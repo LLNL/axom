@@ -224,14 +224,13 @@
         }, 
         {
             "_PTR_F_C_index": 14, 
-            "_decl": "void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))", 
+            "_decl": "void passCharPtr(char * dest+intent(out), const char * src+intent(in))", 
             "_function_index": 2, 
             "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
                         "intent": "out", 
-                        "len": "Ndest", 
                         "ptr": true, 
                         "value": false
                     }, 
@@ -239,7 +238,7 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "dest", 
-                        "c_var_len": "Ndest", 
+                        "c_var_len": "SH_Ndest", 
                         "c_var_trim": "SH_Ldest", 
                         "cpp_type": "char", 
                         "cpp_var": "dest"
@@ -297,7 +296,7 @@
                 "C_prototype": "char * dest, const char * src", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
-                "F_C_call": "c_pass_char_ptr_buffer", 
+                "F_C_call": "c_pass_char_ptr_bufferify", 
                 "F_C_name": "c_pass_char_ptr", 
                 "F_arg_c_call": "dest, len(dest, kind=C_INT), src, len_trim(src, kind=C_INT)", 
                 "F_arg_c_call_tab": "\tdest\tlen(dest, kind=C_INT)\tsrc\tlen_trim(src, kind=C_INT)", 
@@ -312,9 +311,7 @@
                 "function_name": "passCharPtr", 
                 "underscore_name": "pass_char_ptr"
             }, 
-            "options": {
-                "C_bufferify_suffix": "_BUFFER"
-            }, 
+            "options": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "passCharPtr", 
@@ -387,16 +384,16 @@
             }, 
             "fmt": {
                 "C_call_list": "SH_dest, SH_src", 
-                "C_name": "STR_pass_char_ptr_BUFFER", 
+                "C_name": "STR_pass_char_ptr_bufferify", 
                 "C_post_call": "shroud_FccCopy(dest, Ndest, SH_dest);\ndelete [] SH_dest;\ndelete [] SH_src;", 
                 "C_pre_call": "char * SH_dest = new char [Ndest + 1];\nchar * SH_src = new char [Lsrc + 1];\nstd::strncpy(SH_src, src, Lsrc);\nSH_src[Lsrc] = '\\0';", 
                 "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
-                "F_C_name": "c_pass_char_ptr_buffer", 
+                "F_C_name": "c_pass_char_ptr_bufferify", 
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
-                "function_suffix": "_BUFFER"
+                "function_suffix": "_bufferify"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1389,14 +1386,13 @@
         }, 
         {
             "_PTR_F_C_index": 26, 
-            "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))", 
+            "_decl": "void acceptStringReference(std::string & arg1+intent(inout))", 
             "_function_index": 10, 
             "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
                         "intent": "inout", 
-                        "len": "Narg1", 
                         "reference": true, 
                         "value": false
                     }, 
@@ -1404,7 +1400,7 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "arg1", 
-                        "c_var_len": "Narg1", 
+                        "c_var_len": "SH_Narg1", 
                         "c_var_trim": "SH_Larg1", 
                         "cpp_type": "std::string", 
                         "cpp_val": "SH_arg1.c_str()", 
@@ -1434,7 +1430,7 @@
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference", 
                 "C_post_call": "strcpy(arg1, SH_arg1.c_str());", 
-                "C_pre_call": "std::string SH_arg1(arg1);\nint SH_Larg1 = strlen(arg1);", 
+                "C_pre_call": "std::string SH_arg1(arg1);", 
                 "C_prototype": "char * arg1", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
@@ -1567,7 +1563,7 @@
                 "C_prototype": "char * name", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
-                "F_C_call": "c_explicit1_bufferify", 
+                "F_C_call": "c_explicit1_buffer", 
                 "F_C_name": "c_explicit1", 
                 "F_arg_c_call": "name, len_trim(name, kind=C_INT)", 
                 "F_arg_c_call_tab": "\tname\tlen_trim(name, kind=C_INT)", 
@@ -1582,7 +1578,9 @@
                 "function_name": "explicit1", 
                 "underscore_name": "explicit1"
             }, 
-            "options": {}, 
+            "options": {
+                "C_bufferify_suffix": "_BUFFER"
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "explicit1", 
@@ -1626,16 +1624,16 @@
             "decl": "void explicit1(char * name+len_trim(AAlen)+intent(in))", 
             "fmt": {
                 "C_call_list": "SH_name", 
-                "C_name": "STR_explicit1_bufferify", 
+                "C_name": "STR_explicit1_BUFFER", 
                 "C_post_call": "delete [] SH_name;", 
                 "C_pre_call": "char * SH_name = new char [AAlen + 1];\nstd::strncpy(SH_name, name, AAlen);\nSH_name[AAlen] = '\\0';", 
                 "C_prototype": "char * name, int AAlen", 
                 "C_return_type": "void", 
                 "C_rv_decl": "void SH_rv", 
-                "F_C_name": "c_explicit1_bufferify", 
+                "F_C_name": "c_explicit1_buffer", 
                 "c_const": "", 
                 "cpp_var": "SH_rv", 
-                "function_suffix": "_bufferify"
+                "function_suffix": "_BUFFER"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -2113,9 +2111,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
@@ -2175,9 +2170,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
@@ -2237,9 +2229,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {

@@ -28,8 +28,6 @@ functions:
     description: |
       dest is marked intent(OUT) to override the intent(INOUT) default
       This avoid a copy-in on dest.
-  options:
-    C_bufferify_suffix: _BUFFER
 
 ########################################
 
@@ -101,6 +99,8 @@ functions:
 # local declarations shadow parameter
 
 - decl: void explicit1(char * name+len_trim(AAlen)+intent(in))
+  options:
+    C_bufferify_suffix: _BUFFER
 # len_trim is added for free because intent(in)
 
 - decl: void explicit2(char * name+len(AAtrim)+intent(out))

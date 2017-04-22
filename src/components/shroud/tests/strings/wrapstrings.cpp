@@ -52,7 +52,7 @@ void STR_return_char_bufferify(char * SH_F_rv)
 // splicer end function.return_char_bufferify
 }
 
-// void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in))
+// void passCharPtr(char * dest+intent(out), const char * src+intent(in))
 // function_index=2
 /**
  * \brief strcpy like behavior
@@ -76,9 +76,9 @@ void STR_pass_char_ptr(char * dest, const char * src)
  * dest is marked intent(OUT) to override the intent(INOUT) default
  * This avoid a copy-in on dest.
  */
-void STR_pass_char_ptr_BUFFER(char * dest, int Ndest, const char * src, int Lsrc)
+void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc)
 {
-// splicer begin function.pass_char_ptr_BUFFER
+// splicer begin function.pass_char_ptr_bufferify
     char * SH_dest = new char [Ndest + 1];
     char * SH_src = new char [Lsrc + 1];
     std::strncpy(SH_src, src, Lsrc);
@@ -88,7 +88,7 @@ void STR_pass_char_ptr_BUFFER(char * dest, int Ndest, const char * src, int Lsrc
     delete [] SH_dest;
     delete [] SH_src;
     return;
-// splicer end function.pass_char_ptr_BUFFER
+// splicer end function.pass_char_ptr_bufferify
 }
 
 // const char * getChar1()+pure
@@ -323,7 +323,7 @@ void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
 // splicer end function.accept_string_const_reference_bufferify
 }
 
-// void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1))
+// void acceptStringReference(std::string & arg1+intent(inout))
 // function_index=10
 /**
  * \brief Accept a string reference
@@ -336,7 +336,6 @@ void STR_accept_string_reference(char * arg1)
 {
 // splicer begin function.accept_string_reference
     std::string SH_arg1(arg1);
-    int SH_Larg1 = strlen(arg1);
     acceptStringReference(SH_arg1);
     strcpy(arg1, SH_arg1.c_str());
     return;
@@ -374,16 +373,16 @@ void STR_explicit1(char * name)
 
 // void explicit1(char * name+intent(in)+len_trim(AAlen))
 // function_index=27
-void STR_explicit1_bufferify(char * name, int AAlen)
+void STR_explicit1_BUFFER(char * name, int AAlen)
 {
-// splicer begin function.explicit1_bufferify
+// splicer begin function.explicit1_BUFFER
     char * SH_name = new char [AAlen + 1];
     std::strncpy(SH_name, name, AAlen);
     SH_name[AAlen] = '\0';
     explicit1(SH_name);
     delete [] SH_name;
     return;
-// splicer end function.explicit1_bufferify
+// splicer end function.explicit1_BUFFER
 }
 
 // void explicit2(char * name+intent(out)+len(AAtrim))

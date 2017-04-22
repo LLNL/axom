@@ -28,9 +28,8 @@ char returnChar()
 
 //----------------------------------------
 
-void passCharPtr(char * dest, const char *src)
+void passCharPtr(char *dest, const char *src)
 {
-    // throw away result
     std::strcpy(dest, src);
 }
 

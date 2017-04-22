@@ -10,7 +10,7 @@ Close wrapClass1.h
 Close wrapClass1.cpp
 C function void Function1()
 C function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-C function void Sum(int len+intent(in)+value, int * values+dimension((len))+intent(in), int * result+intent(out))
+C function void Sum(int len+intent(in)+value, int * values+dimension(len)+intent(in), int * result+intent(out))
 C function bool Function3(bool arg+intent(in)+value)
 C function void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
 C function void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(NSH_F_rv))
@@ -51,7 +51,7 @@ C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method void Method1()
 C-interface, Fortran function void Function1()
 C-interface, Fortran function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
-C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+dimension((len))+intent(in), int * result+intent(out))
+C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+dimension(len)+intent(in), int * result+intent(out))
 C-interface, Fortran function bool Function3(bool arg+intent(in)+value)
 C-interface, Fortran function void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
 Fortran function const std::string Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))

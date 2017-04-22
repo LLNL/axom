@@ -372,7 +372,7 @@
             }
         }, 
         {
-            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension((len))+intent(in), int * result+intent(out))", 
+            "_decl": "void Sum(int len+intent(in)+value, int * values+dimension(len)+intent(in), int * result+intent(out))", 
             "_function_index": 5, 
             "_subprogram": "subroutine", 
             "args": [
@@ -3897,9 +3897,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
@@ -3959,9 +3956,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
@@ -4021,9 +4015,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {

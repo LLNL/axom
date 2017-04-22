@@ -432,9 +432,9 @@ class Schema(object):
                     intent_out=dict(
                         cpp_header='<cstring>',
 #                        cpp_header='shroudrt.hpp',
-                        pre_call=[
-                            'int {c_var_trim} = strlen({c_var});',
-                            ],
+#                        pre_call=[
+#                            'int {c_var_trim} = strlen({c_var});',
+#                            ],
                         post_call=[
                             # This may overwrite c_var if cpp_val is too long
                             'strcpy({c_var}, {cpp_val});'
@@ -939,12 +939,6 @@ class GenFunctions(object):
                           attrs.get('reference', False))
                 if is_ptr:
                     has_string_arg = True
-                    # Force len attribute when intent is OUT
-                    # so the wrapper will know how much space
-                    # can be written to.
-                    intent = attrs['intent']
-                    if intent in ['out', 'inout'] and 'len' not in attrs:
-                        attrs['len'] = options.C_var_len_template.format(c_var=arg['name'])
                 else:
                     arg['type'] = 'char_scalar'
 
@@ -999,8 +993,13 @@ class GenFunctions(object):
                 attrs = arg['attrs']
                 intent = attrs['intent']
                 if intent in ['in', 'inout'] and 'len_trim' not in attrs:
+                    # Force len_trim when intent is IN
+                    # Assume trailing blanks are not part of data
                     attrs['len_trim'] = options.C_var_trim_template.format(c_var=arg['name'])
                 if intent in ['out', 'inout'] and 'len' not in attrs:
+                    # Force len attribute when intent is OUT
+                    # so the wrapper will know how much space
+                    # can be written to.
                     attrs['len'] = options.C_var_len_template.format(c_var=arg['name'])
 
         if has_string_result:
@@ -1137,6 +1136,9 @@ class GenFunctions(object):
             elif value is False:
                 pass
 #                decl.append('-' + key)
+            elif key == 'dimension':
+                # dimension already has parens
+                decl.append('+%s%s' % (key, value))
             else:
                 decl.append('+%s(%s)' % (key, value))
 

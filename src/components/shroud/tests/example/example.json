@@ -4367,9 +4367,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
@@ -4429,9 +4426,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
@@ -4491,9 +4485,6 @@
                     "cpp_header": "<cstring>", 
                     "post_call": [
                         "strcpy({c_var}, {cpp_val});"
-                    ], 
-                    "pre_call": [
-                        "int {c_var_trim} = strlen({c_var});"
                     ]
                 }, 
                 "intent_out_buf": {
