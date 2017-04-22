@@ -22,7 +22,6 @@
                 "C_header_filename": "wrapClass1.h", 
                 "C_impl_filename": "wrapClass1.cpp", 
                 "C_type_name": "TUT_class1", 
-                "F_C_prefix": "c_", 
                 "F_derived_name": "class1", 
                 "LUA_class_reg": "l_Class1_Reg", 
                 "LUA_ctor_name": "Class1", 

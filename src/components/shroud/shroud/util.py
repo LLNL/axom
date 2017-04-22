@@ -544,7 +544,7 @@ class Options(object):
     """
     If attribute is not found, look in parent's.
     A replacement for a dictionary to allow obj.name syntax.
-    It will automatically look in __parent to attribute if not found to allow
+    It will automatically look in __parent for attribute if not found to allow
     A nesting of options.
     Use __attr to avoid xporting to json
     """

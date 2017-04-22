@@ -457,17 +457,63 @@ And the Fortran wrapper provides the correct values for the *len* and
         ! splicer end accept_string_reference
     end subroutine accept_string_reference
 
-
-
-
-Character Arguments
+Character functions
 ^^^^^^^^^^^^^^^^^^^
 
-When an argument has intent *out*, then *len* attribute is added.
-This allows the wrapper routine to know how much space as available for the output string.
+Function which return a ``char *`` provide an additional challange::
 
-When the argument has intent *in*, then the *len_trim* attribute is added to the *bufferify*
-wrapper only.  The non-bufferify version will use ``strlen`` to compute the length of data.
+
+    - decl: const char * getChar1()  +pure
+    - decl: const char * getChar2+len=30()
+    - decl: const char * getChar3()
+      options:
+         F_string_result_as_arg: output
+
+Each generates very similar C wrappers::
+
+    const char * STR_get_char1()
+    {
+        const char * SH_rv = getChar1();
+        return SH_rv;
+    }
+
+    void STR_get_char1_bufferify(char * SH_F_rv, int NSH_F_rv)
+    {
+        const char * SH_rv = getChar1();
+        shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);
+        return;
+    }
+
+But the Fortran wrappers work differently::
+
+    function get_char1() result(SH_rv)
+        use iso_c_binding, only : C_CHAR
+        character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: SH_rv
+        SH_rv = fstr(c_get_char1())
+    end function get_char1
+
+    function get_char2() result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        character(kind=C_CHAR, len=30) :: SH_rv
+        call c_get_char2_bufferify(  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+    end function get_char2
+
+    subroutine get_char3(output)
+        use iso_c_binding, only : C_INT
+        character(*), intent(OUT) :: output
+        call c_get_char3_bufferify(  &
+            output,  &
+            len(output, kind=C_INT))
+    end subroutine get_char3
+
+
+
+
+.. ######################################################################
+
+
 
 Character Function
 ^^^^^^^^^^^^^^^^^^

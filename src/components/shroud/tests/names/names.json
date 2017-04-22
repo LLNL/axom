@@ -26,7 +26,6 @@
                 "C_header_filename": "foo.h", 
                 "C_impl_filename": "foo.cpp", 
                 "C_type_name": "TES_names", 
-                "F_C_prefix": "c_", 
                 "F_derived_name": "FNames", 
                 "F_impl_filename": "foo.f", 
                 "F_module_name": "name_module", 

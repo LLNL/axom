@@ -67,16 +67,20 @@ class Schema(object):
     def push_options(self, node):
         """ Push a new set of options.
         Copy current options, then update with new options.
+        Replace node[option] dictionary with Options instance.
+        Return original options dictionary.
         """
+        old = None
         new = util.Options(parent=self.options_stack[-1])
         if 'options' in node and \
                 node['options'] is not None:
             if not isinstance(node['options'], dict):
                 raise TypeError("options must be a dictionary")
-            new.update(node['options'])
+            old = node['options']
+            new.update(old)
         self.options_stack.append(new)
         node['options'] = new
-        return new
+        return new, old
 
     def pop_options(self):
         self.options_stack.pop()
@@ -110,6 +114,21 @@ class Schema(object):
 
     def pop_fmt(self):
         self.fmt_stack.pop()
+
+    def option_to_fmt(self, fmt, options):
+        """Set fmt based on options dictionary.
+
+        options - options dictionary from YAML file.
+        """
+        if options is None:
+            return
+        for name in ['C_prefix', 'F_C_prefix', 
+                     'C_this', 'C_result', 'CPP_this',
+                     'F_this', 'F_result', 'F_derived_member',
+                     'PY_result',
+                     'LUA_result']:
+            if name in options:
+                setattr(fmt, name, options[name])
 
     def check_schema(self):
         """ Routine to check entire schema of input tree"
@@ -174,7 +193,10 @@ class Schema(object):
         wrapl.add_templates(def_options)
 
         if 'options' in node:
-            def_options.update(node['options'])
+            old = node['options']
+            def_options.update(old)
+        else:
+            old = None
         self.options_stack = [def_options]
         node['options'] = def_options
 
@@ -202,6 +224,22 @@ class Schema(object):
         fmt_library.CPP_template = ''
         fmt_library.C_pre_call = ''
         fmt_library.C_post_call = ''
+
+        fmt_library.C_this = 'self'
+        fmt_library.C_result = 'SH_rv'
+
+        fmt_library.CPP_this = 'SH_this'
+
+        fmt_library.F_this = 'obj'
+        fmt_library.F_result = 'SH_rv'
+        fmt_library.F_derived_member = 'voidptr'
+
+        # don't have to worry about argument names in Python wrappers
+        # so skip the SH_ prefix by default.
+        fmt_library.PY_result = 'rv'
+        fmt_library.LUA_result = 'rv'
+
+        self.option_to_fmt(fmt_library, old)
 
         self.fmt_stack.append(fmt_library)
 
@@ -568,15 +606,12 @@ class Schema(object):
             # YAML turns blank strings into None
             node['cpp_header'] = ''
 
-        options = self.push_options(node)
+        options, old = self.push_options(node)
         fmt_class = self.push_fmt(node)
+        self.option_to_fmt(fmt_class, old)
         fmt_class.cpp_class = name
         fmt_class.class_lower = name.lower()
         fmt_class.class_upper = name.upper()
-        if 'C_prefix' in options:
-            fmt_class.C_prefix = options.C_prefix
-        if 'F_C_prefix' in options:
-            fmt_class.F_C_prefix = options.F_C_prefix
         util.eval_template(node, 'class_prefix')
 
         # Only one file per class for C.
@@ -594,8 +629,9 @@ class Schema(object):
     def check_function(self, node):
         """ Make sure necessary fields are present for a function.
         """
-        self.push_options(node)
+        options, old = self.push_options(node)
         fmt_func = self.push_fmt(node)
+        self.option_to_fmt(fmt_func, old)
 
 #        func = util.FunctionNode()
 #        func.update(node)
@@ -1346,23 +1382,6 @@ class Namify(object):
         self.config = config
 
     def name_library(self):
-        options = self.tree['options']
-        fmt_library = self.tree['fmt']
-        fmt_library.C_this = options.get('C_this', 'self')
-        fmt_library.C_result = options.get('C_result', 'SH_rv')
-
-        fmt_library.CPP_this = options.get('CPP_this', 'SH_this')
-
-        fmt_library.F_this = options.get('F_this', 'obj')
-        fmt_library.F_result = options.get('F_result', 'SH_rv')
-        fmt_library.F_derived_member = options.get('F_derived_member',
-                                                   'voidptr')
-
-        # don't have to worry about argument names in Python wrappers
-        # so skip the SH_ prefix by default.
-        fmt_library.PY_result = options.get('PY_result', 'rv')
-        fmt_library.LUA_result = options.get('LUA_result', 'rv')
-
         self.name_language(self.name_function_c)
         self.name_language(self.name_function_fortran)
 
