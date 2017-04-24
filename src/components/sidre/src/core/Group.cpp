@@ -1487,29 +1487,38 @@ void Group::load(const hid_t& h5_id,
 void Group::renameOrWarn(const std::string& new_name)
 {
   if (new_name != m_name) {
-    const Group * root = getDataStore()->getRoot();
-    Group * parent = getParent();
-    if (this == root || parent == AXOM_NULLPTR)
+    if (new_name.empty()) 
     {
-      rename(new_name);
+      SLIC_WARNING("Attempted to rename group " << m_name <<
+                   " with an empty string. The name will not be changed.");
+
     }
     else
     {
-      if (parent->hasGroup(new_name))
+      const Group * root = getDataStore()->getRoot();
+      Group * parent = getParent();
+      if (this == root || parent == AXOM_NULLPTR)
       {
-        SLIC_WARNING("Parent already has a child group named " << new_name <<
-                     ". The name of group " << m_name <<
-                     " will not be changed.");
-      }
-      else if (parent->hasView(new_name))
-      {
-        SLIC_WARNING("Parent already has a child view named " << new_name <<
-                     ". The name of group " << m_name <<
-                     " will not be changed.");
+        rename(new_name);
       }
       else
       {
-        rename(new_name);
+        if (parent->hasGroup(new_name))
+        {
+          SLIC_WARNING("Parent already has a child group named " << new_name <<
+                       ". The name of group " << m_name <<
+                       " will not be changed.");
+        }
+        else if (parent->hasView(new_name))
+        {
+          SLIC_WARNING("Parent already has a child view named " << new_name <<
+                       ". The name of group " << m_name <<
+                       " will not be changed.");
+        }
+        else
+        {
+          rename(new_name);
+        }
       }
     }
   }

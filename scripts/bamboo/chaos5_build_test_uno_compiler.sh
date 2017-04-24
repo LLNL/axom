@@ -1,4 +1,4 @@
-#!/bin/bash
+#x!/bin/bash
 # 09-12-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug"
 # 09-16-2016 chang28, build-and-test.sh "clang@3.5.0" "Debug" ""
 # 09-19-2016 chang28, the decider has decided to have a configuration file call a main_script file, this is the configuration file, all environment variables are set up here. chaos5_build_test_all_compilers.sh "Debug" ""
@@ -20,7 +20,7 @@ INSTALL_DOCS=false
 
 JOBS=16
 
-TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
+TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/axom"
 DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
