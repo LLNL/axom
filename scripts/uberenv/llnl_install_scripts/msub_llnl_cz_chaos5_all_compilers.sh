@@ -2,6 +2,7 @@
 #MSUB -l nodes=1
 #MSUB -q pbatch
 #MSUB -l walltime=8:00:00
+#MSUB -A wbronze
 #MSUB -j oe
 #MSUB -o m.out.cz.uberenv.chaos5.all.compilers.%j.%N.txt
 #
