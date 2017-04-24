@@ -25,6 +25,8 @@ Contents:
    previouswork
    futurework
 
+#   classes
+
 
 Indices and tables
 ==================

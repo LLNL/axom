@@ -80,13 +80,12 @@ cut-and-pasted into the YAML file.
 
 In some sense, Shroud can be thought of as a fancy macro processor.
 It takes the function declarations from the YAML file and break them
-down into a series of contexts (library, class, function, argument) and defines
-a dictionary of format macros of the form key=value.  There are then a
-series of macro templates which are expanded to create the wrapper
-functions. Some name templates can be specified as options.  But the
-overall structure of the generated code is defined by the classes and
-functions in the YAML file as well as the requirements of C++ and
-Fortran syntax.
+down into a series of contexts (library, class, function, argument)
+and defines a dictionary of format macros of the form key=value.
+There are then a series of macro templates which are expanded to
+create the wrapper functions. The overall structure of the generated
+code is defined by the classes and functions in the YAML file as well
+as the requirements of C++ and Fortran syntax.
 
 Requirements
 ------------

@@ -537,7 +537,7 @@
                 "F_name_method": "get_char1", 
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
-                "rvlen": "strlen_ptr(c_get_char1(\t))"
+                "c_var_len": "strlen_ptr(c_get_char1(\t))"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -583,9 +583,9 @@
                 "F_subprogram": "function", 
                 "PY_name_impl": "PY_get_char2", 
                 "c_const": "const ", 
+                "c_var_len": "30", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getChar2", 
-                "rvlen": "30", 
                 "underscore_name": "get_char2"
             }, 
             "options": {}, 
@@ -958,7 +958,7 @@
                 "F_name_method": "get_string1", 
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
-                "rvlen": "strlen_ptr(c_get_string1(\t))"
+                "c_var_len": "strlen_ptr(c_get_string1(\t))"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -1005,9 +1005,9 @@
                 "F_subprogram": "function", 
                 "PY_name_impl": "PY_get_string2", 
                 "c_const": "const ", 
+                "c_var_len": "30", 
                 "cpp_var": "SH_rv", 
                 "function_name": "getString2", 
-                "rvlen": "30", 
                 "underscore_name": "get_string2"
             }, 
             "options": {}, 

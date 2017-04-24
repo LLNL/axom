@@ -968,7 +968,10 @@ LUA_name
 Annotations
 -----------
 
-a.k.a. attributes
+Ann annotation can be used to provide semantic information for a function or argument.
+
+
+.. a.k.a. attributes
 
 constructor
    Mark method as a constructor.
@@ -1002,14 +1005,24 @@ default
    Default value for C++ function argument.
 
 len
-   An expression for the length of string result variable.
-   If not set then the function will be called to compute the string
-   result and len will be computed using ``strlen``.
-   The function is then called again to fill in the result variable.
- 
+   For a string argument, pass an additional argument to the
+   C wrapper with the result of the Fortran intrinsic ``len``.
+   If a value for the attribute is provided it will be the name
+   of the extra argument.  If no value is provided then the
+   argument name defaults to option *C_var_len_template*.
+
+   When used with a function, it will be the length of the return
+   value of the function using the declaration::
+
+     character(kind=C_CHAR, len={c_var_len}) :: {F_result}
+
 len_trim
-   For a string argument, pass the string address and the result of
-   len_trim.
+   For a string argument, pass an additional argument to the
+   C wrapper with the result of the Fortran intrinsic ``len_trim``.
+   If a value for the attribute is provided it will be the name
+   of the extra argument.  If no value is provided then the
+   argument name defaults to option *C_var_trim_template*.
+
 
 Doxygen
 -------
@@ -1024,12 +1037,6 @@ description
 
 return
    Description of return value.
-
-
-Splicers
---------
-
-Describe splicers.
 
 
 

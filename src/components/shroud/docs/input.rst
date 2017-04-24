@@ -30,7 +30,7 @@ should be quoted::
 
     name : "{fmt}"
 
-Strings may be split across several lines::
+Strings may be split across several lines by indenting the continued line::
 
     - decl: void Sum(int len, int *values+dimension+intent(in),
                      int *result+intent(out))
@@ -114,6 +114,9 @@ a brace character in the literal text, it can be escaped by doubling:
 ``{{`` and ``}}``. [Python_Format]_
 
 
+
+
+.. rubric:: Footnotes
 
 .. [Python_Format] https://docs.python.org/2/library/string.html#format-string-syntax
 

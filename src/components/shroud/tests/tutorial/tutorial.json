@@ -719,8 +719,8 @@
                 "LUA_name": "Function4a", 
                 "LUA_name_impl": "l_function4a", 
                 "PY_name_impl": "PY_function4a", 
+                "c_var_len": "30", 
                 "function_name": "Function4a", 
-                "rvlen": "30", 
                 "underscore_name": "function4a"
             }, 
             "options": {
@@ -3466,7 +3466,7 @@
                 "F_name_method": "last_function_called", 
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
-                "rvlen": "strlen_ptr(c_last_function_called(\t))"
+                "c_var_len": "strlen_ptr(c_last_function_called(\t))"
             }, 
             "options": {
                 "wrap_c": false, 

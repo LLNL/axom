@@ -26,6 +26,26 @@ All of the fields are defined in the references section and will only be used
 by example in this section.
 
 
+Types
+-----
+
+.. Shroud predefines many of the native types.
+
+  * void
+  * int
+  * long
+  * size_t
+  * bool
+  * float
+  * double
+  * std::string
+
+  Fortran has no support for unsigned types.
+          ``size_t`` will be the correct number of bytes, but
+          will be signed.
+
+
+
 Integer and Real
 ----------------
 
@@ -531,9 +551,9 @@ truncated::
     end function get_char2
 
 The third option gives the best of both worlds.  The C wrapper is only
-called once and any size result can be returned. The option
-**F_string_result_as_arg** will return the result of the C function in
-the named Fortran argument.  The potential downside is that a Fortran
+called once and any size result can be returned.  The result of the C
+function in will be returned in the Fortran argument named by option
+**F_string_result_as_arg**.  The potential downside is that a Fortran
 subroutine is generated instead of a function::
 
     subroutine get_char3(output)

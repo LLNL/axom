@@ -840,9 +840,9 @@ class Wrapf(util.WrapperMixin):
                         fmt_func)
                 else:
                     rvlen = str(rvlen)  # convert integers
-                fmt_func.rvlen = wformat(rvlen, fmt_func)
+                fmt_func.c_var_len = wformat(rvlen, fmt_func)
                 line1 = wformat(
-                    'character(kind=C_CHAR, len={rvlen}) :: {F_result}',
+                    'character(kind=C_CHAR, len={c_var_len}) :: {F_result}',
                     fmt_func)
                 self.append_method_arguments(arg_f_decl, line1)
                 self.set_f_module(modules, 'iso_c_binding', 'C_CHAR')

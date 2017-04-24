@@ -638,25 +638,9 @@ It may now be used with single or double precision arguments::
   call function9(1.0d0)
 
 
-
-
 Types
 -----
 
-Shroud predefines many of the native types.
-
-  * void
-  * int
-  * long
-  * size_t
-  * bool
-  * float
-  * double
-  * std::string
-
-.. note:: Fortran has no support for unsigned types.
-          ``size_t`` will be the correct number of bytes, but
-          will be signed.
 
 Typedef
 ^^^^^^^

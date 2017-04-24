@@ -256,6 +256,69 @@ Results are named from *fmt.C_result* or *fmt.F_result*.
 
 Fortran option F_result.
 
-
-splicers
+Patterns
 --------
+
+blah blah blah
+
+
+Splicers
+--------
+
+No matter how many features are added to Shroud there will always exist
+cases that it does not handle.  Once of the weaknesses of generated
+code is that if the generated code is edited it becomes difficult to
+regenerate the code and perserve the edits.  To deal with this
+situation each block of generated code is surrounded by 'splicer'
+comments::
+
+    const char * STR_get_char3()
+    {
+    // splicer begin function.get_char3
+        const char * SH_rv = getChar3();
+        return SH_rv;
+    // splicer end function.get_char3
+    }
+
+These comments delineate a section of code which can be replaced by
+the user.  In a separate file, add the begin and end splicer comments,
+then add the code which should be inserted into the wrapper.  Multiple
+splicer can be added to an input file.  Any text that is not within a
+splicer block is ignored.  Splicers must be sorted by language.  If
+the input file ends with ``.f`` or ``.f90`` it is processed as
+splicers for the generated Fortran code.  Code for the C wrappers must
+end with any of ``.c``, ``.h``, ``.cpp``, ``.hpp``, ``.cxx``,
+``.hxx``, ``.cc``, ``.C``::
+
+    // splicer begin function.get_char3
+        const char * SH_rv = getChar3();
+        SH_rv[0] = 'F';    // replace first character for Fortran
+        return SH_rv + 1;
+    // splicer end function.get_char3
+
+
+In addition to replacing code for a function wrapper, there are many
+empty splicers that are generate which allow a user to insert additional
+code.  This can be used to add any helper functions::
+
+    ! splicer begin file_top
+    ! splicer end file_top
+
+Additional ``use`` statements into the module::
+
+    ! splicer begin module_use
+    ! splicer end module_use
+
+Additional interfaces::
+
+    ! splicer begin additional_interfaces
+    ! splicer end additional_interfaces
+
+Or additional code::
+
+    ! splicer begin additional_functions
+    ! splicer end additional_functions
+
+There are a large assortment of splicer that allow code to be inserted
+where necessary.
+
