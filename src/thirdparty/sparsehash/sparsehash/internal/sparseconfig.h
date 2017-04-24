@@ -7,18 +7,10 @@
 #define GOOGLE_NAMESPACE ::google
 
 /* the location of the header defining hash functions */
-#if defined( __APPLE__ ) && defined( __clang__ )
-  #define HASH_FUN_H <functional>
-#else
-  #define HASH_FUN_H <tr1/functional>
-#endif
+#define HASH_FUN_H SPARSEHASH_HASHFUN_HEADER
 
 /* the namespace of the hash<> function */
-#if defined( __APPLE__ ) && defined( __clang__ )
-  #define HASH_NAMESPACE std
-#else
-  #define HASH_NAMESPACE std::tr1
-#endif
+#define HASH_NAMESPACE SPARSEHASH_HASHFUN_NAMESPACE
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
