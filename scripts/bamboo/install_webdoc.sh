@@ -5,7 +5,7 @@
 # 09-20-2016 chang28,  chaos5_build_test_uno_compiler.sh "Debug" "" "clang@3.5.0"
 # 01-17-2017 chang28, only create and install web doc.
 
-echo chaos5_install_webdoc 1.0
+echo install_webdoc 1.0
 BT="Debug"
 BUILD_TYPE=$1
 BUILD_PATH="atk_build"
@@ -21,7 +21,7 @@ INSTALL_DOCS=true
 
 JOBS=16
 
-TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/toolkit"
+TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/axom"
 DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
