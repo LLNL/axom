@@ -14,7 +14,7 @@ BUILD_OPT=$2
 
 BUILD=true
 TEST=true
-DOC=false
+DOC=true
 INSTALL_FILES=true
 INSTALL_DOCS=false
 
