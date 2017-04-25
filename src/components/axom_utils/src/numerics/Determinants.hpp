@@ -8,11 +8,11 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-#ifndef DETERMINANTS_H_
-#define DETERMINANTS_H_
+#ifndef AXOM_NUMERICS_DETERMINANTS_HPP_
+#define AXOM_NUMERICS_DETERMINANTS_HPP_
 
 namespace axom {
-namespace primal {
+namespace numerics {
 
 /*!
  *******************************************************************************
@@ -24,7 +24,7 @@ namespace primal {
  * \return det the determinant of the 2X2 matrix
  *******************************************************************************
  */
-template < class real >
+template < typename real >
 inline real determinant( const real& a00, const real& a01,
                          const real& a10, const real& a11 )
 {
@@ -47,7 +47,7 @@ inline real determinant( const real& a00, const real& a01,
  * \return det the determinant of the 3x3 matrix.
  *******************************************************************************
  */
-template < class real >
+template < typename real >
 inline real determinant( const real& a00,  const real& a01,  const real& a02,
                          const real& a10,  const real& a11,  const real& a12,
                          const real& a20,  const real& a21,  const real& a22 )
@@ -82,7 +82,7 @@ inline real determinant( const real& a00,  const real& a01,  const real& a02,
  * \return det the determinant of the 4x4 matrix
  *******************************************************************************
  */
-template < class real >
+template < typename real >
 inline real determinant(
   const real& a00, const real& a01, const real& a02, const real& a03,
   const real& a10, const real& a11, const real& a12, const real& a13,
@@ -105,7 +105,7 @@ inline real determinant(
   return det;
 }
 
-} /* namespace primal */
+} /* namespace numerics */
 } /* namespace axom */
 
 #endif

@@ -11,10 +11,12 @@
 #ifndef VECTOR_HPP_
 #define VECTOR_HPP_
 
+// axom_utils includes
+#include "axom_utils/Determinants.hpp" // For numerics::determinant()
+
 // Primal includes
 #include "primal/NumericArray.hpp"
 #include "primal/Point.hpp"
-#include "primal/Determinants.hpp" // For primal::determinant()
 
 // C/C++ includes
 #include <cmath> // for sqrt()
@@ -531,7 +533,7 @@ inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
   Vector< T,3 > c;
   c[ 0 ] = 0;
   c[ 1 ] = 0;
-  c[ 2 ] = primal::determinant( u[0],u[1], v[0],v[1] );
+  c[ 2 ] = numerics::determinant( u[0],u[1], v[0],v[1] );
   return( c );
 }
 
@@ -541,12 +543,12 @@ inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
   const Vector< T,3 >& u, const Vector< T,3 >& v )
 {
   Vector< T,3 > c;
-  c[ 0 ] = primal::determinant( u[1],u[2], v[1],v[2] );
+  c[ 0 ] = numerics::determinant( u[1],u[2], v[1],v[2] );
 
   // NOTE: Transposed u and v to negate
-  c[ 1 ] = primal::determinant( v[0],v[2], u[0],u[2] );
+  c[ 1 ] = numerics::determinant( v[0],v[2], u[0],u[2] );
 
-  c[ 2 ] = primal::determinant( u[0],u[1], v[0],v[1] );
+  c[ 2 ] = numerics::determinant( u[0],u[1], v[0],v[1] );
 
   return( c );
 }
