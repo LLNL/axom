@@ -151,6 +151,7 @@ class Schema(object):
             wrap_lua=False,
 
             doxygen=True,       # create doxygen comments
+            show_splicer_comments=True,
 
             # blank for functions, set in classes.
             class_prefix_template='{class_lower}_',

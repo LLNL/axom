@@ -11,8 +11,6 @@
 
 #include "mpi.h"
 
-// splicer begin class.Class2.CXX_declarations
-// splicer end class.Class2.CXX_declarations
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,8 +22,6 @@ typedef struct s_DEF_class1 DEF_class1;
 struct s_DEF_class2;
 typedef struct s_DEF_class2 DEF_class2;
 
-// splicer begin class.Class2.C_declarations
-// splicer end class.Class2.C_declarations
 
 void DEF_class2_method1(DEF_class2 * self, MPI_Fint comm);
 

@@ -3531,6 +3531,7 @@
         "class_prefix_template": "{class_lower}_", 
         "debug": true, 
         "doxygen": true, 
+        "show_splicer_comments": true, 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_lua": true, 

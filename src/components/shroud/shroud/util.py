@@ -248,11 +248,14 @@ class WrapperMixin(object):
         # The prefix is needed when two different sets of output
         # are being create and they are not in sync.
         # Creating methods and derived types together.
-        out.append('%s splicer begin %s%s' % (
-            self.comment, self.splicer_path, name))
+        show_splicer_comments = self.tree['options'].show_splicer_comments
+        if show_splicer_comments:
+            out.append('%s splicer begin %s%s' % (
+                self.comment, self.splicer_path, name))
         out.extend(self.splicer_stack[-1].get(name, default))
-        out.append('%s splicer end %s%s' % (
-            self.comment, self.splicer_path, name))
+        if show_splicer_comments:
+            out.append('%s splicer end %s%s' % (
+                self.comment, self.splicer_path, name))
 
 #####
 

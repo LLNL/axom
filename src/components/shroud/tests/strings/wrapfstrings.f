@@ -240,9 +240,9 @@ contains
     !<
     function return_char() result(SH_rv)
         character :: SH_rv
-        ! splicer begin return_char
+        ! splicer begin function.return_char
         call c_return_char_bufferify(SH_rv)
-        ! splicer end return_char
+        ! splicer end function.return_char
     end function return_char
 
     ! void passCharPtr(char * dest+intent(out), const char * src+intent(in))
@@ -258,13 +258,13 @@ contains
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: dest
         character(*), intent(IN) :: src
-        ! splicer begin pass_char_ptr
+        ! splicer begin function.pass_char_ptr
         call c_pass_char_ptr_bufferify(  &
             dest,  &
             len(dest, kind=C_INT),  &
             src,  &
             len_trim(src, kind=C_INT))
-        ! splicer end pass_char_ptr
+        ! splicer end function.pass_char_ptr
     end subroutine pass_char_ptr
 
     ! const string_result_fstr * getChar1()+pure
@@ -276,9 +276,9 @@ contains
     function get_char1() result(SH_rv)
         use iso_c_binding, only : C_CHAR
         character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: SH_rv
-        ! splicer begin get_char1
+        ! splicer begin function.get_char1
         SH_rv = fstr(c_get_char1())
-        ! splicer end get_char1
+        ! splicer end function.get_char1
     end function get_char1
 
     ! const char * getChar2()
@@ -291,11 +291,11 @@ contains
     function get_char2() result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         character(kind=C_CHAR, len=30) :: SH_rv
-        ! splicer begin get_char2
+        ! splicer begin function.get_char2
         call c_get_char2_bufferify(  &
             SH_rv,  &
             len(SH_rv, kind=C_INT))
-        ! splicer end get_char2
+        ! splicer end function.get_char2
     end function get_char2
 
     ! void getChar3(char * output+intent(out)+len(Noutput))
@@ -308,11 +308,11 @@ contains
     subroutine get_char3(output)
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: output
-        ! splicer begin get_char3
+        ! splicer begin function.get_char3
         call c_get_char3_bufferify(  &
             output,  &
             len(output, kind=C_INT))
-        ! splicer end get_char3
+        ! splicer end function.get_char3
     end subroutine get_char3
 
     ! const string_result_fstr & getString1()+pure
@@ -324,9 +324,9 @@ contains
     function get_string1() result(SH_rv)
         use iso_c_binding, only : C_CHAR
         character(kind=C_CHAR, len=strlen_ptr(c_get_string1())) :: SH_rv
-        ! splicer begin get_string1
+        ! splicer begin function.get_string1
         SH_rv = fstr(c_get_string1())
-        ! splicer end get_string1
+        ! splicer end function.get_string1
     end function get_string1
 
     ! const string & getString2()
@@ -339,11 +339,11 @@ contains
     function get_string2() result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         character(kind=C_CHAR, len=30) :: SH_rv
-        ! splicer begin get_string2
+        ! splicer begin function.get_string2
         call c_get_string2_bufferify(  &
             SH_rv,  &
             len(SH_rv, kind=C_INT))
-        ! splicer end get_string2
+        ! splicer end function.get_string2
     end function get_string2
 
     ! void getString3(string & output+intent(out)+len(Noutput))
@@ -356,11 +356,11 @@ contains
     subroutine get_string3(output)
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: output
-        ! splicer begin get_string3
+        ! splicer begin function.get_string3
         call c_get_string3_bufferify(  &
             output,  &
             len(output, kind=C_INT))
-        ! splicer end get_string3
+        ! splicer end function.get_string3
     end subroutine get_string3
 
     ! void acceptStringConstReference(const std::string & arg1+intent(in))
@@ -376,11 +376,11 @@ contains
     subroutine accept_string_const_reference(arg1)
         use iso_c_binding, only : C_INT
         character(*), intent(IN) :: arg1
-        ! splicer begin accept_string_const_reference
+        ! splicer begin function.accept_string_const_reference
         call c_accept_string_const_reference_bufferify(  &
             arg1,  &
             len_trim(arg1, kind=C_INT))
-        ! splicer end accept_string_const_reference
+        ! splicer end function.accept_string_const_reference
     end subroutine accept_string_const_reference
 
     ! void acceptStringReference(std::string & arg1+intent(inout))
@@ -396,12 +396,12 @@ contains
     subroutine accept_string_reference(arg1)
         use iso_c_binding, only : C_INT
         character(*), intent(INOUT) :: arg1
-        ! splicer begin accept_string_reference
+        ! splicer begin function.accept_string_reference
         call c_accept_string_reference_bufferify(  &
             arg1,  &
             len_trim(arg1, kind=C_INT),  &
             len(arg1, kind=C_INT))
-        ! splicer end accept_string_reference
+        ! splicer end function.accept_string_reference
     end subroutine accept_string_reference
 
     ! void explicit1(char * name+intent(in)+len_trim(AAlen))
@@ -410,11 +410,11 @@ contains
     subroutine explicit1(name)
         use iso_c_binding, only : C_INT
         character(*), intent(IN) :: name
-        ! splicer begin explicit1
+        ! splicer begin function.explicit1
         call c_explicit1_buffer(  &
             name,  &
             len_trim(name, kind=C_INT))
-        ! splicer end explicit1
+        ! splicer end function.explicit1
     end subroutine explicit1
 
     ! void explicit2(char * name+intent(out)+len(AAtrim))
@@ -423,11 +423,11 @@ contains
     subroutine explicit2(name)
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: name
-        ! splicer begin explicit2
+        ! splicer begin function.explicit2
         call c_explicit2_bufferify(  &
             name,  &
             len(name, kind=C_INT))
-        ! splicer end explicit2
+        ! splicer end function.explicit2
     end subroutine explicit2
 
     ! splicer begin additional_functions

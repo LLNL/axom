@@ -328,6 +328,10 @@ code::
 
        contains
 
+       ! function.{F_name_method}
+
+       ! {cpp_class}.method.{F_name_method}
+
        ! additional_functions
 
     end module {F_module_name}
@@ -348,6 +352,12 @@ C implementation::
 
     extern "C" {
       // class.{class_name}.C_definitions
+
+      // function.{underscore_name}{function_suffix}
+
+      // {cpp_class}.method.{underscore_name}{function_suffix}
+
     }
 
-
+The splicer comments can be eliminated by setting the option
+**show_splicer_comments** to false.

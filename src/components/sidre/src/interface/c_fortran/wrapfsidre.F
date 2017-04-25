@@ -6208,9 +6208,9 @@ contains
         use iso_c_binding, only : C_BOOL
         character(*), intent(IN) :: name
         logical :: SH_rv
-        ! splicer begin name_is_valid
+        ! splicer begin function.name_is_valid
         SH_rv = name .ne. " "
-        ! splicer end name_is_valid
+        ! splicer end function.name_is_valid
     end function name_is_valid
 
     ! splicer begin additional_functions

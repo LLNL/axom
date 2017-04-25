@@ -4,29 +4,19 @@
 !! \file wrapfClass1.f
 !! \brief Shroud generated wrapper for Class1 class
 !<
-! splicer begin file_top
-! splicer end file_top
 module class1_mod
     use iso_c_binding, only : C_INT, C_PTR
-    ! splicer begin class.Class1.module_use
-    ! splicer end class.Class1.module_use
     implicit none
 
 
-    ! splicer begin class.Class1.module_top
-    ! splicer end class.Class1.module_top
 
     type class1
         type(C_PTR), private :: voidptr
-        ! splicer begin class.Class1.component_part
-        ! splicer end class.Class1.component_part
     contains
         procedure :: method1 => class1_method1
         procedure :: get_instance => class1_get_instance
         procedure :: set_instance => class1_set_instance
         procedure :: associated => class1_associated
-        ! splicer begin class.Class1.type_bound_procedure_part
-        ! splicer end class.Class1.type_bound_procedure_part
     end type class1
 
 
@@ -48,8 +38,6 @@ module class1_mod
             integer(C_INT), value, intent(IN) :: arg1
         end subroutine c_class1_method1
 
-        ! splicer begin class.Class1.additional_interfaces
-        ! splicer end class.Class1.additional_interfaces
     end interface
 
 contains
@@ -58,11 +46,9 @@ contains
         use iso_c_binding, only : C_INT
         class(class1) :: obj
         integer(C_INT), value, intent(IN) :: arg1
-        ! splicer begin class.Class1.method.method1
         call c_class1_method1(  &
             obj%voidptr,  &
             arg1)
-        ! splicer end class.Class1.method.method1
     end subroutine class1_method1
 
     function class1_get_instance(obj) result (voidptr)
@@ -89,8 +75,6 @@ contains
         rv = c_associated(obj%voidptr)
     end function class1_associated
 
-    ! splicer begin class.Class1.additional_functions
-    ! splicer end class.Class1.additional_functions
 
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

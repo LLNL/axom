@@ -9,8 +9,6 @@
 #ifndef WRAPDEFAULT_LIBRARY_H
 #define WRAPDEFAULT_LIBRARY_H
 
-// splicer begin CXX_declarations
-// splicer end CXX_declarations
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,8 +16,6 @@ extern "C" {
 
 // declaration of wrapped types
 
-// splicer begin C_declarations
-// splicer end C_declarations
 
 void DEF_function1();
 

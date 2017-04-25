@@ -175,42 +175,42 @@ contains
     function slic_is_initialized() result(SH_rv)
         use iso_c_binding, only : C_BOOL
         logical :: SH_rv
-        ! splicer begin is_initialized
+        ! splicer begin function.is_initialized
         SH_rv = c_is_initialized()
-        ! splicer end is_initialized
+        ! splicer end function.is_initialized
     end function slic_is_initialized
 
     subroutine slic_create_logger(name, imask)
         use iso_c_binding, only : C_INT
         character(*), intent(IN) :: name
         character, value, intent(IN) :: imask
-        ! splicer begin create_logger
+        ! splicer begin function.create_logger
         call c_create_logger_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT),  &
             imask)
-        ! splicer end create_logger
+        ! splicer end function.create_logger
     end subroutine slic_create_logger
 
     function slic_activate_logger(name) result(SH_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         character(*), intent(IN) :: name
         logical :: SH_rv
-        ! splicer begin activate_logger
+        ! splicer begin function.activate_logger
         SH_rv = c_activate_logger_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT))
-        ! splicer end activate_logger
+        ! splicer end function.activate_logger
     end function slic_activate_logger
 
     subroutine slic_get_active_logger_name(name)
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: name
-        ! splicer begin get_active_logger_name
+        ! splicer begin function.get_active_logger_name
         call c_get_active_logger_name_bufferify(  &
             name,  &
             len(name, kind=C_INT))
-        ! splicer end get_active_logger_name
+        ! splicer end function.get_active_logger_name
     end subroutine slic_get_active_logger_name
 
     subroutine slic_set_abort_on_error(status)
@@ -218,17 +218,17 @@ contains
         logical, value, intent(IN) :: status
         logical(C_BOOL) SH_status
         SH_status = status  ! coerce to C_BOOL
-        ! splicer begin set_abort_on_error
+        ! splicer begin function.set_abort_on_error
         call c_set_abort_on_error(SH_status)
-        ! splicer end set_abort_on_error
+        ! splicer end function.set_abort_on_error
     end subroutine slic_set_abort_on_error
 
     function slic_is_abort_on_errors_enabled() result(SH_rv)
         use iso_c_binding, only : C_BOOL
         logical :: SH_rv
-        ! splicer begin is_abort_on_errors_enabled
+        ! splicer begin function.is_abort_on_errors_enabled
         SH_rv = c_is_abort_on_errors_enabled()
-        ! splicer end is_abort_on_errors_enabled
+        ! splicer end function.is_abort_on_errors_enabled
     end function slic_is_abort_on_errors_enabled
 
     subroutine slic_set_abort_on_warning(status)
@@ -236,17 +236,17 @@ contains
         logical, value, intent(IN) :: status
         logical(C_BOOL) SH_status
         SH_status = status  ! coerce to C_BOOL
-        ! splicer begin set_abort_on_warning
+        ! splicer begin function.set_abort_on_warning
         call c_set_abort_on_warning(SH_status)
-        ! splicer end set_abort_on_warning
+        ! splicer end function.set_abort_on_warning
     end subroutine slic_set_abort_on_warning
 
     function slic_is_abort_on_warnings_enabled() result(SH_rv)
         use iso_c_binding, only : C_BOOL
         logical :: SH_rv
-        ! splicer begin is_abort_on_warnings_enabled
+        ! splicer begin function.is_abort_on_warnings_enabled
         SH_rv = c_is_abort_on_warnings_enabled()
-        ! splicer end is_abort_on_warnings_enabled
+        ! splicer end function.is_abort_on_warnings_enabled
     end function slic_is_abort_on_warnings_enabled
 
     subroutine slic_log_message(level, message, fileName, line, filter)
@@ -258,7 +258,7 @@ contains
         logical, value, intent(IN) :: filter
         logical(C_BOOL) SH_filter
         SH_filter = filter  ! coerce to C_BOOL
-        ! splicer begin log_message
+        ! splicer begin function.log_message
         call c_log_message_bufferify(  &
             level,  &
             message,  &
@@ -267,7 +267,7 @@ contains
             len_trim(fileName, kind=C_INT),  &
             line,  &
             SH_filter)
-        ! splicer end log_message
+        ! splicer end function.log_message
     end subroutine slic_log_message
 
     ! splicer begin additional_functions

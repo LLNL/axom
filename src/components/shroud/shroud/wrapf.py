@@ -196,8 +196,10 @@ class Wrapf(util.WrapperMixin):
             if options.F_module_per_class:
                 self._begin_output_file()
             self.tree['F_module_dependencies'] = []
+            self._push_splicer('function')
             for node in self.tree['functions']:
                 self.wrap_function(None, node)
+            self._pop_splicer('function')
             self.c_interface.append('')
             self._create_splicer('additional_interfaces', self.c_interface)
             self.impl.append('')

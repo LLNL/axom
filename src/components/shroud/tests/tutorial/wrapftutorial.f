@@ -482,9 +482,9 @@ contains
         logical(C_BOOL) SH_arg
         logical :: SH_rv
         SH_arg = arg  ! coerce to C_BOOL
-        ! splicer begin function3
+        ! splicer begin function.function3
         SH_rv = c_function3(SH_arg)
-        ! splicer end function3
+        ! splicer end function.function3
     end function function3
 
     ! void Function3b(const bool arg1+intent(in)+value, bool * arg2+intent(out), bool * arg3+intent(inout))
@@ -499,12 +499,12 @@ contains
         logical(C_BOOL) SH_arg3
         SH_arg1 = arg1  ! coerce to C_BOOL
         SH_arg3 = arg3  ! coerce to C_BOOL
-        ! splicer begin function3b
+        ! splicer begin function.function3b
         call c_function3b(  &
             SH_arg1,  &
             SH_arg2,  &
             SH_arg3)
-        ! splicer end function3b
+        ! splicer end function.function3b
         arg2 = SH_arg2  ! coerce to logical
         arg3 = SH_arg3  ! coerce to logical
     end subroutine function3b
@@ -517,7 +517,7 @@ contains
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
         character(kind=C_CHAR, len=30) :: SH_rv
-        ! splicer begin function4a
+        ! splicer begin function.function4a
         call c_function4a_bufferify(  &
             arg1,  &
             len_trim(arg1, kind=C_INT),  &
@@ -525,7 +525,7 @@ contains
             len_trim(arg2, kind=C_INT),  &
             SH_rv,  &
             len(SH_rv, kind=C_INT))
-        ! splicer end function4a
+        ! splicer end function.function4a
     end function function4a
 
     ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))
@@ -536,7 +536,7 @@ contains
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
         character(*), intent(OUT) :: output
-        ! splicer begin function4b
+        ! splicer begin function.function4b
         call c_function4b_bufferify(  &
             arg1,  &
             len_trim(arg1, kind=C_INT),  &
@@ -544,7 +544,7 @@ contains
             len_trim(arg2, kind=C_INT),  &
             output,  &
             len(output, kind=C_INT))
-        ! splicer end function4b
+        ! splicer end function.function4b
     end subroutine function4b
 
     ! double Function5()
@@ -553,9 +553,9 @@ contains
     function function5() result(SH_rv)
         use iso_c_binding, only : C_DOUBLE
         real(C_DOUBLE) :: SH_rv
-        ! splicer begin function5
+        ! splicer begin function.function5
         SH_rv = c_function5()
-        ! splicer end function5
+        ! splicer end function.function5
     end function function5
 
     ! double Function5(double arg1+default(3.1415)+intent(in)+value)
@@ -565,9 +565,9 @@ contains
         use iso_c_binding, only : C_DOUBLE
         real(C_DOUBLE), value, intent(IN) :: arg1
         real(C_DOUBLE) :: SH_rv
-        ! splicer begin function5_arg1
+        ! splicer begin function.function5_arg1
         SH_rv = c_function5_arg1(arg1)
-        ! splicer end function5_arg1
+        ! splicer end function.function5_arg1
     end function function5_arg1
 
     ! double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -579,11 +579,11 @@ contains
         logical(C_BOOL) SH_arg2
         real(C_DOUBLE) :: SH_rv
         SH_arg2 = arg2  ! coerce to C_BOOL
-        ! splicer begin function5_arg1_arg2
+        ! splicer begin function.function5_arg1_arg2
         SH_rv = c_function5_arg1_arg2(  &
             arg1,  &
             SH_arg2)
-        ! splicer end function5_arg1_arg2
+        ! splicer end function.function5_arg1_arg2
     end function function5_arg1_arg2
 
     ! void Function6(const std::string & name+intent(in))
@@ -592,11 +592,11 @@ contains
     subroutine function6_from_name(name)
         use iso_c_binding, only : C_INT
         character(*), intent(IN) :: name
-        ! splicer begin function6_from_name
+        ! splicer begin function.function6_from_name
         call c_function6_from_name_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT))
-        ! splicer end function6_from_name
+        ! splicer end function.function6_from_name
     end subroutine function6_from_name
 
     ! void Function6(int indx+intent(in)+value)
@@ -604,9 +604,9 @@ contains
     subroutine function6_from_index(indx)
         use iso_c_binding, only : C_INT
         integer(C_INT), value, intent(IN) :: indx
-        ! splicer begin function6_from_index
+        ! splicer begin function.function6_from_index
         call c_function6_from_index(indx)
-        ! splicer end function6_from_index
+        ! splicer end function.function6_from_index
     end subroutine function6_from_index
 
     ! void Function7(int arg+intent(in)+value)
@@ -615,9 +615,9 @@ contains
     subroutine function7_int(arg)
         use iso_c_binding, only : C_INT
         integer(C_INT), value, intent(IN) :: arg
-        ! splicer begin function7_int
+        ! splicer begin function.function7_int
         call c_function7_int(arg)
-        ! splicer end function7_int
+        ! splicer end function.function7_int
     end subroutine function7_int
 
     ! void Function7(double arg+intent(in)+value)
@@ -626,9 +626,9 @@ contains
     subroutine function7_double(arg)
         use iso_c_binding, only : C_DOUBLE
         real(C_DOUBLE), value, intent(IN) :: arg
-        ! splicer begin function7_double
+        ! splicer begin function.function7_double
         call c_function7_double(arg)
-        ! splicer end function7_double
+        ! splicer end function.function7_double
     end subroutine function7_double
 
     ! int Function8()
@@ -637,9 +637,9 @@ contains
     function function8_int() result(SH_rv)
         use iso_c_binding, only : C_INT
         integer(C_INT) :: SH_rv
-        ! splicer begin function8_int
+        ! splicer begin function.function8_int
         SH_rv = c_function8_int()
-        ! splicer end function8_int
+        ! splicer end function.function8_int
     end function function8_int
 
     ! double Function8()
@@ -648,9 +648,9 @@ contains
     function function8_double() result(SH_rv)
         use iso_c_binding, only : C_DOUBLE
         real(C_DOUBLE) :: SH_rv
-        ! splicer begin function8_double
+        ! splicer begin function.function8_double
         SH_rv = c_function8_double()
-        ! splicer end function8_double
+        ! splicer end function.function8_double
     end function function8_double
 
     ! void Function9(float arg+intent(in)+value)
@@ -659,9 +659,9 @@ contains
     subroutine function9_float(arg)
         use iso_c_binding, only : C_DOUBLE, C_FLOAT
         real(C_FLOAT), value, intent(IN) :: arg
-        ! splicer begin function9_float
+        ! splicer begin function.function9_float
         call c_function9(real(arg, C_DOUBLE))
-        ! splicer end function9_float
+        ! splicer end function.function9_float
     end subroutine function9_float
 
     ! void Function9(double arg+intent(in)+value)
@@ -670,17 +670,17 @@ contains
     subroutine function9_double(arg)
         use iso_c_binding, only : C_DOUBLE
         real(C_DOUBLE), value, intent(IN) :: arg
-        ! splicer begin function9_double
+        ! splicer begin function.function9_double
         call c_function9(arg)
-        ! splicer end function9_double
+        ! splicer end function.function9_double
     end subroutine function9_double
 
     ! void Function10()
     ! function_index=16
     subroutine function10_0()
-        ! splicer begin function10_0
+        ! splicer begin function.function10_0
         call c_function10_0()
-        ! splicer end function10_0
+        ! splicer end function.function10_0
     end subroutine function10_0
 
     ! void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
@@ -690,12 +690,12 @@ contains
         use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_INT
         character(*), intent(IN) :: name
         real(C_FLOAT), value, intent(IN) :: arg2
-        ! splicer begin function10_1_float
+        ! splicer begin function.function10_1_float
         call c_function10_1_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT),  &
             real(arg2, C_DOUBLE))
-        ! splicer end function10_1_float
+        ! splicer end function.function10_1_float
     end subroutine function10_1_float
 
     ! void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
@@ -705,12 +705,12 @@ contains
         use iso_c_binding, only : C_DOUBLE, C_INT
         character(*), intent(IN) :: name
         real(C_DOUBLE), value, intent(IN) :: arg2
-        ! splicer begin function10_1_double
+        ! splicer begin function.function10_1_double
         call c_function10_1_bufferify(  &
             name,  &
             len_trim(name, kind=C_INT),  &
             arg2)
-        ! splicer end function10_1_double
+        ! splicer end function.function10_1_double
     end subroutine function10_1_double
 
     ! int overload1(int num+intent(in)+value)
@@ -720,9 +720,9 @@ contains
         use iso_c_binding, only : C_INT
         integer(C_INT), value, intent(IN) :: num
         integer(C_INT) :: SH_rv
-        ! splicer begin overload1_num
+        ! splicer begin function.overload1_num
         SH_rv = c_overload1_num(num)
-        ! splicer end overload1_num
+        ! splicer end function.overload1_num
     end function overload1_num
 
     ! int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)
@@ -733,11 +733,11 @@ contains
         integer(C_INT), value, intent(IN) :: num
         integer(C_INT), value, intent(IN) :: offset
         integer(C_INT) :: SH_rv
-        ! splicer begin overload1_num_offset
+        ! splicer begin function.overload1_num_offset
         SH_rv = c_overload1_num_offset(  &
             num,  &
             offset)
-        ! splicer end overload1_num_offset
+        ! splicer end function.overload1_num_offset
     end function overload1_num_offset
 
     ! int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
@@ -748,12 +748,12 @@ contains
         integer(C_INT), value, intent(IN) :: offset
         integer(C_INT), value, intent(IN) :: stride
         integer(C_INT) :: SH_rv
-        ! splicer begin overload1_num_offset_stride
+        ! splicer begin function.overload1_num_offset_stride
         SH_rv = c_overload1_num_offset_stride(  &
             num,  &
             offset,  &
             stride)
-        ! splicer end overload1_num_offset_stride
+        ! splicer end function.overload1_num_offset_stride
     end function overload1_num_offset_stride
 
     ! int overload1(double type+intent(in)+value, int num+intent(in)+value)
@@ -764,11 +764,11 @@ contains
         real(C_DOUBLE), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num
         integer(C_INT) :: SH_rv
-        ! splicer begin overload1_3
+        ! splicer begin function.overload1_3
         SH_rv = c_overload1_3(  &
             type,  &
             num)
-        ! splicer end overload1_3
+        ! splicer end function.overload1_3
     end function overload1_3
 
     ! int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)
@@ -780,12 +780,12 @@ contains
         integer(C_INT), value, intent(IN) :: num
         integer(C_INT), value, intent(IN) :: offset
         integer(C_INT) :: SH_rv
-        ! splicer begin overload1_4
+        ! splicer begin function.overload1_4
         SH_rv = c_overload1_4(  &
             type,  &
             num,  &
             offset)
-        ! splicer end overload1_4
+        ! splicer end function.overload1_4
     end function overload1_4
 
     ! int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
@@ -797,22 +797,22 @@ contains
         integer(C_INT), value, intent(IN) :: offset
         integer(C_INT), value, intent(IN) :: stride
         integer(C_INT) :: SH_rv
-        ! splicer begin overload1_5
+        ! splicer begin function.overload1_5
         SH_rv = c_overload1_5(  &
             type,  &
             num,  &
             offset,  &
             stride)
-        ! splicer end overload1_5
+        ! splicer end function.overload1_5
     end function overload1_5
 
     ! void useclass(const Class1 * arg1+intent(in)+value)
     ! function_index=22
     subroutine useclass(arg1)
         type(class1), value, intent(IN) :: arg1
-        ! splicer begin useclass
+        ! splicer begin function.useclass
         call c_useclass(arg1%get_instance())
-        ! splicer end useclass
+        ! splicer end function.useclass
     end subroutine useclass
 
     ! const string_result_fstr & LastFunctionCalled()+pure
@@ -820,9 +820,9 @@ contains
     function last_function_called() result(SH_rv)
         use iso_c_binding, only : C_CHAR
         character(kind=C_CHAR, len=strlen_ptr(c_last_function_called())) :: SH_rv
-        ! splicer begin last_function_called
+        ! splicer begin function.last_function_called
         SH_rv = fstr(c_last_function_called())
-        ! splicer end last_function_called
+        ! splicer end function.last_function_called
     end function last_function_called
 
     ! splicer begin additional_functions

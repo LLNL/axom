@@ -112,7 +112,7 @@ contains
         integer(C_INT), value, intent(IN) :: maxElements
         integer(C_INT), value, intent(IN) :: maxLevels
         SH_requiresDistance = requiresDistance  ! coerce to C_BOOL
-        ! splicer begin initialize
+        ! splicer begin function.initialize
         call c_initialize_bufferify(  &
             comm,  &
             fileName,  &
@@ -121,7 +121,7 @@ contains
             ndims,  &
             maxElements,  &
             maxLevels)
-        ! splicer end initialize
+        ! splicer end function.initialize
     end subroutine quest_initialize
 
     ! splicer begin additional_functions

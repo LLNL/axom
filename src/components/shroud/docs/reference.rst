@@ -418,6 +418,11 @@ PY_result
     The name of the Python wrapper's result variable.
     It defaults to *rv*  (return value).
 
+show_splicer_comments
+    If ``true`` show comments which delineate the splicer blocks;
+    else, do not show the comments.
+    Only the global level option is used.
+
 wrap_c
   If *true*, create C wrappers.
   Defaults to *true*.

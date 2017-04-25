@@ -11,8 +11,6 @@
 
 #include "type_header.h"
 
-// splicer begin class.Class1.CXX_declarations
-// splicer end class.Class1.CXX_declarations
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,8 +20,6 @@ extern "C" {
 struct s_DEF_class1;
 typedef struct s_DEF_class1 DEF_class1;
 
-// splicer begin class.Class1.C_declarations
-// splicer end class.Class1.C_declarations
 
 void DEF_class1_method1(DEF_class1 * self, int arg1);
 
