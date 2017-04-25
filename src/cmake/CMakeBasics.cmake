@@ -146,8 +146,14 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
                   
 # Flag for disabling warnings about unused local typedefs.
+# Note: Clang 3.5 and below are not aware of this warning, but later versions are
+if(COMPILER_FAMILY_IS_CLANG AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5))
+  set(clang_unused_local_typedef "-Wno-unused-local-typedefs")
+endif()
+
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   DEFAULT " "
+                  CLANG   "${clang_unused_local_typedef}"
                   GNU     "-Wno-unused-local-typedefs"
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
@@ -155,6 +161,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 # Linker flag for allowing multiple definitions of a symbol
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
                   DEFAULT " "
+                  CLANG   "-Wl,--allow-multiple-definition"
                   GNU     "-Wl,--allow-multiple-definition"
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)

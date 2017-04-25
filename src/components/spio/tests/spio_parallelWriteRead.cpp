@@ -12,11 +12,13 @@
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
 
+#include "mpi.h"
+
 using axom::spio::IOManager;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::DataView;
+using axom::sidre::View;
 
 
 //------------------------------------------------------------------------------
@@ -43,13 +45,13 @@ int main(int argc, char** argv)
    */
   DataStore * ds = new DataStore();
 
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * flds = root->createGroup("fields");
-  DataGroup * flds2 = root->createGroup("fields2");
+  Group * flds = root->createGroup("fields");
+  Group * flds2 = root->createGroup("fields2");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds2->createGroup("b");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
   int * i1_vals = gb->getView("i1")->getData();
@@ -75,23 +77,23 @@ int main(int argc, char** argv)
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) { 
     DataStore * dsextra = new DataStore();
-    DataGroup * extra = dsextra->getRoot()->createGroup("extra");
+    Group * extra = dsextra->getRoot()->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
-    DataGroup * child = extra->createGroup("child");
+    Group * child = extra->createGroup("child");
     child->createViewScalar<int>("ival", 7);
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");
 
     writer.writeGroupToRootFile(extra, root_name);
 
-    DataGroup * path_test = dsextra->getRoot()->createGroup("path_test");
+    Group * path_test = dsextra->getRoot()->createGroup("path_test");
 
     path_test->createViewScalar<int>("path_val", 9);
     path_test->createViewString("word2", "again");
 
     writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
 
-    DataView * view_test = dsextra->getRoot()->createViewString("word3", "new_view");
+    View * view_test = dsextra->getRoot()->createViewString("word3", "new_view");
 
     writer.writeViewToRootFileAtPath(view_test,
                                      root_name,
@@ -171,9 +173,9 @@ int main(int argc, char** argv)
     return_val = 1;
   }
 
-  DataView * view_i1_orig =
+  View * view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  DataView * view_i1_restored =
+  View * view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();

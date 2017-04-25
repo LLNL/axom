@@ -11,11 +11,13 @@
 #include "spio/IOManager.hpp"
 #include "sidre/sidre.hpp"
 
+#include "mpi.h"
+
 using axom::spio::IOManager;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::DataView;
+using axom::sidre::View;
 
 
 //------------------------------------------------------------------------------
@@ -42,20 +44,20 @@ int main(int argc, char** argv)
    */
   DataStore * ds1 = new DataStore();
 
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
   int num_fields = my_rank + 2;
 
   for (int f = 0; f < num_fields; ++f) {
     std::ostringstream ostream;
     ostream << "fields" << f;
-    DataGroup * flds = root1->createGroup(ostream.str());
+    Group * flds = root1->createGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
     for (int g = 0; g < num_subgroups; ++g) {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
-      DataGroup * sg = flds->createGroup(gstream.str());
+      Group * sg = flds->createGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
@@ -107,22 +109,22 @@ int main(int argc, char** argv)
   for (int f = 0; f < num_fields; ++f) {
     std::ostringstream ostream;
     ostream << "fields" << f;
-    DataGroup * flds1 = ds1->getRoot()->getGroup(ostream.str());
-    DataGroup * flds2 = ds2->getRoot()->getGroup(ostream.str());
+    Group * flds1 = ds1->getRoot()->getGroup(ostream.str());
+    Group * flds2 = ds2->getRoot()->getGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
     for (int g = 0; g < num_subgroups; ++g) {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
-      DataGroup * sg1 = flds1->getGroup(gstream.str());
-      DataGroup * sg2 = flds2->getGroup(gstream.str());
+      Group * sg1 = flds1->getGroup(gstream.str());
+      Group * sg2 = flds2->getGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
       if (g % 2) {
 
-        DataView * view_orig = sg1->getView(vstream.str());
-        DataView * view_restored = sg2->getView(vstream.str());
+        View * view_orig = sg1->getView(vstream.str());
+        View * view_restored = sg2->getView(vstream.str());
 
         int num_elems = view_orig->getNumElements();
         if (view_restored->getNumElements() != num_elems) {

@@ -54,6 +54,7 @@ set( BLT_SMOKE_TESTS
         compiler_flag_unused_var.cpp
         compiler_flag_omp_pragma.cpp
         compiler_flag_strict_aliasing.cpp
+        compiler_flag_unused_local_typedef.cpp
         )
 if (ENABLE_FORTRAN)                    
     list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.F)
@@ -84,6 +85,8 @@ set_target_properties(compiler_flag_unused_var
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS}")
 set_target_properties(compiler_flag_omp_pragma 
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
+set_target_properties(compiler_flag_unused_local_typedef 
+    PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF}")
     
 # the aliasing test requires optimization, set this up as custom compiler flag
 # in case we need more flexibility for this flag (e.g. for MSVC)

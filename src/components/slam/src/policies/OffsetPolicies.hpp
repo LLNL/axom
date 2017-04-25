@@ -25,7 +25,7 @@
 #ifndef SLAM_POLICIES_OFFSET_H_
 #define SLAM_POLICIES_OFFSET_H_
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 
 
 namespace axom {

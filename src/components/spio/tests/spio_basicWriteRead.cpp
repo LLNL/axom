@@ -11,8 +11,10 @@
 #include "spio/IOManager.hpp"
 #include "sidre/sidre.hpp"
 
+#include "mpi.h"
+
 using axom::spio::IOManager;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
 
@@ -24,13 +26,13 @@ int main(int argc, char** argv)
 
   DataStore * ds1 = new DataStore();
 
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
-  DataGroup * flds1 = root1->createGroup("fields");
-  DataGroup * flds2 = root1->createGroup("fields2");
+  Group * flds1 = root1->createGroup("fields");
+  Group * flds2 = root1->createGroup("fields2");
 
-  DataGroup * ga = flds1->createGroup("a");
-  DataGroup * gb = flds2->createGroup("b");
+  Group * ga = flds1->createGroup("a");
+  Group * gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101);
   gb->createViewScalar<int>("i1", 404);
 

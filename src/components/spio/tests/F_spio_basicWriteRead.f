@@ -8,7 +8,7 @@
 ! further review from lawrence livermore national laboratory.
 !
 
-program spio_basis_write_read
+program spio_basic_write_read
   use iso_c_binding
   use sidre_mod
   use spio_mod
@@ -21,11 +21,11 @@ program spio_basis_write_read
   integer testvalue1, testvalue2
   integer return_val
 
-  type(datastore) ds1, ds2
-  type(datagroup) root1, root2
-  type(datagroup) flds1, flds2
-  type(datagroup) ga, gb
-  type(dataview)  view1, view2
+  type(SidreDataStore) ds1, ds2
+  type(SidreGroup) root1, root2
+  type(SidreGroup) flds1, flds2
+  type(SidreGroup) ga, gb
+  type(SidreView)  view1, view2
 
   type(iomanager) writer, reader
 
@@ -84,4 +84,4 @@ program spio_basis_write_read
   call mpi_finalize(mpierr)
 
   call exit(return_val)
-end program spio_basis_write_read
+end program spio_basic_write_read

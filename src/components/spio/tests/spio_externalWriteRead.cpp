@@ -15,11 +15,13 @@
 
 #include "sidre/sidre.hpp"
 
+#include "mpi.h"
+
 using axom::spio::IOManager;
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::sidre::DataView;
+using axom::sidre::View;
 
 
 //------------------------------------------------------------------------------
@@ -56,13 +58,13 @@ int main(int argc, char** argv)
    */
   DataStore * ds1 = new DataStore();
 
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
-  DataGroup * flds = root1->createGroup("fields");
-  DataGroup * flds2 = root1->createGroup("fields2");
+  Group * flds = root1->createGroup("fields");
+  Group * flds2 = root1->createGroup("fields2");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds2->createGroup("b");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds2->createGroup("b");
   ga->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
   gb->createView("external_undescribed")->setExternalDataPtr(orig_vals2);
 
@@ -78,7 +80,7 @@ int main(int argc, char** argv)
    * Create another DataStore than holds nothing but the root group.
    */
   DataStore * ds2 = new DataStore();
-  DataGroup * root2 = ds2->getRoot();
+  Group * root2 = ds2->getRoot();
 
   /*
    * Read from the files that were written above.
@@ -93,10 +95,10 @@ int main(int argc, char** argv)
     restored_vals2[i] = -1;
   }
 
-  DataView * view1 = root2->getView("fields/a/external_array");
+  View * view1 = root2->getView("fields/a/external_array");
   view1->setExternalDataPtr(restored_vals1);
 
-  DataView * view2 = root2->getView("fields2/b/external_undescribed");
+  View * view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
   reader.loadExternalData(root2, "out_spio_external_write_read.root");

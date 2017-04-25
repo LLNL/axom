@@ -40,6 +40,14 @@ module top_module
             integer(C_LONG), value, intent(IN) :: i
         end subroutine yyy_tes_function3a_1
 
+        function yyy_tes_function4() &
+                result(RV) &
+                bind(C, name="YYY_TES_function4")
+            use iso_c_binding
+            implicit none
+            integer(C_INT) :: RV
+        end function yyy_tes_function4
+
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -90,6 +98,17 @@ contains
         call yyy_tes_function3a_1(i)
         ! splicer end function3a_1
     end subroutine F_name_function3a_long
+
+    ! int function4()
+    ! function_index=6
+    function testnames_function4() result(RV)
+        use iso_c_binding, only : C_INT
+        implicit none
+        integer(C_INT) :: RV
+        ! splicer begin function4
+        RV = yyy_tes_function4()
+        ! splicer end function4
+    end function testnames_function4
 
     ! splicer begin additional_functions
     ! splicer end additional_functions

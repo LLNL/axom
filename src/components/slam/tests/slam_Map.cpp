@@ -102,8 +102,8 @@ TEST(gtest_slam_map,out_of_bounds)
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
-  ASSERT_DEATH( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED( m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED( m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
 
   #else
   SLIC_INFO("Skipped assertion failure check in release mode.");

@@ -60,6 +60,8 @@ set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_03_17_12_
 # lc bgq gcc@4.7.2 host configs
 ##############################################################################
 
+set(ENABLE_DOCS OFF CACHE PATH "")
+
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
@@ -79,8 +81,16 @@ set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
 set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 set(MPI_Fortran_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 
+
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+
+# GTest death tests use forked threads, which does now work on BG/Q 
+set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
+set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
+
+set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE PATH "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

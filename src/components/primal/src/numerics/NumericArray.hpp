@@ -11,7 +11,7 @@
 #ifndef NUMERIC_ARRAY_HPP_
 #define NUMERIC_ARRAY_HPP_
 
-#include "common/AxomMacros.hpp"
+#include "axom/Macros.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes

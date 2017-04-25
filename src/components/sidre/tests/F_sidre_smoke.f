@@ -17,7 +17,7 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine create_datastore
-    type(datastore) ds
+    type(SidreDataStore) ds
 
     call set_case_name("create_datastore")
 
@@ -30,8 +30,8 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine valid_invalid
-    type(datastore) ds
-    type(datagroup) root
+    type(SidreDataStore) ds
+    type(SidreGroup) root
     integer idx
     character(10) name
 

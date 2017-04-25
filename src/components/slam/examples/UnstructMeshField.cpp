@@ -25,8 +25,8 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "common/AxomMacros.hpp"
-#include "common/FileUtilities.hpp"
+#include "axom/Macros.hpp"
+#include "axom_utils/FileUtilities.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

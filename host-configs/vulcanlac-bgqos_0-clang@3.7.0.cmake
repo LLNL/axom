@@ -30,9 +30,6 @@ set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_
 # conduit from uberenv
 set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/clang-3.7.0/conduit-0.2.1-oiiieme5mlcpao7pqwrk2mdquxnaguqm" CACHE PATH "")
 
-# sparsehash headers from uberenv
-set("SPARSEHASH_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/clang-3.7.0/sparsehash-headers-2.0.2-jnxnoo3nsy2l6vutmvlvwri4tzgbqmro" CACHE PATH "")
-
 # boost headers from uberenv
 set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/clang-3.7.0/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
 
@@ -60,6 +57,8 @@ set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15
 # lc bgq clang@3.7.0 host configs
 ##############################################################################
 
+set(ENABLE_DOCS OFF CACHE PATH "")
+
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
@@ -83,6 +82,13 @@ set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+
+# GTest death tests use forked threads, which does now work on BG/Q 
+set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
+set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
+
+set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE PATH "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

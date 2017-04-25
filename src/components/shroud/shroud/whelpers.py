@@ -6,22 +6,15 @@ FccHeaders = """
 #ifndef SHROUDRT_HPP_
 #define SHROUDRT_HPP_
 
-// Standard C++ headers
-#include <cstring>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-namespace shroud
-{
+void shroud_FccCopy(char *a, int la, const char *s);
 
-static inline void FccCopy(char *a, int la, const char *s)
-{
-   int ls,nm;
-   ls = std::strlen(s);
-   nm = ls < la ? ls : la;
-   memcpy(a,s,nm);
-   if(la > nm) { memset(a+nm,' ',la-nm);}
-}
-
-} /* end namespace shroud */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif /* SHROUDRT_HPP_ */
 """
@@ -34,8 +27,22 @@ static inline void FccCopy(char *a, int la, const char *s)
 
 FccCSource = """
 #ifdef __cplusplus
+// Standard C++ headers
+#include <cstring>
+using namespace std;
 extern "C" {
+#else
+#include <string.h>
 #endif
+
+void shroud_FccCopy(char *a, int la, const char *s)
+{
+   int ls,nm;
+   ls = strlen(s);
+   nm = ls < la ? ls : la;
+   memcpy(a,s,nm);
+   if(la > nm) { memset(a+nm,' ',la-nm);}
+}
 
 // equivalent to C_LOC
 // called from Fortran

@@ -12,14 +12,14 @@
 /**************************************************************************
  *************************************************************************/
 
-#include "sidre/DataGroup.hpp"
+#include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "Timer.hxx"
 
 #include <algorithm>
 #include <set>
 
-using axom::sidre::DataGroup;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
 
 /**************************************************************************
@@ -30,7 +30,7 @@ using axom::sidre::DataStore;
 int main(int argc, char * argv[])
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   size_t num_groups = 0;
   if (argc > 1)

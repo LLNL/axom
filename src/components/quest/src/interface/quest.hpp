@@ -14,7 +14,7 @@
 // C/C++ includes
 #include <string>
 
-#include "common/config.hpp"
+#include "axom/config.hpp"
 
 #ifdef AXOM_USE_MPI
 #include "mpi.h"

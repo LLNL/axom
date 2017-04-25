@@ -8,7 +8,7 @@ echo main_script version 0.9.9
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 if [ "$DOC" = false ]; then
-   OPTIONS=$OPTIONS+" -DENABLE_DOCS=false";
+   OPTIONS+=" -DENABLE_DOCS=OFF";
 fi
 echo "Options: $OPTIONS"
 ./scripts/config-build.py $OPTIONS
@@ -45,7 +45,7 @@ fi
 if [ "$DOC" = true ]; then
     echo "Making docs..."
     echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 docs
+    make VERBOSE=1 docs "-j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make docs' failed"
         exit 1
@@ -56,7 +56,7 @@ fi
 if [ "$INSTALL_FILES" = true ]; then
     echo "Installing files..."
     echo "-----------------------------------------------------------------------"
-    make VERBOSE=1 install
+    make VERBOSE=1 install "-j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make install' failed"
         exit 1

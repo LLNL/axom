@@ -348,7 +348,7 @@ return 1;""", fmt)
         else:
             is_const = None
         fmt.rv_decl = self.std_c_decl(
-            'cpp_type', result, name=fmt.rv, const=is_const)  # return value
+            'cpp_type', result, name=fmt.PY_result, const=is_const)  # return value
 
         PY_decl = []     # variables for function
         PY_code = []
@@ -386,17 +386,20 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets = []
             offset = 0
-            fmt_arg = util.Options(fmt)
             for arg in args:
+                fmt_arg = arg.setdefault('fmtpy', util.Options(fmt))
                 arg_name = arg['name']
                 fmt_arg.c_var = arg['name']
                 fmt_arg.cpp_var = fmt_arg.c_var
                 fmt_arg.py_var = 'SH_Py_' + fmt_arg.c_var
                 if arg['attrs'].get('const', False):
-                    fmt_arg.C_const = 'const '
+                    fmt_arg.c_const = 'const '
                 else:
-                    fmt_arg.C_const = ''
-                fmt_arg.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
+                    fmt_arg.c_const = ''
+                if arg['attrs'].get('ptr', False):
+                    fmt_arg.c_ptr = ' *'
+                else:
+                    fmt_arg.c_ptr = ''
                 attrs = arg['attrs']
 
                 arg_typedef = self.typedef[arg['type']]
@@ -473,7 +476,7 @@ return 1;""", fmt)
                             'both defined for {}'
                             .format(arg_typedef.name))
                     append_format(post_parse,
-                                  '{C_const}{cpp_type}{ptr} {cpp_var} = '
+                                  '{c_const}{cpp_type}{c_ptr} {cpp_var} = '
                                   + arg_typedef.c_to_cpp + ';', fmt_arg)
 
                 if arg_typedef.PY_PyTypeObject:
@@ -488,10 +491,6 @@ return 1;""", fmt)
                     cpp_call_list.append(fmt_arg.cpp_var)
                 else:
                     # convert to C++ type
-                    if arg['attrs'].get('ptr', False):
-                        fmt_arg.ptr = ' *'
-                    else:
-                        fmt_arg.ptr = ''
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt_arg)
 
             if True:
@@ -521,7 +520,7 @@ return 1;""", fmt)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
 
         if cls:
-            #  template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
+            #  template = '{c_const}{cpp_class} *{C_this}obj = static_cast<{c_const}{cpp_class} *>(static_cast<{c_const}void *>({C_this}));'
             #  fmt_func.C_object = wformat(template, fmt_func)
             # call method syntax
             fmt.PY_this_call = wformat('self->{BBB}->', fmt)
@@ -565,8 +564,8 @@ return 1;""", fmt)
 
             if 'PY_error_pattern' in node:
                 lfmt = util.Options(fmt)
-                lfmt.c_var = fmt.rv
-                lfmt.cpp_var = fmt.rv
+                lfmt.c_var = fmt.PY_result
+                lfmt.cpp_var = fmt.PY_result
                 append_format(PY_code,
                               self.patterns[node['PY_error_pattern']], lfmt)
 
@@ -589,8 +588,8 @@ return 1;""", fmt)
 
         # Compute return value
         if CPP_subprogram == 'function':
-            fmt.c_var = fmt.rv
-            fmt.cpp_var = fmt.rv
+            fmt.c_var = fmt.PY_result
+            fmt.cpp_var = fmt.PY_result
             fmt.py_var = 'SH_Py_' + fmt.cpp_var
             format, vargs = self.intent_out(result_typedef, fmt, PY_code)
             # Add result to front of result tuple

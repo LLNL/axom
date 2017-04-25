@@ -15,10 +15,10 @@
 
 using axom::sidre::SidreLength;
 using axom::sidre::TypeID;
-using axom::sidre::DataBuffer;
-using axom::sidre::DataGroup;
+using axom::sidre::Buffer;
+using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataView;
+using axom::sidre::View;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
 using axom::sidre::nameIsValid;
@@ -40,12 +40,12 @@ std::string const protocols[] = { "sidre_json", "sidre_hdf5", "json" };
 TEST(sidre_group,get_name)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("test");
+  Group * root = ds->getRoot();
+  Group * group = root->createGroup("test");
 
   EXPECT_TRUE(group->getName() == std::string("test") );
 
-  DataGroup * group2 = root->getGroup("foo");
+  Group * group2 = root->getGroup("foo");
   EXPECT_TRUE(group2 == AXOM_NULLPTR);
 }
 
@@ -55,12 +55,12 @@ TEST(sidre_group,get_name)
 TEST(sidre_group,get_path_name)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
   EXPECT_EQ(root->getParent(), root);
   EXPECT_EQ(root->getName(), "");
-  DataGroup * group = root->createGroup("test/a/b/c");
-  DataGroup * grp2 = root->getGroup("test/a");
-  DataGroup * grp3 = root->getGroup("test");
+  Group * group = root->createGroup("test/a/b/c");
+  Group * grp2 = root->getGroup("test/a");
+  Group * grp3 = root->getGroup("test");
 
   EXPECT_EQ(root->getName(), std::string(""));
   EXPECT_EQ(root->getPath(), std::string(""));
@@ -85,25 +85,25 @@ TEST(sidre_group,get_path_name)
 TEST(sidre_group,group_with_path)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   // Test full path access when building incrementally
-  DataGroup * group =
+  Group * group =
     root->createGroup("test1")->createGroup("test2")->createGroup("test3");
-  DataGroup * group2 = root->getGroup("test1/test2/test3");
+  Group * group2 = root->getGroup("test1/test2/test3");
 
   EXPECT_TRUE(AXOM_NULLPTR != group2);
   EXPECT_EQ(group, group2);
 
   // Test incremental access when building full path
-  DataGroup * groupP = root->createGroup("testA/testB/testC");
-  DataGroup * groupP2 =
+  Group * groupP = root->createGroup("testA/testB/testC");
+  Group * groupP2 =
     root->getGroup("testA")->getGroup("testB")->getGroup("testC");
 
   EXPECT_TRUE(AXOM_NULLPTR != groupP2);
   EXPECT_EQ(groupP, groupP2);
   // test non-const getGroup() with path
-  DataGroup * groupPParent = root->getGroup("testA/testB");
+  Group * groupPParent = root->getGroup("testA/testB");
   EXPECT_EQ(groupP->getParent(), groupPParent);
   EXPECT_EQ(groupP->getParent()->getName(), "testB");
 
@@ -111,9 +111,9 @@ TEST(sidre_group,group_with_path)
   // Now verify that code will not create missing groups.
 
   root->createGroup("testa")->createGroup("testb")->createGroup("testc");
-  DataGroup * group_bada = root->getGroup("BAD/testb/testc");
-  DataGroup * group_badb = root->getGroup("testa/BAD/testc");
-  DataGroup * group_badc = root->getGroup("testa/testb/BAD");
+  Group * group_bada = root->getGroup("BAD/testb/testc");
+  Group * group_badb = root->getGroup("testa/BAD/testc");
+  Group * group_badc = root->getGroup("testa/testb/BAD");
 
   EXPECT_EQ(group_bada, static_cast<void *>(AXOM_NULLPTR) );
   EXPECT_EQ(group_badb, static_cast<void *>(AXOM_NULLPTR) );
@@ -128,14 +128,14 @@ TEST(sidre_group,group_with_path)
   EXPECT_TRUE(root->hasGroup("test1"));
   EXPECT_TRUE(root->hasGroup("test1/test2"));
   EXPECT_TRUE(root->hasGroup("test1/test2/test3"));
-  DataGroup * group_testa = root->getGroup("testa");
+  Group * group_testa = root->getGroup("testa");
   EXPECT_TRUE(group_testa->hasGroup("testb"));
   EXPECT_TRUE(group_testa->hasGroup("testb/testc"));
   EXPECT_FALSE(group_testa->hasGroup("testb/BAD"));
   EXPECT_FALSE(group_testa->hasGroup("testb/testc/BAD"));
 
   unsigned int testbnumgroups = group_testa->getGroup("testb")->getNumGroups();
-  DataGroup * group_cdup = group_testa->createGroup("testb/testc");
+  Group * group_cdup = group_testa->createGroup("testb/testc");
 
   EXPECT_EQ(group_cdup, static_cast<void *>(AXOM_NULLPTR));
   EXPECT_EQ(group_testa->getGroup("testb")->getNumGroups(), testbnumgroups);
@@ -150,10 +150,10 @@ TEST(sidre_group,group_with_path)
 TEST(sidre_group,destroy_group_with_path)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   // Test full path access when building incrementally
-  DataGroup * group = root->createGroup("test1/test2/test3");
+  Group * group = root->createGroup("test1/test2/test3");
   (void)group;
 
   const std::size_t exp_no_groups = 0;
@@ -186,9 +186,9 @@ TEST(sidre_group,destroy_group_with_path)
 TEST(sidre_group,get_parent)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * parent = root->createGroup("parent");
-  DataGroup * child = parent->createGroup("child");
+  Group * root = ds->getRoot();
+  Group * parent = root->createGroup("parent");
+  Group * child = parent->createGroup("child");
 
   EXPECT_TRUE( child->getParent() == parent );
 
@@ -201,8 +201,8 @@ TEST(sidre_group,get_parent)
 TEST(sidre_group,get_datastore)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("parent");
+  Group * root = ds->getRoot();
+  Group * group = root->createGroup("parent");
 
   EXPECT_TRUE( group->getDataStore() == ds );
 
@@ -218,10 +218,10 @@ TEST(sidre_group,get_datastore)
 TEST(sidre_group,get_group)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * parent = root->createGroup("parent");
-  DataGroup * child = parent->createGroup("child");
+  Group * parent = root->createGroup("parent");
+  Group * child = parent->createGroup("child");
   EXPECT_TRUE( child->getParent() == parent );
 
   EXPECT_TRUE( parent->getGroup("child") == child );
@@ -237,10 +237,10 @@ TEST(sidre_group,get_group)
 TEST(sidre_group,get_view)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * parent = root->createGroup("parent");
-  DataView * view = parent->createView("view");
+  Group * parent = root->createGroup("parent");
+  View * view = parent->createView("view");
 
   EXPECT_TRUE( parent->getView("view") == view );
 
@@ -256,29 +256,29 @@ TEST(sidre_group,get_view)
 TEST(sidre_group,view_with_path)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   // Test with full path access when building incrementally
-  DataView * view =
+  View * view =
     root->createGroup("group1")->createGroup("group2")->createView("view1");
-  DataView * view2 = root->getView("group1/group2/view1");
+  View * view2 = root->getView("group1/group2/view1");
 
   EXPECT_TRUE(AXOM_NULLPTR != view2);
   EXPECT_EQ( view, view2 );
 
 
   // Test incremental access when building with full path
-  DataView * viewP = root->createView("groupA/groupB/viewA");
-  DataView * viewP2 =
+  View * viewP = root->createView("groupA/groupB/viewA");
+  View * viewP2 =
     root->getGroup("groupA")->getGroup("groupB")->getView("viewA");
 
   EXPECT_TRUE(AXOM_NULLPTR != viewP2);
   EXPECT_EQ( viewP, viewP2 );
 
   // Now verify that bad paths just return null, and don't create missing groups
-  DataView * v_bad1 = root->getView("BAD/groupB/viewA");
-  DataView * v_bad2 = root->getView("groupA/BAD/viewA");
-  DataView * v_bad3 = root->getView("groupA/groupB/BAD");
+  View * v_bad1 = root->getView("BAD/groupB/viewA");
+  View * v_bad2 = root->getView("groupA/BAD/viewA");
+  View * v_bad3 = root->getView("groupA/groupB/BAD");
 
   EXPECT_EQ(v_bad1, static_cast<void *>(AXOM_NULLPTR));
   EXPECT_EQ(v_bad2, static_cast<void *>(AXOM_NULLPTR));
@@ -316,7 +316,7 @@ TEST(sidre_group,view_with_path)
   EXPECT_EQ(root->getView("group1/group2/view1"),
             static_cast<void *>(AXOM_NULLPTR));
 
-  DataGroup * groupA = root->getGroup("groupA");
+  Group * groupA = root->getGroup("groupA");
   EXPECT_TRUE(groupA->hasView("groupB/viewA"));
   EXPECT_EQ(groupA->getView("groupB/viewA"), viewP);
   EXPECT_TRUE(root->hasView("groupA/groupB/viewA"));
@@ -343,11 +343,11 @@ TEST(sidre_group,view_with_path)
 TEST(sidre_group,get_view_names_and_indicies)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * parent = root->createGroup("parent");
-  DataView * view1 = parent->createView("view1");
-  DataView * view2 = parent->createView("view2");
+  Group * parent = root->createGroup("parent");
+  View * view1 = parent->createView("view1");
+  View * view2 = parent->createView("view2");
 
   EXPECT_EQ(parent->getNumViews(), 2u);
 
@@ -380,13 +380,13 @@ TEST(sidre_group,get_view_names_and_indicies)
 TEST(sidre_group,get_first_and_next_view_index)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * parent = root->createGroup("parent");
-  DataView * view1 = parent->createView("view1");
-  DataView * view2 = parent->createView("view2");
+  Group * parent = root->createGroup("parent");
+  View * view1 = parent->createView("view1");
+  View * view2 = parent->createView("view2");
 
-  DataGroup * emptyGroup = root->createGroup("emptyGroup");
+  Group * emptyGroup = root->createGroup("emptyGroup");
 
   EXPECT_EQ(parent->getNumViews(), 2u);
 
@@ -417,11 +417,11 @@ TEST(sidre_group,get_first_and_next_view_index)
 TEST(sidre_group,get_group_name_index)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
-  DataGroup * parent = root->createGroup("parent");
-  DataGroup * group1 = parent->createGroup("group1");
-  DataGroup * group2 = parent->createGroup("group2");
+  Group * parent = root->createGroup("parent");
+  Group * group1 = parent->createGroup("group1");
+  Group * group2 = parent->createGroup("group2");
 
   EXPECT_EQ(parent->getNumGroups(), 2u);
 
@@ -458,10 +458,10 @@ TEST(sidre_group,get_group_name_index)
 TEST(sidre_group,create_destroy_has_view)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("parent");
+  Group * root = ds->getRoot();
+  Group * group = root->createGroup("parent");
 
-  DataView * view = group->createView("view");
+  View * view = group->createView("view");
   EXPECT_TRUE( group->getParent() == root );
   EXPECT_FALSE( view->hasBuffer() );
   EXPECT_TRUE( group->hasView("view") );
@@ -514,7 +514,7 @@ TEST(sidre_group,create_destroy_has_view)
 
   // Destroy view but not the buffer
   view = group->createViewAndAllocate( "viewWithLength2", INT_ID, 50 );
-  DataBuffer * buff = view->getBuffer();
+  Buffer * buff = view->getBuffer();
   group->destroyView("viewWithLength2");
   EXPECT_TRUE( buff->isAllocated() );
 
@@ -529,8 +529,8 @@ TEST(sidre_group,create_destroy_has_view)
 TEST(sidre_group,create_destroy_has_group)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("group");
+  Group * root = ds->getRoot();
+  Group * group = root->createGroup("group");
   EXPECT_TRUE( group->getParent() == root );
 
   EXPECT_TRUE( root->hasGroup("group") );
@@ -541,7 +541,7 @@ TEST(sidre_group,create_destroy_has_group)
   // should be a no-op, not a failure
   root->destroyGroup("group");
 
-  DataGroup * group2 = root->createGroup("group2");
+  Group * group2 = root->createGroup("group2");
   // shut up compiler about unused variable
   (void)group2;
   root->destroyGroup( root->getFirstValidGroupIndex() );
@@ -553,7 +553,7 @@ TEST(sidre_group,create_destroy_has_group)
 TEST(sidre_group,group_name_collisions)
 {
   DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
+  Group * flds = ds->getRoot()->createGroup("fields");
   flds->createView("a");
 
   EXPECT_TRUE(flds->hasChildView("a"));
@@ -588,11 +588,11 @@ TEST(sidre_group,group_name_collisions)
 TEST(sidre_group,view_copy_move)
 {
   DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
+  Group * flds = ds->getRoot()->createGroup("fields");
   int * buffdata;
   int extdata[10];
 
-  DataView * views[6];
+  View * views[6];
   std::string names[6];
 
   // Create view in different states
@@ -618,7 +618,7 @@ TEST(sidre_group,view_copy_move)
   }
 
   // test moving a view from flds to sub1
-  DataGroup * sub1 = flds->createGroup("sub1");
+  Group * sub1 = flds->createGroup("sub1");
 
   // flds->print();
 
@@ -635,7 +635,7 @@ TEST(sidre_group,view_copy_move)
 
   // flds->print();
 
-  DataGroup * sub2 = flds->createGroup("sub2");
+  Group * sub2 = flds->createGroup("sub2");
 
   for (int i = 0 ; i < 6 ; ++i)
   {
@@ -645,8 +645,8 @@ TEST(sidre_group,view_copy_move)
   }
 
   // Check copies
-  DataView * view1 = sub1->getView("empty0");
-  DataView * view2 = sub2->getView("empty0");
+  View * view1 = sub1->getView("empty0");
+  View * view2 = sub2->getView("empty0");
   EXPECT_NE(view1, view2);
   EXPECT_TRUE(view2->isEmpty());
   EXPECT_FALSE(view2->isDescribed());
@@ -709,11 +709,11 @@ TEST(sidre_group,view_copy_move)
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
+  Group * flds = ds->getRoot()->createGroup("fields");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds->createGroup("b");
-  DataGroup * gc = flds->createGroup("c");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds->createGroup("b");
+  Group * gc = flds->createGroup("c");
 
   ga->createViewAndAllocate("i0", DataType::c_int());
   gb->createViewAndAllocate("f0", DataType::c_float());
@@ -746,13 +746,13 @@ TEST(sidre_group,groups_move_copy)
 TEST(sidre_group,create_destroy_view_and_buffer2)
 {
   DataStore * const ds = new DataStore();
-  DataGroup * const grp = ds->getRoot()->createGroup("grp");
+  Group * const grp = ds->getRoot()->createGroup("grp");
 
   std::string viewName1("viewBuffer1");
   std::string viewName2("viewBuffer2");
 
-  DataView * view1 = grp->createViewAndAllocate(viewName1, INT_ID, 1);
-  DataView * view2 = grp->createViewAndAllocate(viewName2, INT_ID, 1);
+  View * view1 = grp->createViewAndAllocate(viewName1, INT_ID, 1);
+  View * view2 = grp->createViewAndAllocate(viewName2, INT_ID, 1);
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -767,10 +767,10 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   EXPECT_FALSE(grp->hasView(viewName1));
   EXPECT_EQ(ds->getNumBuffers(), 1u);
 
-  DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
+  Buffer const * const buffer1 = ds->getBuffer(bufferId1);
   EXPECT_TRUE( buffer1 == AXOM_NULLPTR );
 
-  DataView const * const view3 = grp->createView("viewBuffer3");
+  View const * const view3 = grp->createView("viewBuffer3");
   grp->destroyViewsAndData();
   // should be no-op
   grp->destroyViewsAndData();
@@ -785,14 +785,14 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
 TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 {
   DataStore * const ds = new DataStore();
-  DataGroup * const grp = ds->getRoot()->createGroup("grp");
+  Group * const grp = ds->getRoot()->createGroup("grp");
 
   std::string const viewName1 = "viewBuffer1";
   std::string const viewName2 = "viewBuffer2";
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * const view1 = grp->createViewAndAllocate(viewName1,
+  View * const view1 = grp->createViewAndAllocate(viewName1,
                                                       DataType::c_int(10));
 
   EXPECT_TRUE(grp->hasChildView(viewName1));
@@ -818,10 +818,10 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 TEST(sidre_group,create_view_of_buffer_with_schema)
 {
   DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * base =  root->createViewAndAllocate("base", DataType::c_int(10));
+  View * base =  root->createViewAndAllocate("base", DataType::c_int(10));
   int * base_vals = base->getData();
   for(int i=0 ; i<10 ; i++)
   {
@@ -835,7 +835,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
     }
   }
 
-  DataBuffer * base_buff = base->getBuffer();
+  Buffer * base_buff = base->getBuffer();
 
   // create two views into this buffer
   //
@@ -872,7 +872,7 @@ TEST(sidre_group,save_restore_empty_datastore)
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore * ds2 = new DataStore();
-    DataGroup * root2 = ds2->getRoot();
+    Group * root2 = ds2->getRoot();
 
     root2->load(file_path, protocols[i]);
 
@@ -893,7 +893,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
 
   DataStore ds_save;
   // populate the datastore
-  DataGroup * root = ds_save.getRoot();
+  Group * root = ds_save.getRoot();
   root->createViewScalar<int>("i0", 1);
   root->createViewAndAllocate("vals", INT_ID, 5);
   // set values for the "vals" array
@@ -941,7 +941,7 @@ TEST(sidre_group,save_restore_api)
 {
   const std::string file_path_base("sidre_save_subtree_");
   DataStore * ds1 = new DataStore();
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
   root1->createViewScalar<int>("i0", 1);
 
@@ -958,20 +958,20 @@ TEST(sidre_group,save_restore_api)
 
 #if 0
   DataStore * ds2 = new DataStore();
-  DataGroup * root2 = ds2->getRoot();
+  Group * root2 = ds2->getRoot();
   root2->load("sidre_save_fulltree_conduit", "conduit");
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
   delete ds2;
 
   DataStore * ds3 = new DataStore();
-  DataGroup * root3 = ds3->getRoot();
+  Group * root3 = ds3->getRoot();
   root3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
   delete ds3;
 #endif
 
   DataStore * ds4 = new DataStore();
-  DataGroup * root4 = ds4->getRoot();
+  Group * root4 = ds4->getRoot();
   root4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
@@ -982,8 +982,8 @@ TEST(sidre_group,save_restore_api)
   // Trying to make sure sub trees are same here.
 #if 0
   DataStore * ds_new = new DataStore();
-  DataGroup * tree1 = ds_new->getRoot()->createGroup("api1");
-  DataGroup * tree2 = ds_new->getRoot()->createGroup("api2");
+  Group * tree1 = ds_new->getRoot()->createGroup("api1");
+  Group * tree2 = ds_new->getRoot()->createGroup("api2");
 
   api1->load("sidre_save_subtree", "conduit");
   api2->load("sidre_save_subtree", "conduit");
@@ -998,7 +998,7 @@ TEST(sidre_group,save_restore_scalars_and_strings)
 {
   const std::string file_path_base("sidre_save_scalars_and_strings_");
   DataStore * ds1 = new DataStore();
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
   root1->createViewScalar<int>("i0", 1);
   root1->createViewScalar<float>("f0", 1.0);
@@ -1020,7 +1020,7 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore * ds2 = new DataStore();
-    DataGroup * root2 = ds2->getRoot();
+    Group * root2 = ds2->getRoot();
 
     root2->load(file_path, protocols[i]);
 
@@ -1035,6 +1035,88 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     EXPECT_EQ( 1.0, f0);
     EXPECT_EQ( 10.0, d0);
     EXPECT_EQ( std::string(s0), "I am a string");
+
+    delete ds2;
+  }
+
+  delete ds1;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,rename_group)
+{
+  DataStore * ds = new DataStore();
+  Group * root = ds->getRoot();
+  Group * child1 = root->createGroup("g_a");
+  Group * child2 = root->createGroup("g_b");
+  Group * child3 = root->createGroup("g_c");
+
+  bool success = child1->rename("g_r");
+  EXPECT_TRUE( success );
+  EXPECT_TRUE( child1->getName() == "g_r" );
+  EXPECT_TRUE( root->hasGroup("g_r") );
+  EXPECT_FALSE( root->hasGroup("g_a") );
+
+  success = child2->rename("fields/g_s");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( child2->getName() == "g_b" );
+
+  success = child3->rename("g_b");
+  EXPECT_FALSE( success );
+  EXPECT_TRUE( child3->getName() == "g_c" );
+
+}
+
+
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_restore_name_change)
+{
+  const std::string file_path_base("sidre_save_name_change_");
+  DataStore * ds1 = new DataStore();
+  Group * root1 = ds1->getRoot();
+  Group * child1 = root1->createGroup("child1");
+
+  child1->createViewScalar<int>("i0", 1);
+  child1->createViewString("s0", "I am a string");
+
+  bool success = child1->getView("s0")->rename("s0_renamed");
+
+  EXPECT_TRUE( success );
+  EXPECT_FALSE( child1->hasView("s0") );
+  EXPECT_TRUE( child1->hasView("s0_renamed") );
+
+  for (int i = 0 ; i < nprotocols ; ++i)
+  {
+    //      if ( protocols[i] == "conduit_hdf5")
+    //	  continue;   // XXX - Does not work
+    const std::string file_path = file_path_base + protocols[i];
+    child1->save(file_path, protocols[i]);
+  }
+
+
+  // Only restore conduit_hdf
+  for (int i = 1 ; i < 2 ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+
+    DataStore * ds2 = new DataStore();
+    Group * root2 = ds2->getRoot();
+    Group * child2 = root2->createGroup("child2");
+
+    EXPECT_EQ( child2->getName(), "child2" );
+
+    child2->load(file_path, protocols[i]);
+
+    EXPECT_EQ( child2->getName(), "child1" );
+
+    EXPECT_TRUE( root1->isEquivalentTo( root2 ) );
+
+    int i0 = child2->getView("i0")->getScalar();
+    const char * s0 = child2->getView("s0_renamed")->getString();
+
+    EXPECT_EQ( 1, i0 );
+    EXPECT_EQ( std::string(s0), "I am a string" );
 
     delete ds2;
   }
@@ -1066,7 +1148,7 @@ TEST(sidre_group,save_restore_external_data)
   foo3 = NULL;
 
   DataStore * ds1 = new DataStore();
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
   root1->createView("external_array", INT_ID, nfoo, foo1);
   root1->createView("empty_array", INT_ID, nfoo, foo3);
@@ -1092,13 +1174,13 @@ TEST(sidre_group,save_restore_external_data)
     int rank;
 
     DataStore * ds2 = new DataStore();
-    DataGroup * root2 = ds2->getRoot();
+    Group * root2 = ds2->getRoot();
 
     root2->load(file_path, protocols[i]);
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
-    DataView * view1 = root2->getView("external_array");
+    View * view1 = root2->getView("external_array");
     EXPECT_TRUE(view1->isExternal());
     EXPECT_TRUE(view1->isDescribed());
     EXPECT_EQ(view1->getTypeID(), INT_ID);
@@ -1106,14 +1188,14 @@ TEST(sidre_group,save_restore_external_data)
     EXPECT_TRUE(view1->getVoidPtr() == AXOM_NULLPTR);
     view1->setExternalDataPtr(foo2);
 
-    DataView * view2 = root2->getView("empty_array");
+    View * view2 = root2->getView("empty_array");
     EXPECT_TRUE(view2->isEmpty());
     EXPECT_TRUE(view2->isDescribed());
     EXPECT_EQ(view2->getTypeID(), INT_ID);
     EXPECT_TRUE(view2->getVoidPtr() == AXOM_NULLPTR);
     view2->setExternalDataPtr(foo3);
 
-    DataView * view3 = root2->getView("external_undescribed");
+    View * view3 = root2->getView("external_undescribed");
     EXPECT_TRUE(view3->isEmpty());
     EXPECT_FALSE(view3->isDescribed());
     EXPECT_TRUE(view3->getVoidPtr() == AXOM_NULLPTR);
@@ -1122,7 +1204,7 @@ TEST(sidre_group,save_restore_external_data)
     // written to the dump since it is undescribed.
     view3->setExternalDataPtr(foo2);
 
-    DataView * view4 = root2->getView("int2d");
+    View * view4 = root2->getView("int2d");
     EXPECT_FALSE(view4->isEmpty());
     EXPECT_TRUE(view4->isDescribed());
     EXPECT_TRUE(view4->getVoidPtr() == AXOM_NULLPTR);
@@ -1175,46 +1257,46 @@ static void save_restore_buffer_association(const std::string & msg,
     return;
   }
 
-  DataGroup * root = ds->getRoot();
+  Group * root = ds->getRoot();
 
   // Get all views and their buffers
-  DataView * view1 = root->getView("undescribed_attached_buffer");
+  View * view1 = root->getView("undescribed_attached_buffer");
   ASSERT_TRUE(view1->hasBuffer());
-  DataBuffer * buff1a = view1->getBuffer();
+  Buffer * buff1a = view1->getBuffer();
   ASSERT_FALSE(buff1a->isDescribed());
   ASSERT_FALSE(buff1a->isAllocated());
 
-  DataView * view2 = root->getView("unallocated_attached_buffer");
+  View * view2 = root->getView("unallocated_attached_buffer");
   ASSERT_TRUE(view2->hasBuffer());
-  DataBuffer * buff2a = view2->getBuffer();
+  Buffer * buff2a = view2->getBuffer();
   ASSERT_TRUE(buff2a->isDescribed());
   ASSERT_FALSE(buff2a->isAllocated());
 
-  DataView * view3 = root->getView("undescribed_view_described_buffer");
+  View * view3 = root->getView("undescribed_view_described_buffer");
   ASSERT_TRUE(view3->hasBuffer());
-  DataBuffer * buff3a = view3->getBuffer();
+  Buffer * buff3a = view3->getBuffer();
   ASSERT_TRUE(buff3a->isDescribed());
   ASSERT_TRUE(buff3a->isAllocated());
 
-  DataView * view4 = root->getView("describe_view_described_buffer");
+  View * view4 = root->getView("describe_view_described_buffer");
   ASSERT_TRUE(view4->hasBuffer());
-  DataBuffer * buff3b = view4->getBuffer();
+  Buffer * buff3b = view4->getBuffer();
 
-  DataView * view5 = root->getView("even");
+  View * view5 = root->getView("even");
   ASSERT_TRUE(view5->hasBuffer());
-  DataBuffer * buff3c = view5->getBuffer();
+  Buffer * buff3c = view5->getBuffer();
 
-  DataView * view6 = root->getView("odd");
+  View * view6 = root->getView("odd");
   ASSERT_TRUE(view6->hasBuffer());
-  DataBuffer * buff3d = view6->getBuffer();
+  Buffer * buff3d = view6->getBuffer();
 
-  DataView * view7 = root->getView("empty_described");
+  View * view7 = root->getView("empty_described");
   ASSERT_FALSE(view7->hasBuffer());
   ASSERT_TRUE(view7->isEmpty());
 
-  DataView * view8 = root->getView("allocated");
+  View * view8 = root->getView("allocated");
   ASSERT_TRUE(view8->hasBuffer());
-  DataBuffer * buff4a = view8->getBuffer();
+  Buffer * buff4a = view8->getBuffer();
   ASSERT_TRUE(buff4a->isDescribed());
   ASSERT_TRUE(buff4a->isAllocated());
 
@@ -1256,10 +1338,10 @@ TEST(sidre_group,save_restore_buffer)
   const SidreLength len = 10;
 
   DataStore * ds1 = new DataStore();
-  DataGroup * root1 = ds1->getRoot();
-  DataBuffer * buff1 = ds1->createBuffer();
-  DataBuffer * buff2 = ds1->createBuffer(INT_ID, len);
-  DataBuffer * buff3 = ds1->createBuffer(INT_ID, len)->allocate();
+  Group * root1 = ds1->getRoot();
+  Buffer * buff1 = ds1->createBuffer();
+  Buffer * buff2 = ds1->createBuffer(INT_ID, len);
+  Buffer * buff3 = ds1->createBuffer(INT_ID, len)->allocate();
 
   int * idata = buff3->getData();
   for (int ii = 0 ; ii < len ; ++ii)
@@ -1277,7 +1359,7 @@ TEST(sidre_group,save_restore_buffer)
   root1->createView("odd", buff3)->apply(INT_ID, 5, 1, 2);
 
   root1->createView("empty_described", INT_ID, len);
-  DataView * view = root1->createViewAndAllocate("allocated", INT_ID, len);
+  View * view = root1->createViewAndAllocate("allocated", INT_ID, len);
 
   idata = view->getData();
   for (int ii = 0 ; ii < len ; ++ii)
@@ -1300,7 +1382,7 @@ TEST(sidre_group,save_restore_buffer)
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore * ds2 = new DataStore();
-    DataGroup * root2 = ds2->getRoot();
+    Group * root2 = ds2->getRoot();
 
     root2->load(file_path, protocols[i]);
 
@@ -1326,7 +1408,7 @@ TEST(sidre_group,save_restore_other)
   const int ndata = 10;
   SidreLength shape1[] = {ndata, 2};
   DataStore * ds1 = new DataStore();
-  DataGroup * root1 = ds1->getRoot();
+  Group * root1 = ds1->getRoot();
 
   root1->createView("empty_view");
   root1->createView("empty_described", INT_ID, ndata);
@@ -1351,21 +1433,21 @@ TEST(sidre_group,save_restore_other)
     int rank;
 
     DataStore * ds2 = new DataStore();
-    DataGroup * root2 = ds2->getRoot();
+    Group * root2 = ds2->getRoot();
 
     root2->load(file_path, protocols[i]);
 
-    DataView * view1 = root2->getView("empty_view");
+    View * view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
     EXPECT_FALSE(view1->isDescribed());
 
-    DataView * view2 = root2->getView("empty_described");
+    View * view2 = root2->getView("empty_described");
     EXPECT_TRUE(view2->isEmpty());
     EXPECT_TRUE(view2->isDescribed());
     EXPECT_EQ(view2->getTypeID(), INT_ID);
     EXPECT_EQ(view2->getNumElements(), ndata);
 
-    DataView * view3 = root2->getView("empty_shape");
+    View * view3 = root2->getView("empty_shape");
     EXPECT_TRUE(view3->isEmpty());
     EXPECT_TRUE(view3->isDescribed());
     EXPECT_EQ(view3->getTypeID(), INT_ID);
@@ -1376,7 +1458,7 @@ TEST(sidre_group,save_restore_other)
     EXPECT_EQ(rank, 2);
     EXPECT_TRUE(shape2[0] == ndata && shape2[1] == 2);
 
-    DataView * view4 = root2->getView("buffer_shape");
+    View * view4 = root2->getView("buffer_shape");
     EXPECT_TRUE(view4->hasBuffer());
     EXPECT_TRUE(view4->isDescribed());
     EXPECT_EQ(view4->getTypeID(), INT_ID);
@@ -1396,11 +1478,11 @@ TEST(sidre_group,save_restore_complex)
 {
   const std::string file_path_base("sidre_mixed_types_");
   DataStore * ds1 = new DataStore();
-  DataGroup * flds = ds1->getRoot()->createGroup("fields");
+  Group * flds = ds1->getRoot()->createGroup("fields");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds->createGroup("b");
-  DataGroup * gc = flds->createGroup("c");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds->createGroup("b");
+  Group * gc = flds->createGroup("c");
   int ndata = 10;
 
   ga->createViewScalar<int>("i0", 100.0);
@@ -1468,20 +1550,20 @@ TEST(sidre_group,is_equivalent_to)
 
   //These are the parents for two separate subtrees of the root group.
   //Everything below them will be created identically.
-  DataGroup * parent1 = ds->getRoot()->createGroup("parent1");
-  DataGroup * parent2 = ds->getRoot()->createGroup("parent2");
+  Group * parent1 = ds->getRoot()->createGroup("parent1");
+  Group * parent2 = ds->getRoot()->createGroup("parent2");
 
   //The flds1 and flds2 groups will be compared for equivalence
-  DataGroup * flds1 = parent1->createGroup("fields");
-  DataGroup * flds2 = parent2->createGroup("fields");
+  Group * flds1 = parent1->createGroup("fields");
+  Group * flds2 = parent2->createGroup("fields");
 
-  DataGroup * ga1 = flds1->createGroup("a");
-  DataGroup * gb1 = flds1->createGroup("b");
-  DataGroup * gc1 = flds1->createGroup("c");
+  Group * ga1 = flds1->createGroup("a");
+  Group * gb1 = flds1->createGroup("b");
+  Group * gc1 = flds1->createGroup("c");
 
-  DataGroup * gc2 = flds2->createGroup("c");    // Note: flds2 groups added in different order
-  DataGroup * gb2 = flds2->createGroup("b");
-  DataGroup * ga2 = flds2->createGroup("a");
+  Group * gc2 = flds2->createGroup("c");    // Note: flds2 groups added in different order
+  Group * gb2 = flds2->createGroup("b");
+  Group * ga2 = flds2->createGroup("a");
 
   ga1->createViewScalar("i0", 1 );
   gb1->createViewScalar("f0", 100.0f );
@@ -1516,11 +1598,11 @@ TEST(sidre_group,save_load_all_protocols)
   const std::string file_path_base("sidre_save_load_all_protocols.");
   DataStore ds;
 
-  DataGroup * flds = ds.getRoot()->createGroup("fields");
+  Group * flds = ds.getRoot()->createGroup("fields");
 
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds->createGroup("b");
-  DataGroup * gc = flds->createGroup("c");
+  Group * ga = flds->createGroup("a");
+  Group * gb = flds->createGroup("b");
+  Group * gc = flds->createGroup("c");
   int ndata = 10;
 
   // prep a tree that can exactly restored by all
@@ -1571,7 +1653,7 @@ TEST(sidre_group,save_load_all_protocols)
     // show the result
     ds_load.print();
 
-    DataGroup * ds_load_root = ds_load.getRoot();
+    Group * ds_load_root = ds_load.getRoot();
     // check that the sidre hierarchy is equiv
     EXPECT_TRUE( ds.getRoot()->isEquivalentTo(ds_load_root));
 

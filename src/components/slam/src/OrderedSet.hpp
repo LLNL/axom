@@ -23,7 +23,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "common/config.hpp"   // for AXOM_USE_BOOST
+#include "axom/config.hpp"   // for AXOM_USE_BOOST
 
 #ifndef SLAM_USE_COUNTING_ITERATOR
 //=    #define SLAM_USE_COUNTING_ITERATOR
@@ -39,7 +39,7 @@
 #endif
 #endif // AXOM_USE_BOOST
 
-#include "common/CommonTypes.hpp" // for AXOM_NULLPTR
+#include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"
