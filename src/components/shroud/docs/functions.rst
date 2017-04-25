@@ -267,14 +267,70 @@ Fortran option F_result.
 Patterns
 --------
 
-blah blah blah
+To address the issue of semantic differences between Fortran and C++,
+*patterns* may be used to insert additional code.  A *pattern* is a 
+code template which is inserted at a specific point in the wrapper.
+They are defined in the input YAML file::
+
+   functions:
+     - decl: const string& getString2+len=30()
+       C_error_pattern: C_invalid_name
+
+    patterns:
+        C_invalid_name: |
+            if ({cpp_var}.empty()) {{
+                return NULL;
+            }}
+        # return a blank field string if an error occurs
+        C_invalid_name_as_buffer: |
+            if ({cpp_var}.empty()) {{
+                std::memset({c_var}, ' ', {c_var_len});
+                return;
+            }}
+
+The **C_error_pattern** will insert code after the call to the C++
+function in the C wrapper and before any post_call sections from the
+types. The bufferified version of a function will append
+``_as_buffer`` to the **C_error_pattern** value.  The *pattern* is
+formated using the context of the return argument if present,
+otherwise the context of the function is used.  This means that
+*c_var* and *c_var_len* refer to the argument which is added to
+contain the function result for the ``_as_buffer`` pattern.
+
+The function ``getString2`` is returing a ``std::string`` referrence.
+Since C and Fortran cannot deal with this directly, the empty string
+is converted into a ``NULL`` pointer while the bufferified version
+will blank fill the result::
+
+    const char * STR_get_string2()
+    {
+        const std::string & SH_rv = getString2();
+        // C_error_pattern
+        if (SH_rv.empty()) {
+            return NULL;
+        }
+        return SH_rv.c_str();
+    }
+
+    void STR_get_string2_bufferify(char * SH_F_rv, int NSH_F_rv)
+    {
+        const std::string & SH_rv = getString2();
+        // C_error_pattern
+        if (SH_rv.empty()) {
+            std::memset(SH_F_rv, ' ', NSH_F_rv);
+            return;
+        }
+        shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+        return;
+    }
+
 
 
 Splicers
 --------
 
 No matter how many features are added to Shroud there will always exist
-cases that it does not handle.  Once of the weaknesses of generated
+cases that it does not handle.  One of the weaknesses of generated
 code is that if the generated code is edited it becomes difficult to
 regenerate the code and perserve the edits.  To deal with this
 situation each block of generated code is surrounded by 'splicer'
@@ -305,8 +361,8 @@ end with any of ``.c``, ``.h``, ``.cpp``, ``.hpp``, ``.cxx``,
     // splicer end function.get_char3
 
 
-In addition to replacing code for a function wrapper, there are many
-empty splicers that are generated which allow a user to insert additional
+In addition to replacing code for a function wrapper, there are 
+splicers that are generated which allow a user to insert additional
 code::
 
     ! file_top
@@ -360,4 +416,5 @@ C implementation::
     }
 
 The splicer comments can be eliminated by setting the option
-**show_splicer_comments** to false.
+**show_splicer_comments** to false. This may be useful to 
+eliminate the clutter of the splicer comments.

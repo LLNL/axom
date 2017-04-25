@@ -1044,6 +1044,21 @@ return
    Description of return value.
 
 
+Patterns
+--------
+
+C_error_pattern
+    Inserted after the call to the C++ function in the C wrapper.
+    Format is evaluated in the context of the result argument.
+    *c_var*, *c_var_len* refer to the result argument.
+
+C_error_pattern_as_buffer
+    Inserted after the call to the C++ function in the buffer C wrapper
+    for functions with string arguments.
+    Format is evaluated in the context of the result argument.
+
+
+.. ......................................................................
 
 .. rubric:: Footnotes
 

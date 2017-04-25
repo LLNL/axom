@@ -43,6 +43,7 @@ add multiple lines while preserving newlines::
             return NULL;
         }}
 
+Note that to insert a literal ``{``, a double brace is required.
 
 
 Customizing Behavior in the YAML file

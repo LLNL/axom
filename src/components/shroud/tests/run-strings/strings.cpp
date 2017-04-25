@@ -11,6 +11,7 @@ static std::string last_function_called;
 static const char * static_char = "bird";
 static std::string static_str = std::string("dog");
 static std::string global_str;
+static std::string static_str_empty;
 
 //----------------------------------------
 
@@ -65,6 +66,11 @@ const std::string& getString2()
 const std::string& getString3()
 {
     return static_str;
+}
+
+const std::string& getString2_empty()
+{
+    return static_str_empty;
 }
 
 //----------------------------------------

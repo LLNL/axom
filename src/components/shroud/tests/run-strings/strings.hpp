@@ -19,6 +19,7 @@ const char * getChar3();
 const std::string& getString1();
 const std::string& getString2();
 const std::string& getString3();
+const std::string& getString2_empty();
 
 void acceptName_instance(std::string arg1);
 

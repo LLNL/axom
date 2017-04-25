@@ -830,10 +830,7 @@
                 "C_rv_decl": "const std::string SH_rv", 
                 "F_C_name": "c_function4a_bufferify", 
                 "c_const": "", 
-                "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
-                "f_string": "SH_F_rv", 
-                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1057,10 +1054,7 @@
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_function4b_bufferify", 
                 "c_const": "", 
-                "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
-                "f_string": "output", 
-                "f_string_len": "Noutput", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -3424,10 +3418,7 @@
                 "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_last_function_called_bufferify", 
                 "c_const": "", 
-                "c_string": "SH_rv.c_str()", 
                 "cpp_var": "SH_rv", 
-                "f_string": "SH_F_rv", 
-                "f_string_len": "NSH_F_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {

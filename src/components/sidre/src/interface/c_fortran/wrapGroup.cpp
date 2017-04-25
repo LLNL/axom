@@ -223,7 +223,7 @@ const char * SIDRE_group_get_view_name(const SIDRE_group * self,
   const Group * SH_this =
     static_cast<const Group *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getViewName(idx);
-  // check for error
+  // C_error_pattern
   if (!nameIsValid(SH_rv))
   {
     return SIDRE_InvalidName;
@@ -241,7 +241,7 @@ void SIDRE_group_get_view_name_bufferify(const SIDRE_group * self,
   const Group * SH_this =
     static_cast<const Group *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getViewName(idx);
-  // check for error
+  // C_error_pattern
   if (!nameIsValid(SH_rv))
   {
     std::memset(SH_F_rv, ' ', NSH_F_rv);
@@ -871,7 +871,7 @@ const char * SIDRE_group_get_group_name(const SIDRE_group * self,
   const Group * SH_this =
     static_cast<const Group *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getGroupName(idx);
-  // check for error
+  // C_error_pattern
   if (!nameIsValid(SH_rv))
   {
     return SIDRE_InvalidName;
@@ -889,7 +889,7 @@ void SIDRE_group_get_group_name_bufferify(const SIDRE_group * self,
   const Group * SH_this =
     static_cast<const Group *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getGroupName(idx);
-  // check for error
+  // C_error_pattern
   if (!nameIsValid(SH_rv))
   {
     std::memset(SH_F_rv, ' ', NSH_F_rv);

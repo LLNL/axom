@@ -44,7 +44,7 @@ char STR_return_char()
 }
 
 // void returnChar(char_scalar * SH_F_rv+intent(out)+len(NSH_F_rv))
-// function_index=13
+// function_index=14
 /**
  * \brief return a char argument (non-pointer)
  *
@@ -75,7 +75,7 @@ void STR_pass_char_ptr(char * dest, const char * src)
 }
 
 // void passCharPtr(char * dest+intent(out)+len(Ndest), const char * src+intent(in)+len_trim(Lsrc))
-// function_index=14
+// function_index=15
 /**
  * \brief strcpy like behavior
  *
@@ -112,7 +112,7 @@ const char * STR_get_char1()
 }
 
 // void getChar1(char * SH_F_rv+intent(out)+len(NSH_F_rv))+pure
-// function_index=15
+// function_index=16
 /**
  * \brief return a 'const char *' as character(*)
  *
@@ -141,7 +141,7 @@ const char * STR_get_char2()
 }
 
 // void getChar2(char * SH_F_rv+intent(out)+len(NSH_F_rv))
-// function_index=17
+// function_index=18
 /**
  * \brief return 'const char *' with fixed size (len=30)
  *
@@ -170,7 +170,7 @@ const char * STR_get_char3()
 }
 
 // void getChar3(char * output+intent(out)+len(Noutput))
-// function_index=18
+// function_index=19
 /**
  * \brief return a 'const char *' as argument
  *
@@ -199,7 +199,7 @@ const char * STR_get_string1()
 }
 
 // void getString1(string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure
-// function_index=20
+// function_index=21
 /**
  * \brief return a 'const string&' as character(*)
  *
@@ -223,7 +223,7 @@ const char * STR_get_string2()
 {
 // splicer begin function.get_string2
     const std::string & SH_rv = getString2();
-    // check for error
+    // C_error_pattern
     if (SH_rv.empty()) {
         return NULL;
     }
@@ -233,7 +233,7 @@ const char * STR_get_string2()
 }
 
 // void getString2(string & SH_F_rv+intent(out)+len(NSH_F_rv))
-// function_index=22
+// function_index=23
 /**
  * \brief return 'const string&' with fixed size (len=30)
  *
@@ -242,7 +242,7 @@ void STR_get_string2_bufferify(char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin function.get_string2_bufferify
     const std::string & SH_rv = getString2();
-    // check for error
+    // C_error_pattern
     if (SH_rv.empty()) {
         std::memset(SH_F_rv, ' ', NSH_F_rv);
         return;
@@ -263,7 +263,7 @@ const char * STR_get_string3()
 {
 // splicer begin function.get_string3
     const std::string & SH_rv = getString3();
-    // check for error
+    // C_error_pattern
     if (SH_rv.empty()) {
         return NULL;
     }
@@ -273,7 +273,7 @@ const char * STR_get_string3()
 }
 
 // void getString3(string & output+intent(out)+len(Noutput))
-// function_index=23
+// function_index=24
 /**
  * \brief return a 'const string&' as argument
  *
@@ -282,7 +282,7 @@ void STR_get_string3_bufferify(char * output, int Noutput)
 {
 // splicer begin function.get_string3_bufferify
     const std::string & SH_rv = getString3();
-    // check for error
+    // C_error_pattern
     if (SH_rv.empty()) {
         std::memset(output, ' ', Noutput);
         return;
@@ -293,8 +293,48 @@ void STR_get_string3_bufferify(char * output, int Noutput)
 // splicer end function.get_string3_bufferify
 }
 
-// void acceptStringConstReference(const std::string & arg1+intent(in))
+// const string & getString2_empty()
 // function_index=9
+/**
+ * \brief Test returning empty string reference
+ *
+ */
+const char * STR_get_string2_empty()
+{
+// splicer begin function.get_string2_empty
+    const std::string & SH_rv = getString2_empty();
+    // C_error_pattern
+    if (SH_rv.empty()) {
+        return NULL;
+    }
+
+    return SH_rv.c_str();
+// splicer end function.get_string2_empty
+}
+
+// void getString2_empty(string & SH_F_rv+intent(out)+len(NSH_F_rv))
+// function_index=26
+/**
+ * \brief Test returning empty string reference
+ *
+ */
+void STR_get_string2_empty_bufferify(char * SH_F_rv, int NSH_F_rv)
+{
+// splicer begin function.get_string2_empty_bufferify
+    const std::string & SH_rv = getString2_empty();
+    // C_error_pattern
+    if (SH_rv.empty()) {
+        std::memset(SH_F_rv, ' ', NSH_F_rv);
+        return;
+    }
+
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    return;
+// splicer end function.get_string2_empty_bufferify
+}
+
+// void acceptStringConstReference(const std::string & arg1+intent(in))
+// function_index=10
 /**
  * \brief Accept a const string reference
  *
@@ -312,7 +352,7 @@ void STR_accept_string_const_reference(const char * arg1)
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=25
+// function_index=27
 /**
  * \brief Accept a const string reference
  *
@@ -330,7 +370,7 @@ void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout))
-// function_index=10
+// function_index=11
 /**
  * \brief Accept a string reference
  *
@@ -349,7 +389,7 @@ void STR_accept_string_reference(char * arg1)
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-// function_index=26
+// function_index=28
 /**
  * \brief Accept a string reference
  *
@@ -368,7 +408,7 @@ void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
 }
 
 // void explicit1(char * name+intent(in)+len_trim(AAlen))
-// function_index=11
+// function_index=12
 void STR_explicit1(char * name)
 {
 // splicer begin function.explicit1
@@ -378,7 +418,7 @@ void STR_explicit1(char * name)
 }
 
 // void explicit1(char * name+intent(in)+len_trim(AAlen))
-// function_index=27
+// function_index=29
 void STR_explicit1_BUFFER(char * name, int AAlen)
 {
 // splicer begin function.explicit1_BUFFER
@@ -392,7 +432,7 @@ void STR_explicit1_BUFFER(char * name, int AAlen)
 }
 
 // void explicit2(char * name+intent(out)+len(AAtrim))
-// function_index=12
+// function_index=13
 void STR_explicit2(char * name)
 {
 // splicer begin function.explicit2
@@ -402,7 +442,7 @@ void STR_explicit2(char * name)
 }
 
 // void explicit2(char * name+intent(out)+len(AAtrim))
-// function_index=28
+// function_index=30
 void STR_explicit2_bufferify(char * name, int AAtrim)
 {
 // splicer begin function.explicit2_bufferify

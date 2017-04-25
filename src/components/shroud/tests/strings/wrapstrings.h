@@ -55,6 +55,10 @@ const char * STR_get_string3();
 
 void STR_get_string3_bufferify(char * output, int Noutput);
 
+const char * STR_get_string2_empty();
+
+void STR_get_string2_empty_bufferify(char * SH_F_rv, int NSH_F_rv);
+
 void STR_accept_string_const_reference(const char * arg1);
 
 void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1);

@@ -90,6 +90,11 @@ contains
     call get_string3(str)
     call assert_true( str == "dog")
  
+    ! character(30) function
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    str = get_string2_empty()
+    call assert_true( str == " ")
+
 !--------------------------------------------------
 
     call accept_string_const_reference("cat")

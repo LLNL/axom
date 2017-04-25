@@ -266,6 +266,7 @@ class Wrapc(util.WrapperMixin):
         self.log.write("C {0} {1[_decl]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
+        fmt_pattern = fmt_func
 
         # Look for C++ routine to wrap
         # Usually the same node unless it is generated (i.e. bufferified)
@@ -396,6 +397,7 @@ class Wrapc(util.WrapperMixin):
             if c_attrs.get('_is_result', False):
                 arg_call = False
                 fmt_arg.cpp_var = fmt_arg.C_result
+                fmt_pattern = fmt_arg
                 result_arg = arg
                 slist = ['result' + intent_grp]
             else:
@@ -516,20 +518,13 @@ class Wrapc(util.WrapperMixin):
                     fmt_func)
                 C_code.append(line)
 
-                if result_arg:
-                    # may be used in C_error_pattern
-                    fmt_func.f_string = result_arg['name']
-                    fmt_func.f_string_len = result_arg['attrs'].get('len', '')
-                    # pick up rv.c_str() from cpp_to_c
-                    fmt_func.c_string = wformat(arg_typedef.cpp_to_c, fmt_func)
                 if 'C_error_pattern' in node:
                     C_error_pattern = node['C_error_pattern'] + \
                         node.get('_error_pattern_suffix', '')
                     if C_error_pattern in self.patterns:
-                        lfmt = util.Options(fmt_func)
-                        C_code.append('// check for error')
+                        C_code.append('// C_error_pattern')
                         append_format(
-                            C_code, self.patterns[C_error_pattern], lfmt)
+                            C_code, self.patterns[C_error_pattern], fmt_pattern)
 
 #                if result_arg:
 #                    c_post_call = self.typedef[ result_arg['type'] ].c_post_call

@@ -90,7 +90,7 @@ const char * AA_exclass1_get_name(const AA_exclass1 * self)
 // splicer begin class.ExClass1.method.get_name
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getName();
-    // check for error
+    // C_error_pattern
     if (! isNameValid(SH_rv)) {
         return NULL;
     }

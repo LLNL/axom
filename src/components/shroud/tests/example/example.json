@@ -390,11 +390,8 @@
                         "F_C_name": "c_exclass1_get_name_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "SH_F_rv", 
-                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -554,11 +551,8 @@
                         "F_C_name": "c_exclass1_get_name_error_check_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "SH_F_rv", 
-                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -665,11 +659,8 @@
                         "F_C_name": "c_exclass1_get_name_arg_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "name", 
-                        "f_string_len": "Nname", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1391,11 +1382,8 @@
                         "F_C_name": "c_exclass2_get_name_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "SH_F_rv", 
-                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1506,11 +1494,8 @@
                         "F_C_name": "c_exclass2_get_name2_bufferify", 
                         "c_const": "", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "SH_F_rv", 
-                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1623,11 +1608,8 @@
                         "F_C_name": "c_exclass2_get_name3_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "SH_F_rv", 
-                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1736,11 +1718,8 @@
                         "F_C_name": "c_exclass2_get_name4_bufferify", 
                         "c_const": "", 
                         "c_ptr": " *", 
-                        "c_string": "SH_rv.c_str()", 
                         "c_var": "self", 
                         "cpp_var": "SH_rv", 
-                        "f_string": "SH_F_rv", 
-                        "f_string_len": "NSH_F_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {

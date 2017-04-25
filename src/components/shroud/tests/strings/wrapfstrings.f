@@ -150,6 +150,22 @@ module strings_mod
             integer(C_INT), value, intent(IN) :: Noutput
         end subroutine c_get_string3_bufferify
 
+        function c_get_string2_empty() &
+                result(SH_rv) &
+                bind(C, name="STR_get_string2_empty")
+            use iso_c_binding, only : C_PTR
+            implicit none
+            type(C_PTR) SH_rv
+        end function c_get_string2_empty
+
+        subroutine c_get_string2_empty_bufferify(SH_F_rv, NSH_F_rv) &
+                bind(C, name="STR_get_string2_empty_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
+        end subroutine c_get_string2_empty_bufferify
+
         subroutine c_accept_string_const_reference(arg1) &
                 bind(C, name="STR_accept_string_const_reference")
             use iso_c_binding, only : C_CHAR
@@ -268,7 +284,7 @@ contains
     end subroutine pass_char_ptr
 
     ! const string_result_fstr * getChar1()+pure
-    ! function_index=16
+    ! function_index=17
     !>
     !! \brief return a 'const char *' as character(*)
     !!
@@ -300,7 +316,7 @@ contains
 
     ! void getChar3(char * output+intent(out)+len(Noutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=19
+    ! function_index=20
     !>
     !! \brief return a 'const char *' as argument
     !!
@@ -316,7 +332,7 @@ contains
     end subroutine get_char3
 
     ! const string_result_fstr & getString1()+pure
-    ! function_index=21
+    ! function_index=22
     !>
     !! \brief return a 'const string&' as character(*)
     !!
@@ -348,7 +364,7 @@ contains
 
     ! void getString3(string & output+intent(out)+len(Noutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=24
+    ! function_index=25
     !>
     !! \brief return a 'const string&' as argument
     !!
@@ -363,9 +379,26 @@ contains
         ! splicer end function.get_string3
     end subroutine get_string3
 
-    ! void acceptStringConstReference(const std::string & arg1+intent(in))
+    ! const string & getString2_empty()
     ! string_to_buffer_and_len
     ! function_index=9
+    !>
+    !! \brief Test returning empty string reference
+    !!
+    !<
+    function get_string2_empty() result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        character(kind=C_CHAR, len=30) :: SH_rv
+        ! splicer begin function.get_string2_empty
+        call c_get_string2_empty_bufferify(  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+        ! splicer end function.get_string2_empty
+    end function get_string2_empty
+
+    ! void acceptStringConstReference(const std::string & arg1+intent(in))
+    ! string_to_buffer_and_len
+    ! function_index=10
     !>
     !! \brief Accept a const string reference
     !!
@@ -385,7 +418,7 @@ contains
 
     ! void acceptStringReference(std::string & arg1+intent(inout))
     ! string_to_buffer_and_len
-    ! function_index=10
+    ! function_index=11
     !>
     !! \brief Accept a string reference
     !!
@@ -406,7 +439,7 @@ contains
 
     ! void explicit1(char * name+intent(in)+len_trim(AAlen))
     ! string_to_buffer_and_len
-    ! function_index=11
+    ! function_index=12
     subroutine explicit1(name)
         use iso_c_binding, only : C_INT
         character(*), intent(IN) :: name
@@ -419,7 +452,7 @@ contains
 
     ! void explicit2(char * name+intent(out)+len(AAtrim))
     ! string_to_buffer_and_len
-    ! function_index=12
+    ! function_index=13
     subroutine explicit2(name)
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: name
