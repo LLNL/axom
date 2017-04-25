@@ -20,7 +20,7 @@ default_template = dict(
     # C_impl_filename = 'wrap{cpp_class}.cpp',
 
     # F_name_impl = '{class_lower}_{underscore_name}{function_suffix}',
-    # F_name_method = '{underscore_name}{function_suffix}',
+    # F_name_function = '{underscore_name}{function_suffix}',
     # F_name_generic = '{underscore_name}',
 )
 

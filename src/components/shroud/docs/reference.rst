@@ -490,7 +490,7 @@ F_module_name_library_template
 F_name_impl_template
     ``{class_prefix}{underscore_name}{function_suffix}``
 
-F_name_method_template
+F_name_function_template
     ``{underscore_name}{function_suffix}``
 
 
@@ -947,10 +947,10 @@ F_name_impl
 
 ..    class1_method1
 
-F_name_method
+F_name_function
     The name of the *F_name_impl* subprogram when used as a
     type procedure.
-    Defaults to evaluation of option *F_name_method_template*.
+    Defaults to evaluation of option *F_name_function_template*.
 
 F_name_generic
     Defaults to evaluation of option *F_name_generic_template*.

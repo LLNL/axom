@@ -31,7 +31,7 @@ classes:
 
     methods:
     -  decl: void method1
-       F_name_method: type_method1
+       F_name_function: type_method1
     -  decl: void method2
 
 

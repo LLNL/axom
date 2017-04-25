@@ -7,8 +7,8 @@ module {F_module_name}
   type {F_derived_name}
     type(C_PTR) {F_derived_member}
   contains
-    procedure :: {F_name_method} => {F_name_impl}
-    generic :: {F_name_generic} => {F_name_method}, ...
+    procedure :: {F_name_function} => {F_name_impl}
+    generic :: {F_name_generic} => {F_name_function}, ...
   end type {F_derived_name}
 
   ! interface for C functions
@@ -328,11 +328,11 @@ class Wrapf(util.WrapperMixin):
         fmt.underscore_name = options['F_name_instance_get']
         if fmt.underscore_name:
             fmt.underscore_name = options['F_name_instance_get']
-            fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
+            fmt.F_name_function = wformat(options['F_name_function_template'], fmt)
             fmt.F_name_impl = wformat(options['F_name_impl_template'], fmt)
 
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    fmt.F_name_method, fmt.F_name_impl))
+                    fmt.F_name_function, fmt.F_name_impl))
 
             impl.append('')
             append_format(
@@ -351,11 +351,11 @@ class Wrapf(util.WrapperMixin):
         # set
         fmt.underscore_name = options['F_name_instance_set']
         if fmt.underscore_name:
-            fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
+            fmt.F_name_function = wformat(options['F_name_function_template'], fmt)
             fmt.F_name_impl = wformat(options['F_name_impl_template'], fmt)
 
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    fmt.F_name_method, fmt.F_name_impl))
+                    fmt.F_name_function, fmt.F_name_impl))
 
             impl.append('')
             append_format(
@@ -376,11 +376,11 @@ class Wrapf(util.WrapperMixin):
         # associated
         fmt.underscore_name = options['F_name_associated']
         if fmt.underscore_name:
-            fmt.F_name_method = wformat(options['F_name_method_template'], fmt)
+            fmt.F_name_function = wformat(options['F_name_function_template'], fmt)
             fmt.F_name_impl = wformat(options['F_name_impl_template'], fmt)
 
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    fmt.F_name_method, fmt.F_name_impl))
+                    fmt.F_name_function, fmt.F_name_impl))
 
             impl.append('')
             append_format(
@@ -861,17 +861,17 @@ class Wrapf(util.WrapperMixin):
                 # then do not set up generic since only the
                 # return type may be different (ex. getValue<T>())
                 if cls:
-                    gname = fmt_func.F_name_method
+                    gname = fmt_func.F_name_function
                 else:
                     gname = fmt_func.F_name_impl
                 self.f_type_generic.setdefault(
                     fmt_func.F_name_generic, []).append(gname)
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    fmt_func.F_name_method, fmt_func.F_name_impl))
+                    fmt_func.F_name_function, fmt_func.F_name_impl))
 
         # body of function
         # XXX sname = fmt_func.F_name_impl
-        sname = fmt_func.F_name_method
+        sname = fmt_func.F_name_function
         splicer_code = self.splicer_stack[-1].get(sname, None)
         if 'F_code' in node:
             need_wrapper = True

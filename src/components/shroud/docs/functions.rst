@@ -115,8 +115,8 @@ be controlled directly by the input file::
       type {F_derived_name}
         type(C_PTR) {F_derived_member}
       contains
-        procedure :: {F_name_method} => {F_name_impl}
-        generic :: {F_name_generic} => {F_name_method}, ...
+        procedure :: {F_name_function} => {F_name_impl}
+        generic :: {F_name_generic} => {F_name_function}, ...
       end type {F_derived_name}
 
       interface
@@ -328,9 +328,9 @@ code::
 
        contains
 
-       ! function.{F_name_method}
+       ! function.{F_name_function}
 
-       ! {cpp_class}.method.{F_name_method}
+       ! {cpp_class}.method.{F_name_function}
 
        ! additional_functions
 

@@ -177,7 +177,7 @@ class Schema(object):
             F_name_impl_template=(
                 '{class_prefix}{underscore_name}{function_suffix}'),
 
-            F_name_method_template='{underscore_name}{function_suffix}',
+            F_name_function_template='{underscore_name}{function_suffix}',
             F_name_generic_template='{underscore_name}',
 
             F_module_name_library_template='{library_lower}_mod',
@@ -1423,7 +1423,7 @@ class Namify(object):
         fmt_func = node['fmt']
 
         util.eval_template(node, 'F_name_impl')
-        util.eval_template(node, 'F_name_method')
+        util.eval_template(node, 'F_name_function')
         util.eval_template(node, 'F_name_generic')
 
         if 'F_this' in options:
