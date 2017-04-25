@@ -16,11 +16,18 @@
 #include "sidre/Group.hpp"
 #include "sidre/SidreTypes.hpp"
 
-extern "C" {
 namespace axom
 {
 namespace sidre
 {
+
+// splicer begin class.Group.CXX_definitions
+// splicer end class.Group.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.Group.C_definitions
+// splicer end class.Group.C_definitions
 
 const char * SIDRE_group_get_name(const SIDRE_group * self)
 {
@@ -1073,9 +1080,7 @@ void SIDRE_group_load_external_data_bufferify(SIDRE_group * self,
 // splicer end class.Group.method.load_external_data_bufferify
 }
 
-// splicer begin class.Group.additional_functions
-// splicer end class.Group.additional_functions
-
-}  // namespace axom
-}  // namespace sidre
 }  // extern "C"
+
+}  // namespace sidre
+}  // namespace axom

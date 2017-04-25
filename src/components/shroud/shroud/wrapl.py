@@ -636,7 +636,6 @@ luaL_setfuncs({LUA_state_var}, {LUA_class_reg}, 0);
 
         self._create_splicer('include', output)
 
-        output.append('')
         self.namespace(node, None, 'begin', output)
         self._create_splicer('C_definition', output)
 

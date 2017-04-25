@@ -4,11 +4,13 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
+
 // splicer begin include
 // splicer end include
 
 namespace example {
 namespace nested {
+
 // splicer begin C_definition
 // splicer end C_definition
 PyObject *PP_error_obj;
@@ -433,5 +435,6 @@ MOD_INITBASIS(void)
 }
 #endif
 
-}  // namespace example
+
 }  // namespace nested
+}  // namespace example

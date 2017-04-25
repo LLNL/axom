@@ -1,6 +1,7 @@
 // pystringsmodule.cpp
 // This is generated code, do not edit
 #include "pystringsmodule.hpp"
+
 // splicer begin include
 // splicer end include
 

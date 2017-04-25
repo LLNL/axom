@@ -4,8 +4,15 @@
 #include "wrapClass1.h"
 #include "tutorial.hpp"
 
-extern "C" {
 namespace tutorial {
+
+// splicer begin class.Class1.CXX_definitions
+// splicer end class.Class1.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.Class1.C_definitions
+// splicer end class.Class1.C_definitions
 
 // Class1 * new()+constructor
 // function_index=0
@@ -39,8 +46,6 @@ void TUT_class1_method1(TUT_class1 * self)
 // splicer end class.Class1.method.method1
 }
 
-// splicer begin class.Class1.additional_functions
-// splicer end class.Class1.additional_functions
+}  // extern "C"
 
 }  // namespace tutorial
-}  // extern "C"

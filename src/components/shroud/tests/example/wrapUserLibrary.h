@@ -15,14 +15,17 @@
 #include "mpi.h"
 #include "sidre/wrapGroup.h"
 
+// splicer begin CXX_declarations
+// splicer end CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // declaration of wrapped types
 
-// splicer begin C_definition
-// splicer end C_definition
+// splicer begin C_declarations
+// splicer end C_declarations
 
 void AA_local_function1();
 

@@ -311,11 +311,16 @@ class WrapperMixin(object):
                 return
         else:
             namespace = library['namespace']
+        if not namespace:
+            return
+        output.append('')
         if position == 'begin':
             for name in namespace.split():
                 output.append('namespace %s {' % name)
         else:
-            for name in namespace.split():
+            lst = namespace.split()
+            lst.reverse()
+            for name in lst:
                 output.append('}  // namespace %s' % name)
 #####
 

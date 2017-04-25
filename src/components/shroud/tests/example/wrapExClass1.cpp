@@ -9,9 +9,16 @@
 #include "ExClass1.hpp"
 #include "shroudrt.hpp"
 
-extern "C" {
 namespace example {
 namespace nested {
+
+// splicer begin class.ExClass1.CXX_definitions
+// splicer end class.ExClass1.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.ExClass1.C_definitions
+// splicer end class.ExClass1.C_definitions
 
 // ExClass1 * new(const string * name+intent(in))+constructor
 // function_index=0
@@ -229,9 +236,7 @@ void AA_exclass1_splicer_special(AA_exclass1 * self)
 // splicer end class.ExClass1.method.splicer_special
 }
 
-// splicer begin class.ExClass1.additional_functions
-// splicer end class.ExClass1.additional_functions
-
-}  // namespace example
-}  // namespace nested
 }  // extern "C"
+
+}  // namespace nested
+}  // namespace example

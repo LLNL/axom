@@ -10,9 +10,16 @@
 #include "shroudrt.hpp"
 #include "sidre/SidreWrapperHelpers.hpp"
 
-extern "C" {
 namespace example {
 namespace nested {
+
+// splicer begin class.ExClass2.CXX_definitions
+// splicer end class.ExClass2.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.ExClass2.C_definitions
+// splicer end class.ExClass2.C_definitions
 
 // ExClass2 * ExClass2(const string * name+intent(in))+constructor
 // function_index=18
@@ -275,9 +282,7 @@ double AA_exclass2_get_value_double(AA_exclass2 * self)
 // splicer end class.ExClass2.method.get_value_double
 }
 
-// splicer begin class.ExClass2.additional_functions
-// splicer end class.ExClass2.additional_functions
-
-}  // namespace example
-}  // namespace nested
 }  // extern "C"
+
+}  // namespace nested
+}  // namespace example

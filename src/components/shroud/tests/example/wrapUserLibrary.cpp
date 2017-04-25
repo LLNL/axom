@@ -8,9 +8,16 @@
 #include <string>
 #include "sidre/Group.hpp"
 
-extern "C" {
 namespace example {
 namespace nested {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 // void local_function1()
 // function_index=47
@@ -166,9 +173,7 @@ void AA_testgroup2(const SIDRE_group * grp)
 // splicer end function.testgroup2
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
-
-}  // namespace example
-}  // namespace nested
 }  // extern "C"
+
+}  // namespace nested
+}  // namespace example

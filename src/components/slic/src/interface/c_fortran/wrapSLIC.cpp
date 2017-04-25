@@ -15,9 +15,16 @@
 #include "shroudrt.hpp"
 #include "slic/slic.hpp"
 
-extern "C" {
 namespace axom {
 namespace slic {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 void SLIC_initialize()
 {
@@ -185,9 +192,7 @@ void SLIC_log_message_bufferify(int level, const char * message, int Lmessage,
 // splicer end function.log_message_bufferify
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
-
-}  // namespace axom
-}  // namespace slic
 }  // extern "C"
+
+}  // namespace slic
+}  // namespace axom

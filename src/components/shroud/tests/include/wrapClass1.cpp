@@ -5,8 +5,15 @@
 #include "class_header.hpp"
 #include "type_header.hpp"
 
-extern "C" {
 namespace three {
+
+// splicer begin class.Class1.CXX_definitions
+// splicer end class.Class1.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.Class1.C_definitions
+// splicer end class.Class1.C_definitions
 
 void DEF_class1_method1(DEF_class1 * self, int arg1)
 {
@@ -17,8 +24,6 @@ void DEF_class1_method1(DEF_class1 * self, int arg1)
 // splicer end class.Class1.method.method1
 }
 
-// splicer begin class.Class1.additional_functions
-// splicer end class.Class1.additional_functions
+}  // extern "C"
 
 }  // namespace three
-}  // extern "C"

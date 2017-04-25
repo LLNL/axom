@@ -14,11 +14,18 @@
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
 
-extern "C" {
 namespace axom
 {
 namespace sidre
 {
+
+// splicer begin class.DataStore.CXX_definitions
+// splicer end class.DataStore.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.DataStore.C_definitions
+// splicer end class.DataStore.C_definitions
 
 SIDRE_datastore * SIDRE_datastore_new()
 {
@@ -105,9 +112,7 @@ void SIDRE_datastore_print(const SIDRE_datastore * self)
 // splicer end class.DataStore.method.print
 }
 
-// splicer begin class.DataStore.additional_functions
-// splicer end class.DataStore.additional_functions
-
-}  // namespace axom
-}  // namespace sidre
 }  // extern "C"
+
+}  // namespace sidre
+}  // namespace axom

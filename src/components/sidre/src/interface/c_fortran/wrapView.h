@@ -21,6 +21,9 @@
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
 
+// splicer begin class.View.CXX_declarations
+// splicer end class.View.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,8 +36,8 @@ typedef struct s_SIDRE_group SIDRE_group;
 struct s_SIDRE_view;
 typedef struct s_SIDRE_view SIDRE_view;
 
-// splicer begin class.View.C_definition
-// splicer end class.View.C_definition
+// splicer begin class.View.C_declarations
+// splicer end class.View.C_declarations
 
 void SIDRE_view_allocate_simple(SIDRE_view * self);
 

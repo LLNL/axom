@@ -6,8 +6,15 @@
 #include "shroudrt.hpp"
 #include "tutorial.hpp"
 
-extern "C" {
 namespace tutorial {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 // void Function1()
 // function_index=3
@@ -352,8 +359,6 @@ void TUT_last_function_called_bufferify(char * SH_F_rv, int NSH_F_rv)
 // splicer end function.last_function_called_bufferify
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
+}  // extern "C"
 
 }  // namespace tutorial
-}  // extern "C"

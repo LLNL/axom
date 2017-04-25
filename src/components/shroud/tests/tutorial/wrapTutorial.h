@@ -9,6 +9,9 @@
 #ifndef WRAPTUTORIAL_H
 #define WRAPTUTORIAL_H
 
+// splicer begin CXX_declarations
+// splicer end CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,8 +20,8 @@ extern "C" {
 struct s_TUT_class1;
 typedef struct s_TUT_class1 TUT_class1;
 
-// splicer begin C_definition
-// splicer end C_definition
+// splicer begin C_declarations
+// splicer end C_declarations
 
 void TUT_function1();
 

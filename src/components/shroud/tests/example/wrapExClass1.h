@@ -12,6 +12,9 @@
 #ifndef WRAPEXCLASS1_H
 #define WRAPEXCLASS1_H
 
+// splicer begin class.ExClass1.CXX_declarations
+// splicer end class.ExClass1.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,8 +25,8 @@ typedef struct s_AA_exclass1 AA_exclass1;
 struct s_AA_exclass2;
 typedef struct s_AA_exclass2 AA_exclass2;
 
-// splicer begin class.ExClass1.C_definition
-// splicer end class.ExClass1.C_definition
+// splicer begin class.ExClass1.C_declarations
+// splicer end class.ExClass1.C_declarations
 
 AA_exclass1 * AA_exclass1_new(const char * name);
 

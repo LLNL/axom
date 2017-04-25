@@ -234,8 +234,11 @@ Each library or class can be associated with a namespace::
 
        class Class2 {
        };
-    }
-    }
+    } // namespace two
+    } // namespace one
+
+    class Class3 {
+    };
 
 The YAML file would look like::
 
@@ -245,7 +248,12 @@ The YAML file would look like::
     -  Class1
        namespace: one two three
     -  Class2
+    -  Class3
+       namespace: -none
 
+If a namespace starts with a ``-``, then it will be ignored.  This
+allows a library to have a default namespace but have a class have no
+namespace.
 
 Local Variable
 ^^^^^^^^^^^^^^
@@ -298,27 +306,48 @@ end with any of ``.c``, ``.h``, ``.cpp``, ``.hpp``, ``.cxx``,
 
 
 In addition to replacing code for a function wrapper, there are many
-empty splicers that are generate which allow a user to insert additional
-code.  This can be used to add any helper functions::
+empty splicers that are generated which allow a user to insert additional
+code::
 
-    ! splicer begin file_top
-    ! splicer end file_top
+    ! file_top
+    module {F_module_name}
+       ! module_use
+       implicit none
+       ! module_top
 
-Additional ``use`` statements into the module::
+       type class1
+         ! class.{cpp_class}.component_part
+       contains
+         ! class.{cpp_class}.generic.{F_name_generic}
+         ! class.{cpp_class}.type_bound_procedure_part
+       end type class1
 
-    ! splicer begin module_use
-    ! splicer end module_use
+       interface
+          ! additional_interfaces
+       end interface
 
-Additional interfaces::
+       contains
 
-    ! splicer begin additional_interfaces
-    ! splicer end additional_interfaces
+       ! additional_functions
 
-Or additional code::
+    end module {F_module_name}
 
-    ! splicer begin additional_functions
-    ! splicer end additional_functions
+.. from _create_splicer
 
-There are a large assortment of splicer that allow code to be inserted
-where necessary.
+C header::
+
+    // class.{class_name}.CXX_declarations
+
+    extern "C" {
+    // class.{class_name}.C_declarations
+    }
+
+C implementation::
+
+    // class.{class_name}.CXX_definitions
+
+    extern "C" {
+      // class.{class_name}.C_definitions
+    }
+
 

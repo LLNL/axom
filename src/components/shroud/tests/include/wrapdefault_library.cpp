@@ -4,9 +4,16 @@
 #include "wrapdefault_library.h"
 #include "global_header.hpp"
 
-extern "C" {
 namespace one {
 namespace two {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 void DEF_function1()
 {
@@ -16,9 +23,7 @@ void DEF_function1()
 // splicer end function.function1
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
-
-}  // namespace one
-}  // namespace two
 }  // extern "C"
+
+}  // namespace two
+}  // namespace one

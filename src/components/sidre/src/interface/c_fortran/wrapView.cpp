@@ -16,11 +16,18 @@
 #include "sidre/SidreTypes.hpp"
 #include "sidre/View.hpp"
 
-extern "C" {
 namespace axom
 {
 namespace sidre
 {
+
+// splicer begin class.View.CXX_definitions
+// splicer end class.View.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.View.C_definitions
+// splicer end class.View.C_definitions
 
 void SIDRE_view_allocate_simple(SIDRE_view * self)
 {
@@ -563,9 +570,7 @@ void SIDRE_view_print(const SIDRE_view * self)
 // splicer end class.View.method.print
 }
 
-// splicer begin class.View.additional_functions
-// splicer end class.View.additional_functions
-
-}  // namespace axom
-}  // namespace sidre
 }  // extern "C"
+
+}  // namespace sidre
+}  // namespace axom

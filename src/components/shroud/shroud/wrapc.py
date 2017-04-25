@@ -149,6 +149,9 @@ class Wrapc(util.WrapperMixin):
             headers = self.header_typedef_include.keys()
             self.write_headers(headers, output)
 
+        output.append('')
+        self._create_splicer('CXX_declarations', output)
+
         output.extend([
                 '',
                 '#ifdef __cplusplus',
@@ -164,7 +167,7 @@ class Wrapc(util.WrapperMixin):
                 'typedef struct s_{C_type_name} {C_type_name};'.
                 format(C_type_name=name))
         output.append('')
-        self._create_splicer('C_definition', output)
+        self._create_splicer('C_declarations', output)
         output.extend(self.header_proto_c)
         output.extend([
                 '',
@@ -203,15 +206,17 @@ class Wrapc(util.WrapperMixin):
             headers = self.header_impl_include.keys()
             self.write_headers(headers, output)
 
-        output.append('\nextern "C" {')
         self.namespace(library, cls, 'begin', output)
+        output.append('')
+        self._create_splicer('CXX_definitions', output)
+        output.append('\nextern "C" {')
+        output.append('')
+        self._create_splicer('C_definitions', output)
         output.extend(self.impl)
         output.append('')
-        self._create_splicer('additional_functions', output)
-        output.append('')
-        self.namespace(library, cls, 'end', output)
 
         output.append('}  // extern "C"')
+        self.namespace(library, cls, 'end', output)
 
         self.config.cfiles.append(
             os.path.join(self.config.c_fortran_dir, fname))

@@ -3,7 +3,13 @@
 // foo.cpp
 #include "foo.h"
 
+// splicer begin class.Names.CXX_definitions
+// splicer end class.Names.CXX_definitions
+
 extern "C" {
+
+// splicer begin class.Names.C_definitions
+// splicer end class.Names.C_definitions
 
 // void method1()
 // function_index=0
@@ -26,8 +32,5 @@ void XXX_TES_names_method2(TES_names * self)
     return;
 // splicer end class.Names.method.method2
 }
-
-// splicer begin class.Names.additional_functions
-// splicer end class.Names.additional_functions
 
 }  // extern "C"

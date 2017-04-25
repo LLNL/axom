@@ -899,9 +899,10 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
-        self._create_splicer('include', output)
         output.append('')
+        self._create_splicer('include', output)
         self.namespace(node, None, 'begin', output)
+        output.append('')
         self._create_splicer('C_definition', output)
 
         output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
@@ -1119,8 +1120,7 @@ PyTypeObject {PY_PyTypeObject} = {{
 #ifdef IS_PY3K
         (destructor)0,                  /* tp_finalize */
 #endif
-}};
-"""
+}};"""
 
 
 module_begin = """

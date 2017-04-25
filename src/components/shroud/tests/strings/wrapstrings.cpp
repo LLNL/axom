@@ -7,7 +7,13 @@
 #include "shroudrt.hpp"
 #include "strings.hpp"
 
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
 extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 // void passChar(char_scalar status+intent(in)+value)
 // function_index=0
@@ -407,8 +413,5 @@ void STR_explicit2_bufferify(char * name, int AAtrim)
     return;
 // splicer end function.explicit2_bufferify
 }
-
-// splicer begin additional_functions
-// splicer end additional_functions
 
 }  // extern "C"

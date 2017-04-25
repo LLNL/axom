@@ -14,11 +14,18 @@
 #include "sidre/Buffer.hpp"
 #include "sidre/SidreTypes.hpp"
 
-extern "C" {
 namespace axom
 {
 namespace sidre
 {
+
+// splicer begin class.Buffer.CXX_definitions
+// splicer end class.Buffer.CXX_definitions
+
+extern "C" {
+
+// splicer begin class.Buffer.C_definitions
+// splicer end class.Buffer.C_definitions
 
 SIDRE_IndexType SIDRE_buffer_get_index(const SIDRE_buffer * self)
 {
@@ -137,9 +144,7 @@ void SIDRE_buffer_print(const SIDRE_buffer * self)
 // splicer end class.Buffer.method.print
 }
 
-// splicer begin class.Buffer.additional_functions
-// splicer end class.Buffer.additional_functions
-
-}  // namespace axom
-}  // namespace sidre
 }  // extern "C"
+
+}  // namespace sidre
+}  // namespace axom
