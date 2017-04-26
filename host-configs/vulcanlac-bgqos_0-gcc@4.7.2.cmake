@@ -25,13 +25,13 @@ set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
 set("CMAKE_Fortran_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/gcc-4.7.2/hdf5-1.8.16-gsqekrbdiryaddbxrb7lkv5ivwyyylcc" CACHE PATH "")
+set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/gcc-4.7.2/hdf5-1.8.16-gsqekrbdiryaddbxrb7lkv5ivwyyylcc" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
+set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_03_20_14_15_06/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
+set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
 
 # python not build by uberenv
 

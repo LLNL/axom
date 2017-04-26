@@ -75,6 +75,10 @@
 // MPI includes
 #include "mpi.h"
 
+#ifdef AXOM_USE_OPENMP
+#include "omp.h"
+#endif 
+
 const int DIM = 3;
 const int MAX_RESULTS = 10;         // Max number of disagreeing entries to show when comparing results
 const int DEFAULT_RESOLUTION = 32;  // Default resolution of query grid
@@ -197,7 +201,7 @@ CommandLineArguments parseArguments(int argc, char** argv)
             clargs.queryResolution[2] = std::atoi( argv[++i]);
             hasResolution = true;
         }
-        else if(arg == "--boundingBox")
+        else if(arg == "--bounding-box")
         {
             SpacePt bbMin;
             SpacePt bbMax;
@@ -217,6 +221,12 @@ CommandLineArguments parseArguments(int argc, char** argv)
         {
             clargs.usage();
             abort();
+        }
+        else
+        {
+            SLIC_WARNING( fmt::format("Unknown argument: '{}'", arg) );
+            clargs.usage();
+            abort();            
         }
     }
 
@@ -358,16 +368,24 @@ void runContainmentQueries(CommandLineArguments& clargs)
 {
     const int IGNORE = -1;
     const bool USE_DISTANCE = false;
+    
+    SLIC_INFO(fmt::format("Initializing InOutOctree over mesh '{}'...", clargs.meshName));
+    axom::utilities::Timer buildTimer(true);
+
     axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, IGNORE, IGNORE);
+
+    buildTimer.stop();
+    SLIC_INFO(fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
+
+    SpacePt bbMin;
+    SpacePt bbMax;
+    axom::quest::mesh_min_bounds(bbMin.data());
+    axom::quest::mesh_max_bounds(bbMax.data());
 
     if(!clargs.hasBoundingBox())
     {
-        SpacePt bbMin;
-        SpacePt bbMax;
-        axom::quest::mesh_min_bounds(bbMin.data());
-        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
-        clargs.meshBoundingBox.expand(1.5);
+        clargs.meshBoundingBox.scale(1.5);
     }
 
     if(!clargs.hasQueryMesh())
@@ -375,6 +393,17 @@ void runContainmentQueries(CommandLineArguments& clargs)
         clargs.queryMesh = createQueryMesh(clargs.meshBoundingBox, clargs.queryResolution);
     }
 
+    SLIC_INFO("Mesh bounding box is: " << SpaceBoundingBox(bbMin, bbMax) );
+    SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
+
+  #ifdef AXOM_USE_OPENMP
+    #pragma omp parallel 
+    #pragma omp master
+    SLIC_INFO(fmt::format("Querying InOutOctree on uniform grid of resolution {} using {} threads", 
+        clargs.queryResolution, omp_get_num_threads()));
+  #else
+    SLIC_INFO(fmt::format("Querying InOutOctree on uniform grid of resolution {}", clargs.queryResolution));  
+  #endif
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
@@ -387,18 +416,25 @@ void runContainmentQueries(CommandLineArguments& clargs)
     int* containment = PD->getField( "octree_containment" )->getIntPtr();
     SLIC_ASSERT( containment != AXOM_NULLPTR );
 
-    axom::utilities::Timer timer(true);
+    double* coords = new double[3*nnodes];
+    axom::utilities::Timer fillTimer(true);
+
+    #pragma omp parallel for schedule(static)
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        axom::primal::Point< double,3 > pt;
-        umesh->getMeshNode( inode, pt.data() );
-
-        containment[ inode ] = axom::quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
+        umesh->getMeshNode( inode, coords+3*inode );
     }
-    timer.stop();
-    SLIC_INFO(fmt::format("Querying {}^3 containment field took {} seconds (@ {} queries per second)",
-                    clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
+    fillTimer.stop();
 
+    axom::utilities::Timer queryTimer(true);
+    axom::quest::inside( coords, containment, nnodes);
+    queryTimer.stop();
+
+    SLIC_INFO(fmt::format("Filling coordinates array took {} seconds", fillTimer.elapsed()));
+    SLIC_INFO(fmt::format("Querying {}^3 containment field (InOutOctree) took {} seconds (@ {} queries per second)",
+                    clargs.queryResolution, queryTimer.elapsed(), nnodes / queryTimer.elapsed()));
+
+    delete [] coords;
 
     axom::quest::finalize();
 }
@@ -411,16 +447,24 @@ void runDistanceQueries(CommandLineArguments& clargs)
     int maxDepth = 10;
     int maxEltsPerBucket = 25;
     const bool USE_DISTANCE = true;
+    
+    SLIC_INFO(fmt::format("Initializing BVH tree (maxDepth: {}, maxEltsPerBucket: {}) over mesh '{}'...", 
+        maxDepth, maxEltsPerBucket, clargs.meshName));
+    axom::utilities::Timer buildTimer(true);
     axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM, maxDepth, maxEltsPerBucket);
+    buildTimer.stop();
+    
+    SLIC_INFO(fmt::format("Initialization took {} seconds.", buildTimer.elapsed()));
+    
+    SpacePt bbMin;
+    SpacePt bbMax;
+    axom::quest::mesh_min_bounds(bbMin.data());
+    axom::quest::mesh_max_bounds(bbMax.data());
 
     if(!clargs.hasBoundingBox())
     {
-        SpacePt bbMin;
-        SpacePt bbMax;
-        axom::quest::mesh_min_bounds(bbMin.data());
-        axom::quest::mesh_max_bounds(bbMax.data());
         clargs.meshBoundingBox = SpaceBoundingBox(bbMin, bbMax);
-        clargs.meshBoundingBox.expand(1.5);
+        clargs.meshBoundingBox.scale(1.5);
     }
 
     if(!clargs.hasQueryMesh())
@@ -428,6 +472,17 @@ void runDistanceQueries(CommandLineArguments& clargs)
         clargs.queryMesh = createQueryMesh(clargs.meshBoundingBox, clargs.queryResolution);
     }
 
+    SLIC_INFO("Mesh bounding box is: " << SpaceBoundingBox(bbMin, bbMax) );
+    SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
+
+  #ifdef AXOM_USE_OPENMP
+    #pragma omp parallel 
+    #pragma omp master
+    SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {} using {} threads", 
+        clargs.queryResolution, omp_get_num_threads()));
+  #else
+    SLIC_INFO(fmt::format("Querying BVH tree on uniform grid of resolution {}", clargs.queryResolution));  
+  #endif
 
     // Add a scalar field for the containment queries
     SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
@@ -444,18 +499,31 @@ void runDistanceQueries(CommandLineArguments& clargs)
     double* distance = PD->getField( "bvh_distance" )->getDoublePtr();
     SLIC_ASSERT( distance != AXOM_NULLPTR );
 
-    axom::utilities::Timer timer(true);
+    double* coords = new double[3*nnodes];
+    axom::utilities::Timer fillTimer(true);
+
+    #pragma omp parallel for schedule(static)
     for ( int inode=0; inode < nnodes; ++inode )
     {
-        axom::primal::Point< double,3 > pt;
-        umesh->getMeshNode( inode, pt.data() );
-
-        distance[ inode ] = axom::quest::distance(pt[0],pt[1],pt[2]);
-        containment[ inode ] = axom::quest::inside(pt[0],pt[1],pt[2]) ? 1 : 0;
+        umesh->getMeshNode( inode, coords+3*inode );
     }
-    timer.stop();
-    SLIC_INFO(fmt::format("Querying {}^3 distance field took {} seconds (@ {} queries per second)"
-                    , clargs.queryResolution, timer.elapsed(), nnodes / timer.elapsed()));
+    fillTimer.stop();
+
+    axom::utilities::Timer distanceTimer(true);
+    axom::quest::distance( coords, distance, nnodes);
+    distanceTimer.stop();
+
+    axom::utilities::Timer containmentTimer(true);
+    axom::quest::inside( coords, containment, nnodes);
+    containmentTimer.stop();
+
+    SLIC_INFO(fmt::format("Filling coordinates array took {} seconds", fillTimer.elapsed()));
+    SLIC_INFO(fmt::format("Querying {}^3 signed distance field (BVH) took {} seconds (@ {} queries per second)",
+                    clargs.queryResolution, distanceTimer.elapsed(), nnodes / distanceTimer.elapsed()));
+    SLIC_INFO(fmt::format("Querying {}^3 containment field (BVH) took {} seconds (@ {} queries per second)",
+                    clargs.queryResolution, containmentTimer.elapsed(), nnodes / containmentTimer.elapsed()));
+
+    delete [] coords;
 
     axom::quest::finalize();
 }
@@ -723,26 +791,32 @@ int main( int argc, char**argv )
     // run the containment queries
     if(args.testContainment)
     {
-      SLIC_INFO("About to run containment queries");
+      SLIC_INFO("Running containment queries");
       runContainmentQueries(args);
+      SLIC_INFO("--");
     }
 
     // run the distance queries
     if(args.testDistance)
     {
-      SLIC_INFO("About to run distance queries");
+      SLIC_INFO("Running distance queries");
       runDistanceQueries(args);
+      SLIC_INFO("--");
     }
 
     // Compare signs of current results on SignedDistance and InOutOctree
     bool methodsAgree = true;
     if(args.testContainment && args.testDistance)
     {
+      SLIC_INFO("Comparing results from containment and distance queries");
+      
       methodsAgree = compareDistanceAndContainment(args);
 
       SLIC_INFO("** Methods " << (methodsAgree? "agree" : "do not agree"));
 
       allTestsPassed = allTestsPassed && methodsAgree;
+      
+      SLIC_INFO("--");
     }
 
     // compare current results to baselines or generate new baselines
@@ -760,6 +834,7 @@ int main( int argc, char**argv )
       SLIC_INFO("Saving results as new baseline.");
       saveBaseline(ds.getRoot(), args);
     }
+    SLIC_INFO("--");
   }
 
   // finalize

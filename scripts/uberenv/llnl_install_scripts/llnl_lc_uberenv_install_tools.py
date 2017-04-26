@@ -207,6 +207,8 @@ def set_axom_group_and_perms(directory):
     print "[changing group and access perms of: %s]" % directory
     # change group to axomdev
     print "[changing group to axomdev]"
+    sexe("chgrp -f -R axomdev -v  %s" % (directory),echo=True)
+    print "[changing group to axomdev]"
     sexe("chgrp -f -R axomdev %s" % (directory),echo=True)
     # change group perms to rwX
     print "[changing perms for axomdev members to rwX]"
