@@ -254,7 +254,7 @@ The type map::
                     cpp_header: <cstring> shroudrt.hpp
                     post_call:
                       - if ({cpp_var} == NULL) {{
-                      -   std::memset({c_var}, \' \', {c_var_len});
+                      -   std::memset({c_var}, ' ', {c_var_len});
                       - }} else {{
                       -   shroud_FccCopy({c_var}, {c_var_len}, {cpp_var});
                       - }}
@@ -341,7 +341,7 @@ buffers with space for an additional character (the ``NULL``).  The
 the result back into the ``dest`` argument and deletes the scratch
 space.  ``shroud_FccCopy`` is a function provided by Shroud which
 copies character into the destination up to ``Ndest`` characters, then
-blank fill any remaining space.
+blank fills any remaining space.
 
 The Fortran interface is generated::
 
@@ -412,7 +412,7 @@ additional sections to convert between ``char *`` and ``std::string``::
                     cpp_header: <cstring> shroudrt.hpp
                     post_call:
                        - if ({cpp_var}.empty()) {{
-                       -   std::memset({c_var}, \' \', {c_var_len});
+                       -   std::memset({c_var}, ' ', {c_var_len});
                        - }} else {{
                        -   shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
                        - }}
@@ -432,10 +432,13 @@ will accept and modify a string reference::
 A reference defaults to *intent(inout)* and will add both the *len*
 and *len_trim* annotations.
 
-Each generated version will convert ``arg`` into a ``std::string``, call the function,
-then copy the results back. The important thing to notice is that the pure C version
-could do very bad things since it does not know how much space it has to copy into.
-The second version knows the allocated length of the argument::
+Both generated functions will convert ``arg`` into a ``std::string``,
+call the function, then copy the results back into the argument. The
+important thing to notice is that the pure C version could do very bad
+things since it does not know how much space it has to copy into.  The
+bufferify version knows the allocated length of the argument.
+However, since the input argument is a fixed length it may be too
+short for the new string value::
 
     void STR_accept_string_reference(char * arg1)
     {
@@ -533,7 +536,7 @@ the Fortran interface where it declares the function as ``pure``::
             type(C_PTR) SH_rv
         end function c_get_char1
 
-The Fortran function calls the C wrapper twice.  Once in a declaration
+The Fortran wrapper calls the C wrapper twice.  Once in a declaration
 to get the length of the string and once to copy the value.  The
 functions ``strlen_ptr`` and ``fstr`` are provided by Shroud to get
 the length of a ``NULL`` terminated string and to copy and blank fill
@@ -564,7 +567,7 @@ truncated::
 
 The third option gives the best of both worlds.  The C wrapper is only
 called once and any size result can be returned.  The result of the C
-function in will be returned in the Fortran argument named by option
+function will be returned in the Fortran argument named by option
 **F_string_result_as_arg**.  The potential downside is that a Fortran
 subroutine is generated instead of a function::
 
@@ -581,15 +584,93 @@ subroutine is generated instead of a function::
 string functions
 ^^^^^^^^^^^^^^^^
 
+Function which return ``std::string`` values are similar but must provide the
+extra step of converting the result into a ``char *``::
+
+    - decl: const string& getString1()  +pure
+
+The generated wrappers are::
+
+    const char * STR_get_string1()
+    {
+        const std::string & SH_rv = getString1();
+        const char * XSH_rv = SH_rv.c_str();
+        return XSH_rv;
+    }
+    
+    void STR_get_string1_bufferify(char * SH_F_rv, int NSH_F_rv)
+    {
+        const std::string & SH_rv = getString1();
+        if (SH_rv.empty()) {
+          std::memset(SH_F_rv, ' ', NSH_F_rv);
+        } else {
+          shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+        }
+        return;
+    }
+
+.. note:: These example assume that a pointer to an existing string is returned.
+          If the C++ function allocates a string, the C wrapper should deallocate
+          it after copying the contents. Shroud does not deal with this case
+          and will result in leaked memory.
 
 
-Complex Type
-------------
+.. Complex Type
+   ------------
 
 
-Derived Types
--------------
+.. Derived Types
+   -------------
+
+Class Type
+----------
+
+Each class in the input file will create a Fortran derived type which
+acts as a shadow class for the C++ class.  A pointer to an instance is
+saved as a ``type(C_PTR)`` value.  The *f_to_c* field uses the
+generated ``get_instance`` function to return the pointer which will
+be passed to C.
+
+In C an opaque typedef for a struct is created as the type for the C++
+instance pointer.  The *c_to_cpp* and *cpp_to_c* fields casts this
+pointer to C++ and back to C.
+
+The class example from the tutorial is::
+
+    classes:
+     - name: Class1
+
+Shroud will generate a type map for this class as::
+
+    types:
+      Class1:
+        base: wrapped
+        c_type: TUT_class1
+        cpp_type: Class1
+        c_to_cpp: static_cast<{c_const}Class1{c_ptr}>(static_cast<{c_const}void *>({c_var}))
+        cpp_to_c: static_cast<{c_const}TUT_class1 *>(static_cast<{c_const}void *>({cpp_var}))
+
+        f_type: type(class1)
+        f_derived_type: class1
+        f_c_type: type(C_PTR)
+        f_c_module:
+            iso_c_binding:
+              - C_PTR
+        f_module:
+            tutorial_mod:
+              - class1
+        f_return_code: {F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})
+        f_to_c: {f_var}%get_instance()
+        forward: Class1
 
 
+The type map will be written to a file to allow its used by other
+wrapped libraries.  The file is named by the global field
+**YAML_type_filename**. This file will only list some of the fields
+show above with the remainder set to default values by Shroud.
+
+
+
+    
 
 ..  chained function calls

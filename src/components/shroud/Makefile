@@ -18,6 +18,8 @@ include $(top)/tests/defaults.mk
 develop :
 	python setup.py develop
 
+# python must have sphinx installed or else it reports
+# error: invalid command 'build_sphinx'
 docs :
 	python setup.py build_sphinx
 

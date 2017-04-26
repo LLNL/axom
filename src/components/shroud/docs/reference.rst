@@ -91,6 +91,8 @@ library_upper
 namespace_scope
     The values in field **namespace** delimited with ``::``.
 
+YAML_type_filename
+    Output filename for type maps for classes.
 
 Class
 ^^^^^
@@ -547,6 +549,10 @@ LUA_userdata_member_template
 
 PY_name_impl
     PY_class1_method1
+
+YAML_type_filename_template
+    Default value for global field YAML_type_filename
+    ``{library_lower}_types.yaml``
 
 
 Types Map
