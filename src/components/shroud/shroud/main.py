@@ -438,9 +438,11 @@ class Schema(object):
                 c_type='char',    # XXX - char *
 
                 c_statements=dict(
-                    result=dict(
+                    result_buf=dict(
+                        cpp_header='<cstring>',
                         post_call=[
-                            '*{c_var} = {cpp_var};',
+                            'std::memset({c_var}, \' \', {c_var_len});',
+                            '{c_var}[0] = {cpp_var};',
                         ],
                     ),
                 ),

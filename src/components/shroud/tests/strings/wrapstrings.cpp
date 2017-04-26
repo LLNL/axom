@@ -49,11 +49,12 @@ char STR_return_char()
  * \brief return a char argument (non-pointer)
  *
  */
-void STR_return_char_bufferify(char * SH_F_rv)
+void STR_return_char_bufferify(char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin function.return_char_bufferify
     char SH_rv = returnChar();
-    *SH_F_rv = SH_rv;
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+    SH_F_rv[0] = SH_rv;
     return;
 // splicer end function.return_char_bufferify
 }

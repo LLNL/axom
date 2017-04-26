@@ -582,7 +582,8 @@ class Wrapf(util.WrapperMixin):
                 arg_c_decl.append(self._c_decl(arg))
 
             if generator == 'string_to_buffer_and_len' and \
-               arg_typedef.base == 'string':
+               (arg_typedef.base == 'string' or
+                arg_typedef.name == 'char_scalar'):
                 len_trim = attrs.get('len_trim', None)
                 if len_trim:
                     arg_c_names.append(len_trim)
@@ -810,7 +811,8 @@ class Wrapf(util.WrapperMixin):
             else:
                 append_format(arg_c_call, '{c_var}', fmt_arg)
 
-            if arg_typedef.base == 'string':
+            if arg_typedef.base == 'string' or \
+               arg_typedef.name == 'char_scalar':
                 len_trim = c_arg['attrs'].get('len_trim', None)
                 if len_trim:
                     need_wrapper = True

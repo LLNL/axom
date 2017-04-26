@@ -630,9 +630,11 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_statements": {
-                "result": {
+                "result_buf": {
+                    "cpp_header": "<cstring>", 
                     "post_call": [
-                        "*{c_var} = {cpp_var};"
+                        "std::memset({c_var}, ' ', {c_var_len});", 
+                        "{c_var}[0] = {cpp_var};"
                     ]
                 }
             }, 

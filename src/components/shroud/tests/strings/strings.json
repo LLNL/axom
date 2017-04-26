@@ -63,6 +63,8 @@
                         "c_const": "", 
                         "c_ptr": "", 
                         "c_var": "status", 
+                        "c_var_len": "SH_Nstatus", 
+                        "c_var_trim": "SH_Lstatus", 
                         "cpp_type": "char", 
                         "cpp_var": "status"
                     }, 
@@ -131,8 +133,8 @@
                 "C_return_type": "char", 
                 "F_C_call": "c_return_char_bufferify", 
                 "F_C_name": "c_return_char", 
-                "F_arg_c_call": "SH_rv", 
-                "F_arg_c_call_tab": "\tSH_rv", 
+                "F_arg_c_call": "SH_rv, len(SH_rv, kind=C_INT)", 
+                "F_arg_c_call_tab": "\tSH_rv\tlen(SH_rv, kind=C_INT)", 
                 "F_arguments": "", 
                 "F_name_function": "return_char", 
                 "F_name_generic": "return_char", 
@@ -176,6 +178,8 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "SH_F_rv", 
+                        "c_var_len": "NSH_F_rv", 
+                        "c_var_trim": "SH_LSH_F_rv", 
                         "cpp_type": "char", 
                         "cpp_val": "SH_rv", 
                         "cpp_var": "SH_rv"
@@ -196,8 +200,8 @@
             "fmt": {
                 "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
-                "C_post_call": "*SH_F_rv = SH_rv;", 
-                "C_prototype": "char * SH_F_rv", 
+                "C_post_call": "std::memset(SH_F_rv, ' ', NSH_F_rv);\nSH_F_rv[0] = SH_rv;", 
+                "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
                 "F_C_name": "c_return_char_bufferify", 
                 "c_const": "", 
@@ -2047,9 +2051,11 @@
             "PY_ctor": "PyString_FromString({c_var})", 
             "PY_format": "s", 
             "c_statements": {
-                "result": {
+                "result_buf": {
+                    "cpp_header": "<cstring>", 
                     "post_call": [
-                        "*{c_var} = {cpp_var};"
+                        "std::memset({c_var}, ' ', {c_var_len});", 
+                        "{c_var}[0] = {cpp_var};"
                     ]
                 }
             }, 
