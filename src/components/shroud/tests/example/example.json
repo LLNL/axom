@@ -87,7 +87,6 @@
                         "C_pre_call": "const std::string SH_name(name);", 
                         "C_prototype": "const char * name", 
                         "C_return_type": "AA_exclass1 *", 
-                        "C_rv_decl": "ExClass1 * SH_rv", 
                         "F_C_call": "c_exclass1_new_bufferify", 
                         "F_C_name": "c_exclass1_new", 
                         "F_arg_c_call": "name, len_trim(name, kind=C_INT)", 
@@ -99,7 +98,6 @@
                         "F_result_clause": " result(SH_rv)", 
                         "F_subprogram": "function", 
                         "c_const": "", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "new", 
                         "underscore_name": "new"
                     }, 
@@ -107,6 +105,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "ExClass1 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "new", 
                         "type": "ExClass1"
@@ -160,10 +162,8 @@
                         "C_pre_call": "const std::string SH_name(name, Lname);", 
                         "C_prototype": "const char * name, int Lname", 
                         "C_return_type": "AA_exclass1 *", 
-                        "C_rv_decl": "ExClass1 * SH_rv", 
                         "F_C_name": "c_exclass1_new_bufferify", 
                         "c_const": "", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -175,6 +175,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "ExClass1 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "new", 
                         "type": "ExClass1"
@@ -198,7 +202,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass1_delete", 
                         "F_C_name": "c_exclass1_delete", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -212,7 +215,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
@@ -264,7 +266,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, int incr", 
                         "C_return_type": "int", 
-                        "C_rv_decl": "int SH_rv", 
                         "F_C_call": "c_exclass1_increment_count", 
                         "F_C_name": "c_exclass1_increment_count", 
                         "F_arg_c_call": "obj%voidptr, incr", 
@@ -279,13 +280,16 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "incrementCount", 
                         "underscore_name": "increment_count"
                     }, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "int SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "incrementCount", 
                         "type": "int"
                     }
@@ -308,7 +312,6 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "const char *", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_call": "c_exclass1_get_name_bufferify", 
                         "F_C_name": "c_exclass1_get_name", 
                         "F_arg_c_call": "obj%voidptr, SH_rv, len(SH_rv, kind=C_INT)", 
@@ -324,7 +327,6 @@
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "c_var_len": "aa_exclass1_get_name_length(obj%voidptr)", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
@@ -334,6 +336,10 @@
                             "const": true, 
                             "len": "aa_exclass1_get_name_length({F_this}%{F_derived_member})", 
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName", 
                         "type": "string"
@@ -386,12 +392,10 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -406,6 +410,10 @@
                             "len": "aa_exclass1_get_name_length({F_this}%{F_derived_member})", 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName", 
                         "type": "void"
@@ -430,7 +438,6 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "int", 
-                        "C_rv_decl": "int SH_rv", 
                         "F_C_call": "c_exclass1_get_name_length", 
                         "F_C_name": "c_exclass1_get_name_length", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -445,13 +452,16 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "int SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "GetNameLength", 
                         "type": "int"
                     }
@@ -472,7 +482,6 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "const char *", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_call": "c_exclass1_get_name_error_check_bufferify", 
                         "F_C_name": "c_exclass1_get_name_error_check", 
                         "F_arg_c_call": "obj%voidptr, SH_rv, len(SH_rv, kind=C_INT)", 
@@ -488,7 +497,6 @@
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "c_var_len": "strlen_ptr(c_exclass1_get_name_error_check_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getNameErrorCheck", 
                         "underscore_name": "get_name_error_check"
                     }, 
@@ -497,6 +505,10 @@
                         "attrs": {
                             "const": true, 
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getNameErrorCheck", 
                         "type": "string"
@@ -547,12 +559,10 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_error_check_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -566,6 +576,10 @@
                             "const": false, 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getNameErrorCheck", 
                         "type": "void"
@@ -586,14 +600,12 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self", 
                         "C_return_type": "const char *", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_arg", 
                         "F_string_result_as_arg": "name", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
                     }, 
@@ -605,6 +617,10 @@
                         "attrs": {
                             "const": true, 
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getNameArg", 
                         "type": "string"
@@ -655,12 +671,10 @@
                         "C_pre_call": "const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass1 * self, char * name, int Nname", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass1_get_name_arg_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -674,6 +688,10 @@
                             "const": false, 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getNameArg", 
                         "type": "void"
@@ -744,7 +762,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "AA_exclass2 *", 
-                        "C_rv_decl": "ExClass2 * SH_rv", 
                         "F_C_call": "c_exclass1_get_root", 
                         "F_C_name": "c_exclass1_get_root", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -759,7 +776,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getRoot", 
                         "underscore_name": "get_root"
                     }, 
@@ -767,6 +783,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "ExClass2 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getRoot", 
                         "type": "ExClass2"
@@ -818,7 +838,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, int value", 
                         "C_return_type": "int", 
-                        "C_rv_decl": "int SH_rv", 
                         "F_C_call": "c_exclass1_get_value_from_int", 
                         "F_C_name": "c_exclass1_get_value_from_int", 
                         "F_arg_c_call": "obj%voidptr, value", 
@@ -833,7 +852,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getValue", 
                         "function_suffix": "_from_int", 
                         "underscore_name": "get_value"
@@ -842,6 +860,10 @@
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "int SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "getValue", 
                         "type": "int"
                     }
@@ -892,7 +914,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, long value", 
                         "C_return_type": "long", 
-                        "C_rv_decl": "long SH_rv", 
                         "F_C_call": "c_exclass1_get_value_1", 
                         "F_C_name": "c_exclass1_get_value_1", 
                         "F_arg_c_call": "obj%voidptr, value", 
@@ -907,7 +928,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getValue", 
                         "function_suffix": "_1", 
                         "underscore_name": "get_value"
@@ -915,6 +935,10 @@
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "long SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "getValue", 
                         "type": "long"
                     }
@@ -932,7 +956,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "void *", 
-                        "C_rv_decl": "void * SH_rv", 
                         "F_C_call": "c_exclass1_get_addr", 
                         "F_C_name": "c_exclass1_get_addr", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -947,7 +970,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getAddr", 
                         "underscore_name": "get_addr"
                     }, 
@@ -955,6 +977,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "void * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getAddr", 
                         "type": "void"
@@ -1001,7 +1027,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self, bool in", 
                         "C_return_type": "bool", 
-                        "C_rv_decl": "bool SH_rv", 
                         "F_C_call": "c_exclass1_has_addr", 
                         "F_C_name": "c_exclass1_has_addr", 
                         "F_arg_c_call": "obj%voidptr, SH_in", 
@@ -1016,13 +1041,16 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "hasAddr", 
                         "underscore_name": "has_addr"
                     }, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "bool SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "hasAddr", 
                         "type": "bool"
                     }
@@ -1040,7 +1068,6 @@
                         "C_pre_call": "ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass1 * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass1_splicer_special", 
                         "F_C_name": "c_exclass1_splicer_special", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -1054,7 +1081,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "SplicerSpecial", 
                         "underscore_name": "splicer_special"
                     }, 
@@ -1158,7 +1184,6 @@
                         "C_pre_call": "const std::string SH_name(name);", 
                         "C_prototype": "const char * name", 
                         "C_return_type": "AA_exclass2 *", 
-                        "C_rv_decl": "ExClass2 * SH_rv", 
                         "F_C_call": "c_exclass2_ex_class2_bufferify", 
                         "F_C_name": "c_exclass2_ex_class2", 
                         "F_arg_c_call": "name, len_trim(name, kind=C_INT)", 
@@ -1170,7 +1195,6 @@
                         "F_result_clause": " result(SH_rv)", 
                         "F_subprogram": "function", 
                         "c_const": "", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
@@ -1178,6 +1202,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "ExClass2 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "ExClass2", 
                         "type": "ExClass2"
@@ -1226,10 +1254,8 @@
                         "C_pre_call": "const std::string SH_name(name, Lname);", 
                         "C_prototype": "const char * name, int Lname", 
                         "C_return_type": "AA_exclass2 *", 
-                        "C_rv_decl": "ExClass2 * SH_rv", 
                         "F_C_name": "c_exclass2_ex_class2_bufferify", 
                         "c_const": "", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1241,6 +1267,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "ExClass2 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "ExClass2", 
                         "type": "ExClass2"
@@ -1261,7 +1291,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass2_delete", 
                         "F_C_name": "c_exclass2_delete", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -1275,7 +1304,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
@@ -1302,7 +1330,6 @@
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self", 
                         "C_return_type": "const char *", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_call": "c_exclass2_get_name_bufferify", 
                         "F_C_name": "c_exclass2_get_name", 
                         "F_arg_c_call": "obj%voidptr, SH_rv, len(SH_rv, kind=C_INT)", 
@@ -1318,7 +1345,6 @@
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "c_var_len": "aa_exclass2_get_name_length(obj%voidptr)", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
@@ -1328,6 +1354,10 @@
                             "const": true, 
                             "len": "aa_exclass2_get_name_length({F_this}%{F_derived_member})", 
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName", 
                         "type": "string"
@@ -1378,12 +1408,10 @@
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1398,6 +1426,10 @@
                             "len": "aa_exclass2_get_name_length({F_this}%{F_derived_member})", 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName", 
                         "type": "void"
@@ -1417,7 +1449,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "const char *", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_call": "c_exclass2_get_name2_bufferify", 
                         "F_C_name": "c_exclass2_get_name2", 
                         "F_arg_c_call": "obj%voidptr, SH_rv, len(SH_rv, kind=C_INT)", 
@@ -1433,7 +1464,6 @@
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "c_var_len": "strlen_ptr(c_exclass2_get_name2_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getName2", 
                         "underscore_name": "get_name2"
                     }, 
@@ -1442,6 +1472,10 @@
                         "attrs": {
                             "const": true, 
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName2", 
                         "type": "string"
@@ -1490,12 +1524,10 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "const std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name2_bufferify", 
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1509,6 +1541,10 @@
                             "const": false, 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName2", 
                         "type": "void"
@@ -1530,7 +1566,6 @@
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self", 
                         "C_return_type": "char *", 
-                        "C_rv_decl": "std::string & SH_rv", 
                         "F_C_call": "c_exclass2_get_name3_bufferify", 
                         "F_C_name": "c_exclass2_get_name3", 
                         "F_arg_c_call": "obj%voidptr, SH_rv, len(SH_rv, kind=C_INT)", 
@@ -1546,7 +1581,6 @@
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "c_var_len": "strlen_ptr(c_exclass2_get_name3_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getName3", 
                         "underscore_name": "get_name3"
                     }, 
@@ -1554,6 +1588,10 @@
                     "result": {
                         "attrs": {
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName3", 
                         "type": "string"
@@ -1604,12 +1642,10 @@
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name3_bufferify", 
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1623,6 +1659,10 @@
                             "const": false, 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName3", 
                         "type": "void"
@@ -1642,7 +1682,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "char *", 
-                        "C_rv_decl": "std::string & SH_rv", 
                         "F_C_call": "c_exclass2_get_name4_bufferify", 
                         "F_C_name": "c_exclass2_get_name4", 
                         "F_arg_c_call": "obj%voidptr, SH_rv, len(SH_rv, kind=C_INT)", 
@@ -1658,7 +1697,6 @@
                         "c_ptr": " *", 
                         "c_var": "self", 
                         "c_var_len": "strlen_ptr(c_exclass2_get_name4_bufferify(\tobj%voidptr\tSH_rv\tlen(SH_rv, kind=C_INT)))", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getName4", 
                         "underscore_name": "get_name4"
                     }, 
@@ -1666,6 +1704,10 @@
                     "result": {
                         "attrs": {
                             "reference": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName4", 
                         "type": "string"
@@ -1714,12 +1756,10 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "std::string & SH_rv", 
                         "F_C_name": "c_exclass2_get_name4_bufferify", 
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_bufferify"
                     }, 
                     "options": {
@@ -1733,6 +1773,10 @@
                             "const": false, 
                             "ptr": false, 
                             "reference": false
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "std::string & SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "getName4", 
                         "type": "void"
@@ -1754,7 +1798,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "const int", 
-                        "C_rv_decl": "const int SH_rv", 
                         "F_C_call": "c_exclass2_get_name_length", 
                         "F_C_name": "c_exclass2_get_name_length", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -1769,7 +1812,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
@@ -1777,6 +1819,10 @@
                     "result": {
                         "attrs": {
                             "const": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "const int SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "GetNameLength", 
                         "type": "int"
@@ -1825,7 +1871,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, const AA_exclass1 * in", 
                         "C_return_type": "AA_exclass1 *", 
-                        "C_rv_decl": "ExClass1 * SH_rv", 
                         "F_C_call": "c_exclass2_get_class1", 
                         "F_C_name": "c_exclass2_get_class1", 
                         "F_arg_c_call": "obj%voidptr, in%yadda()", 
@@ -1840,7 +1885,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "get_class1", 
                         "underscore_name": "get_class1"
                     }, 
@@ -1848,6 +1892,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "ExClass1 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "get_class1", 
                         "type": "ExClass1"
@@ -1888,12 +1936,10 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, int type", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void * SH_rv", 
                         "F_C_name": "c_exclass2_declare_0", 
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_0"
                     }, 
                     "fortran_generic": {
@@ -2085,13 +2131,11 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, int type, SIDRE_SidreLength len", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void * SH_rv", 
                         "F_C_name": "c_exclass2_declare_1", 
                         "PY_name_impl": "PP_exclass2_declare_1", 
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "declare", 
                         "function_suffix": "_1", 
                         "underscore_name": "declare"
@@ -2251,7 +2295,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass2_destroyall", 
                         "F_C_name": "c_exclass2_destroyall", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -2265,7 +2308,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "destroyall", 
                         "underscore_name": "destroyall"
                     }, 
@@ -2291,7 +2333,6 @@
                         "C_pre_call": "const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));", 
                         "C_prototype": "const AA_exclass2 * self", 
                         "C_return_type": "int", 
-                        "C_rv_decl": "TypeID SH_rv", 
                         "F_C_call": "c_exclass2_get_type_id", 
                         "F_C_name": "c_exclass2_get_type_id", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -2306,13 +2347,16 @@
                         "c_const": "const ", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "getTypeID", 
                         "underscore_name": "get_type_id"
                     }, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "TypeID SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "getTypeID", 
                         "type": "TypeID"
                     }
@@ -2394,7 +2438,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, int value", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass2_set_value_int", 
                         "F_C_name": "c_exclass2_set_value_int", 
                         "F_arg_c_call": "obj%voidptr, value", 
@@ -2407,7 +2450,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_int"
                     }, 
                     "options": {
@@ -2458,7 +2500,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, long value", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass2_set_value_long", 
                         "F_C_name": "c_exclass2_set_value_long", 
                         "F_arg_c_call": "obj%voidptr, value", 
@@ -2471,7 +2512,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_long"
                     }, 
                     "options": {
@@ -2522,7 +2562,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, float value", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass2_set_value_float", 
                         "F_C_name": "c_exclass2_set_value_float", 
                         "F_arg_c_call": "obj%voidptr, value", 
@@ -2535,7 +2574,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_float"
                     }, 
                     "options": {
@@ -2586,7 +2624,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self, double value", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_exclass2_set_value_double", 
                         "F_C_name": "c_exclass2_set_value_double", 
                         "F_arg_c_call": "obj%voidptr, value", 
@@ -2599,7 +2636,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_double"
                     }, 
                     "options": {
@@ -2661,7 +2697,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "int", 
-                        "C_rv_decl": "int SH_rv", 
                         "F_C_call": "c_exclass2_get_value_int", 
                         "F_C_name": "c_exclass2_get_value_int", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -2675,7 +2710,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_int"
                     }, 
                     "options": {
@@ -2686,6 +2720,10 @@
                     }, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "int SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "getValue", 
                         "type": "int"
                     }
@@ -2707,7 +2745,6 @@
                         "C_pre_call": "ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));", 
                         "C_prototype": "AA_exclass2 * self", 
                         "C_return_type": "double", 
-                        "C_rv_decl": "double SH_rv", 
                         "F_C_call": "c_exclass2_get_value_double", 
                         "F_C_name": "c_exclass2_get_value_double", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -2721,7 +2758,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_suffix": "_double"
                     }, 
                     "options": {
@@ -2732,6 +2768,10 @@
                     }, 
                     "result": {
                         "attrs": {}, 
+                        "fmtc": {
+                            "cpp_rv_decl": "double SH_rv", 
+                            "cpp_var": "SH_rv"
+                        }, 
                         "name": "getValue", 
                         "type": "double"
                     }
@@ -2827,7 +2867,6 @@
                 "C_name": "AA_local_function1", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_local_function1", 
                 "F_C_name": "local_function1", 
                 "F_arg_c_call": "", 
@@ -2839,7 +2878,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_local_function1", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "local_function1", 
                 "underscore_name": "local_function1"
             }, 
@@ -2894,7 +2932,6 @@
                 "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "bool", 
-                "C_rv_decl": "bool SH_rv", 
                 "F_C_call": "c_is_name_valid_bufferify", 
                 "F_C_name": "c_is_name_valid", 
                 "F_arg_c_call": "name, len_trim(name, kind=C_INT)", 
@@ -2907,13 +2944,16 @@
                 "F_subprogram": "function", 
                 "PY_name_impl": "PP_is_name_valid", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "bool SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "isNameValid", 
                 "type": "bool"
             }
@@ -2961,10 +3001,8 @@
                 "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "bool", 
-                "C_rv_decl": "bool SH_rv", 
                 "F_C_name": "c_is_name_valid_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -2975,6 +3013,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "bool SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "isNameValid", 
                 "type": "bool"
             }
@@ -2991,7 +3033,6 @@
                 "C_name": "AA_is_initialized", 
                 "C_prototype": "", 
                 "C_return_type": "bool", 
-                "C_rv_decl": "bool SH_rv", 
                 "F_C_call": "c_is_initialized", 
                 "F_C_name": "c_is_initialized", 
                 "F_arg_c_call": "", 
@@ -3004,13 +3045,16 @@
                 "F_subprogram": "function", 
                 "PY_name_impl": "PP_is_initialized", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "isInitialized", 
                 "underscore_name": "is_initialized"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "bool SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "isInitialized", 
                 "type": "bool"
             }
@@ -3115,7 +3159,6 @@
                 "C_name": "AA_check_bool", 
                 "C_prototype": "bool arg1, bool * arg2, bool * arg3", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_check_bool", 
                 "F_C_name": "c_check_bool", 
                 "F_arg_c_call": "SH_arg1, SH_arg2, SH_arg3", 
@@ -3127,7 +3170,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_check_bool", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "checkBool", 
                 "underscore_name": "check_bool"
             }, 
@@ -3185,7 +3227,6 @@
                 "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_test_names_bufferify", 
                 "F_C_name": "c_test_names", 
                 "F_arg_c_call": "name, len_trim(name, kind=C_INT)", 
@@ -3197,7 +3238,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_test_names", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "test_names", 
                 "function_suffix": "", 
                 "underscore_name": "test_names"
@@ -3256,10 +3296,8 @@
                 "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_test_names_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "function_suffix": "", 
@@ -3345,7 +3383,6 @@
                 "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name, int flag", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_test_names_flag_bufferify", 
                 "F_C_name": "c_test_names_flag", 
                 "F_arg_c_call": "name, len_trim(name, kind=C_INT), flag", 
@@ -3357,7 +3394,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_test_names_flag", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "test_names", 
                 "function_suffix": "_flag", 
                 "underscore_name": "test_names"
@@ -3435,10 +3471,8 @@
                 "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname, int flag", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_test_names_flag_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_flag_bufferify"
             }, 
             "function_suffix": "_flag", 
@@ -3468,7 +3502,6 @@
                 "C_name": "AA_testoptional_0", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testoptional_0", 
                 "F_C_name": "c_testoptional_0", 
                 "F_arg_c_call": "", 
@@ -3479,7 +3512,6 @@
                 "F_name_impl": "testoptional_0", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_0"
             }, 
             "options": {
@@ -3529,7 +3561,6 @@
                 "C_name": "AA_testoptional_1", 
                 "C_prototype": "int i", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testoptional_1", 
                 "F_C_name": "c_testoptional_1", 
                 "F_arg_c_call": "i", 
@@ -3540,7 +3571,6 @@
                 "F_name_impl": "testoptional_1", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_1"
             }, 
             "options": {
@@ -3634,7 +3664,6 @@
                 "C_name": "AA_testoptional_2", 
                 "C_prototype": "int i, long j", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testoptional_2", 
                 "F_C_name": "c_testoptional_2", 
                 "F_arg_c_call": "i, j", 
@@ -3646,7 +3675,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_testoptional_2", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "testoptional", 
                 "function_suffix": "_2", 
                 "underscore_name": "testoptional"
@@ -3698,7 +3726,6 @@
                 "C_name": "AA_testmpi", 
                 "C_prototype": "MPI_Fint comm", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testmpi", 
                 "F_C_name": "testmpi", 
                 "F_arg_c_call": "comm", 
@@ -3710,7 +3737,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_testmpi", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "testmpi", 
                 "underscore_name": "testmpi"
             }, 
@@ -3763,7 +3789,6 @@
                 "C_pre_call": "axom::sidre::Group * SH_grp = static_cast<axom::sidre::Group *>(static_cast<void *>(grp));", 
                 "C_prototype": "SIDRE_group * grp", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testgroup1", 
                 "F_C_name": "c_testgroup1", 
                 "F_arg_c_call": "grp%get_instance()", 
@@ -3775,7 +3800,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_testgroup1", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "testgroup1", 
                 "underscore_name": "testgroup1"
             }, 
@@ -3829,7 +3853,6 @@
                 "C_pre_call": "const axom::sidre::Group * SH_grp = static_cast<const axom::sidre::Group *>(static_cast<const void *>(grp));", 
                 "C_prototype": "const SIDRE_group * grp", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_testgroup2", 
                 "F_C_name": "c_testgroup2", 
                 "F_arg_c_call": "grp%get_instance()", 
@@ -3841,7 +3864,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_testgroup2", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "testgroup2", 
                 "underscore_name": "testgroup2"
             }, 
@@ -4173,7 +4195,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "*{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_var};"
                     ]
                 }
             }, 
@@ -4334,6 +4356,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -4397,6 +4425,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -4460,6 +4494,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [

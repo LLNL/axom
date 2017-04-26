@@ -55,7 +55,6 @@
                         "C_pre_call": "Names *SH_this = static_cast<Names *>(static_cast<void *>(self));", 
                         "C_prototype": "TES_names * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "xxx_tes_names_method1", 
                         "F_C_name": "xxx_tes_names_method1", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -70,7 +69,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "method1", 
                         "underscore_name": "method1"
                     }, 
@@ -94,7 +92,6 @@
                         "C_pre_call": "Names *SH_this = static_cast<Names *>(static_cast<void *>(self));", 
                         "C_prototype": "TES_names * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "xxx_tes_names_method2", 
                         "F_C_name": "xxx_tes_names_method2", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -109,7 +106,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "method2", 
                         "underscore_name": "method2"
                     }, 
@@ -189,7 +185,6 @@
                 "C_name": "YYY_TES_function1", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "yyy_tes_function1", 
                 "F_C_name": "yyy_tes_function1", 
                 "F_arg_c_call": "", 
@@ -202,7 +197,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_function1", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "function1", 
                 "underscore_name": "function1"
             }, 
@@ -228,7 +222,6 @@
                 "C_name": "c_name_special", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "f_c_name_special", 
                 "F_C_name": "f_c_name_special", 
                 "F_arg_c_call": "", 
@@ -241,7 +234,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_function2", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "function2", 
                 "underscore_name": "function2"
             }, 
@@ -299,7 +291,6 @@
                 "C_name": "YYY_TES_function3a_0", 
                 "C_prototype": "int i", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "yyy_tes_function3a_0", 
                 "F_C_name": "yyy_tes_function3a_0", 
                 "F_arg_c_call": "i", 
@@ -312,7 +303,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_function3a_0", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "function3a", 
                 "function_suffix": "_0", 
                 "underscore_name": "function3a"
@@ -371,7 +361,6 @@
                 "C_name": "YYY_TES_function3a_1", 
                 "C_prototype": "long i", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "yyy_tes_function3a_1", 
                 "F_C_name": "yyy_tes_function3a_1", 
                 "F_arg_c_call": "i", 
@@ -384,7 +373,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_function3a_1", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "function3a", 
                 "function_suffix": "_1", 
                 "underscore_name": "function3a"
@@ -408,7 +396,6 @@
                 "C_name": "YYY_TES_function4", 
                 "C_prototype": "", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "yyy_tes_function4", 
                 "F_C_name": "yyy_tes_function4", 
                 "F_arg_c_call": "", 
@@ -422,13 +409,16 @@
                 "F_subprogram": "function", 
                 "PY_name_impl": "PY_function4", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "function4", 
                 "underscore_name": "function4"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "function4", 
                 "type": "int"
             }
@@ -642,7 +632,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "*{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_var};"
                     ]
                 }
             }, 
@@ -800,6 +790,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -863,6 +859,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -926,6 +928,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [

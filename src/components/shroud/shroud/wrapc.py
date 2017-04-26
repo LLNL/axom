@@ -266,7 +266,6 @@ class Wrapc(util.WrapperMixin):
         self.log.write("C {0} {1[_decl]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
-        fmt_pattern = fmt_func
 
         # Look for C++ routine to wrap
         # Usually the same node unless it is generated (i.e. bufferified)
@@ -317,8 +316,17 @@ class Wrapc(util.WrapperMixin):
             fmt_func.c_const = 'const '
         else:
             fmt_func.c_const = ''
-        # return value
-        fmt_func.C_rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt_func.C_result)
+
+        if CPP_subprogram == 'subroutine':
+            fmt_result = fmt_func
+            fmt_pattern = fmt_func
+        else:
+            fmt_result = result.setdefault('fmtc', util.Options(fmt_func))
+            fmt_result.cpp_var = fmt_func.C_result
+#            fmt_result.cpp_decl = self._c_type('cpp_type', CPP_result)
+
+            fmt_result.cpp_rv_decl = self._c_decl('cpp_type', CPP_result, name=fmt_func.C_result)
+            fmt_pattern = fmt_result
 
         proto_list = []
         call_list = []
@@ -432,7 +440,6 @@ class Wrapc(util.WrapperMixin):
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     fmt_arg.cpp_val = wformat(arg_typedef.cpp_to_c, fmt_arg)
-                    # append_format(post_call, '// c_var={c_var}  cpp_var={cpp_var}  cpp_val={cpp_val}', fmt_arg)
                     for cmd in cmd_list:
                         append_format(post_call, cmd, fmt_arg)
 
@@ -474,7 +481,6 @@ class Wrapc(util.WrapperMixin):
 
         fmt_func.C_prototype = options.get('C_prototype', ', '.join(proto_list))
 
-        fmt_func.cpp_var = fmt_func.C_result
         if node.get('return_this', False):
             fmt_func.C_return_type = 'void'
         else:
@@ -498,11 +504,11 @@ class Wrapc(util.WrapperMixin):
             C_code.extend(pre_call)
             return_line = 'return;'
             if is_ctor:
-                line = wformat('{C_rv_decl} = new {cpp_class}'
-                               '({C_call_list});', fmt_func)
+                line = wformat('{cpp_rv_decl} = new {cpp_class}'
+                               '({C_call_list});', fmt_result)
                 C_code.append(line)
                 return_line = ('return '
-                               + wformat(result_typedef.cpp_to_c, fmt_func)
+                               + wformat(result_typedef.cpp_to_c, fmt_result)
                                + ';')
             elif is_dtor:
                 C_code.append('delete %s;' % fmt_func.CPP_this)
@@ -514,9 +520,9 @@ class Wrapc(util.WrapperMixin):
                 C_code.append(line)
             else:
                 line = wformat(
-                    '{C_rv_decl} = {CPP_this_call}{function_name}'
+                    '{cpp_rv_decl} = {CPP_this_call}{function_name}'
                     '{CPP_template}({C_call_list});',
-                    fmt_func)
+                    fmt_result)
                 C_code.append(line)
 
                 if 'C_error_pattern' in node:
@@ -527,17 +533,28 @@ class Wrapc(util.WrapperMixin):
                         append_format(
                             C_code, self.patterns[C_error_pattern], fmt_pattern)
 
-#                if result_arg:
-#                    c_post_call = self.typedef[ result_arg['type'] ].c_post_call
-#                    if c_post_call:
-#                        append_format(C_code, c_post_call, fmt_func)
+                if False: #not result_arg:
+                    c_statements = result_typedef.c_statements
+                    intent_blk = c_statements.get('result', {})
+                    have_c_local_var = intent_blk.get('c_local_var', False)
+                    if have_c_local_var:
+                        fmt_result.c_rv_decl = self._c_decl('c_type', CPP_result,
+                                                          name='X' + fmt_func.C_result)
+                        fmt_result.c_val = wformat(result_typedef.cpp_to_c, fmt_result)
+                        append_format(post_call, '{c_rv_decl} = {c_val}', fmt_result)
+
+                    cmd_list = intent_blk.get('post_call', [])
+                    fmt_func.c_var = 'AAA' # wformat(arg_typedef.cpp_to_c, fmt_arg)
+                    fmt_func.cpp_val = 'BBB' # wformat(arg_typedef.cpp_to_c, fmt_arg)
+                    for cmd in cmd_list:
+                        append_format(post_call, cmd, fmt_result)
                     # XXX release rv is necessary
 
                 if subprogram == 'function':
                     # Note: A C function may be converted into a Fortran subroutine subprogram
                     # when the result is returned in an argument.
                     return_line = ('return '
-                                   + wformat(result_typedef.cpp_to_c, fmt_func)
+                                   + wformat(result_typedef.cpp_to_c, fmt_result)
                                    + ';')
 
             # copy-out values, clean up

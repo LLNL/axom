@@ -55,7 +55,6 @@
                         "C_name": "TUT_class1_new", 
                         "C_prototype": "", 
                         "C_return_type": "TUT_class1 *", 
-                        "C_rv_decl": "Class1 * SH_rv", 
                         "F_C_call": "c_class1_new", 
                         "F_C_name": "c_class1_new", 
                         "F_arg_c_call": "", 
@@ -69,7 +68,6 @@
                         "LUA_name": "new", 
                         "LUA_name_impl": "l_class1_new", 
                         "c_const": "", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "new", 
                         "underscore_name": "new"
                     }, 
@@ -77,6 +75,10 @@
                     "result": {
                         "attrs": {
                             "ptr": true
+                        }, 
+                        "fmtc": {
+                            "cpp_rv_decl": "Class1 * SH_rv", 
+                            "cpp_var": "SH_rv"
                         }, 
                         "name": "new", 
                         "type": "Class1"
@@ -97,7 +99,6 @@
                         "C_pre_call": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "TUT_class1 * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_class1_delete", 
                         "F_C_name": "c_class1_delete", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -113,7 +114,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "delete", 
                         "underscore_name": "delete"
                     }, 
@@ -137,7 +137,6 @@
                         "C_pre_call": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "TUT_class1 * self", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_class1_method1", 
                         "F_C_name": "c_class1_method1", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -153,7 +152,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "Method1", 
                         "underscore_name": "method1"
                     }, 
@@ -236,7 +234,6 @@
                 "C_name": "TUT_function1", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function1", 
                 "F_C_name": "function1", 
                 "F_arg_c_call": "", 
@@ -250,7 +247,6 @@
                 "LUA_name_impl": "l_function1", 
                 "PY_name_impl": "PY_function1", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function1", 
                 "underscore_name": "function1"
             }, 
@@ -346,7 +342,6 @@
                 "C_name": "TUT_function2", 
                 "C_prototype": "double arg1, int arg2", 
                 "C_return_type": "double", 
-                "C_rv_decl": "double SH_rv", 
                 "F_C_call": "c_function2", 
                 "F_C_name": "function2", 
                 "F_arg_c_call": "arg1, arg2", 
@@ -361,13 +356,16 @@
                 "LUA_name_impl": "l_function2", 
                 "PY_name_impl": "PY_function2", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function2", 
                 "underscore_name": "function2"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "double SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function2", 
                 "type": "double"
             }
@@ -445,7 +443,6 @@
                 "C_name": "TUT_sum", 
                 "C_prototype": "int len, int * values, int * result", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_sum", 
                 "F_C_name": "sum", 
                 "F_arg_c_call": "len, values, result", 
@@ -456,7 +453,6 @@
                 "F_name_impl": "sum", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Sum", 
                 "underscore_name": "sum"
             }, 
@@ -519,7 +515,6 @@
                 "C_name": "TUT_function3", 
                 "C_prototype": "bool arg", 
                 "C_return_type": "bool", 
-                "C_rv_decl": "bool SH_rv", 
                 "F_C_call": "c_function3", 
                 "F_C_name": "c_function3", 
                 "F_arg_c_call": "SH_arg", 
@@ -534,13 +529,16 @@
                 "LUA_name_impl": "l_function3", 
                 "PY_name_impl": "PY_function3", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function3", 
                 "underscore_name": "function3"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "bool SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function3", 
                 "type": "bool"
             }
@@ -618,7 +616,6 @@
                 "C_name": "TUT_function3b", 
                 "C_prototype": "const bool arg1, bool * arg2, bool * arg3", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function3b", 
                 "F_C_name": "c_function3b", 
                 "F_arg_c_call": "SH_arg1, SH_arg2, SH_arg3", 
@@ -629,7 +626,6 @@
                 "F_name_impl": "function3b", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function3b", 
                 "underscore_name": "function3b"
             }, 
@@ -827,10 +823,8 @@
                 "C_pre_call": "const std::string SH_arg1(arg1, Larg1);\nconst std::string SH_arg2(arg2, Larg2);", 
                 "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
-                "C_rv_decl": "const std::string SH_rv", 
                 "F_C_name": "c_function4a_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -845,6 +839,10 @@
                     "len": "30", 
                     "ptr": false, 
                     "reference": false
+                }, 
+                "fmtc": {
+                    "cpp_rv_decl": "const std::string SH_rv", 
+                    "cpp_var": "SH_rv"
                 }, 
                 "name": "Function4a", 
                 "type": "void"
@@ -936,14 +934,12 @@
                 "C_pre_call": "const std::string SH_arg1(arg1);\nconst std::string SH_arg2(arg2);", 
                 "C_prototype": "const char * arg1, const char * arg2", 
                 "C_return_type": "const char *", 
-                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_function4b", 
                 "F_string_result_as_arg": "output", 
                 "LUA_name": "Function4b", 
                 "LUA_name_impl": "l_function4b", 
                 "PY_name_impl": "PY_function4b", 
                 "c_const": "const ", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function4b", 
                 "underscore_name": "function4b"
             }, 
@@ -955,6 +951,10 @@
                 "attrs": {
                     "const": true, 
                     "reference": true
+                }, 
+                "fmtc": {
+                    "cpp_rv_decl": "const std::string & SH_rv", 
+                    "cpp_var": "SH_rv"
                 }, 
                 "name": "Function4b", 
                 "type": "std::string"
@@ -1051,10 +1051,8 @@
                 "C_pre_call": "const std::string SH_arg1(arg1, Larg1);\nconst std::string SH_arg2(arg2, Larg2);", 
                 "C_prototype": "const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Noutput", 
                 "C_return_type": "void", 
-                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_function4b_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -1068,6 +1066,10 @@
                     "const": false, 
                     "ptr": false, 
                     "reference": false
+                }, 
+                "fmtc": {
+                    "cpp_rv_decl": "const std::string & SH_rv", 
+                    "cpp_var": "SH_rv"
                 }, 
                 "name": "Function4b", 
                 "type": "void"
@@ -1164,7 +1166,6 @@
                 "C_name": "TUT_function5", 
                 "C_prototype": "", 
                 "C_return_type": "double", 
-                "C_rv_decl": "double SH_rv", 
                 "F_C_call": "c_function5", 
                 "F_C_name": "c_function5", 
                 "F_arg_c_call": "", 
@@ -1176,7 +1177,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": ""
             }, 
             "options": {
@@ -1187,6 +1187,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "double SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function5", 
                 "type": "double"
             }
@@ -1231,7 +1235,6 @@
                 "C_name": "TUT_function5_arg1", 
                 "C_prototype": "double arg1", 
                 "C_return_type": "double", 
-                "C_rv_decl": "double SH_rv", 
                 "F_C_call": "c_function5_arg1", 
                 "F_C_name": "c_function5_arg1", 
                 "F_arg_c_call": "arg1", 
@@ -1243,7 +1246,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_arg1"
             }, 
             "options": {
@@ -1254,6 +1256,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "double SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function5", 
                 "type": "double"
             }
@@ -1360,7 +1366,6 @@
                 "C_name": "TUT_function5_arg1_arg2", 
                 "C_prototype": "double arg1, bool arg2", 
                 "C_return_type": "double", 
-                "C_rv_decl": "double SH_rv", 
                 "F_C_call": "c_function5_arg1_arg2", 
                 "F_C_name": "c_function5_arg1_arg2", 
                 "F_arg_c_call": "arg1, SH_arg2", 
@@ -1375,7 +1380,6 @@
                 "LUA_name_impl": "l_function5", 
                 "PY_name_impl": "PY_function5_arg1_arg2", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function5", 
                 "function_suffix": "_arg1_arg2", 
                 "underscore_name": "function5"
@@ -1383,6 +1387,10 @@
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "double SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function5", 
                 "type": "double"
             }
@@ -1443,7 +1451,6 @@
                 "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function6_from_name_bufferify", 
                 "F_C_name": "c_function6_from_name", 
                 "F_arg_c_call": "name, len_trim(name, kind=C_INT)", 
@@ -1457,7 +1464,6 @@
                 "LUA_name_impl": "l_function6", 
                 "PY_name_impl": "PY_function6_from_name", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_name", 
                 "underscore_name": "function6"
@@ -1516,10 +1522,8 @@
                 "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_function6_from_name_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_from_name_bufferify"
             }, 
             "function_suffix": "_from_name", 
@@ -1589,7 +1593,6 @@
                 "C_name": "TUT_function6_from_index", 
                 "C_prototype": "int indx", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function6_from_index", 
                 "F_C_name": "c_function6_from_index", 
                 "F_arg_c_call": "indx", 
@@ -1601,7 +1604,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_function6_from_index", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function6", 
                 "function_suffix": "_from_index", 
                 "underscore_name": "function6"
@@ -1688,7 +1690,6 @@
                 "C_name": "TUT_function7_int", 
                 "C_prototype": "int arg", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function7_int", 
                 "F_C_name": "c_function7_int", 
                 "F_arg_c_call": "arg", 
@@ -1699,7 +1700,6 @@
                 "F_name_impl": "function7_int", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_int"
             }, 
             "options": {
@@ -1749,7 +1749,6 @@
                 "C_name": "TUT_function7_double", 
                 "C_prototype": "double arg", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function7_double", 
                 "F_C_name": "c_function7_double", 
                 "F_arg_c_call": "arg", 
@@ -1760,7 +1759,6 @@
                 "F_name_impl": "function7_double", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_double"
             }, 
             "options": {
@@ -1821,7 +1819,6 @@
                 "C_name": "TUT_function8_int", 
                 "C_prototype": "", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_function8_int", 
                 "F_C_name": "c_function8_int", 
                 "F_arg_c_call": "", 
@@ -1833,7 +1830,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_int"
             }, 
             "options": {
@@ -1844,6 +1840,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function8", 
                 "type": "int"
             }
@@ -1864,7 +1864,6 @@
                 "C_name": "TUT_function8_double", 
                 "C_prototype": "", 
                 "C_return_type": "double", 
-                "C_rv_decl": "double SH_rv", 
                 "F_C_call": "c_function8_double", 
                 "F_C_name": "c_function8_double", 
                 "F_arg_c_call": "", 
@@ -1876,7 +1875,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_double"
             }, 
             "options": {
@@ -1887,6 +1885,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "double SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "Function8", 
                 "type": "double"
             }
@@ -1941,13 +1943,11 @@
                 "C_name": "TUT_function9", 
                 "C_prototype": "double arg", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_function9", 
                 "LUA_name": "Function9", 
                 "LUA_name_impl": "l_function9", 
                 "PY_name_impl": "PY_function9", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function9", 
                 "underscore_name": "function9"
             }, 
@@ -2067,7 +2067,6 @@
                 "C_name": "TUT_function10_0", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function10_0", 
                 "F_C_name": "c_function10_0", 
                 "F_arg_c_call": "", 
@@ -2081,7 +2080,6 @@
                 "LUA_name_impl": "l_function10", 
                 "PY_name_impl": "PY_function10_0", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function10", 
                 "function_suffix": "_0", 
                 "underscore_name": "function10"
@@ -2181,11 +2179,9 @@
                 "C_pre_call": "const std::string SH_name(name);", 
                 "C_prototype": "const char * name, double arg2", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_function10_1", 
                 "PY_name_impl": "PY_function10_1", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "Function10", 
                 "function_suffix": "_1", 
                 "underscore_name": "function10"
@@ -2383,10 +2379,8 @@
                 "C_pre_call": "const std::string SH_name(name, Lname);", 
                 "C_prototype": "const char * name, int Lname, double arg2", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_name": "c_function10_1_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_1_bufferify"
             }, 
             "fortran_generic": {
@@ -2450,7 +2444,6 @@
                 "C_name": "TUT_overload1_num", 
                 "C_prototype": "int num", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_overload1_num", 
                 "F_C_name": "c_overload1_num", 
                 "F_arg_c_call": "num", 
@@ -2462,7 +2455,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_num"
             }, 
             "options": {
@@ -2473,6 +2465,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "overload1", 
                 "type": "int"
             }
@@ -2540,7 +2536,6 @@
                 "C_name": "TUT_overload1_num_offset", 
                 "C_prototype": "int num, int offset", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_overload1_num_offset", 
                 "F_C_name": "c_overload1_num_offset", 
                 "F_arg_c_call": "num, offset", 
@@ -2552,7 +2547,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_num_offset"
             }, 
             "options": {
@@ -2563,6 +2557,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "overload1", 
                 "type": "int"
             }
@@ -2709,7 +2707,6 @@
                 "C_name": "TUT_overload1_num_offset_stride", 
                 "C_prototype": "int num, int offset, int stride", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_overload1_num_offset_stride", 
                 "F_C_name": "c_overload1_num_offset_stride", 
                 "F_arg_c_call": "num, offset, stride", 
@@ -2724,7 +2721,6 @@
                 "LUA_name_impl": "l_overload1", 
                 "PY_name_impl": "PY_overload1_num_offset_stride", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "overload1", 
                 "function_suffix": "_num_offset_stride", 
                 "underscore_name": "overload1"
@@ -2732,6 +2728,10 @@
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "overload1", 
                 "type": "int"
             }
@@ -2793,7 +2793,6 @@
                 "C_name": "TUT_overload1_3", 
                 "C_prototype": "double type, int num", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_overload1_3", 
                 "F_C_name": "c_overload1_3", 
                 "F_arg_c_call": "type, num", 
@@ -2805,7 +2804,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_3"
             }, 
             "options": {
@@ -2816,6 +2814,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "overload1", 
                 "type": "int"
             }
@@ -2897,7 +2899,6 @@
                 "C_name": "TUT_overload1_4", 
                 "C_prototype": "double type, int num, int offset", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_overload1_4", 
                 "F_C_name": "c_overload1_4", 
                 "F_arg_c_call": "type, num, offset", 
@@ -2909,7 +2910,6 @@
                 "F_result_clause": " result(SH_rv)", 
                 "F_subprogram": "function", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_4"
             }, 
             "options": {
@@ -2920,6 +2920,10 @@
             }, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "overload1", 
                 "type": "int"
             }
@@ -3097,7 +3101,6 @@
                 "C_name": "TUT_overload1_5", 
                 "C_prototype": "double type, int num, int offset, int stride", 
                 "C_return_type": "int", 
-                "C_rv_decl": "int SH_rv", 
                 "F_C_call": "c_overload1_5", 
                 "F_C_name": "c_overload1_5", 
                 "F_arg_c_call": "type, num, offset, stride", 
@@ -3110,7 +3113,6 @@
                 "F_subprogram": "function", 
                 "PY_name_impl": "PY_overload1_5", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "overload1", 
                 "function_suffix": "_5", 
                 "underscore_name": "overload1"
@@ -3118,6 +3120,10 @@
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "int SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "overload1", 
                 "type": "int"
             }
@@ -3171,7 +3177,6 @@
                 "C_name": "TUT_typefunc", 
                 "C_prototype": "int arg", 
                 "C_return_type": "int", 
-                "C_rv_decl": "TypeID SH_rv", 
                 "F_C_call": "c_typefunc", 
                 "F_C_name": "typefunc", 
                 "F_arg_c_call": "arg", 
@@ -3186,13 +3191,16 @@
                 "LUA_name_impl": "l_typefunc", 
                 "PY_name_impl": "PY_typefunc", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "typefunc", 
                 "underscore_name": "typefunc"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "TypeID SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "typefunc", 
                 "type": "TypeID"
             }
@@ -3246,7 +3254,6 @@
                 "C_name": "TUT_enumfunc", 
                 "C_prototype": "int arg", 
                 "C_return_type": "int", 
-                "C_rv_decl": "EnumTypeID SH_rv", 
                 "F_C_call": "c_enumfunc", 
                 "F_C_name": "enumfunc", 
                 "F_arg_c_call": "arg", 
@@ -3261,13 +3268,16 @@
                 "LUA_name_impl": "l_enumfunc", 
                 "PY_name_impl": "PY_enumfunc", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "enumfunc", 
                 "underscore_name": "enumfunc"
             }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
+                "fmtc": {
+                    "cpp_rv_decl": "EnumTypeID SH_rv", 
+                    "cpp_var": "SH_rv"
+                }, 
                 "name": "enumfunc", 
                 "type": "EnumTypeID"
             }
@@ -3314,7 +3324,6 @@
                 "C_name": "TUT_useclass", 
                 "C_prototype": "const TUT_class1 * arg1", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_useclass", 
                 "F_C_name": "c_useclass", 
                 "F_arg_c_call": "arg1%get_instance()", 
@@ -3326,7 +3335,6 @@
                 "F_subprogram": "subroutine", 
                 "PY_name_impl": "PY_useclass", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "useclass", 
                 "underscore_name": "useclass"
             }, 
@@ -3353,13 +3361,11 @@
                 "C_name": "TUT_last_function_called", 
                 "C_prototype": "", 
                 "C_return_type": "const char *", 
-                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_last_function_called", 
                 "LUA_name": "LastFunctionCalled", 
                 "LUA_name_impl": "l_last_function_called", 
                 "PY_name_impl": "PY_last_function_called", 
                 "c_const": "const ", 
-                "cpp_var": "SH_rv", 
                 "function_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
             }, 
@@ -3370,6 +3376,10 @@
                 "attrs": {
                     "const": true, 
                     "reference": true
+                }, 
+                "fmtc": {
+                    "cpp_rv_decl": "const std::string & SH_rv", 
+                    "cpp_var": "SH_rv"
                 }, 
                 "name": "LastFunctionCalled", 
                 "type": "std::string"
@@ -3415,10 +3425,8 @@
                 "C_post_call": "if (SH_rv.empty()) {\n  std::memset(SH_F_rv, ' ', NSH_F_rv);\n} else {\n  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());\n}", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
                 "C_return_type": "void", 
-                "C_rv_decl": "const std::string & SH_rv", 
                 "F_C_name": "c_last_function_called_bufferify", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_suffix": "_bufferify"
             }, 
             "options": {
@@ -3432,6 +3440,10 @@
                     "const": false, 
                     "ptr": false, 
                     "reference": false
+                }, 
+                "fmtc": {
+                    "cpp_rv_decl": "const std::string & SH_rv", 
+                    "cpp_var": "SH_rv"
                 }, 
                 "name": "LastFunctionCalled", 
                 "type": "void"
@@ -3721,7 +3733,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "*{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_var};"
                     ]
                 }
             }, 
@@ -3879,6 +3891,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -3942,6 +3960,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -4005,6 +4029,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [

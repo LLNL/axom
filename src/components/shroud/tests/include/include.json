@@ -59,7 +59,6 @@
                         "C_pre_call": "Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class1 * self, int arg1", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_class1_method1", 
                         "F_C_name": "c_class1_method1", 
                         "F_arg_c_call": "obj%voidptr, arg1", 
@@ -72,7 +71,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "method1", 
                         "underscore_name": "method1"
                     }, 
@@ -151,7 +149,6 @@
                         "C_pre_call": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, MPI_Fint comm", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_class2_method1", 
                         "F_C_name": "c_class2_method1", 
                         "F_arg_c_call": "obj%voidptr, comm", 
@@ -164,7 +161,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "method1", 
                         "underscore_name": "method1"
                     }, 
@@ -209,7 +205,6 @@
                         "C_pre_call": "Class2 *SH_this = static_cast<Class2 *>(static_cast<void *>(self));", 
                         "C_prototype": "DEF_class2 * self, DEF_class1 * c2", 
                         "C_return_type": "void", 
-                        "C_rv_decl": "void SH_rv", 
                         "F_C_call": "c_class2_method2", 
                         "F_C_name": "c_class2_method2", 
                         "F_arg_c_call": "obj%voidptr, c2%get_instance()", 
@@ -222,7 +217,6 @@
                         "c_const": "", 
                         "c_ptr": " *", 
                         "c_var": "self", 
-                        "cpp_var": "SH_rv", 
                         "function_name": "method2", 
                         "underscore_name": "method2"
                     }, 
@@ -285,7 +279,6 @@
                 "C_name": "DEF_function1", 
                 "C_prototype": "", 
                 "C_return_type": "void", 
-                "C_rv_decl": "void SH_rv", 
                 "F_C_call": "c_function1", 
                 "F_C_name": "function1", 
                 "F_arg_c_call": "", 
@@ -296,7 +289,6 @@
                 "F_name_impl": "function1", 
                 "F_subprogram": "subroutine", 
                 "c_const": "", 
-                "cpp_var": "SH_rv", 
                 "function_name": "function1", 
                 "underscore_name": "function1"
             }, 
@@ -567,7 +559,7 @@
             "c_statements": {
                 "result": {
                     "post_call": [
-                        "*{c_var} = {cpp_val};"
+                        "*{c_var} = {cpp_var};"
                     ]
                 }
             }, 
@@ -725,6 +717,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -788,6 +786,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -851,6 +855,12 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
+                "XXXresult": {
+                    "c_local_var": true, 
+                    "post_call": [
+                        "// post_call"
+                    ]
+                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [

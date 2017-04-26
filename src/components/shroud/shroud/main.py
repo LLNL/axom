@@ -440,7 +440,7 @@ class Schema(object):
                 c_statements=dict(
                     result=dict(
                         post_call=[
-                            '*{c_var} = {cpp_val};',
+                            '*{c_var} = {cpp_var};',
                         ],
                     ),
                 ),
@@ -486,13 +486,12 @@ class Schema(object):
 #                            'shroud_FccCopy({c_var}, {c_var_trim}, {cpp_val});'
                         ],
                     ),
-#                    result=dict(
-#                        post_call=[
-#                            'if ({cpp_var}.empty()) {{',
-#                            '  {c_var} = NULL;',
-#                            '}}',
-#                        ],
-#                    ),
+                    XXXresult=dict(
+                        c_local_var=True,
+                        post_call=[
+                            '// post_call',
+                        ],
+                    ),
                     intent_in_buf=dict(
                         cpp_local_var=True,
                         pre_call=[
