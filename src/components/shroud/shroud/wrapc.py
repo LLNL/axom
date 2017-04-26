@@ -495,6 +495,17 @@ class Wrapc(util.WrapperMixin):
         if post_call:
             fmt_func.C_post_call = '\n'.join(post_call)
 
+        post_call_pattern = []
+        if 'C_error_pattern' in node:
+            C_error_pattern = node['C_error_pattern'] + \
+                              node.get('_error_pattern_suffix', '')
+            if C_error_pattern in self.patterns:
+                post_call_pattern.append('// C_error_pattern')
+                append_format(
+                    post_call_pattern, self.patterns[C_error_pattern], fmt_pattern)
+        if post_call_pattern:
+            fmt_func.C_post_call_pattern = '\n'.join(post_call_pattern)
+
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.function_name, None)
         if 'C_code' in node:
@@ -503,38 +514,25 @@ class Wrapc(util.WrapperMixin):
             C_code = splicer_code
         else:
             # generate the C body
-            C_code = [1]
-            C_code.extend(pre_call)
-            return_line = 'return;'
+            fmt_func.C_return_code = 'return;'
             if is_ctor:
-                line = wformat('{cpp_rv_decl} = new {cpp_class}'
+                fmt_func.C_call_code = wformat('{cpp_rv_decl} = new {cpp_class}'
                                '({C_call_list});', fmt_result)
-                C_code.append(line)
-                return_line = ('return '
+                fmt_func.C_return_code = ('return '
                                + wformat(result_typedef.cpp_to_c, fmt_result)
                                + ';')
             elif is_dtor:
-                C_code.append('delete %s;' % fmt_func.CPP_this)
+                fmt_func.C_call_code = 'delete %s;' % fmt_func.CPP_this
             elif CPP_subprogram == 'subroutine':
-                line = wformat(
+                fmt_func.C_call_code = wformat(
                     '{CPP_this_call}{function_name}'
                     '{CPP_template}({C_call_list});',
                     fmt_func)
-                C_code.append(line)
             else:
-                line = wformat(
+                fmt_func.C_call_code = wformat(
                     '{cpp_rv_decl} = {CPP_this_call}{function_name}'
                     '{CPP_template}({C_call_list});',
                     fmt_result)
-                C_code.append(line)
-
-                if 'C_error_pattern' in node:
-                    C_error_pattern = node['C_error_pattern'] + \
-                        node.get('_error_pattern_suffix', '')
-                    if C_error_pattern in self.patterns:
-                        C_code.append('// C_error_pattern')
-                        append_format(
-                            C_code, self.patterns[C_error_pattern], fmt_pattern)
 
                 if not result_arg:
                     c_statements = result_typedef.c_statements
@@ -562,13 +560,17 @@ class Wrapc(util.WrapperMixin):
                 if subprogram == 'function':
                     # Note: A C function may be converted into a Fortran subroutine subprogram
                     # when the result is returned in an argument.
-                    return_line = ('return '
-                                   + wformat(return_lang, fmt_result)
-                                   + ';')
+                    fmt_func.C_return_code = ('return '
+                                            + wformat(return_lang, fmt_result)
+                                            + ';')
 
             # copy-out values, clean up
+            C_code = [1]
+            C_code.extend(pre_call)
+            C_code.append(fmt_func.C_call_code)
+            C_code.extend(post_call_pattern)
             C_code.extend(post_call)
-            C_code.append(return_line)
+            C_code.append(fmt_func.C_return_code)
             C_code.append(-1)
 
         self.header_proto_c.append('')

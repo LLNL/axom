@@ -91,9 +91,11 @@
                 "brief": "pass a single char argument as a scalar."
             }, 
             "fmt": {
+                "C_call_code": "passChar(status);", 
                 "C_call_list": "status", 
                 "C_name": "STR_pass_char", 
                 "C_prototype": "char status", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_call": "c_pass_char", 
                 "F_C_name": "pass_char", 
@@ -128,9 +130,11 @@
                 "brief": "return a char argument (non-pointer)"
             }, 
             "fmt": {
+                "C_call_code": "char SH_rv = returnChar();", 
                 "C_call_list": "", 
                 "C_name": "STR_return_char", 
                 "C_prototype": "", 
+                "C_return_code": "return SH_rv;", 
                 "C_return_type": "char", 
                 "F_C_call": "c_return_char_bufferify", 
                 "F_C_name": "c_return_char", 
@@ -199,10 +203,12 @@
                 "brief": "return a char argument (non-pointer)"
             }, 
             "fmt": {
+                "C_call_code": "char SH_rv = returnChar();", 
                 "C_call_list": "", 
                 "C_name": "STR_return_char_bufferify", 
                 "C_post_call": "std::memset(SH_F_rv, ' ', NSH_F_rv);\nSH_F_rv[0] = SH_rv;", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_return_char_bufferify", 
                 "c_const": "", 
@@ -297,9 +303,11 @@
                 "description": "dest is marked intent(OUT) to override the intent(INOUT) default\nThis avoid a copy-in on dest.\n"
             }, 
             "fmt": {
+                "C_call_code": "passCharPtr(dest, src);", 
                 "C_call_list": "dest, src", 
                 "C_name": "STR_pass_char_ptr", 
                 "C_prototype": "char * dest, const char * src", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_call": "c_pass_char_ptr_bufferify", 
                 "F_C_name": "c_pass_char_ptr", 
@@ -387,11 +395,13 @@
                 "description": "dest is marked intent(OUT) to override the intent(INOUT) default\nThis avoid a copy-in on dest.\n"
             }, 
             "fmt": {
+                "C_call_code": "passCharPtr(SH_dest, SH_src);", 
                 "C_call_list": "SH_dest, SH_src", 
                 "C_name": "STR_pass_char_ptr_bufferify", 
                 "C_post_call": "shroud_FccCopy(dest, Ndest, SH_dest);\ndelete [] SH_dest;\ndelete [] SH_src;", 
                 "C_pre_call": "char * SH_dest = new char [Ndest + 1];\nchar * SH_src = new char [Lsrc + 1];\nstd::strncpy(SH_src, src, Lsrc);\nSH_src[Lsrc] = '\\0';", 
                 "C_prototype": "char * dest, int Ndest, const char * src, int Lsrc", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_pass_char_ptr_bufferify", 
                 "c_const": "", 
@@ -422,9 +432,11 @@
                 "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
+                "C_call_code": "const char * SH_rv = getChar1();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_char1", 
                 "C_prototype": "", 
+                "C_return_code": "return SH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_name": "c_get_char1", 
                 "PY_name_impl": "PY_get_char1", 
@@ -486,10 +498,12 @@
                 "brief": "return a 'const char *' as character(*)"
             }, 
             "fmt": {
+                "C_call_code": "const char * SH_rv = getChar1();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_char1_bufferify", 
                 "C_post_call": "if (SH_rv == NULL) {\n  std::memset(SH_F_rv, ' ', NSH_F_rv);\n} else {\n  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);\n}", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_char1_bufferify", 
                 "c_const": "", 
@@ -567,9 +581,11 @@
                 "brief": "return 'const char *' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_code": "const char * SH_rv = getChar2();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_char2", 
                 "C_prototype": "", 
+                "C_return_code": "return SH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_call": "c_get_char2_bufferify", 
                 "F_C_name": "c_get_char2", 
@@ -642,10 +658,12 @@
                 "brief": "return 'const char *' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_code": "const char * SH_rv = getChar2();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_char2_bufferify", 
                 "C_post_call": "if (SH_rv == NULL) {\n  std::memset(SH_F_rv, ' ', NSH_F_rv);\n} else {\n  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);\n}", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_char2_bufferify", 
                 "c_const": "", 
@@ -683,9 +701,11 @@
                 "brief": "return a 'const char *' as argument"
             }, 
             "fmt": {
+                "C_call_code": "const char * SH_rv = getChar3();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_char3", 
                 "C_prototype": "", 
+                "C_return_code": "return SH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_name": "c_get_char3", 
                 "F_string_result_as_arg": "output", 
@@ -751,10 +771,12 @@
                 "brief": "return a 'const char *' as argument"
             }, 
             "fmt": {
+                "C_call_code": "const char * SH_rv = getChar3();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_char3_bufferify", 
                 "C_post_call": "if (SH_rv == NULL) {\n  std::memset(output, ' ', Noutput);\n} else {\n  shroud_FccCopy(output, Noutput, SH_rv);\n}", 
                 "C_prototype": "char * output, int Noutput", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_char3_bufferify", 
                 "c_const": "", 
@@ -846,9 +868,11 @@
                 "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString1();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string1", 
                 "C_prototype": "", 
+                "C_return_code": "return XSH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_name": "c_get_string1", 
                 "PY_name_impl": "PY_get_string1", 
@@ -913,10 +937,12 @@
                 "brief": "return a 'const string&' as character(*)"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString1();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string1_bufferify", 
                 "C_post_call": "if (SH_rv.empty()) {\n  std::memset(SH_F_rv, ' ', NSH_F_rv);\n} else {\n  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());\n}", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_string1_bufferify", 
                 "c_const": "", 
@@ -995,9 +1021,12 @@
                 "brief": "return 'const string&' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString2();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string2", 
+                "C_post_call_pattern": "// C_error_pattern\nif (SH_rv.empty()) {\n    return NULL;\n}\n", 
                 "C_prototype": "", 
+                "C_return_code": "return XSH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_call": "c_get_string2_bufferify", 
                 "F_C_name": "c_get_string2", 
@@ -1074,10 +1103,12 @@
                 "brief": "return 'const string&' with fixed size (len=30)"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString2();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string2_bufferify", 
                 "C_post_call": "if (SH_rv.empty()) {\n  std::memset(SH_F_rv, ' ', NSH_F_rv);\n} else {\n  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());\n}", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_string2_bufferify", 
                 "c_const": "", 
@@ -1116,9 +1147,12 @@
                 "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString3();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string3", 
+                "C_post_call_pattern": "// C_error_pattern\nif (SH_rv.empty()) {\n    return NULL;\n}\n", 
                 "C_prototype": "", 
+                "C_return_code": "return XSH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_name": "c_get_string3", 
                 "F_string_result_as_arg": "output", 
@@ -1188,10 +1222,12 @@
                 "brief": "return a 'const string&' as argument"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString3();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string3_bufferify", 
                 "C_post_call": "if (SH_rv.empty()) {\n  std::memset(output, ' ', Noutput);\n} else {\n  shroud_FccCopy(output, Noutput, SH_rv.c_str());\n}", 
                 "C_prototype": "char * output, int Noutput", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_string3_bufferify", 
                 "c_const": "", 
@@ -1284,9 +1320,12 @@
                 "brief": "Test returning empty string reference"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString2_empty();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string2_empty", 
+                "C_post_call_pattern": "// C_error_pattern\nif (SH_rv.empty()) {\n    return NULL;\n}\n", 
                 "C_prototype": "", 
+                "C_return_code": "return XSH_rv;", 
                 "C_return_type": "const char *", 
                 "F_C_call": "c_get_string2_empty_bufferify", 
                 "F_C_name": "c_get_string2_empty", 
@@ -1363,10 +1402,12 @@
                 "brief": "Test returning empty string reference"
             }, 
             "fmt": {
+                "C_call_code": "const std::string & SH_rv = getString2_empty();", 
                 "C_call_list": "", 
                 "C_name": "STR_get_string2_empty_bufferify", 
                 "C_post_call": "if (SH_rv.empty()) {\n  std::memset(SH_F_rv, ' ', NSH_F_rv);\n} else {\n  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());\n}", 
                 "C_prototype": "char * SH_F_rv, int NSH_F_rv", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_get_string2_empty_bufferify", 
                 "c_const": "", 
@@ -1434,10 +1475,12 @@
                 "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
             }, 
             "fmt": {
+                "C_call_code": "acceptStringConstReference(SH_arg1);", 
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference", 
                 "C_pre_call": "const std::string SH_arg1(arg1);", 
                 "C_prototype": "const char * arg1", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_call": "c_accept_string_const_reference_bufferify", 
                 "F_C_name": "c_accept_string_const_reference", 
@@ -1500,10 +1543,12 @@
                 "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
             }, 
             "fmt": {
+                "C_call_code": "acceptStringConstReference(SH_arg1);", 
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_const_reference_bufferify", 
                 "C_pre_call": "const std::string SH_arg1(arg1, Larg1);", 
                 "C_prototype": "const char * arg1, int Larg1", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_accept_string_const_reference_bufferify", 
                 "c_const": "", 
@@ -1564,11 +1609,13 @@
                 "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
             }, 
             "fmt": {
+                "C_call_code": "acceptStringReference(SH_arg1);", 
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference", 
                 "C_post_call": "strcpy(arg1, SH_arg1.c_str());", 
                 "C_pre_call": "std::string SH_arg1(arg1);", 
                 "C_prototype": "char * arg1", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_call": "c_accept_string_reference_bufferify", 
                 "F_C_name": "c_accept_string_reference", 
@@ -1632,11 +1679,13 @@
                 "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
             }, 
             "fmt": {
+                "C_call_code": "acceptStringReference(SH_arg1);", 
                 "C_call_list": "SH_arg1", 
                 "C_name": "STR_accept_string_reference_bufferify", 
                 "C_post_call": "shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());", 
                 "C_pre_call": "std::string SH_arg1(arg1, Larg1);", 
                 "C_prototype": "char * arg1, int Larg1, int Narg1", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_accept_string_reference_bufferify", 
                 "c_const": "", 
@@ -1691,9 +1740,11 @@
             "attrs": {}, 
             "decl": "void explicit1(char * name+len_trim(AAlen)+intent(in))", 
             "fmt": {
+                "C_call_code": "explicit1(name);", 
                 "C_call_list": "name", 
                 "C_name": "STR_explicit1", 
                 "C_prototype": "char * name", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_call": "c_explicit1_buffer", 
                 "F_C_name": "c_explicit1", 
@@ -1754,11 +1805,13 @@
             "attrs": {}, 
             "decl": "void explicit1(char * name+len_trim(AAlen)+intent(in))", 
             "fmt": {
+                "C_call_code": "explicit1(SH_name);", 
                 "C_call_list": "SH_name", 
                 "C_name": "STR_explicit1_BUFFER", 
                 "C_post_call": "delete [] SH_name;", 
                 "C_pre_call": "char * SH_name = new char [AAlen + 1];\nstd::strncpy(SH_name, name, AAlen);\nSH_name[AAlen] = '\\0';", 
                 "C_prototype": "char * name, int AAlen", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_explicit1_buffer", 
                 "c_const": "", 
@@ -1815,9 +1868,11 @@
             "attrs": {}, 
             "decl": "void explicit2(char * name+len(AAtrim)+intent(out))", 
             "fmt": {
+                "C_call_code": "explicit2(name);", 
                 "C_call_list": "name", 
                 "C_name": "STR_explicit2", 
                 "C_prototype": "char * name", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_call": "c_explicit2_bufferify", 
                 "F_C_name": "c_explicit2", 
@@ -1876,11 +1931,13 @@
             "attrs": {}, 
             "decl": "void explicit2(char * name+len(AAtrim)+intent(out))", 
             "fmt": {
+                "C_call_code": "explicit2(SH_name);", 
                 "C_call_list": "SH_name", 
                 "C_name": "STR_explicit2_bufferify", 
                 "C_post_call": "shroud_FccCopy(name, AAtrim, SH_name);\ndelete [] SH_name;", 
                 "C_pre_call": "char * SH_name = new char [AAtrim + 1];", 
                 "C_prototype": "char * name, int AAtrim", 
+                "C_return_code": "return;", 
                 "C_return_type": "void", 
                 "F_C_name": "c_explicit2_bufferify", 
                 "c_const": "", 

@@ -147,9 +147,14 @@ Function
 C_call_list
     Comma delimited list of function arguments.
 
+C_call_code
+    Code used to call function in C wrapper.
+
 C_post_call
     Statements added after the call to the function.
     Used to convert result and/or ``intent(OUT)`` arguments to C types.
+
+.. C_post_call_pattern
 
 C_pre_call
     Statements added before the call to the function.
@@ -159,6 +164,9 @@ C_prototype
     C prototype for the function.
     This will include any arguments required by annotations or options,
     such as length or **F_string_result_as_arg**.  
+
+C_return_code
+    Code used to return from C wrapper.
 
 C_return_type
     Return type of the function.
