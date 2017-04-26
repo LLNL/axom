@@ -421,3 +421,12 @@ C implementation::
 The splicer comments can be eliminated by setting the option
 **show_splicer_comments** to false. This may be useful to 
 eliminate the clutter of the splicer comments.
+
+Debugging
+---------
+
+Shroud generates a JSON file with all of the input from the YAML
+and all of the format dictionaries and type maps.
+This file can be useful to see which format keys are available and
+how code is genenerated.
+
