@@ -839,47 +839,6 @@ py_statement
            Usually a C++ constructor is involved.
 
 
-
-
-Format dictionary for Type fields
-  * result_arg - name of result variable from *F_string_result_as_arg*.
-  * F_result - name of result variable
-  * F_C_name - name of BIND(C) interface
-  * F_arg_c_call
-  * F_arg_c_call_tab
-  * F_arguments
-
-
-arg_f_decl._f_decl(arg)
-
-Example for each type::
-
-   subroutine name({var})
-       {f_argsdecl}
-
-       ! arguments
-       foreach argument:
-          F_arg_c_call += f_args or f_cast or '{var}'
-
-       {f_pre_call}
-       {f_return_code}     ! call C code
-       {f_post_call}
-
-
-
-Predefined types
-
-  * void
-  * int
-  * long
-  * size_t
-  * float
-  * double
-  * bool
-  * string
-  * string_from_buffer
-
-
 Class Fields
 ------------
 

@@ -884,10 +884,10 @@ class Wrapf(util.WrapperMixin):
         else:
             F_code = []
             if is_ctor:
-                line1 = wformat(
+                fmt_func.F_call_code = wformat(
                     '{F_result}%{F_derived_member} = '
                     '{F_C_call}({F_arg_c_call_tab})', fmt_func)
-                self.append_method_arguments(F_code, line1)
+                self.append_method_arguments(F_code, fmt_func.F_call_code)
             elif c_subprogram == 'function':
                 f_return_code = result_typedef.f_return_code
                 if f_return_code is None:
@@ -897,11 +897,11 @@ class Wrapf(util.WrapperMixin):
                     self.f_helper.update(
                         result_typedef.f_helper.get('f_return_code', {}))
                     need_wrapper = True
-                line1 = wformat(f_return_code, fmt_func)
-                self.append_method_arguments(F_code, line1)
+                fmt_func.F_call_code = wformat(f_return_code, fmt_func)
+                self.append_method_arguments(F_code, fmt_func.F_call_code)
             else:
-                line1 = wformat('call {F_C_call}({F_arg_c_call_tab})', fmt_func)
-                self.append_method_arguments(F_code, line1)
+                fmt_func.F_call_code = wformat('call {F_C_call}({F_arg_c_call_tab})', fmt_func)
+                self.append_method_arguments(F_code, fmt_func.F_call_code)
 
 #            if result_typedef.f_post_call:
 #                need_wrapper = True

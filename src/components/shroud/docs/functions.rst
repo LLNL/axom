@@ -129,6 +129,9 @@ be controlled directly by the input file::
 
     module {F_module_name}
 
+      ! use_stmts
+      implicit none
+
       type {F_derived_name}
         type(C_PTR) {F_derived_member}
       contains
@@ -137,9 +140,12 @@ be controlled directly by the input file::
       end type {F_derived_name}
 
       interface
-        subroutine {F_C_name} bind(C, name="{C_name}")
-          ...
-        end subroutine {F_C_name}
+        {F_C_pure_clause} {F_C_subprogram} {F_C_name}
+             {F_C_result_clause} bind(C, name="{C_name}")
+          ! arg_f_use
+          implicit none
+          ! arg_c_decl
+        end {F_C_subprogram} {F_C_name}
       end interface
 
       interface {F_name_generic}
@@ -148,11 +154,13 @@ be controlled directly by the input file::
 
     contains
 
-      subroutine {F_name_impl}
-        ...
-        ! pre-call
+      {F_subprogram} {F_name_impl}
+        ! arg_f_use
+        ! arg_f_decl
+        ! pre_call
         {F_code}
-      end subroutine {F_name_impl}
+        ! post_call
+      end {F_subprogram} {F_name_impl}
 
     end module {F_module_name}
 
@@ -275,7 +283,6 @@ Local Variable
 
 Results are named from *fmt.C_result* or *fmt.F_result*.
 
-Fortran option F_result.
 
 Patterns
 --------
