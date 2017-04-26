@@ -7,6 +7,7 @@ set(gtest_common_tests
    common_fileUtilities.cpp
    common_types.cpp
 
+   numerics_determinants.cpp
    numerics_lu.cpp
    numerics_matrix.cpp
    )

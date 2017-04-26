@@ -11,8 +11,15 @@
 #ifndef AXOM_NUMERICS_DETERMINANTS_HPP_
 #define AXOM_NUMERICS_DETERMINANTS_HPP_
 
+#include "axom_utils/LU.hpp"     // for lu_decompose()
+#include "axom_utils/Matrix.hpp" // for Matrix
+
+
 namespace axom {
 namespace numerics {
+
+/// \name Matrix Operators
+/// @{
 
 /*!
  *******************************************************************************
@@ -104,6 +111,76 @@ inline real determinant(
   const real det = m123*a03 - m023*a13 + m013*a23 - m012*a33;
   return det;
 }
+
+/*!
+ *******************************************************************************
+ * \brief Computes the determinant of the given square matrix.
+ * \param [in] A an \f$ N \times N \f$ input matrix
+ * \return det the computed determinant.
+ * \note if \f$ A \f$ is not square or empty, this function will return 0.0
+ *******************************************************************************
+ */
+template < typename real >
+inline real determinant( const Matrix< real >& A )
+{
+  real det = 0.0;
+
+  if ( !A.isSquare( ) || A.empty() ) {
+    /* short-circuit */
+    return det;
+  }
+
+  const int N = A.getNumColumns();
+  if ( N==1 ) {
+
+    det = A(0,0);
+
+  } else if ( N==2 ) {
+
+    det = determinant( A(0,0), A(0,1),
+                       A(1,0), A(1,1) );
+
+  } else if ( N==3 ) {
+
+    det = determinant( A(0,0), A(0,1), A(0,2),
+                       A(1,0), A(1,1), A(1,2),
+                       A(2,0), A(2,1), A(2,2)   );
+
+  } else if ( N==4 ) {
+
+    det = determinant( A(0,0), A(0,1), A(0,2), A(0,3),
+                       A(1,0), A(1,1), A(1,2), A(1,3),
+                       A(2,0), A(2,1), A(2,2), A(2,3),
+                       A(3,0), A(3,1), A(3,2), A(3,3)  );
+
+  } else {
+
+     Matrix< real > lu = A;
+     int* pivots = new int[ N ];
+
+     int rc = lu_decompose( lu, pivots );
+     if ( rc == LU_SUCCESS ) {
+
+       // count number of row interchanges
+       int row_interchanges = 0;
+       for ( int i=0; i < N; ++i ) {
+          row_interchanges += ( pivots[i] != i )? 1 : 0;
+       } // END for all rows
+
+       det = ( (row_interchanges & 1)==0 )? 1.0 : -1.0;
+       for ( int i=0; i < N; ++i ) {
+          det *= lu(i,i);
+       }
+
+     }
+
+     delete [] pivots;
+  }
+
+  return ( det );
+}
+
+/// @}
 
 } /* namespace numerics */
 } /* namespace axom */
