@@ -96,7 +96,8 @@ const char * AA_exclass1_get_name(const AA_exclass1 * self)
         return NULL;
     }
 
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass1.method.get_name
 }
 
@@ -138,7 +139,8 @@ const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self)
 // splicer begin class.ExClass1.method.get_name_error_check
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getNameErrorCheck();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
@@ -165,7 +167,8 @@ const char * AA_exclass1_get_name_arg(const AA_exclass1 * self)
 // splicer begin class.ExClass1.method.get_name_arg
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getNameArg();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass1.method.get_name_arg
 }
 
@@ -192,7 +195,8 @@ AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self)
 // splicer begin class.ExClass1.method.get_root
     ExClass1 *SH_this = static_cast<ExClass1 *>(static_cast<void *>(self));
     ExClass2 * SH_rv = SH_this->getRoot();
-    return static_cast<AA_exclass2 *>(static_cast<void *>(SH_rv));
+    AA_exclass2 * XSH_rv = static_cast<AA_exclass2 *>(static_cast<void *>(SH_rv));
+    return XSH_rv;
 // splicer end class.ExClass1.method.get_root
 }
 

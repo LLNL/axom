@@ -92,7 +92,8 @@ const char * TUT_function4b(const char * arg1, const char * arg2)
     const std::string SH_arg1(arg1);
     const std::string SH_arg2(arg2);
     const std::string & SH_rv = Function4b(SH_arg1, SH_arg2);
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.function4b
 }
 
@@ -333,7 +334,8 @@ int TUT_enumfunc(int arg)
 {
 // splicer begin function.enumfunc
     EnumTypeID SH_rv = enumfunc(static_cast<EnumTypeID>(arg));
-    return static_cast<int>(SH_rv);
+    int XSH_rv = static_cast<int>(SH_rv);
+    return XSH_rv;
 // splicer end function.enumfunc
 }
 
@@ -353,7 +355,8 @@ const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called
     const std::string & SH_rv = LastFunctionCalled();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.last_function_called
 }
 

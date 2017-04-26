@@ -290,7 +290,7 @@ computed using ``len``::
     {
         const std::string SH_arg1(arg1, Larg1);
         const std::string SH_arg2(arg2, Larg2);
-        const std::string rv = Function4a(SH_arg1, SH_arg2);
+        const std::string SH_rv = Function4a(SH_arg1, SH_arg2);
         if (SH_rv.empty()) {
           std::memset(SH_F_rv, ' ', NSH_F_rv);
         } else {
@@ -771,14 +771,14 @@ pointers for every instance::
 
     TUT_class1 * TUT_class1_new()
     {
-        Class1 *selfobj = new Class1();
-        return static_cast<TUT_class1 *>(static_cast<void *>(selfobj));
+        Class1 *SH_rv = new Class1();
+        return static_cast<TUT_class1 *>(static_cast<void *>(SH_rv));
     }
 
     void TUT_class1_method1(TUT_class1 * self)
     {
-        Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
-        selfobj->Method1();
+        Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
+        SH_this->Method1();
         return;
     }
 

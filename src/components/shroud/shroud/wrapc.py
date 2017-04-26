@@ -317,6 +317,7 @@ class Wrapc(util.WrapperMixin):
         else:
             fmt_func.c_const = ''
 
+        return_lang = '{cpp_var}'  # Assume C and C++ types are compatiable
         if CPP_subprogram == 'subroutine':
             fmt_result = fmt_func
             fmt_pattern = fmt_func
@@ -535,19 +536,25 @@ class Wrapc(util.WrapperMixin):
                         append_format(
                             C_code, self.patterns[C_error_pattern], fmt_pattern)
 
-                if False: #not result_arg:
+                if not result_arg:
                     c_statements = result_typedef.c_statements
                     intent_blk = c_statements.get('result', {})
-                    have_c_local_var = intent_blk.get('c_local_var', False)
+                    if result_typedef.cpp_to_c != '{cpp_var}':
+                        # Make intermediate c_var value if a conversion
+                        # is required i.e. not the same as cpp_var.
+                        have_c_local_var = True
+                    else:
+                        have_c_local_var = intent_blk.get('c_local_var', False)
                     if have_c_local_var:
+                        # XXX need better mangling than 'X'
+                        fmt_result.c_var = 'X' + fmt_func.C_result
                         fmt_result.c_rv_decl = self._c_decl('c_type', CPP_result,
-                                                          name='X' + fmt_func.C_result)
+                                                          name=fmt_result.c_var)
                         fmt_result.c_val = wformat(result_typedef.cpp_to_c, fmt_result)
-                        append_format(post_call, '{c_rv_decl} = {c_val}', fmt_result)
+                        append_format(post_call, '{c_rv_decl} = {c_val};', fmt_result)
+                        return_lang = '{c_var}'
 
                     cmd_list = intent_blk.get('post_call', [])
-                    fmt_func.c_var = 'AAA' # wformat(arg_typedef.cpp_to_c, fmt_arg)
-                    fmt_func.cpp_val = 'BBB' # wformat(arg_typedef.cpp_to_c, fmt_arg)
                     for cmd in cmd_list:
                         append_format(post_call, cmd, fmt_result)
                     # XXX release rv is necessary
@@ -556,7 +563,7 @@ class Wrapc(util.WrapperMixin):
                     # Note: A C function may be converted into a Fortran subroutine subprogram
                     # when the result is returned in an argument.
                     return_line = ('return '
-                                   + wformat(result_typedef.cpp_to_c, fmt_result)
+                                   + wformat(return_lang, fmt_result)
                                    + ';')
 
             # copy-out values, clean up

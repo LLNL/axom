@@ -864,6 +864,9 @@
                     "reference": true
                 }, 
                 "fmtc": {
+                    "c_rv_decl": "const char * XSH_rv", 
+                    "c_val": "SH_rv.c_str()", 
+                    "c_var": "XSH_rv", 
                     "cpp_rv_decl": "const std::string & SH_rv", 
                     "cpp_var": "SH_rv"
                 }, 
@@ -1019,6 +1022,9 @@
                     "reference": true
                 }, 
                 "fmtc": {
+                    "c_rv_decl": "const char * XSH_rv", 
+                    "c_val": "SH_rv.c_str()", 
+                    "c_var": "XSH_rv", 
                     "cpp_rv_decl": "const std::string & SH_rv", 
                     "cpp_var": "SH_rv"
                 }, 
@@ -1130,6 +1136,9 @@
                     "reference": true
                 }, 
                 "fmtc": {
+                    "c_rv_decl": "const char * XSH_rv", 
+                    "c_val": "SH_rv.c_str()", 
+                    "c_var": "XSH_rv", 
                     "cpp_rv_decl": "const std::string & SH_rv", 
                     "cpp_var": "SH_rv"
                 }, 
@@ -1302,6 +1311,9 @@
                     "reference": true
                 }, 
                 "fmtc": {
+                    "c_rv_decl": "const char * XSH_rv", 
+                    "c_val": "SH_rv.c_str()", 
+                    "c_var": "XSH_rv", 
                     "cpp_rv_decl": "const std::string & SH_rv", 
                     "cpp_var": "SH_rv"
                 }, 
@@ -2213,12 +2225,6 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "XXXresult": {
-                    "c_local_var": true, 
-                    "post_call": [
-                        "// post_call"
-                    ]
-                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -2282,12 +2288,6 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "XXXresult": {
-                    "c_local_var": true, 
-                    "post_call": [
-                        "// post_call"
-                    ]
-                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -2351,12 +2351,6 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "XXXresult": {
-                    "c_local_var": true, 
-                    "post_call": [
-                        "// post_call"
-                    ]
-                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [

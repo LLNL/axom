@@ -62,7 +62,8 @@ const char * AA_exclass2_get_name(const AA_exclass2 * self)
 // splicer begin class.ExClass2.method.get_name
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getName();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass2.method.get_name
 }
 
@@ -89,7 +90,8 @@ const char * AA_exclass2_get_name2(AA_exclass2 * self)
 // splicer begin class.ExClass2.method.get_name2
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
     const std::string & SH_rv = SH_this->getName2();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass2.method.get_name2
 }
 
@@ -116,7 +118,8 @@ char * AA_exclass2_get_name3(const AA_exclass2 * self)
 // splicer begin class.ExClass2.method.get_name3
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
     std::string & SH_rv = SH_this->getName3();
-    return SH_rv.c_str();
+    char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass2.method.get_name3
 }
 
@@ -143,7 +146,8 @@ char * AA_exclass2_get_name4(AA_exclass2 * self)
 // splicer begin class.ExClass2.method.get_name4
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
     std::string & SH_rv = SH_this->getName4();
-    return SH_rv.c_str();
+    char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end class.ExClass2.method.get_name4
 }
 
@@ -185,7 +189,8 @@ AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, const AA_exclass1 * in)
 // splicer begin class.ExClass2.method.get_class1
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
     ExClass1 * SH_rv = SH_this->get_class1(static_cast<const ExClass1 *>(static_cast<const void *>(in)));
-    return static_cast<AA_exclass1 *>(static_cast<void *>(SH_rv));
+    AA_exclass1 * XSH_rv = static_cast<AA_exclass1 *>(static_cast<void *>(SH_rv));
+    return XSH_rv;
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -229,7 +234,8 @@ int AA_exclass2_get_type_id(const AA_exclass2 * self)
 // splicer begin class.ExClass2.method.get_type_id
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
     TypeID SH_rv = SH_this->getTypeID();
-    return static_cast<int>(SH_rv);
+    int XSH_rv = static_cast<int>(SH_rv);
+    return XSH_rv;
 // splicer end class.ExClass2.method.get_type_id
 }
 

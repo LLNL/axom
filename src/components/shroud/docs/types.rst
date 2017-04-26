@@ -485,8 +485,8 @@ And the Fortran wrapper provides the correct values for the *len* and
         ! splicer end accept_string_reference
     end subroutine accept_string_reference
 
-Character functions
-^^^^^^^^^^^^^^^^^^^
+char functions
+^^^^^^^^^^^^^^
 
 Functions which return a ``char *`` provide an additional challenge.
 Taken literally they should return a ``type(C_PTR)``.  And if you call
@@ -514,7 +514,11 @@ copies the result into a buffer of known length::
     void STR_get_char1_bufferify(char * SH_F_rv, int NSH_F_rv)
     {
         const char * SH_rv = getChar1();
-        shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);
+        if (SH_rv == NULL) {
+           std::memset(SH_F_rv, ' ', NSH_F_rv);
+        } else {
+          shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);
+        }
         return;
     }
 
@@ -573,6 +577,10 @@ subroutine is generated instead of a function::
     end subroutine get_char3
 
 .. char ** not supported
+
+string functions
+^^^^^^^^^^^^^^^^
+
 
 
 Complex Type

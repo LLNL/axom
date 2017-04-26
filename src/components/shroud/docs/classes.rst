@@ -43,14 +43,14 @@ pointers for every instance::
 
     TUT_class1 * TUT_class1_new()
     {
-        Class1 *selfobj = new Class1();
-        return static_cast<TUT_class1 *>(static_cast<void *>(selfobj));
+        Class1 *SH_rv = new Class1();
+        return static_cast<TUT_class1 *>(static_cast<void *>(SH_rv));
     }
 
     void TUT_class1_method1(TUT_class1 * self)
     {
-        Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
-        selfobj->Method1();
+        Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
+        SH_this->Method1();
         return;
     }
 

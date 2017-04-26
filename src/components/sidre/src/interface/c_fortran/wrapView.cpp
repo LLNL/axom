@@ -270,7 +270,8 @@ const char * SIDRE_view_get_name(const SIDRE_view * self)
   const View * SH_this =
     static_cast<const View *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getName();
-  return SH_rv.c_str();
+  const char * XSH_rv = SH_rv.c_str();
+  return XSH_rv;
 // splicer end class.View.method.get_name
 }
 
@@ -298,7 +299,9 @@ SIDRE_buffer * SIDRE_view_get_buffer(SIDRE_view * self)
 // splicer begin class.View.method.get_buffer
   View * SH_this = static_cast<View *>(static_cast<void *>(self));
   Buffer * SH_rv = SH_this->getBuffer();
-  return static_cast<SIDRE_buffer *>(static_cast<void *>(SH_rv));
+  SIDRE_buffer * XSH_rv =
+    static_cast<SIDRE_buffer *>(static_cast<void *>(SH_rv));
+  return XSH_rv;
 // splicer end class.View.method.get_buffer
 }
 
@@ -469,7 +472,8 @@ SIDRE_group * SIDRE_view_get_owning_group(SIDRE_view * self)
 // splicer begin class.View.method.get_owning_group
   View * SH_this = static_cast<View *>(static_cast<void *>(self));
   Group * SH_rv = SH_this->getOwningGroup();
-  return static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
+  SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
+  return XSH_rv;
 // splicer end class.View.method.get_owning_group
 }
 
@@ -479,7 +483,8 @@ int SIDRE_view_get_type_id(const SIDRE_view * self)
   const View * SH_this =
     static_cast<const View *>(static_cast<const void *>(self));
   TypeID SH_rv = SH_this->getTypeID();
-  return static_cast<int>(SH_rv);
+  int XSH_rv = static_cast<int>(SH_rv);
+  return XSH_rv;
 // splicer end class.View.method.get_type_id
 }
 

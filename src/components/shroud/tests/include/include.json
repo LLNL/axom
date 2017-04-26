@@ -719,12 +719,6 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "XXXresult": {
-                    "c_local_var": true, 
-                    "post_call": [
-                        "// post_call"
-                    ]
-                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -788,12 +782,6 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "XXXresult": {
-                    "c_local_var": true, 
-                    "post_call": [
-                        "// post_call"
-                    ]
-                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [
@@ -857,12 +845,6 @@
             "PY_format": "s", 
             "base": "string", 
             "c_statements": {
-                "XXXresult": {
-                    "c_local_var": true, 
-                    "post_call": [
-                        "// post_call"
-                    ]
-                }, 
                 "intent_in": {
                     "cpp_local_var": true, 
                     "pre_call": [

@@ -207,7 +207,8 @@ const char * STR_get_string1()
 {
 // splicer begin function.get_string1
     const std::string & SH_rv = getString1();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.get_string1
 }
 
@@ -245,7 +246,8 @@ const char * STR_get_string2()
         return NULL;
     }
 
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.get_string2
 }
 
@@ -283,7 +285,8 @@ const char * STR_get_string3()
         return NULL;
     }
 
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.get_string3
 }
 
@@ -321,7 +324,8 @@ const char * STR_get_string2_empty()
         return NULL;
     }
 
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.get_string2_empty
 }
 

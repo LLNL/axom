@@ -100,7 +100,8 @@ int SIDRE_buffer_get_type_id(const SIDRE_buffer * self)
   const Buffer * SH_this =
     static_cast<const Buffer *>(static_cast<const void *>(self));
   TypeID SH_rv = SH_this->getTypeID();
-  return static_cast<int>(SH_rv);
+  int XSH_rv = static_cast<int>(SH_rv);
+  return XSH_rv;
 // splicer end class.Buffer.method.get_type_id
 }
 

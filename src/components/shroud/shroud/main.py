@@ -488,12 +488,6 @@ class Schema(object):
 #                            'shroud_FccCopy({c_var}, {c_var_trim}, {cpp_val});'
                         ],
                     ),
-                    XXXresult=dict(
-                        c_local_var=True,
-                        post_call=[
-                            '// post_call',
-                        ],
-                    ),
                     intent_in_buf=dict(
                         cpp_local_var=True,
                         pre_call=[
