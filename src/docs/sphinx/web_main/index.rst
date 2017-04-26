@@ -13,10 +13,11 @@
 Axom (a.k.a. The CS Toolkit)
 ****************************
 
-.. note:: The project recently changed its name from "The CS Toolkit" to 
-          "Axom". We have not completed converted everything on the project
-          to the new name. The contents of this page, and linked pages, will
-          continue to be updated as the conversion continues.
+.. note:: We recently changed our project name from "The CS Toolkit" to 
+          "Axom". As a result, you may hear either term used. However, they
+          refer to the same project.
+
+**This web page is the main place to find information about Axom.**
 
 Axom is a project in WCI/WSC that is funded by ECP/ATDM.
 Its principal goal is to provide a collection of robust and flexible software 
@@ -38,11 +39,9 @@ in software design and implementation:
 
 The main drivers of the Axom project are to:
 
-  *  Provide the CS infrastructure foundation of the ECP ATDM multi-physics application at LLNL
+  *  Provide the CS infrastructure foundation of the ECP/ATDM multi-physics application at LLNL
   *  Support current ASC and other production applications and as they continue to evolve
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology transfer from research efforts into production applications
-
-**This web page is the main place to find information about Axom.**
 
 
 =====================
@@ -66,28 +65,28 @@ Component User Guides
 ----------------------
 
   *  Slic (Simple Logging Interface Code for integrated applications)
-  *  Lumberjack (Scalable parallel message logging and filtering)
-  *  `Sidre: Simulation Data Repository <../../sidre_docs/html/index.html>`_
+  *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
+  *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
   *  `Spio (Sidre Parallel I/O) <../../spio_docs/html/index.html>`_
-  *  Slam (Set-theoretic Lightweight API for Meshes)
-  *  Quest (Querying on Surfaces Tool)
-  *  Mint (Mesh data model)
-  *  Primal (Computational geometry primitives)
+  *  Slam (Set-theoretic lightweight API for meshes)
+  *  Quest (Querying on surface tool)
+  *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
+  *  `Primal (Computational geometry primitives) <../../primal_docs/html/index.html>`_
 
 --------------------------
 Source Code Documentation
 --------------------------
 
-  *  `Axom <../../../doxygen/asc_toolkit_doxygen/html/index.html>`_
-  *  `Common <../../../doxygen/common_doxygen/html/index.html>`_
+  *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
+  *  `Axom Utils <../../../doxygen/axom_utils_doxygen/html/index.html>`_
   *  `Slic <../../../doxygen/slic_doxygen/html/index.html>`_
   *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
   *  `Sidre <../../../doxygen/sidre_doxygen/html/index.html>`_
   *  `Spio <../../../doxygen/spio_doxygen/html/index.html>`_
   *  `Slam <../../../doxygen/slam_doxygen/html/index.html>`_
   *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
-  *  Mint
-  *  Primal
+  *  `Mint <../../../doxygen/mint_doxygen/html/index.html>`_ 
+  *  `Primal <../../../doxygen/primal_doxygen/html/index.html>`_ 
 
 Look for documentation to appear for new components as they are developed.
 
@@ -100,7 +99,7 @@ Axom developers support other tools that can be used by software
 projects independent of the Axom. These include:
 
   *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based buld system developed by the Axom team to simplify CMake usage and development tool integration)
-  *  Shroud (Generation of native C and Fortran APIs from C++ code)
+  *  Shroud (Generator for native C and Fortran APIs from C++ code)
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
 
 
