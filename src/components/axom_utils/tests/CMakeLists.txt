@@ -8,6 +8,7 @@ set(gtest_common_tests
    common_types.cpp
 
    numerics_determinants.cpp
+   numerics_linear_solve.cpp
    numerics_lu.cpp
    numerics_matrix.cpp
    )

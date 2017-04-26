@@ -11,6 +11,7 @@ set(axom_utils_headers
     detail/TimeofdayTimer.hpp
 
     numerics/Determinants.hpp
+    numerics/linear_solve.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
     )
