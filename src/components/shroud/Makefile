@@ -71,6 +71,9 @@ test-lua : lua-tutorial
 
 test-all : test-fortran test-python test-lua
 
+test-clean :
+	rm -rf $(tempdir)
+
 print-debug:
 	@echo LUA=$(LUA)
 	@echo PYTHON=$(PYTHON)
@@ -83,5 +86,5 @@ print-debug:
 .PHONY : fortran test-fortran tutorial strings
 .PHONY : test-python py-tutorial
 .PHONY : test-lua lua-tutorial
-.PHONY : test-all
+.PHONY : test-all test-clean
 .PHONY : print-debug
