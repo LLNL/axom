@@ -2,6 +2,7 @@
 // This is generated code, do not edit
 // wrapTutorial.cpp
 #include "wrapTutorial.h"
+#include <cstring>
 #include <string>
 #include "shroudrt.hpp"
 #include "tutorial.hpp"
@@ -74,7 +75,11 @@ void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, i
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
     const std::string SH_rv = Function4a(SH_arg1, SH_arg2);
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end function.function4a_bufferify
 }
@@ -99,7 +104,11 @@ void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, i
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
     const std::string & SH_rv = Function4b(SH_arg1, SH_arg2);
-    shroud_FccCopy(output, Noutput, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(output, ' ', Noutput);
+    } else {
+      shroud_FccCopy(output, Noutput, SH_rv.c_str());
+    }
     return;
 // splicer end function.function4b_bufferify
 }
@@ -354,7 +363,11 @@ void TUT_last_function_called_bufferify(char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify
     const std::string & SH_rv = LastFunctionCalled();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end function.last_function_called_bufferify
 }

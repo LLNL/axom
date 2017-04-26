@@ -538,9 +538,13 @@
                     ]
                 }, 
                 "result_buf": {
-                    "cpp_header": "shroudrt.hpp", 
+                    "cpp_header": "<cstring> shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "if ({cpp_var} == NULL) {{", 
+                        "  std::memset({c_var}, ' ', {c_var_len});", 
+                        "}} else {{", 
+                        "  shroud_FccCopy({c_var}, {c_var_len}, {cpp_var});", 
+                        "}}"
                     ]
                 }
             }, 
@@ -746,9 +750,13 @@
                     ]
                 }, 
                 "result_buf": {
-                    "cpp_header": "shroudrt.hpp", 
+                    "cpp_header": "<cstring> shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "if ({cpp_var}.empty()) {{", 
+                        "  std::memset({c_var}, ' ', {c_var_len});", 
+                        "}} else {{", 
+                        "  shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "}}"
                     ]
                 }
             }, 
@@ -805,9 +813,13 @@
                     ]
                 }, 
                 "result_buf": {
-                    "cpp_header": "shroudrt.hpp", 
+                    "cpp_header": "<cstring> shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "if ({cpp_var}.empty()) {{", 
+                        "  std::memset({c_var}, ' ', {c_var_len});", 
+                        "}} else {{", 
+                        "  shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "}}"
                     ]
                 }
             }, 
@@ -864,9 +876,13 @@
                     ]
                 }, 
                 "result_buf": {
-                    "cpp_header": "shroudrt.hpp", 
+                    "cpp_header": "<cstring> shroudrt.hpp", 
                     "post_call": [
-                        "shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});"
+                        "if ({cpp_var}.empty()) {{", 
+                        "  std::memset({c_var}, ' ', {c_var_len});", 
+                        "}} else {{", 
+                        "  shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+                        "}}"
                     ]
                 }
             }, 

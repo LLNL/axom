@@ -5,6 +5,7 @@
 //
 // wrapExClass1.cpp
 #include "wrapExClass1.h"
+#include <cstring>
 #include <string>
 #include "ExClass1.hpp"
 #include "shroudrt.hpp"
@@ -106,7 +107,11 @@ void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, in
 // splicer begin class.ExClass1.method.get_name_bufferify
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getName();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass1.method.get_name_bufferify
 }
@@ -144,7 +149,11 @@ void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char *
 // splicer begin class.ExClass1.method.get_name_error_check_bufferify
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getNameErrorCheck();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass1.method.get_name_error_check_bufferify
 }
@@ -167,7 +176,11 @@ void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, i
 // splicer begin class.ExClass1.method.get_name_arg_bufferify
     const ExClass1 *SH_this = static_cast<const ExClass1 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getNameArg();
-    shroud_FccCopy(name, Nname, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(name, ' ', Nname);
+    } else {
+      shroud_FccCopy(name, Nname, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass1.method.get_name_arg_bufferify
 }

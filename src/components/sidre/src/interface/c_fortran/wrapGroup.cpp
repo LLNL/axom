@@ -11,6 +11,7 @@
 //
 // wrapGroup.cpp
 #include "wrapGroup.h"
+#include <cstring>
 #include <string>
 #include "shroudrt.hpp"
 #include "sidre/Group.hpp"
@@ -46,7 +47,14 @@ void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
   const Group * SH_this =
     static_cast<const Group *>(static_cast<const void *>(self));
   const std::string & SH_rv = SH_this->getName();
-  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
   return;
 // splicer end class.Group.method.get_name_bufferify
 }
@@ -248,7 +256,14 @@ void SIDRE_group_get_view_name_bufferify(const SIDRE_group * self,
     return;
   }
 
-  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
   return;
 // splicer end class.Group.method.get_view_name_bufferify
 }
@@ -896,7 +911,14 @@ void SIDRE_group_get_group_name_bufferify(const SIDRE_group * self,
     return;
   }
 
-  shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
   return;
 // splicer end class.Group.method.get_group_name_bufferify
 }

@@ -422,12 +422,13 @@ class Wrapc(util.WrapperMixin):
 
             for intent in slist:
                 # pre_call.append('// intent=%s' % intent)
-                cmd_list = c_statements.get(intent, {}).get('pre_call', [])
+                intent_blk = c_statements.get(intent, {})
+                cmd_list = intent_blk.get('pre_call', [])
                 if cmd_list:
                     for cmd in cmd_list:
                         append_format(pre_call, cmd, fmt_arg)
 
-                cmd_list = c_statements.get(intent, {}).get('post_call', [])
+                cmd_list = intent_blk.get('post_call', [])
                 if cmd_list:
                     # pick up c_str() from cpp_to_c
                     fmt_arg.cpp_val = wformat(arg_typedef.cpp_to_c, fmt_arg)
@@ -435,11 +436,11 @@ class Wrapc(util.WrapperMixin):
                     for cmd in cmd_list:
                         append_format(post_call, cmd, fmt_arg)
 
-                cpp_header = c_statements.get(intent, {}) \
-                                         .get('cpp_header', None)
+                cpp_header = intent_blk.get('cpp_header', None)
+                # include any dependent header in generated source
                 if cpp_header:
-                    # include any dependent header in generated source
-                    self.header_impl_include[cpp_header] = True
+                    for h in cpp_header.split():
+                        self.header_impl_include[h] = True
 
             if arg_typedef.cpp_local_var:
                 # cpp_local_var should only be set if c_statements are not used

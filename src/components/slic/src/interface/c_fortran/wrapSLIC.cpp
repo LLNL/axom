@@ -11,6 +11,7 @@
 //
 // wrapSLIC.cpp
 #include "wrapSLIC.h"
+#include <cstring>
 #include <string>
 #include "shroudrt.hpp"
 #include "slic/slic.hpp"
@@ -90,7 +91,12 @@ void SLIC_get_active_logger_name_bufferify(char * name, int Nname)
 {
 // splicer begin function.get_active_logger_name_bufferify
   std::string SH_rv = getActiveLoggerName();
-  shroud_FccCopy(name, Nname, SH_rv.c_str());
+  if (SH_rv.empty()) {
+    std::memset(name, ' ', Nname);
+  }
+  else {
+    shroud_FccCopy(name, Nname, SH_rv.c_str());
+  }
   return;
 // splicer end function.get_active_logger_name_bufferify
 }

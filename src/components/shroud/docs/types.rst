@@ -251,10 +251,14 @@ The type map::
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
                       - delete [] {cpp_var};
                 result_buf:
-                    cpp_header: shroudrt.hpp
+                    cpp_header: <cstring> shroudrt.hpp
                     post_call:
-                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
-    
+                      - if ({cpp_var} == NULL) {{
+                      -   std::memset({c_var}, \' \', {c_var_len});
+                      - }} else {{
+                      -   shroud_FccCopy({c_var}, {c_var_len}, {cpp_var});
+                      - }}
+
             f_type: character(*)
             f_c_type: character(kind=C_CHAR)
             f_c_module:
@@ -386,11 +390,11 @@ additional sections to convert between ``char *`` and ``std::string``::
     
             c_statements:
                 intent_in:
-                    cpp_local_var=True,
+                    cpp_local_var: true
                     pre_call:
                       - {c_const}std::string {cpp_var}({c_var});
                 intent_out:
-                    cpp_header='<cstring>'
+                    cpp_header: <cstring>
                     post_call:
                       - strcpy({c_var}, {cpp_val});
 
@@ -401,13 +405,17 @@ additional sections to convert between ``char *`` and ``std::string``::
                     pre_call_buf:
                       - {c_const}std::string {cpp_var}({c_var}, {c_var_trim});
                 intent_out_buf:
-                    cpp_header: shroudrt.hpp'
+                    cpp_header: shroudrt.hpp
                     post_call:
                       - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
                 result_buf:
-                    cpp_header: shroudrt.hpp'
+                    cpp_header: <cstring> shroudrt.hpp
                     post_call:
-                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                       - if ({cpp_var}.empty()) {{
+                       -   std::memset({c_var}, \' \', {c_var_len});
+                       - }} else {{
+                       -   shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                       - }}
     
             f_type: character(*)
             f_c_type: character(kind=C_CHAR)

@@ -291,7 +291,11 @@ computed using ``len``::
         const std::string SH_arg1(arg1, Larg1);
         const std::string SH_arg2(arg2, Larg2);
         const std::string rv = Function4a(SH_arg1, SH_arg2);
-        shroud_FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
+        if (SH_rv.empty()) {
+          std::memset(SH_F_rv, ' ', NSH_F_rv);
+        } else {
+          shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+        }
         return;
     }
 

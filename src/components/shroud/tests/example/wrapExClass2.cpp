@@ -5,6 +5,7 @@
 //
 // wrapExClass2.cpp
 #include "wrapExClass2.h"
+#include <cstring>
 #include <string>
 #include "ExClass2.hpp"
 #include "shroudrt.hpp"
@@ -72,7 +73,11 @@ void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, in
 // splicer begin class.ExClass2.method.get_name_bufferify
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
     const std::string & SH_rv = SH_this->getName();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass2.method.get_name_bufferify
 }
@@ -95,7 +100,11 @@ void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int NSH
 // splicer begin class.ExClass2.method.get_name2_bufferify
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
     const std::string & SH_rv = SH_this->getName2();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass2.method.get_name2_bufferify
 }
@@ -118,7 +127,11 @@ void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, i
 // splicer begin class.ExClass2.method.get_name3_bufferify
     const ExClass2 *SH_this = static_cast<const ExClass2 *>(static_cast<const void *>(self));
     std::string & SH_rv = SH_this->getName3();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass2.method.get_name3_bufferify
 }
@@ -141,7 +154,11 @@ void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int NSH
 // splicer begin class.ExClass2.method.get_name4_bufferify
     ExClass2 *SH_this = static_cast<ExClass2 *>(static_cast<void *>(self));
     std::string & SH_rv = SH_this->getName4();
-    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end class.ExClass2.method.get_name4_bufferify
 }

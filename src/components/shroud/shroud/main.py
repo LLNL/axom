@@ -399,16 +399,18 @@ class Schema(object):
                             'char * {cpp_var} = new char [{c_var_len} + 1];',
                             ],
                         post_call=[
-                            'shroud_FccCopy'
-                            '({c_var}, {c_var_len}, {cpp_val});',
+                            'shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
                         ),
                     result_buf=dict(
-                        cpp_header='shroudrt.hpp',
+                        cpp_header='<cstring> shroudrt.hpp',
                         post_call=[
-                            ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
+                            'if ({cpp_var} == NULL) {{',
+                            '  std::memset({c_var}, \' \', {c_var_len});',
+                            '}} else {{',
+                            '  shroud_FccCopy({c_var}, {c_var_len}, {cpp_var});',
+                            '}}',
                             ],
                         ),
                     ),
@@ -481,30 +483,38 @@ class Schema(object):
                         post_call=[
                             # This may overwrite c_var if cpp_val is too long
                             'strcpy({c_var}, {cpp_val});'
-#                            ('shroud_FccCopy'
-#                             '({c_var}, {c_var_trim}, {cpp_val});')
-                            ],
+#                            'shroud_FccCopy({c_var}, {c_var_trim}, {cpp_val});'
+                        ],
                     ),
+#                    result=dict(
+#                        post_call=[
+#                            'if ({cpp_var}.empty()) {{',
+#                            '  {c_var} = NULL;',
+#                            '}}',
+#                        ],
+#                    ),
                     intent_in_buf=dict(
                         cpp_local_var=True,
                         pre_call=[
                             ('{c_const}std::string '
                              '{cpp_var}({c_var}, {c_var_trim});')
-                            ],
+                        ],
                     ),
                     intent_out_buf=dict(
                         cpp_header='shroudrt.hpp',
                         post_call=[
-                            ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
-                            ],
+                            'shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});'
+                        ],
                     ),
                     result_buf=dict(
-                        cpp_header='shroudrt.hpp',
+                        cpp_header='<cstring> shroudrt.hpp',
                         post_call=[
-                            ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
-                            ],
+                            'if ({cpp_var}.empty()) {{',
+                            '  std::memset({c_var}, \' \', {c_var_len});',
+                            '}} else {{',
+                            '  shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            '}}',
+                        ],
                     ),
                 ),
 
