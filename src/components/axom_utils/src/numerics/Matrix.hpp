@@ -528,7 +528,7 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Copies the matrix into this matrxi instance.
+   * \brief Copies the matrix into this matrix instance.
    * \param [in] rhs matrix on the right-hand side.
    *****************************************************************************
    */

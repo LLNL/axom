@@ -71,6 +71,7 @@ int lu_decompose( Matrix< T >& A, int* pivots );
  * \param [in] pivots stores row-interchanges ( output from lu_decompose() )
  * \param [in] b the vector on the right-hand side.
  * \param [out] x the solution vector ( computed ).
+ * \return rc return code, LU_SUCCESS if operation is successful
  *
  * \pre A.isSquare()==true
  * \pre pivots != AXOM_NULLPTR
