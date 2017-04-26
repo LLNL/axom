@@ -96,7 +96,7 @@ int linear_solve( Matrix< T >& A, const T* b, T* x )
     }
 
     delete [] pivots;
-    if ( rc != LU_SOLVE_SUCCESS ) {
+    if ( rc != LU_SUCCESS ) {
       return -1;
     }
 

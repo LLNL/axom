@@ -26,7 +26,6 @@ enum ReturnCodes {
   LU_SUCCESS,
   LU_SINGULAR_MATRIX,
   LU_NONSQUARE_MATRIX,
-  LU_SOLVE_SUCCESS
 };
 
 /// \name Matrix Operators
@@ -194,7 +193,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
   } // END for i
 
   delete [] rhs;
-  return LU_SOLVE_SUCCESS;
+  return LU_SUCCESS;
 }
 
 

@@ -99,7 +99,7 @@ TEST( numerics_lu, lu_solve )
   EXPECT_EQ( numerics::LU_SUCCESS, rc );
 
   rc = numerics::lu_solve( A_decomposed, pivots, b, x );
-  EXPECT_EQ( numerics::LU_SOLVE_SUCCESS, rc );
+  EXPECT_EQ( numerics::LU_SUCCESS, rc );
   EXPECT_DOUBLE_EQ( 3,  x[0] );
   EXPECT_DOUBLE_EQ( 4,  x[1] );
   EXPECT_DOUBLE_EQ( -2, x[2] );
