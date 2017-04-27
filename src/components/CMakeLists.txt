@@ -35,7 +35,7 @@ endif()
 ## to ensure that the include files are copied over
 ## Note: This assumes components have a cmake target with the same name 
 ## (e.g. that slic has a target named 'slic')
-set(axom_components shroud axom_utils lumberjack slic primal slam sidre mint quest spio)
+set(axom_components axom_utils lumberjack slic primal slam sidre mint quest spio)
 foreach(comp ${axom_components})
    string(TOUPPER ${comp} COMP)
    if(ENABLE_${COMP})

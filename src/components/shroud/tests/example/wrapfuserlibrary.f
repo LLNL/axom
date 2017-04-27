@@ -112,20 +112,21 @@ module userlibrary_mod
 
         subroutine testmpi(comm) &
                 bind(C, name="AA_testmpi")
+            use iso_c_binding, only : C_INT
             implicit none
             integer(C_INT), value, intent(IN) :: comm
         end subroutine testmpi
 
         subroutine c_testgroup1(grp) &
                 bind(C, name="AA_testgroup1")
-            use sidre_mod, only : group
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: grp
         end subroutine c_testgroup1
 
         subroutine c_testgroup2(grp) &
                 bind(C, name="AA_testgroup2")
-            use sidre_mod, only : group
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: grp
         end subroutine c_testgroup2

@@ -34,7 +34,7 @@ module class2_mod
 
         subroutine c_class2_method1(self, comm) &
                 bind(C, name="DEF_class2_method1")
-            use iso_c_binding, only : C_PTR
+            use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: comm

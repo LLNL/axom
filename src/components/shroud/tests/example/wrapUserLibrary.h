@@ -23,6 +23,8 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
+struct s_SIDRE_group;
+typedef struct s_SIDRE_group SIDRE_group;
 
 // splicer begin C_declarations
 // splicer end C_declarations

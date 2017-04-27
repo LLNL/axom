@@ -348,7 +348,9 @@ comments::
     }
 
 These comments delineate a section of code which can be replaced by
-the user.  In a separate file, add the begin and end splicer comments,
+the user.  The splicer's name, ``function.get_char3`` in the example,
+is used to determine where to insert the code.
+In a separate file, add the begin and end splicer comments,
 then add the code which should be inserted into the wrapper.  Multiple
 splicer can be added to an input file.  Any text that is not within a
 splicer block is ignored.  Splicers must be sorted by language.  If
@@ -363,6 +365,8 @@ end with any of ``.c``, ``.h``, ``.cpp``, ``.hpp``, ``.cxx``,
         return SH_rv + 1;
     // splicer end function.get_char3
 
+The file with the custom splicers is added to the Shroud command line
+along with the YAML file.
 
 In addition to replacing code for a function wrapper, there are 
 splicers that are generated which allow a user to insert additional
@@ -414,7 +418,7 @@ C implementation::
 
       // function.{underscore_name}{function_suffix}
 
-      // {cpp_class}.method.{underscore_name}{function_suffix}
+      // class.{cpp_class}.method.{underscore_name}{function_suffix}
 
     }
 
