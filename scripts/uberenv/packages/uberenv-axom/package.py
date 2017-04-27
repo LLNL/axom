@@ -6,7 +6,7 @@ import platform
 from os.path import join as pjoin
 
 def cmake_cache_entry(name,value):
-    return 'set("%s" "%s" CACHE PATH "")\n\n' % (name,value)
+    return 'set(%s "%s" CACHE PATH "")\n\n' % (name,value)
 
 class UberenvAxom(Package):
     """Spack Based Uberenv Build for Axom TPLs """
@@ -125,60 +125,77 @@ class UberenvAxom(Package):
             cfg.write("# no fortran compiler\n\n")
             cfg.write(cmake_cache_entry("ENABLE_FORTRAN","OFF"))
 
-        cfg.write("# hdf5 from uberenv\n")
-        cfg.write(cmake_cache_entry("HDF5_DIR",spec['hdf5'].prefix))
+        # try to find the common prefix of the TPL directory, including the compiler 
+        # Fallback is to set tpl_root to full install path for uberenv-axom, which will not be in other paths
+        compiler_str = str(spec.compiler).replace('@','-')
+        prefix_paths = prefix.split( compiler_str )
 
+        if len(prefix_paths) == 2:
+            tpl_root = pjoin( prefix_paths[0], compiler_str )
+            cfg.write("# Root directory for generated TPLs\n")
+            cfg.write(cmake_cache_entry("TPL_ROOT",tpl_root))
+        else:
+            tpl_root = prefix  
+
+        hdf5_dir = spec["hdf5"].prefix.replace(tpl_root, "${TPL_ROOT}")
+        cfg.write("# hdf5 from uberenv\n")
+        cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
+
+        conduit_dir = spec["conduit"].prefix.replace(tpl_root, "${TPL_ROOT}")
         cfg.write("# conduit from uberenv\n")
-        cfg.write(cmake_cache_entry("CONDUIT_DIR",spec['conduit'].prefix))
+        cfg.write(cmake_cache_entry("CONDUIT_DIR",conduit_dir))
 
         if "boost-headers" in spec:
+            boost_headers_dir = spec["boost-headers"].prefix.replace(tpl_root, "${TPL_ROOT}")
             cfg.write("# boost headers from uberenv\n")
-            cfg.write(cmake_cache_entry("BOOST_DIR",spec['boost-headers'].prefix))
+            cfg.write(cmake_cache_entry("BOOST_DIR",boost_headers_dir))
         else:
             cfg.write("# boost headers not installed by uberenv\n")
 
         # optional tpls
 
         if "python" in spec or "devtools" in spec:
+            python_exe = pjoin(spec['python'].prefix.bin,"python").replace(tpl_root, "${TPL_ROOT}")
             cfg.write("# python from uberenv\n")
-            python_exe = pjoin(spec['python'].prefix.bin,"python")
             cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",python_exe))
         else:
             cfg.write("# python not build by uberenv\n\n")
 
         if "lua" in spec:
+            lua_dir = spec["lua"].prefix.replace(tpl_root, "${TPL_ROOT}")
             cfg.write("# lua from uberenv\n")
-            cfg.write(cmake_cache_entry("LUA_DIR",spec['lua'].prefix))
+            cfg.write(cmake_cache_entry("LUA_DIR",lua_dir))
         else:
             cfg.write("# lua not build by uberenv\n\n")
 
         # optional tpls (dev tools)
 
         if "doxygen" in spec:
+            doxygen_exe = pjoin(spec['doxygen'].prefix.bin,"doxygen").replace(tpl_root, "${TPL_ROOT}")
             cfg.write("# doxygen from uberenv\n")
-            doxygen_exe = pjoin(spec['doxygen'].prefix.bin,"doxygen")
             cfg.write(cmake_cache_entry("DOXYGEN_EXECUTABLE", doxygen_exe))
         else:
             cfg.write("# doxygen not built by uberenv\n\n")
 
         if "py-sphinx" in spec:
+            sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build").replace(tpl_root, "${TPL_ROOT}")
             cfg.write("# sphinx from uberenv\n")
-            sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build")
             cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", sphinx_build_exe))
         else:
             cfg.write("# sphinx not built by uberenv\n\n")
 
         if "uncrustify" in spec:
+            uncrustify_exe   = pjoin(spec['uncrustify'].prefix.bin,"uncrustify").replace(tpl_root, "${TPL_ROOT}")
             cfg.write("# uncrustify from uberenv\n")
-            uncrustify_exe   = pjoin(spec['uncrustify'].prefix.bin,"uncrustify")
             cfg.write(cmake_cache_entry("UNCRUSTIFY_EXECUTABLE", uncrustify_exe))
         else:
             cfg.write("# uncrustify not built by uberenv\n\n")
 
         cfg.write("# lcov and genhtml from uberenv\n")
         if "lcov" in spec:
-            cfg.write(cmake_cache_entry("LCOV_PATH", pjoin(spec['lcov'].prefix,"usr","bin","lcov")))
-            cfg.write(cmake_cache_entry("GENHTML_PATH",pjoin(spec['lcov'].prefix,"usr","bin","genhtml")))
+            lcov_path = spec['lcov'].prefix.replace(tpl_root, "${TPL_ROOT}")
+            cfg.write(cmake_cache_entry("LCOV_PATH", pjoin(lcov_path,"usr","bin","lcov")))
+            cfg.write(cmake_cache_entry("GENHTML_PATH",pjoin(lcov_path,"usr","bin","genhtml")))
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
 
