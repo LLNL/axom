@@ -16,9 +16,9 @@ If you've never used git/Stash, you will need to create an `SSH key <https://con
 
 1.  First, clone the Axom repo in some local directory you own.::
 
-     git clone ssh://git@cz-stash.llnl.gov:7999/atk/asctoolkit.git
+     git clone ssh://git@cz-stash.llnl.gov:7999/atk/axom.git
 
-     cd asctoolkit
+     cd axom
 
 2.  Run the "setup-for-development" script, which will ensure that Git is configured correctly and client-side hooks are installed:::
 

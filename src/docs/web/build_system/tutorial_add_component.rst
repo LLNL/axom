@@ -2,7 +2,7 @@ How to add a new Component to the Build System
 ==============================================
 1. Create the folder for the new component, inside the components directory.
 
-     `<https://lc.llnl.gov/stash/projects/ATK/repos/asctoolkit/browse/src/components>`_  
+     `<https://lc.llnl.gov/stash/projects/ATK/repos/axom/browse/src/components>`_  
 
 
 *  NOTES:  Create a python file to create a template for a new component.
