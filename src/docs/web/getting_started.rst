@@ -10,13 +10,13 @@ Checking out the code
 ---------------------
 
 The Axom source code can be obtained from the axom git/bitbucket project located at
-  `<https://lc.llnl.gov/stash/projects/ATK>`_
+  `<https://lc.llnl.gov/bitbucket/projects/ATK>`_
 
-If you've never used git/Stash, you will need to create an `SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and  `add that SSH Key <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_ to your `CZ Stash Profile <https://lc.llnl.gov/stash/account>`_.
+If you've never used git/bitbucket, you will need to create an `SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and  `add that SSH Key <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_ to your `CZ Bitbucket Profile <https://lc.llnl.gov/bitbucket/account>`_.
 
 1.  First, clone the Axom repo in some local directory you own.::
 
-     git clone ssh://git@cz-stash.llnl.gov:7999/atk/axom.git
+     git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
 
      cd axom
 

@@ -87,7 +87,7 @@ Quickstart
 ----------
 See the `Code Development in the Toolkit Guide <https://lc.llnl.gov/confluence/display/ASCT/Code+Development+in+the+Toolkit>`_, it contains an explanation and examples of how to build and select compilers in the toolkit.
 
-**Motivation for "host-config" files:**  `<https://lc.llnl.gov/stash/projects/ATK/repos/axom/browse/host-configs>`_
+**Motivation for "host-config" files:**  `<https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/browse/host-configs>`_
 
 * Experience tells us that using hand-typed command line options, ccmake, or cmake-gui to manually set up build options is time consuming, error prone, and not reproducible
 * **Solution:** We keep per-host (or per platform) configuration files that are used to seed CMake via CMake's initial cache file option ("-C")
@@ -97,12 +97,12 @@ See the `Code Development in the Toolkit Guide <https://lc.llnl.gov/confluence/d
    * New configurations can be set up easily by copying and modifying existing host config files.
    * The host-config files are organized by system type and compiler version.
 
-**config-build scripts** `<https://lc.llnl.gov/stash/projects/ATK/repos/axom/browse/scripts>`_
+**config-build scripts** `<https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/browse/scripts>`_
 
 This script is designed to wrap commonly used build options and pick up the correct host-config file for Livermore Computing(LC) systems. There is a 'python' version for systems with 'python' installed - *'config-build.py'*. For non-python systems use *'config-build.sh'*. Additional options can be set via 'ccmake' or 'cmake-gui'. For help on the python version do 'config-build.py --help'
 
 
-**SetupCmakeOptions.cmake** `<https://lc.llnl.gov/stash/projects/ATK/repos/axom/browse/src/cmake/SetupCmakeOptions.cmake>`_
+**SetupCmakeOptions.cmake** `<https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/browse/src/cmake/SetupCmakeOptions.cmake>`_
 This is declared at the top of the 'cmake' configuration, and provides a centralized location for checking configuration options and their defaults.
 
 +-------------------------------------+-------------------------------+--------+

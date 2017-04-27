@@ -588,7 +588,7 @@ To add a repository to a plan:
   3. Click the Add Repository button.
   
      Basic options:
-       * Repository Host is "Bitbucket / Stash" (the cz server can also pull from Github)
+       * Repository Host is "Bitbucket Server / Stash" (the cz server can also pull from Github)
        * Server is CZ Bitbucket (only option available)
        * Repository "Axom"
        * Select the branch
