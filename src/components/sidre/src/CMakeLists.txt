@@ -23,7 +23,7 @@ set(sidre_sources
     core/SidreUtilities.cpp
 )
 
-if(ENABLE_SHROUD)
+if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 

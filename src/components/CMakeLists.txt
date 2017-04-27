@@ -6,10 +6,6 @@ endif(ENABLE_PYTHON_API)
 ## Note: Default state of components is controlled by the ENABLE_ALL_COMPONENTS
 ## option. However, the 'common' component is always enabled.
 
-if ( ENABLE_SHROUD )
-  blt_add_component(COMPONENT_NAME shroud DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-endif()
-
 blt_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 
 # Lumberjack is an extension to SLIC that supports message filtering and
