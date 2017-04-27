@@ -469,12 +469,13 @@ return 1;""", fmt)
 
                 if arg_typedef.cpp_local_var:
                     # cpp_local_var should only be set if
-                    # c_statements are not used
-                    if py_statements:
-                        raise RuntimeError(
-                            'py_statements and cpp_local_var are '
-                            'both defined for {}'
-                            .format(arg_typedef.name))
+                    # py_statements are not used
+# XXX this test is wrong, need to investigate the relationship with cpp_local_var
+#                    if py_statements:
+#                        raise RuntimeError(
+#                            'py_statements and cpp_local_var are '
+#                            'both defined for {}'
+#                            .format(arg_typedef.name))
                     append_format(post_parse,
                                   '{c_const}{cpp_type}{c_ptr} {cpp_var} = '
                                   + arg_typedef.c_to_cpp + ';', fmt_arg)

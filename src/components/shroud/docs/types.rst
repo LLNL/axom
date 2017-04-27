@@ -614,6 +614,31 @@ The generated wrappers are::
           it after copying the contents. Shroud does not deal with this case
           and will result in leaked memory.
 
+MPI_Comm
+--------
+
+MPI_Comm is provided by Shroud and serves as an example of how to wrap
+a non-native type.  MPI provides a Fortran interface and the ability
+to convert MPI_comm between Fortran and C. The type map tells Shroud
+how to use these routines::
+
+    types:
+        MPI_Comm:
+            cpp_type: MPI_Comm
+            c_header: mpi.h
+            c_type: MPI_Fint
+            f_type: integer
+            f_c_type: integer(C_INT)
+            f_c_module:
+                iso_c_binding:
+                  - C_INT
+            cpp_to_c: MPI_Comm_c2f({cpp_var})
+            c_to_cpp: MPI_Comm_f2c({c_var})
+
+
+This mapping makes the assumption that ``integer`` and
+``integer(C_INT)`` are the same type.
+
 
 .. Complex Type
    ------------

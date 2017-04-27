@@ -21,16 +21,21 @@
 #include "mpi.h"
 #include "sidre/wrapGroup.h"
 
+// splicer begin class.IOManager.CXX_declarations
+// splicer end class.IOManager.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // declaration of wrapped types
+struct s_SIDRE_group;
+typedef struct s_SIDRE_group SIDRE_group;
 struct s_SPIO_iomanager;
 typedef struct s_SPIO_iomanager SPIO_iomanager;
 
-// splicer begin class.IOManager.C_definition
-// splicer end class.IOManager.C_definition
+// splicer begin class.IOManager.C_declarations
+// splicer end class.IOManager.C_declarations
 
 SPIO_iomanager * SPIO_iomanager_new(MPI_Fint com);
 

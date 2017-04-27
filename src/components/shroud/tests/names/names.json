@@ -509,6 +509,11 @@
             "c_type": "MPI_Fint", 
             "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
             "cpp_type": "MPI_Comm", 
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
             "f_c_type": "integer(C_INT)", 
             "f_type": "integer"
         }, 

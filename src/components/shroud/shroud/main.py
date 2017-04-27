@@ -545,6 +545,7 @@ class Schema(object):
                 # usually, MPI_Fint will be equivalent to int
                 f_type='integer',
                 f_c_type='integer(C_INT)',
+                f_c_module=dict(iso_c_binding=['C_INT']),
                 cpp_to_c='MPI_Comm_c2f({cpp_var})',
                 c_to_cpp='MPI_Comm_f2c({c_var})',
                 ),
@@ -587,7 +588,7 @@ class Schema(object):
                     def_types[key].update(value)
                 else:
                     def_types[key] = util.Typedef(key, **value)
-#                util.typedef_wrapped_defaults(def_types[key])  # XXX needs work
+                util.typedef_wrapped_defaults(def_types[key])
 
         patterns = node.setdefault('patterns', [])
 
