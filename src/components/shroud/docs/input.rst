@@ -55,7 +55,7 @@ Customizing Behavior in the YAML file
 Fields
 ^^^^^^
 
-A field only apply to the type, class or function to which it belongs.
+A field only applies to the type, class or function to which it belongs.
 It is not inherited.
 For example, *C_name* is a field which is used to explicitly name
 a single C wrapper function.  While *C_name_template* is an option which
