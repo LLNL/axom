@@ -66,7 +66,7 @@ module spio_mod
         function c_iomanager_new(com) &
                 result(SH_rv) &
                 bind(C, name="SPIO_iomanager_new")
-            use iso_c_binding
+            use iso_c_binding, only : C_INT, C_PTR
             implicit none
             integer(C_INT), value, intent(IN) :: com
             type(C_PTR) :: SH_rv
@@ -74,14 +74,14 @@ module spio_mod
 
         subroutine c_iomanager_delete(self) &
                 bind(C, name="SPIO_iomanager_delete")
-            use iso_c_binding
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine c_iomanager_delete
 
         subroutine c_iomanager_write(self, group, num_files, file_string, protocol) &
                 bind(C, name="SPIO_iomanager_write")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -92,7 +92,7 @@ module spio_mod
 
         subroutine c_iomanager_write_bufferify(self, group, num_files, file_string, Lfile_string, protocol, Lprotocol) &
                 bind(C, name="SPIO_iomanager_write_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -105,7 +105,7 @@ module spio_mod
 
         subroutine c_iomanager_write_group_to_root_file(self, group, file_name) &
                 bind(C, name="SPIO_iomanager_write_group_to_root_file")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -114,7 +114,7 @@ module spio_mod
 
         subroutine c_iomanager_write_group_to_root_file_bufferify(self, group, file_name, Lfile_name) &
                 bind(C, name="SPIO_iomanager_write_group_to_root_file_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -124,7 +124,7 @@ module spio_mod
 
         subroutine c_iomanager_read_0(self, group, file_string, protocol) &
                 bind(C, name="SPIO_iomanager_read_0")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -134,7 +134,7 @@ module spio_mod
 
         subroutine c_iomanager_read_0_bufferify(self, group, file_string, Lfile_string, protocol, Lprotocol) &
                 bind(C, name="SPIO_iomanager_read_0_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -146,7 +146,7 @@ module spio_mod
 
         subroutine c_iomanager_read_1(self, group, root_file) &
                 bind(C, name="SPIO_iomanager_read_1")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -155,7 +155,7 @@ module spio_mod
 
         subroutine c_iomanager_read_1_bufferify(self, group, root_file, Lroot_file) &
                 bind(C, name="SPIO_iomanager_read_1_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -165,7 +165,7 @@ module spio_mod
 
         subroutine c_iomanager_load_external_data(self, group, root_file) &
                 bind(C, name="SPIO_iomanager_load_external_data")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -174,7 +174,7 @@ module spio_mod
 
         subroutine c_iomanager_load_external_data_bufferify(self, group, root_file, Lroot_file) &
                 bind(C, name="SPIO_iomanager_load_external_data_bufferify")
-            use iso_c_binding
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
@@ -189,7 +189,6 @@ module spio_mod
 contains
 
     function iomanager_new(com) result(SH_rv)
-        implicit none
         integer, value, intent(IN) :: com
         type(iomanager) :: SH_rv
         ! splicer begin class.IOManager.method.new
@@ -199,7 +198,6 @@ contains
 
     subroutine iomanager_delete(obj)
         use iso_c_binding, only : C_NULL_PTR
-        implicit none
         class(iomanager) :: obj
         ! splicer begin class.IOManager.method.delete
         call c_iomanager_delete(obj%voidptr)
@@ -210,7 +208,6 @@ contains
     subroutine iomanager_write(obj, group, num_files, file_string, protocol)
         use iso_c_binding, only : C_INT
         use sidre_mod, only : SidreGroup
-        implicit none
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         integer(C_INT), value, intent(IN) :: num_files
@@ -231,7 +228,6 @@ contains
     subroutine iomanager_write_group_to_root_file(obj, group, file_name)
         use iso_c_binding, only : C_INT
         use sidre_mod, only : SidreGroup
-        implicit none
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: file_name
@@ -247,7 +243,6 @@ contains
     subroutine iomanager_read_0(obj, group, file_string, protocol)
         use iso_c_binding, only : C_INT
         use sidre_mod, only : SidreGroup
-        implicit none
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: file_string
@@ -266,7 +261,6 @@ contains
     subroutine iomanager_read_1(obj, group, root_file)
         use iso_c_binding, only : C_INT
         use sidre_mod, only : SidreGroup
-        implicit none
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: root_file
@@ -282,7 +276,6 @@ contains
     subroutine iomanager_load_external_data(obj, group, root_file)
         use iso_c_binding, only : C_INT
         use sidre_mod, only : SidreGroup
-        implicit none
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: root_file

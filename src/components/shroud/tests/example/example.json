@@ -4123,22 +4123,46 @@
     }, 
     "types": {
         "DataGroup": {
+            "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
+            "LUA_type": "LUA_TUSERDATA", 
             "PY_PyTypeObject": "FillInTypeForGroup", 
             "base": "wrapped", 
             "c_header": "sidre/wrapGroup.h", 
-            "c_to_cpp": "static_cast<{c_const}{cpp_type}{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
+            "c_to_cpp": "static_cast<{c_const}axom::sidre::Group{c_ptr}>(static_cast<{c_const}void *>({c_var}))", 
             "c_type": "SIDRE_group", 
             "cpp_header": "sidre/Group.hpp", 
             "cpp_local_var": true, 
+            "cpp_to_c": "static_cast<{c_const}SIDRE_group *>(static_cast<{c_const}void *>({cpp_var}))", 
             "cpp_type": "axom::sidre::Group", 
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_PTR"
+                ]
+            }, 
             "f_c_type": "type(C_PTR)", 
+            "f_derived_type": "datagroup", 
             "f_module": {
                 "sidre_mod": [
                     "group"
                 ]
             }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})", 
             "f_to_c": "{f_var}%get_instance()", 
-            "f_type": "type(datagroup)"
+            "f_type": "type(datagroup)", 
+            "forward": "axom::sidre::Group", 
+            "py_statements": {
+                "intent_in": {
+                    "post_parse": [
+                        "{cpp_var} = {py_var} ? {py_var}->{BBB} : NULL;"
+                    ]
+                }, 
+                "intent_out": {
+                    "ctor": [
+                        "{PyObject} * {py_var} = PyObject_New({PyObject}, &{PyTypeObject});", 
+                        "{py_var}->{BBB} = {cpp_var};"
+                    ]
+                }
+            }
         }, 
         "ExClass1": {
             "LUA_pop": "({LUA_userdata_type} *)luaL_checkudata({LUA_state_var}, 1, \"{LUA_metadata}\")", 
@@ -4230,6 +4254,11 @@
             "c_type": "MPI_Fint", 
             "cpp_to_c": "MPI_Comm_c2f({cpp_var})", 
             "cpp_type": "MPI_Comm", 
+            "f_c_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
             "f_c_type": "integer(C_INT)", 
             "f_type": "integer"
         }, 

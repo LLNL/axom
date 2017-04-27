@@ -35,15 +35,18 @@ Strings may be split across several lines by indenting the continued line::
     - decl: void Sum(int len, int *values+dimension+intent(in),
                      int *result+intent(out))
 
-Some values consist of blocks of code.  YAML provides a syntax for 
-add multiple lines while preserving newlines::
+Some values consist of blocks of code.  The pipe, ``|``, is used to indicate that
+the string will span several lines and that newlines should be preserved::
 
     C_invalid_name: |
         if (! isNameValid({cpp_var})) {{
             return NULL;
         }}
 
-Note that to insert a literal ``{``, a double brace is required.
+Note that to insert a literal ``{``, a double brace, ``{{``, is
+required since single braces are used for variable expansion.
+``{cpp_var}`` in this example.
+
 
 
 Customizing Behavior in the YAML file
@@ -52,7 +55,7 @@ Customizing Behavior in the YAML file
 Fields
 ^^^^^^
 
-A fields only apply to the type, class or function to which it belongs.
+A field only apply to the type, class or function to which it belongs.
 It is not inherited.
 For example, *C_name* is a field which is used to explicitly name
 a single C wrapper function.  While *C_name_template* is an option which

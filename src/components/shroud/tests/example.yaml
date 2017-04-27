@@ -63,8 +63,7 @@ types:
     base: wrapped
     cpp_header: sidre/Group.hpp
     cpp_type: axom::sidre::Group
-    f_type: type(datagroup)
-    f_c_type: type(C_PTR)
+    f_derived_type: datagroup
     f_module:
       sidre_mod: [ group ]
     c_type: SIDRE_group
@@ -72,7 +71,6 @@ types:
     f_to_c: '{f_var}%get_instance()'
     # cpp_local_var uses c_to_cpp to assign a value to a local variable
     cpp_local_var: True
-    c_to_cpp: static_cast<{c_const}{cpp_type}{c_ptr}>(static_cast<{c_const}void *>({c_var}))
     PY_PyTypeObject: FillInTypeForGroup
 
 classes:
