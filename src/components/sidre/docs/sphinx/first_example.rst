@@ -33,7 +33,7 @@ be used to generate the same result.
 .. code-block:: cpp
 
   // 'using' directives to simplify code
-  using namespace asctoolkit;
+  using namespace axom;
   using namespace sidre;
 
 
