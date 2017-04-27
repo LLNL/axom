@@ -1,10 +1,12 @@
 // pyTutorialmodule.cpp
 // This is generated code, do not edit
 #include "pyTutorialmodule.hpp"
+
 // splicer begin include
 // splicer end include
 
 namespace tutorial {
+
 // splicer begin C_definition
 // splicer end C_definition
 PyObject *PY_error_obj;
@@ -685,5 +687,6 @@ MOD_INITBASIS(void)
 #ifdef __cplusplus
 }
 #endif
+
 
 }  // namespace tutorial

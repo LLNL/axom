@@ -43,7 +43,7 @@ Cloning the repo
 
 To clone the repo into your local working space, type the following::
 
-  $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/asctoolkit.git
+  $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
 
 Important notes:
 

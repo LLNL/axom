@@ -35,6 +35,21 @@ if (BOOST_DIR)
 endif()
 
 ################################
+# Setup toolkit generate targets
+################################
+
+if(EXISTS ${SHROUD_EXECUTABLE})
+    execute_process(COMMAND ${SHROUD_EXECUTABLE} --sitedir
+                    OUTPUT_VARIABLE SHROUD_Site
+                    ERROR_VARIABLE SHROUD_Site_Error
+                    OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(${SHROUD_Site_Error})
+       message(FATAL_ERROR "Error from Shroud: ${SHROUD_Site_Error}")
+    endif()
+    include(${SHROUD_Site}/cmake/SetupShroud.cmake)
+endif()
+
+################################
 # Python
 ################################
 

@@ -11,6 +11,7 @@ static std::string last_function_called;
 static const char * static_char = "bird";
 static std::string static_str = std::string("dog");
 static std::string global_str;
+static std::string static_str_empty;
 
 //----------------------------------------
 
@@ -28,9 +29,8 @@ char returnChar()
 
 //----------------------------------------
 
-void passCharPtr(char * dest, const char *src)
+void passCharPtr(char *dest, const char *src)
 {
-    // throw away result
     std::strcpy(dest, src);
 }
 
@@ -68,6 +68,11 @@ const std::string& getString3()
     return static_str;
 }
 
+const std::string& getString2_empty()
+{
+    return static_str_empty;
+}
+
 //----------------------------------------
 
 void acceptStringConstReference(const std::string & arg1)
@@ -85,3 +90,17 @@ void acceptStringPointer(std::string * arg1)
     global_str = *arg1;
 }
 
+//----------------------------------------
+
+char *keep_explicit1;
+void explicit1(char * name)
+{
+  keep_explicit1 = name;
+}
+
+void explicit2(char * name)
+{
+  *name = 'a';
+}
+
+//----------------------------------------

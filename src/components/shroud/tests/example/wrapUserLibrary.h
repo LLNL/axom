@@ -13,16 +13,21 @@
 #define WRAPUSERLIBRARY_H
 
 #include "mpi.h"
-#include "sidre/wrapDataGroup.h"
+#include "sidre/wrapGroup.h"
+
+// splicer begin CXX_declarations
+// splicer end CXX_declarations
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // declaration of wrapped types
+struct s_SIDRE_group;
+typedef struct s_SIDRE_group SIDRE_group;
 
-// splicer begin C_definition
-// splicer end C_definition
+// splicer begin C_declarations
+// splicer end C_declarations
 
 void AA_local_function1();
 
@@ -31,6 +36,8 @@ bool AA_is_name_valid(const char * name);
 bool AA_is_name_valid_bufferify(const char * name, int Lname);
 
 bool AA_is_initialized();
+
+void AA_check_bool(bool arg1, bool * arg2, bool * arg3);
 
 void AA_test_names(const char * name);
 
@@ -48,9 +55,9 @@ void AA_testoptional_2(int i, long j);
 
 void AA_testmpi(MPI_Fint comm);
 
-void AA_testgroup1(SIDRE_datagroup * grp);
+void AA_testgroup1(SIDRE_group * grp);
 
-void AA_testgroup2(const SIDRE_datagroup * grp);
+void AA_testgroup2(const SIDRE_group * grp);
 
 #ifdef __cplusplus
 }

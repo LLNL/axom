@@ -22,7 +22,7 @@ def add_templates(options):
         PY_PyObject_template='{PY_prefix}{cpp_class}',
         PY_type_filename_template='py{cpp_class}type.cpp',
         PY_name_impl_template=(
-            '{PY_prefix}{class_name}{underscore_name}{function_suffix}'),
+            '{PY_prefix}{class_prefix}{underscore_name}{function_suffix}'),
     ))
 
 
@@ -469,12 +469,13 @@ return 1;""", fmt)
 
                 if arg_typedef.cpp_local_var:
                     # cpp_local_var should only be set if
-                    # c_statements are not used
-                    if py_statements:
-                        raise RuntimeError(
-                            'py_statements and cpp_local_var are '
-                            'both defined for {}'
-                            .format(arg_typedef.name))
+                    # py_statements are not used
+# XXX this test is wrong, need to investigate the relationship with cpp_local_var
+#                    if py_statements:
+#                        raise RuntimeError(
+#                            'py_statements and cpp_local_var are '
+#                            'both defined for {}'
+#                            .format(arg_typedef.name))
                     append_format(post_parse,
                                   '{c_const}{cpp_type}{c_ptr} {cpp_var} = '
                                   + arg_typedef.c_to_cpp + ';', fmt_arg)
@@ -899,9 +900,10 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
-        self._create_splicer('include', output)
         output.append('')
+        self._create_splicer('include', output)
         self.namespace(node, None, 'begin', output)
+        output.append('')
         self._create_splicer('C_definition', output)
 
         output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
@@ -1119,8 +1121,7 @@ PyTypeObject {PY_PyTypeObject} = {{
 #ifdef IS_PY3K
         (destructor)0,                  /* tp_finalize */
 #endif
-}};
-"""
+}};"""
 
 
 module_begin = """

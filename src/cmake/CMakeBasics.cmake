@@ -42,11 +42,6 @@
 include(cmake/AxomOptions.cmake)
 
 ################################
-# Setup toolkit generate targets
-################################
-include(cmake/SetupShroud.cmake)
-
-################################
 # AXOM's Third party library setup
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)

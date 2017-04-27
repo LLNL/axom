@@ -62,7 +62,7 @@ endif()
 ################################
 # install targets from build
 ################################s
-# NOTE: Commented out installation of bin directory for now since contents (shroud)
+# NOTE: Commented out installation of bin directory for now since contents
 #       don't currently work in other directories.
 #install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . OPTIONAL)
 install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)

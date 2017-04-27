@@ -1,6 +1,7 @@
 // pytestnamesmodule.cpp
 // This is generated code, do not edit
 #include "pytestnamesmodule.hpp"
+
 // splicer begin include
 // splicer end include
 

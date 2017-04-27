@@ -104,7 +104,7 @@ Getting a local working copy of the code
 Before starting work on the code, you must clone the repo into your working
 space. This is done by typing::
 
-  $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/asctoolkit.git
+  $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
 
 Important notes:
 
@@ -119,7 +119,7 @@ After cloning, enter the top-level Axom directory and run the development
 setup script we provide to ensure that your Git environment is configured 
 properly and client-side hooks we use are installed; i.e.,::
 
-  $ cd asctoolkit
+  $ cd axom
   $ ./scripts/setup-for-development.sh
 
 More about the Git hooks later.
@@ -588,7 +588,7 @@ To add a repository to a plan:
   3. Click the Add Repository button.
   
      Basic options:
-       * Repository Host is "Bitbucket / Stash" (the cz server can also pull from Github)
+       * Repository Host is "Bitbucket Server / Stash" (the cz server can also pull from Github)
        * Server is CZ Bitbucket (only option available)
        * Repository "Axom"
        * Select the branch

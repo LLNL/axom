@@ -12,6 +12,9 @@
 #ifndef WRAPEXCLASS1_H
 #define WRAPEXCLASS1_H
 
+// splicer begin class.ExClass1.CXX_declarations
+// splicer end class.ExClass1.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,8 +25,8 @@ typedef struct s_AA_exclass1 AA_exclass1;
 struct s_AA_exclass2;
 typedef struct s_AA_exclass2 AA_exclass2;
 
-// splicer begin class.ExClass1.C_definition
-// splicer end class.ExClass1.C_definition
+// splicer begin class.ExClass1.C_declarations
+// splicer end class.ExClass1.C_declarations
 
 AA_exclass1 * AA_exclass1_new(const char * name);
 
@@ -35,17 +38,17 @@ int AA_exclass1_increment_count(AA_exclass1 * self, int incr);
 
 const char * AA_exclass1_get_name(const AA_exclass1 * self);
 
-void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass1_get_name_bufferify(const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv);
 
 int AA_exclass1_get_name_length(const AA_exclass1 * self);
 
 const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self);
 
-void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass1_get_name_error_check_bufferify(const AA_exclass1 * self, char * SH_F_rv, int NSH_F_rv);
 
 const char * AA_exclass1_get_name_arg(const AA_exclass1 * self);
 
-void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, int Lname);
+void AA_exclass1_get_name_arg_bufferify(const AA_exclass1 * self, char * name, int Nname);
 
 AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self);
 

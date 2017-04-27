@@ -91,7 +91,7 @@ Package Dependencies:
   * readline 6.3
   * sparsehash-headers 2.0.2
   * sqlite 3.8.5
-  * uberenv-asctoolkit 0.1
+  * uberenv-axom 0.1
   * uncrustify 0.61
   * zlib 1.2.8
 

@@ -23,7 +23,7 @@ Mirrors
 To avoid downloading source files for each build, a mirror of the distibution
 files can be created for use by spack::
 
-    spack mirror create -d {directory} --dependencies uberenv-asctoolkit
+    spack mirror create -d {directory} --dependencies uberenv-axom
 
 .. https://lc.llnl.gov/confluence/display/ASCT/Third+Party+Dependencies
    https://lc.llnl.gov/confluence/display/ASCT/Toolkit+Development+Environment

@@ -43,14 +43,14 @@ module name_module
 
         subroutine xxx_tes_names_method1(self) &
                 bind(C, name="XXX_TES_names_method1")
-            use iso_c_binding
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine xxx_tes_names_method1
 
         subroutine xxx_tes_names_method2(self) &
                 bind(C, name="XXX_TES_names_method2")
-            use iso_c_binding
+            use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine xxx_tes_names_method2
@@ -64,7 +64,6 @@ contains
     ! void method1()
     ! function_index=0
     subroutine names_method1(obj)
-        implicit none
         class(FNames) :: obj
         ! splicer begin class.Names.method.type_method1
         call xxx_tes_names_method1(obj%voidptr)
@@ -74,7 +73,6 @@ contains
     ! void method2()
     ! function_index=1
     subroutine names_method2(obj)
-        implicit none
         class(FNames) :: obj
         ! splicer begin class.Names.method.method2
         call xxx_tes_names_method2(obj%voidptr)

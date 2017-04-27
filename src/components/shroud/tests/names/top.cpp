@@ -3,7 +3,13 @@
 // top.cpp
 #include "top.h"
 
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
 extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 // void function1()
 // function_index=2
@@ -54,8 +60,5 @@ int YYY_TES_function4()
     return SH_rv;
 // splicer end function.function4
 }
-
-// splicer begin additional_functions
-// splicer end additional_functions
 
 }  // extern "C"
