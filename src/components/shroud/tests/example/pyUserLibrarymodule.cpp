@@ -4,11 +4,13 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
+
 // splicer begin include
 // splicer end include
 
 namespace example {
 namespace nested {
+
 // splicer begin C_definition
 // splicer end C_definition
 PyObject *PP_error_obj;
@@ -73,6 +75,40 @@ PP_is_initialized(
     PyObject * SH_Py_rv = PyBool_FromLong(rv);
     return (PyObject *) SH_Py_rv;
 // splicer end function.is_initialized
+}
+
+static char PP_check_bool__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_check_bool(
+  PyObject *,  // self unused
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.check_bool
+    bool arg1;
+    PyObject * SH_Py_arg1;
+    bool * arg2;
+    PyObject * SH_Py_arg2;
+    bool * arg3;
+    PyObject * SH_Py_arg3;
+    const char *SH_kwcpp = "arg1\0arg3";
+    char *SH_kw_list[] = { (char *) SH_kwcpp+0,(char *) SH_kwcpp+5, NULL };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!:checkBool", SH_kw_list,
+        &PyBool_Type, &SH_Py_arg1, &PyBool_Type, &SH_Py_arg3))
+    {
+        return NULL;
+    }
+    arg1 = PyObject_IsTrue(SH_Py_arg1);
+    arg3 = PyObject_IsTrue(SH_Py_arg3);
+    checkBool(arg1, arg2, arg3);
+    PyObject * SH_Py_arg2 = PyBool_FromLong(arg2);
+    PyObject * SH_Py_arg3 = PyBool_FromLong(arg3);
+    return Py_BuildValue("(OO)", *SH_Py_arg2, *SH_Py_arg3);
+// splicer end function.check_bool
 }
 
 static PyObject *
@@ -195,7 +231,7 @@ PP_testgroup1(
   PyObject *kwds)
 {
 // splicer begin function.testgroup1
-    axom::sidre::DataGroup * grp;
+    axom::sidre::Group * grp;
     PyObject * SH_Py_grp;
     const char *SH_kwcpp = "grp";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
@@ -205,7 +241,7 @@ PP_testgroup1(
     {
         return NULL;
     }
-    axom::sidre::DataGroup * SH_grp = static_cast<axom::sidre::DataGroup *>(static_cast<void *>(grp));
+    axom::sidre::Group * SH_grp = static_cast<axom::sidre::Group *>(static_cast<void *>(grp));
     testgroup1(SH_grp);
     Py_RETURN_NONE;
 // splicer end function.testgroup1
@@ -222,7 +258,7 @@ PP_testgroup2(
   PyObject *kwds)
 {
 // splicer begin function.testgroup2
-    const axom::sidre::DataGroup * grp;
+    const axom::sidre::Group * grp;
     PyObject * SH_Py_grp;
     const char *SH_kwcpp = "grp";
     char *SH_kw_list[] = { (char *) SH_kwcpp+0, NULL };
@@ -232,7 +268,7 @@ PP_testgroup2(
     {
         return NULL;
     }
-    const axom::sidre::DataGroup * SH_grp = static_cast<const axom::sidre::DataGroup *>(static_cast<const void *>(grp));
+    const axom::sidre::Group * SH_grp = static_cast<const axom::sidre::Group *>(static_cast<const void *>(grp));
     testgroup2(SH_grp);
     Py_RETURN_NONE;
 // splicer end function.testgroup2
@@ -279,6 +315,7 @@ static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
 {"isInitialized", (PyCFunction)PP_is_initialized, METH_NOARGS, PP_is_initialized__doc__},
+{"checkBool", (PyCFunction)PP_check_bool, METH_VARARGS|METH_KEYWORDS, PP_check_bool__doc__},
 {"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"testmpi", (PyCFunction)PP_testmpi, METH_VARARGS|METH_KEYWORDS, PP_testmpi__doc__},
 {"testgroup1", (PyCFunction)PP_testgroup1, METH_VARARGS|METH_KEYWORDS, PP_testgroup1__doc__},
@@ -398,5 +435,6 @@ MOD_INITBASIS(void)
 }
 #endif
 
-}  // namespace example
+
 }  // namespace nested
+}  // namespace example

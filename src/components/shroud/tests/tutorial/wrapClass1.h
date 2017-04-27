@@ -9,6 +9,9 @@
 #ifndef WRAPCLASS1_H
 #define WRAPCLASS1_H
 
+// splicer begin class.Class1.CXX_declarations
+// splicer end class.Class1.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,8 +20,8 @@ extern "C" {
 struct s_TUT_class1;
 typedef struct s_TUT_class1 TUT_class1;
 
-// splicer begin class.Class1.C_definition
-// splicer end class.Class1.C_definition
+// splicer begin class.Class1.C_declarations
+// splicer end class.Class1.C_declarations
 
 TUT_class1 * TUT_class1_new();
 

@@ -11,6 +11,7 @@
 #endif
 // splicer begin header.include
 // splicer end header.include
+
 namespace example {
 namespace nested {
 extern PyTypeObject PP_ExClass1_Type;
@@ -60,6 +61,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 }
 #endif
 
-}  // namespace example
+
 }  // namespace nested
+}  // namespace example
 #endif  /* PYUSERLIBRARYMODULE_HPP */

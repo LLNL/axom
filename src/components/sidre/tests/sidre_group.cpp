@@ -956,16 +956,20 @@ TEST(sidre_group,save_restore_api)
     root1->save(file_path, protocols[i]);
   }
 
+//These are commented out because createViewScalar<int> creates a scalar View
+//with a 32-bit int, but when conduit reads a raw integer from json file, it
+//stores it as a 64-bit int, so the isEquivalentTo test fails.
+
 #if 0
   DataStore * ds2 = new DataStore();
   Group * root2 = ds2->getRoot();
-  root2->load("sidre_save_fulltree_conduit", "conduit");
+  root2->load("sidre_save_fulltree_conduit", "json");
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
   delete ds2;
 
   DataStore * ds3 = new DataStore();
   Group * root3 = ds3->getRoot();
-  root3->load("sidre_save_subtree_conduit", "conduit", ds3->getRoot() );
+  root3->load("sidre_save_subtree_sidre_json", "sidre_json");
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
   delete ds3;
 #endif
@@ -976,20 +980,27 @@ TEST(sidre_group,save_restore_api)
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
 
+#if 0
+  DataStore * ds5 = new DataStore();
+  Group * root5 = ds5->getRoot();
+  root5->load("sidre_save_subtree_json", "json");
+  EXPECT_TRUE( ds5->getRoot()->isEquivalentTo(root1) );
+  delete ds5;
+#endif
   delete ds1;
 
-  // Why don't these pass??? Need to ask Noah about this...
-  // Trying to make sure sub trees are same here.
-#if 0
+  // Test loading of same subtree to different parts of a Group tree
   DataStore * ds_new = new DataStore();
   Group * tree1 = ds_new->getRoot()->createGroup("api1");
   Group * tree2 = ds_new->getRoot()->createGroup("api2");
 
-  api1->load("sidre_save_subtree", "conduit");
-  api2->load("sidre_save_subtree", "conduit");
+  Group * load1 = tree1->createGroup("subtree");
+  Group * load2 = tree2->createGroup("subtree");
 
-  EXPECT_TRUE( api1->isEquivalentTo( api2) );
-#endif
+  load1->load("sidre_save_subtree_sidre_json", "sidre_json");
+  load2->load("sidre_save_subtree_sidre_json", "sidre_json");
+
+  EXPECT_TRUE( load1->isEquivalentTo( load2) );
 
 }
 

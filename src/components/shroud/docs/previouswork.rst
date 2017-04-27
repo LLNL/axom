@@ -6,7 +6,10 @@ Communicating between language has a long history similar work.
 Babel
 -----
 
-https://computation.llnl.gov/casc/components Babel parses a SIDL (Scientific Interface Definition Langauge) file to generate source. It is a hub-and-spokes approach where each language it supports is mapped to a Babel runtime object.  The last release was 2012-01-06. http://en.wikipedia.org/wiki/Babel_Middleware
+.. https://computation.llnl.gov/casc/components
+
+https://computation.llnl.gov/projects/babel-high-performance-language-interoperability
+Babel parses a SIDL (Scientific Interface Definition Langauge) file to generate source. It is a hub-and-spokes approach where each language it supports is mapped to a Babel runtime object.  The last release was 2012-01-06. http://en.wikipedia.org/wiki/Babel_Middleware
 
 Chasm
 -----

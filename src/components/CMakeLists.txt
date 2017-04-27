@@ -29,3 +29,16 @@ endif()
 if(ENABLE_MPI)
   blt_add_component(COMPONENT_NAME spio DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 endif()
+
+
+## Add dependency for each enabled component on the copy_axom_includes target
+## to ensure that the include files are copied over
+## Note: This assumes components have a cmake target with the same name 
+## (e.g. that slic has a target named 'slic')
+set(axom_components shroud axom_utils lumberjack slic primal slam sidre mint quest spio)
+foreach(comp ${axom_components})
+   string(TOUPPER ${comp} COMP)
+   if(ENABLE_${COMP})
+       add_dependencies(${comp} copy_axom_includes)
+   endif()
+endforeach()

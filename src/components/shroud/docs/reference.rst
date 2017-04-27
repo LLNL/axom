@@ -91,6 +91,8 @@ library_upper
 namespace_scope
     The values in field **namespace** delimited with ``::``.
 
+YAML_type_filename
+    Output filename for type maps for classes.
 
 Class
 ^^^^^
@@ -122,9 +124,9 @@ class_lower
 class_upper
     Uppercase version of *cpp_class*.
 
-class_name
+class_prefix
     Variable which may be used in creating function names.
-    Defaults to evaluation of *class_name_template*.
+    Defaults to evaluation of *class_prefix_template*.
     Outside of a class, set to empty string.
 
 C_prefix
@@ -145,16 +147,30 @@ Function
 C_call_list
     Comma delimited list of function arguments.
 
-C_object
-    Set from option **C_object**.
+C_call_code
+    Code used to call function in C wrapper.
+
+C_post_call
+    Statements added after the call to the function.
+    Used to convert result and/or ``intent(OUT)`` arguments to C types.
+
+.. C_post_call_pattern
+
+C_pre_call
+    Statements added before the call to the function.
+    Used to convert C types to C++ types.
 
 C_prototype
     C prototype for the function.
     This will include any arguments required by annotations or options,
     such as length or **F_string_result_as_arg**.  
 
+C_return_code
+    Code used to return from C wrapper.
+
 C_return_type
     Return type of the function.
+    If the **return_this** field is true, then *C_return_type* is set to ``void``.
 
 CPP_template
     The template component of the function declaration.
@@ -220,9 +236,6 @@ function_suffix
     by using the function field *function_suffix*.
     Mulitple suffixes may be applied.
 
-C_rv_decl
-    Declaration of return value for function.
-
 Argument
 ^^^^^^^^
 
@@ -233,15 +246,12 @@ c_var
     The C name of the argument.
 
 c_var_len
-    Function argument for the length attribute of the argument.
-    ``L{c_var}``
-
-c_var_num
-    Function argument for the length attribute of the argument.
-    ``N{c_var}``
+    Function argument generated from the *len* annotation.
+    Set from option **C_var_len_template**.
 
 c_var_trim
-    **len_trim** annotation.
+    Function argument generated from the *len_trim* annotation.
+    Set from option **C_var_trim_template**.
 
 cpp_type
     The C++ type of the argument.
@@ -260,6 +270,13 @@ c_ptr
 
 len_var
     TODO
+
+Result
+------
+
+cpp_rv_decl
+    Declaration of variable to hold return value for function.
+
 
 Global Fields
 -------------
@@ -319,6 +336,11 @@ debug
   be useful for debugging.
   Defaults to *false*.
 
+C_bufferify_suffix
+  Suffix appended to generated routine which pass strings as buffers
+  with explicit lengths.
+  Defaults to *_bufferify*
+
 C_prefix
   Prefix added to name of generated C routines.
   The prefix helps to ensure unique global names.
@@ -327,15 +349,29 @@ C_proto_type
    XXX  override prototype of generated C function
 
 C_result
-    The name of the Fortran wrapper's result variable.
+    The name of the C wrapper's result variable.
     It must not be the same as any of the routines arguments.
     It defaults to *SH_rv*  (Shroud return value).
 
 C_return_type
    XXX   override return type of function
 
+C_string_result_as_arg
+  The name of the output argument for string results.
+  Function which return ``char`` or ``std::string`` values return
+  the result in an additional argument in the C wrapper.
+
 C_this
     Name of the C object argument.  Defauls to ``self``.
+    It may be necessary to set this if it conflicts with an argument name.
+
+C_var_len_template
+    Format for variable created with *len* annotation.
+    Default ``N{c_var}``
+
+C_var_trim_template
+    Format for variable created with *len_trim* annotation.
+    Default ``L{c_var}``
 
 CPP_this
     Name of the C++ object pointer set from the *C_this* argument.
@@ -396,6 +432,11 @@ PY_result
     The name of the Python wrapper's result variable.
     It defaults to *rv*  (return value).
 
+show_splicer_comments
+    If ``true`` show comments which delineate the splicer blocks;
+    else, do not show the comments.
+    Only the global level option is used.
+
 wrap_c
   If *true*, create C wrappers.
   Defaults to *true*.
@@ -432,15 +473,15 @@ C_impl_filename_library_template
     ``wrap{library}.cpp``
 
 C_name_template
-    ``{C_prefix}{class_name}_{underscore_name}{function_suffix}``
+    ``{C_prefix}{class_prefix}{underscore_name}{function_suffix}``
 
-class_name_template
+class_prefix_template
     Class component for function names.
     Will be blank if the function is not in a class.
     ``{class_lower}_``
 
 F_C_name_template
-    ``{F_C_prefix}{class_name}{underscore_name}{function_suffix}``
+    ``{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}``
 
 F_name_generic_template
     ``{underscore_name}``
@@ -461,9 +502,9 @@ F_module_name_library_template
     ``{library_lower}_mod``
 
 F_name_impl_template
-    ``{class_name}{underscore_name}{function_suffix}``
+    ``{class_prefix}{underscore_name}{function_suffix}``
 
-F_name_method_template
+F_name_function_template
     ``{underscore_name}{function_suffix}``
 
 
@@ -498,7 +539,7 @@ LUA_name_impl_template
     Name of implementation function.
     All overloaded function use the same Lua wrapper so 
     *function_suffix* is not needed.
-    ``{LUA_prefix}{class_name}{underscore_name}``
+    ``{LUA_prefix}{class_prefix}{underscore_name}``
 
 LUA_name_template
     Name of function as know by Lua.
@@ -517,9 +558,13 @@ LUA_userdata_member_template
 PY_name_impl
     PY_class1_method1
 
+YAML_type_filename_template
+    Default value for global field YAML_type_filename
+    ``{library_lower}_types.yaml``
 
-Types Dictionary
-----------------
+
+Types Map
+---------
 
 Types describe how to handle arguments from Fortran to C to C++.  Then
 how to convert return values from C++ to C to Fortran.
@@ -590,24 +635,17 @@ c_to_cpp
     Expression to convert from C to C++.
     Defaults to *{c_var}*.  i.e. no conversion required.
 
-c_fortran
-    Type declaration for ``bind(C)`` interface.
-    Defaults to *None*.
-
 c_statements
     A nested dictionary of code template to add.
-    The first layer is *intent_in*, *intent_out*, and *result*.
-    The second layer is *pre_call*, *pre_call_trim*, *post_call*, *cpp_header*.
+    The first layer is *intent_in*, *intent_out*, *result*,
+    *intent_in_buf*, *intent_out_buf*, and *result_buf*.
+    The second layer is *pre_call*, *pre_call_buf*, *post_call*, *cpp_header*.
     The entries are a list of format strings.
 
     intent_in
         Code to add for argument with intent(IN).
         Can be used to convert types or copy-in semantics.
         For example, ``char *`` to ``std::string``.
-
-    intent_in_trim
-        Code to add for argument with intent(IN) and len_trim attribute 
-        For example, ``char *, int`` into ``std::string``
 
     intent_out
         Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
@@ -638,6 +676,16 @@ f_c_argdecl
     By default, only a single argument is passed for each dummy argument.
     Defaults to *None*.
 
+f_c_module
+    Fortran modules needed for type in the interface.
+    A dictionary keyed on the module name with the value being a list of symbols.
+    Similar to **f_module**.
+    Defaults to *None*.
+
+f_c_type
+    Type declaration for ``bind(C)`` interface.
+    Defaults to *None* which will then use *f_type*.
+
 f_type
     Name of type in Fortran.
     Defaults to *None*.
@@ -659,16 +707,17 @@ f_derived_type
     Defaults to *None*  i.e. pass argument unchanged.
 
 f_module
-    Fortran modules needed for type  (dictionary).
-    Defaults to *None*.
+    Fortran modules needed for type in the implementation wrapper.
+    A dictionary keyed on the module name with the value being a list of symbols.
+    Defaults to *None*.::
+
+        f_module:
+           iso_c_binding:
+             - C_INT
 
 f_return_code
     Fortran code used to call function and assign the return value.
     Defaults to *None*.
-
-.. f_kind
-..    Fortran kind of type.
-..    Defaults to *None*.
 
 f_cast
     Expression to convert Fortran type to C type.
@@ -790,47 +839,6 @@ py_statement
            Usually a C++ constructor is involved.
 
 
-
-
-Format dictionary for Type fields
-  * result_arg - name of result variable from *F_string_result_as_arg*.
-  * F_result - name of result variable
-  * F_C_name - name of BIND(C) interface
-  * F_arg_c_call
-  * F_arg_c_call_tab
-  * F_arguments
-
-
-arg_f_decl._f_decl(arg)
-
-Example for each type::
-
-   subroutine name({var})
-       {f_argsdecl}
-
-       ! arguments
-       foreach argument:
-          F_arg_c_call += f_args or f_cast or '{var}'
-
-       {f_pre_call}
-       {f_return_code}     ! call C code
-       {f_post_call}
-
-
-
-Predefined types
-
-  * void
-  * int
-  * long
-  * size_t
-  * float
-  * double
-  * bool
-  * string
-  * string_from_buffer
-
-
 Class Fields
 ------------
 
@@ -890,8 +898,8 @@ function_suffix
 
 return_this
    The method returns a reference to ``this``.  This ideom can be used
-   to chain calls in C++.  This does not translate to C and Fortran.
-   Instead make the return type ``void``.
+   to chain calls in C++.  This ideom does not translate to C and Fortran.
+   Instead the *C_return_type* format is set to ``void``.
 
 
 C_code
@@ -916,10 +924,10 @@ F_name_impl
 
 ..    class1_method1
 
-F_name_method
+F_name_function
     The name of the *F_name_impl* subprogram when used as a
     type procedure.
-    Defaults to evaluation of option *F_name_method_template*.
+    Defaults to evaluation of option *F_name_function_template*.
 
 F_name_generic
     Defaults to evaluation of option *F_name_generic_template*.
@@ -942,7 +950,10 @@ LUA_name
 Annotations
 -----------
 
-a.k.a. attributes
+Ann annotation can be used to provide semantic information for a function or argument.
+
+
+.. a.k.a. attributes
 
 constructor
    Mark method as a constructor.
@@ -976,14 +987,24 @@ default
    Default value for C++ function argument.
 
 len
-   An expression for the length of string result variable.
-   If not set then the function will be called to compute the string
-   result and len will be computed using ``strlen``.
-   The function is then called again to fill in the result variable.
- 
+   For a string argument, pass an additional argument to the
+   C wrapper with the result of the Fortran intrinsic ``len``.
+   If a value for the attribute is provided it will be the name
+   of the extra argument.  If no value is provided then the
+   argument name defaults to option *C_var_len_template*.
+
+   When used with a function, it will be the length of the return
+   value of the function using the declaration::
+
+     character(kind=C_CHAR, len={c_var_len}) :: {F_result}
+
 len_trim
-   For a string argument, pass the string address and the result of
-   len_trim.
+   For a string argument, pass an additional argument to the
+   C wrapper with the result of the Fortran intrinsic ``len_trim``.
+   If a value for the attribute is provided it will be the name
+   of the extra argument.  If no value is provided then the
+   argument name defaults to option *C_var_trim_template*.
+
 
 Doxygen
 -------
@@ -1000,12 +1021,21 @@ return
    Description of return value.
 
 
-Splicers
+Patterns
 --------
 
-Describe splicers.
+C_error_pattern
+    Inserted after the call to the C++ function in the C wrapper.
+    Format is evaluated in the context of the result argument.
+    *c_var*, *c_var_len* refer to the result argument.
+
+C_error_pattern_as_buffer
+    Inserted after the call to the C++ function in the buffer C wrapper
+    for functions with string arguments.
+    Format is evaluated in the context of the result argument.
 
 
+.. ......................................................................
 
 .. rubric:: Footnotes
 
