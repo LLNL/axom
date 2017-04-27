@@ -8,13 +8,13 @@ from os.path import join as pjoin
 def cmake_cache_entry(name,value):
     return 'set("%s" "%s" CACHE PATH "")\n\n' % (name,value)
 
-class UberenvAsctoolkit(Package):
-    """Spack Based Uberenv Build for Toolkit TPLs """
+class UberenvAxom(Package):
+    """Spack Based Uberenv Build for Axom TPLs """
 
     # hash for dummy tarfile
     version('0.1', '8d378ef62dedc2df5db447b029b71200')
  
-    homepage = "http://lc.llnl.gov/toolkit"
+    homepage = "http://lc.llnl.gov/axom"
 
     # variants that allow us to winnow what TPLS we build
     # use ~cmake to skip cmake build and use whatever cmake is in the
@@ -59,7 +59,7 @@ class UberenvAsctoolkit(Package):
     # use dummy tarfile to avoid downloads
     def url_for_version(self, version):
         dummy_tar_path =  os.path.abspath(pjoin(os.path.dirname(__file__)))
-        dummy_tar_path = pjoin(dummy_tar_path,"uberenv-asctoolkit.tar.gz")
+        dummy_tar_path = pjoin(dummy_tar_path,"uberenv-axom.tar.gz")
         url      = "file://" + dummy_tar_path
         return url
 
