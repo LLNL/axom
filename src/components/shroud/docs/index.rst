@@ -20,9 +20,12 @@ Contents:
    tutorial
    input
    types
+   functions
    reference
    previouswork
    futurework
+
+#   classes
 
 
 Indices and tables

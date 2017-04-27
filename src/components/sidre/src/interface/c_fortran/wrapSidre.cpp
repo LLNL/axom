@@ -13,11 +13,18 @@
 #include "wrapSidre.h"
 #include <string>
 
-extern "C" {
 namespace axom
 {
 namespace sidre
 {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 bool SIDRE_name_is_valid(const char * name)
 {
@@ -26,9 +33,7 @@ bool SIDRE_name_is_valid(const char * name)
 // splicer end function.name_is_valid
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
-
-}  // namespace axom
-}  // namespace sidre
 }  // extern "C"
+
+}  // namespace sidre
+}  // namespace axom

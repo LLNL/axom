@@ -7,6 +7,9 @@
 cpp_header: global_header.hpp
 namespace: one two
 
+options:
+  show_splicer_comments: false
+
 types:
    CustomType:
       typedef : int

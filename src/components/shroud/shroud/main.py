@@ -36,12 +36,6 @@ from . import wrapf
 from . import wrapp
 from . import wrapl
 
-# char functions cannot be wrapped directly in intel 15.
-# Instead the result is passed down
-# as an argument from the Fortran wrapper to the C wrapper.
-# Similar to how char * funtions are handled.
-intel_15_fix = True
-
 wformat = util.wformat
 
 
@@ -73,16 +67,20 @@ class Schema(object):
     def push_options(self, node):
         """ Push a new set of options.
         Copy current options, then update with new options.
+        Replace node[option] dictionary with Options instance.
+        Return original options dictionary.
         """
+        old = None
         new = util.Options(parent=self.options_stack[-1])
         if 'options' in node and \
                 node['options'] is not None:
             if not isinstance(node['options'], dict):
                 raise TypeError("options must be a dictionary")
-            new.update(node['options'])
+            old = node['options']
+            new.update(old)
         self.options_stack.append(new)
         node['options'] = new
-        return new
+        return new, old
 
     def pop_options(self):
         self.options_stack.pop()
@@ -117,6 +115,22 @@ class Schema(object):
     def pop_fmt(self):
         self.fmt_stack.pop()
 
+    def option_to_fmt(self, fmt, options):
+        """Set fmt based on options dictionary.
+
+        options - options dictionary from YAML file.
+        """
+        if options is None:
+            return
+        for name in ['C_prefix', 'F_C_prefix', 
+                     'C_this', 'C_result', 'CPP_this',
+                     'F_this', 'F_result', 'F_derived_member',
+                     'C_string_result_as_arg', 'F_string_result_as_arg',
+                     'PY_result',
+                     'LUA_result']:
+            if name in options:
+                setattr(fmt, name, options[name])
+
     def check_schema(self):
         """ Routine to check entire schema of input tree"
         """
@@ -137,9 +151,12 @@ class Schema(object):
             wrap_lua=False,
 
             doxygen=True,       # create doxygen comments
+            show_splicer_comments=True,
 
             # blank for functions, set in classes.
-            class_name_template='{class_lower}_',
+            class_prefix_template='{class_lower}_',
+
+            YAML_type_filename_template='{library_lower}_types.yaml',
 
             C_header_filename_library_template='wrap{library}.h',
             C_impl_filename_library_template='wrap{library}.cpp',
@@ -148,17 +165,21 @@ class Schema(object):
             C_impl_filename_class_template='wrap{cpp_class}.cpp',
 
             C_name_template=(
-                '{C_prefix}{class_name}{underscore_name}{function_suffix}'),
+                '{C_prefix}{class_prefix}{underscore_name}{function_suffix}'),
+
+            C_bufferify_suffix='_bufferify',
+            C_var_len_template = 'N{c_var}',
+            C_var_trim_template = 'L{c_var}',
 
             # Fortran's names for C functions
             F_C_prefix='c_',
             F_C_name_template=(
-                '{F_C_prefix}{class_name}{underscore_name}{function_suffix}'),
+                '{F_C_prefix}{class_prefix}{underscore_name}{function_suffix}'),
 
             F_name_impl_template=(
-                '{class_name}{underscore_name}{function_suffix}'),
+                '{class_prefix}{underscore_name}{function_suffix}'),
 
-            F_name_method_template='{underscore_name}{function_suffix}',
+            F_name_function_template='{underscore_name}{function_suffix}',
             F_name_generic_template='{underscore_name}',
 
             F_module_name_library_template='{library_lower}_mod',
@@ -176,7 +197,10 @@ class Schema(object):
         wrapl.add_templates(def_options)
 
         if 'options' in node:
-            def_options.update(node['options'])
+            old = node['options']
+            def_options.update(old)
+        else:
+            old = None
         self.options_stack = [def_options]
         node['options'] = def_options
 
@@ -197,11 +221,32 @@ class Schema(object):
         util.eval_template(node, 'C_impl_filename', '_library')
 
         # set default values for fields which may be unset.
-        fmt_library.class_name = ''
+        fmt_library.class_prefix = ''
 #        fmt_library.c_ptr = ''
 #        fmt_library.c_const = ''
         fmt_library.CPP_this_call = ''
         fmt_library.CPP_template = ''
+        fmt_library.C_pre_call = ''
+        fmt_library.C_post_call = ''
+
+        fmt_library.C_this = 'self'
+        fmt_library.C_result = 'SH_rv'
+
+        fmt_library.CPP_this = 'SH_this'
+
+        fmt_library.F_this = 'obj'
+        fmt_library.F_result = 'SH_rv'
+        fmt_library.F_derived_member = 'voidptr'
+
+        fmt_library.C_string_result_as_arg='SH_F_rv'
+        fmt_library.F_string_result_as_arg=''
+
+        # don't have to worry about argument names in Python wrappers
+        # so skip the SH_ prefix by default.
+        fmt_library.PY_result = 'rv'
+        fmt_library.LUA_result = 'rv'
+
+        self.option_to_fmt(fmt_library, old)
 
         self.fmt_stack.append(fmt_library)
 
@@ -217,17 +262,15 @@ class Schema(object):
                 c_type='void',
                 cpp_type='void',
                 # fortran='subroutine',
-                c_fortran='type(C_PTR)',
                 f_type='type(C_PTR)',
+                f_module=dict(iso_c_binding=['C_PTR']),
                 PY_ctor='PyCapsule_New({cpp_var}, NULL, NULL)',
                 ),
             int=util.Typedef(
                 'int',
                 c_type='int',
                 cpp_type='int',
-                f_kind='C_INT',
                 f_cast='int({f_var}, C_INT)',
-                c_fortran='integer(C_INT)',
                 f_type='integer(C_INT)',
                 f_module=dict(iso_c_binding=['C_INT']),
                 PY_format='i',
@@ -239,9 +282,7 @@ class Schema(object):
                 'long',
                 c_type='long',
                 cpp_type='long',
-                f_kind='C_LONG',
                 f_cast='int({f_var}, C_LONG)',
-                c_fortran='integer(C_LONG)',
                 f_type='integer(C_LONG)',
                 f_module=dict(iso_c_binding=['C_LONG']),
                 PY_format='l',
@@ -254,9 +295,7 @@ class Schema(object):
                 c_type='size_t',
                 cpp_type='size_t',
                 c_header='stdlib.h',
-                f_kind='C_SIZE_T',
                 f_cast='int({f_var}, C_SIZE_T)',
-                c_fortran='integer(C_SIZE_T)',
                 f_type='integer(C_SIZE_T)',
                 f_module=dict(iso_c_binding=['C_SIZE_T']),
                 PY_ctor='PyInt_FromLong({c_var})',
@@ -269,9 +308,7 @@ class Schema(object):
                 'float',
                 c_type='float',
                 cpp_type='float',
-                f_kind='C_FLOAT',
                 f_cast='real({f_var}, C_FLOAT)',
-                c_fortran='real(C_FLOAT)',
                 f_type='real(C_FLOAT)',
                 f_module=dict(iso_c_binding=['C_FLOAT']),
                 PY_format='f',
@@ -283,9 +320,7 @@ class Schema(object):
                 'double',
                 c_type='double',
                 cpp_type='double',
-                f_kind='C_DOUBLE',
                 f_cast='real({f_var}, C_DOUBLE)',
-                c_fortran='real(C_DOUBLE)',
                 f_type='real(C_DOUBLE)',
                 f_module=dict(iso_c_binding=['C_DOUBLE']),
                 PY_format='d',
@@ -298,10 +333,9 @@ class Schema(object):
                 'bool',
                 c_type='bool',
                 cpp_type='bool',
-                f_kind='C_BOOL',
-                c_fortran='logical(C_BOOL)',
 
                 f_type='logical',
+                f_c_type='logical(C_BOOL)',
                 f_module=dict(iso_c_binding=['C_BOOL']),
                 f_statements=dict(
                     intent_in=dict(
@@ -348,49 +382,44 @@ class Schema(object):
                 c_type='char',    # XXX - char *
 
                 c_statements=dict(
-                    intent_in=dict(
+                    intent_in_buf=dict(
                         cpp_local_var=True,
                         cpp_header='<cstring>',
                         pre_call=[
-                            'int {c_var_len} = std::strlen({c_var});',
-                            'char * {cpp_var} = new char [{c_var_len} + 1];',
-                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
-                            '{cpp_var}[{c_var_len}] = \'\\0\';'
-                            ],
-                        pre_call_trim=[
-                            'char * {cpp_var} = new char [{c_var_len} + 1];',
-                            'std::strncpy({cpp_var}, {c_var}, {c_var_len});',
-                            '{cpp_var}[{c_var_len}] = \'\\0\';'
+                            'char * {cpp_var} = new char [{c_var_trim} + 1];',
+                            'std::strncpy({cpp_var}, {c_var}, {c_var_trim});',
+                            '{cpp_var}[{c_var_trim}] = \'\\0\';'
                             ],
                         post_call=[
                             'delete [] {cpp_var};'
                             ],
                         ),
-                    intent_out=dict(
+                    intent_out_buf=dict(
                         cpp_local_var=True,
+                        cpp_header='shroudrt.hpp',
                         pre_call=[
-                            'char * {cpp_var} = new char [{c_var_num} + 1];',
+                            'char * {cpp_var} = new char [{c_var_len} + 1];',
                             ],
                         post_call=[
-                            'shroud_FccCopy'
-                            '({c_var}, {c_var_len}, {cpp_val});',
+                            'shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});',
                             'delete [] {cpp_var};',
                             ],
-                        cpp_header='shroudrt.hpp',
                         ),
-                    result=dict(
+                    result_buf=dict(
+                        cpp_header='<cstring> shroudrt.hpp',
                         post_call=[
-                            ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
+                            'if ({cpp_var} == NULL) {{',
+                            '  std::memset({c_var}, \' \', {c_var_len});',
+                            '}} else {{',
+                            '  shroud_FccCopy({c_var}, {c_var_len}, {cpp_var});',
+                            '}}',
                             ],
-                        cpp_header='shroudrt.hpp',
                         ),
                     ),
 
-                c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module=dict(iso_c_binding=None),
+                f_c_type='character(kind=C_CHAR)',
+                f_c_module=dict(iso_c_binding=['C_CHAR']),
                 # f_return_code='{F_result} =
                 #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
@@ -410,10 +439,19 @@ class Schema(object):
 
                 c_type='char',    # XXX - char *
 
-                c_fortran='character(kind=C_CHAR)',
+                c_statements=dict(
+                    result_buf=dict(
+                        cpp_header='<cstring>',
+                        post_call=[
+                            'std::memset({c_var}, \' \', {c_var_len});',
+                            '{c_var}[0] = {cpp_var};',
+                        ],
+                    ),
+                ),
+
                 f_type='character',
-                # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module=dict(iso_c_binding=None),
+                f_c_type='character(kind=C_CHAR)',
+                f_c_module=dict(iso_c_binding=['C_CHAR']),
                 # f_return_code='{F_result} =
                 #    fstr({F_C_call}({F_arg_c_call_tab}))',
                 PY_format='s',
@@ -439,31 +477,47 @@ class Schema(object):
                         pre_call=[
                             '{c_const}std::string {cpp_var}({c_var});'
                             ],
-                        pre_call_trim=[
-                            ('{c_const}std::string '
-                             '{cpp_var}({c_var}, {c_var_trim});')
-                            ],
                     ),
                     intent_out=dict(
+                        cpp_header='<cstring>',
+#                        cpp_header='shroudrt.hpp',
+#                        pre_call=[
+#                            'int {c_var_trim} = strlen({c_var});',
+#                            ],
                         post_call=[
-                            ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
-                            ],
-                        cpp_header='shroudrt.hpp'
-                        ),
-                    result=dict(
-                        post_call=[
-                            ('shroud_FccCopy'
-                             '({c_var}, {c_var_len}, {cpp_val});'),
-                            ],
-                        cpp_header='shroudrt.hpp'
-                        ),
+                            # This may overwrite c_var if cpp_val is too long
+                            'strcpy({c_var}, {cpp_val});'
+#                            'shroud_FccCopy({c_var}, {c_var_trim}, {cpp_val});'
+                        ],
                     ),
+                    intent_in_buf=dict(
+                        cpp_local_var=True,
+                        pre_call=[
+                            ('{c_const}std::string '
+                             '{cpp_var}({c_var}, {c_var_trim});')
+                        ],
+                    ),
+                    intent_out_buf=dict(
+                        cpp_header='shroudrt.hpp',
+                        post_call=[
+                            'shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});'
+                        ],
+                    ),
+                    result_buf=dict(
+                        cpp_header='<cstring> shroudrt.hpp',
+                        post_call=[
+                            'if ({cpp_var}.empty()) {{',
+                            '  std::memset({c_var}, \' \', {c_var_len});',
+                            '}} else {{',
+                            '  shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                            '}}',
+                        ],
+                    ),
+                ),
 
-                c_fortran='character(kind=C_CHAR)',
                 f_type='character(*)',
-                # f_module=dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module=dict(iso_c_binding=None),
+                f_c_type='character(kind=C_CHAR)',
+                f_c_module=dict(iso_c_binding=['C_CHAR']),
                 # f_return_code='{F_result} =
                 #    fstr({F_C_call}({F_arg_c_call_tab}))',
 
@@ -489,24 +543,12 @@ class Schema(object):
                 c_header='mpi.h',
                 c_type='MPI_Fint',
                 # usually, MPI_Fint will be equivalent to int
-                c_fortran='integer(C_INT)',
                 f_type='integer',
+                f_c_type='integer(C_INT)',
                 cpp_to_c='MPI_Comm_c2f({cpp_var})',
                 c_to_cpp='MPI_Comm_f2c({c_var})',
                 ),
             )
-
-        if intel_15_fix:
-            # Copy C++ function result into C result argument.
-            def_types['char_scalar'].c_statements = dict(
-                result=dict(
-                    post_call=[
-                        ('// {c_var_len} is always 1,'
-                         ' test to silence warning about unused variable'),
-                        'if ({c_var_len} == 1) *{c_var} = {cpp_val};',
-                        ],
-                    ),
-                )
 
         # aliases
         def_types['std::string'] = def_types['string']
@@ -545,6 +587,7 @@ class Schema(object):
                     def_types[key].update(value)
                 else:
                     def_types[key] = util.Typedef(key, **value)
+#                util.typedef_wrapped_defaults(def_types[key])  # XXX needs work
 
         patterns = node.setdefault('patterns', [])
 
@@ -575,16 +618,13 @@ class Schema(object):
             # YAML turns blank strings into None
             node['cpp_header'] = ''
 
-        options = self.push_options(node)
+        options, old = self.push_options(node)
         fmt_class = self.push_fmt(node)
+        self.option_to_fmt(fmt_class, old)
         fmt_class.cpp_class = name
         fmt_class.class_lower = name.lower()
         fmt_class.class_upper = name.upper()
-        if 'C_prefix' in options:
-            fmt_class.C_prefix = options.C_prefix
-        if 'F_C_prefix' in options:
-            fmt_class.F_C_prefix = options.F_C_prefix
-        util.eval_template(node, 'class_name')
+        util.eval_template(node, 'class_prefix')
 
         # Only one file per class for C.
         util.eval_template(node, 'C_header_filename', '_class')
@@ -601,8 +641,9 @@ class Schema(object):
     def check_function(self, node):
         """ Make sure necessary fields are present for a function.
         """
-        self.push_options(node)
+        options, old = self.push_options(node)
         fmt_func = self.push_fmt(node)
+        self.option_to_fmt(fmt_func, old)
 
 #        func = util.FunctionNode()
 #        func.update(node)
@@ -905,6 +946,7 @@ class GenFunctions(object):
         will convert string arguments into a buffer and length.
         """
         options = node['options']
+        fmt = node['fmt']
 
         # If a C++ function returns a std::string instance,
         # the default wrapper will not compile since the wrapper
@@ -946,12 +988,6 @@ class GenFunctions(object):
                           attrs.get('reference', False))
                 if is_ptr:
                     has_string_arg = True
-                    # Force len attribute when intent is OUT
-                    # so the wrapper will know how much space
-                    # can be written to.
-                    intent = attrs['intent']
-                    if intent in ['out', 'inout']:
-                        attrs['len'] = 'N' + arg['name']
                 else:
                     arg['type'] = 'char_scalar'
 
@@ -960,16 +996,11 @@ class GenFunctions(object):
         is_pure = node['attrs'].get('pure', False)
         if result_typedef.base == 'string':
             if result_type == 'char' and not result_is_ptr:
-                if intel_15_fix:
-                    result['attrs']['len'] = 1
-                    has_string_result = True
-                    result_as_arg = options.get('F_string_result_as_arg', '')
-                    result_name = result_as_arg or 'SH_F_rv'
+                # char functions cannot be wrapped directly in intel 15.
                 result['type'] = 'char_scalar'
-            else:
-                has_string_result = True
-                result_as_arg = options.get('F_string_result_as_arg', '')
-                result_name = result_as_arg or 'SH_F_rv'
+            has_string_result = True
+            result_as_arg = fmt.F_string_result_as_arg
+            result_name = result_as_arg or fmt.C_string_result_as_arg
 
         if not (has_string_result or has_string_arg):
             return
@@ -988,7 +1019,7 @@ class GenFunctions(object):
         C_new['_generated'] = 'string_to_buffer_and_len'
         C_new['_error_pattern_suffix'] = '_as_buffer'
         fmt = C_new['fmt']
-        fmt.function_suffix = fmt.function_suffix + '_bufferify'
+        fmt.function_suffix = fmt.function_suffix + options.C_bufferify_suffix
 
         options = C_new['options']
         options.wrap_c = True
@@ -1003,11 +1034,18 @@ class GenFunctions(object):
             if self.typedef[argtype].base == 'string':
                 # strings passed in need len_trim
                 # strings returned need len
-                intent = arg['attrs']['intent']
-                if intent in ['in', 'inout']:
-                    arg['attrs']['len_trim'] = 'L' + arg['name']
-                if intent in ['out', 'inout']:
-                    arg['attrs']['len'] = 'N' + arg['name']
+                # Add attributes if not already set
+                attrs = arg['attrs']
+                intent = attrs['intent']
+                if intent in ['in', 'inout'] and 'len_trim' not in attrs:
+                    # Force len_trim when intent is IN
+                    # Assume trailing blanks are not part of data
+                    attrs['len_trim'] = options.C_var_trim_template.format(c_var=arg['name'])
+                if intent in ['out', 'inout'] and 'len' not in attrs:
+                    # Force len attribute when intent is OUT
+                    # so the wrapper will know how much space
+                    # can be written to.
+                    attrs['len'] = options.C_var_len_template.format(c_var=arg['name'])
 
         if has_string_result:
             # Add additional argument to hold result
@@ -1015,7 +1053,7 @@ class GenFunctions(object):
             result_as_string['name'] = result_name
             attrs = result_as_string['attrs']
             attrs['const'] = False
-            attrs['len'] = 'L' + result_name
+            attrs['len'] = options.C_var_len_template.format(c_var=result_name)
             attrs['intent'] = 'out'
             attrs['_is_result'] = True
             if not result_is_ptr:
@@ -1143,6 +1181,9 @@ class GenFunctions(object):
             elif value is False:
                 pass
 #                decl.append('-' + key)
+            elif key == 'dimension':
+                # dimension already has parens
+                decl.append('+%s%s' % (key, value))
             else:
                 decl.append('+%s(%s)' % (key, value))
 
@@ -1282,8 +1323,6 @@ class VerifyAttrs(object):
                     attrs['intent'] = 'in'  # XXX must coordinate with VALUE
             else:
                 intent = intent.lower()
-                if intent[0] == '(' and intent[-1] == ')':
-                    intent = intent[1:-1]
                 if intent in ['in', 'out', 'inout']:
                     attrs['intent'] = intent
                 else:
@@ -1294,7 +1333,7 @@ class VerifyAttrs(object):
             value = attrs.get('value', None)
             if value is None:
                 if is_ptr:
-                    if typedef.c_fortran == 'type(C_PTR)':
+                    if (typedef.f_c_type or typedef.f_type) == 'type(C_PTR)':
                         # This causes Fortran to dereference the C_PTR
                         # Otherwise a void * argument becomes void **
                         attrs['value'] = True
@@ -1314,6 +1353,9 @@ class VerifyAttrs(object):
                 if dimension is True:
                     # No value was provided, provide default
                     attrs['dimension'] = '(*)'
+                else:
+                    # Put parens around dimension
+                    attrs['dimension'] = '(' + attrs['dimension'] + ')'
 
             if 'default' in attrs:
                 found_default = True
@@ -1325,16 +1367,16 @@ class VerifyAttrs(object):
             # XXX make sure they don't conflict with other names
             len_name = attrs.get('len', False)
             if len_name is True:
-                attrs['len'] = 'L' + argname
+                attrs['len'] = options.C_var_len_template.format(c_var=argname)
             len_name = attrs.get('len_trim', False)
             if len_name is True:
-                attrs['len'] = 'L' + argname
+                attrs['len_trim'] = options.C_var_trim_template.format(c_var=argname)
 #        if typedef.base == 'string':
 
 
 class Namify(object):
     """Compute names of functions in library.
-    Need to compute F_name and C_F_name since they interact.
+    Need to compute F_name and F_C_name since they interact.
     Compute all C names first, then Fortran.
     A Fortran function may call a generated C function via
     _PTR_F_C_index
@@ -1349,23 +1391,6 @@ class Namify(object):
         self.config = config
 
     def name_library(self):
-        options = self.tree['options']
-        fmt_library = self.tree['fmt']
-        fmt_library.C_this = options.get('C_this', 'self')
-        fmt_library.C_result = options.get('C_result', 'SH_rv')
-
-        fmt_library.CPP_this = options.get('CPP_this', 'SH_this')
-
-        fmt_library.F_this = options.get('F_this', 'obj')
-        fmt_library.F_result = options.get('F_result', 'SH_rv')
-        fmt_library.F_derived_member = options.get('F_derived_member',
-                                                   'voidptr')
-
-        # don't have to worry about argument names in Python wrappers
-        # so skip the SH_ prefix by default.
-        fmt_library.PY_result = options.get('PY_result', 'rv')
-        fmt_library.LUA_result = options.get('LUA_result', 'rv')
-
         self.name_language(self.name_function_c)
         self.name_language(self.name_function_fortran)
 
@@ -1405,7 +1430,7 @@ class Namify(object):
         fmt_func = node['fmt']
 
         util.eval_template(node, 'F_name_impl')
-        util.eval_template(node, 'F_name_method')
+        util.eval_template(node, 'F_name_function')
         util.eval_template(node, 'F_name_generic')
 
         if 'F_this' in options:
@@ -1429,7 +1454,8 @@ class TypeOut(util.WrapperMixin):
         """Write out types into a file.
         This file can be read by Shroud to share types.
         """
-        fname = util.wformat('{library_lower}_types.yaml', self.tree['fmt'])
+        util.eval_template(self.tree, 'YAML_type_filename')
+        fname = self.tree['fmt'].YAML_type_filename
         output = [
             '# Types generated by Shroud for class {}'.format(
                 self.tree['library']),

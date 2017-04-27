@@ -20,7 +20,7 @@ default_template = dict(
     # C_impl_filename = 'wrap{cpp_class}.cpp',
 
     # F_name_impl = '{class_lower}_{underscore_name}{function_suffix}',
-    # F_name_method = '{underscore_name}{function_suffix}',
+    # F_name_function = '{underscore_name}{function_suffix}',
     # F_name_generic = '{underscore_name}',
 )
 
@@ -113,9 +113,9 @@ def as_yaml(obj, order, indent, output):
             # quote strings which start with { to avoid treating them
             # as a dictionary.
             if value.startswith('{'):
-                output.append('{}{} = "{}"'.format(prefix, key, value))
+                output.append('{}{}: "{}"'.format(prefix, key, value))
             else:
-                output.append('{}{} = {}'.format(prefix, key, value))
+                output.append('{}{}: {}'.format(prefix, key, value))
         elif isinstance(value, collections.Sequence):
             # Keys which are are an array of string (code templates)
             if key in ('declare', 'pre_call', 'pre_call_trim', 'post_call',
@@ -135,7 +135,7 @@ def as_yaml(obj, order, indent, output):
             as_yaml(value, order0, indent + 1, output)
         else:
             # numbers or booleans
-            output.append('{}{} = {}'.format(prefix, key, value))
+            output.append('{}{}: {}'.format(prefix, key, value))
 
 
 def typedef_wrapped_defaults(typedef):
@@ -144,7 +144,7 @@ def typedef_wrapped_defaults(typedef):
     since the rest are boilerplate.  This function restores
     the boilerplate.
     """
-    if typedef.base is not 'wrapped':
+    if typedef.base != 'wrapped':
         return
 
     typedef.cpp_to_c=('static_cast<{c_const}%s *>('
@@ -157,7 +157,7 @@ def typedef_wrapped_defaults(typedef):
                       typedef.cpp_type)
 
     typedef.f_type='type(%s)' % typedef.f_derived_type
-    typedef.c_fortran='type(C_PTR)'
+    typedef.f_c_type='type(C_PTR)'
 
     # XXX module name may not conflict with type name
 #    typedef.f_module={fmt_class.F_module_name:[unname]}
@@ -166,6 +166,7 @@ def typedef_wrapped_defaults(typedef):
     # f_c_return_decl='type(CPTR)' % unname,
     typedef.f_return_code=('{F_result}%{F_derived_member} = '
                            '{F_C_call}({F_arg_c_call_tab})')
+    typedef.f_c_module={ 'iso_c_binding': ['C_PTR']}
 
     typedef.py_statements=dict(
         intent_in=dict(
@@ -247,11 +248,14 @@ class WrapperMixin(object):
         # The prefix is needed when two different sets of output
         # are being create and they are not in sync.
         # Creating methods and derived types together.
-        out.append('%s splicer begin %s%s' % (
-            self.comment, self.splicer_path, name))
+        show_splicer_comments = self.tree['options'].show_splicer_comments
+        if show_splicer_comments:
+            out.append('%s splicer begin %s%s' % (
+                self.comment, self.splicer_path, name))
         out.extend(self.splicer_stack[-1].get(name, default))
-        out.append('%s splicer end %s%s' % (
-            self.comment, self.splicer_path, name))
+        if show_splicer_comments:
+            out.append('%s splicer end %s%s' % (
+                self.comment, self.splicer_path, name))
 
 #####
 
@@ -310,11 +314,16 @@ class WrapperMixin(object):
                 return
         else:
             namespace = library['namespace']
+        if not namespace:
+            return
+        output.append('')
         if position == 'begin':
             for name in namespace.split():
                 output.append('namespace %s {' % name)
         else:
-            for name in namespace.split():
+            lst = namespace.split()
+            lst.reverse()
+            for name in lst:
                 output.append('}  // namespace %s' % name)
 #####
 
@@ -425,20 +434,20 @@ class Typedef(object):
         ('c_type', None),         # Name of type in C
         ('c_header', None),       # Name of C header file required for type
         ('c_to_cpp', '{c_var}'),  # Expression to convert from C to C++
-        ('c_fortran', None),      # Expression to convert from C to Fortran
         ('c_statements', {}),
         ('c_return_code', None),
 
         ('f_c_args', None),       # List of argument names to F_C routine
         ('f_c_argdecl', None),    # List of declarations to F_C routine
+        ('f_c_module', None),     # Fortran modules needed for interface  (dictionary)
 
         ('f_type', None),         # Name of type in Fortran
+        ('f_c_type', None),       # Type for C interface
         ('f_to_c', None),         # Expression to convert from Fortran to C
         ('f_derived_type', None), # Fortran derived type name
         ('f_args', None),         # Argument in Fortran wrapper to call C.
         ('f_module', None),       # Fortran modules needed for type  (dictionary)
         ('f_return_code', None),
-        ('f_kind', None),         # Fortran kind of type
         ('f_cast', '{f_var}'),    # Expression to convert to type
                                   # e.g. intrinsics such as int and real
         ('f_statements', {}),
@@ -543,7 +552,7 @@ class Options(object):
     """
     If attribute is not found, look in parent's.
     A replacement for a dictionary to allow obj.name syntax.
-    It will automatically look in __parent to attribute if not found to allow
+    It will automatically look in __parent for attribute if not found to allow
     A nesting of options.
     Use __attr to avoid xporting to json
     """

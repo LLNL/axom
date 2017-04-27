@@ -39,7 +39,9 @@ number = spaces ('-' | -> ''):sign (digits:ds (floatPart(sign ds)
 string = (('"' | "'"):q <(~exactly(q) anything)*>:xs exactly(q))
                      -> xs
 
-parens = <'('  (~')' anything)* ')'>
+# remove parens
+parens = '('  (~')' anything)*:v ')'
+        -> ''.join(v)
 
 value = name | string | number
 

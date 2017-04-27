@@ -3,6 +3,7 @@
 #include "pyTutorialmodule.hpp"
 // splicer begin class.Class1.impl.include
 // splicer end class.Class1.impl.include
+
 namespace tutorial {
 // splicer begin class.Class1.impl.C_definition
 // splicer end class.Class1.impl.C_definition

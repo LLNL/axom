@@ -4,6 +4,11 @@ Future Work
   * complex
   * structures
 
+  * pointers to pointers and in particular ``char **`` are not supported.
+    An argument like ``Class **ptr+intent(out)`` does not work.
+    Instead use a function which return a pointer to ``Class *``
+
+
 Possible Future Work
 --------------------
 
