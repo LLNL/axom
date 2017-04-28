@@ -129,10 +129,10 @@ TEST( numerics_matrix, assignment )
   const int NCOLS = 3;
 
   numerics::Matrix< int > A( MROWS, NCOLS );
-  A.fillAll( 3 );
+  A.fill( 3 );
 
   numerics::Matrix< int > B( 2, 2 );
-  B.fillAll( 1 );
+  B.fill( 1 );
 
   B = A;
 
@@ -248,7 +248,7 @@ TEST( numerics_matrix, fillColumn )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_matrix, fillAll )
+TEST( numerics_matrix, fill )
 {
   const int FILL_VAL = 3;
 
@@ -257,7 +257,7 @@ TEST( numerics_matrix, fillAll )
   EXPECT_EQ( N, M.getNumRows() );
   EXPECT_EQ( N, M.getNumColumns() );
 
-  M.fillAll( FILL_VAL );
+  M.fill( FILL_VAL );
 
   for ( int i=0; i < N; ++i ) {
      for ( int j=0; j < N; ++j ) {

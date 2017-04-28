@@ -481,7 +481,7 @@ public:
    * \param [in] val value to assign to all elements of the matrix.
    *****************************************************************************
    */
-  void fillAll( const T& val );
+  void fill( const T& val );
 
   /*!
    ****************************************************************************
@@ -764,7 +764,7 @@ void Matrix< T >::fillColumn( IndexType j, const T& val )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-void Matrix< T >::fillAll( const T& val )
+void Matrix< T >::fill( const T& val )
 {
   const int nitems = m_rows*m_cols;
   for ( IndexType i=0; i < nitems; ++i ) {
@@ -877,7 +877,7 @@ template < typename T >
 Matrix< T > Matrix< T >::zeros( int nrows, int ncols )
 {
   Matrix< T > M( nrows, ncols );
-  M.fillAll( static_cast< T >( 0 ) );
+  M.fill( static_cast< T >( 0 ) );
   return ( M );
 }
 
@@ -886,7 +886,7 @@ template < typename T >
 Matrix< T > Matrix< T >::ones( int nrows, int ncols )
 {
   Matrix< T > M( nrows, ncols );
-  M.fillAll( static_cast< T >( 1 ) );
+  M.fill( static_cast< T >( 1 ) );
   return ( M );
 }
 
