@@ -217,6 +217,39 @@ TEST( numerics_matrix, getColumn )
 }
 
 //------------------------------------------------------------------------------
+TEST( numerics_matrix, getRow )
+{
+  const int N=3;
+  numerics::Matrix< int > A( N,N );
+
+  int row_sums[ ] = { 0, 0, 0 };
+
+  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  for ( IndexType i=0; i < N; ++i ) {
+     A.fillRow( i, i+1 );
+     row_sums[ i ] = N*(i+1);
+  }
+
+  IndexType p = 0;
+  IndexType size=0;
+  for ( IndexType i=0; i < N; ++i ) {
+
+    int* row = A.getRow( i, p, size);
+    for ( IndexType j=0; j < size; j+=p ) {
+       EXPECT_EQ( i+1, row[ j ] );
+    }
+
+    double sum=0.0;
+    for ( IndexType j=0; j < size; j+=p ) {
+       sum += row[ j ];
+    }
+
+    EXPECT_EQ( row_sums[i], sum );
+  }
+
+}
+
+//------------------------------------------------------------------------------
 TEST( numerics_matrix, getDiagonal )
 {
   const int N=3;

@@ -584,6 +584,71 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns a const pointer to the \f$ ith \f$ row of an
+   *  \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$
+   *
+   * \param [in]  i index to the \f$ ith \f$ row of the matrix
+   * \param [out] p stride used to access row elements
+   * \param [out] N upper-bound to loop over
+   * \return \f$ \mathcal{A}_{i*} \f$ pointer to the \f$ ith \f$ row.
+   *
+   * \pre i >= 0 && i < m_rows
+   * \post p == m_rows
+   *
+   * \note Example Usage:
+   * \code
+   *   ...
+   *   typedef typename Matrix< double >::IndexType IndexType;
+   *   Matrix< double > A( MROWS,NCOLS );
+   *
+   *   IndexType p = 0;
+   *   IndexType N = 0;
+   *   const double* row = A.getRow( irow, p, N );
+   *
+   *   for ( IndexType j=0; j < N; j+=p ) {
+   *      std::cout << row[ j ]
+   *   }
+   *   ...
+   * \endcode
+   *****************************************************************************
+   */
+  const T* getRow( IndexType i, IndexType& p, IndexType& N ) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a pointer to the \f$ ith \f$ row of an  \f$ M \times N \f$
+   *  matrix, \f$ \mathcal{A} \f$
+   *
+   * \param [in]  i index to the \f$ ith \f$ row of the matrix
+   * \param [out] p stride used to access row elements
+   * \param [out] N upper-bound to loop over
+   * \return \f$ \mathcal{A}_{i*} \f$ pointer to the \f$ ith \f$ row.
+   *
+   * \pre i >= 0 && i < m_rows
+   * \post p == m_rows
+   *
+   * \note Example Usage:
+   * \code
+   *   ...
+   *   typedef typename Matrix< double >::IndexType IndexType;
+   *   Matrix< double > A( MROWS,NCOLS );
+   *
+   *   IndexType p = 0;
+   *   IndexType N = 0;
+   *   double* row = A.getRow( irow, p, N );
+   *
+   *   for ( IndexType j=0; j < N; j+=p ) {
+   *      row[ j ] = newval;
+   *   }
+   *   ...
+   * \endcode
+   *
+   *****************************************************************************
+   */
+  T* getRow( IndexType i, IndexType& p, IndexType& N );
+
+  /*!
+   *****************************************************************************
    * \brief Returns a const pointer to the raw data.
    *
    * \return ptr pointer to the raw data.
@@ -896,6 +961,26 @@ T* Matrix< T >::getColumn( IndexType j )
 {
   assert( (j>=0) && (j < m_cols) );
   return &m_data[ j*m_rows ];
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+const T* Matrix< T >::getRow( IndexType i, IndexType& p, IndexType& N ) const
+{
+  assert( (i >= 0) && (i < m_rows) );
+  p = m_rows;
+  N = (m_cols-1)*m_rows + i + 1;
+  return &m_data[ i ];
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+T* Matrix< T>::getRow( IndexType i, IndexType& p, IndexType& N )
+{
+  assert( (i >= 0) && (i < m_rows) );
+  p = m_rows;
+  N = (m_cols-1)*m_rows + i + 1;
+  return &m_data[ i ];
 }
 
 //-----------------------------------------------------------------------------
