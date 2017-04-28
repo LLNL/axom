@@ -722,8 +722,9 @@ void Matrix< T >::getDiagonal( T* diagonal ) const
   assert( diagonal != AXOM_NULLPTR );
 
   const int N = this->getDiagonalSize();
-  for ( IndexType i=0; i < N; ++i ) {
-     diagonal[ i ] = m_data[ i*m_rows+i ];
+  const int p = m_rows+1;
+  for ( IndexType i=0, j=0; i < N; ++i, j+=p ) {
+     diagonal[ i ] = m_data[ j ];
   }
 }
 
@@ -731,10 +732,12 @@ void Matrix< T >::getDiagonal( T* diagonal ) const
 template < typename T >
 void Matrix< T >::fillDiagonal( const T& val )
 {
-  const int N = this->getDiagonalSize();
-  for ( IndexType i=0; i < N; ++i ) {
-     m_data[ i*m_rows+i ] = val;
+  const int N = this->getDiagonalSize()*m_rows;
+  const int p = m_rows+1;
+  for ( IndexType i=0; i < N; i+=p ) {
+     m_data[ i ] = val;
   }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -743,8 +746,10 @@ void Matrix< T >::fillRow( IndexType i, const T& val )
 {
   assert( (i>=0) && (i < m_rows) );
 
-   for ( IndexType j=0; j < m_cols; ++j ) {
-     m_data[ i+j*m_rows ] = val;
+  const int N = (m_cols-1)*m_rows + i + 1;
+  const int p = m_rows;
+  for ( IndexType j=i; j < N; j+=p ) {
+     m_data[ j ] = val;
   }
 
 }
