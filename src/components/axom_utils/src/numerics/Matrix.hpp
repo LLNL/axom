@@ -371,13 +371,17 @@ public:
   /*!
    *****************************************************************************
    * \brief Constructor, creates a Matrix with the given rows and columns.
+   *
    * \param [in] rows the number of rows in the matrix.
    * \param [in] cols the number of columns in the matrix.
+   * \param [in] val optional argument to initialize the entries of the matrix.
+   *  If not supplied, the default is zero.
+   *
    * \pre rows >= 1
    * \pre cols >= 1
    *****************************************************************************
    */
-  Matrix( int rows, int cols );
+  Matrix( int rows, int cols, T val=static_cast< T >( 0 ) );
 
   /*!
    *****************************************************************************
@@ -690,13 +694,14 @@ namespace axom {
 namespace numerics {
 
 template < typename T >
-Matrix< T >::Matrix( int rows, int cols ) : m_rows( rows ), m_cols( cols )
+Matrix< T >::Matrix( int rows, int cols, T val ) : m_rows( rows ), m_cols( cols )
 {
   // sanity checks
   assert( m_rows > 0 );
   assert( m_cols > 0 );
 
   m_data = new T [ m_rows*m_cols ];
+  this->fill( val );
 }
 
 //-----------------------------------------------------------------------------

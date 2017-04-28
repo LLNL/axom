@@ -69,6 +69,32 @@ TEST( numerics_matrix, basic_constructor )
   EXPECT_EQ( MROWS, A.getNumRows() );
   EXPECT_EQ( NCOLS, A.getNumColumns() );
   EXPECT_FALSE( A.isSquare() );
+
+  for ( int irow=0; irow < MROWS; ++irow ) {
+     for ( int jcol=0; jcol < NCOLS; ++jcol ) {
+        EXPECT_DOUBLE_EQ( 0.0, A(irow,jcol) );
+     }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matrix, basic_constructor_with_value )
+{
+  const int MROWS = 5;
+  const int NCOLS = 10;
+  const double FILL_VAL = 2.5;
+
+  numerics::Matrix< double > A( MROWS, NCOLS, FILL_VAL );
+  EXPECT_EQ( MROWS, A.getNumRows() );
+  EXPECT_EQ( NCOLS, A.getNumColumns() );
+  EXPECT_FALSE( A.isSquare() );
+
+  for ( int irow=0; irow < MROWS; ++irow ) {
+    for ( int jcol=0; jcol < NCOLS; ++jcol ) {
+       EXPECT_DOUBLE_EQ( FILL_VAL, A(irow,jcol) );
+     }
+  }
+
 }
 
 //------------------------------------------------------------------------------
