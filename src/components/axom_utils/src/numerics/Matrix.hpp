@@ -43,6 +43,12 @@ class Matrix;
  *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
  *  have different dimensions, a \f$ 1 \times 1 \f$ null matrix is returned in
  *  \f$ \mathcal{C} \f$
+ *
+ * \warning Use this method with caution. Chaining overloaded operators may
+ *  lead to the creation of an undesirable number of temporaries and slow the
+ *  performance considerably. Consider using a variant for this method.
+ *
+ * \see add() variant
  *******************************************************************************
  */
 template < typename T >
@@ -64,6 +70,12 @@ Matrix< T > operator+( const Matrix< T >& A, const Matrix< T >& B );
  *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
  *  have different dimensions, a \f$ 1 \times 1 \f$ null matrix is returned in
  *  \f$ \mathcal{C} \f$
+ *
+ * \warning Use this method with caution. Chaining overloaded operators may
+ *  lead to the creation of an undesirable number of temporaries and slow the
+ *  performance considerably. Consider using a variant for this method.
+ *
+ * \see subtract() variant
  *******************************************************************************
  */
 template < typename T >
@@ -83,6 +95,12 @@ Matrix< T > operator-( const Matrix< T >& A, const Matrix< T >& B );
  *
  * \note Matrix-scalar multiplication is a commutative operation
  *  \f$ c \cdot \mathcal{A} = \mathcal{A} \cdot c \f$
+ *
+ * \warning Use this method with caution. Chaining overloaded operators may
+ *  lead to the creation of an undesirable number of temporaries and slow the
+ *  performance considerably. Consider using a variant for this method.
+ *
+ * \see scalar_multiply() variant
  *******************************************************************************
  */
 template < typename T >
@@ -104,6 +122,12 @@ Matrix< T > operator*( const T& c,const Matrix< T >& A) { return A*c; };
  * \post \f$ \mathbf{b} \f$ solution vector of dimension \f$ M \times 1 \f$
  * \post \f$ b_{i} = \sum\limits_{j=0}^N a_{ij} \cdot x_{j} \f$,
  *  \f$ \forall i \in [0,M-1] \f$
+ *
+ * \warning Use this method with caution. Chaining overloaded operators may
+ *  lead to the creation of an undesirable number of temporaries and slow the
+ *  performance considerably. Consider using a variant for this method.
+ *
+ * \see vector_multiply() variant
  *******************************************************************************
  */
 template < typename T >
@@ -120,9 +144,15 @@ Matrix< T > operator*( const Matrix< T >& A, const T* x );
  *
  * \pre The inner dimensions of the two matrices must match
  *
- * \note Matrix multiplication is undefined for matrices with different
- *  inner dimension. If the inner dimensions are not matching, the code
- *  retunrs
+ * \note Matrix multiplication is undefined for matrices with different inner
+ *  dimension. If the inner dimensions are not matching, the code returns a
+ *  \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{C} \f$
+ *
+ * \warning Use this method with caution. Chaining overloaded operators may
+ *  lead to the creation of an undesirable number of temporaries and slow the
+ *  performance considerably. Consider using a variant for this method.
+ *
+ * \see matrix_multiply() variant
  *******************************************************************************
  */
 template < typename T >
@@ -145,6 +175,102 @@ std::ostream& operator<<( std::ostream& os, const Matrix< T >& A );
 
 /// \name Matrix Operators
 /// @{
+
+/*!
+ *******************************************************************************
+ * \brief Computes \f$ \mathcal{C} = \mathcal{A} + \mathcal{B} \f$
+ *
+ * \param [in]  A \f$ M \times N \f$ matrix on the left-hand side.
+ * \param [in]  B \f$ M \times N \f$ matrix on the right-hand side.
+ * \param [out] C \f$ M \times N \f$ output matrix.
+ *
+ * \post \f$ c_{ij} = a_{ij} + b{ij} \f$, \f$\forall c_{ij} \in \mathcal{C}\f$
+ *
+ * \note Matrix addition is undefined for matrices that have different
+ *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
+ *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
+ *  matrix is returned in \f$ \mathcal{C} \f$
+ *******************************************************************************
+ */
+template < typename T >
+void add( const Matrix< T >& A, const Matrix< T >&B, Matrix< T >& C );
+
+/*!
+ *******************************************************************************
+ * \brief Computes \f$ \mathcal{C} = \mathcal{A} - \mathcal{B} \f$
+ *
+ * \param [in]  A \f$ M \times N \f$ matrix on the left-hand side.
+ * \param [in]  B \f$ M \times N \f$ matrix on the right-hand side.
+ * \param [out] C \f$ M \times N \f$ output matrix.
+ *
+ * \post \f$ c_{ij} = a_{ij} + b{ij} \f$, \f$\forall c_{ij} \in \mathcal{C}\f$
+ *
+ * \note Matrix addition is undefined for matrices that have different
+ *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
+ *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
+ *  matrix is returned in \f$ \mathcal{C} \f$
+ *******************************************************************************
+ */
+template < typename T >
+void subtract( const Matrix< T >& A, const Matrix< T >& B, Matrix< T >& C );
+
+/*!
+ *******************************************************************************
+ * \brief Computes a scalar-matrix produect of a matrix \f$ \mathcal{A} \f$ and
+ *  a scalar \f$ c \f$ and stores the result in \f$ \mathcal{A} \f$
+ *
+ * \param [in,out] A an \f$ M \times N \f$ matrix
+ * \param [in] c scalar value to multiply the matrix coefficients
+ *
+ * \post \f$ a_{ij} = c \cdot a_{ij} \f$, \f$ \forall a_{ij} \in mathcal{A} \f$
+ *******************************************************************************
+ */
+template < typename T >
+void scalar_multiply( Matrix< T >& A, const T& c );
+
+/*!
+ *******************************************************************************
+ * \brief Computes the matrix-vector product of a matrix \f$\mathcal{A}\f$ and
+ *  a vector \f$\mathbf{x}\f$ and store the result in the user-supplied output
+ *  vector.
+ *
+ * \param [in] A an \f$ M \times N \f$ matrix
+ * \param [in] x pointer to user-supplied vector storing the vector
+ * \param [out] c pointer to the user-supplied output vector
+ *
+ * \pre vec != AXOM_NULLPTR
+ * \pre vec must be of dimension \f$ N \f$
+ * \pre output != AXOM_NULLPTR
+ * \pre output must be of dimension \f$ M \f$
+ *
+ * \post \f$ b_i = \sum\limits_{j=0}^N a_{ij} \cdot x_j \f$,
+ *  \f$\forall i \in [0,M-1] \f$
+ *******************************************************************************
+ */
+template < typename T >
+void vector_multiply( const Matrix< T >& A, const T* vec, T* output );
+
+/*!
+ *******************************************************************************
+ * \brief Computes the matrix-matrix product of \f$ \mathcal{A} \f$ and
+ *  \f$ \mathcal{B} \f$ and stores the result in \f$ \mathcal{C} \f$
+ *
+ * \param [in] A  \f$ M \times N \f$ matrix on the left hand-side.
+ * \param [in] B  \f$ N \times K \f$ matrix on the right hand-side.
+ * \param [out] C \f$ M \times K \f$ output matrix
+ *
+ * \pre The inner dimensions of matrices A, B must match
+ * \pre Output matrix should be an \f$ M \times K \f$ matrix
+ *
+ * \note Matrix multiplication is undefined for matrices with different inner
+ *  dimension. If the inner dimensions are not matching, the code returns a
+ *  \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{C} \f$
+ *******************************************************************************
+ */
+template < typename T >
+void matrix_multiply( const Matrix< T >&A,
+                      const Matrix< T >& B,
+                      Matrix< T >& C );
 
 /*!
  *****************************************************************************
@@ -790,49 +916,85 @@ void Matrix< T >::clear( )
 }
 
 //-----------------------------------------------------------------------------
-// FREE METHODS
+// OVERLOADED OPERATORS
 //-----------------------------------------------------------------------------
 
 template < typename T >
 Matrix< T > operator+( const Matrix< T >& A, const Matrix< T >& B )
 {
-  assert( A.getNumRows() == B.getNumRows() );
-  assert( A.getNumColumns() == B.getNumColumns() );
-
-  if ( A.getNumRows() != B.getNumRows() ||
-       A.getNumColumns() != B.getNumColumns() ) {
-     // matrix dimensions do not match
-     return Matrix< T >::zeros(1,1);
-  }
-
-  typedef typename Matrix< T >::IndexType IndexType;
-
   const int nrows = A.getNumRows();
   const int ncols = A.getNumColumns();
-  const int N     = nrows*ncols;
+  Matrix< T > C( nrows, ncols );
 
-  Matrix< T > M(nrows,ncols);
-  T* target = M.data();
+  add( A, B, C );
 
-  const T* sourceA = A.data();
-  const T* sourceB = B.data();
-  for ( IndexType i=0; i < N; ++i ) {
-     target[ i ] = sourceA[ i ] + sourceB[ i ];
-  }
-  return ( M );
+  return ( C );
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
 Matrix< T > operator-( const Matrix< T >& A, const Matrix< T >& B )
 {
+  const int nrows = A.getNumRows();
+  const int ncols = A.getNumColumns();
+  Matrix< T > C( nrows, ncols );
+
+  subtract( A, B, C );
+
+  return ( C );
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+Matrix< T > operator*( const Matrix< T >& A, const T& scalar )
+{
+  Matrix< T > C = A;
+  scalar_multiply( C, scalar );
+  return ( C );
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+Matrix< T > operator*( const Matrix< T >& A, const T* x )
+{
+  const int nrows= A.getNumRows();
+
+  Matrix< T > b( nrows, 1 );
+  vector_multiply( A, x, b.data() );
+  return( b );
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+Matrix< T > operator*( const Matrix< T >& A, const Matrix< T >& B )
+{
+  const int nrows = A.getNumRows();
+  const int ncols = B.getNumColumns();
+
+  Matrix< T > C(nrows,ncols);
+  matrix_multiply( A, B, C );
+  return( C );
+}
+
+//-----------------------------------------------------------------------------
+// FREE METHODS
+//-----------------------------------------------------------------------------
+template < typename T >
+void add( const Matrix< T >& A, const Matrix< T >&B, Matrix< T >& C )
+{
   assert( A.getNumRows() == B.getNumRows() );
   assert( A.getNumColumns() == B.getNumColumns() );
+  assert( C.getNumRows() == B.getNumRows() );
+  assert( C.getNumColumns() == B.getNumColumns() );
 
-  if ( A.getNumRows() != B.getNumRows() ||
-       A.getNumColumns() != B.getNumColumns() ) {
+  if ( A.getNumRows()    != B.getNumRows() ||
+       A.getNumColumns() != B.getNumColumns() ||
+       C.getNumRows()    != B.getNumRows() ||
+       C.getNumColumns() != B.getNumColumns() ) {
+
     // matrix dimensions do not match
-    return Matrix< T >::zeros(1,1);
+    C = Matrix< T >::zeros(1,1);
+    return;
   }
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -841,21 +1003,54 @@ Matrix< T > operator-( const Matrix< T >& A, const Matrix< T >& B )
   const int ncols = A.getNumColumns();
   const int N     = nrows*ncols;
 
-  Matrix< T > M(nrows,ncols);
-  T* target = M.data();
+  T* target = C.data();
 
-  const T* sourceB = B.data();
   const T* sourceA = A.data();
+  const T* sourceB = B.data();
   for ( IndexType i=0; i < N; ++i ) {
-     target[ i ] = sourceA[ i ] - sourceB[ i ] ;
+     target[ i ] = sourceA[ i ] + sourceB[ i ];
   }
 
-  return ( M );
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
-Matrix< T > operator*( const Matrix< T >& A, const T& scalar )
+void subtract( const Matrix< T >& A, const Matrix< T >& B, Matrix< T >& C )
+{
+  assert( A.getNumRows() == B.getNumRows() );
+  assert( A.getNumColumns() == B.getNumColumns() );
+  assert( C.getNumRows() == B.getNumRows() );
+  assert( C.getNumColumns() == B.getNumColumns() );
+
+  if ( A.getNumRows()    != B.getNumRows() ||
+       A.getNumColumns() != B.getNumColumns() ||
+       C.getNumRows()    != B.getNumRows() ||
+       C.getNumColumns() != B.getNumColumns() ) {
+
+      // matrix dimensions do not match
+      C = Matrix< T >::zeros(1,1);
+      return;
+  }
+
+    typedef typename Matrix< T >::IndexType IndexType;
+
+    const int nrows = A.getNumRows();
+    const int ncols = A.getNumColumns();
+    const int N     = nrows*ncols;
+
+    T* target = C.data();
+
+    const T* sourceB = B.data();
+    const T* sourceA = A.data();
+    for ( IndexType i=0; i < N; ++i ) {
+       target[ i ] = sourceA[ i ] - sourceB[ i ] ;
+    }
+
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+void scalar_multiply( Matrix< T >& A, const T& c )
 {
   // matrix-scalar multiplication
   const int nrows = A.getNumRows();
@@ -864,20 +1059,16 @@ Matrix< T > operator*( const Matrix< T >& A, const T& scalar )
 
   typedef typename Matrix< T >::IndexType IndexType;
 
-  Matrix< T > M(nrows,ncols);
-  T* target = M.data();
-
-  const T* source = A.data();
+  T* target = A.data();
   for ( IndexType i=0; i < N; ++i ) {
-     target[ i ] = scalar*source[ i ];
+     target[ i ] *= c;
   }
 
-  return ( M );
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
-Matrix< T > operator*( const Matrix< T >& A, const T* x )
+void vector_multiply( const Matrix< T >& A, const T* x, T* b )
 {
   // matrix-vector multiplication
   const int nrows = A.getNumRows();
@@ -885,49 +1076,53 @@ Matrix< T > operator*( const Matrix< T >& A, const T* x )
 
   typedef typename Matrix< T >::IndexType IndexType;
 
-  Matrix< T > vec( A.getNumRows(), 1 );
-
   for ( IndexType i=0; i < nrows; ++i ) {
-     double sum = 0.0;
-     for ( IndexType j=0; j < ncols; ++j ) {
-        sum += A( i,j )*x[ j ];
-     } // END for all columns
-     vec( i,0 ) = sum;
+
+    double sum = 0.0;
+    for ( IndexType j=0; j < ncols; ++j ) {
+       sum += A( i,j )*x[ j ];
+    } // END for all columns
+
+    b[ i ] = sum;
+
   } // END for all rows
 
-  return ( vec );
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
-Matrix< T > operator*( const Matrix< T >& A, const Matrix< T >& B )
+void matrix_multiply( const Matrix< T >& A,
+                      const Matrix< T >& B,
+                      Matrix< T >& C )
 {
   // basic matrix-matrix multiplication
   assert( A.getNumColumns() == B.getNumRows() );
 
-  if ( A.getNumColumns() != B.getNumRows() ) {
-    // inner dimensions do not match
-    return Matrix< T >::zeros( 1,1 );
+  if ( A.getNumColumns() != B.getNumRows()   ||
+       C.getNumRows() != A.getNumRows()      ||
+       C.getNumColumns() != B.getNumColumns()   ) {
+
+     C = Matrix< T >::zeros( 1,1 );
+     return;
   }
 
   typedef typename Matrix< T >::IndexType IndexType;
 
   const int nk    = A.getNumColumns();
-  const int nrows = A.getNumRows();
-  const int ncols = B.getNumColumns();
-  Matrix< T > result = Matrix< T >::zeros( nrows, ncols );
+  const int nrows = C.getNumRows();
+  const int ncols = C.getNumColumns();
 
   for ( IndexType i=0; i < nrows; ++i ) {
      for ( IndexType j=0; j < ncols; ++j ) {
 
+        C( i,j ) = static_cast< T >( 0 );
         for ( IndexType k=0; k < nk; ++k ) {
-           result( i,j ) += A(i,k) * B(k,j);
-        } // EDN for all internal
+           C( i,j ) += A(i,k) * B(k,j);
+        } // END for all internal
 
      } // END for all columns
   } // END for all rows
 
-  return ( result );
 }
 
 //-----------------------------------------------------------------------------
