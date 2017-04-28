@@ -1,0 +1,41 @@
+.. ##
+.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory.
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file cannot be distributed without permission and
+.. ## further review from Lawrence Livermore National Laboratory.
+.. ##
+
+.. _tooleco-label:
+
+--------------------------
+Building the Code (BLT)
+--------------------------
+
+The `Axom Quickstart Guide <../../../quickstart_guide_docs/html/index.html>`_ 
+describes how to build the Axom code and its third-party library dependencies.
+
+The Axom build system is built on top of a streamlined CMake-based build 
+system foundation, called *BLT*, that we maintain and share with other 
+software projects. It is available in the 
+`BLT GitHub Project <https://github.com/LLNL/blt>`_. BLT provides a "common 
+sense" CMake setup that helps to simplify configuration and building the Axom 
+code. It also enables software development tool integration via *make targets*. BLT has built-in support for the following tools, all of which we use for 
+Axom development:
+
+  Documentation
+    *Doxygen* (source code docs) and *Sphinx* (user docs)
+  Unit testing
+    *CTest* (test orchestration), *Google Test* (C/C++ unit tests), *Fruit* (Fortran unit tests)
+  Code Health
+    *Uncrustify* (code style), *gcov* and *lcov* (code coverage), and *Valgrind* (memory checking)
+  Benchmarking
+    *Google Benchmark*
+
+We use `Spack <https://github.com/LLNL/spack>`_ to manage and build the 
+third-party libraries on which Axom depends.
+
+

@@ -39,6 +39,12 @@ Describe requirements for unit tests, integration tests, etc.; e.g., coverage
 performance, memory usage correctness....
 
 
+----------------------------
+Continuous Integration (CI)
+----------------------------
+
+See Bamboo section...
+
 ----------------
 Code Coverage
 ----------------

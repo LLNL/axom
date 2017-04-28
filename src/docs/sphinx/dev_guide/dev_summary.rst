@@ -13,15 +13,8 @@
 Axom Development Process Summary
 ****************************************
 
-This section provides a brief summary of various aspects of Axom software 
-development. 
-
-The main interaction hub for Axom developers is the Atlassian 
-tool suite on the Livermore Computing Collaboration Zone (CZ). These tools 
-can be accessed through the `MyLC Portal <https://lc.llnl.gov>`_. 
-Developer-level access to Axom project spaces requires membership in the LC 
-group 'axomdev'. If you are not in this group and need to be, please send 
-an email request to 'axom-dev@llnl.gov'.
+This section summarizes high-level aspects of Axom software development. 
+Links to more detailed discuss can be found in the text.
 
 
 ======================================================
@@ -30,11 +23,11 @@ Development and Release Cycles
 
 The Axom team uses an agile, sprint-based development process. 
 We target a set of development tasks for each quarterly (3 month) releease 
-cycles for the project as a whole. Developers of individual software 
-components in Axom may plan work on a finer time-scale if they choose to do so.
-However, project-wide schedule planning for a release is done every three 
-months. Work performed in each release cycle is tracked as a single unified
-sprint encompassing the entire project.
+cycles for the project as a whole. Within this coarse-grain time framework,
+developers of individual Axom components may plan and schedule work on a 
+finer time-scale if they choose to do so. However, work performed in each 
+3 month release cycle is tracked as a single unified sprint encompassing 
+the entire project.
 
 See :ref:`releasecycle-label` for more information about how we do release 
 planning and tracking. 
@@ -97,20 +90,34 @@ including *continuous integration*.
 Software Development Tools
 ======================================================
 
-We use a variety of tools for software development. Our tool philosophy has
-three main tenets:
+We use a variety of tools for our software development. Our tool philosophy 
+focuses on three central tenets:
 
-  * Employ robust, commonly-used tools. Don't re-invent something that already exists
-  * Apply tools in ways that are easy for non-experts
-  * Strive for automation and reproducibility
+  * We employ robust, commonly-used tools. We don't re-invent something that already exists.
+  * We apply tools in ways that are easy for non-experts.
+  * We strive for automation and reproducibility.
 
-The main tools we use are listed below. Details about how we use
-them and helpful information about getting started can be found via the 
-provided links.
+The main interaction hub for Axom developers is the Atlassian
+tool suite on the Livermore Computing Collaboration Zone (CZ). These tools
+can be accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
+Developer-level access to Axom project spaces requires membership in the LC
+group 'axomdev'. If you are not in this group and need to be, please send
+an email request to 'axom-dev@llnl.gov'.
 
-* We use the `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion, planning, maintaining meeting notes, etc.
-* We use the `Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_ to manage our Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
-* We use the `Axom JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking.
-* We use the `Axom Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for 
-continuous integration and automated testing.
+The Atlassian tools we use are listed below. Details about how we use
+them and helpful information about getting started with the can be found via 
+the provided links.
 
+* **Confluence.**  We use our `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion (e.g., hashing out design ideas), maintaining meeting notes, etc.
+
+* **Bitbucket.** We use the `Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_ to manage our Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
+
+  * See :ref:`gitandbranch-label` for more information about how we use Git and Bitbucket.
+
+* **JIRA.** We use the `Axom JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking and release planning.
+
+  * See :ref:`issuetracking-label` for more information about how we use JIRA.
+
+* **Bamboo.** We use two Bamboo projects for continuous integration, automated testing, documentation generation, etc.: `Axom CZ Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ and `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
+
+  * See :ref:`citesting-label` for more information about how we use Bamboo.

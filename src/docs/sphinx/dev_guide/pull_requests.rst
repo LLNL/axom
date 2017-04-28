@@ -44,11 +44,9 @@ other tools. In particular :
 * The code should compile cleanly at the highest warning level with the 
   main compilers supported by the project. All warnings **must** be 
   understood and eliminated if possible. Reducing a compiler warning 
-  level to eliminate warning messages **is not** acceptable.
-
-  Compiler warnings, while seemingly innocuous at times, often indicate
-  problems that do not appear until later or until specific run-time
-  conditions are encountered.
+  level to eliminate warning messages **is not** acceptable. Compiler warnings,
+  while seemingly innocuous at times, often indicate problems that do not 
+  appear until later or until specific run-time conditions are encountered.
 
 * Static analysis tools **should** be applied to the code using tools such
   as `cppcheck`, etc. to identify potential implementation issues.
