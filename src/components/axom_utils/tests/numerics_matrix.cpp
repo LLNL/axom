@@ -339,6 +339,34 @@ TEST( numerics_matrix, swapRows )
   }
 
 }
+
+//------------------------------------------------------------------------------
+TEST( numerics_matrix, swapColumns )
+{
+  const int M=3;
+  const int N=4;
+
+  typedef typename numerics::Matrix< int >::IndexType IndexType;
+
+  // setup a test matrix
+  numerics::Matrix< int > A( M,N );
+  for ( IndexType i=0; i < N; ++i ) {
+     A.fillColumn( i, i+1 );
+  }
+
+  int first_column = 0;
+  int last_column  = N-1;
+  A.swapColumns( first_column, last_column );
+
+  int* first_column_data = A.getColumn( first_column );
+  int* last_column_data  = A.getColumn( last_column );
+  for ( IndexType i=0; i < M; ++i ) {
+     EXPECT_EQ( last_column+1, first_column_data[ i ] );
+     EXPECT_EQ( first_column+1, last_column_data[ i ] );
+  }
+
+}
+
 //------------------------------------------------------------------------------
 TEST( numerics_matrix, addition )
 {

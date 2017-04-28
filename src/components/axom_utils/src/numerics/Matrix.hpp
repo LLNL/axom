@@ -514,6 +514,17 @@ public:
    */
   void swapRows( IndexType i, IndexType j );
 
+  /*!
+   *****************************************************************************
+   * \brief Swaps the columns of this matrix instance.
+   * \param [in] i index of the first column to swap
+   * \param [in] j index of the second column to swap
+   * \pre i >= 0 && i < m_cols
+   * \pre j >= 0 && j < m_cols
+   *****************************************************************************
+   */
+  void swapColumns( IndexType i, IndexType j );
+
   /// \name Random Access Operators
   /// @{
 
@@ -829,6 +840,26 @@ void Matrix< T >::swapRows( IndexType irow, IndexType jrow )
 
   for ( IndexType k=0; k < m_cols; ++k ) {
      utilities::swap( A( irow,k ), A( jrow,k ) );
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+void Matrix< T >::swapColumns( IndexType icol, IndexType jcol )
+{
+  assert( (icol >= 0) && (icol < m_cols) );
+  assert( (jcol >= 0) && (jcol < m_cols) );
+
+  if ( icol == jcol ) {
+    /* short-circuit */
+    return;
+  }
+
+  T* icol_data = this->getColumn( icol );
+  T* jcol_data = this->getColumn( jcol );
+  for ( IndexType i=0; i < m_rows; ++i ) {
+     utilities::swap( icol_data[ i ], jcol_data[ i ] );
   }
 
 }
