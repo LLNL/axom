@@ -409,4 +409,5 @@ int luaopen_tutorial(lua_State *L) {
 #ifdef __cplusplus
 }
 #endif
+
 }  // namespace tutorial

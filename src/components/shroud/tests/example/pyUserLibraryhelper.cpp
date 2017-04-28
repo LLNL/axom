@@ -4,6 +4,7 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
+
 namespace example {
 namespace nested {
 const char *PY_ExClass1_capsule_name = "ExClass1";
@@ -67,5 +68,6 @@ int PP_ExClass2_from_Object(PyObject *obj, void **addr)
     return 1;
     // splicer end class.ExClass2.helper.from_object
 }
-}  // namespace example
+
 }  // namespace nested
+}  // namespace example

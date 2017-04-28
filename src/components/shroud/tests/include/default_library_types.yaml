@@ -4,21 +4,21 @@
 types:
 
   Class1:
-    base = wrapped
-    cpp_type = Class1
-    c_type = DEF_class1
-    f_derived_type = class1
-    f_to_c = "{f_var}%get_instance()"
+    base: wrapped
+    cpp_type: Class1
+    c_type: DEF_class1
+    f_derived_type: class1
+    f_to_c: "{f_var}%get_instance()"
     f_module:
       class1_mod:
       - class1
 
   Class2:
-    base = wrapped
-    cpp_type = Class2
-    c_type = DEF_class2
-    f_derived_type = class2
-    f_to_c = "{f_var}%get_instance()"
+    base: wrapped
+    cpp_type: Class2
+    c_type: DEF_class2
+    f_derived_type: class2
+    f_to_c: "{f_var}%get_instance()"
     f_module:
       class2_mod:
       - class2

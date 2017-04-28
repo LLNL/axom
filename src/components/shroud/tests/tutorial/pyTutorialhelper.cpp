@@ -1,6 +1,7 @@
 // pyTutorialhelper.cpp
 // This is generated code, do not edit
 #include "pyTutorialmodule.hpp"
+
 namespace tutorial {
 const char *PY_Class1_capsule_name = "Class1";
 
@@ -33,4 +34,5 @@ int PP_Class1_from_Object(PyObject *obj, void **addr)
     return 1;
     // splicer end class.Class1.helper.from_object
 }
+
 }  // namespace tutorial

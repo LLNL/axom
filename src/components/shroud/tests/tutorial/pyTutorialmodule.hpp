@@ -9,6 +9,7 @@
 #include "tutorial.hpp"
 // splicer begin header.include
 // splicer end header.include
+
 namespace tutorial {
 extern PyTypeObject PY_Class1_Type;
 // splicer begin header.C_declaration
@@ -43,6 +44,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 #ifdef __cplusplus
 }
 #endif
+
 
 }  // namespace tutorial
 #endif  /* PYTUTORIALMODULE_HPP */

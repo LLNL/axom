@@ -14,6 +14,9 @@
 
 #include "sidre/SidreTypes.h"
 
+// splicer begin class.ExClass2.CXX_declarations
+// splicer end class.ExClass2.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,8 +27,8 @@ typedef struct s_AA_exclass1 AA_exclass1;
 struct s_AA_exclass2;
 typedef struct s_AA_exclass2 AA_exclass2;
 
-// splicer begin class.ExClass2.C_definition
-// splicer end class.ExClass2.C_definition
+// splicer begin class.ExClass2.C_declarations
+// splicer end class.ExClass2.C_declarations
 
 AA_exclass2 * AA_exclass2_ex_class2(const char * name);
 
@@ -35,19 +38,19 @@ void AA_exclass2_delete(AA_exclass2 * self);
 
 const char * AA_exclass2_get_name(const AA_exclass2 * self);
 
-void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name_bufferify(const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 const char * AA_exclass2_get_name2(AA_exclass2 * self);
 
-void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name2_bufferify(AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 char * AA_exclass2_get_name3(const AA_exclass2 * self);
 
-void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name3_bufferify(const AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 char * AA_exclass2_get_name4(AA_exclass2 * self);
 
-void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int LSH_F_rv);
+void AA_exclass2_get_name4_bufferify(AA_exclass2 * self, char * SH_F_rv, int NSH_F_rv);
 
 const int AA_exclass2_get_name_length(AA_exclass2 * self);
 

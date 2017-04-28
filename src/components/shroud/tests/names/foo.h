@@ -9,6 +9,9 @@
 #ifndef FOO_H
 #define FOO_H
 
+// splicer begin class.Names.CXX_declarations
+// splicer end class.Names.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,8 +20,8 @@ extern "C" {
 struct s_TES_names;
 typedef struct s_TES_names TES_names;
 
-// splicer begin class.Names.C_definition
-// splicer end class.Names.C_definition
+// splicer begin class.Names.C_declarations
+// splicer end class.Names.C_declarations
 
 void XXX_TES_names_method1(TES_names * self);
 

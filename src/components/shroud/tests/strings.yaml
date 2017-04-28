@@ -36,7 +36,7 @@ functions:
   doxygen:
     brief: return a 'const char *' as character(*)
 
-- decl: const char * getChar2+len=30()
+- decl: const char * getChar2+len(30)()
 #  C_error_pattern: C_char_invalid_name
   doxygen:
     brief: return 'const char *' with fixed size (len=30)
@@ -67,6 +67,11 @@ functions:
   options:
     F_string_result_as_arg: output
 
+- decl: const string& getString2_empty+len=30()
+  C_error_pattern: C_invalid_name
+  doxygen:
+    brief: Test returning empty string reference
+
 ########################################
 
 - decl: void acceptStringConstReference(const std::string & arg1)
@@ -93,18 +98,32 @@ functions:
 #  doxygen:
 #    brief: Accept a string instance
 
+########################################
+# explicit annotations
+# Currently explicit len/len_trim conflict with auto generated one and do not compile
+# local declarations shadow parameter
 
+- decl: void explicit1(char * name+len_trim(AAlen)+intent(in))
+  options:
+    C_bufferify_suffix: _BUFFER
+# len_trim is added for free because intent(in)
 
+- decl: void explicit2(char * name+len(AAtrim)+intent(out))
+# len is added for free because intent(out)
 
+#- decl: void explicit3(char * name+len(AAlen)+len_trim(AAtrim))
+# set names for len/len_trim annotations
+
+########################################
 patterns:
-    C_invalid_name: >
+    C_invalid_name: |
         if ({cpp_var}.empty()) {{
             return NULL;
         }}
     # return a blank field string if an error occurs
-    C_invalid_name_as_buffer: >
-        if ({cpp_var}.empty()) {{
-            std::memset({f_string}, ' ', {f_string_len});
-            return;
-        }}
+#    C_invalid_name_as_buffer: |
+#        if ({cpp_var}.empty()) {{
+#            std::memset({c_var}, ' ', {c_var_len});
+#            return;
+#        }}
 

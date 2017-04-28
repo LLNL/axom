@@ -34,7 +34,7 @@ fi
 if [ "$TEST" = true ]; then
     echo "Running tests env CTEST_OUTPUT_ON_FAILURE=1 ..."
     echo "-----------------------------------------------------------------------"
-    env CTEST_OUTPUT_ON_FAILURE=1 make test ARGS="-T Test -j$JOBS"
+    env CTEST_OUTPUT_ON_FAILURE=1 make test ARGS="-T Test -VV -j$JOBS"
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1
