@@ -85,6 +85,12 @@ blt_add_library( NAME
 #    add_dependencies(copy_headers_sidre sidre_generate)
 #endif()
 
+if(SPARSEHASH_FOUND)
+   blt_add_target_definitions(TO
+                              sidre
+                              TARGET_DEFINITIONS
+                              ${SPARSEHASH_COMPILER_DEFS})
+endif()
 
 if(FALSE)  # The Python module is not create yet.
 #if(ENABLE_PYTHON_API)
