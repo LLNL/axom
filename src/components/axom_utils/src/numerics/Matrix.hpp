@@ -853,7 +853,11 @@ Matrix< T >& Matrix< T >::operator=( const Matrix< T >& rhs )
 {
 
   if ( this != &rhs ) {
-    this->clear();
+
+    if ( (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols) ) {
+      this->clear();
+    }
+
     this->copy( rhs );
   }
 
@@ -901,13 +905,23 @@ Matrix< T > Matrix< T >::ones( int nrows, int ncols )
 template < typename T >
 void Matrix< T >::copy( const Matrix< T >& rhs )
 {
-  m_rows = rhs.m_rows;
-  m_cols = rhs.m_cols;
+  bool do_allocate = (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols);
+
+  if ( do_allocate ) {
+
+    assert( m_data == AXOM_NULLPTR );
+
+    m_rows = rhs.m_rows;
+    m_cols = rhs.m_cols;
+    m_data = new T[ m_rows*m_cols ];
+  }
+
+  assert( m_rows==rhs.m_rows );
+  assert( m_cols==rhs.m_cols );
+  assert( m_data != AXOM_NULLPTR );
 
   const int nitems   = m_rows*m_cols;
   const int bytesize = nitems*sizeof(T);
-
-  m_data = new T[ nitems ];
   memcpy( m_data, rhs.m_data, bytesize );
 }
 
