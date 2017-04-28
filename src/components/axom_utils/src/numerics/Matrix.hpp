@@ -385,6 +385,22 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Array constructor, creates a Matrix with the given rows and columns
+   *  and initializes its entries with the data from the supplied array.
+   *
+   * \param [in] rows the number of rows in the matrix
+   * \param [in] cols the number of columns in the matrix
+   * \param [in] data pointer to user-supplied buffer to initialize the matrix.
+   *
+   * \pre rows >= 1
+   * \pre cols >= 1
+   * \pre data != AXOM_NULLPTR
+   *****************************************************************************
+   */
+  Matrix( int rows, int cols, T* data );
+
+  /*!
+   *****************************************************************************
    * \brief Copy constructor.
    * \param [in] m the matrix instance that is being passed.
    *****************************************************************************
@@ -702,6 +718,19 @@ Matrix< T >::Matrix( int rows, int cols, T val ) : m_rows( rows ), m_cols( cols 
 
   m_data = new T [ m_rows*m_cols ];
   this->fill( val );
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+Matrix< T >::Matrix( int rows, int cols, T* data ) :
+ m_rows( rows ),
+ m_cols( cols )
+{
+  assert( data != AXOM_NULLPTR );
+
+  const int nitems = m_rows*m_cols;
+  m_data = new T[ nitems ];
+  memcpy( m_data, data, nitems*sizeof(T) );
 }
 
 //-----------------------------------------------------------------------------

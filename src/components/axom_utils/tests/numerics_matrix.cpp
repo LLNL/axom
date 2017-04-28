@@ -98,6 +98,27 @@ TEST( numerics_matrix, basic_constructor_with_value )
 }
 
 //------------------------------------------------------------------------------
+TEST( numerics_matrix, array_constructor )
+{
+  const int MROWS = 2;
+  const int NCOLS = 2;
+  int data[ 4 ]   = { 1, 2, 3, 4 };
+
+  numerics::Matrix< int > A( MROWS, NCOLS, data );
+  EXPECT_EQ( MROWS, A.getNumRows() );
+  EXPECT_EQ( NCOLS, A.getNumColumns() );
+
+  int idx = 0;
+  for ( int j=0; j < NCOLS; ++j ) {
+     for ( int i=0; i < MROWS; ++i ) {
+        ++idx;
+        EXPECT_EQ( idx, A(i,j) );
+     }
+  }
+
+}
+
+//------------------------------------------------------------------------------
 TEST( numerics_matrix, is_square )
 {
   const int MROWS = 10;
