@@ -8,11 +8,18 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-#ifndef DETERMINANTS_H_
-#define DETERMINANTS_H_
+#ifndef AXOM_NUMERICS_DETERMINANTS_HPP_
+#define AXOM_NUMERICS_DETERMINANTS_HPP_
+
+#include "axom_utils/LU.hpp"     // for lu_decompose()
+#include "axom_utils/Matrix.hpp" // for Matrix
+
 
 namespace axom {
-namespace primal {
+namespace numerics {
+
+/// \name Matrix Operators
+/// @{
 
 /*!
  *******************************************************************************
@@ -24,7 +31,7 @@ namespace primal {
  * \return det the determinant of the 2X2 matrix
  *******************************************************************************
  */
-template < class real >
+template < typename real >
 inline real determinant( const real& a00, const real& a01,
                          const real& a10, const real& a11 )
 {
@@ -47,7 +54,7 @@ inline real determinant( const real& a00, const real& a01,
  * \return det the determinant of the 3x3 matrix.
  *******************************************************************************
  */
-template < class real >
+template < typename real >
 inline real determinant( const real& a00,  const real& a01,  const real& a02,
                          const real& a10,  const real& a11,  const real& a12,
                          const real& a20,  const real& a21,  const real& a22 )
@@ -82,7 +89,7 @@ inline real determinant( const real& a00,  const real& a01,  const real& a02,
  * \return det the determinant of the 4x4 matrix
  *******************************************************************************
  */
-template < class real >
+template < typename real >
 inline real determinant(
   const real& a00, const real& a01, const real& a02, const real& a03,
   const real& a10, const real& a11, const real& a12, const real& a13,
@@ -105,7 +112,77 @@ inline real determinant(
   return det;
 }
 
-} /* namespace primal */
+/*!
+ *******************************************************************************
+ * \brief Computes the determinant of the given square matrix.
+ * \param [in] A an \f$ N \times N \f$ input matrix
+ * \return det the computed determinant.
+ * \note if \f$ A \f$ is not square or empty, this function will return 0.0
+ *******************************************************************************
+ */
+template < typename real >
+inline real determinant( const Matrix< real >& A )
+{
+  real det = 0.0;
+
+  if ( !A.isSquare( ) || A.empty() ) {
+    /* short-circuit */
+    return det;
+  }
+
+  const int N = A.getNumColumns();
+  if ( N==1 ) {
+
+    det = A(0,0);
+
+  } else if ( N==2 ) {
+
+    det = determinant( A(0,0), A(0,1),
+                       A(1,0), A(1,1) );
+
+  } else if ( N==3 ) {
+
+    det = determinant( A(0,0), A(0,1), A(0,2),
+                       A(1,0), A(1,1), A(1,2),
+                       A(2,0), A(2,1), A(2,2)   );
+
+  } else if ( N==4 ) {
+
+    det = determinant( A(0,0), A(0,1), A(0,2), A(0,3),
+                       A(1,0), A(1,1), A(1,2), A(1,3),
+                       A(2,0), A(2,1), A(2,2), A(2,3),
+                       A(3,0), A(3,1), A(3,2), A(3,3)  );
+
+  } else {
+
+     Matrix< real > lu = A;
+     int* pivots = new int[ N ];
+
+     int rc = lu_decompose( lu, pivots );
+     if ( rc == LU_SUCCESS ) {
+
+       // count number of row interchanges
+       int row_interchanges = 0;
+       for ( int i=0; i < N; ++i ) {
+          row_interchanges += ( pivots[i] != i )? 1 : 0;
+       } // END for all rows
+
+       det = ( (row_interchanges & 1)==0 )? 1.0 : -1.0;
+       for ( int i=0; i < N; ++i ) {
+          det *= lu(i,i);
+       }
+
+     }
+
+     delete [] pivots;
+  }
+
+  return ( det );
+}
+
+/// @}
+
+} /* namespace numerics */
 } /* namespace axom */
 
 #endif
