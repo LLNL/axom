@@ -463,6 +463,10 @@ public:
    *
    * \pre diagonal != AXOM_NULLPTR
    * \pre diagonal must have sufficient storage for all the diagonal entries.
+   *
+   * \note For non-square matrices, this method will retrieve all the entries
+   *  along the main diagonal, \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
+   *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
    *****************************************************************************
    */
   void getDiagonal( T* diagonal ) const;
@@ -471,6 +475,10 @@ public:
    *****************************************************************************
    * \brief Assigns <em>val</em> to all entries in the diagonal.
    * \param [in] val value to assign to all diagonal entries.
+   *
+   * \note For non-square matrices, this method will fill all the entries
+   *  along the main diagonal, \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
+   *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
    *****************************************************************************
    */
   void fillDiagonal( const T& val );
@@ -566,6 +574,19 @@ public:
    * \param [in] j the jth column of the matrix.
    * \return \f$ \mathcal{A}_{*j} \f$ pointer to the \f$ jth \f$ column.
    * \pre j >= 0 && j < m_cols
+   *
+   * \note Example Usage:
+   * \code
+   *  ...
+   *  typedef typename Matrix< double >::IndexType IndexType;
+   *
+   *  Matrix < double > A( MROWS,NCOLS );
+   *  const double* column = A.getColumn( j );
+   *  for ( IndexType i=0; i < MROWS; ++i ) {
+   *     std::cout << column[ i ] << " ";
+   *  }
+   *  ...
+   * \endcode
    *****************************************************************************
    */
   const T* getColumn( IndexType j ) const;
@@ -578,6 +599,19 @@ public:
    * \param [in] j the jth column of the matrix.
    * \return \f$ \mathcal{A}_{*j} \f$ pointer to the \f$ jth \f$ column.
    * \pre j >= 0 && j < m_cols
+   *
+   * \note Example Usage:
+   * \code
+   *  ...
+   *  typedef typename Matrix< double >::IndexType IndexType;
+   *
+   *  Matrix < double > A( MROWS,NCOLS );
+   *  double* column = A.getColumn( j );
+   *  for ( IndexType i=0; i < MROWS; ++i ) {
+   *     column[ i ] = newval;
+   *  }
+   *  ...
+   * \endcode
    *****************************************************************************
    */
   T* getColumn( IndexType j );
@@ -592,6 +626,10 @@ public:
    *
    * \post p = m_rows+1
    * \post N = this->getDiaonalSize()*m_rows
+   *
+   * \note For non-square matrices, the entries along the main diagonal, are
+   *  given by \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
+   *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
    *
    * \note Example Usage:
    * \code
@@ -623,6 +661,10 @@ public:
    *
    * \post p = m_rows+1
    * \post N = this->getDiagonalSize()*m_rows
+   *
+   * \note For non-square matrices, the entries along the main diagonal, are
+   *  given by \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
+   *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
    *
    * \note Example Usage:
    * \code
