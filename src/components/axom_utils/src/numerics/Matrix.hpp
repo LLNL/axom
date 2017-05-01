@@ -584,6 +584,68 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns a const pointer for strided access along the main diagonal.
+   *
+   * \param [out] p stride used to access elements along the main diagonal.
+   * \param [out] N upper-bound used to loop over the main diagonal entries.
+   * \return diag pointer along the main diagonal.
+   *
+   * \post p = m_rows+1
+   * \post N = this->getDiaonalSize()*m_rows
+   *
+   * \note Example Usage:
+   * \code
+   *  ...
+   *  typedef typename Matrix< double >::IndexType IndexType;
+   *
+   *  Matrix< double > A (MROWS,NCOLS);
+   *
+   *  IndexType  p = 0;
+   *  IndexThype N = 0;
+   *  const double* diag  = A.getDiagonal( p, N );
+   *
+   *  for ( IndexType i=0; i < N; i+=p ) {
+   *     std::cout << diag[ i ];
+   *  }
+   *  ...
+   * \endcode
+   *****************************************************************************
+   */
+  const T* getDiagonal( IndexType& p, IndexType& N ) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a pointer for strided access along the main diagonal.
+   *
+   * \param [out] p stride used to access elements along the main diagonal.
+   * \param [out] N upper-bound used to loop over the main diagonal entris.
+   * \return diag pointer along the main diagonal.
+   *
+   * \post p = m_rows+1
+   * \post N = this->getDiagonalSize()*m_rows
+   *
+   * \note Example Usage:
+   * \code
+   *  ...
+   *  typedef typename Matrix< double >::IndexType IndexType;
+   *
+   *  Matrix< double > A (MROWS,NCOLS);
+   *
+   *  IndexType p = 0;
+   *  IndexType N = 0;
+   *  const double* diag  = A.getDiagonal( p,N );
+   *
+   *  for ( IndexType i=0; i < N; i+=p ) {
+   *     diag[ i ] = newval;
+   *  }
+   *  ...
+   * \endcode
+   *****************************************************************************
+   */
+  T* getDiagonal( IndexType& p, IndexType& N );
+
+  /*!
+   *****************************************************************************
    * \brief Returns a const pointer to the \f$ ith \f$ row of an
    *  \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$
    *
@@ -981,6 +1043,24 @@ T* Matrix< T>::getRow( IndexType i, IndexType& p, IndexType& N )
   p = m_rows;
   N = (m_cols-1)*m_rows + i + 1;
   return &m_data[ i ];
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+const T* Matrix< T >::getDiagonal( IndexType& p, IndexType& N ) const
+{
+  p = m_rows + 1;
+  N = this->getDiagonalSize()*m_rows;
+  return &m_data[ 0 ] ;
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+T* Matrix< T >::getDiagonal( IndexType& p, IndexType& N )
+{
+  p = m_rows + 1;
+  N = this->getDiagonalSize()*m_rows;
+  return &m_data[ 0 ] ;
 }
 
 //-----------------------------------------------------------------------------

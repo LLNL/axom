@@ -258,14 +258,35 @@ TEST( numerics_matrix, getDiagonal )
   EXPECT_EQ( N, M.getNumColumns() );
   EXPECT_EQ( N, M.getDiagonalSize() );
 
+  const int EXPECTED_SUM = N;
+
   int* diagonal = new int[ N ];
   M.getDiagonal( diagonal );
 
+  int sum = 0;
   for ( int i=0; i < N; ++i ) {
      EXPECT_EQ( 1, diagonal[ i ] );
+     sum += diagonal[ i ];
   }
 
+  EXPECT_EQ( EXPECTED_SUM, sum );
   delete [] diagonal;
+
+  typedef numerics::Matrix< int >::IndexType IndexType;
+
+  IndexType p    = 0;
+  IndexType size = 0;
+  const int* diag = M.getDiagonal( p, size );
+  EXPECT_EQ( N+1, p );
+  EXPECT_EQ( M.getDiagonalSize()*N, size );
+
+  int sum2 = 0;
+  for ( IndexType i=0; i < size; i+=p ) {
+     EXPECT_EQ( 1, diag[ i ] );
+     sum2 += diag[ i ];
+  }
+  EXPECT_EQ( EXPECTED_SUM, sum2 );
+
 }
 
 //------------------------------------------------------------------------------
