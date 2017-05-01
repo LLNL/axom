@@ -21,16 +21,17 @@ Links to more detailed discuss can be found in the text.
 Development and Release Cycles
 ======================================================
 
-The Axom team uses an agile, sprint-based development process. 
-We target a set of development tasks for each quarterly (3 month) releease 
-cycles for the project as a whole. Within this coarse-grain time framework,
-developers of individual Axom components may plan and schedule work on a 
-finer time-scale if they choose to do so. However, work performed in each 
+The Axom team uses an agile, sprint-based development process. We collect
+and track issues (bugs, feature requests, tasks, etc.) and then target a 
+set of development tasks (i.e., issues) to complete for each quarterly 
+(3 month) releease cycles for the project. Within this quarterly time 
+framework, developers of individual Axom components may plan and schedule 
+work in any way that works for them. However, work performed in each 
 3 month release cycle is tracked as a single unified sprint encompassing 
-the entire project.
+activities for the entire project.
 
-See :ref:`releasecycle-label` for more information about how we do release 
-planning and tracking. 
+See :ref:`jira-label` for more information about how we do issue tracking
+and release planning.
 
 
 ======================================================
@@ -42,8 +43,7 @@ release numbers. Semantic versioning is a methodology for assigning version
 numbers to software releases in a way that conveys specific meaning about 
 the code and modifications from version to version. 
 
-See :ref:`semanticversioning-label` for details on how we apply semantic 
-versioning.
+See :ref:`semver-label` for details on how we use semantic versioning.
 
 
 ======================================================
@@ -112,12 +112,12 @@ the provided links.
 
 * **Bitbucket.** We use the `Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_ to manage our Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
 
-  * See :ref:`gitandbranch-label` for more information about how we use Git and Bitbucket.
+  * See :ref:`bitbucket-label` for more information about how we use Git and Bitbucket.
 
 * **JIRA.** We use the `Axom JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking and release planning.
 
-  * See :ref:`issuetracking-label` for more information about how we use JIRA.
+  * See :ref:`jira-label` for more information about how we use JIRA.
 
 * **Bamboo.** We use two Bamboo projects for continuous integration, automated testing, documentation generation, etc.: `Axom CZ Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ and `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
 
-  * See :ref:`citesting-label` for more information about how we use Bamboo.
+  * See :ref:`bamboo-label` for more information about how we use Bamboo.

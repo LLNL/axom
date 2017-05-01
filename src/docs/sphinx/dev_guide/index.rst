@@ -16,8 +16,9 @@
 .. ##  '^' for subsubsections
 .. ##  '"' for paragraphs
 
+#####################
 Axom Developer Guide
-=========================================================
+#####################
 
 This guide describes the main software development processes used
 by the Axom project. It is intended for all team members and contributors. 
@@ -37,9 +38,10 @@ assessing their merits using our collective professional judgment. When
 changes are made, this guide should be updated accordingly.
 
 .. note:: This document does not describe how to configure and build the
-          Axom code, or how to use it. For that information, please follow 
-          the links to the Quickstart Guide and component user documentation 
-          on our `Main Web Page <../../web_main_docs/html/index.html>`_
+          Axom code, or how to use it. For that information, please see the 
+          `Axom Quickstart Guide <../../quickstart_guide_docs/index.html>`_
+          and component user documentation linked to our 
+          `Main Web Page <../../web_main_docs/html/index.html>`_
 
 
 **Contents:**
@@ -48,10 +50,11 @@ changes are made, this guide should be updated accordingly.
    :maxdepth: 3
 
    dev_summary
-   semantic_versioning
-   pull_requests
    jira
+   semantic_versioning
    gitflow_branching
+   bitbucket
+   pull_requests
    testing
    bamboo
    add_new_component

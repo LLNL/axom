@@ -9,11 +9,11 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-.. _semanticversioning-label:
+.. _semver-label:
 
-======================================================
+***********************
 Semantic Versioning
-======================================================
+***********************
 
 The Axom team uses the *semantic* versioning scheme for assigning
 release numbers. Semantic versioning is a methodology for assigning version 
@@ -21,9 +21,9 @@ numbers to software releases in a way that conveys specific meaning about
 the code and modifications from version to version. 
 See `Semantic Versioning <http://semver.org>`_ for a more detailed description.
 
-----------------------------
+============================
 Version Numbers and Meaning
-----------------------------
+============================
 
 Semantic versioning is based on a three part version number `MM.mm.pp`:
 
@@ -47,9 +47,9 @@ Semantic versioning is based on a three part version number `MM.mm.pp`:
     is merged into master, or when develop is merged into master and the 
     changes only contain bug fixes.
 
--------------------------
-Version Number Changes
--------------------------
+===========================================
+What Does a Change in Version Number Mean?
+===========================================
 
 A key consideration in meaning for these three version numbers is that
 the software has a public API. Changes to the API or code functionality

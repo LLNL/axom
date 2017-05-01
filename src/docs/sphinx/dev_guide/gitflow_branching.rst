@@ -12,12 +12,13 @@
 
 .. _gitflow-label:
 
-======================================================
+*************************
 Gitflow Branching Model
-======================================================
+*************************
 
 The Axom team uses the 'Gitflow' branch development model, which is
-summarized in this section. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ for more details.
+summarized in this section. See the `Atlassian Gitflow Description <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ 
+for more details.
 
 Gitflow is a branching model centered around software releases. It is a simple 
 workflow that makes clear which branches correspond to which phases of 
@@ -25,9 +26,9 @@ development and those phases are represented explicitly in the structure of
 the repository. As in other branching models, developers develop code locally 
 and push their work to a central repository. 
 
-----------------------------
+==============================
 Master and Develop Branches
-----------------------------
+==============================
 
 The master and develop branches are the two main branches used in Gitflow.
 They always exist and the distinction between them is central to the Gitflow
@@ -36,7 +37,7 @@ tasks.
 
 The master branch records the official release history of the project. 
 Each time the master branch is changed, it is tagged with a new version number.
-For a description of our versioning scheme, see :ref:`versioning-label`.
+For a description of our versioning scheme, see :ref:`semver-label`.
 
 The develop branch is used to integrate and test new features and most 
 bug fixes before they are merged into master. 
@@ -44,9 +45,9 @@ bug fixes before they are merged into master.
 .. important:: **Development never occurs directly on the master or develop
                branches.**  
 
----------------
+==============================
 Topic Branches
----------------
+==============================
 
 Topic branches are created off of other branches (usually develop)
 and are used to develop new features and resolve issues before they 
@@ -63,15 +64,15 @@ when doing topic branch development.
 When a feature is complete, a pull request is submitted for review by other 
 team members. When all issues arising in a review have been addressed and 
 reviewers have approved the pull request, the feature branch is merged into 
-develop. See :ref:`review-label` for more information about code reviews and 
-pull request approval.
+develop. See :ref:`pullrequest-label` for more information about code reviews 
+and pull request approval.
 
 .. important:: **Feature branches never interact directly with the master 
                branch.**
 
------------------
+==============================
 Release Branches
------------------
+==============================
 
 Release branches are another important temporary branch type in Gitflow:
 When the team has decided that enough features, bug fixes, etc. have been 
@@ -88,9 +89,9 @@ it may have changed since the release was initiated.
                documentation, and other release-oriented changes go into a 
                release branch.**
 
-----------------
+==============================
 Hotfix Branches
-----------------
+==============================
 
 The last important temporary branch type in Gitflow is a hotfix branch.
 Sometimes, there is a need to resolve an issue in a released version on the 
@@ -102,9 +103,9 @@ issues without disrupting other parts of the workflow.
 
 .. important:: Hotfix branches are the only branches created off of master.
 
------------------------
+==============================
 Gitflow Illustrated
------------------------
+==============================
 
 The figure below shows how branches interact in Gitflow.
 

@@ -13,18 +13,18 @@
 .. _pullrequest-label:
 
 
-======================================================
+********************************
 Pull Requests and Code Reviews
-======================================================
+********************************
 
 Before any code is merged into the develop or master branches, it
-must be tested, reviewed, and accepted. Submitting a pull request on
+must be tested, reviewed, and accepted. Creating a pull request on
 the Axom Bitbucket project to merge a branch into develop or master 
-initiates the test and review processes. All builds and tests must pass 
-for a pull request to be approved. Also, it is expected that unit tests 
-are constructed to exercise any new functionality that is introduced. This 
-will be assessed by reviewers of each pull request. See :ref:`testing-label` 
-for more information about testing.
+initiates the test and review processes. All required build configurations
+and tests must pass for a pull request to be approved. Also, it is expected 
+that unit tests are created to exercise any new functionality that is 
+introduced. This will be assessed by reviewers of each pull request. 
+See :ref:`createpr-label` for details about creating pull requests.
 
 Code changes in a pull request must be accepted by at least one member
 of the Axom development team other than the originator of the pull
@@ -37,27 +37,17 @@ with additional changes as needed. When a pull request is approved, it can
 be merged. If the merged branch is no longer needed for development, it 
 should be deleted.
 
-In addition to successful compilation and passing tests, changes to the 
+In addition to successful compilation and passing unit tests, changes to the 
 develop and master branches should be scrutinized in other ways and using 
-other tools. In particular :
-
-* The code should compile cleanly at the highest warning level with the 
-  main compilers supported by the project. All warnings **must** be 
-  understood and eliminated if possible. Reducing a compiler warning 
-  level to eliminate warning messages **is not** acceptable. Compiler warnings,
-  while seemingly innocuous at times, often indicate problems that do not 
-  appear until later or until specific run-time conditions are encountered.
-
-* Static analysis tools **should** be applied to the code using tools such
-  as `cppcheck`, etc. to identify potential implementation issues.
-
-* Runtime memory checking, using a  tool such as Valgrind, **should** be 
-  performed to verify that there are no leaks or other memory issues. 
+other code health tools we use. See :ref:`ci-label` for more information about 
+using our continuous integration tools.
 
 
----------------------
+=======================
 Pull Request Summary
----------------------
+=======================
+
+To recap, here is a summary of steps in a pull request:
 
   #. When code is ready to be considered for acceptance, create a pull request
      on the Axom Bitbucket project. Identify the appropriate reviewers 
@@ -76,17 +66,18 @@ Pull Request Summary
      no longer needed, it should be deleted. This can be done when merging
      with Bitbucket. 
 
+.. _review-label:
 
----------------------------
+======================
 Code Review Checklist
----------------------------
+======================
 
 Beyond build and test correctness, we also want to ensure that code follows
 common conventions before acceptance. The following list summarizes concerns 
 we want to identify during pull request reviews and resolve before a pull 
-request is approved for merging. Please see the Axom coding guidelines
-**(insert link here)**
-document for details. 
+request is approved for merging. Please see the 
+`Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for details
+on items in this list.
 
  #. A new file or directory must be located in in the proper location; e.g.,
     in the same directory with existing files supporting related functionality.
@@ -104,5 +95,4 @@ document for details.
     other developers.
  #. Adequate tests (unit and performance) tests must be added for new 
     functionality.
-
 

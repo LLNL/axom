@@ -39,6 +39,8 @@ Describe requirements for unit tests, integration tests, etc.; e.g., coverage
 performance, memory usage correctness....
 
 
+.. _ci-label:
+
 ----------------------------
 Continuous Integration (CI)
 ----------------------------

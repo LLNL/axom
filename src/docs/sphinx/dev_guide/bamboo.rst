@@ -9,10 +9,10 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-.. _citesting-label:
+.. _bamboo-label:
 
 ======================================================
-Continuous Integration (Bamboo)
+Bamboo: Continuous Integration 
 ======================================================
 
 We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for
