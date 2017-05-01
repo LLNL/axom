@@ -48,7 +48,7 @@ TEST( numerics_linear_solve, linear_solve_with_identity_matrix )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_linear_solve, linear_sove2x2 )
+TEST( numerics_linear_solve, linear_solve2x2 )
 {
   const int N = 2;
   numerics::Matrix< double > A( N,N );
