@@ -50,8 +50,13 @@ compilers:
           gcc@4.7.2:
              cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
              cxx: /usr/local/tools/toolchain-4.7.2/scripts/bgg++
-             f77: /usr/local/tools/toolchain-4.7.2/scripts/bggfortran
-             fc:  /usr/local/tools/toolchain-4.7.2/scripts/bggfortran
+             f77: None
+             fc:  None
+          gcc@4.8.4:
+             cc:  /usr/local/tools/toolchain-4.8.4/scripts/bggcc-4.8.4
+             cxx: /usr/local/tools/toolchain-4.8.4/scripts/bgg++-4.8.4
+             f77: None
+             fc:  None
           xlc@12.1:
             cc:  /usr/local/bin/bgxlc_r
             cxx: /usr/local/bin/bgxlc++_r
