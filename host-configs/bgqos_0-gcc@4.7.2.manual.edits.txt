@@ -10,32 +10,53 @@ set(ENABLE_DOCS OFF CACHE PATH "")
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2-fastmpi" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2-fastmpi" CACHE PATH "")
-set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpigfortran-4.7.2-fastmpi" CACHE PATH "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
+set(MPI_HOME             "/usr/local/tools/compilers/ibm" CACHE PATH "")
+set(MPI_C_COMPILER       "${MPI_HOME}/mpicc-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_CXX_COMPILER     "${MPI_HOME}/mpicxx-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_Fortran_COMPILER "${MPI_HOME}/mpigfortran-4.7.2-fastmpi" CACHE PATH "")
 
-set(MPI_INCLUDE_PATHS "/bgsys/drivers/V1R2M4/ppc64/comm/include;/bgsys/drivers/V1R2M4/ppc64/comm/lib/gnu;/bgsys/drivers/V1R2M4/ppc64;/bgsys/drivers/V1R2M4/ppc64/comm/sys/include;/bgsys/drivers/V1R2M4/ppc64/spi/include;/bgsys/drivers/V1R2M4/ppc64/spi/include/kernel/cnk" )
+set(MPI_DRIVER_ROOT      "/bgsys/drivers/V1R2M4/ppc64" CACHE PATH "")
 
-set(MPI_C_INCLUDE_PATH ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_C_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_LIBS 
+    ${MPI_DRIVER_ROOT}/comm/lib/libmpich-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libopa-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libmpl-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libpami-gcc.a
+    ${MPI_DRIVER_ROOT}/spi/lib/libSPI.a
+    ${MPI_DRIVER_ROOT}/spi/lib/libSPI_cnk.a
+    rt
+    pthread
+    stdc++
+    pthread)
+
+set(MPI_INCLUDE_PATHS 
+    ${MPI_DRIVER_ROOT}/comm/include
+    ${MPI_DRIVER_ROOT}/comm/lib/gnu
+    ${MPI_DRIVER_ROOT}
+    ${MPI_DRIVER_ROOT}/comm/sys/include
+    ${MPI_DRIVER_ROOT}/spi/include
+    ${MPI_DRIVER_ROOT}/spi/include/kernel/cnk )
+
+set(MPI_C_INCLUDE_PATH    ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_C_LIBRARIES       ${MPI_LIBS} CACHE PATH "")
 
 set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_CXX_LIBRARIES     ${MPI_LIBS} CACHE PATH "")
+
 set(MPI_Fortran_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 
 
-set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(MPIEXEC               "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG  "-n" CACHE PATH "")
 
 
 # GTest death tests use forked threads, which does now work on BG/Q 
 set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 
-set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE PATH "Ensures that tests will be wrapped with srun to run on the backend nodes")
+set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
