@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_27_12_42_41/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/cmake-3.3.1-2uuw7ygf74nmfkdbjbwxwwt3oa7yyzht/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_01_16_48_17/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/cmake-3.3.1-2uuw7ygf74nmfkdbjbwxwwt3oa7yyzht/bin/cmake
 
 #######
 # using intel@17.0.0 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN "ON" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-17.0.0/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_27_12_42_41/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_01_16_48_17/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-cgyhvn3ggrcy6mmiqfhvbuvjl3ildffp" CACHE PATH "")
@@ -73,8 +73,9 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0/" CACHE PATH "")
+set(ENABLE_MPI ON CACHE BOOL "")
+
+set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
