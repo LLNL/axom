@@ -25,9 +25,7 @@ set(slam_headers
 
     # SRM Relation headers
     Relation.hpp
-    StaticRelation.hpp   # Will replace StaticVariable and StaticConstant
-      StaticVariableRelation.hpp
-      StaticConstantRelation.hpp
+    StaticRelation.hpp
     DynamicVariableRelation.hpp
 
     # SRM Map headers
@@ -42,8 +40,6 @@ set(slam_sources
 
     # SRM Relation sources
     Relation.cpp
-    StaticVariableRelation.cpp
-    #StaticConstantRelation.cpp
     DynamicVariableRelation.cpp
 
     # SRM Map sources
