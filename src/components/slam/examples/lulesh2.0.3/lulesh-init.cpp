@@ -279,7 +279,7 @@ namespace slamLulesh {
       nidx += edgeNodes;
     }
 
-    m_nodelist.setRelationData(local_nodelist.size(), &local_nodelist);
+    m_nodelist.bindIndices(local_nodelist.size(), &local_nodelist);
     SLIC_ASSERT( m_nodelist.isValid());
   }
 
@@ -309,7 +309,7 @@ namespace slamLulesh {
 
       // Invert the zones to corner relation
       IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("node_corner_begins", numNode() + 1 );
-      IntsRegistry::BufferType& local_offsets = m_intsRegistry.addBuffer("node_corner_offsets", m_cornerSet.size() );
+      IntsRegistry::BufferType& local_relIndices = m_intsRegistry.addBuffer("node_corner_rel_indices", m_cornerSet.size() );
 
       local_begins[0] = 0;                                    // use the counts array to set the begins array
       for (Index_t i = 1; i <= numNode(); ++i)
@@ -326,7 +326,7 @@ namespace slamLulesh {
           Index_t m = nl[j];                                     //     m is the node index pointed to by this corner
           Index_t k = i * 8 + j;                                 //     k is the corner index (elem*8+offset)
           Index_t offset = local_begins[m] + nodeCornerCount[m]; //     offset is where this element belongs in the offsets array
-          local_offsets[offset] = k;                             //     this is the offsets array of the node to corner relation
+          local_relIndices[offset] = k;                             //     this is the offsets array of the node to corner relation
           ++(nodeCornerCount[m]);                                //     increment the count for this node
         }
       }
@@ -334,7 +334,7 @@ namespace slamLulesh {
       // Finally create the relation over these arrays and check validity
       m_nodeCornerRelation = NodeToCornerRelation(&m_nodeSet, &m_cornerSet);
       m_nodeCornerRelation.setOffsets(numNode(), &local_begins);
-      m_nodeCornerRelation.setRelationData(local_offsets.size(), &local_offsets);
+      m_nodeCornerRelation.bindIndices(local_relIndices.size(), &local_relIndices);
 
       SLIC_ASSERT_MSG(m_nodeCornerRelation.isValid(), "Generating Node to Corner relation: Corner index out of range." );
     }
@@ -499,22 +499,22 @@ namespace slamLulesh {
 
     // Convert from a Dynamic to a Static relation
     IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("reg_elem_begins", numReg() + 1 );
-    IntsRegistry::BufferType& local_offsets = m_intsRegistry.addBuffer("reg_elem_offsets", numElem() );
+    IntsRegistry::BufferType& local_relIndices = m_intsRegistry.addBuffer("reg_elem_rel_indices", numElem() );
     Index_t curOffIdx = 0;
     for(Index_t regionPos = 0; regionPos < numReg(); ++regionPos)
     {
       local_begins[ regionPos] = curOffIdx;
       for(Index_t elemRelPos = 0; elemRelPos < reg2Elems.size( regionPos); ++elemRelPos)
       {
-        local_offsets[curOffIdx++] = reg2Elems[ regionPos][elemRelPos];
+        local_relIndices[curOffIdx++] = reg2Elems[ regionPos][elemRelPos];
       }
     }
-    local_begins[ numReg()] = local_offsets.size();
+    local_begins[ numReg()] = local_relIndices.size();
 
     /// We can finally create the region to elem relation
     m_regionElementsRel = RegionToElemRelation(&m_regionSet, &m_elemSet);
     m_regionElementsRel.setOffsets(numReg(), &local_begins);
-    m_regionElementsRel.setRelationData(local_offsets.size(), &local_offsets);
+    m_regionElementsRel.bindIndices(local_relIndices.size(), &local_relIndices);
 
     SLIC_ASSERT(m_regionElementsRel.isValid(true));    // Ensure that the relation is valid
   }
@@ -589,8 +589,8 @@ namespace slamLulesh {
       indices_xip[i - 1] = i;
     }
     indices_xip[numElem() - 1] = numElem() - 1;
-    m_lxim.setRelationData(numElem(), &indices_xim);
-    m_lxip.setRelationData(numElem(), &indices_xip);
+    m_lxim.bindIndices(numElem(), &indices_xim);
+    m_lxip.bindIndices(numElem(), &indices_xip);
 
     // Setup eta face adjacencies
     IntsRegistry::BufferType& indices_etam = m_intsRegistry.addBuffer("zone_face_eta_m", numElem());
@@ -605,8 +605,8 @@ namespace slamLulesh {
       indices_etam[i] = i - edgeElems;
       indices_etap[i - edgeElems] = i;
     }
-    m_letam.setRelationData( numElem(), &indices_etam);
-    m_letap.setRelationData( numElem(), &indices_etap);
+    m_letam.bindIndices( numElem(), &indices_etam);
+    m_letap.bindIndices( numElem(), &indices_etap);
 
     // Setup zeta face adjacencies
     IntsRegistry::BufferType& indices_zetam = m_intsRegistry.addBuffer("zone_face_zeta_m", numElem());
@@ -621,8 +621,8 @@ namespace slamLulesh {
       indices_zetam[i] = i - edgeElems * edgeElems;
       indices_zetap[i - edgeElems * edgeElems] = i;
     }
-    m_lzetam.setRelationData(numElem(), &indices_zetam);
-    m_lzetap.setRelationData(numElem(), &indices_zetap);
+    m_lzetam.bindIndices(numElem(), &indices_zetam);
+    m_lzetap.bindIndices(numElem(), &indices_zetap);
 
     // Ensure that all the indices in the relations are valid
     SLIC_ASSERT(  m_lxim.isValid() );

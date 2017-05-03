@@ -281,7 +281,7 @@ namespace slamShocktube {
     }
 
     mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
-    mesh->relationFaceElem.setRelationData(feRelVec.size(), &feRelVec);
+    mesh->relationFaceElem.bindIndices(feRelVec.size(), &feRelVec);
     SLIC_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
@@ -296,7 +296,7 @@ namespace slamShocktube {
     }
 
     mesh->relationTubeFace = ShockTubeMesh::TubeElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
-    mesh->relationTubeFace.setRelationData(efRelVec.size(), &efRelVec);
+    mesh->relationTubeFace.bindIndices(efRelVec.size(), &efRelVec);
     SLIC_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
   }

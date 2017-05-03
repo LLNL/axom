@@ -268,16 +268,16 @@ TEST(gtest_slam_relation_static_constant,construct_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
-  IndexVec offsets;
-  generateIncrementingRelations(ELEM_STRIDE, &offsets);
-  printVector("offsets vector for relation", offsets);
+  IndexVec relIndices;
+  generateIncrementingRelations(ELEM_STRIDE, &relIndices);
+  printVector("Relation indices vector ", relIndices);
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.setOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
-  incrementingRel.setRelationData(offsets.size(), &offsets);  // init the relation indices set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the relation indices set
 
   EXPECT_TRUE(incrementingRel.isValid(true));
 
@@ -351,12 +351,12 @@ TEST(gtest_slam_relation_static_constant,out_of_bounds_initialized)
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
 
-  IndexVec offsets;
-  generateIncrementingRelations(ELEM_STRIDE, &offsets);
+  IndexVec relIndices;
+  generateIncrementingRelations(ELEM_STRIDE, &relIndices);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.setOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
-  incrementingRel.setRelationData(offsets.size(), &offsets);  // init the relation indices set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the relation indices set
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
@@ -381,8 +381,8 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
 
-  IndexVec offsets;
-  generateIncrementingRelations(ELEM_STRIDE, &offsets);
+  IndexVec relIndices;
+  generateIncrementingRelations(ELEM_STRIDE, &relIndices);
 
 
   // --  Construct empty and uninitialized relation
@@ -396,7 +396,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
   // -- Simple relation construction
   StaticConstantRelation_RT_STL relation(&fromSet, &toSet);
   relation.setOffsets(fromSet.size(), ELEM_STRIDE);
-  relation.setRelationData(offsets.size(), &offsets);
+  relation.bindIndices(relIndices.size(), &relIndices);
 
   EXPECT_TRUE(relation.isValid(true));
 
@@ -415,8 +415,8 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
       .begins( RelationBuilder::BeginsSetBuilder()
           .stride(ELEM_STRIDE))
       .indices( RelationBuilder::IndicesSetBuilder()
-          .size(offsets.size())
-          .data(&offsets) )
+          .size(relIndices.size())
+          .data(&relIndices) )
   ;
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -438,9 +438,9 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
 
-  IndexVec offsets;
-  generateIncrementingRelations(ELEM_STRIDE, &offsets);
-  PositionType* data = &offsets[0];   // Get a pointer to the data
+  IndexVec relIndices;
+  generateIncrementingRelations(ELEM_STRIDE, &relIndices);
+  PositionType* data = &relIndices[0];   // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -454,7 +454,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
   // -- Simple relation construction
   StaticConstantRelation_RT_Array relation(&fromSet, &toSet);
   relation.setOffsets(fromSet.size(), ELEM_STRIDE);
-  relation.setRelationData(offsets.size(), data);
+  relation.bindIndices(relIndices.size(), data);
 
   EXPECT_TRUE(relation.isValid(true));
 
@@ -473,7 +473,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
       .begins( RelationBuilder::BeginsSetBuilder()
           .stride(ELEM_STRIDE))
       .indices( RelationBuilder::IndicesSetBuilder()
-          .size(offsets.size())
+          .size(relIndices.size())
           .data(data));
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -496,9 +496,9 @@ TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
 
-  IndexVec offsets;
-  generateIncrementingRelations(ELEM_STRIDE, &offsets);
-  PositionType* data = &offsets[0];   // Get a pointer to the data
+  IndexVec relIndices;
+  generateIncrementingRelations(ELEM_STRIDE, &relIndices);
+  PositionType* data = &relIndices[0];   // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -511,7 +511,7 @@ TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 
   // -- Simple relation construction
   StaticConstantRelation_CT_Array relation(&fromSet, &toSet);
-  relation.setRelationData(offsets.size(), data);
+  relation.bindIndices(relIndices.size(), data);
 
   // Note: Since the striding is a compile time constant,
   //       we don't need to set the striding,
@@ -538,7 +538,7 @@ TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
       .begins( RelationBuilder::BeginsSetBuilder()
           .stride(ELEM_STRIDE))
       .indices( RelationBuilder::IndicesSetBuilder()
-          .size(offsets.size())
+          .size(relIndices.size())
           .data(data) )
   ;
   EXPECT_TRUE(builderRel.isValid(true));
@@ -559,7 +559,7 @@ TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 //      .begins( RelationBuilder::BeginsSetBuilder()
 //          .stride(ELEM_STRIDE))
       .indices( RelationBuilder::IndicesSetBuilder()
-          .size(offsets.size())
+          .size(relIndices.size())
           .data(data) );
   EXPECT_TRUE(builderRel_implicitStride.isValid(true));
 

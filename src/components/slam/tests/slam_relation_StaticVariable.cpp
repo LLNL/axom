@@ -89,10 +89,10 @@ namespace policies = axom::slam::policies;
 
 
   template<typename VecType>
-  void generateIncrementingRelations(VecType* begins, VecType* offsets)
+  void generateIncrementingRelations(VecType* begins, VecType* indices)
   {
     VecType& beginsVec = *begins;
-    VecType& offsetsVec = *offsets;
+    VecType& indicesVec = *indices;
 
     PositionType curIdx = PositionType();
 
@@ -101,7 +101,7 @@ namespace policies = axom::slam::policies;
       beginsVec.push_back( curIdx );
       for(PositionType j = 0; j < elementCardinality(i); ++j)
       {
-        offsetsVec.push_back( relationData(i,j) );
+        indicesVec.push_back( relationData(i,j) );
         ++curIdx;
       }
     }
@@ -261,20 +261,20 @@ TEST(gtest_slam_static_variable_relation,construct_relation)
   RangeSet toSet(TOSET_SIZE);
 
   IndexVec offsets;
-  IndexVec relationData;
+  IndexVec relIndices;
 
   SLIC_INFO("Uninitialized relation data");
   printVector("begins vector",  offsets);
-  printVector("offsets vector", relationData);
-  generateIncrementingRelations(&offsets, &relationData);
+  printVector("indices vector", relIndices);
+  generateIncrementingRelations(&offsets, &relIndices);
 
   SLIC_INFO("Initialized relation data");
   printVector("begins vector",  offsets);
-  printVector("offsets vector", relationData);
+  printVector("indices vector", relIndices);
 
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.setOffsets(fromSet.size(), &offsets);
-  incrementingRel.setRelationData(relationData.size(), &relationData);
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
   EXPECT_TRUE(incrementingRel.isValid(true));
 
@@ -296,8 +296,8 @@ TEST(gtest_slam_static_variable_relation,construct_builder)
   RangeSet toSet(TOSET_SIZE);
 
   IndexVec offsets;
-  IndexVec relationData;
-  generateIncrementingRelations(&offsets, &relationData);
+  IndexVec relIndices;
+  generateIncrementingRelations(&offsets, &relIndices);
 
   typedef StaticVariableRelationType::RelationBuilder RelationBuilder;
   StaticVariableRelationType relation =  RelationBuilder()
@@ -307,8 +307,8 @@ TEST(gtest_slam_static_variable_relation,construct_builder)
           .size(offsets.size())
           .data(&offsets) )
       .indices( RelationBuilder::IndicesSetBuilder()
-          .size(relationData.size())
-          .data(&relationData))
+          .size(relIndices.size())
+          .data(&relIndices))
   ;
   EXPECT_TRUE(relation.isValid(true));
 
@@ -345,13 +345,13 @@ TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
 
-  IndexVec offsets, relationData;
-  generateIncrementingRelations(&offsets, &relationData);
+  IndexVec offsets, relIndices;
+  generateIncrementingRelations(&offsets, &relIndices);
 
   RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.setOffsets(fromSet.size(), &offsets);
-  incrementingRel.setRelationData(relationData.size(), &relationData);
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode

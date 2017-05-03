@@ -281,7 +281,7 @@ namespace slamUnstructuredHex {
     /// Create the topological incidence relation from zones to nodes
     IndexBuf& zn_indices = Repository::intsRegistry.getBuffer("zone_node_indices");
     mesh->zoneToNodeRelation = HexMesh::ZoneToNodeRelation(&mesh->zones, &mesh->nodes);
-    mesh->zoneToNodeRelation.setRelationData(zn_indices.size(), &zn_indices);
+    mesh->zoneToNodeRelation.bindIndices(zn_indices.size(), &zn_indices);
 
     // Check that the relation is valid
     SLIC_ASSERT_MSG( mesh->zoneToNodeRelation.isValid(),
@@ -344,7 +344,7 @@ namespace slamUnstructuredHex {
     /// We can finally create the node to zone relation
     mesh->nodeToZoneRelation = HexMesh::NodeToZoneRelation( &mesh->nodes, &mesh->zones);
     mesh->nodeToZoneRelation.setOffsets(mesh->nodes.size(), &nzBegins);
-    mesh->nodeToZoneRelation.setRelationData(zIndices.size(), &zIndices);
+    mesh->nodeToZoneRelation.bindIndices(zIndices.size(), &zIndices);
 
     SLIC_ASSERT_MSG( mesh->nodeToZoneRelation.isValid(true), "Error creating (static) relation from nodes to zones!\n");
 

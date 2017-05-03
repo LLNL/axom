@@ -366,7 +366,7 @@ namespace policies {
     const ToSetType*    toSet() const { return m_toSet; }
 
 
-    void                setRelationData(SetPosition size, IndirectionBufferType* data)
+    void                bindIndices(SetPosition size, IndirectionBufferType* data)
     {
       m_relationIndices  = typename IndicesSet::SetBuilder()
           .size(size)

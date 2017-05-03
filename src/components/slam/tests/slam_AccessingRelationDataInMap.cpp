@@ -118,13 +118,13 @@ TEST(gtest_slam_set_relation_map,access_pattern)
 {
   SLIC_INFO("Testing accessing relation data.");
 
-  IndexVec offsets, rdata;
-  generateIncrementingRelations(&offsets, &rdata);
+  IndexVec offsets, relIndices;
+  generateIncrementingRelations(&offsets, &relIndices);
 
   RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.setOffsets(fromSet.size(), &offsets);
-  incrementingRel.setRelationData(rdata.size(), &rdata);
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 
   // Note: Nothing requires the relations elements to be unique -- the relation can still be valid with duplicates

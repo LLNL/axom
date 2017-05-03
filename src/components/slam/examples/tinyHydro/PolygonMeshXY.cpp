@@ -65,8 +65,8 @@ namespace tinyHydro {
       faceIndices[4 * i + 2] = 4 * i + 2;
       faceIndices[4 * i + 3] = 4 * i + 3;
     }
-    zoneToNodes.setRelationData( nodeIndices.size(), &nodeIndices );
-    zoneToFaces.setRelationData( faceIndices.size(), &faceIndices );
+    zoneToNodes.bindIndices( nodeIndices.size(), &nodeIndices );
+    zoneToFaces.bindIndices( faceIndices.size(), &faceIndices );
   #endif
 
     /// Geometric fields on the mesh

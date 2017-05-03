@@ -778,7 +778,7 @@ private:
 
             m_elementSet = MeshElementSet( m_tv_data.size() / NUM_TRI_VERTS );
             m_triangleToVertexRelation = TriangleVertexRelation(&m_elementSet, &m_vertexSet);
-            m_triangleToVertexRelation.setRelationData(m_tv_data.size(), &m_tv_data);
+            m_triangleToVertexRelation.bindIndices(m_tv_data.size(), &m_tv_data);
 
 
             // Delete old mesh, and NULL its pointer
@@ -1465,11 +1465,11 @@ void InOutOctree<DIM>::insertMeshTriangles ()
             m_grayLeafsMap[lev] = GrayLeafSet( gvRelData.size() );
 
             m_grayLeafToVertexRelationLevelMap[lev] = GrayLeafVertexRelation(&m_grayLeafsMap[lev], &m_meshWrapper.vertexSet());
-            m_grayLeafToVertexRelationLevelMap[lev].setRelationData(gvRelData.size(), &gvRelData);
+            m_grayLeafToVertexRelationLevelMap[lev].bindIndices(gvRelData.size(), &gvRelData);
 
             m_grayLeafToElementRelationLevelMap[lev] = GrayLeafElementRelation(&m_grayLeafsMap[lev], &m_meshWrapper.elementSet());
             m_grayLeafToElementRelationLevelMap[lev].setOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
-            m_grayLeafToElementRelationLevelMap[lev].setRelationData(geIndRelData.size(), &geIndRelData);
+            m_grayLeafToElementRelationLevelMap[lev].bindIndices(geIndRelData.size(), &geIndRelData);
         }
 
         currentLevelData.clear();
