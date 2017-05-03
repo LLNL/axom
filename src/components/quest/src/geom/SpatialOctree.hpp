@@ -49,10 +49,10 @@ public:
      * \param [in] bb The spatial extent to be indexed by the octree
      */
     SpatialOctree(const GeometricBoundingBox& bb)
-        : BaseOctree()
-        , m_deltaLevelMap(& this->m_levels)
-        , m_invDeltaLevelMap(& this->m_levels)
-        , m_boundingBox(bb)
+        : BaseOctree(),
+          m_deltaLevelMap(& this->m_levels),
+          m_invDeltaLevelMap(& this->m_levels),
+          m_boundingBox(bb)
     {
         // Cache the extents of a grid cell at each level of resolution
         const SpaceVector bbRange = m_boundingBox.range();
