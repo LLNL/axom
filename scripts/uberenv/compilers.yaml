@@ -46,6 +46,12 @@ compilers:
             cxx: /usr/tce/packages/intel/intel-17.0.0/bin/icpc
             f77: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
             fc: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
+    blueos_3_ppc64le_ib:
+        clang@4.0.0:
+            cc:  /usr/tcetmp/packages/clang/clang-4.0.0/bin/clang
+            cxx: /usr/tcetmp/packages/clang/clang-4.0.0/bin/clang++
+            f77: None
+            fc:  None
     bgqos_0:
           gcc@4.7.2:
              cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
