@@ -113,7 +113,7 @@ TEST(gtest_slam_set_positionset,construct_set_builder)
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   const int NON_ZERO_OFFSET = 3;
-  ASSERT_DEATH( SetType(SetBuilder()
+  EXPECT_DEATH_IF_SUPPORTED( SetType(SetBuilder()
       .size(MAX_SET_SIZE)
       .offset(NON_ZERO_OFFSET)), "" );
 #endif

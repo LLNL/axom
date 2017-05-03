@@ -1291,12 +1291,12 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     {
         Timer levelTimer(true);
 
-        typename IndexRegistry::BufferType& gvRelData = m_indexRegistry.addNamelessBuffer(0);
+        typename IndexRegistry::BufferType& gvRelData = m_indexRegistry.addNamelessBuffer();
 
-        typename IndexRegistry::BufferType& geSizeRelData = m_indexRegistry.addNamelessBuffer(0);
+        typename IndexRegistry::BufferType& geSizeRelData = m_indexRegistry.addNamelessBuffer();
         geSizeRelData.push_back(0);
 
-        typename IndexRegistry::BufferType& geIndRelData = m_indexRegistry.addNamelessBuffer(0);
+        typename IndexRegistry::BufferType& geIndRelData = m_indexRegistry.addNamelessBuffer();
 
         int nextLevelDataBlockCounter = 0;
 

@@ -123,8 +123,8 @@ namespace slam {
     }
 
     inline void verifyFieldsKey(const KeyType& AXOM_DEBUG_PARAM(key)) const {
-      SLIC_ASSERT_MSG( hasField(key)
-          , "Didn't find " << dataTypeString() << " field named " << key );
+      SLIC_ASSERT_MSG( hasField(key),
+          "Didn't find " << dataTypeString() << " field named " << key );
     }
 
     inline void verifyBufferKey(const KeyType & AXOM_DEBUG_PARAM(key)) const {

@@ -56,9 +56,7 @@ namespace tinyHydro {
       nodeIndices[4 * i + 0] = k     + l * kmax;
       nodeIndices[4 * i + 1] = k + 1 + l * kmax;
       nodeIndices[4 * i + 2] = k + 1 + (l + 1) * kmax;
-      ;
       nodeIndices[4 * i + 3] = k     + (l + 1) * kmax;
-      ;
 
       faceIndices[4 * i]   = 4 * i;
       faceIndices[4 * i + 1] = 4 * i + 1;

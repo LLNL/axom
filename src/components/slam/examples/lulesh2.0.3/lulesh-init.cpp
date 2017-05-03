@@ -248,9 +248,8 @@ namespace slamLulesh {
 
 
     // embed hexahedral elements in nodal point lattice
-    // SLAM NOTE: This should really be a DynamicConstantRelation
-    // SLAM TODO: Change this once DynamicConstantRelation becomes available
-    // SLAM TODO: Actually the underlying connectivity should be derivable from an implicit Fixed grid in 3D.
+    // SLAM NOTE: This could be represented using an implicit relation, when available
+    // SLAM NOTE: Alternatively, the underlying connectivity should be derivable from an implicit Cartesian grid.
     IntsRegistry::BufferType& local_nodelist = m_intsRegistry.addBuffer("hex_node_boundary", 8 * numElem() );
     Index_t zidx = 0;
     nidx = 0;
@@ -688,10 +687,8 @@ namespace slamLulesh {
 
 
     // SLAM HACK: We want to modify the data of a StaticRelation (ElemFaceAdjacencyRelation).
-    //            Grab the underlying array from the registry instead
-    //            A more intuitive solution might be to store this as a DynamicConstantRelation
-    //            until we are done modifying the relation data.
-    //            TODO: Ensure that we can grab a pointer to the raw data in a StaticRelation
+    //            This will be addressed in ATK-927.
+    //            For now, grab the underlying array from the registry
 
     IntsRegistry::BufferType& local_xi_m = m_intsRegistry.getBuffer("zone_face_xi_m");
     IntsRegistry::BufferType& local_xi_p = m_intsRegistry.getBuffer("zone_face_xi_p");

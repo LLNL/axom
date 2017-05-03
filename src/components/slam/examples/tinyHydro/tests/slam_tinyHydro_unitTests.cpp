@@ -414,8 +414,8 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
   double expDT = 0.1 * h.cfl;
   AXOM_DEBUG_VAR( expDT);
 
-  SLIC_ASSERT_MSG( std::fabs(dt - expDT) < tol
-      , " newDT calculation FAILS -- expected dt = " << expDT << " but got " << dt << " instead, leaving " << dt - expDT);
+  SLIC_ASSERT_MSG( std::fabs(dt - expDT) < tol,
+      " newDT calculation FAILS -- expected dt = " << expDT << " but got " << dt << " instead, leaving " << dt - expDT);
 
   SLIC_INFO(" *** PASS *** " );
 }
@@ -488,8 +488,8 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
   double tol = 1.0e-16;
   AXOM_DEBUG_VAR( tol);
 
-  SLIC_ASSERT_MSG( std::fabs(dt - theoryDT) < tol
-      , " newDT calculation FAILS -- expected dt = " << theoryDT << " but code got " << dt << ". Diff:" <<  dt - theoryDT);
+  SLIC_ASSERT_MSG( std::fabs(dt - theoryDT) < tol,
+      " newDT calculation FAILS -- expected dt = " << theoryDT << " but code got " << dt << ". Diff:" <<  dt - theoryDT);
 
   SLIC_INFO(" *** PASS ***");
 }
@@ -571,8 +571,8 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
   double rhoCode = h.getState()->getPart(0)->rho(0);
   AXOM_DEBUG_VAR(rhoCode);
 
-  SLIC_ASSERT_MSG( std::fabs(theoryRho - rhoCode) < tol
-      , "density calculation FAILS -- rhoCode = " << rhoCode << " but should be " << theoryRho );
+  SLIC_ASSERT_MSG( std::fabs(theoryRho - rhoCode) < tol,
+      "density calculation FAILS -- rhoCode = " << rhoCode << " but should be " << theoryRho );
 
 
   double theoryE = std::pow(theoryRho / rho0, 2.0 / 3.0); // e = e0*(rho/rho0)**(gamma-1)
@@ -581,8 +581,8 @@ TEST(gtest_slam_tinyHydro,test_06_PdV_work)
   SLIC_INFO("\t h.getState().getPart(0).e(0) " << eCode );
   SLIC_INFO("\t theory e " << theoryE );
 
-  SLIC_ASSERT_MSG( std::fabs(theoryE - eCode) < tol
-      , "PdV calculation FAILS");
+  SLIC_ASSERT_MSG( std::fabs(theoryE - eCode) < tol,
+      "PdV calculation FAILS");
 
 
 

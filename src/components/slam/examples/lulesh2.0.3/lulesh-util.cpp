@@ -290,8 +290,8 @@ namespace slamLulesh {
     Int_t gEdge = nx * domainsPerSide;
     if(resultCheckMap.find(gEdge) != resultCheckMap.end() )
     {
-      SLIC_ASSERT_MSG( resultCheckMap[gEdge].first == locDom.cycle()
-          , "Specs state that num cycles should be "
+      SLIC_ASSERT_MSG( resultCheckMap[gEdge].first == locDom.cycle(),
+          "Specs state that num cycles should be "
           << resultCheckMap[gEdge].first
           << " actual number of cycles was " << locDom.cycle() << "." );
 
@@ -300,8 +300,7 @@ namespace slamLulesh {
         "Specs state that final energy at origin must be "
         << resultCheckMap[gEdge].second
         << " actual energy at origin was " << locDom.e(ElemId)
-        << ". Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
-      );
+        << ". Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) ) );
 
       double diff = std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) );
       double maxFabs = std::max( std::fabs(resultCheckMap[gEdge].second), std::fabs(locDom.e(ElemId) ) );

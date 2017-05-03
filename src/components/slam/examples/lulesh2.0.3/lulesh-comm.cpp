@@ -2198,6 +2198,6 @@ namespace slamLulesh {
     }
   }
 
-#endif
+#endif  // AXOM_USE_MPI
 
 } // end namespace slamLulesh
