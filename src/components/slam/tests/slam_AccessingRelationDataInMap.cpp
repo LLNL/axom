@@ -118,12 +118,12 @@ TEST(gtest_slam_set_relation_map,access_pattern)
 {
   SLIC_INFO("Testing accessing relation data.");
 
-  IndexVec offsets, relIndices;
-  generateIncrementingRelations(&offsets, &relIndices);
+  IndexVec relOffsets, relIndices;
+  generateIncrementingRelations(&relOffsets, &relIndices);
 
   RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.setOffsets(fromSet.size(), &offsets);
+  incrementingRel.bindBeginOffsets(fromSet.size(), &relOffsets);
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 

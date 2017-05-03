@@ -1468,7 +1468,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
             m_grayLeafToVertexRelationLevelMap[lev].bindIndices(gvRelData.size(), &gvRelData);
 
             m_grayLeafToElementRelationLevelMap[lev] = GrayLeafElementRelation(&m_grayLeafsMap[lev], &m_meshWrapper.elementSet());
-            m_grayLeafToElementRelationLevelMap[lev].setOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
+            m_grayLeafToElementRelationLevelMap[lev].bindBeginOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
             m_grayLeafToElementRelationLevelMap[lev].bindIndices(geIndRelData.size(), &geIndRelData);
         }
 

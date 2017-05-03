@@ -276,7 +276,7 @@ TEST(gtest_slam_relation_static_constant,construct_relation)
   slam::RangeSet toSet(TOSET_SIZE);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.setOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
   incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the relation indices set
 
   EXPECT_TRUE(incrementingRel.isValid(true));
@@ -355,7 +355,7 @@ TEST(gtest_slam_relation_static_constant,out_of_bounds_initialized)
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.setOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
   incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the relation indices set
 
 #ifdef AXOM_DEBUG
@@ -395,7 +395,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
 
   // -- Simple relation construction
   StaticConstantRelation_RT_STL relation(&fromSet, &toSet);
-  relation.setOffsets(fromSet.size(), ELEM_STRIDE);
+  relation.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);
   relation.bindIndices(relIndices.size(), &relIndices);
 
   EXPECT_TRUE(relation.isValid(true));
@@ -453,7 +453,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
 
   // -- Simple relation construction
   StaticConstantRelation_RT_Array relation(&fromSet, &toSet);
-  relation.setOffsets(fromSet.size(), ELEM_STRIDE);
+  relation.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);
   relation.bindIndices(relIndices.size(), data);
 
   EXPECT_TRUE(relation.isValid(true));
@@ -518,7 +518,7 @@ TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
   EXPECT_TRUE(relation.isValid(true));
 
   //        .. but we can, if we'd like to
-  relation.setOffsets(fromSet.size(), ELEM_STRIDE);
+  relation.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);
   EXPECT_TRUE(relation.isValid(true));
 
 

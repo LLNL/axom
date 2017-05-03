@@ -260,20 +260,20 @@ TEST(gtest_slam_static_variable_relation,construct_relation)
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
 
-  IndexVec offsets;
+  IndexVec relOffsets;
   IndexVec relIndices;
 
   SLIC_INFO("Uninitialized relation data");
-  printVector("begins vector",  offsets);
+  printVector("begins vector",  relOffsets);
   printVector("indices vector", relIndices);
-  generateIncrementingRelations(&offsets, &relIndices);
+  generateIncrementingRelations(&relOffsets, &relIndices);
 
   SLIC_INFO("Initialized relation data");
-  printVector("begins vector",  offsets);
+  printVector("begins vector",  relOffsets);
   printVector("indices vector", relIndices);
 
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.setOffsets(fromSet.size(), &offsets);
+  incrementingRel.bindBeginOffsets(fromSet.size(), &relOffsets);
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
   EXPECT_TRUE(incrementingRel.isValid(true));
@@ -345,12 +345,12 @@ TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
 
-  IndexVec offsets, relIndices;
-  generateIncrementingRelations(&offsets, &relIndices);
+  IndexVec relOffsets, relIndices;
+  generateIncrementingRelations(&relOffsets, &relIndices);
 
   RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.setOffsets(fromSet.size(), &offsets);
+  incrementingRel.bindBeginOffsets(fromSet.size(), &relOffsets);
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 #ifdef AXOM_DEBUG

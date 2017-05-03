@@ -333,7 +333,7 @@ namespace slamLulesh {
 
       // Finally create the relation over these arrays and check validity
       m_nodeCornerRelation = NodeToCornerRelation(&m_nodeSet, &m_cornerSet);
-      m_nodeCornerRelation.setOffsets(numNode(), &local_begins);
+      m_nodeCornerRelation.bindBeginOffsets(numNode(), &local_begins);
       m_nodeCornerRelation.bindIndices(local_relIndices.size(), &local_relIndices);
 
       SLIC_ASSERT_MSG(m_nodeCornerRelation.isValid(), "Generating Node to Corner relation: Corner index out of range." );
@@ -513,7 +513,7 @@ namespace slamLulesh {
 
     /// We can finally create the region to elem relation
     m_regionElementsRel = RegionToElemRelation(&m_regionSet, &m_elemSet);
-    m_regionElementsRel.setOffsets(numReg(), &local_begins);
+    m_regionElementsRel.bindBeginOffsets(numReg(), &local_begins);
     m_regionElementsRel.bindIndices(local_relIndices.size(), &local_relIndices);
 
     SLIC_ASSERT(m_regionElementsRel.isValid(true));    // Ensure that the relation is valid

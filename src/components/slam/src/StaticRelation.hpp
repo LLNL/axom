@@ -79,7 +79,7 @@ namespace policies {
     const ElementType size(ElementType AXOM_NOT_USED(fromPos) ) const { return m_begins.stride(); }
     const ElementType offset(ElementType fromPos) const { return m_begins[fromPos]; }
 
-    void              setOffsets(ElementType fromSetSize, ElementType stride)
+    void              bindBeginOffsets(ElementType fromSetSize, ElementType stride)
     {
       m_begins = typename BeginsSet::SetBuilder()
           .size(fromSetSize)
@@ -130,7 +130,7 @@ namespace policies {
       m_begins = builder;
     }
 
-    void setOffsets(ElementType fromSetSize, IndirectionBufferType* data)
+    void bindBeginOffsets(ElementType fromSetSize, IndirectionBufferType* data)
     {
       m_begins = typename BeginsSet::SetBuilder()
           .size(fromSetSize + 1)

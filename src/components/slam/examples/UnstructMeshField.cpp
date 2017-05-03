@@ -343,7 +343,7 @@ namespace slamUnstructuredHex {
 
     /// We can finally create the node to zone relation
     mesh->nodeToZoneRelation = HexMesh::NodeToZoneRelation( &mesh->nodes, &mesh->zones);
-    mesh->nodeToZoneRelation.setOffsets(mesh->nodes.size(), &nzBegins);
+    mesh->nodeToZoneRelation.bindBeginOffsets(mesh->nodes.size(), &nzBegins);
     mesh->nodeToZoneRelation.bindIndices(zIndices.size(), &zIndices);
 
     SLIC_ASSERT_MSG( mesh->nodeToZoneRelation.isValid(true), "Error creating (static) relation from nodes to zones!\n");
