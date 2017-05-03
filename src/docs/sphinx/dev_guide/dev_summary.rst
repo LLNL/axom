@@ -24,7 +24,7 @@ Development and Release Cycles
 The Axom team uses an agile, sprint-based development process. We collect
 and track issues (bugs, feature requests, tasks, etc.) and then target a 
 set of development tasks (i.e., issues) to complete for each quarterly 
-(3 month) releease cycles for the project. Within this quarterly time 
+(3 month) release cycles for the project. Within this quarterly time 
 framework, developers of individual Axom components may plan and schedule 
 work in any way that works for them. However, work performed in each 
 3 month release cycle is tracked as a single unified sprint encompassing 
@@ -35,7 +35,7 @@ and release planning.
 
 
 ======================================================
-Release Versioning
+Release Version Numbers
 ======================================================
 
 The Axom team follows the *semantic* versioning scheme for assigning

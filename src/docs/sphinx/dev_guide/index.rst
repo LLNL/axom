@@ -31,7 +31,7 @@ of and follow these guidelines.
 
 We realize that the benefits of uniformity should be balanced with 
 allowances for individual preferences, which may work better in 
-certain situations. Therefore, we do nnot view these processes as fixed 
+certain situations. Therefore, we do not view these processes as fixed 
 for all time. They should evolve with project needs and be improved when 
 it makes sense. Changes should be agreed to by team members after 
 assessing their merits using our collective professional judgment. When 

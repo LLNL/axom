@@ -28,8 +28,9 @@ several good sources of information available on the web:
   * `Learn Git Branching <http://learngitbranching.js.org/>`_ is nice for visual, hands-on learners.
   * The e-book `Pro Git, by Scott Chacon <https://git-scm.com/book/en/v2>`_ is an excellent overview guide to using Git effectively.
 
-SSH keys
----------
+=========
+SSH Keys
+=========
 
 If you have not used Bitbucket before, you will need to
 `create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_. This will make it easier for you to interact with our Git repository
@@ -37,8 +38,9 @@ without having to repeatedly enter login credentials.
 
 .. _repoclone-label:
 
-Getting a local working copy of the repo
------------------------------------------
+=========================================
+Cloning the Repo
+=========================================
 
 Before doing any work on the code, you must clone the repo into a local 
 workspace. This is done by typing::
@@ -78,8 +80,9 @@ your profile::
 
 .. _topicdev-label:
 
-Performing topic branch development
-------------------------------------
+=======================================
+Topic Branch Development
+=======================================
 
 It is worth re-emphasizing a fundamental principle of the Gitflow
 development model that we described in :ref:`gitflow-label`.
@@ -106,7 +109,7 @@ on a topic branch is:
 Here are some details about each of these steps.
 
 Step 1 -- Create a topic branch
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
     Most development occurs on a topic branch created off the develop branch.
     Occasions where a branch is created from another branch, such as a
@@ -131,8 +134,8 @@ Step 1 -- Create a topic branch
     the Bitbucket server and it will appear in the list of branches you and 
     other developers can see there.
 
-Step 2 -- Edit Files
-^^^^^^^^^^^^^^^^^^^^^^^^
+Step 2 -- Edit files
+--------------------------------
 
     After you've created a topic branch and pushed it to Bitbucket, perform 
     your development work on it; i.e., edit files, add files, etc. 
@@ -163,7 +166,7 @@ Step 2 -- Edit Files
     * Main body of commit message is wrapped to 78 characters
 
 Step 3 -- Keep current with develop
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------
 
     If you will be working on your branch for a while, it is a good idea to 
     merge from the develop branch to your topic branch regularly to prevent 
@@ -216,7 +219,7 @@ Step 3 -- Keep current with develop
 .. _createpr-label:
 
 Step 4 -- Create a pull request
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------
 
     When your work is complete, and you are ready to merge your topic branch 
     to the develop branch, you must initiate a pull request in Bitbucket. Go
@@ -260,8 +263,9 @@ Step 4 -- Create a pull request
                    further development. Bitbucket provides an option to delete
                    the source branch of a merge after the merge is complete.**
 
-Checking out an existing branch
---------------------------------
+================================
+Checking Out an Existing Branch
+================================
 
 When working on multiple branches, or working on one with someone else on
 the team, you will need to checkout a specific branch. Any existing branch
