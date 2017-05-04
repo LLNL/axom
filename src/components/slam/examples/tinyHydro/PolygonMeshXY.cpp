@@ -42,8 +42,9 @@ namespace tinyHydro {
     zoneToNodes = ZoneToNodeRelation(&zones, &nodes);
     zoneToFaces = ZoneToFaceRelation(&zones, &faces);
 
-    IndexMap faceIndices(&faces);
-    IndexMap nodeIndices(&corners);
+    IndexBuffer& nodeIndices = DataRegistry::setRegistry.addBuffer("zone_node_relation_data", corners.size());
+    IndexBuffer& faceIndices = DataRegistry::setRegistry.addBuffer("zone_face_relation_data", faces.size());
+
 
     // set up connectivity data, knowing it's logical orthogonal quads
     const int nZones = numZones();
@@ -64,8 +65,8 @@ namespace tinyHydro {
       faceIndices[4 * i + 2] = 4 * i + 2;
       faceIndices[4 * i + 3] = 4 * i + 3;
     }
-    zoneToNodes.bindRelationData( nodeIndices.data() );
-    zoneToFaces.bindRelationData( faceIndices.data() );
+    zoneToNodes.setRelationData( nodeIndices.size(), &nodeIndices );
+    zoneToFaces.setRelationData( faceIndices.size(), &faceIndices );
   #endif
 
     /// Geometric fields on the mesh
@@ -169,15 +170,14 @@ namespace tinyHydro {
 
   void PolygonMeshXY::dumpMesh()
   {
-    SLIC_INFO( "Mesh has " << nodes.size() << " nodes and " << zones.size() << " zones");
+    SLIC_INFO( fmt::format("Mesh has {} nodes and {} zones", nodes.size(), zones.size()) );
 
     std::stringstream nodesStr;
     nodesStr << "Nodes";
     for(int i = 0; i< nodes.size(); ++i)
     {
       VectorXY p = getPos(i);
-      nodesStr  << "\n\t Node " << i
-                << " -- pos (" << p.x << "," << p.y << ")";
+      nodesStr << fmt::format("\n\t Node {} -- pos ({},{})", i, p.x, p.y);
     }
     SLIC_INFO(nodesStr.str() << "\n----\n");
 
@@ -189,12 +189,11 @@ namespace tinyHydro {
       ZoneToNodeRelation::RelationSet zNodes = zoneToNodes[i];
       ZoneToNodeRelation::RelationSet zFaces = zoneToFaces[i];
       zonesStr  << "\n\t Zone " << i
-                << " -- pos (" << p.x << "," << p.y << " )"
+                << fmt::format("-- pos ({},{})", p.x, p.y)
                 << " -- vol " << zoneVol(i)
                 << "-- zNumNodes " << zNodes.size()
-                << "-- zoneNodes " << zNodes[0] << " " << zNodes[1] << " " << zNodes[2] << " " << zNodes[3]
-                << "-- zoneFaces " << zFaces[0] << " " << zFaces[1] << " " << zFaces[2] << " " << zFaces[3]
-      ;
+                << fmt::format("-- zoneNodes {} {} {} {}", zNodes[0], zNodes[1], zNodes[2], zNodes[3])
+                << fmt::format("-- zoneFaces {} {} {} {}", zFaces[0], zFaces[1], zFaces[2], zFaces[3]);
     }
     SLIC_INFO(zonesStr.str() << "\n----\n");
 

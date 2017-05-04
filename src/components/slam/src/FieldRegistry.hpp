@@ -37,19 +37,19 @@ namespace slam {
   class FieldRegistry
   {
   public:
-    typedef TheDataType                     DataType;
-    typedef std::string                     KeyType;
-    typedef axom::slam::Map<DataType> MapType;
-    typedef typename MapType::OrderedMap    BufferType;
+    typedef TheDataType                   DataType;
+    typedef std::string                   KeyType;
+    typedef axom::slam::Map<DataType>     MapType;
+    typedef typename MapType::OrderedMap  BufferType;
 
-    typedef std::map<KeyType, MapType>      DataVecMap;
-    typedef std::map<KeyType, BufferType>   DataBufferMap;
-    typedef std::map<KeyType, DataType>     DataAttrMap;
+    typedef std::map<KeyType, MapType>    DataVecMap;
+    typedef std::map<KeyType, BufferType> DataBufferMap;
+    typedef std::map<KeyType, DataType>   DataAttrMap;
 
   public:
 
 
-    bool hasField(const KeyType & key) const { return m_maps.find(key) != m_maps.end(); }
+    bool      hasField(const KeyType & key) const { return m_maps.find(key) != m_maps.end(); }
 
     MapType&  addField(KeyType key, Set const* theSet) { return m_maps[key] = MapType(theSet); }
 
@@ -75,9 +75,18 @@ namespace slam {
     }
 
 
-    bool hasBuffer(const KeyType & key) const { return m_buff.find(key) != m_buff.end(); }
+    bool        hasBuffer(const KeyType & key) const { return m_buff.find(key) != m_buff.end(); }
 
     BufferType& addBuffer(KeyType key, int size = 0)     { return m_buff[key] = BufferType(size); }
+
+    BufferType& addNamelessBuffer(int size = 0)
+    {
+      static int cnt = 0;
+      std::stringstream key;
+
+      key << "__buffer_" << cnt++;
+      return m_buff[key.str()] = BufferType(size);
+    }
 
     BufferType& getBuffer(KeyType key)
     {
@@ -91,7 +100,7 @@ namespace slam {
     }
 
 
-    bool hasScalar(const KeyType & key) const { return m_scal.find(key) != m_scal.end(); }
+    bool      hasScalar(const KeyType & key) const { return m_scal.find(key) != m_scal.end(); }
 
     DataType& addScalar(KeyType key, DataType val)     { return m_scal[key] = val; }
 

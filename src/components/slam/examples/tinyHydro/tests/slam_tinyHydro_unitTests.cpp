@@ -191,8 +191,8 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
   VectorXY f13 = h.getForce(13);
   SLIC_ASSERT_MSG( std::fabs(f12.x - f13.x) < tol
       && std::fabs(f12.y) < tol
-      && std::fabs(f13.y) < tol
-      , "force calculation FAILS --"
+      && std::fabs(f13.y) < tol,
+      "force calculation FAILS --"
       << "  f12: " << f12
       << ", f13: " << f13
       << ", diff in x: " << std::fabs(f12.x - f13.x)
@@ -218,8 +218,8 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
   VectorXY u12 = s.u(12);
   SLIC_ASSERT_MSG( std::fabs(u0.x - u12.x) < tol
       && std::fabs(u11.y) < tol
-      && std::fabs(u12.y) < tol
-      , "acceleration/velocity calculation FAILS");
+      && std::fabs(u12.y) < tol,
+      "acceleration/velocity calculation FAILS");
 
 
   SLIC_INFO(" *** PASS ***");
@@ -409,10 +409,10 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
   SLIC_INFO("\tnewDT = " << dt );
 
   double tol = 1.0e-16;
-  AXOM_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR( tol);
 
   double expDT = 0.1 * h.cfl;
-  AXOM_DEBUG_VAR(expDT);
+  AXOM_DEBUG_VAR( expDT);
 
   SLIC_ASSERT_MSG( std::fabs(dt - expDT) < tol
       , " newDT calculation FAILS -- expected dt = " << expDT << " but got " << dt << " instead, leaving " << dt - expDT);
@@ -483,10 +483,10 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
   double cfl = 0.7;
   double cs = sqrt(10 * E / (4 * zonemass * 9));
   double theoryDT = cfl * L / cs;
-  AXOM_DEBUG_VAR(theoryDT);
+  AXOM_DEBUG_VAR( theoryDT);
 
   double tol = 1.0e-16;
-  AXOM_DEBUG_VAR(tol);
+  AXOM_DEBUG_VAR( tol);
 
   SLIC_ASSERT_MSG( std::fabs(dt - theoryDT) < tol
       , " newDT calculation FAILS -- expected dt = " << theoryDT << " but code got " << dt << ". Diff:" <<  dt - theoryDT);
