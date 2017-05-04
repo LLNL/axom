@@ -16,14 +16,14 @@ Adding a New Axom Component
 ******************************************************
 
 This section describes the tasks to be completed when adding a new software 
-component to Axom. Apart from writing code, tasks include:
+component to Axom. Beyond writing code, tasks include:
 
-  * Setting up the appropriate directory structure
+  * Creating the appropriate directory structure
   * Modifying and adding CMake files and variables
   * Generating C and Fortran interfaces
   * Writing documentation
   * Writing tests
-  * Adding a 'readme' file
+  * Adding a 'README' file
   * Adding a component-specific 'uncrustify' configure file (optional)
 
 ====================================
@@ -44,7 +44,7 @@ each Axom component. For example::
 All files for each component are contained in subdirectories within the
 top-level component directory. 
 
-To illustrate, we describe the contents of the 'sidre' component directory::
+To illustrate, we describe the contents of the *sidre* component directory::
 
   $ cd axom/src/components/sidre
   $ ls -1
@@ -56,27 +56,31 @@ To illustrate, we describe the contents of the 'sidre' component directory::
   tests
   uncrustify.cfg
 
-The names of the subdirectories are descriptive of their contents.
+The names of the subdirectories should make their contents clear.
 
-The 'docs' directory contains documentation for the component in 
-subdirectories, such as 'doxygen' and 'sphinx' which are required. Each 
-component uses doxygen to build source code documentation and sphinx to
-build user documentation. Other documentation directories can be added
-as needed; e.g., 'dot' for det-generated figures, 'design' for design
-documents, etc.
+The 'docs' directory contains documentation in subdirectories for each
+type of documentation. The directories 'doxygen' and 'sphinx' are required. 
+Each Axom component uses doxygen for source code documentation and sphinx 
+for user documentation. Other documentation directories can be used
+as needed. For example, *sidre* also contains documentation diretories: 'dot' 
+for dot-generated figures, and 'design' for design documents.
 
 The 'src' directory contains all header and source files for the component.
-The main files (typically C++) can be organized into subdirectories
-in whatever manner makes sense. As is common practice in C++ libraries,
-we keep C++ header and source files in the same directories. For example, 
-in sidre, these files are in a subdirectory called 'core'. 
+The main files (which are typically C++) can be organized in subdirectories
+withing the 'src' directory in whatever manner makes sense. For example, in 
+*sidre*, these files are in a subdirectory called 'core'. As is common 
+practice for C++ libraries, we keep C++ header and source files in the same 
+directories. 
 
-However, **all interface files for other languages must be in a subdirectory 
-called 'interface'**. For example, sidre has generated files for C, Fortran, 
-python, etc. in that directory.
+**All interface files for other languages must be in a subdirectory 
+called 'interface'**. To make it easy for applications written in C and
+Fortran, for example, to use Axom directly in their native languages,
+Axom components provide APIs in these languages. For information about
+how we typically generate these APIs, see :ref:`shroudfiles-label`.
 
 Each component must have a 'tests' directory that contains a comprehensive
-set of unit tests.
+set of unit tests. See :ref:`testing` for information about writing tests
+and inserting them into our testing framework.
 
 The 'examples' directory contains simple code examples illustrating 
 component usage. A directory of examples is optional, but recommended
@@ -95,26 +99,176 @@ CMake macro definitions
 ------------------------------
 
 The top-level CMake directory 'axom/src/cmake' contains a file called
-'CMakeConfigureFile.cmake' that defines macro constants for third-party
-library (TPL) dependencies and Axom components that help enforce consistency
-for conditionally-compiled code. 
+'CMakeConfigureFile.cmake' that defines macro constants for enabling
+Axom components and setting third-party library (TPL) dependencies that 
+help enforce consistency for conditionally-compiled code. When a new
+component or dependency is added, that file must be modified:
 
-  * The name of the new component must be added to the 'COMPS' variable in that file.  
-  * If a new component adds a new TPL dependency, it must be added to the 'TPL_DEPS' variable.
+  #. The name of the component must be added to the 'COMPS' variable.  
+  #. If a new TPL dependency is introduced, it must be added to the 'TPL_DEPS' variable.
 
-Then, a '#cmakedefine' definition must be added for each new macro name in the
-'config.hpp.in' file in the 'axom/src/include' directory.
+The CMake variables are used to generate macro contants in the Axom 
+configuration header file. For each new CMake variable added, an associated
+'#cmakedefine' definition must be added in the 'config.hpp.in' file in the 
+'axom/src/include' directory.
 
+Modify top-level CMakeLists.txt file
+----------------------------------------
+
+When adding a new Axom component, the file 'axom/src/components/CMakeLists.txt'
+must be modified to hook the component into the CMake build configuration 
+system. Specifically:
+
+    #. Add option to enable component. For example,::
+
+         blt_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+
+    #. Add component dependency target by adding component name to the 'axom_components' variable.
+    
+Add component CMakeLists.txt files
+----------------------------------------
+
+There are several CMakeLists.txt files that must be added in various component
+directories. We try to maintain consistent organization and usage across all
+Axom components. To illustrate, we describe the basic contents of the 
+CMakeLists.txt files in the *sidre* Axom component. See those files or those 
+in other components for more details.
+
+Top-level component directory
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The CMakeLists.txt file in the top-level component directory, e.g., 
+axom/src/components/sidre, contains the following items:
+
+  #. Project definition; e.g.,::
+
+       project(sidre)
+
+  #. Checks for necessary dependencies with appropriate error or warning messages.
+
+  #. Add subdirectories with guards as needed; e.g.,::
+
+       add_subdirectory(src)  
+
+     and::
+
+       if (ENABLE_TESTS)
+         add_subdirectory(tests)
+       endif() 
+
+  #. CMake exports of all component targets; e.g.,::
+
+       install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+
+  #. Code formatting target if component-specific uncrustify configuration file
+     is provided; e.g.,::
+
+       add_code_check_targets(uncrustify.cfg) 
+
+Component src directory
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The CMakeLists.txt file in the component 'src' directory defines variables for
+component header files, source files, and dependencies. These CMake variable 
+names have the form <component name>_<variable meaning>. So, for example,
+*sidre* header file names are held in the variable 'sidre_headers'. 
+The source file names are held in the variable 'sidre_sources'. Dependencies 
+are held in the variable 'sidre_depends'. 
+
+.. note:: It is important to account for all conditional inclusion of items
+          in these CMake variable names. For example, a C interface is 
+          generated to support a Fortran API, typically. So if Fortran is
+          not enabled, it is usually not necessary to include the C header 
+          files in 'sidre_headers'. Similarly, do not include items in
+          the dependency variable if they are not found.
+
+This CMakeLists.txt file also adds source subdirectories as needed 
+(using the CMake 'add_subdirectory' command), adds the component as a Axom
+library, and adds target definitions for dependencies. For
+example, the command to add *sidre* as a library is::
+
+  blt_add_library( NAME
+                       sidre
+                   SOURCES
+                       "${sidre_sources}"
+                       "${sidre_fortran_sources}"
+                   HEADERS
+                       "${sidre_headers}"
+                   HEADERS_OUTPUT_SUBDIR
+                       sidre
+                   DEPENDS_ON
+                       ${sidre_depends}
+                   )
+
+All components should follow this format.
+
+Component examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The CMakeLists.txt files in component examples directories define the 
+following items:
+
+  #. Variables for example source files and header files as needed
+     Separate variables should be used for Fortran, C++, etc. For example,
+     'example_sources' for C++, 'F_example_sources' for Fortran.
+
+  #. An executable and test variable for each example executable to be 
+     generated and each executable to be run as a test. These definitions
+     use the 'blt_add_executable' and 'blt_add_test' macros, respectively.
+     For example::
+
+       blt_add_executable(NAME  <example executable name>
+                          SOURCES <example source>
+                          OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                          DEPENDS_ON <example dependencies>)
+
+     and::
+
+       blt_add_test(NAME <example executable name>
+                    COMMAND <example executable name>)
+
+     Fortran executables and tests should be guarded to prevent generation if 
+     Fortran is not enabled.
+
+Component unit tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The CMakeLists.txt files in component examples directories define the 
+following items:
+
+  #. Variables for test source files as needed. Separate variables should 
+     be used for Fortran, C++, etc. For example, 'gtest_sidre_tests' for
+     C++ tests, 'gtest_sidre_C_tests' for C tests, and 'fruit_sidre_tests'
+     for Fortran tests. Note that we use the *Google Test* framework for C
+     and C++ tests and *Fruit* for Fortran tests.
+
+  #. An executable and test variable for each test executable to be 
+     generated. These variables use the 'blt_add_executable' and 
+     'blt_add_test' macros, respectively, as described above.
+
+     Fortran executables and tests should be guarded to prevent generation if 
+     Fortran is not enabled.
+
+
+
+
+.. _shroudfiles-label:
 
 ====================================
 C and Fortran Interfaces
 ====================================
 
+Typically, we use the Shroud tool to generate C and
+Fortran APIs from our C++ interfaces. This makes it easy for applications 
+written in those languages to use Axom directly in their native languages.
+To use Shroud, create a *yaml* file in the 'interface' directory named 
+For example, sidre has generated files for C, Fortran, 
+python, etc. in subdirectories in the 'interface' directory.
+
 
 ====================================
 Documentation
-====================================
-
+==================================== 
 
 ====================================
 Tests
