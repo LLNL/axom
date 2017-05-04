@@ -24,6 +24,7 @@
 ##############################################################################
 
 from spack import *
+import os
 
 
 class Hdf5(Package):
@@ -80,6 +81,9 @@ class Hdf5(Package):
         # combinations of other arguments. Enabling it just skips a
         # sanity check in configure, so this doesn't merit a variant.
         extra_args.append("--enable-unsupported")
+
+        if os.environ['SYS_TYPE'].find("blueos_3") == 0:
+            extra_args.append('ac_cv_build=powerpc64le-unknown-linux-gnu')
 
         if '+debug' in spec:
             extra_args.append('--enable-debug=all')
