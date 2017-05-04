@@ -14,24 +14,27 @@
 #######
 
 # c compiler used by spack
-set("CMAKE_C_COMPILER" "/usr/local/bin/bgclang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/local/bin/bgclang" CACHE PATH "")
 
 # cpp compiler used by spack
-set("CMAKE_CXX_COMPILER" "/usr/local/bin/bgclang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/local/bin/bgclang++" CACHE PATH "")
 
 # fortran compiler used by spack
 # no fortran compiler
 
-set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
+set(ENABLE_FORTRAN "OFF" CACHE PATH "")
+
+# Root directory for generated TPLs
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_01_22_09_59/spack/opt/spack/bgqos_0/clang-3.7.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/clang-3.7.0/hdf5-1.8.16-bosaqxj3xd5fhyovqnda3rgj2kjsj4ah" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-bosaqxj3xd5fhyovqnda3rgj2kjsj4ah" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/clang-3.7.0/conduit-0.2.1-oiiieme5mlcpao7pqwrk2mdquxnaguqm" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-oiiieme5mlcpao7pqwrk2mdquxnaguqm" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_17_21_35_08/spack/opt/spack/bgqos_0/clang-3.7.0/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
 
 # python not build by uberenv
 
@@ -62,23 +65,43 @@ set(ENABLE_DOCS OFF CACHE PATH "")
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE PATH "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/bin/mpicc" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3/bin/mpicxx" CACHE PATH "")
+set(MPI_HOME             "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3" CACHE PATH "")
+set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc" CACHE PATH "")
+set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx" CACHE PATH "")
 
-set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
 
-set(MPI_INCLUDE_PATHS "/bgsys/drivers/V1R2M4/ppc64/comm/include;/bgsys/drivers/V1R2M4/ppc64/comm/lib/gnu;/bgsys/drivers/V1R2M4/ppc64;/bgsys/drivers/V1R2M4/ppc64/comm/sys/include;/bgsys/drivers/V1R2M4/ppc64/spi/include;/bgsys/drivers/V1R2M4/ppc64/spi/include/kernel/cnk" )
+set(MPI_DRIVER_ROOT      "/bgsys/drivers/V1R2M4/ppc64" CACHE PATH "")
 
-set(MPI_C_INCLUDE_PATH ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_C_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_LIBS 
+    ${MPI_DRIVER_ROOT}/comm/lib/libmpich-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libopa-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libmpl-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libpami-gcc.a
+    ${MPI_DRIVER_ROOT}/spi/lib/libSPI.a
+    ${MPI_DRIVER_ROOT}/spi/lib/libSPI_cnk.a
+    rt
+    pthread
+    stdc++
+    pthread)
+
+set(MPI_INCLUDE_PATHS 
+    ${MPI_DRIVER_ROOT}/comm/include
+    ${MPI_DRIVER_ROOT}/comm/lib/gnu
+    ${MPI_DRIVER_ROOT}
+    ${MPI_DRIVER_ROOT}/comm/sys/include
+    ${MPI_DRIVER_ROOT}/spi/include
+    ${MPI_DRIVER_ROOT}/spi/include/kernel/cnk )
+
+set(MPI_C_INCLUDE_PATH    ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_C_LIBRARIES       ${MPI_LIBS} CACHE PATH "")
 
 set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_CXX_LIBRARIES     ${MPI_LIBS} CACHE PATH "")
 
 
-set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 
@@ -86,7 +109,7 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 
-set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE PATH "Ensures that tests will be wrapped with srun to run on the backend nodes")
+set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

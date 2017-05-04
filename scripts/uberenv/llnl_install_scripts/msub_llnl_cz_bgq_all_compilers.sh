@@ -1,6 +1,6 @@
 #!/bin/bash
 #MSUB -l nodes=1
-#MSUB -q pbatch
+#MSUB -q psmall
 #MSUB -l walltime=8:00:00
 #MSUB -A ddcwork
 #MSUB -j oe
