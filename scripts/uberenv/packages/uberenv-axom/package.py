@@ -43,10 +43,15 @@ class UberenvAxom(Package):
     variant("lua",     default=True, description="Build lua")
     variant("boost",   default=True, description="Build boost headers")
 
+    variant("mfem",   default=True, description="Build mfem")
+
     depends_on("conduit~shared+cmake",when="+cmake")
     depends_on("conduit~shared~cmake",when="~cmake")
     
     depends_on("hdf5~cxx~shared~fortran")
+
+    # builds serial version of mfem that does not depend on Sidre
+    depends_on("mfem~mpi",   when="+mfem")
 
     # optional tpl builds
     depends_on("cmake@3.3.1",when="+cmake")
@@ -160,6 +165,10 @@ class UberenvAxom(Package):
         conduit_dir = get_spec_path(spec, "conduit", path_replacements)
         cfg.write("# conduit from uberenv\n")
         cfg.write(cmake_cache_entry("CONDUIT_DIR",conduit_dir))
+
+        mfem_dir = get_spec_path(spec, "mfem", path_replacements)
+        cfg.write("# mfem from uberenv\n")
+        cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
 
         if "boost-headers" in spec:
             boost_headers_dir = get_spec_path(spec, "boost-headers", path_replacements)
