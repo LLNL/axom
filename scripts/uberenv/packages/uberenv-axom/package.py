@@ -6,7 +6,14 @@ import platform
 from os.path import join as pjoin
 
 def cmake_cache_entry(name,value):
+    """Generate a string for a cmake cache variable""" 
     return 'set(%s "%s" CACHE PATH "")\n\n' % (name,value)
+
+def cmake_cache_option(name,boolean_value):
+    """Generate a string for a cmake configuration option""" 
+    
+    value = "ON" if boolean_value else "OFF"
+    return 'set(%s %s CACHE BOOL "")\n\n' % (name,value)
 
 def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
     """Extracts the prefix path for the given spack package
@@ -140,11 +147,11 @@ class UberenvAxom(Package):
         
         cfg.write("# fortran compiler used by spack\n")
         if not f_compiler is None:
-            cfg.write(cmake_cache_entry("ENABLE_FORTRAN","ON"))
+            cfg.write(cmake_cache_option("ENABLE_FORTRAN",True))
             cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER",f_compiler))
         else:
             cfg.write("# no fortran compiler\n\n")
-            cfg.write(cmake_cache_entry("ENABLE_FORTRAN","OFF"))
+            cfg.write(cmake_cache_option("ENABLE_FORTRAN",False))
 
         # Try to find the common prefix of the TPL directory, including the compiler 
         # If found, we will use this in the TPL paths
@@ -230,7 +237,7 @@ class UberenvAxom(Package):
             mpicc    = pjoin(spec['mpich'].prefix.bin,"mpicc")
             mpif90   = pjoin(spec['mpich'].prefix.bin,"mpif90")
             cfg.write("# MPI Support\n")
-            cfg.write(cmake_cache_entry("ENABLE_MPI","ON"))
+            cfg.write(cmake_cache_option("ENABLE_MPI",True))
             cfg.write(cmake_cache_entry("MPI_C_COMPILER",mpicc))
             # we use `mpicc` as `MPI_CXX_COMPILER` b/c we don't want to introduce 
             # linking deps to the MPI C++ libs (we aren't using C++ features of MPI)
