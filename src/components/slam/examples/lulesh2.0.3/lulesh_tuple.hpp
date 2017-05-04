@@ -9,7 +9,7 @@
  */
 
 
-#include "common/config.hpp"  // defines AXOM_USE_MPI and AXOM_USE_OPENMP
+#include "axom/config.hpp"  // defines AXOM_USE_MPI and AXOM_USE_OPENMP
 
 #ifdef AXOM_USE_MPI
 #include <mpi.h>

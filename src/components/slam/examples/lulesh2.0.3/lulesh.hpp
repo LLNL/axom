@@ -10,7 +10,7 @@
 
 
 
-#include "common/config.hpp"  // defines AXOM_USE_MPI
+#include "axom/config.hpp"  // defines AXOM_USE_MPI
 
 #ifdef AXOM_USE_MPI
 #include <mpi.h>

@@ -20,8 +20,8 @@
 #ifndef SLAM_STATIC_RELATION_HPP_
 #define SLAM_STATIC_RELATION_HPP_
 
-#include "common/config.hpp"
-#include "common/AxomMacros.hpp"
+#include "axom/config.hpp"
+#include "axom/Macros.hpp"
 
 #include "slam/Relation.hpp"
 #include "slam/OrderedSet.hpp"
