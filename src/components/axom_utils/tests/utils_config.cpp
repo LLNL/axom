@@ -28,7 +28,7 @@
 #include <algorithm>        // copy
 
 
-TEST(gtest_common_config,config_libraries)
+TEST(gtest_utils_config,config_libraries)
 {
   // This test checks which libraries are available in the configuration
 
@@ -88,7 +88,7 @@ TEST(gtest_common_config,config_libraries)
 }
 
 
-TEST(gtest_common_config,config_components)
+TEST(gtest_utils_config,config_components)
 {
   // This test checks which toolkit components are available in the configuration
 
@@ -99,8 +99,6 @@ TEST(gtest_common_config,config_components)
 #ifdef AXOM_USE_AXOM_UTILS
   comps.push_back("axom_utils");
 #endif
-
-  EXPECT_EQ(1u, comps.size()) << "Common component is always available.";
 
 #ifdef AXOM_USE_MINT
   comps.push_back("mint");
@@ -142,7 +140,7 @@ TEST(gtest_common_config,config_components)
   EXPECT_TRUE(true);
 }
 
-TEST(gtest_common_config,config_openmp)
+TEST(gtest_utils_config,config_openmp)
 {
     // This test checks that the per-target OpenMP guards
     // in our configuration file 'axom/config.hpp' are working properly
@@ -184,7 +182,7 @@ TEST(gtest_common_config,config_openmp)
 }
 
 #ifdef AXOM_USE_BOOST
-TEST(gtest_common_config,boost_version)
+TEST(gtest_utils_config,boost_version)
 {
     std::cout << "Using boost version "
           << BOOST_VERSION / 100000     << "."  // major version

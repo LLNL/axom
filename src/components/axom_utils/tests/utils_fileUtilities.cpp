@@ -14,7 +14,7 @@
 
 #include "axom_utils/FileUtilities.hpp"
 
-TEST(gtest_common_fileUtilities,getCWD_smoke)
+TEST(gtest_utils_fileUtilities,getCWD_smoke)
 {
   // This test just checks that we can call the getCWD function
   // It does not in any way confirm the results
@@ -30,7 +30,7 @@ TEST(gtest_common_fileUtilities,getCWD_smoke)
 
 
 
-TEST(gtest_common_fileUtilities,common_fileUtil_joinPath)
+TEST(gtest_utils_fileUtilities,joinPath)
 {
   using namespace axom::utilities::filesystem;
 
@@ -53,7 +53,7 @@ TEST(gtest_common_fileUtilities,common_fileUtil_joinPath)
 }
 
 
-TEST(gtest_common_fileUtilities,common_fileUtil_pathExists)
+TEST(gtest_utils_fileUtilities,pathExists)
 {
   using namespace axom::utilities::filesystem;
 

@@ -10,10 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file common_TaskTimer.cpp
- *
- * \date Feb 10, 2016
- * \author George Zagaris (zagaris2@llnl.gov)
+ * \file utils_TaskTimer.cpp
  *******************************************************************************
  */
 
@@ -31,7 +28,7 @@ void sleep(int numSeconds)
 #include <unistd.h> // for sleep()
 #endif
 
-TEST(gtest_common_Timer, timer_check )
+TEST(gtest_utils_Timer, timer_check )
 {
   axom::utilities::Timer t;
 
@@ -56,7 +53,7 @@ TEST(gtest_common_Timer, timer_check )
 }
 
 
-TEST(gtest_common_Timer, timer_check_duration )
+TEST(gtest_utils_Timer, timer_check_duration )
 {
   axom::utilities::Timer t;
   t.start();
