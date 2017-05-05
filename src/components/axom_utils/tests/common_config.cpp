@@ -60,7 +60,11 @@ TEST(gtest_common_config,config_libraries)
   libs.push_back("openmp");
 #endif
 
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MFEM
+  libs.push_back("mfem");
+#endif
+
+#ifdef AXOM_USE_MPI
   libs.push_back("mpi");
 #endif
 

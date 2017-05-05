@@ -29,6 +29,7 @@
 #cmakedefine AXOM_USE_CXX11
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
+#cmakedefine AXOM_USE_MFEM
 #cmakedefine AXOM_USE_MPI
 #cmakedefine AXOM_USE_MPIF_HEADER
 #cmakedefine AXOM_USE_SPARSEHASH
