@@ -19,24 +19,6 @@
 
 
 //-----------------------------------------------------------------------------
-TEST(mfem_smoke, configuration)
-{
-    // Verify that this copy of mfem is built without MPI
-    bool hasMPI = false;
-    #ifdef MFEM_USE_MPI
-       hasMPI = true;
-    #endif
-    EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
-
-    // Verify that this copy of mfem is built without Sidre
-    bool hasSidre = false;
-    #ifdef MFEM_USE_SIDRE
-       hasSidre = true;
-    #endif
-    EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
-}
-
-//-----------------------------------------------------------------------------
 TEST(mfem_smoke, basic_use)
 {
     // Simple usage of a basic mfem type

@@ -46,6 +46,10 @@ if(BOOST_FOUND)
     list(APPEND utils_config_test_depends boost)
 endif()
 
+if(MFEM_FOUND)
+    list(APPEND utils_config_test_depends mfem)    
+endif()
+
 blt_add_executable( NAME utils_config
                     SOURCES utils_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -56,8 +60,14 @@ blt_add_test( NAME utils_config
               COMMAND utils_config )
 
 # Add flag to ignore unknown openmp pragmas in utils_config
-set_target_properties(utils_config
-                      PROPERTIES COMPILE_FLAGS ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS})
+set_property(TARGET utils_config
+    APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
+
+# Have to ignore unused parameters for mfem
+if(MFEM_FOUND)
+    set_property(TARGET utils_config
+        APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+endif()
 
 
 if(ENABLE_OPENMP)
@@ -70,5 +80,13 @@ if(ENABLE_OPENMP)
 
     blt_add_test( NAME utils_config_openmp
                   COMMAND utils_config_openmp )
+
+    if(MFEM_FOUND)
+        set_property(TARGET utils_config_openmp
+            APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+    endif()
+
 endif()
+
+
 

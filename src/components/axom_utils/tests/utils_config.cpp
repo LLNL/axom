@@ -21,6 +21,10 @@
   #include "boost/version.hpp"
 #endif
 
+#ifdef AXOM_USE_MFEM
+  #include "mfem.hpp"
+#endif
+
 #include <string>
 #include <sstream>          // stringstream
 #include <iostream>         // cout
@@ -191,4 +195,23 @@ TEST(gtest_utils_config,boost_version)
           << std::endl;
 }
 #endif // AXOM_USE_BOOST
+
+#ifdef AXOM_USE_MFEM
+TEST(gtest_utils_config,mfem_configuration)
+{
+    // Verify that this copy of mfem is configured without MPI
+    bool hasMPI = false;
+    #ifdef MFEM_USE_MPI
+       hasMPI = true;
+    #endif
+    EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
+
+    // Verify that this copy of mfem is configured without Sidre
+    bool hasSidre = false;
+    #ifdef MFEM_USE_SIDRE
+       hasSidre = true;
+    #endif
+    EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
+}
+#endif // AXOM_USE_MFEM
 
