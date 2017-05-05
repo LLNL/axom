@@ -15,8 +15,8 @@
 Adding a New Axom Component
 ******************************************************
 
-This section describes the tasks to be completed when adding a new software 
-component to Axom. Beyond writing code, tasks include:
+This section describes the tasks to be done when adding a new software 
+component to Axom. The main tasks include:
 
   * Creating the appropriate directory structure
   * Modifying and adding CMake files and variables
@@ -25,6 +25,9 @@ component to Axom. Beyond writing code, tasks include:
   * Writing tests
   * Adding a 'README' file
   * Adding a component-specific 'uncrustify' configure file (optional)
+
+The discussion here does not contain coding guidelines. Please see
+`Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for that information.
 
 ====================================
 Directory Structure
@@ -79,7 +82,7 @@ Axom components provide APIs in these languages. For information about
 how we typically generate these APIs, see :ref:`shroudfiles-label`.
 
 Each component must have a 'tests' directory that contains a comprehensive
-set of unit tests. See :ref:`testing` for information about writing tests
+set of unit tests. See :ref:`testing-label` for information about writing tests
 and inserting them into our testing framework.
 
 The 'examples' directory contains simple code examples illustrating 

@@ -21,13 +21,16 @@ Axom Developer Guide
 #####################
 
 This guide describes the main software development processes used
-by the Axom project. It is intended for all team members and contributors. 
+by the Axom project. It does not contain coding guidelines. Please see
+`Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for that information.
+
+It is intended for all team members and contributors. 
 and is especially helpful for new individuals who wish to understand how 
 the team works. We employ simple practices that are easy for all contributors 
 to understand and follow. We believe that when everyone on the team follows 
 similar practices, it helps to ensure that our code will be robust, consist, 
 correct, and easy to use. Everyone who contributes to Axom should be aware 
-of and follow these guidelines. 
+of and follow these guidelines.
 
 We realize that the benefits of uniformity should be balanced with 
 allowances for individual preferences, which may work better in 
@@ -39,7 +42,7 @@ changes are made, this guide should be updated accordingly.
 
 .. note:: This document does not describe how to configure and build the
           Axom code, or how to use it. For that information, please see the 
-          `Axom Quickstart Guide <../../quickstart_guide_docs/index.html>`_
+          `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_
           and component user documentation linked to our 
           `Main Web Page <../../web_main_docs/html/index.html>`_
 
@@ -47,7 +50,7 @@ changes are made, this guide should be updated accordingly.
 **Contents:**
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    dev_summary
    jira
@@ -55,9 +58,9 @@ changes are made, this guide should be updated accordingly.
    gitflow_branching
    bitbucket
    pull_requests
+   add_new_component
    testing
    bamboo
-   add_new_component
    misc_tasks
 
 
