@@ -39,8 +39,8 @@ should be deleted.
 
 In addition to successful compilation and passing unit tests, changes to the 
 develop and master branches should be scrutinized in other ways and using 
-other code health tools we use. See :ref:`ci-label` for more information about 
-using our continuous integration tools.
+other code health tools we use. See :ref:`bamboo-label` for more information 
+about using our continuous integration tools.
 
 
 =======================

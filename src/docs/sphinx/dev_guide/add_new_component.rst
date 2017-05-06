@@ -23,8 +23,6 @@ component to Axom. The main tasks include:
   * Generating C and Fortran interfaces
   * Writing documentation
   * Writing tests
-  * Adding a 'README' file
-  * Adding a component-specific 'uncrustify' configure file (optional)
 
 The discussion here does not contain coding guidelines. Please see
 `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for that information.
@@ -33,7 +31,7 @@ The discussion here does not contain coding guidelines. Please see
 Directory Structure
 ====================================
 
-In the 'axom/src/components' directory, you will find a subdirectory for
+In the `axom/src/components` directory, you will find a subdirectory for
 each Axom component. For example::
 
   $ cd axom/src/components
@@ -44,10 +42,11 @@ each Axom component. For example::
   mint
   ...
 
-All files for each component are contained in subdirectories within the
-top-level component directory. 
+All files for each component are contained in subdirectories in the
+top-level component directory. For consistency, subdirectory 
+names should be the same for all Axom components. 
 
-To illustrate, we describe the contents of the *sidre* component directory::
+To illustrate, consider the *sidre* component directory::
 
   $ cd axom/src/components/sidre
   $ ls -1
@@ -59,66 +58,66 @@ To illustrate, we describe the contents of the *sidre* component directory::
   tests
   uncrustify.cfg
 
-The names of the subdirectories should make their contents clear.
+The `docs` directory contains *sidre* documentation. Subdirectories in the
+docs directory are named for each type of documentation. The directories 
+`doxygen` and `sphinx` are required. Each Axom component uses *Doxygen* for 
+source code documentation and *Sphinx* for user documentation. Other 
+documentation directories can be used as needed. For example, *sidre* also 
+contains documentation directories `dot` for dot-generated figures, and 
+`design` for design documents.
 
-The 'docs' directory contains documentation in subdirectories for each
-type of documentation. The directories 'doxygen' and 'sphinx' are required. 
-Each Axom component uses doxygen for source code documentation and sphinx 
-for user documentation. Other documentation directories can be used
-as needed. For example, *sidre* also contains documentation diretories: 'dot' 
-for dot-generated figures, and 'design' for design documents.
-
-The 'src' directory contains all header and source files for the component.
-The main files (which are typically C++) can be organized in subdirectories
-withing the 'src' directory in whatever manner makes sense. For example, in 
-*sidre*, these files are in a subdirectory called 'core'. As is common 
-practice for C++ libraries, we keep C++ header and source files in the same 
-directories. 
+The `src` directory contains all header and source files for the component.
+These files, which are typically C++, can be organized in subdirectories
+withing the `src` directory in whatever manner makes sense. For example, in 
+*sidre*, these core header and source files are in a subdirectory called 
+`core`. As is common practice for C++ libraries, associated  header and 
+source files are co-located in the same directories. 
 
 **All interface files for other languages must be in a subdirectory 
-called 'interface'**. To make it easy for applications written in C and
+called `interface`**. To make it easy for applications written in C and
 Fortran, for example, to use Axom directly in their native languages,
 Axom components provide APIs in these languages. For information about
-how we typically generate these APIs, see :ref:`shroudfiles-label`.
+how we generate these APIs, see :ref:`shroudfiles-label`.
 
-Each component must have a 'tests' directory that contains a comprehensive
-set of unit tests. See :ref:`testing-label` for information about writing tests
-and inserting them into our testing framework.
+A `test` directory is required for each component which contains a 
+comprehensive set of unit tests. See :ref:`testing-label` for information 
+about writing tests and inserting them into our testing framework.
 
-The 'examples' directory contains simple code examples illustrating 
-component usage. A directory of examples is optional, but recommended
-in most cases.
+An `examples` directory, which is optional but recommend, contains simple 
+code examples illustrating component usage.
 
 ====================================
 CMake Files and Variables
 ====================================
 
-To properly configure and compile code for a new component, and generate 
+To properly configure and compile code for a component, and generate 
 consistent make targets, existing CMake files and variables need to be
 modified in addition to adding CMake files for the new component. In this
-section, we describe the changes and additions that are required.
+section, we describe the sort of changes and additions that are required.
+For additional details about our CMake and BLT usage, please look in files
+in existing Axom components.
 
-CMake macro definitions
+Add CMake macro definitions
 ------------------------------
 
-The top-level CMake directory 'axom/src/cmake' contains a file called
-'CMakeConfigureFile.cmake' that defines macro constants for enabling
+The top-level CMake directory `axom/src/cmake` contains a file called
+`CMakeConfigureFile.cmake` that defines macro constants for enabling
 Axom components and setting third-party library (TPL) dependencies that 
 help enforce consistency for conditionally-compiled code. When a new
-component or dependency is added, that file must be modified:
+component or dependency is added, that file must be modified by:
 
-  #. The name of the component must be added to the 'COMPS' variable.  
-  #. If a new TPL dependency is introduced, it must be added to the 'TPL_DEPS' variable.
+  #. Adding the name of the component to the `COMPS` variable
+  #. Adding new TPL dependencies to the `TPL_DEPS` variable
 
-The CMake variables are used to generate macro contants in the Axom 
+The CMake variables are used to generate macro constants in the Axom 
 configuration header file. For each new CMake variable added, an associated
-'#cmakedefine' definition must be added in the 'config.hpp.in' file in the 
-'axom/src/include' directory.
+`#cmakedefine` definition must be added to the `config.hpp.in` file in the 
+`axom/src/include` directory.
 
 Modify top-level CMakeLists.txt file
 ----------------------------------------
 
-When adding a new Axom component, the file 'axom/src/components/CMakeLists.txt'
+When adding a new Axom component, the file `axom/src/components/CMakeLists.txt`
 must be modified to hook the component into the CMake build configuration 
 system. Specifically:
 
@@ -126,30 +125,30 @@ system. Specifically:
 
          blt_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
-    #. Add component dependency target by adding component name to the 'axom_components' variable.
+    #. Add component dependency target by adding component name to the `axom_components` variable.
     
 Add component CMakeLists.txt files
 ----------------------------------------
 
-There are several CMakeLists.txt files that must be added in various component
+There are several `CMakeLists.txt` files that must be added in various component
 directories. We try to maintain consistent organization and usage across all
-Axom components. To illustrate, we describe the basic contents of the 
+Axom components. To illustrate, we describe the key contents of the 
 CMakeLists.txt files in the *sidre* Axom component. See those files or those 
 in other components for more details.
 
 Top-level component directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The CMakeLists.txt file in the top-level component directory, e.g., 
-axom/src/components/sidre, contains the following items:
+The top-level component directory contains a `CMakeLists.txt`, e.g., 
+`axom/src/components/sidre/CmakeLists.txt`, which contains the following items:
 
   #. Project definition; e.g.,::
 
        project(sidre)
 
-  #. Checks for necessary dependencies with appropriate error or warning messages.
+  #. Checks for necessary dependencies with useful error or warning messages.
 
-  #. Add subdirectories with guards as needed; e.g.,::
+  #. Subdirectories additions with guards as needed; e.g.,::
 
        add_subdirectory(src)  
 
@@ -168,27 +167,39 @@ axom/src/components/sidre, contains the following items:
 
        add_code_check_targets(uncrustify.cfg) 
 
+.. note:: Each Axom component can either provide its own *uncrustify* 
+          configuration file (e.g., `uncrustify.cfg`) or use the common 
+          configuration file defined for the project. The file is used to 
+          define source code formatting options that are applied when the 
+          *uncrustify* tool is run on the code. If a project-specific 
+          configuration file is provided, it should be located in the 
+          top-level component directory and a target should be added to the 
+          `CMakeLists.txt` file in that directory as described above.
+
+
 Component src directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The CMakeLists.txt file in the component 'src' directory defines variables for
-component header files, source files, and dependencies. These CMake variable 
-names have the form <component name>_<variable meaning>. So, for example,
-*sidre* header file names are held in the variable 'sidre_headers'. 
-The source file names are held in the variable 'sidre_sources'. Dependencies 
-are held in the variable 'sidre_depends'. 
+The `CMakeLists.txt` file in the component `src` directory defines:
+
+  #. A variable for component header files named `<component name>_headers`
+  #. A variable for component source files named `<component name>_sources`
+  #. A variable for component dependencies named `<component name>_depends`
+
+For example, these variables for the *sidre* component are `sidre_headers`,
+`sidre_sources`, and `sidre_depends`. 
 
 .. note:: It is important to account for all conditional inclusion of items
           in these CMake variable names. For example, a C interface is 
           generated to support a Fortran API, typically. So if Fortran is
           not enabled, it is usually not necessary to include the C header 
-          files in 'sidre_headers'. Similarly, do not include items in
+          files in `sidre_headers`. Similarly, do not include items in
           the dependency variable if they are not found.
 
-This CMakeLists.txt file also adds source subdirectories as needed 
-(using the CMake 'add_subdirectory' command), adds the component as a Axom
-library, and adds target definitions for dependencies. For
-example, the command to add *sidre* as a library is::
+This file also adds source subdirectories as needed (using the CMake 
+`add_subdirectory` command), adds the component as a Axom library, and 
+adds target definitions for dependencies. For example, the command to 
+add *sidre* as a library is::
 
   blt_add_library( NAME
                        sidre
@@ -203,21 +214,21 @@ example, the command to add *sidre* as a library is::
                        ${sidre_depends}
                    )
 
-All components should follow this format.
+All components should follow this format to describe the library information.
 
-Component examples
+Component examples directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The CMakeLists.txt files in component examples directories define the 
+The `CMakeLists.txt` files in component examples directories define the 
 following items:
 
   #. Variables for example source files and header files as needed
      Separate variables should be used for Fortran, C++, etc. For example,
-     'example_sources' for C++, 'F_example_sources' for Fortran.
+     `example_sources` for C++, `F_example_sources` for Fortran.
 
   #. An executable and test variable for each example executable to be 
      generated and each executable to be run as a test. These definitions
-     use the 'blt_add_executable' and 'blt_add_test' macros, respectively.
+     use the `blt_add_executable` and `blt_add_test` macros, respectively.
      For example::
 
        blt_add_executable(NAME  <example executable name>
@@ -233,26 +244,37 @@ following items:
      Fortran executables and tests should be guarded to prevent generation if 
      Fortran is not enabled.
 
-Component unit tests
+Component tests directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The CMakeLists.txt files in component examples directories define the 
+The `CMakeLists.txt` files in component examples directories define the 
 following items:
 
   #. Variables for test source files as needed. Separate variables should 
-     be used for Fortran, C++, etc. For example, 'gtest_sidre_tests' for
-     C++ tests, 'gtest_sidre_C_tests' for C tests, and 'fruit_sidre_tests'
+     be used for Fortran, C++, etc. For example, `gtest_sidre_tests` for
+     C++ tests, `gtest_sidre_C_tests` for C tests, and `fruit_sidre_tests`
      for Fortran tests. Note that we use the *Google Test* framework for C
      and C++ tests and *Fruit* for Fortran tests.
 
   #. An executable and test variable for each test executable to be 
-     generated. These variables use the 'blt_add_executable' and 
-     'blt_add_test' macros, respectively, as described above.
+     generated. These variables use the `blt_add_executable` and 
+     `blt_add_test` macros, respectively, as described above.
 
-     Fortran executables and tests should be guarded to prevent generation if 
-     Fortran is not enabled.
+.. note:: Fortran executables and tests should be guarded to prevent 
+          generation when Fortran is not enabled.
 
+Component docs directory
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+A component `docs` directory contains a `CMakeLists.txt` file that uses
+the CMake `add_subdirectory` command to add `sphinx` and `doxygen` 
+subdirectories to the build configuration. These are guarded to prevent
+addition if either *Sphinx* or *Doxygen* are not found.
+
+`CMakeLists.txt` files in the `sphinx` and `doxygen` subdirectories add
+targets and dependencies for each type of documentation build. For example,
+the *sidre* component generates `sidre_docs` and `sidre_doxygen` targets
+for these document types.
 
 
 .. _shroudfiles-label:
@@ -261,158 +283,132 @@ following items:
 C and Fortran Interfaces
 ====================================
 
-Typically, we use the Shroud tool to generate C and
-Fortran APIs from our C++ interfaces. This makes it easy for applications 
-written in those languages to use Axom directly in their native languages.
-To use Shroud, create a *yaml* file in the 'interface' directory named 
-For example, sidre has generated files for C, Fortran, 
-python, etc. in subdirectories in the 'interface' directory.
+Typically, we use the Shroud tool to generate C and Fortran APIs from our C++ 
+interface code. Shroud is a collection of python scripts that generate code
+from a *yaml* file that describes C++ types and their interfaces. 
+***Add link to Shroud documentation***
+To illustrate what is needed to generate multi-language API code via a make 
+target in the Axom build system, we describe the contents of the *sidre* 
+Axom component interface directory `axom/src/components/sidre/src/interface` 
+that must be added:
+
+  #. A *yaml* file, named `sidre_shroud.yaml`, which contains an annotated 
+     description of C++ types and their interfaces in *sidre* C++ files. 
+     This file and its contents are manually generated. When 
+
+  #. Header files, such as `sidre.h`, that can be included in C files. Such
+     a file includes files containing Shroud-generated 'extern' C prototypes.
+
+  #. Directories to hold the generated files for different languages; e.g.,
+     `c_fortran` for C and Fortran APIs, `python` for python API, etc.
+
+  #. 'Splicer' files containing code snippets that get inserted in the
+     generated files.
+
+  #. A `CMakeLists.txt` files that contains information for generating CMake
+     targets for Shroud to generate the desired interface code. For example::
+
+       add_shroud( YAML_INPUT_FILE sidre_shroud.yaml
+            YAML_OUTPUT_DIR yaml
+            C_FORTRAN_OUTPUT_DIR c_fortran
+            PYTHON_OUTPUT_DIR python
+            DEPENDS_SOURCE
+                c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
+                python/pysidresplicer.c
+            DEPENDS_BINARY genfsidresplicer.f
+       )
+
+     This tells shroud which *yaml* file to generate code files from, which
+     directories to put generated files in, which splicer files to use, etc.
+
+The end result of properly setting up these pieces is a make target called
+`generate_sidre_shroud` that can be invoked to generate *sidre* API code
+in other languages Axom supports.
 
 
 ====================================
 Documentation
 ==================================== 
 
-====================================
-Tests
-====================================
+Complete documentation for an Axom component consists of several parts
+described in the following sections. All user documentation is accessible 
+on the `Axom LC web space <https://lc.llnl.gov/axom/docs/sphinx/web_docs/html/index.html>`_.
 
-
-====================================
 README File
-====================================
+------------
 
+Each Axom component should have a basic `README.md` markdown file in its
+top-level directory that briefly describes the role and capabilities of the 
+component. The contents of this file will appear when the component source 
+code is viewed on the 
+`Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
-====================================
-Uncrustify Coniguration File
-====================================
+User Documentation
+------------------
 
+Each Axom component uses *Sphinx* for user documentation. This documentation 
+is generated by invoking appropriate make targets in our build system.
+For example, `make sidre_docs` builds *html files* from *Sphinx* user 
+documentation for the *sidre* component.
 
+The main goal of good user documentation is to introduce the software to
+users so that they can quickly understand what it does and how to use it.
+A user guide for an Axom component should enable a new user to get a 
+reasonable sense of the capabilities the component provides and what the
+API looks like in under 30 minutes. Beyond introductory material, the user
+guide should also help users understand all major features and ways the
+software may be used. Here is a list of tips to help you write good 
+documentation:
 
-Note: when adding a new component, config.hpp.in file must be updated with 
-#cmakedefine AXOM_USE_<new-component-name> 
+  #. Try to limit documentation length and complexity. Using figures,
+     diagrams, tables, bulleted lists, etc. can help impart useful 
+     information more quickly than text alone.
+  #. Use examples. Good examples can help users grasp concepts quickly
+     and learn to tackle problems easily.
+  #. Place yourself in the shoes of targeted users. Detailed
+     instructions may be best for some users, but may be onerous for others
+     who can quickly figure things out on their own. Consider providing
+     step-by-step instructions for completeness in an appendix, separate
+     chapter, via hyperlink, etc. to avoid clutter in sections where you 
+     are trying to get the main ideas across.
+  #. Try to anticipate user difficulties. When possible, describe workarounds,
+     caveats, and places where software is immature to help users set
+     expectations and assumptions about the quality and state of your software.
+  #. *Test* your docuementation. Follow your own instructions completely. 
+     If something is unclear or missing, fix your documenation. Working with
+     a co-worker who is new to your work, or less informed about it, is
+     also a good way to get feedback and improve your documentation.
+  #. Make documentation interesting to read. While you are not writing a 
+     scintillating novel, you want to engage users with your documentation
+     enough so that they don't fall asleep reading it.
+  #. Quickly incorporate feedback. When a user provides some useful feedback
+     on your documentation, it shows they care enough to help you improve
+     it to benefit others. Incorporate their suggestions in a timely fashion
+     and ask them if you've addressed their concerns. Hopefully, this will
+     encourage them to continue to help.
 
-======================================================
-Adding a New Axom Component
-======================================================
+Speaking of good user documentation, the 
+`reStructuredText Primer <http://www.sphinx-doc.org/en/stable/rest.html>`_ 
+provides enough information to quickly learn enough to start using it 
+productively.
 
-This section describes how to modify the Axom build system when 
-adding a new component.
+Code Documentation
+------------------
 
-1. Create the folder for the new component, inside the components directory.
+Each Axom component uses *Doxygen* for code documentation. This documentation 
+is generated by invoking appropriate make targets in our build system.
+For example, `make sidre_doxygen` builds *html* files from *Doxygen* code 
+documentation for the *sidre* component.
 
-     `<https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/browse/src/components>`_
+The main goal of code documentation is to provide an easily navigable 
+reference document of your software interfaces and implemenations for
+users who need to understand details of your code.
 
+We have a useful discussion of our Doxygen usage conventions in the 
+`Documentation Section of the Axom Coding Guide <../../coding_guide_docs/html/sec07_documentation.html>`_. 
+The `Doxygen Manual <http://www.stack.nl/~dimitri/doxygen/>`_ contains
+a lot more details.
 
-*  NOTES:  Create a python file to create a template for a new component.
-
-2. Edit the **CMakeLists.txt** in the src/components directory. Use the **add_component** macro to add the new component.
-
-      **CMakeLists.txt file:** ::
-
-         ## add components examples
-
-         add_component(COMPONENT_NAME common DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-         add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-         add_component(COMPONENT_NAME meshapi DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-         add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-
-3. Inside the **src/components/<component_name>** add a new **CMakeLists.txt** .
-   Each component directory may also have **docs**, **examples**, **src** and **tests** directories.
-
-    **Example: slic directory structure:**
-
-.. image:: ./slic_directory.png
-
-4. Optionally each component can have its own **uncrustify.cfg** file detailing formatting choices for the code.
-   In this example, the new component Foo depends on Conduit.
-
-    **Details of Foo's 'CMakeLists.txt:** ::
-
-
-             ################################
-             # Datastore
-             ################################
-             project(foo)
-
-
-             ################################
-             # Check necessary dependencies
-             ################################
-             if(NOT CONDUIT_FOUND)
-                message(FATAL_ERROR "Foo requires Conduit. Set CONDUIT_DIR to location of built Conduit.")
-             endif()
-
-
-             ################################
-             # Add the Foo sources
-             ################################
-             add_subdirectory(src)
-
-
-             ################################
-             # Add examples
-             ################################
-             if (ENABLE_EXAMPLES)
-                add_subdirectory(examples)
-             endif()
-
-
-             ################################
-             # Add tests
-             ################################
-             if (ENABLE_TESTS)
-                add_subdirectory(tests)
-             endif()
-
-             add_code_check_targets(uncrustify.cfg)
-
-
-             ################################
-             # Add docs
-             ################################
-             if (ENABLE_DOCS)
-                add_subdirectory(docs)
-             endif()
-
-
-             ################################
-             # Create CMake importable
-             # exports for all of our targets
-             ################################
-             install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake) 
-
-5. Create another **CMakeLists.txt** file in the *src* directory of the component.
-    This contains a list of the headers, sources, and how to build them. blt_add_library
-    handles building and installing the library.
-
-    **Details of Foo's 'CMakeLists.txt:** ::
-
-             set(foo_headers
-                 Foo.hpp
-                 )
-             
-             #
-             # Specify all sources
-             #
-             set(foo_sources
-                 Foo.cpp
-                 )
-             
-             
-             #
-             # make the library
-             #
-             blt_add_library( NAME
-                                  foo
-                              SOURCES
-                                  "${foo_sources}"
-                              HEADERS
-                     "${foo_headers}"
-                              HEADERS_OUTPUT_SUBDIR
-                                  foo
-                              DEPENDS_ON
-                                  common conduit
-                              )
-
+Fill this in when we have a better handle on how we want to prganize our 
+doxygen stuff...
 

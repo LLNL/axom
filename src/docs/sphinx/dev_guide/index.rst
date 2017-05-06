@@ -61,6 +61,7 @@ changes are made, this guide should be updated accordingly.
    add_new_component
    testing
    bamboo
+   code_health_tools
    misc_tasks
 
 
