@@ -10,6 +10,8 @@
 #ifndef INTERSECTION_IMPL_HPP_
 #define INTERSECTION_IMPL_HPP_
 
+#define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+
 #include "primal/BoundingBox.hpp"
 #include "primal/Determinants.hpp"
 #include "primal/Point.hpp"
@@ -34,7 +36,9 @@ typedef primal::Point< double, 2 > Point2;
 bool isGt(double x, double y, double EPS=1.0e-12);
 bool isLt(double x, double y, double EPS=1.0e-12);
 bool isLeq(double x, double y, double EPS=1.0e-12);
+bool isLpeq(double x, double y, double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
+bool isGpeq(double x, double y, double EPS=1.0e-12);
 bool signMatch(double x, double y, double z, double EPS=1.0e-12);
 double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
@@ -377,36 +381,36 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
     //if x projection area greatest, project on YZ and return 2D checker
 
     const Triangle2 t1_2da = Triangle2(Point2::make_point(q1[2],q1[1]),
-                                       Point2::make_point( p1[2],p1[1]),
-                                       Point2::make_point( r1[2],r1[1]));
+                                       Point2::make_point(p1[2],p1[1]),
+                                       Point2::make_point(r1[2],r1[1]));
 
     const Triangle2 t2_2da = Triangle2(Point2::make_point(q2[2],q2[1]),
-                                       Point2::make_point( p2[2],p2[1]),
-                                       Point2::make_point( r2[2],r2[1]));
+                                       Point2::make_point(p2[2],p2[1]),
+                                       Point2::make_point(r2[2],r2[1]));
 
     return TriangleIntersection2D(t1_2da, t2_2da);
   }
   else if (isGt(normal[1],normal[2]) && isGeq(normal[1],normal[0])) {
     //if y projection area greatest, project on XZ and return 2D checker
     const Triangle2 t1_2da = Triangle2(Point2::make_point(q1[0],q1[2]),
-                                       Point2::make_point( p1[0],p1[2]),
-                                       Point2::make_point( r1[0],r1[2]));
+                                       Point2::make_point(p1[0],p1[2]),
+                                       Point2::make_point(r1[0],r1[2]));
 
     const Triangle2 t2_2da = Triangle2(Point2::make_point(q2[0],q2[2]),
-                                       Point2::make_point( p2[0],p2[2]),
-                                       Point2::make_point( r2[0],r2[2]));
+                                       Point2::make_point(p2[0],p2[2]),
+                                       Point2::make_point(r2[0],r2[2]));
 
     return TriangleIntersection2D(t1_2da, t2_2da);
   }
   else{
     //if z projection area greatest, project on XY and return 2D checker
     const Triangle2 t1_2da = Triangle2(Point2::make_point(p1[0],p1[1]),
-                                       Point2::make_point( q1[0],q1[1]),
-                                       Point2::make_point( r1[0],r1[1]));
+                                       Point2::make_point(q1[0],q1[1]),
+                                       Point2::make_point(r1[0],r1[1]));
 
     const Triangle2 t2_2da = Triangle2(Point2::make_point(p2[0],p2[1]),
-                                       Point2::make_point( q2[0],q2[1]),
-                                       Point2::make_point( r2[0],r2[1]));
+                                       Point2::make_point(q2[0],q2[1]),
+                                       Point2::make_point(r2[0],r2[1]));
 
     return TriangleIntersection2D(t1_2da, t2_2da);
   }
@@ -530,7 +534,7 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkEdge(const Point2 p1,
+inline bool checkEdgeOld(const Point2 p1,
                       const Point2 q1,
                       const Point2 r1,
                       const Point2 p2,
@@ -581,11 +585,49 @@ inline bool checkEdge(const Point2 p1,
 
 /*!
  *****************************************************************************
+ * \brief Check for 2D triangle-edge intersection, given p1 close to r2p2.
+ * \return status true iff coplanar CCW triangles 1 and 2 intersect.
+ *****************************************************************************
+ */
+inline bool checkEdge(const Point2 p1,
+                      const Point2 q1,
+                      const Point2 r1,
+                      const Point2 p2,
+                      const Point2 r2)
+{
+  if (isGpeq(twoDcross(r2, p2, q1), 0.0)) {
+    if (isGpeq(twoDcross(r2, p1, q1), 0.0)) {
+      if (isGpeq(twoDcross(p1, p2, q1), 0.0)) {
+        return true;
+      } else {
+        if (isGpeq(twoDcross(p1, p2, r1), 0.0) &&
+            isGpeq(twoDcross(q1, r1, p2), 0.0)) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+  } else {
+    if (isGpeq(twoDcross(r2, p2, r1), 0.0) &&
+        isGpeq(twoDcross(q1, r1, r2), 0.0) &&
+        isGpeq(twoDcross(p1, p2, r1), 0.0)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+/*!
+ *****************************************************************************
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2.
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkVertex(const Point2 p1,
+inline bool checkVertexOld(const Point2 p1,
                         const Point2 q1,
                         const Point2 r1,
                         const Point2 p2,
@@ -667,6 +709,66 @@ inline bool checkVertex(const Point2 p1,
 
 /*!
  *****************************************************************************
+ * \brief Check for 2D triangle-edge intersection, given p1 close to r2.
+ * \return status true iff coplanar CCW triangles 1 and 2 intersect.
+ *****************************************************************************
+ */
+inline bool checkVertex(const Point2 p1,
+                        const Point2 q1,
+                        const Point2 r1,
+                        const Point2 p2,
+                        const Point2 q2,
+                        const Point2 r2)
+{
+  if (isGpeq(twoDcross(r2, p2, q1), 0.0)) {
+    if (isGpeq(twoDcross(q2, r2, q1), 0.0)) {
+      if (isGpeq(twoDcross(p1, p2, q1), 0.0)) {
+        if (isLpeq(twoDcross(p1, q2, q1), 0.0)) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        if (isGpeq(twoDcross(p1, p2, r1), 0.0) &&
+            isGpeq(twoDcross(r2, p2, r1), 0.0)) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      if (isLpeq(twoDcross(p1, q2, q1), 0.0) &&
+          isGpeq(twoDcross(q2, r2, r1), 0.0) &&
+          isGpeq(twoDcross(q1, r1, q2), 0.0)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  } else {
+    if (isGpeq(twoDcross(r2, p2, r1), 0.0)) {
+      if (isGpeq(twoDcross(q1, r1, r2), 0.0)) {
+        if (isGpeq(twoDcross(r1, p1, p2), 0.0)) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        if (isGpeq(twoDcross(q1, r1, q2), 0.0) &&
+            isGpeq(twoDcross(q2, r2, r1), 0.0)) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+}
+
+/*!
+ *****************************************************************************
  * \brief Compute cross product of two 2D vectors as if they were 3D.
  * \return Cross product of A C and B C.
  *
@@ -713,12 +815,52 @@ inline bool isLeq(double x, double y, double EPS)
 
 /*!
  *****************************************************************************
+ * \brief Checks if x < y, or possibly x == y, within a specified tolerance.
+ *
+ * The check for equality is controlled by a compile-time constant.  This
+ * lets users specify at compile time whether triangles intersecting only on
+ * border points are reported as intersecting or not.
+ *****************************************************************************
+ */
+inline bool isLpeq(double x, double y, double EPS)
+{
+#if defined AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+  if (axom::utilities::isNearlyEqual(x, y, EPS)) {
+    return true;
+  }
+#endif
+
+  return isLt(x, y, EPS);
+}
+
+/*!
+ *****************************************************************************
  * \brief Checks if x >= y, within a specified tolerance.
  *****************************************************************************
  */
 inline bool isGeq(double x, double y, double EPS)
 {
   return !(isLt(x,y,EPS));
+}
+
+/*!
+ *****************************************************************************
+ * \brief Checks if x > y, or possibly x == y, within a specified tolerance.
+ *
+ * The check for equality is controlled by a compile-time constant.  This
+ * lets users specify at compile time whether triangles intersecting only on
+ * border points are reported as intersecting or not.
+ *****************************************************************************
+ */
+inline bool isGpeq(double x, double y, double EPS)
+{
+#if defined AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+  if (axom::utilities::isNearlyEqual(x, y, EPS)) {
+    return true;
+  }
+#endif
+
+  return isGt(x, y, EPS);
 }
 
 /*!
