@@ -2,9 +2,9 @@
 # Specify list of tests
 #
 
-################
-# Test conduit tests
-################
+###########################################
+# Smoke test for conduit thirdparty library
+###########################################
 if (CONDUIT_FOUND)
     blt_add_executable(NAME conduit_smoke
                        SOURCES conduit_smoke.cpp
@@ -23,9 +23,28 @@ if (CONDUIT_FOUND)
   endif()
 endif()
 
-################
-# Test fmt thirdparty library
-################
+
+########################################
+# Smoke test for mfem thirdparty library
+########################################
+if (MFEM_FOUND)
+    blt_add_executable(NAME mfem_smoke
+                       SOURCES mfem_smoke.cpp
+                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                       DEPENDS_ON mfem gtest)
+                       
+    set_property(
+        TARGET mfem_smoke
+        APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+                       
+    blt_add_test(NAME mfem_smoke
+                 COMMAND mfem_smoke)
+
+endif()
+
+#######################################
+# Smoke test for fmt thirdparty library
+#######################################
 blt_add_executable(
     NAME fmt_smoke
     SOURCES fmt_smoke.cpp
