@@ -50,29 +50,28 @@ class Mfem(Package):
     # If this quick verification procedure fails, additional discussion
     # will be required to verify the new version.
 
-    # Note (KW): We are using the expanded URL since I could not get the redirect 
-    #            to work with our spack mirrors.  spack was not appending the '.tgz' extension. 
-    #            This appears to be fixed in the current spack version.
+    # Note (KW): We are using the full expanded URL rather than the shortened URL 
+    #            since I could not get the redirect to work with axom's spack mirror.  
+    #            Specifically, spack was not appending the '.tgz' extension. 
+    #            This appears to be fixed in more recent versions of spack.
     version('3.3',
             'b17bd452593aada93dc0fee748fcfbbf4f04ce3e7d77fdd0341cc9103bcacd0b',
             url='http://mfem.github.io/releases/mfem-3.3.tgz')
             # url='http://goo.gl/Vrpsns', expand=False
 
     version('3.2',
-            '2938c3deed4ec4f7fd5b5f5cfe656845282e86e2dcd477d292390058b7b94340',
-            url='http://goo.gl/Y9T75B', expand=False)
+            '2938c3deed4ec4f7fd5b5f5cfe656845282e86e2dcd477d292390058b7b94340')
+            #url='http://goo.gl/Y9T75B', expand=False)
 
     version('3.1',
-            '841ea5cf58de6fae4de0f553b0e01ebaab9cd9c67fa821e8a715666ecf18fc57',
-            url='http://goo.gl/xrScXn', expand=False)
+            '841ea5cf58de6fae4de0f553b0e01ebaab9cd9c67fa821e8a715666ecf18fc57')
+            #url='http://goo.gl/xrScXn', expand=False)
 
     variant('metis', default=False, description='Activate support for metis')
     variant('hypre', default=False, description='Activate support for hypre')
-    variant('suite-sparse', default=False,
-            description='Activate support for SuiteSparse')
-    variant('mpi', default=True, description='Activate support for MPI')
-    variant('superlu-dist', default=False,
-            description='Activate support for SuperLU_Dist')
+    variant('suite-sparse', default=False, description='Activate support for SuiteSparse')
+    variant('mpi', default=False, description='Activate support for MPI')
+    variant('superlu-dist', default=False, description='Activate support for SuperLU_Dist')
     variant('lapack', default=False, description='Activate support for LAPACK')
     variant('debug', default=False, description='Build debug version')
     variant('netcdf', default=False, description='Activate NetCDF support')
@@ -213,26 +212,10 @@ class Mfem(Package):
         if '+debug' in spec:
             options.extend(['MFEM_DEBUG=YES'])
 
-        # Dirty hack to cope with URL redirect
-        # Note (KW): Disabled since we are using the expanded path (w/o/ redirect)
-        if False:
-            tgz_file = string.split(self.url,'/')[-1]
-            tar = which('tar')
-            tar('xzvf', tgz_file)
-            cd(glob.glob('mfem*')[0])
-
         make('config', *options)
         make('all')
 
-        # Run a small test before installation
-        args = ['-m', join_path('data', 'star.mesh'), '--no-visualization']
-        if '+mpi' in spec:
-            Executable(join_path(spec['mpi'].prefix.bin,
-                                 'mpirun'))('-np',
-                                            '4',
-                                            join_path('examples', 'ex1p'),
-                                            *args)
-        else:
-            Executable(join_path('examples', 'ex1'))(*args)
+        # Note (KW): I removed the test example since axom has an mfem smoke test.
 
         make('install')
+
