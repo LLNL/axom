@@ -50,9 +50,13 @@ class Mfem(Package):
     # If this quick verification procedure fails, additional discussion
     # will be required to verify the new version.
 
+    # Note (KW): We are using the expanded URL since I could not get the redirect 
+    #            to work with our spack mirrors.  spack was not appending the '.tgz' extension. 
+    #            This appears to be fixed in the current spack version.
     version('3.3',
             'b17bd452593aada93dc0fee748fcfbbf4f04ce3e7d77fdd0341cc9103bcacd0b',
-            url='http://goo.gl/Vrpsns', expand=False)
+            url='http://mfem.github.io/releases/mfem-3.3.tgz')
+            # url='http://goo.gl/Vrpsns', expand=False
 
     version('3.2',
             '2938c3deed4ec4f7fd5b5f5cfe656845282e86e2dcd477d292390058b7b94340',
@@ -207,11 +211,12 @@ class Mfem(Package):
             options.extend(['MFEM_DEBUG=YES'])
 
         # Dirty hack to cope with URL redirect
-        tgz_file = string.split(self.url,'/')[-1]
-        tar = which('tar')
-        tar('xzvf', tgz_file)
-        cd(glob.glob('mfem*')[0])
-        # End dirty hack to cope with URL redirect
+        # Note (KW): Disabled since we are using the expanded path (w/o/ redirect)
+        if False:
+            tgz_file = string.split(self.url,'/')[-1]
+            tar = which('tar')
+            tar('xzvf', tgz_file)
+            cd(glob.glob('mfem*')[0])
 
         make('config', *options)
         make('all')
