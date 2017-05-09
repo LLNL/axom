@@ -23,7 +23,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 from spack import *
-import glob, string
+import glob, string, os
 
 class Mfem(Package):
     """Free, lightweight, scalable C++ library for finite element methods."""
@@ -125,6 +125,9 @@ class Mfem(Package):
         self.check_variants(spec)
 
         options = ['PREFIX=%s' % prefix]
+
+        spack_cxx  = os.environ['CXX']
+        options.extend(['MFEM_CXX=%s' % spack_cxx])
 
         if '+lapack' in spec:
             lapack_lib = (spec['lapack'].libs + spec['blas'].libs).ld_flags  # NOQA: ignore=E501
