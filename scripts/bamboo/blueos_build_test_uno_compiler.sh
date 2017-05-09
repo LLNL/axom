@@ -49,7 +49,8 @@ if [ "$RUN_BGQ_TEST" = true ]; then
     echo "Running tests env CTEST_OUTPUT_ON_FAILURE=1 ..."
     export CTEST_OUTPUT_ON_FAILURE=1
     echo "-----------------------------------------------------------------------"
-    salloc -N4 -p$PARTITION $CTEST_EXE -T Test -j$JOBS
+    #salloc -N4 -p$PARTITION $CTEST_EXE -T Test -j$JOBS
+    bsub -n 20 -x -XF -W 120 -G guests $CTEST_EXE -T Test
     if [ $? -ne 0 ]; then
         echo "Error: 'make test' failed"
         exit 1
