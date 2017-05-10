@@ -66,7 +66,7 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-m3drhxrsm27ft72a6y55alsm2bcfmdgg
 
 set(ENABLE_MPI ON BOOL PATH "")
 
-set(MPI_HOME             "/usr/tcetmp/packages/openmpi/openmpi-2.0.0-clang-3.9.1" CACHE PATH "")
+set(MPI_HOME             "/usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-clang-4.0.0" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
