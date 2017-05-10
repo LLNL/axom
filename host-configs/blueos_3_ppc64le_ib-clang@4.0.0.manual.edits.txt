@@ -9,7 +9,7 @@
 # MPI - manually added for now
 ##############################################################################
 
-set(ENABLE_MPI ON BOOL PATH "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
 set(MPI_HOME             "/usr/tcetmp/packages/openmpi/openmpi-2.0.0-clang-3.9.1" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
