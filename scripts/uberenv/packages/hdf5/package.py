@@ -83,7 +83,7 @@ class Hdf5(Package):
         extra_args.append("--enable-unsupported")
 
 #        if os.environ['SYS_TYPE'].find("blueos_3") == 0:
-         if "blueos_3" in os.getenv('SYS_TYPE', ""):
+        if 'blueos_3' in os.getenv('SYS_TYPE', ""):
             extra_args.append('ac_cv_build=powerpc64le-unknown-linux-gnu')
 
         if '+debug' in spec:
