@@ -16,7 +16,7 @@ set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
-set(MPIEXEC              "bsub" CACHE PATH "")
+set(MPIEXEC              "mpirun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 ##############################################################################
