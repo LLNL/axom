@@ -50,8 +50,8 @@ compilers:
         clang@4.0.0:
             cc:  /usr/tcetmp/packages/clang/clang-4.0.0/bin/clang
             cxx: /usr/tcetmp/packages/clang/clang-4.0.0/bin/clang++
-            f77: /usr/tcetmp/packages/xl/xl-beta-2017.05.08/bin/xlf 
-            fc:  /usr/tcetmp/packages/xl/xl-beta-2017.05.08/bin/xlf
+            f77: 
+            fc:  
     bgqos_0:
           gcc@4.7.2:
              cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
