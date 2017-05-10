@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_01_16_48_17/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.3.1-h62huv6j45n6zomdy76l23djjsai32yx/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_09_12_55_49/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.3.1-h62huv6j45n6zomdy76l23djjsai32yx/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -20,18 +20,21 @@ set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/g++" CACHE PATH "")
 
 # fortran compiler used by spack
-set(ENABLE_FORTRAN "ON" CACHE PATH "")
+set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_01_16_48_17/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_09_12_55_49/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-aucg4njv6djcvymsftkrzwswblstl7hs" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-rhlucjc4a4xq7p7nlb6gw3cdxnqnenrn" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-nvmps5cyz6fnof343goaptduus4n65cz" CACHE PATH "")
