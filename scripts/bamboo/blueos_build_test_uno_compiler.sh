@@ -10,14 +10,14 @@ COMP_OPT=""
 BUILD_OPT=$2
 
 BUILD=true
-TEST=false
+TEST=true
 DOC=false
 INSTALL_FILES=true
 INSTALL_DOCS=false
 
 # Explicitly set a CTest that works on the backend nodes 
 CTEST_EXE="/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"  
-RUN_BGQ_TEST=true
+RUN_BGQ_TEST=false
 
 JOBS=16
 
