@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_10_09_44_48/spack/opt/spack/blueos_3_ppc64le_ib/clang-4.0.0/cmake-3.3.1-pdq7ymiktz6yazhnfetwrnd7k2gqsby5/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_11_13_14_56/spack/opt/spack/blueos_3_ppc64le_ib/clang-4.0.0/cmake-3.3.1-pdq7ymiktz6yazhnfetwrnd7k2gqsby5/bin/cmake
 
 #######
 # using clang@4.0.0 compiler spec
@@ -20,12 +20,12 @@ set(CMAKE_C_COMPILER "/usr/tcetmp/packages/clang/clang-4.0.0/bin/clang" CACHE PA
 set(CMAKE_CXX_COMPILER "/usr/tcetmp/packages/clang/clang-4.0.0/bin/clang++" CACHE PATH "")
 
 # fortran compiler used by spack
-# no fortran compiler
+set(ENABLE_FORTRAN "ON" CACHE PATH "")
 
-set(ENABLE_FORTRAN "OFF" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/tcetmp/packages/xl/xl-beta-2017.05.08/bin/xlf90" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_10_09_44_48/spack/opt/spack/blueos_3_ppc64le_ib/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_11_13_14_56/spack/opt/spack/blueos_3_ppc64le_ib/clang-4.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-oog4xh5irqbcv36y6rrxg46te5z4x7qm" CACHE PATH "")
