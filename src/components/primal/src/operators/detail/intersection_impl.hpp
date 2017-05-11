@@ -534,7 +534,7 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkEdgeOld(const Point2 p1,
+inline bool checkEdgeOrig(const Point2 p1,
                       const Point2 q1,
                       const Point2 r1,
                       const Point2 p2,
@@ -589,7 +589,7 @@ inline bool checkEdgeOld(const Point2 p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkEdge(const Point2 p1,
+inline bool checkEdgeCompileTimeMacro(const Point2 p1,
                       const Point2 q1,
                       const Point2 r1,
                       const Point2 p2,
@@ -627,7 +627,7 @@ inline bool checkEdge(const Point2 p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkVertexOld(const Point2 p1,
+inline bool checkVertexOrig(const Point2 p1,
                         const Point2 q1,
                         const Point2 r1,
                         const Point2 p2,
@@ -713,7 +713,7 @@ inline bool checkVertexOld(const Point2 p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkVertex(const Point2 p1,
+inline bool checkVertexCompileTimeMacro(const Point2 p1,
                         const Point2 q1,
                         const Point2 r1,
                         const Point2 p2,
@@ -820,6 +820,8 @@ inline bool isLeq(double x, double y, double EPS)
  * The check for equality is controlled by a compile-time constant.  This
  * lets users specify at compile time whether triangles intersecting only on
  * border points are reported as intersecting or not.
+ *
+ * Supports checkEdgeCompileTimeMacro and checkVertexCompileTimeMacro
  *****************************************************************************
  */
 inline bool isLpeq(double x, double y, double EPS)
@@ -850,6 +852,8 @@ inline bool isGeq(double x, double y, double EPS)
  * The check for equality is controlled by a compile-time constant.  This
  * lets users specify at compile time whether triangles intersecting only on
  * border points are reported as intersecting or not.
+ *
+ * Supports checkEdgeCompileTimeMacro and checkVertexCompileTimeMacro
  *****************************************************************************
  */
 inline bool isGpeq(double x, double y, double EPS)
