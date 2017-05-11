@@ -61,7 +61,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
             APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
     endif()
 
-    if ( $ENV{SYS_TYPE} STREQUAL "bgqos_0" )
+    if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
        set_property(
            TARGET quest_regression
            APPEND_STRING PROPERTY LINK_FLAGS ${AXOM_ALLOW_MULTIPLE_DEFINITIONS}

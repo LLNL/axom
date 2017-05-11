@@ -42,11 +42,6 @@
 include(cmake/AxomOptions.cmake)
 
 ################################
-# Setup toolkit generate targets
-################################
-include(cmake/SetupShroud.cmake)
-
-################################
 # AXOM's Third party library setup
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
@@ -70,10 +65,11 @@ endif()
 # Fortran Configuration
 ################################
 if(ENABLE_FORTRAN)
-    # Create macros for Fortran name mangling
+
+    # Check C/C++ compiler compatiblity with the Fortran compiler
     include(FortranCInterface)
-    FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
     FortranCInterface_VERIFY()
+    FortranCInterface_VERIFY(CXX)
     
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module

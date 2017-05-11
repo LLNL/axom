@@ -1,14 +1,33 @@
 # shroud/tests/defaults.mk
 
 compiler = gcc
+#compiler = intel
+
+# paths need the trailing slash
+gcc.path = /usr/apps/gnu/4.7.1/bin/
+gcc.path = /usr/apps/gnu/4.9.3/bin/
+intel.path = /usr/local/tools/ic-15.0.187/bin/
+intel.path = /usr/local/tools/ic-16.0.109/bin/
 
 ifeq ($(compiler),gcc)
-CC = gcc
+CC = $(gcc.path)gcc
 CFLAGS = -g -Wall
-CXX = g++
+CXX = $(gcc.path)g++
 CXXFLAGS = -g -Wall
-FC = gfortran
+FC = $(gcc.path)gfortran
 FFLAGS = -g -Wall -ffree-form
+LIBS = -lstdc++
+SHARED = -fPIC
+LD_SHARED = -shared
+endif
+
+ifeq ($(compiler),intel)
+CC = $(intel.path)icc
+CFLAGS = -g
+CXX = $(intel.path)icpc
+CXXFLAGS = -g 
+FC = $(intel.path)ifort
+FFLAGS = -g -free
 LIBS = -lstdc++
 SHARED = -fPIC
 LD_SHARED = -shared

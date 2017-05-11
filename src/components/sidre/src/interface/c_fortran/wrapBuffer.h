@@ -21,6 +21,9 @@
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
 
+// splicer begin class.Buffer.CXX_declarations
+// splicer end class.Buffer.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,8 +32,8 @@ extern "C" {
 struct s_SIDRE_buffer;
 typedef struct s_SIDRE_buffer SIDRE_buffer;
 
-// splicer begin class.Buffer.C_definition
-// splicer end class.Buffer.C_definition
+// splicer begin class.Buffer.C_declarations
+// splicer end class.Buffer.C_declarations
 
 SIDRE_IndexType SIDRE_buffer_get_index(const SIDRE_buffer * self);
 

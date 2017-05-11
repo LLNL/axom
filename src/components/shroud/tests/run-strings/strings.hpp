@@ -19,6 +19,7 @@ const char * getChar3();
 const std::string& getString1();
 const std::string& getString2();
 const std::string& getString3();
+const std::string& getString2_empty();
 
 void acceptName_instance(std::string arg1);
 
@@ -28,6 +29,8 @@ void acceptStringReference(std::string & arg1);
 
 void acceptStringPointer(std::string * arg1);
 
+void explicit1(char * name);
+void explicit2(char * name);
 
 
 #endif // STRINGS_HPP

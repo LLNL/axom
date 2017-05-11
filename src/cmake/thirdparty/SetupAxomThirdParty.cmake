@@ -26,12 +26,37 @@ if (HDF5_DIR)
 endif()
 
 ################################
+# MFEM
+################################
+if (MFEM_DIR)
+  include(cmake/thirdparty/FindMFEM.cmake)
+  blt_register_library( NAME mfem
+                        INCLUDES  ${MFEM_INCLUDE_DIRS}
+                        LIBRARIES ${MFEM_LIBRARY} )
+endif()
+
+################################
 # Find boost headers
 ################################
 if (BOOST_DIR)
     include(cmake/thirdparty/SetupBoost.cmake)
     blt_register_library(NAME boost
                          INCLUDES ${Boost_INCLUDE_DIR})
+endif()
+
+################################
+# Setup toolkit generate targets
+################################
+
+if(EXISTS ${SHROUD_EXECUTABLE})
+    execute_process(COMMAND ${SHROUD_EXECUTABLE} --sitedir
+                    OUTPUT_VARIABLE SHROUD_Site
+                    ERROR_VARIABLE SHROUD_Site_Error
+                    OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(${SHROUD_Site_Error})
+       message(FATAL_ERROR "Error from Shroud: ${SHROUD_Site_Error}")
+    endif()
+    include(${SHROUD_Site}/cmake/SetupShroud.cmake)
 endif()
 
 ################################

@@ -463,7 +463,7 @@ patterns:
     # return a blank field string if an error occurs
     C_invalid_name_as_buffer: |
         if (! nameIsValid({cpp_var})) {{
-            std::memset({f_string}, ' ', {f_string_len});
+            std::memset({c_var}, ' ', {c_var_len});
             return;
         }}
     PY_invalid_name: |

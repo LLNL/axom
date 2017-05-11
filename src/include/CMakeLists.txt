@@ -30,7 +30,7 @@ add_custom_target( copy_axom_includes ALL
                  -P ${blt_dir}/copy_headers.cmake
 
         DEPENDS
-            ${arg_HEADERS}
+            ${axom_headers}
 
         WORKING_DIRECTORY
             ${CMAKE_SOURCE_DIR}/include

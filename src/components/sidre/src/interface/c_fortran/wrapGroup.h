@@ -21,6 +21,9 @@
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
 
+// splicer begin class.Group.CXX_declarations
+// splicer end class.Group.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,13 +38,13 @@ typedef struct s_SIDRE_group SIDRE_group;
 struct s_SIDRE_view;
 typedef struct s_SIDRE_view SIDRE_view;
 
-// splicer begin class.Group.C_definition
-// splicer end class.Group.C_definition
+// splicer begin class.Group.C_declarations
+// splicer end class.Group.C_declarations
 
 const char * SIDRE_group_get_name(const SIDRE_group * self);
 
 void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
-                                    int LSH_F_rv);
+                                    int NSH_F_rv);
 
 const SIDRE_group * SIDRE_group_get_parent(const SIDRE_group * self);
 
@@ -88,7 +91,7 @@ const char * SIDRE_group_get_view_name(const SIDRE_group * self,
 
 void SIDRE_group_get_view_name_bufferify(const SIDRE_group * self,
                                          SIDRE_IndexType idx, char * SH_F_rv,
-                                         int LSH_F_rv);
+                                         int NSH_F_rv);
 
 SIDRE_IndexType SIDRE_group_get_first_valid_view_index(const SIDRE_group * self);
 
@@ -287,7 +290,7 @@ const char * SIDRE_group_get_group_name(const SIDRE_group * self,
 
 void SIDRE_group_get_group_name_bufferify(const SIDRE_group * self,
                                           SIDRE_IndexType idx, char * SH_F_rv,
-                                          int LSH_F_rv);
+                                          int NSH_F_rv);
 
 SIDRE_IndexType SIDRE_group_get_first_valid_group_index(const SIDRE_group * self);
 

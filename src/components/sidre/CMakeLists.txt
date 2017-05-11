@@ -16,13 +16,16 @@ endif()
 
 # Note: sidre depends on boost OR C++11 b/c USE_UNORDERED_MAP is defined in DataGroup.hpp
 
-if(NOT AXOM_USE_CXX11 AND NOT SPARSEHASH_FOUND)
-  message(WARNING "No hashmap implementation available. 
-    Defaulting to using an ordered map for Sidre groups.
-    For improved performance, set SPARSEHASH_DIR to location of a sparsehash install
-    or enable C++11 (e.g. set BLT_CXX_STD to 'c++11').")
+if(NOT SPARSEHASH_FOUND)
+  if(NOT CMAKE_CXX_STANDARD EQUAL 11)
+    if(NOT CMAKE_CXX_STANDARD EQUAL 14)
+      message(WARNING "No hashmap implementation available. 
+        Defaulting to using an ordered map for Sidre groups.
+        For improved performance, set SPARSEHASH_DIR to location of a sparsehash install
+        or enable C++11 (e.g. set BLT_CXX_STD to 'c++11').")
+    endif()
+  endif()
 endif()
-
 
 ################################
 # Add the sidre sources

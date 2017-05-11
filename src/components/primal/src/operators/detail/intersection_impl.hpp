@@ -10,16 +10,16 @@
 #ifndef INTERSECTION_IMPL_HPP_
 #define INTERSECTION_IMPL_HPP_
 
-#define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+#include "axom_utils/Determinants.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/BoundingBox.hpp"
-#include "primal/Determinants.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
-#include "axom_utils/Utilities.hpp"
+#define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
 
 namespace axom {
 namespace primal {
@@ -898,7 +898,7 @@ bool intersect_ray_seg( const primal::Ray< T,2 >& R,
   // Step 1: Equating R(t0)=S(t1) yields a system of two equations and
   // two unknowns, namely, t0 and t1. We can solve this system directly
   // using Cramer's Rule.
-  const double denom = primal::determinant(
+  const double denom = numerics::determinant(
     R.direction()[0], (-1.0)*R2.direction()[0],
     R.direction()[1], (-1.0)*R2.direction()[1]     );
 
@@ -916,11 +916,11 @@ bool intersect_ray_seg( const primal::Ray< T,2 >& R,
   const double alpha = S.source()[0] - R.origin()[0];
   const double beta  = S.source()[1] - R.origin()[1];
 
-  const double t0 = primal::determinant( alpha, (-1.0)*R2.direction()[0],
+  const double t0 = numerics::determinant( alpha, (-1.0)*R2.direction()[0],
                                          beta,
                                          (-1.0)*R2.direction()[1] )/denom;
 
-  const double t1 = primal::determinant( R.direction()[0], alpha,
+  const double t1 = numerics::determinant( R.direction()[0], alpha,
                                          R.direction()[1], beta   )/denom;
 
   // STEP 4: Define lower/upper threshold

@@ -67,3 +67,9 @@ set(GENHTML_PATH "/home/taylor16/tpl/v2/usr/bin/genhtml" CACHE PATH "")
 #set(MPI_C_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicc" CACHE PATH "")
 #set(MPI_CXX_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicxx" CACHE PATH "")
 #set(MPI_Fortran_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpif90" CACHE PATH "")
+
+##############################################################################
+# SHROUD - manually added for now. Use a public build add to TPL later
+##############################################################################
+set(SHROUD_EXECUTABLE "/home/taylor16/tpl/shroud/bin/shroud" CACHE PATH "")
+
