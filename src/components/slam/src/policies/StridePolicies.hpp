@@ -21,6 +21,8 @@
  *     * isValid() : bool -- indicates whether the Stride policy of the set is valid
  *   * [optional]
  *     * operator(): IntType -- alternate accessor for the stride value
+ *
+ * \note All non-zero stride values are valid.
  */
 
 #ifndef SLAM_POLICIES_STRIDE_H_
@@ -59,7 +61,8 @@ namespace policies {
     inline IntType operator ()() const { return stride(); }
     inline IntType& operator()() { return stride(); }
 
-    inline bool             isValid(bool) const { return true; }
+    /** All non-zero strides are valid     */
+    inline bool             isValid(bool) const { return (m_stride != 0); }
 
     //inline bool hasStride() const       { return m_stride != IntType(); }
   private:
@@ -89,7 +92,9 @@ namespace policies {
           "SLAM::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
     }
-    inline bool isValid(bool) const { return true; }
+
+    /** All non-zero strides are valid     */
+    inline bool isValid(bool) const { return (INT_VAL != 0); }
   };
 
   /**

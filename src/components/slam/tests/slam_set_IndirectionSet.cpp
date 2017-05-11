@@ -304,6 +304,155 @@ TEST(gtest_slam_set_indirectionset,vector_indirection)
   }
 }
 
+TEST(gtest_slam_set_indirectionset,negative_stride)
+{
+  SLIC_INFO("Testing negative strides on an indirection set");
+
+  namespace policies = axom::slam::policies;
+
+  typedef axom::slam::Set::PositionType              SetPosition;
+
+  typedef policies::RuntimeSizeHolder<SetPosition>   SizePol;
+  typedef policies::RuntimeOffsetHolder<SetPosition> OffPol;
+  typedef policies::RuntimeStrideHolder<SetPosition> StridePol;
+  typedef policies::STLVectorIndirection<SetPosition, SetPosition> VecIndPol;
+  typedef policies::ArrayIndirection<SetPosition, SetPosition>     ArrIndPol;
+
+  typedef axom::slam::OrderedSet<SizePol,OffPol,StridePol, VecIndPol> VecSet;
+  typedef VecSet::SetBuilder  VecSetBuilder;
+
+  typedef axom::slam::OrderedSet<SizePol,OffPol,StridePol, ArrIndPol> ArrSet;
+  typedef ArrSet::SetBuilder  ArrSetBuilder;
+
+  // Set up data -- an array of incrementing integers
+  std::vector<int> intVec;
+  intVec.reserve(MAX_SET_SIZE);
+  for(int i = 0; i<MAX_SET_SIZE; ++i)
+  {
+    intVec.push_back(i);
+  }
+
+  const int setSize = MAX_SET_SIZE / 2;
+  const int setOffset = MAX_SET_SIZE -1;
+  const int setStride = -2;
+
+  // Setup the VectorIndirectionSet and test basic functionality
+  {
+    VecSet vSet(VecSetBuilder()
+      .size(setSize)
+      .offset(setOffset)
+      .stride(setStride)
+      .data(&intVec));
+
+    EXPECT_TRUE(vSet.isValid());
+    EXPECT_FALSE(vSet.empty());
+    EXPECT_EQ(setSize, vSet.size());
+    EXPECT_TRUE(vSet.hasIndirection());
+
+    SLIC_INFO("Ordered vector set has:"
+      << "\n\t --size "   << vSet.size()
+      << "\n\t --stride " << vSet.stride()
+      << "\n\t --offset " << vSet.offset()
+      << "\n\t --first elt " << vSet[0]
+      << "\n\t --last elt " << vSet[ vSet.size() -1 ]
+      );
+
+    // Test the elements
+    EXPECT_EQ(intVec[setOffset], vSet[0]);
+    for(int i = 0; i< vSet.size(); ++i)
+    {
+      EXPECT_EQ( setOffset + setStride * i, vSet[i] );
+    }
+
+    /// Several tests to check that sets with bad offsets and strides are not valid
+
+    VecSet noDataVSet(VecSetBuilder()  // Note: Missing a data pointer
+      .size(setSize)
+      .offset(setOffset)
+      .stride(setStride));
+    EXPECT_FALSE(noDataVSet.isValid(true));
+
+    VecSet outOfBoundsVSet(VecSetBuilder()
+      .size(setSize+1)    // Note: This will cause the last index to be out of bounds
+      .offset(setOffset)
+      .stride(setStride)
+      .data(&intVec));
+    EXPECT_FALSE(outOfBoundsVSet.isValid(true));
+
+    VecSet outOfBoundsVSet2(VecSetBuilder()
+      .size(setSize)
+      .offset(-1)         // Note: This will cause the first index to be out of bounds
+      .stride(1)
+      .data(&intVec));
+    EXPECT_FALSE(outOfBoundsVSet2.isValid(true));
+
+    VecSet zeroStrideVSet(VecSetBuilder()
+      .size(setSize)
+      .offset(setOffset)
+      .stride(0)        // Note: A stride of zero is not valid
+      .data(&intVec));
+    EXPECT_FALSE(zeroStrideVSet.isValid(true));
+  }
+
+  // Setup the VectorIndirectionSet and test basic functionality
+  {
+    ArrSet aSet(ArrSetBuilder()
+      .size(setSize)
+      .offset(setOffset)
+      .stride(setStride)
+      .data(&intVec[0]));
+
+    EXPECT_TRUE(aSet.isValid());
+    EXPECT_FALSE(aSet.empty());
+    EXPECT_EQ(setSize, aSet.size());
+    EXPECT_TRUE(aSet.hasIndirection());
+
+    EXPECT_EQ(intVec[setOffset], aSet[0]);
+
+    SLIC_INFO("Ordered array set has:"
+      << "\n\t --size "   << aSet.size()
+      << "\n\t --stride " << aSet.stride()
+      << "\n\t --offset " << aSet.offset()
+      << "\n\t --first elt " << aSet[0]
+      << "\n\t --last elt " << aSet[ aSet.size() -1 ]
+      );
+
+    for(int i = 0; i< aSet.size(); ++i)
+    {
+      EXPECT_EQ( setOffset + setStride * i, aSet[i] );
+    }
+
+    /// Several tests to check that sets with bad offsets and strides are not valid
+
+    ArrSet noDataASet(ArrSetBuilder()  // Note: Missing a data pointer
+      .size(setSize)
+      .offset(setOffset)
+      .stride(setStride));
+    EXPECT_FALSE(noDataASet.isValid(true));
+
+    ArrSet outOfBoundsASet1(ArrSetBuilder()
+      .size(setSize+1)  // Note: This will cause the last index to be out of bounds
+      .offset(setOffset)
+      .stride(setStride)
+      .data(&intVec[0]));
+    EXPECT_FALSE(outOfBoundsASet1.isValid(true));
+
+    ArrSet outOfBoundsASet2(ArrSetBuilder()
+      .size(setSize)
+      .offset(-1)         // Note: This will cause the first index to be out of bounds
+      .stride(1)
+      .data(&intVec[0]));
+    EXPECT_FALSE(outOfBoundsASet2.isValid(true));
+
+    ArrSet zeroStrideASet(ArrSetBuilder()
+      .size(setSize)
+      .offset(setOffset)
+      .stride(0)        // Note: A stride of zero is not valid
+      .data(&intVec[0]));
+    EXPECT_FALSE(zeroStrideASet.isValid(true));
+  }
+
+}
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

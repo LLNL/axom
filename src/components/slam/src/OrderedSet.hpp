@@ -170,7 +170,7 @@ namespace slam {
 
 #ifdef AXOM_USE_BOOST
     /**
-     * \class OrdereSetIterator
+     * \class OrderedSetIterator
      * \brief An iterator type for an ordered set
      *
      * Uses the set's policies for efficient iteration

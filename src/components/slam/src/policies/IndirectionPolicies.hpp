@@ -94,24 +94,50 @@ namespace policies {
 
     inline bool                       isValid(
       PositionType size,
-      PositionType AXOM_NOT_USED(offset),
-      PositionType AXOM_NOT_USED(stride),
+      PositionType offset,
+      PositionType stride,
       bool verboseOutput = false) const
     {
       // set of zero size is always valid
       if(size == 0)
         return true;
 
-      bool bValid = hasIndirection();
+      bool bValid = true;
 
-      if(verboseOutput && !bValid)
+      // Check whether the set has elements, but the array ptr is null
+      if( !hasIndirection() )
       {
-        SLIC_DEBUG(
-          "Array-based indirection set with non-zero size (size="
-          << size << ") requires valid data buffer, but buffer pointer was null.");
-      }
+        if(verboseOutput)
+        {
+          SLIC_DEBUG("Array-based indirection set with non-zero size"
+              <<" (size=" << size << ") requires a valid data buffer,"
+              <<" but buffer pointer was null.");
+        }
 
-      // Since array-based indirection sets don't encode a buffer size, that is all we can check
+        bValid = false;
+      }
+      else
+      {
+        // Check that none of the elements have negative indices within the array
+        // Note: We do not have sufficient information about the array to know its upper bound
+
+        PositionType firstEltInd = offset;
+        PositionType lastEltInd = (size - 1) * stride + offset;
+
+        bool isRangeValid = (firstEltInd >= 0) && (lastEltInd >= 0);
+        if(!isRangeValid)
+        {
+          if(verboseOutput)
+          {
+            SLIC_DEBUG("Array-based indirection does not allow access "
+              << "to data with lower addresses than its underlying pointer."
+              << " Offset of " << offset << " leads to a first index of " << firstEltInd <<"."
+              << " Stride of " << stride << " and size of " << size
+              << " leads to a last index of " << lastEltInd << ".");
+          }
+          bValid = false;
+        }
+      }
 
       return bValid;
     }
@@ -167,7 +193,7 @@ namespace policies {
         if(verboseOutput)
         {
           SLIC_DEBUG("Vector-based indirection set with non-zero size (size="
-              << size << ") requires valid data buffer, but buffer pointer was null.");
+              << size << ") requires a valid data buffer, but buffer pointer was null.");
         }
 
         bValid = false;
@@ -176,18 +202,21 @@ namespace policies {
       {
         // Finally, check that the underlying vector has sufficient storage for all set elements
         // Note that it is valid for the data buffer to have more space than the set's positions
-        PositionType firstElt = offset;
-        PositionType lastElt = (size - 1) * stride + offset;
+        PositionType firstEltInd = offset;
+        PositionType lastEltInd = (size - 1) * stride + offset;
         PositionType vecSize = m_vecBuf->size();
 
-        bool isRangeValid = (firstElt < vecSize) && (lastElt < vecSize);
+        bool isRangeValid = (0 <= firstEltInd) && (firstEltInd < vecSize)
+                            && (0 <= lastEltInd) &&  (lastEltInd < vecSize);
         if(!isRangeValid)
         {
           if(verboseOutput)
           {
-            SLIC_DEBUG("Data buffer in vector-based IndirectionSet must be large enough "
-                << " to hold all elements of the set. Underlying buffer size is " << vecSize
-                << ", and set's range is from " << "positions " << firstElt << " to " << lastElt << ".");
+            SLIC_DEBUG("Invalid vector-based IndirectionSet -- Data buffer must be large enough"
+                << " to hold all elements of the set. Underlying buffer size is " << vecSize << "."
+                << " Offset of " << offset << " leads to a first index of " << firstEltInd <<"."
+                << " Stride of " << stride << " and size of " << size
+                << " leads to a last index of " << lastEltInd << ".");
           }
           bValid = false;
         }
