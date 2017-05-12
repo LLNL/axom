@@ -54,25 +54,25 @@ namespace policies = axom::slam::policies;
   const PositionType TOSET_SIZE = 6;
   const PositionType ELEM_STRIDE = 5;
 
-  typedef policies::CompileTimeStrideHolder<PositionType, ELEM_STRIDE>  CTStride;
-  typedef policies::RuntimeStrideHolder<PositionType>                   RTStride;
+  typedef policies::CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
+  typedef policies::RuntimeStride<PositionType>                       RTStride;
 
-  typedef policies::ConstantCardinalityPolicy<PositionType, CTStride>   ConstantCardinalityPolicyCT;
-  typedef policies::ConstantCardinalityPolicy<PositionType, RTStride>   ConstantCardinalityPolicyRT;
+  typedef policies::ConstantCardinality<PositionType, CTStride>       ConstantCardinalityCT;
+  typedef policies::ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
 
-  typedef policies::STLVectorIndirection<PositionType, PositionType>    STLIndirection;
-  typedef policies::ArrayIndirection<PositionType, PositionType>        ArrayIndirection;
+  typedef policies::STLVectorIndirection<PositionType, PositionType>  STLIndirection;
+  typedef policies::ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
 
-  typedef std::vector<PositionType>                                     IndexVec;
+  typedef std::vector<PositionType>                                   IndexVec;
 
 
-  typedef slam::StaticRelation<ConstantCardinalityPolicyCT, STLIndirection,
+  typedef slam::StaticRelation<ConstantCardinalityCT, STLIndirection,
       slam::RangeSet, slam::RangeSet>              StaticConstantRelationType;
 
 
   // Use a slam::ModularInt type for more interesting test data
-  typedef policies::CompileTimeSizeHolder<int, ELEM_STRIDE> CTSize;
-  typedef slam::ModularInt< CTSize >                        FixedModularInt;
+  typedef policies::CompileTimeSize<int, ELEM_STRIDE> CTSize;
+  typedef slam::ModularInt< CTSize >                  FixedModularInt;
 
   template<typename StrType, typename VecType>
   void printVector(StrType const& msg, VecType const& vec)
@@ -375,7 +375,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and STL Indirection");
 
-  typedef slam::StaticRelation<ConstantCardinalityPolicyRT, STLIndirection,
+  typedef slam::StaticRelation<ConstantCardinalityRT, STLIndirection,
       slam::RangeSet, slam::RangeSet>              StaticConstantRelation_RT_STL;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
@@ -432,7 +432,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and array Indirection");
 
-  typedef slam::StaticRelation<ConstantCardinalityPolicyRT, ArrayIndirection,
+  typedef slam::StaticRelation<ConstantCardinalityRT, ArrayIndirection,
       slam::RangeSet, slam::RangeSet>              StaticConstantRelation_RT_Array;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
@@ -490,7 +490,7 @@ TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and array Indirection");
 
-  typedef slam::StaticRelation<ConstantCardinalityPolicyCT, ArrayIndirection,
+  typedef slam::StaticRelation<ConstantCardinalityCT, ArrayIndirection,
       slam::RangeSet, slam::RangeSet>              StaticConstantRelation_CT_Array;
 
   slam::RangeSet fromSet(FROMSET_SIZE);

@@ -149,61 +149,61 @@ namespace slamLulesh {
 
   public:
 
-    typedef axom::slam::Set                                                                       Set;
-    typedef axom::slam::NullSet                                                                   NullSet;
+    typedef axom::slam::Set                                                                   Set;
+    typedef axom::slam::NullSet                                                               NullSet;
 
-    typedef axom::slam::RangeSet                                                                  ElemSet;
-    typedef axom::slam::RangeSet                                                                  NodeSet;
-    typedef axom::slam::RangeSet                                                                  CornerSet;
-    typedef axom::slam::RangeSet                                                                  ExtendedElemSet;
+    typedef axom::slam::RangeSet                                                              ElemSet;
+    typedef axom::slam::RangeSet                                                              NodeSet;
+    typedef axom::slam::RangeSet                                                              CornerSet;
+    typedef axom::slam::RangeSet                                                              ExtendedElemSet;
 
-    typedef axom::slam::VectorIndirectionSet                                                      SymmNodeSet;
+    typedef axom::slam::VectorIndirectionSet                                                  SymmNodeSet;
 
-    typedef axom::slam::policies::STLVectorIndirection<Set::PositionType, Set::PositionType>      STLIndirection;
+    typedef axom::slam::policies::STLVectorIndirection<Set::PositionType, Set::PositionType>  STLIndirection;
 
     enum { NODES_PER_ZONE = 8, FACES_PER_ZONE = 1};
-    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE>  ZNStride;
-    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE>  ZFStride;
+    typedef axom::slam::policies::CompileTimeStride<ElemSet::PositionType, NODES_PER_ZONE>    ZNStride;
+    typedef axom::slam::policies::CompileTimeStride<ElemSet::PositionType, FACES_PER_ZONE>    ZFStride;
 
-    typedef axom::slam::policies::ConstantCardinalityPolicy<Set::PositionType, ZNStride>          ZNCard;
-    typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ElemSet, NodeSet>                  ElemToNodeRelation;
-    typedef const ElemToNodeRelation::RelationSet                                                 ElemNodeSet;
+    typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZNStride>            ZNCard;
+    typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ElemSet, NodeSet>              ElemToNodeRelation;
+    typedef const ElemToNodeRelation::RelationSet                                             ElemNodeSet;
 
-    typedef axom::slam::policies::ConstantCardinalityPolicy<Set::PositionType, ZFStride>          ZFCard;
-    typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ElemSet, ExtendedElemSet>          ElemFaceAdjacencyRelation;
+    typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZFStride>            ZFCard;
+    typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ElemSet, ExtendedElemSet>      ElemFaceAdjacencyRelation;
 
 
-    typedef axom::slam::RangeSet                                                                  RegionSet;
-    typedef axom::slam::policies::VariableCardinalityPolicy<Set::PositionType, STLIndirection>    VariableCardinalityPolicy;
+    typedef axom::slam::RangeSet                                                              RegionSet;
+    typedef axom::slam::policies::VariableCardinality<Set::PositionType, STLIndirection>      VariableCardinality;
     typedef axom::slam::StaticRelation<
-          VariableCardinalityPolicy,
+          VariableCardinality,
           STLIndirection,
           RegionSet,
-          ElemSet>                                                                                RegionToElemRelation;
+          ElemSet>                                                                            RegionToElemRelation;
     typedef const RegionToElemRelation::RelationSet RegionElemSet;
 
 
     typedef axom::slam::StaticRelation<
-          VariableCardinalityPolicy,
+          VariableCardinality,
           STLIndirection,
           NodeSet,
-          CornerSet>                                                                              NodeToCornerRelation;
+          CornerSet>                                                                          NodeToCornerRelation;
     typedef const NodeToCornerRelation::RelationSet NodeCornerSet;
 
     typedef axom::slam::Map<Index_t>                ElemIndexMap;
     typedef axom::slam::Map<Int_t>                  ElemIntMap;
-    //typedef axom::slam::Map<Real_t>            ElemRealMap;
+    //typedef axom::slam::Map<Real_t>               ElemRealMap;
 
     typedef axom::slam::Map<Index_t>                NodeIndexMap;
-    //typedef axom::slam::Map<Int_t>             NodeIntMap;
-    //typedef axom::slam::Map<Real_t>            NodeRealMap;
+    //typedef axom::slam::Map<Int_t>                NodeIntMap;
+    //typedef axom::slam::Map<Real_t>               NodeRealMap;
 
-    //typedef axom::slam::Map<Index_t>           RegionIndexMap;
+    //typedef axom::slam::Map<Index_t>          RegionIndexMap;
     typedef axom::slam::Map<Int_t> RegionIntMap;
-    //typedef axom::slam::Map<Real_t>            RegionRealMap;
+    //typedef axom::slam::Map<Real_t>           RegionRealMap;
 
-    //typedef axom::slam::Map<Index_t>           CornerIndexMap;
-    //typedef axom::slam::Map<Int_t>             CornerIntMap;
+    //typedef axom::slam::Map<Index_t>          CornerIndexMap;
+    //typedef axom::slam::Map<Int_t>            CornerIntMap;
     typedef axom::slam::Map<Real_t>             CornerRealMap;
 
     typedef axom::slam::FieldRegistry<Real_t>   RealsRegistry;

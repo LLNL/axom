@@ -41,10 +41,10 @@ namespace policies {
 
   template<
     typename ElementType = int,
-    typename StridePolicy = RuntimeStrideHolder<ElementType> >
-  struct ConstantCardinalityPolicy
+    typename StridePolicy = RuntimeStride<ElementType> >
+  struct ConstantCardinality
   {
-    typedef RuntimeSizeHolder<ElementType>          BeginsSizePolicy;
+    typedef RuntimeSize<ElementType>                BeginsSizePolicy;
     typedef ZeroOffset<ElementType>                 BeginsOffsetPolicy;
     typedef StridePolicy                            BeginsStridePolicy;
     typedef NoIndirection<ElementType,ElementType>  BeginsIndirectionPolicy;
@@ -53,7 +53,7 @@ namespace policies {
     typedef OrderedSet<
           BeginsSizePolicy,
           BeginsOffsetPolicy,
-          BeginsStridePolicy>                       BeginsSet;
+          BeginsStridePolicy >                      BeginsSet;
 
     // The cardinality of each relational operator is determined by the StridePolicy of the relation
     typedef typename StrideToSize<
@@ -62,14 +62,14 @@ namespace policies {
           BeginsStridePolicy::DEFAULT_VALUE>::SizeType RelationalOperatorSizeType;
 
 
-    ConstantCardinalityPolicy() : m_begins() {}
-    ConstantCardinalityPolicy(BeginsSet begins) : m_begins(begins) {}
-    ConstantCardinalityPolicy(ElementType fromSetSize)
+    ConstantCardinality() : m_begins() {}
+    ConstantCardinality(BeginsSet begins) : m_begins(begins) {}
+    ConstantCardinality(ElementType fromSetSize)
     {
       m_begins = BeginsSet(fromSetSize);
     }
 
-    ConstantCardinalityPolicy(ElementType fromSetSize, typename BeginsSet::SetBuilder& builder )
+    ConstantCardinality(ElementType fromSetSize, typename BeginsSet::SetBuilder& builder )
     {
       // needs a size and a stride (when runtime)
       builder.size(fromSetSize);
@@ -102,12 +102,12 @@ namespace policies {
     typename ElementType = int,
     typename IndirectionPolicy = STLVectorIndirection<ElementType, ElementType>
   >
-  struct VariableCardinalityPolicy
+  struct VariableCardinality
   {
-    typedef RuntimeSizeHolder<ElementType>  BeginsSizePolicy;
-    typedef ZeroOffset<ElementType>         BeginsOffsetPolicy;
-    typedef StrideOne<ElementType>          BeginsStridePolicy;
-    typedef IndirectionPolicy               BeginsIndirectionPolicy;
+    typedef RuntimeSize<ElementType>  BeginsSizePolicy;
+    typedef ZeroOffset<ElementType>   BeginsOffsetPolicy;
+    typedef StrideOne<ElementType>    BeginsStridePolicy;
+    typedef IndirectionPolicy         BeginsIndirectionPolicy;
 
     // runtime size (fromSet.size()), striding from template parameter, no offset
     typedef OrderedSet<
@@ -122,9 +122,9 @@ namespace policies {
 
     typedef typename IndirectionPolicy::IndirectionBufferType IndirectionBufferType;
 
-    VariableCardinalityPolicy() : m_begins() {}
-    VariableCardinalityPolicy(BeginsSet begins) : m_begins(begins) {}
-    VariableCardinalityPolicy(ElementType fromSetSize, typename BeginsSet::SetBuilder& builder)
+    VariableCardinality() : m_begins() {}
+    VariableCardinality(BeginsSet begins) : m_begins(begins) {}
+    VariableCardinality(ElementType fromSetSize, typename BeginsSet::SetBuilder& builder)
     {
       builder.size(fromSetSize + 1);
       m_begins = builder;
@@ -194,13 +194,13 @@ namespace policies {
 
     typedef OrderedSet<
           BeginsSizePolicy,
-          policies::RuntimeOffsetHolder<SetPosition>,
+          policies::RuntimeOffset<SetPosition>,
           policies::StrideOne<SetPosition>,
           IndicesIndirectionPolicy >                  RelationSet;
 
 
     typedef OrderedSet<
-          policies::RuntimeSizeHolder<SetPosition>,
+          policies::RuntimeSize<SetPosition>,
           policies::ZeroOffset<SetPosition>,
           policies::StrideOne<SetPosition>,
           IndicesIndirectionPolicy >                  IndicesSet;

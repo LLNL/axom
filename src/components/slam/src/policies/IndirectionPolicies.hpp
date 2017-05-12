@@ -110,8 +110,8 @@ namespace policies {
         if(verboseOutput)
         {
           SLIC_DEBUG("Array-based indirection set with non-zero size"
-              <<" (size=" << size << ") requires a valid data buffer,"
-              <<" but buffer pointer was null.");
+              << " (size=" << size << ") requires a valid data buffer,"
+              << " but buffer pointer was null.");
         }
 
         bValid = false;
@@ -130,10 +130,10 @@ namespace policies {
           if(verboseOutput)
           {
             SLIC_DEBUG("Array-based indirection does not allow access "
-              << "to data with lower addresses than its underlying pointer."
-              << " Offset of " << offset << " leads to a first index of " << firstEltInd <<"."
-              << " Stride of " << stride << " and size of " << size
-              << " leads to a last index of " << lastEltInd << ".");
+                << "to data with lower addresses than its underlying pointer."
+                << " Offset of " << offset << " leads to a first index of " << firstEltInd << "."
+                << " Stride of " << stride << " and size of " << size
+                << " leads to a last index of " << lastEltInd << ".");
           }
           bValid = false;
         }
@@ -207,14 +207,14 @@ namespace policies {
         PositionType vecSize = m_vecBuf->size();
 
         bool isRangeValid = (0 <= firstEltInd) && (firstEltInd < vecSize)
-                            && (0 <= lastEltInd) &&  (lastEltInd < vecSize);
+            && (0 <= lastEltInd) && (lastEltInd < vecSize);
         if(!isRangeValid)
         {
           if(verboseOutput)
           {
             SLIC_DEBUG("Invalid vector-based IndirectionSet -- Data buffer must be large enough"
                 << " to hold all elements of the set. Underlying buffer size is " << vecSize << "."
-                << " Offset of " << offset << " leads to a first index of " << firstEltInd <<"."
+                << " Offset of " << offset << " leads to a first index of " << firstEltInd << "."
                 << " Stride of " << stride << " and size of " << size
                 << " leads to a last index of " << lastEltInd << ".");
           }

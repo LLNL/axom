@@ -93,28 +93,28 @@ namespace slamUnstructuredHex {
     };
 
     /// types for sets
-    typedef axom::slam::PositionSet                                                       NodeSet;
-    typedef axom::slam::PositionSet                                                       ZoneSet;
-    typedef ZoneSet::PositionType                                                         PositionType;
-    typedef ZoneSet::IndexType                                                            IndexType;
+    typedef axom::slam::PositionSet                                                 NodeSet;
+    typedef axom::slam::PositionSet                                                 ZoneSet;
+    typedef ZoneSet::PositionType                                                   PositionType;
+    typedef ZoneSet::IndexType                                                      IndexType;
 
     /// types for relations
-    typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>        STLIndirection;
-    typedef axom::slam::policies::VariableCardinalityPolicy<PositionType, STLIndirection> VariableCardinalityPolicy;
+    typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>  STLIndirection;
+    typedef axom::slam::policies::VariableCardinality<PositionType, STLIndirection> VariableCardinality;
     typedef axom::slam::StaticRelation<
-          VariableCardinalityPolicy,
+          VariableCardinality,
           STLIndirection,
           NodeSet,
-          ZoneSet>                                                                            NodeToZoneRelation;
-    typedef typename NodeToZoneRelation::RelationConstIterator                          NodeZoneIterator;
+          ZoneSet>                                                                NodeToZoneRelation;
+    typedef typename NodeToZoneRelation::RelationConstIterator                    NodeZoneIterator;
 
-    typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, NODES_PER_ZONE> ZNStride;
-    typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, ZNStride>     ConstantCardinalityPolicy;
+    typedef axom::slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE> ZNStride;
+    typedef axom::slam::policies::ConstantCardinality<PositionType, ZNStride>     ConstantCardinality;
     typedef axom::slam::StaticRelation<
-          ConstantCardinalityPolicy,
+          ConstantCardinality,
           STLIndirection,
           ZoneSet,
-          NodeSet>                                                                             ZoneToNodeRelation;
+          NodeSet>                                                                 ZoneToNodeRelation;
     typedef ZoneToNodeRelation::RelationConstIterator ZoneNodeIterator;
 
     /// types for maps

@@ -45,12 +45,12 @@ namespace policies {
    * \brief A policy class for the size of a set whose value can be set at runtime.
    */
   template<typename IntType>
-  struct RuntimeSizeHolder
+  struct RuntimeSize
   {
   public:
     static const IntType DEFAULT_VALUE = IntType();
 
-    RuntimeSizeHolder(IntType sz = DEFAULT_VALUE) : m_sz(sz) {}
+    RuntimeSize(IntType sz = DEFAULT_VALUE) : m_sz(sz) {}
 
     inline IntType          size() const { return m_sz; }
     inline IntType&         size() { return m_sz; }
@@ -68,15 +68,15 @@ namespace policies {
    * \brief A policy class for a compile-time known set size
    */
   template<typename IntType, IntType INT_VAL>
-  struct CompileTimeSizeHolder
+  struct CompileTimeSize
   {
     static const IntType DEFAULT_VALUE = INT_VAL;
 
-    CompileTimeSizeHolder(IntType val = DEFAULT_VALUE)
+    CompileTimeSize(IntType val = DEFAULT_VALUE)
     {
       AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == INT_VAL,
-          "SLAM::CompileTimeSizeHolder -- tried to initialize a compile time size policy with value ("
+          "slam::CompileTimeSize -- tried to initialize a compile time size policy with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
     }
 
@@ -100,7 +100,7 @@ namespace policies {
     {
       AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
-          "SLAM::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
+          "slam::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
           << val << " ) but should always be zero.");
     }
 

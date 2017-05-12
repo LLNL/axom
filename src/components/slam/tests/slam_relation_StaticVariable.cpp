@@ -51,17 +51,17 @@ namespace policies = axom::slam::policies;
   const PositionType FROMSET_SIZE = 7;
   const PositionType TOSET_SIZE = 8;
 
-  typedef policies::STLVectorIndirection<PositionType, PositionType>        STLIndirection;
-  typedef policies::ArrayIndirection<PositionType, PositionType>            ArrayIndirection;
+  typedef policies::STLVectorIndirection<PositionType, PositionType>  STLIndirection;
+  typedef policies::ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
 
-  typedef policies::VariableCardinalityPolicy<PositionType, STLIndirection> VariableCardinalityPolicy;
+  typedef policies::VariableCardinality<PositionType, STLIndirection> VariableCardinality;
 
-  typedef slam::StaticRelation<VariableCardinalityPolicy, STLIndirection,
-      slam::RangeSet, slam::RangeSet>              StaticVariableRelationType;
+  typedef slam::StaticRelation<VariableCardinality, STLIndirection,
+      slam::RangeSet, slam::RangeSet>                                 StaticVariableRelationType;
 
   // Use a slam::ModularInt type for more interesting test data
-  typedef policies::CompileTimeSizeHolder<int, TOSET_SIZE > CTSize;
-  typedef slam::ModularInt< CTSize >                        FixedModularInt;
+  typedef policies::CompileTimeSize<int, TOSET_SIZE > CTSize;
+  typedef slam::ModularInt< CTSize >                  FixedModularInt;
 
 
   PositionType elementCardinality(PositionType fromPos)

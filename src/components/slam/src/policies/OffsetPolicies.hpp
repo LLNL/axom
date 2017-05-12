@@ -44,12 +44,12 @@ namespace policies {
    * \brief A policy class for the offset in a set.  The offset can be set at runtime.
    */
   template<typename IntType>
-  struct RuntimeOffsetHolder
+  struct RuntimeOffset
   {
   public:
     static const IntType DEFAULT_VALUE = IntType();
 
-    RuntimeOffsetHolder(IntType off = DEFAULT_VALUE) : m_off(off) {}
+    RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) {}
 
     inline IntType          offset() const { return m_off; }
     inline IntType&         offset() { return m_off; }
@@ -67,14 +67,14 @@ namespace policies {
    * \brief A policy class for a compile-time known set offset
    */
   template<typename IntType, IntType INT_VAL>
-  struct CompileTimeOffsetHolder
+  struct CompileTimeOffset
   {
     static const IntType DEFAULT_VALUE = INT_VAL;
 
-    CompileTimeOffsetHolder(IntType val = DEFAULT_VALUE) {
+    CompileTimeOffset(IntType val = DEFAULT_VALUE) {
       AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == INT_VAL,
-          "SLAM::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
+          "slam::CompileTimeOffset -- tried to initialize a compile time offset with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
     }
 
@@ -97,7 +97,7 @@ namespace policies {
     {
       AXOM_DEBUG_VAR(val);
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
-          "SLAM::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
+          "slam::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
           << val << ", but should always be 0");
     }
 

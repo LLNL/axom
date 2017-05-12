@@ -58,12 +58,11 @@ namespace slam {
  *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
   template<
-    typename SizePolicy          = policies::RuntimeSizeHolder<Set::PositionType>,
+    typename SizePolicy          = policies::RuntimeSize<Set::PositionType>,
     typename OffsetPolicy        = policies::ZeroOffset<Set::PositionType>,
     typename StridePolicy        = policies::StrideOne<Set::PositionType>,
     typename IndirectionPolicy   = policies::NoIndirection<Set::PositionType, Set::ElementType>,
-    typename SubsettingPolicy    = policies::NoSubset
-  >
+    typename SubsettingPolicy    = policies::NoSubset >
   struct OrderedSet : public Set,
                           SizePolicy,
                           OffsetPolicy,

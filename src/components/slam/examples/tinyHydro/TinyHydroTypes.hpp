@@ -69,28 +69,28 @@ namespace tinyHydro {
     NUM_DOMAIN_BOUNDARIES = 4
   };
 
-  typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>                    STLIndirection;
+  typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
 
-  typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, NODES_PER_ZONE>               ZNStride;
-  typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, ZNStride>                   ZNCard;
-  typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ZoneSet, NodeSet>                      ZoneToNodeRelation;
-  typedef ZoneToNodeRelation::RelationSet                                                           ZNodeSet;
-
-
-  typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, FACES_PER_ZONE>               ZFStride;
-  typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, ZFStride>                   ZFCard;
-  typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ZoneSet, FaceSet>                      ZoneToFaceRelation;
-  typedef ZoneToFaceRelation::RelationSet                                                           ZFaceSet;
+  typedef axom::slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>               ZNStride;
+  typedef axom::slam::policies::ConstantCardinality<PositionType, ZNStride>                   ZNCard;
+  typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ZoneSet, NodeSet>                ZoneToNodeRelation;
+  typedef ZoneToNodeRelation::RelationSet                                                     ZNodeSet;
 
 
-  typedef axom::slam::policies::CompileTimeSizeHolder<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
-  typedef axom::slam::OrderedSet< NUM_BD_SZ>                                                        BoundaryEdgeSet;
+  typedef axom::slam::policies::CompileTimeStride<PositionType, FACES_PER_ZONE>               ZFStride;
+  typedef axom::slam::policies::ConstantCardinality<PositionType, ZFStride>                   ZFCard;
+  typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ZoneSet, FaceSet>                ZoneToFaceRelation;
+  typedef ZoneToFaceRelation::RelationSet                                                     ZFaceSet;
 
 
-  typedef axom::slam::Map<IndexType>                                                                IndexMap;
+  typedef axom::slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
+  typedef axom::slam::OrderedSet< NUM_BD_SZ>                                                  BoundaryEdgeSet;
 
-  typedef axom::slam::FieldRegistry<ZoneSet::IndexType>                                             IndexRegistry;
-  typedef IndexRegistry::BufferType                                                                 IndexBuffer;
+
+  typedef axom::slam::Map<IndexType>                                                          IndexMap;
+
+  typedef axom::slam::FieldRegistry<ZoneSet::IndexType>                                       IndexRegistry;
+  typedef IndexRegistry::BufferType                                                           IndexBuffer;
 
   struct DataRegistry
   {

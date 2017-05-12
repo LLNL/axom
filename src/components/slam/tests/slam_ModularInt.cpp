@@ -24,7 +24,7 @@
 
 TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > ModularIntType;
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
@@ -55,7 +55,7 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
   using namespace axom::slam;
 
 #ifdef AXOM_DEBUG
-  typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
+  typedef ModularInt<policies::CompileTimeSize<int, 0> > ModularIntZero;
 
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: ");
@@ -71,16 +71,16 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 #endif
 
   SLIC_INFO("Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 for (compile time)");
-  ModularInt<policies::CompileTimeSizeHolder<int, 1> > m1(1);
+  ModularInt<policies::CompileTimeSize<int, 1> > m1(1);
   EXPECT_EQ(  m1, 0);
 
-  ModularInt<policies::CompileTimeSizeHolder<int, 2> > m2(2);
+  ModularInt<policies::CompileTimeSize<int, 2> > m2(2);
   EXPECT_EQ(  m2, 0);
 
-  ModularInt<policies::CompileTimeSizeHolder<int, 3> > m3(3);
+  ModularInt<policies::CompileTimeSize<int, 3> > m3(3);
   EXPECT_EQ(  m3, 0);
 
-  ModularInt<policies::CompileTimeSizeHolder<int, 4> > m4(4);
+  ModularInt<policies::CompileTimeSize<int, 4> > m4(4);
   EXPECT_EQ(  m4, 0);
 
 }
@@ -90,7 +90,7 @@ TEST(gtest_slam_modInt,runtime_modular_int)
 {
   SLIC_INFO("Checking modular int addition and subtraction when supplying the max value at runtime");
 
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > ModularIntType;
 
   volatile int sz = 937;
 
@@ -123,7 +123,7 @@ TEST(gtest_slam_modInt,runtime_modular_int)
 
 TEST(gtest_slam_modInt,runtime_modular_int_mult)
 {
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > ModularIntType;
 
   volatile int sz = 10;
 
@@ -157,7 +157,7 @@ TEST(gtest_slam_modInt,compiletime_modular_int)
 
   const int SZ = 937;
 
-  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSize<int, SZ> > ModularIntType;
 
   int sz = SZ;
 

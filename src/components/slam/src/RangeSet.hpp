@@ -64,18 +64,17 @@ namespace slam {
     typename SubsettingPolicy
   >
   class GenericRangeSet : public OrderedSet<
-                            policies::RuntimeSizeHolder<Set::PositionType>,
-                            policies::RuntimeOffsetHolder<Set::PositionType>,
+                            policies::RuntimeSize<Set::PositionType>,
+                            policies::RuntimeOffset<Set::PositionType>,
                             StridingPolicy,
                             IndirectionPolicy,
-                            SubsettingPolicy
-    >
+                            SubsettingPolicy >
   {
 
   private:
     typedef OrderedSet<
-          policies::RuntimeSizeHolder<Set::PositionType>,
-          policies::RuntimeOffsetHolder<Set::PositionType>,
+          policies::RuntimeSize<Set::PositionType>,
+          policies::RuntimeOffset<Set::PositionType>,
           StridingPolicy,
           IndirectionPolicy,
           SubsettingPolicy                                     > OrderedSetType;
@@ -107,14 +106,13 @@ namespace slam {
    *          Examples include: signed and unsigned integral types
    */
   class RangeSet : public OrderedSet<
-                     policies::RuntimeSizeHolder<Set::PositionType>,
-                     policies::RuntimeOffsetHolder<Set::PositionType>
-    >
+                     policies::RuntimeSize<Set::PositionType>,
+                     policies::RuntimeOffset<Set::PositionType> >
   {
 
   private:
-    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-        , policies::RuntimeOffsetHolder<Set::PositionType>  >  OrderedSetType;
+    typedef OrderedSet< policies::RuntimeSize<Set::PositionType>,
+        policies::RuntimeOffset<Set::PositionType>  >  OrderedSetType;
 
   public:
     typedef OrderedSetType::PositionType  PositionType;

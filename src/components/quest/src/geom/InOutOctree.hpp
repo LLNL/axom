@@ -520,14 +520,14 @@ private:
         typedef axom::slam::Map<VertexIndex> VertexIndexMap;
         typedef axom::slam::Map<SpacePt> VertexPositionMap;
 
-        typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>       STLIndirection;
-        typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, NUM_TRI_VERTS>  TVStride;
-        typedef axom::slam::policies::ConstantCardinalityPolicy<VertexIndex, TVStride>     ConstantCardinalityPolicy;
+        typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex> STLIndirection;
+        typedef axom::slam::policies::CompileTimeStride<VertexIndex, NUM_TRI_VERTS>  TVStride;
+        typedef axom::slam::policies::ConstantCardinality<VertexIndex, TVStride>     ConstantCardinality;
         typedef axom::slam::StaticRelation<
-              ConstantCardinalityPolicy,
+              ConstantCardinality,
               STLIndirection,
               MeshElementSet,
-              MeshVertexSet>                                                               TriangleVertexRelation;
+              MeshVertexSet>                                                         TriangleVertexRelation;
         typedef typename TriangleVertexRelation::RelationSet TriVertIndices;
 
     public:
@@ -857,20 +857,20 @@ public:
     typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>             STLIndirection;
 
     typedef axom::slam::PositionSet GrayLeafSet;
-    typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
-    typedef axom::slam::policies::ConstantCardinalityPolicy<VertexIndex, BVStride>           ConstantCardinalityPolicy;
+    typedef axom::slam::policies::CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
+    typedef axom::slam::policies::ConstantCardinality<VertexIndex, BVStride>           ConstantCardinality;
     typedef axom::slam::StaticRelation<
-          ConstantCardinalityPolicy,
+          ConstantCardinality,
           STLIndirection,
           GrayLeafSet,
-          MeshVertexSet>                                                                     GrayLeafVertexRelation;
+          MeshVertexSet>                                                               GrayLeafVertexRelation;
 
-    typedef axom::slam::policies::VariableCardinalityPolicy<VertexIndex, STLIndirection>     VariableCardinalityPolicy;
+    typedef axom::slam::policies::VariableCardinality<VertexIndex, STLIndirection>     VariableCardinality;
     typedef axom::slam::StaticRelation<
-          VariableCardinalityPolicy,
+          VariableCardinality,
           STLIndirection,
           GrayLeafSet,
-          MeshElementSet>                                                                    GrayLeafElementRelation;
+          MeshElementSet >                                                             GrayLeafElementRelation;
     typedef typename GrayLeafElementRelation::RelationSet TriangleIndexSet;
 
     typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;

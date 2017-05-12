@@ -31,25 +31,24 @@ namespace policies {
   template<typename StridePolicyType, typename IntType, IntType VAL> struct StrideToSize;
 
   /**
-   * \brief Specialization of StrideToSize trait for a RuntimeStrideHolder
+   * \brief Specialization of StrideToSize trait for a RuntimeStride
    */
   template<>
   struct StrideToSize<
-    RuntimeStrideHolder< Set::PositionType >,
+    RuntimeStride< Set::PositionType >,
     Set::PositionType,
-    RuntimeStrideHolder< Set::PositionType >::DEFAULT_VALUE
-  >
+    RuntimeStride< Set::PositionType >::DEFAULT_VALUE >
   {
-    typedef RuntimeSizeHolder<typename Set::PositionType> SizeType;
+    typedef RuntimeSize<typename Set::PositionType> SizeType;
   };
 
   /**
-   * \brief Specialization of StrideToSize trait for a CompileTimeStrideHolder
+   * \brief Specialization of StrideToSize trait for a CompileTimeStride
    */
   template<Set::PositionType VAL>
-  struct StrideToSize< CompileTimeStrideHolder<Set::PositionType, VAL>, Set::PositionType, VAL >
+  struct StrideToSize< CompileTimeStride<Set::PositionType, VAL>, Set::PositionType, VAL >
   {
-    typedef CompileTimeSizeHolder<Set::PositionType, VAL> SizeType;
+    typedef CompileTimeSize<Set::PositionType, VAL> SizeType;
   };
 
   /**
@@ -58,7 +57,7 @@ namespace policies {
   template<>
   struct StrideToSize< StrideOne<Set::PositionType>, Set::PositionType,  StrideOne<Set::PositionType>::DEFAULT_VALUE >
   {
-    typedef CompileTimeSizeHolder<Set::PositionType, StrideOne<Set::PositionType  >::DEFAULT_VALUE > SizeType;
+    typedef CompileTimeSize<Set::PositionType, StrideOne<Set::PositionType  >::DEFAULT_VALUE > SizeType;
   };
 
 

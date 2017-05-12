@@ -46,12 +46,12 @@ namespace policies {
    * \brief A policy class for the stride in a set.  When using this class, the stride can be set at runtime.
    */
   template<typename IntType>
-  struct RuntimeStrideHolder
+  struct RuntimeStride
   {
   public:
     static const IntType DEFAULT_VALUE = IntType(1);
 
-    RuntimeStrideHolder(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
+    RuntimeStride(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
 
     inline IntType          stride() const { return m_stride; }
     inline IntType&         stride() { return m_stride; }
@@ -74,11 +74,11 @@ namespace policies {
    * \brief A policy class for a compile-time known stride
    */
   template<typename IntType, IntType INT_VAL>
-  struct CompileTimeStrideHolder
+  struct CompileTimeStride
   {
     static const IntType DEFAULT_VALUE = INT_VAL;
 
-    CompileTimeStrideHolder(IntType val = DEFAULT_VALUE)
+    CompileTimeStride(IntType val = DEFAULT_VALUE)
     {
       setStride(val);
     }
@@ -89,7 +89,7 @@ namespace policies {
     void                    setStride(IntType AXOM_DEBUG_PARAM(val))
     {
       SLIC_ASSERT_MSG( val == INT_VAL,
-          "SLAM::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
+          "slam::CompileTimeStride -- tried to set a compile time stride with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
     }
 
@@ -119,7 +119,7 @@ namespace policies {
     void                          setStride(IntType AXOM_DEBUG_PARAM(val))
     {
       SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
-          "SLAM::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
+          "slam::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
           << val << "), but should always be 1.");
     }
     inline bool isValid(bool) const { return true; }

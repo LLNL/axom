@@ -111,10 +111,10 @@ namespace slamShocktube {
 
     /// types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, FACES_PER_ELEM>         EFStride;
-    typedef axom::slam::policies::CompileTimeStrideHolder<PositionType, ELEMS_PER_FACE>         FEStride;
-    typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, EFStride>             EFCard;
-    typedef axom::slam::policies::ConstantCardinalityPolicy<PositionType, FEStride>             FECard;
+    typedef axom::slam::policies::CompileTimeStride<PositionType, FACES_PER_ELEM>               EFStride;
+    typedef axom::slam::policies::CompileTimeStride<PositionType, ELEMS_PER_FACE>               FEStride;
+    typedef axom::slam::policies::ConstantCardinality<PositionType, EFStride>                   EFCard;
+    typedef axom::slam::policies::ConstantCardinality<PositionType, FEStride>                   FECard;
     typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
     typedef STLIndirection::VectorType                                                          IndexVec;
 
