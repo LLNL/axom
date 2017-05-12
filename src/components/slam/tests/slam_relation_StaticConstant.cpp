@@ -35,6 +35,7 @@
 #include "slam/Relation.hpp"
 #include "slam/SizePolicies.hpp"
 #include "slam/IndirectionPolicies.hpp"
+#include "slam/CardinalityPolicies.hpp"
 #include "slam/ModularInt.hpp"
 
 

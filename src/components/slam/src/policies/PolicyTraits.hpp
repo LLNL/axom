@@ -28,36 +28,33 @@ namespace policies {
   /**
    * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
    */
-  template<typename StridePolicyType, typename IntType, IntType VAL> struct StrideToSize;
+  template<typename StridePolicyType, typename IntType, int VAL = 1> struct StrideToSize;
 
   /**
    * \brief Specialization of StrideToSize trait for a RuntimeStride
    */
-  template<>
-  struct StrideToSize<
-    RuntimeStride< Set::PositionType >,
-    Set::PositionType,
-    RuntimeStride< Set::PositionType >::DEFAULT_VALUE >
+  template<typename IntType>
+  struct StrideToSize < RuntimeStride<IntType>, IntType >
   {
-    typedef RuntimeSize<typename Set::PositionType> SizeType;
+    typedef RuntimeSize<IntType> SizeType;
   };
 
   /**
    * \brief Specialization of StrideToSize trait for a CompileTimeStride
    */
-  template<Set::PositionType VAL>
-  struct StrideToSize< CompileTimeStride<Set::PositionType, VAL>, Set::PositionType, VAL >
+  template<typename IntType, int VAL>
+  struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
   {
-    typedef CompileTimeSize<Set::PositionType, VAL> SizeType;
+    typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
   };
 
   /**
    * \brief Specialization of StrideToSize trait for a StrideOne type
    */
-  template<>
-  struct StrideToSize< StrideOne<Set::PositionType>, Set::PositionType,  StrideOne<Set::PositionType>::DEFAULT_VALUE >
+  template<typename IntType>
+  struct StrideToSize< StrideOne<IntType>, IntType >
   {
-    typedef CompileTimeSize<Set::PositionType, StrideOne<Set::PositionType  >::DEFAULT_VALUE > SizeType;
+    typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
   };
 
 

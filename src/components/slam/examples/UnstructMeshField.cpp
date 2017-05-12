@@ -32,6 +32,7 @@
 #include "slic/UnitTestLogger.hpp"
 
 #include "slam/IndirectionPolicies.hpp"
+#include "slam/CardinalityPolicies.hpp"
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/StaticRelation.hpp"

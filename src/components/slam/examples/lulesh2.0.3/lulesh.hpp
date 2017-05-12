@@ -34,6 +34,7 @@
 #include "slam/NullSet.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/IndirectionSet.hpp"
+#include "slam/CardinalityPolicies.hpp"
 #include "slam/StaticRelation.hpp"
 #include "slam/DynamicVariableRelation.hpp"
 #include "slam/Map.hpp"

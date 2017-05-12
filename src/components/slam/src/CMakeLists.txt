@@ -8,6 +8,7 @@ set(slam_headers
     ModularInt.hpp
 
     #SRM policies
+    policies/CardinalityPolicies.hpp
     policies/SizePolicies.hpp
     policies/OffsetPolicies.hpp
     policies/StridePolicies.hpp
