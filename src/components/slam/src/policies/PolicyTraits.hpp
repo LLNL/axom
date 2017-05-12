@@ -12,6 +12,11 @@
 #ifndef SLAM_POLICY_TRAITS_H_
 #define SLAM_POLICY_TRAITS_H_
 
+/**
+ * \file PolicyTraits.hpp
+ *
+ * A collection of utility traits classes for Slam policies.
+ */
 
 #include "slam/SizePolicies.hpp"
 #include "slam/StridePolicies.hpp"
@@ -20,23 +25,36 @@ namespace axom {
 namespace slam {
 namespace policies {
 
-  template<typename StridePolicyType, typename IntType, IntType VAL> struct StrideToSize;
+  /**
+   * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
+   */
+  template<typename StridePolicyType, typename IntType, int VAL = 1> struct StrideToSize;
 
-  template<> struct StrideToSize< RuntimeStrideHolder< Set::PositionType >
-  , Set::PositionType
-  , RuntimeStrideHolder< Set::PositionType >::DEFAULT_VALUE >
+  /**
+   * \brief Specialization of StrideToSize trait for a RuntimeStride
+   */
+  template<typename IntType>
+  struct StrideToSize < RuntimeStride<IntType>, IntType >
   {
-    typedef RuntimeSizeHolder<typename Set::PositionType> SizeType;
+    typedef RuntimeSize<IntType> SizeType;
   };
 
-  template<Set::PositionType VAL> struct StrideToSize< CompileTimeStrideHolder<Set::PositionType, VAL>, Set::PositionType, VAL >
+  /**
+   * \brief Specialization of StrideToSize trait for a CompileTimeStride
+   */
+  template<typename IntType, int VAL>
+  struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
   {
-    typedef CompileTimeSizeHolder<Set::PositionType, VAL> SizeType;
+    typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
   };
 
-  template<> struct StrideToSize< StrideOne<Set::PositionType>, Set::PositionType,  StrideOne<Set::PositionType>::DEFAULT_VALUE >
+  /**
+   * \brief Specialization of StrideToSize trait for a StrideOne type
+   */
+  template<typename IntType>
+  struct StrideToSize< StrideOne<IntType>, IntType >
   {
-    typedef CompileTimeSizeHolder<Set::PositionType, StrideOne<Set::PositionType  >::DEFAULT_VALUE > SizeType;
+    typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
   };
 
 

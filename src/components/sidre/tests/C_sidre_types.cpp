@@ -27,7 +27,7 @@ namespace
 
 /**
  * \brief Tests the equivalence of two integral types
- * \see These test complement the ones in common/tests/common_test.cpp
+ * \see These test complement the ones in axom_utils/tests/common_test.cpp
  */
 template<typename CommonType, typename SidreType>
 void testTypesForEquality()

@@ -9,14 +9,9 @@
  */
 
 
-// OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
-// used supports it (i.e. the _OPENMP symbol is defined)
-#define USE_OMP 1
+#include "axom/config.hpp"  // defines AXOM_USE_MPI and AXOM_USE_OPENMP
 
-#ifdef USE_MPI
-#include <mpi.h>
-#endif
-
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 
 /*
@@ -28,6 +23,7 @@
 */
 
 #define SEDOV_SYNC_POS_VEL_EARLY 1
+#endif 
 
 #include <math.h>
 #include <vector>
@@ -396,7 +392,7 @@ class Domain {
    // MPI-Related additional data
    //
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
    // Communication Work space 
    Real_t *commDataSend ;
    Real_t *commDataRecv ;

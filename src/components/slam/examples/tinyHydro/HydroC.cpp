@@ -24,10 +24,10 @@ namespace tinyHydro {
 //----------------------------------------------
 // c'tor
   Hydro::Hydro(State * s)
-      : mesh(*(s->mesh))
-        , state(*s), halfStep(*s), dState(*s)
-        , cycle(0), dtZone(-1), time(0.0)
-        , Cq(1.0), Cl(1.0), cfl(0.7)
+      : mesh(*(s->mesh)),
+        state(*s), halfStep(*s), dState(*s),
+        cycle(0), dtZone(-1), time(0.0),
+        Cq(1.0), Cl(1.0), cfl(0.7)
   {
     SLIC_INFO("using HydroC");
 
@@ -95,27 +95,30 @@ namespace tinyHydro {
     }
 
     // Find nodes on each boundary
-    std::vector<IndexType> bcNodeLists[NUM_DOMAIN_BOUNDARIES];
+    IndexBuffer* bcNodeList[NUM_DOMAIN_BOUNDARIES];
+    for(int i = 0; i< boundaryEdgeSet.size(); ++i)
+    {
+      bcNodeList[i] = &DataRegistry::setRegistry.addBuffer(fmt::format("bc_nodes_{}",i));
+    }
+
     for (int n = 0; n < mesh.numNodes(); n++)
     {
       const VectorXY & pos = mesh.nodePos[n];
       if (fuzzyEqual(pos.y, bbLower.y))
-        bcNodeLists[0].push_back(n);
+        bcNodeList[0]->push_back(n);
       if (fuzzyEqual(pos.x, bbUpper.x))
-        bcNodeLists[1].push_back(n);
+        bcNodeList[1]->push_back(n);
       if (fuzzyEqual(pos.y, bbUpper.y))
-        bcNodeLists[2].push_back(n);
+        bcNodeList[2]->push_back(n);
       if (fuzzyEqual(pos.x, bbLower.x))
-        bcNodeLists[3].push_back(n);
+        bcNodeList[3]->push_back(n);
     }
-
     // Setup the node lists as indirection sets
     for(int i = 0; i< boundaryEdgeSet.size(); ++i)
     {
-      bcNodes[i] = NodeSubset( bcNodeLists[i].size() );
-      std::vector<int>& bcVec = DataRegistry::setRegistry.addNamelessField( &bcNodes[i]).data();
-      bcVec.swap( bcNodeLists[i]);
-      bcNodes[i].data() = &bcVec;
+      bcNodes[i] =  NodeSubset::SetBuilder()
+          .size(bcNodeList[i]->size())
+          .data(bcNodeList[i]);
     }
   #endif
   }
@@ -575,17 +578,11 @@ namespace tinyHydro {
 //----------------------------------------------
   int Hydro::numBCnodes(int bc)
   {
-    SLIC_ASSERT_MSG( 0 <= bc && bc < NUM_DOMAIN_BOUNDARIES
-        , "BC identifier must be between 0 and " << NUM_DOMAIN_BOUNDARIES);
-
     return bcNodes[bc].size();
   }
 //----------------------------------------------
   int Hydro::bcNode(int bc, int node)
   {
-    SLIC_ASSERT_MSG( 0 <= bc && bc < NUM_DOMAIN_BOUNDARIES
-        , "BC identifier must be between 0 and " << NUM_DOMAIN_BOUNDARIES);
-
     return bcNodes[bc][node];
   }
 //----------------------------------------------

@@ -46,9 +46,9 @@ namespace filesystem {
  * \note Example2:  joinPath("abc/", "def") -> "abc/def"
  * \note Example3:  joinPath("abc/", "def/ghi") -> "abc/def/ghi"
  */
-  std::string joinPath(const std::string& fileDir
-                       , const std::string& fileName
-                       , const std::string& separator = "/");
+  std::string joinPath(const std::string& fileDir,
+                       const std::string& fileName,
+                       const std::string& separator = "/");
 
 
 /**

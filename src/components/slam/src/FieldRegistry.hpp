@@ -37,17 +37,21 @@ namespace slam {
   class FieldRegistry
   {
   public:
-    typedef TheDataType                     DataType;
-    typedef std::string                     KeyType;
-    typedef axom::slam::Map<DataType> MapType;
-    typedef typename MapType::OrderedMap    BufferType;
+    typedef TheDataType                   DataType;
+    typedef std::string                   KeyType;
+    typedef axom::slam::Map<DataType>     MapType;
+    typedef typename MapType::OrderedMap  BufferType;
 
-    typedef std::map<KeyType, MapType>      DataVecMap;
-    typedef std::map<KeyType, DataType>     DataAttrMap;
+    typedef std::map<KeyType, MapType>    DataVecMap;
+    typedef std::map<KeyType, BufferType> DataBufferMap;
+    typedef std::map<KeyType, DataType>   DataAttrMap;
 
   public:
-    MapType&  addField(KeyType key, Set const* theSet) { return m_dataVecs[key] = MapType(theSet); }
-    DataType& addScalar(KeyType key, DataType val)     { return m_dataScalars[key] = val; }
+
+
+    bool      hasField(const KeyType & key) const { return m_maps.find(key) != m_maps.end(); }
+
+    MapType&  addField(KeyType key, Set const* theSet) { return m_maps[key] = MapType(theSet); }
 
     MapType&  addNamelessField(Set const* theSet)
     {
@@ -55,45 +59,90 @@ namespace slam {
       std::stringstream key;
 
       key << "__field_" << cnt++;
-      return m_dataVecs[key.str()] = MapType(theSet);
+      return m_maps[key.str()] = MapType(theSet);
     }
-
 
     MapType& getField(KeyType key)
     {
       verifyFieldsKey(key);
-      return m_dataVecs[key];
+      return m_maps[key];
     }
-    MapType const& getField(KeyType key) const
+
+    const MapType& getField(KeyType key) const
     {
       verifyFieldsKey(key);
-      return m_dataVecs[key];
+      return m_maps[key];
     }
+
+
+    bool        hasBuffer(const KeyType & key) const { return m_buff.find(key) != m_buff.end(); }
+
+    BufferType& addBuffer(KeyType key, int size = 0)     { return m_buff[key] = BufferType(size); }
+
+    BufferType& addNamelessBuffer(int size = 0)
+    {
+      static int cnt = 0;
+      std::stringstream key;
+
+      key << "__buffer_" << cnt++;
+      return m_buff[key.str()] = BufferType(size);
+    }
+
+    BufferType& getBuffer(KeyType key)
+    {
+      verifyBufferKey(key);
+      return m_buff[key];
+    }
+    const BufferType & getBuffer(KeyType key) const
+    {
+      verifyBufferKey(key);
+      return m_buff[key];
+    }
+
+
+    bool      hasScalar(const KeyType & key) const { return m_scal.find(key) != m_scal.end(); }
+
+    DataType& addScalar(KeyType key, DataType val)     { return m_scal[key] = val; }
 
     DataType& getScalar(KeyType key)
     {
-      verifyScalarsKey(key);
-      return m_dataScalars[key];
+      verifyScalarKey(key);
+      return m_scal[key];
     }
-    DataType const& getScalar(KeyType key) const
+
+    const DataType& getScalar(KeyType key) const
     {
-      verifyScalarsKey(key);
-      return m_dataScalars[key];
+      verifyScalarKey(key);
+      return m_scal[key];
     }
 
   private:
-    inline void verifyFieldsKey(KeyType AXOM_DEBUG_PARAM(key)){
-      SLIC_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
-          , "Didn't find " << axom::slam::util::TypeToString<DataType>::to_string() << " field named " << key );
+
+    std::string dataTypeString() const {
+      return axom::slam::util::TypeToString<DataType>::to_string();
     }
-    inline void verifyScalarsKey(KeyType AXOM_DEBUG_PARAM(key)){
-      SLIC_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
-          , "Didn't find " << axom::slam::util::TypeToString<DataType>::to_string() << " scalar named " << key );
+
+    inline void verifyFieldsKey(const KeyType& AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( hasField(key),
+          "Didn't find " << dataTypeString() << " field named " << key );
     }
+
+    inline void verifyBufferKey(const KeyType & AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( hasBuffer(key),
+          "Didn't find " << dataTypeString() << " buffer named " << key );
+    }
+    inline void verifyScalarKey(const KeyType & AXOM_DEBUG_PARAM(key)) const {
+      SLIC_ASSERT_MSG( hasScalar(key),
+          "Didn't find " << dataTypeString() << " scalar named " << key );
+    }
+
   private:
-    DataVecMap m_dataVecs;
-    DataAttrMap m_dataScalars;
+
+    DataVecMap m_maps;
+    DataBufferMap m_buff;
+    DataAttrMap m_scal;
   };
+
 } // end namespace slam
 } // end namespace axom
 
