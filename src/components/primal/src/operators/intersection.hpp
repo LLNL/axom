@@ -32,11 +32,13 @@ namespace primal {
 
 /*!
  *******************************************************************************
- * \brief Tests if 3D Triangles t1 and t2 (interiors or boundaries) intersect.
+ * \brief Tests if the interiors of 3D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * This function will return true if an intersection consists of the interior,
- * an edge or a vertex of t1 intersecting any part of t2.
+ * This function will return true if the interior of t1 intersects the interior
+ * of t2.  To also report boundary intersections as true, write
+ * #define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+ * before including this file.
  *******************************************************************************
  */
 template < typename T >
@@ -47,11 +49,13 @@ bool intersect( const Triangle< T, 3 >& t1, const Triangle< T, 3 >& t2)
 
 /*!
  *******************************************************************************
- * \brief Tests if 2D Triangles t1 and t2 (interiors or boundaries) intersect.
+ * \brief Tests if the interiors of 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * This function will return true if an intersection consists of the interior,
- * an edge or a vertex of t1 intersecting any part of t2.
+ * This function will return true if the interior of t1 intersects the interior
+ * of t2.  To also report boundary intersections as true, write
+ * #define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+ * before including this file.
  *******************************************************************************
  */
 template < typename T >

@@ -12,12 +12,12 @@
 
 #include "slic/slic.hpp"
 
-// Not defined: AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
+#define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
 #include "primal/intersection_impl.hpp"
 
 using namespace axom;
 
-TEST( primal_intersection_impl, fuzzy_comparisons )
+TEST( primal_intersection_impl_includebound, fuzzy_comparisons_includebound )
 {
   const double eps = 0.1;
 

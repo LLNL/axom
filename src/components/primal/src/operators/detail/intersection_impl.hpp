@@ -19,8 +19,6 @@
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
-#define AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
-
 namespace axom {
 namespace primal {
 namespace detail {
@@ -127,6 +125,7 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1, const Triangle< T,
   double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
   double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
   double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
+
   if (signMatch(dp1, dq1, dr1)) {
     return false;
   }
@@ -344,10 +343,8 @@ inline bool intersectTwoPermutedTriangles(const Point3 p1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
 
-  if (isGt(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0)) {
-    return false;
-  }
-  if (isGt((Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal())), 0.0)) {
+  if (!isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0) ||
+      !isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0)) {
     return false;
   }
 
@@ -461,7 +458,8 @@ inline bool TriangleIntersection2D(const Triangle2& t1,
       return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
                                           t2[0], t2[2], t2[1]);
     }
-    else{return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
+    else{
+      return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
                                              t2[0], t2[1], t2[2]);
     }
   }
@@ -497,33 +495,37 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
   //
   // See paper at https://hal.inria.fr/inria-00072100/document for more details
 
-  if (isGeq(twoDcross(p2,q2,p1), 0.0 )) {
-    if (isGeq(twoDcross(q2,r2,p1), 0.0 )) {
-      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
+  if (isGpeq(twoDcross(p2,q2,p1), 0.0 )) {
+    if (isGpeq(twoDcross(q2,r2,p1), 0.0 )) {
+      if (isGpeq(twoDcross(r2,p2,p1), 0.0)) {
         return true;
       }
-      else{return checkEdge(p1,q1,r1,p2,r2); //T1 clockwise
+      else{
+        return checkEdge(p1,q1,r1,p2,r2); //T1 clockwise
       }
     }
     else {
-      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
+      if (isGpeq(twoDcross(r2,p2,p1), 0.0)) {
         //5 region decomposition with p1 in the +-- region
         return checkEdge(p1,q1,r1,r2,q2);
       }
-      else{return checkVertex(p1,q1,r1,p2,q2,r2);
+      else{
+        return checkVertex(p1,q1,r1,p2,q2,r2);
       }
     }
   }
   else {
-    if (isGeq(twoDcross(q2,r2,p1), 0.0)) {
-      if (isGeq(twoDcross(r2,p2,p1), 0.0)) {
+    if (isGpeq(twoDcross(q2,r2,p1), 0.0)) {
+      if (isGpeq(twoDcross(r2,p2,p1), 0.0)) {
         //four region decomposition.  ++- region
         return checkEdge(p1,q1,r1,q2,p2);
       }
-      else{return checkVertex(p1,q1,r1,q2,r2,p2);
+      else{
+        return checkVertex(p1,q1,r1,q2,r2,p2);
       }
     }
-    else{return checkVertex(p1,q1,r1,r2,p2,q2);
+    else{
+      return checkVertex(p1,q1,r1,r2,p2,q2);
     }
   }
 }
@@ -589,7 +591,7 @@ inline bool checkEdgeOrig(const Point2 p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkEdgeCompileTimeMacro(const Point2 p1,
+inline bool checkEdge(const Point2 p1,
                       const Point2 q1,
                       const Point2 r1,
                       const Point2 p2,
@@ -713,7 +715,7 @@ inline bool checkVertexOrig(const Point2 p1,
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  *****************************************************************************
  */
-inline bool checkVertexCompileTimeMacro(const Point2 p1,
+inline bool checkVertex(const Point2 p1,
                         const Point2 q1,
                         const Point2 r1,
                         const Point2 p2,
@@ -821,7 +823,7 @@ inline bool isLeq(double x, double y, double EPS)
  * lets users specify at compile time whether triangles intersecting only on
  * border points are reported as intersecting or not.
  *
- * Supports checkEdgeCompileTimeMacro and checkVertexCompileTimeMacro
+ * Supports checkEdge and checkVertex
  *****************************************************************************
  */
 inline bool isLpeq(double x, double y, double EPS)
@@ -853,7 +855,7 @@ inline bool isGeq(double x, double y, double EPS)
  * lets users specify at compile time whether triangles intersecting only on
  * border points are reported as intersecting or not.
  *
- * Supports checkEdgeCompileTimeMacro and checkVertexCompileTimeMacro
+ * Supports checkEdge and checkVertex
  *****************************************************************************
  */
 inline bool isGpeq(double x, double y, double EPS)
