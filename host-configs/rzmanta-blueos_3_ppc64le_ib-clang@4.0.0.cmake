@@ -71,7 +71,7 @@ set(MPI_Fortran_HOME         "/usr/tcetmp/packages/xl/xl-beta-2017.05.08" CACHE 
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpif77" CACHE PATH "")
-set(MPI_Fortran_LIBRARIES    "${MPI_Fortran_HOME}/lib" CACHE PATH "")
+set(MPI_Fortran_LIBRARIES    "${MPI_Fortran_HOME}/lib/libxlf90.so.1" CACHE PATH "")
 set(MPI_Fortran_INCLUDE_PATH "${MPI_Fortran_HOME}/xlf/16.1.0/include" CACHE PATH "")
 
 set(MPIEXEC              "mpirun" CACHE PATH "")
