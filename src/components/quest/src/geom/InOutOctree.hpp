@@ -26,8 +26,8 @@
 
 #include "slam/Map.hpp"
 #include "slam/RangeSet.hpp"
-#include "slam/StaticConstantRelation.hpp"
-#include "slam/StaticVariableRelation.hpp"
+#include "slam/StaticRelation.hpp"
+#include "slam/FieldRegistry.hpp"
 
 #include "quest/SpatialOctree.hpp"
 
@@ -481,13 +481,12 @@ public:
     typedef typename SpatialOctreeType::BlockIndex BlockIndex;
     typedef typename OctreeBaseType::GridPt GridPt;
 
-
 private:
-    enum GenerationState { INOUTOCTREE_UNINITIALIZED
-                         , INOUTOCTREE_VERTICES_INSERTED
-                         , INOUTOCTREE_MESH_REORDERED
-                         , INOUTOCTREE_ELEMENTS_INSERTED
-                         , INOUTOCTREE_LEAVES_COLORED
+    enum GenerationState { INOUTOCTREE_UNINITIALIZED,
+                           INOUTOCTREE_VERTICES_INSERTED,
+                           INOUTOCTREE_MESH_REORDERED,
+                           INOUTOCTREE_ELEMENTS_INSERTED,
+                           INOUTOCTREE_LEAVES_COLORED
     };
 
     /**
@@ -521,19 +520,25 @@ private:
         typedef axom::slam::Map<VertexIndex> VertexIndexMap;
         typedef axom::slam::Map<SpacePt> VertexPositionMap;
 
-        typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, NUM_TRI_VERTS>  TVStride;
-        typedef axom::slam::StaticConstantRelation<TVStride, MeshElementSet, MeshVertexSet> TriangleVertexRelation;
+        typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex> STLIndirection;
+        typedef axom::slam::policies::CompileTimeStride<VertexIndex, NUM_TRI_VERTS>  TVStride;
+        typedef axom::slam::policies::ConstantCardinality<VertexIndex, TVStride>     ConstantCardinality;
+        typedef axom::slam::StaticRelation<
+              ConstantCardinality,
+              STLIndirection,
+              MeshElementSet,
+              MeshVertexSet>                                                         TriangleVertexRelation;
         typedef typename TriangleVertexRelation::RelationSet TriVertIndices;
 
     public:
         /** \brief Constructor for a mesh wrapper */
         MeshWrapper(SurfaceMesh*& meshPtr)
-            : m_surfaceMesh(meshPtr)
-            , m_vertexSet(0)
-            , m_elementSet(0)
-            , m_vertexPositions(&m_vertexSet)
-            , m_triangleToVertexRelation()
-            , m_meshWasReindexed(false)
+            : m_surfaceMesh(meshPtr),
+              m_vertexSet(0),
+              m_elementSet(0),
+              m_vertexPositions(&m_vertexSet),
+              m_triangleToVertexRelation(),
+              m_meshWasReindexed(false)
         {}
 
         /** Const accessor to the vertex set of the wrapped surface mesh */
@@ -747,8 +752,9 @@ private:
 
             // Update the vertex IDs of the triangles to the new vertices and create a SLAM relation on these
             int numOrigTris = numMeshElements();
-            std::vector<int> tvrefs;
-            tvrefs.reserve(NUM_TRI_VERTS * numOrigTris);
+
+            m_tv_data.clear();
+            m_tv_data.reserve(NUM_TRI_VERTS * numOrigTris);
             for(int i=0; i< numOrigTris ; ++i)
             {
                 // Grab relation from mesh
@@ -764,15 +770,15 @@ private:
                    && (vertIds[1] != vertIds[2])
                    && (vertIds[2] != vertIds[0]) )
                {
-                   tvrefs.push_back (vertIds[0]);
-                   tvrefs.push_back (vertIds[1]);
-                   tvrefs.push_back (vertIds[2]);
+                   m_tv_data.push_back (vertIds[0]);
+                   m_tv_data.push_back (vertIds[1]);
+                   m_tv_data.push_back (vertIds[2]);
                }
             }
 
-            m_elementSet = MeshElementSet( tvrefs.size() / NUM_TRI_VERTS );
+            m_elementSet = MeshElementSet( m_tv_data.size() / NUM_TRI_VERTS );
             m_triangleToVertexRelation = TriangleVertexRelation(&m_elementSet, &m_vertexSet);
-            m_triangleToVertexRelation.bindRelationData(tvrefs);
+            m_triangleToVertexRelation.bindIndices(m_tv_data.size(), &m_tv_data);
 
 
             // Delete old mesh, and NULL its pointer
@@ -817,6 +823,8 @@ private:
         MeshVertexSet m_vertexSet;
         MeshElementSet m_elementSet;
         VertexPositionMap m_vertexPositions;
+
+        std::vector<VertexIndex> m_tv_data;
         TriangleVertexRelation m_triangleToVertexRelation;
 
         bool m_meshWasReindexed;
@@ -830,22 +838,39 @@ public:
 
     typedef typename MeshWrapper::VertexIndex VertexIndex;
     typedef typename MeshWrapper::TriangleIndex TriangleIndex;
+    typedef axom::slam::FieldRegistry<VertexIndex>  IndexRegistry;
+
     typedef typename MeshWrapper::SpaceTriangle SpaceTriangle;
 
     typedef typename MeshWrapper::MeshVertexSet MeshVertexSet;
+    typedef typename MeshWrapper::MeshElementSet MeshElementSet;
     typedef typename MeshWrapper::TriVertIndices TriVertIndices;
     typedef typename MeshWrapper::VertexIndexMap VertexIndexMap;
 
 
 
     // Some type defs for the Relations from Gray leaf blocks to mesh vertices and elements
+
     static const int MAX_VERTS_PER_BLOCK = 1;
     typedef axom::slam::Map<BlockIndex> VertexBlockMap;
 
+    typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>             STLIndirection;
+
     typedef axom::slam::PositionSet GrayLeafSet;
-    typedef axom::slam::policies::CompileTimeStrideHolder<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
-    typedef axom::slam::StaticConstantRelation<BVStride, GrayLeafSet, MeshVertexSet> GrayLeafVertexRelation;
-    typedef axom::slam::StaticVariableRelation                                       GrayLeafElementRelation;
+    typedef axom::slam::policies::CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
+    typedef axom::slam::policies::ConstantCardinality<VertexIndex, BVStride>           ConstantCardinality;
+    typedef axom::slam::StaticRelation<
+          ConstantCardinality,
+          STLIndirection,
+          GrayLeafSet,
+          MeshVertexSet>                                                               GrayLeafVertexRelation;
+
+    typedef axom::slam::policies::VariableCardinality<VertexIndex, STLIndirection>     VariableCardinality;
+    typedef axom::slam::StaticRelation<
+          VariableCardinality,
+          STLIndirection,
+          GrayLeafSet,
+          MeshElementSet >                                                             GrayLeafElementRelation;
     typedef typename GrayLeafElementRelation::RelationSet TriangleIndexSet;
 
     typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
@@ -861,15 +886,15 @@ public:
      *       to be enclosed by the octree
      */
     InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
-        : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) )
-        , m_meshWrapper(meshPtr)
-        , m_vertexToBlockMap(&m_meshWrapper.vertexSet())
+        : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) ),
+          m_meshWrapper(meshPtr),
+          m_vertexToBlockMap(&m_meshWrapper.vertexSet()),
         //
-        , m_grayLeafsMap( &this->m_levels)
-        , m_grayLeafToVertexRelationLevelMap( &this->m_levels )
-        , m_grayLeafToElementRelationLevelMap( &this->m_levels )
+          m_grayLeafsMap( &this->m_levels),
+          m_grayLeafToVertexRelationLevelMap( &this->m_levels ),
+          m_grayLeafToElementRelationLevelMap( &this->m_levels ),
         //
-        , m_generationState( INOUTOCTREE_UNINITIALIZED)
+          m_generationState( INOUTOCTREE_UNINITIALIZED)
     {
     }
 
@@ -1032,12 +1057,11 @@ private:
     /**
      * \brief Utility function to dump a single element vtk file
      */
-    void dumpMeshVTK( const std::string& name
-                    , int idx
-                    , const BlockIndex& block
-                    , const GeometricBoundingBox& blockBB
-                    , bool isTri
-                    ) const;
+    void dumpMeshVTK( const std::string& name,
+                     int idx,
+                     const BlockIndex& block,
+                     const GeometricBoundingBox& blockBB,
+                     bool isTri ) const;
 
     /**
      * \brief Utility function to dump any Inside blocks whose neighbors are outside (and vice-versa)
@@ -1065,6 +1089,8 @@ protected:
     GrayLeafElementRelationLevelMap m_grayLeafToElementRelationLevelMap;
 
     GenerationState m_generationState;
+
+    IndexRegistry m_indexRegistry;
 };
 
 
@@ -1188,8 +1214,8 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
     InOutBlockData& blkData = (*this)[block];
 
 
-    QUEST_OCTREE_DEBUG_LOG_IF( idx == DEBUG_VERT_IDX
-              , "\t -- inserting pt " << pt << " with index " << idx
+    QUEST_OCTREE_DEBUG_LOG_IF( idx == DEBUG_VERT_IDX,
+                "\t -- inserting pt " << pt << " with index " << idx
                   << ". Looking at block " << block
                   << " w/ blockBB " << this->blockBoundingBox(block)
                   << " indexing leaf vertex " << blkData.dataIndex()
@@ -1242,12 +1268,6 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     currentLevelData.reserve( NUM_INIT_DATA_ENTRIES );
     nextLevelData.reserve( NUM_INIT_DATA_ENTRIES );
 
-    // Raw data for relations from gray octree leaves to mesh vertices and elements
-    std::vector<VertexIndex>   gvRelData;
-    std::vector<int>           geSizeRelData;
-    std::vector<TriangleIndex> geIndRelData;
-
-
     /// --- Initialize root level data
     BlockIndex rootBlock = this->root();
     InOutBlockData& rootData = (*this)[rootBlock];
@@ -1271,10 +1291,12 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     {
         Timer levelTimer(true);
 
-        gvRelData.clear();
-        geSizeRelData.clear();
+        typename IndexRegistry::BufferType& gvRelData = m_indexRegistry.addNamelessBuffer();
+
+        typename IndexRegistry::BufferType& geSizeRelData = m_indexRegistry.addNamelessBuffer();
         geSizeRelData.push_back(0);
-        geIndRelData.clear();
+
+        typename IndexRegistry::BufferType& geIndRelData = m_indexRegistry.addNamelessBuffer();
 
         int nextLevelDataBlockCounter = 0;
 
@@ -1292,8 +1314,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
             bool isInternal = !dynamicLeafData.isLeaf();
             bool isLeafThatMustRefine = !isInternal && ! allTrianglesIncidentInCommonVertex(blk, dynamicLeafData);
 
-            QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk
-                 , "Attempting to insert triangles from block" << blk << "."
+            QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
+                 "Attempting to insert triangles from block" << blk << "."
                  << "\n\tDynamic data: " << dynamicLeafData
                  << "\n\tBlock data: " << blkData
                  << "\n\tAbout to finalize? " << (!isInternal && !isLeafThatMustRefine  ? " yes" : "no" )
@@ -1312,13 +1334,13 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                     gvRelData.push_back( dynamicLeafData.vertexIndex() );
 
                     // Add the triangles to the gray block's element relations
-                    std::copy( dynamicLeafData.triangles().begin()
-                             , dynamicLeafData.triangles().end()
-                             , std::back_inserter(geIndRelData));
+                    std::copy( dynamicLeafData.triangles().begin(),
+                               dynamicLeafData.triangles().end(),
+                               std::back_inserter(geIndRelData));
                     geSizeRelData.push_back( geIndRelData.size());
 
-                    QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk
-                         , "[Added block" << blk << " into tree as a gray leaf]."
+                    QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
+                         "[Added block" << blk << " into tree as a gray leaf]."
                          << "\n\tDynamic data: " << dynamicLeafData
                          << "\n\tBlock data: " << blkData );
                 }
@@ -1424,8 +1446,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                             childDataPtr[j]->addTriangle(tIdx);
 
                             QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == childBlk[j]
-                                                   || DEBUG_BLOCK_2 == childBlk[j] //&& tIdx == DEBUG_TRI_IDX
-                                 ,"Added triangle " << tIdx
+                                                   || DEBUG_BLOCK_2 == childBlk[j], //&& tIdx == DEBUG_TRI_IDX
+                                 "Added triangle " << tIdx
                                  <<" @ " << spaceTri
                                  << " with verts " << m_meshWrapper.triangleVertexIndices(tIdx)
                                  << "\n\tinto block " << childBlk[j]
@@ -1443,10 +1465,11 @@ void InOutOctree<DIM>::insertMeshTriangles ()
             m_grayLeafsMap[lev] = GrayLeafSet( gvRelData.size() );
 
             m_grayLeafToVertexRelationLevelMap[lev] = GrayLeafVertexRelation(&m_grayLeafsMap[lev], &m_meshWrapper.vertexSet());
-            m_grayLeafToVertexRelationLevelMap[lev].bindRelationData(gvRelData);
+            m_grayLeafToVertexRelationLevelMap[lev].bindIndices(gvRelData.size(), &gvRelData);
 
             m_grayLeafToElementRelationLevelMap[lev] = GrayLeafElementRelation(&m_grayLeafsMap[lev], &m_meshWrapper.elementSet());
-            m_grayLeafToElementRelationLevelMap[lev].bindRelationData(geSizeRelData, geIndRelData);
+            m_grayLeafToElementRelationLevelMap[lev].bindBeginOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
+            m_grayLeafToElementRelationLevelMap[lev].bindIndices(geIndRelData.size(), &geIndRelData);
         }
 
         currentLevelData.clear();
@@ -1621,8 +1644,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                     }
 
                     QUEST_OCTREE_DEBUG_LOG_IF(neighborData.isColored()
-                             && (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk)
-                          ,  "Neighbor block was colored -- " << neighborBlk
+                             && (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk),
+                             "Neighbor block was colored -- " << neighborBlk
                              << " now has data " << neighborData);
                 }
             }
@@ -1677,8 +1700,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& lea
     std::vector<SpaceVector>   unitNorms;
     unitNorms.reserve( numTris);
 
-    QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
-          , "Within gray block " << leafBlk
+    QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
+          "Within gray block " << leafBlk
           << "\n\t\t -- data " << leafData
           << "\n\t\t -- bounding box " << this->blockBoundingBox(leafBlk)
           << "\n\t\t -- testing point " << pt
@@ -2646,12 +2669,11 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
 }
 
 template<int DIM>
-void InOutOctree<DIM>::dumpMeshVTK( const std::string& name
-                , int idx
-                , const BlockIndex& block
-                , const GeometricBoundingBox& blockBB
-                , bool isTri
-                ) const
+void InOutOctree<DIM>::dumpMeshVTK( const std::string& name,
+                int idx,
+                const BlockIndex& block,
+                const GeometricBoundingBox& blockBB,
+                bool isTri ) const
 {
   #ifdef DUMP_VTK_MESH
     DebugMesh* debugMesh= new DebugMesh(3);
