@@ -1,3 +1,7 @@
+#
+# Generate source
+# sidre/src/interface/CMakeLists.txt
+#
 add_shroud( YAML_INPUT_FILE sidre_shroud.yaml
             YAML_OUTPUT_DIR yaml
             C_FORTRAN_OUTPUT_DIR c_fortran
@@ -15,3 +19,5 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py fortran > 
             ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
+
+uncrustify_shroud()
