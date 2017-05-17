@@ -4,7 +4,7 @@
 ###############################################################################
 
 """
- file: llnl_rz_uberenv_blueos_3_ppc64le_ib.py
+ file: llnl_rz_uberenv_blueos_3_ppc64le_ib_all_compilers.py
 
  description: 
   uses uberenv to install tpls for the set of compilers we want
