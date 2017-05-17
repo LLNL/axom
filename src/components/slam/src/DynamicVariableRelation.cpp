@@ -68,14 +68,15 @@ namespace slam {
       // Check that all elements of the relations vector point to valid set elements in the toSet
       for(SetPosition fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
       {
-        SetPosition idx = m_fromSet->at(fromIdx);
+        SetPosition idx = fromIdx;
         for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx); rIt < rEnd; ++rIt)
         {
           if( *rIt >= m_toSet->size() )
           {
             if(verboseOutput)
             {
-              sstr  << "\n\t* relation for element " << fromIdx << " of fromSet had an out-of-range element."
+              sstr  << "\n\t* relation for element " << m_fromSet->at(fromIdx)
+                    << " of fromSet had an out-of-range element."
                     << " -- value of element " << std::distance( begin(idx), rIt) << " was " << *rIt
                     << ". Max possible value should be " << m_toSet->size() << ".";
             }
@@ -116,8 +117,8 @@ namespace slam {
 
         for(SetPosition fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
         {
-          SetPosition idx = m_fromSet->at(fromIdx);
-          std::cout << "\n\telt[" << fromIdx << "] (" << size(idx)  << "):\t";
+          SetPosition idx = fromIdx;
+          std::cout << "\n\t" << m_fromSet->at(fromIdx) <<  " (" << size(idx)  << "):\t";
           std::copy(begin(idx), end(idx), std::ostream_iterator<SetPosition>(std::cout, " "));
           overallCount += size(idx);
         }

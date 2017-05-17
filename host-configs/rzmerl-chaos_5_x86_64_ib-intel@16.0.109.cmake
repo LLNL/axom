@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_01_16_47_58/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/cmake-3.3.1-leegihjenbrwm6vzsbekeu5pknapqtol/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_08_21_38_20/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/cmake-3.3.1-leegihjenbrwm6vzsbekeu5pknapqtol/bin/cmake
 
 #######
 # using intel@16.0.109 compiler spec
@@ -20,18 +20,21 @@ set(CMAKE_C_COMPILER "/usr/local/tools/ic-16.0.109/bin/icc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/tools/ic-16.0.109/bin/icpc" CACHE PATH "")
 
 # fortran compiler used by spack
-set(ENABLE_FORTRAN "ON" CACHE PATH "")
+set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-16.0.109/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_01_16_47_58/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_08_21_38_20/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-lkavbwiq2g26mxzbmdpvtji6t6np2hex" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-7x7anog2j57nnvfu5whm4ypl7wvznm3a" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-r67cgn6jxgfmexi3qosmpzl2sxr5pqjq" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-vaxfagykvpueronnzybsyr63rhcmldzj" CACHE PATH "")

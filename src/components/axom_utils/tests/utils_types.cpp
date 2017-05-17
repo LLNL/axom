@@ -14,7 +14,7 @@
 
 #include "axom/Types.hpp"
 
-TEST(gtest_common_types,check_types_8)
+TEST(gtest_utils_types,check_types_8)
 {
   typedef axom::common::int8 SignedType;
   typedef axom::common::uint8 UnsigneType;
@@ -36,7 +36,7 @@ TEST(gtest_common_types,check_types_8)
 
 
 
-TEST(gtest_common_types,check_types_16)
+TEST(gtest_utils_types,check_types_16)
 {
   typedef axom::common::int16 SignedType;
   typedef axom::common::uint16 UnsigneType;
@@ -56,7 +56,7 @@ TEST(gtest_common_types,check_types_16)
 }
 
 
-TEST(gtest_common_types,check_types_32)
+TEST(gtest_utils_types,check_types_32)
 {
   typedef axom::common::int32 SignedType;
   typedef axom::common::uint32 UnsigneType;
@@ -76,7 +76,7 @@ TEST(gtest_common_types,check_types_32)
 }
 
 
-TEST(gtest_common_types,check_types_64)
+TEST(gtest_utils_types,check_types_64)
 {
 #ifndef AXOM_NO_INT64_T
   typedef axom::common::int64 SignedType;
@@ -95,9 +95,9 @@ TEST(gtest_common_types,check_types_64)
   EXPECT_EQ(EXP_BYTES, sizeof(SignedType) );
   EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
 #else
-  std::cout<<"Tests for common's typedefs: "
-           <<" 64-bit integer types not defined for this build."
-           <<" Skipping 64-bit test." << std::endl;
+  std::cout<<" Skipping 64-bit tests --"
+           <<" 64-bit integer typedefs not defined in this configuration." 
+           << std::endl;
 
   EXPECT_TRUE(true);
 #endif

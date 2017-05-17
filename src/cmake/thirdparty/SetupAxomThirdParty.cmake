@@ -26,6 +26,16 @@ if (HDF5_DIR)
 endif()
 
 ################################
+# MFEM
+################################
+if (MFEM_DIR)
+  include(cmake/thirdparty/FindMFEM.cmake)
+  blt_register_library( NAME mfem
+                        INCLUDES  ${MFEM_INCLUDE_DIRS}
+                        LIBRARIES ${MFEM_LIBRARY} )
+endif()
+
+################################
 # Find boost headers
 ################################
 if (BOOST_DIR)

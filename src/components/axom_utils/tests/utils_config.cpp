@@ -21,6 +21,10 @@
   #include "boost/version.hpp"
 #endif
 
+#ifdef AXOM_USE_MFEM
+  #include "mfem.hpp"
+#endif
+
 #include <string>
 #include <sstream>          // stringstream
 #include <iostream>         // cout
@@ -28,7 +32,7 @@
 #include <algorithm>        // copy
 
 
-TEST(gtest_common_config,config_libraries)
+TEST(gtest_utils_config,config_libraries)
 {
   // This test checks which libraries are available in the configuration
 
@@ -60,7 +64,11 @@ TEST(gtest_common_config,config_libraries)
   libs.push_back("openmp");
 #endif
 
-  #ifdef AXOM_USE_MPI
+#ifdef AXOM_USE_MFEM
+  libs.push_back("mfem");
+#endif
+
+#ifdef AXOM_USE_MPI
   libs.push_back("mpi");
 #endif
 
@@ -84,7 +92,7 @@ TEST(gtest_common_config,config_libraries)
 }
 
 
-TEST(gtest_common_config,config_components)
+TEST(gtest_utils_config,config_components)
 {
   // This test checks which toolkit components are available in the configuration
 
@@ -95,8 +103,6 @@ TEST(gtest_common_config,config_components)
 #ifdef AXOM_USE_AXOM_UTILS
   comps.push_back("axom_utils");
 #endif
-
-  EXPECT_EQ(1u, comps.size()) << "Common component is always available.";
 
 #ifdef AXOM_USE_MINT
   comps.push_back("mint");
@@ -138,7 +144,7 @@ TEST(gtest_common_config,config_components)
   EXPECT_TRUE(true);
 }
 
-TEST(gtest_common_config,config_openmp)
+TEST(gtest_utils_config,config_openmp)
 {
     // This test checks that the per-target OpenMP guards
     // in our configuration file 'axom/config.hpp' are working properly
@@ -180,7 +186,7 @@ TEST(gtest_common_config,config_openmp)
 }
 
 #ifdef AXOM_USE_BOOST
-TEST(gtest_common_config,boost_version)
+TEST(gtest_utils_config,boost_version)
 {
     std::cout << "Using boost version "
           << BOOST_VERSION / 100000     << "."  // major version
@@ -189,4 +195,23 @@ TEST(gtest_common_config,boost_version)
           << std::endl;
 }
 #endif // AXOM_USE_BOOST
+
+#ifdef AXOM_USE_MFEM
+TEST(gtest_utils_config,mfem_configuration)
+{
+    // Verify that this copy of mfem is configured without MPI
+    bool hasMPI = false;
+    #ifdef MFEM_USE_MPI
+       hasMPI = true;
+    #endif
+    EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
+
+    // Verify that this copy of mfem is configured without Sidre
+    bool hasSidre = false;
+    #ifdef MFEM_USE_SIDRE
+       hasSidre = true;
+    #endif
+    EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
+}
+#endif // AXOM_USE_MFEM
 

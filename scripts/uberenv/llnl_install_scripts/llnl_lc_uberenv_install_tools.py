@@ -161,9 +161,18 @@ def build_and_test_host_config(test_root,host_config):
         print "[ERROR: Build for host-config: %s failed]" % host_config
         return res
 
-    res = sexe("cd %s && make test " % build_dir,
-               output_file = pjoin(build_dir,"output.log.make.test.txt"),
-               echo=True)
+
+    if "bgqos_0" in os.getenv('SYS_TYPE', ""):
+        # Need to use ctest-3.0 on bg/q
+        ctest_exe = "/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"
+        res = sexe("cd {} && {} -T Test -j16".format(build_dir,ctest_exe),
+                   output_file = pjoin(build_dir,"output.log.make.test.txt"),
+                   echo=True)
+
+    else:
+        res = sexe("cd %s && make test " % build_dir,
+                   output_file = pjoin(build_dir,"output.log.make.test.txt"),
+                   echo=True)
 
     if res != 0:
         print "[ERROR: Tests for host-config: %s failed]" % host_config

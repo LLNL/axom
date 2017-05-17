@@ -1,5 +1,5 @@
 #!/bin/bash
-#MSUB -l nodes=1
+#MSUB -l nodes=1:ppn=36
 #MSUB -q pdebug
 #MSUB -l walltime=8:00:00
 #MSUB -j oe

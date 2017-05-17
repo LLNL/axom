@@ -46,7 +46,7 @@ namespace slam {
     inline bool                 isSubset() const { return false; }
     const Set*                  parentSet() const { return this; }
 
-    bool                        isValid(bool) const { return true; }
+    bool                        isValid(bool AXOM_NOT_USED(verboseOutput) = false) const { return true; }
 
     bool                        empty() const { return true; }
 
