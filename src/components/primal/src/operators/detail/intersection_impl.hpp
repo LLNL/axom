@@ -38,6 +38,9 @@ bool isLpeq(double x, double y, double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
 bool isGpeq(double x, double y, double EPS=1.0e-12);
 bool signMatch(double x, double y, double z, double EPS=1.0e-12);
+bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
+bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
+int  countZeros(double x, double y, double z, double EPS=1.0e-12);
 double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
 bool checkEdge(const Point2 p1,
@@ -130,6 +133,13 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1, const Triangle< T,
     return false;
   }
 
+#if !defined (AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY)
+  if (twoZeros(dp1, dq1, dr1) ||
+      oneZeroOthersMatch(dp1, dq1, dr1)) {
+    return false;
+  }
+#endif
+
   // Step 2: Check if all the vertices of triangle 2 lie on the same side of
   // the plane created by triangle 1:
 
@@ -139,9 +149,17 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1, const Triangle< T,
   double dp2 = (Vector3(t1[2],t2[0])).dot(t1Normal);
   double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
   double dr2 = (Vector3(t1[2],t2[2])).dot(t1Normal);
+
   if (signMatch(dp2, dq2, dr2)) {
     return false;
   }
+
+#if !defined (AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY)
+  if (twoZeros(dp2, dq2, dr2) ||
+      oneZeroOthersMatch(dp2, dq2, dr2)) {
+    return false;
+  }
+#endif
 
   /* Note: Because we know that all the vertices either triangle do not
      lay on the same side of the plane formed by the other triangle, we
@@ -870,13 +888,48 @@ inline bool isGpeq(double x, double y, double EPS)
 }
 
 /*!
- *****************************************************************************
+ *******************************************************************************
  * \brief Check if x, y, and z all have the same sign.
- ****************************************************************************
+ *******************************************************************************
  */
 inline bool signMatch(double x, double y, double z, double EPS)
 {
   return ((isGt(x*y, 0.0, EPS)) && (isGt(x*z, 0.0, EPS)));
+}
+
+/*!
+ *******************************************************************************
+ * \brief Check if two of x, y, and z are near zero.
+ *******************************************************************************
+ */
+inline bool twoZeros(double x, double y, double z, double EPS)
+{
+  return countZeros(x, y, z, EPS) == 2;
+}
+
+/*!
+ *******************************************************************************
+ * \brief Check if one of x, y, and z is near zero and the others' signs match.
+ *******************************************************************************
+ */
+inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
+{
+  return countZeros(x, y, z, EPS) == 1 &&
+    ((axom::utilities::isNearlyEqual(x, 0.0, EPS) && isGt(y*z, 0.0, EPS)) ||
+     (axom::utilities::isNearlyEqual(y, 0.0, EPS) && isGt(z*x, 0.0, EPS)) ||
+     (axom::utilities::isNearlyEqual(z, 0.0, EPS) && isGt(x*y, 0.0, EPS)));
+}
+
+/*!
+ *******************************************************************************
+ * \brief Count the number of arguments near zero.
+ *******************************************************************************
+ */
+inline int countZeros(double x, double y, double z, double EPS)
+{
+  return (int)axom::utilities::isNearlyEqual(x, 0.0, EPS) +
+    (int)axom::utilities::isNearlyEqual(y, 0.0, EPS) +
+    (int)axom::utilities::isNearlyEqual(z, 0.0, EPS);
 }
 
 /** @} */
