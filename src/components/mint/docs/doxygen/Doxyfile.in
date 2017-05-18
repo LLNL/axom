@@ -1,6 +1,7 @@
 PROJECT_NAME  = Mint
 PROJECT_BRIEF = "Mint: Mesh Infrastructure Toolkit"
-INPUT = @PROJECT_SOURCE_DIR@/src/mesh
+INPUT = @PROJECT_SOURCE_DIR@/src
+RECURSIVE = YES
 GENERATE_XML = YES
 USE_MATHJAX = YES
 FILE_PATTERNS += *.md *.markdown *.cpp *.hpp
