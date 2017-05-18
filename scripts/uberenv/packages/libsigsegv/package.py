@@ -33,11 +33,14 @@ class Libsigsegv(Package):
     version('2.10', '7f96fb1f65b3b8cbc1582fb7be774f0f')
 
     def install(self, spec, prefix):
-      #extra_args = []
-      #if os.environ['SYS_TYPE'].find("blueos_3") == 0:
-      #      extra_args.append('ac_cv_build=powerpc64le-unknown-linux-gnu')
+      extra_args = []
+      extra_args.append('--enable-shared')
+      extra_args.append("--enable-unsupported")
+      if 'blueos_3' in os.getenv('SYS_TYPE', ""):
+            extra_args.append('ac_cv_build=powerpc64le-unknown-linux-gnu')
 
-        configure('--prefix=%s' % prefix,
-                  '--enable-shared')
+         # configure('--prefix=%s' % prefix,
+         #    '--enable-shared')
 
-       # configure("--prefix=%s" % prefix, *extra_args)
+      configure("--prefix=%s" % prefix, 
+            *extra_args)
