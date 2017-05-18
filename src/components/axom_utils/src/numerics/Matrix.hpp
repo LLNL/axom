@@ -13,7 +13,8 @@
 #include "axom_utils/Utilities.hpp" // for utilities::swap()
 
 // C/C++ includes
-#include <cassert> // for assert()
+#include <cassert>  // for assert()
+#include <iostream> // for std::ostream
 
 #ifndef AXOM_MATRIX_HPP_
 #define AXOM_MATRIX_HPP_
