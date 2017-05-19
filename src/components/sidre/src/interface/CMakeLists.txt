@@ -2,14 +2,17 @@
 # Generate source
 # sidre/src/interface/CMakeLists.txt
 #
-add_shroud( YAML_INPUT_FILE sidre_shroud.yaml
-            YAML_OUTPUT_DIR yaml
-            C_FORTRAN_OUTPUT_DIR c_fortran
-            PYTHON_OUTPUT_DIR python
-            DEPENDS_SOURCE
-                c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
-                python/pysidresplicer.c
-            DEPENDS_BINARY genfsidresplicer.f
+set(YAML_INPUT_FILE sidre_shroud.yaml)
+
+add_shroud(
+    YAML_INPUT_FILE      ${YAML_INPUT_FILE}
+    YAML_OUTPUT_DIR      yaml
+    C_FORTRAN_OUTPUT_DIR c_fortran
+    PYTHON_OUTPUT_DIR    python
+    DEPENDS_SOURCE
+        c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
+        python/pysidresplicer.c
+    DEPENDS_BINARY genfsidresplicer.f
 )
 
 add_custom_command(
@@ -20,4 +23,6 @@ add_custom_command(
             ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
 
-uncrustify_shroud()
+uncrustify_shroud(
+    YAML_INPUT_FILE      ${YAML_INPUT_FILE}
+)

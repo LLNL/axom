@@ -59,29 +59,6 @@ if(EXISTS ${SHROUD_EXECUTABLE})
     include(${CMAKE_CURRENT_BINARY_DIR}/SetupShroud.cmake)
 endif()
 
-macro(uncrustify_shroud)
-    # Must be after a call to add_shroud macro
-    # Only run uncrustify if shroud has just run
-    # XXX uncrustify.cfg is hardwired
-    set(_cfg ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
-    set(_uncrustify ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.uncrustify)
-    if(UNCRUSTIFY_FOUND AND (EXISTS ${_cfg}))
-        add_custom_command(
-            OUTPUT ${_uncrustify}
-            DEPENDS  ${_timestamp}
-            COMMAND ${UNCRUSTIFY_EXECUTABLE}
-                    -c ${_cfg} --no-backup `cat ${_cfiles}`
-            COMMAND touch ${_uncrustify}
-            COMMENT "Running uncrustify for ${arg_YAML_INPUT_FILE}."
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-        add_custom_target(${_shroud_target}_uncrustify
-            DEPENDS ${_uncrustify}
-        )
-        add_dependencies(generate ${_shroud_target}_uncrustify)
-    endif()
-endmacro(uncrustify_shroud)
-
 ################################
 # Python
 ################################
