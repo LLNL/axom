@@ -1,0 +1,32 @@
+##############################################################################
+# !---------------------------------------------------------------------------
+##############################################################################
+# Options added manually to 
+# lc blueos clang@4.0.0  host configs
+##############################################################################
+
+##############################################################################
+# MPI - manually added for now
+##############################################################################
+
+set(ENABLE_MPI ON CACHE BOOL "")
+
+set(MPI_HOME                 "/usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-clang-coral-2017.05.19" CACHE PATH "")
+set(MPI_Fortran_HOME         "/usr/tcetmp/packages/xlflang/xlflang-2016-11-30/xlf" CACHE PATH "")
+set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
+set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
+set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
+set(MPI_Fortran_LIBRARIES    "${MPI_Fortran_HOME}/lib" CACHE PATH "")
+set(MPI_Fortran_INCLUDE_PATH "${MPI_Fortran_HOME}/include" CACHE PATH "")
+
+set(MPIEXEC              "mpirun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+##############################################################################
+# SHROUD - manually added for now. Use a public build add to TPL later
+##############################################################################
+set(SHROUD_EXECUTABLE "/usr/apps/shroud/bin/shroud" CACHE PATH "")
+
+##############################################################################
+# !---------------------------------------------------------------------------
+##############################################################################
