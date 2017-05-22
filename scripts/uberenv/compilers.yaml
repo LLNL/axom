@@ -55,8 +55,8 @@ compilers:
         clang@coral:
             cc:  /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang
             cxx: /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang++
-            f77: None
-            fc: None
+            f77: /usr/tcetmp/packages/xlflang/xlflang-2016-11-30/bin/xlflang
+            fc: /usr/tcetmp/packages/xlflang/xlflang-2016-11-30/bin/xlflang
         gcc@4.9.3:
             cc:  /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gcc
             cxx: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/g++
