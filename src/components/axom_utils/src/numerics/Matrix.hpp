@@ -392,13 +392,15 @@ public:
    * \param [in] rows the number of rows in the matrix
    * \param [in] cols the number of columns in the matrix
    * \param [in] data pointer to user-supplied buffer to initialize the matrix.
+   * \param [in] shallowCopyt optional flag that indicates that this matrix
+   *  instance should not make a deep copy of the data. Default is false.
    *
    * \pre rows >= 1
    * \pre cols >= 1
    * \pre data != AXOM_NULLPTR
    *****************************************************************************
    */
-  Matrix( int rows, int cols, T* data );
+  Matrix( int rows, int cols, T* data, bool shallowCopy=false );
 
   /*!
    *****************************************************************************
@@ -430,6 +432,14 @@ public:
    *****************************************************************************
    */
   bool empty() const { return (m_rows*m_cols==0); };
+
+  /*!
+   *****************************************************************************
+   * \brief Checks to see if the matrix has an external buffer.
+   * \return status true iff the matrix has an external buffer, else, false.
+   *****************************************************************************
+   */
+  bool hasExternalBuffer() const { return m_external; };
 
   /*!
    *****************************************************************************
@@ -873,9 +883,10 @@ private:
   /// \name Private Data Members
   /// @{
 
-  int m_rows; /*!< the number of rows in the matrix */
-  int m_cols; /*!< the number of columns in the matrix */
-  T* m_data;  /*!< raw storage buffer for the matrix data */
+  int m_rows;      /*!< the number of rows in the matrix */
+  int m_cols;      /*!< the number of columns in the matrix */
+  T* m_data;       /*!< raw storage buffer for the matrix data */
+  bool m_external; /*!< flag that indicates if an external buffer is used */
 
   /// @}
 
@@ -891,7 +902,10 @@ namespace axom {
 namespace numerics {
 
 template < typename T >
-Matrix< T >::Matrix( int rows, int cols, T val ) : m_rows( rows ), m_cols( cols )
+Matrix< T >::Matrix( int rows, int cols, T val ) :
+  m_rows( rows ),
+  m_cols( cols ),
+  m_external( false )
 {
   // sanity checks
   assert( m_rows > 0 );
@@ -903,23 +917,33 @@ Matrix< T >::Matrix( int rows, int cols, T val ) : m_rows( rows ), m_cols( cols 
 
 //-----------------------------------------------------------------------------
 template < typename T >
-Matrix< T >::Matrix( int rows, int cols, T* data ) :
+Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
  m_rows( rows ),
- m_cols( cols )
+ m_cols( cols ),
+ m_external( external )
 {
   assert( data != AXOM_NULLPTR );
 
   const int nitems = m_rows*m_cols;
-  m_data = new T[ nitems ];
-  memcpy( m_data, data, nitems*sizeof(T) );
+
+  if ( m_external ) {
+
+     m_data = data;
+
+  } else {
+    m_data = new T[ nitems ];
+    memcpy( m_data, data, nitems*sizeof(T) );
+  }
+
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
 Matrix< T >::Matrix( const Matrix< T >& rhs )
 {
-  m_rows = m_cols = 0;
-  m_data = AXOM_NULLPTR;
+  m_external = false;
+  m_rows     = m_cols = 0;
+  m_data     = AXOM_NULLPTR;
   this->copy( rhs );
 }
 
@@ -1178,7 +1202,8 @@ Matrix< T > Matrix< T >::ones( int nrows, int ncols )
 template < typename T >
 void Matrix< T >::copy( const Matrix< T >& rhs )
 {
-  bool do_allocate = (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols);
+  bool do_allocate =
+       m_external || (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols);
 
   if ( do_allocate ) {
 
@@ -1202,8 +1227,11 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 template < typename T >
 void Matrix< T >::clear( )
 {
-  delete [ ] m_data;
-  m_data = AXOM_NULLPTR;
+  if ( !m_external ) {
+    delete [ ] m_data;
+    m_data = AXOM_NULLPTR;
+  }
+
   m_rows = m_cols = 0;
 }
 
