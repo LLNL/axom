@@ -12,9 +12,7 @@ set( primal_tests
     primal_boundingbox.cpp
     primal_bvhtree.cpp
     primal_intersection_impl.cpp
-    primal_intersection_impl_includebound.cpp
     primal_intersection.cpp
-    primal_intersection_includebound.cpp
     primal_numeric_array.cpp
     primal_orient.cpp
     primal_point.cpp

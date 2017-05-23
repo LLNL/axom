@@ -12,7 +12,6 @@
 
 #include "slic/slic.hpp"
 
-// Not defined: AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
 #include "primal/intersection_impl.hpp"
 
 using namespace axom;
@@ -63,35 +62,34 @@ TEST( primal_intersection_impl, fuzzy_comparisons )
   // --
   EXPECT_FALSE( primal::detail::isGeq(0.85, 1.0, eps) );
 
-#if defined AXOM_TRI_INTERSECTION_INCLUDES_BOUNDARY
-  EXPECT_FALSE( primal::detail::isLpeq(1.15, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLpeq(1.15, 1.0, true, eps) );
   // --
-  EXPECT_TRUE(  primal::detail::isLpeq(1.05, 1.0, eps) );
-  EXPECT_TRUE(  primal::detail::isLpeq(1.0, 1.0, eps) );
-  EXPECT_TRUE(  primal::detail::isLpeq(0.95, 1.0, eps) );
-  EXPECT_TRUE(  primal::detail::isLpeq(0.85, 1.0, eps) );
+  EXPECT_TRUE(  primal::detail::isLpeq(1.05, 1.0, true, eps) );
+  EXPECT_TRUE(  primal::detail::isLpeq(1.0, 1.0, true, eps) );
+  EXPECT_TRUE(  primal::detail::isLpeq(0.95, 1.0, true, eps) );
+  EXPECT_TRUE(  primal::detail::isLpeq(0.85, 1.0, true, eps) );
 
-  EXPECT_TRUE(  primal::detail::isGpeq(1.15, 1.0, eps) );
-  EXPECT_TRUE(  primal::detail::isGpeq(1.05, 1.0, eps) );
-  EXPECT_TRUE(  primal::detail::isGpeq(1.0, 1.0, eps) );
-  EXPECT_TRUE(  primal::detail::isGpeq(0.95, 1.0, eps) );
+  EXPECT_TRUE(  primal::detail::isGpeq(1.15, 1.0, true, eps) );
+  EXPECT_TRUE(  primal::detail::isGpeq(1.05, 1.0, true, eps) );
+  EXPECT_TRUE(  primal::detail::isGpeq(1.0, 1.0, true, eps) );
+  EXPECT_TRUE(  primal::detail::isGpeq(0.95, 1.0, true, eps) );
   // --
-  EXPECT_FALSE( primal::detail::isGpeq(0.85, 1.0, eps) );
-#else
-  EXPECT_FALSE( primal::detail::isLpeq(1.15, 1.0, eps) );
-  EXPECT_FALSE(  primal::detail::isLpeq(1.05, 1.0, eps) );
-  EXPECT_FALSE(  primal::detail::isLpeq(1.0, 1.0, eps) );
-  EXPECT_FALSE(  primal::detail::isLpeq(0.95, 1.0, eps) );
-  // --
-  EXPECT_TRUE(  primal::detail::isLpeq(0.85, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isGpeq(0.85, 1.0, true, eps) );
 
-  EXPECT_TRUE(  primal::detail::isGpeq(1.15, 1.0, eps) );
+  EXPECT_FALSE( primal::detail::isLpeq(1.15, 1.0, false, eps) );
+  EXPECT_FALSE(  primal::detail::isLpeq(1.05, 1.0, false, eps) );
+  EXPECT_FALSE(  primal::detail::isLpeq(1.0, 1.0, false, eps) );
+  EXPECT_FALSE(  primal::detail::isLpeq(0.95, 1.0, false, eps) );
   // --
-  EXPECT_FALSE(  primal::detail::isGpeq(1.05, 1.0, eps) );
-  EXPECT_FALSE(  primal::detail::isGpeq(1.0, 1.0, eps) );
-  EXPECT_FALSE(  primal::detail::isGpeq(0.95, 1.0, eps) );
-  EXPECT_FALSE( primal::detail::isGpeq(0.85, 1.0, eps) );
-#endif
+  EXPECT_TRUE(  primal::detail::isLpeq(0.85, 1.0, false, eps) );
+
+  EXPECT_TRUE(  primal::detail::isGpeq(1.15, 1.0, false, eps) );
+  // --
+  EXPECT_FALSE(  primal::detail::isGpeq(1.05, 1.0, false, eps) );
+  EXPECT_FALSE(  primal::detail::isGpeq(1.0, 1.0, false, eps) );
+  EXPECT_FALSE(  primal::detail::isGpeq(0.95, 1.0, false, eps) );
+  EXPECT_FALSE( primal::detail::isGpeq(0.85, 1.0, false, eps) );
+
 
 }
 
