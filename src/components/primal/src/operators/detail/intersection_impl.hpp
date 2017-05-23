@@ -728,7 +728,7 @@ inline bool isLeq(double x, double y, double EPS)
  *****************************************************************************
  * \brief Checks if x < y, or possibly x == y, within a specified tolerance.
  *
- * The check for equality is controlled by a compile-time constant.  This
+ * The check for equality is controlled by parameter includeEqual.  This
  * lets users specify at compile time whether triangles intersecting only on
  * border points are reported as intersecting or not.
  *
@@ -758,7 +758,7 @@ inline bool isGeq(double x, double y, double EPS)
  *****************************************************************************
  * \brief Checks if x > y, or possibly x == y, within a specified tolerance.
  *
- * The check for equality is controlled by a compile-time constant.  This
+ * The check for equality is controlled by parameter includeEqual.  This
  * lets users specify at compile time whether triangles intersecting only on
  * border points are reported as intersecting or not.
  *
