@@ -31,8 +31,10 @@
 #include "slic/GenericOutputStream.hpp"
 
 // Sidre component headers
+#include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
+#include "Attribute.hpp"
 
 
 namespace axom
@@ -92,7 +94,9 @@ void DataStoreConduitInfoHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
-  : m_RootGroup(AXOM_NULLPTR), m_need_to_finalize_slic(false)
+  : m_RootGroup(AXOM_NULLPTR),
+    m_attribute_coll(new AttributeCollection()),
+    m_need_to_finalize_slic(false)
 {
 
   if ( !axom::slic::isInitialized() )
@@ -137,6 +141,7 @@ DataStore::~DataStore()
   // clean up Groups and Views before we destroy Buffers
   delete m_RootGroup;
   destroyAllBuffers();
+  delete m_attribute_coll;
 
   if ( m_need_to_finalize_slic )
   {
@@ -293,6 +298,31 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
           : InvalidIndex);
 }
 
+/*
+ *************************************************************************
+ *
+ * Return number of Attributes in the DataStore.
+ *
+ *************************************************************************
+ */
+size_t DataStore::getNumAttributes() const
+{
+  return m_attribute_coll->getNumItems();
+}
+
+Attribute * DataStore::createAttribute( const std::string & name )
+{
+  // XXX look for existing attribute
+
+  Attribute * new_attribute = new(std::nothrow) Attribute(name);
+  if ( new_attribute == AXOM_NULLPTR )
+  {
+    return AXOM_NULLPTR;
+  }
+
+  m_attribute_coll->insertItem(new_attribute, name);
+  return new_attribute;
+}
 
 /*
  *************************************************************************

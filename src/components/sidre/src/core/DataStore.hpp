@@ -42,6 +42,8 @@ namespace sidre
 
 class Buffer;
 class Group;
+class Attribute;
+template <typename TYPE> class MapCollection;
 
 /*!
  * \class DataStore
@@ -183,6 +185,84 @@ public:
 
 //@}
 
+//@{
+//!  @name Methods to query, access, create, and destroy Attributes.
+
+  /*!
+   * \brief Return number of Attributes in the DataStore.
+   */
+  size_t getNumAttributes() const;
+
+#if 0
+  /*!
+   * \brief Return true if DataStore owns a Attribute with given index;
+   *        else false.
+   */
+  bool hasAttribute( IndexType idx ) const
+  {
+    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
+             m_data_buffers[static_cast<unsigned>(idx)] != AXOM_NULLPTR );
+  }
+
+  /*!
+   * \brief Return (non-const) pointer to Attribute object with given index,
+   *        or AXOM_NULLPTR if none exists.
+   */
+  Attribute * getAttribute( IndexType idx ) const;
+
+  /*!
+   * \brief Create an undescribed Attribute object and return a pointer to it.
+   *
+   *        The Attribute must be described before it can be allocated.
+   *
+   *        The Attribute object is assigned a unique index when created and the
+   *        Attribute object is owned by the DataStore object.
+   */
+  Attribute * createAttribute();
+#endif
+
+  /*!
+   * \brief Create a Attribute object with specified type and number of
+   *        elements and return a pointer to it.
+   *
+   *        See the Attribute::describe() method for valid data description.
+   *
+   *        The Attribute object is assigned a unique index when created and the
+   *        Attribute object is owned by the DataStore object.
+   */
+  Attribute * createAttribute( const std::string & name );
+
+#if 0
+  /*!
+   * \brief Remove Attribute from the DataStore and destroy it and
+   *        its data.
+   *
+   *        Note that Attribute destruction detaches it from all Views to
+   *        which it is attached.
+   */
+  void destroyAttribute( Attribute * buff );
+
+  /*!
+   * \brief Remove Attribute with given index from the DataStore and
+   *        destroy it and its data.
+   *
+   *        Note that Attribute destruction detaches it from all Views to
+   *        which it is attached.
+   */
+  void destroyAttribute( IndexType idx );
+
+  /*!
+   * \brief Remove all Attributes from the DataStore and destroy them
+   *        and their data.
+   *
+   *        Note that Attribute destruction detaches it from all Views to
+   *        which it is attached.
+   */
+  void destroyAllAttributes();
+#endif
+
+//@}
+
   /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at
    *        root) and Buffer descriptions to std::cout.
@@ -207,6 +287,14 @@ private:
 
   /// Collection of unused unique Buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;
+
+  ///////////////////////////////////////////////////////////////////
+  //
+  typedef MapCollection<Attribute> AttributeCollection;
+  ///////////////////////////////////////////////////////////////////
+
+  /// Collection of Attributes
+  AttributeCollection * m_attribute_coll;
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;

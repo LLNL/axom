@@ -6,6 +6,7 @@ set(sidre_headers
     core/Group.hpp
     core/DataStore.hpp
     core/View.hpp
+    core/Attribute.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
@@ -20,6 +21,7 @@ set(sidre_sources
     core/Group.cpp
     core/DataStore.cpp
     core/View.cpp
+    core/Attribute.cpp
     core/SidreUtilities.cpp
 )
 
