@@ -350,21 +350,64 @@ bool DataStore::hasAttribute( IndexType idx ) const
   return m_attribute_coll->hasItem(idx);
 }
 
+/*
+ *************************************************************************
+ *
+ * Destroy Attribute with given name.
+ *
+ *************************************************************************
+ */
 void DataStore::destroyAttribute( const std::string & name )
 {
   Attribute *attr = getAttribute(name);
   destroyAttribute(attr);
 }
 
+/*
+ *************************************************************************
+ *
+ * Destroy Attribute with given index.
+ *
+ *************************************************************************
+ */
 void DataStore::destroyAttribute( IndexType idx )
 {
-  Attribute *attr = getAttribute(idx);
-  destroyAttribute(attr);
+  Attribute * attr = m_attribute_coll->removeItem(idx);
+  if ( attr != AXOM_NULLPTR )
+  {
+    delete attr;
+  }
 }
 
+/*
+ *************************************************************************
+ *
+ * Destroy Attribute.
+ *
+ *************************************************************************
+ */
 void DataStore::destroyAttribute( Attribute * attr )
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
+
+  destroyAttribute(attr->getIndex());
+}
+
+/*
+ *************************************************************************
+ *
+ * Destroy all Attributes in DataStore and reclaim indices.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyAllAttributes()
+{
+  IndexType bidx = getFirstValidAttributeIndex();
+  while ( indexIsValid(bidx) )
+  {
+    destroyAttribute( bidx );
+    bidx = getNextValidAttributeIndex(bidx);
+  }
 }
 
 /*
@@ -435,24 +478,34 @@ const Attribute * DataStore::getAttribute( IndexType idx ) const
   return m_attribute_coll->getItem(idx);
 }
 
-#if 0
-  /*!
-   * \brief Return first valid Attribute index in DataStore object
-   *        (i.e., smallest index over all Attributes).
-   *
-   * sidre::InvalidIndex is returned if DataStore has no Attributes.
-   */
-  IndexType DataStore::getFirstValidAttributeIndex() const;
+/*
+ *************************************************************************
+ *
+ * \brief Return first valid Attribute index in DataStore object
+ *        (i.e., smallest index over all Attributes).
+ *
+ * sidre::InvalidIndex is returned if DataStore has no Attributes.
+ *************************************************************************
+ */
+IndexType DataStore::getFirstValidAttributeIndex() const
+{
+  return m_attribute_coll->getFirstValidIndex();
+}
 
-  /*!
-   * \brief Return next valid Attribute index in DataStore object after given index
-   *        (i.e., smallest index over all Attribute indices larger than given one).
-   *
-   * sidre::InvalidIndex is returned if there is no valid index greater
-   * than given one.
-   */
-  IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const;
-#endif
+/*
+ *************************************************************************
+ *
+ * \brief Return next valid Attribute index in DataStore object after given index
+ *        (i.e., smallest index over all Attribute indices larger than given one).
+ *
+ * sidre::InvalidIndex is returned if there is no valid index greater
+ * than given one.
+ *************************************************************************
+ */
+IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const
+{
+  return m_attribute_coll->getNextValidIndex(idx);
+}
 
 
 /*

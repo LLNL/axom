@@ -53,6 +53,14 @@ public:
   friend class DataStore;
 
   /*!
+   * \brief Return const reference to name of Attribute object.
+   */
+  const std::string& getName() const
+  {
+    return m_name;
+  }
+
+  /*!
    * \brief Return the unique index of this Attribute object.
    */
   IndexType getIndex() const

@@ -259,16 +259,14 @@ public:
    */
   void destroyAttribute( Attribute * attr );
 
-#if 0
   /*!
    * \brief Remove all Attributes from the DataStore and destroy them
    *        and their data.
    *
-   *        Note that Attribute destruction detaches it from all Views to
+   * XXX    Note that Attribute destruction detaches it from all Views to
    *        which it is attached.
    */
   void destroyAllAttributes();
-#endif
 
 //@}
 
@@ -303,7 +301,6 @@ public:
    */
   const Attribute * getAttribute( IndexType idx ) const;
 
-#if 0
   /*!
    * \brief Return first valid Attribute index in DataStore object
    *        (i.e., smallest index over all Attributes).
@@ -320,7 +317,6 @@ public:
    * than given one.
    */
   IndexType getNextValidAttributeIndex(IndexType idx) const;
-#endif
 
 //@}
 //----------------
