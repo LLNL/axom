@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_01_17_47_34/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/cmake-3.3.1-2uuw7ygf74nmfkdbjbwxwwt3oa7yyzht/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_26_50/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0/cmake-3.3.1-2uuw7ygf74nmfkdbjbwxwwt3oa7yyzht/bin/cmake
 
 #######
 # using intel@17.0.0 compiler spec
@@ -20,18 +20,21 @@ set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-17.0.0/bin/icc" CACHE PATH "
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-17.0.0/bin/icpc" CACHE PATH "")
 
 # fortran compiler used by spack
-set(ENABLE_FORTRAN "ON" CACHE PATH "")
+set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-17.0.0/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_01_17_47_34/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_26_50/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-cgyhvn3ggrcy6mmiqfhvbuvjl3ildffp" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-lsl32y6qynlfl3x2qsrovl5bnelun4p2" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-drsi3j6epx7523n6j3oemou4gvgvn42k" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-6u7zrofaj4sdmjiodxelsplx7o32ewqz" CACHE PATH "")

@@ -74,8 +74,7 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-hucmk5dnudjpfjy2vhnid46g3fmi3r7n/usr/bin
 # MPI - manually added for now
 ##############################################################################
 
-# Temporarily disabling MPI on toss3 clang. See JIRA issue ATK-1017.
-set(ENABLE_MPI OFF CACHE BOOL "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
 set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")

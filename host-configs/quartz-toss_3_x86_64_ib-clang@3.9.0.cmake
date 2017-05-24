@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_01_17_47_34/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/cmake-3.3.1-usuntzhfbmwz5ci5fryejg52swgb5ruo/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_26_50/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/cmake-3.3.1-usuntzhfbmwz5ci5fryejg52swgb5ruo/bin/cmake
 
 #######
 # using clang@3.9.0 compiler spec
@@ -22,16 +22,19 @@ set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-3.9.0/bin/clang++" CACHE P
 # fortran compiler used by spack
 # no fortran compiler
 
-set(ENABLE_FORTRAN "OFF" CACHE PATH "")
+set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_01_17_47_34/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_26_50/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-qy646zjgaj4crjrgwrlqj2slnvjel5re" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-spqnui5wsqcmq46b3uyaimo5gxz3bttj" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-2lr5tv7roznsowa2oactqmrwx3cq6dwy" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-cjtvgl2bbxo727ky5bfaiihg4uublmbp" CACHE PATH "")
@@ -71,8 +74,7 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-hucmk5dnudjpfjy2vhnid46g3fmi3r7n/usr/bin
 # MPI - manually added for now
 ##############################################################################
 
-# Temporarily disabling MPI on toss3 clang. See JIRA issue ATK-1017.
-set(ENABLE_MPI OFF CACHE BOOL "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
 set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
