@@ -321,7 +321,33 @@ Attribute * DataStore::createAttribute( const std::string & name )
   }
 
   m_attribute_coll->insertItem(new_attribute, name);
+  IndexType idx = m_attribute_coll->getItemIndex(name);
+  new_attribute->setIndex(idx);
   return new_attribute;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this DataStore has an Attribute with given name; else false.
+ *
+ *************************************************************************
+ */
+bool DataStore::hasAttribute( const std::string & name ) const
+{
+  return m_attribute_coll->hasItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this DataStore has an Attribute with given index; else false.
+ *
+ *************************************************************************
+ */
+bool DataStore::hasAttribute( IndexType idx ) const
+{
+  return m_attribute_coll->hasItem(idx);
 }
 
 /*

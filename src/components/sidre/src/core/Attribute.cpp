@@ -42,8 +42,9 @@ namespace sidre
  *
  *************************************************************************
  */
-Attribute::Attribute( const std::string& name)
-  :   m_name(name)
+Attribute::Attribute( const std::string& name) :
+  m_name(name),
+  m_index(-1)
 {}
 
 /*

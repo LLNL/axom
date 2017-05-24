@@ -232,6 +232,16 @@ public:
    */
   Attribute * createAttribute( const std::string & name );
 
+  /*!
+   * \brief Return true if DataStore has created attribute name; else false.
+   */
+  bool hasAttribute( const std::string& name ) const;
+
+  /*!
+   * \brief Return true if DataStore has created attribute with index; else false.
+   */
+  bool hasAttribute( IndexType idx ) const;
+
 #if 0
   /*!
    * \brief Remove Attribute from the DataStore and destroy it and

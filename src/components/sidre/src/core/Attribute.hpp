@@ -25,6 +25,9 @@
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
 
+// Sidre project headers
+#include "sidre/SidreTypes.hpp"
+
 #ifndef SIDRE_ATTRIBUTE_HPP_
 #define SIDRE_ATTRIBUTE_HPP_
 
@@ -49,11 +52,27 @@ public:
    */
   friend class DataStore;
 
+  /*!
+   * \brief Return the unique index of this Attribute object.
+   */
+  IndexType getIndex() const
+  {
+    return m_index;
+  }
+
 private:
 
   DISABLE_DEFAULT_CTOR(Attribute);
   DISABLE_MOVE_AND_ASSIGNMENT(Attribute);
 
+  /*!
+   * \brief Set index of attribute within DataStore.
+   *        Called as part of DataStore->createAttribute.
+   */
+  void setIndex(IndexType index)
+  {
+    m_index = index;
+  }
 
 //@{
 //!  @name Private Attribute ctor and dtor
@@ -79,6 +98,10 @@ private:
 
   /// Name of this Attribute object.
   std::string m_name;
+
+  /// Attribute's unique index within DataStore object that created it.
+  IndexType m_index;
+
 };
 
 } /* end namespace sidre */

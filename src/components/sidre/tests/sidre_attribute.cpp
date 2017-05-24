@@ -16,6 +16,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Attribute;
 using axom::sidre::Group;
 using axom::sidre::View;
+using axom::sidre::IndexType;
 
 //------------------------------------------------------------------------------
 TEST(sidre_attribute,create_attr)
@@ -25,11 +26,24 @@ TEST(sidre_attribute,create_attr)
   int nattrs = ds->getNumAttributes();
   EXPECT_EQ(0, nattrs);
 
+  bool has_index = ds->hasAttribute(0);
+  EXPECT_FALSE( has_index );
+  bool has_name = ds->hasAttribute("units");
+  EXPECT_FALSE( has_name );
+
   Attribute * units = ds->createAttribute("units"); // , STRING, " ");
   EXPECT_TRUE( units != AXOM_NULLPTR );
 
+  IndexType attr_index = units->getIndex();
+  EXPECT_EQ(0, attr_index);
+
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(1, nattrs);
+
+  has_name = ds->hasAttribute("units");
+  EXPECT_TRUE( has_name );
+  has_index = ds->hasAttribute(0);
+  EXPECT_TRUE( has_index );
 
 #if 0
   IndexType iunits = units->getIndex();
