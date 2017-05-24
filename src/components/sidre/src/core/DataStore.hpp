@@ -195,16 +195,6 @@ public:
 
 #if 0
   /*!
-   * \brief Return true if DataStore owns a Attribute with given index;
-   *        else false.
-   */
-  bool hasAttribute( IndexType idx ) const
-  {
-    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-             m_data_buffers[static_cast<unsigned>(idx)] != AXOM_NULLPTR );
-  }
-
-  /*!
    * \brief Return (non-const) pointer to Attribute object with given index,
    *        or AXOM_NULLPTR if none exists.
    */
@@ -242,15 +232,14 @@ public:
    */
   bool hasAttribute( IndexType idx ) const;
 
-#if 0
   /*!
    * \brief Remove Attribute from the DataStore and destroy it and
    *        its data.
    *
-   *        Note that Attribute destruction detaches it from all Views to
+   * XXX    Note that Attribute destruction detaches it from all Views to
    *        which it is attached.
    */
-  void destroyAttribute( Attribute * buff );
+  void destroyAttribute( const std::string & name );
 
   /*!
    * \brief Remove Attribute with given index from the DataStore and
@@ -262,6 +251,16 @@ public:
   void destroyAttribute( IndexType idx );
 
   /*!
+   * \brief Remove Attribute from the DataStore and destroy it and
+   *        its data.
+   *
+   * XXX    Note that Attribute destruction detaches it from all Views to
+   *        which it is attached.
+   */
+  void destroyAttribute( Attribute * attr );
+
+#if 0
+  /*!
    * \brief Remove all Attributes from the DataStore and destroy them
    *        and their data.
    *
@@ -272,6 +271,60 @@ public:
 #endif
 
 //@}
+
+//@{
+//!  @name Attribute access and iteration methods.
+
+  /*!
+   * \brief Return pointer to non-const Attribute with given name.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  Attribute * getAttribute( const std::string& name );
+
+  /*!
+   * \brief Return pointer to const Attribute with given name.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  const Attribute * getAttribute( const std::string& name ) const;
+
+  /*!
+   * \brief Return pointer to non-const Attribute with given index.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  Attribute * getAttribute( IndexType idx );
+
+  /*!
+   * \brief Return pointer to const Attribute with given index.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  const Attribute * getAttribute( IndexType idx ) const;
+
+#if 0
+  /*!
+   * \brief Return first valid Attribute index in DataStore object
+   *        (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if DataStore has no Attributes.
+   */
+  IndexType getFirstValidAttributeIndex() const;
+
+  /*!
+   * \brief Return next valid Attribute index in DataStore object after given index
+   *        (i.e., smallest index over all Attribute indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   */
+  IndexType getNextValidAttributeIndex(IndexType idx) const;
+#endif
+
+//@}
+//----------------
+
 
   /*!
    * \brief Print JSON description of DataStore Group hierarchy (starting at

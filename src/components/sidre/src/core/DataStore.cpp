@@ -350,6 +350,111 @@ bool DataStore::hasAttribute( IndexType idx ) const
   return m_attribute_coll->hasItem(idx);
 }
 
+void DataStore::destroyAttribute( const std::string & name )
+{
+  Attribute *attr = getAttribute(name);
+  destroyAttribute(attr);
+}
+
+void DataStore::destroyAttribute( IndexType idx )
+{
+  Attribute *attr = getAttribute(idx);
+  destroyAttribute(attr);
+}
+
+void DataStore::destroyAttribute( Attribute * attr )
+{
+  SLIC_ASSERT( attr != AXOM_NULLPTR);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::getAttribute( const std::string& name )
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const Attribute * DataStore::getAttribute( const std::string& name ) const
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const Attribute with given index.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::getAttribute( IndexType idx )
+{
+  SLIC_CHECK_MSG( hasAttribute(idx),
+                  "DataStore has no Attribute with index " << idx);
+
+  return m_attribute_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const Attribute with given index.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const Attribute * DataStore::getAttribute( IndexType idx ) const
+{
+  SLIC_CHECK_MSG( hasAttribute(idx),
+                  "DataStore has no Attribute with index " << idx);
+
+  return m_attribute_coll->getItem(idx);
+}
+
+#if 0
+  /*!
+   * \brief Return first valid Attribute index in DataStore object
+   *        (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if DataStore has no Attributes.
+   */
+  IndexType DataStore::getFirstValidAttributeIndex() const;
+
+  /*!
+   * \brief Return next valid Attribute index in DataStore object after given index
+   *        (i.e., smallest index over all Attribute indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   */
+  IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const;
+#endif
+
+
 /*
  *************************************************************************
  *

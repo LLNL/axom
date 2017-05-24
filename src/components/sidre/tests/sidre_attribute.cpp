@@ -45,6 +45,49 @@ TEST(sidre_attribute,create_attr)
   has_index = ds->hasAttribute(0);
   EXPECT_TRUE( has_index );
 
+  Attribute * attr = ds->getAttribute("units");
+  EXPECT_EQ(attr, units);
+  const Attribute * attrc = ds->getAttribute("units");
+  EXPECT_EQ(attrc, units);
+
+  attr = ds->getAttribute(0);
+  EXPECT_EQ(attr, units);
+  attrc = ds->getAttribute(0);
+  EXPECT_EQ(attrc, units);
+
+  ds->destroyAttribute(units);
+
+}
+
+//------------------------------------------------------------------------------
+
+#if 0
+TEST(sidre_attribute,view_attr)
+{
+  DataStore * ds = new DataStore();
+
+  int nattrs = ds->getNumAttributes();
+  EXPECT_EQ(0, nattrs);
+
+  bool has_index = ds->hasAttribute(0);
+  EXPECT_FALSE( has_index );
+  bool has_name = ds->hasAttribute("units");
+  EXPECT_FALSE( has_name );
+
+  Attribute * units = ds->createAttribute("units"); // , STRING, " ");
+  EXPECT_TRUE( units != AXOM_NULLPTR );
+
+  IndexType attr_index = units->getIndex();
+  EXPECT_EQ(0, attr_index);
+
+  nattrs = ds->getNumAttributes();
+  EXPECT_EQ(1, nattrs);
+
+  has_name = ds->hasAttribute("units");
+  EXPECT_TRUE( has_name );
+  has_index = ds->hasAttribute(0);
+  EXPECT_TRUE( has_index );
+
 #if 0
   IndexType iunits = units->getIndex();
 
@@ -65,4 +108,5 @@ TEST(sidre_attribute,create_attr)
   const char * attr1 = view->getAttribute(units);
 #endif
 }
+#endif
 //------------------------------------------------------------------------------
