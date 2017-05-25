@@ -16,8 +16,23 @@ set(MPI_Fortran_HOME         "/usr/tcetmp/packages/xlflang/xlflang-2016-11-30/xl
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
-set(MPI_Fortran_LIBRARIES    "${MPI_Fortran_HOME}/lib" CACHE PATH "")
-set(MPI_Fortran_INCLUDE_PATH "${MPI_Fortran_HOME}/include" CACHE PATH "")
+
+set(MPI_DRIVER_ROOT          "/usr/tcetmp/packages/xlflang/xlflang-2016-11-30/xlf" CACHE PATH "")
+
+set(MPI_LIBS 
+    ${MPI_DRIVER_ROOT}/lib/libxl.a
+    ${MPI_DRIVER_ROOT}/lib/libxlcuf.a
+    ${MPI_DRIVER_ROOT}/lib/libxlcuf_nonshr.a
+    ${MPI_DRIVER_ROOT}/lib/libxlcufdevice.a
+    ${MPI_DRIVER_ROOT}/lib/libxldevice.a
+    ${MPI_DRIVER_ROOT}/lib/libxlmbif.a
+    ${MPI_DRIVER_ROOT}/lib/libxlopt.a)
+
+set(MPI_INCLUDE_PATHS 
+    ${MPI_DRIVER_ROOT}/include)
+
+set(MPI_Fortran_LIBRARIES    "${MPI_LIBS}" CACHE PATH "")
+set(MPI_Fortran_INCLUDE_PATH "${MPI_INCLUDE_PATHS}" CACHE PATH "")
 
 set(MPIEXEC              "mpirun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
