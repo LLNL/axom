@@ -67,7 +67,7 @@ namespace quest {
 #ifdef AXOM_USE_CXX11
         static_assert( std::is_integral<CoordType>::value, "Coordtype must be integral for Morton indexing" );
         static_assert( std::is_integral<MortonIndexType>::value, "MortonIndexType must be integral for Morton indexing" );
-#else
+#elif defined(AXOM_USE_BOOST)
         BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
         BOOST_STATIC_ASSERT(boost::is_integral<MortonIndexType>::value);
 #endif

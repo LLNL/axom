@@ -11,13 +11,21 @@
 //
 // wrapSLIC.cpp
 #include "wrapSLIC.h"
+#include <cstring>
 #include <string>
 #include "shroudrt.hpp"
 #include "slic/slic.hpp"
 
-extern "C" {
 namespace axom {
 namespace slic {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 void SLIC_initialize()
 {
@@ -79,11 +87,16 @@ bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 // splicer end function.activate_logger_bufferify
 }
 
-void SLIC_get_active_logger_name_bufferify(char * name, int Lname)
+void SLIC_get_active_logger_name_bufferify(char * name, int Nname)
 {
 // splicer begin function.get_active_logger_name_bufferify
   std::string SH_rv = getActiveLoggerName();
-  shroud_FccCopy(name, Lname, SH_rv.c_str());
+  if (SH_rv.empty()) {
+    std::memset(name, ' ', Nname);
+  }
+  else {
+    shroud_FccCopy(name, Nname, SH_rv.c_str());
+  }
   return;
 // splicer end function.get_active_logger_name_bufferify
 }
@@ -185,9 +198,7 @@ void SLIC_log_message_bufferify(int level, const char * message, int Lmessage,
 // splicer end function.log_message_bufferify
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
-
-}  // namespace axom
-}  // namespace slic
 }  // extern "C"
+
+}  // namespace slic
+}  // namespace axom

@@ -1,4 +1,6 @@
 PROJECT_NAME  = AxomUtils
 PROJECT_BRIEF = "Common utilities for Axom"
-INPUT = @PROJECT_SOURCE_DIR@/src/utilities
+INPUT = @PROJECT_SOURCE_DIR@/src/utilities @PROJECT_SOURCE_DIR@/src/numerics
 GENERATE_XML = YES
+USE_MATHJAX = YES
+EXTRACT_ALL = YES

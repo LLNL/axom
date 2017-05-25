@@ -13,15 +13,12 @@ set( primal_headers
      ## geometry
      geometry/BoundingBox.hpp
      geometry/HyperSphere.hpp
+     geometry/NumericArray.hpp
      geometry/Point.hpp
      geometry/Ray.hpp
      geometry/Segment.hpp
      geometry/Triangle.hpp
-
-     ## numerics
-     numerics/Determinants.hpp
-     numerics/NumericArray.hpp
-     numerics/Vector.hpp
+     geometry/Vector.hpp
 
      ## operators
      operators/detail/intersection_impl.hpp

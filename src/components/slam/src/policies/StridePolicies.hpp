@@ -9,17 +9,20 @@
  */
 
 /**
- * \file
+ * \file StridePolicies.hpp
  *
  * \brief Stride policies for SLAM
  *
  * Stride policies are meant to represent the fixed distance between consecutive elements of an OrderedSet
- *   A valid stride policy must support the following interface:
- *      [required]
- *      * DEFAULT_VALUE is a public static const IntType
- *      * stride() : IntType  -- returns the stride
- *      [optional]
- *      * operator(): IntType -- alternate accessor for the stride value
+ * A valid stride policy must support the following interface:
+ *   * [required]
+ *     * DEFAULT_VALUE is a public static const IntType
+ *     * stride() : IntType  -- returns the stride
+ *     * isValid() : bool -- indicates whether the Stride policy of the set is valid
+ *   * [optional]
+ *     * operator(): IntType -- alternate accessor for the stride value
+ *
+ * \note All non-zero stride values are valid.
  */
 
 #ifndef SLAM_POLICIES_STRIDE_H_
@@ -43,22 +46,23 @@ namespace policies {
    * \brief A policy class for the stride in a set.  When using this class, the stride can be set at runtime.
    */
   template<typename IntType>
-  struct RuntimeStrideHolder
+  struct RuntimeStride
   {
   public:
     static const IntType DEFAULT_VALUE = IntType(1);
 
-    RuntimeStrideHolder(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
+    RuntimeStride(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
 
-    inline IntType          stride()      const { return m_stride; }
-    inline IntType&         stride()            { return m_stride; }
+    inline IntType          stride() const { return m_stride; }
+    inline IntType&         stride() { return m_stride; }
 
-    void                    setStride(IntType str)         { m_stride = str; }
+    void                    setStride(IntType str) { m_stride = str; }
 
-    inline IntType operator ()()  const { return stride(); }
-    inline IntType& operator()()        { return stride(); }
+    inline IntType operator ()() const { return stride(); }
+    inline IntType& operator()() { return stride(); }
 
-    inline bool             isValid(bool)         const { return true; }
+    /** All non-zero strides are valid     */
+    inline bool             isValid(bool) const { return (m_stride != 0); }
 
     //inline bool hasStride() const       { return m_stride != IntType(); }
   private:
@@ -70,25 +74,27 @@ namespace policies {
    * \brief A policy class for a compile-time known stride
    */
   template<typename IntType, IntType INT_VAL>
-  struct CompileTimeStrideHolder
+  struct CompileTimeStride
   {
     static const IntType DEFAULT_VALUE = INT_VAL;
 
-    CompileTimeStrideHolder(IntType val = DEFAULT_VALUE)
+    CompileTimeStride(IntType val = DEFAULT_VALUE)
     {
       setStride(val);
     }
 
-    inline IntType          stride()      const { return INT_VAL; }
-    inline IntType operator ()()  const { return stride(); }
+    inline IntType          stride() const { return INT_VAL; }
+    inline IntType operator ()() const { return stride(); }
 
     void                    setStride(IntType AXOM_DEBUG_PARAM(val))
     {
-      SLIC_ASSERT_MSG( val == INT_VAL
-          , "SLAM::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
+      SLIC_ASSERT_MSG( val == INT_VAL,
+          "slam::CompileTimeStride -- tried to set a compile time stride with value ("
           << val << " ) that differs from the template parameter of " << INT_VAL << ".");
     }
-    inline bool isValid(bool)         const { return true; }
+
+    /** All non-zero strides are valid     */
+    inline bool isValid(bool) const { return (INT_VAL != 0); }
   };
 
   /**
@@ -107,16 +113,16 @@ namespace policies {
       setStride(val);
     }
 
-    inline const IntType          stride()     const { return DEFAULT_VALUE; }
+    inline const IntType          stride() const { return DEFAULT_VALUE; }
     inline const IntType operator ()() const { return stride(); }
 
     void                          setStride(IntType AXOM_DEBUG_PARAM(val))
     {
-      SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-          , "SLAM::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
+      SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
+          "slam::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
           << val << "), but should always be 1.");
     }
-    inline bool isValid(bool )         const { return true; }
+    inline bool isValid(bool) const { return true; }
   };
 
 

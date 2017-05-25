@@ -18,6 +18,8 @@ include $(top)/tests/defaults.mk
 develop :
 	python setup.py develop
 
+# python must have sphinx installed or else it reports
+# error: invalid command 'build_sphinx'
 docs :
 	python setup.py build_sphinx
 
@@ -71,6 +73,9 @@ test-lua : lua-tutorial
 
 test-all : test-fortran test-python test-lua
 
+test-clean :
+	rm -rf $(tempdir)
+
 print-debug:
 	@echo LUA=$(LUA)
 	@echo PYTHON=$(PYTHON)
@@ -83,5 +88,5 @@ print-debug:
 .PHONY : fortran test-fortran tutorial strings
 .PHONY : test-python py-tutorial
 .PHONY : test-lua lua-tutorial
-.PHONY : test-all
+.PHONY : test-all test-clean
 .PHONY : print-debug

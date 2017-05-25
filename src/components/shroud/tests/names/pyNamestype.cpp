@@ -124,4 +124,3 @@ PyTypeObject PY_Names_Type = {
         (destructor)0,                  /* tp_finalize */
 #endif
 };
-

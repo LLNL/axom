@@ -25,7 +25,7 @@ Web Documentation
 
 Build and install web documentation...
 
-Shared LC web content location asctoolkit/src/docs/sphinx/web
+Shared LC web content location axom/src/docs/sphinx/web
 
 
 ------------------------------------

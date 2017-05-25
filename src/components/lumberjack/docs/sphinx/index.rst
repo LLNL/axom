@@ -31,7 +31,7 @@ include and compiler define:
 
 .. code-block:: c
 
-    #include "common/config.hpp"
+    #include "axom/config.hpp"
     #ifdef ATK_USE_LUMBERJACK
         // Lumberjack work
     #endif

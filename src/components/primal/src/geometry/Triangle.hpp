@@ -11,11 +11,11 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
+#include "axom_utils/Determinants.hpp" // For numerics::determinant()
 #include "axom_utils/Utilities.hpp"
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
-#include "primal/Determinants.hpp"
 
 #include "slic/slic.hpp"
 
@@ -173,7 +173,7 @@ private:
     }
     else {
 
-      return primal::determinant< double > ( A[0], A[1], A[2], 1.,
+      return numerics::determinant< double > ( A[0], A[1], A[2], 1.,
                                              B[0], B[1], B[2], 1.,
                                              C[0], C[1], C[2], 1.,
                                              p[0], p[1], p[2], 1.  );
@@ -232,9 +232,9 @@ public:
     const PointType& C = m_points[2];
 
     // Compute ood * area of each sub-triangle
-    bary[0] = ood * primal::determinant( p[c0] - B[c0], p[c1] - B[c1],
+    bary[0] = ood * numerics::determinant( p[c0] - B[c0], p[c1] - B[c1],
                                          B[c0] - C[c0], B[c1] - C[c1]);
-    bary[1] = ood * primal::determinant( p[c0] - C[c0], p[c1] - C[c1],
+    bary[1] = ood * numerics::determinant( p[c0] - C[c0], p[c1] - C[c1],
                                          C[c0] - A[c0], C[c1] - A[c1]);
     bary[2] = 1. - bary[0] - bary[1];
 

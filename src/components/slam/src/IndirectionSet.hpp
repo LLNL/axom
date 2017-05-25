@@ -32,18 +32,16 @@ namespace slam {
  *
  * \brief Concrete class (all template parameters fixed) for an array-based indirection set
  */
-  class ArrayIndirectionSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                              , policies::ZeroOffset<Set::PositionType>
-                              , policies::StrideOne<Set::PositionType>
-                              , policies::ArrayIndirection<Set::PositionType, Set::ElementType>
-    >
+  class ArrayIndirectionSet : public OrderedSet< policies::RuntimeSize<Set::PositionType>,
+                              policies::ZeroOffset<Set::PositionType>,
+                              policies::StrideOne<Set::PositionType>,
+                              policies::ArrayIndirection<Set::PositionType, Set::ElementType> >
   {
   private:
-    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-        , policies::ZeroOffset<Set::PositionType>
-        , policies::StrideOne<Set::PositionType>
-        , policies::ArrayIndirection<Set::PositionType, Set::ElementType>
->OrderedSetType;
+    typedef OrderedSet< policies::RuntimeSize<Set::PositionType>,
+        policies::ZeroOffset<Set::PositionType>,
+        policies::StrideOne<Set::PositionType>,
+        policies::ArrayIndirection<Set::PositionType, Set::ElementType> > OrderedSetType;
 
   public:
     typedef OrderedSetType::PositionType  PositionType;
@@ -69,18 +67,17 @@ namespace slam {
    *
    * \brief Concrete class (all template parameters fixed) for an STL vector-based indirection set
    */
-  class VectorIndirectionSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                               , policies::ZeroOffset<Set::PositionType>
-                               , policies::StrideOne<Set::PositionType>
-                               , policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
+  class VectorIndirectionSet : public OrderedSet< policies::RuntimeSize<Set::PositionType>,
+                               policies::ZeroOffset<Set::PositionType>,
+                               policies::StrideOne<Set::PositionType>,
+                               policies::STLVectorIndirection<Set::PositionType, Set::ElementType> >
                                // add parent subset ?
-    >
   {
   private:
-    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-        , policies::ZeroOffset<Set::PositionType>
-        , policies::StrideOne<Set::PositionType>
-        , policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
+    typedef OrderedSet< policies::RuntimeSize<Set::PositionType>,
+        policies::ZeroOffset<Set::PositionType>,
+        policies::StrideOne<Set::PositionType>,
+        policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
 >OrderedSetType;
 
     typedef OrderedSet::IndirectionPolicyType IndirectionPolicyType;

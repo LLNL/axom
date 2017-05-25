@@ -2,4 +2,4 @@
 # documentation targets
 ################################
 
-add_doxygen_target( common_doxygen )
+add_doxygen_target( axom_utils_doxygen )

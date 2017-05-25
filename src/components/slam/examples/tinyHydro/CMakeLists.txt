@@ -23,7 +23,7 @@ set(tinyHydro_lib_sources
 
 # blt_add_executable depends_on handles our include dir settings
 # these teste are using boost so boost needs to be a dep
-set(slam_tiny_hydro_lib_depends_on axom_utils slam slic gtest)
+set(slam_tiny_hydro_lib_depends_on axom_utils slam slic fmt)
 if (BOOST_FOUND)
     list(APPEND slam_tiny_hydro_lib_depends_on boost)
 endif()
@@ -52,7 +52,7 @@ blt_add_executable(
     NAME        slam_tinyHydro_unitTests
     SOURCES     tests/slam_tinyHydro_unitTests.cpp
     OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on}
+    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} gtest
     )
 blt_add_test(
     NAME        slam_tinyHydro_unitTests

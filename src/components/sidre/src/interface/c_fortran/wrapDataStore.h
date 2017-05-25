@@ -21,6 +21,9 @@
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
 
+// splicer begin class.DataStore.CXX_declarations
+// splicer end class.DataStore.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,8 +36,8 @@ typedef struct s_SIDRE_datastore SIDRE_datastore;
 struct s_SIDRE_group;
 typedef struct s_SIDRE_group SIDRE_group;
 
-// splicer begin class.DataStore.C_definition
-// splicer end class.DataStore.C_definition
+// splicer begin class.DataStore.C_declarations
+// splicer end class.DataStore.C_declarations
 
 SIDRE_datastore * SIDRE_datastore_new();
 

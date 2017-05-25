@@ -26,17 +26,16 @@ options:
 
 types:
   Group:
+    base: wrapped
     cpp_header: sidre/Group.hpp
     cpp_type: axom::sidre::Group
-    f_type: type(SidreGroup)
+    f_derived_type: SidreGroup
     f_module:
       sidre_mod: [ SidreGroup ]
     c_type: SIDRE_group
     c_header: sidre/wrapGroup.h
-    c_fortran: type(C_PTR)
     f_to_c: '{f_var}%get_instance()'
     cpp_local_var: True
-    c_to_cpp: static_cast<{c_const}{cpp_type}{c_ptr}>(static_cast<{c_const}void *>({c_var}))
 
 
 classes:
