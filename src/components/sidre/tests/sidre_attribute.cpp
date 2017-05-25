@@ -28,11 +28,11 @@ TEST(sidre_attribute,create_attr)
 
   bool has_index = ds->hasAttribute(0);
   EXPECT_FALSE( has_index );
-  std::string name("units");
-  bool has_name = ds->hasAttribute(name);
+  std::string nameattr("units");
+  bool has_name = ds->hasAttribute(nameattr);
   EXPECT_FALSE( has_name );
 
-  Attribute * units = ds->createAttribute(name); // , STRING, " ");
+  Attribute * units = ds->createAttribute(nameattr); // , STRING, " ");
   EXPECT_TRUE( units != AXOM_NULLPTR );
 
   IndexType attr_index = units->getIndex();
@@ -41,14 +41,14 @@ TEST(sidre_attribute,create_attr)
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(1, nattrs);
 
-  has_name = ds->hasAttribute(name);
+  has_name = ds->hasAttribute(nameattr);
   EXPECT_TRUE( has_name );
   has_index = ds->hasAttribute(0);
   EXPECT_TRUE( has_index );
 
-  Attribute * attr = ds->getAttribute(name);
+  Attribute * attr = ds->getAttribute(nameattr);
   EXPECT_EQ(attr, units);
-  const Attribute * attrc = ds->getAttribute(name);
+  const Attribute * attrc = ds->getAttribute(nameattr);
   EXPECT_EQ(attrc, units);
 
   attr = ds->getAttribute(0);
@@ -59,7 +59,7 @@ TEST(sidre_attribute,create_attr)
   ds->destroyAttribute(units);
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(0, nattrs);
-  has_name = ds->hasAttribute(name);
+  has_name = ds->hasAttribute(nameattr);
   EXPECT_FALSE( has_name );
   // At this point units points to deallocated memory
 
@@ -89,32 +89,23 @@ TEST(sidre_attribute,create_attr)
 
 //------------------------------------------------------------------------------
 
-#if 0
 TEST(sidre_attribute,view_attr)
 {
   DataStore * ds = new DataStore();
 
-  int nattrs = ds->getNumAttributes();
-  EXPECT_EQ(0, nattrs);
-
-  bool has_index = ds->hasAttribute(0);
-  EXPECT_FALSE( has_index );
-  bool has_name = ds->hasAttribute("units");
-  EXPECT_FALSE( has_name );
-
-  Attribute * units = ds->createAttribute("units"); // , STRING, " ");
+  std::string nameattr("units");
+  Attribute * units = ds->createAttribute(nameattr); // , STRING, " ");
   EXPECT_TRUE( units != AXOM_NULLPTR );
 
-  IndexType attr_index = units->getIndex();
-  EXPECT_EQ(0, attr_index);
+  Group * root = ds->getRoot();
+  View  * view1 = root->createView("v1");
+  EXPECT_TRUE( view1 != AXOM_NULLPTR );
 
-  nattrs = ds->getNumAttributes();
-  EXPECT_EQ(1, nattrs);
+  bool ok = view1->setAttribute(units, "miles");
+  EXPECT_TRUE( ok );
 
-  has_name = ds->hasAttribute("units");
-  EXPECT_TRUE( has_name );
-  has_index = ds->hasAttribute(0);
-  EXPECT_TRUE( has_index );
+  view1->getAttribute(units);
+  //std::string & sattr = view1->getAttribute(units);
 
 #if 0
   IndexType iunits = units->getIndex();
@@ -136,5 +127,5 @@ TEST(sidre_attribute,view_attr)
   const char * attr1 = view->getAttribute(units);
 #endif
 }
-#endif
+
 //------------------------------------------------------------------------------

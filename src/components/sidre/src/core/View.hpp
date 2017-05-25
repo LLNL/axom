@@ -41,6 +41,7 @@ namespace sidre
 class Buffer;
 class Group;
 class DataStore;
+class Attribute;
 
 /*!
  * \class View
@@ -95,7 +96,7 @@ public:
 
 
 //@{
-//!  @name View query and accessor methods methods
+//!  @name View query and accessor methods
 
   /*!
    * \brief Return const reference to name of View.
@@ -931,6 +932,23 @@ public:
    * /return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
+
+
+//@{
+//!  @name View query and accessor methods
+
+  /*!
+   * \brief Set Attribute for a View.
+   */
+  bool setAttribute( const Attribute * attr, const std::string & value );
+
+  /*!
+   * \brief Return a string attribute.
+   */
+  const std::string & getAttribute( const Attribute * attr ) const;
+
+//@}
+
 
 private:
 
