@@ -91,23 +91,93 @@ TEST(sidre_attribute,create_attr)
 
 TEST(sidre_attribute,view_attr)
 {
+  // Create some attribute values
+  const std::string units_none("none");
+  const std::string units_miles("miles");
+  const std::string units_km("km");
+
+  const std::string animal_none("blank");
+  const std::string animal_cat("cat");
+  const std::string animal_dog("dog");
+
+  // Results of functions
+  //  const std::string & out = units_none;
+  //  const std::string & out = units_none;
+  bool ok;
+
   DataStore * ds = new DataStore();
 
-  std::string nameattr("units");
-  Attribute * units = ds->createAttribute(nameattr); // , STRING, " ");
-  EXPECT_TRUE( units != AXOM_NULLPTR );
+  // Create all attributes for DataStore
+  std::string nameattr1("units");
+  Attribute * attrunits = ds->createAttribute(nameattr1); // , STRING, " ");
+  EXPECT_TRUE( attrunits != AXOM_NULLPTR );
+
+  std::string nameattr2("animal");
+  Attribute * attranimal = ds->createAttribute(nameattr2); // , STRING, " ");
+  EXPECT_TRUE( attranimal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
-  View  * view1 = root->createView("v1");
-  EXPECT_TRUE( view1 != AXOM_NULLPTR );
 
-  std::string units_miles("miles");
+  //----------------------------------------
+  // Set the first attribute in a Group
+  Group * grp1 = root->createGroup("grp1");
+  View  * view1a = grp1->createView("a");
+  EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
-  bool ok = view1->setAttribute(units, units_miles);
+  ok = view1a->setAttribute(attrunits, units_miles);
   EXPECT_TRUE( ok );
 
-  const std::string & out = view1->getAttribute(units);
+  const std::string & out = view1a->getAttribute(attrunits);
   EXPECT_EQ(units_miles, out);
+
+  // reset attribute value
+  ok = view1a->setAttribute(attrunits, units_km);
+  EXPECT_TRUE( ok );
+
+  const std::string & out1b = view1a->getAttribute(attrunits);
+  EXPECT_EQ(units_km, out1b);
+
+  // Now set second attribute
+  ok = view1a->setAttribute(attranimal, animal_dog);
+  EXPECT_TRUE( ok );
+
+  const std::string & out1c = view1a->getAttribute(attranimal);
+  EXPECT_EQ(animal_dog, out1c);
+
+  //----------------------------------------
+  // Set the second attribute in a Group
+  Group * grp2 = root->createGroup("grp2");
+
+  View  * view2a = grp2->createView("a");
+  EXPECT_TRUE( view2a != AXOM_NULLPTR );
+
+  ok = view2a->setAttribute(attranimal, animal_dog);
+  EXPECT_TRUE( ok );
+
+  const std::string & out2a = view2a->getAttribute(attranimal);
+  EXPECT_EQ(animal_dog, out2a);
+
+  // Now set first attribute
+  ok = view2a->setAttribute(attrunits, units_miles);
+  EXPECT_TRUE( ok );
+
+  const std::string & out2b = view2a->getAttribute(attrunits);
+  EXPECT_EQ(units_miles, out2b);
+
+
+  //----------------------------------------
+  // Set attribute on second View in a Group
+  Group * grp3 = root->createGroup("grp3");
+  View  * view3a = grp3->createView("a");
+  EXPECT_TRUE( view3a != AXOM_NULLPTR );
+  View  * view3b = grp3->createView("b");
+  EXPECT_TRUE( view3b != AXOM_NULLPTR );
+
+  ok = view3b->setAttribute(attranimal, animal_dog);
+  EXPECT_TRUE( ok );
+
+  const std::string & out3a = view3b->getAttribute(attranimal);
+  EXPECT_EQ(animal_dog, out3a);
 
 #if 0
   IndexType iunits = units->getIndex();

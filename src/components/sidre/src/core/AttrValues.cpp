@@ -49,23 +49,24 @@ bool AttrValues::setAttrValue(const Attribute * attr, IndexType idx,
 
   IndexType iattr = attr->getIndex();
 
-  // If the vector for this attribute does not exist yet, create it.
-  // Set new attributes to AXOM_NULLPTR.
+  // Make sure m_attributes has space for this attribute table
   if ((size_t) iattr >= m_attributes->size()) {
     m_attributes->reserve(iattr + 1);
-    for(int n=m_attributes->size(); n < iattr; ++n)
+    for(int n=m_attributes->size(); n <= iattr; ++n)
     {
       m_attributes->push_back(AXOM_NULLPTR);
     }
-    std::vector<std::string> * avec = new std::vector<std::string>();
-    m_attributes->push_back(avec);
-      //    (*m_attributes)[iattr] = avec;
   }
 
   {
     //    std::vector<std::string> * avec = static_cast<std::vector<std::string> *>(m_attributes[iattr]);
     std::vector<std::string> * avec = (*m_attributes)[iattr];
-    //    std::vector<std::string> * avec = m_attributes->at(iattr);
+
+    if (avec == AXOM_NULLPTR)
+    {
+      avec = new std::vector<std::string>(idx + 1);
+      (*m_attributes)[iattr] = avec;
+    }
 
     if ((size_t) idx < avec->size())
     {
@@ -125,7 +126,7 @@ const std::string & AttrValues::getAttribute( const Attribute * attr, IndexType 
     return none;
   }
 
-  return (*avec)[iattr];
+  return (*avec)[idx];
 }
 
 
