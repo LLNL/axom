@@ -28,14 +28,14 @@ TEST(sidre_attribute,create_attr)
 
   bool has_index = ds->hasAttribute(0);
   EXPECT_FALSE( has_index );
-  std::string nameattr("units");
+  std::string nameattr("color");
   bool has_name = ds->hasAttribute(nameattr);
   EXPECT_FALSE( has_name );
 
-  Attribute * units = ds->createAttribute(nameattr); // , STRING, " ");
-  EXPECT_TRUE( units != AXOM_NULLPTR );
+  Attribute * color = ds->createAttribute(nameattr); // , STRING, " ");
+  EXPECT_TRUE( color != AXOM_NULLPTR );
 
-  IndexType attr_index = units->getIndex();
+  IndexType attr_index = color->getIndex();
   EXPECT_EQ(0, attr_index);
 
   nattrs = ds->getNumAttributes();
@@ -47,21 +47,21 @@ TEST(sidre_attribute,create_attr)
   EXPECT_TRUE( has_index );
 
   Attribute * attr = ds->getAttribute(nameattr);
-  EXPECT_EQ(attr, units);
+  EXPECT_EQ(attr, color);
   const Attribute * attrc = ds->getAttribute(nameattr);
-  EXPECT_EQ(attrc, units);
+  EXPECT_EQ(attrc, color);
 
   attr = ds->getAttribute(0);
-  EXPECT_EQ(attr, units);
+  EXPECT_EQ(attr, color);
   attrc = ds->getAttribute(0);
-  EXPECT_EQ(attrc, units);
+  EXPECT_EQ(attrc, color);
 
-  ds->destroyAttribute(units);
+  ds->destroyAttribute(color);
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(0, nattrs);
   has_name = ds->hasAttribute(nameattr);
   EXPECT_FALSE( has_name );
-  // At this point units points to deallocated memory
+  // At this point color points to deallocated memory
 
   // Create additional attributes
   std::string namedump1("dump1");
@@ -92,29 +92,26 @@ TEST(sidre_attribute,create_attr)
 TEST(sidre_attribute,view_attr)
 {
   // Create some attribute values
-  const std::string units_none("none");
-  const std::string units_miles("miles");
-  const std::string units_km("km");
+  const std::string color_none("none");
+  const std::string color_red("red");
+  const std::string color_blue("blue");
 
   const std::string animal_none("blank");
   const std::string animal_cat("cat");
   const std::string animal_dog("dog");
 
-  // Results of functions
-  //  const std::string & out = units_none;
-  //  const std::string & out = units_none;
   bool ok;
 
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  std::string nameattr1("units");
-  Attribute * attrunits = ds->createAttribute(nameattr1); // , STRING, " ");
-  EXPECT_TRUE( attrunits != AXOM_NULLPTR );
+  std::string nameattr1("color");
+  Attribute * attr_color = ds->createAttribute(nameattr1); // , STRING, " ");
+  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
   std::string nameattr2("animal");
-  Attribute * attranimal = ds->createAttribute(nameattr2); // , STRING, " ");
-  EXPECT_TRUE( attranimal != AXOM_NULLPTR );
+  Attribute * attr_animal = ds->createAttribute(nameattr2); // , STRING, " ");
+  EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
 
@@ -124,24 +121,24 @@ TEST(sidre_attribute,view_attr)
   View  * view1a = grp1->createView("a");
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
-  ok = view1a->setAttribute(attrunits, units_miles);
+  ok = view1a->setAttribute(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const std::string & out = view1a->getAttribute(attrunits);
-  EXPECT_EQ(units_miles, out);
+  const std::string & out = view1a->getAttribute(attr_color);
+  EXPECT_EQ(color_red, out);
 
   // reset attribute value
-  ok = view1a->setAttribute(attrunits, units_km);
+  ok = view1a->setAttribute(attr_color, color_blue);
   EXPECT_TRUE( ok );
 
-  const std::string & out1b = view1a->getAttribute(attrunits);
-  EXPECT_EQ(units_km, out1b);
+  const std::string & out1b = view1a->getAttribute(attr_color);
+  EXPECT_EQ(color_blue, out1b);
 
   // Now set second attribute
-  ok = view1a->setAttribute(attranimal, animal_dog);
+  ok = view1a->setAttribute(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out1c = view1a->getAttribute(attranimal);
+  const std::string & out1c = view1a->getAttribute(attr_animal);
   EXPECT_EQ(animal_dog, out1c);
 
   //----------------------------------------
@@ -151,18 +148,18 @@ TEST(sidre_attribute,view_attr)
   View  * view2a = grp2->createView("a");
   EXPECT_TRUE( view2a != AXOM_NULLPTR );
 
-  ok = view2a->setAttribute(attranimal, animal_dog);
+  ok = view2a->setAttribute(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out2a = view2a->getAttribute(attranimal);
+  const std::string & out2a = view2a->getAttribute(attr_animal);
   EXPECT_EQ(animal_dog, out2a);
 
   // Now set first attribute
-  ok = view2a->setAttribute(attrunits, units_miles);
+  ok = view2a->setAttribute(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const std::string & out2b = view2a->getAttribute(attrunits);
-  EXPECT_EQ(units_miles, out2b);
+  const std::string & out2b = view2a->getAttribute(attr_color);
+  EXPECT_EQ(color_red, out2b);
 
 
   //----------------------------------------
@@ -173,30 +170,30 @@ TEST(sidre_attribute,view_attr)
   View  * view3b = grp3->createView("b");
   EXPECT_TRUE( view3b != AXOM_NULLPTR );
 
-  ok = view3b->setAttribute(attranimal, animal_dog);
+  ok = view3b->setAttribute(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out3a = view3b->getAttribute(attranimal);
+  const std::string & out3a = view3b->getAttribute(attr_animal);
   EXPECT_EQ(animal_dog, out3a);
 
 #if 0
-  IndexType iunits = units->getIndex();
+  IndexType icolor = color->getIndex();
 
   Group * root = ds.getRoot();
   View * view = root->createView("var1");
 
-  view->setAttribute(units, "miles");
-  view->setAttribute(iunits, "miles");
-  view->setAttribute("units", "miles");
+  view->setAttribute(color, "red");
+  view->setAttribute(icolor, "red");
+  view->setAttribute("color", "red");
 
-  const char * attr1 = view->getAttribute(units);
-  const char * attr2 = view->getAttribute(iunits);
-  const char * attr3 = view->getAttribute("units");
+  const char * attr1 = view->getAttribute(color);
+  const char * attr2 = view->getAttribute(icolor);
+  const char * attr3 = view->getAttribute("color");
 
 
   view = root->createView("var2");
   // Get attributes without setting returns default value
-  const char * attr1 = view->getAttribute(units);
+  const char * attr1 = view->getAttribute(color);
 #endif
 }
 
