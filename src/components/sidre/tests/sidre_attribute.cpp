@@ -101,11 +101,13 @@ TEST(sidre_attribute,view_attr)
   View  * view1 = root->createView("v1");
   EXPECT_TRUE( view1 != AXOM_NULLPTR );
 
-  bool ok = view1->setAttribute(units, "miles");
+  std::string units_miles("miles");
+
+  bool ok = view1->setAttribute(units, units_miles);
   EXPECT_TRUE( ok );
 
-  view1->getAttribute(units);
-  //std::string & sattr = view1->getAttribute(units);
+  const std::string & out = view1->getAttribute(units);
+  EXPECT_EQ(units_miles, out);
 
 #if 0
   IndexType iunits = units->getIndex();

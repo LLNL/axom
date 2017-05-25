@@ -42,6 +42,8 @@
 // Sidre project headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
+#include "Attribute.hpp"
+#include "AttrValues.hpp"
 
 
 namespace axom
@@ -122,6 +124,7 @@ public:
   // private members.
   //
   friend class DataStore;
+  friend class View;  // XXX for setAttrValue
 
 
 //@{
@@ -1292,6 +1295,17 @@ private:
    */
   void renameOrWarn(const std::string& new_name);
 
+  /*!
+   * \brief Set the attribute value for Attribute attr and View idx.
+   */
+  bool setAttrValue(const Attribute * attr, IndexType idx, const std::string & value);
+
+  /*!
+   * \brief Get std::string attribute for Attribute attr and View idx.
+   */
+  const std::string & getAttribute( const Attribute * attr, IndexType idx ) const;
+
+
   /// Name of this Group object.
   std::string m_name;
 
@@ -1316,6 +1330,9 @@ private:
 
   /// Collection of child Groups
   GroupCollection * m_group_coll;
+
+  /// Attribute Values
+  AttrValues m_view_attr_values;
 
 };
 

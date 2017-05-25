@@ -1276,7 +1276,11 @@ bool View::setAttribute( const Attribute * attr, const std::string & value )
   SLIC_ASSERT( attr != AXOM_NULLPTR);
   SLIC_ASSERT( ! value.empty() );
 
-  return true;
+  // Should save m_index directly
+  IndexType idx = m_owning_group->getViewIndex(m_name);
+  bool status = m_owning_group->setAttrValue(attr, idx, value);
+
+  return status;
 }
 
 /*
@@ -1290,7 +1294,10 @@ const std::string & View::getAttribute( const Attribute * attr ) const
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
 
-  return attr->getName();  // defeate return warning
+  // Should save m_index directly
+  IndexType idx = m_owning_group->getViewIndex(m_name);
+  const std::string & value = m_owning_group->getAttribute(attr, idx);
+  return value;
 }
 
 } /* end namespace sidre */
