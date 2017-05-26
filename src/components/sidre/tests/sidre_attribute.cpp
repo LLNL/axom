@@ -21,6 +21,9 @@ using axom::sidre::IndexType;
 //------------------------------------------------------------------------------
 TEST(sidre_attribute,create_attr)
 {
+  const std::string color_none("none");
+  const std::string dump_none("none");
+
   DataStore * ds = new DataStore();
 
   int nattrs = ds->getNumAttributes();
@@ -32,7 +35,7 @@ TEST(sidre_attribute,create_attr)
   bool has_name = ds->hasAttribute(nameattr);
   EXPECT_FALSE( has_name );
 
-  Attribute * color = ds->createAttribute(nameattr); // , STRING, " ");
+  Attribute * color = ds->createAttribute(nameattr, color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
 
   IndexType attr_index = color->getIndex();
@@ -65,14 +68,14 @@ TEST(sidre_attribute,create_attr)
 
   // Create additional attributes
   std::string namedump1("dump1");
-  Attribute * dump1 = ds->createAttribute(namedump1); // , STRING, " ");
+  Attribute * dump1 = ds->createAttribute(namedump1, dump_none);
   EXPECT_TRUE( dump1 != AXOM_NULLPTR );
 
   attr_index = dump1->getIndex();
   EXPECT_EQ(0, attr_index);
 
   std::string namedump2("dump2");
-  Attribute * dump2 = ds->createAttribute(namedump2); // , STRING, " ");
+  Attribute * dump2 = ds->createAttribute(namedump2, dump_none);
   EXPECT_TRUE( dump1 != AXOM_NULLPTR );
 
   attr_index = dump2->getIndex();
@@ -92,11 +95,11 @@ TEST(sidre_attribute,create_attr)
 TEST(sidre_attribute,view_attr)
 {
   // Create some attribute values
-  const std::string color_none("none");
+  const std::string color_none("white");
   const std::string color_red("red");
   const std::string color_blue("blue");
 
-  const std::string animal_none("blank");
+  const std::string animal_none("human");
   const std::string animal_cat("cat");
   const std::string animal_dog("dog");
 
@@ -106,11 +109,11 @@ TEST(sidre_attribute,view_attr)
 
   // Create all attributes for DataStore
   std::string nameattr1("color");
-  Attribute * attr_color = ds->createAttribute(nameattr1); // , STRING, " ");
+  Attribute * attr_color = ds->createAttribute(nameattr1, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
   std::string nameattr2("animal");
-  Attribute * attr_animal = ds->createAttribute(nameattr2); // , STRING, " ");
+  Attribute * attr_animal = ds->createAttribute(nameattr2, animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
@@ -120,6 +123,13 @@ TEST(sidre_attribute,view_attr)
   Group * grp1 = root->createGroup("grp1");
   View  * view1a = grp1->createView("a");
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
+
+  // Check values of unset attributes
+  const std::string & out1x = view1a->getAttribute(attr_color);
+  EXPECT_EQ(color_none, out1x);
+
+  const std::string & out1y = view1a->getAttribute(attr_animal);
+  EXPECT_EQ(animal_none, out1y);
 
   ok = view1a->setAttribute(attr_color, color_red);
   EXPECT_TRUE( ok );

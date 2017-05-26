@@ -310,7 +310,15 @@ size_t DataStore::getNumAttributes() const
   return m_attribute_coll->getNumItems();
 }
 
-Attribute * DataStore::createAttribute( const std::string & name )
+/*
+ *************************************************************************
+ *
+ * Create a Attribute object with a default value.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::createAttribute( const std::string & name,
+					const std::string & default_value)
 {
   // XXX look for existing attribute
 
@@ -323,6 +331,7 @@ Attribute * DataStore::createAttribute( const std::string & name )
   m_attribute_coll->insertItem(new_attribute, name);
   IndexType idx = m_attribute_coll->getItemIndex(name);
   new_attribute->setIndex(idx);
+  new_attribute->setDefault(default_value);
   return new_attribute;
 }
 

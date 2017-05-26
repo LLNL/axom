@@ -68,6 +68,25 @@ public:
     return m_index;
   }
 
+  /*!
+   * \brief Set default value of attribute.
+   *        Called as part of DataStore->createAttribute.
+   *
+   * The type of the default should not be changed after the attribute is created.
+   */
+  void setDefault(const std::string & default_value)
+  {
+    m_default_string = default_value;
+  }
+
+  /*!
+   * \brief Get default value of attribute.
+   */
+  const std::string & getDefault() const
+  {
+    return m_default_string;
+  }
+
 private:
 
   DISABLE_DEFAULT_CTOR(Attribute);
@@ -109,6 +128,9 @@ private:
 
   /// Attribute's unique index within DataStore object that created it.
   IndexType m_index;
+
+  /// Default value of string attribute.
+  std::string m_default_string;
 
 };
 

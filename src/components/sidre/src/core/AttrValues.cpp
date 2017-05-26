@@ -109,21 +109,21 @@ const std::string & AttrValues::getAttribute( const Attribute * attr, IndexType 
   if (m_attributes == AXOM_NULLPTR)
   {
     // No attributes have been set;
-    return none;
+    return attr->getDefault();
   }
 
   IndexType iattr = attr->getIndex();
 
   if ((size_t) iattr > m_attributes->size()) {
     // This attribute has not been set for any Views in this Group.
-    return none;
+    return attr->getDefault();
   }
 
   std::vector<std::string> * avec = (*m_attributes)[iattr];
   if ((size_t) idx > avec->size())
   {
     // This attribute has not been set for this View
-    return none;
+    return attr->getDefault();
   }
 
   return (*avec)[idx];
