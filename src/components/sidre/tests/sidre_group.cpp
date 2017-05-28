@@ -353,6 +353,8 @@ TEST(sidre_group,get_view_names_and_indicies)
 
   IndexType idx1 = parent->getViewIndex("view1");
   IndexType idx2 = parent->getViewIndex("view2");
+  EXPECT_EQ(idx1, view1->getIndex());
+  EXPECT_EQ(idx2, view2->getIndex());
 
   const std::string& name1 = parent->getViewName(idx1);
   const std::string& name2 = parent->getViewName(idx2);
@@ -427,6 +429,8 @@ TEST(sidre_group,get_group_name_index)
 
   IndexType idx1 = parent->getGroupIndex("group1");
   IndexType idx2 = parent->getGroupIndex("group2");
+  EXPECT_EQ(idx1, group1->getIndex());
+  EXPECT_EQ(idx2, group2->getIndex());
 
   const std::string& name1 = parent->getGroupName(idx1);
   const std::string& name2 = parent->getGroupName(idx2);
@@ -466,6 +470,8 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_FALSE( view->hasBuffer() );
   EXPECT_TRUE( group->hasView("view") );
   IndexType iview = group->getViewIndex("view");
+  EXPECT_EQ(0, iview);
+  iview = view->getIndex();
   EXPECT_EQ(0, iview);
 
   // try creating view again, should be a no-op.
@@ -729,7 +735,13 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_TRUE(flds->hasGroup("c"));
 
   // move "b" to a child of "sub"
-  flds->createGroup("sub")->moveGroup(gb);
+  EXPECT_EQ(1, gb->getIndex());
+  EXPECT_EQ(flds, gb->getParent());
+  Group * gsub = flds->createGroup("sub");
+  Group * gb0 = gsub->moveGroup(gb);
+  EXPECT_EQ(gb, gb0);
+  EXPECT_EQ(0, gb->getIndex());
+  EXPECT_EQ(gsub, gb->getParent());
 
   // flds->print();
 
@@ -1062,23 +1074,35 @@ TEST(sidre_group,rename_group)
   Group * child2 = root->createGroup("g_b");
   Group * child3 = root->createGroup("g_c");
 
+  // rename should not change the index
+  EXPECT_EQ(0, child1->getIndex());
   bool success = child1->rename("g_r");
   EXPECT_TRUE( success );
-  EXPECT_TRUE( child1->getName() == "g_r" );
+  EXPECT_EQ( "g_r", child1->getName() );
+  EXPECT_EQ(0, child1->getIndex());
   EXPECT_TRUE( root->hasGroup("g_r") );
   EXPECT_FALSE( root->hasGroup("g_a") );
 
+  // try to rename to path
   success = child2->rename("fields/g_s");
   EXPECT_FALSE( success );
-  EXPECT_TRUE( child2->getName() == "g_b" );
+  EXPECT_EQ( "g_b", child2->getName() );
 
+  // Try to rename to existing group name
   success = child3->rename("g_b");
   EXPECT_FALSE( success );
-  EXPECT_TRUE( child3->getName() == "g_c" );
+  EXPECT_EQ( "g_c", child3->getName() );
+
+  // Rename root group
+  EXPECT_EQ(InvalidIndex, root->getIndex());
+  EXPECT_EQ(root, root->getParent());
+  EXPECT_EQ("", root->getName());
+  root->rename("newroot");
+  EXPECT_EQ(InvalidIndex, root->getIndex());
+  EXPECT_EQ(root, root->getParent());
+  EXPECT_EQ("newroot", root->getName());
 
 }
-
-
 
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_name_change)

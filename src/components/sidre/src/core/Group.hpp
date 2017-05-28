@@ -136,6 +136,14 @@ public:
   }
 
   /*!
+   * \brief Return index of Group object within parent Group.
+   */
+  IndexType getIndex() const
+  {
+    return m_index;
+  }
+
+  /*!
    * \brief Return const reference to name of Group object.
    *
    * \sa getPath(), getPathName()
@@ -1294,6 +1302,9 @@ private:
 
   /// Name of this Group object.
   std::string m_name;
+
+  /// Index of this Group object within m_parent.
+  IndexType m_index;
 
   /// Parent Group of this Group object.
   Group * m_parent;

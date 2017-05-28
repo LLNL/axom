@@ -1627,7 +1627,7 @@ View * Group::attachView(View * view)
   {
     SLIC_ASSERT(view->m_owning_group == AXOM_NULLPTR);
     view->m_owning_group = this;
-    m_view_coll->insertItem(view, view->getName());
+    view->m_index = m_view_coll->insertItem(view, view->getName());
     return view;
   }
 }
@@ -1645,6 +1645,7 @@ View * Group::detachView(const std::string& name )
   if ( view != AXOM_NULLPTR )
   {
     view->m_owning_group = AXOM_NULLPTR;
+    view->m_index = InvalidIndex;
   }
 
   return view;
@@ -1663,6 +1664,7 @@ View * Group::detachView(IndexType idx)
   if ( view != AXOM_NULLPTR )
   {
     view->m_owning_group = AXOM_NULLPTR;
+    view->m_index = InvalidIndex;
   }
 
   return view;
@@ -1705,7 +1707,8 @@ Group * Group::attachGroup(Group * group)
   }
   else
   {
-    m_group_coll->insertItem(group, group->getName());
+    group->m_parent = this;
+    group->m_index = m_group_coll->insertItem(group, group->getName());
     return group;
   }
 }
@@ -1723,6 +1726,7 @@ Group * Group::detachGroup(const std::string& name )
   if ( group != AXOM_NULLPTR )
   {
     group->m_parent = AXOM_NULLPTR;
+    group->m_index = InvalidIndex;
   }
 
   return group;
@@ -1741,6 +1745,7 @@ Group * Group::detachGroup(IndexType idx)
   if ( group != AXOM_NULLPTR )
   {
     group->m_parent = AXOM_NULLPTR;
+    group->m_index = InvalidIndex;
   }
 
   return group;
