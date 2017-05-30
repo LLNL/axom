@@ -1176,6 +1176,9 @@ private:
   /*!
    *  \brief Private ctor that creates a Group with given name
    *         in the given DataStore.
+   *
+   *  attachGroup must be called on a newly created Group to insert it
+   *  into the hierarchy. The root group is an exception to this rule.
    */
   Group(const std::string& name, DataStore * datastore);
 
