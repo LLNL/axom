@@ -1572,6 +1572,7 @@ void Group::loadExternalData(const hid_t& h5_id)
 Group::Group(const std::string& name,
                      Group * parent)
   : m_name(name),
+  m_index(InvalidIndex),
   m_parent(parent),
   m_datastore(parent->getDataStore()),
   m_view_coll(new ViewCollection()),
@@ -1589,6 +1590,7 @@ Group::Group(const std::string& name,
 Group::Group(const std::string& name,
                      DataStore * datastore)
   : m_name(name),
+  m_index(InvalidIndex),
   m_parent(datastore->getRoot()),
   m_datastore(datastore),
   m_view_coll(new ViewCollection()),

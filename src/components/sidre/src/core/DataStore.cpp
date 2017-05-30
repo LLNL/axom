@@ -122,7 +122,6 @@ DataStore::DataStore()
 
   m_RootGroup = new Group("", this);
   m_RootGroup->m_parent = m_RootGroup;
-  m_RootGroup->m_index = InvalidIndex;
 };
 
 
