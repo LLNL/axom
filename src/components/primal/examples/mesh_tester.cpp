@@ -89,15 +89,11 @@ typedef struct Input
 
 SpatialBoundingBox compute_bounds( mint::Mesh* mesh);
 Triangle3 getMeshTriangle(int i,  mint::Mesh* surface_mesh);
-bool shareVertices(Triangle3 t1, Triangle3 t2);
-bool trianglesAreCoplanar(Triangle3 t1, Triangle3 t2);
-bool trianglesOverlap(Triangle3 t1, Triangle3 t2);
-bool checkTT(Triangle3& t1, Triangle3& t2, std::ofstream& ofs, int i, int j, bool useTrianglesOverlap = true);
+inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
+bool checkTT(Triangle3& t1, Triangle3& t2, std::ofstream& ofs, int i, int j);
 void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh);
 void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution);
 void init_params(Input& params,int argc, char ** argv);
-bool trianglesIn(Triangle3 t1, Triangle3 t2);
-inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 
 //compute_bounds is from code reused from George Zagaris' sphere example.  Computes the bounding box of a mesh
 SpatialBoundingBox compute_bounds( mint::Mesh* mesh)
@@ -143,131 +139,18 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
     axom::utilities::isNearlyEqual(p1[2], p2[2], EPS);
 }
 
-// check if any of the vertices are the same point (all of their points are within 1.0e-11 of eachother)
-bool shareVertices(Triangle3 t1, Triangle3 t2)
-{
-  return ((pointIsNearlyEqual(t1[0], t2[0])) || \
-          (pointIsNearlyEqual(t1[0], t2[1])) || \
-          (pointIsNearlyEqual(t1[0], t2[2])) || \
-          (pointIsNearlyEqual(t1[1], t2[0])) || \
-          (pointIsNearlyEqual(t1[1], t2[1])) || \
-          (pointIsNearlyEqual(t1[1], t2[2])) || \
-          (pointIsNearlyEqual(t1[2], t2[0])) || \
-          (pointIsNearlyEqual(t1[2], t2[1])) || \
-          (pointIsNearlyEqual(t1[2], t2[2])));
-}
-
-bool trianglesAreCoplanar(Triangle3 t1, Triangle3 t2)
-{
-  //Step 11.1: Check if the triangles are coplanar
-  Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]), Vector3(t1[0], t1[2]));
-  Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]), Vector3(t2[2], t2[1]));
-
-  double dAi = (Vector3(t2[2], t1[0])).dot(t2Normal);
-  double dBi = (Vector3(t2[2],t1[1])).dot(t2Normal);
-  double dCi = (Vector3(t2[2],t1[2])).dot(t2Normal); 
-
-  double dAj = (Vector3(t1[2],t2[0])).dot(t1Normal);
-  double dBj = (Vector3(t1[2],t2[1])).dot(t1Normal);
-  double dCj = (Vector3(t1[2],t2[2])).dot(t1Normal);
-    
-  return (axom::utilities::isNearlyEqual(dAi, 0.0, 1.0e-12) && \
-          axom::utilities::isNearlyEqual(dBi, 0.0, 1.0e-12) && \
-          axom::utilities::isNearlyEqual(dCi, 0.0, 1.0e-12)) || \
-    (axom::utilities::isNearlyEqual(dAj, 0.0, 1.0e-12) && \
-     axom::utilities::isNearlyEqual(dBj, 0.0, 1.0e-12) && \
-     axom::utilities::isNearlyEqual(dCj, 0.0, 1.0e-12)); 
-}
-
-// Requires t1 and t2 share at least 1 vertex
-bool trianglesIn(Triangle3 t1, Triangle3 t2)
-{
-  /* Step 11.1: given that t1 and t2 share a vertex, permute all possible vertex 
-     matching pairs.  We have three cases: 
-     (1) triangles share all 3 vertices (are the same triangle)
-     (2) triangles share 2 vertices-- if they overlap not on the edge formed by
-         these two vertices, it is because one of their vertices lies within the
-         other.  Note that this function must be called twice to check this
-         case, as only one of the non-intersecting vertices need lie in the
-         other triangle for an intersection to occur. 
-     (3) Triangles share 1 vertex -- if they overlap or intersect, one of the
-         triangles two non-intersecting vertices must form a segment that
-         intersects the other.  Note that this function must be called twice
-         to check this case, as only one of the segments formed by the
-         non-intersecting vertices need intersect the other triangle for an
-         intersection to occur.
-  */
-  bool returning;
-  if ((pointIsNearlyEqual(t1[0],t2[0])) || (pointIsNearlyEqual(t1[0],t2[1])) || (pointIsNearlyEqual(t1[0],t2[2]))) {
-    if ((pointIsNearlyEqual(t1[1],t2[0])) || (pointIsNearlyEqual(t1[1],t2[1])) || (pointIsNearlyEqual(t1[1],t2[2]))){
-      if ((pointIsNearlyEqual(t1[2],t2[0])) || (pointIsNearlyEqual(t1[2],t2[1])) || (pointIsNearlyEqual(t1[2],t2[2]))) {
-        return true; // Case 1: triangles are the same triangle, so they must be intersecting in a region
-      }
-      else {
-        returning = trianglesAreCoplanar(t1, t2) && (t2.checkInTriangle(t1[2]));
-        return returning; // Case 2: t1.B and t1.A are a side on t2
-      }
-        
-    }
-    else if ((pointIsNearlyEqual(t1[2],t2[0])) || (pointIsNearlyEqual(t1[2],t2[1])) || (pointIsNearlyEqual(t1[2],t2[2]))) {
-      returning = trianglesAreCoplanar(t1, t2) && (t2.checkInTriangle(t1[1]));
-      return returning; // t1.C and t1.A are a side on t2
-    }
-    else {
-      Segment3 s = Segment3(t1[1], t1[2]);
-      returning = primal::intersect(t2, s);  // t1.A is a shared vertex
-      return returning;
-    }
-
-  }
-  else if ((pointIsNearlyEqual(t1[1],t2[0])) || (pointIsNearlyEqual(t1[1],t2[1])) || (pointIsNearlyEqual(t1[1],t2[2]))) {
-    // t1.A is not a shared vertex, at least one of t1.B or t1.C share a vertex with t2
-    if ((pointIsNearlyEqual(t1[2],t2[0])) || (pointIsNearlyEqual(t1[2],t2[1])) || (pointIsNearlyEqual(t1[2],t2[2]))) {
-      returning = trianglesAreCoplanar(t1, t2) && (t2.checkInTriangle(t1[0]));
-      return returning;  // t1.B and t1.C are a side on t2
-    }
-    else {
-      Segment3 s = Segment3(t1[0], t1[2]);
-      returning = primal::intersect(t2, s);
-      return returning; // t1.B is a shared vertex
-    }
-  }
-  else { // t1.C must be a shared vertex, because t1.A and t1.B are not shared
-    Segment3 s = Segment3(t1[0], t1[1]);
-    returning = primal::intersect(t2, s);
-    return returning; // t1.C is a shared vertex
-  }
-}
-
-//Requires t1 and t2 share at least 1 vertex
-bool trianglesOverlap(Triangle3 t1, Triangle3 t2)
-{
-  return ((trianglesIn(t1, t2) || trianglesIn(t2, t1)));
-}
-
-bool checkTT(Triangle3& t1, Triangle3& t2, std::ofstream& ofs, int i, int j, bool useTrianglesOverlap)
+bool checkTT(Triangle3& t1, Triangle3& t2, std::ofstream& ofs, int i, int j)
 {
   // Step 9:  Ignore degenerate triangles: we will eventually write out all
   // degenerate triangles in main for loop.
   if (t2.degenerate()) return false;
 
-  if (useTrianglesOverlap) {
-    // Step 10:  If two triangles share at least one vertex, they are either
-    // connected only along an edge/vertex or one of the triangles has at least
-    // one vertex lying on the interior or along an edge (excluding the vertices)
-    // of the other triangle.
-    if (shareVertices(t1, t2)) {
-      if (trianglesOverlap(t1, t2)) {
-        ofs << "\n INTERSECTION FOUND Triangle 1 at index " << i << " is " << t1
-            << "and triangle 2 at index " << j << " is " << t2 << "\n";
-        return true;
-      }
-      return false;
-    }
+  if (primal::intersect(t1, t2)) {
+    ofs << "\n INTERSECTION FOUND Triangle 1 at index " << i << " is " << t1
+        << "and triangle 2 at index " << j << " is " << t2 << "\n";
+    return true;
   }
-
-  // Step 11.2: If no shared vertices, run the standard intersection test.
-  return primal::intersect(t1,  t2);
+  return false;
 }
 
 void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh) 
@@ -310,8 +193,8 @@ void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh)
   ofs << "A total of " << degenerateCounter << " degenerate triangles were found.";
 }
 
-void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution) {
-
+void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution)
+{
   int counter=0;  //total intersections found, will be written to outfile at end
   int degenerateCounter=0; //total degenerate triangles found
   //Step 6:  Construct our virtual grid
@@ -338,7 +221,7 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution) {
   UniformGrid3 vg(minBBPt.data(), maxBBPt.data(), resolutions);
   const int ncells = surface_mesh->getMeshNumberOfCells();
   for (int i=0; i< ncells; i++) {
-    if (i%(ncells/100)==0) {
+    if (ncells >= 100 && i % (ncells/100) == 0) {
       std::cerr<<"Building grid is "<<100.0*(double(i)/double(ncells)) <<" percent done \n";
 
     }
@@ -357,7 +240,7 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution) {
   //only checking against triangles with indexes greater than z. 
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
   for (size_t z=0; z< ncells; z++) {
-    if (z%(ncells/100)==0) {
+    if (ncells >= 100 && z % (ncells/100) == 0) {
       //the below will not actually reflect the time the algorithm will take perfectly, as triangles at earlier indexes
       //must do more checks than triangles at later indexes
       std::cerr<<"Querying grid is "<<100.0*(double(z)/double(ncells)) <<" percent done \n";
@@ -377,49 +260,45 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution) {
     triBB2.addPoint(t1[2]);
 
     Point3 minBBPt2,maxBBPt2;
-        
+
     minBBPt2 = triBB2.getMin();
     maxBBPt2 = triBB2.getMax();   
     bool notBadBefore=true;
-    //step 7.3:  Find the virtual grid indices that this triangle will touch.  The below breaks the black box created by the virtual grid
-    //This can be avoided by providing increased functinality in virtual grid
+    //step 7.3:  Find the virtual grid indices that this triangle will touch.
     std::vector<int> trianglesInBin;
-    size_t lowerIndex = vg.getBinIndex(minBBPt2);
-    size_t stepsPerSide [3] = {((size_t)(1.0+(maxBBPt2[0]-minBBPt2[0]+1.0e-12)/((double)sideSizes[0]))), \
-                               ((size_t)(1.0+(maxBBPt2[1]-minBBPt2[1]+1.0e-12)/((double)sideSizes[1]))), \
-                               ((size_t)(1.0+(maxBBPt2[2]-minBBPt2[2]+1.0e-12)/((double)sideSizes[2])))};
-    //   SLIC_INFO("Steps per side is: "<< stepsPerSide[0] <<","<<stepsPerSide[1] <<","<<stepsPerSide[2] );
+    const std::vector<int> binsToCheck = vg.getBinsForBbox(triBB2);
 
-    //Step 7.4: iterate through all the bins that the triangle bounding box touches
-    for (size_t i =0; i<stepsPerSide[0]; i++)  {
-      for (size_t j =0; j<stepsPerSide[1]; j++) {
-        for (size_t k =0; k<stepsPerSide[2]; k++) {
-          //Step 7.5: retrieve triangles for the bin
-          trianglesInBin= vg.getBinContents(lowerIndex + i + resolutions[0]*(j + (k * resolutions[1])));    
-          int binSize=trianglesInBin.size();
+    for (size_t curbin = 0; curbin < binsToCheck.size(); ++curbin) {
+      //Step 7.5: retrieve triangles for the bin
+      int bidx = binsToCheck[curbin];
+      if (!vg.isValidIndex(bidx)) {
+        std::cout << bidx << " is not a valid bin index!!" << std::endl;
+      } else {
+        trianglesInBin = vg.getBinContents(bidx);
+        int binSize = trianglesInBin.size();
 
-          //Step 7.6: Iterate through triangles in the bin. Check if we have already tested this intection pair
-          //by comparing the indices.  If we have, skip, otherwise, proceed to step 8
-          for (size_t l=0; l<binSize; l++) {
-            int t2Index=trianglesInBin[l];
-            SLIC_ASSERT(trianglesInBin[l]>=0);
-            if (t2Index<=z) continue;  
-            else{ 
-              //Step 8: if we haven't already tested the intersection, run the intersection test
-              t2=getMeshTriangle(t2Index,  surface_mesh);
-              //Step into CheckTT for steps 9-11
-              if (checkTT(t1, t2, ofs, i, t2Index)) {
-                counter++;
-                if (notBadBefore) {
-                  intersectingTriangleCount ++;
-                  notBadBefore=false;
-                }
+        // Step 7.6: Iterate through triangles in the bin. Check if we have already tested this 
+        // pair by comparing the indices.  If we have, skip, otherwise, proceed to step 8
+        for (size_t l = 0; l < binSize; ++l) {
+          int t2Index = trianglesInBin[l];
+          SLIC_ASSERT(trianglesInBin[l] >= 0);
+          if (t2Index <= z) {
+            continue;  
+          } else { 
+            // Step 8: if we haven't already tested the intersection, run the intersection test
+            t2 = getMeshTriangle(t2Index, surface_mesh);
+            // Step into CheckTT for steps 9-11
+            if (checkTT(t1, t2, ofs, z, t2Index)) {
+              counter++;
+              if (notBadBefore) {
+                intersectingTriangleCount ++;
+                notBadBefore=false;
               }
             }
           }
-        }
-      }
-    }
+        }  // end for triangles in bin
+      }  // valid index
+    }  // bins to check
   }
   //step 12, write results to outfile
   ofs<<"A total of "<< counter <<  " triangle intersections were found.";
@@ -427,22 +306,41 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution) {
   ofs<<"A total of "<< degenerateCounter <<  " degenerate triangles were found.";
 }
 
+void showhelp()
+{
+  std::cout << "Argument usage:" << std::endl
+            << "  --help           Show this help message." << std::endl
+            << "  --resolution N   Resolution of uniform grid.  Default N = 10.  "
+            << "Set to 1 to run " << std::endl 
+            << "                   the naive algorithm instead of "
+            << "using the spatial index." << std::endl
+            << "  --infile fname   The STL input file (must be specified)." << std::endl
+            << "  --outfile fname  The text output file to contain the results." << std::endl
+            << "                   Default value meshTestResults.txt."
+            << std::endl;
+}
+
+bool canOpenFile(const std::string & fname)
+{
+  std::ifstream teststream(fname);
+  return teststream.good();
+}
+
 //helper function to update the parameters with the command line arguments
 void init_params(Input& params,int argc, char ** argv)
 {
-  if((argc > 1)){
+  if (argc < 2) {
+    showhelp();
+    params.errorCode = 1;
+    return;
+  } else {
     std::string help = argv[1];
     if(help == "--help") {
-      std::cout << "Possible flags/usage are as follows" << std::endl
-                << "--resolution: resolution of uniform grid.  Make this 1 "
-                << "if you want to run the naive algorithm." << std::endl
-                << "--infile -- the stl input file" << std::endl
-                << "--outfile -- the text output file containing the " 
-                << "results" << std::endl;
+      showhelp();
       params.errorCode = 1;
       return;
     }
-    for(int i = 1; i< argc;){
+    for(int i = 1; i < argc; /* increment i in loop */){
       std::string arg = argv[i];
       if(arg == "--resolution"){
         params.resolution = atoi(argv[++i]);
@@ -456,17 +354,25 @@ void init_params(Input& params,int argc, char ** argv)
       ++i;
     }
   }
-  std::cerr << "Parameters are: " << std::endl
-            << "resolution = " << params.resolution << std::endl
-            << "infile = " << params.stlInput << std::endl
-            << "outfile = " << params.textOutputFile << std::endl;
+
+  if (!canOpenFile(params.stlInput)) {
+    params.errorCode = 2;
+    return;
+  }
+
+  std::cerr << "Using parameter values: " << std::endl
+            << "  resolution = " << params.resolution << std::endl
+            << "  infile = " << params.stlInput << std::endl
+            << "  outfile = " << params.textOutputFile << std::endl;
 }
 
 
 
 
-int main( int argc, char** argv ) 
+int main( int argc, char** argv )
 {
+  int retval = EXIT_SUCCESS;
+
   // STEP 0: Initialize SLIC Environment
   slic::initialize();
   slic::setLoggingMsgLevel( axom::slic::message::Debug );
@@ -485,13 +391,27 @@ int main( int argc, char** argv )
   //Step 1: Initialize default parameters and update parameters with command line arguments:
   Input params;
   init_params(params, argc, argv);
+
+  if (params.errorCode > 0) {
+    retval = EXIT_FAILURE;
+    if (params.errorCode == 1) {
+      // user requested help message; don't print anything
+      retval = EXIT_SUCCESS;
+    } else if (params.errorCode == 2) {
+      std::cout << "Can't open STL file " << params.stlInput << " for reading." << std::endl;
+    } else {
+      std::cout << "Error " << params.errorCode << " while parsing arguments." << std::endl;
+    }
+
+    return retval;
+  }
+
   SLIC_ASSERT(params.resolution > 0);
-  SLIC_ERROR_IF( (params.errorCode > 0), "Error while parsing arguments" );
 
   // STEP 2: read file
   SLIC_INFO("Reading file: " <<  params.stlInput << "...\n");
   quest::STLReader* reader = new quest::STLReader();
-  reader->setFileName(  params.stlInput );
+  reader->setFileName( params.stlInput );
   reader->read();
   SLIC_INFO("done\n");
 
@@ -518,5 +438,5 @@ int main( int argc, char** argv )
   }
 
   ofs.close();
-
+  return retval;
 }
