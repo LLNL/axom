@@ -1175,13 +1175,7 @@ private:
 
   /*!
    *  \brief Private ctor that creates a Group with given name
-   *         in given parent Group.
-   */
-  Group(const std::string& name, Group * parent);
-
-  /*!
-   *  \brief Private ctor that creates a Group with given name
-   *         in the given DataStore root Group.
+   *         in the given DataStore.
    */
   Group(const std::string& name, DataStore * datastore);
 

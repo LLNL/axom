@@ -877,7 +877,7 @@ Group * Group::createGroup( const std::string& path )
     return AXOM_NULLPTR;
   }
 
-  Group * new_group = new(std::nothrow) Group(intpath, group);
+  Group * new_group = new(std::nothrow) Group(intpath, group->getDataStore());
   if ( new_group == AXOM_NULLPTR )
   {
     return AXOM_NULLPTR;
@@ -1565,23 +1565,6 @@ void Group::loadExternalData(const hid_t& h5_id)
 /*
  *************************************************************************
  *
- * PRIVATE ctor makes Group with given name and make it a child of parent.
- *
- *************************************************************************
- */
-Group::Group(const std::string& name,
-                     Group * parent)
-  : m_name(name),
-  m_index(InvalidIndex),
-  m_parent(parent),
-  m_datastore(parent->getDataStore()),
-  m_view_coll(new ViewCollection()),
-  m_group_coll(new GroupCollection())
-{}
-
-/*
- *************************************************************************
- *
  * PRIVATE ctor makes Group with given name and make it a child of
  * root Group in datastore.
  *
@@ -1591,7 +1574,7 @@ Group::Group(const std::string& name,
                      DataStore * datastore)
   : m_name(name),
   m_index(InvalidIndex),
-  m_parent(datastore->getRoot()),
+  m_parent(AXOM_NULLPTR),
   m_datastore(datastore),
   m_view_coll(new ViewCollection()),
   m_group_coll(new GroupCollection())
