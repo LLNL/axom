@@ -122,6 +122,7 @@ public:
   // private members.
   //
   friend class DataStore;
+  friend class View;
 
 
 //@{
@@ -761,55 +762,6 @@ public:
 
 
 //@{
-//!  @name View attach and detach methods.
-
-  /*!
-   * \brief Attach View object to this Group.
-   */
-  View * attachView(View * view);
-
-  /*!
-   * \brief Detach View object from this Group.
-   */
-  View * detachView(const View * view)
-  {
-    return detachView(view->getName());
-  }
-
-  /*!
-   * \brief Detach View with given name from this Group.
-   */
-  View * detachView(const std::string& name);
-
-  /*!
-   * \brief Detach View with given index from this Group.
-   */
-  View * detachView(IndexType idx);
-
-//@}
-
-//@{
-//!  @name Group attach and detach methods.
-
-  /*!
-   * \brief Attach Group object to this Group.
-   */
-  Group * attachGroup(Group * view);
-
-  /*!
-   * \brief Detach Child Group with given name from this Group.
-   */
-  Group * detachGroup(const std::string& name);
-
-  /*!
-   * \brief Detach Child Group with given index from this Group.
-   */
-  Group * detachGroup(IndexType idx);
-
-//@}
-
-
-//@{
 //!  @name Child Group query methods.
 
   /*!
@@ -1186,6 +1138,56 @@ private:
 
 
 //@{
+//!  @name View attach and detach methods.
+
+  /*!
+   * \brief Attach View object to this Group.
+   */
+  View * attachView(View * view);
+
+  /*!
+   * \brief Detach View object from this Group.
+   */
+  View * detachView(const View * view)
+  {
+    return detachView(view->getName());
+  }
+
+  /*!
+   * \brief Detach View with given name from this Group.
+   */
+  View * detachView(const std::string& name);
+
+  /*!
+   * \brief Detach View with given index from this Group.
+   */
+  View * detachView(IndexType idx);
+
+//@}
+
+
+//@{
+//!  @name Group attach and detach methods.
+
+  /*!
+   * \brief Attach Group object to this Group.
+   */
+  Group * attachGroup(Group * view);
+
+  /*!
+   * \brief Detach Child Group with given name from this Group.
+   */
+  Group * detachGroup(const std::string& name);
+
+  /*!
+   * \brief Detach Child Group with given index from this Group.
+   */
+  Group * detachGroup(IndexType idx);
+
+//@}
+
+
+//@{
 //!  @name Private Group View manipulation methods.
 
   /*!
@@ -1200,7 +1202,6 @@ private:
   void destroyViewAndData( View * view );
 
 //@}
-
 
 
 //@{
