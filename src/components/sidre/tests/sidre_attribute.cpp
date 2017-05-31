@@ -186,6 +186,20 @@ TEST(sidre_attribute,view_attr)
   const std::string & out3a = view3b->getAttribute(attr_animal);
   EXPECT_EQ(animal_dog, out3a);
 
+  //----------------------------------------
+  // Moving a view should preserve attributes
+  Group * grp4 = root->createGroup("grp4");
+
+  grp4->moveView(view3b);
+
+#if 0
+  const std::string & out4a = view3b->getAttribute(attr_animal);
+  EXPECT_EQ(animal_dog, out4a);
+
+  grp3->destroyView("a");
+  grp4->destroyView("b");
+#endif
+
 #if 0
   IndexType icolor = color->getIndex();
 
