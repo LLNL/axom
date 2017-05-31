@@ -99,6 +99,16 @@ public:
 //!  @name View query and accessor methods
 
   /*!
+   * \brief Return index of View within owning Group.
+   *
+   * If View is detached, return sidre::InvalidIndex. 
+   */
+  IndexType getIndex() const
+  {
+    return m_index;
+  }
+
+  /*!
    * \brief Return const reference to name of View.
    *
    * \sa getPath(), getPathName()
@@ -1145,6 +1155,9 @@ private:
 
   /// Name of this View object.
   std::string m_name;
+
+  /// Index of this View object within m_owning_group.
+  IndexType m_index;
 
   /// Group object that owns this View object.
   Group * m_owning_group;

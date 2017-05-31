@@ -97,6 +97,7 @@ module sidre_mod
         ! splicer begin class.Group.component_part
         ! splicer end class.Group.component_part
     contains
+        procedure :: get_index => group_get_index
         procedure :: get_name => group_get_name
         procedure :: get_parent => group_get_parent
         procedure :: get_data_store => group_get_data_store
@@ -384,6 +385,7 @@ module sidre_mod
         procedure :: is_opaque => view_is_opaque
         procedure :: is_scalar => view_is_scalar
         procedure :: is_string => view_is_string
+        procedure :: get_index => view_get_index
         procedure :: get_name => view_get_name
         procedure :: get_buffer => view_get_buffer
         procedure :: get_void_ptr => view_get_void_ptr
@@ -641,6 +643,15 @@ module sidre_mod
 
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
+
+        function c_group_get_index(self) &
+                result(SH_rv) &
+                bind(C, name="SIDRE_group_get_index")
+            use iso_c_binding, only : C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: SH_rv
+        end function c_group_get_index
 
         pure function c_group_get_name(self) &
                 result(SH_rv) &
@@ -1881,6 +1892,15 @@ module sidre_mod
             logical(C_BOOL) :: SH_rv
         end function c_view_is_string
 
+        function c_view_get_index(self) &
+                result(SH_rv) &
+                bind(C, name="SIDRE_view_get_index")
+            use iso_c_binding, only : C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: SH_rv
+        end function c_view_get_index
+
         pure function c_view_get_name(self) &
                 result(SH_rv) &
                 bind(C, name="SIDRE_view_get_name")
@@ -2316,6 +2336,15 @@ contains
 
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
+
+    function group_get_index(obj) result(SH_rv)
+        use iso_c_binding, only : C_INT
+        class(SidreGroup) :: obj
+        integer(C_INT) :: SH_rv
+        ! splicer begin class.Group.method.get_index
+        SH_rv = c_group_get_index(obj%voidptr)
+        ! splicer end class.Group.method.get_index
+    end function group_get_index
 
     function group_get_name(obj) result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
@@ -4912,6 +4941,15 @@ contains
         SH_rv = c_view_is_string(obj%voidptr)
         ! splicer end class.View.method.is_string
     end function view_is_string
+
+    function view_get_index(obj) result(SH_rv)
+        use iso_c_binding, only : C_INT
+        class(SidreView) :: obj
+        integer(C_INT) :: SH_rv
+        ! splicer begin class.View.method.get_index
+        SH_rv = c_view_get_index(obj%voidptr)
+        ! splicer end class.View.method.get_index
+    end function view_get_index
 
     function view_get_name(obj) result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
