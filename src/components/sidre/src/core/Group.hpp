@@ -137,6 +137,14 @@ public:
   }
 
   /*!
+   * \brief Return index of Group object within parent Group.
+   */
+  IndexType getIndex() const
+  {
+    return m_index;
+  }
+
+  /*!
    * \brief Return const reference to name of Group object.
    *
    * \sa getPath(), getPathName()
@@ -181,7 +189,9 @@ public:
    * \brief Return pointer to non-const parent Group of a Group.
    *
    * Note that if this method is called on the root Group in a
-   * DataStore, AXOM_NULLPTR is returned.
+   * DataStore, a pointer to itself is returned.
+   * This allows root->getParent()->getParent() to always work similar
+   * to how the filesystem's `cd /;cd ../..` works.
    */
   Group * getParent()
   {
@@ -225,6 +235,14 @@ public:
   const DataStore * getDataStore() const
   {
     return m_datastore;
+  }
+
+  /*!
+   * \brief Return true if this Group is the DataStore's root Group.
+   */
+  bool isRoot() const
+  {
+    return m_parent == this;
   }
 
 //@}
@@ -1119,13 +1137,10 @@ private:
 
   /*!
    *  \brief Private ctor that creates a Group with given name
-   *         in given parent Group.
-   */
-  Group(const std::string& name, Group * parent);
-
-  /*!
-   *  \brief Private ctor that creates a Group with given name
-   *         in the given DataStore root Group.
+   *         in the given DataStore.
+   *
+   *  attachGroup must be called on a newly created Group to insert it
+   *  into the hierarchy. The root group is an exception to this rule.
    */
   Group(const std::string& name, DataStore * datastore);
 
@@ -1295,6 +1310,9 @@ private:
 
   /// Name of this Group object.
   std::string m_name;
+
+  /// Index of this Group object within m_parent.
+  IndexType m_index;
 
   /// Parent Group of this Group object.
   Group * m_parent;

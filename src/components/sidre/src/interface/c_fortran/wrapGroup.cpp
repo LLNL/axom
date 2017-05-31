@@ -30,6 +30,15 @@ extern "C" {
 // splicer begin class.Group.C_definitions
 // splicer end class.Group.C_definitions
 
+SIDRE_IndexType SIDRE_group_get_index(SIDRE_group * self)
+{
+// splicer begin class.Group.method.get_index
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  IndexType SH_rv = SH_this->getIndex();
+  return SH_rv;
+// splicer end class.Group.method.get_index
+}
+
 const char * SIDRE_group_get_name(const SIDRE_group * self)
 {
 // splicer begin class.Group.method.get_name
