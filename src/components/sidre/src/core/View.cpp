@@ -1277,9 +1277,7 @@ bool View::setAttribute( const Attribute * attr, const std::string & value )
   SLIC_ASSERT( attr != AXOM_NULLPTR);
   SLIC_ASSERT( ! value.empty() );
 
-  // Should save m_index directly
-  IndexType idx = m_owning_group->getViewIndex(m_name);
-  bool status = m_owning_group->setAttrValue(attr, idx, value);
+  bool status = m_owning_group->setAttrValue(attr, m_index, value);
 
   return status;
 }
@@ -1295,9 +1293,7 @@ const std::string & View::getAttribute( const Attribute * attr ) const
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
 
-  // Should save m_index directly
-  IndexType idx = m_owning_group->getViewIndex(m_name);
-  const std::string & value = m_owning_group->getAttribute(attr, idx);
+  const std::string & value = m_owning_group->getAttribute(attr, m_index);
   return value;
 }
 
