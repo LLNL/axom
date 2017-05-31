@@ -188,7 +188,9 @@ public:
    * \brief Return pointer to non-const parent Group of a Group.
    *
    * Note that if this method is called on the root Group in a
-   * DataStore, AXOM_NULLPTR is returned.
+   * DataStore, a pointer to itself is returned.
+   * This allows root->getParent()->getParent() to always work similar
+   * to how the filesystem's `cd /;cd ../..` works.
    */
   Group * getParent()
   {
@@ -236,10 +238,6 @@ public:
 
   /*!
    * \brief Return true if this Group is the DataStore's root Group.
-   *
-   * The root Group's parent is itself.
-   * This allows root->getParent()->getParent() to always work similar
-   * to how the filesystem's `cd /;cd ../..` works.
    */
   bool isRoot() const
   {
