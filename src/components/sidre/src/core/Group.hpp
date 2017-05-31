@@ -234,6 +234,18 @@ public:
     return m_datastore;
   }
 
+  /*!
+   * \brief Return true if this Group is the DataStore's root Group.
+   *
+   * The root Group's parent is itself.
+   * This allows root->getParent()->getParent() to always work similar
+   * to how the filesystem's `cd /;cd ../..` works.
+   */
+  bool isRoot() const
+  {
+    return m_parent == this;
+  }
+
 //@}
 
 

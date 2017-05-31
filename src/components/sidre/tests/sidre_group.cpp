@@ -43,6 +43,9 @@ TEST(sidre_group,get_name)
   Group * root = ds->getRoot();
   Group * group = root->createGroup("test");
 
+  EXPECT_TRUE(root->isRoot());
+  EXPECT_FALSE(group->isRoot());
+
   EXPECT_TRUE(group->getName() == std::string("test") );
 
   Group * group2 = root->getGroup("foo");
