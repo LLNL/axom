@@ -42,7 +42,6 @@
 // Sidre project headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
-#include "Attribute.hpp"
 
 
 namespace axom
