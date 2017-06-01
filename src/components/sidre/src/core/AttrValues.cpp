@@ -65,13 +65,6 @@ bool AttrValues::setAttrValue(const Attribute * attr,
     m_values->push_back(value);
   } 
 
-
-#if 0
-std::vector<int>::size_type sz = myvector.size();
- std::vector<std::string> * avec = static_cast(std::vector<std::string> *) m_attributes[iattr];
-  // Make sure there are enough elements
-#endif
-
   return true;
 }
 
@@ -84,8 +77,6 @@ std::vector<int>::size_type sz = myvector.size();
  */
 const std::string & AttrValues::getAttribute( const Attribute * attr ) const
 {
-  static std::string none("NONE");
-
   if (m_values == AXOM_NULLPTR)
   {
     // No attributes have been set;

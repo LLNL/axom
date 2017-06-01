@@ -103,6 +103,9 @@ TEST(sidre_attribute,view_attr)
   const std::string animal_cat("cat");
   const std::string animal_dog("dog");
 
+  const std::string namea("a");
+  const std::string nameb("b");
+
   bool ok;
 
   DataStore * ds = new DataStore();
@@ -121,7 +124,7 @@ TEST(sidre_attribute,view_attr)
   //----------------------------------------
   // Set the first attribute in a Group
   Group * grp1 = root->createGroup("grp1");
-  View  * view1a = grp1->createView("a");
+  View  * view1a = grp1->createView(namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   // Check values of unset attributes
@@ -155,7 +158,7 @@ TEST(sidre_attribute,view_attr)
   // Set the second attribute in a Group
   Group * grp2 = root->createGroup("grp2");
 
-  View  * view2a = grp2->createView("a");
+  View  * view2a = grp2->createView(namea);
   EXPECT_TRUE( view2a != AXOM_NULLPTR );
 
   ok = view2a->setAttribute(attr_animal, animal_dog);
@@ -175,9 +178,9 @@ TEST(sidre_attribute,view_attr)
   //----------------------------------------
   // Set attribute on second View in a Group
   Group * grp3 = root->createGroup("grp3");
-  View  * view3a = grp3->createView("a");
+  View  * view3a = grp3->createView(namea);
   EXPECT_TRUE( view3a != AXOM_NULLPTR );
-  View  * view3b = grp3->createView("b");
+  View  * view3b = grp3->createView(nameb);
   EXPECT_TRUE( view3b != AXOM_NULLPTR );
 
   ok = view3b->setAttribute(attr_animal, animal_dog);
@@ -195,10 +198,11 @@ TEST(sidre_attribute,view_attr)
   const std::string & out4a = view3b->getAttribute(attr_animal);
   EXPECT_EQ(animal_dog, out4a);
 
-#if 0
-  grp3->destroyView("a");
-  grp4->destroyView("b");
-#endif
+  // Create an attribute which will be destroyed
+  view3a->setAttribute(attr_animal, animal_dog);
+
+  grp3->destroyView(namea);
+  grp4->destroyView(nameb);
 
 #if 0
   IndexType icolor = color->getIndex();
