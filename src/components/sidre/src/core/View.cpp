@@ -1277,7 +1277,7 @@ bool View::setAttribute( const Attribute * attr, const std::string & value )
   SLIC_ASSERT( attr != AXOM_NULLPTR);
   SLIC_ASSERT( ! value.empty() );
 
-  bool status = m_owning_group->setAttrValue(attr, m_index, value);
+  bool status = m_attr_values.setAttrValue(attr, value);
 
   return status;
 }
@@ -1293,7 +1293,7 @@ const std::string & View::getAttribute( const Attribute * attr ) const
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
 
-  const std::string & value = m_owning_group->getAttribute(attr, m_index);
+  const std::string & value = m_attr_values.getAttribute(attr);
   return value;
 }
 

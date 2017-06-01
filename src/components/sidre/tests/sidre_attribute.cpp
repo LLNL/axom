@@ -192,10 +192,10 @@ TEST(sidre_attribute,view_attr)
 
   grp4->moveView(view3b);
 
-#if 0
   const std::string & out4a = view3b->getAttribute(attr_animal);
   EXPECT_EQ(animal_dog, out4a);
 
+#if 0
   grp3->destroyView("a");
   grp4->destroyView("b");
 #endif

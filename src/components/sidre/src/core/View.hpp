@@ -32,6 +32,7 @@
 
 // Sidre project headers
 #include "sidre/SidreTypes.hpp"
+#include "AttrValues.hpp"
 
 namespace axom
 {
@@ -1182,6 +1183,9 @@ private:
 
   /// Has data description been applied to the view's data?
   bool m_is_applied;
+
+  /// Attribute Values
+  AttrValues m_attr_values;
 
 };
 

@@ -67,16 +67,16 @@ public:
    * Friend declarations to constrain usage via controlled access to
    * private members.
    */
-  friend class Group;
+  friend class View;
 
 private:
 
   //DISABLE_DEFAULT_CTOR(AttrValues);
   DISABLE_MOVE_AND_ASSIGNMENT(AttrValues);
 
-  bool setAttrValue(const Attribute * attr, IndexType idx, const std::string & value);
+  bool setAttrValue(const Attribute * attr, const std::string & value);
 
-  const std::string & getAttribute( const Attribute * attr, IndexType idx ) const;
+  const std::string & getAttribute( const Attribute * attr ) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor
@@ -101,11 +101,11 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef std::vector< std::vector<std::string> * > Attributes;
+  typedef std::vector<std::string> Values;
   ///////////////////////////////////////////////////////////////////
 
-  /// Name of this Attribute object.
-  Attributes * m_attributes;
+  /// Attributes values.
+  Values * m_values;
 
 };
 

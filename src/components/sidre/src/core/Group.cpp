@@ -2446,37 +2446,5 @@ bool Group::rename(const std::string& new_name)
   return do_rename;
 }
 
-/*
- *************************************************************************
- *
- * Set the attribute value for Attribute attr and View idx.
- *
- *************************************************************************
- */
-bool Group::setAttrValue(const Attribute * attr, IndexType idx,
-			 const std::string & value)
-{
-  SLIC_CHECK_MSG( hasView(idx), "No such view " << idx);
-
-  bool status = m_view_attr_values.setAttrValue(attr, idx, value);
-  return status;
-}
-
-
-/*
- *************************************************************************
- *
- * Get std::string attribute for Attribute attr and View idx.
- *
- *************************************************************************
- */
-const std::string & Group::getAttribute( const Attribute * attr, IndexType idx ) const
-{
-  SLIC_CHECK_MSG( hasView(idx), "No such view " << idx);
-
-  const std::string & value = m_view_attr_values.getAttribute(attr, idx);
-  return value;
-}
-
 } /* end namespace sidre */
 } /* end namespace axom */

@@ -38,51 +38,31 @@ namespace sidre
  *
  *************************************************************************
  */
-bool AttrValues::setAttrValue(const Attribute * attr, IndexType idx,
+bool AttrValues::setAttrValue(const Attribute * attr,
 			      const std::string & value)
 {
 
-  if (m_attributes == AXOM_NULLPTR)
+  if (m_values == AXOM_NULLPTR)
   {
-    m_attributes = new(std::nothrow) Attributes( );
+    m_values = new(std::nothrow) Values( );
   }
 
   IndexType iattr = attr->getIndex();
 
-  // Make sure m_attributes has space for this attribute table
-  if ((size_t) iattr >= m_attributes->size()) {
-    m_attributes->reserve(iattr + 1);
-    for(int n=m_attributes->size(); n <= iattr; ++n)
-    {
-      m_attributes->push_back(AXOM_NULLPTR);
-    }
-  }
-
+  if ((size_t) iattr < m_values->size())
   {
-    //    std::vector<std::string> * avec = static_cast<std::vector<std::string> *>(m_attributes[iattr]);
-    std::vector<std::string> * avec = (*m_attributes)[iattr];
-
-    if (avec == AXOM_NULLPTR)
+    // replace existing attribute
+    (*m_values)[iattr] = value;
+  }
+  else
+  {
+    // Create all attributes up to iattr
+    m_values->reserve(iattr + 1);
+    for(int n=m_values->size(); n < iattr; ++n)
     {
-      avec = new std::vector<std::string>(idx + 1);
-      (*m_attributes)[iattr] = avec;
+      m_values->push_back("");
     }
-
-    if ((size_t) idx < avec->size())
-    {
-      // replace existing attribute
-      (*avec)[idx] = value;
-    }
-    else
-    {
-      // Create attributes for all Views upto idx
-      avec->reserve(idx + 1);
-      for(int n=avec->size(); n < idx; ++n)
-      {
-	avec->push_back("");
-      }
-      avec->push_back(value);
-    }
+    m_values->push_back(value);
   } 
 
 
@@ -102,11 +82,11 @@ std::vector<int>::size_type sz = myvector.size();
  *
  *************************************************************************
  */
-const std::string & AttrValues::getAttribute( const Attribute * attr, IndexType idx ) const
+const std::string & AttrValues::getAttribute( const Attribute * attr ) const
 {
   static std::string none("NONE");
 
-  if (m_attributes == AXOM_NULLPTR)
+  if (m_values == AXOM_NULLPTR)
   {
     // No attributes have been set;
     return attr->getDefault();
@@ -114,19 +94,13 @@ const std::string & AttrValues::getAttribute( const Attribute * attr, IndexType 
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr > m_attributes->size()) {
-    // This attribute has not been set for any Views in this Group.
-    return attr->getDefault();
-  }
-
-  std::vector<std::string> * avec = (*m_attributes)[iattr];
-  if ((size_t) idx > avec->size())
+  if ((size_t) iattr > m_values->size())
   {
     // This attribute has not been set for this View
     return attr->getDefault();
   }
 
-  return (*avec)[idx];
+  return (*m_values)[iattr];
 }
 
 
@@ -138,7 +112,7 @@ const std::string & AttrValues::getAttribute( const Attribute * attr, IndexType 
  *************************************************************************
  */
 AttrValues::AttrValues() :
-  m_attributes(AXOM_NULLPTR)
+  m_values(AXOM_NULLPTR)
 {}
 
 /*
