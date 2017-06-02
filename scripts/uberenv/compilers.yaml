@@ -55,13 +55,13 @@ compilers:
         clang@coral:
             cc:  /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang
             cxx: /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang++
-            f77: /usr/tcetmp/packages/xl/xl-beta-2017.05.08/xlf/bin/xlf2003
-            fc: /usr/tcetmp/packages/xl/xl-beta-2017.05.08/xlf/bin/xlf2003
+            f77: /usr/tcetmp/packages/xl/xl-beta-2017.05.08/bin/xlf90
+            fc:  /usr/tcetmp/packages/xl/xl-beta-2017.05.08/bin/xlf90
         gcc@4.9.3:
             cc:  /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gcc
             cxx: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/g++
-            f77: None 
-            fc: None
+            f77: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
+            fc: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
     bgqos_0:
           gcc@4.7.2:
              cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
