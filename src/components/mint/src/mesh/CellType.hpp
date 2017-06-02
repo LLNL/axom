@@ -34,6 +34,8 @@ enum {
   MINT_NUM_CELL_TYPES  ///< NUM_CELL_TYPES
 };
 
+#define MINT_MAX_NUM_NODES 8
+
 namespace axom {
 namespace mint {
 

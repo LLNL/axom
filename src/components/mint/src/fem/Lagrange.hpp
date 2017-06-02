@@ -1,0 +1,339 @@
+/*
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
+#ifndef MINT_LAGRANGE_SHAPEFUNCTION_HPP_
+#define MINT_LAGRANGE_SHAPEFUNCTION_HPP_
+
+// Axom includes
+#include "axom/Macros.hpp" // For AXOM_STATIC_ASSERT(), AXOM_NOT_USED()
+
+// Mint includes
+#include "mint/CellType.hpp"
+#include "mint/FEBasisTypes.hpp"
+#include "mint/ShapeFunction.hpp"
+
+// Slic includes
+#include "slic/slic.hpp"
+
+namespace axom {
+namespace mint {
+
+/*!
+ *******************************************************************************
+ * \brief Defines the Lagrange family of Finite Elements
+ *
+ * \tparam CellType the cell type of the element, e.g., MINT_QUAD, etc.
+ *
+ * \note This is the default implementation. Only stubs are defined at this
+ *  level.This class is specialized according to cell type.
+ *******************************************************************************
+ */
+template < int CellType >
+class Lagrange : public ShapeFunction< Lagrange< CellType > >
+{
+
+public:
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the cell type of this instance.
+   * \return c the cell type, e.g., MINT_QUAD etc.
+   * \see CellType.hpp
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getCellType()
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+       SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                    cell::name[ CellType ] );
+     } else {
+
+       SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+
+     return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the Basis function type.
+   * \return b the basis thpe, e.g., MINT_LAGRANGE_BASIS
+   * \see FEBasisTypes.hpp
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getType()
+  {
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+    if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+       SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                    cell::name[ CellType ] );
+    } else {
+
+      SLIC_ERROR( "Invalid CellType: " << CellType );
+
+    }
+
+    return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the number of degrees of freedom on this Finite Element.
+   * \return nodfs the number of degrees of freedom.
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getNumDofs()
+  {
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+    if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                     cell::name[ CellType ] );
+    } else {
+
+       SLIC_ERROR( "Invalid CellType: " << CellType );
+
+    }
+
+    return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the max number of newton iterations for this Finite Element
+   * \return N the max number of newton iterations
+   * \post N >= 1
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getMaxNewtonIters()
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+      } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+     return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the dimension of the reference element.
+   * \return dim the dimension of the reference element
+   * \post dim >= 1 && dim <= 3
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getDimension()
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+      } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+     return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the min coordinate of the element's reference space
+   * \return min the min coordinate of the element's reference space, e.g., 0
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getMin()
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+     } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+     return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the max coordinate of the element's reference space
+   * \return max the max coordinate of the element's reference space, e.g., 1
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static int getMax()
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+     } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+    return 0;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the centroid of the reference element.
+   *
+   * \param [out] center ndims long buffer to store the centroid
+   * \pre center != AXOM_NULLPTR
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static void getCenter( double* AXOM_NOT_USED(center) )
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+     } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the coordinates of the reference element.
+   *
+   * \param [out] coords ndims*ndofs long buffer to store the coordinates
+   * \pre coords != AXOM_NULLPTR
+   *
+   * \note The coordinates are arranged in column-major flat array layout.
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static void getCoords( double* AXOM_NOT_USED(coords) )
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+         SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+     } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Computes the shape functions of the Finite Element at the given
+   *  natural coordinates, \f$ \xi \f$
+   *
+   * \param [in] nc natural coordinates at which to compute the shape functions
+   * \param [out] phi buffer (ndofs long) to store the shape functions
+   *
+   * \pre nc != AXOM_NULLPTR
+   * \pre phi != AXOM_NULLPTR
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static void computeShape( const double* AXOM_NOT_USED(nc),
+                            double* AXOM_NOT_USED(phi) )
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+     } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Computes the shape function first derivatives for the Finite
+   *  Element at the given natural coordinates, \f$ \xi \f$
+   *
+   * \param [in] nc natural coordinates at which to compute the derivatives
+   * \param [out] phidot buffer (ndofs*ndims long) for the derivatives
+   *
+   * \pre nc != AXOM_NULLPTR
+   * \pre phidot != AXOM_NULLPTR
+   *
+   * \note This method is implemented in specialized instances.
+   *****************************************************************************
+   */
+  static void computeDerivatives( const double* AXOM_NOT_USED(nc),
+                                  double* AXOM_NOT_USED(phidot) )
+  {
+     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+
+     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+
+        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
+                      cell::name[ CellType ] );
+     } else {
+
+        SLIC_ERROR( "Invalid CellType: " << CellType );
+
+     }
+  }
+
+};
+
+} /* namespace mint */
+} /* namespace axom */
+
+// Template Specializations for Lagrange
+#include "mint/fem/shape_functions/lagrange/quad_4.hpp"
+#include "mint/fem/shape_functions/lagrange/tri_3.hpp"
+
+#endif /* MINT_LAGRANGE_SHAPEFUNCTION_HPP_ */

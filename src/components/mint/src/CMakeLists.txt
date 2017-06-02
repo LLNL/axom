@@ -8,8 +8,31 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
+## list of mint dependencies
+set(mint_depends mint)
+
+## load mint cmake macros
+include(${PROJECT_SOURCE_DIR}/cmake/MintMacros.cmake)
+
+## mint Lagrange basis functions
+mint_fe_basis( NAME LAGRANGE
+               HEADER_FILES
+                  quad_4.hpp
+                  tri_3.hpp
+               )
+
+## custom target to put the mint basis functions under mint/lagrange
 ## mint headers
 set( mint_headers
+
+    ## FEM classes
+    fem/FEBasis.hpp
+    fem/FEBasisTypes.hpp
+    fem/FiniteElement.hpp
+    fem/Lagrange.hpp
+    fem/ShapeFunction.hpp
+
+    ## Mesh data-model
     mesh/CellConnectivity.hpp
     mesh/CellType.hpp
     mesh/CurvilinearMesh.hpp
@@ -30,6 +53,11 @@ set( mint_headers
 
 ## mint sources
 set( mint_sources
+
+    ## FEM classes
+    fem/FiniteElement.cpp
+
+    ## Mesh data-model
     mesh/CurvilinearMesh.cpp
     mesh/Field.cpp
     mesh/FieldData.cpp
@@ -48,3 +76,5 @@ blt_add_library(
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
    )
+
+add_dependencies( ${mint_depends} )
