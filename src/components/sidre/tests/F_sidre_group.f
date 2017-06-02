@@ -180,14 +180,55 @@ contains
   end subroutine get_view_name_index
 
 !------------------------------------------------------------------------------
-! Verify getFirstValidViewIndex, getNextValidGroupIndex
+! Verify getFirstValidGroupIndex, getNextValidGroupIndex
+!------------------------------------------------------------------------------
+  subroutine get_first_and_next_group_index
+    type(SidreDataStore) ds
+    type(SidreGroup) root, parent, emptygrp
+    type(SidreGroup) group1, group2, group1out, group2out
+    integer idx1, idx2, idx3, badidx1, badidx2    ! IndexType
+
+    call set_case_name("get_first_and_next_group_index")
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    parent = root%create_group("parent")
+    group1 = parent%create_group("group1")
+    group2 = parent%create_group("group2")
+    call assert_true(parent%get_num_groups() == 2)
+
+    idx1 = parent%get_first_valid_group_index()
+    idx2 = parent%get_next_valid_group_index(idx1)
+    idx3 = parent%get_next_valid_group_index(idx2)
+    call assert_equals(0, idx1);
+    call assert_equals(1, idx2);
+    call assert_equals(invalid_index, idx3);
+
+    group1out = parent%get_group(idx1)
+    group2out = parent%get_group(idx2)
+    call assert_true(group1 == group1out);
+    call assert_true(group2 == group2out);
+
+    ! check error conditions
+    emptygrp = root%create_group("emptyGroup")
+    badidx1 = emptygrp%get_first_valid_group_index()
+    badidx2 = emptygrp%get_next_valid_group_index(badidx1)
+
+    call assert_equals(badidx1, invalid_index)
+    call assert_equals(badidx2, invalid_index)
+
+    call ds%delete()
+  end subroutine get_first_and_next_group_index
+
+!------------------------------------------------------------------------------
+! Verify getFirstValidViewIndex, getNextValidViewIndex
 !------------------------------------------------------------------------------
   subroutine get_first_and_next_view_index
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, emptygrp
-    type(SidreView) view1, view2
+    type(SidreView) view1, view2, view1out, view2out
     integer idx1, idx2, idx3, badidx1, badidx2    ! IndexType
-    character(len=30) name1, name2, name3
 
     call set_case_name("get_first_and_next_view_index")
 
@@ -197,31 +238,27 @@ contains
     parent = root%create_group("parent")
     view1 = parent%create_view("view1")
     view2 = parent%create_view("view2")
-
-    call assert_true(parent%get_num_views() == 2)
-
-    emptygrp = root%create_group("emptyGroup")
-
     call assert_true(parent%get_num_views() == 2)
 
     idx1 = parent%get_first_valid_view_index()
     idx2 = parent%get_next_valid_view_index(idx1)
+    idx3 = parent%get_next_valid_view_index(idx2)
+    call assert_equals(0, idx1);
+    call assert_equals(1, idx2);
+    call assert_equals(invalid_index, idx3);
 
-    name1 = parent%get_view_name(idx1)
-    name2 = parent%get_view_name(idx2)
-
-    call assert_true(name1 == "view1")
-    call assert_true(view1%get_name() == "view1")
-
-    call assert_true(name2 == "view2")
-    call assert_true(view2%get_name() == "view2")
+    view1out = parent%get_view(idx1)
+    view2out = parent%get_view(idx2)
+    call assert_true(view1 == view1out);
+    call assert_true(view2 == view2out);
 
     ! check error conditions
+    emptygrp = root%create_group("emptyGroup")
     badidx1 = emptygrp%get_first_valid_view_index()
     badidx2 = emptygrp%get_next_valid_view_index(badidx1)
 
-!    EXPECT_TRUE(badidx1 == InvalidIndex)
-!    EXPECT_TRUE(badidx2 == InvalidIndex)
+    call assert_equals(badidx1, invalid_index)
+    call assert_equals(badidx2, invalid_index)
 
     call ds%delete()
   end subroutine get_first_and_next_view_index
@@ -1013,6 +1050,7 @@ program fortran_test
   call get_group
   call get_view
   call get_view_name_index
+  call get_first_and_next_group_index
   call get_first_and_next_view_index
   call get_group_name_index
   call create_destroy_has_view

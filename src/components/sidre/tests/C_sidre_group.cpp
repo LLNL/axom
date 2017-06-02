@@ -28,7 +28,7 @@ TEST(C_sidre_group,get_name)
   //    EXPECT_TRUE(group->getName() == std::string("test") );
   EXPECT_TRUE(strcmp(SIDRE_group_get_name(group), "test") == 0);
 
-  SIDRE_group * group2 = SIDRE_group_get_group(root, "foo");
+  SIDRE_group * group2 = SIDRE_group_get_group_from_name(root, "foo");
   EXPECT_TRUE(group2 == NULL);
 
   SIDRE_datastore_delete(ds);
@@ -80,7 +80,7 @@ TEST(C_sidre_group,get_group)
 
   EXPECT_TRUE( SIDRE_group_has_group(parent, "child") );
   // check error condition
-  EXPECT_TRUE( SIDRE_group_get_group(parent,
+  EXPECT_TRUE( SIDRE_group_get_group_from_name(parent,
                                          "non-existant group") == NULL );
 
   SIDRE_datastore_delete(ds);
@@ -146,7 +146,47 @@ TEST(C_sidre_group,get_view_names_and_indicies)
 }
 
 //------------------------------------------------------------------------------
-// Verify getFirstValidViewIndex, getNextValidGroupIndex
+// Verify getFirstValidGroupIndex, getNextValidGroupIndex
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_first_and_next_group_index)
+{
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_group * root = SIDRE_datastore_get_root(ds);
+
+  SIDRE_group * parent = SIDRE_group_create_group(root, "parent");
+  SIDRE_group * group1 = SIDRE_group_create_group(parent, "group1");
+  SIDRE_group * group2 = SIDRE_group_create_group(parent, "group2");
+  EXPECT_EQ(SIDRE_group_get_num_groups(parent), 2u);
+
+  SIDRE_IndexType idx1 = SIDRE_group_get_first_valid_group_index(parent);
+  SIDRE_IndexType idx2 = SIDRE_group_get_next_valid_group_index(parent, idx1);
+  SIDRE_IndexType idx3 = SIDRE_group_get_next_valid_group_index(parent, idx2);
+  EXPECT_EQ(0, idx1);
+  EXPECT_EQ(1, idx2);
+  EXPECT_EQ(SIDRE_InvalidIndex, idx3);
+
+  SIDRE_group * group1out = SIDRE_group_get_group_from_index(parent, idx1);
+  SIDRE_group * group2out = SIDRE_group_get_group_from_index(parent, idx2);
+  EXPECT_EQ(group1, group1out);
+  EXPECT_EQ(group2, group2out);
+
+  // check error conditions
+  SIDRE_group * emptyGroup =
+    SIDRE_group_create_group(root, "emptyGroup");
+
+  SIDRE_IndexType badidx1 = SIDRE_group_get_first_valid_group_index(
+    emptyGroup);
+  SIDRE_IndexType badidx2 = SIDRE_group_get_next_valid_group_index(
+    emptyGroup, badidx1);
+
+  EXPECT_EQ(SIDRE_InvalidIndex, badidx1);
+  EXPECT_EQ(SIDRE_InvalidIndex, badidx2);
+
+  SIDRE_datastore_delete(ds);
+}
+
+//------------------------------------------------------------------------------
+// Verify getFirstValidViewIndex, getNextValidViewIndex
 //------------------------------------------------------------------------------
 TEST(sidre_group,get_first_and_next_view_index)
 {
@@ -156,33 +196,31 @@ TEST(sidre_group,get_first_and_next_view_index)
   SIDRE_group * parent = SIDRE_group_create_group(root, "parent");
   SIDRE_view * view1 = SIDRE_group_create_view_empty(parent, "view1");
   SIDRE_view * view2 = SIDRE_group_create_view_empty(parent, "view2");
-
-  SIDRE_group * emptyGroup =
-    SIDRE_group_create_group(root, "emptyGroup");
-
   EXPECT_EQ(SIDRE_group_get_num_views(parent), 2u);
 
   SIDRE_IndexType idx1 = SIDRE_group_get_first_valid_view_index(parent);
-  SIDRE_IndexType idx2 =
-    SIDRE_group_get_next_valid_view_index(parent, idx1);
+  SIDRE_IndexType idx2 = SIDRE_group_get_next_valid_view_index(parent, idx1);
+  SIDRE_IndexType idx3 = SIDRE_group_get_next_valid_view_index(parent, idx2);
+  EXPECT_EQ(0, idx1);
+  EXPECT_EQ(1, idx2);
+  EXPECT_EQ(SIDRE_InvalidIndex, idx3);
 
-  const char * name1 = SIDRE_group_get_view_name(parent, idx1);
-  const char * name2 = SIDRE_group_get_view_name(parent, idx2);
-
-  EXPECT_TRUE(strcmp(name1, "view1") == 0);
-  EXPECT_TRUE(strcmp(SIDRE_view_get_name(view1), name1) == 0);
-
-  EXPECT_TRUE(strcmp(name2, "view2") == 0);
-  EXPECT_TRUE(strcmp(SIDRE_view_get_name(view2), name2) == 0);
+  SIDRE_view * view1out = SIDRE_group_get_view_from_index(parent, idx1);
+  SIDRE_view * view2out = SIDRE_group_get_view_from_index(parent, idx2);
+  EXPECT_EQ(view1, view1out);
+  EXPECT_EQ(view2, view2out);
 
   // check error conditions
+  SIDRE_group * emptyGroup =
+    SIDRE_group_create_group(root, "emptyGroup");
+
   SIDRE_IndexType badidx1 = SIDRE_group_get_first_valid_view_index(
     emptyGroup);
   SIDRE_IndexType badidx2 = SIDRE_group_get_next_valid_view_index(
     emptyGroup, badidx1);
 
-  EXPECT_TRUE(badidx1 == SIDRE_InvalidIndex);
-  EXPECT_TRUE(badidx2 == SIDRE_InvalidIndex);
+  EXPECT_EQ(SIDRE_InvalidIndex, badidx1);
+  EXPECT_EQ(SIDRE_InvalidIndex, badidx2);
 
   SIDRE_datastore_delete(ds);
 }
@@ -382,7 +420,7 @@ TEST(C_sidre_group,view_copy_move)
 #ifdef XXX
   // we expect the actual data  pointers to be the same
   EXPECT_EQ(SIDRE_group_get_view(flds, "i0")->getNode().data_pointer(),
-            SIDRE_group_get_group("sub")->get_view(
+            SIDRE_group_get_group_from_name("sub")->get_view(
               "i0")->getNode().data_pointer());
 #endif
 
@@ -429,8 +467,8 @@ TEST(C_sidre_group,groups_move_copy)
   EXPECT_TRUE(SIDRE_group_has_group(flds, "sub"));
   EXPECT_TRUE(SIDRE_group_has_group(flds, "c"));
 
-  SIDRE_group * tmpgrp = SIDRE_group_get_group(flds, "sub");
-  EXPECT_EQ(SIDRE_group_get_group(tmpgrp, "b"), gb);
+  SIDRE_group * tmpgrp = SIDRE_group_get_group_from_name(flds, "sub");
+  EXPECT_EQ(SIDRE_group_get_group_from_name(tmpgrp, "b"), gb);
 
   SIDRE_datastore_delete(ds);
 }
@@ -575,11 +613,11 @@ TEST(C_sidre_group,save_restore_simple)
   SIDRE_group_create_view_scalar_int(ga, "i0", 1);
 
   EXPECT_TRUE(SIDRE_group_has_group(root, "fields"));
-  EXPECT_TRUE(SIDRE_group_has_group(SIDRE_group_get_group(root,
+  EXPECT_TRUE(SIDRE_group_has_group(SIDRE_group_get_group_from_name(root,
                                                                   "fields"),
                                         "a"));
-  EXPECT_TRUE(SIDRE_group_has_view(SIDRE_group_get_group(
-                                         SIDRE_group_get_group(root,
+  EXPECT_TRUE(SIDRE_group_has_view(SIDRE_group_get_group_from_name(
+                                         SIDRE_group_get_group_from_name(root,
                                                                    "fields"),
                                          "a"), "i0"));
 
@@ -599,11 +637,11 @@ TEST(C_sidre_group,save_restore_simple)
   SIDRE_datastore_print(ds2);
 
   root = SIDRE_datastore_get_root(ds2);
-  flds = SIDRE_group_get_group(root, "fields");
+  flds = SIDRE_group_get_group_from_name(root, "fields");
 
   // check that all sub groups exist
   EXPECT_TRUE(SIDRE_group_has_group(flds, "a"));
-  ga = SIDRE_group_get_group(flds, "a");
+  ga = SIDRE_group_get_group_from_name(flds, "a");
   i0_view = SIDRE_group_get_view_from_name(ga, "i0");
   EXPECT_EQ(SIDRE_view_get_data_int(i0_view), 1);
 
@@ -672,15 +710,15 @@ TEST(C_sidre_group,save_restore_complex)
   SIDRE_group_load(root, "C_out_sidre_group_save_restore_complex",
                        "conduit");
 
-  flds = SIDRE_group_get_group(root, "fields");
+  flds = SIDRE_group_get_group_from_name(root, "fields");
   // check that all sub groups exist
   EXPECT_TRUE(SIDRE_group_has_group(flds, "a"));
   EXPECT_TRUE(SIDRE_group_has_group(flds, "b"));
   EXPECT_TRUE(SIDRE_group_has_group(flds, "c"));
 
-  ga = SIDRE_group_get_group(flds, "a");
-  gb = SIDRE_group_get_group(flds, "b");
-  gc = SIDRE_group_get_group(flds, "c");
+  ga = SIDRE_group_get_group_from_name(flds, "a");
+  gb = SIDRE_group_get_group_from_name(flds, "b");
+  gc = SIDRE_group_get_group_from_name(flds, "c");
 
   i0_view = SIDRE_group_get_view_from_name(ga, "i0");
   f0_view = SIDRE_group_get_view_from_name(gb, "f0");
