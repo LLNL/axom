@@ -55,24 +55,43 @@ void STLReader::clear()
 //------------------------------------------------------------------------------
 bool STLReader::isAsciiFormat() const
 {
-    // An STL file is in ASCII format if the first word is 'solid'
+    // An STL file with 'numTris' triangles is in binary format  
+    // if its file size (in bytes) is: 84 + 50 * numTris
 
-    std::ifstream ifs( m_fileName.c_str());
-    SLIC_ASSERT_MSG(ifs.is_open()
-                   , "There was a problem reading the provided STL file " << m_fileName);
+    // The binary format consists of 
+    //    an 80 byte header, 
+    //    followed by a four byte int encoding the number of triangles
+    //    followed by the triangle data (50 bytes per triangle)
 
-    std::string first;
-    ifs >> first;
+    // Open the file
+    std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
+    SLIC_ASSERT_MSG(ifs.is_open(),
+                   "There was a problem reading the provided STL file " << m_fileName);
 
-    return first == "solid";
+    // Find out the file size
+    ifs.seekg(0, ifs.end);
+    int fileSize = ifs.tellg();
+    
+    const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(int));
+    if(fileSize < totalHeaderSize)
+        return true;
+    
+    // Find the number of triangles (if the file were binary)
+    int numTris = 0;
+    ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
+    ifs.read( (char*)&numTris, sizeof(int));
+    
+    // Check if the size matches our expectation
+    int expectedBinarySize = totalHeaderSize + (numTris * BINARY_TRI_SIZE);
+    return (fileSize != expectedBinarySize);
 }
 
 //------------------------------------------------------------------------------
 void STLReader::readAsciiSTL()
 {
     std::ifstream ifs( m_fileName.c_str());
-    SLIC_ASSERT_MSG(ifs.is_open()
-                   , "There was a problem reading the provided STL file " << m_fileName);
+    SLIC_ASSERT_MSG(ifs.is_open(),
+                    "There was a problem reading the provided STL file " << m_fileName);
 
     std::string junk;
     double x,y,z;
@@ -99,13 +118,10 @@ void STLReader::readAsciiSTL()
 
 void STLReader::readBinarySTL()
 {
-  const std::size_t  BINARY_HEADER_SIZE = 80; // bytes
-  const std::size_t  BINARY_TRI_SIZE = 50;    // bytes
-
   // Binary STL format consists of
-  //    an 80 byte header
+  //    an 80 byte header (BINARY_HEADER_SIZE)
   //    followed by a 32 bit int encoding the number of faces
-  //    followed by the triangles, each of which is 50 bytes
+  //    followed by the triangles, each of which is 50 bytes (BINARY_TRI_SIZE)
 
 
   // A local union data structure for triangles in a binary STL

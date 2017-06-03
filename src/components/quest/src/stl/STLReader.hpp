@@ -24,6 +24,9 @@ namespace quest
 
 class STLReader
 {
+    static const std::size_t  BINARY_HEADER_SIZE = 80; // bytes
+    static const std::size_t  BINARY_TRI_SIZE = 50;    // bytes
+
 public:
 
     /*!
