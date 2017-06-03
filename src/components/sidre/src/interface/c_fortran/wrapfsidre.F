@@ -139,7 +139,8 @@ module sidre_mod
         procedure :: copy_view => group_copy_view
         procedure :: has_group => group_has_group
         procedure :: has_child_group => group_has_child_group
-        procedure :: get_group => group_get_group
+        procedure :: get_group_from_name => group_get_group_from_name
+        procedure :: get_group_from_index => group_get_group_from_index
         procedure :: get_group_index => group_get_group_index
         procedure :: get_group_name => group_get_group_name
         procedure :: get_first_valid_group_index => group_get_first_valid_group_index
@@ -194,6 +195,11 @@ module sidre_mod
             ! splicer end class.Group.generic.destroy_view_and_data
             destroy_view_and_data_name,  &
             destroy_view_and_data_index
+        generic :: get_group => &
+            ! splicer begin class.Group.generic.get_group
+            ! splicer end class.Group.generic.get_group
+            get_group_from_name,  &
+            get_group_from_index
         generic :: get_view => &
             ! splicer begin class.Group.generic.get_view
             ! splicer end class.Group.generic.get_view
@@ -1364,26 +1370,36 @@ module sidre_mod
             logical(C_BOOL) :: SH_rv
         end function c_group_has_child_group_bufferify
 
-        function c_group_get_group(self, path) &
+        function c_group_get_group_from_name(self, path) &
                 result(SH_rv) &
-                bind(C, name="SIDRE_group_get_group")
+                bind(C, name="SIDRE_group_get_group_from_name")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             type(C_PTR) :: SH_rv
-        end function c_group_get_group
+        end function c_group_get_group_from_name
 
-        function c_group_get_group_bufferify(self, path, Lpath) &
+        function c_group_get_group_from_name_bufferify(self, path, Lpath) &
                 result(SH_rv) &
-                bind(C, name="SIDRE_group_get_group_bufferify")
+                bind(C, name="SIDRE_group_get_group_from_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             type(C_PTR) :: SH_rv
-        end function c_group_get_group_bufferify
+        end function c_group_get_group_from_name_bufferify
+
+        function c_group_get_group_from_index(self, idx) &
+                result(SH_rv) &
+                bind(C, name="SIDRE_group_get_group_from_index")
+            use iso_c_binding, only : C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            type(C_PTR) :: SH_rv
+        end function c_group_get_group_from_index
 
         pure function c_group_get_group_index(self, name) &
                 result(SH_rv) &
@@ -2930,18 +2946,30 @@ contains
         ! splicer end class.Group.method.has_child_group
     end function group_has_child_group
 
-    function group_get_group(obj, path) result(SH_rv)
+    function group_get_group_from_name(obj, path) result(SH_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         type(SidreGroup) :: SH_rv
-        ! splicer begin class.Group.method.get_group
-        SH_rv%voidptr = c_group_get_group_bufferify(  &
+        ! splicer begin class.Group.method.get_group_from_name
+        SH_rv%voidptr = c_group_get_group_from_name_bufferify(  &
             obj%voidptr,  &
             path,  &
             len_trim(path, kind=C_INT))
-        ! splicer end class.Group.method.get_group
-    end function group_get_group
+        ! splicer end class.Group.method.get_group_from_name
+    end function group_get_group_from_name
+
+    function group_get_group_from_index(obj, idx) result(SH_rv)
+        use iso_c_binding, only : C_INT
+        class(SidreGroup) :: obj
+        integer(C_INT), value, intent(IN) :: idx
+        type(SidreGroup) :: SH_rv
+        ! splicer begin class.Group.method.get_group_from_index
+        SH_rv%voidptr = c_group_get_group_from_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.Group.method.get_group_from_index
+    end function group_get_group_from_index
 
     function group_get_group_index(obj, name) result(SH_rv)
         use iso_c_binding, only : C_INT
