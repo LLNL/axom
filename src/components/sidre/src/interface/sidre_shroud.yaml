@@ -102,6 +102,7 @@ classes:
     F_derived_name:  SidreGroup
 
     methods:
+    -  decl: IndexType getIndex()
     -  decl: const std::string& getName+len(MAXNAMESIZE)() const
 #    -  decl: Group* getParent()
     -  decl: const Group* getParent() const
@@ -375,6 +376,7 @@ classes:
     - decl: bool isOpaque() const
     - decl: bool isScalar() const
     - decl: bool isString() const
+    - decl: IndexType getIndex()
     - decl: const std::string& getName+len(MAXNAMESIZE)() const
     - decl: Buffer* getBuffer()
 #    - decl: Buffer const* getBuffer() const

@@ -264,6 +264,15 @@ bool SIDRE_view_is_string(const SIDRE_view * self)
 // splicer end class.View.method.is_string
 }
 
+SIDRE_IndexType SIDRE_view_get_index(SIDRE_view * self)
+{
+// splicer begin class.View.method.get_index
+  View * SH_this = static_cast<View *>(static_cast<void *>(self));
+  IndexType SH_rv = SH_this->getIndex();
+  return SH_rv;
+// splicer end class.View.method.get_index
+}
+
 const char * SIDRE_view_get_name(const SIDRE_view * self)
 {
 // splicer begin class.View.method.get_name

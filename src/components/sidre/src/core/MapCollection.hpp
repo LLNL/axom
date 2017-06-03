@@ -92,10 +92,10 @@
  *
  *               IndexType getItemIndex(const std::string& name) const;
  *
- *          - // Insert item with given name; return true if insertion
- *            // succeeded, and false otherwise.
+ *          - // Insert item with given name; return index if insertion
+ *            // succeeded, and InvalidIndex otherwise.
  *
- *               bool insertItem(TYPE* item, const std::string& name);
+ *               IndexType insertItem(TYPE* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
  *            // pointer to it. If it doesn't exist, return AXOM_NULLPTR.
@@ -255,7 +255,7 @@ public:
   }
 
   ///
-  bool insertItem(TYPE * item, const std::string& name);
+  IndexType insertItem(TYPE * item, const std::string& name);
 
   ///
   TYPE * removeItem(const std::string& name);
@@ -321,8 +321,8 @@ IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 
 
 template <typename TYPE>
-bool MapCollection<TYPE>::insertItem(TYPE * item,
-                                     const std::string& name)
+IndexType MapCollection<TYPE>::insertItem(TYPE * item,
+                                          const std::string& name)
 {
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
@@ -353,7 +353,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
     {
       m_items.push_back(item);
     }
-    return true;
+    return idx;
   }
   else
   {
@@ -362,7 +362,7 @@ bool MapCollection<TYPE>::insertItem(TYPE * item,
     {
       m_free_ids.push(idx);
     }
-    return false;
+    return InvalidIndex;
   }
 }
 

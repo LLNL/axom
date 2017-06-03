@@ -41,6 +41,8 @@ typedef struct s_SIDRE_view SIDRE_view;
 // splicer begin class.Group.C_declarations
 // splicer end class.Group.C_declarations
 
+SIDRE_IndexType SIDRE_group_get_index(SIDRE_group * self);
+
 const char * SIDRE_group_get_name(const SIDRE_group * self);
 
 void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
