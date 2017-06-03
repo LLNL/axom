@@ -89,7 +89,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine get_group
     type(SidreDataStore) ds
-    type(SidreGroup) root, parent, child, child1, errgrp
+    type(SidreGroup) root, parent, child, child1, child2, errgrp
 
     call set_case_name("has_group")
 
@@ -102,6 +102,9 @@ contains
 
     child1 = parent%get_group("child")
     call assert_true( child == child1 )
+
+    child2 = parent%get_group(0)
+    call assert_true( child == child2 )
 
     ! check error condition
     errgrp = parent%get_group("non-existent group")
@@ -116,7 +119,7 @@ contains
   subroutine get_view
     type(SidreDataStore) ds
     type(SidreGroup) root,parent
-    type(SidreView) view1, view2
+    type(SidreView) view1, view2, view3
 
     call set_case_name("get_view")
 
@@ -128,6 +131,9 @@ contains
 
     view2 = parent%get_view("view")
     call assert_true( view1 == view2 )
+
+    view3 = parent%get_view(0)
+    call assert_true( view1 == view3 )
 
     ! check error condition
     view2 = parent%get_view("non-existent view")

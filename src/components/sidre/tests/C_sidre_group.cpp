@@ -78,7 +78,9 @@ TEST(C_sidre_group,get_group)
   SIDRE_group * child = SIDRE_group_create_group(parent, "child");
   EXPECT_TRUE( SIDRE_group_get_parent(child) == parent );
 
-  EXPECT_TRUE( SIDRE_group_has_group(parent, "child") );
+  EXPECT_TRUE( SIDRE_group_get_group_from_name(parent, "child") == child);
+  EXPECT_TRUE( SIDRE_group_get_group_from_index(parent, 0) == child);
+
   // check error condition
   EXPECT_TRUE( SIDRE_group_get_group_from_name(parent,
                                          "non-existant group") == NULL );
@@ -99,6 +101,7 @@ TEST(C_sidre_group,get_view)
   SIDRE_view * view = SIDRE_group_create_view_empty(parent, "view");
 
   EXPECT_TRUE( SIDRE_group_get_view_from_name(parent, "view") == view );
+  EXPECT_TRUE( SIDRE_group_get_view_from_index(parent, 0) == view );
 
   // check error condition
   EXPECT_TRUE( SIDRE_group_get_view_from_name(parent,

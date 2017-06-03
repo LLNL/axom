@@ -235,6 +235,8 @@ TEST(sidre_group,get_group)
   EXPECT_TRUE( child->getParent() == parent );
 
   EXPECT_TRUE( parent->getGroup("child") == child );
+  EXPECT_TRUE( parent->getGroup(0) == child );
+
   // check error condition
   EXPECT_TRUE( parent->getGroup("non-existant group") == AXOM_NULLPTR );
 
@@ -253,6 +255,7 @@ TEST(sidre_group,get_view)
   View * view = parent->createView("view");
 
   EXPECT_TRUE( parent->getView("view") == view );
+  EXPECT_TRUE( parent->getView(0) == view );
 
   // check error condition
   EXPECT_TRUE( parent->getView("non-existant view") == AXOM_NULLPTR );
