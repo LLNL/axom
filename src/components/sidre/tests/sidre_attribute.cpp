@@ -128,30 +128,30 @@ TEST(sidre_attribute,view_attr)
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   // Check values of unset attributes
-  const std::string & out1x = view1a->getAttribute(attr_color);
+  const std::string & out1x = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_none, out1x);
 
-  const std::string & out1y = view1a->getAttribute(attr_animal);
+  const std::string & out1y = view1a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_none, out1y);
 
-  ok = view1a->setAttribute(attr_color, color_red);
+  ok = view1a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const std::string & out = view1a->getAttribute(attr_color);
+  const std::string & out = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_red, out);
 
   // reset attribute value
-  ok = view1a->setAttribute(attr_color, color_blue);
+  ok = view1a->setAttributeValue(attr_color, color_blue);
   EXPECT_TRUE( ok );
 
-  const std::string & out1b = view1a->getAttribute(attr_color);
+  const std::string & out1b = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_blue, out1b);
 
   // Now set second attribute
-  ok = view1a->setAttribute(attr_animal, animal_dog);
+  ok = view1a->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out1c = view1a->getAttribute(attr_animal);
+  const std::string & out1c = view1a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out1c);
 
   //----------------------------------------
@@ -161,18 +161,23 @@ TEST(sidre_attribute,view_attr)
   View  * view2a = grp2->createView(namea);
   EXPECT_TRUE( view2a != AXOM_NULLPTR );
 
-  ok = view2a->setAttribute(attr_animal, animal_dog);
+  ok = view2a->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out2a = view2a->getAttribute(attr_animal);
+  const std::string & out2a = view2a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out2a);
 
+  // Get the first, unset, attribute
+  const std::string & out2b = view2a->getAttributeValue(attr_color);
+  EXPECT_EQ("", out2b);  // XXX should be getting default value
+  // XXX  EXPECT_EQ(animal_none, out2b);
+
   // Now set first attribute
-  ok = view2a->setAttribute(attr_color, color_red);
+  ok = view2a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const std::string & out2b = view2a->getAttribute(attr_color);
-  EXPECT_EQ(color_red, out2b);
+  const std::string & out2c = view2a->getAttributeValue(attr_color);
+  EXPECT_EQ(color_red, out2c);
 
 
   //----------------------------------------
@@ -183,10 +188,10 @@ TEST(sidre_attribute,view_attr)
   View  * view3b = grp3->createView(nameb);
   EXPECT_TRUE( view3b != AXOM_NULLPTR );
 
-  ok = view3b->setAttribute(attr_animal, animal_dog);
+  ok = view3b->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out3a = view3b->getAttribute(attr_animal);
+  const std::string & out3a = view3b->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out3a);
 
   //----------------------------------------
@@ -195,11 +200,11 @@ TEST(sidre_attribute,view_attr)
 
   grp4->moveView(view3b);
 
-  const std::string & out4a = view3b->getAttribute(attr_animal);
+  const std::string & out4a = view3b->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out4a);
 
   // Create an attribute which will be destroyed
-  view3a->setAttribute(attr_animal, animal_dog);
+  view3a->setAttributeValue(attr_animal, animal_dog);
 
   grp3->destroyView(namea);
   grp4->destroyView(nameb);
@@ -210,18 +215,18 @@ TEST(sidre_attribute,view_attr)
   Group * root = ds.getRoot();
   View * view = root->createView("var1");
 
-  view->setAttribute(color, "red");
-  view->setAttribute(icolor, "red");
-  view->setAttribute("color", "red");
+  view->setAttributeValue(color, "red");
+  view->setAttributeValue(icolor, "red");
+  view->setAttributeValue("color", "red");
 
-  const char * attr1 = view->getAttribute(color);
-  const char * attr2 = view->getAttribute(icolor);
-  const char * attr3 = view->getAttribute("color");
+  const char * attr1 = view->getAttributeValue(color);
+  const char * attr2 = view->getAttributeValue(icolor);
+  const char * attr3 = view->getAttributeValue("color");
 
 
   view = root->createView("var2");
   // Get attributes without setting returns default value
-  const char * attr1 = view->getAttribute(color);
+  const char * attr1 = view->getAttributeValue(color);
 #endif
 }
 

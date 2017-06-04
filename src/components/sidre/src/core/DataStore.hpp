@@ -191,7 +191,7 @@ public:
   /*!
    * \brief Return number of Attributes in the DataStore.
    */
-  size_t getNumAttributes() const;
+  SidreLength getNumAttributes() const;
 
 #if 0
   /*!

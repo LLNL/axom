@@ -305,7 +305,7 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
  *
  *************************************************************************
  */
-size_t DataStore::getNumAttributes() const
+SidreLength DataStore::getNumAttributes() const
 {
   return m_attribute_coll->getNumItems();
 }
@@ -320,7 +320,14 @@ size_t DataStore::getNumAttributes() const
 Attribute * DataStore::createAttribute( const std::string & name,
 					const std::string & default_value)
 {
-  // XXX look for existing attribute
+  if ( name.empty() || hasAttribute(name) )
+  {
+    SLIC_CHECK( !name.empty() );
+    SLIC_CHECK_MSG( hasAttribute(name),
+                    "Cannot create Attribute with name '" << name <<
+                    " since it already has an Attribute with that name" );
+    return AXOM_NULLPTR;
+  }
 
   Attribute * new_attribute = new(std::nothrow) Attribute(name);
   if ( new_attribute == AXOM_NULLPTR )

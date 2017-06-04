@@ -951,12 +951,12 @@ public:
   /*!
    * \brief Set Attribute for a View.
    */
-  bool setAttribute( const Attribute * attr, const std::string & value );
+  bool setAttributeValue( const Attribute * attr, const std::string & value );
 
   /*!
    * \brief Return a string attribute.
    */
-  const std::string & getAttribute( const Attribute * attr ) const;
+  const std::string & getAttributeValue( const Attribute * attr ) const;
 
 //@}
 

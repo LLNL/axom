@@ -43,17 +43,13 @@ namespace sidre
  *
  * \brief Store Attribute values.
  *
- * Each attribute is defined by an instance if Attribute in the DataStore.
+ * Each attribute is defined by an instance of Attribute in the DataStore.
  * The attribute has an associated type and index.
- *
- * While attributes are associated with a View, they are saved in the Group.
- * Each attribute has a std::vector of values indexed by the View's index.
- * Attributes are saved in a std::vector of vectors so that attributes.
  *
  * The assumption is made that attributes will be looked up more often than
  * set.  So getAttribute should be optimized over setAttribute.
  *
- * Another assumption is that the View should not pay of attributes if they
+ * Another assumption is that the View should not pay for attributes if they
  * are not being used.
  *
  * Space can be minimized by creating more common Attribute first so that they
