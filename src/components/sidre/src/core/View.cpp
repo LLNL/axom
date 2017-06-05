@@ -29,6 +29,7 @@
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "DataStore.hpp"
+#include "Attribute.hpp"
 
 namespace axom
 {
@@ -1262,6 +1263,38 @@ bool View::rename(const std::string& new_name)
   }
 
   return do_rename;
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeValue( const Attribute * attr, const std::string & value )
+{
+  SLIC_ASSERT( attr != AXOM_NULLPTR);
+  SLIC_ASSERT( ! value.empty() );
+
+  bool status = m_attr_values.setAttrValue(attr, value);
+
+  return status;
+}
+
+/*
+ *************************************************************************
+ *
+ * Get Attribute for a View.
+ *
+ *************************************************************************
+ */
+const std::string & View::getAttributeValue( const Attribute * attr ) const
+{
+  SLIC_ASSERT( attr != AXOM_NULLPTR);
+
+  const std::string & value = m_attr_values.getAttribute(attr);
+  return value;
 }
 
 } /* end namespace sidre */
