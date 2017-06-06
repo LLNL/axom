@@ -111,11 +111,11 @@ TEST(sidre_attribute,view_attr)
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  std::string nameattr1("color");
+  const std::string nameattr1("color");
   Attribute * attr_color = ds->createAttribute(nameattr1, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  std::string nameattr2("animal");
+  const std::string nameattr2("animal");
   Attribute * attr_animal = ds->createAttribute(nameattr2, animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
@@ -127,6 +127,8 @@ TEST(sidre_attribute,view_attr)
   View  * view1a = grp1->createView(namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_color));
+
   // Check values of unset attributes
   const std::string out1x = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_none, out1x);
@@ -136,6 +138,8 @@ TEST(sidre_attribute,view_attr)
 
   ok = view1a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
+
+  EXPECT_TRUE(view1a->hasAttributeValue(attr_color));
 
   const std::string out = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_red, out);
@@ -161,8 +165,14 @@ TEST(sidre_attribute,view_attr)
   View  * view2a = grp2->createView(namea);
   EXPECT_TRUE( view2a != AXOM_NULLPTR );
 
+  EXPECT_FALSE(view2a->hasAttributeValue(attr_color));
+  EXPECT_FALSE(view2a->hasAttributeValue(attr_animal));
+
   ok = view2a->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
+
+  EXPECT_FALSE(view2a->hasAttributeValue(attr_color));
+  EXPECT_TRUE(view2a->hasAttributeValue(attr_animal));
 
   const std::string out2a = view2a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out2a);
@@ -174,6 +184,9 @@ TEST(sidre_attribute,view_attr)
   // Now set first attribute
   ok = view2a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
+
+  EXPECT_TRUE(view2a->hasAttributeValue(attr_color));
+  EXPECT_TRUE(view2a->hasAttributeValue(attr_animal));
 
   const std::string out2c = view2a->getAttributeValue(attr_color);
   EXPECT_EQ(color_red, out2c);
@@ -189,6 +202,9 @@ TEST(sidre_attribute,view_attr)
 
   ok = view3b->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
+
+  EXPECT_FALSE(view3b->hasAttributeValue(attr_color));
+  EXPECT_TRUE(view3b->hasAttributeValue(attr_animal));
 
   const std::string & out3a = view3b->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out3a);
@@ -228,5 +244,51 @@ TEST(sidre_attribute,view_attr)
   const char * attr1 = view->getAttributeValue(color);
 #endif
 }
+
+#if 0
+//------------------------------------------------------------------------------
+
+TEST(sidre_attribute,as_node)
+{
+  // Create some attribute values
+  const std::string color_none("white");
+  const std::string color_red("red");
+  const std::string color_blue("blue");
+
+  const std::string animal_none("human");
+  const std::string animal_cat("cat");
+  const std::string animal_dog("dog");
+
+  const std::string namea("a");
+  const std::string nameb("b");
+
+  bool ok;
+
+  DataStore * ds = new DataStore();
+
+  // Create all attributes for DataStore
+  const std::string nameattr1("color");
+  Attribute * attr_color = ds->createAttribute(nameattr1, color_none);
+  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
+
+  const std::string nameattr2("animal");
+  Attribute * attr_animal = ds->createAttribute(nameattr2, animal_none);
+  EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
+
+  Group * root = ds->getRoot();
+
+  //----------------------------------------
+  // Set the first attribute in a Group
+  Group * grp1 = root->createGroup("grp1");
+  View  * view1a = grp1->createView(namea);
+  EXPECT_TRUE( view1a != AXOM_NULLPTR );
+
+  ok = view1a->setAttributeValue(attr_color, color_red);
+  EXPECT_TRUE( ok );
+
+  Node & node = view1a->getAttributeValueAsNodeRef(attr_color);
+
+}
+#endif
 
 //------------------------------------------------------------------------------

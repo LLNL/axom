@@ -35,6 +35,40 @@ namespace sidre
 /*
  *************************************************************************
  *
+ * Return true if the attribute has been explicitly set; else false.
+ *
+ *************************************************************************
+ */
+bool AttrValues::hasAttrValue( const Attribute * attr ) const
+{
+  if (m_values == AXOM_NULLPTR)
+  {
+    // No attributes have been set in this View;
+    return false;
+  }
+
+  IndexType iattr = attr->getIndex();
+
+  if ((size_t) iattr > m_values->size())
+  {
+    // This attribute has not been set for this View
+    return false;
+  }
+
+  Node & value = (*m_values)[iattr];
+  
+  if (value.schema().dtype().is_empty())
+  {
+    return false;
+  }
+
+  return true;
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute.
  *
  *************************************************************************
  */
@@ -72,6 +106,7 @@ bool AttrValues::setAttrValue(const Attribute * attr,
 /*
  *************************************************************************
  *
+ * Return attribute.
  *
  *************************************************************************
  */

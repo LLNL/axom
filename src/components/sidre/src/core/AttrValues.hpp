@@ -70,8 +70,19 @@ private:
   //DISABLE_DEFAULT_CTOR(AttrValues);
   DISABLE_MOVE_AND_ASSIGNMENT(AttrValues);
 
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttrValue(const Attribute * attr) const;
+
+  /*!
+   * \brief Set Attribute.
+   */
   bool setAttrValue(const Attribute * attr, const std::string & value);
 
+  /*!
+   * \brief Return a attribute.
+   */
   const char * getAttribute( const Attribute * attr ) const;
 
 //@{

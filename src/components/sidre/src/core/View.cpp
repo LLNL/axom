@@ -1268,6 +1268,22 @@ bool View::rename(const std::string& new_name)
 /*
  *************************************************************************
  *
+ * Return true if the attribute has been explicitly set; else false.
+ *
+ *************************************************************************
+ */
+bool View::hasAttributeValue( const Attribute * attr ) const
+{
+  SLIC_ASSERT( attr != AXOM_NULLPTR);
+
+  bool status = m_attr_values.hasAttrValue(attr);
+
+  return status;
+}
+
+/*
+ *************************************************************************
+ *
  * Set Attribute for a View.
  *
  *************************************************************************
