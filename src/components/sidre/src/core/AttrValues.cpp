@@ -56,13 +56,13 @@ bool AttrValues::setAttrValue(const Attribute * attr,
   }
   else
   {
-    // Create all attributes up to iattr
+    // Create all attributes up to iattr, push back empty Nodes
     m_values->reserve(iattr + 1);
-    for(int n=m_values->size(); n < iattr; ++n)
+    for(int n=m_values->size(); n < iattr + 1; ++n)
     {
-      m_values->push_back("");
+      m_values->push_back(Node());
     }
-    m_values->push_back(value);
+    (*m_values)[iattr] = value;
   } 
 
   return true;
@@ -75,11 +75,11 @@ bool AttrValues::setAttrValue(const Attribute * attr,
  *
  *************************************************************************
  */
-const std::string & AttrValues::getAttribute( const Attribute * attr ) const
+const char * AttrValues::getAttribute( const Attribute * attr ) const
 {
   if (m_values == AXOM_NULLPTR)
   {
-    // No attributes have been set;
+    // No attributes have been set in this View;
     return attr->getDefault();
   }
 
@@ -91,7 +91,14 @@ const std::string & AttrValues::getAttribute( const Attribute * attr ) const
     return attr->getDefault();
   }
 
-  return (*m_values)[iattr];
+  Node & value = (*m_values)[iattr];
+  
+  if (value.schema().dtype().is_empty())
+  {
+    return attr->getDefault();
+  }
+
+  return value.as_char8_str();
 }
 
 

@@ -128,30 +128,30 @@ TEST(sidre_attribute,view_attr)
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   // Check values of unset attributes
-  const std::string & out1x = view1a->getAttributeValue(attr_color);
+  const std::string out1x = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_none, out1x);
 
-  const std::string & out1y = view1a->getAttributeValue(attr_animal);
+  const std::string out1y = view1a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_none, out1y);
 
   ok = view1a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const std::string & out = view1a->getAttributeValue(attr_color);
+  const std::string out = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_red, out);
 
   // reset attribute value
   ok = view1a->setAttributeValue(attr_color, color_blue);
   EXPECT_TRUE( ok );
 
-  const std::string & out1b = view1a->getAttributeValue(attr_color);
+  const std::string out1b = view1a->getAttributeValue(attr_color);
   EXPECT_EQ(color_blue, out1b);
 
   // Now set second attribute
   ok = view1a->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out1c = view1a->getAttributeValue(attr_animal);
+  const std::string out1c = view1a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out1c);
 
   //----------------------------------------
@@ -164,19 +164,18 @@ TEST(sidre_attribute,view_attr)
   ok = view2a->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string & out2a = view2a->getAttributeValue(attr_animal);
+  const std::string out2a = view2a->getAttributeValue(attr_animal);
   EXPECT_EQ(animal_dog, out2a);
 
   // Get the first, unset, attribute
-  const std::string & out2b = view2a->getAttributeValue(attr_color);
-  EXPECT_EQ("", out2b);  // XXX should be getting default value
-  // XXX  EXPECT_EQ(animal_none, out2b);
+  const std::string out2b = view2a->getAttributeValue(attr_color);
+  EXPECT_EQ(color_none, out2b);
 
   // Now set first attribute
   ok = view2a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const std::string & out2c = view2a->getAttributeValue(attr_color);
+  const std::string out2c = view2a->getAttributeValue(attr_color);
   EXPECT_EQ(color_red, out2c);
 
 

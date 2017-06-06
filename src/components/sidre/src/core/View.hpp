@@ -956,7 +956,7 @@ public:
   /*!
    * \brief Return a string attribute.
    */
-  const std::string & getAttributeValue( const Attribute * attr ) const;
+  const char * getAttributeValue( const Attribute * attr ) const;
 
 //@}
 

@@ -1275,7 +1275,6 @@ bool View::rename(const std::string& new_name)
 bool View::setAttributeValue( const Attribute * attr, const std::string & value )
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
-  SLIC_ASSERT( ! value.empty() );
 
   bool status = m_attr_values.setAttrValue(attr, value);
 
@@ -1289,11 +1288,11 @@ bool View::setAttributeValue( const Attribute * attr, const std::string & value 
  *
  *************************************************************************
  */
-const std::string & View::getAttributeValue( const Attribute * attr ) const
+const char * View::getAttributeValue( const Attribute * attr ) const
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
 
-  const std::string & value = m_attr_values.getAttribute(attr);
+  const char * value = m_attr_values.getAttribute(attr);
   return value;
 }
 
