@@ -74,17 +74,17 @@ public:
    *
    * The type of the default should not be changed after the attribute is created.
    */
-  void setDefault(const std::string & default_value)
+  void setDefault(const std::string & value)
   {
-    m_default_string = default_value;
+    m_default_value = value;
   }
 
   /*!
    * \brief Get default value of attribute.
    */
-  const std::string & getDefault() const
+  const char * getDefault() const
   {
-    return m_default_string;
+    return m_default_value.as_char8_str();
   }
 
 private:
@@ -129,8 +129,8 @@ private:
   /// Attribute's unique index within DataStore object that created it.
   IndexType m_index;
 
-  /// Default value of string attribute.
-  std::string m_default_string;
+  /// Default value of attribute.
+  Node m_default_value;
 
 };
 

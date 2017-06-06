@@ -72,7 +72,7 @@ private:
 
   bool setAttrValue(const Attribute * attr, const std::string & value);
 
-  const std::string & getAttribute( const Attribute * attr ) const;
+  const char * getAttribute( const Attribute * attr ) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor
@@ -97,7 +97,7 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef std::vector<std::string> Values;
+  typedef std::vector< Node > Values;
   ///////////////////////////////////////////////////////////////////
 
   /// Attributes values.
