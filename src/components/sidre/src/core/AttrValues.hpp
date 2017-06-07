@@ -73,17 +73,17 @@ private:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttrValue(const Attribute * attr) const;
+  bool hasValue(const Attribute * attr) const;
 
   /*!
-   * \brief Set Attribute.
+   * \brief Set attribute value.
    */
-  bool setAttrValue(const Attribute * attr, const std::string & value);
+  bool setValue(const Attribute * attr, const std::string & value);
 
   /*!
-   * \brief Return a attribute.
+   * \brief Return a string value.
    */
-  const char * getAttribute( const Attribute * attr ) const;
+  const char * getValueString( const Attribute * attr ) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor

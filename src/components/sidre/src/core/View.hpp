@@ -963,7 +963,7 @@ public:
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeValue( const Attribute * attr ) const;
+  const char * getAttributeValueString( const Attribute * attr ) const;
 
 //@}
 

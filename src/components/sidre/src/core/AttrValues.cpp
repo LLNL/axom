@@ -39,7 +39,7 @@ namespace sidre
  *
  *************************************************************************
  */
-bool AttrValues::hasAttrValue( const Attribute * attr ) const
+bool AttrValues::hasValue( const Attribute * attr ) const
 {
   if (m_values == AXOM_NULLPTR)
   {
@@ -72,8 +72,8 @@ bool AttrValues::hasAttrValue( const Attribute * attr ) const
  *
  *************************************************************************
  */
-bool AttrValues::setAttrValue(const Attribute * attr,
-			      const std::string & value)
+bool AttrValues::setValue(const Attribute * attr,
+			  const std::string & value)
 {
 
   if (m_values == AXOM_NULLPTR)
@@ -110,7 +110,7 @@ bool AttrValues::setAttrValue(const Attribute * attr,
  *
  *************************************************************************
  */
-const char * AttrValues::getAttribute( const Attribute * attr ) const
+const char * AttrValues::getValueString( const Attribute * attr ) const
 {
   if (m_values == AXOM_NULLPTR)
   {
