@@ -965,6 +965,13 @@ public:
    */
   const char * getAttributeValueString( const Attribute * attr ) const;
 
+  /*!
+   * \brief Return reference to attribute node.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeValueNodeRef( const Attribute * attr ) const;
+
 //@}
 
 

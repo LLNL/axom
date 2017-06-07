@@ -17,11 +17,23 @@ using axom::sidre::Attribute;
 using axom::sidre::Group;
 using axom::sidre::View;
 using axom::sidre::IndexType;
+using axom::sidre::Node;
+
+// Create some attribute values
+const std::string color_none("white");
+const std::string color_red("red");
+const std::string color_blue("blue");
+
+const std::string animal_none("human");
+const std::string animal_cat("cat");
+const std::string animal_dog("dog");
+
+const std::string namea("a");
+const std::string nameb("b");
 
 //------------------------------------------------------------------------------
 TEST(sidre_attribute,create_attr)
 {
-  const std::string color_none("none");
   const std::string dump_none("none");
 
   DataStore * ds = new DataStore();
@@ -94,18 +106,6 @@ TEST(sidre_attribute,create_attr)
 
 TEST(sidre_attribute,view_attr)
 {
-  // Create some attribute values
-  const std::string color_none("white");
-  const std::string color_red("red");
-  const std::string color_blue("blue");
-
-  const std::string animal_none("human");
-  const std::string animal_cat("cat");
-  const std::string animal_dog("dog");
-
-  const std::string namea("a");
-  const std::string nameb("b");
-
   bool ok;
 
   DataStore * ds = new DataStore();
@@ -230,9 +230,9 @@ TEST(sidre_attribute,view_attr)
   Group * root = ds.getRoot();
   View * view = root->createView("var1");
 
-  view->setAttributeValue(color, "red");
-  view->setAttributeValue(icolor, "red");
-  view->setAttributeValue("color", "red");
+  view->setAttributeValue(color, color_red);
+  view->setAttributeValue(icolor, color_red);
+  view->setAttributeValue("color", color_red);
 
   const char * attr1 = view->getAttributeValueString(color);
   const char * attr2 = view->getAttributeValueString(icolor);
@@ -245,23 +245,10 @@ TEST(sidre_attribute,view_attr)
 #endif
 }
 
-#if 0
 //------------------------------------------------------------------------------
 
 TEST(sidre_attribute,as_node)
 {
-  // Create some attribute values
-  const std::string color_none("white");
-  const std::string color_red("red");
-  const std::string color_blue("blue");
-
-  const std::string animal_none("human");
-  const std::string animal_cat("cat");
-  const std::string animal_dog("dog");
-
-  const std::string namea("a");
-  const std::string nameb("b");
-
   bool ok;
 
   DataStore * ds = new DataStore();
@@ -286,9 +273,8 @@ TEST(sidre_attribute,as_node)
   ok = view1a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  Node & node = view1a->getAttributeValueNodeRef(attr_color);
-
+  const Node & node = view1a->getAttributeValueNodeRef(attr_color);
+  EXPECT_EQ(color_red, node.as_string());
 }
-#endif
 
 //------------------------------------------------------------------------------

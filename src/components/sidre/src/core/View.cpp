@@ -1312,5 +1312,19 @@ const char * View::getAttributeValueString( const Attribute * attr ) const
   return value;
 }
 
+/*
+ *************************************************************************
+ *
+ * Get Attribute for a View.
+ *
+ *************************************************************************
+ */
+const Node & View::getAttributeValueNodeRef( const Attribute * attr ) const
+{
+  SLIC_ASSERT( attr != AXOM_NULLPTR);
+
+  return m_attr_values.getValueNodeRef(attr);
+}
+
 } /* end namespace sidre */
 } /* end namespace axom */

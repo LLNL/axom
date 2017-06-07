@@ -69,7 +69,7 @@ public:
   }
 
   /*!
-   * \brief Set default value of attribute.
+   * \brief Set default value of Attribute.
    *        Called as part of DataStore->createAttribute.
    *
    * The type of the default should not be changed after the attribute is created.
@@ -80,11 +80,11 @@ public:
   }
 
   /*!
-   * \brief Get default value of attribute.
+   * \brief Return default value of Attribute.
    */
-  const char * getDefault() const
+  const Node & getDefault() const
   {
-    return m_default_value.as_char8_str();
+    return m_default_value;
   }
 
 private:

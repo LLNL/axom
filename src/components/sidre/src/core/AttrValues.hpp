@@ -85,6 +85,11 @@ private:
    */
   const char * getValueString( const Attribute * attr ) const;
 
+  /*!
+   * \brief Return reference to value Node.
+   */
+  const Node & getValueNodeRef( const Attribute * attr ) const;
+
 //@{
 //!  @name Private AttrValues ctor and dtor
 //!        (callable only by DataStore methods).

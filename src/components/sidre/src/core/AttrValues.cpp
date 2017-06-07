@@ -112,6 +112,19 @@ bool AttrValues::setValue(const Attribute * attr,
  */
 const char * AttrValues::getValueString( const Attribute * attr ) const
 {
+  const Node & node = getValueNodeRef(attr);
+  return node.as_char8_str();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return Reference to Node.
+ *
+ *************************************************************************
+ */
+const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
+{
   if (m_values == AXOM_NULLPTR)
   {
     // No attributes have been set in this View;
@@ -133,9 +146,8 @@ const char * AttrValues::getValueString( const Attribute * attr ) const
     return attr->getDefault();
   }
 
-  return value.as_char8_str();
+  return value;
 }
-
 
 /*
  *************************************************************************
