@@ -20,10 +20,12 @@ using axom::sidre::IndexType;
 using axom::sidre::Node;
 
 // Create some attribute values
+const std::string name_color("color");
 const std::string color_none("white");
 const std::string color_red("red");
 const std::string color_blue("blue");
 
+const std::string name_animal("animal");
 const std::string animal_none("human");
 const std::string animal_cat("cat");
 const std::string animal_dog("dog");
@@ -43,11 +45,10 @@ TEST(sidre_attribute,create_attr)
 
   bool has_index = ds->hasAttribute(0);
   EXPECT_FALSE( has_index );
-  std::string nameattr("color");
-  bool has_name = ds->hasAttribute(nameattr);
+  bool has_name = ds->hasAttribute(name_color);
   EXPECT_FALSE( has_name );
 
-  Attribute * color = ds->createAttribute(nameattr, color_none);
+  Attribute * color = ds->createAttribute(name_color, color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
 
   IndexType attr_index = color->getIndex();
@@ -56,14 +57,14 @@ TEST(sidre_attribute,create_attr)
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(1, nattrs);
 
-  has_name = ds->hasAttribute(nameattr);
+  has_name = ds->hasAttribute(name_color);
   EXPECT_TRUE( has_name );
   has_index = ds->hasAttribute(0);
   EXPECT_TRUE( has_index );
 
-  Attribute * attr = ds->getAttribute(nameattr);
+  Attribute * attr = ds->getAttribute(name_color);
   EXPECT_EQ(attr, color);
-  const Attribute * attrc = ds->getAttribute(nameattr);
+  const Attribute * attrc = ds->getAttribute(name_color);
   EXPECT_EQ(attrc, color);
 
   attr = ds->getAttribute(0);
@@ -74,7 +75,7 @@ TEST(sidre_attribute,create_attr)
   ds->destroyAttribute(color);
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(0, nattrs);
-  has_name = ds->hasAttribute(nameattr);
+  has_name = ds->hasAttribute(name_color);
   EXPECT_FALSE( has_name );
   // At this point color points to deallocated memory
 
@@ -111,12 +112,10 @@ TEST(sidre_attribute,view_attr)
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  const std::string nameattr1("color");
-  Attribute * attr_color = ds->createAttribute(nameattr1, color_none);
+  Attribute * attr_color = ds->createAttribute(name_color, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  const std::string nameattr2("animal");
-  Attribute * attr_animal = ds->createAttribute(nameattr2, animal_none);
+  Attribute * attr_animal = ds->createAttribute(name_animal, animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
@@ -254,12 +253,10 @@ TEST(sidre_attribute,as_node)
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  const std::string nameattr1("color");
-  Attribute * attr_color = ds->createAttribute(nameattr1, color_none);
+  Attribute * attr_color = ds->createAttribute(name_color, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  const std::string nameattr2("animal");
-  Attribute * attr_animal = ds->createAttribute(nameattr2, animal_none);
+  Attribute * attr_animal = ds->createAttribute(name_animal, animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
