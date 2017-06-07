@@ -24,7 +24,8 @@ def main():
     # write info about this build
     write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the cz chaos systems
-    specs = ["%gcc@4.9.3~devtools~python~lua"]
+    specs = ["%gcc@4.9.3~devtools~python~lua",
+             "%clang@coral~devtools~python~lua"]
     #specs = ["%clang@4.0.0"]
     # use uberenv to install for all specs
     for spec in specs:
