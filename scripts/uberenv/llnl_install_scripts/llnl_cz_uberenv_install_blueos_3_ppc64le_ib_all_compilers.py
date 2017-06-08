@@ -15,7 +15,7 @@
 from llnl_lc_uberenv_install_tools import *
 
 def main():
-    builds_dir = "/usr/workspace/wsc/axom/thirdparty_libs/builds/"
+    builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
     mirror_dir = pjoin(builds_dir,"mirror")
     # unique install location
     prefix =  pjoin(builds_dir,timestamp())
