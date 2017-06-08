@@ -50,15 +50,15 @@
 #define DEBUG_BLOCK_1  BlockIndex::invalid_index()
 
 #ifndef DUMP_VTK_MESH
-//    #define DUMP_VTK_MESH
+    #define DUMP_VTK_MESH
 #endif
 
 #ifndef DUMP_OCTREE_INFO
-//    #define DUMP_OCTREE_INFO 1
+    #define DUMP_OCTREE_INFO 1
 #endif
 
 #ifndef DEBUG_OCTREE_ACTIVE
-//    #define DEBUG_OCTREE_ACTIVE
+    #define DEBUG_OCTREE_ACTIVE
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) and defined(AXOM_DEBUG)
@@ -70,6 +70,12 @@
 
 namespace axom {
 namespace quest {
+
+namespace detail {
+    // Predeclaration for utility class that deals with generating and printing statistics about an InOutOctree instance
+    template<int DIM> class InOutOctreeStats;
+
+}  // end namespace detail
 
     /**
      * \brief Compact BlockDataType for an InOutOctree
@@ -470,6 +476,8 @@ namespace quest {
 template<int DIM>
 class InOutOctree : public SpatialOctree<DIM, InOutBlockData>
 {
+private:
+    friend class detail::InOutOctreeStats<DIM>;
 public:
 
     typedef OctreeBase<DIM, InOutBlockData> OctreeBaseType;
@@ -1700,6 +1708,9 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& lea
     std::vector<SpaceVector>   unitNorms;
     unitNorms.reserve( numTris);
 
+    if(DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk)
+      SLIC_INFO( leafBlk );
+
     QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
           "Within gray block " << leafBlk
           << "\n\t\t -- data " << leafData
@@ -1741,6 +1752,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& lea
         if(sqDists[i] < minDistSq )
             minDistSq = sqDists[i];
     }
+
 
     SpaceVector norm;
     for(int i=0; i< numTris; ++i)
@@ -1885,262 +1897,9 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
 template<int DIM>
 void InOutOctree<DIM>::printOctreeStats() const
 {
-    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
-    typedef axom::slam::Map<int> LeafCountMap;
+    detail::InOutOctreeStats<DIM> octreeStats(*this);
 
-    LeafCountMap levelBlocks( &this->m_levels);
-    LeafCountMap levelLeaves( &this->m_levels);
-    LeafCountMap levelLeavesWithVert( &this->m_levels);
-    LeafCountMap levelTriangleRefCount( &this->m_levels);
-
-    LeafCountMap levelWhiteBlockCount( &this->m_levels);
-    LeafCountMap levelBlackBlockCount( &this->m_levels);
-    LeafCountMap levelGrayBlockCount( &this->m_levels);
-
-    int totalBlocks = 0;
-    int totalLeaves = 0;
-    int totalLeavesWithVert = 0;
-    int totalTriangleRefCount = 0;
-    int totalWhiteBlocks = 0;
-    int totalBlackBlocks = 0;
-    int totalGrayBlocks = 0;
-
-    // Iterate through blocks -- count the numbers of internal and leaf blocks
-    for(int lev=0; lev< this->m_levels.size(); ++lev)
-    {
-        const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
-        levelBlocks[lev] = levelLeafMap.numBlocks();
-        levelLeaves[lev] = levelLeafMap.numLeafBlocks();
-        levelLeavesWithVert[lev] = 0;
-        levelTriangleRefCount[lev] = 0;
-        levelWhiteBlockCount[lev] = 0;
-        levelBlackBlockCount[lev] = 0;
-        levelGrayBlockCount[lev] = 0;
-
-        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
-        {
-            const InOutBlockData& blockData = *it;
-            BlockIndex block(it.pt(), lev);
-
-            if(blockData.isLeaf())
-            {
-                if(blockData.hasData())
-                {
-                    ++levelLeavesWithVert[ lev ];
-
-                    if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
-                    {
-                        levelTriangleRefCount[ lev ] += leafTriangles(block, blockData).size();
-                    }
-                }
-                if(m_generationState >= INOUTOCTREE_LEAVES_COLORED)
-                {
-                    switch(blockData.color())
-                    {
-                    case InOutBlockData::Black:      ++levelBlackBlockCount[lev]; break;
-                    case InOutBlockData::White:      ++levelWhiteBlockCount[lev]; break;
-                    case InOutBlockData::Gray:       ++levelGrayBlockCount[lev];  break;
-                    case InOutBlockData::Undetermined:                            break;
-                    }
-                }
-            }
-        }
-
-        totalBlocks += levelBlocks[lev];
-        totalLeaves += levelLeaves[lev];
-        totalLeavesWithVert += levelLeavesWithVert[lev];
-        totalTriangleRefCount += levelTriangleRefCount[ lev ];
-        totalWhiteBlocks += levelWhiteBlockCount[lev];
-        totalBlackBlocks += levelBlackBlockCount[lev];
-        totalGrayBlocks  += levelGrayBlockCount[lev];
-    }
-
-
-    std::stringstream octreeStatsStr;
-    octreeStatsStr << "*** " << (m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED ? "PM" : "PR")
-                   << " octree summary *** \n";
-
-    for(int lev=0; lev< this->m_levels.size(); ++lev)
-    {
-        if(levelBlocks[lev] > 0)
-        {
-            int percentWithVert = (levelLeaves[lev] > 0)
-                    ? (100. * levelLeavesWithVert[lev]) / levelLeaves[lev]
-                    : 0;
-
-            octreeStatsStr << "\t Level " << lev
-                           << " has " << levelBlocks[lev] << " blocks -- "
-                           <<  levelBlocks[lev] - levelLeaves[lev] << " internal; "
-                           <<  levelLeaves[lev] << " leaves "
-                           << " (" <<   percentWithVert  << "% w/ vert); ";
-            if(m_generationState >= INOUTOCTREE_LEAVES_COLORED)
-            {
-                octreeStatsStr << " Leaves with colors -- B,W,G ==> " << levelBlackBlockCount[lev]
-                               << "," << levelWhiteBlockCount[lev]
-                               << "," << levelGrayBlockCount[lev]
-                               << " and " << levelTriangleRefCount[lev] << " triangle references.";
-            }
-            //octreeStatsStr <<"Hash load factor: " << this->m_leavesLevelMap[ lev ].load_factor()
-            //                                      << " -- max lf: " << this->m_leavesLevelMap[ lev ].max_load_factor();
-
-            octreeStatsStr <<"\n";
-        }
-    }
-
-
-    double meshNumTriangles = m_meshWrapper.numMeshElements();
-    int percentWithVert = (100. * totalLeavesWithVert) / totalLeaves;
-    octreeStatsStr<<"  Mesh has " << m_meshWrapper.numMeshVertices() << " vertices."
-                 <<"\n  Octree has " << totalBlocks << " blocks; "
-                 <<  totalBlocks - totalLeaves << " internal; "
-                 <<  totalLeaves << " leaves "
-                 << " (" <<   percentWithVert  << "% w/ vert); ";
-    if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
-    {
-        octreeStatsStr<<" \n\t There were " << totalTriangleRefCount << " triangle references "
-                 <<" (avg. " << ( totalTriangleRefCount / meshNumTriangles ) << " refs per triangle).";
-    }
-    if(m_generationState >= INOUTOCTREE_LEAVES_COLORED)
-    {
-        octreeStatsStr<<"\n Colors B,W,G ==> " << totalBlackBlocks
-                 << "," << totalWhiteBlocks
-                 << "," << totalGrayBlocks
-                 <<"\n";
-    }
-
-    SLIC_INFO( octreeStatsStr.str() );
-
-    if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
-    {
-        if(DEBUG_TRI_IDX >= 0)
-        {
-             dumpMeshVTK("triangle", DEBUG_TRI_IDX, this->root(), this->blockBoundingBox(this->root()), true);
-
-
-             TriVertIndices tv = m_meshWrapper.triangleVertexIndices(DEBUG_TRI_IDX);
-             for(int i=0; i< 3; ++i)
-             {
-                 BlockIndex blk = m_vertexToBlockMap[ tv[i] ];
-                 dumpMeshVTK("triangleVertexBlock", DEBUG_TRI_IDX, blk, this->blockBoundingBox(blk), false);
-             }
-
-        }
-
-        typedef axom::slam::Map<int> TriCountMap;
-        typedef axom::slam::Map<int> CardinalityVTMap;
-
-        TriCountMap triCount( &m_meshWrapper.elementSet());
-        for(int lev=0; lev< this->m_levels.size(); ++lev)
-        {
-            const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
-            levelBlocks[lev] = levelLeafMap.numBlocks();
-            for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
-            {
-                const InOutBlockData& leafData = *it;
-                if(leafData.isLeaf() && leafData.hasData())
-                {
-                    BlockIndex blk(it.pt(), lev);
-                    TriangleIndexSet tris = leafTriangles(blk, leafData);
-                    for(int i = 0; i < tris.size(); ++i)
-                    {
-                        ++triCount[ tris[i]];
-
-                        if(DEBUG_TRI_IDX == tris[i] )
-                        {
-                            dumpMeshVTK("triangleIntersect", tris[i], blk, this->blockBoundingBox(blk), false);
-                        }
-
-                    }
-                }
-            }
-        }
-
-
-        // Generate and output a histogram of the bucket counts on a lg-scale
-        typedef std::map<int,int> LogHistogram;
-        LogHistogram triCountHist;        // Create histogram of edge lengths (log scale)
-
-        typedef axom::primal::BoundingBox<double,1> MinMaxRange;
-        typedef MinMaxRange::PointType LengthType;
-
-        typedef std::map<int,MinMaxRange> LogRangeMap;
-        LogRangeMap triCountRange;
-
-        for ( int i=0; i < m_meshWrapper.numMeshElements(); ++i )
-        {
-            LengthType count( triCount[i] );
-            int expBase2;
-            std::frexp( triCount[i], &expBase2);
-            triCountHist[ expBase2 ]++;
-            triCountRange[ expBase2 ].addPoint( count );
-        }
-
-        std::stringstream triCountStr;
-        triCountStr<<"\tTriangle index count (lg-arithmic bins for number of references per triangle):";
-        for(LogHistogram::const_iterator it = triCountHist.begin()
-                ; it != triCountHist.end()
-                ; ++it)
-        {
-            triCountStr << "\n\t exp: " << it->first
-                        <<"\t count: " << (it->second)
-                        <<"\tRange: " << triCountRange[it->first];
-        }
-        SLIC_INFO(triCountStr.str());
-
-        // Generate and output histogram of VT relation
-        CardinalityVTMap cardVT(&m_meshWrapper.vertexSet());
-        for ( int i=0; i < m_meshWrapper.numMeshElements(); ++i )
-        {
-            TriVertIndices tvRel = m_meshWrapper.triangleVertexIndices(i);
-            cardVT[tvRel[0]]++;
-            cardVT[tvRel[1]]++;
-            cardVT[tvRel[2]]++;
-        }
-
-        typedef std::map<int,int> LinHistogram;
-        LinHistogram vtCardHist;
-        for ( int i=0; i < m_meshWrapper.numMeshVertices(); ++i )
-        {
-            LengthType count( cardVT[i] );
-            vtCardHist[ cardVT[i] ]++;
-        }
-
-        std::stringstream vtCartStr;
-        vtCartStr<<"\tCardinality VT relation histogram (linear): ";
-        for(LinHistogram::const_iterator it = vtCardHist.begin()
-                ; it != vtCardHist.end()
-                ; ++it)
-        {
-            vtCartStr << "\n\t exp: " << it->first
-                        <<"\t count: " << (it->second);
-        }
-        SLIC_INFO(vtCartStr.str());
-
-//        // Add field to the triangle mesh
-//        mint::FieldData* CD = m_surfaceMesh->getCellFieldData();
-//        CD->addField( new mint::FieldVariable< TriangleIndex >("blockCount", meshTris.size()) );
-//
-//        int* blockCount = CD->getField( "blockCount" )->getIntPtr();
-//
-//        SLIC_ASSERT( blockCount != AXOM_NULLPTR );
-//
-//        for ( int i=0; i < meshTris.size(); ++i ) {
-//            blockCount[i] = triCount[i];
-//        }
-//
-//        // Add field to the triangle mesh
-//        mint::FieldData* ND = m_surfaceMesh->getNodeFieldData();
-//        ND->addField( new mint::FieldVariable< int >("vtCount", m_vertexSet.size()) );
-//
-//        int* vtCount = ND->getField( "vtCount" )->getIntPtr();
-//
-//        SLIC_ASSERT( vtCount != AXOM_NULLPTR );
-//
-//        for ( int i=0; i < m_vertexSet.size(); ++i ) {
-//            vtCount[i] = cardVT[i];
-//        }
-    }
+    SLIC_INFO( octreeStats.summaryStats() );
 
 }
 
@@ -2407,11 +2166,13 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
     axom::slam::PositionSet leafSet(totalLeaves);
     typedef axom::slam::Map<VertexIndex> LeafVertMap;
     typedef axom::slam::Map<int> LeafIntMap;
+    typedef axom::slam::Map<GridPt> LeafGridPtMap;
     LeafVertMap leafVertID(&leafSet);
     LeafVertMap leafVertID_unique(&leafSet);
     LeafIntMap leafTriCount(&leafSet);
     LeafIntMap leafColors(&leafSet);
     LeafIntMap leafLevel(&leafSet);
+    LeafGridPtMap leafPoint(&leafSet);
 
 
     // Iterate through blocks -- and set the field data
@@ -2444,13 +2205,14 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
             for(int i=0; i< 8; ++i)
                 data[i] = vStart + i;
 
-            debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
+            debugMesh->insertCell( data, MINT_HEX, 8);
 
             int vIdx = leafData.hasData() ? leafVertex(block, leafData) :  MeshWrapper::NO_VERTEX;
             leafVertID[leafCount] = vIdx;
 
             leafLevel[leafCount] = lev;
-
+            leafPoint[leafCount] = it.pt();
+            
             if(hasTriangles)
             {
                 leafVertID_unique[leafCount] = blockIndexesVertex(vIdx, block) ? vIdx : MeshWrapper::NO_VERTEX;
@@ -2479,10 +2241,22 @@ void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
         VertexIndex* lLevel = CD->getField( "level" )->getIntPtr();
         SLIC_ASSERT( lLevel != AXOM_NULLPTR );
 
+        CD->addField( new mint::FieldVariable< int >("block_x", leafSet.size()) );
+        CD->addField( new mint::FieldVariable< int >("block_y", leafSet.size()) );
+        CD->addField( new mint::FieldVariable< int >("block_z", leafSet.size()) );
+        int* block_x = CD->getField( "block_x" )->getIntPtr();
+        int* block_y = CD->getField( "block_y" )->getIntPtr();
+        int* block_z = CD->getField( "block_z" )->getIntPtr();
+        
         for ( int i=0; i < leafSet.size(); ++i )
         {
             vertID[i] = leafVertID[i];
             lLevel[i] = leafLevel[i];
+            
+            const GridPt& pt = leafPoint[i];
+            block_x[i] = pt[0];
+            block_y[i] = pt[1];
+            block_z[i] = pt[2];
         }
 
         if(hasTriangles)
@@ -2635,7 +2409,7 @@ void InOutOctree<DIM>::dumpDifferentColoredNeighborsMeshVTK( const std::string& 
       int data[8];
       for(int i=0; i< 8; ++i)
         data[i] = colorsField.size()*8+i;
-      debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
+      debugMesh->insertCell( data, MINT_HEX, 8);
 
       debugIdxField.push_back( it->second );
       colorsField.push_back( colorMap[ blkData.color() ]);
@@ -2688,7 +2462,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name,
         debugMesh->insertNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
         int verts[3] = {0,1,2};
-        debugMesh->insertCell(verts, mint::LINEAR_TRIANGLE, 3);
+        debugMesh->insertCell(verts, MINT_TRIANGLE, 3);
 
         fNameStr << name << idx << ".vtk";
 
@@ -2716,7 +2490,7 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name,
         for(int i=0; i< 8; ++i)
             data[i] = i;
 
-        debugMesh->insertCell( data, mint::LINEAR_HEX, 8);
+        debugMesh->insertCell( data, MINT_HEX, 8);
 
         fNameStr << name << idx << "_" << counter[name] << ".vtk";
 
@@ -2738,6 +2512,404 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name,
     AXOM_DEBUG_VAR(isTri);
   #endif
 }
+
+namespace detail {
+
+template<int DIM>
+class InOutOctreeStats
+{
+public:
+  typedef InOutOctree<DIM> InOutOctreeType;
+  typedef typename InOutOctreeType::TriangleIndexSet TriangleIndexSet;
+
+  typedef typename InOutOctreeType::OctreeBaseType OctreeBaseType;
+  typedef typename OctreeBaseType::OctreeLevels OctreeLevels;
+  typedef typename OctreeBaseType::BlockIndex BlockIndex;
+  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+  typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+
+  typedef axom::slam::Map<int> LeafCountMap;
+  typedef axom::slam::Map<int> TriCountMap;
+  typedef axom::slam::Map<int> CardinalityVTMap;
+
+  typedef std::map<int,int> LogHistogram;
+  typedef axom::primal::BoundingBox<double,1> MinMaxRange;
+  typedef MinMaxRange::PointType LengthType;
+  typedef std::map<int,MinMaxRange> LogRangeMap;
+
+  struct Totals
+  {
+    int blocks = 0;
+    int leaves = 0;
+    int leavesWithVert = 0;
+    int triangleRefCount = 0;
+    int whiteBlocks = 0;
+    int blackBlocks = 0;
+    int grayBlocks = 0;
+  };
+
+public:
+  InOutOctreeStats(const InOutOctreeType& octree) :
+    m_octree(octree),
+    m_generationState(m_octree.m_generationState),
+    m_levelBlocks( &m_octree.m_levels),
+    m_levelLeaves( &m_octree.m_levels),
+    m_levelLeavesWithVert( &m_octree.m_levels),
+    m_levelTriangleRefCount( &m_octree.m_levels),
+    m_levelWhiteBlockCount( &m_octree.m_levels),
+    m_levelBlackBlockCount( &m_octree.m_levels),
+    m_levelGrayBlockCount( &m_octree.m_levels)
+  {
+    if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
+    {
+      m_triCount = TriCountMap( &m_octree.m_meshWrapper.elementSet());
+    }
+
+
+    // Iterate through blocks -- count the numbers of internal and leaf blocks
+    for(int lev=0; lev< m_octree.m_levels.size(); ++lev)
+    {
+        const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
+
+        m_levelBlocks[lev] = levelLeafMap.numBlocks();
+        m_levelLeaves[lev] = levelLeafMap.numLeafBlocks();
+        m_levelLeavesWithVert[lev] = 0;
+        m_levelTriangleRefCount[lev] = 0;
+        m_levelWhiteBlockCount[lev] = 0;
+        m_levelBlackBlockCount[lev] = 0;
+        m_levelGrayBlockCount[lev] = 0;
+
+        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        {
+            const InOutBlockData& blockData = *it;
+            BlockIndex block(it.pt(), lev);
+
+            if(blockData.isLeaf())
+            {
+                if(blockData.hasData())
+                {
+                    ++m_levelLeavesWithVert[ lev ];
+
+                    if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
+                    {
+                        m_levelTriangleRefCount[ lev ] += m_octree.leafTriangles(block, blockData).size();
+
+                        BlockIndex blk(it.pt(), lev);
+                        TriangleIndexSet tris = m_octree.leafTriangles(blk, blockData);
+                        for(int i = 0; i < tris.size(); ++i)
+                        {
+                            ++m_triCount[ tris[i]];
+                        }
+                    }
+                }
+
+                if(m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
+                {
+                    switch(blockData.color())
+                    {
+                    case InOutBlockData::Black:      ++m_levelBlackBlockCount[lev]; break;
+                    case InOutBlockData::White:      ++m_levelWhiteBlockCount[lev]; break;
+                    case InOutBlockData::Gray:       ++m_levelGrayBlockCount[lev];  break;
+                    case InOutBlockData::Undetermined:                            break;
+                    }
+                }
+            }
+        }
+
+        m_totals.blocks += m_levelBlocks[lev];
+        m_totals.leaves += m_levelLeaves[lev];
+        m_totals.leavesWithVert += m_levelLeavesWithVert[lev];
+        m_totals.triangleRefCount += m_levelTriangleRefCount[ lev ];
+        m_totals.whiteBlocks += m_levelWhiteBlockCount[lev];
+        m_totals.blackBlocks += m_levelBlackBlockCount[lev];
+        m_totals.grayBlocks  += m_levelGrayBlockCount[lev];
+    }
+  }
+
+  /** Generates a string summarizing information about the leaves and blocks of the octree */
+  std::string blockDataStats() const
+  {
+    std::stringstream sstr;
+
+    for(int lev=0; lev< m_octree.m_levels.size(); ++lev)
+    {
+        if(m_levelBlocks[lev] > 0)
+        {
+            int percentWithVert = integerPercentage(m_levelLeavesWithVert[lev], m_levelLeaves[lev]);
+
+            sstr << "\t Level " << lev
+                 << " has " << m_levelBlocks[lev] << " blocks -- "
+                 <<  m_levelBlocks[lev] - m_levelLeaves[lev] << " internal; "
+                 <<  m_levelLeaves[lev] << " leaves "
+                 << " (" <<   percentWithVert  << "% w/ vert); ";
+
+            if(m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
+            {
+                sstr << " Leaves with colors -- B,W,G ==> " << m_levelBlackBlockCount[lev]
+                     << "," << m_levelWhiteBlockCount[lev]
+                     << "," << m_levelGrayBlockCount[lev]
+                     << " and " << m_levelTriangleRefCount[lev] << " triangle references.";
+            }
+            //sstr <<"Hash load factor: " << this->m_leavesLevelMap[ lev ].load_factor()
+            //                                      << " -- max lf: " << this->m_leavesLevelMap[ lev ].max_load_factor();
+            sstr << "\n";
+
+        }
+    }
+
+    return sstr.str();
+  }
+
+  /** Generates a string summarizing information about the mesh elements indexed by the octree */
+  std::string meshDataStats() const
+  {
+    std::stringstream sstr;
+
+    double meshNumTriangles = m_octree.m_meshWrapper.numMeshElements();
+
+    int percentWithVert = integerPercentage(m_totals.leavesWithVert, m_totals.leaves);
+    sstr <<"  Mesh has " << m_octree.m_meshWrapper.numMeshVertices() << " vertices."
+         <<"\n  Octree has " << m_totals.blocks << " blocks; "
+         <<  m_totals.blocks - m_totals.leaves << " internal; "
+         <<  m_totals.leaves << " leaves "
+         << " (" <<   percentWithVert  << "% w/ vert); ";
+
+    if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
+    {
+        sstr <<" \n\t There were " << m_totals.triangleRefCount << " triangle references "
+             <<" (avg. " << ( m_totals.triangleRefCount / meshNumTriangles ) << " refs per triangle).";
+    }
+
+    return sstr.str();
+  }
+
+  std::string triangleCountHistogram() const
+  {
+    std::stringstream sstr;
+
+    // Generate and output a histogram of the bucket counts on a lg-scale
+    LogHistogram triCountHist;        // Create histogram of edge lengths (log scale)
+    LogRangeMap triCountRange;
+
+    int numElems = m_octree.m_meshWrapper.numMeshElements();
+
+    for ( int i=0; i < numElems; ++i )
+    {
+        LengthType count( m_triCount[i] );
+        int expBase2;
+        std::frexp( m_triCount[i], &expBase2);
+        triCountHist[ expBase2 ]++;
+        triCountRange[ expBase2 ].addPoint( count );
+    }
+
+    std::stringstream triCountStr;
+    triCountStr<<"\tTriangle index count (lg-arithmic bins for number of references per triangle):";
+    for(LogHistogram::const_iterator it = triCountHist.begin()
+            ; it != triCountHist.end()
+            ; ++it)
+    {
+        triCountStr << "\n\t exp: " << it->first
+                    <<"\t count: " << (it->second)
+                    <<"\tRange: " << triCountRange[it->first];
+    }
+
+    return triCountStr.str();
+  }
+
+  std::string vertexCardinalityHistogram() const
+  {
+    std::stringstream sstr;
+
+    typedef typename InOutOctreeType::MeshWrapper::TriVertIndices TriVertIndices;
+
+
+    // Generate and output histogram of VT relation
+    CardinalityVTMap cardVT(&m_octree.m_meshWrapper.vertexSet());
+
+    int numElems = m_octree.m_meshWrapper.numMeshElements();
+    for ( int i=0; i < numElems; ++i )
+    {
+        TriVertIndices tvRel = m_octree.m_meshWrapper.triangleVertexIndices(i);
+        cardVT[tvRel[0]]++;
+        cardVT[tvRel[1]]++;
+        cardVT[tvRel[2]]++;
+    }
+
+    typedef std::map<int,int> LinHistogram;
+    LinHistogram vtCardHist;
+    int numVerts = m_octree.m_meshWrapper.numMeshVertices();
+    for ( int i=0; i < numVerts; ++i )
+    {
+        LengthType count( cardVT[i] );
+        vtCardHist[ cardVT[i] ]++;
+    }
+
+    sstr<<"\tCardinality VT relation histogram (linear): ";
+    for(LinHistogram::const_iterator it = vtCardHist.begin()
+            ; it != vtCardHist.end()
+            ; ++it)
+    {
+        sstr<< "\n\t exp: " << it->first
+                    <<"\t count: " << (it->second);
+    }
+
+    return sstr.str();
+  }
+
+  std::string summaryStats() const
+  {
+      std::stringstream octreeStatsStr;
+
+      octreeStatsStr << "*** "
+           << (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED ? "PM" : "PR")
+           << " octree summary *** \n";
+
+      octreeStatsStr << blockDataStats() << "\n"
+                    << meshDataStats() ;
+
+
+      if(m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
+      {
+          octreeStatsStr<<"\n\tColors B,W,G ==> " << m_totals.blackBlocks
+                   << "," << m_totals.whiteBlocks
+                   << "," << m_totals.grayBlocks;
+      }
+
+      if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
+      {
+        octreeStatsStr <<"\n" << triangleCountHistogram() <<"\n"
+                       << vertexCardinalityHistogram();
+      }
+
+      return octreeStatsStr.str();
+
+//
+//      if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
+//      {
+//          if(DEBUG_TRI_IDX >= 0)
+//          {
+//               dumpMeshVTK("triangle", DEBUG_TRI_IDX, this->root(), this->blockBoundingBox(this->root()), true);
+//
+//
+//               TriVertIndices tv = m_meshWrapper.triangleVertexIndices(DEBUG_TRI_IDX);
+//               for(int i=0; i< 3; ++i)
+//               {
+//                   BlockIndex blk = m_vertexToBlockMap[ tv[i] ];
+//                   dumpMeshVTK("triangleVertexBlock", DEBUG_TRI_IDX, blk, this->blockBoundingBox(blk), false);
+//               }
+//
+//          }
+//
+//          if(DEBUG_VERT_IDX >= 0)
+//          {
+//              std::stringstream sstr;
+//              sstr << "vert_" << DEBUG_VERT_IDX << "_triangle";
+//
+//              for(int tIdx=0; tIdx < m_meshWrapper.numMeshElements(); ++tIdx)
+//              {
+//                  if( m_meshWrapper.incidentInVertex( m_meshWrapper.triangleVertexIndices(tIdx),  DEBUG_VERT_IDX) )
+//                      dumpMeshVTK(sstr.str(), tIdx, this->root(), this->blockBoundingBox(this->root()), true);
+//              }
+//          }
+//
+//          if(DEBUG_BLOCK_1 != BlockIndex::invalid_index() )
+//          {
+//              const BlockIndex& block = DEBUG_BLOCK_1;
+//              const GridPt& pt = block.pt();
+//              const int& lev = block.level();
+//
+//              std::stringstream sstr;
+//              sstr << "block_" << pt[0] << "_" << pt[1] << "_" << pt[2] << "_level" << lev <<"_";
+//              dumpMeshVTK(sstr.str(), 1, block, this->blockBoundingBox(block), false);
+//
+//              const InOutBlockData& data = (*this)[block];
+//              if( data.hasData() )
+//              {
+//                  TriangleIndexSet tris = leafTriangles( block, data);
+//                  for(int i=0; i< tris.size(); ++i)
+//                  {
+//                      dumpMeshVTK(sstr.str()+"tri", tris[i], block, this->blockBoundingBox(block), true);
+//                  }
+//              }
+//          }
+//
+//          if(DEBUG_BLOCK_2 != BlockIndex::invalid_index() )
+//          {
+//              const BlockIndex& block = DEBUG_BLOCK_2;
+//              const GridPt& pt = block.pt();
+//              const int& lev = block.level();
+//
+//              std::stringstream sstr;
+//              sstr << "block_" << pt[0] << "_" << pt[1] << "_" << pt[2] << "_level" << lev <<"_";
+//              dumpMeshVTK(sstr.str(), 2, block, this->blockBoundingBox(block), false);
+//
+//              const InOutBlockData& data = (*this)[block];
+//              if( data.hasData() )
+//              {
+//                  TriangleIndexSet tris = leafTriangles( block, data);
+//                  for(int i=0; i< tris.size(); ++i)
+//                  {
+//                      dumpMeshVTK(sstr.str()+"tri", tris[i], block, this->blockBoundingBox(block), true);
+//                  }
+//              }
+//          }
+
+//          // Add field to the triangle mesh
+//          mint::FieldData* CD = m_surfaceMesh->getCellFieldData();
+//          CD->addField( new mint::FieldVariable< TriangleIndex >("blockCount", meshTris.size()) );
+//
+//          int* blockCount = CD->getField( "blockCount" )->getIntPtr();
+//
+//          SLIC_ASSERT( blockCount != AXOM_NULLPTR );
+//
+//          for ( int i=0; i < meshTris.size(); ++i ) {
+//              blockCount[i] = triCount[i];
+//          }
+//
+//          // Add field to the triangle mesh
+//          mint::FieldData* ND = m_surfaceMesh->getNodeFieldData();
+//          ND->addField( new mint::FieldVariable< int >("vtCount", m_vertexSet.size()) );
+//
+//          int* vtCount = ND->getField( "vtCount" )->getIntPtr();
+//
+//          SLIC_ASSERT( vtCount != AXOM_NULLPTR );
+//
+//          for ( int i=0; i < m_vertexSet.size(); ++i ) {
+//              vtCount[i] = cardVT[i];
+//          }
+//      }
+  }
+
+private:
+  int integerPercentage(double val, double size) const
+  {
+    return (size > 0)
+        ? static_cast<int>((100. * val) / size)
+        : 0;
+  }
+
+private:
+  const InOutOctreeType& m_octree;
+  typename InOutOctreeType::GenerationState m_generationState;
+
+  LeafCountMap m_levelBlocks;
+  LeafCountMap m_levelLeaves;
+  LeafCountMap m_levelLeavesWithVert;
+  LeafCountMap m_levelTriangleRefCount;
+
+  LeafCountMap m_levelWhiteBlockCount;
+  LeafCountMap m_levelBlackBlockCount;
+  LeafCountMap m_levelGrayBlockCount;
+
+  TriCountMap m_triCount;
+
+  Totals m_totals;
+
+};
+
+}  // end namespace detail
+
+
 
 
 } // end namespace quest
