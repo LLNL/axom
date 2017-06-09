@@ -70,8 +70,8 @@ TEST( primal_uniform_grid, indexing)
     EXPECT_EQ(expectedBin, valid.getBinIndex(pt4));
 
     // This is a set of upper-boundary cases.
-    // In general, a bin is "half-open", including its lower-boundary 
-    // planes but excluding its upper boundary planes.  The bins located 
+    // In general, a bin is "half-open", including its lower-boundary
+    // planes but excluding its upper boundary planes.  The bins located
     // on the max-x, max-y, and max-z planes are exceptions: they include
     // the upper boundary, so that points on all faces of the UniformGrid
     // are indexed in the UniformGrid.
