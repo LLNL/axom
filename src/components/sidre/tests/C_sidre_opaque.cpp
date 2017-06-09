@@ -221,7 +221,7 @@ TEST(C_sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
     SIDRE_group * dom_gp =
-      SIDRE_group_get_group(problem_gp, dom_name[idom].c_str());
+      SIDRE_group_get_group_from_name(problem_gp, dom_name[idom].c_str());
     SIDRE_view * ext_view =
       SIDRE_group_get_view_from_name(dom_gp, "ext");
     AA_extent * dom_ext = (AA_extent *) SIDRE_view_get_void_ptr(ext_view);
@@ -253,7 +253,7 @@ TEST(C_sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
     SIDRE_group * dom_gp =
-      SIDRE_group_get_group(problem_gp, dom_name[idom].c_str());
+      SIDRE_group_get_group_from_name(problem_gp, dom_name[idom].c_str());
     SIDRE_view * ext_view =
       SIDRE_group_get_view_from_name(dom_gp, "ext");
     AA_extent * dom_ext = (AA_extent *) SIDRE_view_get_void_ptr(ext_view);

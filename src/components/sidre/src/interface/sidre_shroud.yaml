@@ -221,9 +221,12 @@ classes:
 #    -  decl: bool hasGroup( IndexType idx )
     -  decl: bool hasChildGroup( const string& name )
     -  decl: Group * getGroup( const std::string& path )
+       function_suffix: _from_name
        PY_error_pattern: PY_null_to_none
 #    -  decl: Group const * getGroup( const std::string& path ) const
-#    -  decl: Group * getGroup( IndexType idx)
+    -  decl: Group * getGroup( IndexType idx)
+       function_suffix: _from_index
+       PY_error_pattern: PY_null_to_none
 #    -  decl: Group const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
     -  decl: const std::string& getGroupName+len(MAXNAMESIZE)(IndexType idx) const
