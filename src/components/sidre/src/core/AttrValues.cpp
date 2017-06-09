@@ -35,12 +35,57 @@ namespace sidre
 /*
  *************************************************************************
  *
+ * Return true if the attribute has been explicitly set; else false.
  *
  *************************************************************************
  */
-bool AttrValues::setAttrValue(const Attribute * attr,
-			      const std::string & value)
+bool AttrValues::hasValue( const Attribute * attr ) const
 {
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK(attr != AXOM_NULLPTR);
+    return false;
+  }
+
+  if (m_values == AXOM_NULLPTR)
+  {
+    // No attributes have been set in this View;
+    return false;
+  }
+
+  IndexType iattr = attr->getIndex();
+
+  if ((size_t) iattr > m_values->size())
+  {
+    // This attribute has not been set for this View
+    return false;
+  }
+
+  Node & value = (*m_values)[iattr];
+  
+  if (value.schema().dtype().is_empty())
+  {
+    return false;
+  }
+
+  return true;
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute.
+ *
+ *************************************************************************
+ */
+bool AttrValues::setValue(const Attribute * attr,
+			  const std::string & value)
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK(attr != AXOM_NULLPTR);
+    return false;
+  }
 
   if (m_values == AXOM_NULLPTR)
   {
@@ -49,12 +94,7 @@ bool AttrValues::setAttrValue(const Attribute * attr,
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr < m_values->size())
-  {
-    // replace existing attribute
-    (*m_values)[iattr] = value;
-  }
-  else
+  if ((size_t) iattr >= m_values->size())
   {
     // Create all attributes up to iattr, push back empty Nodes
     m_values->reserve(iattr + 1);
@@ -62,8 +102,9 @@ bool AttrValues::setAttrValue(const Attribute * attr,
     {
       m_values->push_back(Node());
     }
-    (*m_values)[iattr] = value;
-  } 
+  }
+   
+  (*m_values)[iattr] = value;
 
   return true;
 }
@@ -72,11 +113,33 @@ bool AttrValues::setAttrValue(const Attribute * attr,
 /*
  *************************************************************************
  *
+ * Return attribute.
  *
  *************************************************************************
  */
-const char * AttrValues::getAttribute( const Attribute * attr ) const
+const char * AttrValues::getValueString( const Attribute * attr ) const
 {
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK(attr != AXOM_NULLPTR);
+    return AXOM_NULLPTR;
+  }
+
+  const Node & node = getValueNodeRef(attr);
+  return node.as_char8_str();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return Reference to Node.
+ *
+ *************************************************************************
+ */
+const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
+{
+  SLIC_ASSERT(attr != AXOM_NULLPTR);
+
   if (m_values == AXOM_NULLPTR)
   {
     // No attributes have been set in this View;
@@ -98,9 +161,8 @@ const char * AttrValues::getAttribute( const Attribute * attr ) const
     return attr->getDefault();
   }
 
-  return value.as_char8_str();
+  return value;
 }
-
 
 /*
  *************************************************************************

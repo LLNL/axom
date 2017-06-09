@@ -949,14 +949,28 @@ public:
 //!  @name View query and accessor methods
 
   /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttributeValue( const Attribute * attr ) const;
+
+  /*!
    * \brief Set Attribute for a View.
    */
   bool setAttributeValue( const Attribute * attr, const std::string & value );
 
   /*!
    * \brief Return a string attribute.
+   *
+   * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeValue( const Attribute * attr ) const;
+  const char * getAttributeValueString( const Attribute * attr ) const;
+
+  /*!
+   * \brief Return reference to attribute node.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeValueNodeRef( const Attribute * attr ) const;
 
 //@}
 

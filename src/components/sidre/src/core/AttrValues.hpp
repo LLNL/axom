@@ -70,9 +70,25 @@ private:
   //DISABLE_DEFAULT_CTOR(AttrValues);
   DISABLE_MOVE_AND_ASSIGNMENT(AttrValues);
 
-  bool setAttrValue(const Attribute * attr, const std::string & value);
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasValue(const Attribute * attr) const;
 
-  const char * getAttribute( const Attribute * attr ) const;
+  /*!
+   * \brief Set attribute value.
+   */
+  bool setValue(const Attribute * attr, const std::string & value);
+
+  /*!
+   * \brief Return a string value.
+   */
+  const char * getValueString( const Attribute * attr ) const;
+
+  /*!
+   * \brief Return reference to value Node.
+   */
+  const Node & getValueNodeRef( const Attribute * attr ) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor
