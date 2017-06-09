@@ -72,8 +72,10 @@ namespace axom {
 namespace quest {
 
 namespace detail {
-    // Predeclaration for utility class that deals with generating and printing statistics about an InOutOctree instance
+    // Predeclare utility classes that deals with validating and logging stats of InOutOctrees
+
     template<int DIM> class InOutOctreeStats;
+    template<int DIM> class InOutOctreeValidator;
 
 }  // end namespace detail
 
@@ -478,6 +480,7 @@ class InOutOctree : public SpatialOctree<DIM, InOutBlockData>
 {
 private:
     friend class detail::InOutOctreeStats<DIM>;
+    friend class detail::InOutOctreeValidator<DIM>;
 public:
 
     typedef OctreeBase<DIM, InOutBlockData> OctreeBaseType;
@@ -1898,9 +1901,7 @@ template<int DIM>
 void InOutOctree<DIM>::printOctreeStats() const
 {
     detail::InOutOctreeStats<DIM> octreeStats(*this);
-
     SLIC_INFO( octreeStats.summaryStats() );
-
 }
 
 
@@ -1909,224 +1910,24 @@ template<int DIM>
 void InOutOctree<DIM>::checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const
 {
 #ifdef AXOM_DEBUG
-    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
-
-  const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( level );
-  for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
-  {
-      if( ! it->isLeaf() )
-          continue;
-
-      SLIC_ASSERT_MSG( it->isColored()
-                      , "Error after coloring level " << level
-                      << " leaf block " << BlockIndex(it.pt(), level)
-                      << " was not colored."
-      );
-  }
- #endif
+  detail::InOutOctreeValidator<DIM> validator(*this);
+  validator.checkAllLeavesColoredAtLevel(level);
+#endif
 }
 
 template<int DIM>
 void InOutOctree<DIM>::checkValid() const
 {
 #ifdef AXOM_DEBUG
-    typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-    typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+  SLIC_DEBUG("Inside InOutOctree::checkValid() to verify state of "
+      << (m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED ? "PM" : "PR")
+      << " octree." );
 
-    SLIC_ASSERT_MSG( m_generationState >= INOUTOCTREE_VERTICES_INSERTED
-                   , "InOutOctree::checkValid assumes that we have already inserted "
-                     << "the vertices into the octree.");
+  detail::InOutOctreeValidator<DIM> validator(*this);
+  validator.checkValid();
 
-    // Iterate through the tree
-    // Internal blocks should not have associated vertex data
-    // Leaf block consistency depends on 'color'
-    //      Black or White blocks should not have vertex data
-    //      Gray blocks should have a vertex reference; it may or may not be located within the block
-    //          The sum of vertices located within a block should equal the number of mesh vertices.
-    //      Gray blocks should have one or more triangles.
-    //          All triangles should be incident in a common vertex -- which equals the indexed vertex, if it exists.
-
-    std::string treeTypeStr = (m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
-                ? "PM" : "PR";
-
-    SLIC_DEBUG("Inside InOutOctree::checkValid() to verify state of " << treeTypeStr << " octree.");
-
-
-    if(m_generationState > INOUTOCTREE_VERTICES_INSERTED )
-    {
-      SLIC_DEBUG("--Checking that each vertex is in a leaf block of the tree.");
-      const int numVertices = m_meshWrapper.numMeshVertices();
-      for(int i=0; i< numVertices; ++i)
-      {
-        const SpacePt& pos = m_meshWrapper.vertexPosition(i);
-        BlockIndex vertBlock = this->findLeafBlock(pos);
-        const InOutBlockData& leafData = (*this)[vertBlock];
-        VertexIndex vertInBlock = leafVertex(vertBlock, leafData);
-
-        // Check that we can find the leaf block indexing each vertex from its position
-        SLIC_ASSERT_MSG( leafData.hasData() &&  vertInBlock == i
-                     ,  " Vertex " << i << " at position " << pos
-                     << " \n\t was not indexed in block " << vertBlock
-                     << " with bounding box " << this->blockBoundingBox(vertBlock)
-                     << " ( point is" << (this->blockBoundingBox(vertBlock).contains(pos)? "" : " NOT" )
-                     << " contained in block )."
-                     << " \n\n *** \n Leaf data: " << leafData
-                     << " \n ***"
-        );
-
-        // Check that our cached value of the vertex's block is accurate
-        SLIC_ASSERT_MSG( vertBlock == m_vertexToBlockMap[i]
-                   , "Cached block for vertex " << i << " differs from its found block. "
-                   << "\n\t -- cached block "<< m_vertexToBlockMap[i]
-                   << "-- is leaf? " << ( (*this)[ m_vertexToBlockMap[i]].isLeaf() ? "yes" : "no")
-                   << "\n\t -- actual block " << vertBlock
-                   << "-- is leaf? " << ( (*this)[ vertBlock].isLeaf() ? "yes" : "no")
-                   << "\n\t -- vertex set size: " << numVertices
-                    );
-      }
-    }
-
-    if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
-    {
-        SLIC_DEBUG("--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
-
-        const int numTriangles = m_meshWrapper.numMeshElements();
-        for(int tIdx=0; tIdx< numTriangles; ++tIdx)
-        {
-            TriVertIndices tvRel = m_meshWrapper.triangleVertexIndices( tIdx );
-            for(int j=0; j< tvRel.size();++j)
-            {
-                VertexIndex vIdx = tvRel[j];
-                BlockIndex vertBlock = m_vertexToBlockMap[vIdx];
-                const InOutBlockData& leafData = (*this)[vertBlock];
-
-                // Check that this triangle is referenced here.
-                bool foundTriangle = false;
-                TriangleIndexSet leafTris = leafTriangles(vertBlock, leafData);
-                for(int k=0; !foundTriangle && k< leafTris.size(); ++k)
-                {
-                    if( leafTris[k] == tIdx)
-                        foundTriangle = true;
-                }
-
-                SLIC_ASSERT_MSG( foundTriangle
-                               , "Did not find triangle with index " << tIdx << " and vertices" << tvRel
-                               << " in block " << vertBlock << " containing vertex " << vIdx
-                               << " \n\n *** \n Leaf data: " << leafData
-                               << " \n\t Triangles in block? " << leafTris
-                               << " \n ***"
-                               );
-            }
-        }
-
-        // Check that internal blocks have no triangle / vertex
-        //       and leaf blocks satisfy the conditions above
-        SLIC_DEBUG("--Checking that internal blocks have no data, and that leaves satisfy all PM conditions");
-        for(int lev=0; lev< this->m_levels.size(); ++lev)
-        {
-            const LeavesLevelMap& levelLeafMap = this->getOctreeLevel(lev);
-            for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
-            {
-                const BlockIndex block(it.pt(), lev);
-                const InOutBlockData& data = *it;
-
-                if( !data.isLeaf() )
-                {
-                    SLIC_ASSERT( !data.hasData() );
-                }
-                else // leaf block
-                {
-                    if( data.hasData())
-                    {
-                        VertexIndex vIdx = leafVertex(block, data);
-                        TriangleIndexSet triSet = leafTriangles(block,data);
-                        for( int i  = 0; i< triSet.size(); ++i)
-                        {
-                            TriangleIndex tIdx = triSet[i];
-
-                            // Check that vIdx is one of this triangle's vertices
-                            TriVertIndices tvRel = m_meshWrapper.triangleVertexIndices( tIdx );
-                            SLIC_ASSERT_MSG( m_meshWrapper.incidentInVertex(tvRel, vIdx)
-                                             , "All triangles in a gray block must be incident on a common vertex,"
-                                             << " but triangles " << tIdx << " with vertices " << tvRel
-                                             << " in block " << block << " is not incident in vertex " << vIdx);
-
-                            // Check that this triangle intersects the bounding box of the block
-                            GeometricBoundingBox blockBB = this->blockBoundingBox(block);
-                            SLIC_ASSERT_MSG( blockIndexesElementVertex(tIdx, block)
-                                             || intersect( m_meshWrapper.trianglePositions(tIdx), blockBB)
-                                           , "Triangle " << tIdx << " was indexed in block " << block
-                                            << " but it does not intersect the block."
-                                            << "\n\tBlock bounding box: " << blockBB
-                                            << "\n\tTriangle positions: " << m_meshWrapper.trianglePositions(tIdx)
-                                            << "\n\tTriangle vertex indices: " << tvRel
-                                            << "\n\tLeaf vertex is: " << vIdx
-                                            << "\n\tLeaf triangles: " << triSet
-                                            << "(" << triSet.size() <<")"
-                            );
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-
-    if(m_generationState >= INOUTOCTREE_LEAVES_COLORED)
-    {
-        SLIC_DEBUG("--Checking that all leaves have a color -- black, white and gray");
-        for(int lev=0; lev< this->m_levels.size(); ++lev)
-        {
-            checkAllLeavesColoredAtLevel(lev);
-        }
-
-        SLIC_DEBUG("--Checking that inside blocks do not neighbor outside blocks");
-        for(int lev=this->maxLeafLevel()-1; lev >= 0; --lev)
-        {
-            const LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
-            for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
-            {
-                const BlockIndex block(it.pt(), lev);
-                const InOutBlockData& data = *it;
-
-                if(data.isLeaf() && data.color() != InOutBlockData::Gray)
-                {
-                    // Leaf does not yet have a color... try to find its color from same-level face neighbors
-                    for(int i=0; i< block.numFaceNeighbors(); ++i)
-                    {
-                        BlockIndex neighborBlk = this->coveringLeafBlock( block.faceNeighbor(i) );
-                        if(neighborBlk != BlockIndex::invalid_index() )
-                        {
-                            const InOutBlockData& neighborData = (*this)[neighborBlk];
-                            switch(neighborData.color())
-                            {
-                            case InOutBlockData::Black:             // intentional fallthrough
-                            case InOutBlockData::White:
-                                SLIC_CHECK_MSG(data.color() == neighborData.color()
-                                                , "Problem at block " << block << " with data " << data
-                                                <<" --- neighbor " << neighborBlk << " with data " << neighborData
-                                                <<". Neighboring leaves that are not gray must have the same color."
-                                                );
-                                break;
-                            case InOutBlockData::Gray:              // intentional fallthrough
-                            case InOutBlockData::Undetermined:
-                                break;
-                            }
-                        }
-                    }
-
-
-
-                }
-            }
-        }
-
-    }
-
+  SLIC_DEBUG("done.");
 #endif
-    SLIC_DEBUG("done.");
-
 }
 template<int DIM>
 void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
@@ -2514,6 +2315,266 @@ void InOutOctree<DIM>::dumpMeshVTK( const std::string& name,
 }
 
 namespace detail {
+
+template<int DIM>
+class InOutOctreeValidator
+{
+public:
+  typedef InOutOctree<DIM> InOutOctreeType;
+  typedef typename InOutOctreeType::TriangleIndexSet TriangleIndexSet;
+
+  typedef typename InOutOctreeType::OctreeBaseType OctreeBaseType;
+  typedef typename OctreeBaseType::OctreeLevels OctreeLevels;
+  typedef typename OctreeBaseType::BlockIndex BlockIndex;
+  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
+  typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+
+  typedef typename InOutOctreeType::SpacePt SpacePt;
+  typedef typename InOutOctreeType::VertexIndex VertexIndex;
+  typedef typename InOutOctreeType::TriangleIndex TriangleIndex;
+  typedef typename InOutOctreeType::MeshWrapper::TriVertIndices TriVertIndices;
+  typedef typename InOutOctreeType::GeometricBoundingBox GeometricBoundingBox;
+
+public:
+  InOutOctreeValidator(const InOutOctreeType& octree) :
+    m_octree(octree),
+    m_generationState(m_octree.m_generationState)
+  {}
+
+
+  void checkAllLeavesColored() const
+  {
+    SLIC_DEBUG("--Checking that all leaves have a color -- black, white and gray");
+    for(int lev=0; lev< m_octree.m_levels.size(); ++lev)
+    {
+        checkAllLeavesColoredAtLevel(lev);
+    }
+  }
+
+  void checkAllLeavesColoredAtLevel(int level) const
+  {
+    const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( level );
+    for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+    {
+        if( ! it->isLeaf() )
+            continue;
+
+        SLIC_ASSERT_MSG(
+            it->isColored(),
+            "Error after coloring level " << level
+              << " leaf block " << BlockIndex(it.pt(), level)
+              << " was not colored."
+        );
+    }
+  }
+
+  void checkEachVertexIsIndexed() const
+  {
+    SLIC_DEBUG("--Checking that each vertex is in a leaf block of the tree.");
+
+    const int numVertices = m_octree.m_meshWrapper.numMeshVertices();
+    for(int i=0; i< numVertices; ++i)
+    {
+      const SpacePt& pos = m_octree.m_meshWrapper.vertexPosition(i);
+      BlockIndex vertBlock = m_octree.findLeafBlock(pos);
+      const InOutBlockData& leafData = m_octree[vertBlock];
+
+      VertexIndex vertInBlock = m_octree.leafVertex(vertBlock, leafData);
+
+      // Check that we can find the leaf block indexing each vertex from its position
+      SLIC_ASSERT_MSG(
+          leafData.hasData() &&  vertInBlock == i,
+          " Vertex " << i << " at position " << pos
+            << " \n\t was not indexed in block " << vertBlock
+            << " with bounding box " << m_octree.blockBoundingBox(vertBlock)
+            << " ( point is" << ( m_octree.blockBoundingBox(vertBlock).contains(pos) ? "" : " NOT" )
+            << " contained in block )."
+            << " \n\n *** \n Leaf data: " << leafData
+            << " \n ***" );
+
+      // Check that our cached value of the vertex's block is accurate
+      SLIC_ASSERT_MSG(
+          vertBlock == m_octree.m_vertexToBlockMap[i],
+          "Cached block for vertex " << i << " differs from its found block. "
+            << "\n\t -- cached block "<< m_octree.m_vertexToBlockMap[i]
+            << "-- is leaf? " << ( m_octree[ m_octree.m_vertexToBlockMap[i]].isLeaf() ? "yes" : "no")
+            << "\n\t -- actual block " << vertBlock
+            << "-- is leaf? " << ( m_octree[ vertBlock].isLeaf() ? "yes" : "no")
+            << "\n\t -- vertex set size: " << numVertices );
+    }
+  }
+
+  void checkTrianglesReferencedInBoundaryVertexBlocks() const
+  {
+    SLIC_DEBUG("--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
+
+    const int numTriangles = m_octree.m_meshWrapper.numMeshElements();
+    for(int tIdx=0; tIdx< numTriangles; ++tIdx)
+    {
+        TriVertIndices tvRel = m_octree.m_meshWrapper.triangleVertexIndices( tIdx );
+        for(int j=0; j< tvRel.size();++j)
+        {
+            VertexIndex vIdx = tvRel[j];
+            BlockIndex vertBlock = m_octree.m_vertexToBlockMap[vIdx];
+            const InOutBlockData& leafData = m_octree[vertBlock];
+
+            // Check that this triangle is referenced here.
+            bool foundTriangle = false;
+            TriangleIndexSet leafTris = m_octree.leafTriangles(vertBlock, leafData);
+            for(int k=0; !foundTriangle && k< leafTris.size(); ++k)
+            {
+                if( leafTris[k] == tIdx)
+                    foundTriangle = true;
+            }
+
+            SLIC_ASSERT_MSG( foundTriangle
+                           , "Did not find triangle with index " << tIdx << " and vertices" << tvRel
+                           << " in block " << vertBlock << " containing vertex " << vIdx
+                           << " \n\n *** \n Leaf data: " << leafData
+                           << " \n\t Triangles in block? " << leafTris
+                           << " \n ***"
+                           );
+        }
+    }
+  }
+
+  void checkBlockIndexingConsistency()  const
+  {
+    // Check that internal blocks have no triangle / vertex
+    //       and leaf blocks satisfy the conditions above
+    SLIC_DEBUG("--Checking that internal blocks have no data, and that leaves satisfy all PM conditions");
+
+    for(int lev=0; lev< m_octree.m_levels.size(); ++lev)
+    {
+        const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel(lev);
+        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        {
+            const BlockIndex block(it.pt(), lev);
+            const InOutBlockData& data = *it;
+
+            if( !data.isLeaf() )
+            {
+                SLIC_ASSERT( !data.hasData() );
+            }
+            else // leaf block
+            {
+                if( data.hasData())
+                {
+                    VertexIndex vIdx = m_octree.leafVertex(block, data);
+                    TriangleIndexSet triSet = m_octree.leafTriangles(block,data);
+                    for( int i  = 0; i< triSet.size(); ++i)
+                    {
+                        TriangleIndex tIdx = triSet[i];
+
+                        // Check that vIdx is one of this triangle's vertices
+                        TriVertIndices tvRel = m_octree.m_meshWrapper.triangleVertexIndices( tIdx );
+                        SLIC_ASSERT_MSG(
+                            m_octree.m_meshWrapper.incidentInVertex(tvRel, vIdx),
+                            "All triangles in a gray block must be incident on a common vertex,"
+                              << " but triangles " << tIdx << " with vertices " << tvRel
+                              << " in block " << block << " is not incident in vertex " << vIdx );
+
+                        // Check that this triangle intersects the bounding box of the block
+                        GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
+                        SLIC_ASSERT_MSG(
+                            m_octree.blockIndexesElementVertex(tIdx, block)
+                              || intersect( m_octree.m_meshWrapper.trianglePositions(tIdx), blockBB),
+                            "Triangle " << tIdx << " was indexed in block " << block
+                              << " but it does not intersect the block."
+                              << "\n\tBlock bounding box: " << blockBB
+                              << "\n\tTriangle positions: " << m_octree.m_meshWrapper.trianglePositions(tIdx)
+                              << "\n\tTriangle vertex indices: " << tvRel
+                              << "\n\tLeaf vertex is: " << vIdx
+                              << "\n\tLeaf triangles: " << triSet
+                              << "(" << triSet.size() <<")" );
+                    }
+                }
+            }
+
+        }
+    }
+  }
+
+  void checkNeighboringBlockColors() const
+  {
+    SLIC_DEBUG("--Checking that inside blocks do not neighbor outside blocks");
+    for(int lev= m_octree.maxLeafLevel()-1; lev >= 0; --lev)
+    {
+        const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
+        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        {
+            const BlockIndex block(it.pt(), lev);
+            const InOutBlockData& data = *it;
+
+            if(data.isLeaf() && data.color() != InOutBlockData::Gray)
+            {
+                // Leaf does not yet have a color... try to find its color from same-level face neighbors
+                for(int i=0; i< block.numFaceNeighbors(); ++i)
+                {
+                    BlockIndex neighborBlk = m_octree.coveringLeafBlock( block.faceNeighbor(i) );
+                    if(neighborBlk != BlockIndex::invalid_index() )
+                    {
+                        const InOutBlockData& neighborData = m_octree[neighborBlk];
+                        switch(neighborData.color())
+                        {
+                        case InOutBlockData::Black:             // intentional fallthrough
+                        case InOutBlockData::White:
+                            SLIC_CHECK_MSG(
+                                data.color() == neighborData.color(),
+                                "Problem at block " << block << " with data " << data
+                                  <<" --- neighbor " << neighborBlk << " with data " << neighborData
+                                  <<". Neighboring leaves that are not gray must have the same color." );
+                            break;
+                        case InOutBlockData::Gray:              // intentional fallthrough
+                        case InOutBlockData::Undetermined:
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+  }
+
+  void checkValid() const
+  {
+    // We are assumed to be valid before we insert the vertices
+    if( m_generationState < InOutOctreeType::INOUTOCTREE_VERTICES_INSERTED )
+      return;
+
+    // Iterate through the tree
+    // Internal blocks should not have associated vertex data
+    // Leaf block consistency depends on 'color'
+    //      Black or White blocks should not have vertex data
+    //      Gray blocks should have a vertex reference; it may or may not be located within the block
+    //          The sum of vertices located within a block should equal the number of mesh vertices.
+    //      Gray blocks should have one or more triangles.
+    //          All triangles should be incident in a common vertex -- which equals the indexed vertex, if it exists.
+
+
+    if(m_generationState > InOutOctreeType::INOUTOCTREE_VERTICES_INSERTED )
+    {
+      checkEachVertexIsIndexed();
+    }
+
+    if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
+    {
+      checkTrianglesReferencedInBoundaryVertexBlocks();
+      checkBlockIndexingConsistency();
+    }
+
+    if(m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
+    {
+      checkAllLeavesColored();
+      checkNeighboringBlockColors();
+    }
+  }
+
+private:
+  const InOutOctreeType& m_octree;
+  typename InOutOctreeType::GenerationState m_generationState;
+};
+
 
 template<int DIM>
 class InOutOctreeStats
