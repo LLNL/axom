@@ -101,6 +101,7 @@ TEST(sidre_attribute,create_attr)
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(0, nattrs);
 
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -126,6 +127,7 @@ TEST(sidre_attribute,view_attr)
   View  * view1a = grp1->createView(namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
+  EXPECT_FALSE(view1a->hasAttributeValue(AXOM_NULLPTR));
   EXPECT_FALSE(view1a->hasAttributeValue(attr_color));
 
   // Check values of unset attributes
@@ -242,6 +244,8 @@ TEST(sidre_attribute,view_attr)
   // Get attributes without setting returns default value
   const char * attr1 = view->getAttributeValueString(color);
 #endif
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -272,6 +276,8 @@ TEST(sidre_attribute,as_node)
 
   const Node & node = view1a->getAttributeValueNodeRef(attr_color);
   EXPECT_EQ(color_red, node.as_string());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

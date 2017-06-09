@@ -1274,8 +1274,6 @@ bool View::rename(const std::string& new_name)
  */
 bool View::hasAttributeValue( const Attribute * attr ) const
 {
-  SLIC_ASSERT( attr != AXOM_NULLPTR);
-
   bool status = m_attr_values.hasValue(attr);
 
   return status;
@@ -1290,10 +1288,7 @@ bool View::hasAttributeValue( const Attribute * attr ) const
  */
 bool View::setAttributeValue( const Attribute * attr, const std::string & value )
 {
-  SLIC_ASSERT( attr != AXOM_NULLPTR);
-
   bool status = m_attr_values.setValue(attr, value);
-
   return status;
 }
 
@@ -1306,8 +1301,6 @@ bool View::setAttributeValue( const Attribute * attr, const std::string & value 
  */
 const char * View::getAttributeValueString( const Attribute * attr ) const
 {
-  SLIC_ASSERT( attr != AXOM_NULLPTR);
-
   const char * value = m_attr_values.getValueString(attr);
   return value;
 }
@@ -1321,8 +1314,6 @@ const char * View::getAttributeValueString( const Attribute * attr ) const
  */
 const Node & View::getAttributeValueNodeRef( const Attribute * attr ) const
 {
-  SLIC_ASSERT( attr != AXOM_NULLPTR);
-
   return m_attr_values.getValueNodeRef(attr);
 }
 
