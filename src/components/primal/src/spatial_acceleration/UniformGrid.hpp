@@ -11,6 +11,8 @@
 #ifndef UNIFORMGRID_HPP_
 #define UNIFORMGRID_HPP_
 
+#include "axom_utils/Utilities.hpp"
+
 #include "slic/slic.hpp"
 
 #include "primal/BoundingBox.hpp"
@@ -248,11 +250,11 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
 
   size_t newsize = 1;
   for (int i=0; i<NDIMS;++i) {
-    m_origin[i] = lower_bound[i] - 1;
+    m_origin[i] = lower_bound[i];
 
     SLIC_ASSERT(lower_bound[i] <= upper_bound[i]);
     SLIC_ASSERT(res[i] > 0 );
-    m_spacing[i] = (upper_bound[i] + 1 - (lower_bound[i] - 1)) / res[i];
+    m_spacing[i] = (upper_bound[i] - (lower_bound[i])) / res[i];
     m_resolution[i] = res[i];
     newsize *= res[i];
   }
@@ -275,8 +277,17 @@ int UniformGrid<T, NDIMS>::getBinIndex(const PointType & pt) const
   for (int i = 0; i < NDIMS; ++i) {
     int tmp = static_cast<int>(floor((pt[i] - m_origin[i]) / m_spacing[i]));
 
-    if (tmp < 0 || tmp >= m_resolution[i]) {
+    if (tmp < 0 || tmp > m_resolution[i]) {
       return INVALID_BIN_INDEX;
+    }
+    if (tmp == m_resolution[i]) {
+      if (! axom::utilities::isNearlyEqual(pt[i],
+             m_origin[i] + m_resolution[i] * m_spacing[i],
+             1.0e-12) ) {
+        return INVALID_BIN_INDEX;
+      } else {
+        tmp = tmp - 1;
+      }
     }
 
     int factor = 1;
@@ -418,7 +429,7 @@ void UniformGrid<T, NDIMS>::insert(const BoxType& BB,
   const std::vector<int> bidxs = getBinsForBbox(BB);
 
   for (int i = 0; i < bidxs.size(); ++i) {
-    addObj(obj, i);
+    addObj(obj, bidxs[i]);
   }
 }
 
