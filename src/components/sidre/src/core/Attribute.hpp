@@ -24,6 +24,7 @@
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
+#include "slic/slic.hpp"
 
 // Sidre project headers
 #include "sidre/SidreTypes.hpp"
@@ -72,11 +73,41 @@ public:
    * \brief Set default value of Attribute.
    *        Called as part of DataStore->createAttribute.
    *
-   * The type of the default should not be changed after the attribute is created.
+   * The type of the default cannot be changed after the attribute is created.
    */
+  template<typename ScalarType>
+  void setDefault(ScalarType value)
+  {
+    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+    if (m_default_value.dtype().is_empty() || 
+        arg_id == m_default_value.dtype().id())
+    {
+      m_default_value = value;
+    }
+    else
+    {
+      SLIC_CHECK_MSG(arg_id == m_default_value.dtype().id(),
+		     "Cannot change type of attribute '" << m_name
+		     << "' from " << m_default_value.dtype().name()
+		     << " to " << DataType::id_to_name(arg_id) << ".");
+    }
+  }
+
   void setDefault(const std::string & value)
   {
-    m_default_value = value;
+    DataTypeId arg_id = CHAR8_STR_ID;
+    if (m_default_value.dtype().is_empty() || 
+        arg_id == m_default_value.dtype().id())
+    {
+      m_default_value = value;
+    }
+    else
+    {
+      SLIC_CHECK_MSG(arg_id == m_default_value.dtype().id(),
+		     "Cannot change type of attribute '" << m_name
+		     << "' from " << m_default_value.dtype().name()
+		     << " to " << DataType::id_to_name(arg_id) << ".");
+    }
   }
 
   /*!

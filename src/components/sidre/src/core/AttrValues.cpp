@@ -55,7 +55,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr > m_values->size())
+  if ((size_t) iattr >= m_values->size())
   {
     // This attribute has not been set for this View
     return false;
@@ -148,7 +148,7 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr > m_values->size())
+  if ((size_t) iattr >= m_values->size())
   {
     // This attribute has not been set for this View
     return attr->getDefault();

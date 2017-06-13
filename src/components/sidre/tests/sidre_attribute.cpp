@@ -33,7 +33,18 @@ const std::string animal_dog("dog");
 const std::string namea("a");
 const std::string nameb("b");
 
+const std::string name_dump("dump");
+const int dump_no = 0;
+const int dump_yes = 1;
+
+const std::string name_size("size");
+const int dump_small = 1.2;
+const int dump_medium = 2.3;
+const int dump_large = 3.4;
+
 //------------------------------------------------------------------------------
+// Create attribute in a Datastore
+//
 TEST(sidre_attribute,create_attr)
 {
   const std::string dump_none("none");
@@ -48,6 +59,7 @@ TEST(sidre_attribute,create_attr)
   bool has_name = ds->hasAttribute(name_color);
   EXPECT_FALSE( has_name );
 
+  // Create string attribute
   Attribute * color = ds->createAttribute(name_color, color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
 
@@ -61,6 +73,9 @@ TEST(sidre_attribute,create_attr)
   EXPECT_TRUE( has_name );
   has_index = ds->hasAttribute(0);
   EXPECT_TRUE( has_index );
+
+  // try to change default to a different type
+  color->setDefault(1);
 
   Attribute * attr = ds->getAttribute(name_color);
   EXPECT_EQ(attr, color);
@@ -80,22 +95,26 @@ TEST(sidre_attribute,create_attr)
   // At this point color points to deallocated memory
 
   // Create additional attributes
-  std::string namedump1("dump1");
-  Attribute * dump1 = ds->createAttribute(namedump1, dump_none);
-  EXPECT_TRUE( dump1 != AXOM_NULLPTR );
+  Attribute * dump = ds->createAttribute(name_dump, dump_no);
+  EXPECT_TRUE( dump != AXOM_NULLPTR );
 
-  attr_index = dump1->getIndex();
+  attr_index = dump->getIndex();
   EXPECT_EQ(0, attr_index);
 
-  std::string namedump2("dump2");
-  Attribute * dump2 = ds->createAttribute(namedump2, dump_none);
-  EXPECT_TRUE( dump1 != AXOM_NULLPTR );
+  Attribute * size = ds->createAttribute(name_size, dump_small);
+  EXPECT_TRUE( dump != AXOM_NULLPTR );
 
-  attr_index = dump2->getIndex();
+  attr_index = size->getIndex();
   EXPECT_EQ(1, attr_index);
 
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(2, nattrs);
+
+  dump->setDefault(1);
+  // try to change default to a different type
+  dump->setDefault(name_dump);
+  dump->setDefault("yes");
+  dump->setDefault(3.1415);
 
   ds->destroyAllAttributes();
   nattrs = ds->getNumAttributes();
@@ -105,6 +124,7 @@ TEST(sidre_attribute,create_attr)
 }
 
 //------------------------------------------------------------------------------
+// Set attributes on a view
 
 TEST(sidre_attribute,view_attr)
 {
@@ -151,6 +171,11 @@ TEST(sidre_attribute,view_attr)
 
   const std::string out1b = view1a->getAttributeValueString(attr_color);
   EXPECT_EQ(color_blue, out1b);
+
+  // Check second, unset attribute. Should be default value
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_animal));
+  const std::string out1d = view1a->getAttributeValueString(attr_animal);
+  EXPECT_EQ(animal_none, out1d);
 
   // Now set second attribute
   ok = view1a->setAttributeValue(attr_animal, animal_dog);
@@ -249,8 +274,10 @@ TEST(sidre_attribute,view_attr)
 }
 
 //------------------------------------------------------------------------------
+// Use different type of attributes
 
-TEST(sidre_attribute,as_node)
+#if 0
+TEST(sidre_attribute,view_attr)
 {
   bool ok;
 
@@ -265,6 +292,27 @@ TEST(sidre_attribute,as_node)
 
   Group * root = ds->getRoot();
 
+}
+#endif
+
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_attribute,as_node)
+{
+  bool ok;
+
+  DataStore * ds = new DataStore();
+
+  // Create all attributes for DataStore
+  Attribute * attr_color = ds->createAttribute(name_color, color_none);
+  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
+
+  Attribute * attr_dump = ds->createAttribute(name_dump, dump_small);
+  EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
+
+  Group * root = ds->getRoot();
+
   //----------------------------------------
   // Set the first attribute in a Group
   Group * grp1 = root->createGroup("grp1");
@@ -276,6 +324,9 @@ TEST(sidre_attribute,as_node)
 
   const Node & node = view1a->getAttributeValueNodeRef(attr_color);
   EXPECT_EQ(color_red, node.as_string());
+
+  const Node & node2 = view1a->getAttributeValueNodeRef(attr_dump);
+  EXPECT_EQ(dump_small, node2.as_int32());
 
   delete ds;
 }

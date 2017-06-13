@@ -127,29 +127,42 @@ typedef conduit_float64 sidre_float64;
  * \brief Type traits to assist in converting compiler types to the appropriate data type ids.
  */
 template<typename T> struct SidreTT {};
-template<> struct SidreTT<sidre_int8>   {  static const DataTypeId id = INT8_ID;
+template<> struct SidreTT<sidre_int8>   {
+  static const DataTypeId id = INT8_ID;
 };
-template<> struct SidreTT<sidre_int16>  {  static const DataTypeId id =
-                                             INT16_ID; };
-template<> struct SidreTT<sidre_int32>  {  static const DataTypeId id =
-                                             INT32_ID; };
-template<> struct SidreTT<sidre_int64>  {  static const DataTypeId id =
-                                             INT64_ID; };
+template<> struct SidreTT<sidre_int16>  {
+  static const DataTypeId id = INT16_ID;
+};
+template<> struct SidreTT<sidre_int32>  {
+  static const DataTypeId id = INT32_ID; 
+};
+template<> struct SidreTT<sidre_int64>  {
+  static const DataTypeId id = INT64_ID; 
+};
 
-template<> struct SidreTT<sidre_uint8>   {  static const DataTypeId id =
-                                              UINT8_ID; };
-template<> struct SidreTT<sidre_uint16>  {  static const DataTypeId id =
-                                              UINT16_ID; };
-template<> struct SidreTT<sidre_uint32>  {  static const DataTypeId id =
-                                              UINT32_ID; };
-template<> struct SidreTT<sidre_uint64>  {  static const DataTypeId id =
-                                              UINT64_ID; };
+template<> struct SidreTT<sidre_uint8>   {
+  static const DataTypeId id = UINT8_ID; 
+};
+template<> struct SidreTT<sidre_uint16>  {
+  static const DataTypeId id = UINT16_ID; 
+};
+template<> struct SidreTT<sidre_uint32>  {
+  static const DataTypeId id = UINT32_ID; 
+};
+template<> struct SidreTT<sidre_uint64>  {
+  static const DataTypeId id = UINT64_ID; 
+};
 
-template<> struct SidreTT<sidre_float32>  {  static const DataTypeId id =
-                                               FLOAT32_ID; };
-template<> struct SidreTT<sidre_float64>  {  static const DataTypeId id =
-                                               FLOAT64_ID; };
+template<> struct SidreTT<sidre_float32>  {
+  static const DataTypeId id = FLOAT32_ID; 
+};
+template<> struct SidreTT<sidre_float64>  {
+  static const DataTypeId id = FLOAT64_ID; 
+};
 
+template<> struct SidreTT<const char *>  {
+  static const DataTypeId id = CHAR8_STR_ID;
+};
 }
 
 /*!

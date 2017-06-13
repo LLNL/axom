@@ -33,6 +33,7 @@
 #include "slic/slic.hpp"
 
 // Sidre project headers
+#include "Attribute.hpp"
 #include "SidreTypes.hpp"
 
 namespace axom
@@ -42,7 +43,6 @@ namespace sidre
 
 class Buffer;
 class Group;
-class Attribute;
 template <typename TYPE> class MapCollection;
 
 /*!
@@ -217,7 +217,32 @@ public:
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
    */
-  Attribute * createAttribute( const std::string & name, const std::string & default_value );
+  Attribute * createAttribute( const std::string & name, const std::string & default_value )
+  {
+    Attribute * new_attribute = createEmptyAttribute(name);
+    if ( new_attribute != AXOM_NULLPTR )
+    {
+      new_attribute->setDefault(default_value);
+    }
+    return new_attribute;
+  }
+
+  /*!
+   * \brief Create a Attribute object with a default value.
+   *
+   *        The Attribute object is assigned a unique index when created and the
+   *        Attribute object is owned by the DataStore object.
+   */
+  template<typename ScalarType>
+  Attribute * createAttribute( const std::string & name, ScalarType default_value)
+  {
+    Attribute * new_attribute = createEmptyAttribute(name);
+    if ( new_attribute != AXOM_NULLPTR )
+    {
+      new_attribute->setDefault(default_value);
+    }
+    return new_attribute;
+  }
 
   /*!
    * \brief Return true if DataStore has created attribute name; else false.
@@ -334,6 +359,18 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGNMENT(DataStore);
   DISABLE_MOVE_AND_ASSIGNMENT(DataStore);
+
+//@{
+//!  @name Private View declaration methods.
+//!        (callable only by Group and View methods).
+
+  /*!
+   * \brief Create an Attribute and insert it into the DataStore.
+   *        The attribute will be untyped.
+   */
+  Attribute * createEmptyAttribute(const std::string & name);
+
+//@}
 
   /// Root Group, created when DataStore object is created.
   Group * m_RootGroup;

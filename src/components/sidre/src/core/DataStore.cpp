@@ -313,12 +313,11 @@ SidreLength DataStore::getNumAttributes() const
 /*
  *************************************************************************
  *
- * Create a Attribute object with a default value.
+ * PRIVATE method to create an untyped Attribute object.
  *
  *************************************************************************
  */
-Attribute * DataStore::createAttribute( const std::string & name,
-					const std::string & default_value)
+Attribute * DataStore::createEmptyAttribute(const std::string & name)
 {
   if ( name.empty() || hasAttribute(name) )
   {
@@ -338,7 +337,6 @@ Attribute * DataStore::createAttribute( const std::string & name,
   m_attribute_coll->insertItem(new_attribute, name);
   IndexType idx = m_attribute_coll->getItemIndex(name);
   new_attribute->setIndex(idx);
-  new_attribute->setDefault(default_value);
   return new_attribute;
 }
 
