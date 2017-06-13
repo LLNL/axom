@@ -15,9 +15,6 @@ DOC=false
 INSTALL_FILES=true
 INSTALL_DOCS=false
 
-# Explicitly set a CTest that works on the backend nodes 
-CTEST_EXE="/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"  
-RUN_BGQ_TEST=false
 
 JOBS=16
 
@@ -40,22 +37,5 @@ echo Running $COMPILER
 if [ $? -ne 0 ]; then
     echo Error: calling  $COMPILER  failed
     exit 1
-fi
-
-# Now run the tests using a ctest executable that we know to work on BG/Q
-if [ "$RUN_BGQ_TEST" = true ]; then
-    cd $BUILD_PATH
-    pwd
-    echo "Running tests env CTEST_OUTPUT_ON_FAILURE=1 ..."
-    export CTEST_OUTPUT_ON_FAILURE=1
-    echo "-----------------------------------------------------------------------"
-    #salloc -N4 -p$PARTITION $CTEST_EXE -T Test -j$JOBS
-    bsub -n 20 -x -XF -W 120 -G guests $CTEST_EXE -T Test
-    if [ $? -ne 0 ]; then
-        echo "Error: 'make test' failed"
-        exit 1
-    fi
-    cd ..
-    echo "-----------------------------------------------------------------------"
 fi
 
