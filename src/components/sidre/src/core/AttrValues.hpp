@@ -25,6 +25,7 @@
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
+#include "slic/slic.hpp"
 
 // Sidre project headers
 #include "sidre/Attribute.hpp"
@@ -86,7 +87,16 @@ private:
   template<typename ScalarType>
   bool setValue(const Attribute * attr, ScalarType value)
   {
-    // XXX check types
+    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+    if (arg_id != attr->getDefault().dtype().id())
+    {
+      SLIC_CHECK_MSG(arg_id == attr->getDefault().dtype().id(),
+		     "Incorrect type for attribute '" << attr->getName()
+		     << "' of type " << attr->getDefault().dtype().name()
+		     << ": " << DataType::id_to_name(arg_id) << ".");
+      return false;
+    }
+
     bool ok = createNode(attr);
     if (ok)
     {
@@ -101,6 +111,16 @@ private:
    */
   bool setValue(const Attribute * attr, const std::string & value)
   {
+    DataTypeId arg_id = CHAR8_STR_ID;
+    if (arg_id != attr->getDefault().dtype().id())
+    {
+      SLIC_CHECK_MSG(arg_id == attr->getDefault().dtype().id(),
+		     "Incorrect type for attribute '" << attr->getName()
+		     << "' of type " << attr->getDefault().dtype().name()
+		     << ": " << DataType::id_to_name(arg_id) << ".");
+      return false;
+    }
+
     bool ok = createNode(attr);
     if (ok)
     {

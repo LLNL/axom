@@ -250,26 +250,6 @@ TEST(sidre_attribute,view_attr)
   grp3->destroyView(namea);
   grp4->destroyView(nameb);
 
-#if 0
-  IndexType icolor = color->getIndex();
-
-  Group * root = ds.getRoot();
-  View * view = root->createView("var1");
-
-  view->setAttributeValue(color, color_red);
-  view->setAttributeValue(icolor, color_red);
-  view->setAttributeValue("color", color_red);
-
-  const char * attr1 = view->getAttributeValueString(color);
-  const char * attr2 = view->getAttributeValueString(icolor);
-  const char * attr3 = view->getAttributeValueString("color");
-
-
-  view = root->createView("var2");
-  // Get attributes without setting returns default value
-  const char * attr1 = view->getAttributeValueString(color);
-#endif
-
   delete ds;
 }
 
@@ -317,7 +297,44 @@ TEST(sidre_attribute,view_int_and_double)
   size = view1a->getAttributeValue(attr_size);
   EXPECT_EQ( size_medium, size );
 
+  // Set values with incorrect types
+  ok = view1a->setAttributeValue(attr_dump, size_small);
+  EXPECT_FALSE( ok );
+  ok = view1a->setAttributeValue(attr_dump, namea);
+  EXPECT_FALSE( ok );
+  ok = view1a->setAttributeValue(attr_dump, "namea");
+  EXPECT_FALSE( ok );
+
+  delete ds;
 }
+
+//------------------------------------------------------------------------------
+// Access attributes by name or index
+
+#if 0
+TEST(sidre_attribute,overloads)
+{
+  IndexType icolor = color->getIndex();
+
+  Group * root = ds.getRoot();
+  View * view = root->createView("var1");
+
+  view->setAttributeValue(color, color_red);
+  view->setAttributeValue(icolor, color_red);
+  view->setAttributeValue("color", color_red);
+
+  const char * attr1 = view->getAttributeValueString(color);
+  const char * attr2 = view->getAttributeValueString(icolor);
+  const char * attr3 = view->getAttributeValueString("color");
+
+
+  view = root->createView("var2");
+  // Get attributes without setting returns default value
+  const char * attr1 = view->getAttributeValueString(color);
+
+  delete ds;
+}
+#endif
 
 //------------------------------------------------------------------------------
 
