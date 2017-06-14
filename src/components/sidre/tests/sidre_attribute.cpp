@@ -61,7 +61,7 @@ TEST(sidre_attribute,create_attr)
   EXPECT_FALSE( has_name );
 
   // Create string attribute
-  Attribute * color = ds->createAttribute(name_color, color_none);
+  Attribute * color = ds->createAttributeString(name_color, color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
 
   IndexType attr_index = color->getIndex();
@@ -77,20 +77,20 @@ TEST(sidre_attribute,create_attr)
 
   // Try to change default to a different type.
   // Check template of setDefault.
-  ok = color->setDefault(1);
+  ok = color->setDefaultScalar(1);
   EXPECT_FALSE(ok);
-  ok = color->setDefault(3.14);
+  ok = color->setDefaultScalar(3.14);
   EXPECT_FALSE(ok);
 
   // Change to legal values.
-  ok = color->setDefault("unknown");
+  ok = color->setDefaultString("unknown");
   EXPECT_TRUE(ok);
 #if 0
-  // XXX - this causes the default type to change to int.
-  ok = color->setDefault('u');
+  // XXX - unsupported overload
+  ok = color->setDefaultString('u');
   EXPECT_TRUE(ok);
 #endif
-  ok = color->setDefault(std::string("string"));  // non-const string
+  ok = color->setDefaultString(std::string("string"));  // non-const string
   EXPECT_TRUE(ok);
 
   Attribute * attr = ds->getAttribute(name_color);
@@ -111,13 +111,13 @@ TEST(sidre_attribute,create_attr)
   // At this point color points to deallocated memory
 
   // Create additional attributes
-  Attribute * dump = ds->createAttribute(name_dump, dump_no);
+  Attribute * dump = ds->createAttributeScalar(name_dump, dump_no);
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   attr_index = dump->getIndex();
   EXPECT_EQ(0, attr_index);
 
-  Attribute * size = ds->createAttribute(name_size, size_small);
+  Attribute * size = ds->createAttributeScalar(name_size, size_small);
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   attr_index = size->getIndex();
@@ -126,14 +126,14 @@ TEST(sidre_attribute,create_attr)
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(2, nattrs);
 
-  ok = dump->setDefault(1);
+  ok = dump->setDefaultScalar(1);
   EXPECT_TRUE(ok);
   // try to change default to a different type
-  ok = dump->setDefault(name_dump);
+  ok = dump->setDefaultString(name_dump);
   EXPECT_FALSE(ok);
-  ok = dump->setDefault("yes");
+  ok = dump->setDefaultString("yes");
   EXPECT_FALSE(ok);
-  ok = dump->setDefault(3.1415);
+  ok = dump->setDefaultScalar(3.1415);
   EXPECT_FALSE(ok);
 
   ds->destroyAllAttributes();
@@ -153,10 +153,10 @@ TEST(sidre_attribute,view_attr)
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_color = ds->createAttribute(name_color, color_none);
+  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  Attribute * attr_animal = ds->createAttribute(name_animal, animal_none);
+  Attribute * attr_animal = ds->createAttributeString(name_animal, animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
@@ -283,10 +283,10 @@ TEST(sidre_attribute,view_int_and_double)
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_dump = ds->createAttribute(name_dump, dump_no);
+  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
 
-  Attribute * attr_size = ds->createAttribute(name_size, size_small);
+  Attribute * attr_size = ds->createAttributeScalar(name_size, size_small);
   EXPECT_TRUE( attr_size != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
@@ -377,10 +377,10 @@ TEST(sidre_attribute,as_node)
   DataStore * ds = new DataStore();
 
   // Create attributes for DataStore
-  Attribute * attr_color = ds->createAttribute(name_color, color_none);
+  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  Attribute * attr_dump = ds->createAttribute(name_dump, dump_no);
+  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();

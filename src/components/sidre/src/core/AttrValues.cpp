@@ -159,7 +159,7 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
   if (m_values == AXOM_NULLPTR)
   {
     // No attributes have been set in this View;
-    return attr->getDefault();
+    return attr->getDefaultNodeRef();
   }
 
   IndexType iattr = attr->getIndex();
@@ -167,14 +167,14 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
   if ((size_t) iattr >= m_values->size())
   {
     // This attribute has not been set for this View
-    return attr->getDefault();
+    return attr->getDefaultNodeRef();
   }
 
   Node & value = (*m_values)[iattr];
   
   if (value.schema().dtype().is_empty())
   {
-    return attr->getDefault();
+    return attr->getDefaultNodeRef();
   }
 
   return value;

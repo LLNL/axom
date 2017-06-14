@@ -159,18 +159,6 @@ template<> struct SidreTT<sidre_float32>  {
 template<> struct SidreTT<sidre_float64>  {
   static const DataTypeId id = FLOAT64_ID; 
 };
-
-#if 0
-template<> struct SidreTT<char>  {
-  static const DataTypeId id = CHAR8_STR_ID;
-};
-template<> struct SidreTT<const char>  {
-  static const DataTypeId id = CHAR8_STR_ID;
-};
-#endif
-template<> struct SidreTT<const char *>  {
-  static const DataTypeId id = CHAR8_STR_ID;
-};
 }
 
 /*!

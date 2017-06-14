@@ -75,7 +75,7 @@ public:
    * The type of the default cannot be changed after the attribute is created.
    */
   template<typename ScalarType>
-  bool setDefault(ScalarType value)
+  bool setDefaultScalar(ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
     if (m_default_value.dtype().is_empty() || 
@@ -99,7 +99,7 @@ public:
    *
    * The type of the default cannot be changed after the attribute is created.
    */
-  bool setDefault(const std::string & value)
+  bool setDefaultString(const std::string & value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
     if (m_default_value.dtype().is_empty() || 
@@ -121,7 +121,7 @@ public:
   /*!
    * \brief Return default value of Attribute.
    */
-  const Node & getDefault() const
+  const Node & getDefaultNodeRef() const
   {
     return m_default_value;
   }

@@ -88,11 +88,13 @@ private:
   bool setScalar(const Attribute * attr, ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    if (arg_id != attr->getDefault().dtype().id())
+    if (arg_id != attr->getDefaultNodeRef().dtype().id())
     {
-      SLIC_CHECK_MSG(arg_id == attr->getDefault().dtype().id(),
-		     "Incorrect type for attribute '" << attr->getName()
-		     << "' of type " << attr->getDefault().dtype().name()
+      SLIC_CHECK_MSG(arg_id == attr->getDefaultNodeRef().dtype().id(),
+		     "Incorrect type for attribute '"
+                     << attr->getName()
+		     << "' of type "
+                     << attr->getDefaultNodeRef().dtype().name()
 		     << ": " << DataType::id_to_name(arg_id) << ".");
       return false;
     }
@@ -112,11 +114,13 @@ private:
   bool setString(const Attribute * attr, const std::string & value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
-    if (arg_id != attr->getDefault().dtype().id())
+    if (arg_id != attr->getDefaultNodeRef().dtype().id())
     {
-      SLIC_CHECK_MSG(arg_id == attr->getDefault().dtype().id(),
-		     "Incorrect type for attribute '" << attr->getName()
-		     << "' of type " << attr->getDefault().dtype().name()
+      SLIC_CHECK_MSG(arg_id == attr->getDefaultNodeRef().dtype().id(),
+		     "Incorrect type for attribute '"
+                     << attr->getName()
+		     << "' of type "
+                     << attr->getDefaultNodeRef().dtype().name()
 		     << ": " << DataType::id_to_name(arg_id) << ".");
       return false;
     }
