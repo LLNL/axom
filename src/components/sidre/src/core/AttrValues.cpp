@@ -115,7 +115,7 @@ bool AttrValues::createNode(const Attribute * attr)
  *
  *************************************************************************
  */
-Node::ConstValue AttrValues::getValue( const Attribute * attr ) const
+Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
@@ -133,7 +133,7 @@ Node::ConstValue AttrValues::getValue( const Attribute * attr ) const
  *
  *************************************************************************
  */
-const char * AttrValues::getValueString( const Attribute * attr ) const
+const char * AttrValues::getString( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {

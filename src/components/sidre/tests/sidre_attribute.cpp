@@ -177,7 +177,7 @@ TEST(sidre_attribute,view_attr)
   const std::string out1y = view1a->getAttributeString(attr_animal);
   EXPECT_EQ(animal_none, out1y);
 
-  ok = view1a->setAttributeValue(attr_color, color_red);
+  ok = view1a->setAttributeString(attr_color, color_red);
   EXPECT_TRUE( ok );
 
   EXPECT_TRUE(view1a->hasAttributeValue(attr_color));
@@ -186,7 +186,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_EQ(color_red, out);
 
   // reset attribute value
-  ok = view1a->setAttributeValue(attr_color, color_blue);
+  ok = view1a->setAttributeString(attr_color, color_blue);
   EXPECT_TRUE( ok );
 
   const std::string out1b = view1a->getAttributeString(attr_color);
@@ -198,7 +198,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_EQ(animal_none, out1d);
 
   // Now set second attribute
-  ok = view1a->setAttributeValue(attr_animal, animal_dog);
+  ok = view1a->setAttributeString(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
   const std::string out1c = view1a->getAttributeString(attr_animal);
@@ -214,7 +214,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_FALSE(view2a->hasAttributeValue(attr_color));
   EXPECT_FALSE(view2a->hasAttributeValue(attr_animal));
 
-  ok = view2a->setAttributeValue(attr_animal, animal_dog);
+  ok = view2a->setAttributeString(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
   EXPECT_FALSE(view2a->hasAttributeValue(attr_color));
@@ -228,7 +228,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_EQ(color_none, out2b);
 
   // Now set first attribute
-  ok = view2a->setAttributeValue(attr_color, color_red);
+  ok = view2a->setAttributeString(attr_color, color_red);
   EXPECT_TRUE( ok );
 
   EXPECT_TRUE(view2a->hasAttributeValue(attr_color));
@@ -246,7 +246,7 @@ TEST(sidre_attribute,view_attr)
   View  * view3b = grp3->createView(nameb);
   EXPECT_TRUE( view3b != AXOM_NULLPTR );
 
-  ok = view3b->setAttributeValue(attr_animal, animal_dog);
+  ok = view3b->setAttributeString(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
   EXPECT_FALSE(view3b->hasAttributeValue(attr_color));
@@ -265,7 +265,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_EQ(animal_dog, out4a);
 
   // Create an attribute which will be destroyed
-  view3a->setAttributeValue(attr_animal, animal_dog);
+  view3a->setAttributeString(attr_animal, animal_dog);
 
   grp3->destroyView(namea);
   grp4->destroyView(nameb);
@@ -305,28 +305,28 @@ TEST(sidre_attribute,view_int_and_double)
   EXPECT_EQ( size_small, size );
 
   // Set values
-  ok = view1a->setAttributeValue(attr_dump, dump_yes);
+  ok = view1a->setAttributeScalar(attr_dump, dump_yes);
   EXPECT_TRUE( ok );
   dump = -1; // clear value
   dump = view1a->getAttributeScalar(attr_dump);
   EXPECT_EQ( dump_yes, dump );
 
-  ok = view1a->setAttributeValue(attr_size, size_medium);
+  ok = view1a->setAttributeScalar(attr_size, size_medium);
   EXPECT_TRUE( ok );
   size = 0.0;  // clear value
   size = view1a->getAttributeScalar(attr_size);
   EXPECT_EQ( size_medium, size );
 
   // Set values with incorrect types
-  ok = view1a->setAttributeValue(attr_dump, size_small);
+  ok = view1a->setAttributeScalar(attr_dump, size_small);
   EXPECT_FALSE( ok );
-  ok = view1a->setAttributeValue(attr_dump, namea);
+  ok = view1a->setAttributeString(attr_dump, namea);
   EXPECT_FALSE( ok );
 #if 0
-  ok = view1a->setAttributeValue(attr_dump, 'a');
+  ok = view1a->setAttributeString(attr_dump, 'a');
   EXPECT_FALSE( ok );
 #endif
-  ok = view1a->setAttributeValue(attr_dump, "namea");
+  ok = view1a->setAttributeString(attr_dump, "namea");
   EXPECT_FALSE( ok );
 
   // Error checks
@@ -351,9 +351,9 @@ TEST(sidre_attribute,overloads)
   Group * root = ds.getRoot();
   View * view = root->createView("var1");
 
-  view->setAttributeValue(color, color_red);
-  view->setAttributeValue(icolor, color_red);
-  view->setAttributeValue("color", color_red);
+  view->setAttributeString(color, color_red);
+  view->setAttributeString(icolor, color_red);
+  view->setAttributeString("color", color_red);
 
   const char * attr1 = view->getAttributeString(color);
   const char * attr2 = view->getAttributeString(icolor);
@@ -391,7 +391,7 @@ TEST(sidre_attribute,as_node)
   View  * view1a = grp1->createView(namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
-  ok = view1a->setAttributeValue(attr_color, color_red);
+  ok = view1a->setAttributeString(attr_color, color_red);
   EXPECT_TRUE( ok );
 
   const Node & node = view1a->getAttributeNodeRef(attr_color);

@@ -960,17 +960,17 @@ public:
    * \brief Set Attribute for a View.
    */
   template<typename ScalarType>
-  bool setAttributeValue( const Attribute * attr, ScalarType value )
+  bool setAttributeScalar( const Attribute * attr, ScalarType value )
   {
-    return m_attr_values.setValue(attr, value);
+    return m_attr_values.setScalar(attr, value);
   }
 
   /*!
    * \brief Set Attribute for a View.
    */
-  bool setAttributeValue( const Attribute * attr, const std::string & value )
+  bool setAttributeString( const Attribute * attr, const std::string & value )
   {
-    return m_attr_values.setValue(attr, value);
+    return m_attr_values.setString(attr, value);
   }
 
   /*!
@@ -978,7 +978,7 @@ public:
    */
   Node::ConstValue getAttributeScalar(const Attribute * attr) const
   {
-      return m_attr_values.getValue(attr);
+      return m_attr_values.getScalar(attr);
   }
 
   /*!
@@ -988,7 +988,7 @@ public:
    */
   const char * getAttributeString( const Attribute * attr ) const
   {
-    return m_attr_values.getValueString(attr);
+    return m_attr_values.getString(attr);
   }
 
   /*!

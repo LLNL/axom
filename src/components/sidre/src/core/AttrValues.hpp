@@ -85,7 +85,7 @@ private:
    * \brief Set attribute value.
    */
   template<typename ScalarType>
-  bool setValue(const Attribute * attr, ScalarType value)
+  bool setScalar(const Attribute * attr, ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
     if (arg_id != attr->getDefault().dtype().id())
@@ -109,7 +109,7 @@ private:
   /*!
    * \brief Set attribute value.
    */
-  bool setValue(const Attribute * attr, const std::string & value)
+  bool setString(const Attribute * attr, const std::string & value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
     if (arg_id != attr->getDefault().dtype().id())
@@ -133,12 +133,12 @@ private:
   /*!
    * \brief Return a value.
    */
-  Node::ConstValue getValue( const Attribute * attr ) const;
+  Node::ConstValue getScalar( const Attribute * attr ) const;
 
   /*!
    * \brief Return a string value.
    */
-  const char * getValueString( const Attribute * attr ) const;
+  const char * getString( const Attribute * attr ) const;
 
   /*!
    * \brief Return reference to value Node.
