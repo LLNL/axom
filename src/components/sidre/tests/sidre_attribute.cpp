@@ -76,7 +76,7 @@ TEST(sidre_attribute,create_attr)
   EXPECT_TRUE( has_index );
 
   // Try to change default to a different type.
-  // Check template of setDefault.
+  // Check template of setDefaultScalar.
   ok = color->setDefaultScalar(1);
   EXPECT_FALSE(ok);
   ok = color->setDefaultScalar(3.14);

@@ -220,7 +220,7 @@ public:
   template<typename ScalarType>
   Attribute * createAttributeScalar( const std::string & name, ScalarType default_value)
   {
-    Attribute * new_attribute = createEmptyAttribute(name);
+    Attribute * new_attribute = createAttributeEmpty(name);
     if ( new_attribute != AXOM_NULLPTR )
     {
       new_attribute->setDefaultScalar(default_value);
@@ -236,7 +236,7 @@ public:
    */
   Attribute * createAttributeString( const std::string & name, const std::string & default_value)
   {
-    Attribute * new_attribute = createEmptyAttribute(name);
+    Attribute * new_attribute = createAttributeEmpty(name);
     if ( new_attribute != AXOM_NULLPTR )
     {
       new_attribute->setDefaultString(default_value);
@@ -368,7 +368,7 @@ private:
    * \brief Create an Attribute and insert it into the DataStore.
    *        The attribute will be untyped.
    */
-  Attribute * createEmptyAttribute(const std::string & name);
+  Attribute * createAttributeEmpty(const std::string & name);
 
 //@}
 

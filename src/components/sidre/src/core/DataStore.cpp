@@ -317,7 +317,7 @@ SidreLength DataStore::getNumAttributes() const
  *
  *************************************************************************
  */
-Attribute * DataStore::createEmptyAttribute(const std::string & name)
+Attribute * DataStore::createAttributeEmpty(const std::string & name)
 {
   if ( name.empty() || hasAttribute(name) )
   {
