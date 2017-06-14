@@ -18,6 +18,7 @@ set(example_sources
     HandleMesh.cpp
     PolicyPrototype.cpp
     ShockTube.cpp
+    TopologicalMesh.cpp
     UserDocs.cpp
     )
 
