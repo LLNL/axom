@@ -329,6 +329,14 @@ TEST(sidre_attribute,view_int_and_double)
   ok = view1a->setAttributeValue(attr_dump, "namea");
   EXPECT_FALSE( ok );
 
+  // Error checks
+#if 0
+  // AttrValue::getValueNodeRef will fail an assert
+  int err = -1;
+  err = view1a->getAttributeValue(AXOM_NULLPTR);
+  EXPECT_EQ(-1, err);
+#endif
+
   delete ds;
 }
 

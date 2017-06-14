@@ -117,14 +117,10 @@ bool AttrValues::createNode(const Attribute * attr)
  */
 Node::ConstValue AttrValues::getValue( const Attribute * attr ) const
 {
-#if 0
-  // XXX what to return if no attribute?
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK(attr != AXOM_NULLPTR);
-    return AXOM_NULLPTR;
   }
-#endif
 
   const Node & node = getValueNodeRef(attr);
   return node.value();
