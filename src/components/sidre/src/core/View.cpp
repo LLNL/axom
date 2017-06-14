@@ -1265,56 +1265,5 @@ bool View::rename(const std::string& new_name)
   return do_rename;
 }
 
-/*
- *************************************************************************
- *
- * Return true if the attribute has been explicitly set; else false.
- *
- *************************************************************************
- */
-bool View::hasAttributeValue( const Attribute * attr ) const
-{
-  bool status = m_attr_values.hasValue(attr);
-
-  return status;
-}
-
-/*
- *************************************************************************
- *
- * Get Attribute for a View.
- *
- *************************************************************************
- */
-Node::ConstValue View::getAttributeValue( const Attribute * attr ) const
-{
-  return m_attr_values.getValue(attr);
-}
-
-/*
- *************************************************************************
- *
- * Get Attribute for a View.
- *
- *************************************************************************
- */
-const char * View::getAttributeValueString( const Attribute * attr ) const
-{
-  const char * value = m_attr_values.getValueString(attr);
-  return value;
-}
-
-/*
- *************************************************************************
- *
- * Get Attribute for a View.
- *
- *************************************************************************
- */
-const Node & View::getAttributeValueNodeRef( const Attribute * attr ) const
-{
-  return m_attr_values.getValueNodeRef(attr);
-}
-
 } /* end namespace sidre */
 } /* end namespace axom */

@@ -171,10 +171,10 @@ TEST(sidre_attribute,view_attr)
   EXPECT_FALSE(view1a->hasAttributeValue(attr_color));
 
   // Check values of unset attributes
-  const std::string out1x = view1a->getAttributeValueString(attr_color);
+  const std::string out1x = view1a->getAttributeString(attr_color);
   EXPECT_EQ(color_none, out1x);
 
-  const std::string out1y = view1a->getAttributeValueString(attr_animal);
+  const std::string out1y = view1a->getAttributeString(attr_animal);
   EXPECT_EQ(animal_none, out1y);
 
   ok = view1a->setAttributeValue(attr_color, color_red);
@@ -182,26 +182,26 @@ TEST(sidre_attribute,view_attr)
 
   EXPECT_TRUE(view1a->hasAttributeValue(attr_color));
 
-  const std::string out = view1a->getAttributeValueString(attr_color);
+  const std::string out = view1a->getAttributeString(attr_color);
   EXPECT_EQ(color_red, out);
 
   // reset attribute value
   ok = view1a->setAttributeValue(attr_color, color_blue);
   EXPECT_TRUE( ok );
 
-  const std::string out1b = view1a->getAttributeValueString(attr_color);
+  const std::string out1b = view1a->getAttributeString(attr_color);
   EXPECT_EQ(color_blue, out1b);
 
   // Check second, unset attribute. Should be default value
   EXPECT_FALSE(view1a->hasAttributeValue(attr_animal));
-  const std::string out1d = view1a->getAttributeValueString(attr_animal);
+  const std::string out1d = view1a->getAttributeString(attr_animal);
   EXPECT_EQ(animal_none, out1d);
 
   // Now set second attribute
   ok = view1a->setAttributeValue(attr_animal, animal_dog);
   EXPECT_TRUE( ok );
 
-  const std::string out1c = view1a->getAttributeValueString(attr_animal);
+  const std::string out1c = view1a->getAttributeString(attr_animal);
   EXPECT_EQ(animal_dog, out1c);
 
   //----------------------------------------
@@ -220,11 +220,11 @@ TEST(sidre_attribute,view_attr)
   EXPECT_FALSE(view2a->hasAttributeValue(attr_color));
   EXPECT_TRUE(view2a->hasAttributeValue(attr_animal));
 
-  const std::string out2a = view2a->getAttributeValueString(attr_animal);
+  const std::string out2a = view2a->getAttributeString(attr_animal);
   EXPECT_EQ(animal_dog, out2a);
 
   // Get the first, unset, attribute
-  const std::string out2b = view2a->getAttributeValueString(attr_color);
+  const std::string out2b = view2a->getAttributeString(attr_color);
   EXPECT_EQ(color_none, out2b);
 
   // Now set first attribute
@@ -234,7 +234,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_TRUE(view2a->hasAttributeValue(attr_color));
   EXPECT_TRUE(view2a->hasAttributeValue(attr_animal));
 
-  const std::string out2c = view2a->getAttributeValueString(attr_color);
+  const std::string out2c = view2a->getAttributeString(attr_color);
   EXPECT_EQ(color_red, out2c);
 
 
@@ -252,7 +252,7 @@ TEST(sidre_attribute,view_attr)
   EXPECT_FALSE(view3b->hasAttributeValue(attr_color));
   EXPECT_TRUE(view3b->hasAttributeValue(attr_animal));
 
-  const std::string & out3a = view3b->getAttributeValueString(attr_animal);
+  const std::string & out3a = view3b->getAttributeString(attr_animal);
   EXPECT_EQ(animal_dog, out3a);
 
   //----------------------------------------
@@ -261,7 +261,7 @@ TEST(sidre_attribute,view_attr)
 
   grp4->moveView(view3b);
 
-  const std::string & out4a = view3b->getAttributeValueString(attr_animal);
+  const std::string & out4a = view3b->getAttributeString(attr_animal);
   EXPECT_EQ(animal_dog, out4a);
 
   // Create an attribute which will be destroyed
@@ -298,23 +298,23 @@ TEST(sidre_attribute,view_int_and_double)
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   // Get default values
-  int dump = view1a->getAttributeValue(attr_dump);
+  int dump = view1a->getAttributeScalar(attr_dump);
   EXPECT_EQ( dump_no, dump );
 
-  double size = view1a->getAttributeValue(attr_size);
+  double size = view1a->getAttributeScalar(attr_size);
   EXPECT_EQ( size_small, size );
 
   // Set values
   ok = view1a->setAttributeValue(attr_dump, dump_yes);
   EXPECT_TRUE( ok );
   dump = -1; // clear value
-  dump = view1a->getAttributeValue(attr_dump);
+  dump = view1a->getAttributeScalar(attr_dump);
   EXPECT_EQ( dump_yes, dump );
 
   ok = view1a->setAttributeValue(attr_size, size_medium);
   EXPECT_TRUE( ok );
   size = 0.0;  // clear value
-  size = view1a->getAttributeValue(attr_size);
+  size = view1a->getAttributeScalar(attr_size);
   EXPECT_EQ( size_medium, size );
 
   // Set values with incorrect types
@@ -333,7 +333,7 @@ TEST(sidre_attribute,view_int_and_double)
 #if 0
   // AttrValue::getValueNodeRef will fail an assert
   int err = -1;
-  err = view1a->getAttributeValue(AXOM_NULLPTR);
+  err = view1a->getAttributeScalar(AXOM_NULLPTR);
   EXPECT_EQ(-1, err);
 #endif
 
@@ -355,14 +355,14 @@ TEST(sidre_attribute,overloads)
   view->setAttributeValue(icolor, color_red);
   view->setAttributeValue("color", color_red);
 
-  const char * attr1 = view->getAttributeValueString(color);
-  const char * attr2 = view->getAttributeValueString(icolor);
-  const char * attr3 = view->getAttributeValueString("color");
+  const char * attr1 = view->getAttributeString(color);
+  const char * attr2 = view->getAttributeString(icolor);
+  const char * attr3 = view->getAttributeString("color");
 
 
   view = root->createView("var2");
   // Get attributes without setting returns default value
-  const char * attr1 = view->getAttributeValueString(color);
+  const char * attr1 = view->getAttributeString(color);
 
   delete ds;
 }
@@ -394,10 +394,10 @@ TEST(sidre_attribute,as_node)
   ok = view1a->setAttributeValue(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const Node & node = view1a->getAttributeValueNodeRef(attr_color);
+  const Node & node = view1a->getAttributeNodeRef(attr_color);
   EXPECT_EQ(color_red, node.as_string());
 
-  const Node & node2 = view1a->getAttributeValueNodeRef(attr_dump);
+  const Node & node2 = view1a->getAttributeNodeRef(attr_dump);
   EXPECT_EQ(dump_no, node2.as_int32());
 
   delete ds;
