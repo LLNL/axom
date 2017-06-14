@@ -48,6 +48,7 @@ const double size_large = 3.4;
 TEST(sidre_attribute,create_attr)
 {
   const std::string dump_none("none");
+  bool ok;
 
   DataStore * ds = new DataStore();
 
@@ -74,8 +75,23 @@ TEST(sidre_attribute,create_attr)
   has_index = ds->hasAttribute(0);
   EXPECT_TRUE( has_index );
 
-  // try to change default to a different type
-  color->setDefault(1);
+  // Try to change default to a different type.
+  // Check template of setDefault.
+  ok = color->setDefault(1);
+  EXPECT_FALSE(ok);
+  ok = color->setDefault(3.14);
+  EXPECT_FALSE(ok);
+
+  // Change to legal values.
+  ok = color->setDefault("unknown");
+  EXPECT_TRUE(ok);
+#if 0
+  // XXX - this causes the default type to change to int.
+  ok = color->setDefault('u');
+  EXPECT_TRUE(ok);
+#endif
+  ok = color->setDefault(std::string("string"));  // non-const string
+  EXPECT_TRUE(ok);
 
   Attribute * attr = ds->getAttribute(name_color);
   EXPECT_EQ(attr, color);
@@ -110,11 +126,15 @@ TEST(sidre_attribute,create_attr)
   nattrs = ds->getNumAttributes();
   EXPECT_EQ(2, nattrs);
 
-  dump->setDefault(1);
+  ok = dump->setDefault(1);
+  EXPECT_TRUE(ok);
   // try to change default to a different type
-  dump->setDefault(name_dump);
-  dump->setDefault("yes");
-  dump->setDefault(3.1415);
+  ok = dump->setDefault(name_dump);
+  EXPECT_FALSE(ok);
+  ok = dump->setDefault("yes");
+  EXPECT_FALSE(ok);
+  ok = dump->setDefault(3.1415);
+  EXPECT_FALSE(ok);
 
   ds->destroyAllAttributes();
   nattrs = ds->getNumAttributes();
@@ -302,6 +322,10 @@ TEST(sidre_attribute,view_int_and_double)
   EXPECT_FALSE( ok );
   ok = view1a->setAttributeValue(attr_dump, namea);
   EXPECT_FALSE( ok );
+#if 0
+  ok = view1a->setAttributeValue(attr_dump, 'a');
+  EXPECT_FALSE( ok );
+#endif
   ok = view1a->setAttributeValue(attr_dump, "namea");
   EXPECT_FALSE( ok );
 

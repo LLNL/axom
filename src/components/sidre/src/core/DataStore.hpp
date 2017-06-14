@@ -217,22 +217,6 @@ public:
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
    */
-  Attribute * createAttribute( const std::string & name, const std::string & default_value )
-  {
-    Attribute * new_attribute = createEmptyAttribute(name);
-    if ( new_attribute != AXOM_NULLPTR )
-    {
-      new_attribute->setDefault(default_value);
-    }
-    return new_attribute;
-  }
-
-  /*!
-   * \brief Create a Attribute object with a default value.
-   *
-   *        The Attribute object is assigned a unique index when created and the
-   *        Attribute object is owned by the DataStore object.
-   */
   template<typename ScalarType>
   Attribute * createAttribute( const std::string & name, ScalarType default_value)
   {

@@ -70,19 +70,19 @@ public:
   }
 
   /*!
-   * \brief Set default value of Attribute.
-   *        Called as part of DataStore->createAttribute.
+   * \brief Set default value of Attribute. Return true if successfully changed.
    *
    * The type of the default cannot be changed after the attribute is created.
    */
   template<typename ScalarType>
-  void setDefault(ScalarType value)
+  bool setDefault(ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
     if (m_default_value.dtype().is_empty() || 
         arg_id == m_default_value.dtype().id())
     {
       m_default_value = value;
+      return true;
     }
     else
     {
@@ -90,16 +90,23 @@ public:
 		     "Cannot change type of attribute '" << m_name
 		     << "' from " << m_default_value.dtype().name()
 		     << " to " << DataType::id_to_name(arg_id) << ".");
+      return false;
     }
   }
 
-  void setDefault(const std::string & value)
+  /*!
+   * \brief Set default value of Attribute. Return true if successfully changed.
+   *
+   * The type of the default cannot be changed after the attribute is created.
+   */
+  bool setDefault(const std::string & value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
     if (m_default_value.dtype().is_empty() || 
         arg_id == m_default_value.dtype().id())
     {
       m_default_value = value;
+      return true;
     }
     else
     {
@@ -107,6 +114,7 @@ public:
 		     "Cannot change type of attribute '" << m_name
 		     << "' from " << m_default_value.dtype().name()
 		     << " to " << DataType::id_to_name(arg_id) << ".");
+      return false;
     }
   }
 
