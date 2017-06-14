@@ -956,7 +956,19 @@ public:
   /*!
    * \brief Set Attribute for a View.
    */
-  bool setAttributeValue( const Attribute * attr, const std::string & value );
+  template<typename ScalarType>
+  bool setAttributeValue( const Attribute * attr, ScalarType value )
+  {
+    return m_attr_values.setValue(attr, value);
+  }
+
+  /*!
+   * \brief Set Attribute for a View.
+   */
+  bool setAttributeValue( const Attribute * attr, const std::string & value )
+  {
+    return m_attr_values.setValue(attr, value);
+  }
 
   /*!
    * \brief Return scalar attribute value.

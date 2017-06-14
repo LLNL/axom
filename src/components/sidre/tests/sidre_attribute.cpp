@@ -278,7 +278,7 @@ TEST(sidre_attribute,view_attr)
 
 TEST(sidre_attribute,view_int_and_double)
 {
-  //  bool ok;
+  bool ok;
 
   DataStore * ds = new DataStore();
 
@@ -292,16 +292,30 @@ TEST(sidre_attribute,view_int_and_double)
   Group * root = ds->getRoot();
 
   //----------------------------------------
-  // Set the first attribute in a Group
+  // Create a View
   Group * grp1 = root->createGroup("grp1");
   View  * view1a = grp1->createView(namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
+  // Get default values
   int dump = view1a->getAttributeValue(attr_dump);
   EXPECT_EQ( dump_no, dump );
 
   double size = view1a->getAttributeValue(attr_size);
   EXPECT_EQ( size_small, size );
+
+  // Set values
+  ok = view1a->setAttributeValue(attr_dump, dump_yes);
+  EXPECT_TRUE( ok );
+  dump = -1; // clear value
+  dump = view1a->getAttributeValue(attr_dump);
+  EXPECT_EQ( dump_yes, dump );
+
+  ok = view1a->setAttributeValue(attr_size, size_medium);
+  EXPECT_TRUE( ok );
+  size = 0.0;  // clear value
+  size = view1a->getAttributeValue(attr_size);
+  EXPECT_EQ( size_medium, size );
 
 }
 
@@ -313,7 +327,7 @@ TEST(sidre_attribute,as_node)
 
   DataStore * ds = new DataStore();
 
-  // Create all attributes for DataStore
+  // Create attributes for DataStore
   Attribute * attr_color = ds->createAttribute(name_color, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 

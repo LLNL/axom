@@ -76,9 +76,39 @@ private:
   bool hasValue(const Attribute * attr) const;
 
   /*!
+   * \brief Create a Node to store attribute.
+   */
+  bool createNode(const Attribute * attr);
+
+  /*!
    * \brief Set attribute value.
    */
-  bool setValue(const Attribute * attr, const std::string & value);
+  template<typename ScalarType>
+  bool setValue(const Attribute * attr, ScalarType value)
+  {
+    // XXX check types
+    bool ok = createNode(attr);
+    if (ok)
+    {
+      IndexType iattr = attr->getIndex();
+      (*m_values)[iattr] = value;
+    }
+    return ok;
+  }
+
+  /*!
+   * \brief Set attribute value.
+   */
+  bool setValue(const Attribute * attr, const std::string & value)
+  {
+    bool ok = createNode(attr);
+    if (ok)
+    {
+      IndexType iattr = attr->getIndex();
+      (*m_values)[iattr] = value;
+    }
+    return ok;
+  }
 
   /*!
    * \brief Return a value.

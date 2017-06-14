@@ -1282,19 +1282,6 @@ bool View::hasAttributeValue( const Attribute * attr ) const
 /*
  *************************************************************************
  *
- * Set Attribute for a View.
- *
- *************************************************************************
- */
-bool View::setAttributeValue( const Attribute * attr, const std::string & value )
-{
-  bool status = m_attr_values.setValue(attr, value);
-  return status;
-}
-
-/*
- *************************************************************************
- *
  * Get Attribute for a View.
  *
  *************************************************************************

@@ -74,12 +74,13 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 /*
  *************************************************************************
  *
- * Set Attribute.
+ * Create a Node for the Attribute.
+ *
+ * Create vector of Nodes and push empty nodes up to attr.
  *
  *************************************************************************
  */
-bool AttrValues::setValue(const Attribute * attr,
-			  const std::string & value)
+bool AttrValues::createNode(const Attribute * attr)
 {
   if (attr == AXOM_NULLPTR)
   {
@@ -104,8 +105,6 @@ bool AttrValues::setValue(const Attribute * attr,
     }
   }
    
-  (*m_values)[iattr] = value;
-
   return true;
 }
 
