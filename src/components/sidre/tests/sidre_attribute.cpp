@@ -38,9 +38,9 @@ const int dump_no = 0;
 const int dump_yes = 1;
 
 const std::string name_size("size");
-const int dump_small = 1.2;
-const int dump_medium = 2.3;
-const int dump_large = 3.4;
+const double size_small = 1.2;
+const double size_medium = 2.3;
+const double size_large = 3.4;
 
 //------------------------------------------------------------------------------
 // Create attribute in a Datastore
@@ -101,7 +101,7 @@ TEST(sidre_attribute,create_attr)
   attr_index = dump->getIndex();
   EXPECT_EQ(0, attr_index);
 
-  Attribute * size = ds->createAttribute(name_size, dump_small);
+  Attribute * size = ds->createAttribute(name_size, size_small);
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   attr_index = size->getIndex();
@@ -276,25 +276,34 @@ TEST(sidre_attribute,view_attr)
 //------------------------------------------------------------------------------
 // Use different type of attributes
 
-#if 0
-TEST(sidre_attribute,view_attr)
+TEST(sidre_attribute,view_int_and_double)
 {
-  bool ok;
+  //  bool ok;
 
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_color = ds->createAttribute(name_color, color_none);
-  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
+  Attribute * attr_dump = ds->createAttribute(name_dump, dump_no);
+  EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
 
-  Attribute * attr_animal = ds->createAttribute(name_animal, animal_none);
-  EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
+  Attribute * attr_size = ds->createAttribute(name_size, size_small);
+  EXPECT_TRUE( attr_size != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
 
-}
-#endif
+  //----------------------------------------
+  // Set the first attribute in a Group
+  Group * grp1 = root->createGroup("grp1");
+  View  * view1a = grp1->createView(namea);
+  EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
+  int dump = view1a->getAttributeValue(attr_dump);
+  EXPECT_EQ( dump_no, dump );
+
+  double size = view1a->getAttributeValue(attr_size);
+  EXPECT_EQ( size_small, size );
+
+}
 
 //------------------------------------------------------------------------------
 
@@ -308,7 +317,7 @@ TEST(sidre_attribute,as_node)
   Attribute * attr_color = ds->createAttribute(name_color, color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  Attribute * attr_dump = ds->createAttribute(name_dump, dump_small);
+  Attribute * attr_dump = ds->createAttribute(name_dump, dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
@@ -326,7 +335,7 @@ TEST(sidre_attribute,as_node)
   EXPECT_EQ(color_red, node.as_string());
 
   const Node & node2 = view1a->getAttributeValueNodeRef(attr_dump);
-  EXPECT_EQ(dump_small, node2.as_int32());
+  EXPECT_EQ(dump_no, node2.as_int32());
 
   delete ds;
 }

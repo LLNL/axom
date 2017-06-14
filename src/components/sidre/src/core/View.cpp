@@ -1299,6 +1299,18 @@ bool View::setAttributeValue( const Attribute * attr, const std::string & value 
  *
  *************************************************************************
  */
+Node::ConstValue View::getAttributeValue( const Attribute * attr ) const
+{
+  return m_attr_values.getValue(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Get Attribute for a View.
+ *
+ *************************************************************************
+ */
 const char * View::getAttributeValueString( const Attribute * attr ) const
 {
   const char * value = m_attr_values.getValueString(attr);

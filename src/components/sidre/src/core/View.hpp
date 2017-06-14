@@ -959,6 +959,11 @@ public:
   bool setAttributeValue( const Attribute * attr, const std::string & value );
 
   /*!
+   * \brief Return scalar attribute value.
+   */
+  Node::ConstValue getAttributeValue(const Attribute * attr) const;
+
+  /*!
    * \brief Return a string attribute.
    *
    * If the value has not been explicitly set, return the current default.

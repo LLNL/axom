@@ -81,6 +81,11 @@ private:
   bool setValue(const Attribute * attr, const std::string & value);
 
   /*!
+   * \brief Return a value.
+   */
+  Node::ConstValue getValue( const Attribute * attr ) const;
+
+  /*!
    * \brief Return a string value.
    */
   const char * getValueString( const Attribute * attr ) const;
