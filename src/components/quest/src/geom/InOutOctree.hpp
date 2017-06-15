@@ -16,10 +16,13 @@
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
+#include "primal/Ray.hpp"
+#include "primal/Polygon.hpp"
 
 #include "primal/intersection.hpp"
 #include "primal/orientation.hpp"
 #include "primal/squared_distance.hpp"
+#include "primal/clipping.hpp"
 
 
 #include "slic/slic.hpp"
@@ -43,22 +46,22 @@
 #include <sstream>
 
 
-#define DEBUG_VERT_IDX  - 2  // 1160
-#define DEBUG_TRI_IDX   - 2  // 1654
+#define DEBUG_VERT_IDX  -2  // 1160
+#define DEBUG_TRI_IDX   -2 // 1654
 
-#define DEBUG_BLOCK_2  BlockIndex::invalid_index()  // BlockIndex( GridPt::make_point(258,272,831), 11)
-#define DEBUG_BLOCK_1  BlockIndex::invalid_index()  // BlockIndex( GridPt::make_point(4, 4, 13), 5)
+#define DEBUG_BLOCK_2  BlockIndex::invalid_index() // BlockIndex( GridPt::make_point(15,15,0), 5)
+#define DEBUG_BLOCK_1  BlockIndex::invalid_index() // BlockIndex( GridPt::make_point(7287,0,2986), 13)
 
 #ifndef DUMP_VTK_MESH
-    #define DUMP_VTK_MESH
+//    #define DUMP_VTK_MESH
 #endif
 
 #ifndef DUMP_OCTREE_INFO
-    #define DUMP_OCTREE_INFO 1
+//    #define DUMP_OCTREE_INFO 1
 #endif
 
 #ifndef DEBUG_OCTREE_ACTIVE
-    #define DEBUG_OCTREE_ACTIVE
+//    #define DEBUG_OCTREE_ACTIVE
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) and defined(AXOM_DEBUG)
@@ -494,6 +497,7 @@ public:
     typedef typename SpatialOctreeType::SpaceVector SpaceVector;
     typedef typename SpatialOctreeType::BlockIndex BlockIndex;
     typedef typename OctreeBaseType::GridPt GridPt;
+    typedef typename primal::Ray<double, DIM> SpaceRay;
 
 private:
     enum GenerationState { INOUTOCTREE_UNINITIALIZED,
@@ -521,6 +525,9 @@ private:
 
         /** \brief A vertex index to indicate that there is no associated vertex */
         static const VertexIndex NO_VERTEX = -1;
+
+        /** \brief A vertex index to indicate that there is no associated vertex */
+        static const TriangleIndex NO_TRIANGLE = -1;
 
         /** \brief A constant for the number of boundary vertices in a triangle */
         static const int NUM_TRI_VERTS = 3;
@@ -1025,12 +1032,12 @@ private:
     /**
      * \brief Determines whether the specified point is within the gray leaf
      *
-     * \param pt The point we are querying
+     * \param queryPt The point we are querying
      * \param leafBlk The block of the gray leaf
      * \param data The data associated with the leaf block
      * \return True, if the point is inside the local surface associated with this block, false otherwise
      */
-    bool withinGrayBlock( const SpacePt & pt, const BlockIndex& leafBlk, const InOutBlockData&  data) const;
+    bool withinGrayBlock( const SpacePt & queryPt, const BlockIndex& leafBlk, const InOutBlockData&  data) const;
 
     /**
      * \brief Returns the index of the mesh vertex associated with the given leaf block
@@ -1065,6 +1072,7 @@ private:
     void checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const;
 
     void dumpOctreeMeshVTK( const std::string& name) const;
+    void dumpTriMeshVTK( const std::string& name) const;
 
     /**
      * \brief Utility function to dump any Inside blocks whose neighbors are outside (and vice-versa)
@@ -1080,6 +1088,59 @@ private:
      */
     void printOctreeStats() const;
 
+
+    /**
+     * \brief Utility function to compute the angle-weighted pseudonormal for a vertex in the mesh
+     * \note Not optimized
+     */
+    SpaceVector vertexNormal(VertexIndex vIdx) const
+    {
+      SpaceVector vec;
+
+      BlockIndex vertexBlock = m_vertexToBlockMap[vIdx];
+      TriangleIndexSet triSet = leafTriangles(vertexBlock, (*this)[vertexBlock]);
+      for(int i=0; i < triSet.size(); ++i)
+      {
+        TriangleIndex tIdx = triSet[i];
+        TriVertIndices tv = m_meshWrapper.triangleVertexIndices(tIdx);
+        if( m_meshWrapper.incidentInVertex(tv, vIdx) )
+        {
+          int idx =
+              (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
+
+          SpaceTriangle tr = m_meshWrapper.trianglePositions( tIdx );
+          vec += tr.angle(idx) * tr.normal();
+        }
+      }
+
+      return vec;
+    }
+
+    /**
+     * \brief Utility function to compute the normal for an edge of the mesh.
+     *
+     * The computed edge normal is the average of its face normals.  
+     * There should be two of these in a closed manifold surface mesh.
+     * \note Not optimized
+     */
+    SpaceVector edgeNormal(VertexIndex vIdx1, VertexIndex vIdx2) const
+    {
+      SpaceVector vec;
+
+      BlockIndex vertexBlock = m_vertexToBlockMap[vIdx1];
+      TriangleIndexSet triSet = leafTriangles(vertexBlock, (*this)[vertexBlock]);
+      for(int i=0; i < triSet.size(); ++i)
+      {
+        TriangleIndex tIdx = triSet[i];
+        TriVertIndices tv = m_meshWrapper.triangleVertexIndices(tIdx);
+        if( m_meshWrapper.incidentInVertex(tv, vIdx1) && m_meshWrapper.incidentInVertex(tv, vIdx2) )
+        {
+          vec += m_meshWrapper.trianglePositions( tIdx ).normal();
+        }
+      }
+
+      return vec;
+    }
 
 protected:
 
@@ -1163,7 +1224,8 @@ void InOutOctree<DIM>::generateIndex ()
   #ifdef DUMP_OCTREE_INFO
     // -- Print some stats about the octree
     SLIC_INFO("** Octree stats after inserting vertices");
-    dumpOctreeMeshVTK("prOctree.vtk");
+    dumpTriMeshVTK("surfaceMesh");
+    dumpOctreeMeshVTK("prOctree");
     printOctreeStats();
   #endif
     checkValid();
@@ -1188,8 +1250,8 @@ void InOutOctree<DIM>::generateIndex ()
     // -- Print some stats about the octree
   #ifdef DUMP_OCTREE_INFO
     SLIC_INFO("** Octree stats after inserting triangles");
-    dumpOctreeMeshVTK("pmOctree.vtk");
-    dumpDifferentColoredNeighborsMeshVTK("differentNeighbors.vtk");
+    dumpOctreeMeshVTK("pmOctree");
+    dumpDifferentColoredNeighborsMeshVTK("differentNeighbors");
     printOctreeStats();
   #endif
     checkValid();
@@ -1588,10 +1650,14 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                     leafData.setWhite();
                     break;
                 case InOutBlockData::Gray:
-                    if( withinGrayBlock(this->blockBoundingBox(leafBlk).centroid(),  neighborBlk, neighborData) )
+                {
+                    SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).centroid(),
+                                                           this->blockBoundingBox(neighborBlk).centroid());
+                    if( withinGrayBlock(faceCenter,  neighborBlk, neighborData) )
                         leafData.setBlack();
                     else
                         leafData.setWhite();
+                }
                     break;
                 case InOutBlockData::Undetermined:
                     break;
@@ -1637,10 +1703,15 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                         neighborData.setWhite();
                         break;
                     case InOutBlockData::Gray:
-                        if( withinGrayBlock(this->blockBoundingBox(neighborBlk).centroid(),  leafBlk, leafData) )
+                    {
+                        SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).centroid(),
+                                                               this->blockBoundingBox(leafBlk.faceNeighbor(i)).centroid());
+
+                        if( withinGrayBlock(faceCenter,  leafBlk, leafData) )
                             neighborData.setBlack();
                         else
                             neighborData.setWhite();
+                    }
                         break;
                     case InOutBlockData::Undetermined:
                         break;
@@ -1681,82 +1752,89 @@ typename InOutOctree<DIM>::TriangleIndexSet InOutOctree<DIM>::leafTriangles(cons
 }
 
 
-
 template<int DIM>
-bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & pt, const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
+bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
 {
+   /// The algorithm finds a ray from queryPt to a point of any triangle within leafBlk.
+   /// It then finds the first triangle along this ray and tests this vector
+   /// against the triangle normal. queryPt is inside if the dot product is positive.
+
     SLIC_ASSERT( leafData.color() == InOutBlockData::Gray );
     SLIC_ASSERT( leafData.hasData() );
 
-    VertexIndex vIdx = leafVertex(leafBlk, leafData);
-    const SpaceVector vec( m_meshWrapper.vertexPosition( vIdx), pt );
+    GeometricBoundingBox blockBB = this->blockBoundingBox(leafBlk);
+    GeometricBoundingBox expandedBB = blockBB;
+    expandedBB.scale(1.005);
 
-    // If signs of all dot products are positive (negative) point is outside (inside)
-    // Otherwise, short circuit for more complicated test below
-    int sgnCount = 0;
     TriangleIndexSet triSet = leafTriangles(leafBlk, leafData);
     const int numTris = triSet.size();
+    TriangleIndex localTriIdx = MeshWrapper::NO_TRIANGLE;
 
-    std::vector<SpaceTriangle> spaceTris;
-    spaceTris.reserve( numTris);
-
-    std::vector<SpaceVector>   unitNorms;
-    unitNorms.reserve( numTris);
-
-    if(DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk)
-      SLIC_INFO( leafBlk );
-
-    QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-          "Within gray block " << leafBlk
-          << "\n\t\t -- data " << leafData
-          << "\n\t\t -- bounding box " << this->blockBoundingBox(leafBlk)
-          << "\n\t\t -- testing point " << pt
-          <<"\n\t\t -- block vertex is " << m_meshWrapper.vertexPosition( vIdx)
-          << " -- vec is " << vec << " -- index " << vIdx
-          <<"\n\t\t -- block triangles are " << triSet
-        );
-
+    SpacePt triPt;
     for(int i=0; i< numTris; ++i)
     {
-        TriangleIndex tIdx = triSet[i];
-        spaceTris[i] = m_meshWrapper.trianglePositions(tIdx);
-        unitNorms[i] = spaceTris[i].normal().unitVector();
-        sgnCount += (vec.dot( unitNorms[i] )  >= 0 ) ? 1 : -1;
+      /// Get the triangle
+      TriangleIndex idx = triSet[i];
+      SpaceTriangle tri = m_meshWrapper.trianglePositions(idx);
+
+      /// Find a point from this triangle that is within the bounding box of the mesh
+      primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
+      if(poly.numVertices() == 0)
+        continue;
+
+      triPt = poly.centroid();
+
+      if(! expandedBB.contains(triPt))
+      {
+        continue;
+      }
+
+      /// Use a ray from the query point to the triangle point to find an intersection
+      /// Note: We have to check all triangles to ensure that there is not a closer
+      ///       triangle than tri along this direction.
+      TriangleIndex tIdx = MeshWrapper::NO_TRIANGLE;
+      double minRayParam = std::numeric_limits<double>::infinity();
+      SpaceRay ray(queryPt, SpaceVector(queryPt,triPt));
+
+      double rayParam = 0;
+      if( primal::intersect(tri, ray, rayParam) )
+      {
+        minRayParam = rayParam;
+        tIdx = idx;
+      }
+
+      for(int j=0; j< numTris; ++j)
+      {
+        TriangleIndex localIdx = triSet[j];
+        if(localIdx == idx)
+          continue;
+
+        if( primal::intersect(m_meshWrapper.trianglePositions(localIdx), ray, rayParam) )
+        {
+          if (rayParam < minRayParam )
+          {
+            minRayParam = rayParam;
+            tIdx = localIdx;
+          }
+        }
+      }
+
+      if( tIdx == MeshWrapper::NO_TRIANGLE)
+      {
+        continue;
+      }
+
+      /// We are inside if the dot product of the normal with this triangle is positive
+      SpaceVector normal = (tIdx == idx)
+             ? tri.normal()
+             : m_meshWrapper.trianglePositions( tIdx ).normal();
+
+      return normal.dot( ray.direction() ) > 0.;
+
     }
 
-    if(sgnCount == numTris)             // outside
-        return false;
-    else if(sgnCount == -numTris)       // inside
-        return true;
-
-
-    // Else, pt is within some half-spaces and outside others
-    // Find the min distance to the closest triangle within leafBlk to pt
-    // Note: we must account for the possibility that the closest point in on an edge or a vertex of a triangle.
-    //       As a simple fix, we take the average of the normals.
-    //       It might be more accurate to take the angle-weighted average as discussed in
-    //          Baerentzen TVCG 11:3 (2005) -- `Signed distance computation using the angle weighted pseudonomral'
-
-    std::vector<double> sqDists;
-    sqDists.reserve( numTris);
-    double minDistSq = std::numeric_limits<double>::max();
-
-    for(int i=0; i< numTris; ++i)
-    {
-        sqDists[i] = squared_distance(pt, spaceTris[i] );
-        if(sqDists[i] < minDistSq )
-            minDistSq = sqDists[i];
-    }
-
-
-    SpaceVector norm;
-    for(int i=0; i< numTris; ++i)
-    {
-        if( axom::utilities::isNearlyEqual(minDistSq, sqDists[i]))
-            norm += unitNorms[i];
-    }
-
-    return vec.dot( norm.unitVector() ) >=0 ? false : true;
+    SLIC_WARNING("Could not determine inside/outside for point " << queryPt << " on block " << leafBlk);
+    return false;  // should not get here -- revisit this...
 }
 
 
@@ -1901,23 +1979,23 @@ void InOutOctree<DIM>::printOctreeStats() const
     {
       detail::InOutOctreeMeshDumper<DIM> meshDumper(*this);
 
-      if(DEBUG_VERT_IDX >=0)
+      if(DEBUG_VERT_IDX >=0 && DEBUG_VERT_IDX < m_meshWrapper.numMeshVertices() )
       {
         meshDumper.dumpLocalOctreeMeshesForVertex("debug_", DEBUG_VERT_IDX);
 
       }
-      if(DEBUG_TRI_IDX >=0)
+      if(DEBUG_TRI_IDX >=0 && DEBUG_TRI_IDX < m_meshWrapper.numMeshElements() )
       {
         meshDumper.dumpLocalOctreeMeshesForTriangle("debug_", DEBUG_TRI_IDX);
       }
 
-      if(DEBUG_BLOCK_1 != BlockIndex::invalid_index() )
+      if(DEBUG_BLOCK_1 != BlockIndex::invalid_index() && this->hasBlock(DEBUG_BLOCK_1) )
       {
         meshDumper.dumpLocalOctreeMeshesForBlock("debug_", DEBUG_BLOCK_1);
 
       }
 
-      if(DEBUG_BLOCK_2 != BlockIndex::invalid_index() )
+      if(DEBUG_BLOCK_2 != BlockIndex::invalid_index() && this->hasBlock(DEBUG_BLOCK_2))
       {
         meshDumper.dumpLocalOctreeMeshesForBlock("debug_", DEBUG_BLOCK_2);
       }
@@ -1950,6 +2028,21 @@ void InOutOctree<DIM>::checkValid() const
   SLIC_DEBUG("done.");
 #endif
 }
+
+template<int DIM>
+void InOutOctree<DIM>::dumpTriMeshVTK( const std::string& name) const
+{
+  #ifdef DUMP_VTK_MESH
+
+  detail::InOutOctreeMeshDumper<DIM> meshDumper(*this);
+  meshDumper.dumpTriMeshVTK(name);
+
+  #else
+    AXOM_DEBUG_VAR(name); // avoids warning about unsued param
+  #endif
+}
+
+
 template<int DIM>
 void InOutOctree<DIM>::dumpOctreeMeshVTK( const std::string& name) const
 {
@@ -2223,6 +2316,23 @@ public:
     dumpOctreeMeshBlocks(name, blocks, false);
   }
 
+  /** Generates a VTK mesh with all triangles in the mesh */
+  void dumpTriMeshVTK(const std::string& name) const
+  {
+    const int numElts = m_octree.m_meshWrapper.numMeshElements();
+
+    std::vector<TriangleIndex> tris;
+    tris.reserve(numElts);
+
+    for(int i=0; i< numElts; ++i)
+    {
+      tris.push_back(i);
+    }
+    SLIC_INFO("Dump vtk:: Mesh has " << numElts << " triangles.");
+
+    dumpTriangleMesh(name, tris, false);
+  }
+
 private:
   void dumpOctreeMeshBlocks(const std::string& name, const std::vector<BlockIndex>& blocks, bool shouldLogBlocks = false) const
   {
@@ -2351,31 +2461,32 @@ private:
       addTriangle(debugMesh, tIdx, shouldLogTris);
     }
 
-    ///  Add field data here ?
-    //          // Add field to the triangle mesh
-    //          mint::FieldData* CD = m_surfaceMesh->getCellFieldData();
-    //          CD->addField( new mint::FieldVariable< TriangleIndex >("blockCount", meshTris.size()) );
-    //
-    //          int* blockCount = CD->getField( "blockCount" )->getIntPtr();
-    //
-    //          SLIC_ASSERT( blockCount != AXOM_NULLPTR );
-    //
-    //          for ( int i=0; i < meshTris.size(); ++i ) {
-    //              blockCount[i] = triCount[i];
-    //          }
-    //
-    //          // Add field to the triangle mesh
-    //          mint::FieldData* ND = m_surfaceMesh->getNodeFieldData();
-    //          ND->addField( new mint::FieldVariable< int >("vtCount", m_vertexSet.size()) );
-    //
-    //          int* vtCount = ND->getField( "vtCount" )->getIntPtr();
-    //
-    //          SLIC_ASSERT( vtCount != AXOM_NULLPTR );
-    //
-    //          for ( int i=0; i < m_vertexSet.size(); ++i ) {
-    //              vtCount[i] = cardVT[i];
-    //          }
-    //      }
+    // Add fields to the triangle mesh
+    int numTris = tris.size();
+
+    // Index of each triangle within the mesh
+    int* triIdx = addIntField(debugMesh, "triangle_index", numTris);
+
+    // Indices of the three boundary vertices of this triangle
+    int* vertIdx[3];
+    vertIdx[0] = addIntField(debugMesh, "vertex_index_0", numTris);
+    vertIdx[1] = addIntField(debugMesh, "vertex_index_1", numTris);
+    vertIdx[2] = addIntField(debugMesh, "vertex_index_2", numTris);
+
+    for(int i=0; i< numTris; ++i)
+    {
+      TriangleIndex tIdx = tris[i];
+      triIdx[i] = tIdx;
+
+      TriVertIndices tv = m_octree.m_meshWrapper.triangleVertexIndices(tIdx);
+      vertIdx[0][i] = tv[0];
+      vertIdx[1][i] = tv[1];
+      vertIdx[2][i] = tv[2];
+    }
+
+    // other possible fields on triangles
+    // -- number of blocks that index this triangle (blockCount)?
+    // -- vertex field for number of triangles incident in the vertex (vtCount)?
 
     debugMesh->toVtkFile(fNameStr.str());
 

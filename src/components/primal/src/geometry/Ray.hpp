@@ -134,7 +134,6 @@ private:
 };
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
@@ -190,7 +189,6 @@ std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray)
 }
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 #endif /* RAY_HPP_ */

@@ -266,6 +266,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Intersects the current bounding box with another bounding box
+   * \param [in] otherBox The other box to intersect
+   * \note If the intersection is empty, the bounding box will be cleared
+   * \return A reference to the bounding box after it has been intersected
+   *****************************************************************************
+   */
+  BoundingBox& intersect(const BoundingBox& otherBox);
+
+  /*!
+   *****************************************************************************
    * \brief Expands the lower and upper bounds by the given amount.
    * \param [in] expansionAmount an absolute amount to expand
    * \note Moves min & max point expansionAmount away from the center.
@@ -668,6 +678,27 @@ std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
   os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
   return os;
 }
+
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+BoundingBox<T, NDIMS>& BoundingBox< T,NDIMS >::intersect(const BoundingBox& otherBox)
+{
+
+  for(int i=0; i< NDIMS; ++i)
+  {
+    m_min[i] = std::max( m_min[i], otherBox.m_min[i]);
+    m_max[i] = std::min( m_max[i], otherBox.m_max[i]);
+  }
+
+  if(! isValid() )
+  {
+    clear();
+  }
+
+  return *this;
+}
+
+
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >

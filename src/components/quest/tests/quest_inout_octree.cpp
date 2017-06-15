@@ -137,7 +137,7 @@ TEST( quest_inout_octree, octahedron_mesh)
 
     // Generate the InOutOctree
     axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
-    // quest::utilities::write_vtk(mesh, "octahedron.vtk");
+    // axom::quest::utilities::write_vtk(mesh, "octahedron.vtk");
 
     ///
     SpacePt ptNeg1(-1.);
@@ -170,16 +170,10 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
-
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
-
-
-  // finalized when exiting main scope
 
 #ifdef INOUT_OCTREE_TESTER_SHOULD_SEED
   std::srand( std::time(0) );
@@ -187,9 +181,7 @@ int main(int argc, char * argv[])
   std::srand( 105);
 #endif
 
-
-  result = RUN_ALL_TESTS();
-
+  int result = RUN_ALL_TESTS();
   return result;
 }
 
