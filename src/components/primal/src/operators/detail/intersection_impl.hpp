@@ -1128,6 +1128,11 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
 /*!
  *******************************************************************************
  * \brief Tests if 3D triangle tri intersects with 3D ray R.
+ * \param [in] tri The input triangle
+ * \param [in] R The input ray
+ * \param [out] t Intersection point of tri and R, w.r.t. parametrization of R
+ * \note If there is an intersection, the intersection point pt is:
+ *                     pt = R.origin() + t * R.direction()
  * \return status true iff tri intersects with R, otherwise, false.
  *
  * This algorithm is modeled after Woop, Benthin, and Wald (2013).  It
@@ -1137,8 +1142,7 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * triangle.  If any of these coordinates are less than zero, the ray misses.
  *
  * If any are equal to zero, more care is needed to check if the ray hits
- * the edge or misses.  Additionally, the code falls back to double precision
- * for cases that call for it.
+ * the edge or misses.  
  *
  * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle
  * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2,
@@ -1146,7 +1150,7 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  *******************************************************************************
  */
 template < typename T >
-bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R)
+bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)
 {
   // Ray origins inside of the triangle are considered a miss.
   // This is a good thing, as pointed out by Matt Larsen in January 2017,
@@ -1160,32 +1164,20 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R)
   // I (Arlie Capps, Jan. 2017) don't understand the motivation at this
   // point, but I'll accept this for now.
 
+  typedef NumericArray<T,3> NumArray;
+  static const T zero = T();
+
   //find out dimension where ray direction is maximal
   int kx,ky,kz;
-  float rX,rY,rZ;
 
-  //assign initial directions
-  rX = R.direction()[0];
-  rY = R.direction()[1];
-  rZ = R.direction()[2];
-
-  //make all dimensions positive
-  if (rX < 0.0f) {
-    rX *= -1.0f;
-  }
-  if (rY < 0.0f) {
-    rY *= -1.0f;
-  }
-  if (rZ < 0.0f) {
-    rZ *= -1.0f;
-  }
+  NumArray r = primal::abs(R.direction().array() );
 
   //z-direction largest
-  if ((rZ>=rX) && (rZ >= rY)) {
+  if ((r[2]>=r[0]) && (r[2] >= r[1])) {
     kz=2;
   }
   //y direction largest
-  else if ((rY >= rX) && (rY >= rZ)) {
+  else if ((r[1] >= r[0]) && (r[1] >= r[2])) {
     kz=1;
   }
   //x direction largest
@@ -1198,107 +1190,92 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R)
   ky = (kz+2) % 3;
 
   //if necessary swap  ky and kx to preserve triangle winding
-  if (R.direction()[kz] < 0.0f) {
+  if (R.direction()[kz] < zero) {
     std::swap(kx, ky);
   }
 
   //calculate shear constants
-  float Sx = R.direction()[kx]/R.direction()[kz];
-  float Sy = R.direction()[ky]/R.direction()[kz];
-  float Sz = 1.0f/R.direction()[kz];
+  NumericArray<T,3> shear(1.0f/R.direction()[kz], 3);
+  shear[0] *= R.direction()[kx];
+  shear[1] *= R.direction()[ky];
 
-  //A,B,C are the triangle vertices
-  float A[3],B[3],C[3];
-
-  //calculate vertices relative to the ray origin
-  A[kx] = tri[0].array()[kx] - R.origin()[kx];
-  A[ky] = tri[0].array()[ky] - R.origin()[ky];
-  A[kz] = tri[0].array()[kz] - R.origin()[kz];
-
-  B[kx] = tri[1].array()[kx] - R.origin()[kx];
-  B[ky] = tri[1].array()[ky] - R.origin()[ky];
-  B[kz] = tri[1].array()[kz] - R.origin()[kz];
-
-  C[kx] = tri[2].array()[kx] - R.origin()[kx];
-  C[ky] = tri[2].array()[ky] - R.origin()[ky];
-  C[kz] = tri[2].array()[kz] - R.origin()[kz];
+  //A,B,C are the triangle vertices offset to Ray's origin
+  NumArray A = tri[0].array() - R.origin().array();
+  NumArray B = tri[1].array() - R.origin().array();
+  NumArray C = tri[2].array() - R.origin().array();
 
   //shear and scale the vertices
-  const float Ax = A[kx] - Sx*A[kz];
-  const float Ay = A[ky] - Sy*A[kz];
-  const float Bx = B[kx] - Sx*B[kz];
-  const float By = B[ky] - Sy*B[kz];
-  const float Cx = C[kx] - Sx*C[kz];
-  const float Cy = C[ky] - Sy*C[kz];
+  const T Ax = A[kx] - shear[0]*A[kz];
+  const T Ay = A[ky] - shear[1]*A[kz];
+  const T Bx = B[kx] - shear[0]*B[kz];
+  const T By = B[ky] - shear[1]*B[kz];
+  const T Cx = C[kx] - shear[0]*C[kz];
+  const T Cy = C[ky] - shear[1]*C[kz];
 
   //scaled barycentric coordinates
-  float U = Cx*By - Cy*Bx;
-  float V = Ax*Cy - Ay*Cx;
-  float W = Bx*Ay - By*Ax;
-
-  //fallback to test against edges using double precision
-  if (U == 0.0f || V == 0.0f || W == 0.0f) {
-    double CxBy = (double)Cx*(double)By;
-    double CyBx = (double)Cy*(double)Bx;
-    U = (float)(CxBy - CyBx);
-
-    double AxCy = (double)Ax*(double)Cy;
-    double AyCx = (double)Ay*(double)Cx;
-    V = (float)(AxCy - AyCx);
-
-    double BxAy = (double)Bx*(double)Ay;
-    double ByAx = (double)By*(double)Ax;
-    W = (float)(BxAy - ByAx);
-  }
+  const T U = Cx*By - Cy*Bx;
+  const T V = Ax*Cy - Ay*Cx;
+  const T W = Bx*Ay - By*Ax;
 
   //edge testing
-  if ((U<0.0f || V<0.0f || W<0.0f) && (U>0.0f || V>0.0f || W>0.0f)) {
+  if ( (U< zero || V< zero || W< zero) && (U>zero || V>zero || W>zero))
+  {
     return false;
   }
 
   //calculate determinant
-  float det = U + V + W;
+  const T det = U + V + W;
 
-  if (det == 0.0f) {
+  if (det == zero) {
     return false;
   }
 
   //calculate scaled z-coordinates of the vertices and use them to calculate hit
   // distance
-  const float Az = Sz*A[kz];
-  const float Bz = Sz*B[kz];
-  const float Cz = Sz*C[kz];
-  const float Q = U*Az + V*Bz +W*Cz;
+  const T Az = shear[2]*A[kz];
+  const T Bz = shear[2]*B[kz];
+  const T Cz = shear[2]*C[kz];
+  t = (U*Az + V*Bz +W*Cz);  // save the parameter of the intersection w.r.t. ray R
 
   //make sure hit is in correct direction
-  bool dir = ((Q<0.0f) && !(det<0.0f)) || ((det < 0.0f) && !(Q<0.0f));
-  if (dir) {
+  if( (( t < zero) && !(det < zero)) || ((det < zero) && !(t < zero) ) )
+  {
     return false;
   }
+
+  t /= det;
   return true;
 }
 
 /** @} */
 
 template < typename T >
-bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S)
+bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S, T& t)
 {
   typedef Vector< T,3 > Vector3;
-  Ray< T,3 > r1(S.source(), Vector3(S.source(), S.target()));
-  Ray< T,3 > r2(S.target(), Vector3(S.target(), S.source()));
+  Ray< T,3 > r(S.source(), Vector3(S.source(), S.target()));
 
   //Ray-triangle intersection does not check endpoints, so we explicitly check here
-  if (tri.checkInTriangle(r1.origin())) {
+  if ( tri.checkInTriangle(S.source() ) )
+  {
+    t = 0;
     return true;
   }
-  if (tri.checkInTriangle(r2.origin())) {
+  if ( tri.checkInTriangle(S.target()))
+  {
+    t = S.length();
     return true;
   }
 
-  //if the two rays formed by the endpoints of the segment intersect the triangle,
-  //then the triangle must intersect the triangle
-  if ((intersect_tri_ray(tri, r1)) && (intersect_tri_ray(tri, r2))) {
-    return true;
+  // The triangle only intersects the segment if it intersects the ray defined by one
+  // of its endpoints and the direction defined by its two endpoints.
+  // We can parametrize the line as:  r.origin() + t * r.direction()
+  // Values of the parameter t between 0 and the length of the segment correspond
+  // to points on the segment.
+  // Note: if intersect_tri_ray() is true, t must be greater than zero
+  if ( intersect_tri_ray(tri, r, t) )
+  {
+    return t < static_cast<T>( S.length() );
   }
   return false;
 }

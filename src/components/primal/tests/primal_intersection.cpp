@@ -10,6 +10,8 @@
 
 #include "gtest/gtest.h"
 
+#include "slic/slic.hpp"
+
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
@@ -952,15 +954,59 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
 {
   SCOPED_TRACE(whattest);
 
-  primal::Segment< double, DIM > seg1(p1, p2);
-  primal::Segment< double, DIM > seg2(p2, p1);
-  if (testtrue) {
-    EXPECT_TRUE(intersect(tri, seg1));
-    EXPECT_TRUE(intersect(tri, seg2));
+  typedef primal::Point<double, DIM> PointType;
+  typedef primal::Vector<double, DIM> VectorType;
+  typedef primal::Ray<double, DIM> RayType;
+  typedef primal::Segment<double, DIM> SegmentType;
+
+
+  double t = 0.;
+
+  SegmentType seg1(p1, p2);
+  SegmentType seg2(p2, p1);
+  if (testtrue)
+  {
+    // Find the intersection of segment from p1 to p2
+    double t1 = 0;
+    EXPECT_TRUE(intersect(tri, seg1, t1));
+
+    RayType r1(p1, VectorType(p1,p2));
+    PointType ip1 = r1.at(t1);
+    SLIC_INFO("\t -- found intersection between triangle " << tri
+        << " and segment [" << p1 << "," << p2 << "] at point "<< ip1 );
+
+
+    // Find the intersection of segment from p1 to p2
+    double t2 = 0;
+    EXPECT_TRUE(intersect(tri, seg2, t2));
+    RayType r2(p2, VectorType(p2,p1));
+    PointType ip2 = r2.at(t2);
+    SLIC_INFO("\t -- found intersection between triangle " << tri
+        << " and segment [" << p2 << "," << p1 << "] at point "<< ip2 );
+
+
+    // When intersection is not on the endpoints, check that intersection points are the same
+    bool t1IsEndPoint = ( t1 == 0 || axom::utilities::isNearlyEqual(t1, seg1.length()) );
+    bool t2IsEndPoint = ( t2 == 0 || axom::utilities::isNearlyEqual(t2, seg2.length()) );
+    if(!t1IsEndPoint && !t2IsEndPoint)
+    {
+      for(int i=0; i<DIM;++i)
+      {
+        EXPECT_NEAR(ip1[i], ip2[i], 1e-4 )
+            << "Points " << ip1 << " and " << ip2
+            << " differed in coordinate " << i;
+      }
+    }
   }
-  else {
-    EXPECT_FALSE( intersect(tri, seg1));
-    EXPECT_FALSE( intersect(tri, seg2));
+  else
+  {
+    EXPECT_FALSE( intersect(tri, seg1, t))
+        <<"Expected no intersection; Found one at point "
+        << RayType(p1, VectorType(p1,p2)).at(t);
+
+    EXPECT_FALSE( intersect(tri, seg2, t))
+        <<"Expected no intersection; Found one at point "
+        << RayType(p2, VectorType(p2,p1)).at(t);
   }
 }
 
@@ -1126,6 +1172,62 @@ TEST(primal_intersection, triangle_ray_intersection)
   EXPECT_FALSE(intersect(tri2, testRay));
 }
 
+TEST(primal_intersection, triangle_ray_intersection_unit_ray)
+{
+  static int const DIM = 3;
+  typedef primal::Point< double,DIM >     PointType;
+  typedef primal::Vector< double,DIM >    VectorType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Ray< double, DIM >      RayType;
+
+  PointType o = PointType::zero();
+  VectorType v = VectorType::make_vector(0,0,1);
+  RayType r(o,v);
+
+  TriangleType t ( PointType::make_point(2,2,2),
+                   PointType::make_point(2,4,2),
+                   PointType::make_point(3,3,2));
+
+  EXPECT_FALSE ( axom::primal::intersect(t, r));
+
+  double intersectionParam = 0.;
+  TriangleType t2 ( PointType::make_point(-1,-1,2),
+                   PointType::make_point(-1,1,2),
+                   PointType::make_point( 2,0,2));
+  EXPECT_TRUE ( axom::primal::intersect(t2, r, intersectionParam));
+
+  PointType intersectionPoint = r.at(intersectionParam);
+  SLIC_INFO("Intersection param is " << intersectionParam);
+  SLIC_INFO("Intersection point is " << intersectionPoint);
+}
+
+TEST(primal_intersection, triangle_ray_intersection_unit_seg)
+{
+  static int const DIM = 3;
+  typedef primal::Point< double,DIM >     PointType;
+  typedef primal::Vector< double,DIM >    VectorType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Ray< double, DIM >      RayType;
+  typedef primal::Segment< double, DIM >      SegmentType;
+
+  PointType o = PointType::zero();
+  PointType d = PointType::make_point(0,0,4);
+  SegmentType s(o,d);
+  RayType r(o, VectorType(o,d));
+
+  TriangleType t ( PointType::make_point(-1,-1,2),
+                   PointType::make_point(-1,1,2),
+                   PointType::make_point( 2,0,2));
+
+  double intersectionParam = 0.;
+  EXPECT_TRUE( axom::primal::intersect(t, s, intersectionParam));
+
+  EXPECT_DOUBLE_EQ(2.0, intersectionParam);
+
+  PointType intersectionPoint = r.at(intersectionParam);
+  SLIC_INFO("Intersection param is " << intersectionParam);
+  SLIC_INFO("Intersection point is " << intersectionPoint);
+}
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
@@ -1133,17 +1235,11 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
-
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
+  int result = RUN_ALL_TESTS();
   return result;
 }

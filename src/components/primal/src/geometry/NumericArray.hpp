@@ -172,6 +172,17 @@ NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE >& arr,
 
 /*!
  *******************************************************************************
+ * \brief Coordinate-wise absolute value on the NumericArray
+ * \param [in] arr numeric array instance
+ * \pre std::abs is defined for template type T
+ * \return A NumericArray whose coordinates are the abolute value of arr
+ *******************************************************************************
+ */
+template < typename T,int SIZE >
+NumericArray< T,SIZE > abs( const NumericArray< T, SIZE >& arr);
+
+/*!
+ *******************************************************************************
  * \brief Overloaded output operator for numeric arrays
  * \param [in] os C++ output stream
  * \param [in] arr numeric array instance.
@@ -858,6 +869,19 @@ inline NumericArray< T,SIZE > operator-(const NumericArray< T,SIZE >& arr)
   result -= arr;
   return result;
 }
+
+//------------------------------------------------------------------------------
+template < typename T,int SIZE >
+inline NumericArray< T,SIZE > abs(const NumericArray< T,SIZE >& arr)
+{
+  NumericArray< T, SIZE > result(arr);
+
+  for(int i=0; i<SIZE; ++i)
+    result[i] = std::abs(result[i]);
+
+  return result;
+}
+
 
 } /* namespace primal*/
 
