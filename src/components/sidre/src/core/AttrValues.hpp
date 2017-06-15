@@ -77,7 +77,11 @@ private:
   bool hasValue(const Attribute * attr) const;
 
   /*!
-   * \brief Create a Node to store attribute.
+   * \brief Create a Conduit Node to store an attribute.
+   *
+   * Create vector of Nodes and push empty nodes up to attr's index.
+   * Called as part of View::createAttributeScalar and
+   * View::createAttributeString.
    */
   bool createNode(const Attribute * attr);
 
@@ -88,9 +92,9 @@ private:
   bool setScalar(const Attribute * attr, ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
-    if (arg_id != attr->getDefaultNodeRef().dtype().id())
+    if (arg_id != attr->getTypeID())
     {
-      SLIC_CHECK_MSG(arg_id == attr->getDefaultNodeRef().dtype().id(),
+      SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
 		     "Incorrect type for attribute '"
                      << attr->getName()
 		     << "' of type "
@@ -114,9 +118,9 @@ private:
   bool setString(const Attribute * attr, const std::string & value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
-    if (arg_id != attr->getDefaultNodeRef().dtype().id())
+    if (arg_id != attr->getTypeID())
     {
-      SLIC_CHECK_MSG(arg_id == attr->getDefaultNodeRef().dtype().id(),
+      SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
 		     "Incorrect type for attribute '"
                      << attr->getName()
 		     << "' of type "

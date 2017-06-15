@@ -18,6 +18,9 @@ using axom::sidre::Group;
 using axom::sidre::View;
 using axom::sidre::IndexType;
 using axom::sidre::Node;
+using axom::sidre::DOUBLE_ID;
+using axom::sidre::INT_ID;
+using axom::sidre::CHAR8_STR_ID;
 
 // Create some attribute values
 const std::string name_color("color");
@@ -63,6 +66,7 @@ TEST(sidre_attribute,create_attr)
   // Create string attribute
   Attribute * color = ds->createAttributeString(name_color, color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
+  EXPECT_EQ( CHAR8_STR_ID, color->getTypeID());
 
   IndexType attr_index = color->getIndex();
   EXPECT_EQ(0, attr_index);
@@ -237,6 +241,9 @@ TEST(sidre_attribute,view_attr)
   const std::string out2c = view2a->getAttributeString(attr_color);
   EXPECT_EQ(color_red, out2c);
 
+  // Try to get a scalar from string
+  int novalue = view2a->getAttributeScalar(attr_color);
+  EXPECT_EQ(0, novalue);
 
   //----------------------------------------
   // Set attribute on second View in a Group
@@ -285,9 +292,11 @@ TEST(sidre_attribute,view_int_and_double)
   // Create all attributes for DataStore
   Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
+  EXPECT_EQ( INT_ID, attr_dump->getTypeID());
 
   Attribute * attr_size = ds->createAttributeScalar(name_size, size_small);
   EXPECT_TRUE( attr_size != AXOM_NULLPTR );
+  EXPECT_EQ( DOUBLE_ID, attr_size->getTypeID());
 
   Group * root = ds->getRoot();
 
@@ -329,13 +338,11 @@ TEST(sidre_attribute,view_int_and_double)
   ok = view1a->setAttributeString(attr_dump, "namea");
   EXPECT_FALSE( ok );
 
-  // Error checks
-#if 0
-  // AttrValue::getValueNodeRef will fail an assert
-  int err = -1;
-  err = view1a->getAttributeScalar(AXOM_NULLPTR);
-  EXPECT_EQ(-1, err);
-#endif
+  // Try to get a string from a scalar
+  const char * nostr = view1a->getAttributeString(attr_dump);
+  EXPECT_EQ(AXOM_NULLPTR, nostr);
+
+  EXPECT_DEATH_IF_SUPPORTED( view1a->getAttributeScalar(AXOM_NULLPTR), "" );
 
   delete ds;
 }

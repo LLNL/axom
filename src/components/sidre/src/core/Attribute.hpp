@@ -18,6 +18,9 @@
  ******************************************************************************
  */
 
+#ifndef SIDRE_ATTRIBUTE_HPP_
+#define SIDRE_ATTRIBUTE_HPP_
+
 // Standard C++ headers
 #include <string>
 
@@ -28,9 +31,6 @@
 
 // Sidre project headers
 #include "sidre/SidreTypes.hpp"
-
-#ifndef SIDRE_ATTRIBUTE_HPP_
-#define SIDRE_ATTRIBUTE_HPP_
 
 namespace axom
 {
@@ -124,6 +124,14 @@ public:
   const Node & getDefaultNodeRef() const
   {
     return m_default_value;
+  }
+
+  /*!
+   * \brief Return type of Attribute.
+   */
+  TypeID getTypeID() const
+  {
+    return static_cast<TypeID>(m_default_value.dtype().id());
   }
 
 private:

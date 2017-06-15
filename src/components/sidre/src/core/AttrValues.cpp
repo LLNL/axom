@@ -74,9 +74,9 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 /*
  *************************************************************************
  *
- * Create a Node for the Attribute.
+ * PRIVATE Create a Node for the Attribute.
  *
- * Create vector of Nodes and push empty nodes up to attr.
+ * Create vector of Nodes and push empty nodes up to attr's index.
  *
  *************************************************************************
  */
@@ -138,6 +138,12 @@ const char * AttrValues::getString( const Attribute * attr ) const
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK(attr != AXOM_NULLPTR);
+    return AXOM_NULLPTR;
+  }
+
+  if (attr->getTypeID() != CHAR8_STR_ID)
+  {
+    SLIC_CHECK(attr->getTypeID() == CHAR8_STR_ID);
     return AXOM_NULLPTR;
   }
 
