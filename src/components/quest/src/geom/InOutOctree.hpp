@@ -2866,15 +2866,20 @@ public:
   typedef MinMaxRange::PointType LengthType;
   typedef std::map<int,MinMaxRange> LogRangeMap;
 
+  /** A simple struct to track totals within the octree levels */
   struct Totals
   {
-    int blocks = 0;
-    int leaves = 0;
-    int leavesWithVert = 0;
-    int triangleRefCount = 0;
-    int whiteBlocks = 0;
-    int blackBlocks = 0;
-    int grayBlocks = 0;
+    /** Default constructor to set everything to 0 */
+    Totals() : blocks(0), leaves(0), leavesWithVert(0), triangleRefCount(0), 
+               whiteBlocks(0), blackBlocks(0), grayBlocks(0) {}
+
+    int blocks;
+    int leaves;
+    int leavesWithVert;
+    int triangleRefCount;
+    int whiteBlocks;
+    int blackBlocks;
+    int grayBlocks;
   };
 
 public:

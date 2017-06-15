@@ -16,6 +16,7 @@
 
 // C/C++ includes
 #include <cstring>    // For memcpy()
+#include <cmath>      // For std::abs
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 

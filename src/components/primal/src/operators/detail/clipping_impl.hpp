@@ -30,10 +30,12 @@ namespace primal {
 namespace detail {
 
 /** Enum types for classifying points with respect to a thick plane */
-enum PtPlaneClassifier {
-  POINT_ON_PLANE,
-  POINT_IN_FRONT_OF_PLANE,
-  POINT_BEHIND_PLANE
+struct PtPlaneClassifier {
+  enum {
+    POINT_ON_PLANE,
+    POINT_IN_FRONT_OF_PLANE,
+    POINT_BEHIND_PLANE
+   };
 };
 
 
