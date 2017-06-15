@@ -15,6 +15,7 @@ set( primal_headers
      geometry/HyperSphere.hpp
      geometry/NumericArray.hpp
      geometry/Point.hpp
+     geometry/Polygon.hpp
      geometry/Ray.hpp
      geometry/Segment.hpp
      geometry/Triangle.hpp
@@ -22,10 +23,12 @@ set( primal_headers
 
      ## operators
      operators/detail/intersection_impl.hpp
+     operators/detail/clipping_impl.hpp
 
      operators/intersection.hpp
      operators/orientation.hpp
      operators/squared_distance.hpp
+     operators/clipping.hpp
      operators/closest_point.hpp
 
      ## spatial acceleration

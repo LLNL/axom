@@ -11,6 +11,7 @@
 set( primal_tests
     primal_boundingbox.cpp
     primal_bvhtree.cpp
+    primal_clipping.cpp
     primal_intersection_impl.cpp
     primal_intersection.cpp
     primal_numeric_array.cpp
