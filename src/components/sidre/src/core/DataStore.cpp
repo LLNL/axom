@@ -334,9 +334,7 @@ Attribute * DataStore::createAttributeEmpty(const std::string & name)
     return AXOM_NULLPTR;
   }
 
-  m_attribute_coll->insertItem(new_attribute, name);
-  IndexType idx = m_attribute_coll->getItemIndex(name);
-  new_attribute->setIndex(idx);
+  new_attribute->m_index = m_attribute_coll->insertItem(new_attribute, name);
   return new_attribute;
 }
 

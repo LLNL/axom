@@ -141,15 +141,6 @@ private:
   DISABLE_DEFAULT_CTOR(Attribute);
   DISABLE_MOVE_AND_ASSIGNMENT(Attribute);
 
-  /*!
-   * \brief Set index of attribute within DataStore.
-   *        Called as part of DataStore->createAttribute.
-   */
-  void setIndex(IndexType index)
-  {
-    m_index = index;
-  }
-
 //@{
 //!  @name Private Attribute ctor and dtor
 //!        (callable only by DataStore methods).
