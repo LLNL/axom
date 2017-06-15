@@ -44,7 +44,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "hasValue: called willout an Attribute");
+		   "hasValue: called without an Attribute");
     return false;
   }
 
@@ -86,7 +86,7 @@ bool AttrValues::createNode(const Attribute * attr)
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "createNode: called willout an Attribute");
+		   "createNode: called without an Attribute");
     return false;
   }
 
@@ -122,7 +122,7 @@ Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getScalar: called willout an Attribute");
+		   "getScalar: called without an Attribute");
     return getEmptyNodeRef().value();
   }
 
@@ -142,14 +142,18 @@ const char * AttrValues::getString( const Attribute * attr ) const
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getString: called willout an Attribute");
+		   "getString: called without an Attribute");
     return AXOM_NULLPTR;
   }
 
   if (attr->getTypeID() != CHAR8_STR_ID)
   {
     SLIC_CHECK_MSG(attr->getTypeID() == CHAR8_STR_ID,
-		   "getString: Called on an attribute that was not a string");
+		   "getString: Called on attribute '"
+		   << attr->getName() 
+		   << "' which is type "
+		   << DataType::id_to_name(attr->getTypeID())
+                   << ".");
     return AXOM_NULLPTR;
   }
 
@@ -169,7 +173,7 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getValueNodeRef: called willout an Attribute");
+		   "getValueNodeRef: called without an Attribute");
     return getEmptyNodeRef();
   }
 
