@@ -95,7 +95,7 @@ private:
     if (arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
-		     "Incorrect type for attribute '"
+		     "setScalar: Incorrect type for attribute '"
                      << attr->getName()
 		     << "' of type "
                      << attr->getDefaultNodeRef().dtype().name()
@@ -121,7 +121,7 @@ private:
     if (arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
-		     "Incorrect type for attribute '"
+		     "setString: Incorrect type for attribute '"
                      << attr->getName()
 		     << "' of type "
                      << attr->getDefaultNodeRef().dtype().name()
@@ -152,6 +152,17 @@ private:
    * \brief Return reference to value Node.
    */
   const Node & getValueNodeRef( const Attribute * attr ) const;
+
+  /*!
+   * \brief Return a reference to an empty Node.
+   *
+   * Used as error return value from getValueNodeRef.
+   */
+  const Node & getEmptyNodeRef() const
+  {
+    static const Node empty;
+    return empty;
+  }
 
 //@{
 //!  @name Private AttrValues ctor and dtor

@@ -342,7 +342,9 @@ TEST(sidre_attribute,view_int_and_double)
   const char * nostr = view1a->getAttributeString(attr_dump);
   EXPECT_EQ(AXOM_NULLPTR, nostr);
 
-  EXPECT_DEATH_IF_SUPPORTED( view1a->getAttributeScalar(AXOM_NULLPTR), "" );
+  int i = -1;
+  i = view1a->getAttributeScalar(AXOM_NULLPTR);
+  EXPECT_EQ(0, i);
 
   delete ds;
 }
@@ -401,11 +403,14 @@ TEST(sidre_attribute,as_node)
   ok = view1a->setAttributeString(attr_color, color_red);
   EXPECT_TRUE( ok );
 
-  const Node & node = view1a->getAttributeNodeRef(attr_color);
-  EXPECT_EQ(color_red, node.as_string());
+  const Node & node1 = view1a->getAttributeNodeRef(attr_color);
+  EXPECT_EQ(color_red, node1.as_string());
 
   const Node & node2 = view1a->getAttributeNodeRef(attr_dump);
   EXPECT_EQ(dump_no, node2.as_int32());
+
+  const Node & node3 = view1a->getAttributeNodeRef(AXOM_NULLPTR);
+  EXPECT_TRUE(node3.schema().dtype().is_empty());
 
   delete ds;
 }

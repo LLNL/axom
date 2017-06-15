@@ -87,7 +87,8 @@ public:
     else
     {
       SLIC_CHECK_MSG(arg_id == m_default_value.dtype().id(),
-		     "Cannot change type of attribute '" << m_name
+		     "setDefaultScalar: Cannot change type of attribute '"
+                     << m_name
 		     << "' from " << m_default_value.dtype().name()
 		     << " to " << DataType::id_to_name(arg_id) << ".");
       return false;
@@ -111,7 +112,8 @@ public:
     else
     {
       SLIC_CHECK_MSG(arg_id == m_default_value.dtype().id(),
-		     "Cannot change type of attribute '" << m_name
+		     "setDefaultString: Cannot change type of attribute '"
+                     << m_name
 		     << "' from " << m_default_value.dtype().name()
 		     << " to " << DataType::id_to_name(arg_id) << ".");
       return false;
