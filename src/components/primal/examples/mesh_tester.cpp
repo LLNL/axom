@@ -59,6 +59,8 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <set>
 #include <stdio.h>
 
 using namespace axom;
@@ -76,24 +78,32 @@ typedef primal::Segment<double, 3> Segment3;
 typedef struct Input
 {
   std::string stlInput;
-  std::string textOutputFile;
+  std::string textOutput;
   int resolution;
   int errorCode;
 
-  Input() : stlInput("src/components/primal/data/plane.stl"),
-            textOutputFile("meshTestResults.txt"),
+  Input() : stlInput(""),
+            textOutput("meshFlaws.txt"),
             resolution(10),
             errorCode(0)
   { };
 } Input;
 
+typedef struct TrianglePair
+{
+  int a, b;
+
+  TrianglePair(const int na, const int nb) : a(na), b(nb) {};
+} TrianglePair;
+
 SpatialBoundingBox compute_bounds( mint::Mesh* mesh);
 Triangle3 getMeshTriangle(int i,  mint::Mesh* surface_mesh);
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
-bool checkTT(Triangle3& t1, Triangle3& t2, std::ofstream& ofs, int i, int j);
-void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh);
-void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution);
+bool checkTT(Triangle3& t1, Triangle3& t2);
+std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh);
+std::vector<TrianglePair> vgIntersectionAlgorithm(mint::Mesh* surface_mesh, int resolution);
 void init_params(Input& params,int argc, char ** argv);
+void writeCollisions(const std::vector<TrianglePair> & c);
 
 //compute_bounds is from code reused from George Zagaris' sphere example.  Computes the bounding box of a mesh
 SpatialBoundingBox compute_bounds( mint::Mesh* mesh)
@@ -139,34 +149,41 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
     axom::utilities::isNearlyEqual(p1[2], p2[2], EPS);
 }
 
-bool checkTT(Triangle3& t1, Triangle3& t2, std::ofstream& ofs, int i, int j)
+bool checkTT(Triangle3& t1, Triangle3& t2)
 {
   // Step 9:  Ignore degenerate triangles: we will eventually write out all
   // degenerate triangles in main for loop.
   if (t2.degenerate()) return false;
 
   if (primal::intersect(t1, t2)) {
-    ofs << "\n INTERSECTION FOUND Triangle 1 at index " << i << " is " << t1
-        << "and triangle 2 at index " << j << " is " << t2 << "\n";
     return true;
   }
   return false;
 }
 
-void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh) 
+bool testSeveralTris(mint::Mesh* surface_mesh, const int i, const int j)
+{
+  Triangle3 t1 = getMeshTriangle(i, surface_mesh);
+  Triangle3 t2 = getMeshTriangle(j, surface_mesh);
+
+  return checkTT(t1, t2);
+}
+
+
+std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh) 
 {
   // Step 6-11 overview: For each triangle, check for intersections against
   // every other triangle with a greater index in the mesh, excluding
   // degenerate triangles and triangles whose only intersection with the
   // initial triangle occurs at a vertex.
+  std::vector<TrianglePair> retval;
 
   const int ncells = surface_mesh->getMeshNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
 
   Triangle3 t1 = Triangle3();
   Triangle3 t2 = Triangle3();
-  int counter = 0; // total intersections found, will be written to outfile
-  int degenerateCounter = 0;  // total degenerate triangles found
+  int counter = 0; // total intersections found, will be written to std::cout
 
   // Step 6:  Iterate over all the triangles in the mesh
   for (int i = 0; i< ncells; i++) {
@@ -175,8 +192,8 @@ void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh)
     // Step 7: Check if the triangle is degenerate, if so, write out to
     // output file and skip
     if (t1.degenerate()) {
-      degenerateCounter++;     
-      ofs << "Warning, degenerate triangle at index " << i << ": " << t1;
+      // degenerateCounter++;     
+      // ofs << "Warning, degenerate triangle at index " << i << ": " << t1;
       continue;
     }
 
@@ -185,18 +202,61 @@ void naiveAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh)
     for (int j = i + 1; j < ncells; j++) {
       t2 = getMeshTriangle(j, surface_mesh);
       // Actual intersection test is wrapped by checkTT()
-      if (checkTT(t1, t2, ofs, i, j)) counter++;
+      // std::cout << "Checking " << i << " vs " << j;
+      if (checkTT(t1, t2)) {
+        counter++;
+        // std::cout << ": INTERSECT" << std::endl;
+        retval.push_back(TrianglePair(i, j));
+        std::cout << "Hit:" << std::endl << "  t1: " << t1 << std::endl << "  t2: " << t2 << std::endl;
+      } else {
+        // std::cout << ": miss" << std::endl;
+      }
     }
   }
-  // step 12, write results to outfile
-  ofs << "A total of " << counter << " triangle intersections were found.";
-  ofs << "A total of " << degenerateCounter << " degenerate triangles were found.";
+
+  return retval;
 }
 
-void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution)
+std::vector<TrianglePair> realizeList(const std::map<int, std::set<int> > & seen)
 {
-  int counter=0;  //total intersections found, will be written to outfile at end
-  int degenerateCounter=0; //total degenerate triangles found
+  std::vector<TrianglePair> retval;
+
+  std::map<int, std::set<int> >::const_iterator it = seen.begin(), end = seen.end();
+  for ( ;  it != end; ++it) {
+    std::set<int>::const_iterator sit = (*it).second.begin(), send = (*it).second.end();
+    for ( ; sit != send; ++sit) {
+      retval.push_back(TrianglePair(it->first, *sit));
+    }
+  }
+  return retval;
+}
+
+void markSeen(const int a, const int b, std::map<int, std::set<int> > & seen)
+{
+  std::set<int> theseen;
+  if (seen.count(a) > 0) {
+    theseen = seen[a];
+  }
+
+  theseen.insert(b);
+
+  seen[a] = theseen;
+}
+
+void markSeen(const int a, const std::set<int> & bs, std::vector<TrianglePair> & list)
+{
+  list.reserve(list.size() + bs.size());
+  std::set<int>::const_iterator sit = bs.begin(), send = bs.end();
+  for ( ; sit != send; ++sit) {
+    list.push_back(TrianglePair(a, *sit));
+  }
+}
+
+std::vector<TrianglePair> vgIntersectionAlgorithm(mint::Mesh* surface_mesh, int resolution)
+{
+  std::vector<TrianglePair> retval;
+  std::set<int> seen, hit;
+  int counter=0;  //total intersections found, will be written to std::cout
   //Step 6:  Construct our virtual grid
   int intersectingTriangleCount=0;
   Triangle3 t1 = Triangle3();
@@ -209,9 +269,9 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution)
   const Point3 maxBBPt= meshBB.getMax();
 
   //figure out the appropriate side sizes for our given resolution
-  const double sideSizes [3] = {((maxBBPt[0]-minBBPt[0]+1.0e-12)/((double)resolution)), \
-                                ((maxBBPt[1]-minBBPt[1]+1.0e-12)/((double)resolution)), \
-                                ((maxBBPt[2]-minBBPt[2]+1.0e-12)/((double)resolution))};
+  // const double sideSizes [3] = {((maxBBPt[0]-minBBPt[0]+1.0e-12)/((double)resolution)), \
+  //                               ((maxBBPt[1]-minBBPt[1]+1.0e-12)/((double)resolution)), \
+  //                               ((maxBBPt[2]-minBBPt[2]+1.0e-12)/((double)resolution))};
 
   //create an array containing the resolution for each side.  This will be uniform for now
   //WIP client ability to specify x,y and z resolutions
@@ -235,24 +295,37 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution)
   }
 
 
-  //Step 7:  Iterate through triangle indices from first index to last index and check against any other triangles with indexes 
-  //greater than the index z who also share a virtual grid bin with the triangle at index z.  Avoid repeat checks by
-  //only checking against triangles with indexes greater than z. 
+  for (int q = 0; q < ncells; ++q) {
+    t1 = getMeshTriangle(q, surface_mesh);
+    SpatialBoundingBox triBB2;
+    triBB2.addPoint(t1[0]);
+    triBB2.addPoint(t1[1]);
+    triBB2.addPoint(t1[2]);
+  }
+
+
+  // Step 7:  Iterate through triangle indices from first index to last index and check against
+  // any other triangles with indexes greater than the index z who also share a virtual grid bin
+  // with the triangle at index z.  Avoid repeat checks by only checking against triangles with
+  // indexes greater than z.
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
   for (size_t z=0; z< ncells; z++) {
+    seen.clear();
+    hit.clear();
+
     if (ncells >= 100 && z % (ncells/100) == 0) {
-      //the below will not actually reflect the time the algorithm will take perfectly, as triangles at earlier indexes
-      //must do more checks than triangles at later indexes
+      // the status message will not actually reflect the time the algorithm will take perfectly,
+      // as triangles at earlier indexes must do more checks than triangles at later indexes
       std::cerr<<"Querying grid is "<<100.0*(double(z)/double(ncells)) <<" percent done \n";
     }
-        
+
     //Step 7.1:  Retrieve the triangle at index z and construct a bounding box around it
     SpatialBoundingBox triBB2;
     t1=getMeshTriangle(z,  surface_mesh);
     //Step 7.2:  Check if this triangle is degenerate, if so, write to ofs and skip this triangle test
     if (t1.degenerate()) { 
-      degenerateCounter++;    
-      ofs<<"Warning, degenerate triangle at index "<< z<<" with ~value "<<t1;
+      // degenerateCounter++;
+      // ofs<<"Warning, degenerate triangle at index "<< z<<" with ~value "<<t1;
       continue;
     }
     triBB2.addPoint(t1[0]);
@@ -282,28 +355,33 @@ void vgAlgorithm(std::ofstream& ofs, mint::Mesh* surface_mesh, int resolution)
         for (size_t l = 0; l < binSize; ++l) {
           int t2Index = trianglesInBin[l];
           SLIC_ASSERT(trianglesInBin[l] >= 0);
-          if (t2Index <= z) {
+          if (t2Index <= z || seen.count(t2Index) > 0) {
             continue;  
           } else { 
+            seen.insert(t2Index);
             // Step 8: if we haven't already tested the intersection, run the intersection test
             t2 = getMeshTriangle(t2Index, surface_mesh);
             // Step into CheckTT for steps 9-11
-            if (checkTT(t1, t2, ofs, z, t2Index)) {
+            // std::cout << "Checking " << z << " vs " << t2Index;
+            if (checkTT(t1, t2)) {
               counter++;
+              // std::cout << ": INTERSECT" << std::endl;
               if (notBadBefore) {
                 intersectingTriangleCount ++;
                 notBadBefore=false;
               }
+              hit.insert(t2Index);
+            } else {
+              // std::cout << ": miss" << std::endl;
             }
           }
         }  // end for triangles in bin
       }  // valid index
     }  // bins to check
+    markSeen(z, hit, retval);
   }
-  //step 12, write results to outfile
-  ofs<<"A total of "<< counter <<  " triangle intersections were found.";
-  ofs<<"A total of "<< intersectingTriangleCount <<  " intersecting triangles were found. \n";
-  ofs<<"A total of "<< degenerateCounter <<  " degenerate triangles were found.";
+
+  return retval;
 }
 
 void showhelp()
@@ -315,8 +393,7 @@ void showhelp()
             << "                   the naive algorithm instead of "
             << "using the spatial index." << std::endl
             << "  --infile fname   The STL input file (must be specified)." << std::endl
-            << "  --outfile fname  The text output file to contain the results." << std::endl
-            << "                   Default value meshTestResults.txt."
+            << "  --outfile fname  The text output file (defaults to meshFlaws.txt)." << std::endl
             << std::endl;
 }
 
@@ -340,16 +417,16 @@ void init_params(Input& params,int argc, char ** argv)
       params.errorCode = 1;
       return;
     }
-    for(int i = 1; i < argc; /* increment i in loop */){
+    for (int i = 1; i < argc; /* increment i in loop */){
       std::string arg = argv[i];
-      if(arg == "--resolution"){
+      if (arg == "--resolution"){
         params.resolution = atoi(argv[++i]);
       }
-      else if(arg == "--infile"){
+      else if (arg == "--infile"){
         params.stlInput = argv[++i];
       }
-      else if(arg == "--outfile"){
-        params.textOutputFile = argv[++i];
+      else if (arg == "--outfile"){
+        params.textOutput = argv[++i];
       }
       ++i;
     }
@@ -360,12 +437,26 @@ void init_params(Input& params,int argc, char ** argv)
     return;
   }
 
-  std::cerr << "Using parameter values: " << std::endl
-            << "  resolution = " << params.resolution << std::endl
-            << "  infile = " << params.stlInput << std::endl
-            << "  outfile = " << params.textOutputFile << std::endl;
+  SLIC_INFO ("Using parameter values: " << std::endl << 
+      "  resolution = " << params.resolution << std::endl << 
+      "  infile = " << params.stlInput << std::endl << 
+      "  outfile = " << params.textOutput << std::endl);
 }
 
+bool writeCollisions(const std::vector<TrianglePair> & c, const std::string & outfile)
+{
+  std::ofstream outf(outfile);
+  if (!outf) {
+    return false;
+  }
+
+  outf << c.size() << " intersecting triangle pairs:" << std::endl;
+  for (int i = 0; i < c.size(); ++i) {
+    outf << c[i].a << " " << c[i].b << std::endl;
+  }
+
+  return true;
+}
 
 
 
@@ -393,17 +484,14 @@ int main( int argc, char** argv )
   init_params(params, argc, argv);
 
   if (params.errorCode > 0) {
-    retval = EXIT_FAILURE;
     if (params.errorCode == 1) {
       // user requested help message; don't print anything
-      retval = EXIT_SUCCESS;
+      return EXIT_SUCCESS;
     } else if (params.errorCode == 2) {
-      std::cout << "Can't open STL file " << params.stlInput << " for reading." << std::endl;
+      SLIC_ERROR("Can't open STL file " << params.stlInput << " for reading.");
     } else {
-      std::cout << "Error " << params.errorCode << " while parsing arguments." << std::endl;
+      SLIC_ERROR("Error " << params.errorCode << " while parsing arguments.");
     }
-
-    return retval;
   }
 
   SLIC_ASSERT(params.resolution > 0);
@@ -423,20 +511,17 @@ int main( int argc, char** argv )
   delete reader;
   reader = AXOM_NULLPTR;
 
-  // STEP 5: write vtk file
-  //write_vtk( surface_mesh, "surface_mesh.vtk" );
-  std::ofstream ofs;
-  ofs.open(params.textOutputFile);
-
-  if (params.resolution==1) {
+  std::vector<TrianglePair> collisions;
+  if (params.resolution == 1) {
     // Naive method -- check inside for steps 5-12
-    naiveAlgorithm(ofs, surface_mesh);
-  }
-  else {
+    collisions = naiveIntersectionAlgorithm(surface_mesh);
+  } else {
     //  Virtual grid method -- check inside for steps 5-12
-    vgAlgorithm(ofs, surface_mesh, params.resolution);
+    collisions = vgIntersectionAlgorithm(surface_mesh, params.resolution);
+  }
+  if (!writeCollisions(collisions, params.textOutput)) {
+    SLIC_ERROR("Couldn't write results to " << params.textOutput);
   }
 
-  ofs.close();
   return retval;
 }
