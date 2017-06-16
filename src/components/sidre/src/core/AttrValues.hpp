@@ -25,6 +25,7 @@
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
+#include "slic/slic.hpp"
 
 // Sidre project headers
 #include "sidre/Attribute.hpp"
@@ -76,19 +77,92 @@ private:
   bool hasValue(const Attribute * attr) const;
 
   /*!
+   * \brief Create a Conduit Node to store an attribute.
+   *
+   * Create vector of Nodes and push empty nodes up to attr's index.
+   * Called as part of View::createAttributeScalar and
+   * View::createAttributeString.
+   */
+  bool createNode(const Attribute * attr);
+
+  /*!
    * \brief Set attribute value.
    */
-  bool setValue(const Attribute * attr, const std::string & value);
+  template<typename ScalarType>
+  bool setScalar(const Attribute * attr, ScalarType value)
+  {
+    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+    if (arg_id != attr->getTypeID())
+    {
+      SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
+		     "setScalar: Incorrect type for attribute '"
+                     << attr->getName()
+		     << "' of type "
+                     << attr->getDefaultNodeRef().dtype().name()
+		     << ": " << DataType::id_to_name(arg_id) << ".");
+      return false;
+    }
+
+    bool ok = createNode(attr);
+    if (ok)
+    {
+      IndexType iattr = attr->getIndex();
+      (*m_values)[iattr] = value;
+    }
+    return ok;
+  }
+
+  /*!
+   * \brief Set attribute value.
+   */
+  bool setString(const Attribute * attr, const std::string & value)
+  {
+    DataTypeId arg_id = CHAR8_STR_ID;
+    if (arg_id != attr->getTypeID())
+    {
+      SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
+		     "setString: Incorrect type for attribute '"
+                     << attr->getName()
+		     << "' of type "
+                     << attr->getDefaultNodeRef().dtype().name()
+		     << ": " << DataType::id_to_name(arg_id) << ".");
+      return false;
+    }
+
+    bool ok = createNode(attr);
+    if (ok)
+    {
+      IndexType iattr = attr->getIndex();
+      (*m_values)[iattr] = value;
+    }
+    return ok;
+  }
+
+  /*!
+   * \brief Return a value.
+   */
+  Node::ConstValue getScalar( const Attribute * attr ) const;
 
   /*!
    * \brief Return a string value.
    */
-  const char * getValueString( const Attribute * attr ) const;
+  const char * getString( const Attribute * attr ) const;
 
   /*!
    * \brief Return reference to value Node.
    */
   const Node & getValueNodeRef( const Attribute * attr ) const;
+
+  /*!
+   * \brief Return a reference to an empty Node.
+   *
+   * Used as error return value from getValueNodeRef.
+   */
+  const Node & getEmptyNodeRef() const
+  {
+    static const Node empty;
+    return empty;
+  }
 
 //@{
 //!  @name Private AttrValues ctor and dtor
