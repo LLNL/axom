@@ -34,7 +34,6 @@
 #include "primal/orientation.hpp"
 #include "primal/Point.hpp"
 #include "quest/STLReader.hpp"
-// #include "quest/SquaredDistance.hpp"  // <<!!???   
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 #include "quest/SignedDistance.hpp"
@@ -83,7 +82,7 @@ typedef struct Input
   int errorCode;
 
   Input() : stlInput(""),
-            textOutput("meshFlaws.txt"),
+            textOutput("meshTestResults.txt"),
             resolution(10),
             errorCode(0)
   { };
@@ -393,7 +392,7 @@ void showhelp()
             << "                   the naive algorithm instead of "
             << "using the spatial index." << std::endl
             << "  --infile fname   The STL input file (must be specified)." << std::endl
-            << "  --outfile fname  The text output file (defaults to meshFlaws.txt)." << std::endl
+            << "  --outfile fname  The text output file (defaults to meshTestResults.txt)." << std::endl
             << std::endl;
 }
 
@@ -488,9 +487,12 @@ int main( int argc, char** argv )
       // user requested help message; don't print anything
       return EXIT_SUCCESS;
     } else if (params.errorCode == 2) {
-      SLIC_ERROR("Can't open STL file " << params.stlInput << " for reading.");
+      std::cerr << "Can't open STL file " << params.stlInput <<
+        " for reading." << std::endl;
+      return EXIT_FAILURE;
     } else {
-      SLIC_ERROR("Error " << params.errorCode << " while parsing arguments.");
+      std::cerr << "Error " << params.errorCode <<
+        " while parsing arguments." << std::endl;
     }
   }
 
