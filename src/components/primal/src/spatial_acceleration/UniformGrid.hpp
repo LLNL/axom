@@ -138,6 +138,13 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns true if index refers to a valid bin.
+   *****************************************************************************
+   */
+  bool isValidIndex(int index) const;
+
+  /*!
+   *****************************************************************************
    * \brief Returns the indices of the bins for a given bounding box.
    *
    * This method returns the indices of the bins that intersect BB.  Any part
@@ -182,8 +189,6 @@ public:
   enum {
     INVALID_BIN_INDEX = -1
   };
-
-  bool isValidIndex(int index) const;
 
 protected:
 
@@ -254,7 +259,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
 
     SLIC_ASSERT(lower_bound[i] <= upper_bound[i]);
     SLIC_ASSERT(res[i] > 0 );
-    m_spacing[i] = (upper_bound[i] - (lower_bound[i])) / res[i];
+    m_spacing[i] = (upper_bound[i] - lower_bound[i]) / res[i];
     m_resolution[i] = res[i];
     newsize *= res[i];
   }
