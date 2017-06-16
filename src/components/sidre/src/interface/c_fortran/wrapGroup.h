@@ -275,10 +275,15 @@ bool SIDRE_group_has_child_group(SIDRE_group * self, const char * name);
 bool SIDRE_group_has_child_group_bufferify(SIDRE_group * self,
                                            const char * name, int Lname);
 
-SIDRE_group * SIDRE_group_get_group(SIDRE_group * self, const char * path);
+SIDRE_group * SIDRE_group_get_group_from_name(SIDRE_group * self,
+                                              const char * path);
 
-SIDRE_group * SIDRE_group_get_group_bufferify(SIDRE_group * self,
-                                              const char * path, int Lpath);
+SIDRE_group * SIDRE_group_get_group_from_name_bufferify(SIDRE_group * self,
+                                                        const char * path,
+                                                        int Lpath);
+
+SIDRE_group * SIDRE_group_get_group_from_index(SIDRE_group * self,
+                                               SIDRE_IndexType idx);
 
 SIDRE_IndexType SIDRE_group_get_group_index(const SIDRE_group * self,
                                             const char * name);

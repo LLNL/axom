@@ -29,6 +29,7 @@
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "DataStore.hpp"
+#include "Attribute.hpp"
 
 namespace axom
 {
