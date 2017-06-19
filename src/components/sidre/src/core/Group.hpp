@@ -1076,7 +1076,8 @@ public:
    * \param protocol  I/O protocol
    */
   void load(const std::string& path,
-            const std::string& protocol = "sidre_hdf5");
+            const std::string& protocol = "sidre_hdf5",
+            bool preserve_contents = false);
 
   /*!
    * \brief Load the Group from an hdf5 handle.
@@ -1084,7 +1085,8 @@ public:
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    */
   void load( const hid_t& h5_id,
-             const std::string &protocol = "sidre_hdf5");
+             const std::string &protocol = "sidre_hdf5",
+             bool preserve_contents = false);
 
 
   /*!
@@ -1244,7 +1246,7 @@ private:
    *
    * Note: This is for the "sidre_{zzz}" protocols.
    */
-  void importFrom(conduit::Node& node);
+  void importFrom(conduit::Node& node, bool preserve_contents = false);
 
   /*!
    * \brief Private method to copy Group from Conduit Node.
@@ -1263,7 +1265,7 @@ private:
    *
    * Note: This is for the "conduit_{zzz}" protocols.
    */
-  void importConduitTree(conduit::Node& node);
+  void importConduitTree(conduit::Node& node, bool preserve_contents = false);
 
 
 //@}
