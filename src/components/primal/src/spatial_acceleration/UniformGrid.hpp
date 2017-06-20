@@ -138,7 +138,13 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns true if index refers to a valid bin.
+   * \brief Returns true if index is valid; that is, refers to a valid bin.
+   *
+   * The region of space indexed by this UniformGrid is divided into bins.
+   * Each bin has a unique integer index.  If an integer is greater than or
+   * equal to zero and less than or equal to the greatest bin index, this
+   * method will return true.  Otherwise, the integer does not refer to any
+   * bin and this method will return false.
    *****************************************************************************
    */
   bool isValidIndex(int index) const;
