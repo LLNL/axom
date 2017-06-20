@@ -10,7 +10,7 @@
 
 
 
-// ATK Toolkit includes
+// Axom includes
 #include "axom_utils/FileUtilities.hpp"
 
 #include "primal/BoundingBox.hpp"
@@ -57,7 +57,7 @@ typedef struct Input
 
   Input() : stlInput(""),
             textOutput("meshTestResults.txt"),
-            resolution(10),
+            resolution(0),
             errorCode(0)
   { };
 } Input;
@@ -73,13 +73,18 @@ SpatialBoundingBox compute_bounds(mint::Mesh* mesh);
 Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh);
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);
-std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh);
+std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+  std::vector<int> & degenerate);
 void markSeen(const int a, const std::set<int> & bs, std::vector<TrianglePair> & list);
-std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh, int resolution);
+std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
+  std::vector<int> & degenerate,
+  int resolution);
 void showhelp();
 bool canOpenFile(const std::string & fname);
 void init_params(Input& params, int argc, char ** argv);
-bool writeCollisions(const std::vector<TrianglePair> & c, const std::string & outfile);
+bool writeCollisions(const std::vector<TrianglePair> & c,
+  const std::vector<int> & d,
+  const std::string & outfile);
 
 SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
 {
@@ -133,7 +138,8 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
   return false;
 }
 
-std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh) 
+std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+  std::vector<int> & degenerate)
 {
   // For each triangle, check for intersection against
   // every other triangle with a greater index in the mesh, excluding
@@ -152,8 +158,7 @@ std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh)
 
     // Skip if degenerate
     if (t1.degenerate()) {
-      // degenerateCounter++;     
-      // ofs << "Warning, degenerate triangle at index " << i << ": " << t1;
+      degenerate.push_back(i);
       continue;
     }
 
@@ -179,7 +184,9 @@ void markSeen(const int a, const std::set<int> & bs, std::vector<TrianglePair> &
   }
 }
 
-std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh, int resolution)
+std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
+  std::vector<int> & degenerate,
+  int resolution)
 {
   std::vector<TrianglePair> retval;
   std::set<int> seen, hit;
@@ -194,15 +201,23 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh, i
   const Point3 minBBPt= meshBB.getMin();
   const Point3 maxBBPt= meshBB.getMax();
 
+  const int ncells = surface_mesh->getMeshNumberOfCells();
+  const int reportInterval = (int)(ncells / 5.0);
+
+  // find the specified resolution.  If we're passed a number less than one,
+  // use the cube root of the number of triangles.
+  if (resolution < 1) {
+    resolution = (int)(1 + std::pow(ncells, 1/3.));
+  }
   int resolutions[3]={resolution,resolution,resolution};
 
   std::cerr << "Building virtual grid..." << std::endl;
   UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
-  const int ncells = surface_mesh->getMeshNumberOfCells();
-  for (int i=0; i< ncells; i++) {
-    if (ncells >= 100 && i % (ncells/100) == 0) {
-      std::cerr<<"Building grid is "<<100.0*(double(i)/double(ncells)) <<" percent done \n";
 
+  for (int i=0; i < ncells; i++) {
+    if (ncells >= reportInterval && i % (ncells/reportInterval) == 0) {
+      std::cerr << "Building grid is " << 100.0 * (double(i)/double(ncells)) <<
+        " percent done" << std::endl;
     }
     SpatialBoundingBox triBB;
     t1=getMeshTriangle(i,  surface_mesh);
@@ -217,13 +232,14 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh, i
   // Iterate through triangle indices z from first index to last index.
   // Check against each other triangle with index greater than the index z
   // that also shares a virtual grid bin.
-  SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
+  SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
   for (size_t z=0; z< ncells; z++) {
     seen.clear();
     hit.clear();
 
-    if (ncells >= 100 && z % (ncells/100) == 0) {
-      std::cerr<<"Querying grid is "<<100.0*(double(z)/double(ncells)) <<" percent done \n";
+    if (ncells >= reportInterval && z % (ncells/reportInterval) == 0) {
+      std::cerr << "Querying grid is " << 100.0 * (double(z)/double(ncells)) <<
+        " percent done" << std::endl;
     }
 
     // Retrieve the triangle at index z and construct a bounding box around it
@@ -231,7 +247,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh, i
     t1 = getMeshTriangle(z,  surface_mesh);
  
     if (t1.degenerate()) { 
-      // degenerateCounter++;
+      degenerate.push_back(z);
       continue;
     }
     triBB2.addPoint(t1[0]);
@@ -277,15 +293,15 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh, i
 
 void showhelp()
 {
-  std::cout << "Argument usage:" << std::endl
-            << "  --help           Show this help message." << std::endl
-            << "  --resolution N   Resolution of uniform grid.  Default N = 10.  "
-            << "Set to 1 to run " << std::endl 
-            << "                   the naive algorithm instead of "
-            << "using the spatial index." << std::endl
-            << "  --infile fname   The STL input file (must be specified)." << std::endl
-            << "  --outfile fname  The text output file (defaults to meshTestResults.txt)." << std::endl
-            << std::endl;
+  std::cout << "Argument usage:" << std::endl <<
+    "  --help           Show this help message." << std::endl <<
+    "  --resolution N   Resolution of uniform grid.  Default N = 10.  " <<
+    "       Set to 1 to run the naive algorithm, without the spatial index." << std::endl <<
+    "       Set to less than 1 to use the spatial index with a resolution of the" << std::endl <<
+    "         cube root of the number of triangles." << std::endl <<
+    "  --infile fname   The STL input file (must be specified)." << std::endl <<
+    "  --outfile fname  The text output file (defaults to meshTestResults.txt)." << std::endl <<
+    std::endl;
 }
 
 bool canOpenFile(const std::string & fname)
@@ -328,12 +344,16 @@ void init_params(Input& params, int argc, char ** argv)
   }
 
   SLIC_INFO ("Using parameter values: " << std::endl << 
-      "  resolution = " << params.resolution << std::endl << 
+      "  resolution = " << params.resolution <<
+         (params.resolution < 1? " (use cube root of triangle count)": "") <<
+         std::endl <<
       "  infile = " << params.stlInput << std::endl << 
       "  outfile = " << params.textOutput << std::endl);
 }
 
-bool writeCollisions(const std::vector<TrianglePair> & c, const std::string & outfile)
+bool writeCollisions(const std::vector<TrianglePair> & c,
+  const std::vector<int> & d,
+  const std::string & outfile)
 {
   std::ofstream outf(outfile);
   if (!outf) {
@@ -345,10 +365,28 @@ bool writeCollisions(const std::vector<TrianglePair> & c, const std::string & ou
     outf << c[i].a << " " << c[i].b << std::endl;
   }
 
+  outf << d.size() << " degenerate triangles:" << std::endl;
+  for (int i = 0; i < d.size(); ++i) {
+    outf << d[i] << std::endl;
+  }
+
   return true;
 }
 
 
+/***************************************************************************
+ * The mesh tester checks a triangulated surface mesh for several problems.
+ *
+ * Currently the mesh tester checks for intersecting triangles.  This is
+ * implemented in two ways.  First, a naive algorithm tests each triangle
+ * against each other triangle.  This is easy to understand and verify,
+ * but slow.  A second algorithm uses a UniformGrid to index the bounding
+ * box of the mesh, and checks each triangle for intersection with the
+ * triangles in all the bins the triangle's bounding box falls into.
+ *
+ * Currently, the mesh tester works only with Triangle meshes.
+ ***************************************************************************
+ */
 
 int main( int argc, char** argv )
 {
@@ -405,14 +443,15 @@ int main( int argc, char** argv )
   reader = AXOM_NULLPTR;
 
   std::vector<TrianglePair> collisions;
+  std::vector<int> degenerate;
   if (params.resolution == 1) {
     // Naive method
-    collisions = naiveIntersectionAlgorithm(surface_mesh);
+    collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
   } else {
     // Use a spatial index
-    collisions = uGridIntersectionAlgorithm(surface_mesh, params.resolution);
+    collisions = uGridIntersectionAlgorithm(surface_mesh, degenerate, params.resolution);
   }
-  if (!writeCollisions(collisions, params.textOutput)) {
+  if (!writeCollisions(collisions, degenerate, params.textOutput)) {
     SLIC_ERROR("Couldn't write results to " << params.textOutput);
   }
 
