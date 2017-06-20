@@ -45,7 +45,7 @@ blt_add_executable(
     )
 
 blt_add_executable(
-    NAME        quest_mesh_tester
+    NAME        mesh_tester
     SOURCES     mesh_tester.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}

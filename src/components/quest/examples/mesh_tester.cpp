@@ -48,19 +48,42 @@ typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
 
-typedef struct Input
+enum InputStatus
+{
+  SUCCESS,
+  SHOWHELP,
+  CANTOPENFILE
+};
+
+
+struct Input
 {
   std::string stlInput;
   std::string textOutput;
   int resolution;
-  int errorCode;
+  InputStatus errorCode;
 
   Input() : stlInput(""),
             textOutput("meshTestResults.txt"),
             resolution(0),
-            errorCode(0)
+            errorCode(SUCCESS)
   { };
-} Input;
+
+  Input(int argc, char ** argv);
+
+  void showhelp()
+  {
+    std::cout << "Argument usage:" << std::endl <<
+      "  --help           Show this help message." << std::endl <<
+      "  --resolution N   Resolution of uniform grid.  Default N = 10.  " <<
+      "       Set to 1 to run the naive algorithm, without the spatial index." << std::endl <<
+      "       Set to less than 1 to use the spatial index with a resolution of the" << std::endl <<
+      "         cube root of the number of triangles." << std::endl <<
+      "  --infile fname   The STL input file (must be specified)." << std::endl <<
+      "  --outfile fname  The text output file (defaults to meshTestResults.txt)." << std::endl <<
+      std::endl;
+  };
+};
 
 typedef struct TrianglePair
 {
@@ -75,16 +98,58 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);
 std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
   std::vector<int> & degenerate);
-void markSeen(const int a, const std::set<int> & bs, std::vector<TrianglePair> & list);
+void markSeen(const int a, const std::set<int> & bs,
+  std::vector<TrianglePair> & list);
 std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   std::vector<int> & degenerate,
   int resolution);
-void showhelp();
 bool canOpenFile(const std::string & fname);
-void init_params(Input& params, int argc, char ** argv);
 bool writeCollisions(const std::vector<TrianglePair> & c,
   const std::vector<int> & d,
   const std::string & outfile);
+
+Input::Input(int argc, char ** argv) :
+    stlInput(""),
+    textOutput("meshTestResults.txt"),
+    resolution(0),
+    errorCode(SUCCESS)
+{
+    if (argc < 2) {
+        errorCode = SHOWHELP;
+        return;
+    } else {
+        std::string help = argv[1];
+        if(help == "--help") {
+            errorCode = SHOWHELP;
+            return;
+        }
+        for (int i = 1; i < argc; /* increment i in loop */){
+            std::string arg = argv[i];
+            if (arg == "--resolution"){
+                resolution = atoi(argv[++i]);
+            }
+            else if (arg == "--infile"){
+                stlInput = argv[++i];
+            }
+            else if (arg == "--outfile"){
+                textOutput = argv[++i];
+            }
+            ++i;
+        }
+    }
+
+    if (!canOpenFile(stlInput)) {
+        errorCode = CANTOPENFILE;
+        return;
+    }
+
+    SLIC_INFO ("Using parameter values: " << std::endl <<
+            "  resolution = " << resolution <<
+            (resolution < 1? " (use cube root of triangle count)": "") <<
+            std::endl <<
+            "  infile = " << stlInput << std::endl <<
+            "  outfile = " << textOutput << std::endl);
+}
 
 SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
 {
@@ -175,7 +240,8 @@ std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
   return retval;
 }
 
-void markSeen(const int a, const std::set<int> & bs, std::vector<TrianglePair> & list)
+void markSeen(const int a, const std::set<int> & bs,
+  std::vector<TrianglePair> & list)
 {
   list.reserve(list.size() + bs.size());
   std::set<int>::const_iterator sit = bs.begin(), send = bs.end();
@@ -291,64 +357,10 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   return retval;
 }
 
-void showhelp()
-{
-  std::cout << "Argument usage:" << std::endl <<
-    "  --help           Show this help message." << std::endl <<
-    "  --resolution N   Resolution of uniform grid.  Default N = 10.  " <<
-    "       Set to 1 to run the naive algorithm, without the spatial index." << std::endl <<
-    "       Set to less than 1 to use the spatial index with a resolution of the" << std::endl <<
-    "         cube root of the number of triangles." << std::endl <<
-    "  --infile fname   The STL input file (must be specified)." << std::endl <<
-    "  --outfile fname  The text output file (defaults to meshTestResults.txt)." << std::endl <<
-    std::endl;
-}
-
 bool canOpenFile(const std::string & fname)
 {
   std::ifstream teststream(fname);
   return teststream.good();
-}
-
-void init_params(Input& params, int argc, char ** argv)
-{
-  if (argc < 2) {
-    showhelp();
-    params.errorCode = 1;
-    return;
-  } else {
-    std::string help = argv[1];
-    if(help == "--help") {
-      showhelp();
-      params.errorCode = 1;
-      return;
-    }
-    for (int i = 1; i < argc; /* increment i in loop */){
-      std::string arg = argv[i];
-      if (arg == "--resolution"){
-        params.resolution = atoi(argv[++i]);
-      }
-      else if (arg == "--infile"){
-        params.stlInput = argv[++i];
-      }
-      else if (arg == "--outfile"){
-        params.textOutput = argv[++i];
-      }
-      ++i;
-    }
-  }
-
-  if (!canOpenFile(params.stlInput)) {
-    params.errorCode = 2;
-    return;
-  }
-
-  SLIC_INFO ("Using parameter values: " << std::endl << 
-      "  resolution = " << params.resolution <<
-         (params.resolution < 1? " (use cube root of triangle count)": "") <<
-         std::endl <<
-      "  infile = " << params.stlInput << std::endl << 
-      "  outfile = " << params.textOutput << std::endl);
 }
 
 bool writeCollisions(const std::vector<TrianglePair> & c,
@@ -407,25 +419,23 @@ int main( int argc, char** argv )
   slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
   slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
 
-  // Initialize default parameters and update parameters with command line arguments:
-  Input params;
-  init_params(params, argc, argv);
+  // Initialize default parameters and update with command line arguments:
+  Input params(argc, argv);
 
-  if (params.errorCode > 0) {
-    if (params.errorCode == 1) {
-      // user requested help message; don't print anything
+  if (params.errorCode != SUCCESS) {
+    if (params.errorCode == SHOWHELP) {
+      params.showhelp();
       return EXIT_SUCCESS;
-    } else if (params.errorCode == 2) {
+    } else if (params.errorCode == CANTOPENFILE) {
       std::cerr << "Can't open STL file " << params.stlInput <<
         " for reading." << std::endl;
       return EXIT_FAILURE;
     } else {
-      std::cerr << "Error " << params.errorCode <<
+      std::cerr << "Unknown error " << (int)params.errorCode <<
         " while parsing arguments." << std::endl;
+      return EXIT_FAILURE;
     }
   }
-
-  SLIC_ASSERT(params.resolution > 0);
 
   // Read file
   SLIC_INFO("Reading file: " <<  params.stlInput << "...\n");
@@ -449,7 +459,8 @@ int main( int argc, char** argv )
     collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
   } else {
     // Use a spatial index
-    collisions = uGridIntersectionAlgorithm(surface_mesh, degenerate, params.resolution);
+    collisions = uGridIntersectionAlgorithm(surface_mesh, degenerate,
+      params.resolution);
   }
   if (!writeCollisions(collisions, degenerate, params.textOutput)) {
     SLIC_ERROR("Couldn't write results to " << params.textOutput);
