@@ -11,10 +11,12 @@
 #ifdef AXOM_USE_CXX11
   #include <type_traits>
   #include <unordered_map>
-#else
+#elif defined(AXOM_USE_BOOST)
   #include <boost/static_assert.hpp>
   #include <boost/type_traits.hpp>
   #include "boost/unordered_map.hpp"
+#else
+  #error "quest::SparseOctreeLevel requires either C++11 or boost"
 #endif
 
 namespace axom {  
@@ -39,7 +41,7 @@ namespace quest {
             static_assert( std::is_unsigned<PointRepresenationType>::value, "RepresentationType must be unsigned" );
 
             typedef std::unordered_map<RepresentationType, BroodDataType> MapType;
-        #else
+        #elif defined(AXOM_USE_BOOST)
             BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
             BOOST_STATIC_ASSERT(boost::is_integral<PointRepresenationType>::value);
             BOOST_STATIC_ASSERT(boost::is_unsigned<PointRepresenationType>::value);
@@ -71,7 +73,7 @@ namespace quest {
       #if defined(AXOM_USE_CXX11)
         static_assert( std::is_integral<CoordType>::value, "CoordType must be integral" );
         typedef std::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
-      #else
+      #elif defined(AXOM_USE_BOOST)
         BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
         typedef boost::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
       #endif

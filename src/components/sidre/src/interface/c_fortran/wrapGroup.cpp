@@ -30,6 +30,15 @@ extern "C" {
 // splicer begin class.Group.C_definitions
 // splicer end class.Group.C_definitions
 
+SIDRE_IndexType SIDRE_group_get_index(SIDRE_group * self)
+{
+// splicer begin class.Group.method.get_index
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  IndexType SH_rv = SH_this->getIndex();
+  return SH_rv;
+// splicer end class.Group.method.get_index
+}
+
 const char * SIDRE_group_get_name(const SIDRE_group * self)
 {
 // splicer begin class.Group.method.get_name
@@ -876,27 +885,40 @@ bool SIDRE_group_has_child_group_bufferify(SIDRE_group * self,
 // splicer end class.Group.method.has_child_group_bufferify
 }
 
-SIDRE_group * SIDRE_group_get_group(SIDRE_group * self, const char * path)
+SIDRE_group * SIDRE_group_get_group_from_name(SIDRE_group * self,
+                                              const char * path)
 {
-// splicer begin class.Group.method.get_group
+// splicer begin class.Group.method.get_group_from_name
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_path(path);
   Group * SH_rv = SH_this->getGroup(SH_path);
   SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
   return XSH_rv;
-// splicer end class.Group.method.get_group
+// splicer end class.Group.method.get_group_from_name
 }
 
-SIDRE_group * SIDRE_group_get_group_bufferify(SIDRE_group * self,
-                                              const char * path, int Lpath)
+SIDRE_group * SIDRE_group_get_group_from_name_bufferify(SIDRE_group * self,
+                                                        const char * path,
+                                                        int Lpath)
 {
-// splicer begin class.Group.method.get_group_bufferify
+// splicer begin class.Group.method.get_group_from_name_bufferify
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_path(path, Lpath);
   Group * SH_rv = SH_this->getGroup(SH_path);
   SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
   return XSH_rv;
-// splicer end class.Group.method.get_group_bufferify
+// splicer end class.Group.method.get_group_from_name_bufferify
+}
+
+SIDRE_group * SIDRE_group_get_group_from_index(SIDRE_group * self,
+                                               SIDRE_IndexType idx)
+{
+// splicer begin class.Group.method.get_group_from_index
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  Group * SH_rv = SH_this->getGroup(idx);
+  SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
+  return XSH_rv;
+// splicer end class.Group.method.get_group_from_index
 }
 
 SIDRE_IndexType SIDRE_group_get_group_index(const SIDRE_group * self,

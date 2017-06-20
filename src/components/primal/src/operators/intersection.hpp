@@ -32,32 +32,38 @@ namespace primal {
 
 /*!
  *******************************************************************************
- * \brief Tests if 3D Triangles t1 and t2 (interiors or boundaries) intersect.
+ * \brief Tests if 3D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * This function will return true if an intersection consists of the interior,
- * an edge or a vertex of t1 intersecting any part of t2.
+ * If parameter includeBoundary is false (default), this function will
+ * return true if the interior of t1 intersects the interior of t2.  To include
+ * triangle boundaries in intersections, specify includeBoundary as true.
  *******************************************************************************
  */
 template < typename T >
-bool intersect( const Triangle< T, 3 >& t1, const Triangle< T, 3 >& t2)
+bool intersect( const Triangle< T, 3 >& t1,
+                const Triangle< T, 3 >& t2,
+                const bool includeBoundary = false)
 {
-  return detail::intersect_tri3D_tri3D(t1, t2);
+  return detail::intersect_tri3D_tri3D<T>(t1, t2, includeBoundary);
 }
 
 /*!
  *******************************************************************************
- * \brief Tests if 2D Triangles t1 and t2 (interiors or boundaries) intersect.
+ * \brief Tests if 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * This function will return true if an intersection consists of the interior,
- * an edge or a vertex of t1 intersecting any part of t2.
+ * If parameter includeBoundary is false (default), this function will
+ * return true if the interior of t1 intersects the interior of t2.  To include
+ * triangle boundaries in intersections, specify includeBoundary as true.
  *******************************************************************************
  */
 template < typename T >
-bool intersect( const Triangle< T, 2 >& t1, const Triangle< T, 2 >& t2)
+bool intersect( const Triangle< T, 2 >& t1,
+                const Triangle< T, 2 >& t2,
+                const bool includeBoundary = false)
 {
-  return detail::intersect_tri2D_tri2D(t1, t2);
+  return detail::intersect_tri2D_tri2D<T>(t1, t2, includeBoundary);
 }
 
 /*!

@@ -8,6 +8,7 @@ set(slam_headers
     ModularInt.hpp
 
     #SRM policies
+    policies/CardinalityPolicies.hpp
     policies/SizePolicies.hpp
     policies/OffsetPolicies.hpp
     policies/StridePolicies.hpp
@@ -25,8 +26,7 @@ set(slam_headers
 
     # SRM Relation headers
     Relation.hpp
-    StaticVariableRelation.hpp
-    StaticConstantRelation.hpp
+    StaticRelation.hpp
     DynamicVariableRelation.hpp
 
     # SRM Map headers
@@ -41,8 +41,6 @@ set(slam_sources
 
     # SRM Relation sources
     Relation.cpp
-    StaticVariableRelation.cpp
-    #StaticConstantRelation.cpp
     DynamicVariableRelation.cpp
 
     # SRM Map sources

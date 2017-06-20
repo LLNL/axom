@@ -15,7 +15,7 @@
 namespace tinyHydro {
 
 
-  SubsetRegistry DataRegistry::setRegistry;
+  IndexRegistry DataRegistry::setRegistry;
 
 
 

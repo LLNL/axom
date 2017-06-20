@@ -178,12 +178,14 @@ TEST(sidre_view,create_views)
   View * dv_0 = root->createViewAndAllocate("field0", INT_ID, 1);
   View * dv_1 = root->createViewAndAllocate("field1", INT_ID, 1);
 
+  EXPECT_EQ(0, dv_0->getIndex());
+  EXPECT_EQ(1, dv_1->getIndex());
 
   Buffer * db_0 = dv_0->getBuffer();
   Buffer * db_1 = dv_1->getBuffer();
 
-  EXPECT_EQ(db_0->getIndex(), 0);
-  EXPECT_EQ(db_1->getIndex(), 1);
+  EXPECT_EQ(0, db_0->getIndex());
+  EXPECT_EQ(1, db_1->getIndex());
   delete ds;
 }
 #endif
@@ -197,6 +199,7 @@ TEST(sidre_view,get_path_name)
   View * v1 = root->createView("test/a/b/v1");
   View * v2 = root->createView("test/v2");
   View * v3 = root->createView("v3");
+  View * v4 = root->createView("v4");
 
   EXPECT_EQ(std::string("v1"), v1->getName());
   EXPECT_EQ(std::string("test/a/b"), v1->getPath());
@@ -206,9 +209,12 @@ TEST(sidre_view,get_path_name)
   EXPECT_EQ(std::string("test"), v2->getPath());
   EXPECT_EQ(std::string("test/v2"), v2->getPathName());
 
+  EXPECT_EQ(0, v3->getIndex());
   EXPECT_EQ(std::string("v3"), v3->getName());
   EXPECT_EQ(std::string(""), v3->getPath());
   EXPECT_EQ(std::string("v3"), v3->getPathName());
+
+  EXPECT_EQ(1, v4->getIndex());
 }
 
 //------------------------------------------------------------------------------

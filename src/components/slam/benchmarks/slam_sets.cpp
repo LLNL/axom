@@ -133,8 +133,8 @@ namespace {
 
 template<int SZ>
 void positionSet_compileTimeSize(benchmark::State& state) {
-  typedef axom::slam::policies::CompileTimeSizeHolder<int, SZ>  StaticSetSize;
-  typedef axom::slam::OrderedSet<StaticSetSize>                 SetType;
+  typedef axom::slam::policies::CompileTimeSize<int, SZ>  StaticSetSize;
+  typedef axom::slam::OrderedSet<StaticSetSize>           SetType;
   SetType set(SZ);
 
   while (state.KeepRunning())

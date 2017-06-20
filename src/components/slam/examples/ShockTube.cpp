@@ -15,12 +15,13 @@
  * \brief 1D shock tube, split flux Euler equations
  *
  * \author J. Keasler (original)
- * \author K. Weiss (modified to use the ASC Toolkit Mesh API)
+ * \author K. Weiss (modified to use axom's Slam component)
  *
- * \details  Developing example to use and demo features of Mesh API on shock tube example over structured 1D mesh.
- *           Tests: Sets and subsets.
- *                  Implicit relations over regular grid (currently implemented as explicit static constant relations) 5/2015
- *                  Fields/maps over the data -- and access to sidre/local datastore.
+ * \details  Developing example to use and demo features of Slam on shock tube example over structured 1D mesh.
+ *           Tests:
+ *           * Sets and subsets.
+ *           * Relations over regular grid (should be implicit; currently implemented as explicit static constant relations)
+ *           * Fields/maps over the data -- and access to a local datastore (using Slam::FieldRegistry, can easily convert to Sidre).
  *
  * \verbatim
  *         | m  |            |    mv    |
@@ -52,8 +53,8 @@
 
 #include "slam/FieldRegistry.hpp"
 #include "slam/RangeSet.hpp"
-#include "slam/StaticConstantRelation.hpp"
-
+#include "slam/StaticRelation.hpp"
+#include "slam/Map.hpp"
 
 namespace slamShocktube {
 
@@ -93,48 +94,50 @@ namespace slamShocktube {
   {
   public:
 
-    // other types
-    typedef axom::slam::Set::IndexType                                                            IndexType;
-    typedef axom::slam::Set::PositionType                                                         PositionType;
-    typedef axom::slam::Set::ElementType                                                          ElementType;
+    /// types for Element and Face sets
+    typedef axom::slam::PositionSet                                                             ElemSet;
+    typedef axom::slam::PositionSet                                                             FaceSet;
 
-    // types for Element and Face sets
-    typedef axom::slam::PositionSet                                                               ElemSet;
-    typedef axom::slam::PositionSet                                                               FaceSet;
+    typedef axom::slam::PositionSet::IndexType                                                  IndexType;
+    typedef axom::slam::PositionSet::PositionType                                               PositionType;
+    typedef axom::slam::PositionSet::ElementType                                                ElementType;
 
-    // types for Tube and {In,Out}Flow subsets
-    typedef axom::slam::policies::StrideOne<PositionType>                                         StrideOnePolicy;
-    typedef axom::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
-    typedef axom::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
-    typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
-    typedef axom::slam::RangeSet                                                                  RangeSet;
+    /// types for Tube and {In,Out}Flow subsets
+    typedef axom::slam::policies::StrideOne<PositionType>                                       StrideOnePolicy;
+    typedef axom::slam::policies::NoIndirection<PositionType,ElementType>                       NoIndirectionPolicy;
+    typedef axom::slam::policies::ConcreteParentSubset<ElemSet>                                 TubeSubsetPolicy;
+    typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
+    typedef axom::slam::RangeSet                                                                RangeSet;
 
-    // types for relations
+    /// types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM>  EFStride;
-    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE>  FEStride;
-    typedef axom::slam::StaticConstantRelation<EFStride>                                          ElemToFaceRelation;
-    typedef axom::slam::StaticConstantRelation<FEStride>                                          FaceToElemRelation;
+    typedef axom::slam::policies::CompileTimeStride<PositionType, FACES_PER_ELEM>               EFStride;
+    typedef axom::slam::policies::CompileTimeStride<PositionType, ELEMS_PER_FACE>               FEStride;
+    typedef axom::slam::policies::ConstantCardinality<PositionType, EFStride>                   EFCard;
+    typedef axom::slam::policies::ConstantCardinality<PositionType, FEStride>                   FECard;
+    typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
+    typedef STLIndirection::VectorType                                                          IndexVec;
+
+    typedef axom::slam::StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>             TubeElemToFaceRelation;
+    typedef axom::slam::StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>                FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
-    ElemSubset tubeElems;          // Subset of internal elements
-    ElemSubset inFlowElems;        // Subset of inflow elements (not used in this example)
-    ElemSubset outFlowElems;       // Subset of outflow elements (not used in this example)
-
+    ElemSubset tubeElems;       // Subset of internal elements
+    ElemSubset inFlowElems;     // Subset of inflow elements
+    ElemSubset outFlowElems;    // Subset of outflow elements
     FaceSet faces;              // Faces between adjacent pairs of elements
 
     FaceToElemRelation relationFaceElem;        // co-boundary relation of faces to their elements
-    ElemToFaceRelation relationTubeFace;        // boundary relation of internal 'tube' elements
+    TubeElemToFaceRelation relationTubeFace;        // boundary relation of internal 'tube' elements
   };
 
 
-// Define the explicit instances of our local (key/value) datastore for int and double
-// TODO: Might need an additional uint version for mesh data
+  // Define the explicit instances of our local (key/value) datastore for int and double
   typedef axom::slam::FieldRegistry<int>    IntsRegistry;
   typedef axom::slam::FieldRegistry<double> RealsRegistry;
-  typedef IntsRegistry::MapType                   IntField;
-  typedef RealsRegistry::MapType                  RealField;
+  typedef axom::slam::Map<int>              IntField;
+  typedef axom::slam::Map<double>           RealField;
 
   IntsRegistry intsRegistry;
   RealsRegistry realsRegistry;
@@ -239,60 +242,61 @@ namespace slamShocktube {
  */
   void CreateShockTubeMesh(ShockTubeMesh *mesh)
   {
+    // ------------ Generate the Sets and Subsets
+
     // create element and face sets
     mesh->elems = ShockTubeMesh::ElemSet( intsRegistry.getScalar("numElems") );
     mesh->faces = ShockTubeMesh::FaceSet( intsRegistry.getScalar("numFaces") );
 
-    // define the subsets
+    // construct the element subsets
     ShockTubeMesh::PositionType numElems = mesh->elems.size();
-
-    // construct the element subsets using the named-parameter idiom
     typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
-    mesh->inFlowElems    = ElemSubsetBuilder().range(0,1)
-        . parent( &mesh->elems);
-    mesh->tubeElems      = ElemSubsetBuilder().range(1,numElems - 1)
-        . parent( &mesh->elems);
-    mesh->outFlowElems   = ElemSubsetBuilder().range(numElems - 1,numElems)
-        . parent( &mesh->elems);
+    mesh->inFlowElems    = ElemSubsetBuilder()
+        .range(0,1)
+        .parent( &mesh->elems);
+    mesh->tubeElems      = ElemSubsetBuilder()
+        .range(1,numElems - 1)
+        .parent( &mesh->elems);
+    mesh->outFlowElems   = ElemSubsetBuilder()
+        .range(numElems - 1,numElems)
+        .parent( &mesh->elems);
 
 
-    // ------------ Set up relations
+    // ------------ Generate the Relations
 
     // TODO: Need to define DynamicConstantRelation -- which will allow modifying the relation elements
     // TODO: Need to define ImplicitConstantRelation -- since the relations are actually implicit
     //       -- no storage should be necessary for regular grid neighbors
-    // For now, we will have to do this explicitly...
-    const ShockTubeMesh::PositionType STRIDE = 2;
-    typedef std::vector<ShockTubeMesh::PositionType> IndexVec;
+    //       For now, we use explicitly storage for the relation data...
+
+    typedef ShockTubeMesh::IndexVec IndexVec;
 
     /// Setup the FaceToElem relation
-    IndexVec relVec( STRIDE * mesh->faces.size());
-    IndexVec::iterator relIt = relVec.begin();
+    IndexVec& feRelVec = intsRegistry.addBuffer("feRel", ShockTubeMesh::FACES_PER_ELEM * mesh->faces.size());
+    IndexVec::iterator relIt = feRelVec.begin();
     for(ShockTubeMesh::IndexType idx = 0; idx < static_cast<ShockTubeMesh::IndexType>(mesh->faces.size()); ++idx)
     {
-      *relIt++ = idx;
-      *relIt++ = idx + 1;
+      *relIt++ = mesh->faces[idx];
+      *relIt++ = mesh->faces[idx] + 1;
     }
 
     mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
-    mesh->relationFaceElem.bindRelationData(relVec, STRIDE);
+    mesh->relationFaceElem.bindIndices(feRelVec.size(), &feRelVec);
     SLIC_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
     /// Setup the TubeElementToFace relation: A relation from the tubes subset of the elements to their incident faces
-    //  For convenience, we can reuse the relVec container
     ShockTubeMesh::PositionType numTubeElems = mesh->tubeElems.size();
-    relVec.clear();
-    relVec.resize( STRIDE * numTubeElems);
-    relIt = relVec.begin();
+    IndexVec& efRelVec = intsRegistry.addBuffer("efRel", ShockTubeMesh::ELEMS_PER_FACE * numTubeElems);
+    relIt = efRelVec.begin();
     for(ShockTubeMesh::IndexType idx = 0; idx < static_cast<ShockTubeMesh::IndexType>(numTubeElems); ++idx)
     {
       *relIt++ = mesh->tubeElems[idx] - 1;
       *relIt++ = mesh->tubeElems[idx];
     }
 
-    mesh->relationTubeFace = ShockTubeMesh::ElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
-    mesh->relationTubeFace.bindRelationData(relVec, STRIDE);
+    mesh->relationTubeFace = ShockTubeMesh::TubeElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
+    mesh->relationTubeFace.bindIndices(efRelVec.size(), &efRelVec);
     SLIC_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
   }
@@ -306,9 +310,6 @@ namespace slamShocktube {
   {
     typedef ShockTubeMesh::IndexType  IndexType;
     typedef ShockTubeMesh::RangeSet   RangeSet;
-
-    // TODO: Define and use mesh API maps over sets for these
-    // Note -- the extra code and allocations here will be unnecessary once maps on sets are defined
 
     // Create element centered fields
     RealField& mass      = realsRegistry.addField("mass", &mesh.elems);
@@ -512,44 +513,58 @@ namespace slamShocktube {
     RealField const& energy   = realsRegistry.getField("energy");
     RealField const& pressure = realsRegistry.getField("pressure");
 
-    static const ShockTubeMesh::PositionType MAX_ELEM_DUMP = 10;
-    const int maxDump = std::min(mesh.elems.size(), MAX_ELEM_DUMP);
-    const int rmaxDump = std::min(MAX_ELEM_DUMP, mesh.elems.size() - maxDump);
+    static const ShockTubeMesh::PositionType MAX_ELEM_DUMP = 20;
+    const int maxDumpPerSide = std::min(mesh.elems.size(), MAX_ELEM_DUMP) / 2;
 
-    // TODO: The following is currently grabbing the raw data from the Map and spitting out at most MAX_ELEM_DUMP elements
-    // I would like to create a subset with a stride to only print every n_th element
-    // Alternatively -- it can use an indirection map to grab the values, and write out to an sstream
+    typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
+    ShockTubeMesh::ElemSubset begSet, endSet;
+    begSet = ElemSubsetBuilder().parent(&mesh.elems).size(maxDumpPerSide);
+    endSet = ElemSubsetBuilder().parent(&mesh.elems).size(maxDumpPerSide).offset(mesh.elems.size() - maxDumpPerSide);
 
-    std::stringstream elemStream, mStream, pStream, eStream, prStream;
+    SLIC_ASSERT(  begSet.isValid(verboseOutput));
+    SLIC_ASSERT(  endSet.isValid(verboseOutput));
 
-    mStream << std::setprecision(3);
-    pStream << std::setprecision(3);
-    eStream << std::setprecision(3);
-    prStream << std::setprecision(3);
+    // Use subsets to output a few samples from the beginning and end of the tube
+    std::stringstream elemStream, mStream, pStream, eStream, rStream;
 
-    for(int i = 0; i<maxDump; ++i)
+    elemStream << std::setw(5) << std::setfill(' ');
+    mStream << std::setw(5) << std::setfill(' ') << std::setprecision(3);
+    pStream << std::setw(5) << std::setfill(' ') << std::setprecision(3);
+    eStream << std::setw(5) << std::setfill(' ') << std::setprecision(3);
+    rStream << std::setw(5) << std::setfill(' ') << std::setprecision(3);
+
+    for(int i = 0; i< begSet.size(); ++i)
     {
-      ShockTubeMesh::IndexType ind = mesh.elems[i];
-      elemStream << ind << "\t";
+      ShockTubeMesh::IndexType ind = begSet[i];
+      if(i==0)
+        elemStream << "IN" << "\t";
+      else
+        elemStream << ind << "\t";
+
       mStream << mass[ind] << "\t";
       pStream << momentum[ind] << "\t";
       eStream << energy[ind] << "\t";
-      prStream << pressure[ind] << "\t";
+      rStream << pressure[ind] << "\t";
     }
+
     elemStream << "...\t";
     mStream << "...\t";
     pStream << "...\t";
     eStream << "...\t";
-    prStream << "...\t";
+    rStream << "...\t";
 
-    for(int i = mesh.elems.size() - rmaxDump; i<mesh.elems.size(); ++i)
+    for(int i = 0; i< endSet.size(); ++i)
     {
-      ShockTubeMesh::IndexType ind = mesh.elems[i];
-      elemStream << ind << "\t";
+      ShockTubeMesh::IndexType ind = endSet[i];
+      if(ind == endSet.parentSet()->size() - 1 )
+        elemStream << "OUT" << "\t";
+      else
+        elemStream << ind << "\t";
+
       mStream << mass[ind] << "\t";
       pStream << momentum[ind] << "\t";
       eStream << energy[ind] << "\t";
-      prStream << pressure[ind] << "\t";
+      rStream << pressure[ind] << "\t";
     }
 
     SLIC_INFO( "Data dump: \n"
@@ -557,7 +572,7 @@ namespace slamShocktube {
         << "mass:     " << mStream.str() << "\n"
         << "momemtum: " << pStream.str() << "\n"
         << "energy:   " << eStream.str() << "\n"
-        << "pressure: " << prStream.str() << "\n" );
+        << "pressure: " << rStream.str() << "\n" );
 
   }
 
@@ -595,8 +610,9 @@ int main(void)
   {
     if( currCycle % dumpInterval == 0)
     {
-      SLIC_INFO("\tStarting cycle " << currCycle
-                                    << " at time " << realsRegistry.getScalar("time"));
+      SLIC_INFO("\tStarting cycle "
+          << currCycle
+          << " at time " << realsRegistry.getScalar("time"));
       dumpData(mesh);
     }
 
@@ -604,8 +620,10 @@ int main(void)
     UpdateElemInfo(mesh);
   }
 
-  SLIC_INFO("\tFinished cycle " << currCycle
-                                << " at time " << realsRegistry.getScalar("time"));
+  SLIC_INFO("\tFinished cycle "
+      << currCycle
+      << " at time " << realsRegistry.getScalar("time"));
+
   dumpData(mesh);
 
   SLIC_INFO("done.");

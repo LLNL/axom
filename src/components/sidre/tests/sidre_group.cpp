@@ -43,6 +43,9 @@ TEST(sidre_group,get_name)
   Group * root = ds->getRoot();
   Group * group = root->createGroup("test");
 
+  EXPECT_TRUE(root->isRoot());
+  EXPECT_FALSE(group->isRoot());
+
   EXPECT_TRUE(group->getName() == std::string("test") );
 
   Group * group2 = root->getGroup("foo");
@@ -133,6 +136,13 @@ TEST(sidre_group,group_with_path)
   EXPECT_TRUE(group_testa->hasGroup("testb/testc"));
   EXPECT_FALSE(group_testa->hasGroup("testb/BAD"));
   EXPECT_FALSE(group_testa->hasGroup("testb/testc/BAD"));
+
+  EXPECT_EQ(root->getNumGroups(), 3u);
+  EXPECT_TRUE(root->hasGroup(0));
+  EXPECT_TRUE(root->hasGroup(1));
+  EXPECT_TRUE(root->hasGroup(2));
+  EXPECT_FALSE(root->hasGroup(3));
+  EXPECT_FALSE(root->hasGroup(InvalidIndex));
 
   unsigned int testbnumgroups = group_testa->getGroup("testb")->getNumGroups();
   Group * group_cdup = group_testa->createGroup("testb/testc");
@@ -225,6 +235,8 @@ TEST(sidre_group,get_group)
   EXPECT_TRUE( child->getParent() == parent );
 
   EXPECT_TRUE( parent->getGroup("child") == child );
+  EXPECT_TRUE( parent->getGroup(0) == child );
+
   // check error condition
   EXPECT_TRUE( parent->getGroup("non-existant group") == AXOM_NULLPTR );
 
@@ -243,6 +255,7 @@ TEST(sidre_group,get_view)
   View * view = parent->createView("view");
 
   EXPECT_TRUE( parent->getView("view") == view );
+  EXPECT_TRUE( parent->getView(0) == view );
 
   // check error condition
   EXPECT_TRUE( parent->getView("non-existant view") == AXOM_NULLPTR );
@@ -353,6 +366,8 @@ TEST(sidre_group,get_view_names_and_indicies)
 
   IndexType idx1 = parent->getViewIndex("view1");
   IndexType idx2 = parent->getViewIndex("view2");
+  EXPECT_EQ(idx1, view1->getIndex());
+  EXPECT_EQ(idx2, view2->getIndex());
 
   const std::string& name1 = parent->getViewName(idx1);
   const std::string& name2 = parent->getViewName(idx2);
@@ -375,7 +390,43 @@ TEST(sidre_group,get_view_names_and_indicies)
 }
 
 //------------------------------------------------------------------------------
-// Verify getFirstValidViewIndex, getNextValidGroupIndex
+// Verify getFirstValidGroupIndex, getNextValidGroupIndex
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_first_and_next_group_index)
+{
+  DataStore * ds = new DataStore();
+  Group * root = ds->getRoot();
+
+  Group * parent = root->createGroup("parent");
+  Group * group1 = parent->createGroup("group1");
+  Group * group2 = parent->createGroup("group2");
+  EXPECT_EQ(parent->getNumGroups(), 2u);
+
+  IndexType idx1 = parent->getFirstValidGroupIndex();
+  IndexType idx2 = parent->getNextValidGroupIndex(idx1);
+  IndexType idx3 = parent->getNextValidGroupIndex(idx2);
+  EXPECT_EQ(0, idx1);
+  EXPECT_EQ(1, idx2);
+  EXPECT_EQ(InvalidIndex, idx3);
+
+  Group * group1out = parent->getGroup(idx1);
+  Group * group2out = parent->getGroup(idx2);
+  EXPECT_EQ(group1, group1out);
+  EXPECT_EQ(group2, group2out);
+
+  // check error conditions
+  Group * emptyGroup = root->createGroup("emptyGroup");
+  IndexType badidx1 = emptyGroup->getFirstValidGroupIndex();
+  IndexType badidx2 = emptyGroup->getNextValidGroupIndex(badidx1);
+
+  EXPECT_TRUE(badidx1 == InvalidIndex);
+  EXPECT_TRUE(badidx2 == InvalidIndex);
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Verify getFirstValidViewIndex, getNextValidViewIndex
 //------------------------------------------------------------------------------
 TEST(sidre_group,get_first_and_next_view_index)
 {
@@ -385,24 +436,22 @@ TEST(sidre_group,get_first_and_next_view_index)
   Group * parent = root->createGroup("parent");
   View * view1 = parent->createView("view1");
   View * view2 = parent->createView("view2");
-
-  Group * emptyGroup = root->createGroup("emptyGroup");
-
   EXPECT_EQ(parent->getNumViews(), 2u);
 
   IndexType idx1 = parent->getFirstValidViewIndex();
   IndexType idx2 = parent->getNextValidViewIndex(idx1);
+  IndexType idx3 = parent->getNextValidViewIndex(idx2);
+  EXPECT_EQ(0, idx1);
+  EXPECT_EQ(1, idx2);
+  EXPECT_EQ(InvalidIndex, idx3);
 
-  const std::string& name1 = parent->getViewName(idx1);
-  const std::string& name2 = parent->getViewName(idx2);
-
-  EXPECT_EQ(name1, std::string("view1"));
-  EXPECT_EQ(view1->getName(), name1);
-
-  EXPECT_EQ(name2, std::string("view2"));
-  EXPECT_EQ(view2->getName(), name2);
+  View * view1out = parent->getView(idx1);
+  View * view2out = parent->getView(idx2);
+  EXPECT_EQ(view1, view1out);
+  EXPECT_EQ(view2, view2out);
 
   // check error conditions
+  Group * emptyGroup = root->createGroup("emptyGroup");
   IndexType badidx1 = emptyGroup->getFirstValidViewIndex();
   IndexType badidx2 = emptyGroup->getNextValidViewIndex(badidx1);
 
@@ -411,6 +460,7 @@ TEST(sidre_group,get_first_and_next_view_index)
 
   delete ds;
 }
+
 //------------------------------------------------------------------------------
 // Verify getGroupName(), getGroupIndex()
 //------------------------------------------------------------------------------
@@ -427,6 +477,8 @@ TEST(sidre_group,get_group_name_index)
 
   IndexType idx1 = parent->getGroupIndex("group1");
   IndexType idx2 = parent->getGroupIndex("group2");
+  EXPECT_EQ(idx1, group1->getIndex());
+  EXPECT_EQ(idx2, group2->getIndex());
 
   const std::string& name1 = parent->getGroupName(idx1);
   const std::string& name2 = parent->getGroupName(idx2);
@@ -466,6 +518,8 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_FALSE( view->hasBuffer() );
   EXPECT_TRUE( group->hasView("view") );
   IndexType iview = group->getViewIndex("view");
+  EXPECT_EQ(0, iview);
+  iview = view->getIndex();
   EXPECT_EQ(0, iview);
 
   // try creating view again, should be a no-op.
@@ -729,7 +783,13 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_TRUE(flds->hasGroup("c"));
 
   // move "b" to a child of "sub"
-  flds->createGroup("sub")->moveGroup(gb);
+  EXPECT_EQ(1, gb->getIndex());
+  EXPECT_EQ(flds, gb->getParent());
+  Group * gsub = flds->createGroup("sub");
+  Group * gb0 = gsub->moveGroup(gb);
+  EXPECT_EQ(gb, gb0);
+  EXPECT_EQ(0, gb->getIndex());
+  EXPECT_EQ(gsub, gb->getParent());
 
   // flds->print();
 
@@ -1062,23 +1122,35 @@ TEST(sidre_group,rename_group)
   Group * child2 = root->createGroup("g_b");
   Group * child3 = root->createGroup("g_c");
 
+  // rename should not change the index
+  EXPECT_EQ(0, child1->getIndex());
   bool success = child1->rename("g_r");
   EXPECT_TRUE( success );
-  EXPECT_TRUE( child1->getName() == "g_r" );
+  EXPECT_EQ( "g_r", child1->getName() );
+  EXPECT_EQ(0, child1->getIndex());
   EXPECT_TRUE( root->hasGroup("g_r") );
   EXPECT_FALSE( root->hasGroup("g_a") );
 
+  // try to rename to path
   success = child2->rename("fields/g_s");
   EXPECT_FALSE( success );
-  EXPECT_TRUE( child2->getName() == "g_b" );
+  EXPECT_EQ( "g_b", child2->getName() );
 
+  // Try to rename to existing group name
   success = child3->rename("g_b");
   EXPECT_FALSE( success );
-  EXPECT_TRUE( child3->getName() == "g_c" );
+  EXPECT_EQ( "g_c", child3->getName() );
+
+  // Rename root group
+  EXPECT_EQ(InvalidIndex, root->getIndex());
+  EXPECT_EQ(root, root->getParent());
+  EXPECT_EQ("", root->getName());
+  root->rename("newroot");
+  EXPECT_EQ(InvalidIndex, root->getIndex());
+  EXPECT_EQ(root, root->getParent());
+  EXPECT_EQ("newroot", root->getName());
 
 }
-
-
 
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_name_change)

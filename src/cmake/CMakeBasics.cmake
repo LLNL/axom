@@ -42,6 +42,11 @@
 include(cmake/AxomOptions.cmake)
 
 ################################
+# Macros common across projects
+################################
+include(cmake/AxomMacros.cmake)
+
+################################
 # AXOM's Third party library setup
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)

@@ -22,6 +22,15 @@ namespace axom {
 namespace quest 
 {
 
+/*!
+ * \class STLReader
+ * 
+ * \brief A simple reader for an STL file encoded in the ascii or binary format.
+ * 
+ * STL (STereoLithography) is a common file format for triangle meshes.
+ * It encodes a "soup of triangles" by explicitly listing the coordinate 
+ * positions of the three vertices of each triangle. 
+ */
 class STLReader
 {
 public:
@@ -76,17 +85,25 @@ public:
 private:
     /**
      * \brief A predicate to check if the file is in ascii format
+     *
+     * We can test the size of the STL file to determine if it is in
+     * the binary or ascii format.  The binary format is defined
+     * to have an 80 byte header followed by a 4 byte integer
+     * encoding the number of triangles, followed by the triangle data
+     * (50 bytes per triangle).
+     * 
+     * \return True, if the file is ascii encoded, False if it is binary
      */
     bool isAsciiFormat() const;
 
     /**
-     * \brief Reads an ascii encoded STL file into memory
+     * \brief Reads an ascii-encoded STL file into memory
      * \note The filename should be set with STLReader::setFileName()
      */
     void readAsciiSTL();
 
     /**
-     * \brief Reads a binary encoded STL file into memory
+     * \brief Reads a binary-encoded STL file into memory
      * \note The filename should be set with STLReader::setFileName()
      */
     void readBinarySTL();
@@ -94,8 +111,8 @@ private:
 protected:
     std::string m_fileName;
 
-    int m_num_nodes;
-    int m_num_faces;
+    axom::common::int32 m_num_nodes;
+    axom::common::int32 m_num_faces;
 
     std::vector<double> m_nodes;
 

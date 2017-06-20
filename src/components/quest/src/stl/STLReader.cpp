@@ -16,11 +16,16 @@
 #include "axom/Types.hpp"
 #include "slic/slic.hpp"
 
-
 // C/C++ includes
 #include <cstddef>   // for NULL
 #include <fstream>   // for ifstream
 
+
+namespace
+{
+    const std::size_t  BINARY_HEADER_SIZE = 80; // bytes
+    const std::size_t  BINARY_TRI_SIZE = 50;    // bytes
+}
 
 
 //------------------------------------------------------------------------------
@@ -55,24 +60,40 @@ void STLReader::clear()
 //------------------------------------------------------------------------------
 bool STLReader::isAsciiFormat() const
 {
-    // An STL file is in ASCII format if the first word is 'solid'
+    // The binary format consists of 
+    //    a header of size BINARY_HEADER_SIZE==80 bytes
+    //    followed by a four byte int encoding the number of triangles
+    //    followed by the triangle data (BINARY_TRI_SIZE == 50 bytes per triangle)
 
-    std::ifstream ifs( m_fileName.c_str());
-    SLIC_ASSERT_MSG(ifs.is_open()
-                   , "There was a problem reading the provided STL file " << m_fileName);
+    // Open the file
+    std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
+    SLIC_ASSERT_MSG(ifs.is_open(),
+                   "There was a problem reading the provided STL file " << m_fileName);
 
-    std::string first;
-    ifs >> first;
-
-    return first == "solid";
+    // Find out the file size
+    ifs.seekg(0, ifs.end);
+    axom::common::int32 fileSize = ifs.tellg();
+    
+    const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(axom::common::int32));
+    if(fileSize < totalHeaderSize)
+        return true;
+    
+    // Find the number of triangles (if the file were binary)
+    int numTris = 0;
+    ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
+    ifs.read( (char*)&numTris, sizeof(axom::common::int32));
+    
+    // Check if the size matches our expectation
+    int expectedBinarySize = totalHeaderSize + (numTris * BINARY_TRI_SIZE);
+    return (fileSize != expectedBinarySize);
 }
 
 //------------------------------------------------------------------------------
 void STLReader::readAsciiSTL()
 {
     std::ifstream ifs( m_fileName.c_str());
-    SLIC_ASSERT_MSG(ifs.is_open()
-                   , "There was a problem reading the provided STL file " << m_fileName);
+    SLIC_ASSERT_MSG(ifs.is_open(),
+                    "There was a problem reading the provided STL file " << m_fileName);
 
     std::string junk;
     double x,y,z;
@@ -99,13 +120,10 @@ void STLReader::readAsciiSTL()
 
 void STLReader::readBinarySTL()
 {
-  const std::size_t  BINARY_HEADER_SIZE = 80; // bytes
-  const std::size_t  BINARY_TRI_SIZE = 50;    // bytes
-
   // Binary STL format consists of
-  //    an 80 byte header
+  //    an 80 byte header (BINARY_HEADER_SIZE)
   //    followed by a 32 bit int encoding the number of faces
-  //    followed by the triangles, each of which is 50 bytes
+  //    followed by the triangles, each of which is 50 bytes (BINARY_TRI_SIZE)
 
 
   // A local union data structure for triangles in a binary STL
@@ -124,7 +142,7 @@ void STLReader::readBinarySTL()
   ifs.seekg(BINARY_HEADER_SIZE);
 
   // read the num faces and reserve room for the vertex positions
-  ifs.read( (char*)&m_num_faces, 4);
+  ifs.read( (char*)&m_num_faces, sizeof(axom::common::int32));
 
   m_num_nodes = m_num_faces * 3;
   m_nodes.reserve( m_num_nodes * 3);
