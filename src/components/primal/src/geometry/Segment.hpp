@@ -76,7 +76,7 @@ public:
    */
   double length() const
   {
-	typedef Vector<T, NDIMS> VectorType;
+    typedef Vector< T, NDIMS > VectorType;
     return VectorType(m_source, m_target).norm();
   }
 private:

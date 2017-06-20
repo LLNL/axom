@@ -681,24 +681,21 @@ std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-BoundingBox<T, NDIMS>& BoundingBox< T,NDIMS >::intersect(const BoundingBox& otherBox)
+BoundingBox< T, NDIMS >& BoundingBox< T,NDIMS >::intersect(
+  const BoundingBox& otherBox)
 {
 
-  for(int i=0; i< NDIMS; ++i)
-  {
+  for (int i=0; i< NDIMS; ++i) {
     m_min[i] = std::max( m_min[i], otherBox.m_min[i]);
     m_max[i] = std::min( m_max[i], otherBox.m_max[i]);
   }
 
-  if(! isValid() )
-  {
+  if (!isValid() ) {
     clear();
   }
 
   return *this;
 }
-
-
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >

@@ -90,7 +90,6 @@ TEST( primal_intersection_impl, fuzzy_comparisons )
   EXPECT_FALSE(  primal::detail::isGpeq(0.95, 1.0, false, eps) );
   EXPECT_FALSE( primal::detail::isGpeq(0.85, 1.0, false, eps) );
 
-
 }
 
 TEST( primal_intersection_impl, zero_count )
@@ -99,40 +98,51 @@ TEST( primal_intersection_impl, zero_count )
 
   int expectedCount = 0;
 
-  EXPECT_EQ( primal::detail::countZeros(1, 1, 1, eps),             expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(-1, 1, -5, eps),           expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(0.15, -0.15, 1.3, eps),    expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(1, 1, 1, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(-1, 1, -5, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(0.15, -0.15, 1.3, eps),
+             expectedCount );
 
   expectedCount = 1;
 
-  EXPECT_EQ( primal::detail::countZeros(-1, 1, 0, eps),            expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(-0.2, -0.05, 3, eps),      expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(0.07, -0.5, 3, eps),       expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(-1, 1, 0, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(-0.2, -0.05, 3, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(0.07, -0.5, 3, eps),
+             expectedCount );
 
   expectedCount = 2;
 
-  EXPECT_EQ( primal::detail::countZeros(1, 0.05, 0, eps),          expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(0.05, -0.02, -0.12, eps),  expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(0.07, -0.5, 0, eps),       expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(1, 0.05, 0, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(0.05, -0.02, -0.12, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(0.07, -0.5, 0, eps),
+             expectedCount );
 
   expectedCount = 3;
 
-  EXPECT_EQ( primal::detail::countZeros(0.01, 0.05, 0, eps),       expectedCount );
-  EXPECT_EQ( primal::detail::countZeros(-0.01, -0.02, 0.05, eps),  expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(0.01, 0.05, 0, eps),
+             expectedCount );
+  EXPECT_EQ( primal::detail::countZeros(-0.01, -0.02, 0.05, eps),
+             expectedCount );
 
-  EXPECT_TRUE ( primal::detail::oneZeroOthersMatch(0, 1, 0.2, eps) );
-  EXPECT_TRUE ( primal::detail::oneZeroOthersMatch(-1, 0.02, -9, eps) );
-  EXPECT_TRUE ( primal::detail::oneZeroOthersMatch(-1, -0.9, -0.05, eps) );
+  EXPECT_TRUE( primal::detail::oneZeroOthersMatch(0, 1, 0.2, eps) );
+  EXPECT_TRUE( primal::detail::oneZeroOthersMatch(-1, 0.02, -9, eps) );
+  EXPECT_TRUE( primal::detail::oneZeroOthersMatch(-1, -0.9, -0.05, eps) );
   EXPECT_FALSE( primal::detail::oneZeroOthersMatch(0, -0.2, 0.2, eps) );
   EXPECT_FALSE( primal::detail::oneZeroOthersMatch(-1, 0.02, 5, eps) );
   EXPECT_FALSE( primal::detail::oneZeroOthersMatch(-1, 0.02, 0.05, eps) );
   EXPECT_FALSE( primal::detail::oneZeroOthersMatch(-1, 2, 5, eps) );
   EXPECT_FALSE( primal::detail::oneZeroOthersMatch(-0.01, 0.05, 0, eps) );
 
-  EXPECT_TRUE ( primal::detail::twoZeros(0, 0, 1, eps) );
-  EXPECT_TRUE ( primal::detail::twoZeros(0.05, -0.05, 1, eps) );
-  EXPECT_TRUE ( primal::detail::twoZeros(-0.05, -1.5, 0.05, eps) );
-  EXPECT_TRUE ( primal::detail::twoZeros(1, 0.05, 0.01, eps) );
+  EXPECT_TRUE( primal::detail::twoZeros(0, 0, 1, eps) );
+  EXPECT_TRUE( primal::detail::twoZeros(0.05, -0.05, 1, eps) );
+  EXPECT_TRUE( primal::detail::twoZeros(-0.05, -1.5, 0.05, eps) );
+  EXPECT_TRUE( primal::detail::twoZeros(1, 0.05, 0.01, eps) );
   EXPECT_FALSE( primal::detail::twoZeros(0, 0.05, 0.01, eps) );
   EXPECT_FALSE( primal::detail::twoZeros(0, 0.05, 0.01, eps) );
   EXPECT_FALSE( primal::detail::twoZeros(1, 0.05, 0.15, eps) );

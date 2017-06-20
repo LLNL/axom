@@ -26,7 +26,6 @@
 #include <vector>
 #include <ostream> // for std::ostream
 
-
 namespace axom {
 namespace primal {
 
@@ -56,7 +55,7 @@ public:
   typedef NumericArray< T,NDIMS > NumArrayType;
 
 private:
-  typedef std::vector<PointType> Coords;
+  typedef std::vector< PointType > Coords;
 
 public:
   /** Default constructor for an empty polygon   */
@@ -64,7 +63,7 @@ public:
 
   /**
    * \brief Constructor for an empty polygon that reserves space for
-   * 		the given number of vertices
+   *    the given number of vertices
    *
    * \param [in] numExpectedVerts The number of vertices for which to reserve space
    * \pre numExpectedVerts is not negative
@@ -72,8 +71,8 @@ public:
    * */
   Polygon(int numExpectedVerts)
   {
-	  SLIC_ASSERT(numExpectedVerts >= 0);
-	  m_vertices.reserve(numExpectedVerts);
+    SLIC_ASSERT(numExpectedVerts >= 0);
+    m_vertices.reserve(numExpectedVerts);
   }
 
   /** Return the number of vertices in the polygon */
@@ -108,8 +107,7 @@ public:
 
     NumArrayType sum;
 
-    for(int i=0; i< numVertices(); ++i)
-    {
+    for (int i=0; i< numVertices(); ++i) {
       sum += m_vertices[i].array();
     }
     sum /= numVertices();
@@ -127,20 +125,17 @@ public:
   {
     const int sz = numVertices();
 
-    os  <<"{" << sz <<"-gon:";
-    for(int i=0; i< sz-1; ++i)
-    {
-        os << m_vertices[i] << ",";
+    os <<"{" << sz <<"-gon:";
+    for (int i=0; i< sz-1; ++i) {
+      os << m_vertices[i] << ",";
     }
-    if(sz >= 2)
-    {
+    if (sz >= 2) {
       os<<m_vertices[sz-1];
     }
     os<< "}";
 
     return os;
   }
-
 
   /**
    * \brief Simple check for validity of a polygon
@@ -153,11 +148,9 @@ public:
     return m_vertices.size() >= 3;
   }
 
-
 private:
   Coords m_vertices;
 };
-
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Polygon's operators
@@ -168,7 +161,6 @@ std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly)
   poly.print(os);
   return os;
 }
-
 
 } // namespace primal
 } // namespace axom

@@ -879,12 +879,12 @@ inline NumericArray< T,SIZE > abs(const NumericArray< T,SIZE >& arr)
 {
   NumericArray< T, SIZE > result(arr);
 
-  for(int i=0; i<SIZE; ++i)
+  for (int i=0; i<SIZE; ++i) {
     result[i] = axom::utilities::abs(result[i]);
+  }
 
   return result;
 }
-
 
 } /* namespace primal*/
 

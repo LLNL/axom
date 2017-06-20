@@ -45,7 +45,7 @@ bool intersect( const Triangle< T, 3 >& t1,
                 const Triangle< T, 3 >& t2,
                 const bool includeBoundary = false)
 {
-  return detail::intersect_tri3D_tri3D<T>(t1, t2, includeBoundary);
+  return detail::intersect_tri3D_tri3D< T >(t1, t2, includeBoundary);
 }
 
 /*!
@@ -63,7 +63,7 @@ bool intersect( const Triangle< T, 2 >& t1,
                 const Triangle< T, 2 >& t2,
                 const bool includeBoundary = false)
 {
-  return detail::intersect_tri2D_tri2D<T>(t1, t2, includeBoundary);
+  return detail::intersect_tri2D_tri2D< T >(t1, t2, includeBoundary);
 }
 
 /*!
@@ -207,7 +207,6 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
 {
   return detail::intersect_tri_segment(tri, seg, t);
 }
-
 
 } /* namespace primal */
 } /* namespace axom */
