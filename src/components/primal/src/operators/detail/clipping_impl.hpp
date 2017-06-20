@@ -38,13 +38,19 @@ struct PtPlaneClassifier {
    };
 };
 
+/** Returns true when index is even  */
+bool isEven(int index)
+{
+   return (index & 1)==0;
+}
 
 /**
  * \brief Specialized point plane classifier for axis aligned planes
  *
- * \param pt The plane to classify
- * \param index The index of the axis aligned plane. See below for mapping
- * \param val The plane's coordinate with respect to the given axis
+ * \param [in] pt The plane to classify
+ * \param [in] index The index of the axis aligned plane. See below for mapping
+ * \param [in] val The plane's coordinate with respect to the given axis
+ * \param [in] eps A parameter for thickening width of the plane (default 1e-8)
  *
  * Mapping of index to axis
  * * 0 -> -x axis
@@ -57,20 +63,18 @@ struct PtPlaneClassifier {
  * \return A PtPlaneClassifier value based on the relative orientations
  */
 template<typename T, int NDIMS>
-int classifyPointAxisPlane(const Point<T, NDIMS>& pt, int index, T val)
+int classifyPointAxisPlane(const Point<T, NDIMS>& pt, int index, T val, const double eps = 1e-8)
 {
-  const double EPS = 1e-8;
-
   // Note: we are exploiting the fact that the planes are axis aligned
   // So the dot product is +/- the given coordinate.
   // In general, we would need to call distance(pt, plane) here
-  T dist = (index  % 2 == 0)
+  T dist = isEven(index)
         ? -(pt[ index/2 ] - val)
         :  pt[ index/2 ] - val;
 
-  if(dist > EPS)
+  if(dist > eps)
     return PtPlaneClassifier::POINT_IN_FRONT_OF_PLANE;
-  if(dist < -EPS)
+  if(dist < -eps)
     return PtPlaneClassifier::POINT_BEHIND_PLANE;
 
   return PtPlaneClassifier::POINT_ON_PLANE;
@@ -79,10 +83,10 @@ int classifyPointAxisPlane(const Point<T, NDIMS>& pt, int index, T val)
 /**
  * \brief Finds the clipping intersection point between points a and b.
  *
- * \param a The point behind the plane
- * \param b The point in front of the plane
- * \param index The index of the axis aligned plane.
- * \param val The plane's coordinate with respect to the given axis
+ * \param [in] a The point behind the plane
+ * \param [in] b The point in front of the plane
+ * \param [in] index The index of the axis aligned plane.
+ * \param [in] val The plane's coordinate with respect to the given axis
  * \return The point between a and b whose corresponding coordinate is val
  *
  * \see classifyPointAxisPlane for a description of how index maps to coordinates.
@@ -116,8 +120,8 @@ Point<T,NDIMS> findIntersectionPoint(const Point<T, NDIMS>& a, const Point<T, ND
  * \param [in] prevPoly  An input polygon with the vertices to clip
  * \param [out] currentPoly An output polygon whose coordinates are clipped
  *                          against this plane.
- * \param index The index of the axis aligned plane.
- * \param val The plane's coordinate with respect to the given axis
+ * \param [in] index The index of the axis aligned plane.
+ * \param [in] val The plane's coordinate with respect to the given axis
  *
  * \note Algorithm for robust clipping against "thick" planes derived from
  *       Section 8.3 of Christer Ericson's "Real-Time Collision Detection"
@@ -134,7 +138,9 @@ void clipAxisPlane(const Polygon<T,NDIMS>* prevPoly, Polygon<T,NDIMS>* currentPo
   int numVerts = prevPoly->numVertices();
 
   if(numVerts == 0)
+  {
     return;
+  }
 
   // Initialize point a with the last vertex of the polygon
   const PointType* a = &(*prevPoly)[numVerts-1];
@@ -173,12 +179,8 @@ void clipAxisPlane(const Polygon<T,NDIMS>* prevPoly, Polygon<T,NDIMS>* currentPo
       case PtPlaneClassifier::POINT_BEHIND_PLANE:
         currentPoly->addVertex(*b);
         break;
-      default:
-        break;
       }
       break;
-    default:
-        break;
     }
 
     // swap a and b

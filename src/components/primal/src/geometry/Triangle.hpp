@@ -275,7 +275,7 @@ public:
    *****************************************************************************
    * \brief Computes the request angle corresponding to the given vertex ID.
    * \param [in] idx the index of the corresponding vertex
-   * \return alpha the incidence angle.
+   * \return alpha the incidence angle in the range [0, pi].
    * \pre idx >= 0 && idx < NUM_TRI_VERTS
    *****************************************************************************
    */

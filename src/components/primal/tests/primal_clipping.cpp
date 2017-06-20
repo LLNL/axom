@@ -8,8 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-#include <limits>
-
 #include "gtest/gtest.h"
 
 #include "primal/Point.hpp"
@@ -17,6 +15,8 @@
 #include "primal/Triangle.hpp"
 
 #include "primal/clipping.hpp"
+
+#include <limits>
 
 
 namespace Primal3D
@@ -27,6 +27,58 @@ namespace Primal3D
   typedef axom::primal::Triangle<double, 3> TriangleType;
   typedef axom::primal::Polygon<double, 3> PolygonType;
 }
+
+
+TEST( primal_clipping, boundingBoxOptimization )
+{
+   using namespace Primal3D;
+
+   SLIC_INFO("Checking correctness of optimization for skipping clipping "
+			<< " of planes that the triangle's bounding box doesn't cover");
+
+   const double VAL1 = 3.;
+   const double VAL2 = 2.;
+
+   BoundingBoxType bbox;
+   bbox.addPoint( PointType(-1.) );
+   bbox.addPoint( PointType(1.) );
+
+   PointType midpoint = PointType::zero();
+
+   PointType points[] =
+   {
+	   PointType::make_point( VAL1,  VAL2,    0),
+	   PointType::make_point(-VAL1,  VAL2,    0),
+	   PointType::make_point( VAL1, -VAL2,    0),
+	   PointType::make_point(-VAL1, -VAL2,    0),
+
+	   PointType::make_point( VAL1,     0,  VAL2),
+	   PointType::make_point(-VAL1,     0,  VAL2),
+	   PointType::make_point( VAL1,     0, -VAL2),
+	   PointType::make_point(-VAL1,     0, -VAL2),
+
+	   PointType::make_point(    0,  VAL2,  VAL1),
+	   PointType::make_point(    0,  VAL2, -VAL1),
+	   PointType::make_point(    0, -VAL2,  VAL1),
+	   PointType::make_point(    0, -VAL2, -VAL1),
+
+	   PointType::make_point(    0,  VAL1,  VAL2),
+	   PointType::make_point(    0, -VAL1,  VAL2),
+	   PointType::make_point(    0,  VAL1, -VAL2),
+	   PointType::make_point(    0, -VAL1, -VAL2),
+   };
+
+
+   for(int i=0; i<16; i+=2)
+   {
+	   TriangleType tri(midpoint, points[i], points[i+1]);
+	   PolygonType poly = axom::primal::clip(tri, bbox);
+	   SLIC_INFO(poly);
+	   EXPECT_EQ(5, poly.numVertices());
+   }
+
+}
+
 
 TEST( primal_clipping, experimentalData)
 {

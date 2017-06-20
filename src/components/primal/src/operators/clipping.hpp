@@ -20,6 +20,8 @@
 #ifndef PRIMAL_CLIPPING_HPP_
 #define PRIMAL_CLIPPING_HPP_
 
+#include "axom_utils/Utilities.hpp"
+
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/BoundingBox.hpp"
@@ -31,11 +33,11 @@ namespace axom {
 namespace primal {
 
 
-/**
+/*!
  * \brief Clips a 3D triangle against an axis-aligned bounding box in 3D
  *
- * \param tri The triangle to clip
- * \param bbox The bounding box to clip against
+ * \param [in] tri The triangle to clip
+ * \param [in] bbox The bounding box to clip against
  * \return A planar polygon of the triangle clipped against the bounding box.
  *         If the triangle is completely outside the bounding box,
  *         the returned polygon is empty (i.e. it has no vertices).
@@ -43,13 +45,14 @@ namespace primal {
  * \note Using a specialization of the Sutherland-Hodgeman clipping algorithm for axis aligned planes
  */
 template<typename T>
-Polygon<T,3> clip(const Triangle<T,3>& tri, const BoundingBox<T, 3> bbox)
+Polygon<T,3> clip(const Triangle<T,3>& tri, const BoundingBox<T, 3>& bbox)
 {
   typedef BoundingBox<T,3> BoundingBoxType;
   typedef Polygon<T,3> PolygonType;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
-  PolygonType poly[2];
+  const int MAX_VERTS =6;
+  PolygonType poly[2] = {PolygonType(MAX_VERTS), PolygonType(MAX_VERTS) };
   PolygonType* currentPoly = &poly[0];
   PolygonType* prevPoly    = &poly[1];
 
@@ -81,11 +84,17 @@ Polygon<T,3> clip(const Triangle<T,3>& tri, const BoundingBox<T, 3> bbox)
     // Optimization note: we should be able to save some work based on
     // the clipping plane and the triangle's bounding box
 
-    std::swap(prevPoly, currentPoly);
-    detail::clipAxisPlane(prevPoly, currentPoly, 2*dim+0, bbox.getMin()[dim]);
+	if(triBox.getMax()[dim] > bbox.getMin()[dim] )
+	{
+	   axom::utilities::swap(prevPoly, currentPoly);
+	   detail::clipAxisPlane(prevPoly, currentPoly, 2*dim+0, bbox.getMin()[dim]);
+	}
 
-    std::swap(prevPoly, currentPoly);
-    detail::clipAxisPlane(prevPoly, currentPoly, 2*dim+1, bbox.getMax()[dim]);
+	if(triBox.getMin()[dim] < bbox.getMax()[dim] )
+	{
+       axom::utilities::swap(prevPoly, currentPoly);
+       detail::clipAxisPlane(prevPoly, currentPoly, 2*dim+1, bbox.getMax()[dim]);
+	}
   }
 
   return *currentPoly;

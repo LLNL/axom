@@ -1091,7 +1091,9 @@ private:
 
     /**
      * \brief Utility function to compute the angle-weighted pseudonormal for a vertex in the mesh
+     *
      * \note Not optimized
+     * \note The returned normal is not normalized.
      */
     SpaceVector vertexNormal(VertexIndex vIdx) const
     {
@@ -1105,8 +1107,7 @@ private:
         TriVertIndices tv = m_meshWrapper.triangleVertexIndices(tIdx);
         if( m_meshWrapper.incidentInVertex(tv, vIdx) )
         {
-          int idx =
-              (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
+          int idx = (vIdx == tv[0]) ? 0 : (vIdx == tv[1] ? 1 : 2);
 
           SpaceTriangle tr = m_meshWrapper.trianglePositions( tIdx );
           vec += tr.angle(idx) * tr.normal();
@@ -1122,6 +1123,7 @@ private:
      * The computed edge normal is the average of its face normals.  
      * There should be two of these in a closed manifold surface mesh.
      * \note Not optimized
+     * \note The returned normal is not normalized.
      */
     SpaceVector edgeNormal(VertexIndex vIdx1, VertexIndex vIdx2) const
     {
@@ -1780,7 +1782,9 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex
       /// Find a point from this triangle that is within the bounding box of the mesh
       primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
       if(poly.numVertices() == 0)
+      {
         continue;
+      }
 
       triPt = poly.centroid();
 

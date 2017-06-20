@@ -55,11 +55,26 @@ public:
   typedef Vector< T,NDIMS > VectorType;
   typedef NumericArray< T,NDIMS > NumArrayType;
 
+private:
   typedef std::vector<PointType> Coords;
 
 public:
   /** Default constructor for an empty polygon   */
   Polygon() {}
+
+  /**
+   * \brief Constructor for an empty polygon that reserves space for
+   * 		the given number of vertices
+   *
+   * \param [in] numExpectedVerts The number of vertices for which to reserve space
+   * \pre numExpectedVerts is not negative
+   *
+   * */
+  Polygon(int numExpectedVerts)
+  {
+	  SLIC_ASSERT(numExpectedVerts >= 0);
+	  m_vertices.reserve(numExpectedVerts);
+  }
 
   /** Return the number of vertices in the polygon */
   int numVertices() const { return m_vertices.size(); }

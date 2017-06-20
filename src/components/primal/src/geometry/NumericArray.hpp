@@ -12,11 +12,13 @@
 #define NUMERIC_ARRAY_HPP_
 
 #include "axom/Macros.hpp"
+
+#include "axom_utils/Utilities.hpp"
+
 #include "slic/slic.hpp"
 
 // C/C++ includes
 #include <cstring>    // For memcpy()
-#include <cmath>      // For std::abs
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 
@@ -176,7 +178,7 @@ NumericArray< T,SIZE > operator/( const NumericArray< T, SIZE >& arr,
  * \brief Coordinate-wise absolute value on the NumericArray
  * \param [in] arr numeric array instance
  * \pre std::abs is defined for template type T
- * \return A NumericArray whose coordinates are the abolute value of arr
+ * \return A NumericArray whose coordinates are the absolute value of arr
  *******************************************************************************
  */
 template < typename T,int SIZE >
@@ -878,7 +880,7 @@ inline NumericArray< T,SIZE > abs(const NumericArray< T,SIZE >& arr)
   NumericArray< T, SIZE > result(arr);
 
   for(int i=0; i<SIZE; ++i)
-    result[i] = std::abs(result[i]);
+    result[i] = axom::utilities::abs(result[i]);
 
   return result;
 }

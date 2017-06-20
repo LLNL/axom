@@ -34,7 +34,6 @@ class Segment
 {
 public:
   typedef Point< T,NDIMS > PointType;
-  typedef Vector< T,NDIMS > VectorType;
 
 public:
 
@@ -77,6 +76,7 @@ public:
    */
   double length() const
   {
+	typedef Vector<T, NDIMS> VectorType;
     return VectorType(m_source, m_target).norm();
   }
 private:
@@ -94,7 +94,6 @@ private:
 };
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
@@ -114,7 +113,6 @@ template < typename T, int NDIMS >
 Segment< T,NDIMS >::~Segment() { }
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 #endif /* SEGMENT_HPP_ */
