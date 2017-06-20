@@ -179,7 +179,9 @@ public:
    * \param group         Group to fill with input data
    * \param root_file     root file containing input data
    */
-  void read(sidre::Group * group, const std::string& root_file, bool preserve_contents = false);
+  void read(sidre::Group * group,
+            const std::string& root_file,
+            bool preserve_contents = false);
 
   /*!
    * \brief load external data into a group

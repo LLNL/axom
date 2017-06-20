@@ -1038,6 +1038,115 @@ contains
 !    call ds2%delete()
   end subroutine save_restore_complex
 
+  !------------------------------------------------------------------------------
+  subroutine save_load_preserve_contents
+    character(38) :: file_path_base0 = "F_sidre_save_preserve_contents_tree0_"
+    character(38) :: file_path_base1 = "F_sidre_save_preserve_contents_tree1_"
+    character(80) :: file_path0, file_path1
+
+    type(SidreDataStore) ds, ds2, dsload
+    type(SidreGroup) root, tree0, tree1, ldroot, ldtree0
+    type(SidreGroup) ga, gb, gc, gx, gy, gz
+    type(SidreView) i0_view, f0_view, s0_view, i10_view
+    type(SidreView) i20_view, i1_view, f1_view
+    character(80) :: s0
+    integer(C_INT), pointer :: v1_vals(:), v2_vals(:)
+    integer(C_INT) i, i0, i1
+    real(C_FLOAT) :: f0, f1
+
+    call set_case_name("save_load_preserve_contents")
+
+    ds = datastore_new()
+    root = ds%get_root()
+    tree0 = root%create_group("tree0")
+
+    ga = tree0%create_group("a")
+    gb = tree0%create_group("b")
+    gc = tree0%create_group("c")
+
+    i0_view = ga%create_view_scalar_int("i0", 100);
+    f0_view = ga%create_view_scalar_float("f0", 3000.0);
+    s0_view = gb%create_view_string("s0", "foo")
+    i10_view = gc%create_view_and_allocate("int10", SIDRE_INT_ID, 10)
+
+    call i10_view%get_data(v1_vals)
+
+    do i = 1, 10
+       v1_vals(i) = i
+    enddo
+
+    file_path0 = file_path_base0 // "sidre_hdf5"
+    call tree0%save(file_path0, "sidre_hdf5")
+
+    tree1 = root%create_group("tree1")
+
+    gx = tree1%create_group("x")
+    gy = tree1%create_group("y")
+    gz = tree1%create_group("z")
+
+    i20_view = gx%create_view_and_allocate("int20", SIDRE_INT_ID, 20)
+
+    call i20_view%get_data(v2_vals)
+
+    do i = 1, 10
+       v2_vals(i) = 2*i
+    enddo
+
+    i1_view = gy%create_view_scalar_int("i1", 400);
+    f1_view = gz%create_view_scalar_float("f1", 17.0);
+
+    file_path1 =  file_path_base1 // "sidre_hdf5" 
+    call tree1%save(file_path1, "sidre_hdf5")
+
+    call ds%print()
+
+    dsload = datastore_new()
+    ldroot = dsload%get_root()
+
+    ldtree0 = ldroot%create_group("tree0")
+    call ldtree0%load(file_path0, "sidre_hdf5")
+    call ldtree0%load(file_path1, "sidre_hdf5", .true.)
+
+    call dsload%print()
+
+    i0_view = ldroot%get_view("tree1/a/i0")
+    i0 = i0_view%get_data_int()
+    call assert_equals(i0, 100)
+
+    f0_view = ldroot%get_view("tree1/a/f0")
+    f0 = f0_view%get_data_float()
+    call assert_equals(f0, 3000.0)
+
+    s0_view = ldroot%get_view("tree1/b/s0")
+    call s0_view%get_string(s0)
+    call assert_equals(s0, "foo")
+
+    i1_view = ldroot%get_view("tree1/y/i1")
+    i1 = i1_view%get_data_int()
+    call assert_equals(i1, 400)
+
+    f1_view = ldroot%get_view("tree1/z/f1")
+    f1 = f1_view%get_data_float()
+    call assert_equals(f1, 17.0)
+
+    i10_view = ldroot%get_view("tree1/c/int10")
+    i20_view = ldroot%get_view("tree1/c/int20")
+
+    call i10_view%get_data(v1_vals)
+    call i20_view%get_data(v2_vals)
+
+    do i = 1, 10
+      call assert_equals(v1_vals(i), i)
+    enddo
+
+    do i = 1, 20
+      call assert_equals(v2_vals(i), 2*i)
+    enddo
+
+  end subroutine save_load_preserve_contents
+
+
+
 !----------------------------------------------------------------------
 end module sidre_group
 !----------------------------------------------------------------------
