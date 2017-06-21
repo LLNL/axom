@@ -17,47 +17,58 @@ JIRA: Issue Tracking and Release Cycles
 
 We use our `Axom JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ 
 for issue tracking and work planning. In JIRA, you can create issues, edit
-them, comment on them, check issue status, group them together for sprint
-development, and search for issues in various ways, including setting up
-filters to customize your searches.
+them, comment on them, assign them to individuals, check issue status, group 
+them together for sprint development, and search for issues in various ways.
 
-This section describes our software development cycles and basic issue work 
+This section describes Axom software development cycles and basic issue work 
 flow. 
 
 .. _releasecycle-label:
 
 ========================================
-Release Cycles and Work Planning
+Sprint Cycles and Work Planning
 ========================================
 
-The Axom project plans work for quarterly (3 month) release cycles. These 
-cycles align with the quarters of the LLNL fiscal year:
+The Axom project plans work for quarterly (3 month) sprint cycles. Three
+months is long for typical sprint-based development. However, we find that
+it works well for our project where multiple software components are under
+development concurrently by giving component developers flexibility to 
+plan and coordinate work with other components in a way that works best for
+them.
 
-* January 1 -- March 31
-* April 1 -- June 30
-* July 1 -- September 30
-* October 1 -- December 31
+.. note:: Our three-month sprint development cycles do not necessarily 
+          coincide with software releases. We may do multiple releases in
+          a sprint or a single release may contain work from more than one 
+          sprint. Our releases are driven by the frequency with which it makes
+          sense to get new developments to our users.
 
-A few weeks before the start of one of these cycles, we begin to 
+The Axom sprint cycles align with the quarters of the LLNL fiscal year:
+
+* Q1: October 1 -- December 31
+* Q2: January 1 -- March 31
+* Q3: April 1 -- June 30
+* Q4: July 1 -- September 30
+
+A few weeks before the start of one of these cycles, the team begins to 
 discuss and prioritize the contents of our JIRA issue backlog. Those issues 
-we target for the upcoming release cycle are moved into the corresponding
+we target for the upcoming sprint cycle are moved into a corresponding
 *version*. Here, *version* refers to the JIRA feature that allows a team to
 create a collection of issues and track progress on them. Typically, we create
-a named version, such as "Due 6/30/2017", for each quarterly release.
+a named version, such as "Due 6/30/2017", for each quarterly sprint.
 
-At the end of one release cycle and before starting the next one, we 
+At the end of one sprint cycle and before starting the next one, we 
 decide which issues that were not completed in the cycle we should move to the 
 next. Hopefully, there are not many and typically we will propagate all 
-such unresolved issues to the next release cycle. Before we start the next 
+such unresolved issues to the next sprint cycle. Before we start the next 
 cycle, we meet as a team to make sure all issues in the associated version 
 are assigned and that everyone is comfortable with their assignments.
 
-To start a new release cycle, we create a new *sprint board* in JIRA and move
+To start a new sprint cycle, we create a new *sprint board* in JIRA and move
 all issues in the upcoming version to it. We configure the board so that issues
 are sorted into horizontal "swimlanes" one for each developer. There are 
 three vertical columns on the sprint board that intersect the swimlanes to
 indicate issues that: have not been started, are in progress, are done.
-Then, we start the sprint; i.e., the new release cycle.
+Then, we start the sprint; i.e., the new sprint cycle.
 
 Note that as development occurs during a sprint, work will be reviewed and
 merged from feature branches to the develop branch using pull requests. 
@@ -87,22 +98,22 @@ Issue states
 For the Axom project, each issue has three possible states:
 
 * Open.
-    Every issues starts out as an open issue. An open issue can
-    be assigned to someone or unassigned. When an issue is assigned, this
+    Every issue starts out in an open state. An open issue can
+    be assigned to someone or left unassigned. When an issue is assigned, this
     means that the assignee owns the issue and is responsible for working
-    on it. An open issue that is unassigned has not been been discussed or
-    reviewed, or we have not decide how to act on it. In general, an open
-    issue is not being worked on.
+    on it. An open issue that is left unassigned means that it has not been 
+    been discussed or reviewed, or we have not decided how to act on it. 
+    In general, an open issue is not being worked on.
 * In Progress.
     An issue in progress is one that is actively being worked on.
 * Closed.
     When an issue is closed, work on it has been completed, or
     a decision has been made that it will not be addressed.
 
-An open issue can transition to either 'in progress' (work has started on it)
-or 'closed'. An in progress issue can transition to either open (work on it
-has stopped, but it is not finished) or closed. Finally, a closed issue
-can be re-opened, which changes its state to open. The complete issue workflow
+An 'open' issue can transition to either 'in progress' or 'closed'. An 'in 
+progress' issue can transition to either 'open' (work on it has stopped, 
+but it is not finished) or 'closed'. Finally, a 'closed' issue
+can be re-opened, which changes its state to 'open'. The complete issue workflow
 is shown in the figure below.
 
 .. figure:: jira-issue.png
@@ -115,11 +126,10 @@ Creating a new issue
 
 To create a new issue, click the 'Create' button at the top of the Axom
 JIRA project page and enter information in the issue fields. Filling in the
-fields properly helps team members search through project issues
-to find what they are looking for. Note that issue fields marked with a red
-asterisk are required -- they must be set to create a new issue. Other fields 
-are not required, but may be used to include helpful information. The main 
-fields we use are:
+fields properly helps team members search through project issues more easily.
+Note that issue fields marked with a red asterisk are required -- they must 
+be set to create a new issue. Other fields are not required, but may be used 
+to include helpful information. The main issue fields we use are:
 
   Project
     Axom will show up as the default. You shouldn't need
@@ -127,14 +137,14 @@ fields we use are:
   Issue Type
     We use only three issue types: *Bug*, *New Feature*, and
     *Task*. A bug is something broken that needs to be fixed. A new feature
-    is something to add that increases functionality, enhances an interface,
-    etc. Task is a "catch-all" issue type for any other issue.
+    is something that adds functionality, enhances an interface, etc. Task 
+    is a "catch-all" issue type for any other issue.
   Summary
     Provide a short descriptive summary. A good (and brief)
     summary makes it easy to scan a list of issues to find one you are
     looking for.
   Priority
-    Select an appropriate issue priority to impart its level
+    Select an appropriate issue priority to identify its level
     of importance or urgency. Clicking on the question mark to the right of
     the priority field provides a description of each option.
   Components
@@ -143,7 +153,7 @@ fields we use are:
     testing, etc.
   Assignee
     Unless you are certain which team member should be assigned
-    the issue, choose 'Unassigned'. This will indicate that the issue requires
+    an issue, choose 'Unassigned'. This will indicate that the issue requires
     discussion and review before it is assigned. The default assignee is the
     owner of the component you chose earlier if you make no choice.
   Reporter
@@ -165,7 +175,7 @@ You may also use the other fields that appear if you think they will help
 describe the issue. However, the team seldom uses fields apart from the list
 above.
 
-.. note:: We use epics in JIRA and link our issues to them to get a cool 
+.. note:: We use epics in JIRA and link our issues to them to get a convenient 
           label on each each issue when we look at a sprint board or the issue 
           backlog. We have an epic for each of our components and the epic
           name matches the component name for this purpose. 
@@ -178,7 +188,7 @@ from 'open' to 'in progress'. There are two ways to perform this transition.
 The first is to open the issue and click the 'Start Progress' button at the 
 top of the issue menu. Alternatively, if the issue is in the 'open' column 
 on a sprint board, you can drag and drop it into the 'in progress' column.
-Either way changes the issue status to *in progress*.
+Either way changes the issue status to 'in progress'.
 
 If there is still work to do on the issue, but you will stop working on it
 for a while, you can click the 'Stop Progress' button at the top of the
@@ -194,9 +204,9 @@ or the issue will not be addressed, it should be closed. To close an issue,
 click the 'Close' button and select the appropriate issue resolution. There 
 are two options: *Done* and *Won't Fix*.  'Done' means that the issue is 
 resolved. 'Won't Fix' means that the issue will not be addressed for some 
-reason. 
+reason.
 
-When closing an issue, adding information to the 'Comment' field is usually
+When closing an issue, adding information to the 'Comment' field is
 helpful. For example, when an issue is closed as 'Won't Fix', it is helpful to
 enter a brief explanation as to why this is so.
 
