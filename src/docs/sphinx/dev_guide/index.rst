@@ -20,20 +20,21 @@
 Axom Developer Guide
 #####################
 
-This guide describes the main software development processes used
-by the Axom project. It does not contain coding guidelines. Please see
-`Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for that information.
+This guide describes important aspects of software development processes used
+by the Axom project. It does not contain information about building the code or
+coding guidelines. Please see the note below.
 
-It is intended for all team members and contributors. 
-and is especially helpful for new individuals who wish to understand how 
-the team works. We employ simple practices that are easy for all contributors 
-to understand and follow. We believe that when everyone on the team follows 
-similar practices, it helps to ensure that our code will be robust, consist, 
-correct, and easy to use. Everyone who contributes to Axom should be aware 
-of and follow these guidelines.
+This development guide is intended for all team members and contributors. 
+It is especially helpful for individuals who are less familiar with the project
+and wish to understand how the team works. We attempt to employ simple 
+practices that are easy to understand and follow and which improve our software
+without being overly burdensome. We believe that when everyone on our team 
+follows similar practices, the likelihood that our software will be 
+high quality (i.e., robust, correct, easy to use, etc.) is improved. Everyone 
+who contributes to Axom should be aware of and follow these guidelines.
 
-We realize that the benefits of uniformity should be balanced with 
-allowances for individual preferences, which may work better in 
+We also believe that the benefits of uniformity and rigor are best balanced 
+with allowances for individual preferences, which may work better in 
 certain situations. Therefore, we do not view these processes as fixed 
 for all time. They should evolve with project needs and be improved when 
 it makes sense. Changes should be agreed to by team members after 
@@ -41,10 +42,9 @@ assessing their merits using our collective professional judgment. When
 changes are made, this guide should be updated accordingly.
 
 .. note:: This document does not describe how to configure and build the
-          Axom code, or how to use it. For that information, please see the 
-          `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_
-          and component user documentation linked to our 
-          `Main Web Page <../../web_main_docs/html/index.html>`_
+          Axom code, or specific Axom coding guidelines. For information
+          on those topics please refer to the following documents:
+          `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_          `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_.
 
 
 **Contents:**
