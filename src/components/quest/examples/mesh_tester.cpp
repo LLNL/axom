@@ -75,7 +75,7 @@ struct Input
   {
     std::cout << "Argument usage:" << std::endl <<
       "  --help           Show this help message." << std::endl <<
-      "  --resolution N   Resolution of uniform grid.  Default N = 10.  " <<
+      "  --resolution N   Resolution of uniform grid.  Default N = 10.  " << std::endl <<
       "       Set to 1 to run the naive algorithm, without the spatial index." << std::endl <<
       "       Set to less than 1 to use the spatial index with a resolution of the" << std::endl <<
       "         cube root of the number of triangles." << std::endl <<
@@ -281,7 +281,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
 
   for (int i=0; i < ncells; i++) {
-    if (ncells >= reportInterval && i % (ncells/reportInterval) == 0) {
+    if (reportInterval > 0 && i % (ncells/reportInterval) == 0) {
       std::cerr << "Building grid is " << 100.0 * (double(i)/double(ncells)) <<
         " percent done" << std::endl;
     }
@@ -303,7 +303,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
     seen.clear();
     hit.clear();
 
-    if (ncells >= reportInterval && z % (ncells/reportInterval) == 0) {
+    if (reportInterval > 0 && z % (ncells/reportInterval) == 0) {
       std::cerr << "Querying grid is " << 100.0 * (double(z)/double(ncells)) <<
         " percent done" << std::endl;
     }
@@ -323,35 +323,33 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
     Point3 minBBPt2,maxBBPt2;
 
     minBBPt2 = triBB2.getMin();
-    maxBBPt2 = triBB2.getMax();   
+    maxBBPt2 = triBB2.getMax();
 
-    // For each grid bins that this triangle will touch,
-    std::vector<int> trianglesInBin;
+    // Get a list of all triangles in bins this triangle will touch
+    std::vector<int> neighborTriangles;
     const std::vector<int> binsToCheck = ugrid.getBinsForBbox(triBB2);
     for (size_t curbin = 0; curbin < binsToCheck.size(); ++curbin) {
-      //Step 7.5: retrieve triangles for the bin
-      int bidx = binsToCheck[curbin];
-      trianglesInBin = ugrid.getBinContents(bidx);
-      int binSize = trianglesInBin.size();
+      std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
+      neighborTriangles.insert(neighborTriangles.end(), 
+        ntlist.begin(), ntlist.end());
+    }
+    std::sort(neighborTriangles.begin(), neighborTriangles.end());
+    std::vector<int>::iterator nend = 
+      std::unique(neighborTriangles.begin(), neighborTriangles.end());
+    std::vector<int>::iterator nit = neighborTriangles.begin();
 
-      // For each triangle in the current bin,
-      for (size_t l = 0; l < binSize; ++l) {
-        int t2Index = trianglesInBin[l];
-        SLIC_ASSERT(trianglesInBin[l] >= 0);
-        if (t2Index <= z || seen.count(t2Index) > 0) {
-          continue;  
-        } else { 
-          seen.insert(t2Index);
-
-          t2 = getMeshTriangle(t2Index, surface_mesh);
-          // Test for intersection.
-          if (checkTT(t1, t2)) {
-            hit.insert(t2Index);
-          }
-        }
-      }  // end for triangles in bin
-    }  // bins to check
-    markSeen(z, hit, retval);
+    // remove triangles with indices less than or equal to this tri
+    while (nit != nend && *nit <= z) {
+      ++nit;
+    }
+    // test any remaining neighbor tris for intersection
+    while (nit != nend) {
+      t2 = getMeshTriangle(*nit, surface_mesh);
+      if (checkTT(t1, t2)) {
+        retval.push_back(TrianglePair(z, *nit));
+      }
+      ++nit;
+    }
   }
 
   return retval;
