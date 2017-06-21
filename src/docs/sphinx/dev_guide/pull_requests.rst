@@ -18,26 +18,27 @@ Pull Requests and Code Reviews
 ********************************
 
 Before any code is merged into the develop or master branches, it
-must be tested, reviewed, and accepted. Creating a pull request on
+must be tested, documented, reviewed, and accepted. Creating a pull request on
 the Axom Bitbucket project to merge a branch into develop or master 
 initiates the test and review processes. All required build configurations
-and tests must pass for a pull request to be approved. Also, it is expected 
-that unit tests are created to exercise any new functionality that is 
-introduced. This will be assessed by reviewers of each pull request. 
+and tests must pass for a pull request to be approved. Also, new tests 
+(unit, integration, etc.) must be created that exercise any new functionality 
+that is introduced. This will be assessed by reviewers of each pull request. 
 See :ref:`createpr-label` for details about creating pull requests.
 
 Code changes in a pull request must be accepted by at least one member
 of the Axom development team other than the originator of the pull
-request. It is recommended to have several team members review pull 
-requests, especially when changes affect APIs. Pull request reviewers can be 
+request. It is recommended that several team members review pull 
+requests, especially when changes affect APIs, dependencies (within Axom
+and external), etc. Pull request reviewers can be 
 selected on Bitbucket when the pull request is created. Changes reviewed by 
 the team are accepted, rejected, or commented on for improvement; e.g., 
 issues to be addressed, suggested changes, etc. Pull requests can be updated
-with additional changes as needed. When a pull request is approved, it can 
-be merged. If the merged branch is no longer needed for development, it 
-should be deleted.
+with additional changes and commits as needed. When a pull request is 
+approved, it can be merged. If the merged branch is no longer needed for 
+development, it should be deleted.
 
-In addition to successful compilation and passing unit tests, changes to the 
+In addition to successful compilation and test passing, changes to the 
 develop and master branches should be scrutinized in other ways and using 
 other code health tools we use. See :ref:`bamboo-label` for more information 
 about using our continuous integration tools.
@@ -73,13 +74,13 @@ Code Review Checklist
 ======================
 
 Beyond build and test correctness, we also want to ensure that code follows
-common conventions before acceptance. The following list summarizes concerns 
-we want to identify during pull request reviews and resolve before a pull 
-request is approved for merging. Please see the 
+common conventions before acceptance. The following list is a high-level 
+summary of the types of concerns we want to identify during pull request 
+reviews and resolve before a pull request is merged. Please see the 
 `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for details
 on items in this list.
 
- #. A new file or directory must be located in in the proper location; e.g.,
+ #. A new file or directory must be placed in its proper location; e.g.,
     in the same directory with existing files supporting related functionality.
  #. File contents must be organized clearly and structure must be consistent 
     with conventions. 
