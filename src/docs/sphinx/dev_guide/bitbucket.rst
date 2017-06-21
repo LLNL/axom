@@ -15,10 +15,10 @@
 Git/Bitbucket: Version Control and Branch Development 
 ******************************************************
 
-This section provides some information about getting started with Git and
-Bitbucket and describes operations related to topic branch development
-on the Axom project. Our Git repository lives in our
-`Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+This section provides information about getting started with Git and
+Bitbucket and describes some mechanics of topic branch development
+on the Axom project. For most project work, we interact with our Git 
+repository via our `Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
 
 If you are new to the Git or want to brush up on its features, there are
 several good sources of information available on the web:
@@ -32,9 +32,14 @@ several good sources of information available on the web:
 SSH Keys
 =========
 
-If you have not used Bitbucket before, you will need to
-`create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_. This will make it easier for you to interact with our Git repository
-without having to repeatedly enter login credentials. 
+If you have not used Bitbucket before, you should start by doing two things:
+
+* `Create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_ 
+* `Add the SSH key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_. 
+
+Performing these two simple steps will make it easier for you to interact with 
+our Git repository without having to repeatedly enter login credentials. 
+
 
 .. _repoclone-label:
 
@@ -42,19 +47,21 @@ without having to repeatedly enter login credentials.
 Cloning the Repo
 =========================================
 
-Before doing any work on the code, you must clone the repo into a local 
-workspace. This is done by typing::
+All development work on Axom is performed in a *local workspace copy* of
+the Git repository. To make a local workspace copy, you clone the repo into 
+a directory that you will work in. This is done by typing::
 
   $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
 
 .. note:: You don't need to remember the URL for the Axom repo above. It can be
           found by going to the Axom repo on our Bitbucket project and
-          clicking on the 'Clone' action button that appears when you hover your
-          mouse cursor over the ellipses on the top left of the web page.
+          clicking on the 'Clone' action button that appears when you hover 
+          your mouse cursor over the ellipses on the top left of the web page.
 
-The '--recursive' argument above is needed to pull the BLT build system, which
-is a Git sub-module in Axom, into your local copy of the repo. In case you 
-forget pass the '--recursive' argument to the 'git cone' command, you can
+The '--recursive' argument above is needed to pull in all Git *submodules*
+that we use in the project. In particular, you will need the BLT build system, 
+which is a Git sub-module in Axom, in your local copy of the repo. In case you 
+forget pass the '--recursive' argument to the 'git clone' command, you can
 type the following commands after cloning::
 
   $ cd axom
@@ -63,12 +70,19 @@ type the following commands after cloning::
 
 Either way, the end result is the same and you are good to go.
 
-After cloning, enter the top-level Axom directory and run the development
-setup script we provide to ensure that your Git environment is configured
-properly and client-side hooks we use are installed; i.e.,::
+=========================================
+Git Environment Support
+=========================================
+
+After cloning, we recommend that you run the development setup script we 
+provide in the top-level Axom directory to ensure that your Git environment 
+is configured properly; i.e.,::
 
   $ cd axom
   $ ./scripts/setup-for-development.sh
+
+This script sets up several things we find useful, such as Git editor, aliases,
+client-side hooks, useful tips, etc.
 
 You can also define aliases in your shell environment to do things like modify 
 your prompt to show which git branch you are on. If you are a csh/tcsh user, 
@@ -96,12 +110,14 @@ on a topic branch is:
 
   #. Create a topic branch off the develop branch and push the new branch
      to Bitbucket.
-  #. Make changes and commit them to your branch in your local copy of the repo.
-     Remember to push changes to the main repo on Bitbucket regularly for
-     backup.
+  #. Make changes and commit them to your branch in your local copy of the 
+     repository. Remember to push changes to the main repo on Bitbucket 
+     regularly for backup and so you can easily recover earlier versions of
+     your work if you need to do so.
   #. If you are working on your topic branch for a while, it is a good idea
      to keep your topic branch current with the develop branch by merging 
-     develop into your topic branch regularly.
+     develop into your topic branch regularly. This will simplify the 
+     process of merging your work into the develop branch when you are ready.
   #. When your work is complete (including required testing, documentation, 
      etc.), create a pull request so others on the team
      can review your work. See :ref:`pullrequest-label`.
@@ -113,17 +129,19 @@ Step 1 -- Create a topic branch
 
     Most development occurs on a topic branch created off the develop branch.
     Occasions where a branch is created from another branch, such as a
-    'hotfix' branch created off master, are described in :ref :`gitflow-label`.
-    To create a branch in Git, you provide the '-b' argument to the 
-    'git checkout' command. A topic branch name should include your user 
-    id and a brief description indicating the purpose of the branch. 
+    'hotfix' branch created off master, are described in :ref:`gitflow-label`.
+    To create a branch in Git, provide the '-b' option to the 
+    'git checkout' command, followed by the name of your topic branch. 
+    A topic branch name should include your username (i.e., login id) and a 
+    brief description indicating the purpose of the branch. 
     Typically, we label such branches using "feature", "bugfix", etc. to make 
     it clear what type of work is being performed on a branch. For example,::
 
-      $ git checkout -b feature/<userid>/some_cool_new_feature
+      $ git checkout -b feature/<userid>/my-cool-new-feature
       $ git push -u
 
-    You can also attach a JIRA issue number to the branch name. Then, Bitbucket
+    You can also attach a JIRA issue number to the branch name if the work
+    you will do on the branch is related to a JIRA issue. Then, Bitbucket
     will associate the issue with the commit when you merge your branch to the
     develop branch. For example,::
 
@@ -134,7 +152,7 @@ Step 1 -- Create a topic branch
     the Bitbucket server and it will appear in the list of branches you and 
     other developers can see there.
 
-Step 2 -- Edit files
+Step 2 -- Do development work
 --------------------------------
 
     After you've created a topic branch and pushed it to Bitbucket, perform 
@@ -145,14 +163,29 @@ Step 2 -- Edit files
       $ git commit
       $ git push
 
-    The 'add' command adds a file (or files) to be staged for commit. The 
-    'commit' command commits staged files to your local copy of the repository.     The 'push' command pushes your commits to the topic branch in the main 
-    Git repo. You could also do::
+    The 'add' command adds a file (or files) to be staged for a commit 
+    operation. The 'commit' command moves your staged changes to your local 
+    copy of the repository. The 'push' command pushes these changes to the 
+    topic branch in the main Git repo. To push your work, you could also do::
 
       $ git push origin
 
     This is equivalent to 'git push' if you specified the '-u' option when you
-    originally pushed your topic branch you created it.
+    originally pushed your topic branch when you created it.
+
+ 
+.. important:: You may perform several local commits before you push your work 
+               to the main repo. Generally, it is a good idea to limit the 
+               amount of modifications contained in any one commit. By 
+               restricting individual commits to a reasonable size that 
+               contain closely related work, it is easier to refer back to 
+               specific changes you make when the need arises (as it 
+               inevitably will!). For example, if you regularly run your
+               code through a formatting tool (we use *uncrustify* on the Axom 
+               project), it is preferable to commit other content changes first
+               and then commit formatting changes in a separate commit. That 
+               way, you can distinguish substance from cosmetic changes easily 
+               in the Git history.
 
     Recall the Git environment setup script we recommended that you run after
     cloning the repo in the Section :ref:`repoclone-label` above. One of the
@@ -165,15 +198,17 @@ Step 2 -- Edit files
     * Subject line and main body of commit message are separated by a blank line
     * Main body of commit message is wrapped to 78 characters
 
+.. _keepcurrent-label:
+
 Step 3 -- Keep current with develop
 -------------------------------------
 
-    If you will be working on your branch for a while, it is a good idea to 
-    merge from the develop branch to your topic branch regularly to prevent 
-    getting too far out of sync with the branch into which your work will be
-    merged eventually. Otherwise, you may have many conflicts to resolve when 
-    you are ready to merge your topic branch into develop and the merge could 
-    be difficult.
+    If you will be working on your topic branch for a while, it is a good idea 
+    to merge changes (made by other developers) from the develop branch to 
+    your topic branch regularly. This will help avoid getting too far out of 
+    sync with the branch into which your work will be merged eventually. 
+    Otherwise, you may have many conflicts to resolve when you are ready to 
+    merge your topic branch into develop and the merge could be difficult.
 
     Before you begin the merge, make sure all outstanding changes to your topic
     branch are committed. Then, make sure your local repo is up-to-date with 
@@ -210,8 +245,8 @@ Step 3 -- Keep current with develop
     the correct version of contents you want and delete the other lines.
 
     Alternatively, you can use a tool to help resolve your conflicts. The
-    'git mergetool' command helps you run a merge tool. One such tool is the
-    "meld" tool, which is very powerful and intuitive. Diff tools like "tkdiff"
+    'git mergetool' command helps you run a merge tool. One such tool is called
+    "meld", which is very powerful and intuitive. Diff tools like "tkdiff"
     are also helpful for resolving merge conflicts.
 
     .. important:: **Git will not let you commit a file with merge conflicts.**
@@ -231,7 +266,7 @@ Step 4 -- Create a pull request
 
     You must also select appropriate team members to review changes. Our 
     Bitbucket project is set up to require at least one other developer to 
-    approve the pull request.
+    approve the pull request before a merge.
 
     .. important:: **You cannot approve your own pull request.**
 
@@ -250,8 +285,8 @@ Step 4 -- Create a pull request
 
     The 'fetch' command pulls changes from the remote branch into your local
     branch. Running the 'merge' command will show which files have conflicts.
-    Fix the conflicts as described in the previous step. After all conflicts 
-    are resolved, run the 'commit' and 'push' commands as usual::
+    Fix the conflicts as described in :ref:`keepcurrent-label`. After all 
+    conflicts are resolved, run the 'commit' and 'push' commands as usual::
 
       $ git commit
       $ git push
@@ -260,8 +295,10 @@ Step 4 -- Create a pull request
 
     .. important:: **To keep things tidy, please delete your topic branch in
                    Bitbucket after it is merged if you no longer need it for
-                   further development. Bitbucket provides an option to delete
-                   the source branch of a merge after the merge is complete.**
+                   further development. Bitbucket provides an option to 
+                   automatically delete the source branch of a merge after 
+                   the merge is complete. Alternatively, you can click on
+                   the Bitbucket branches tab and manually delete the branch.**
 
 ================================
 Checking Out an Existing Branch
@@ -269,8 +306,7 @@ Checking Out an Existing Branch
 
 When working on multiple branches, or working on one with someone else on
 the team, you will need to checkout a specific branch. Any existing branch
-can be checked out from the Git repository and cloned from, etc. Here are
-some useful commands::
+can be checked out from the Git repository. Here are some useful commands::
 
   $ git fetch
   $ git branch -a
