@@ -24,11 +24,12 @@ component to Axom. The main tasks include:
   * Writing documentation
   * Writing tests
 
-The discussion here does not contain coding guidelines. Please see
-`Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for that information.
+.. note:: The discussion here does not contain coding guidelines. Please see
+          `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ 
+          for that information.
 
 ====================================
-Directory Structure
+Component Directory Structure
 ====================================
 
 In the `axom/src/components` directory, you will find a subdirectory for
@@ -36,55 +37,64 @@ each Axom component. For example::
 
   $ cd axom/src/components
   $ ls -1
-  CmakeLists.txt
+  CMakeLists.txt
   axom_utils
   lumberjack
   mint
   ...
 
 All files for each component are contained in subdirectories in the
-top-level component directory. For consistency, subdirectory 
-names should be the same for all Axom components. 
+component directory. 
 
 To illustrate, consider the *sidre* component directory::
 
   $ cd axom/src/components/sidre
-  $ ls -1
+  $ ls -1 -F
   CMakeLists.txt
   README.md
-  docs
-  examples
-  src
-  tests
+  docs/
+  examples/
+  src/
+  tests/
   uncrustify.cfg
 
-The `docs` directory contains *sidre* documentation. Subdirectories in the
-docs directory are named for each type of documentation. The directories 
+Note that, besides directories, the top-level component directory contains
+a few files: 
+
+* **CMakeLists.txt** contains CMake information for the component in the Axom build system.
+* **README.md** is the markdown overview file for the component. Its contents appear in the Axom Bitbucket project when you navigate through the source tree.
+* **uncrustify.cfg** is the component-specific uncrustify configuration file for formatting the component source code. This is optional, see note below.
+    
+The **docs** directory contains the component documentation. Subdirectories in 
+the docs directory are named for each type of documentation. The directories 
 `doxygen` and `sphinx` are required. Each Axom component uses *Doxygen* for 
 source code documentation and *Sphinx* for user documentation. Other 
 documentation directories can be used as needed. For example, *sidre* also 
 contains documentation directories `dot` for dot-generated figures, and 
 `design` for design documents.
 
-The `src` directory contains all header and source files for the component.
+The **src** directory contains all header and source files for the component.
 These files, which are typically C++, can be organized in subdirectories
 withing the `src` directory in whatever manner makes sense. For example, in 
 *sidre*, these core header and source files are in a subdirectory called 
 `core`. As is common practice for C++ libraries, associated  header and 
 source files are co-located in the same directories. 
 
-**All interface files for other languages must be in a subdirectory 
-called `interface`**. To make it easy for applications written in C and
+The **interface** directory contains interface files for use by languages 
+other than C++. To make it easy for applications written in C and
 Fortran, for example, to use Axom directly in their native languages,
 Axom components provide APIs in these languages. For information about
 how we generate these APIs, see :ref:`shroudfiles-label`.
 
-A `test` directory is required for each component which contains a 
+A **test** directory is required for each component which contains a 
 comprehensive set of unit tests. See :ref:`testing-label` for information 
 about writing tests and inserting them into our testing framework.
 
-An `examples` directory, which is optional but recommend, contains simple 
+An **examples** directory is optional, but recommended. It contains simple 
 code examples illustrating component usage.
+
+.. important:: For consistency, these subdirectory names within the top-level 
+               component directory should be the same for each Axom components. 
 
 ====================================
 CMake Files and Variables
@@ -103,11 +113,11 @@ Add CMake macro definitions
 The top-level CMake directory `axom/src/cmake` contains a file called
 `CMakeConfigureFile.cmake` that defines macro constants for enabling
 Axom components and setting third-party library (TPL) dependencies that 
-help enforce consistency for conditionally-compiled code. When a new
+are used to enforce consistency for conditionally-compiled code. When a new
 component or dependency is added, that file must be modified by:
 
   #. Adding the name of the component to the `COMPS` variable
-  #. Adding new TPL dependencies to the `TPL_DEPS` variable
+  #. Adding new TPL dependency to the `TPL_DEPS` variable
 
 The CMake variables are used to generate macro constants in the Axom 
 configuration header file. For each new CMake variable added, an associated
@@ -132,9 +142,9 @@ Add component CMakeLists.txt files
 
 There are several `CMakeLists.txt` files that must be added in various component
 directories. We try to maintain consistent organization and usage across all
-Axom components. To illustrate, we describe the key contents of the 
-CMakeLists.txt files in the *sidre* Axom component. See those files or those 
-in other components for more details.
+Axom components to avoid confusion. To illustrate, we describe the key 
+contents of the CMakeLists.txt files in the *sidre* Axom component. See those 
+files or those in other components for more details.
 
 Top-level component directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -146,7 +156,12 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
 
        project(sidre)
 
-  #. Checks for necessary dependencies with useful error or warning messages.
+  #. Checks for necessary dependencies with useful error or warning messages; 
+     e.g.,::
+
+       if(NOT HDF5_FOUND)
+         message(FATAL_ERROR "Sidre requires HDF5. Set HDF5_DIR to HDF5 installation.")
+       endif()
 
   #. Subdirectories additions with guards as needed; e.g.,::
 
@@ -158,7 +173,7 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
          add_subdirectory(tests)
        endif() 
 
-  #. CMake exports of all component targets; e.g.,::
+  #. CMake exports of component targets; e.g.,::
 
        install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
 
@@ -219,7 +234,7 @@ All components should follow this format to describe the library information.
 Component examples directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `CMakeLists.txt` files in component examples directories define the 
+The `CMakeLists.txt` file in component examples directory defines the 
 following items:
 
   #. Variables for example source files and header files as needed
@@ -247,7 +262,7 @@ following items:
 Component tests directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `CMakeLists.txt` files in component examples directories define the 
+The `CMakeLists.txt` file in component test directory defines the 
 following items:
 
   #. Variables for test source files as needed. Separate variables should 
@@ -268,7 +283,7 @@ Component docs directory
 
 A component `docs` directory contains a `CMakeLists.txt` file that uses
 the CMake `add_subdirectory` command to add `sphinx` and `doxygen` 
-subdirectories to the build configuration. These are guarded to prevent
+subdirectories to the build configuration. These should be guarded to prevent
 addition if either *Sphinx* or *Doxygen* are not found.
 
 `CMakeLists.txt` files in the `sphinx` and `doxygen` subdirectories add
@@ -285,8 +300,9 @@ C and Fortran Interfaces
 
 Typically, we use the Shroud tool to generate C and Fortran APIs from our C++ 
 interface code. Shroud is a collection of python scripts that generate code
-from a *yaml* file that describes C++ types and their interfaces. 
-***Add link to Shroud documentation***
+from a *yaml* file that describes C++ types and their interfaces. It was
+developed for the Axom project and has since been generalized and is supported
+as a standalone project. ***Add link to Shroud project***
 To illustrate what is needed to generate multi-language API code via a make 
 target in the Axom build system, we describe the contents of the *sidre* 
 Axom component interface directory `axom/src/components/sidre/src/interface` 
@@ -294,10 +310,10 @@ that must be added:
 
   #. A *yaml* file, named `sidre_shroud.yaml`, which contains an annotated 
      description of C++ types and their interfaces in *sidre* C++ files. 
-     This file and its contents are manually generated. When 
+     This file and its contents are generated manually.
 
   #. Header files, such as `sidre.h`, that can be included in C files. Such
-     a file includes files containing Shroud-generated 'extern' C prototypes.
+     a file includes files containing Shroud-generated 'extern C' prototypes.
 
   #. Directories to hold the generated files for different languages; e.g.,
      `c_fortran` for C and Fortran APIs, `python` for python API, etc.
@@ -374,8 +390,8 @@ documentation:
   #. Try to anticipate user difficulties. When possible, describe workarounds,
      caveats, and places where software is immature to help users set
      expectations and assumptions about the quality and state of your software.
-  #. *Test* your docuementation. Follow your own instructions completely. 
-     If something is unclear or missing, fix your documenation. Working with
+  #. *Test* your documentation. Follow your own instructions completely. 
+     If something is unclear or missing, fix your documentation. Working with
      a co-worker who is new to your work, or less informed about it, is
      also a good way to get feedback and improve your documentation.
   #. Make documentation interesting to read. While you are not writing a 
@@ -389,8 +405,8 @@ documentation:
 
 Speaking of good user documentation, the 
 `reStructuredText Primer <http://www.sphinx-doc.org/en/stable/rest.html>`_ 
-provides enough information to quickly learn enough to start using it 
-productively.
+provides enough information to quickly learn enough to start using the
+markdown language for generating sphinx documentation.
 
 Code Documentation
 ------------------
@@ -401,7 +417,7 @@ For example, `make sidre_doxygen` builds *html* files from *Doxygen* code
 documentation for the *sidre* component.
 
 The main goal of code documentation is to provide an easily navigable 
-reference document of your software interfaces and implemenations for
+reference document of your software interfaces and implementations for
 users who need to understand details of your code.
 
 We have a useful discussion of our Doxygen usage conventions in the 
@@ -409,6 +425,6 @@ We have a useful discussion of our Doxygen usage conventions in the
 The `Doxygen Manual <http://www.stack.nl/~dimitri/doxygen/>`_ contains
 a lot more details.
 
-Fill this in when we have a better handle on how we want to prganize our 
-doxygen stuff...
+**Fill in more details when we have a better handle on how we want to organize 
+our doxygen stuff...**
 
