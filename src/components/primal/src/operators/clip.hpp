@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file clipping.hpp
+ * \file clip.hpp
  *
  * \brief Consists of a set of methods to clip a primal primitive against
  *        another primal primitive
@@ -33,6 +33,7 @@ namespace axom {
 namespace primal {
 
 /*!
+ *******************************************************************************
  * \brief Clips a 3D triangle against an axis-aligned bounding box in 3D
  *
  * \param [in] tri The triangle to clip
@@ -41,8 +42,9 @@ namespace primal {
  *         If the triangle is completely outside the bounding box,
  *         the returned polygon is empty (i.e. it has no vertices).
  *
- * \note Using a specialization of the Sutherland-Hodgeman clipping algorithm for
- * axis aligned planes
+ * \note Using a specialization of the Sutherland-Hodgeman clipping algorithm
+ *       for axis aligned planes
+ *******************************************************************************
  */
 template < typename T >
 Polygon< T,3 > clip(const Triangle< T,3 >& tri, const BoundingBox< T, 3 >& bbox)

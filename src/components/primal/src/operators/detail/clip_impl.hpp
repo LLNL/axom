@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file clipping_impl.hpp
+ * \file clip_impl.hpp
  *
  * \brief Helper functions for the primal clipping operators
  *******************************************************************************
@@ -31,13 +31,14 @@ namespace primal {
 
 namespace detail {
 
-/** Returns true when index is even */
+/*! Returns true when index is even */
 bool isEven(int index)
 {
   return (index & 1)==0;
 }
 
-/**
+/*!
+ *******************************************************************************
  * \brief Specialized point plane classifier for axis aligned planes
  *
  * \param [in] pt The plane to classify
@@ -57,6 +58,7 @@ bool isEven(int index)
  *         value based on the relative orientations of point pt and the
  *         corresponding plane associated with index.
  * \see OrientedPlane enum
+ *******************************************************************************
  */
 template < typename T, int NDIMS >
 int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
@@ -79,7 +81,8 @@ int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
   return ON_BOUNDARY;
 }
 
-/**
+/*!
+ *******************************************************************************
  * \brief Finds the clipping intersection point between points a and b.
  *
  * \param [in] a The point behind the plane
@@ -89,6 +92,7 @@ int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
  * \return The point between a and b whose corresponding coordinate is val
  *
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
+ *******************************************************************************
  */
 template < typename T, int NDIMS >
 Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
@@ -111,7 +115,8 @@ Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
   return ret;
 }
 
-/**
+/*!
+ *******************************************************************************
  * \brief Clips the vertices of the polygon to be behind the plane.
  *
  * This is a specialization of the Sutherland-Hodgeman clipping algorithm
@@ -128,6 +133,7 @@ Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
  *       and is based on the Sutherland-Hodgeman clipping algorithm.
  *       We are only keeping the "back" polygon, w.r.t. that algorithm.
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
+ *******************************************************************************
  */
 template < typename T, int NDIMS >
 void clipAxisPlane(const Polygon< T,NDIMS >* prevPoly,

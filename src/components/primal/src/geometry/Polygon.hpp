@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -8,7 +8,7 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/**
+/*!
  *******************************************************************************
  * \file Polygon.hpp
  *
@@ -33,13 +33,12 @@ namespace primal {
 template < typename T, int NDIMS >
 class Polygon;
 
-/**
- * \brief Overloaded output operator for polygons
- */
+/*! \brief Overloaded output operator for polygons */
 template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
 
-/**
+/*!
+ *******************************************************************************
  * \class Polygon
  *
  * \brief Represents a polygon defined by an array of points
@@ -47,6 +46,7 @@ std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
  * \tparam NDIMS the number of dimensions
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
+ *******************************************************************************
  */
 template < typename T,int NDIMS >
 class Polygon
@@ -60,48 +60,52 @@ private:
   typedef std::vector< PointType > Coords;
 
 public:
-  /** Default constructor for an empty polygon   */
+  /*! Default constructor for an empty polygon   */
   Polygon() {}
 
-  /**
+  /*!
+   ********************************************************************************
    * \brief Constructor for an empty polygon that reserves space for
    *    the given number of vertices
    *
    * \param [in] numExpectedVerts The number of vertices for which to reserve space
    * \pre numExpectedVerts is not negative
    *
-   * */
+   ********************************************************************************
+   */
   Polygon(int numExpectedVerts)
   {
     SLIC_ASSERT(numExpectedVerts >= 0);
     m_vertices.reserve(numExpectedVerts);
   }
 
-  /** Return the number of vertices in the polygon */
+  /*! Return the number of vertices in the polygon */
   int numVertices() const { return m_vertices.size(); }
 
-  /** Appends a vertex to the list of vertices */
+  /*! Appends a vertex to the list of vertices */
   void addVertex(const PointType& pt)
   {
     m_vertices.push_back(pt);
   }
 
-  /** Clears the list of vertices */
+  /*! Clears the list of vertices */
   void clear()
   {
     m_vertices.clear();
   }
 
-  /** Retrieves the vertex at index idx */
+  /*! Retrieves the vertex at index idx */
   PointType& operator[](int idx) { return m_vertices[idx]; }
-  /** Retrieves the vertex at index idx */
+  /*! Retrieves the vertex at index idx */
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
-  /**
+  /*!
+   *******************************************************************************
    * \brief Computes the centroid as the average of the polygon's vertex positions
    *
    * \return The centroid of the polygon's vertices
    * \pre  polygon.isValid() is true
+   *******************************************************************************
    */
   PointType centroid() const
   {
@@ -117,11 +121,13 @@ public:
     return sum;
   }
 
-  /**
+  /*!
+   *******************************************************************************
    * \brief Simple formatted print of a polygon instance
    *
    * \param os The output stream to write to
    * \return A reference to the modified ostream
+   *******************************************************************************
    */
   std::ostream& print(std::ostream& os) const
   {
@@ -139,11 +145,13 @@ public:
     return os;
   }
 
-  /**
+  /*!
+   *******************************************************************************
    * \brief Simple check for validity of a polygon
    *
    * Initial check is that the polygon has three or more vertices
    * \return True, if the polygon is valid, False otherwise
+   *******************************************************************************
    */
   bool isValid() const
   {
