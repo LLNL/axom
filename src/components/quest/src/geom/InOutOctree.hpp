@@ -1,5 +1,5 @@
 /**
- * \file
+ * \file InOutOctree.hpp
  *
  * \brief Defines an InOutOctree for containment queries on a surface.
  */
@@ -1617,8 +1617,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
 {
     bool isColored = leafData.isColored();
 
-    QUEST_OCTREE_DEBUG_LOG_IF(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2
-                              , "Trying to color " << leafBlk << " with data: " << leafData );
+    QUEST_OCTREE_DEBUG_LOG_IF(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
+                              "Trying to color " << leafBlk << " with data: " << leafData );
 
 
     if( ! isColored )
@@ -1633,8 +1633,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
 
                 QUEST_OCTREE_DEBUG_LOG_IF(
                         DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
-                         || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
-                     ,"Spreading color to block " << leafBlk << " with data " <<  leafData
+                         || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
+                     "Spreading color to block " << leafBlk << " with data " <<  leafData
                      << " and bounding box " << this->blockBoundingBox(leafBlk)
                      << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
                      //
@@ -1768,11 +1768,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex
     GeometricBoundingBox expandedBB = blockBB;
     expandedBB.scale(1.005);
 
+    SpacePt triPt;
+
     TriangleIndexSet triSet = leafTriangles(leafBlk, leafData);
     const int numTris = triSet.size();
-    TriangleIndex localTriIdx = MeshWrapper::NO_TRIANGLE;
-
-    SpacePt triPt;
     for(int i=0; i< numTris; ++i)
     {
       /// Get the triangle
