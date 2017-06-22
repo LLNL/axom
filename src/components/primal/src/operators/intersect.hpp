@@ -25,7 +25,7 @@
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
-#include "primal/intersection_impl.hpp"
+#include "primal/intersect_impl.hpp"
 
 namespace axom {
 namespace primal {

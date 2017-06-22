@@ -27,7 +27,7 @@
 #include "primal/BoundingBox.hpp"
 #include "primal/Polygon.hpp"
 
-#include "primal/clipping_impl.hpp"
+#include "primal/clip_impl.hpp"
 
 namespace axom {
 namespace primal {

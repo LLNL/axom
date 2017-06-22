@@ -19,7 +19,7 @@
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 
-#include "primal/intersection.hpp"
+#include "primal/intersect.hpp"
 
 using namespace axom;
 
@@ -116,7 +116,7 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   }
 }
 
-TEST( primal_intersection, ray_segment_intersection )
+TEST( primal_intersect, ray_segment_intersection )
 {
   typedef primal::Point< double,2 >   PointType;
   typedef primal::Segment< double,2 > SegmentType;
@@ -149,7 +149,7 @@ TEST( primal_intersection, ray_segment_intersection )
   EXPECT_FALSE( intersects2 );
 }
 
-TEST( primal_intersection, triangle_aabb_intersection )
+TEST( primal_intersect, triangle_aabb_intersection )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -272,7 +272,7 @@ TEST( primal_intersection, triangle_aabb_intersection )
   EXPECT_FALSE( primal::intersect(xyTri, bbInvalid) );
 }
 
-TEST( primal_intersection, triangle_aabb_intersection_fromData )
+TEST( primal_intersect, triangle_aabb_intersection_fromData )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -334,7 +334,7 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData )
 
 }
 
-TEST( primal_intersection, triangle_aabb_intersection_fromData2 )
+TEST( primal_intersect, triangle_aabb_intersection_fromData2 )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -391,7 +391,7 @@ TEST( primal_intersection, triangle_aabb_intersection_fromData2 )
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
-TEST( primal_intersection, 2D_triangle_triangle_intersection )
+TEST( primal_intersect, 2D_triangle_triangle_intersection )
 {
 
   typedef primal::Triangle< double,2 > Triangle2;
@@ -743,7 +743,7 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l,
   return !l.degenerate() && !r.degenerate();
 }
 
-TEST( primal_intersection, 3D_triangle_triangle_intersection )
+TEST( primal_intersect, 3D_triangle_triangle_intersection )
 {
 
   typedef primal::Triangle< double,3 > Triangle3;
@@ -876,7 +876,7 @@ TEST( primal_intersection, 3D_triangle_triangle_intersection )
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
-TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
+TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -926,7 +926,7 @@ TEST( primal_intersection, triangle_aabb_intersection_boundaryFace )
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
-TEST( primal_intersection, ray_aabb_intersection_general3D )
+TEST( primal_intersect, ray_aabb_intersection_general3D )
 {
   static int const DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
@@ -964,7 +964,7 @@ TEST( primal_intersection, ray_aabb_intersection_general3D )
   //axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
-TEST( primal_intersection, ray_aabb_intersection_tinyDirectionVector3D )
+TEST( primal_intersect, ray_aabb_intersection_tinyDirectionVector3D )
 {
   static int const DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
@@ -1067,7 +1067,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
   }
 }
 
-TEST(primal_intersection, triangle_segment_intersection)
+TEST(primal_intersect, triangle_segment_intersection)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -1135,7 +1135,7 @@ TEST(primal_intersection, triangle_segment_intersection)
   testTriSegBothEnds( tri,  testp,  ptX,    "beyond edge 2",  true);
 }
 
-TEST(primal_intersection, triangle_ray_intersection)
+TEST(primal_intersect, triangle_ray_intersection)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
@@ -1229,7 +1229,7 @@ TEST(primal_intersection, triangle_ray_intersection)
   EXPECT_FALSE(intersect(tri2, testRay));
 }
 
-TEST(primal_intersection, triangle_ray_intersection_unit_ray)
+TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
@@ -1258,7 +1258,7 @@ TEST(primal_intersection, triangle_ray_intersection_unit_ray)
   SLIC_INFO("Intersection point is " << intersectionPoint);
 }
 
-TEST(primal_intersection, triangle_ray_intersection_unit_seg)
+TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >     PointType;

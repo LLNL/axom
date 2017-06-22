@@ -19,10 +19,10 @@
 #include "primal/Ray.hpp"
 #include "primal/Polygon.hpp"
 
-#include "primal/intersection.hpp"
+#include "primal/intersect.hpp"
 #include "primal/orientation.hpp"
 #include "primal/squared_distance.hpp"
-#include "primal/clipping.hpp"
+#include "primal/clip.hpp"
 
 
 #include "slic/slic.hpp"

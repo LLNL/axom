@@ -12,7 +12,7 @@
 
 #include "slic/slic.hpp"
 
-#include "primal/intersection_impl.hpp"
+#include "primal/intersect_impl.hpp"
 
 using namespace axom;
 

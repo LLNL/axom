@@ -14,7 +14,7 @@
 #include "primal/BoundingBox.hpp"
 #include "primal/Triangle.hpp"
 
-#include "primal/clipping.hpp"
+#include "primal/clip.hpp"
 
 #include <limits>
 
@@ -26,7 +26,120 @@ typedef axom::primal::Triangle< double, 3 > TriangleType;
 typedef axom::primal::Polygon< double, 3 > PolygonType;
 }
 
-TEST( primal_clipping, boundingBoxOptimization )
+TEST( primal_clip, simple_clip)
+{
+  using namespace Primal3D;
+  BoundingBoxType bbox;
+  bbox.addPoint( PointType::zero());
+  bbox.addPoint( PointType::ones());
+
+  PointType points[] =
+  {
+    PointType::make_point(2,2,2),
+    PointType::make_point(2,2,4),
+    PointType::make_point(2,4,2),
+    PointType::make_point(-100,-100,0.5),
+    PointType::make_point(-100,100,0.5),
+    PointType::make_point(100,0,0.5),
+    PointType::make_point(0.25,0.25,0.5),
+    PointType::make_point(0.75,0.25,0.5),
+    PointType::make_point(0.66,0.5,0.5),
+    PointType::make_point(1.5,0.5,0.5),
+  };
+
+  {
+    TriangleType tri( points[0], points[1], points[2]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(0, poly.numVertices());
+  }
+
+  {
+    TriangleType tri( points[3], points[4], points[5]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(4, poly.numVertices());
+
+    SLIC_INFO("Intersection of triangle "
+              << tri
+              << " and bounding box " << bbox
+              << " is polygon" << poly);
+  }
+
+  {
+    TriangleType tri( points[3], points[4], points[5]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(4, poly.numVertices());
+
+    EXPECT_EQ(PointType(.5), poly.centroid());
+
+    SLIC_INFO("Intersection of triangle "
+              << tri
+              << " and bounding box " << bbox
+              << " is polygon" << poly);
+  }
+
+  {
+    TriangleType tri( points[6], points[7], points[9]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(4, poly.numVertices());
+
+    SLIC_INFO("Intersection of triangle "
+              << tri
+              << " and bounding box " << bbox
+              << " is polygon" << poly);
+  }
+
+}
+
+TEST( primal_clip, unit_simplex)
+{
+  using namespace Primal3D;
+  double delta = 1e-5;
+
+  // Test the "unit simplex", and a jittered version
+  PointType points[] =
+  {
+    PointType::make_point(1,0,0),
+    PointType::make_point(0,1,0),
+    PointType::make_point(0,0,1),
+    PointType::make_point(1+delta,delta,delta),
+    PointType::make_point(delta,1+delta,delta),
+    PointType::make_point(delta,delta,1+delta)
+  };
+
+  BoundingBoxType bbox;
+  bbox.addPoint( PointType::zero());
+  bbox.addPoint( PointType(.75));
+
+  // intersection of this triangle and cube is a hexagon
+  {
+    TriangleType tri( points[0], points[1], points[2]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(6, poly.numVertices());
+
+    SLIC_INFO("Intersection of triangle "
+              << tri
+              << " and bounding box " << bbox
+              << " is polygon" << poly);
+  }
+  {
+    TriangleType tri( points[3], points[4], points[5]);
+
+    PolygonType poly = axom::primal::clip(tri, bbox);
+    EXPECT_EQ(6, poly.numVertices());
+
+    SLIC_INFO("Intersection of triangle "
+              << tri
+              << " and bounding box " << bbox
+              << " is polygon" << poly);
+  }
+}
+
+TEST( primal_clip, boundingBoxOptimization )
 {
   using namespace Primal3D;
 
@@ -71,10 +184,9 @@ TEST( primal_clipping, boundingBoxOptimization )
     SLIC_INFO(poly);
     EXPECT_EQ(5, poly.numVertices());
   }
-
 }
 
-TEST( primal_clipping, experimentalData)
+TEST( primal_clip, experimentalData)
 {
   using namespace Primal3D;
 
@@ -148,120 +260,6 @@ TEST( primal_clipping, experimentalData)
       EXPECT_NEAR(centroid[dim], reconstructed[dim], EPS);
     }
     EXPECT_TRUE(box12.contains(centroid));
-  }
-
-}
-
-TEST( primal_clipping, unit_simplex)
-{
-  using namespace Primal3D;
-  double delta = 1e-5;
-
-  // Test the "unit simplex", and a jittered version
-  PointType points[] =
-  {
-    PointType::make_point(1,0,0),
-    PointType::make_point(0,1,0),
-    PointType::make_point(0,0,1),
-    PointType::make_point(1+delta,delta,delta),
-    PointType::make_point(delta,1+delta,delta),
-    PointType::make_point(delta,delta,1+delta)
-  };
-
-  BoundingBoxType bbox;
-  bbox.addPoint( PointType::zero());
-  bbox.addPoint( PointType(.75));
-
-  // intersection of this triangle and cube is a hexagon
-  {
-    TriangleType tri( points[0], points[1], points[2]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(6, poly.numVertices());
-
-    SLIC_INFO("Intersection of triangle "
-              << tri
-              << " and bounding box " << bbox
-              << " is polygon" << poly);
-  }
-  {
-    TriangleType tri( points[3], points[4], points[5]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(6, poly.numVertices());
-
-    SLIC_INFO("Intersection of triangle "
-              << tri
-              << " and bounding box " << bbox
-              << " is polygon" << poly);
-  }
-
-}
-
-TEST( primal_clipping, simple_clip)
-{
-  using namespace Primal3D;
-  BoundingBoxType bbox;
-  bbox.addPoint( PointType::zero());
-  bbox.addPoint( PointType::ones());
-
-  PointType points[] =
-  {
-    PointType::make_point(2,2,2),
-    PointType::make_point(2,2,4),
-    PointType::make_point(2,4,2),
-    PointType::make_point(-100,-100,0.5),
-    PointType::make_point(-100,100,0.5),
-    PointType::make_point(100,0,0.5),
-    PointType::make_point(0.25,0.25,0.5),
-    PointType::make_point(0.75,0.25,0.5),
-    PointType::make_point(0.66,0.5,0.5),
-    PointType::make_point(1.5,0.5,0.5),
-  };
-
-  {
-    TriangleType tri( points[0], points[1], points[2]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(0, poly.numVertices());
-  }
-
-  {
-    TriangleType tri( points[3], points[4], points[5]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(4, poly.numVertices());
-
-    SLIC_INFO("Intersection of triangle "
-              << tri
-              << " and bounding box " << bbox
-              << " is polygon" << poly);
-  }
-
-  {
-    TriangleType tri( points[3], points[4], points[5]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(4, poly.numVertices());
-
-    EXPECT_EQ(PointType(.5), poly.centroid());
-
-    SLIC_INFO("Intersection of triangle "
-              << tri
-              << " and bounding box " << bbox
-              << " is polygon" << poly);
-  }
-
-  {
-    TriangleType tri( points[6], points[7], points[9]);
-
-    PolygonType poly = axom::primal::clip(tri, bbox);
-    EXPECT_EQ(4, poly.numVertices());
-
-    SLIC_INFO("Intersection of triangle "
-              << tri
-              << " and bounding box " << bbox
-              << " is polygon" << poly);
   }
 
 }
