@@ -1185,7 +1185,7 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)
   // point, but I'll accept this for now.
 
   typedef NumericArray< T,3 > NumArray;
-  static const T zero = T();
+  const T zero = T();
 
   //find out dimension where ray direction is maximal
   int kx,ky,kz;
@@ -1211,7 +1211,7 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)
 
   //if necessary swap  ky and kx to preserve triangle winding
   if (R.direction()[kz] < zero) {
-    std::swap(kx, ky);
+    axom::utilities::swap(kx, ky);
   }
 
   //calculate shear constants

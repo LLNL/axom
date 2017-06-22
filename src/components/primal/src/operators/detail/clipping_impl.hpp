@@ -24,22 +24,14 @@
 #include "primal/BoundingBox.hpp"
 #include "primal/Polygon.hpp"
 
+#include "primal/orientation.hpp"
+
 namespace axom {
 namespace primal {
 
 namespace detail {
 
-/** Enum types for classifying points with respect to a thick plane */
-struct PtPlaneClassifier
-{
-  enum {
-    POINT_ON_PLANE,
-    POINT_IN_FRONT_OF_PLANE,
-    POINT_BEHIND_PLANE
-  };
-};
-
-/** Returns true when index is even  */
+/** Returns true when index is even */
 bool isEven(int index)
 {
   return (index & 1)==0;
@@ -61,7 +53,10 @@ bool isEven(int index)
  * * 4 -> -z axis
  * * 5 -> +z axis
  *
- * \return A PtPlaneClassifier value based on the relative orientations
+ * \return An OrientedSide (ON_POSITIVE_SIDE, ON_NEGATIVE_SIDE, ON_BOUNDARY)
+ *         value based on the relative orientations of point pt and the
+ *         corresponding plane associated with index.
+ * \see OrientedPlane enum
  */
 template < typename T, int NDIMS >
 int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
@@ -71,17 +66,17 @@ int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
   // So the dot product is +/- the given coordinate.
   // In general, we would need to call distance(pt, plane) here
   T dist = isEven(index)
-           ? -(pt[ index/2 ] - val)
-           :  pt[ index/2 ] - val;
+           ? val - pt[ index/2 ]
+           : pt[ index/2 ] - val;
 
   if (dist > eps) {
-    return PtPlaneClassifier::POINT_IN_FRONT_OF_PLANE;
+    return ON_POSITIVE_SIDE;
   }
   if (dist < -eps) {
-    return PtPlaneClassifier::POINT_BEHIND_PLANE;
+    return ON_NEGATIVE_SIDE;
   }
 
-  return PtPlaneClassifier::POINT_ON_PLANE;
+  return ON_BOUNDARY;
 }
 
 /**
@@ -104,15 +99,14 @@ Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
 
   // Need to find a parameter t for the point pt, such that,
   // * 0 <= t <= 1
-  // * pt = a + t (b-a)
+  // * pt = a + t * (b-a)
   // * pt[ index/2]  == val
 
   T t = (val - a[ index /2 ]) / (b[index/2]- a[index/2]);
   SLIC_ASSERT(0. <= t && t <= 1.);
 
   PointType ret = PointType(a.array() + t * (b.array()-a.array()) );
-  SLIC_ASSERT( classifyPointAxisPlane( ret, index, val) ==
-               PtPlaneClassifier::POINT_ON_PLANE);
+  SLIC_ASSERT( classifyPointAxisPlane( ret, index, val) == ON_BOUNDARY);
 
   return ret;
 }
@@ -157,27 +151,27 @@ void clipAxisPlane(const Polygon< T,NDIMS >* prevPoly,
     int bSide = classifyPointAxisPlane(*b, index, val);
 
     switch (bSide) {
-    case PtPlaneClassifier::POINT_IN_FRONT_OF_PLANE:
-      if (aSide == PtPlaneClassifier::POINT_BEHIND_PLANE) {
+    case ON_POSITIVE_SIDE:
+      if (aSide == ON_NEGATIVE_SIDE) {
         currentPoly->addVertex(findIntersectionPoint(*a, *b, index, val));
       }
       break;
-    case PtPlaneClassifier::POINT_ON_PLANE:
-      if (aSide == PtPlaneClassifier::POINT_BEHIND_PLANE) {
+    case ON_BOUNDARY:
+      if (aSide == ON_NEGATIVE_SIDE) {
         currentPoly->addVertex(*b);
       }
       break;
-    case PtPlaneClassifier::POINT_BEHIND_PLANE:
+    case ON_NEGATIVE_SIDE:
       switch (aSide) {
-      case PtPlaneClassifier::POINT_IN_FRONT_OF_PLANE:
+      case ON_POSITIVE_SIDE:
         currentPoly->addVertex(findIntersectionPoint(*a, *b, index, val));
         currentPoly->addVertex(*b);
         break;
-      case PtPlaneClassifier::POINT_ON_PLANE:
+      case ON_BOUNDARY:
         currentPoly->addVertex(*a);
         currentPoly->addVertex(*b);
         break;
-      case PtPlaneClassifier::POINT_BEHIND_PLANE:
+      case ON_NEGATIVE_SIDE:
         currentPoly->addVertex(*b);
         break;
       }

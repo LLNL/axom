@@ -45,6 +45,8 @@ std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
  * \brief Represents a polygon defined by an array of points
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
+ * \note The polygon vertices should be ordered in a counter clockwise
+ *       orientation with respect to the polygon's desired normal vector
  */
 template < typename T,int NDIMS >
 class Polygon

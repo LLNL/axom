@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------------------
 TEST( primal_uniform_grid, bbox_constructor)
 {
-  static const int DIM = 3;
+  const int DIM = 3;
 
   double p_max[DIM] = {10, 10, 10};
   double p_min[DIM] = {0, 0, 0};
@@ -34,7 +34,7 @@ TEST( primal_uniform_grid, bbox_constructor)
 
 TEST( primal_uniform_grid, indexing)
 {
-  static const int DIM = 3;
+  const int DIM = 3;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
 
@@ -127,7 +127,7 @@ void zero(std::map< int, int > & m, int idx)
 }
 
 TEST(primal_uniform_grid, add_stuff_3D){
-  static const int DIM = 3;
+  const int DIM = 3;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
   typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
@@ -204,7 +204,7 @@ TEST(primal_uniform_grid, add_stuff_3D){
 }
 
 TEST(primal_uniform_grid, delete_stuff_3D){
-  static const int DIM = 3;
+  const int DIM = 3;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
   typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
@@ -271,7 +271,7 @@ TEST(primal_uniform_grid, delete_stuff_3D){
 }
 
 TEST(primal_uniform_grid, add_stuff_2D){
-  static const int DIM = 2;
+  const int DIM = 2;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
   typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
@@ -346,7 +346,7 @@ TEST(primal_uniform_grid, add_stuff_2D){
 }
 
 TEST(primal_uniform_grid, delete_stuff_2D){
-  static const int DIM = 2;
+  const int DIM = 2;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
   typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
