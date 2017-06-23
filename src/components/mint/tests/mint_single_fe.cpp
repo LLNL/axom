@@ -843,6 +843,7 @@ TEST( mint_single_fe, check_fe_shape_function )
   check_shape< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  check_shape< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -852,6 +853,7 @@ TEST( mint_single_fe, check_fe_jacobian )
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -861,6 +863,7 @@ TEST( mint_single_fe, check_fe_forward_map )
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -870,6 +873,7 @@ TEST( mint_single_fe, check_fe_inverse_map )
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -879,6 +883,7 @@ TEST( mint_single_fe, check_fe_point_in_cell )
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_TET >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -888,6 +893,7 @@ TEST( mint_single_fe, check_fe_interp )
   check_interp< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( 1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_TET >( 1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >( 1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >( 1.e-12 );
 }
 
 //------------------------------------------------------------------------------

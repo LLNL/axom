@@ -207,6 +207,7 @@ TEST( mint_shape_functions, check_reference_element )
   reference_element< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   reference_element< MINT_LAGRANGE_BASIS, MINT_TET >( );
   reference_element< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  reference_element< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -216,6 +217,7 @@ TEST( mint_shape_functions, check_kronecker_delta )
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_TET >( );
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------
@@ -225,6 +227,7 @@ TEST( mint_shape_functions, check_partition_of_unity )
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_TET >( );
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_HEX >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
 }
 
 //------------------------------------------------------------------------------

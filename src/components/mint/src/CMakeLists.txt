@@ -21,6 +21,7 @@ mint_fe_basis( NAME LAGRANGE
                   quad_4.hpp
                   tetra_4.hpp
                   tri_3.hpp
+                  prism_6.hpp
                )
 
 ## custom target to put the mint basis functions under mint/lagrange

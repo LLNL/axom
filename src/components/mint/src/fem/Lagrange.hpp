@@ -337,5 +337,6 @@ public:
 #include "mint/fem/shape_functions/lagrange/tri_3.hpp"
 #include "mint/fem/shape_functions/lagrange/tetra_4.hpp"
 #include "mint/fem/shape_functions/lagrange/hexa_8.hpp"
+#include "mint/fem/shape_functions/lagrange/prism_6.hpp"
 
 #endif /* MINT_LAGRANGE_SHAPEFUNCTION_HPP_ */
