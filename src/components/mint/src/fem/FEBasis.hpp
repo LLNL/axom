@@ -53,6 +53,7 @@ struct FEBasis { };
 // Lagrange Basis
 REGISTER_LAGRANGE_BASIS( MINT_QUAD );
 REGISTER_LAGRANGE_BASIS( MINT_TRIANGLE );
+REGISTER_LAGRANGE_BASIS( MINT_TET );
 
 } /* namespace mint */
 } /* namespace axom */

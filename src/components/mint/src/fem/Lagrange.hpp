@@ -335,5 +335,6 @@ public:
 // Template Specializations for Lagrange
 #include "mint/fem/shape_functions/lagrange/quad_4.hpp"
 #include "mint/fem/shape_functions/lagrange/tri_3.hpp"
+#include "mint/fem/shape_functions/lagrange/tetra_4.hpp"
 
 #endif /* MINT_LAGRANGE_SHAPEFUNCTION_HPP_ */
