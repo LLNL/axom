@@ -64,7 +64,7 @@ Polygon< T,3 > clip(const Triangle< T,3 >& tri, const BoundingBox< T, 3 >& bbox)
   triBox.addPoint(tri[1]);
   triBox.addPoint(tri[2]);
 
-  if (!bbox.intersects(triBox)) {
+  if (!bbox.intersectsWith(triBox)) {
     return *currentPoly; // note: currentPoly is empty
   }
 

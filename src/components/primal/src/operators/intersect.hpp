@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file
+ * \file intersect.hpp
  *
  * \brief Consists of functions to test intersection among geometric primitives.
  *******************************************************************************
@@ -128,7 +128,7 @@ template < typename T, int DIM >
 bool intersect( const BoundingBox< T, DIM >& bb1,
                 const BoundingBox< T, DIM >& bb2)
 {
-  return bb1.intersects(bb2);
+  return bb1.intersectsWith(bb2);
 }
 
 /*!

@@ -348,14 +348,14 @@ public:
   /*!
    *****************************************************************************
    * \param [in] otherBB the bounding box that we are checking.
-   * \return status true if bb intersects, else false.
+   * \return status true if bb intersects otherBB, else false.
    * \note We are allowing the other bounding box to have a different coordinate
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
    *****************************************************************************
    */
   template < typename OtherType >
-  bool intersects( const BoundingBox< OtherType, NDIMS >& otherBB ) const;
+  bool intersectsWith( const BoundingBox< OtherType, NDIMS >& otherBB ) const;
 
   /*!
    *****************************************************************************
@@ -529,7 +529,7 @@ bool BoundingBox< T, NDIMS >::contains(
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherType  >
-bool BoundingBox< T,NDIMS >::intersects(
+bool BoundingBox< T,NDIMS >::intersectsWith(
   const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
   // AABBs cannot intersect if they are separated along any dimension
