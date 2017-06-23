@@ -32,7 +32,9 @@
 #include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cmath>   // for sin()/cos()
+#include <cmath>   // for sin(), cos(), sqrt(), etc.
+
+//#define MINT_FEM_DEBUG
 
 using namespace axom;
 
@@ -40,6 +42,53 @@ using namespace axom;
 //  INTERNAL HELPER METHODS
 //------------------------------------------------------------------------------
 namespace {
+
+/*!
+ *******************************************************************************
+ * \brief Helper method to calculate the centroid of Finite Element instance.
+ * \param [in] fe pointer to a finite element instance.
+ * \param [out] centroid buffer to store the centroid
+ *******************************************************************************
+ */
+void compute_centroid( mint::FiniteElement* fe, double* centroid )
+{
+  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_TRUE( centroid != AXOM_NULLPTR );
+
+  const int ndims  = fe->getDimension();
+  const int nnodes = fe->getNumNodes();
+  numerics::Matrix< double > physical_nodes(
+          ndims, nnodes, fe->getPhysicalNodes(), true );
+
+  if ( fe->getCellType() == MINT_PYRAMID ) {
+
+    // Hard-code expected centroid from VTK, since averaging the nodes
+    // doesn't yield the centroid for a pyramid.
+    centroid[ 0 ] = 4.00001;
+    centroid[ 1 ] = 4.28284;
+    centroid[ 2 ] = 2.0;
+
+  } else {
+
+    for ( int i=0; i < ndims; ++i ) {
+
+      typedef typename numerics::Matrix< double >::IndexType IndexType;
+      IndexType p = 0;
+      IndexType N = 0;
+      const double* xp_i = physical_nodes.getRow(i,p,N);
+
+      centroid[ i ] = 0.0;
+      for ( int j=0; j < N; j+=p ) {
+        centroid[ i ] += xp_i[ j ];
+      } // END for all nodes
+
+      centroid[ i ] /= nnodes;
+
+    } // END for all dimensions
+
+  } // END else
+
+}
 
 /*!
  *******************************************************************************
@@ -93,6 +142,8 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
 
   MeshType* m = new MeshType( ndims );
 
+  double centroid[ ] = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
+
   for ( int i=0; i < ndofs; ++i ) {
 
      cell[ i ]    = i;
@@ -105,13 +156,32 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
      node[ 0 ] = SCALE * ( (dx*COST - dy*SINT) + center[ 0 ] );
      node[ 1 ] = SCALE * ( (dx*SINT + dy*COST) + center[ 1 ] );
      if ( ndims==3 ) {
-       node[ 2 ] *= SCALE;	     
+       node[ 2 ] *= SCALE;
+     }
+
+     if ( CellType==MINT_PYRAMID && i < 4 ) {
+        centroid[ 0 ] += node[ 0 ];
+        centroid[ 1 ] += node[ 1 ];
+        centroid[ 2 ] += node[ 2 ];
+     }
+
+     if ( CellType==MINT_PYRAMID && i==4 ) {
+       // generate right pyramid, ensure the apex is prependicular to the
+       // base of the pyramid to facilitate testing.
+       node[ 0 ] = 0.25*centroid[ 0 ];
+       node[ 1 ] = 0.25*centroid[ 1 ];
+       node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
      }
 
      m->insertNode( node );
   }
 
   m->insertCell( cell, CellType, ndofs );
+
+#ifdef MINT_FEM_DEBUG
+  std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
+  m->toVtkFile( vtkFile );
+#endif
 
   // clean up
   delete [] center;
@@ -286,18 +356,7 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 
   // STEP 4: compute expected centroid by averaging coordinates
   double* expected_centroid = new double[ ndims ];
-
-  for ( int i=0; i < ndims; ++i ) {
-
-     expected_centroid[ i ] = 0.0;
-
-     for ( int j=0; j < nnodes; ++j ) {
-        const double* xp = element_coords.getColumn( j );
-        expected_centroid[ i ] += xp[ i ];
-     }
-
-     expected_centroid[ i ] /= nnodes;
-  }
+  compute_centroid( fe, expected_centroid );
 
   // STEP 5: check mapping of centroid
   for ( int i=0; i < ndims; ++i ) {
@@ -347,6 +406,11 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
   // STEP 3: loop over physical nodes and map them to reference space
   for ( int i=0; i < nnodes; ++i ) {
 
+    if ( fe->getCellType()==MINT_PYRAMID && i==4 ) {
+      // skip inverse map at the apex of the pyramid, system is singular
+      continue;
+    }
+
     const double* expected_xr = reference_nodes.getColumn( i );
     const double* xp          = physical_nodes.getColumn( i );
     int rc = fe->computeReferenceCoords( xp, xr, TOL );
@@ -360,21 +424,8 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
   } // END for all physical nodes
 
   // STEP 4: calculate centroid in physical space by averaging coordinates
-  typedef typename numerics::Matrix< double >::IndexType IndexType;
   double* centroid = new double[ ndims ];
-  for ( int i=0; i < ndims; ++i ) {
-
-     IndexType p = 0;
-     IndexType N = 0;
-     const double* xp_i = physical_nodes.getRow(i,p,N);
-
-     centroid[ i ] = 0.0;
-     for ( int j=0; j < N; j+=p ) {
-        centroid[ i ] += xp_i[ j ];
-     }
-
-     centroid[ i ] /= nnodes;
-  }
+  compute_centroid( fe, centroid );
 
   // STEP 4: map centroid
   int rc = fe->computeReferenceCoords( centroid, xr, TOL );
@@ -388,7 +439,7 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 
   // STEP 6: clean up
   delete [] xr;
-
+  delete [] centroid;
 }
 
 /*!
@@ -638,6 +689,11 @@ void point_in_cell( double TOL=1.e-9 )
   // STEP 1: Ensure element nodes are inside
   for ( int i=0; i < nnodes; ++i ) {
 
+    if ( fe->getCellType()==MINT_PYRAMID && i==4 ) {
+       // skip inverse map at the apex of the pyramid, system is singular
+       continue;
+     }
+
      const double* xp = nodes.getColumn( i );
 
      status = fe->computeReferenceCoords( xp, xi, TOL );
@@ -844,6 +900,7 @@ TEST( mint_single_fe, check_fe_shape_function )
   check_shape< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
+  check_shape< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
 }
 
 //------------------------------------------------------------------------------
@@ -854,6 +911,7 @@ TEST( mint_single_fe, check_fe_jacobian )
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
 }
 
 //------------------------------------------------------------------------------
@@ -864,6 +922,7 @@ TEST( mint_single_fe, check_fe_forward_map )
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
 }
 
 //------------------------------------------------------------------------------
@@ -874,6 +933,7 @@ TEST( mint_single_fe, check_fe_inverse_map )
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_TET >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
 }
 
 //------------------------------------------------------------------------------
@@ -884,6 +944,7 @@ TEST( mint_single_fe, check_fe_point_in_cell )
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_TET >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
 }
 
 //------------------------------------------------------------------------------
@@ -894,6 +955,7 @@ TEST( mint_single_fe, check_fe_interp )
   check_interp< MINT_LAGRANGE_BASIS, MINT_TET >( 1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >( 1.e-24 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >( 1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-12 );
 }
 
 //------------------------------------------------------------------------------

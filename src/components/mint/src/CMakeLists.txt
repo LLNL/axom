@@ -18,10 +18,11 @@ include(${PROJECT_SOURCE_DIR}/cmake/MintMacros.cmake)
 mint_fe_basis( NAME LAGRANGE
                HEADER_FILES
                   hexa_8.hpp
+                  prism_6.hpp
+                  pyra_5.hpp
                   quad_4.hpp
                   tetra_4.hpp
                   tri_3.hpp
-                  prism_6.hpp
                )
 
 ## custom target to put the mint basis functions under mint/lagrange

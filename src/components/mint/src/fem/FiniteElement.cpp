@@ -148,6 +148,7 @@ int FiniteElement::computeReferenceCoords( const double* xp,
        SLIC_WARNING( "Newton-Raphson failed, system appears singular!" );
        SLIC_INFO( "singular system => det(J)=" << det );
        SLIC_INFO( "l1norm=" << l1norm );
+       SLIC_INFO( "Newton iteration=" << iter );
 
        double xr1 = xr[ 0 ];
        double xr2 = xr[ 1 ];
