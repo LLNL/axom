@@ -46,7 +46,8 @@ namespace mint {
  *******************************************************************************
  */
 template < >
-class Lagrange< MINT_TRIANGLE > : public ShapeFunction< Lagrange< MINT_TRIANGLE > >
+class Lagrange< MINT_TRIANGLE > :
+      public ShapeFunction< Lagrange< MINT_TRIANGLE > >
 {
 public:
 
@@ -100,9 +101,9 @@ public:
     phi[ 2 ] = s;
   }
 
-  static void computeDerivatives( const double* xr, double* phidot )
+  static void computeDerivatives( const double* AXOM_NOT_USED(xr),
+                                  double* phidot )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
     SLIC_ASSERT( phidot != AXOM_NULLPTR );
 
     // r derivatives

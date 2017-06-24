@@ -113,9 +113,9 @@ public:
     phi[ 3 ] = t;
   }
 
-  static void computeDerivatives( const double* xr, double* phidot )
+  static void computeDerivatives( const double* AXOM_NOT_USED( xr ),
+                                  double* phidot )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
     SLIC_ASSERT( phidot != AXOM_NULLPTR );
 
     // r derivatives
