@@ -12,6 +12,7 @@
 #define SEGMENT_HPP_
 
 #include "primal/Point.hpp"
+#include "primal/Vector.hpp"
 
 namespace axom {
 namespace primal {
@@ -68,6 +69,16 @@ public:
    */
   const PointType& target() const { return m_target; };
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the length of the segment
+   *****************************************************************************
+   */
+  double length() const
+  {
+    typedef Vector< T, NDIMS > VectorType;
+    return VectorType(m_source, m_target).norm();
+  }
 private:
 
   /*!
@@ -83,7 +94,6 @@ private:
 };
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
@@ -103,7 +113,6 @@ template < typename T, int NDIMS >
 Segment< T,NDIMS >::~Segment() { }
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 #endif /* SEGMENT_HPP_ */
