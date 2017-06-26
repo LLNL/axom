@@ -26,6 +26,7 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_quad_4.hpp
     fem/shape_functions/lagrange/lagrange_tetra_4.hpp
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
+    fem/shape_functions/lagrange/lagrange_quad_9.hpp
 
     ## Mesh data-model
     mesh/CellConnectivity.hpp
