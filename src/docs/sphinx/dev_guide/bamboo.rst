@@ -15,13 +15,13 @@
 Bamboo: Continuous Integration 
 ======================================================
 
+.. important:: Section under construction...
+
 We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for
 continuous integration and automated testing. We maintain a collection of
 test plans for performing automated and manual builds, tests, and other
 code health monitoring tasks.
 
-
-.. note:: This section needs work and cleanup....
 
 Bamboo Agent Notes
 ^^^^^^^^^^^^^^^^^^^

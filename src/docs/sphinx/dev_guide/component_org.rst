@@ -9,14 +9,15 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
-.. _addcomponent-label:
+.. _componentorg-label:
 
 ******************************************************
-Adding a New Axom Component
+Axom Component Structure
 ******************************************************
 
-This section describes the tasks to be done when adding a new software 
-component to Axom. The main tasks include:
+This section describes the structure of directories, files, and their contents
+for an Axom component. This section should be used as a guide to identify
+tasks to be done when adding a new software component to Axom. These include:
 
   * Creating the appropriate directory structure
   * Modifying and adding CMake files and variables
@@ -231,53 +232,6 @@ add *sidre* as a library is::
 
 All components should follow this format to describe the library information.
 
-Component examples directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The `CMakeLists.txt` file in component examples directory defines the 
-following items:
-
-  #. Variables for example source files and header files as needed
-     Separate variables should be used for Fortran, C++, etc. For example,
-     `example_sources` for C++, `F_example_sources` for Fortran.
-
-  #. An executable and test variable for each example executable to be 
-     generated and each executable to be run as a test. These definitions
-     use the `blt_add_executable` and `blt_add_test` macros, respectively.
-     For example::
-
-       blt_add_executable(NAME  <example executable name>
-                          SOURCES <example source>
-                          OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                          DEPENDS_ON <example dependencies>)
-
-     and::
-
-       blt_add_test(NAME <example executable name>
-                    COMMAND <example executable name>)
-
-     Fortran executables and tests should be guarded to prevent generation if 
-     Fortran is not enabled.
-
-Component tests directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The `CMakeLists.txt` file in component test directory defines the 
-following items:
-
-  #. Variables for test source files as needed. Separate variables should 
-     be used for Fortran, C++, etc. For example, `gtest_sidre_tests` for
-     C++ tests, `gtest_sidre_C_tests` for C tests, and `fruit_sidre_tests`
-     for Fortran tests. Note that we use the *Google Test* framework for C
-     and C++ tests and *Fruit* for Fortran tests.
-
-  #. An executable and test variable for each test executable to be 
-     generated. These variables use the `blt_add_executable` and 
-     `blt_add_test` macros, respectively, as described above.
-
-.. note:: Fortran executables and tests should be guarded to prevent 
-          generation when Fortran is not enabled.
-
 Component docs directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -290,6 +244,37 @@ addition if either *Sphinx* or *Doxygen* are not found.
 targets and dependencies for each type of documentation build. For example,
 the *sidre* component generates `sidre_docs` and `sidre_doxygen` targets
 for these document types.
+
+Component tests and examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The content of component `tests` and `examples` directories, including as
+CMake files are discussed in :ref:`testing-label`.
+
+=============================================================================
+Filename and CMake Target Conventions for Axom Documentation
+=============================================================================
+
+The conventions in this section are intended to make it easy to generate 
+a specific piece of documentation for a an Axom component manually. In Axom, 
+we use 'make' targets to build documentation. Typing `make help` will list 
+all available targets.  When the following conventions are followed, all 
+documentation targets for a component will be grouped together in this 
+listing. Also, it should be clear from each target name what the target is for.
+
+CMake targets for component user guides and source code docs (i.e., Doxygen) 
+are::
+
+  <component name>_user_docs
+
+and ::
+
+  <component name>_doxygen_docs
+
+respectively. For example::
+
+  sidre_user_docs     (sidre component user guide)
+  sidre_docygen_docs  (sidre Doxygen source code docs)
 
 
 .. _shroudfiles-label:

@@ -64,9 +64,9 @@ as needed when software changes.
     For example, all unit tests for a container class may live in a single
     test file, but you should verify each container operation (e.g., 
     container creation/destruction, item insertion, item removal, container 
-    traversal, etc.) in exactly one test. In particular, if a test 
+    traversal, etc.) in exaactly one test. In particular, if a test 
     covers some behavior, checking that same behavior in another test
-    is unnecessary.
+    is unecessary.
 
   * Limit each test to as few logical assertions as possible. Ideally, each
     behavior should require one logical assertion. However, sometimes it 
@@ -133,7 +133,7 @@ Each unit test is defined by the Google Test `TEST()` macro which accepts a
 *test group* identifier, such as the name of the C++ class being tested, 
 and a *test name*, which indicates the functionality being verified by the 
 unit test. Within each unit test, logical assertions are defined using 
-Google Test `assertion macros`. Failure of expected values will cause the test 
+Google Test `assetion macros`. Failure of expected values will cause the test 
 to fail, but other tests will continue to run. 
 
 Note that the Google Test framework will generate a 'main()' routine for 
@@ -196,7 +196,7 @@ The contents of a typical FRUIT test file look like this::
 
 ! Etc.
 
-The tests in a FRUIT test file are placed in a Fortran *module* named for
+The tests in a FRUTI test file are placed in a Fortran *module* named for
 the *test group*, such as the name of the C++ class whose Fortran interface
 is being tested . Each unit test is in its own Fortran subroutine named
 for the *test name*, which indicates the functionality being verified by the
