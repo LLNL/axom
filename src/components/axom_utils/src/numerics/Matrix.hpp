@@ -14,6 +14,7 @@
 
 // C/C++ includes
 #include <cassert>  // for assert()
+#include <cstring>  // for memcpy()
 #include <iostream> // for std::ostream
 
 #ifndef AXOM_MATRIX_HPP_
