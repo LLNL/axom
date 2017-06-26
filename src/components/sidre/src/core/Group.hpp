@@ -1081,6 +1081,13 @@ public:
     load(path, protocol, false);
   }
 
+  /*!
+   * \brief Load the Group from a file.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
+   * \param preserve_contents   Preserve existing contents of group if true
+   */
   void load(const std::string& path,
             const std::string& protocol,
             bool preserve_contents);

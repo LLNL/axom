@@ -167,6 +167,7 @@ public:
    * \param group         Group to fill with input data
    * \param file_string   base name of input files
    * \param protocol      identifies I/O protocol
+   * \param preserve_contents   Preserves group's existing contents if true
    */
   void read(sidre::Group * group,
             const std::string& file_string,
@@ -178,6 +179,7 @@ public:
    *
    * \param group         Group to fill with input data
    * \param root_file     root file containing input data
+   * \param preserve_contents   Preserves group's existing contents if true
    */
   void read(sidre::Group * group,
             const std::string& root_file,
