@@ -260,7 +260,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   int intersectingTriangleCount=0;
   Triangle3 t1 = Triangle3();
   Triangle3 t2 = Triangle3();
-  SLIC_INFO("Running mesh_tester with virtual_grid");
+  SLIC_INFO("Running mesh_tester with UniformGrid index");
 
   // Create a bounding box around mesh to find the minimum point
   SpatialBoundingBox meshBB  = compute_bounds(surface_mesh);
@@ -268,7 +268,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   const Point3 maxBBPt= meshBB.getMax();
 
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  const int reportInterval = (int)(ncells / 5.0);
+  const int reportInterval = (int)(ncells / 5.0) + 1;
 
   // find the specified resolution.  If we're passed a number less than one,
   // use the cube root of the number of triangles.
@@ -277,11 +277,11 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   }
   int resolutions[3]={resolution,resolution,resolution};
 
-  std::cerr << "Building virtual grid..." << std::endl;
+  std::cerr << "Building UniformGrid index..." << std::endl;
   UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
 
   for (int i=0; i < ncells; i++) {
-    if (reportInterval > 0 && i % (ncells/reportInterval) == 0) {
+    if (reportInterval > 0 && i % reportInterval == 0) {
       std::cerr << "Building grid is " << 100.0 * (double(i)/double(ncells)) <<
         " percent done" << std::endl;
     }
@@ -297,13 +297,13 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
 
   // Iterate through triangle indices z from first index to last index.
   // Check against each other triangle with index greater than the index z
-  // that also shares a virtual grid bin.
+  // that also shares a UniformGrid bin.
   SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
   for (size_t z=0; z< ncells; z++) {
     seen.clear();
     hit.clear();
 
-    if (reportInterval > 0 && z % (ncells/reportInterval) == 0) {
+    if (reportInterval > 0 && z % reportInterval == 0) {
       std::cerr << "Querying grid is " << 100.0 * (double(z)/double(ncells)) <<
         " percent done" << std::endl;
     }
