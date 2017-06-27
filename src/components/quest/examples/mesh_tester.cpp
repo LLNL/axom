@@ -16,7 +16,7 @@
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
-#include "primal/intersection.hpp"
+#include "primal/intersect.hpp"
 #include "primal/UniformGrid.hpp"
 
 #include "quest/STLReader.hpp"
@@ -357,7 +357,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
 
 bool canOpenFile(const std::string & fname)
 {
-  std::ifstream teststream(fname);
+  std::ifstream teststream(fname.c_str());
   return teststream.good();
 }
 
@@ -365,7 +365,7 @@ bool writeCollisions(const std::vector<TrianglePair> & c,
   const std::vector<int> & d,
   const std::string & outfile)
 {
-  std::ofstream outf(outfile);
+  std::ofstream outf(outfile.c_str());
   if (!outf) {
     return false;
   }
