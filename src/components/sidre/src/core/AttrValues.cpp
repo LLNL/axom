@@ -43,7 +43,8 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK(attr != AXOM_NULLPTR);
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "hasValue: called without an Attribute");
     return false;
   }
 
@@ -55,7 +56,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr > m_values->size())
+  if ((size_t) iattr >= m_values->size())
   {
     // This attribute has not been set for this View
     return false;
@@ -74,16 +75,18 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 /*
  *************************************************************************
  *
- * Set Attribute.
+ * PRIVATE Create a Node for the Attribute.
+ *
+ * Create vector of Nodes and push empty nodes up to attr's index.
  *
  *************************************************************************
  */
-bool AttrValues::setValue(const Attribute * attr,
-			  const std::string & value)
+bool AttrValues::createNode(const Attribute * attr)
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK(attr != AXOM_NULLPTR);
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "createNode: called without an Attribute");
     return false;
   }
 
@@ -104,11 +107,8 @@ bool AttrValues::setValue(const Attribute * attr,
     }
   }
    
-  (*m_values)[iattr] = value;
-
   return true;
 }
-
 
 /*
  *************************************************************************
@@ -117,11 +117,43 @@ bool AttrValues::setValue(const Attribute * attr,
  *
  *************************************************************************
  */
-const char * AttrValues::getValueString( const Attribute * attr ) const
+Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK(attr != AXOM_NULLPTR);
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "getScalar: called without an Attribute");
+    return getEmptyNodeRef().value();
+  }
+
+  const Node & node = getValueNodeRef(attr);
+  return node.value();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return attribute.
+ *
+ *************************************************************************
+ */
+const char * AttrValues::getString( const Attribute * attr ) const
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "getString: called without an Attribute");
+    return AXOM_NULLPTR;
+  }
+
+  if (attr->getTypeID() != CHAR8_STR_ID)
+  {
+    SLIC_CHECK_MSG(attr->getTypeID() == CHAR8_STR_ID,
+		   "getString: Called on attribute '"
+		   << attr->getName() 
+		   << "' which is type "
+		   << DataType::id_to_name(attr->getTypeID())
+                   << ".");
     return AXOM_NULLPTR;
   }
 
@@ -138,27 +170,32 @@ const char * AttrValues::getValueString( const Attribute * attr ) const
  */
 const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 {
-  SLIC_ASSERT(attr != AXOM_NULLPTR);
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "getValueNodeRef: called without an Attribute");
+    return getEmptyNodeRef();
+  }
 
   if (m_values == AXOM_NULLPTR)
   {
     // No attributes have been set in this View;
-    return attr->getDefault();
+    return attr->getDefaultNodeRef();
   }
 
   IndexType iattr = attr->getIndex();
 
-  if ((size_t) iattr > m_values->size())
+  if ((size_t) iattr >= m_values->size())
   {
     // This attribute has not been set for this View
-    return attr->getDefault();
+    return attr->getDefaultNodeRef();
   }
 
   Node & value = (*m_values)[iattr];
   
   if (value.schema().dtype().is_empty())
   {
-    return attr->getDefault();
+    return attr->getDefaultNodeRef();
   }
 
   return value;

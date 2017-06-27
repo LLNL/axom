@@ -65,9 +65,9 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 {
 
   double det = numerics::determinant( tri[0][0], tri[0][1], tri[0][2], 1.0,
-                                    tri[1][0], tri[1][1], tri[1][2], 1.0,
-                                    tri[2][0], tri[2][1], tri[2][2], 1.0,
-                                    p[0],      p[1],      p[2], 1.0  );
+                                      tri[1][0], tri[1][1], tri[1][2], 1.0,
+                                      tri[2][0], tri[2][1], tri[2][2], 1.0,
+                                      p[0],      p[1],      p[2], 1.0  );
 
   int orient = -1;
 
@@ -118,8 +118,8 @@ inline
 int orientation( const Point< T,2 >& p, const Segment< T,2 >& seg )
 {
   double det = numerics::determinant( seg.source()[0], seg.source()[1], 1.0,
-                                    seg.target()[0], seg.target()[1], 1.0,
-                                    p[0],            p[1], 1.0  );
+                                      seg.target()[0], seg.target()[1], 1.0,
+                                      p[0],            p[1], 1.0  );
 
   int orient = -1;
 

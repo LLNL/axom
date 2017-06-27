@@ -540,6 +540,7 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine 
 int main( int argc, char** argv )
 {
   axom::slic::UnitTestLogger logger;  // create & initialize logger
+  // axom::slic::debug::checksAreErrors = true;
 
   bool hasInputArgs = argc > 1;
 

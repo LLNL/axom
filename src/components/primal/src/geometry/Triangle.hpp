@@ -174,9 +174,9 @@ private:
     else {
 
       return numerics::determinant< double > ( A[0], A[1], A[2], 1.,
-                                             B[0], B[1], B[2], 1.,
-                                             C[0], C[1], C[2], 1.,
-                                             p[0], p[1], p[2], 1.  );
+                                               B[0], B[1], B[2], 1.,
+                                               C[0], C[1], C[2], 1.,
+                                               p[0], p[1], p[2], 1.  );
     }
 
   }
@@ -233,9 +233,9 @@ public:
 
     // Compute ood * area of each sub-triangle
     bary[0] = ood * numerics::determinant( p[c0] - B[c0], p[c1] - B[c1],
-                                         B[c0] - C[c0], B[c1] - C[c1]);
+                                           B[c0] - C[c0], B[c1] - C[c1]);
     bary[1] = ood * numerics::determinant( p[c0] - C[c0], p[c1] - C[c1],
-                                         C[c0] - A[c0], C[c1] - A[c1]);
+                                           C[c0] - A[c0], C[c1] - A[c1]);
     bary[2] = 1. - bary[0] - bary[1];
 
     return bary;
@@ -275,7 +275,7 @@ public:
    *****************************************************************************
    * \brief Computes the request angle corresponding to the given vertex ID.
    * \param [in] idx the index of the corresponding vertex
-   * \return alpha the incidence angle.
+   * \return alpha the incidence angle in the range [0, pi].
    * \pre idx >= 0 && idx < NUM_TRI_VERTS
    *****************************************************************************
    */
@@ -304,7 +304,6 @@ private:
 };
 
 } /* namespace primal */
-
 } /* namespace axom */
 
 //------------------------------------------------------------------------------

@@ -18,18 +18,19 @@
  ******************************************************************************
  */
 
+#ifndef SIDRE_ATTRIBUTE_HPP_
+#define SIDRE_ATTRIBUTE_HPP_
+
 // Standard C++ headers
 #include <string>
 
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
+#include "slic/slic.hpp"
 
 // Sidre project headers
 #include "sidre/SidreTypes.hpp"
-
-#ifndef SIDRE_ATTRIBUTE_HPP_
-#define SIDRE_ATTRIBUTE_HPP_
 
 namespace axom
 {
@@ -69,37 +70,76 @@ public:
   }
 
   /*!
-   * \brief Set default value of Attribute.
-   *        Called as part of DataStore->createAttribute.
+   * \brief Set default value of Attribute. Return true if successfully changed.
    *
-   * The type of the default should not be changed after the attribute is created.
+   * The type of the default cannot be changed after the attribute is created.
    */
-  void setDefault(const std::string & value)
+  template<typename ScalarType>
+  bool setDefaultScalar(ScalarType value)
   {
-    m_default_value = value;
+    DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
+    if (m_default_value.dtype().is_empty() || 
+        arg_id == m_default_value.dtype().id())
+    {
+      m_default_value = value;
+      return true;
+    }
+    else
+    {
+      SLIC_CHECK_MSG(arg_id == m_default_value.dtype().id(),
+		     "setDefaultScalar: Cannot change type of attribute '"
+                     << m_name
+		     << "' from " << m_default_value.dtype().name()
+		     << " to " << DataType::id_to_name(arg_id) << ".");
+      return false;
+    }
+  }
+
+  /*!
+   * \brief Set default value of Attribute. Return true if successfully changed.
+   *
+   * The type of the default cannot be changed after the attribute is created.
+   */
+  bool setDefaultString(const std::string & value)
+  {
+    DataTypeId arg_id = CHAR8_STR_ID;
+    if (m_default_value.dtype().is_empty() || 
+        arg_id == m_default_value.dtype().id())
+    {
+      m_default_value = value;
+      return true;
+    }
+    else
+    {
+      SLIC_CHECK_MSG(arg_id == m_default_value.dtype().id(),
+		     "setDefaultString: Cannot change type of attribute '"
+                     << m_name
+		     << "' from " << m_default_value.dtype().name()
+		     << " to " << DataType::id_to_name(arg_id) << ".");
+      return false;
+    }
   }
 
   /*!
    * \brief Return default value of Attribute.
    */
-  const Node & getDefault() const
+  const Node & getDefaultNodeRef() const
   {
     return m_default_value;
+  }
+
+  /*!
+   * \brief Return type of Attribute.
+   */
+  TypeID getTypeID() const
+  {
+    return static_cast<TypeID>(m_default_value.dtype().id());
   }
 
 private:
 
   DISABLE_DEFAULT_CTOR(Attribute);
   DISABLE_MOVE_AND_ASSIGNMENT(Attribute);
-
-  /*!
-   * \brief Set index of attribute within DataStore.
-   *        Called as part of DataStore->createAttribute.
-   */
-  void setIndex(IndexType index)
-  {
-    m_index = index;
-  }
 
 //@{
 //!  @name Private Attribute ctor and dtor

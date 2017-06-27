@@ -951,26 +951,55 @@ public:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const Attribute * attr ) const;
+  bool hasAttributeValue( const Attribute * attr ) const
+  {
+    return m_attr_values.hasValue(attr);
+  }
 
   /*!
    * \brief Set Attribute for a View.
    */
-  bool setAttributeValue( const Attribute * attr, const std::string & value );
+  template<typename ScalarType>
+  bool setAttributeScalar( const Attribute * attr, ScalarType value )
+  {
+    return m_attr_values.setScalar(attr, value);
+  }
+
+  /*!
+   * \brief Set Attribute for a View.
+   */
+  bool setAttributeString( const Attribute * attr, const std::string & value )
+  {
+    return m_attr_values.setString(attr, value);
+  }
+
+  /*!
+   * \brief Return scalar attribute value.
+   */
+  Node::ConstValue getAttributeScalar(const Attribute * attr) const
+  {
+      return m_attr_values.getScalar(attr);
+  }
 
   /*!
    * \brief Return a string attribute.
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeValueString( const Attribute * attr ) const;
+  const char * getAttributeString( const Attribute * attr ) const
+  {
+    return m_attr_values.getString(attr);
+  }
 
   /*!
    * \brief Return reference to attribute node.
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const Node & getAttributeValueNodeRef( const Attribute * attr ) const;
+  const Node & getAttributeNodeRef( const Attribute * attr ) const
+  {
+    return m_attr_values.getValueNodeRef(attr);
+  }
 
 //@}
 
