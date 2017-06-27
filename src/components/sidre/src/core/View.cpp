@@ -982,9 +982,9 @@ bool View::isApplyValid() const
     rv = isDescribed();
     break;
   case BUFFER:
-    rv = 0 < getTotalBytes() &&
+    rv = 0 <= getTotalBytes() &&
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
-    SLIC_CHECK_MSG( 0 < getTotalBytes(),
+    SLIC_CHECK_MSG( 0 <= getTotalBytes(),
                     "Apply is not valid on data with zero length." );
     SLIC_CHECK_MSG(
       getTotalBytes() <= m_data_buffer->getTotalBytes(),

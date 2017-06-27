@@ -415,7 +415,7 @@ TEST(sidre_view,alloc_zero_items)
   dv = root->createView("z0");
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, 0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   // Reallocate zero items
@@ -425,8 +425,32 @@ TEST(sidre_view,alloc_zero_items)
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
   dv->reallocate(0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
+
+  // Allocate View of size 0 into non-empty buffer
+  Buffer* nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+  
+  dv = root->createView("z_nonEmptyBuf_attach_apply");
+  dv->attachBuffer(nonEmptyBuf)->apply(0);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+  dv = root->createView("z_nonEmptyBuf_described_attach", INT_ID, 0);
+  dv->attachBuffer(nonEmptyBuf);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+
+  // Allocate View of size 0 into empty buffer
+  Buffer* emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
+  dv = root->createView("z_emptyBuf_attach_apply");
+  dv->attachBuffer(emptyBuf)->allocate()->apply(0);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+  dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
+  dv->attachBuffer(emptyBuf);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
 
   delete ds;
 }
