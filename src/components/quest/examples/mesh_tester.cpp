@@ -16,7 +16,7 @@
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
-#include "primal/intersection.hpp"
+#include "primal/intersect.hpp"
 #include "primal/UniformGrid.hpp"
 
 #include "quest/STLReader.hpp"
