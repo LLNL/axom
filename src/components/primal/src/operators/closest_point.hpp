@@ -203,6 +203,6 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 }
 
 } /* namespace primal */
-} /* namepsace axom */
+} /* namespace axom */
 
 #endif /* CLOSEST_POINT_HPP_ */

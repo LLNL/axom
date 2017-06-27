@@ -69,18 +69,31 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
 
     endif()
 
-    # Note: The following are all valid regression tests.
-    #       Most are commented out to avoid excessive test runtimes, especially in debug mode.
+
+    # Note: By default we only run a small subset of the quest regression tests.
+    #       To run additional regression tests, configure the code 
+    #       with ENABLE_QUEST_EXTRA_REGRESSION_TESTS set to True.
+    
+    # set(ENABLE_QUEST_EXTRA_REGRESSION_TESTS True)
+    
     set(quest_regression_datasets
-        sphere
-        #naca0012
-        #plane_simp
-        #plane_binary
+        sphere        
     )
     set(quest_regression_resolutions
         16
-        #32
     )
+        
+    if( ${ENABLE_QUEST_EXTRA_REGRESSION_TESTS} )
+       list(APPEND quest_regression_datasets
+           naca0012
+           plane_simp
+           plane_binary
+           aatbase_3_binary
+       )
+       list(APPEND quest_regression_resolutions
+           32
+       )
+    endif()
 
     # Add resolution tests for each dataset and resolution
     foreach(dataset ${quest_regression_datasets})
