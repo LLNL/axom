@@ -11,6 +11,8 @@
 #ifndef UNIFORMGRID_HPP_
 #define UNIFORMGRID_HPP_
 
+#include "axom_utils/Utilities.hpp"
+
 #include "slic/slic.hpp"
 
 #include "primal/BoundingBox.hpp"
@@ -136,6 +138,30 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns true if index is valid; that is, refers to a valid bin.
+   *
+   * The region of space indexed by this UniformGrid is divided into bins.
+   * Each bin has a unique integer index.  If an integer is greater than or
+   * equal to zero and less than or equal to the greatest bin index, this
+   * method will return true.  Otherwise, the integer does not refer to any
+   * bin and this method will return false.
+   *****************************************************************************
+   */
+  bool isValidIndex(int index) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the indices of the bins for a given bounding box.
+   *
+   * This method returns the indices of the bins that intersect BB.  Any part
+   * of BB that falls outside this UniformGrid is disregarded.  If BB falls
+   * completely outside this UniformGrid, this method returns an empty list.
+   *****************************************************************************
+   */
+  const std::vector<int> getBinsForBbox(const BoxType& BB) const;
+
+  /*!
+   *****************************************************************************
    * \brief Clears the bin indicated by index.
    *
    * No-op if index is invalid.
@@ -182,7 +208,6 @@ private:
   int m_resolution[NDIMS];
 
   void addObj(const T& obj, int index);
-  bool isValidIndex(int index) const;
 
   struct Bin
   {
@@ -261,8 +286,17 @@ int UniformGrid< T, NDIMS >::getBinIndex(const PointType & pt) const
   for (int i = 0; i < NDIMS; ++i) {
     int tmp = static_cast< int >(floor((pt[i] - m_origin[i]) / m_spacing[i]));
 
-    if (tmp < 0 || tmp >= m_resolution[i]) {
+    if (tmp < 0 || tmp > m_resolution[i]) {
       return INVALID_BIN_INDEX;
+    }
+    if (tmp == m_resolution[i]) {
+      if (! axom::utilities::isNearlyEqual(pt[i],
+             m_origin[i] + m_resolution[i] * m_spacing[i],
+             1.0e-12) ) {
+        return INVALID_BIN_INDEX;
+      } else {
+        tmp = tmp - 1;
+      }
     }
 
     int factor = 1;
@@ -315,42 +349,22 @@ const std::vector< T >& UniformGrid< T, NDIMS >::getBinContents(int index) const
   return m_bins[index].ObjectArray;
 }
 
-//------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-void UniformGrid< T, NDIMS >::clear(int index)
-{
-  if (isValidIndex(index)) {
-    m_bins[index].ObjectArray.clear();
-  }
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-void UniformGrid< T, NDIMS >::addObj(const T& obj, int index)
-{
-  SLIC_CHECK(!isValidIndex(index));
-
-  if (isValidIndex(index)) {
-    m_bins[index].ObjectArray.push_back(obj);
-  }
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-void UniformGrid< T, NDIMS >::insert(const BoxType& BB,
-                                     const T& obj)
+template< typename T, int NDIMS >
+const std::vector<int> UniformGrid<T, NDIMS>::getBinsForBbox(const BoxType& BB) const
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   PointType bmin = BB.getMin();
   PointType bmax = BB.getMax();
 
+  std::vector<int> retval;
+
   // Clamp the input bounding-box to at most the UniformGrid bounding box
   for (int dim = 0; dim < NDIMS; ++dim) {
     if (bmin[dim] < m_origin[dim]) {
       bmin[dim] = m_origin[dim];
     }
-    double dimlimit = m_origin[dim] + m_spacing[dim] * (m_resolution[dim] - 1);
+    double dimlimit = m_origin[dim] + m_spacing[dim] * m_resolution[dim];
     if (bmax[dim] > dimlimit) {
       bmax[dim] = dimlimit;
     }
@@ -359,13 +373,12 @@ void UniformGrid< T, NDIMS >::insert(const BoxType& BB,
   int start = getBinIndex(bmin);
   int end = getBinIndex(bmax);
 
-  // Initialize bincount.  Note that NDIMS == 2 or NDIMS == 3.
-  int bincount[3] = {1, 1, 1};
-
   // Guard against BB not overlapping the grid at all
   if (isValidIndex(start) && isValidIndex(end)) {
     int res = 1;
     // Find how many bboxes in each dimension (at least one)
+    // Initialize bincount.  Note that NDIMS == 2 or NDIMS == 3.
+    int bincount[3] = {1, 1, 1};
     for (int dim = 0; dim < NDIMS; ++dim) {
       PointType extent(bmin);
       extent[dim] = bmax[dim];
@@ -386,10 +399,46 @@ void UniformGrid< T, NDIMS >::insert(const BoxType& BB,
       for (int j = 0; j < bincount[1]; ++j) {
         const int j_offset = j * x_res;
         for (int i = 0; i < bincount[0]; ++i) {
-          addObj(obj, start + i + j_offset + k_offset);
+          retval.push_back(start + i + j_offset + k_offset);
         }
       }
     }
+  }
+
+  return retval;
+}
+
+//------------------------------------------------------------------------------
+template< typename T, int NDIMS >
+void UniformGrid<T, NDIMS>::clear(int index)
+{
+  if (isValidIndex(index)) {
+    m_bins[index].ObjectArray.clear();
+  }
+}
+
+//------------------------------------------------------------------------------
+template< typename T, int NDIMS >
+void UniformGrid<T, NDIMS>::addObj(const T& obj, int index)
+{
+  SLIC_CHECK(isValidIndex(index));
+
+  if (isValidIndex(index)) {
+    m_bins[index].ObjectArray.push_back(obj);
+  }
+}
+
+//------------------------------------------------------------------------------
+template< typename T, int NDIMS>
+void UniformGrid<T, NDIMS>::insert(const BoxType& BB,
+                                  const T& obj)
+{
+  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
+
+  const std::vector<int> bidxs = getBinsForBbox(BB);
+
+  for (int i = 0; i < bidxs.size(); ++i) {
+    addObj(obj, bidxs[i]);
   }
 }
 
