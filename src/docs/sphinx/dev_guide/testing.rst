@@ -306,18 +306,6 @@ following items:
      Fortran is not enabled.
 
 
-============================
-Running Tests and Examples
-============================
-
-.. important:: Section under construction...
-
-Describe how to run tests from the command line using make targets....
-
-See :ref:`bamboo-label` for information about setting up and running tests 
-using the *Bamboo* continuous integration (CI) tool.
-
-
 .. _namestargets-label:
 
 =============================================================================
@@ -369,4 +357,30 @@ The format of an example file name is::
 Examples::
   sidre_shocktube_ex.cpp    ('shocktube' C++ example)
   sidre_shocktube_F_ex.f    ('shocktube' Fortran example)
+
+============================
+Running Tests and Examples
+============================
+
+Axom examples and tests can be run in multiple different ways using make
+targets, Bamboo continuous integration (CI) tool, or manually. The best 
+choice for running them depends on what you are trying to do.
+
+For example, if you build Axom and want to make sure everything is working
+properly, you can type the following command in the build directory::
+
+  $ make test 
+
+This will run all tests and examples and report a summary of passes and 
+failures. Detailed output on individual tests is suppressed.
+
+If a test fails, you can invoke its executable directly to see the detailed
+output of which checks passed or failed. This is especially useful when 
+you are modifying or adding code and need to understand how unit test details
+are working, for example.
+
+Lastly, you can run suites of tests, such as all tests on a set of platforms
+and compilers, using Bamboo. See :ref:`bamboo-label` for information about 
+running tests using the *Bamboo* tool.
+
 
