@@ -451,8 +451,32 @@ TEST(sidre_view,alloc_zero_items)
   dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
   dv->attachBuffer(emptyBuf);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
-
+  
   delete ds;
+}
+
+TEST(sidre_view,save_empty_view_non_empty_buffer)
+{
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  Buffer* buf = ds.createBuffer(INT_ID, 10)->allocate();  // allocate non-empty buffer
+
+  root->createView("a")->attachBuffer(buf)->apply(0);  // attach zero-sized array to it
+
+  root->save("empty_view_non_empty_buffer.sidre.json", "sidre_json"); // ok
+  root->save("empty_view_non_empty_buffer.sidre.hdf5", "sidre_hdf5"); // ok
+}
+
+TEST(sidre_view,save_empty_view)
+{
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  root->createView("a", INT_ID, 0)->allocate()->apply();  // create View and allocate view of size 0
+
+  root->save("empty_view.sidre.json", "sidre_json");   // this is ok
+  // root->save("empty_view.sidre.hdf5", "sidre_hdf5");   // <-- problem here (in conduit 0.2.1)
 }
 
 //------------------------------------------------------------------------------
