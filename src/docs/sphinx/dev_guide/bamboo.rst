@@ -11,16 +11,41 @@
 
 .. _bamboo-label:
 
-======================================================
-Bamboo: Continuous Integration 
-======================================================
+*******************************
+Continuous Integration 
+*******************************
 
-.. important:: Section under construction...
+*Bamboo* is a continuous integration (CI) tool that is part of the Atlassian
+tool suite. The Axom project uses two Bamboo projects, one on the LC
+Collaboration Zone (CZ) and one on the LC Restricted Zone (RZ). 
 
-We use our `Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ for
-continuous integration and automated testing. We maintain a collection of
-test plans for performing automated and manual builds, tests, and other
-code health monitoring tasks.
+.. important:: Section under construction....
+
+
+===========================
+CZ Bamboo Project
+===========================
+
+Describe how we use our CZ Bamboo project ....
+
+`Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ 
+
+
+===========================
+RZ Bamboo Project
+===========================
+
+Describe how we use our RZ Bamboo project ....
+
+`Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_ 
+
+
+===========================
+Basic Bamboo Tasks
+===========================
+
+.. important:: The content below is mainly usage notes. Much of what we want 
+               to include here will be pulled from `Our Confluence Notes on Bamboo <https://lc.llnl.gov/confluence/display/ASCT/Bamboo+How-To%27s>`_
 
 
 Bamboo Agent Notes

@@ -118,6 +118,6 @@ getting started with them.
 
   * See :ref:`jira-label` for more information about how we use JIRA.
 
-* **Bamboo.** We use two Bamboo projects for continuous integration, automated testing, documentation generation, etc.: `Axom CZ Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ and `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
+* **Bamboo.** We use two Bamboo projects for continuous integration tasks.: `Axom CZ Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ and `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
 
   * See :ref:`bamboo-label` for more information about how we use Bamboo.

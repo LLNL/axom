@@ -185,16 +185,16 @@ The contents of a typical FRUIT test file look like this::
   contains
 
   subroutine test_name_1
-!    Test 1 code here...
-!    call assert_equals(...)
+  !  Test 1 code here...
+  !  call assert_equals(...)
   end subroutine test_name_1
 
   subroutine test_name_2
-!    Test 2 code here...
-!    call assert_true(...)
+  !  Test 2 code here...
+  !  call assert_true(...)
   end subroutine test_name_2
 
-! Etc.
+  ! Etc.
 
 The tests in a FRUIT test file are placed in a Fortran *module* named for
 the *test group*, such as the name of the C++ class whose Fortran interface
@@ -213,14 +213,14 @@ program is defined at the end of the test file and is organized as follows::
     implicit none
     logical ok
 
-! initialize fruit
+    ! initialize fruit
     call init_fruit
 
-! run tests
+    ! run tests
     call test_name_1
     call test_name_2
 
-! compile summary and finalize fruit
+    ! compile summary and finalize fruit
     call fruit_summary
     call fruit_finalize
 
@@ -228,7 +228,7 @@ program is defined at the end of the test file and is organized as follows::
     if (.not. ok) then
       call exit(1)
     endif
-end program fortran_test
+  end program fortran_test
 
 Please refer to the `FRUIT documentation <https://sourceforge.net/projects/fortranxunit/>`_ for more information.
 
@@ -236,7 +236,7 @@ Please refer to the `FRUIT documentation <https://sourceforge.net/projects/fortr
 Integration Tests
 ===========================
 
-.. important:: Fill this in when we have something to describe...
+.. important:: Fill this in when we know what we want to do for this...
 
 =======================================
 CMake Files and Variables for Tests

@@ -61,7 +61,6 @@ changes are made, this guide should be updated accordingly.
    component_org
    testing
    bamboo
-   code_health_tools
    misc_tasks
 
 
