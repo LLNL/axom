@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file
+ * \file intersect.hpp
  *
  * \brief Consists of functions to test intersection among geometric primitives.
  *******************************************************************************
@@ -25,7 +25,7 @@
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
-#include "primal/intersection_impl.hpp"
+#include "primal/intersect_impl.hpp"
 
 namespace axom {
 namespace primal {
@@ -45,7 +45,7 @@ bool intersect( const Triangle< T, 3 >& t1,
                 const Triangle< T, 3 >& t2,
                 const bool includeBoundary = false)
 {
-  return detail::intersect_tri3D_tri3D<T>(t1, t2, includeBoundary);
+  return detail::intersect_tri3D_tri3D< T >(t1, t2, includeBoundary);
 }
 
 /*!
@@ -63,7 +63,7 @@ bool intersect( const Triangle< T, 2 >& t1,
                 const Triangle< T, 2 >& t2,
                 const bool includeBoundary = false)
 {
-  return detail::intersect_tri2D_tri2D<T>(t1, t2, includeBoundary);
+  return detail::intersect_tri2D_tri2D< T >(t1, t2, includeBoundary);
 }
 
 /*!
@@ -128,7 +128,7 @@ template < typename T, int DIM >
 bool intersect( const BoundingBox< T, DIM >& bb1,
                 const BoundingBox< T, DIM >& bb2)
 {
-  return bb1.intersects(bb2);
+  return bb1.intersectsWith(bb2);
 }
 
 /*!
@@ -156,7 +156,24 @@ bool intersect( const Triangle< T, 3 >& tri, const BoundingBox< T, 3 >& bb)
 template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
 {
-  return detail::intersect_tri_ray(tri, ray);
+  T t = T();
+  return detail::intersect_tri_ray(tri, ray, t);
+}
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D triangle intersects a 3D ray.
+ * \param [in] tri A 3D triangle
+ * \param [in] ray A 3D ray
+ * \param [out] t Intersection point of tri and R, w.r.t. parametrization of R
+ * \note If there is an intersection, the intersection point is:  R.at(t)
+ * \return true iff tri intersects with ray, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray, T& t)
+{
+  return detail::intersect_tri_ray(tri, ray, t);
 }
 
 /*!
@@ -170,10 +187,28 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
 template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
 {
-  return detail::intersect_tri_segment(tri, seg);
+  T t = T();
+  return detail::intersect_tri_segment(tri, seg, t);
+}
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D triangle intersects a 3D segment.
+ * \param [in] tri A 3D triangle
+ * \param [in] seg A 3D line segment
+ * \param [out] t Intersection point of tri and seg, w.r.t. seg's parametrization
+ * \note If there is an intersection, the intersection point pt is:
+ *                     pt = seg.source() + t * ( seg.dest() - seg.target() )
+ * \return true iff tri intersects with seg, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
+{
+  return detail::intersect_tri_segment(tri, seg, t);
 }
 
 } /* namespace primal */
-} /* namepsace axom */
+} /* namespace axom */
 
 #endif /* INTERSECTION_HPP_ */

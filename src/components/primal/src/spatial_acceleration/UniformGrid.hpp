@@ -18,7 +18,6 @@
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 
-
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
@@ -55,7 +54,7 @@ namespace primal {
  * point, then retrieve any objects associated with the bin at that index.
  *******************************************************************************
  */
-template< typename T, int NDIMS >
+template < typename T, int NDIMS >
 class UniformGrid
 {
 public:
@@ -83,7 +82,8 @@ public:
    * UniformGrid.
    *****************************************************************************
    */
-  UniformGrid(const double * lower_bound, const double * upper_bound, const int * res);
+  UniformGrid(const double * lower_bound, const double * upper_bound,
+              const int * res);
 
   /*! \brief Destructor: present for symmetry with constructor */
   ~UniformGrid();
@@ -124,7 +124,7 @@ public:
    * \param [in] index The index of the bin to retrieve.
    *****************************************************************************
    */
-  std::vector<T>& getBinContents(int index);
+  std::vector< T >& getBinContents(int index);
 
   /*!
    *****************************************************************************
@@ -134,7 +134,7 @@ public:
    * \param [in] index The index of the bin to retrieve.
    *****************************************************************************
    */
-  const std::vector<T>& getBinContents(int index) const;
+  const std::vector< T >& getBinContents(int index) const;
 
   /*!
    *****************************************************************************
@@ -200,7 +200,7 @@ protected:
 
   /*! \brief The default constructor should not be used, so it is protected. */
   UniformGrid();
-    
+
 private:
 
   PointType m_origin;
@@ -209,11 +209,12 @@ private:
 
   void addObj(const T& obj, int index);
 
-  struct Bin {
-    std::vector<T> ObjectArray;
+  struct Bin
+  {
+    std::vector< T > ObjectArray;
     //other stuff
   };
-  std::vector<Bin> m_bins;
+  std::vector< Bin > m_bins;
 
   DISABLE_COPY_AND_ASSIGNMENT(UniformGrid);
   DISABLE_MOVE_AND_ASSIGNMENT(UniformGrid);
@@ -223,8 +224,6 @@ private:
 } //end namespace primal
 } //end namespace axom
 
-
-
 //------------------------------------------------------------------------------
 // UniformGrid implementation
 //------------------------------------------------------------------------------
@@ -232,12 +231,12 @@ namespace axom {
 namespace primal {
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS >
+template < typename T, int NDIMS >
 UniformGrid< T, NDIMS >::UniformGrid()
 {
 
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
-    
+
   size_t newsize = 1;
   for (int i=0; i<NDIMS; ++i) {
     m_origin[i] = 0;
@@ -249,7 +248,7 @@ UniformGrid< T, NDIMS >::UniformGrid()
   m_bins.resize(newsize);
 }
 
-template< typename T, int NDIMS >
+template < typename T, int NDIMS >
 UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
                                      const double * upper_bound,
                                      const int * res)
@@ -260,7 +259,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   size_t newsize = 1;
-  for (int i=0; i<NDIMS;++i) {
+  for (int i=0; i<NDIMS; ++i) {
     m_origin[i] = lower_bound[i];
 
     SLIC_ASSERT(lower_bound[i] <= upper_bound[i]);
@@ -273,20 +272,19 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
   m_bins.resize(newsize);
 }
 
-template< typename T, int NDIMS >
+template < typename T, int NDIMS >
 UniformGrid< T, NDIMS >::~UniformGrid()
-{
-}
+{}
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS >
-int UniformGrid<T, NDIMS>::getBinIndex(const PointType & pt) const
+template < typename T, int NDIMS >
+int UniformGrid< T, NDIMS >::getBinIndex(const PointType & pt) const
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   int retval = 0;
   for (int i = 0; i < NDIMS; ++i) {
-    int tmp = static_cast<int>(floor((pt[i] - m_origin[i]) / m_spacing[i]));
+    int tmp = static_cast< int >(floor((pt[i] - m_origin[i]) / m_spacing[i]));
 
     if (tmp < 0 || tmp > m_resolution[i]) {
       return INVALID_BIN_INDEX;
@@ -312,20 +310,20 @@ int UniformGrid<T, NDIMS>::getBinIndex(const PointType & pt) const
   return retval;
 }
 
-template< typename T, int NDIMS >
-bool UniformGrid<T, NDIMS>::isValidIndex(int index) const
+template < typename T, int NDIMS >
+bool UniformGrid< T, NDIMS >::isValidIndex(int index) const
 {
-  return index >=0 && index < static_cast<int>(m_bins.size());
+  return index >=0 && index < static_cast< int >(m_bins.size());
 }
 
-template< typename T, int NDIMS >
-int UniformGrid<T, NDIMS>::getNumBins() const
+template < typename T, int NDIMS >
+int UniformGrid< T, NDIMS >::getNumBins() const
 {
   return m_bins.size();
 }
 
-template< typename T, int NDIMS >
-bool UniformGrid<T, NDIMS>::isBinEmpty(int index) const
+template < typename T, int NDIMS >
+bool UniformGrid< T, NDIMS >::isBinEmpty(int index) const
 {
   if (!isValidIndex(index)) {
     return true;
@@ -335,16 +333,16 @@ bool UniformGrid<T, NDIMS>::isBinEmpty(int index) const
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS >
-std::vector<T>& UniformGrid<T, NDIMS>::getBinContents(int index)
+template < typename T, int NDIMS >
+std::vector< T >& UniformGrid< T, NDIMS >::getBinContents(int index)
 {
   SLIC_ASSERT(isValidIndex(index));
 
   return m_bins[index].ObjectArray;
 }
 
-template< typename T, int NDIMS >
-const std::vector<T>& UniformGrid<T, NDIMS>::getBinContents(int index) const
+template < typename T, int NDIMS >
+const std::vector< T >& UniformGrid< T, NDIMS >::getBinContents(int index) const
 {
   SLIC_ASSERT(isValidIndex(index));
 
@@ -355,7 +353,7 @@ template< typename T, int NDIMS >
 const std::vector<int> UniformGrid<T, NDIMS>::getBinsForBbox(const BoxType& BB) const
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
-   
+
   PointType bmin = BB.getMin();
   PointType bmax = BB.getMax();
 
@@ -447,7 +445,4 @@ void UniformGrid<T, NDIMS>::insert(const BoxType& BB,
 }  /* end namespace primal */
 }  /* end namespace axom */
 
-
 #endif /* UNIFORMGRID_HPP_ */
-
-
