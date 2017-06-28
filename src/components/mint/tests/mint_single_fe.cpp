@@ -892,7 +892,29 @@ void check_interp( double TOL=1.e-9 )
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+TEST( mint_single_fe, check_override_max_newton )
+{
+  typedef typename mint::UnstructuredMesh< MINT_QUAD > MeshType;
 
+  const int MAX_NEWTON = 42; // test value to override max newton
+
+  // STEP 0: construct a mesh with a single element
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
+  get_fe_mesh< MINT_LAGRANGE_BASIS, MINT_QUAD >( m, fe );
+
+  EXPECT_FALSE( MAX_NEWTON==fe->getMaxNewtonIterations() );
+
+  // STEP 1: override max newton iterations
+  fe->setMaxNewtonIterations( MAX_NEWTON );
+  EXPECT_EQ( MAX_NEWTON, fe->getMaxNewtonIterations() );
+
+  // clean up
+  delete fe;
+  delete m;
+}
+
+//------------------------------------------------------------------------------
 TEST( mint_single_fe, check_fe_shape_function )
 {
   check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD >( );

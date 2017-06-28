@@ -120,6 +120,33 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Overrides the max number of iterations for the Newton-Raphson, used
+   *  for the isoparametric inverse mapping from physical coordinates to
+   *  reference coordinates.
+   *
+   * \note Each Basis/Element pair prescribes a nominal value for the maximum
+   *  number of Newton-Raphson iterations. This method provides the flexibility
+   *  of overriding this value.
+   *
+   * \warning If bind_basis() is called after invoking this method, the max
+   *  newton iterations would be set to the nominal value. Typically, this
+   *  method should be called after bind_basis() is invoked.
+   *
+   * \param [in] N user-supplied number for
+   *****************************************************************************
+   */
+  void setMaxNewtonIterations( int N ) { m_maxNewtonIterations=N; };
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the max number of iterations used for the Newton-Raphson.
+   * \return N max number of iterations for the Newton-Raphson
+   *****************************************************************************
+   */
+  int getMaxNewtonIterations( ) const { return m_maxNewtonIterations; };
+
+  /*!
+   *****************************************************************************
    * \brief Returns the Cell ID on the mesh corresponding to this FiniteElement.
    * \return idx ID of the cell corresponding to this instance.
    *****************************************************************************
