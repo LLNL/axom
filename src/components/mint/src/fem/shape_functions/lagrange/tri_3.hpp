@@ -22,7 +22,7 @@
 namespace axom {
 namespace mint {
 
-#define ONE_THIRD 0.33333333333333333333333333333333333333333333333333333333333
+static const double TRI_ONE_THIRD =  1.0/3.0;
 
 /*!
  *******************************************************************************
@@ -68,7 +68,7 @@ public:
   static void getCenter( double* center )
   {
     SLIC_ASSERT( center != AXOM_NULLPTR );
-    center[ 0 ] = center[ 1 ] = ONE_THIRD;
+    center[ 0 ] = center[ 1 ] = TRI_ONE_THIRD;
   }
 
   static void getCoords( double* coords )
@@ -118,8 +118,6 @@ public:
   }
 
 };
-
-#undef ONE_THIRD
 
 } /* namespace mint */
 } /* namespace axom */

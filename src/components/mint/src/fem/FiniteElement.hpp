@@ -599,9 +599,9 @@ void bind_basis( FiniteElement& fe )
   }
 
   fe.m_shape_func_type     = FEBasisType::BasisType;
-  fe.m_maxNewtonIterations = ShapeType::max_newton_iters();
+  fe.m_maxNewtonIterations = ShapeType::maxNewtonIters();
   fe.m_reference_dim       = ShapeType::dimension();
-  fe.m_numdofs             = ShapeType::num_dofs();
+  fe.m_numdofs             = ShapeType::numDofs();
   fe.m_reference_min       = ShapeType::min();
   fe.m_reference_max       = ShapeType::max();
 

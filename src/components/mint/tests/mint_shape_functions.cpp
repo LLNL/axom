@@ -48,15 +48,15 @@ void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
 
-  const int ctype = sf.cell_type();
+  const int ctype = sf.cellType();
   EXPECT_TRUE( (ctype >= 0) && (ctype < MINT_NUM_CELL_TYPES) );
 
   const int type = sf.type();
   EXPECT_TRUE( (type >= 0) && ( type < MINT_NUM_BASIS ) );
 
-  const int ndofs = sf.num_dofs();
+  const int ndofs = sf.numDofs();
   EXPECT_TRUE( ndofs > 0 );
-  EXPECT_TRUE( sf.max_newton_iters() >= 16 );
+  EXPECT_TRUE( sf.maxNewtonIters() >= 16 );
 
   const int ndims = sf.dimension();
   EXPECT_TRUE( ndims > 0 && ndims < 4 );
@@ -99,7 +99,7 @@ void kronecker_delta( )
                          << mint::cell::name[ CellType ] );
 
   int ndims = sf.dimension();
-  int ndofs = sf.num_dofs();
+  int ndofs = sf.numDofs();
 
   const int N    = ndofs*ndims;
   double* phi    = new double[ ndofs ];
@@ -138,7 +138,7 @@ void partition_of_unity()
                          << mint::cell::name[ CellType ] );
 
   int ndims      = sf.dimension();
-  int ndofs      = sf.num_dofs();
+  int ndofs      = sf.numDofs();
   const int N    = ndofs*ndims;
   double* coords = new double[ N ];
   double* phi    = new double [ ndofs ];

@@ -130,7 +130,7 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
   const int ndims = ShapeFunctionType::dimension();
   EXPECT_TRUE( ndims==2 || ndims==3 );
 
-  const int ndofs = ShapeFunctionType::num_dofs();
+  const int ndofs = ShapeFunctionType::numDofs();
 
   int* cell = new int[ ndofs ];
 
@@ -249,7 +249,7 @@ void check_reference_element( mint::FiniteElement* fe )
 
   // STEP 0: check reference element attributes, eg, dofs, dimension, etc.
   ShapeFunctionType sf;
-  EXPECT_EQ( sf.num_dofs(), fe->getNumDofs() );
+  EXPECT_EQ( sf.numDofs(), fe->getNumDofs() );
   EXPECT_EQ( sf.dimension(), fe->getReferenceDimension() );
 
   const int fe_dim = fe->getDimension();
@@ -259,7 +259,7 @@ void check_reference_element( mint::FiniteElement* fe )
   EXPECT_TRUE( ref_dim <= fe_dim );
 
   // STEP 1: check reference coordinates
-  const int ndofs = sf.num_dofs();
+  const int ndofs = sf.numDofs();
   const int ndims = sf.dimension();
 
   // populate a matrix with shape function coordinates (expected)

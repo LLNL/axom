@@ -393,7 +393,7 @@ public:
    * \param [in] rows the number of rows in the matrix
    * \param [in] cols the number of columns in the matrix
    * \param [in] data pointer to user-supplied buffer to initialize the matrix.
-   * \param [in] shallowCopyt optional flag that indicates that this matrix
+   * \param [in] shallowCopy optional flag that indicates that this matrix
    *  instance should not make a deep copy of the data. Default is false.
    *
    * \pre rows >= 1

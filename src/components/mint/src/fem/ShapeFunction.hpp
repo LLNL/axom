@@ -42,7 +42,7 @@ public:
    * \see CellType.hpp
    *****************************************************************************
    */
-  static int cell_type( ) { return ShapeType::getCellType(); };
+  static int cellType( ) { return ShapeType::getCellType(); };
 
   /*!
    *****************************************************************************
@@ -60,7 +60,7 @@ public:
    * \post ndofs >= 1
    *****************************************************************************
    */
-  static int num_dofs( ) { return ShapeType::getNumDofs(); };
+  static int numDofs( ) { return ShapeType::getNumDofs(); };
 
   /*!
    *****************************************************************************
@@ -68,7 +68,7 @@ public:
    * \return N the maximum number of Newton-Raphson iterations
    *****************************************************************************
    */
-  static int max_newton_iters( ) { return ShapeType::getMaxNewtonIters( ); };
+  static int maxNewtonIters( ) { return ShapeType::getMaxNewtonIters( ); };
 
   /*!
    *****************************************************************************

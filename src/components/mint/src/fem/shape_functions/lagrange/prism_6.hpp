@@ -22,7 +22,7 @@
 namespace axom {
 namespace mint {
 
-#define ONE_THIRD 0.33333333333333333333333333333333333333333333333333333333333
+static const double PRISM_ONE_THIRD =  1.0/3.0;
 
 /*!
  *******************************************************************************
@@ -65,7 +65,7 @@ public:
   static void getCenter( double* center )
   {
     SLIC_ASSERT( center != AXOM_NULLPTR );
-    center[ 0 ] = center[ 1 ] = ONE_THIRD; center[ 2 ] = 0.5;
+    center[ 0 ] = center[ 1 ] = PRISM_ONE_THIRD; center[ 2 ] = 0.5;
   }
 
   static void getCoords( double* coords )
@@ -158,8 +158,6 @@ public:
     phidot[ 17 ] =  s;
   }
 };
-
-#undef ONE_THIRD
 
 } /* namespace mint */
 } /* namespace axom */
