@@ -52,19 +52,9 @@ public:
    */
   static int getCellType()
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-       SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                    cell::name[ CellType ] );
-     } else {
-
-       SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
-
-     return 0;
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
+    return MINT_UNDEFINED_CELL;
   }
 
   /*!
@@ -79,18 +69,8 @@ public:
   static int getType()
   {
     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-    if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-       SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                    cell::name[ CellType ] );
-    } else {
-
-      SLIC_ERROR( "Invalid CellType: " << CellType );
-
-    }
-
-    return 0;
+    Lagrange< CellType >::checkCellType();
+    return MINT_UNDEFINED_BASIS;
   }
 
   /*!
@@ -104,17 +84,7 @@ public:
   static int getNumDofs()
   {
     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-    if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                     cell::name[ CellType ] );
-    } else {
-
-       SLIC_ERROR( "Invalid CellType: " << CellType );
-
-    }
-
+    Lagrange< CellType >::checkCellType();
     return 0;
   }
 
@@ -129,18 +99,9 @@ public:
    */
   static int getMaxNewtonIters()
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-      } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
-     return 0;
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
+    return 0;
   }
 
   /*!
@@ -154,18 +115,9 @@ public:
    */
   static int getDimension()
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-      } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
-     return 0;
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
+    return 0;
   }
 
   /*!
@@ -178,18 +130,9 @@ public:
    */
   static int getMin()
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-     } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
-     return 0;
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
+    return 0;
   }
 
   /*!
@@ -202,17 +145,8 @@ public:
    */
   static int getMax()
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-     } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
     return 0;
   }
 
@@ -228,17 +162,8 @@ public:
    */
   static void getCenter( double* AXOM_NOT_USED(center) )
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-     } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
   }
 
   /*!
@@ -254,17 +179,8 @@ public:
    */
   static void getCoords( double* AXOM_NOT_USED(coords) )
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-         SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-     } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
   }
 
   /*!
@@ -284,17 +200,8 @@ public:
   static void computeShape( const double* AXOM_NOT_USED(nc),
                             double* AXOM_NOT_USED(phi) )
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
-
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
-     } else {
-
-        SLIC_ERROR( "Invalid CellType: " << CellType );
-
-     }
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
   }
 
   /*!
@@ -314,15 +221,27 @@ public:
   static void computeDerivatives( const double* AXOM_NOT_USED(nc),
                                   double* AXOM_NOT_USED(phidot) )
   {
-     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+    Lagrange< CellType >::checkCellType();
+  }
 
-     if ( CellType >= 0 && CellType < MINT_NUM_CELL_TYPES ) {
+private:
 
-        SLIC_ERROR( "Lagrange ShapeFunction does not support " <<
-                      cell::name[ CellType ] );
+  /*!
+   *****************************************************************************
+   * \brief Checks if the CellType is valid and supported in the Lagrange basis.
+   *****************************************************************************
+   */
+  static void checkCellType( )
+  {
+     if ( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) ) {
+
+       SLIC_ERROR( "Lagrange ShapeFunctions does not support " <<
+                    cell::name[ CellType ] );
+
      } else {
 
-        SLIC_ERROR( "Invalid CellType: " << CellType );
+       SLIC_ERROR( "Invalid CellType: " << CellType );
 
      }
   }

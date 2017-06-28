@@ -39,6 +39,7 @@ public:
    *****************************************************************************
    * \brief Returns the underlying cell type, e.g., MINT_QUAD, etc.
    * \return cellType the cell type
+   * \see CellType.hpp
    *****************************************************************************
    */
   static int cell_type( ) { return ShapeType::getCellType(); };
