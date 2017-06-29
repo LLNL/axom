@@ -3,38 +3,38 @@
 #
 
 set(gtest_sidre_tests
-   sidre_smoke.cpp
-   sidre_buffer.cpp
-   sidre_buffer_unit.cpp
-   sidre_class.cpp
-   sidre_datastore.cpp
-   sidre_datastore_unit.cpp
-   sidre_external.cpp
-   sidre_group.cpp
-   sidre_opaque.cpp
-   sidre_view.cpp
-   sidre_native_layout.cpp
-   sidre_attribute.cpp
+   sidre_smoke_test.cpp
+   sidre_buffer_test.cpp
+   sidre_buffer_unit_test.cpp
+   sidre_class_test.cpp
+   sidre_datastore_test.cpp
+   sidre_datastore_unit_test.cpp
+   sidre_external_test.cpp
+   sidre_group_test.cpp
+   sidre_opaque_test.cpp
+   sidre_view_test.cpp
+   sidre_native_layout_test.cpp
+   sidre_attribute_test.cpp
    )
 
 set(gtest_sidre_C_tests
-   C_sidre_smoke.cpp
-   C_sidre_buffer.cpp
-   C_sidre_external.cpp
-   C_sidre_group.cpp
-   C_sidre_opaque.cpp
-   C_sidre_types.cpp
-   C_sidre_view.cpp
+   sidre_smoke_C_test.cpp
+   sidre_buffer_C_test.cpp
+   sidre_external_C_test.cpp
+   sidre_group_C_test.cpp
+   sidre_opaque_C_test.cpp
+   sidre_types_C_test.cpp
+   sidre_view_C_test.cpp
    )
 
 set(fruit_sidre_tests
-   F_sidre_smoke.f
-   F_sidre_group.f
-   F_sidre_buffer.f
-   F_sidre_view.f
-   F_sidre_external.f
-   F_sidre_opaque.f
-   F_sidre_allocatable.f
+   sidre_smoke_F_test.f
+   sidre_group_F_test.f
+   sidre_buffer_F_test.f
+   sidre_view_F_test.f
+   sidre_external_F_test.f
+   sidre_opaque_F_test.f
+   sidre_allocatable_F_test.f
 )
 
 #
