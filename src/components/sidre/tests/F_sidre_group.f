@@ -11,10 +11,10 @@
 ! API coverage tests
 ! Each test should be documented with the interface functions being tested
 
-module sidre_group
+module sidre_group_test
   use iso_c_binding
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
   ! Test protocols
@@ -1039,12 +1039,12 @@ contains
   end subroutine save_restore_complex
 
 !----------------------------------------------------------------------
-end module sidre_group
+end module sidre_group_test
 !----------------------------------------------------------------------
 
 program fortran_test
   use fruit
-  use sidre_group
+  use sidre_group_test
   implicit none
   logical ok
 

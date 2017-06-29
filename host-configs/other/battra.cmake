@@ -7,8 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /home/taylor16/local/bin/cmake
-
+# cmake executable path: /home/taylor16/apps/cmake-3.8.2/bin/cmake
 #######
 # using gcc@4.9.3 compiler spec
 #######

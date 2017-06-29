@@ -19,7 +19,7 @@ types:
     f_derived_type: SidreDataStore
     f_to_c: "{f_var}%get_instance()"
     f_module:
-      sidre_mod:
+      axom_sidre:
       - datastore
 
   Group:
@@ -29,7 +29,7 @@ types:
     f_derived_type: SidreGroup
     f_to_c: "{f_var}%get_instance()"
     f_module:
-      sidre_mod:
+      axom_sidre:
       - group
 
   Buffer:
@@ -39,7 +39,7 @@ types:
     f_derived_type: SidreBuffer
     f_to_c: "{f_var}%get_instance()"
     f_module:
-      sidre_mod:
+      axom_sidre:
       - buffer
 
   View:
@@ -49,5 +49,5 @@ types:
     f_derived_type: SidreView
     f_to_c: "{f_var}%get_instance()"
     f_module:
-      sidre_mod:
+      axom_sidre:
       - view

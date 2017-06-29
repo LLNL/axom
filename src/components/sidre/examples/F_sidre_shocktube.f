@@ -40,7 +40,7 @@
 program main
 
   use iso_c_binding
-  use sidre_mod
+  use axom_sidre
   implicit none
 
   integer, parameter :: IUPWIND = 1, IDOWNWIND = 2
