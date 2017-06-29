@@ -30,7 +30,7 @@ and push their work to a central repository.
 Master and Develop Branches
 ==============================
 
-The master and develop branches are the two main branches used in Gitflow.
+The **master** and **develop** branches are the two main branches used in Gitflow.
 They always exist and the distinction between them is central to the Gitflow
 model. Other branches are temporary and used to perform specific development 
 tasks.

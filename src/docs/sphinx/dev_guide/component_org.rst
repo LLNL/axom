@@ -274,7 +274,7 @@ and ::
 respectively. For example::
 
   sidre_user_docs     (sidre component user guide)
-  sidre_docygen_docs  (sidre Doxygen source code docs)
+  sidre_doxygen_docs  (sidre Doxygen source code docs)
 
 
 .. _shroudfiles-label:
