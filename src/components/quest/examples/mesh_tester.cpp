@@ -257,7 +257,6 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   std::vector<TrianglePair> retval;
   std::set<int> seen, hit;
 
-  int intersectingTriangleCount=0;
   Triangle3 t1 = Triangle3();
   Triangle3 t2 = Triangle3();
   SLIC_INFO("Running mesh_tester with UniformGrid index");
@@ -299,7 +298,7 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
   // Check against each other triangle with index greater than the index z
   // that also shares a UniformGrid bin.
   SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
-  for (size_t z=0; z< ncells; z++) {
+  for (int z=0; z< ncells; z++) {
     seen.clear();
     hit.clear();
 
@@ -371,12 +370,12 @@ bool writeCollisions(const std::vector<TrianglePair> & c,
   }
 
   outf << c.size() << " intersecting triangle pairs:" << std::endl;
-  for (int i = 0; i < c.size(); ++i) {
+  for (size_t i = 0; i < c.size(); ++i) {
     outf << c[i].a << " " << c[i].b << std::endl;
   }
 
   outf << d.size() << " degenerate triangles:" << std::endl;
-  for (int i = 0; i < d.size(); ++i) {
+  for (size_t i = 0; i < d.size(); ++i) {
     outf << d[i] << std::endl;
   }
 
