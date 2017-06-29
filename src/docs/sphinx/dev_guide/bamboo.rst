@@ -47,7 +47,7 @@ To run a plan on a specific branch, do the following:
   #. Click on the 'Axom' project.
   #. Select the test plan you want to run.
   #. Click on the branch you want to build and test.
-  #. Click the run button on the upper right.
+  #. Click 'Run plan' via the 'Run' pulldown menu on the upper right.
 
 Depending on resource availability and what the plan does, the plan may 
 take a while to run. When the plan completes, you will receive an email
@@ -99,7 +99,10 @@ stages, one to build the code and run tests for each platform and compiler
 combination. The tasks comprising a stage are shell commands that navigate
 workspace directories on LC systems, check out the axom code, and run scripts
 (that we archive in our source code repo) that encode all of the code 
-compilation and test execution operations. A final stage parses CTest output.  
+compilation and test execution operations. A final stage parses CTest output.
+
+.. note:: All of our scripts that are run in Bamboo can be found in 
+          the source directory `axom/scripts/bamboo`.
 
 To see the specific contents of any particular plan, click on the Axom project
 in one of our Bamboo projects and click on a plan. Then, in the 'Actions'
@@ -272,7 +275,7 @@ Use a regular expression for your branch plan:
 
 To execute a test plan/branch from command line:
   * Use this python script to execute a test plan /branch from a command line: /usr/bin/python ./queue_build.py
-  * Use Usetn key can be found in this directory: login vulcanlac3 as atk, go to /g/g16/atk/bambooWorkspace/asctoolkit.cab.llnl.gov/xml-data/build-dir
+  * Use key can be found in this directory: login vulcanlac3 as atk, go to /g/g16/atk/bambooWorkspace/asctoolkit.cab.llnl.gov/xml-data/build-dir
   * Plan key can also be found from the test plan execution log file.
 
 Who Can do What

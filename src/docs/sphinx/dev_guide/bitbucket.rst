@@ -148,6 +148,10 @@ Step 1 -- Create a topic branch
       $ git checkout -b bugfix/<userid>/jira-atk-<issue #>
       $ git push -u
 
+    Alternatively, if your branch addresses multiple JIRA issues, you should 
+    add the appropriate JIRA issue numbers (e.g., ATK-374) to the messages in 
+    your commits that address them.
+
     In each of these examples, the 'git push -u' command pushes the branch to
     the Bitbucket server and it will appear in the list of branches you and 
     other developers can see there.
@@ -251,6 +255,10 @@ Step 3 -- Keep current with develop
     are also helpful for resolving merge conflicts.
 
     .. important:: **Git will not let you commit a file with merge conflicts.**
+                   After you resolve merge conflicts in a file, you must 
+                   stage the file for commit (i.e., `git add <filename>),
+                   commit it (i.e., `git commit`), and push it to the main
+                   repo (i.e., `git push`) before you can merge.
 
 .. _createpr-label:
 
@@ -277,6 +285,10 @@ Step 4 -- Create a pull request
     the merge will proceed and you are done. If there are conflicts, Bitbucket 
     will indicate this and will not let you merge until all conflicts are
     resolved.
+
+    .. important:: **You must run the CZ Bamboo plan 'Build and Test Branch' 
+                   and verify all tests pass before you merge.** 
+                   See :ref:`bamboo-label` for more information.
 
     The preferred way to resolve conflicts at this point is to go into your 
     topic branch and do the following::

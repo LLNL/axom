@@ -153,9 +153,9 @@ to include helpful information. The main issue fields we use are:
     testing, etc.
   Assignee
     Unless you are certain which team member should be assigned
-    an issue, choose 'Unassigned'. This will indicate that the issue requires
-    discussion and review before it is assigned. The default assignee is the
-    owner of the component you chose earlier if you make no choice.
+    an issue, leave the issue 'Unassigned', which is the default in our
+    JIRA configuration. This indicates that the issue 
+    requires discussion and review before we decide how to treat it. 
   Reporter
     Unless you explicitly enter someone in this field, you, as
     the issue creator, will be the reporter. This is the correct choice in
@@ -175,10 +175,11 @@ You may also use the other fields that appear if you think they will help
 describe the issue. However, the team seldom uses fields apart from the list
 above.
 
-.. note:: We use epics in JIRA and link our issues to them to get a convenient 
-          label on each each issue when we look at a sprint board or the issue 
-          backlog. We have an epic for each of our components and the epic
-          name matches the component name for this purpose. 
+.. important:: We use epics in JIRA and link our issues to them to get a 
+               convenient label on each each issue when we look at a sprint 
+               board or the issue backlog. We have an epic for each of our 
+               components for this purpose and the epic name matches the 
+               corresponding component name.
     
 Starting and stopping work on an issue
 ---------------------------------------

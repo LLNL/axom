@@ -76,7 +76,7 @@ contains documentation directories `dot` for dot-generated figures, and
 
 The **src** directory contains all header and source files for the component.
 These files, which are typically C++, can be organized in subdirectories
-withing the `src` directory in whatever manner makes sense. For example, in 
+within the `src` directory in whatever manner makes sense. For example, in 
 *sidre*, these core header and source files are in a subdirectory called 
 `core`. As is common practice for C++ libraries, associated  header and 
 source files are co-located in the same directories. 
@@ -284,7 +284,7 @@ C and Fortran Interfaces
 ====================================
 
 Typically, we use the Shroud tool to generate C and Fortran APIs from our C++ 
-interface code. Shroud is a collection of python scripts that generate code
+interface code. Shroud is a python script that generate code
 from a *yaml* file that describes C++ types and their interfaces. It was
 developed for the Axom project and has since been generalized and is supported
 as a standalone project. ***Add link to Shroud project***
