@@ -436,8 +436,9 @@ void UniformGrid<T, NDIMS>::insert(const BoxType& BB,
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
   const std::vector<int> bidxs = getBinsForBbox(BB);
-
-  for (int i = 0; i < bidxs.size(); ++i) {
+  
+  const int numBins = bidxs.size();
+  for (int i = 0; i < numBins; ++i) {
     addObj(obj, bidxs[i]);
   }
 }
