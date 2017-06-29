@@ -15,7 +15,7 @@
 !<
 ! splicer begin file_top
 ! splicer end file_top
-module quest_mod
+module axom_quest
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
@@ -127,4 +127,4 @@ contains
     ! splicer begin additional_functions
     ! splicer end additional_functions
 
-end module quest_mod
+end module axom_quest

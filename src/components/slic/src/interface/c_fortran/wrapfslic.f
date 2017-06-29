@@ -15,7 +15,7 @@
 !<
 ! splicer begin file_top
 ! splicer end file_top
-module slic_mod
+module axom_slic
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
@@ -273,4 +273,4 @@ contains
     ! splicer begin additional_functions
     ! splicer end additional_functions
 
-end module slic_mod
+end module axom_slic

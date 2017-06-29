@@ -13,7 +13,7 @@
 ! (included in namespace to prevent clashes)
 !------------------------------------------------------------------------------
 
-module dsopaquetest
+module dsopaque_test
   use iso_c_binding
 
   ! Centering
@@ -77,12 +77,12 @@ contains
     
     rv = ext%getNumPts(self%m_cent) * self%m_depth
   end function MeshVar_getNumVals
-end module dsopaquetest
+end module dsopaque_test
 
-module sidre_opaque
+module sidre_opaque_test
   use iso_c_binding
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
 contains
@@ -93,7 +93,7 @@ contains
 ! the retrieved object is in the expected state.
 !
   subroutine basic_inout
-    use dsopaquetest
+    use dsopaque_test
     type(SidreDataStore) ds
     type(SidreGroup) root, problem_gp
     type(SidreView) ext_view
@@ -155,7 +155,7 @@ contains
   ! lengths match the expected values.
   !
   subroutine meshvar_test
-    use dsopaquetest
+    use dsopaque_test
 
     type(SidreDataStore) ds
     type(SidreGroup) root, problem_gp, meshvar_gp
@@ -269,12 +269,12 @@ contains
   end subroutine meshvar_test
 
 !----------------------------------------------------------------------
-end module sidre_opaque
+end module sidre_opaque_test
 !----------------------------------------------------------------------
 
 program fortran_test
   use fruit
-  use sidre_opaque
+  use sidre_opaque_test
   implicit none
   logical ok
 

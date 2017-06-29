@@ -17,6 +17,7 @@ namespace: axom spio
 
 options:
   C_prefix: SPIO_
+  F_module_name_library_template: axom_{library_lower}
   F_module_per_class: False
 
   # Any C++ function which returns a string will be wrapped in

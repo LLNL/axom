@@ -8,10 +8,10 @@
 ! further review from Lawrence Livermore National Laboratory.
 !
 
-module sidre_external
+module sidre_external_test
   use iso_c_binding
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
 contains
@@ -137,12 +137,12 @@ contains
   end subroutine save_load_external_view
 
 !----------------------------------------------------------------------
-end module sidre_external
+end module sidre_external_test
 !----------------------------------------------------------------------
 
 program fortran_test
   use fruit
-  use sidre_external
+  use sidre_external_test
   implicit none
   logical ok
 
