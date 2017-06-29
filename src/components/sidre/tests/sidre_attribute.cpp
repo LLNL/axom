@@ -350,6 +350,65 @@ TEST(sidre_attribute,view_int_and_double)
 }
 
 //------------------------------------------------------------------------------
+// Reset attribute to default
+
+TEST(sidre_attribute,set_default)
+{
+  bool ok;
+
+  DataStore * ds = new DataStore();
+
+  // Create all attributes for DataStore
+  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
+  EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
+  EXPECT_EQ( INT_ID, attr_dump->getTypeID());
+
+  Attribute * attr_size = ds->createAttributeScalar(name_size, size_small);
+  EXPECT_TRUE( attr_size != AXOM_NULLPTR );
+  EXPECT_EQ( DOUBLE_ID, attr_size->getTypeID());
+
+  Group * root = ds->getRoot();
+
+  //----------------------------------------
+  // Create a View
+  Group * grp1 = root->createGroup("grp1");
+  View  * view1a = grp1->createView(namea);
+  EXPECT_TRUE( view1a != AXOM_NULLPTR );
+
+  // reset unset attribute 1
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_dump));
+
+  ok = view1a->setAttributeToDefault(attr_dump);
+  EXPECT_TRUE(ok);
+
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_dump));
+
+  // Set value
+  ok = view1a->setAttributeScalar(attr_dump, dump_yes);
+  EXPECT_TRUE( ok );
+  EXPECT_TRUE(view1a->hasAttributeValue(attr_dump));
+
+  // reset set attribute 1
+  ok = view1a->setAttributeToDefault(attr_dump);
+  EXPECT_TRUE(ok);
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_dump));
+
+  // reset unset attribute 2
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_size));
+
+  ok = view1a->setAttributeToDefault(attr_size);
+  EXPECT_TRUE(ok);
+
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_size));
+
+  // Check errors
+  ok = view1a->setAttributeToDefault(AXOM_NULLPTR);
+  EXPECT_FALSE( ok );
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
 // Access attributes by name or index
 
 #if 0
