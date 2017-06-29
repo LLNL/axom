@@ -84,13 +84,81 @@ is configured properly; i.e.,::
 This script sets up several things we find useful, such as Git editor, aliases,
 client-side hooks, useful tips, etc.
 
-You can also define aliases in your shell environment to do things like modify 
-your prompt to show which git branch you are on. If you are a csh/tcsh user, 
-for example, you can add the following to the file (e.g., .cshrc) that defines 
-your profile::
+You can also define your own aliases for common git commands to simplify your workflow.
+For example, the following sets up an alias for unstaging files::
 
-   alias __git_current_branch 'git rev-parse --abbrev-ref HEAD >& /dev/null && echo "{`git rev-parse --abbrev-ref HEAD`}"'
-   alias precmd 'set prompt="%n@%m>`__git_current_branch` "'
+  $ git config alias.unstage 'reset HEAD--'
+
+Then, the alias can be used as a regular Git command as illustrated below::
+
+  $ git unstage <file>
+  
+Moreover, you may want to tap in to some of your shell's features to enhance your Git experience. 
+Chief among the most notable and widely used features are: 
+
+#. Git Completion, which allows tab-completion of Git commands and branch names.
+
+#. Prompt Customization, which allows modifying your prompt to indicate the
+   current branch name, whether there are local changes, etc.   
+
+Git ships with contributed plugins for popular shells. Examples illustrating
+how to use these plugins in bash and tcsh/csh are given below. 
+
+Setting up your Bash Environment 
+--------------------------------
+
+If you are in Bash, you can set your environment as follows:
+
+#. Get the git-prompt.sh and auto-completion scripts from github ::
+
+      $ wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+      $ wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
+
+#. Optionally, you may want to move the files to another location. Nominaly, folks put those as 
+   hidden files in their home directory ::
+
+      $ mv git-prompt.sh $HOME/.git-prompt.sh
+      $ mv git-completion.bash $HOME/.git-completion.bash
+
+#. Add the following to your `.bashrc` ::
+  
+      source ~/.git-prompt.sh
+      source ~/.git-completion.bash
+      export GIT_PS1_SHOWDIRTYSTATE=1
+      export GIT_PS1_SHOWSTASHSTATE=1
+      export GIT_PS1_SHOWUNTRACKEDFILES=1
+  
+      ## Set your PS1 variable
+      reset=$(tput sgr0)
+      bold=$(tput bold)
+      export PS1='[\w] \[$bold\]$(__git_ps1 " (%s)")\[$reset\]\n\[$bold\]\u@\h\[$reset\] > '
+  
+Setting up your tcsh/csh Environment 
+--------------------------------------
+
+Likewise, if you are using tcsh/csh, you can do the following:
+
+#. Get the auto-completion scripts from github. Note, git-completion.tcsh makes
+   calls to git-completion.bash, so you need to have both ::
+
+      $ wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.tcsh
+      $ wget https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
+  
+#. Optionally, you may want to move the files to another location. Nominally, folks put those as
+   hidden files in their home directory ::
+
+      $ mv git-completion.tcsh $HOME/.git-completion.tcsh
+      $ mv git-completion.bash $HOME/.git-completion.bash
+  
+#. Add the following to your *.tcshrc/*.cshrc ::
+
+      source ~/.git-completion.tcsh
+      
+      ## Add alias to get the branch
+      alias __git_current_branch 'git rev-parse --abbrev-ref HEAD >& /dev/null && echo "{`git rev-parse --abbrev-ref HEAD`}"'
+  
+      ## Set your prompt variable for example:
+      alias precmd 'set prompt="%n@%m[%c2]`__git_current_branch` "'
 
 .. _topicdev-label:
 
