@@ -81,13 +81,8 @@ weekly third-party library builds.
 .. _bambooplan-label:
 
 ====================================
-Basic Bamboo Test Plan Management
+Bamboo Test Plans
 ====================================
-
-.. important:: Section under construction....
-
-Creating and Configuring a Bamboo Plan
-----------------------------------------
 
 A Bamboo plan consists of stages, each of which represents a step in a
 build and/or test process. Each stage may contain one or more jobs that can
@@ -115,6 +110,56 @@ Before we describe how to create and configure a plan, it is important to
 note that every Bamboo project has *agents* the run Bamboo jobs on LC 
 platforms. When Bamboo executes a plan, it communicates with an agent 
 associated with it that runs tasks on the machine.
+
+Creating and configuring a Bamboo plan
+----------------------------------------
+
+Here are the steps to create and set up a Bamboo plan once you are in the
+appropriate Axom Bamboo project (either CZ or RZ).
+
+  #. Click the 'Create' button at the top of the page and choose either
+     'Create a new plan' or 'Clone an existing plan'.
+
+      * When you choose to create a new plan, you can define everything about
+        what the plan does.
+
+      * When you clone an existing plan, you make a copy of the plan and its
+        entire configuration.
+
+  #. Enter information in all required fields (i.e., required fields are
+     denoted with a red asterisk). 
+
+      * If you clone an existing plan, make sure you choose the correct 
+        **destination project** for the plan.
+
+      * Make sure you link the correct repository and branch to the plan. 
+        If you **DO NOT** want a repository associated with the plan, choose
+        'Link new repository' and select 'None' from the pulldown menu.
+
+  #. Click 'Configure plan'. Bamboo will ask you to configure plan tasks.
+
+  #. Click 'Add task' for each task you wish to add to the plan. Note that
+     a typical Axom plan includes **script** tasks (either inline or run
+     from files).
+
+      * Start typing 'script' in the search field and select the script
+        icon when it appears.
+
+  #. Configure each task. For a 'script' task, this means:
+
+      * Enter a short script description.
+      
+      * Choose 'inline' or 'file'. If inline, type in the script commands.
+        If file, choose the file containing the script to run.
+
+      * Fill in arguments, environment variables, etc. as needed.
+
+  #. Check the box under 'Enable this plan?'
+
+  #. Clock the 'Create' button.   
+
+
+
 
 .. important:: The content below is mainly usage notes. Much of what we want 
                to include here will be pulled from `Our Confluence Notes on Bamboo <https://lc.llnl.gov/confluence/display/ASCT/Bamboo+How-To%27s>`_
