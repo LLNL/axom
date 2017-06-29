@@ -2,10 +2,10 @@
 ! Test allocatable arrays as meta-buffers
 !
 
-module sidre_allocatable
+module sidre_allocatable_test
   use iso_c_binding
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
 contains
@@ -317,12 +317,12 @@ contains
 !----------------------------------------------------------------------
 !----------------------------------------------------------------------
 
-end module sidre_allocatable
+end module sidre_allocatable_test
 
 
 program fortran_test
   use fruit
-  use sidre_allocatable
+  use sidre_allocatable_test
   implicit none
   logical ok
 

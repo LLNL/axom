@@ -86,6 +86,11 @@ private:
   bool createNode(const Attribute * attr);
 
   /*!
+   * \brief Set attribute to its default value.
+   */
+  bool setToDefault(const Attribute * attr);
+
+  /*!
    * \brief Set attribute value.
    */
   template<typename ScalarType>

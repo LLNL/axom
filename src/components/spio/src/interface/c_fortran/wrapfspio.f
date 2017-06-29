@@ -15,7 +15,7 @@
 !<
 ! splicer begin file_top
 ! splicer end file_top
-module spio_mod
+module axom_spio
     use, intrinsic :: iso_c_binding, only : C_PTR
     ! splicer begin module_use
     ! splicer end module_use
@@ -206,8 +206,8 @@ contains
     end subroutine iomanager_delete
 
     subroutine iomanager_write(obj, group, num_files, file_string, protocol)
+        use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : SidreGroup
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         integer(C_INT), value, intent(IN) :: num_files
@@ -226,8 +226,8 @@ contains
     end subroutine iomanager_write
 
     subroutine iomanager_write_group_to_root_file(obj, group, file_name)
+        use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : SidreGroup
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: file_name
@@ -241,8 +241,8 @@ contains
     end subroutine iomanager_write_group_to_root_file
 
     subroutine iomanager_read_0(obj, group, file_string, protocol)
+        use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : SidreGroup
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: file_string
@@ -259,8 +259,8 @@ contains
     end subroutine iomanager_read_0
 
     subroutine iomanager_read_1(obj, group, root_file)
+        use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : SidreGroup
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: root_file
@@ -274,8 +274,8 @@ contains
     end subroutine iomanager_read_1
 
     subroutine iomanager_load_external_data(obj, group, root_file)
+        use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
-        use sidre_mod, only : SidreGroup
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: root_file
@@ -339,4 +339,4 @@ contains
         endif
     end function iomanager_ne
 
-end module spio_mod
+end module axom_spio

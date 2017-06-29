@@ -8,9 +8,9 @@
 ! further review from Lawrence Livermore National Laboratory.
 !
 
-module sidre_smoke
+module sidre_smoke_test
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
 contains
@@ -56,13 +56,13 @@ contains
   end subroutine valid_invalid
 
 !------------------------------------------------------------------------------
-end module sidre_smoke
+end module sidre_smoke_test
 !------------------------------------------------------------------------------
 
 program fortran_test
   use iso_c_binding
   use fruit
-  use sidre_smoke
+  use sidre_smoke_test
   implicit none
 
   logical ok

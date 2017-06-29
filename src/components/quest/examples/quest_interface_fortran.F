@@ -14,14 +14,14 @@
 ! NOTE: assumes a "sphere.stl" file exists in the working directory.
 !-------------------------------------------------------------------------------
 
-module quest_fortran_usage
+module quest_fortran_usage_test
 
 #include "axom/config.hpp"
 
 #ifndef AXOM_USE_MPIF_HEADER
   use mpi
 #endif
-  use quest_mod
+  use axom_quest
   implicit none
 
 #ifdef AXOM_USE_MPIF_HEADER
@@ -160,7 +160,7 @@ contains
     call quest_finalize()
   end subroutine run_containment_queries
 
-end module
+end module quest_fortran_usage_test
 
 
 !-------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ end module
 !-------------------------------------------------------------------------------
 program quest_fortran
 
-  use quest_fortran_usage
+  use quest_fortran_usage_test
 
   implicit none
 

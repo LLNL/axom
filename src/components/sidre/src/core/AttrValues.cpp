@@ -50,7 +50,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 
   if (m_values == AXOM_NULLPTR)
   {
-    // No attributes have been set in this View;
+    // No attributes have been set in this View.
     return false;
   }
 
@@ -58,7 +58,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 
   if ((size_t) iattr >= m_values->size())
   {
-    // This attribute has not been set for this View
+    // This attribute has not been set for this View.
     return false;
   }
 
@@ -68,6 +68,45 @@ bool AttrValues::hasValue( const Attribute * attr ) const
   {
     return false;
   }
+
+  return true;
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute to its default value. If the Attribute has not been
+ * set yet, then it is already the default value.  Otherwise, reset
+ * the Node to empty.  Future calls to hasAttributeValue will return
+ * false for the attribute.
+ *
+ *************************************************************************
+ */
+bool AttrValues::setToDefault( const Attribute * attr )
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "setDefault: called without an Attribute");
+    return false;
+  }
+
+  if (m_values == AXOM_NULLPTR)
+  {
+    // No attributes have been set in this View, already default.
+    return true;
+  }
+
+  IndexType iattr = attr->getIndex();
+
+  if ((size_t) iattr >= m_values->size())
+  {
+    // This attribute has not been set for this View, already default.
+    return true;
+  }
+
+  Node & value = (*m_values)[iattr];
+  value.reset();
 
   return true;
 }
