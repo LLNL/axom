@@ -16,8 +16,8 @@ JIRA: Issue Tracking and Release Cycles
 *******************************************
 
 We use our `Axom JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ 
-for issue tracking and work planning. In JIRA, you can create issues, edit
-them, comment on them, assign them to individuals, check issue status, group 
+for issue tracking and work planning. In JIRA, you can create, edit and comment 
+on issues.  You can also assign issues to individuals, check on their status, group 
 them together for sprint development, and search for issues in various ways.
 
 This section describes Axom software development cycles and basic issue work 
@@ -29,10 +29,10 @@ flow.
 Sprint Cycles and Work Planning
 ========================================
 
-The Axom project plans work for quarterly (3 month) sprint cycles. Three
-months is long for typical sprint-based development. However, we find that
+The Axom project plans work for quarterly (3 month) sprint cycles. Although
+three months is long for typical sprint-based development, we find that
 it works well for our project where multiple software components are under
-development concurrently by giving component developers flexibility to 
+development concurrently since it gives component developers flexibility to 
 plan and coordinate work with other components in a way that works best for
 them.
 
@@ -57,8 +57,8 @@ create a collection of issues and track progress on them. Typically, we create
 a named version, such as "Due 6/30/2017", for each quarterly sprint.
 
 At the end of one sprint cycle and before starting the next one, we 
-decide which issues that were not completed in the cycle we should move to the 
-next. Hopefully, there are not many and typically we will propagate all 
+decide which issues that were not completed to move to the next cycle. 
+Hopefully, there are not many and typically we will propagate all 
 such unresolved issues to the next sprint cycle. Before we start the next 
 cycle, we meet as a team to make sure all issues in the associated version 
 are assigned and that everyone is comfortable with their assignments.

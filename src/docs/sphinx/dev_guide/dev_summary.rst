@@ -24,11 +24,10 @@ Development and Release Cycles
 The Axom team uses a sprint-based development process. We collect
 and track issues (bugs, feature requests, tasks, etc.) and then target a 
 set of development tasks (i.e., issues) to complete for each quarterly 
-(3 month) release cycles for the project. Within this quarterly time 
-framework, developers of individual Axom components may plan and schedule 
-work in any way that works for them. However, work performed in each 
-3 month release cycle is tracked as a single unified sprint encompassing 
-activities for the entire project.
+(3 month) release cycle. Within this time frame, developers of 
+individual Axom components may plan and schedule work in any way that works 
+for them. However, work performed in each release cycle is tracked 
+as a single unified sprint encompassing activities for the entire project.
 
 See :ref:`jira-label` for more information about how we do issue tracking
 and release planning.
@@ -89,12 +88,12 @@ including *continuous integration*.
 Software Development Tools
 ======================================================
 
-In addition to tools listed above, we use a variety of other tools to help
+In addition to the tools listed above, we use a variety of other tools to help
 manage and automate our software development processes. The *tool philosophy*
 adopted by the Axom project focuses on three central tenets:
 
   * Employ robust, commonly-used tools and don't re-invent something that already exists.
-  * Apply tools in ways that non-experts find them easy to use.
+  * Apply tools in ways that non-experts find easy to use.
   * Strive for automation and reproducibility.
 
 The main interaction hub for Axom developers is the **Atlassian

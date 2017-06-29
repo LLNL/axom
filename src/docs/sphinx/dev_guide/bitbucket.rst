@@ -174,21 +174,22 @@ Step 2 -- Do development work
     originally pushed your topic branch when you created it.
 
  
-.. important:: You may perform several local commits before you push your work 
-               to the main repo. Generally, it is a good idea to limit the 
-               amount of modifications contained in any one commit. By 
-               restricting individual commits to a reasonable size that 
-               contain closely related work, it is easier to refer back to 
-               specific changes you make when the need arises (as it 
-               inevitably will!). For example, if you regularly run your
-               code through a formatting tool (we use *uncrustify* on the Axom 
-               project), it is preferable to commit other content changes first
-               and then commit formatting changes in a separate commit. That 
-               way, you can distinguish substance from cosmetic changes easily 
-               in the Git history.
+    .. important:: 
+       You may perform several local commits before you push your work 
+       to the main repo. Generally, it is a good idea to limit the 
+       amount of modifications contained in any one commit. By 
+       restricting individual commits to a reasonable size that 
+       contain closely related work, it is easier to refer back to 
+       specific changes you make when the need arises (as it 
+       inevitably will!). For example, if you regularly run your
+       code through a formatting tool (we use *uncrustify* on the Axom 
+       project), it is preferable to commit other content changes first
+       and then commit formatting changes in a separate commit. That 
+       way, you can distinguish substance from cosmetic changes easily 
+       in the Git history.
 
     Recall the Git environment setup script we recommended that you run after
-    cloning the repo in the Section :ref:`repoclone-label` above. One of the
+    cloning the repo in the :ref:`repoclone-label` section above. One of the
     Git pre-commit hooks that the script sets up applies formatting constraints
     on the commit message you provide when you execute the 'commit' command. The
     constraints are recommended Git practices that help make it easier to use
