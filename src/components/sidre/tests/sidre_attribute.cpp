@@ -378,7 +378,7 @@ TEST(sidre_attribute,set_default)
   // reset unset attribute 1
   EXPECT_FALSE(view1a->hasAttributeValue(attr_dump));
 
-  ok = view1a->setAttributeDefault(attr_dump);
+  ok = view1a->setAttributeToDefault(attr_dump);
   EXPECT_TRUE(ok);
 
   EXPECT_FALSE(view1a->hasAttributeValue(attr_dump));
@@ -389,20 +389,20 @@ TEST(sidre_attribute,set_default)
   EXPECT_TRUE(view1a->hasAttributeValue(attr_dump));
 
   // reset set attribute 1
-  ok = view1a->setAttributeDefault(attr_dump);
+  ok = view1a->setAttributeToDefault(attr_dump);
   EXPECT_TRUE(ok);
   EXPECT_FALSE(view1a->hasAttributeValue(attr_dump));
 
   // reset unset attribute 2
   EXPECT_FALSE(view1a->hasAttributeValue(attr_size));
 
-  ok = view1a->setAttributeDefault(attr_size);
+  ok = view1a->setAttributeToDefault(attr_size);
   EXPECT_TRUE(ok);
 
   EXPECT_FALSE(view1a->hasAttributeValue(attr_size));
 
   // Check errors
-  ok = view1a->setAttributeDefault(AXOM_NULLPTR);
+  ok = view1a->setAttributeToDefault(AXOM_NULLPTR);
   EXPECT_FALSE( ok );
 
   delete ds;

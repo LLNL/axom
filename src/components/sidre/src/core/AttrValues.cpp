@@ -82,7 +82,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
  *
  *************************************************************************
  */
-bool AttrValues::setDefault( const Attribute * attr )
+bool AttrValues::setToDefault( const Attribute * attr )
 {
   if (attr == AXOM_NULLPTR)
   {

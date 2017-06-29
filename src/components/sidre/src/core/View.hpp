@@ -961,9 +961,9 @@ public:
    *
    * This causes hasAttributeValue to return false for the attribute.
    */
-  bool setAttributeDefault( const Attribute * attr )
+  bool setAttributeToDefault( const Attribute * attr )
   {
-    return m_attr_values.setDefault(attr);
+    return m_attr_values.setToDefault(attr);
   }
 
   /*!

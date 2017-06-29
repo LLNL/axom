@@ -88,7 +88,7 @@ private:
   /*!
    * \brief Set attribute to its default value.
    */
-  bool setDefault(const Attribute * attr);
+  bool setToDefault(const Attribute * attr);
 
   /*!
    * \brief Set attribute value.
