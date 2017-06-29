@@ -140,8 +140,11 @@ Note that the Google Test framework will generate a 'main()' routine for
 each test file if it is not explicitly provided. However, sometimes it is 
 necessary to provide a 'main()' routine that contains operation to run 
 before or after the unit tests in a file; e.g., initialization code or 
-pre-/post-processing operations. Here is an example 'main()' from an Axom 
-slic component test that lives at the end of the file in which it resides::
+pre-/post-processing operations. A 'main()' routine provided in a test 
+file should be placed at the end of the file in which it resides.
+
+Here is an example 'main()' from an Axom test that sets up a slic logger
+object to be used in tests:: 
 
   int main(int argc, char * argv[])
   {
@@ -158,9 +161,33 @@ slic component test that lives at the end of the file in which it resides::
     return result;
   }
 
-Here, Google Test is initialized first, followed by initialization of a slic 
-UnitTestLogger object. The `RUN_ALL_TESTS()` Google Test macro will run all the 
-tests in the file.
+Note that Google Test is initialized first, followed by initialization of the
+slic UnitTestLogger object. The `RUN_ALL_TESTS()` Google Test macro will 
+run all the tests in the file. 
+
+As another example, consider a set of tests that use MPI.  The 'main()' 
+routine will initialize and finalize MPI before and after tests are run,
+respectively::
+
+  int main(int argc, char * argv[])
+  {
+    int result = 0;
+
+    ::testing::InitGoogleTest(&argc, argv);
+
+    UnitTestLogger logger;  // create & initialize test logger,
+                            // finalized when exiting main scope
+
+    MPI_Init(&argc, &argv);
+
+    result = RUN_ALL_TESTS();
+
+    MPI_Finalize();
+
+    return result;
+  }
+
+Note that Google test is initialized before 'MPI_Init()' is called. 
 
 Other Google Test features, such as *fixtures*, may be used as well. 
 
