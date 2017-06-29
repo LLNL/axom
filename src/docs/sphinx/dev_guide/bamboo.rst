@@ -31,7 +31,7 @@ We use the `Axom CZ Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_
 primarily for manually running Bamboo plans on specific branches. For example,
 if you are working on a branch and you want to build the branch code and run 
 tests on several LC platforms on the CZ with a variety of compilers, you can
-do this easily. The test plans for for such branch testing are configured so
+do this easily. The plans for such branch testing are configured so
 that when a new Axom git branch is created and pushed to our Bitbucket project,
 the branch will appear in the list of branches on which a plan can be run.
 
