@@ -8,24 +8,6 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-## list of mint dependencies
-set(mint_depends mint)
-
-## load mint cmake macros
-include(${PROJECT_SOURCE_DIR}/cmake/MintMacros.cmake)
-
-## mint Lagrange basis functions
-mint_fe_basis( NAME LAGRANGE
-               HEADER_FILES
-                  hexa_8.hpp
-                  prism_6.hpp
-                  pyra_5.hpp
-                  quad_4.hpp
-                  tetra_4.hpp
-                  tri_3.hpp
-               )
-
-## custom target to put the mint basis functions under mint/lagrange
 ## mint headers
 set( mint_headers
 
@@ -33,8 +15,17 @@ set( mint_headers
     fem/FEBasis.hpp
     fem/FEBasisTypes.hpp
     fem/FiniteElement.hpp
-    fem/Lagrange.hpp
-    fem/ShapeFunction.hpp
+    fem/shape_functions/Lagrange.hpp
+    fem/shape_functions/ShapeFunction.hpp
+
+    ## Lagrange Basis
+    fem/shape_functions/Lagrange.hpp
+    fem/shape_functions/lagrange/lagrange_hexa_8.hpp
+    fem/shape_functions/lagrange/lagrange_prism_6.hpp
+    fem/shape_functions/lagrange/lagrange_pyra_5.hpp
+    fem/shape_functions/lagrange/lagrange_quad_4.hpp
+    fem/shape_functions/lagrange/lagrange_tetra_4.hpp
+    fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Mesh data-model
     mesh/CellConnectivity.hpp
@@ -79,6 +70,5 @@ blt_add_library(
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
+    DEPENDS_ON axom_utils slic
    )
-
-add_dependencies( ${mint_depends} )

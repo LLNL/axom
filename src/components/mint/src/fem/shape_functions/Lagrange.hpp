@@ -252,12 +252,11 @@ private:
 } /* namespace axom */
 
 // Template Specializations for Lagrange
-#include "mint/fem/shape_functions/lagrange/quad_4.hpp"
-#include "mint/fem/shape_functions/lagrange/tri_3.hpp"
-#include "mint/fem/shape_functions/lagrange/tetra_4.hpp"
-#include "mint/fem/shape_functions/lagrange/hexa_8.hpp"
-#include "mint/fem/shape_functions/lagrange/prism_6.hpp"
-#include "mint/fem/shape_functions/lagrange/pyra_5.hpp"
-
+#include "mint/lagrange_quad_4.hpp"
+#include "mint/lagrange_tri_3.hpp"
+#include "mint/lagrange_tetra_4.hpp"
+#include "mint/lagrange_hexa_8.hpp"
+#include "mint/lagrange_prism_6.hpp"
+#include "mint/lagrange_pyra_5.hpp"
 
 #endif /* MINT_LAGRANGE_SHAPEFUNCTION_HPP_ */
