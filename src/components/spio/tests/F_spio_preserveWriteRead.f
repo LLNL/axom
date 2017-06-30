@@ -10,8 +10,8 @@
 !
 
 program spio_preserve_write_read
-  use sidre_mod
-  use spio_mod
+  use axom_sidre
+  use axom_spio
   use fruit
   use iso_c_binding
   implicit none

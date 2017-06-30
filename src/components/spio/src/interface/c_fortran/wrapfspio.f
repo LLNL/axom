@@ -297,8 +297,8 @@ contains
     end subroutine iomanager_read_1
 
     subroutine iomanager_read_2(obj, group, root_file, preserve_contents)
+        use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_BOOL, C_INT
-        use sidre_mod, only : SidreGroup
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: root_file
