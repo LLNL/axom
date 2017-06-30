@@ -165,10 +165,11 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
 void IOManager::read(
   sidre::Group * datagroup,
   const std::string& root_file,
-  const std::string& protocol)
+  const std::string& protocol,
+  bool preserve_contents)
 {
   if (protocol == "sidre_hdf5") {
-    readSidreHDF5(datagroup, root_file);
+    readSidreHDF5(datagroup, root_file, preserve_contents);
   } else {
     if (m_baton) {
       if (m_baton->getNumFiles() != 1) {
@@ -185,7 +186,7 @@ void IOManager::read(
 
     std::string file_name = getRankGroupFileName(root_file, group_id, protocol);
 
-    datagroup->load(file_name, protocol);
+    datagroup->load(file_name, protocol, preserve_contents);
 
     (void)m_baton->pass();
 
@@ -199,11 +200,11 @@ void IOManager::read(
  *
  *************************************************************************
  */
-void IOManager::read(sidre::Group * datagroup, const std::string& root_file)
+void IOManager::read(sidre::Group * datagroup, const std::string& root_file, bool preserve_contents)
 {
   std::string protocol = getProtocol(root_file);
 
-  read(datagroup, root_file, protocol);
+  read(datagroup, root_file, protocol, preserve_contents);
 }
 
 /*
@@ -213,7 +214,9 @@ void IOManager::read(sidre::Group * datagroup, const std::string& root_file)
  *
  *************************************************************************
  */
-void IOManager::readSidreHDF5(sidre::Group * datagroup, const std::string& root_file)
+void IOManager::readSidreHDF5(sidre::Group * datagroup,
+                              const std::string& root_file,
+                              bool preserve_contents)
 {
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
@@ -247,7 +250,7 @@ void IOManager::readSidreHDF5(sidre::Group * datagroup, const std::string& root_
   hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
   SLIC_ASSERT(h5_group_id >= 0);
 
-  datagroup->load(h5_group_id);
+  datagroup->load(h5_group_id, "sidre_hdf5", preserve_contents);
 
   errv = H5Gclose(h5_group_id);
   SLIC_ASSERT(errv >= 0);
