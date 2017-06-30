@@ -44,6 +44,14 @@ blt_add_executable(
     USE_OPENMP  ${ENABLE_OPENMP}
     )
 
+blt_add_executable(
+    NAME        mesh_tester
+    SOURCES     mesh_tester.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
+    )
+
 if (ENABLE_MPI)
 
   set(quest_interface_extra_depends)

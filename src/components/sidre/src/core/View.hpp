@@ -957,6 +957,16 @@ public:
   }
 
   /*!
+   * \brief Set Attribute to its default value.
+   *
+   * This causes hasAttributeValue to return false for the attribute.
+   */
+  bool setAttributeToDefault( const Attribute * attr )
+  {
+    return m_attr_values.setToDefault(attr);
+  }
+
+  /*!
    * \brief Set Attribute for a View.
    */
   template<typename ScalarType>

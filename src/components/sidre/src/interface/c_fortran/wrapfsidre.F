@@ -16,7 +16,7 @@
 ! splicer begin file_top
 #include "axom/config.hpp"
 ! splicer end file_top
-module sidre_mod
+module axom_sidre
     use, intrinsic :: iso_c_binding, only : C_PTR
     ! splicer begin module_use
     ! map conduit type names to sidre type names
@@ -6425,4 +6425,4 @@ contains
         endif
     end function view_ne
 
-end module sidre_mod
+end module axom_sidre

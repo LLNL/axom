@@ -8,10 +8,10 @@
 ! further review from Lawrence Livermore National Laboratory.
 !
 
-module sidre_buffer
+module sidre_buffer_test
   use iso_c_binding
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
 contains
@@ -173,12 +173,12 @@ contains
   end subroutine realloc_buffer
 
 !----------------------------------------------------------------------
-end module sidre_buffer
+end module sidre_buffer_test
 !----------------------------------------------------------------------
 
 program fortran_test
   use fruit
-  use sidre_buffer
+  use sidre_buffer_test
   implicit none
   logical ok
 

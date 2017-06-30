@@ -8,10 +8,10 @@
 ! further review from Lawrence Livermore National Laboratory.
 !
 
-module sidre_view
+module sidre_view_test
   use iso_c_binding
   use fruit
-  use sidre_mod
+  use axom_sidre
   implicit none
 
   integer, parameter :: &
@@ -940,12 +940,12 @@ contains
   end subroutine simple_opaque
 
 !----------------------------------------------------------------------
-end module sidre_view
+end module sidre_view_test
 !----------------------------------------------------------------------
 
 program fortran_test
   use fruit
-  use sidre_view
+  use sidre_view_test
   implicit none
   logical ok
 
