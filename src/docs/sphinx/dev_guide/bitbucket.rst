@@ -150,7 +150,7 @@ Likewise, if you are using tcsh/csh, you can do the following:
       $ mv git-completion.tcsh $HOME/.git-completion.tcsh
       $ mv git-completion.bash $HOME/.git-completion.bash
   
-#. Add the following to your *.tcshrc/*.cshrc ::
+#. Add the following to your *.tcshrc or *.cshrc ::
 
       source ~/.git-completion.tcsh
       

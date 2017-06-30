@@ -115,13 +115,13 @@ The contents of a typical Google Test file look like this::
 
   // ...
 
-  TEST(<test_group>, <test_name_1>) 
+  TEST(<test_case_name>, <test_name_1>) 
   {
      // Test 1 code here...
      // EXPECT_EQ(...);
   }
 
-  TEST(<test_group>, <test_name_2>) 
+  TEST(<test_case_name>, <test_name_2>) 
   {
      // Test 2 code here...
      // EXPECT_TRUE(...);
@@ -130,9 +130,9 @@ The contents of a typical Google Test file look like this::
   // Etc.
 
 Each unit test is defined by the Google Test `TEST()` macro which accepts a 
-*test group* identifier, such as the name of the C++ class being tested, 
+*test case name* identifier, such as the name of the C++ class being tested, 
 and a *test name*, which indicates the functionality being verified by the 
-unit test. Within each unit test, logical assertions are defined using 
+test. For each test, logical assertions are defined using 
 Google Test `assertion macros`. Failure of expected values will cause the test 
 to fail, but other tests will continue to run. 
 
@@ -203,7 +203,7 @@ the Google Test tests for C and C++ described above.
 
 The contents of a typical FRUIT test file look like this::
 
-  module <test_group>
+  module <test_case_name>
     use iso_c_binding
     use fruit
     use <axom_module_name>
@@ -224,8 +224,8 @@ The contents of a typical FRUIT test file look like this::
   ! Etc.
 
 The tests in a FRUIT test file are placed in a Fortran *module* named for
-the *test group*, such as the name of the C++ class whose Fortran interface
-is being tested . Each unit test is in its own Fortran subroutine named
+the *test case name*, such as the name of the C++ class whose Fortran interface
+is being tested. Each unit test is in its own Fortran subroutine named
 for the *test name*, which indicates the functionality being verified by the
 unit test. Within each unit test, logical assertions are defined using
 FRUIT methods. Failure of expected values will cause the test
@@ -307,7 +307,7 @@ In addition, each example should be given its own CMake-generated make target.
 CMake Files and Variables for Examples
 =======================================
 
-The `CMakeLists.txt` file in component examples directory defines the
+The `CMakeLists.txt` file in each component's 'examples' directory defines the
 following items:
 
   #. Variables for example source files and header files as needed
@@ -352,19 +352,20 @@ Test file names and make targets
 
 The format of a test file name is::
 
-  <component name>_<test name>_<optional language specifier>_test
+  <component name>_<test name>_<optional language specifier>
 
 Examples::
 
-  sidre_buffer_test.cpp     ('Buffer' class C++ unit test)
-  sidre_buffer_C_test.cpp   ('Buffer' class C unit test)
-  sidre_buffer_F_test.f     ('Buffer' class Fortran unit test)
+  sidre_buffer.cpp     ('Buffer' class C++ unit test)
+  sidre_buffer_C.cpp   ('Buffer' class C unit test)
+  sidre_buffer_F.f     ('Buffer' class Fortran unit test)
 
 When test files are named like this, it is easy to see what they contain.
 Additionally, when added to the appropriate CMakeLists.txt file
-(see src/components/sidre/tests/CmakeLists.txt file for example), the test
-targets will appear as follows in the listing of all targets when when
-'make help' is typed::
+(see src/components/sidre/tests/CmakeLists.txt file for example), the 
+extension '_test' will be added to the make target name so that the 
+test will appear as follows in the make target listing when 'make help' 
+is typed::
 
   sidre_buffer_test
   sidre_buffer_C_test
