@@ -59,6 +59,7 @@ static const int mesh_of_cell_type[] = {
   MINT_UNDEFINED_MESH,                // LINEAR_PYRAMID,
 
   MINT_UNSTRUCTURED_QUAD_MESH,        // Q2 quad mesh
+  MINT_UNSTRUCTURED_HEX_MESH,         // Q2 hex mesh
 
   MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH,   // MIXED
 };

@@ -33,12 +33,13 @@ enum {
   MINT_PYRAMID,        ///< LINEAR_PYRAMID
 
   MINT_QUAD9,          ///< QUADRATIC QUAD
+  MINT_HEX27,          ///< QUADRATIC HEX
 
   MINT_MIXED_CELL,     ///< MIXED
   MINT_NUM_CELL_TYPES  ///< NUM_CELL_TYPES
 };
 
-#define MINT_MAX_NUM_NODES 9
+#define MINT_MAX_NUM_NODES 27
 
 namespace axom {
 namespace mint {
@@ -56,6 +57,7 @@ static const int vtk_types[] = {
   14,   // LINEAR_PYRAMID  -> VTK_PYRAMID
 
   28,   // QUADRATIC_QUAD  -> VTK_BIQUADRATIC_QUAD
+  29,   // QUADRATIC_HEX   -> VTK_TRIQUADRATIC_HEXAHEDRON
 
   0     // MIXED           -> VTK_EMPTY_CELL
 };
@@ -71,6 +73,7 @@ static const int num_nodes[] = {
   5,    // LINEAR_PYRAMID
 
   9,    // QUADRATIC_QUAD
+  27,   // QUADRATIC_HEX
 
   5     // MIXED
 };
@@ -86,6 +89,7 @@ static const std::string name[] = {
   "MINT_PYRAMID",        //!< LINEAR_PYRAMID
 
   "MINT_QUAD9",          //!< QUADRATIC_QUAD
+  "MINT_HEX27",          //!< QUADRATIC_HEX
 };
 
 } /* namespace cell */

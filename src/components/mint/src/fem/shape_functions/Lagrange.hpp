@@ -252,12 +252,13 @@ private:
 } /* namespace axom */
 
 // Template Specializations for Lagrange
-#include "mint/lagrange_quad_4.hpp"
-#include "mint/lagrange_tri_3.hpp"
-#include "mint/lagrange_tetra_4.hpp"
+#include "mint/lagrange_hexa_27.hpp"
 #include "mint/lagrange_hexa_8.hpp"
 #include "mint/lagrange_prism_6.hpp"
 #include "mint/lagrange_pyra_5.hpp"
+#include "mint/lagrange_quad_4.hpp"
 #include "mint/lagrange_quad_9.hpp"
+#include "mint/lagrange_tetra_4.hpp"
+#include "mint/lagrange_tri_3.hpp"
 
 #endif /* MINT_LAGRANGE_SHAPEFUNCTION_HPP_ */
