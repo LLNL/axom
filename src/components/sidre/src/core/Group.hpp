@@ -1068,19 +1068,6 @@ public:
   void save( const hid_t& h5_id,
              const std::string &protocol = "sidre_hdf5") const;
 
-
-  /*!
-   * \brief Load the Group from a file.
-   *
-   * \param path      file path
-   * \param protocol  I/O protocol
-   */
-  void load(const std::string& path,
-            const std::string& protocol = "sidre_hdf5")
-  {
-    load(path, protocol, false);
-  }
-
   /*!
    * \brief Load the Group from a file.
    *
@@ -1089,23 +1076,18 @@ public:
    * \param preserve_contents   Preserve existing contents of group if true
    */
   void load(const std::string& path,
-            const std::string& protocol,
-            bool preserve_contents);
+            const std::string& protocol = "sidre_hdf5",
+            bool preserve_contents = "false");
 
   /*!
    * \brief Load the Group from an hdf5 handle.
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   * \param preserve_contents   Preserve existing contents of group if true
    */
   void load( const hid_t& h5_id,
-             const std::string &protocol = "sidre_hdf5")
-  {
-    load(h5_id, protocol, false); 
-  }
-
-  void load( const hid_t& h5_id,
-             const std::string &protocol,
-             bool preserve_contents);
+             const std::string &protocol = "sidre_hdf5",
+             bool preserve_contents = false);
 
   /*!
    * \brief Load data into the Group's external views from a file.

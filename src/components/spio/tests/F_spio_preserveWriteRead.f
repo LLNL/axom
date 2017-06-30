@@ -1,6 +1,6 @@
 ! F_spio_preserveWriteRead.f
 !
-! copyright (c) 2015, lawrence livermore national security, llc.
+! copyright (c) 2017, lawrence livermore national security, llc.
 ! produced at the lawrence livermore national laboratory.
 !
 ! all rights reserved.

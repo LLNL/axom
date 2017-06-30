@@ -1851,7 +1851,8 @@ void Group::importFrom(conduit::Node & node, bool preserve_contents)
   // or tag identifying the data.  We don't want someone giving us a file that
   // doesn't have our full multiView->buffer connectivity in there.
 
-  if (!preserve_contents) {
+  if (!preserve_contents)
+  {
     destroyGroups();
     destroyViews();
   }
@@ -1940,7 +1941,8 @@ void Group::importFrom(conduit::Node& node,
 
 void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
 {
-  if (!preserve_contents) {
+  if (!preserve_contents)
+  {
     destroyGroups();
     destroyViews();
   }
