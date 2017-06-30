@@ -47,6 +47,5 @@ classes:
     - decl: void write(Group * group, int num_files, const std::string& file_string, const std::string& protocol)
     - decl: void writeGroupToRootFile(Group * group, const std::string& file_name)
     - decl: void read(Group * group, const std::string& file_string, const std::string& protocol)
-    - decl: void read(Group * group, const std::string& root_file)
-    - decl: void read(Group * group, const std::string& root_file, bool preserve_contents)
+    - decl: void read(Group * group, const std::string& root_file, bool preserve_contents = false)
     - decl: void loadExternalData(Group * group, const std::string& root_file)
