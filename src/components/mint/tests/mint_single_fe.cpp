@@ -64,6 +64,9 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 
     // Hard-code expected centroid from VTK, since averaging the nodes
     // doesn't yield the centroid for a pyramid.
+    //
+    // NOTE: these values are hard-coded for the specific pyramid in this test.
+
     centroid[ 0 ] = 4.00001;
     centroid[ 1 ] = 4.28284;
     centroid[ 2 ] = 2.0;
@@ -332,7 +335,7 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
   // STEP 2: buffer to store the mapped physical coordinates
   numerics::Matrix< double > physical_coords( ndims, nnodes );
 
-  // STEP 3: map each reference coordinate to physical and
+  // STEP 3: map each reference coordinate to physical
   for ( int i=0; i < numdofs; ++i ) {
 
      // forward map

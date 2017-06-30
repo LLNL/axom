@@ -41,7 +41,7 @@ enum {
 
 /*!
  *******************************************************************************
- * \brief The FiniteElement object is used to represents a mesh element
+ * \brief The FiniteElement object is used to represent a mesh element
  *  \f$ \Omega^e \f$ corresponding to a mesh \f$ \mathcal{M} \f$ .
  *
  *  The FiniteElement is associated with a Finite Element Basis (FEBasis),
@@ -54,7 +54,17 @@ enum {
  *   <li> Compute the jacobian \f$ \mathcal{J}(\hat{\xi} ) \f$ </li>
  *  </ul>
  *
- * Usage Example:
+ *  The FiniteElement class is the primary object that application codes will
+ *  use to perform these operations. Once a FiniteElement object is
+ *  instantiated it can then be bound to a Finite Element Basis by invoking
+ *  the bind_basis( ) method on the target FiniteElement instance, which is
+ *  templated on two enum values: (a) the BasisType, defined in
+ *  (\ref FEBasisTypes.hpp) and (b) the CellType defined in(\ref CellType.hpp).
+ *  The rationale behind this is to insulate the user from the low-level classes
+ *  and provide a simple and unified interface to Finite Element operations.
+ *
+ * A simple example illustrating how to use the FiniteElement class is given
+ * below:
  * \code
  *  using axom;
  *
@@ -68,7 +78,7 @@ enum {
  *  const int N   = m->getMeshNumberOfCells();
  *
  *  for ( int idx=0; idx < N; ++idx ) {
- *     mint:FiniteElement fe( m, idx );
+ *     mint::FiniteElement fe( m, idx );
  *     mint::bind_basis< MINT_LAGRANGE, MINT_QUAD >( fe );
  *
  *     int status = fe.computeReferenceCoords( xp, xr );
@@ -84,6 +94,7 @@ enum {
  * \endcode
  *
  * \see FEBasis
+ * \see CellType.hpp
  * \see FEBasisTypes.hpp
  * \see ShapeFunction
  *******************************************************************************
@@ -124,7 +135,7 @@ public:
    *  for the isoparametric inverse mapping from physical coordinates to
    *  reference coordinates.
    *
-   * \note Each Basis/Element pair prescribes a nominal value for the maximum
+   * \note Each Basis/Element pair prescribes a default value for the maximum
    *  number of Newton-Raphson iterations. This method provides the flexibility
    *  of overriding this value.
    *
@@ -193,7 +204,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the number of nodes of the FiniteElement
+   * \brief Returns the number of nodes, i.e., degrees-of-freedom (dofs) of the
+   *  FiniteElement.
    * \return N the number of nodes of the element
    *****************************************************************************
    */
@@ -217,7 +229,8 @@ public:
    *
    * \note The nodes of the element are arranged in a flat array using a
    *  column-major layout. It is convenient to access the nodes of the element
-   *  by wrapping the return pointer in a matrix object as follows:
+   *  by wrapping the return pointer in a matrix object with getNumNodes()
+   *  columns and getPhysicalDimension() rows. This can be achieved as follows:
    *  \code
    *    ...
    *    double* nodesptr = fe->getPhysicalNodes( );
