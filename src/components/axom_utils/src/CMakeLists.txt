@@ -32,4 +32,13 @@ blt_add_library( NAME                  axom_utils
                  SOURCES              "${axom_utils_sources}"
                  HEADERS              "${axom_utils_headers}"
                  HEADERS_OUTPUT_SUBDIR axom_utils
+                 DEPENDS_ON            mpi
                  )
+install(TARGETS              axom_utils
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/axom_utils
+        )
+install(FILES       ${axom_utils_headers}
+        DESTINATION include/axom_utils
+        )

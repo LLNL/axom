@@ -18,25 +18,36 @@ set(lulesh_sources
         )
 
 # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
+set(lulesh_depends_on )
 set(luleshExtraCompileFlags ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS})
-if ( NOT ENABLE_OPENMP )
+if ( ENABLE_OPENMP )
+    list(APPEND lulesh_depends_on openmp)
+else()
     set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 endif()
 
 if ( ENABLE_MPI )
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=1 ")
+    list(APPEND lulesh_depends_on mpi)
+    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} USE_MPI=1 ")
 else()
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=0 ")
+    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} USE_MPI=0 ")
 endif()
 #message(STATUS " luleshExtraCompileFlags is '${luleshExtraCompileFlags}'")
 
 set_source_files_properties(${lulesh_sources} ${lulesh_headers} 
     PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
 
-
-blt_add_executable(
-    NAME        slam_lulesh_orig
-    SOURCES     ${lulesh_sources} ${lulesh_headers}
-    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    USE_OPENMP  ${ENABLE_OPENMP}
-    ) 
+if ( lulesh_depends_on )
+    blt_add_executable(
+        NAME        slam_lulesh_orig
+        SOURCES     ${lulesh_sources} ${lulesh_headers}
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${lulesh_depends_on}
+        )
+else()
+    blt_add_executable(
+        NAME        slam_lulesh_orig
+        SOURCES     ${lulesh_sources} ${lulesh_headers}
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        )
+endif()

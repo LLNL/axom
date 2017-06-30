@@ -27,6 +27,10 @@ if (BOOST_FOUND)
     list(APPEND quest_tests_depends boost)
 endif()
 
+if (ENABLE_OPENMP)
+    list(APPEND quest_tests_depends openmp)
+endif()
+
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
@@ -34,7 +38,6 @@ foreach(test ${quest_tests})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
-        USE_OPENMP ${ENABLE_OPENMP}
     )
     blt_add_test(
         NAME ${test_name}
@@ -50,7 +53,6 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         NAME quest_regression
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        USE_OPENMP ${ENABLE_OPENMP}
         DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)

@@ -53,4 +53,14 @@ blt_add_library( NAME
                      conduit
                      sidre
                      fmt
+                     mpi
                 )
+install(TARGETS              spio
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/spio
+        )
+install(FILES       ${spio_headers}
+        DESTINATION include/spio
+        )
+

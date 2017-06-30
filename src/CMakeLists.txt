@@ -20,9 +20,10 @@ git submodule init\n \
 git submodule update")
 
 endif()
-include(blt/SetupBLT.cmake)
 
-set(ENABLE_COPY_HEADERS ON)
+set(ENABLE_COPY_HEADERS ON CACHE PATH "")
+
+include(blt/SetupBLT.cmake)
 
 ################################
 # Include standard build system logic and options
@@ -58,15 +59,6 @@ add_subdirectory(util)
 if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
-
-################################
-# install targets from build
-################################s
-# NOTE: Commented out installation of bin directory for now since contents
-#       don't currently work in other directories.
-#install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . OPTIONAL)
-install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION . OPTIONAL)
-install(DIRECTORY ${PROJECT_BINARY_DIR}/lib/fortran DESTINATION lib OPTIONAL)
 
 ################################
 # Create header of configuration options

@@ -36,7 +36,7 @@
  */
 #include "mpi.h"
 
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 #include "slic/slic.hpp"
 #include "slic/LogStream.hpp"
 

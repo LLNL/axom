@@ -54,6 +54,10 @@ if (BOOST_FOUND)
     list(APPEND quest_depends_on boost)
 endif()
 
+if (ENABLE_OPENMP)
+    list(APPEND quest_depends_on openmp)
+endif()
+
 if (ENABLE_MPI)
   list(APPEND quest_headers stl/PSTLReader.hpp)
   list(APPEND quest_sources stl/PSTLReader.cpp)
@@ -81,5 +85,12 @@ blt_add_library(
     HEADERS     ${quest_headers}
     HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
-    USE_OPENMP  ${ENABLE_OPENMP}
     )
+install(TARGETS              quest
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/quest
+        )
+install(FILES       ${quest_headers}
+        DESTINATION include/quest
+        )

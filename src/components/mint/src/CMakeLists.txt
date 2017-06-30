@@ -48,3 +48,11 @@ blt_add_library(
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
    )
+install(TARGETS              mint
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/mint
+        )
+install(FILES       ${mint_headers}
+        DESTINATION include/mint
+        )

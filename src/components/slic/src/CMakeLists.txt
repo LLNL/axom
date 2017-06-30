@@ -66,7 +66,7 @@ set(slic_depends_on
     axom_utils
 )
 if (ENABLE_LUMBERJACK)
-    list(APPEND slic_depends_on lumberjack)
+    list(APPEND slic_depends_on lumberjack mpi)
 endif()
 
 blt_add_library( NAME
@@ -85,3 +85,12 @@ blt_add_library( NAME
                  DEPENDS_ON
                     "${slic_depends_on}"
               )
+install(TARGETS              slic
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/slic
+        )
+install(FILES       ${slic_headers}
+        DESTINATION include/slic
+        )
+

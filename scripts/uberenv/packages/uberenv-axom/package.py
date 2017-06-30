@@ -61,7 +61,7 @@ class UberenvAxom(Package):
     depends_on("mfem~mpi",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.3.1",when="+cmake")
+    depends_on("cmake@3.8.2",when="+cmake")
 
     depends_on("python",    when="+devtools")
     depends_on("doxygen",   when="+devtools")
