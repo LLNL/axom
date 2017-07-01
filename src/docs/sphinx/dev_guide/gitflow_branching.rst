@@ -85,6 +85,9 @@ When a release branch is ready, it is merged into master and master is tagged
 with a new version number. Finally, master is merged back into develop since 
 it may have changed since the release was initiated.
 
+The basic mechanics for generating a new release of the master branch for the 
+Axom project are described in :ref:`release-label`. 
+
 .. important:: **No new features are added to a release branch. Only bug fixes, 
                documentation, and other release-oriented changes go into a 
                release branch.**
