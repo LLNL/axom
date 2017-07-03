@@ -340,6 +340,17 @@ public:
    */
   IndexType getNextValidAttributeIndex(IndexType idx) const;
 
+  /*!
+   * \brief Copy Attribute and default value to Conduit node.
+   *        Return true if attributes were copied.
+   */
+  bool saveAttributeLayout(Node& node) const;
+
+  /*!
+   * \brief Create attributes from name/value pairs in node["attribute"].
+   */
+  void loadAttributeLayout(Node& node);
+
 //@}
 //----------------
 

@@ -45,6 +45,10 @@ const double size_small = 1.2;
 const double size_medium = 2.3;
 const double size_large = 3.4;
 
+// Test protocols
+int nprotocols = 3;
+std::string const protocols[] = { "sidre_json", "sidre_hdf5", "json" };
+
 //------------------------------------------------------------------------------
 // Create attribute in a Datastore
 //
@@ -122,7 +126,7 @@ TEST(sidre_attribute,create_attr)
   EXPECT_EQ(0, attr_index);
 
   Attribute * size = ds->createAttributeScalar(name_size, size_small);
-  EXPECT_TRUE( dump != AXOM_NULLPTR );
+  EXPECT_TRUE( size != AXOM_NULLPTR );
 
   attr_index = size->getIndex();
   EXPECT_EQ(1, attr_index);
@@ -472,6 +476,63 @@ TEST(sidre_attribute,as_node)
   EXPECT_TRUE(node3.schema().dtype().is_empty());
 
   delete ds;
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_attribute,save_ds_attributes)
+{
+  //  bool ok;
+
+  const std::string file_path_base("sidre_attribute_datastore_");
+  DataStore * ds1 = new DataStore();
+
+  // Create attributes for DataStore
+  Attribute * color = ds1->createAttributeString(name_color, color_none);
+  EXPECT_TRUE( color != AXOM_NULLPTR );
+
+  Attribute * dump = ds1->createAttributeScalar(name_dump, dump_no);
+  EXPECT_TRUE( dump != AXOM_NULLPTR );
+
+  Attribute * size = ds1->createAttributeScalar(name_size, size_small);
+  EXPECT_TRUE( size != AXOM_NULLPTR );
+
+  EXPECT_EQ(3, ds1->getNumAttributes());
+
+  Group * root1 = ds1->getRoot();
+
+  for (int i = 0 ; i < nprotocols ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+    root1->save(file_path, protocols[i]);
+  }
+
+  delete ds1;
+
+
+  // Only restore conduit_hdf5
+  for (int i = 1 ; i < 2 ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+
+    DataStore * ds2 = new DataStore();
+    Group * root2 = ds2->getRoot();
+
+    root2->load(file_path, protocols[i]);
+    EXPECT_EQ(3, ds2->getNumAttributes());
+
+    Attribute *attr = ds2->getAttribute(name_color);
+    EXPECT_EQ(color_none, attr->getDefaultNodeRef().as_string());
+
+    attr = ds2->getAttribute(name_dump);
+    EXPECT_EQ(dump_no, attr->getDefaultNodeRef().as_int());
+
+    attr = ds2->getAttribute(name_size);
+    EXPECT_EQ(size_small, attr->getDefaultNodeRef().as_double());
+
+    delete ds2;
+  }
+
 }
 
 //------------------------------------------------------------------------------
