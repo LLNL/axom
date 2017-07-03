@@ -54,7 +54,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
 
-    if ( $ENV{SYS_TYPE} STREQUAL "bgqos_0" )
+    if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
        set_property(
            TARGET quest_regression
            APPEND_STRING PROPERTY LINK_FLAGS ${AXOM_ALLOW_MULTIPLE_DEFINITIONS}
