@@ -47,14 +47,19 @@ namespace spio
  *
  *************************************************************************
  */
-IOManager::IOManager(MPI_Comm comm)
+IOManager::IOManager(MPI_Comm comm,
+                     bool use_scr)
 : m_comm_size(1),
   m_my_rank(0),
   m_baton(AXOM_NULLPTR),
-  m_mpi_comm(comm)
+  m_mpi_comm(comm),
+  m_scr_initialized(use_scr)
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
+  if (use_scr) {
+    SCR_Init(); 
+  }
 }
 
 
@@ -69,6 +74,9 @@ IOManager::~IOManager()
 {
   if (m_baton) {
     delete m_baton;
+  }
+  if (m_scr_initialized) {
+    SCR_Finalize();
   }
 }
 
@@ -93,14 +101,26 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
-  std::string root_name = file_string + ".root";
+  std::string root_string = file_string;
+  if (protocol == "scr_hdf5") { 
+    SCR_Start_checkpoint();
+
+//    char checkpoint_file[256];
+//    sprintf(checkpoint_file, "%s_%6d", file_string.c_str(), m_my_rank);
+    char scr_file[SCR_MAX_FILENAME];
+//    SCR_Route_file(checkpoint_file, scr_file);
+    SCR_Route_file(file_string.c_str(), scr_file);
+    root_string = std::string(scr_file);
+  } 
 
   if (m_my_rank == 0) {
-     createRootFile(file_string, num_files, protocol);
+    createRootFile(root_string, num_files, protocol);
   }
   MPI_Barrier(m_mpi_comm);
 
-  if (protocol == "sidre_hdf5") {
+  std::string root_name = root_string + ".root";
+
+  if (protocol == "sidre_hdf5" || protocol == "scr_hdf5") {
     std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
@@ -153,6 +173,12 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
     datagroup->save(obase, protocol);
   }
   (void)m_baton->pass();
+
+  if (protocol == "scr_hdf5") {
+    MPI_Barrier(m_mpi_comm);
+    int valid = 1;
+    SCR_Complete_checkpoint(valid);
+  }
 }
 
 /*
@@ -315,12 +341,11 @@ void IOManager::createRootFile(const std::string& file_base,
                                int num_files,
                                const std::string& protocol)
 {
-
-  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {
+  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5" || protocol == "scr_hdf5") {
     conduit::Node n;
 
     n["number_of_files"] = num_files;
-    if (protocol == "sidre_hdf5") {
+    if (protocol == "sidre_hdf5" || protocol == "scr_hdf5") {
       std::string local_file_base;
       std::string next;
       std::string slash = "/";
@@ -336,6 +361,32 @@ void IOManager::createRootFile(const std::string& file_base,
     n["protocol/version"] = "0.0";
 
     conduit::relay::io::save(n, file_base + ".root", "hdf5");
+  } else if (protocol == "scr_hdf55") {
+    conduit::Node n;
+
+    n["number_of_files"] = num_files;
+    n["number_of_trees"] = m_comm_size;
+    n["tree_pattern"] = "datagroup_%07d";
+    n["protocol/name"] = protocol;
+    n["protocol/version"] = "0.0";
+    n["file_pattern"] = file_base + "_" + "%07d.scr_hdf5";
+
+    SCR_Start_checkpoint();
+
+    std::string root_name = file_base + ".root";
+    char checkpoint_file[256];
+    sprintf(checkpoint_file, "%s/rank_%d.ckpt", root_name.c_str(), m_my_rank); 
+    char scr_file[SCR_MAX_FILENAME];
+    SCR_Route_file(checkpoint_file, scr_file);
+
+    std::string dir_name;
+    utilities::filesystem::getDirName(dir_name, std::string(scr_file));
+    if (!dir_name.empty()) {
+      utilities::filesystem::makeDirsForPath(dir_name);
+    }
+    conduit::relay::io::save(n, std::string(scr_file), "hdf5");
+    int valid = 1;
+    SCR_Complete_checkpoint(valid);
   } else {
     conduit::Node n;
 

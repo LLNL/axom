@@ -22,6 +22,7 @@
 #define IOPARALLEL_HPP_
 
 #include "mpi.h"
+#include "scr.h"
 #include "hdf5.h"
 
 // Other axom headers
@@ -58,7 +59,7 @@ public:
    *
    * \param com               MPI communicator
    */
-  IOManager(MPI_Comm com);
+  IOManager(MPI_Comm com, bool use_scr = false);
 
   /*!
    * \brief Destructor
@@ -226,6 +227,9 @@ private:
   IOBaton * m_baton;
 
   MPI_Comm m_mpi_comm;
+
+  bool m_scr_initialized;
+
 };
 
 

@@ -31,6 +31,7 @@ class UberenvAxom(Package):
     depends_on("conduit~shared~cmake",when="~cmake")
     
     depends_on("hdf5~cxx~shared~fortran")
+    depends_on("scr")
 
     # optional tpl builds
     depends_on("cmake@3.3.1",when="+cmake")
@@ -127,6 +128,9 @@ class UberenvAxom(Package):
 
         cfg.write("# hdf5 from uberenv\n")
         cfg.write(cmake_cache_entry("HDF5_DIR",spec['hdf5'].prefix))
+
+        cfg.write("# scr from uberenv\n")
+        cfg.write('set(SCR_DIR "%s" CACHE PATH "")\n\n' % spec['scr'].prefix)
 
         cfg.write("# conduit from uberenv\n")
         cfg.write(cmake_cache_entry("CONDUIT_DIR",spec['conduit'].prefix))
