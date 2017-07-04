@@ -43,7 +43,7 @@ const int dump_yes = 1;
 const std::string name_size("size");
 const double size_small = 1.2;
 const double size_medium = 2.3;
-const double size_large = 3.4;
+// const double size_large = 3.4;
 
 //------------------------------------------------------------------------------
 // Create attribute in a Datastore
