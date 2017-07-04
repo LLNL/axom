@@ -72,6 +72,14 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(AttrValues);
 
   /*!
+   * \brief Return true if attribute is set in value.
+   */
+  static bool isEmpty(Node & value)
+  {
+    return value.schema().dtype().is_empty();
+  }
+
+  /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
   bool hasValue(const Attribute * attr) const;
@@ -168,6 +176,23 @@ private:
     static const Node empty;
     return empty;
   }
+
+  /*!
+   * \brief Return first valid Attribute index in DataStore object
+   *        (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if AttrValue has no Attributes.
+   */
+  IndexType getFirstValidAttributeIndex() const;
+
+  /*!
+   * \brief Return next valid Attribute index in DataStore object after given index
+   *        (i.e., smallest index over all Attribute indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   */
+  IndexType getNextValidAttributeIndex(IndexType idx) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor

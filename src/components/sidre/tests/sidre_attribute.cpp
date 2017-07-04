@@ -483,6 +483,7 @@ TEST(sidre_attribute,as_node)
 TEST(sidre_attribute,save_ds_attributes)
 {
   //  bool ok;
+  int idata[5], *bdata;
 
   const std::string file_path_base("sidre_attribute_datastore_");
   DataStore * ds1 = new DataStore();
@@ -501,6 +502,42 @@ TEST(sidre_attribute,save_ds_attributes)
 
   Group * root1 = ds1->getRoot();
 
+  // empty
+  View  * view1a = root1->createView("empty");
+  view1a->setAttributeString(color, "color-empty");
+  view1a->setAttributeScalar(dump, 1);
+  view1a->setAttributeScalar(size, 10.5);
+
+  // buffer
+  View  * view1b = root1->createViewAndAllocate("buffer", INT_ID, 5);
+  bdata = view1b->getData();
+  view1b->setAttributeString(color, "color-buffer");
+  view1b->setAttributeScalar(size, 20.5);
+
+  // external
+  View  * view1c = root1->createView("external", INT_ID, 5, idata);
+  view1c->setAttributeScalar(size, 30.5);
+
+  // scalar
+  View  * view1d = root1->createViewScalar("scalar", 1);
+  view1d->setAttributeString(color, "color-scalar");
+
+  // string
+  View  * view1e = root1->createViewString("string", "value");
+  view1e->setAttributeString(color, "color-string");
+
+  // empty without attributes
+  root1->createView("empty-no-attributes");
+
+  for (int i=0; i < 5; i++) 
+  {
+    idata[i] = i;
+    bdata[i] = i;
+  }
+
+
+  //----------------------------------------
+
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
@@ -509,7 +546,7 @@ TEST(sidre_attribute,save_ds_attributes)
 
   delete ds1;
 
-
+  //----------------------------------------
   // Only restore conduit_hdf5
   for (int i = 1 ; i < 2 ; ++i)
   {

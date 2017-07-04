@@ -1011,6 +1011,29 @@ public:
     return m_attr_values.getValueNodeRef(attr);
   }
 
+  /*!
+   * \brief Return first valid Attribute index in View object
+   *        (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if View has no Attributes.
+   */
+  IndexType getFirstValidAttributeIndex() const
+  {
+    return m_attr_values.getFirstValidAttributeIndex();
+  }
+
+  /*!
+   * \brief Return next valid Attribute index in View object after given index
+   *        (i.e., smallest index over all Attribute indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   */
+  IndexType getNextValidAttributeIndex(IndexType idx) const
+  {
+    return m_attr_values.getNextValidAttributeIndex(idx);
+  }
+
 //@}
 
 
@@ -1130,6 +1153,11 @@ private:
    * \brief Restore a view's description from a conduit tree.
    */
   void importDescription(conduit::Node& data_holder);
+
+  /*!
+   * \brief Add view's attributes to a conduit tree.
+   */
+  void exportAttribute(conduit::Node& data_holder) const;
 
   /*!
    *  \brief Private method to remove any applied description;

@@ -64,7 +64,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 
   Node & value = (*m_values)[iattr];
   
-  if (value.schema().dtype().is_empty())
+  if (isEmpty(value))
   {
     return false;
   }
@@ -232,12 +232,61 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 
   Node & value = (*m_values)[iattr];
   
-  if (value.schema().dtype().is_empty())
+  if (isEmpty(value))
   {
     return attr->getDefaultNodeRef();
   }
 
   return value;
+}
+
+/*
+ *************************************************************************
+ * Return first valid Attribute index in DataStore object
+ * (i.e., smallest index over all Attributes).
+ *
+ * sidre::InvalidIndex is returned if DataStore has no Attributes.
+ *************************************************************************
+ */
+IndexType AttrValues::getFirstValidAttributeIndex() const
+{
+  if (m_values == AXOM_NULLPTR)
+  {
+    // No attributes have been set in this View.
+    return InvalidIndex;
+  }
+
+  for(size_t iattr = 0; iattr < m_values->size(); ++iattr)
+  {
+    // Find first, non-empty attribute.
+    Node & value = (*m_values)[iattr];
+    if (! isEmpty(value))
+    {
+      return iattr;
+    }
+  }
+
+  return InvalidIndex;
+}
+
+/*
+ *************************************************************************
+ * Return next valid Attribute index in DataStore object after given index
+ * (i.e., smallest index over all Attribute indices larger than given one).
+ *
+ * sidre::InvalidIndex is returned if there is no valid index greater
+ * than given one.
+ *************************************************************************
+ */
+IndexType AttrValues::getNextValidAttributeIndex(IndexType idx) const
+{
+  idx++;
+  while ( static_cast<unsigned>(idx) < m_values->size() &&
+          isEmpty((*m_values)[idx]))
+  {
+    idx++;
+  }
+  return ( (static_cast<unsigned>(idx) < m_values->size()) ? idx : InvalidIndex );
 }
 
 /*
