@@ -11,7 +11,7 @@
 
 /*!
  *******************************************************************************
- * \file octree_driver.cpp
+ * \file containment_driver.cpp
  * \brief Basic demo of point containment acceleration structure over surfaces.
  *******************************************************************************
  */

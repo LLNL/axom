@@ -64,7 +64,7 @@ static struct {
 //------------------------------------------------------------------------------
 void showHelp()
 {
-  SLIC_INFO("Usage: ./quest_driver --file <myfile.stl> [options]" );
+  SLIC_INFO("Usage: ./quest_distance_driver_ex --file <myfile.stl> [options]" );
   SLIC_INFO("--file <file> specifies the STL file of the input surface mesh.");
   SLIC_INFO("--maxLevels <N> max levels for BVH decomposition.");
   SLIC_INFO("--maxObjects <N> max objects in a BVH bin (for refinement).");
