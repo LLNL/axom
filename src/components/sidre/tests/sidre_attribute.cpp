@@ -480,7 +480,7 @@ TEST(sidre_attribute,as_node)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_attribute,save_ds_attributes)
+TEST(sidre_attribute,save_attributes)
 {
   //  bool ok;
   int idata[5], *bdata;
@@ -503,27 +503,27 @@ TEST(sidre_attribute,save_ds_attributes)
   Group * root1 = ds1->getRoot();
 
   // empty
-  View  * view1a = root1->createView("empty");
+  View * view1a = root1->createView("empty");
   view1a->setAttributeString(color, "color-empty");
   view1a->setAttributeScalar(dump, 1);
   view1a->setAttributeScalar(size, 10.5);
 
   // buffer
-  View  * view1b = root1->createViewAndAllocate("buffer", INT_ID, 5);
+  View * view1b = root1->createViewAndAllocate("buffer", INT_ID, 5);
   bdata = view1b->getData();
   view1b->setAttributeString(color, "color-buffer");
   view1b->setAttributeScalar(size, 20.5);
 
   // external
-  View  * view1c = root1->createView("external", INT_ID, 5, idata);
+  View * view1c = root1->createView("external", INT_ID, 5, idata);
   view1c->setAttributeScalar(size, 30.5);
 
   // scalar
-  View  * view1d = root1->createViewScalar("scalar", 1);
+  View * view1d = root1->createViewScalar("scalar", 1);
   view1d->setAttributeString(color, "color-scalar");
 
   // string
-  View  * view1e = root1->createViewString("string", "value");
+  View * view1e = root1->createViewString("string", "value");
   view1e->setAttributeString(color, "color-string");
 
   // empty without attributes
@@ -558,6 +558,8 @@ TEST(sidre_attribute,save_ds_attributes)
     root2->load(file_path, protocols[i]);
     EXPECT_EQ(3, ds2->getNumAttributes());
 
+    // Check available attributes
+
     Attribute *attr = ds2->getAttribute(name_color);
     EXPECT_EQ(color_none, attr->getDefaultNodeRef().as_string());
 
@@ -566,6 +568,39 @@ TEST(sidre_attribute,save_ds_attributes)
 
     attr = ds2->getAttribute(name_size);
     EXPECT_EQ(size_small, attr->getDefaultNodeRef().as_double());
+
+    // Check attributes assigned to Views
+
+    View * view1a = root2->getView("empty");
+    EXPECT_TRUE(view1a->hasAttributeValue(name_color));
+    EXPECT_TRUE(view1a->hasAttributeValue(name_dump));
+    EXPECT_TRUE(view1a->hasAttributeValue(name_size));
+    // XXX check values of attributes
+    
+    View * view1b = root2->getView("buffer");
+    EXPECT_TRUE(view1b->hasAttributeValue(name_color));
+    EXPECT_FALSE(view1b->hasAttributeValue(name_dump));
+    EXPECT_TRUE(view1b->hasAttributeValue(name_size));
+
+    View * view1c = root2->getView("external");
+    EXPECT_FALSE(view1c->hasAttributeValue(name_color));
+    EXPECT_FALSE(view1c->hasAttributeValue(name_dump));
+    EXPECT_TRUE(view1c->hasAttributeValue(name_size));
+
+    View * view1d = root2->getView("scalar");
+    EXPECT_TRUE(view1d->hasAttributeValue(name_color));
+    EXPECT_FALSE(view1d->hasAttributeValue(name_dump));
+    EXPECT_FALSE(view1d->hasAttributeValue(name_size));
+
+    View * view1e = root2->getView("string");
+    EXPECT_TRUE(view1e->hasAttributeValue(name_color));
+    EXPECT_FALSE(view1e->hasAttributeValue(name_dump));
+    EXPECT_FALSE(view1e->hasAttributeValue(name_size));
+
+    View * view1f = root2->getView("empty-no-attributes");
+    EXPECT_FALSE(view1f->hasAttributeValue(name_color));
+    EXPECT_FALSE(view1f->hasAttributeValue(name_dump));
+    EXPECT_FALSE(view1f->hasAttributeValue(name_size));
 
     delete ds2;
   }

@@ -82,7 +82,7 @@ private:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasValue(const Attribute * attr) const;
+  bool hasValue( IndexType iattr ) const;
 
   /*!
    * \brief Create a Conduit Node to store an attribute.
@@ -99,7 +99,7 @@ private:
   bool setToDefault(const Attribute * attr);
 
   /*!
-   * \brief Set attribute value.
+   * \brief Set attribute value from a scalar.
    */
   template<typename ScalarType>
   bool setScalar(const Attribute * attr, ScalarType value)
@@ -126,7 +126,7 @@ private:
   }
 
   /*!
-   * \brief Set attribute value.
+   * \brief Set attribute value from a string.
    */
   bool setString(const Attribute * attr, const std::string & value)
   {
@@ -147,6 +147,23 @@ private:
     {
       IndexType iattr = attr->getIndex();
       (*m_values)[iattr] = value;
+    }
+    return ok;
+  }
+
+  /*!
+   * \brief Set attribute value from a Node.
+   *
+   * Used when restoring attributes from a file.
+   * The type of node is not check.
+   */
+  bool setNode(const Attribute * attr, const Node & node)
+  {
+    bool ok = createNode(attr);
+    if (ok)
+    {
+      IndexType iattr = attr->getIndex();
+      (*m_values)[iattr] = node;
     }
     return ok;
   }

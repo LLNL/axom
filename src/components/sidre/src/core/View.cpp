@@ -1135,6 +1135,7 @@ void View::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
   m_state = getStateId(data_holder["state"].as_string());
+  importAttribute(data_holder);
 
   switch (m_state)
   {
@@ -1255,6 +1256,33 @@ void View::exportAttribute(conduit::Node& data_holder) const
 /*
  *************************************************************************
  *
+ * PRIVATE method to restore a view's attributes from a conduit tree.
+ *
+ *************************************************************************
+ */
+void View::importAttribute(conduit::Node& data_holder)
+{
+  if (data_holder.has_path("attribute"))
+  {
+    conduit::NodeIterator attrs_itr = data_holder["attribute"].children();
+    while (attrs_itr.has_next())
+    {
+      Node& n_attr = attrs_itr.next();
+      std::string attr_name = attrs_itr.name();
+
+      Attribute * attr = 
+	getOwningGroup()->getDataStore()->getAttribute(attr_name);
+      if (attr != AXOM_NULLPTR)
+      {
+	m_attr_values.setNode(attr, n_attr);
+      }
+    }
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Rename this View with a new string name.
  *
  *************************************************************************
@@ -1295,6 +1323,47 @@ bool View::rename(const std::string& new_name)
   }
 
   return do_rename;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if the attribute has been explicitly set; else false.
+ *
+ *************************************************************************
+ */
+bool View::hasAttributeValue( const std::string & name ) const
+{
+  const Attribute * attr = 
+    getOwningGroup()->getDataStore()->getAttribute(name);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return false;
+  }
+
+  IndexType iattr = attr->getIndex();
+  return m_attr_values.hasValue(iattr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if the attribute has been explicitly set; else false.
+ *
+ *************************************************************************
+ */
+bool View::hasAttributeValue( const Attribute * attr ) const
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "hasAttributeValue: called without an Attribute");
+    return false;
+  }
+    
+  IndexType iattr = attr->getIndex();
+  return m_attr_values.hasValue(iattr);
 }
 
 } /* end namespace sidre */

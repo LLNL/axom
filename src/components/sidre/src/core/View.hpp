@@ -951,10 +951,20 @@ public:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const Attribute * attr ) const
+  bool hasAttributeValue( IndexType iattr ) const
   {
-    return m_attr_values.hasValue(attr);
+    return m_attr_values.hasValue(iattr);
   }
+
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttributeValue( const std::string & name ) const;
+
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttributeValue( const Attribute * attr ) const;
 
   /*!
    * \brief Set Attribute to its default value.
@@ -1158,6 +1168,11 @@ private:
    * \brief Add view's attributes to a conduit tree.
    */
   void exportAttribute(conduit::Node& data_holder) const;
+
+  /*!
+   * \brief Restore a view's attributes from a conduit tree.
+   */
+  void importAttribute(conduit::Node& data_holder);
 
   /*!
    *  \brief Private method to remove any applied description;
