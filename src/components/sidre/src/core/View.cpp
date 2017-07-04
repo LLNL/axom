@@ -1084,6 +1084,7 @@ void View::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
   data_holder["state"] = getStateStringName(m_state);
+  exportAttribute(data_holder);
 
   switch (m_state)
   {
@@ -1092,7 +1093,6 @@ void View::exportTo(conduit::Node& data_holder,
     {
       exportDescription(data_holder);
     }
-    exportAttribute(data_holder["attribute"]);
     break;
   case BUFFER: {
     IndexType buffer_id = getBuffer()->getIndex();
@@ -1101,7 +1101,6 @@ void View::exportTo(conduit::Node& data_holder,
     {
       exportDescription(data_holder);
     }
-    exportAttribute(data_holder["attribute"]);
     data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     buffer_indices.insert(buffer_id);
     break;
@@ -1116,12 +1115,10 @@ void View::exportTo(conduit::Node& data_holder,
       // If there is no description, make it an EMPTY view
       data_holder["state"] = getStateStringName(EMPTY);
     }
-    exportAttribute(data_holder["attribute"]);
     break;
   case SCALAR:
   case STRING:
     data_holder["value"] = getNode();
-    exportAttribute(data_holder["attribute"]);
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -1228,25 +1225,30 @@ void View::importDescription(conduit::Node& data_holder)
  *************************************************************************
  *
  * PRIVATE method to save view's attributes to a conduit tree.
+ * Only add "attribute" Node if the View has any attributes.
  *
  *************************************************************************
  */
 void View::exportAttribute(conduit::Node& data_holder) const
 {
-  data_holder.set(DataType::object());
-
-  //  bool hasAttributes = false;
-
   IndexType aidx = getFirstValidAttributeIndex();
+
+  if (aidx == InvalidIndex)
+  {
+    return;
+  }
+
+  Node & node = data_holder["attribute"];
+  node.set(DataType::object());
+
   while ( indexIsValid(aidx) )
   {
     const Attribute * attr =
       getOwningGroup()->getDataStore()->getAttribute(aidx);
 
-    data_holder[attr->getName()] = getAttributeNodeRef(attr);
+    node[attr->getName()] = getAttributeNodeRef(attr);
 
     aidx = getNextValidAttributeIndex(aidx);
-    //    hasAttributes = true;
   }
 }
 
