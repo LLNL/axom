@@ -28,11 +28,7 @@ endif()
 
 if ( ENABLE_MPI )
     list(APPEND lulesh_depends_on mpi)
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} USE_MPI=1 ")
-else()
-    set(luleshExtraCompileFlags "${luleshExtraCompileFlags} USE_MPI=0 ")
 endif()
-#message(STATUS " luleshExtraCompileFlags is '${luleshExtraCompileFlags}'")
 
 set_source_files_properties(${lulesh_sources} ${lulesh_headers} 
     PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
@@ -50,4 +46,10 @@ else()
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         )
+endif()
+
+if ( ENABLE_MPI )
+    target_compile_definitions(slam_lulesh_orig PRIVATE USE_MPI=1)
+else()
+    target_compile_definitions(slam_lulesh_orig PRIVATE USE_MPI=0)
 endif()
