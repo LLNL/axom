@@ -21,6 +21,7 @@
 
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
+#include "primal/OrientedBoundingBox.hpp"
 
 namespace axom {
 namespace primal {
@@ -196,6 +197,37 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 #undef A
 #undef B
 #undef C
+}
+
+template < typename T, int NDIMS >
+Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
+  const OrientedBoundingBox< T, NDIMS >& obb)
+{
+  if (obb.contains(pt)) return pt;
+
+  Vector< T, NDIMS > c = obb.centroid();
+  Vector< T, NDIMS > e = obb.extents();
+  Vector< T, NDIMS > u[NDIMS];
+  obb.axes(u);
+
+  Vector< T, NDIMS > d = Vector< T, NDIMS >(pt) - c;
+  Vector< T, NDIMS > res(c);
+
+  for (int i = 0; i < NDIMS; i++) {
+    // since the local coordinates are individually constrained, we can simply
+    // choose the "best" local coordinate in each axis direction
+    T dot = d.dot(u[i]);
+
+    if (abs< T >(dot) <= e[i]) {
+      res += dot*u[i];
+    } else if (dot > e[i]) {
+      res += e[i]*u[i];
+    } else {
+      res -= e[i]*u[i];
+    }
+  }
+
+  return Point< T, NDIMS >(res.array());
 }
 
 } /* namespace primal */
