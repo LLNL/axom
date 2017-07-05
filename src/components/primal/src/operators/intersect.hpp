@@ -19,6 +19,7 @@
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 
+#include "primal/OrientedBoundingBox.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
@@ -207,6 +208,127 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
 {
   return detail::intersect_tri_segment(tri, seg, t);
 }
+
+template < typename T >
+bool intersect(const OrientedBoundingBox< T, 1 > & b1,
+  const OrientedBoundingBox< T, 1 >& b2)
+{
+  T c1 = b1.centroid().array()[0];
+  T c2 = b2.centroid().array()[0];
+
+  T e1 = b1.extents()[0];
+  T e2 = b2.extents()[0];
+
+  if (c1 + e1 > c2 - e2) return true;
+  if (c2 + e2 > c1 - e1) return true;
+
+  return false;
+}
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a 2D OBB intersects a 2D OBB.
+ * \param [in] b1 A 2D OrientedBoundingBox
+ * \param [in] b2 A 2D OrientedBoundingBox
+ * \return true iff b1 intersects with b2, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const OrientedBoundingBox< T, 2 >& b1,
+  const OrientedBoundingBox< T, 2 >& b2)
+{
+  Vector< T, 2 > c1(b1.centroid());
+  Vector< T, 2 > c2(b2.centroid());
+
+  Vector< T, 2 > e1 = b1.extents();
+  Vector< T, 2 > e2 = b2.extents();
+
+  Vector< T, 2 > u1[2];
+  b1.axes(u1);
+  Vector< T, 2 > u2[2];
+  b2.axes(u2);
+
+  Vector< T, 2 > d = c2 - c1;
+
+  for (int i = 0; i < 2; i++) {
+    if (abs< T >(d.dot(u1[i])) > e1[i] + abs< T >((e2[0]*u2[0]).dot(u1[i]))
+        + abs< T >((e2[1]*u2[1]).dot(u1[i]))) {
+      return false;
+    }
+  }
+
+  for (int i = 0; i < 2; i++) {
+    if (abs< T >(d.dot(u2[i])) > e2[i] + abs< T >((e1[0]*u1[0]).dot(u2[i]))
+        + abs< T >((e1[1]*u1[1]).dot(u2[i]))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/*!
+ *******************************************************************************
+ * \brief Determines if a 3D OBB intersects a 3D OBB.
+ * \param [in] b1 A 3D OrientedBoundingBox
+ * \param [in] b2 A 3D OrientedBoundingBox
+ * \return true iff b1 intersects with b2, otherwise, false.
+ *******************************************************************************
+ */
+template < typename T >
+bool intersect(const OrientedBoundingBox< T, 3 >& b1,
+  const OrientedBoundingBox< T, 3 >& b2)
+{
+  static const double EPS = 1.0e-4;
+  Vector< T, 3 > d = Vector< T, 3 >(b1.centroid())
+    - Vector< T, 3 >(b2.centroid());
+
+  Vector< T, 3 > e1 = b1.extents();
+  Vector< T, 3 > e2 = b2.extents();
+
+  Vector< T, 3 > u1[3];
+  b1.axes(u1);
+  Vector< T, 3 > u2[3];
+  b2.axes(u2);
+
+  // compute r and r^T here:
+  Vector< T, 3 > r[3];
+  Vector< T, 3 > rt[3];
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      r[i][j] = abs< T >(u1[i].dot(u2[j]));
+      rt[i][j] = abs< T >(u1[j].dot(u2[i]));
+    }
+  }
+
+  // check for separating planes parallel to faces
+  for (int i = 0; i < 3; i++) {
+    if (abs< T >(d.dot(u1[i])) > e1[i] + e2.dot(r[i]) + EPS) {
+      return false;
+    }
+  }
+
+  for (int i = 0; i < 3; i++) {
+    if (abs< T >(d.dot(u2[i])) > e2[i] + e1.dot(rt[i]) + EPS) return false;
+  }
+
+  // check for separating planes with normals parallel to cross product of edges
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      T left = abs< T >(d.dot(u1[(i + 2) % 3])*r[(i + 1) % 3][j]
+        - (d.dot(u1[(i + 1) % 3])*r[(i + 2) % 3][j]));
+      T right = (e1[(i + 1) % 3]*r[(i + 2) % 3][j]
+        + e1[(i + 2) % 3]*r[(i + 1) % 3][j]);
+      right += (e2[(i + 1) % 3]*r[i][(j + 2) % 3]
+        + e2[(i + 2) % 3]*r[i][(j + 1) % 3]);
+      if (left > right + EPS) return false;
+    }
+  }
+
+  // didn't find a separating anything
+  return true;
+}
+
 
 } /* namespace primal */
 } /* namespace axom */
