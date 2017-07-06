@@ -240,13 +240,13 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 
 /*
  *************************************************************************
- * Return first valid Attribute index in DataStore object
+ * Return first valid Attribute index for a set Attribute.
  * (i.e., smallest index over all Attributes).
  *
  * sidre::InvalidIndex is returned if DataStore has no Attributes.
  *************************************************************************
  */
-IndexType AttrValues::getFirstValidAttributeIndex() const
+IndexType AttrValues::getFirstValidAttrValueIndex() const
 {
   if (m_values == AXOM_NULLPTR)
   {
@@ -269,15 +269,22 @@ IndexType AttrValues::getFirstValidAttributeIndex() const
 
 /*
  *************************************************************************
- * Return next valid Attribute index in DataStore object after given index
- * (i.e., smallest index over all Attribute indices larger than given one).
+ * Return next valid Attribute index for a set Attribute after given
+ * index (i.e., smallest index over all Attribute indices larger than
+ * given one).
  *
  * sidre::InvalidIndex is returned if there is no valid index greater
  * than given one.
+ * getNextAttrValueIndex(InvalidIndex) returns InvalidIndex.
  *************************************************************************
  */
-IndexType AttrValues::getNextValidAttributeIndex(IndexType idx) const
+IndexType AttrValues::getNextValidAttrValueIndex(IndexType idx) const
 {
+  if (idx == InvalidIndex)
+  {
+    return InvalidIndex;
+  }
+
   idx++;
   while ( static_cast<unsigned>(idx) < m_values->size() &&
           isEmpty((*m_values)[idx]))

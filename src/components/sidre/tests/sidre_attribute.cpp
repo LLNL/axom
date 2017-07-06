@@ -17,6 +17,7 @@ using axom::sidre::Attribute;
 using axom::sidre::Group;
 using axom::sidre::View;
 using axom::sidre::IndexType;
+using axom::sidre::InvalidIndex;
 using axom::sidre::Node;
 using axom::sidre::DOUBLE_ID;
 using axom::sidre::INT_ID;
@@ -480,6 +481,109 @@ TEST(sidre_attribute,as_node)
 
 //------------------------------------------------------------------------------
 
+// Query Attributes on a View
+
+TEST(sidre_attribute, loop_attributes)
+{
+  DataStore * ds = new DataStore();
+
+  // Create attributes for DataStore
+  Attribute * color = ds->createAttributeString(name_color, color_none);
+  IndexType icolor = color->getIndex();
+  EXPECT_EQ(0, icolor);
+
+  Attribute * dump = ds->createAttributeScalar(name_dump, dump_no);
+  IndexType idump = dump->getIndex();
+  EXPECT_EQ(1, idump);
+
+  Attribute * size = ds->createAttributeScalar(name_size, size_small);
+  IndexType isize = size->getIndex();
+  EXPECT_EQ(2, isize);
+
+  {
+    IndexType idx1 = ds->getFirstValidAttributeIndex();
+    EXPECT_EQ(0, idx1);
+    IndexType idx2 = ds->getNextValidAttributeIndex(idx1);
+    EXPECT_EQ(1, idx2);
+    IndexType idx3 = ds->getNextValidAttributeIndex(idx2);
+    EXPECT_EQ(2, idx3);
+    IndexType idx4 = ds->getNextValidAttributeIndex(idx3);
+    EXPECT_EQ(InvalidIndex, idx4);
+    IndexType idx5 = ds->getNextValidAttributeIndex(idx4);
+    EXPECT_EQ(InvalidIndex, idx5);
+  }
+
+  //----------------------------------------
+  Group * root = ds->getRoot();
+
+  // set all attributes
+  View * view1 = root->createView("view1");
+  view1->setAttributeString(color, color_red);
+  view1->setAttributeScalar(dump, dump_yes);
+  view1->setAttributeScalar(size, size_large);
+
+  {
+    IndexType idx1 = view1->getFirstValidAttrValueIndex();
+    EXPECT_EQ(0, idx1);
+    IndexType idx2 = view1->getNextValidAttrValueIndex(idx1);
+    EXPECT_EQ(1, idx2);
+    IndexType idx3 = view1->getNextValidAttrValueIndex(idx2);
+    EXPECT_EQ(2, idx3);
+    IndexType idx4 = view1->getNextValidAttrValueIndex(idx3);
+    EXPECT_EQ(InvalidIndex, idx4);
+  }
+
+  // set first attribute
+  View * view2 = root->createView("view2");
+  view2->setAttributeString(color, color_red);
+
+  {
+    IndexType idx1 = view2->getFirstValidAttrValueIndex();
+    EXPECT_EQ(0, idx1);
+    IndexType idx2 = view2->getNextValidAttrValueIndex(idx1);
+    EXPECT_EQ(InvalidIndex, idx2);
+  }
+
+  // set last attribute
+  View * view3 = root->createView("view3");
+  view3->setAttributeScalar(size, size_large);
+
+  {
+    IndexType idx1 = view3->getFirstValidAttrValueIndex();
+    EXPECT_EQ(2, idx1);
+    IndexType idx2 = view3->getNextValidAttrValueIndex(idx1);
+    EXPECT_EQ(InvalidIndex, idx2);
+  }
+
+  // set first and last attributes
+  View * view4 = root->createView("view4");
+  view4->setAttributeString(color, color_red);
+  view4->setAttributeScalar(size, size_large);
+
+  {
+    IndexType idx1 = view4->getFirstValidAttrValueIndex();
+    EXPECT_EQ(0, idx1);
+    IndexType idx2 = view4->getNextValidAttrValueIndex(idx1);
+    EXPECT_EQ(2, idx2);
+    IndexType idx3 = view4->getNextValidAttrValueIndex(idx2);
+    EXPECT_EQ(InvalidIndex, idx3);
+  }
+
+  // no attributes
+  View * view5 = root->createView("view5");
+
+  {
+    IndexType idx1 = view5->getFirstValidAttrValueIndex();
+    EXPECT_EQ(InvalidIndex, idx1);
+    IndexType idx2 = view5->getNextValidAttrValueIndex(idx1);
+    EXPECT_EQ(InvalidIndex, idx2);
+  }
+
+  // XXX - now delete attribute and check again
+}
+
+//------------------------------------------------------------------------------
+
 TEST(sidre_attribute,save_attributes)
 {
   //  bool ok;
@@ -534,7 +638,6 @@ TEST(sidre_attribute,save_attributes)
     idata[i] = i;
     bdata[i] = i;
   }
-
 
   //----------------------------------------
 

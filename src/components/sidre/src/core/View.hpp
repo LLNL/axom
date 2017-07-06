@@ -1022,26 +1022,28 @@ public:
   }
 
   /*!
-   * \brief Return first valid Attribute index in View object
-   *        (i.e., smallest index over all Attributes).
+   * \brief Return first valid Attribute index for a set Attribute in
+   *        View object (i.e., smallest index over all Attributes).
    *
-   * sidre::InvalidIndex is returned if View has no Attributes.
+   * sidre::InvalidIndex is returned if View has no Attributes set.
    */
-  IndexType getFirstValidAttributeIndex() const
+  IndexType getFirstValidAttrValueIndex() const
   {
-    return m_attr_values.getFirstValidAttributeIndex();
+    return m_attr_values.getFirstValidAttrValueIndex();
   }
 
   /*!
-   * \brief Return next valid Attribute index in View object after given index
-   *        (i.e., smallest index over all Attribute indices larger than given one).
+   * \brief Return next valid Attribute index for a set Attribute in
+   *        View object after given index (i.e., smallest index over
+   *        all Attribute indices larger than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
+   * getNextAttrValueIndex(InvalidIndex) returns InvalidIndex.
    */
-  IndexType getNextValidAttributeIndex(IndexType idx) const
+  IndexType getNextValidAttrValueIndex(IndexType idx) const
   {
-    return m_attr_values.getNextValidAttributeIndex(idx);
+    return m_attr_values.getNextValidAttrValueIndex(idx);
   }
 
 //@}

@@ -195,21 +195,23 @@ private:
   }
 
   /*!
-   * \brief Return first valid Attribute index in DataStore object
+   * \brief Return first valid Attribute index for a set Attribute.
    *        (i.e., smallest index over all Attributes).
    *
    * sidre::InvalidIndex is returned if AttrValue has no Attributes.
    */
-  IndexType getFirstValidAttributeIndex() const;
+  IndexType getFirstValidAttrValueIndex() const;
 
   /*!
-   * \brief Return next valid Attribute index in DataStore object after given index
-   *        (i.e., smallest index over all Attribute indices larger than given one).
+   * \brief Return next valid Attribute index for a set Attribute
+   *        after given index (i.e., smallest index over all Attribute
+   *        indices larger than given one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
+   * getNextAttrValueIndex(InvalidIndex) returns InvalidIndex.
    */
-  IndexType getNextValidAttributeIndex(IndexType idx) const;
+  IndexType getNextValidAttrValueIndex(IndexType idx) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor

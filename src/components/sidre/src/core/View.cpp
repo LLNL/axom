@@ -1232,7 +1232,7 @@ void View::importDescription(conduit::Node& data_holder)
  */
 void View::exportAttribute(conduit::Node& data_holder) const
 {
-  IndexType aidx = getFirstValidAttributeIndex();
+  IndexType aidx = getFirstValidAttrValueIndex();
 
   if (aidx == InvalidIndex)
   {
@@ -1249,7 +1249,7 @@ void View::exportAttribute(conduit::Node& data_holder) const
 
     node[attr->getName()] = getAttributeNodeRef(attr);
 
-    aidx = getNextValidAttributeIndex(aidx);
+    aidx = getNextValidAttrValueIndex(aidx);
   }
 }
 
