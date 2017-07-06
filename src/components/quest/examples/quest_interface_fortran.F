@@ -14,7 +14,7 @@
 ! NOTE: assumes a "sphere.stl" file exists in the working directory.
 !-------------------------------------------------------------------------------
 
-module quest_fortran_usage_test
+module quest_interface_ex
 
 #include "axom/config.hpp"
 
@@ -160,7 +160,7 @@ contains
     call quest_finalize()
   end subroutine run_containment_queries
 
-end module quest_fortran_usage_test
+end module quest_interface_ex
 
 
 !-------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ end module quest_fortran_usage_test
 !-------------------------------------------------------------------------------
 program quest_fortran
 
-  use quest_fortran_usage_test
+  use quest_interface_ex
 
   implicit none
 

@@ -3,13 +3,13 @@
 # List of single source file examples
 #
 set(example_sources
-    sidre_stressgroups_example.cpp
-    sidre_shocktube_example.cpp
+    sidre_stressgroups.cpp
+    sidre_shocktube.cpp
 )
 
 
 set(F_example_sources
-    sidre_shocktube_F_example.f
+    sidre_shocktube_F.f
 )
 
 
@@ -25,28 +25,28 @@ endif()
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
     blt_add_executable(
-        NAME ${exe_name}
+        NAME ${exe_name}_ex
         SOURCES ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
     blt_add_test(
         NAME ${exe_name}
-        COMMAND ${exe_name})
+        COMMAND ${exe_name}_ex )
 endforeach()
 
 if(ENABLE_FORTRAN)
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
         blt_add_executable(
-            NAME ${exe_name}
+            NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
             DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
         blt_add_test(
             NAME ${exe_name}
-            COMMAND ${exe_name})
+            COMMAND ${exe_name}_ex )
     endforeach()
-    set_target_properties(${exe_name} PROPERTIES LINKER_LANGUAGE Fortran)
+    set_target_properties(${exe_name}_ex PROPERTIES LINKER_LANGUAGE Fortran)
 #   set_target_properties(${exe_name} PROPERTIES Fortran_FORMAT "FREE")
 endif()
 

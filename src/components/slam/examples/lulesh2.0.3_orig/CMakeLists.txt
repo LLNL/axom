@@ -35,7 +35,7 @@ set_source_files_properties(${lulesh_sources} ${lulesh_headers}
 
 
 blt_add_executable(
-    NAME        slam_lulesh_orig
+    NAME        slam_lulesh_orig_ex
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     USE_OPENMP  ${ENABLE_OPENMP}
