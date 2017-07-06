@@ -16,19 +16,20 @@ set(bench_slic_tests
 #
 foreach(test ${gtest_slic_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}
+    blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON slic gtest )
     blt_add_test( NAME ${test_name} 
-                  COMMAND ${test_name} )
+                  COMMAND ${test_name}_test )
 endforeach()
 
-blt_add_executable( NAME slic_fmt
+blt_add_executable( NAME slic_fmt_test
                     SOURCES slic_fmt.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON slic gtest fmt )
-blt_add_test( NAME slic_fmt COMMAND slic_fmt )
+blt_add_test( NAME slic_fmt 
+              COMMAND slic_fmt_test )
 
 
 
