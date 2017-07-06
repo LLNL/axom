@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_08_21_38_20/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/cmake-3.3.1-2ffcsc32b75exq6yu3baa7n7yk5rnael/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_05_12_33_02/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187/cmake-3.8.2-j2jm67xewe7ranc7e55soktrlchvey3k/bin/cmake
 
 #######
 # using intel@15.0.187 compiler spec
@@ -25,13 +25,13 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-15.0.187/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_08_21_38_20/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_05_12_33_02/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.187" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-dvlk5aqfby3atjbqefigk6ugby5dk5yy" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-ldvfo5r46mpnc2taxmwm6lt2sa53qomi" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-ykk4uxptqllgfoeevc7k3s5gabn6txhm" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-wcjbff3t4wldquuorpfgz3z3ykdahoe4" CACHE PATH "")
@@ -46,7 +46,7 @@ set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2us32xlalxdytptzzhfiniiimqrf4ez
 set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-7gpjuo5khxsxqwidz74wccitsl3hdixj" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-hnig4yzjrv6izpmdpstyr6bxyupnzhpu/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-4nntybfqq6li3nbbrjkhw47li2vlj6a6/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2us32xlalxdytptzzhfiniiimqrf4ezh/bin/sphinx-build" CACHE PATH "")
