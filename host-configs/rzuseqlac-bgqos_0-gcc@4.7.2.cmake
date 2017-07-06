@@ -14,24 +14,30 @@
 #######
 
 # c compiler used by spack
-set("CMAKE_C_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
 
 # cpp compiler used by spack
-set("CMAKE_CXX_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
 
 # fortran compiler used by spack
-set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
+# no fortran compiler
 
-set("CMAKE_Fortran_COMPILER" "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
+set(ENABLE_FORTRAN OFF CACHE BOOL "")
+
+# Root directory for generated TPLs
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_09_13_07_10/spack/opt/spack/bgqos_0/gcc-4.7.2" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_17_17_46_38/spack/opt/spack/bgqos_0/gcc-4.7.2/hdf5-1.8.16-gsqekrbdiryaddbxrb7lkv5ivwyyylcc" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-gsqekrbdiryaddbxrb7lkv5ivwyyylcc" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_17_17_46_38/spack/opt/spack/bgqos_0/gcc-4.7.2/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-y7kksgazxhxo4qkgbz54vdjfkpmkqu52" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-wb2a3z3lptwlnbbnsh4ssyz7zwa24ekj" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_17_17_46_38/spack/opt/spack/bgqos_0/gcc-4.7.2/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-bgbbwvnccff6bzg32vt2dk5343c346jn" CACHE PATH "")
 
 # python not build by uberenv
 
@@ -57,37 +63,58 @@ set("BOOST_DIR" "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_04_17_17_
 # lc bgq gcc@4.7.2 host configs
 ##############################################################################
 
-set(ENABLE_DOCS OFF CACHE PATH "")
+set(ENABLE_DOCS    OFF CACHE BOOL "")
 
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_C_COMPILER "/usr/local/tools/compilers/ibm/mpicc-4.7.2-fastmpi" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2-fastmpi" CACHE PATH "")
-set(MPI_Fortran_COMPILER  "/usr/local/tools/compilers/ibm/mpigfortran-4.7.2-fastmpi" CACHE PATH "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_LIBS "/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpich-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libopa-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libmpl-gcc.a;/bgsys/drivers/V1R2M4/ppc64/comm/lib/libpami-gcc.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI.a;/bgsys/drivers/V1R2M4/ppc64/spi/lib/libSPI_cnk.a;rt;pthread;stdc++;pthread")
+set(MPI_HOME             "/usr/local/tools/compilers/ibm" CACHE PATH "")
+set(MPI_C_COMPILER       "${MPI_HOME}/mpicc-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_CXX_COMPILER     "${MPI_HOME}/mpicxx-4.7.2-fastmpi" CACHE PATH "")
+set(MPI_Fortran_COMPILER "${MPI_HOME}/mpigfortran-4.7.2-fastmpi" CACHE PATH "")
 
-set(MPI_INCLUDE_PATHS "/bgsys/drivers/V1R2M4/ppc64/comm/include;/bgsys/drivers/V1R2M4/ppc64/comm/lib/gnu;/bgsys/drivers/V1R2M4/ppc64;/bgsys/drivers/V1R2M4/ppc64/comm/sys/include;/bgsys/drivers/V1R2M4/ppc64/spi/include;/bgsys/drivers/V1R2M4/ppc64/spi/include/kernel/cnk" )
+set(MPI_DRIVER_ROOT      "/bgsys/drivers/V1R2M4/ppc64" CACHE PATH "")
 
-set(MPI_C_INCLUDE_PATH ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_C_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_LIBS 
+    ${MPI_DRIVER_ROOT}/comm/lib/libmpich-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libopa-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libmpl-gcc.a
+    ${MPI_DRIVER_ROOT}/comm/lib/libpami-gcc.a
+    ${MPI_DRIVER_ROOT}/spi/lib/libSPI.a
+    ${MPI_DRIVER_ROOT}/spi/lib/libSPI_cnk.a
+    rt
+    pthread
+    stdc++
+    pthread)
+
+set(MPI_INCLUDE_PATHS 
+    ${MPI_DRIVER_ROOT}/comm/include
+    ${MPI_DRIVER_ROOT}/comm/lib/gnu
+    ${MPI_DRIVER_ROOT}
+    ${MPI_DRIVER_ROOT}/comm/sys/include
+    ${MPI_DRIVER_ROOT}/spi/include
+    ${MPI_DRIVER_ROOT}/spi/include/kernel/cnk )
+
+set(MPI_C_INCLUDE_PATH    ${MPI_INCLUDE_PATHS} CACHE PATH "")
+set(MPI_C_LIBRARIES       ${MPI_LIBS} CACHE PATH "")
 
 set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_CXX_LIBRARIES ${MPI_LIBS} CACHE PATH "")
+set(MPI_CXX_LIBRARIES     ${MPI_LIBS} CACHE PATH "")
+
 set(MPI_Fortran_LIBRARIES ${MPI_LIBS} CACHE PATH "")
 
 
-set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(MPIEXEC               "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG  "-n" CACHE PATH "")
 
 
 # GTest death tests use forked threads, which does now work on BG/Q 
 set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
 
-set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE PATH "Ensures that tests will be wrapped with srun to run on the backend nodes")
+set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

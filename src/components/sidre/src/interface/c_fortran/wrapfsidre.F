@@ -16,7 +16,7 @@
 ! splicer begin file_top
 #include "axom/config.hpp"
 ! splicer end file_top
-module sidre_mod
+module axom_sidre
     use, intrinsic :: iso_c_binding, only : C_PTR
     ! splicer begin module_use
     ! map conduit type names to sidre type names
@@ -97,6 +97,7 @@ module sidre_mod
         ! splicer begin class.Group.component_part
         ! splicer end class.Group.component_part
     contains
+        procedure :: get_index => group_get_index
         procedure :: get_name => group_get_name
         procedure :: get_parent => group_get_parent
         procedure :: get_data_store => group_get_data_store
@@ -138,7 +139,8 @@ module sidre_mod
         procedure :: copy_view => group_copy_view
         procedure :: has_group => group_has_group
         procedure :: has_child_group => group_has_child_group
-        procedure :: get_group => group_get_group
+        procedure :: get_group_from_name => group_get_group_from_name
+        procedure :: get_group_from_index => group_get_group_from_index
         procedure :: get_group_index => group_get_group_index
         procedure :: get_group_name => group_get_group_name
         procedure :: get_first_valid_group_index => group_get_first_valid_group_index
@@ -150,7 +152,8 @@ module sidre_mod
         procedure :: print => group_print
         procedure :: is_equivalent_to => group_is_equivalent_to
         procedure :: save => group_save
-        procedure :: load => group_load
+        procedure :: load_0 => group_load_0
+        procedure :: load_1 => group_load_1
         procedure :: load_external_data => group_load_external_data
         procedure :: get_instance => group_get_instance
         procedure :: set_instance => group_set_instance
@@ -193,11 +196,21 @@ module sidre_mod
             ! splicer end class.Group.generic.destroy_view_and_data
             destroy_view_and_data_name,  &
             destroy_view_and_data_index
+        generic :: get_group => &
+            ! splicer begin class.Group.generic.get_group
+            ! splicer end class.Group.generic.get_group
+            get_group_from_name,  &
+            get_group_from_index
         generic :: get_view => &
             ! splicer begin class.Group.generic.get_view
             ! splicer end class.Group.generic.get_view
             get_view_from_name,  &
             get_view_from_index
+        generic :: load => &
+            ! splicer begin class.Group.generic.load
+            ! splicer end class.Group.generic.load
+            load_0,  &
+            load_1
         ! splicer begin class.Group.type_bound_procedure_part
         procedure :: get_scalar_int => group_get_scalar_int
         procedure :: get_scalar_long => group_get_scalar_long
@@ -384,6 +397,7 @@ module sidre_mod
         procedure :: is_opaque => view_is_opaque
         procedure :: is_scalar => view_is_scalar
         procedure :: is_string => view_is_string
+        procedure :: get_index => view_get_index
         procedure :: get_name => view_get_name
         procedure :: get_buffer => view_get_buffer
         procedure :: get_void_ptr => view_get_void_ptr
@@ -641,6 +655,15 @@ module sidre_mod
 
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
+
+        function c_group_get_index(self) &
+                result(SH_rv) &
+                bind(C, name="SIDRE_group_get_index")
+            use iso_c_binding, only : C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: SH_rv
+        end function c_group_get_index
 
         pure function c_group_get_name(self) &
                 result(SH_rv) &
@@ -1353,26 +1376,36 @@ module sidre_mod
             logical(C_BOOL) :: SH_rv
         end function c_group_has_child_group_bufferify
 
-        function c_group_get_group(self, path) &
+        function c_group_get_group_from_name(self, path) &
                 result(SH_rv) &
-                bind(C, name="SIDRE_group_get_group")
+                bind(C, name="SIDRE_group_get_group_from_name")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             type(C_PTR) :: SH_rv
-        end function c_group_get_group
+        end function c_group_get_group_from_name
 
-        function c_group_get_group_bufferify(self, path, Lpath) &
+        function c_group_get_group_from_name_bufferify(self, path, Lpath) &
                 result(SH_rv) &
-                bind(C, name="SIDRE_group_get_group_bufferify")
+                bind(C, name="SIDRE_group_get_group_from_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             type(C_PTR) :: SH_rv
-        end function c_group_get_group_bufferify
+        end function c_group_get_group_from_name_bufferify
+
+        function c_group_get_group_from_index(self, idx) &
+                result(SH_rv) &
+                bind(C, name="SIDRE_group_get_group_from_index")
+            use iso_c_binding, only : C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            type(C_PTR) :: SH_rv
+        end function c_group_get_group_from_index
 
         pure function c_group_get_group_index(self, name) &
                 result(SH_rv) &
@@ -1527,17 +1560,17 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_group_save_bufferify
 
-        subroutine c_group_load(self, file_path, protocol) &
-                bind(C, name="SIDRE_group_load")
+        subroutine c_group_load_0(self, file_path, protocol) &
+                bind(C, name="SIDRE_group_load_0")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_group_load
+        end subroutine c_group_load_0
 
-        subroutine c_group_load_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_group_load_bufferify")
+        subroutine c_group_load_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_group_load_0_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -1545,7 +1578,29 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_group_load_bufferify
+        end subroutine c_group_load_0_bufferify
+
+        subroutine c_group_load_1(self, file_path, protocol, preserve_contents) &
+                bind(C, name="SIDRE_group_load_1")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+        end subroutine c_group_load_1
+
+        subroutine c_group_load_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, preserve_contents) &
+                bind(C, name="SIDRE_group_load_1_bufferify")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+        end subroutine c_group_load_1_bufferify
 
         subroutine c_group_load_external_data(self, file_path) &
                 bind(C, name="SIDRE_group_load_external_data")
@@ -1880,6 +1935,15 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: SH_rv
         end function c_view_is_string
+
+        function c_view_get_index(self) &
+                result(SH_rv) &
+                bind(C, name="SIDRE_view_get_index")
+            use iso_c_binding, only : C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: SH_rv
+        end function c_view_get_index
 
         pure function c_view_get_name(self) &
                 result(SH_rv) &
@@ -2316,6 +2380,15 @@ contains
 
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
+
+    function group_get_index(obj) result(SH_rv)
+        use iso_c_binding, only : C_INT
+        class(SidreGroup) :: obj
+        integer(C_INT) :: SH_rv
+        ! splicer begin class.Group.method.get_index
+        SH_rv = c_group_get_index(obj%voidptr)
+        ! splicer end class.Group.method.get_index
+    end function group_get_index
 
     function group_get_name(obj) result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
@@ -2901,18 +2974,30 @@ contains
         ! splicer end class.Group.method.has_child_group
     end function group_has_child_group
 
-    function group_get_group(obj, path) result(SH_rv)
+    function group_get_group_from_name(obj, path) result(SH_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         type(SidreGroup) :: SH_rv
-        ! splicer begin class.Group.method.get_group
-        SH_rv%voidptr = c_group_get_group_bufferify(  &
+        ! splicer begin class.Group.method.get_group_from_name
+        SH_rv%voidptr = c_group_get_group_from_name_bufferify(  &
             obj%voidptr,  &
             path,  &
             len_trim(path, kind=C_INT))
-        ! splicer end class.Group.method.get_group
-    end function group_get_group
+        ! splicer end class.Group.method.get_group_from_name
+    end function group_get_group_from_name
+
+    function group_get_group_from_index(obj, idx) result(SH_rv)
+        use iso_c_binding, only : C_INT
+        class(SidreGroup) :: obj
+        integer(C_INT), value, intent(IN) :: idx
+        type(SidreGroup) :: SH_rv
+        ! splicer begin class.Group.method.get_group_from_index
+        SH_rv%voidptr = c_group_get_group_from_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.Group.method.get_group_from_index
+    end function group_get_group_from_index
 
     function group_get_group_index(obj, name) result(SH_rv)
         use iso_c_binding, only : C_INT
@@ -3043,20 +3128,39 @@ contains
         ! splicer end class.Group.method.save
     end subroutine group_save
 
-    subroutine group_load(obj, file_path, protocol)
+    subroutine group_load_0(obj, file_path, protocol)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
-        ! splicer begin class.Group.method.load
-        call c_group_load_bufferify(  &
+        ! splicer begin class.Group.method.load_0
+        call c_group_load_0_bufferify(  &
             obj%voidptr,  &
             file_path,  &
             len_trim(file_path, kind=C_INT),  &
             protocol,  &
             len_trim(protocol, kind=C_INT))
-        ! splicer end class.Group.method.load
-    end subroutine group_load
+        ! splicer end class.Group.method.load_0
+    end subroutine group_load_0
+
+    subroutine group_load_1(obj, file_path, protocol, preserve_contents)
+        use iso_c_binding, only : C_BOOL, C_INT
+        class(SidreGroup) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        logical, value, intent(IN) :: preserve_contents
+        logical(C_BOOL) SH_preserve_contents
+        SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
+        ! splicer begin class.Group.method.load_1
+        call c_group_load_1_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT),  &
+            SH_preserve_contents)
+        ! splicer end class.Group.method.load_1
+    end subroutine group_load_1
 
     subroutine group_load_external_data(obj, file_path)
         use iso_c_binding, only : C_INT
@@ -4913,6 +5017,15 @@ contains
         ! splicer end class.View.method.is_string
     end function view_is_string
 
+    function view_get_index(obj) result(SH_rv)
+        use iso_c_binding, only : C_INT
+        class(SidreView) :: obj
+        integer(C_INT) :: SH_rv
+        ! splicer begin class.View.method.get_index
+        SH_rv = c_view_get_index(obj%voidptr)
+        ! splicer end class.View.method.get_index
+    end function view_get_index
+
     function view_get_name(obj) result(SH_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreView) :: obj
@@ -6312,4 +6425,4 @@ contains
         endif
     end function view_ne
 
-end module sidre_mod
+end module axom_sidre

@@ -26,7 +26,7 @@ DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
 COMPILER=$3
 if [[ $HOSTNAME == rz* ]]; then
-    HOST_CONFIGURATION="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
+    HOST_CONFIGURATION="host-configs/rzalastor-chaos_5_x86_64_ib-${COMPILER}.cmake"
 else
     HOST_CONFIGURATION="host-configs/cab-chaos_5_x86_64_ib-${COMPILER}.cmake"
 fi

@@ -32,6 +32,7 @@
 
 // Sidre project headers
 #include "sidre/SidreTypes.hpp"
+#include "AttrValues.hpp"
 
 namespace axom
 {
@@ -41,6 +42,7 @@ namespace sidre
 class Buffer;
 class Group;
 class DataStore;
+class Attribute;
 
 /*!
  * \class View
@@ -95,7 +97,17 @@ public:
 
 
 //@{
-//!  @name View query and accessor methods methods
+//!  @name View query and accessor methods
+
+  /*!
+   * \brief Return index of View within owning Group.
+   *
+   * If View is detached, return sidre::InvalidIndex. 
+   */
+  IndexType getIndex() const
+  {
+    return m_index;
+  }
 
   /*!
    * \brief Return const reference to name of View.
@@ -932,6 +944,76 @@ public:
    */
   bool rename(const std::string& new_name);
 
+
+//@{
+//!  @name View query and accessor methods
+
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttributeValue( const Attribute * attr ) const
+  {
+    return m_attr_values.hasValue(attr);
+  }
+
+  /*!
+   * \brief Set Attribute to its default value.
+   *
+   * This causes hasAttributeValue to return false for the attribute.
+   */
+  bool setAttributeToDefault( const Attribute * attr )
+  {
+    return m_attr_values.setToDefault(attr);
+  }
+
+  /*!
+   * \brief Set Attribute for a View.
+   */
+  template<typename ScalarType>
+  bool setAttributeScalar( const Attribute * attr, ScalarType value )
+  {
+    return m_attr_values.setScalar(attr, value);
+  }
+
+  /*!
+   * \brief Set Attribute for a View.
+   */
+  bool setAttributeString( const Attribute * attr, const std::string & value )
+  {
+    return m_attr_values.setString(attr, value);
+  }
+
+  /*!
+   * \brief Return scalar attribute value.
+   */
+  Node::ConstValue getAttributeScalar(const Attribute * attr) const
+  {
+      return m_attr_values.getScalar(attr);
+  }
+
+  /*!
+   * \brief Return a string attribute.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const char * getAttributeString( const Attribute * attr ) const
+  {
+    return m_attr_values.getString(attr);
+  }
+
+  /*!
+   * \brief Return reference to attribute node.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeNodeRef( const Attribute * attr ) const
+  {
+    return m_attr_values.getValueNodeRef(attr);
+  }
+
+//@}
+
+
 private:
 
   DISABLE_DEFAULT_CTOR(View);
@@ -1128,6 +1210,9 @@ private:
   /// Name of this View object.
   std::string m_name;
 
+  /// Index of this View object within m_owning_group.
+  IndexType m_index;
+
   /// Group object that owns this View object.
   Group * m_owning_group;
 
@@ -1151,6 +1236,9 @@ private:
 
   /// Has data description been applied to the view's data?
   bool m_is_applied;
+
+  /// Attribute Values
+  AttrValues m_attr_values;
 
 };
 

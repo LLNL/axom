@@ -877,7 +877,7 @@ Group * Group::createGroup( const std::string& path )
     return AXOM_NULLPTR;
   }
 
-  Group * new_group = new(std::nothrow) Group(intpath, group);
+  Group * new_group = new(std::nothrow) Group(intpath, group->getDataStore());
   if ( new_group == AXOM_NULLPTR )
   {
     return AXOM_NULLPTR;
@@ -1374,7 +1374,8 @@ void Group::save(const hid_t& h5_id,
  *************************************************************************
  */
 void Group::load(const std::string& path,
-                     const std::string& protocol)
+                 const std::string& protocol,
+                 bool preserve_contents)
 {
   std::string new_name; 
   if (protocol == "sidre_hdf5")
@@ -1382,7 +1383,7 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     SLIC_ASSERT(n.has_path("sidre"));
-    importFrom(n["sidre"]);
+    importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1392,7 +1393,7 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"conduit_json", n);
     SLIC_ASSERT(n.has_path("sidre"));
-    importFrom(n["sidre"]);
+    importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1402,7 +1403,7 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"json", n);
     SLIC_ASSERT(n.has_path("sidre"));
-    importFrom(n["sidre"]);
+    importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1411,7 +1412,7 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
-    importConduitTree(n);
+    importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1422,7 +1423,7 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,protocol, n);
-    importConduitTree(n);
+    importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1443,7 +1444,8 @@ void Group::load(const std::string& path,
  *************************************************************************
  */
 void Group::load(const hid_t& h5_id,
-                     const std::string &protocol)
+                 const std::string &protocol,
+                 bool preserve_contents)
 {
   // supported here:
   // "sidre_hdf5"
@@ -1454,7 +1456,7 @@ void Group::load(const hid_t& h5_id,
     Node n;
     conduit::relay::io::hdf5_read(h5_id,n);
     SLIC_ASSERT(n.has_path("sidre"));
-    importFrom(n["sidre"]);
+    importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1464,7 +1466,7 @@ void Group::load(const hid_t& h5_id,
     SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
-    importConduitTree(n);
+    importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name")) {
       new_name = n["sidre_group_name"].as_string();
     }
@@ -1565,22 +1567,6 @@ void Group::loadExternalData(const hid_t& h5_id)
 /*
  *************************************************************************
  *
- * PRIVATE ctor makes Group with given name and make it a child of parent.
- *
- *************************************************************************
- */
-Group::Group(const std::string& name,
-                     Group * parent)
-  : m_name(name),
-  m_parent(parent),
-  m_datastore(parent->getDataStore()),
-  m_view_coll(new ViewCollection()),
-  m_group_coll(new GroupCollection())
-{}
-
-/*
- *************************************************************************
- *
  * PRIVATE ctor makes Group with given name and make it a child of
  * root Group in datastore.
  *
@@ -1589,7 +1575,8 @@ Group::Group(const std::string& name,
 Group::Group(const std::string& name,
                      DataStore * datastore)
   : m_name(name),
-  m_parent(datastore->getRoot()),
+  m_index(InvalidIndex),
+  m_parent(AXOM_NULLPTR),
   m_datastore(datastore),
   m_view_coll(new ViewCollection()),
   m_group_coll(new GroupCollection())
@@ -1627,7 +1614,7 @@ View * Group::attachView(View * view)
   {
     SLIC_ASSERT(view->m_owning_group == AXOM_NULLPTR);
     view->m_owning_group = this;
-    m_view_coll->insertItem(view, view->getName());
+    view->m_index = m_view_coll->insertItem(view, view->getName());
     return view;
   }
 }
@@ -1645,6 +1632,7 @@ View * Group::detachView(const std::string& name )
   if ( view != AXOM_NULLPTR )
   {
     view->m_owning_group = AXOM_NULLPTR;
+    view->m_index = InvalidIndex;
   }
 
   return view;
@@ -1663,6 +1651,7 @@ View * Group::detachView(IndexType idx)
   if ( view != AXOM_NULLPTR )
   {
     view->m_owning_group = AXOM_NULLPTR;
+    view->m_index = InvalidIndex;
   }
 
   return view;
@@ -1705,7 +1694,8 @@ Group * Group::attachGroup(Group * group)
   }
   else
   {
-    m_group_coll->insertItem(group, group->getName());
+    group->m_parent = this;
+    group->m_index = m_group_coll->insertItem(group, group->getName());
     return group;
   }
 }
@@ -1723,6 +1713,7 @@ Group * Group::detachGroup(const std::string& name )
   if ( group != AXOM_NULLPTR )
   {
     group->m_parent = AXOM_NULLPTR;
+    group->m_index = InvalidIndex;
   }
 
   return group;
@@ -1741,6 +1732,7 @@ Group * Group::detachGroup(IndexType idx)
   if ( group != AXOM_NULLPTR )
   {
     group->m_parent = AXOM_NULLPTR;
+    group->m_index = InvalidIndex;
   }
 
   return group;
@@ -1853,14 +1845,17 @@ void Group::exportTo(conduit::Node& result,
  *************************************************************************
  */
 
-void Group::importFrom(conduit::Node & node)
+void Group::importFrom(conduit::Node & node, bool preserve_contents)
 {
   // TODO - May want to put in a little meta-data into these files like a 'version'
   // or tag identifying the data.  We don't want someone giving us a file that
   // doesn't have our full multiView->buffer connectivity in there.
 
-  destroyGroups();
-  destroyViews();
+  if (!preserve_contents)
+  {
+    destroyGroups();
+    destroyViews();
+  }
 
   // First - Import Buffers into the DataStore.
   std::map<IndexType, IndexType> buffer_indices_map;
@@ -1904,7 +1899,7 @@ void Group::importFrom(conduit::Node & node)
  *************************************************************************
  */
 void Group::importFrom(conduit::Node& node,
-                           const std::map<IndexType, IndexType>& buffer_id_map)
+                       const std::map<IndexType, IndexType>& buffer_id_map)
 {
   if ( node.has_path("views") )
   {
@@ -1944,10 +1939,13 @@ void Group::importFrom(conduit::Node& node,
  *************************************************************************
  */
 
-void Group::importConduitTree(conduit::Node &node)
+void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
 {
-  destroyGroups();
-  destroyViews();
+  if (!preserve_contents)
+  {
+    destroyGroups();
+    destroyViews();
+  }
 
   //
   DataType node_dtype = node.dtype();
@@ -1964,7 +1962,7 @@ void Group::importConduitTree(conduit::Node &node)
       {
         // create group
         Group * grp = createGroup(cld_name);
-        grp->importConduitTree(cld_node);
+        grp->importConduitTree(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
       {

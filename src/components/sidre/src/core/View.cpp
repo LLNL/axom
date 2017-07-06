@@ -29,6 +29,7 @@
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "DataStore.hpp"
+#include "Attribute.hpp"
 
 namespace axom
 {
@@ -758,6 +759,7 @@ void View::createNativeLayout(Node &n) const
  */
 View::View( const std::string& name)
   :   m_name(name),
+  m_index(InvalidIndex),
   m_owning_group(AXOM_NULLPTR),
   m_data_buffer(AXOM_NULLPTR),
   m_schema(),
@@ -980,9 +982,9 @@ bool View::isApplyValid() const
     rv = isDescribed();
     break;
   case BUFFER:
-    rv = 0 < getTotalBytes() &&
+    rv = 0 <= getTotalBytes() &&
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
-    SLIC_CHECK_MSG( 0 < getTotalBytes(),
+    SLIC_CHECK_MSG( 0 <= getTotalBytes(),
                     "Apply is not valid on data with zero length." );
     SLIC_CHECK_MSG(
       getTotalBytes() <= m_data_buffer->getTotalBytes(),

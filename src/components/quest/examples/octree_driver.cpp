@@ -476,8 +476,8 @@ void print_surface_stats( axom::mint::Mesh* mesh)
            ; it != edgeLenHist.end()
            ; ++it)
    {
-       edgeHistStr.write("\n\texp: {}\tcount: {}\tRange: {}"
-                        , it->first, it->second / 2, edgeLenRangeMap[it->first]);
+       edgeHistStr.write("\n\texp: {}\tcount: {}\tRange: {}",
+                         it->first, it->second / 2, edgeLenRangeMap[it->first]);
    }
    SLIC_DEBUG(edgeHistStr.str());
 
@@ -487,8 +487,8 @@ void print_surface_stats( axom::mint::Mesh* mesh)
            ; it != areaHist.end()
            ; ++it)
    {
-       triHistStr.write("\n\texp: {}\tcount: {}\tRange: {}"
-                       , it->first, it->second, areaRangeMap[it->first]);
+       triHistStr.write("\n\texp: {}\tcount: {}\tRange: {}",
+                        it->first, it->second, areaRangeMap[it->first]);
    }
    SLIC_DEBUG(triHistStr.str());
 
@@ -531,15 +531,16 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine 
     GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
     bool containsPt = blockBB.contains(queryPt);
 
-    SLIC_INFO(fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point."
-            , leafBlock.pt(), leafBlock.level(), blockBB
-            , (containsPt? " contains " : "does not contain ") ));
+    SLIC_INFO(fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point.",
+             leafBlock.pt(), leafBlock.level(), blockBB,
+             (containsPt? " contains " : "does not contain ") ));
 }
 
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
   axom::slic::UnitTestLogger logger;  // create & initialize logger
+  // axom::slic::debug::checksAreErrors = true;
 
   bool hasInputArgs = argc > 1;
 
@@ -635,11 +636,12 @@ int main( int argc, char** argv )
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
       SLIC_INFO(fmt::format(
-              "  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t bounding box {4}]"
-              , lev, gridPt
-              , octree.maxGridCellAtLevel(lev)
-              , octree.spacingAtLevel(lev)
-              , octree.blockBoundingBox(gridPt, lev)
+              "  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t bounding box {4}]",
+              lev,
+              gridPt,
+              octree.maxGridCellAtLevel(lev),
+              octree.spacingAtLevel(lev),
+              octree.blockBoundingBox(gridPt, lev)
               ));
   }
 

@@ -31,8 +31,10 @@
 #include "slic/GenericOutputStream.hpp"
 
 // Sidre component headers
+#include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
+#include "Attribute.hpp"
 
 
 namespace axom
@@ -92,7 +94,9 @@ void DataStoreConduitInfoHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
-  : m_RootGroup(AXOM_NULLPTR), m_need_to_finalize_slic(false)
+  : m_RootGroup(AXOM_NULLPTR),
+    m_attribute_coll(new AttributeCollection()),
+    m_need_to_finalize_slic(false)
 {
 
   if ( !axom::slic::isInitialized() )
@@ -137,6 +141,7 @@ DataStore::~DataStore()
   // clean up Groups and Views before we destroy Buffers
   delete m_RootGroup;
   destroyAllBuffers();
+  delete m_attribute_coll;
 
   if ( m_need_to_finalize_slic )
   {
@@ -291,6 +296,227 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
   }
   return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx
           : InvalidIndex);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return number of Attributes in the DataStore.
+ *
+ *************************************************************************
+ */
+SidreLength DataStore::getNumAttributes() const
+{
+  return m_attribute_coll->getNumItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to create an untyped Attribute object.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::createAttributeEmpty(const std::string & name)
+{
+  if ( name.empty() || hasAttribute(name) )
+  {
+    SLIC_CHECK( !name.empty() );
+    SLIC_CHECK_MSG( hasAttribute(name),
+                    "Cannot create Attribute with name '" << name <<
+                    " since it already has an Attribute with that name" );
+    return AXOM_NULLPTR;
+  }
+
+  Attribute * new_attribute = new(std::nothrow) Attribute(name);
+  if ( new_attribute == AXOM_NULLPTR )
+  {
+    return AXOM_NULLPTR;
+  }
+
+  new_attribute->m_index = m_attribute_coll->insertItem(new_attribute, name);
+  return new_attribute;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this DataStore has an Attribute with given name; else false.
+ *
+ *************************************************************************
+ */
+bool DataStore::hasAttribute( const std::string & name ) const
+{
+  return m_attribute_coll->hasItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if this DataStore has an Attribute with given index; else false.
+ *
+ *************************************************************************
+ */
+bool DataStore::hasAttribute( IndexType idx ) const
+{
+  return m_attribute_coll->hasItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Destroy Attribute with given name.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyAttribute( const std::string & name )
+{
+  Attribute *attr = getAttribute(name);
+  destroyAttribute(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Destroy Attribute with given index.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyAttribute( IndexType idx )
+{
+  Attribute * attr = m_attribute_coll->removeItem(idx);
+  if ( attr != AXOM_NULLPTR )
+  {
+    delete attr;
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Destroy Attribute.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyAttribute( Attribute * attr )
+{
+  SLIC_ASSERT( attr != AXOM_NULLPTR);
+
+  destroyAttribute(attr->getIndex());
+}
+
+/*
+ *************************************************************************
+ *
+ * Destroy all Attributes in DataStore and reclaim indices.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyAllAttributes()
+{
+  IndexType bidx = getFirstValidAttributeIndex();
+  while ( indexIsValid(bidx) )
+  {
+    destroyAttribute( bidx );
+    bidx = getNextValidAttributeIndex(bidx);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::getAttribute( const std::string& name )
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const Attribute * DataStore::getAttribute( const std::string& name ) const
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const Attribute with given index.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::getAttribute( IndexType idx )
+{
+  SLIC_CHECK_MSG( hasAttribute(idx),
+                  "DataStore has no Attribute with index " << idx);
+
+  return m_attribute_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const Attribute with given index.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const Attribute * DataStore::getAttribute( IndexType idx ) const
+{
+  SLIC_CHECK_MSG( hasAttribute(idx),
+                  "DataStore has no Attribute with index " << idx);
+
+  return m_attribute_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * \brief Return first valid Attribute index in DataStore object
+ *        (i.e., smallest index over all Attributes).
+ *
+ * sidre::InvalidIndex is returned if DataStore has no Attributes.
+ *************************************************************************
+ */
+IndexType DataStore::getFirstValidAttributeIndex() const
+{
+  return m_attribute_coll->getFirstValidIndex();
+}
+
+/*
+ *************************************************************************
+ *
+ * \brief Return next valid Attribute index in DataStore object after given index
+ *        (i.e., smallest index over all Attribute indices larger than given one).
+ *
+ * sidre::InvalidIndex is returned if there is no valid index greater
+ * than given one.
+ *************************************************************************
+ */
+IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const
+{
+  return m_attribute_coll->getNextValidIndex(idx);
 }
 
 

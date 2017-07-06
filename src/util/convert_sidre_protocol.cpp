@@ -71,9 +71,9 @@ using axom::spio::IOManager;
 
 
 typedef axom::sidre::IndexType IndexType;
-typedef axom::slam::policies::RuntimeSizeHolder<IndexType>   SzPol;
+typedef axom::slam::policies::RuntimeSize<IndexType>   SzPol;
 typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
-typedef axom::slam::policies::RuntimeStrideHolder<IndexType> StrPol;
+typedef axom::slam::policies::RuntimeStride<IndexType> StrPol;
 typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> ViewSet;
 
 void setupLogging();

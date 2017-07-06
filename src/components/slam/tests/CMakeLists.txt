@@ -4,16 +4,16 @@
 
 set(gtest_slam_tests
     # test sets
-    slam_Set.cpp
-    slam_NullSet.cpp
-    slam_RangeSet.cpp
-    slam_WindowedRangeSet.cpp
-    slam_IndirectionSet.cpp
+    slam_set_Set.cpp
+    slam_set_NullSet.cpp
+    slam_set_PositionSet.cpp
+    slam_set_RangeSet.cpp
+    slam_set_IndirectionSet.cpp
 
     # test relations
-    slam_DynamicVariableRelation.cpp
-    slam_StaticVariableRelation.cpp
-    slam_StaticConstantRelation.cpp
+    slam_relation_DynamicVariable.cpp
+    slam_relation_StaticVariable.cpp
+    slam_relation_StaticConstant.cpp
 
     # test maps
     slam_Map.cpp

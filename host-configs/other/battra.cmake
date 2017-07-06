@@ -7,8 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /home/taylor16/local/bin/cmake
-
+# cmake executable path: /home/taylor16/apps/cmake-3.8.2/bin/cmake
 #######
 # using gcc@4.9.3 compiler spec
 #######
@@ -24,37 +23,37 @@ set(ENABLE_FORTRAN ON CACHE PATH "")
 
 set(CMAKE_Fortran_COMPILER  "/home/taylor16/apps/gcc-4.9.4/bin/gfortran" CACHE PATH "")
 
+# Root directory for generated TPLs
+set(TPL_ROOT "/home/taylor16/tpl/v2" CACHE PATH "")
+
 # hdf5 from uberenv
-set(HDF5_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "/home/taylor16/tpl/v2/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/bin/doxygen" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "/home/taylor16/tpl/v2/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${TPL_ROOT}/bin/python" CACHE PATH "")
 
 # lua from uberenv
-set(LUA_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}" CACHE PATH "")
 
 # sphinx from uberenv
-set(SPHINX_EXECUTABLE "/home/taylor16/tpl/v2/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${TPL_ROOT}/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/tpl/v2/bin/uncrustify" CACHE PATH "")
-
-# sparsehash headers from uberenv
-set(SPARSEHASH_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/bin/uncrustify" CACHE PATH "")
 
 # boost headers from uberenv
-set(BOOST_DIR "/home/taylor16/tpl/v2" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set(LCOV_PATH "/home/taylor16/tpl/v2/usr/bin/lcov" CACHE PATH "")
+set(LCOV_PATH "${TPL_ROOT}/usr/bin/lcov" CACHE PATH "")
 
-set(GENHTML_PATH "/home/taylor16/tpl/v2/usr/bin/genhtml" CACHE PATH "")
+set(GENHTML_PATH "${TPL_ROOT}/usr/bin/genhtml" CACHE PATH "")
 
 ##################################
 # end uberenv host-config

@@ -102,6 +102,8 @@ bool SIDRE_view_is_scalar(const SIDRE_view * self);
 
 bool SIDRE_view_is_string(const SIDRE_view * self);
 
+SIDRE_IndexType SIDRE_view_get_index(SIDRE_view * self);
+
 const char * SIDRE_view_get_name(const SIDRE_view * self);
 
 void SIDRE_view_get_name_bufferify(const SIDRE_view * self, char * SH_F_rv,

@@ -9,7 +9,7 @@ set(example_sources
 
 
 set(F_example_sources
-    F_sidre_shocktube.f
+    sidre_shocktube_F_example.f
 )
 
 

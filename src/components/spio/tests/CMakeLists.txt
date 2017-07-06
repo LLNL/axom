@@ -43,6 +43,17 @@ if (ENABLE_MPI)
                 COMMAND spio_externalWriteRead
                 NUM_PROCS 4
                 )
+
+   blt_add_executable(NAME spio_preserveWriteRead
+                      SOURCES spio_preserveWriteRead.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON spio conduit scr hdf5
+                      )
+   blt_add_test(NAME spio_preserveWriteRead
+                COMMAND spio_preserveWriteRead
+                NUM_PROCS 4
+                )
+
 endif()
 
 if(ENABLE_FORTRAN)
@@ -86,6 +97,17 @@ if(ENABLE_FORTRAN)
                    COMMAND F_spio_externalWriteRead
                    NUM_PROCS 4
                    )
+
+      blt_add_executable(NAME F_spio_preserveWriteRead
+                         SOURCES F_spio_preserveWriteRead.f
+                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                         DEPENDS_ON spio conduit hdf5 fruit
+                         )
+      blt_add_test(NAME F_spio_preserveWriteRead
+                   COMMAND F_spio_preserveWriteRead
+                   NUM_PROCS 4
+                   )
+
    endif()
 endif()
 

@@ -906,7 +906,7 @@ This makes it easy to check pointers for "null-ness" when needed.
       non-C++11 usage, this should be done using the common macro
       "AXOM\_NULLPTR"; For example::
 
-         // #include "common/CommonTypes.hpp"
+         // #include "axom/Types.hpp"
          
          double* data = new double[10];
          // ...

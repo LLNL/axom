@@ -30,6 +30,15 @@ extern "C" {
 // splicer begin class.Group.C_definitions
 // splicer end class.Group.C_definitions
 
+SIDRE_IndexType SIDRE_group_get_index(SIDRE_group * self)
+{
+// splicer begin class.Group.method.get_index
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  IndexType SH_rv = SH_this->getIndex();
+  return SH_rv;
+// splicer end class.Group.method.get_index
+}
+
 const char * SIDRE_group_get_name(const SIDRE_group * self)
 {
 // splicer begin class.Group.method.get_name
@@ -876,27 +885,40 @@ bool SIDRE_group_has_child_group_bufferify(SIDRE_group * self,
 // splicer end class.Group.method.has_child_group_bufferify
 }
 
-SIDRE_group * SIDRE_group_get_group(SIDRE_group * self, const char * path)
+SIDRE_group * SIDRE_group_get_group_from_name(SIDRE_group * self,
+                                              const char * path)
 {
-// splicer begin class.Group.method.get_group
+// splicer begin class.Group.method.get_group_from_name
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_path(path);
   Group * SH_rv = SH_this->getGroup(SH_path);
   SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
   return XSH_rv;
-// splicer end class.Group.method.get_group
+// splicer end class.Group.method.get_group_from_name
 }
 
-SIDRE_group * SIDRE_group_get_group_bufferify(SIDRE_group * self,
-                                              const char * path, int Lpath)
+SIDRE_group * SIDRE_group_get_group_from_name_bufferify(SIDRE_group * self,
+                                                        const char * path,
+                                                        int Lpath)
 {
-// splicer begin class.Group.method.get_group_bufferify
+// splicer begin class.Group.method.get_group_from_name_bufferify
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_path(path, Lpath);
   Group * SH_rv = SH_this->getGroup(SH_path);
   SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
   return XSH_rv;
-// splicer end class.Group.method.get_group_bufferify
+// splicer end class.Group.method.get_group_from_name_bufferify
+}
+
+SIDRE_group * SIDRE_group_get_group_from_index(SIDRE_group * self,
+                                               SIDRE_IndexType idx)
+{
+// splicer begin class.Group.method.get_group_from_index
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  Group * SH_rv = SH_this->getGroup(idx);
+  SIDRE_group * XSH_rv = static_cast<SIDRE_group *>(static_cast<void *>(SH_rv));
+  return XSH_rv;
+// splicer end class.Group.method.get_group_from_index
 }
 
 SIDRE_IndexType SIDRE_group_get_group_index(const SIDRE_group * self,
@@ -1104,29 +1126,54 @@ void SIDRE_group_save_bufferify(const SIDRE_group * self,
 // splicer end class.Group.method.save_bufferify
 }
 
-void SIDRE_group_load(SIDRE_group * self, const char * file_path,
-                      const char * protocol)
+void SIDRE_group_load_0(SIDRE_group * self, const char * file_path,
+                        const char * protocol)
 {
-// splicer begin class.Group.method.load
+// splicer begin class.Group.method.load_0
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
   SH_this->load(SH_file_path, SH_protocol);
   return;
-// splicer end class.Group.method.load
+// splicer end class.Group.method.load_0
 }
 
-void SIDRE_group_load_bufferify(SIDRE_group * self, const char * file_path,
-                                int Lfile_path, const char * protocol,
-                                int Lprotocol)
+void SIDRE_group_load_0_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol)
 {
-// splicer begin class.Group.method.load_bufferify
+// splicer begin class.Group.method.load_0_bufferify
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
   SH_this->load(SH_file_path, SH_protocol);
   return;
-// splicer end class.Group.method.load_bufferify
+// splicer end class.Group.method.load_0_bufferify
+}
+
+void SIDRE_group_load_1(SIDRE_group * self, const char * file_path,
+                        const char * protocol, bool preserve_contents)
+{
+// splicer begin class.Group.method.load_1
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  const std::string SH_file_path(file_path);
+  const std::string SH_protocol(protocol);
+  SH_this->load(SH_file_path, SH_protocol, preserve_contents);
+  return;
+// splicer end class.Group.method.load_1
+}
+
+void SIDRE_group_load_1_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol, bool preserve_contents)
+{
+// splicer begin class.Group.method.load_1_bufferify
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  const std::string SH_file_path(file_path, Lfile_path);
+  const std::string SH_protocol(protocol, Lprotocol);
+  SH_this->load(SH_file_path, SH_protocol, preserve_contents);
+  return;
+// splicer end class.Group.method.load_1_bufferify
 }
 
 void SIDRE_group_load_external_data(SIDRE_group * self, const char * file_path)

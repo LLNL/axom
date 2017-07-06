@@ -5,8 +5,8 @@
 set(example_sources
     IORead.cpp
     IOWrite.cpp
-    IOscrex.cpp
-    scrhello.cpp
+#    IOscrex.cpp
+#    scrhello.cpp
 )
 
 set(SPIO_EXAMPLE_DEPENDS spio sidre conduit conduit_relay hdf5 slic scr ${EXTRA_LIBS})

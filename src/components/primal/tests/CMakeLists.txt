@@ -11,10 +11,11 @@
 set( primal_tests
     primal_boundingbox.cpp
     primal_bvhtree.cpp
-    primal_intersection_impl.cpp
-    primal_intersection.cpp
+    primal_clip.cpp
+    primal_intersect_impl.cpp
+    primal_intersect.cpp
     primal_numeric_array.cpp
-    primal_orient.cpp
+    primal_orientation.cpp
     primal_point.cpp
     primal_squared_distance.cpp
     primal_triangle.cpp

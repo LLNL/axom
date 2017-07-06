@@ -7,51 +7,57 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/cmake-3.3.1-usuntzhfbmwz5ci5fryejg52swgb5ruo/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_26_50/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/cmake-3.3.1-usuntzhfbmwz5ci5fryejg52swgb5ruo/bin/cmake
 
 #######
 # using clang@3.9.0 compiler spec
 #######
 
 # c compiler used by spack
-set("CMAKE_C_COMPILER" "/usr/tce/packages/clang/clang-3.9.0/bin/clang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-3.9.0/bin/clang" CACHE PATH "")
 
 # cpp compiler used by spack
-set("CMAKE_CXX_COMPILER" "/usr/tce/packages/clang/clang-3.9.0/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-3.9.0/bin/clang++" CACHE PATH "")
 
 # fortran compiler used by spack
 # no fortran compiler
 
-set("ENABLE_FORTRAN" "OFF" CACHE PATH "")
+set(ENABLE_FORTRAN OFF CACHE BOOL "")
+
+# Root directory for generated TPLs
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_26_50/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set("HDF5_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/hdf5-1.8.16-qy646zjgaj4crjrgwrlqj2slnvjel5re" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-qy646zjgaj4crjrgwrlqj2slnvjel5re" CACHE PATH "")
 
 # conduit from uberenv
-set("CONDUIT_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/conduit-0.2.1-spqnui5wsqcmq46b3uyaimo5gxz3bttj" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-spqnui5wsqcmq46b3uyaimo5gxz3bttj" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-2lr5tv7roznsowa2oactqmrwx3cq6dwy" CACHE PATH "")
 
 # boost headers from uberenv
-set("BOOST_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/boost-headers-1.58.0-cjtvgl2bbxo727ky5bfaiihg4uublmbp" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-cjtvgl2bbxo727ky5bfaiihg4uublmbp" CACHE PATH "")
 
 # python from uberenv
-set("PYTHON_EXECUTABLE" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/python-2.7.11-dozo3tjzgctvcgazuvlp4gcnduc43ery/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-dozo3tjzgctvcgazuvlp4gcnduc43ery/bin/python" CACHE PATH "")
 
 # lua from uberenv
-set("LUA_DIR" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/lua-5.1.5-izxbfxhlava24dron2y7i2pruwx3cuh3" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-izxbfxhlava24dron2y7i2pruwx3cuh3" CACHE PATH "")
 
 # doxygen from uberenv
-set("DOXYGEN_EXECUTABLE" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/doxygen-1.8.11-bprlm2fmh7jvshvtty2a2c6utnyw6u7s/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-bprlm2fmh7jvshvtty2a2c6utnyw6u7s/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
-set("SPHINX_EXECUTABLE" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/python-2.7.11-dozo3tjzgctvcgazuvlp4gcnduc43ery/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-dozo3tjzgctvcgazuvlp4gcnduc43ery/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set("UNCRUSTIFY_EXECUTABLE" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/uncrustify-0.61-vgt2p36odqlrkexkus4xzzy53uyiopug/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-vgt2p36odqlrkexkus4xzzy53uyiopug/bin/uncrustify" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set("LCOV_PATH" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/lcov-1.11-hucmk5dnudjpfjy2vhnid46g3fmi3r7n/usr/bin/lcov" CACHE PATH "")
+set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-hucmk5dnudjpfjy2vhnid46g3fmi3r7n/usr/bin/lcov" CACHE PATH "")
 
-set("GENHTML_PATH" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08_52_00/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/lcov-1.11-hucmk5dnudjpfjy2vhnid46g3fmi3r7n/usr/bin/genhtml" CACHE PATH "")
+set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-hucmk5dnudjpfjy2vhnid46g3fmi3r7n/usr/bin/genhtml" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
@@ -67,8 +73,10 @@ set("GENHTML_PATH" "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_04_18_08
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0/" CACHE PATH "")
+
+set(ENABLE_MPI ON CACHE BOOL "")
+
+set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")

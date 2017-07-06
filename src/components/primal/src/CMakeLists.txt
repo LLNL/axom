@@ -13,23 +13,23 @@ set( primal_headers
      ## geometry
      geometry/BoundingBox.hpp
      geometry/HyperSphere.hpp
+     geometry/NumericArray.hpp
      geometry/Point.hpp
+     geometry/Polygon.hpp
      geometry/Ray.hpp
      geometry/Segment.hpp
      geometry/Triangle.hpp
-
-     ## numerics
-     numerics/Determinants.hpp
-     numerics/NumericArray.hpp
-     numerics/Vector.hpp
+     geometry/Vector.hpp
 
      ## operators
-     operators/detail/intersection_impl.hpp
-
-     operators/intersection.hpp
+     operators/clip.hpp
+     operators/closest_point.hpp
+     operators/intersect.hpp
      operators/orientation.hpp
      operators/squared_distance.hpp
-     operators/closest_point.hpp
+
+     operators/detail/clip_impl.hpp
+     operators/detail/intersect_impl.hpp
 
      ## spatial acceleration
      spatial_acceleration/BVHTree.hpp

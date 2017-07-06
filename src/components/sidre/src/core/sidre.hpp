@@ -22,6 +22,7 @@
 #ifndef SIDRE_H_
 #define SIDRE_H_
 
+#include "Attribute.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "DataStore.hpp"

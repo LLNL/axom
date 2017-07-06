@@ -41,6 +41,8 @@ typedef struct s_SIDRE_view SIDRE_view;
 // splicer begin class.Group.C_declarations
 // splicer end class.Group.C_declarations
 
+SIDRE_IndexType SIDRE_group_get_index(SIDRE_group * self);
+
 const char * SIDRE_group_get_name(const SIDRE_group * self);
 
 void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
@@ -273,10 +275,15 @@ bool SIDRE_group_has_child_group(SIDRE_group * self, const char * name);
 bool SIDRE_group_has_child_group_bufferify(SIDRE_group * self,
                                            const char * name, int Lname);
 
-SIDRE_group * SIDRE_group_get_group(SIDRE_group * self, const char * path);
+SIDRE_group * SIDRE_group_get_group_from_name(SIDRE_group * self,
+                                              const char * path);
 
-SIDRE_group * SIDRE_group_get_group_bufferify(SIDRE_group * self,
-                                              const char * path, int Lpath);
+SIDRE_group * SIDRE_group_get_group_from_name_bufferify(SIDRE_group * self,
+                                                        const char * path,
+                                                        int Lpath);
+
+SIDRE_group * SIDRE_group_get_group_from_index(SIDRE_group * self,
+                                               SIDRE_IndexType idx);
 
 SIDRE_IndexType SIDRE_group_get_group_index(const SIDRE_group * self,
                                             const char * name);
@@ -323,12 +330,19 @@ void SIDRE_group_save_bufferify(const SIDRE_group * self,
                                 const char * file_path, int Lfile_path,
                                 const char * protocol, int Lprotocol);
 
-void SIDRE_group_load(SIDRE_group * self, const char * file_path,
-                      const char * protocol);
+void SIDRE_group_load_0(SIDRE_group * self, const char * file_path,
+                        const char * protocol);
 
-void SIDRE_group_load_bufferify(SIDRE_group * self, const char * file_path,
-                                int Lfile_path, const char * protocol,
-                                int Lprotocol);
+void SIDRE_group_load_0_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol);
+
+void SIDRE_group_load_1(SIDRE_group * self, const char * file_path,
+                        const char * protocol, bool preserve_contents);
+
+void SIDRE_group_load_1_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol, bool preserve_contents);
 
 void SIDRE_group_load_external_data(SIDRE_group * self, const char * file_path);
 
