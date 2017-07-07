@@ -980,12 +980,40 @@ public:
   bool hasAttributeValue( const Attribute * attr ) const;
 
   /*!
-   * \brief Set Attribute to its default value.
+   * \brief Set Attribute to its default value from Attribute index.
+   *
+   * This causes hasAttributeValue to return false for the attribute.
+   */
+  bool setAttributeToDefault( IndexType idx )
+  {
+    const Attribute * attr = getAttribute(idx);
+    return m_attr_values.setToDefault(attr);
+  }
+
+  /*!
+   * \brief Set Attribute to its default value from Attribute name.
+   *
+   * This causes hasAttributeValue to return false for the attribute.
+   */
+  bool setAttributeToDefault( const std::string & name )
+  {
+    const Attribute * attr = getAttribute(name);
+    return m_attr_values.setToDefault(attr);
+  }
+
+  /*!
+   * \brief Set Attribute to its default value from Attribute pointer.
    *
    * This causes hasAttributeValue to return false for the attribute.
    */
   bool setAttributeToDefault( const Attribute * attr )
   {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+  		     "getAttributeToDefault: called without an Attribute");
+    }
+
     return m_attr_values.setToDefault(attr);
   }
 
@@ -1168,12 +1196,40 @@ public:
   const char * getAttributeString( const Attribute * attr ) const;
 
   /*!
-   * \brief Return reference to attribute node.
+   * \brief Return reference to attribute node from Attribute index.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeNodeRef( IndexType idx ) const
+  {
+    const Attribute * attr = getAttribute(idx);
+    return m_attr_values.getValueNodeRef(attr);
+  }
+
+  /*!
+   * \brief Return reference to attribute node from Attribute name.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeNodeRef( const std::string & name ) const
+  {
+    const Attribute * attr = getAttribute(name);
+    return m_attr_values.getValueNodeRef(attr);
+  }
+
+  /*!
+   * \brief Return reference to attribute node from Attribute pointer.
    *
    * If the value has not been explicitly set, return the current default.
    */
   const Node & getAttributeNodeRef( const Attribute * attr ) const
   {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+  		     "getAttributeNodeRef: called without an Attribute");
+    }
+
     return m_attr_values.getValueNodeRef(attr);
   }
 

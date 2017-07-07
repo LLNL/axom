@@ -414,69 +414,6 @@ TEST(sidre_attribute,set_default)
 }
 
 //------------------------------------------------------------------------------
-// Access attributes by name or index
-
-TEST(sidre_attribute,overloads)
-{
-   bool ok;
-   DataStore * ds = new DataStore();
-
-  // Create string and scalar attributes
-  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
-  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
-  IndexType icolor = attr_color->getIndex();
-  EXPECT_EQ(0, icolor);
-
-  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
-  EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
-  IndexType idump = attr_dump->getIndex();
-  EXPECT_EQ(1, idump);
-
-  EXPECT_EQ(attr_color, ds->getAttribute(name_color));
-  EXPECT_EQ(attr_color, ds->getAttribute(icolor));
-
-  //----------------------------------------
-  Group * root = ds->getRoot();
-  View * view = root->createView("view1");
-
-  // string
-  ok = view->setAttributeString(attr_color, color_red);
-  EXPECT_TRUE(ok);
-  ok = view->setAttributeString(icolor, color_red);
-  EXPECT_TRUE(ok);
-  ok = view->setAttributeString("color", color_red);
-  EXPECT_TRUE(ok);
-
-  const char * attr1a = view->getAttributeString(attr_color);
-  EXPECT_EQ(color_red, attr1a);
-  const char * attr2a = view->getAttributeString(icolor);
-  EXPECT_EQ(color_red, attr2a);
-  const char * attr3a = view->getAttributeString("color");
-  EXPECT_EQ(color_red, attr3a);
-
-  // scalar
-  ok = view->setAttributeScalar(attr_dump, dump_yes);
-  EXPECT_TRUE(ok);
-  ok = view->setAttributeScalar(idump, dump_yes);
-  EXPECT_TRUE(ok);
-  ok = view->setAttributeScalar("dump", dump_yes);
-  EXPECT_TRUE(ok);
-
-  int attr1b = view->getAttributeScalar(attr_dump);
-  EXPECT_EQ(dump_yes, attr1b);
-  int attr2b = view->getAttributeScalar(idump);
-  EXPECT_EQ(dump_yes, attr2b);
-  int attr3b = view->getAttributeScalar("dump");
-  EXPECT_EQ(dump_yes, attr3b);
-
-  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(attr_dump));
-  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(idump));
-  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>("dump"));
-
-  delete ds;
-}
-
-//------------------------------------------------------------------------------
 
 TEST(sidre_attribute,as_node)
 {
@@ -510,6 +447,88 @@ TEST(sidre_attribute,as_node)
 
   const Node & node3 = view1a->getAttributeNodeRef(AXOM_NULLPTR);
   EXPECT_TRUE(node3.schema().dtype().is_empty());
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Access attributes by name or index
+
+TEST(sidre_attribute,overloads)
+{
+   bool ok;
+   DataStore * ds = new DataStore();
+
+  // Create string and scalar attributes
+  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
+  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
+  IndexType icolor = attr_color->getIndex();
+  EXPECT_EQ(0, icolor);
+
+  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
+  EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
+  IndexType idump = attr_dump->getIndex();
+  EXPECT_EQ(1, idump);
+
+  EXPECT_EQ(attr_color, ds->getAttribute(name_color));
+  EXPECT_EQ(attr_color, ds->getAttribute(icolor));
+
+  //----------------------------------------
+  Group * root = ds->getRoot();
+  View * view = root->createView("view1");
+
+  // string
+  ok = view->setAttributeString(attr_color, color_red);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeString(icolor, color_red);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeString(name_color, color_red);
+  EXPECT_TRUE(ok);
+
+  const char * attr1a = view->getAttributeString(attr_color);
+  EXPECT_EQ(color_red, attr1a);
+  const char * attr2a = view->getAttributeString(icolor);
+  EXPECT_EQ(color_red, attr2a);
+  const char * attr3a = view->getAttributeString(name_color);
+  EXPECT_EQ(color_red, attr3a);
+
+  // scalar
+  ok = view->setAttributeScalar(attr_dump, dump_yes);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeScalar(idump, dump_yes);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeScalar(name_dump, dump_yes);
+  EXPECT_TRUE(ok);
+
+  int attr1b = view->getAttributeScalar(attr_dump);
+  EXPECT_EQ(dump_yes, attr1b);
+  int attr2b = view->getAttributeScalar(idump);
+  EXPECT_EQ(dump_yes, attr2b);
+  int attr3b = view->getAttributeScalar(name_dump);
+  EXPECT_EQ(dump_yes, attr3b);
+
+  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(attr_dump));
+  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(idump));
+  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(name_dump));
+
+  const Node & node1 = view->getAttributeNodeRef(attr_dump);
+  EXPECT_EQ(dump_yes, node1.as_int());
+  const Node & node2 = view->getAttributeNodeRef(idump);
+  EXPECT_EQ(dump_yes, node2.as_int());
+  const Node & node3 = view->getAttributeNodeRef(name_dump);
+  EXPECT_EQ(dump_yes, node3.as_int());
+
+  ok = view->setAttributeToDefault(attr_dump);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeToDefault(idump);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeToDefault(name_dump);
+  EXPECT_TRUE(ok);
+
+  // Check some errors
+  EXPECT_EQ(0, view->getAttributeScalar<int>(AXOM_NULLPTR));
+  EXPECT_EQ(0, view->getAttributeScalar<int>(InvalidIndex));
+  EXPECT_EQ(0, view->getAttributeScalar<int>("noname"));
 
   delete ds;
 }

@@ -84,8 +84,6 @@ bool AttrValues::setToDefault( const Attribute * attr )
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "setDefault: called without an Attribute");
     return false;
   }
 
@@ -190,8 +188,6 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getValueNodeRef: called without an Attribute");
     return getEmptyNodeRef();
   }
 
