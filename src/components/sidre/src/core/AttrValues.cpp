@@ -141,8 +141,6 @@ bool AttrValues::createNode(IndexType iattr)
  *
  * Return a scalar attribute value.
  *
- * The caller must ensure that attr is not NULL.
- *
  *************************************************************************
  */
 Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
@@ -162,6 +160,11 @@ Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
  */
 const char * AttrValues::getString( const Attribute * attr ) const
 {
+  if (attr == AXOM_NULLPTR)
+  {
+    return AXOM_NULLPTR;
+  }
+
   if (attr->getTypeID() != CHAR8_STR_ID)
   {
     SLIC_CHECK_MSG(attr->getTypeID() == CHAR8_STR_ID,

@@ -55,6 +55,15 @@ namespace sidre
  *
  * Space can be minimized by creating more common Attribute first so that they
  * will have a lower index.
+ *
+ * Methods which accept a Attribute pointer will check for
+ * AXOM_NULLPTR but will not print a message.  The calling routines in
+ * the View class are expected to print any error message.  This will
+ * avoid multiple messages for the same error.  For example, if the
+ * index cannot be converted to an Attribute pointer in the View
+ * class, an error message will be printing and then a NULL pointer
+ * passed to the AttrValues class which will not print another
+ * message.
  */
 class AttrValues
 {
@@ -82,7 +91,7 @@ private:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasValue( const Attribute * attr ) const;
+  bool hasValue(const Attribute * attr) const;
 
   /*!
    * \brief Create a Conduit Node to store an attribute.

@@ -987,7 +987,7 @@ public:
     if (attr == AXOM_NULLPTR)
     {
       SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-  		     "hasAttributeValue: called without an Attribute");
+                     "hasAttributeValue: called without an Attribute");
     }
 
     return m_attr_values.hasValue(attr);
@@ -1025,7 +1025,7 @@ public:
     if (attr == AXOM_NULLPTR)
     {
       SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-  		     "getAttributeToDefault: called without an Attribute");
+                     "getAttributeToDefault: called without an Attribute");
     }
 
     return m_attr_values.setToDefault(attr);
@@ -1128,7 +1128,7 @@ public:
     if (attr == AXOM_NULLPTR)
     {
       SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-  		     "getScalar: called without an Attribute");
+                     "getScalar: called without an Attribute");
       return m_attr_values.getEmptyNodeRef().value();
     }
 
@@ -1180,7 +1180,7 @@ public:
     if (attr == AXOM_NULLPTR)
     {
       SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-  		     "getAttributeScalar: called without an Attribute");
+                     "getAttributeScalar: called without an Attribute");
     }
 
     const Node & node = m_attr_values.getValueNodeRef(attr);
@@ -1241,7 +1241,7 @@ public:
     if (attr == AXOM_NULLPTR)
     {
       SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-  		     "getAttributeNodeRef: called without an Attribute");
+                     "getAttributeNodeRef: called without an Attribute");
     }
 
     return m_attr_values.getValueNodeRef(attr);
