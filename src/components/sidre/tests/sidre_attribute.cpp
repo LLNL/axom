@@ -46,6 +46,9 @@ const double size_small = 1.2;
 const double size_medium = 2.3;
 const double size_large = 3.4;
 
+// intel has a problem overloading 'Attribute *' and 'IndexType'.
+Attribute * attr_null = AXOM_NULLPTR;
+
 // Test protocols
 int nprotocols = 3;
 std::string const protocols[] = { "sidre_json", "sidre_hdf5", "json" };
@@ -176,7 +179,7 @@ TEST(sidre_attribute,view_attr)
   View  * view1a = grp1->createView(namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
-  EXPECT_FALSE(view1a->hasAttributeValue(AXOM_NULLPTR));
+  EXPECT_FALSE(view1a->hasAttributeValue(attr_null));
   EXPECT_FALSE(view1a->hasAttributeValue(attr_color));
 
   // Check values of unset attributes
@@ -348,7 +351,7 @@ TEST(sidre_attribute,view_int_and_double)
   EXPECT_EQ(AXOM_NULLPTR, nostr);
 
   int i = -1;
-  i = view1a->getAttributeScalar(AXOM_NULLPTR);
+  i = view1a->getAttributeScalar(attr_null);
   EXPECT_EQ(0, i);
 
   delete ds;
@@ -407,7 +410,7 @@ TEST(sidre_attribute,set_default)
   EXPECT_FALSE(view1a->hasAttributeValue(attr_size));
 
   // Check errors
-  ok = view1a->setAttributeToDefault(AXOM_NULLPTR);
+  ok = view1a->setAttributeToDefault(attr_null);
   EXPECT_FALSE( ok );
 
   delete ds;
@@ -445,7 +448,7 @@ TEST(sidre_attribute,as_node)
   const Node & node2 = view1a->getAttributeNodeRef(attr_dump);
   EXPECT_EQ(dump_no, node2.as_int32());
 
-  const Node & node3 = view1a->getAttributeNodeRef(AXOM_NULLPTR);
+  const Node & node3 = view1a->getAttributeNodeRef(attr_null);
   EXPECT_TRUE(node3.schema().dtype().is_empty());
 
   delete ds;
@@ -535,7 +538,7 @@ TEST(sidre_attribute,overloads)
   EXPECT_FALSE(view->hasAttributeValue(name_dump));
 
   // Check some errors
-  EXPECT_EQ(0, view->getAttributeScalar<int>(AXOM_NULLPTR));
+  EXPECT_EQ(0, view->getAttributeScalar<int>(attr_null));
   EXPECT_EQ(0, view->getAttributeScalar<int>(InvalidIndex));
   EXPECT_EQ(0, view->getAttributeScalar<int>("noname"));
 
