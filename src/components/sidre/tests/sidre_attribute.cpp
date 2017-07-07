@@ -416,30 +416,43 @@ TEST(sidre_attribute,set_default)
 //------------------------------------------------------------------------------
 // Access attributes by name or index
 
-#if 0
 TEST(sidre_attribute,overloads)
 {
-  IndexType icolor = color->getIndex();
+   bool ok;
+   DataStore * ds = new DataStore();
 
-  Group * root = ds.getRoot();
-  View * view = root->createView("var1");
+  // Create string and scalar attributes
+  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
+  EXPECT_TRUE( attr_color != AXOM_NULLPTR );
+  IndexType icolor = attr_color->getIndex();
+  EXPECT_EQ(0, icolor);
 
-  view->setAttributeString(color, color_red);
-  view->setAttributeString(icolor, color_red);
-  view->setAttributeString("color", color_red);
+  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
+  EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
+  IndexType idump = attr_dump->getIndex();
+  EXPECT_EQ(1, idump);
 
-  const char * attr1 = view->getAttributeString(color);
+  //----------------------------------------
+  Group * root = ds->getRoot();
+  View * view = root->createView("view1");
+
+  ok = view->setAttributeString(attr_color, color_red);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeString(icolor, color_red);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeString("color", color_red);
+  EXPECT_TRUE(ok);
+
+  const char * attr1 = view->getAttributeString(attr_color);
+  EXPECT_EQ(color_red, attr1);
   const char * attr2 = view->getAttributeString(icolor);
+  EXPECT_EQ(color_red, attr2);
   const char * attr3 = view->getAttributeString("color");
+  EXPECT_EQ(color_red, attr3);
 
-
-  view = root->createView("var2");
-  // Get attributes without setting returns default value
-  const char * attr1 = view->getAttributeString(color);
 
   delete ds;
 }
-#endif
 
 //------------------------------------------------------------------------------
 

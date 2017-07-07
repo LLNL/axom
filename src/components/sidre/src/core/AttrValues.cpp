@@ -146,11 +146,32 @@ bool AttrValues::createNode(const Attribute * attr)
    
   return true;
 }
+bool AttrValues::createNode(IndexType iattr)
+{
+  if (m_values == AXOM_NULLPTR)
+  {
+    m_values = new(std::nothrow) Values( );
+  }
+
+  if ((size_t) iattr >= m_values->size())
+  {
+    // Create all attributes up to iattr, push back empty Nodes
+    m_values->reserve(iattr + 1);
+    for(int n=m_values->size(); n < iattr + 1; ++n)
+    {
+      m_values->push_back(Node());
+    }
+  }
+   
+  return true;
+}
 
 /*
  *************************************************************************
  *
- * Return attribute.
+ * Return a scalar attribute value.
+ *
+ * The caller must ensure that attr is not NULL.
  *
  *************************************************************************
  */
@@ -170,19 +191,14 @@ Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
 /*
  *************************************************************************
  *
- * Return attribute.
+ * Return a string attribute value.
+ *
+ * The caller must ensure that attr is not NULL.
  *
  *************************************************************************
  */
 const char * AttrValues::getString( const Attribute * attr ) const
 {
-  if (attr == AXOM_NULLPTR)
-  {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getString: called without an Attribute");
-    return AXOM_NULLPTR;
-  }
-
   if (attr->getTypeID() != CHAR8_STR_ID)
   {
     SLIC_CHECK_MSG(attr->getTypeID() == CHAR8_STR_ID,

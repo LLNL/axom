@@ -986,12 +986,19 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View.
+   * \brief Set Attribute for a View from Attribute index.
    */
-  bool setAttributeString( const Attribute * attr, const std::string & value )
-  {
-    return m_attr_values.setString(attr, value);
-  }
+  bool setAttributeString( IndexType indx, const std::string & value );
+
+  /*!
+   * \brief Set Attribute for a View from Attribute name.
+   */
+  bool setAttributeString( const std::string & name, const std::string & value );
+
+  /*!
+   * \brief Set Attribute for a View from Attribute pointer.
+   */
+  bool setAttributeString( const Attribute * attr, const std::string & value );
 
   /*!
    * \brief Return scalar attribute value.
@@ -1017,14 +1024,25 @@ public:
   }
 
   /*!
-   * \brief Return a string attribute.
+   * \brief Return a string attribute from the Attribute index.
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeString( const Attribute * attr ) const
-  {
-    return m_attr_values.getString(attr);
-  }
+  const char * getAttributeString( IndexType idx ) const;
+
+  /*!
+   * \brief Return a string attribute from the Attribute name.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const char * getAttributeString( const std::string & name ) const;
+
+  /*!
+   * \brief Return a string attribute from the Attribute pointer.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const char * getAttributeString( const Attribute * attr ) const;
 
   /*!
    * \brief Return reference to attribute node.

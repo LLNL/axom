@@ -193,24 +193,6 @@ public:
    */
   SidreLength getNumAttributes() const;
 
-#if 0
-  /*!
-   * \brief Return (non-const) pointer to Attribute object with given index,
-   *        or AXOM_NULLPTR if none exists.
-   */
-  Attribute * getAttribute( IndexType idx ) const;
-
-  /*!
-   * \brief Create an undescribed Attribute object and return a pointer to it.
-   *
-   *        The Attribute must be described before it can be allocated.
-   *
-   *        The Attribute object is assigned a unique index when created and the
-   *        Attribute object is owned by the DataStore object.
-   */
-  Attribute * createAttribute();
-#endif
-
   /*!
    * \brief Create a Attribute object with a default scalar value.
    *

@@ -92,6 +92,7 @@ private:
    * View::createAttributeString.
    */
   bool createNode(const Attribute * attr);
+  bool createNode(IndexType idx);
 
   /*!
    * \brief Set attribute to its default value.
@@ -142,10 +143,10 @@ private:
       return false;
     }
 
-    bool ok = createNode(attr);
+    IndexType iattr = attr->getIndex();
+    bool ok = createNode(iattr);
     if (ok)
     {
-      IndexType iattr = attr->getIndex();
       (*m_values)[iattr] = value;
     }
     return ok;
@@ -169,12 +170,12 @@ private:
   }
 
   /*!
-   * \brief Return a value.
+   * \brief Return a scalar attribute value.
    */
   Node::ConstValue getScalar( const Attribute * attr ) const;
 
   /*!
-   * \brief Return a string value.
+   * \brief Return a string attribute value.
    */
   const char * getString( const Attribute * attr ) const;
 

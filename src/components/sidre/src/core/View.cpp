@@ -1366,5 +1366,129 @@ bool View::hasAttributeValue( const Attribute * attr ) const
   return m_attr_values.hasValue(iattr);
 }
 
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View from Attribute name.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeString( IndexType idx, const std::string & value )
+{
+  const Attribute * attr = 
+    getOwningGroup()->getDataStore()->getAttribute(idx);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return false;
+  }
+
+  return m_attr_values.setString(attr, value);
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View from Attribute name.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeString( const std::string & name, const std::string & value )
+{
+  const Attribute * attr = 
+    getOwningGroup()->getDataStore()->getAttribute(name);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return false;
+  }
+
+  return m_attr_values.setString(attr, value);
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View from Attribute pointer.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeString( const Attribute * attr, const std::string & value )
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "setAttributeString: called without an Attribute");
+    return false;
+  }
+    
+  return m_attr_values.setString(attr, value);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return a string attribute from the Attribute index.
+ *
+ * If the value has not been explicitly set, return the current default.
+ *
+ *************************************************************************
+ */
+const char * View::getAttributeString( IndexType idx ) const
+{
+  const Attribute * attr = 
+    getOwningGroup()->getDataStore()->getAttribute(idx);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return AXOM_NULLPTR;
+  }
+
+  return m_attr_values.getString(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return a string attribute from the Attribute name.
+ *
+ * If the value has not been explicitly set, return the current default.
+ *
+ *************************************************************************
+ */
+const char * View::getAttributeString( const std::string & name ) const
+{
+  const Attribute * attr = 
+    getOwningGroup()->getDataStore()->getAttribute(name);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return AXOM_NULLPTR;
+  }
+
+  return m_attr_values.getString(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return a string attribute from the Attribute pointer.
+ *
+ * If the value has not been explicitly set, return the current default.
+ *
+ *************************************************************************
+ */
+const char * View::getAttributeString( const Attribute * attr ) const
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "getAttributeString: called without an Attribute");
+    return AXOM_NULLPTR;
+  }
+
+  return m_attr_values.getString(attr);
+}
+
 } /* end namespace sidre */
 } /* end namespace axom */
