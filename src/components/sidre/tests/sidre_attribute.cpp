@@ -432,6 +432,9 @@ TEST(sidre_attribute,overloads)
   IndexType idump = attr_dump->getIndex();
   EXPECT_EQ(1, idump);
 
+  EXPECT_EQ(attr_color, ds->getAttribute(name_color));
+  EXPECT_EQ(attr_color, ds->getAttribute(icolor));
+
   //----------------------------------------
   Group * root = ds->getRoot();
   View * view = root->createView("view1");
@@ -465,6 +468,10 @@ TEST(sidre_attribute,overloads)
   EXPECT_EQ(dump_yes, attr2b);
   int attr3b = view->getAttributeScalar("dump");
   EXPECT_EQ(dump_yes, attr3b);
+
+  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(attr_dump));
+  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>(idump));
+  EXPECT_EQ(dump_yes, view->getAttributeScalar<int>("dump"));
 
   delete ds;
 }
