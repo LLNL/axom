@@ -118,34 +118,6 @@ bool AttrValues::setToDefault( const Attribute * attr )
  *
  *************************************************************************
  */
-bool AttrValues::createNode(const Attribute * attr)
-{
-  if (attr == AXOM_NULLPTR)
-  {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "createNode: called without an Attribute");
-    return false;
-  }
-
-  if (m_values == AXOM_NULLPTR)
-  {
-    m_values = new(std::nothrow) Values( );
-  }
-
-  IndexType iattr = attr->getIndex();
-
-  if ((size_t) iattr >= m_values->size())
-  {
-    // Create all attributes up to iattr, push back empty Nodes
-    m_values->reserve(iattr + 1);
-    for(int n=m_values->size(); n < iattr + 1; ++n)
-    {
-      m_values->push_back(Node());
-    }
-  }
-   
-  return true;
-}
 bool AttrValues::createNode(IndexType iattr)
 {
   if (m_values == AXOM_NULLPTR)
@@ -177,13 +149,6 @@ bool AttrValues::createNode(IndexType iattr)
  */
 Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
 {
-  if (attr == AXOM_NULLPTR)
-  {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getScalar: called without an Attribute");
-    return getEmptyNodeRef().value();
-  }
-
   const Node & node = getValueNodeRef(attr);
   return node.value();
 }

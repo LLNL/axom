@@ -948,6 +948,19 @@ public:
 //@{
 //!  @name View query and accessor methods
 
+//  Attribute * getAttribute(IndexType idx);
+
+  const Attribute * getAttribute(IndexType idx) const;
+
+  //  Attribute * getAttribute(const std::string & name);
+
+  const Attribute * getAttribute(const std::string & name) const;
+
+//@}
+
+//@{
+//!  @name Attribute Value query and accessor methods
+
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
@@ -977,11 +990,48 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View.
+   * \brief Set Attribute for a View from Attribute index.
+   */
+  template<typename ScalarType>
+  bool setAttributeScalar( IndexType idx, ScalarType value )
+  {
+    const Attribute * attr = getAttribute(idx);
+    if (attr == AXOM_NULLPTR)
+    {
+      return false;
+    }
+
+    return m_attr_values.setScalar(attr, value);
+  }
+
+  /*!
+   * \brief Set Attribute for a View from Attribute name.
+   */
+  template<typename ScalarType>
+  bool setAttributeScalar( const std::string & name, ScalarType value )
+  {
+    const Attribute * attr = getAttribute(name);
+    if (attr == AXOM_NULLPTR)
+    {
+      return false;
+    }
+
+    return m_attr_values.setScalar(attr, value);
+  }
+
+  /*!
+   * \brief Set Attribute for a View from Attribute pointer.
    */
   template<typename ScalarType>
   bool setAttributeScalar( const Attribute * attr, ScalarType value )
   {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                    "setAttributeScalar: called without an Attribute");
+      return false;
+    }
+    
     return m_attr_values.setScalar(attr, value);
   }
 
@@ -1001,11 +1051,46 @@ public:
   bool setAttributeString( const Attribute * attr, const std::string & value );
 
   /*!
-   * \brief Return scalar attribute value.
+   * \brief Return scalar attribute value from Attribute indx.
+   */
+  Node::ConstValue getAttributeScalar(IndexType idx) const
+  {
+    const Attribute * attr = getAttribute(idx);
+    if (attr == AXOM_NULLPTR)
+    {
+      return m_attr_values.getEmptyNodeRef().value();
+    }
+
+    return m_attr_values.getScalar(attr);
+  }
+
+  /*!
+   * \brief Return scalar attribute value from Attribute name.
+   */
+  Node::ConstValue getAttributeScalar(const std::string & name) const
+  {
+    const Attribute * attr = getAttribute(name);
+    if (attr == AXOM_NULLPTR)
+    {
+      return m_attr_values.getEmptyNodeRef().value();
+    }
+
+    return m_attr_values.getScalar(attr);
+  }
+
+  /*!
+   * \brief Return scalar attribute value from Attribute pointer.
    */
   Node::ConstValue getAttributeScalar(const Attribute * attr) const
   {
-      return m_attr_values.getScalar(attr);
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+  		     "getScalar: called without an Attribute");
+      return m_attr_values.getEmptyNodeRef().value();
+    }
+
+    return m_attr_values.getScalar(attr);
   }
 
   /*!

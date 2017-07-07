@@ -91,7 +91,6 @@ private:
    * Called as part of View::createAttributeScalar and
    * View::createAttributeString.
    */
-  bool createNode(const Attribute * attr);
   bool createNode(IndexType idx);
 
   /*!
@@ -117,10 +116,10 @@ private:
       return false;
     }
 
-    bool ok = createNode(attr);
+    IndexType iattr = attr->getIndex();
+    bool ok = createNode(iattr);
     if (ok)
     {
-      IndexType iattr = attr->getIndex();
       (*m_values)[iattr] = value;
     }
     return ok;
@@ -160,10 +159,10 @@ private:
    */
   bool setNode(const Attribute * attr, const Node & node)
   {
-    bool ok = createNode(attr);
+    IndexType iattr = attr->getIndex();
+    bool ok = createNode(iattr);
     if (ok)
     {
-      IndexType iattr = attr->getIndex();
       (*m_values)[iattr] = node;
     }
     return ok;

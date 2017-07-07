@@ -1328,6 +1328,65 @@ bool View::rename(const std::string& new_name)
 /*
  *************************************************************************
  *
+ * Return pointer to Attribute.
+ *
+ *************************************************************************
+ */
+#if 0
+Attribute * View::getAttribute(IndexType idx)
+{
+  const Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(idx);
+  return attr;
+}
+#endif
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute.
+ *
+ *************************************************************************
+ */
+const Attribute * View::getAttribute(IndexType idx) const
+{
+  const Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(idx);
+  return attr;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute.
+ *
+ *************************************************************************
+ */
+#if 0
+Attribute * View::getAttribute(const std::string & name)
+{
+  const Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(name);
+  return attr;
+}
+#endif
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute.
+ *
+ *************************************************************************
+ */
+const Attribute * View::getAttribute(const std::string & name) const
+{
+  const Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(name);
+  return attr;
+}
+
+/*
+ *************************************************************************
+ *
  * Return true if the attribute has been explicitly set; else false.
  *
  *************************************************************************

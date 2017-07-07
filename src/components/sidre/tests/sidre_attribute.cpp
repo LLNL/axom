@@ -436,6 +436,7 @@ TEST(sidre_attribute,overloads)
   Group * root = ds->getRoot();
   View * view = root->createView("view1");
 
+  // string
   ok = view->setAttributeString(attr_color, color_red);
   EXPECT_TRUE(ok);
   ok = view->setAttributeString(icolor, color_red);
@@ -443,13 +444,27 @@ TEST(sidre_attribute,overloads)
   ok = view->setAttributeString("color", color_red);
   EXPECT_TRUE(ok);
 
-  const char * attr1 = view->getAttributeString(attr_color);
-  EXPECT_EQ(color_red, attr1);
-  const char * attr2 = view->getAttributeString(icolor);
-  EXPECT_EQ(color_red, attr2);
-  const char * attr3 = view->getAttributeString("color");
-  EXPECT_EQ(color_red, attr3);
+  const char * attr1a = view->getAttributeString(attr_color);
+  EXPECT_EQ(color_red, attr1a);
+  const char * attr2a = view->getAttributeString(icolor);
+  EXPECT_EQ(color_red, attr2a);
+  const char * attr3a = view->getAttributeString("color");
+  EXPECT_EQ(color_red, attr3a);
 
+  // scalar
+  ok = view->setAttributeScalar(attr_dump, dump_yes);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeScalar(idump, dump_yes);
+  EXPECT_TRUE(ok);
+  ok = view->setAttributeScalar("dump", dump_yes);
+  EXPECT_TRUE(ok);
+
+  int attr1b = view->getAttributeScalar(attr_dump);
+  EXPECT_EQ(dump_yes, attr1b);
+  int attr2b = view->getAttributeScalar(idump);
+  EXPECT_EQ(dump_yes, attr2b);
+  int attr3b = view->getAttributeScalar("dump");
+  EXPECT_EQ(dump_yes, attr3b);
 
   delete ds;
 }
@@ -494,7 +509,7 @@ TEST(sidre_attribute,as_node)
 
 //------------------------------------------------------------------------------
 
-// Query Attributes on a View
+// Test looping over Attributes and Attribute Values.
 
 TEST(sidre_attribute, loop_attributes)
 {
