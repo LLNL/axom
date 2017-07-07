@@ -1002,6 +1002,21 @@ public:
   }
 
   /*!
+   * \brief Lightweight templated wrapper around getAttributeScalar()
+   *        that can be used when you are calling
+   *        getAttributeScalar(), but not assigning the return type.
+   *
+   * \sa getAttributeScalar()
+   */
+  template<typename DataType>
+  DataType getAttributeScalar(const Attribute *attr)
+  {
+    const Node & node = m_attr_values.getValueNodeRef(attr);
+    DataType data = node.value();
+    return data;
+  }
+
+  /*!
    * \brief Return a string attribute.
    *
    * If the value has not been explicitly set, return the current default.
