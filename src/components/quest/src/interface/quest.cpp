@@ -323,7 +323,7 @@ namespace quest {
                 std::string fmt = "[Quest <LEVEL>]: <MESSAGE>\n";
                 ls = new slic::GenericOutputStream(&std::cout, fmt);
               #endif
-                slic::createLogger(questLoggerName, slic::inherit::errors_and_warnings);
+                slic::createLogger(questLoggerName);
                 slic::activateLogger(questLoggerName);
                 slic::setLoggingMsgLevel( slic::message::Info );
                 slic::addStreamToAllMsgLevels(ls);
@@ -405,6 +405,8 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   {
       accelerator3D.initializeContainmentTree(surface_mesh);
   }
+
+  accelerator3D.teardownQuestLogger();
 }
 #else
 //------------------------------------------------------------------------------

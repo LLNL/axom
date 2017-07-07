@@ -1,5 +1,5 @@
 #
-# API for Datastore
+# API for Sidre
 #
 copyright:
   -
@@ -20,6 +20,7 @@ options:
   C_prefix: SIDRE_
   F_module_per_class: False
   F_impl_filename_library_template: wrapf{library_lower}.F
+  F_module_name_library_template: axom_{library_lower}
 
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
@@ -102,6 +103,7 @@ classes:
     F_derived_name:  SidreGroup
 
     methods:
+    -  decl: IndexType getIndex()
     -  decl: const std::string& getName+len(MAXNAMESIZE)() const
 #    -  decl: Group* getParent()
     -  decl: const Group* getParent() const
@@ -220,9 +222,12 @@ classes:
 #    -  decl: bool hasGroup( IndexType idx )
     -  decl: bool hasChildGroup( const string& name )
     -  decl: Group * getGroup( const std::string& path )
+       function_suffix: _from_name
        PY_error_pattern: PY_null_to_none
 #    -  decl: Group const * getGroup( const std::string& path ) const
-#    -  decl: Group * getGroup( IndexType idx)
+    -  decl: Group * getGroup( IndexType idx)
+       function_suffix: _from_index
+       PY_error_pattern: PY_null_to_none
 #    -  decl: Group const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
     -  decl: const std::string& getGroupName+len(MAXNAMESIZE)(IndexType idx) const
@@ -253,7 +258,7 @@ classes:
     -  decl: void save(const std::string& file_path, const std::string& protocol) const
 #   -  decl: void save(const hid_t& h5_id) const
 #      function_suffix: _hdf
-    -  decl: void load(const std::string& file_path, const std::string& protocol)
+    -  decl: void load(const std::string& file_path, const std::string& protocol, bool preserve_contents = false)
 #   -  decl: void load(const hid_t& h5_id)
 #      function_suffix: _hdf
     -  decl: void loadExternalData(const std::string& file_path)
@@ -375,6 +380,7 @@ classes:
     - decl: bool isOpaque() const
     - decl: bool isScalar() const
     - decl: bool isString() const
+    - decl: IndexType getIndex()
     - decl: const std::string& getName+len(MAXNAMESIZE)() const
     - decl: Buffer* getBuffer()
 #    - decl: Buffer const* getBuffer() const
@@ -463,7 +469,7 @@ patterns:
     # return a blank field string if an error occurs
     C_invalid_name_as_buffer: |
         if (! nameIsValid({cpp_var})) {{
-            std::memset({f_string}, ' ', {f_string_len});
+            std::memset({c_var}, ' ', {c_var_len});
             return;
         }}
     PY_invalid_name: |

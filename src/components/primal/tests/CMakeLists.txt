@@ -11,10 +11,11 @@
 set( primal_tests
     primal_boundingbox.cpp
     primal_bvhtree.cpp
-    primal_intersection_impl.cpp
-    primal_intersection.cpp
+    primal_clip.cpp
+    primal_intersect_impl.cpp
+    primal_intersect.cpp
     primal_numeric_array.cpp
-    primal_orient.cpp
+    primal_orientation.cpp
     primal_point.cpp
     primal_squared_distance.cpp
     primal_triangle.cpp
@@ -27,7 +28,7 @@ foreach ( test ${primal_tests} )
    get_filename_component( test_name ${test} NAME_WE )
 
    blt_add_executable(
-        NAME       ${test_name}
+        NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON primal slic gtest
@@ -35,7 +36,7 @@ foreach ( test ${primal_tests} )
 
    blt_add_test(
         NAME    ${test_name}
-        COMMAND ${test_name}
+        COMMAND ${test_name}_test
        )
 
 endforeach()

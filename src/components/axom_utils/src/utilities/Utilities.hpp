@@ -33,6 +33,26 @@ namespace utilities {
  */
   void processAbort();
 
+  /*!
+   * \brief Returns the absolute value of x
+   * \param x value whose absolute value is computed
+   * \return abs(x) the absolute value of x
+   */
+  template < typename T >
+  inline T abs( const T& x) { return ( (x < 0)? -x : x ); }
+
+  /*!
+   * \brief Swaps the values of a, b
+   * \param [in,out] a 1st object to swap
+   * \param [in,out] b 2nd object to swap
+   */
+  template < typename T >
+  inline void swap( T& a, T& b )
+  {
+     T tmp = a;
+     a = b; b = tmp;
+  }
+
 /*!
  * \brief Fuzzy comparison of two real valued quantities
  *

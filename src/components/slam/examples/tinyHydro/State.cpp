@@ -23,11 +23,12 @@ namespace tinyHydro {
 
 //----------------------------------------------
   State::State(PolygonMeshXY & theMesh)
-      : mesh(&theMesh)
-        , nParts(0)
-        , maxNParts(100)
+      : mesh(&theMesh),
+        nParts(0),
+        maxNParts(100)
   {
-    SLIC_DEBUG("\tin State c'tor");
+    SLIC_DEBUG("in State c'tor");
+
     parts = new Part[maxNParts];
 
     velocity = NodalVectorField( &mesh->nodes);
@@ -48,9 +49,10 @@ namespace tinyHydro {
 // addPart
   void State::addPart(Part * partPtr)
   {
-    SLIC_DEBUG("\tin State::addPart");
-    SLIC_ASSERT_MSG( nParts < maxNParts
-        , "tried to add more than " << maxNParts << " parts, limit is hard-wired allowed, craaashing!");
+    SLIC_DEBUG("in State::addPart");
+
+    SLIC_ASSERT_MSG( nParts < maxNParts,
+        "tried to add more than " << maxNParts << " parts, limit is hard-wired allowed, craaashing!");
 
     parts[nParts] = *partPtr; // copy in part data to the list
     nParts++; // now is next unused Part ptr
@@ -59,9 +61,9 @@ namespace tinyHydro {
 //----------------------------------------------
 // Copy operator
   State::State(const State & arg)
-      : mesh(arg.mesh)
-        , nParts(arg.nParts)
-        , maxNParts(arg.maxNParts)
+      : mesh(arg.mesh),
+        nParts(arg.nParts),
+        maxNParts(arg.maxNParts)
   {
     // printf("in State::copy \n");
 

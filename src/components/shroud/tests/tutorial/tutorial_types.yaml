@@ -4,11 +4,11 @@
 types:
 
   Class1:
-    base = wrapped
-    cpp_type = Class1
-    c_type = TUT_class1
-    f_derived_type = class1
-    f_to_c = "{f_var}%get_instance()"
+    base: wrapped
+    cpp_type: Class1
+    c_type: TUT_class1
+    f_derived_type: class1
+    f_to_c: "{f_var}%get_instance()"
     f_module:
       tutorial_mod:
       - class1

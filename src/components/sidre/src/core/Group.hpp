@@ -122,6 +122,7 @@ public:
   // private members.
   //
   friend class DataStore;
+  friend class View;
 
 
 //@{
@@ -133,6 +134,14 @@ public:
   char getPathDelimiter() const
   {
     return s_path_delimiter;
+  }
+
+  /*!
+   * \brief Return index of Group object within parent Group.
+   */
+  IndexType getIndex() const
+  {
+    return m_index;
   }
 
   /*!
@@ -180,7 +189,9 @@ public:
    * \brief Return pointer to non-const parent Group of a Group.
    *
    * Note that if this method is called on the root Group in a
-   * DataStore, AXOM_NULLPTR is returned.
+   * DataStore, a pointer to itself is returned.
+   * This allows root->getParent()->getParent() to always work similar
+   * to how the filesystem's `cd /;cd ../..` works.
    */
   Group * getParent()
   {
@@ -224,6 +235,14 @@ public:
   const DataStore * getDataStore() const
   {
     return m_datastore;
+  }
+
+  /*!
+   * \brief Return true if this Group is the DataStore's root Group.
+   */
+  bool isRoot() const
+  {
+    return m_parent == this;
   }
 
 //@}
@@ -761,55 +780,6 @@ public:
 
 
 //@{
-//!  @name View attach and detach methods.
-
-  /*!
-   * \brief Attach View object to this Group.
-   */
-  View * attachView(View * view);
-
-  /*!
-   * \brief Detach View object from this Group.
-   */
-  View * detachView(const View * view)
-  {
-    return detachView(view->getName());
-  }
-
-  /*!
-   * \brief Detach View with given name from this Group.
-   */
-  View * detachView(const std::string& name);
-
-  /*!
-   * \brief Detach View with given index from this Group.
-   */
-  View * detachView(IndexType idx);
-
-//@}
-
-//@{
-//!  @name Group attach and detach methods.
-
-  /*!
-   * \brief Attach Group object to this Group.
-   */
-  Group * attachGroup(Group * view);
-
-  /*!
-   * \brief Detach Child Group with given name from this Group.
-   */
-  Group * detachGroup(const std::string& name);
-
-  /*!
-   * \brief Detach Child Group with given index from this Group.
-   */
-  Group * detachGroup(IndexType idx);
-
-//@}
-
-
-//@{
 //!  @name Child Group query methods.
 
   /*!
@@ -1098,24 +1068,26 @@ public:
   void save( const hid_t& h5_id,
              const std::string &protocol = "sidre_hdf5") const;
 
-
   /*!
    * \brief Load the Group from a file.
    *
    * \param path      file path
    * \param protocol  I/O protocol
+   * \param preserve_contents   Preserve existing contents of group if true
    */
   void load(const std::string& path,
-            const std::string& protocol = "sidre_hdf5");
+            const std::string& protocol = "sidre_hdf5",
+            bool preserve_contents = "false");
 
   /*!
    * \brief Load the Group from an hdf5 handle.
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   * \param preserve_contents   Preserve existing contents of group if true
    */
   void load( const hid_t& h5_id,
-             const std::string &protocol = "sidre_hdf5");
-
+             const std::string &protocol = "sidre_hdf5",
+             bool preserve_contents = false);
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1167,13 +1139,10 @@ private:
 
   /*!
    *  \brief Private ctor that creates a Group with given name
-   *         in given parent Group.
-   */
-  Group(const std::string& name, Group * parent);
-
-  /*!
-   *  \brief Private ctor that creates a Group with given name
-   *         in the given DataStore root Group.
+   *         in the given DataStore.
+   *
+   *  attachGroup must be called on a newly created Group to insert it
+   *  into the hierarchy. The root group is an exception to this rule.
    */
   Group(const std::string& name, DataStore * datastore);
 
@@ -1181,6 +1150,56 @@ private:
    * \brief Destructor destroys all Views and child Groups.
    */
   ~Group();
+
+//@}
+
+
+//@{
+//!  @name View attach and detach methods.
+
+  /*!
+   * \brief Attach View object to this Group.
+   */
+  View * attachView(View * view);
+
+  /*!
+   * \brief Detach View object from this Group.
+   */
+  View * detachView(const View * view)
+  {
+    return detachView(view->getName());
+  }
+
+  /*!
+   * \brief Detach View with given name from this Group.
+   */
+  View * detachView(const std::string& name);
+
+  /*!
+   * \brief Detach View with given index from this Group.
+   */
+  View * detachView(IndexType idx);
+
+//@}
+
+
+//@{
+//!  @name Group attach and detach methods.
+
+  /*!
+   * \brief Attach Group object to this Group.
+   */
+  Group * attachGroup(Group * view);
+
+  /*!
+   * \brief Detach Child Group with given name from this Group.
+   */
+  Group * detachGroup(const std::string& name);
+
+  /*!
+   * \brief Detach Child Group with given index from this Group.
+   */
+  Group * detachGroup(IndexType idx);
 
 //@}
 
@@ -1200,7 +1219,6 @@ private:
   void destroyViewAndData( View * view );
 
 //@}
-
 
 
 //@{
@@ -1228,7 +1246,7 @@ private:
    *
    * Note: This is for the "sidre_{zzz}" protocols.
    */
-  void importFrom(conduit::Node& node);
+  void importFrom(conduit::Node& node, bool preserve_contents = false);
 
   /*!
    * \brief Private method to copy Group from Conduit Node.
@@ -1247,7 +1265,7 @@ private:
    *
    * Note: This is for the "conduit_{zzz}" protocols.
    */
-  void importConduitTree(conduit::Node& node);
+  void importConduitTree(conduit::Node& node, bool preserve_contents = false);
 
 
 //@}
@@ -1294,6 +1312,9 @@ private:
 
   /// Name of this Group object.
   std::string m_name;
+
+  /// Index of this Group object within m_parent.
+  IndexType m_index;
 
   /// Parent Group of this Group object.
   Group * m_parent;

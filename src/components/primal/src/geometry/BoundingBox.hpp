@@ -266,6 +266,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Intersects the current bounding box with another bounding box
+   * \param [in] otherBox The other box to intersect
+   * \note If the intersection is empty, the bounding box will be cleared
+   * \return A reference to the bounding box after it has been intersected
+   *****************************************************************************
+   */
+  BoundingBox& intersect(const BoundingBox& otherBox);
+
+  /*!
+   *****************************************************************************
    * \brief Expands the lower and upper bounds by the given amount.
    * \param [in] expansionAmount an absolute amount to expand
    * \note Moves min & max point expansionAmount away from the center.
@@ -338,14 +348,14 @@ public:
   /*!
    *****************************************************************************
    * \param [in] otherBB the bounding box that we are checking.
-   * \return status true if bb intersects, else false.
+   * \return status true if bb intersects otherBB, else false.
    * \note We are allowing the other bounding box to have a different coordinate
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
    *****************************************************************************
    */
   template < typename OtherType >
-  bool intersects( const BoundingBox< OtherType, NDIMS >& otherBB ) const;
+  bool intersectsWith( const BoundingBox< OtherType, NDIMS >& otherBB ) const;
 
   /*!
    *****************************************************************************
@@ -519,7 +529,7 @@ bool BoundingBox< T, NDIMS >::contains(
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherType  >
-bool BoundingBox< T,NDIMS >::intersects(
+bool BoundingBox< T,NDIMS >::intersectsWith(
   const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
   // AABBs cannot intersect if they are separated along any dimension
@@ -667,6 +677,24 @@ std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
 {
   os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
   return os;
+}
+
+//------------------------------------------------------------------------------
+template < typename T,int NDIMS >
+BoundingBox< T, NDIMS >& BoundingBox< T,NDIMS >::intersect(
+  const BoundingBox& otherBox)
+{
+
+  for (int i=0; i< NDIMS; ++i) {
+    m_min[i] = std::max( m_min[i], otherBox.m_min[i]);
+    m_max[i] = std::min( m_max[i], otherBox.m_max[i]);
+  }
+
+  if (!isValid() ) {
+    clear();
+  }
+
+  return *this;
 }
 
 //------------------------------------------------------------------------------

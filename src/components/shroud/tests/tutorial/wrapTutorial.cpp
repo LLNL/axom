@@ -2,12 +2,20 @@
 // This is generated code, do not edit
 // wrapTutorial.cpp
 #include "wrapTutorial.h"
+#include <cstring>
 #include <string>
 #include "shroudrt.hpp"
 #include "tutorial.hpp"
 
-extern "C" {
 namespace tutorial {
+
+// splicer begin CXX_definitions
+// splicer end CXX_definitions
+
+extern "C" {
+
+// splicer begin C_definitions
+// splicer end C_definitions
 
 // void Function1()
 // function_index=3
@@ -29,7 +37,7 @@ double TUT_function2(double arg1, int arg2)
 // splicer end function.function2
 }
 
-// void Sum(int len+intent(in)+value, int * values+dimension((*))+intent(in), int * result+intent(out))
+// void Sum(int len+intent(in)+value, int * values+dimension(len)+intent(in), int * result+intent(out))
 // function_index=5
 void TUT_sum(int len, int * values, int * result)
 {
@@ -59,15 +67,19 @@ void TUT_function3b(const bool arg1, bool * arg2, bool * arg3)
 // splicer end function.function3b
 }
 
-// void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(LSH_F_rv))
+// void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string * SH_F_rv+intent(out)+len(NSH_F_rv))
 // function_index=34
-void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv)
+void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin function.function4a_bufferify
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
     const std::string SH_rv = Function4a(SH_arg1, SH_arg2);
-    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end function.function4a_bufferify
 }
@@ -80,19 +92,24 @@ const char * TUT_function4b(const char * arg1, const char * arg2)
     const std::string SH_arg1(arg1);
     const std::string SH_arg2(arg2);
     const std::string & SH_rv = Function4b(SH_arg1, SH_arg2);
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.function4b
 }
 
-// void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Loutput))
+// void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), std::string & output+intent(out)+len(Noutput))
 // function_index=35
-void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput)
+void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Noutput)
 {
 // splicer begin function.function4b_bufferify
     const std::string SH_arg1(arg1, Larg1);
     const std::string SH_arg2(arg2, Larg2);
     const std::string & SH_rv = Function4b(SH_arg1, SH_arg2);
-    shroud_FccCopy(output, Loutput, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(output, ' ', Noutput);
+    } else {
+      shroud_FccCopy(output, Noutput, SH_rv.c_str());
+    }
     return;
 // splicer end function.function4b_bufferify
 }
@@ -317,7 +334,8 @@ int TUT_enumfunc(int arg)
 {
 // splicer begin function.enumfunc
     EnumTypeID SH_rv = enumfunc(static_cast<EnumTypeID>(arg));
-    return static_cast<int>(SH_rv);
+    int XSH_rv = static_cast<int>(SH_rv);
+    return XSH_rv;
 // splicer end function.enumfunc
 }
 
@@ -337,23 +355,26 @@ const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called
     const std::string & SH_rv = LastFunctionCalled();
-    return SH_rv.c_str();
+    const char * XSH_rv = SH_rv.c_str();
+    return XSH_rv;
 // splicer end function.last_function_called
 }
 
-// void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// void LastFunctionCalled(std::string & SH_F_rv+intent(out)+len(NSH_F_rv))+pure
 // function_index=39
-void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
+void TUT_last_function_called_bufferify(char * SH_F_rv, int NSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify
     const std::string & SH_rv = LastFunctionCalled();
-    shroud_FccCopy(SH_F_rv, LSH_F_rv, SH_rv.c_str());
+    if (SH_rv.empty()) {
+      std::memset(SH_F_rv, ' ', NSH_F_rv);
+    } else {
+      shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+    }
     return;
 // splicer end function.last_function_called_bufferify
 }
 
-// splicer begin additional_functions
-// splicer end additional_functions
+}  // extern "C"
 
 }  // namespace tutorial
-}  // extern "C"

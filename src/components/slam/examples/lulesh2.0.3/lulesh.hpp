@@ -10,11 +10,9 @@
 
 
 
-// OpenMP will be compiled in if this flag is set to 1 AND the compiler being
-// used supports it (i.e. the _OPENMP symbol is defined)
-#define USE_OMP 1
+#include "axom/config.hpp"  // defines AXOM_USE_MPI
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 #include <mpi.h>
 
 /*
@@ -26,7 +24,7 @@
  */
 
 #define SEDOV_SYNC_POS_VEL_EARLY 1
-#endif
+#endif // AXOM_USE_MPI
 
 #include <math.h>
 #include <vector>
@@ -36,8 +34,8 @@
 #include "slam/NullSet.hpp"
 #include "slam/RangeSet.hpp"
 #include "slam/IndirectionSet.hpp"
-#include "slam/StaticConstantRelation.hpp"
-#include "slam/StaticVariableRelation.hpp"
+#include "slam/CardinalityPolicies.hpp"
+#include "slam/StaticRelation.hpp"
 #include "slam/DynamicVariableRelation.hpp"
 #include "slam/Map.hpp"
 #include "slam/FieldRegistry.hpp"
@@ -76,37 +74,36 @@ namespace slamLulesh {
 
 
 // Stuff needed for boundary conditions
-// 2 BCs on each of 6 hexahedral faces (12 bits)
-  enum { XI_M_SYMM   = 1 << 0
-         , XI_M_FREE   = 1 << 1
-         , XI_M_COMM   = 1 << 2
-         , XI_M        = XI_M_SYMM | XI_M_FREE | XI_M_COMM
+// 3 BCs on each of 6 hexahedral faces (18 bits)
+  enum { XI_M_SYMM   = 1 << 0,
+         XI_M_FREE   = 1 << 1,
+         XI_M_COMM   = 1 << 2,
+         XI_M        = XI_M_SYMM | XI_M_FREE | XI_M_COMM,
 
-         , XI_P_SYMM   = 1 << 3
-         , XI_P_FREE   = 1 << 4
-         , XI_P_COMM   = 1 << 5
-         , XI_P        = XI_P_SYMM | XI_P_FREE | XI_P_COMM
+         XI_P_SYMM   = 1 << 3,
+         XI_P_FREE   = 1 << 4,
+         XI_P_COMM   = 1 << 5,
+         XI_P        = XI_P_SYMM | XI_P_FREE | XI_P_COMM,
 
-         , ETA_M_SYMM  = 1 << 6
-         , ETA_M_FREE  = 1 << 7
-         , ETA_M_COMM  = 1 << 8
-         , ETA_M       = ETA_M_SYMM | ETA_M_FREE | ETA_M_COMM
+         ETA_M_SYMM  = 1 << 6,
+         ETA_M_FREE  = 1 << 7,
+         ETA_M_COMM  = 1 << 8,
+         ETA_M       = ETA_M_SYMM | ETA_M_FREE | ETA_M_COMM,
 
-         , ETA_P_SYMM  = 1 << 9
-         , ETA_P_FREE  = 1 << 10
-         , ETA_P_COMM  = 1 << 11
-         , ETA_P       = ETA_P_SYMM | ETA_P_FREE | ETA_P_COMM
+         ETA_P_SYMM  = 1 << 9,
+         ETA_P_FREE  = 1 << 10,
+         ETA_P_COMM  = 1 << 11,
+         ETA_P       = ETA_P_SYMM | ETA_P_FREE | ETA_P_COMM,
 
-         , ZETA_M_SYMM = 1 << 12
-         , ZETA_M_FREE = 1 << 13
-         , ZETA_M_COMM = 1 << 14
-         , ZETA_M      = ZETA_M_SYMM | ZETA_M_FREE | ZETA_M_COMM
+         ZETA_M_SYMM = 1 << 12,
+         ZETA_M_FREE = 1 << 13,
+         ZETA_M_COMM = 1 << 14,
+         ZETA_M      = ZETA_M_SYMM | ZETA_M_FREE | ZETA_M_COMM,
 
-         , ZETA_P_SYMM = 1 << 15
-         , ZETA_P_FREE = 1 << 16
-         , ZETA_P_COMM = 1 << 17
-         , ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM}
-  ;
+         ZETA_P_SYMM = 1 << 15,
+         ZETA_P_FREE = 1 << 16,
+         ZETA_P_COMM = 1 << 17,
+         ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM};
 
 // MPI Message Tags
 #define MSG_COMM_SBN      1024
@@ -122,7 +119,7 @@ namespace slamLulesh {
 #define CACHE_ALIGN_REAL(n) \
   (((n) + (CACHE_COHERENCE_PAD_REAL - 1)) & ~(CACHE_COHERENCE_PAD_REAL - 1))
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   struct CommMessageMetadata;
 #endif
 
@@ -153,44 +150,65 @@ namespace slamLulesh {
 
   public:
 
-    typedef axom::slam::Set                                                                       Set;
-    typedef axom::slam::NullSet                                                                   NullSet;
+    typedef axom::slam::Set                                                                   Set;
+    typedef axom::slam::NullSet                                                               NullSet;
 
-    typedef axom::slam::RangeSet                                                                  ElemSet;
-    typedef axom::slam::RangeSet                                                                  NodeSet;
-    typedef axom::slam::RangeSet                                                                  CornerSet;
-    typedef axom::slam::RangeSet                                                                  ExtendedElemSet;
+    typedef axom::slam::RangeSet                                                              ElemSet;
+    typedef axom::slam::RangeSet                                                              NodeSet;
+    typedef axom::slam::RangeSet                                                              CornerSet;
+    typedef axom::slam::RangeSet                                                              ExtendedElemSet;
 
-    typedef axom::slam::VectorIndirectionSet                                                      SymmNodeSet;
+    typedef axom::slam::VectorIndirectionSet                                                  SymmNodeSet;
+
+    typedef axom::slam::policies::STLVectorIndirection<Set::PositionType, Set::PositionType>  STLIndirection;
 
     enum { NODES_PER_ZONE = 8, FACES_PER_ZONE = 1};
-    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE>  ZNStride;
-    typedef axom::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE>  ZFStride;
-    typedef axom::slam::StaticConstantRelation<ZNStride, ElemSet,NodeSet>                         ElemToNodeRelation;
-    typedef axom::slam::StaticConstantRelation<ZFStride, ElemSet,ExtendedElemSet>                 ElemFaceAdjacencyRelation;
+    typedef axom::slam::policies::CompileTimeStride<ElemSet::PositionType, NODES_PER_ZONE>    ZNStride;
+    typedef axom::slam::policies::CompileTimeStride<ElemSet::PositionType, FACES_PER_ZONE>    ZFStride;
+
+    typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZNStride>            ZNCard;
+    typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ElemSet, NodeSet>              ElemToNodeRelation;
+    typedef const ElemToNodeRelation::RelationSet                                             ElemNodeSet;
+
+    typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZFStride>            ZFCard;
+    typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ElemSet, ExtendedElemSet>      ElemFaceAdjacencyRelation;
 
 
-    typedef axom::slam::RangeSet                                                                  RegionSet;
-    typedef axom::slam::StaticVariableRelation                                                    RegionToElemRelation;
+    typedef axom::slam::RangeSet                                                              RegionSet;
+    typedef axom::slam::policies::VariableCardinality<Set::PositionType, STLIndirection>      VariableCardinality;
+    typedef axom::slam::StaticRelation<
+          VariableCardinality,
+          STLIndirection,
+          RegionSet,
+          ElemSet>                                                                            RegionToElemRelation;
+    typedef const RegionToElemRelation::RelationSet RegionElemSet;
 
-    typedef axom::slam::StaticVariableRelation                                                    NodeToCornerRelation;
 
-    typedef axom::slam::Map<Index_t>                                                              ElemIndexMap;
-    typedef axom::slam::Map<Int_t>                                                                ElemIntMap;
-    //typedef axom::slam::Map<Real_t>            ElemRealMap;
+    typedef axom::slam::StaticRelation<
+          VariableCardinality,
+          STLIndirection,
+          NodeSet,
+          CornerSet>                                                                          NodeToCornerRelation;
+    typedef const NodeToCornerRelation::RelationSet NodeCornerSet;
 
-    typedef axom::slam::Map<Index_t>                                                              NodeIndexMap;
-    //typedef axom::slam::Map<Int_t>             NodeIntMap;
-    //typedef axom::slam::Map<Real_t>            NodeRealMap;
+    typedef axom::slam::Map<Index_t>                ElemIndexMap;
+    typedef axom::slam::Map<Int_t>                  ElemIntMap;
+    //typedef axom::slam::Map<Real_t>               ElemRealMap;
 
-    //typedef axom::slam::Map<Index_t>           RegionIndexMap;
+    typedef axom::slam::Map<Index_t>                NodeIndexMap;
+    //typedef axom::slam::Map<Int_t>                NodeIntMap;
+    //typedef axom::slam::Map<Real_t>               NodeRealMap;
+
+    //typedef axom::slam::Map<Index_t>          RegionIndexMap;
     typedef axom::slam::Map<Int_t> RegionIntMap;
-    //typedef axom::slam::Map<Real_t>            RegionRealMap;
+    //typedef axom::slam::Map<Real_t>           RegionRealMap;
 
-    //typedef axom::slam::Map<Index_t>           CornerIndexMap;
-    //typedef axom::slam::Map<Int_t>             CornerIntMap;
-    typedef axom::slam::Map<Real_t> CornerRealMap;
+    //typedef axom::slam::Map<Index_t>          CornerIndexMap;
+    //typedef axom::slam::Map<Int_t>            CornerIntMap;
+    typedef axom::slam::Map<Real_t>             CornerRealMap;
 
+    typedef axom::slam::FieldRegistry<Real_t>   RealsRegistry;
+    typedef axom::slam::FieldRegistry<Index_t>  IntsRegistry;
 
   public:
 
@@ -340,18 +358,18 @@ namespace slamLulesh {
     Index_t         regElemSize(Index_t idx) { return m_regionElementsRel.size(idx); }
     Index_t&        regNumList(Index_t idx) { return m_elemRegNum[idx]; }
     Index_t*        regNumList()            { return &m_elemRegNum[0]; }
-    const Index_t*  regElemlist(Int_t r)    { return &(*m_regionElementsRel.begin(r)); }
+    RegionElemSet   regElemlist(Int_t r)    { return m_regionElementsRel[r]; }
     Index_t         regElemlist(Int_t r, Index_t idx) { return m_regionElementsRel[r][idx]; }
 
-    const Index_t*  nodelist(Index_t idx)    { return &(*m_nodelist.begin(idx)); }
+    ElemNodeSet     nodelist(Index_t idx)    { return m_nodelist[idx]; }
 
     // elem adjacencies through face
-    const Index_t&  lxim(Index_t idx) { return *m_lxim.begin(idx); }
-    const Index_t&  lxip(Index_t idx) { return *m_lxip.begin(idx); }
-    const Index_t&  letam(Index_t idx) { return *m_letam.begin(idx); }
-    const Index_t&  letap(Index_t idx) { return *m_letap.begin(idx); }
-    const Index_t&  lzetam(Index_t idx) { return *m_lzetam.begin(idx); }
-    const Index_t&  lzetap(Index_t idx) { return *m_lzetap.begin(idx); }
+    const Index_t&  lxim(Index_t idx) { return m_lxim[idx][0]; }
+    const Index_t&  lxip(Index_t idx) { return m_lxip[idx][0]; }
+    const Index_t&  letam(Index_t idx) { return m_letam[idx][0]; }
+    const Index_t&  letap(Index_t idx) { return m_letap[idx][0]; }
+    const Index_t&  lzetam(Index_t idx) { return m_lzetam[idx][0]; }
+    const Index_t&  lzetap(Index_t idx) { return m_lzetap[idx][0]; }
 
     // elem face symm/free-surface flag
     Int_t&          elemBC(Index_t idx) { return m_elemBC[idx]; }
@@ -406,14 +424,14 @@ namespace slamLulesh {
 
 
     Index_t         nodeElemCount(Index_t idx) { return m_nodeCornerRelation.size(idx); }
-    const Index_t * nodeElemCornerList(Index_t idx) { return &(*m_nodeCornerRelation.begin(idx)); }
+    NodeCornerSet   nodeElemCornerList(Index_t idx) { return m_nodeCornerRelation[idx]; }
 
 
     /**
      * \brief Returns a const reference to the corner set when threading (omp) is enabled, otherwise, a ref to a NullSet (with no elements).
      */
     const Set&      threadingCornerSet()  const {
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
       return m_cornerSet;
 #else
       static const NullSet s_nullSet;
@@ -489,7 +507,7 @@ namespace slamLulesh {
     // MPI-Related additional data
     //
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
     // Communication Work space
     Real_t *commDataSend;
     Real_t *commDataRecv;
@@ -654,8 +672,8 @@ namespace slamLulesh {
     Index_t m_colMin, m_colMax;
     Index_t m_planeMin, m_planeMax;
 
-    axom::slam::FieldRegistry<double> m_realsRegistry;
-    axom::slam::FieldRegistry<Set::PositionType> m_intsRegistry;
+    RealsRegistry m_realsRegistry;
+    IntsRegistry m_intsRegistry;
   };
 
   typedef Real_t & (Domain::* Domain_member )(Index_t);

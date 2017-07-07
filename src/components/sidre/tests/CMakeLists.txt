@@ -14,26 +14,27 @@ set(gtest_sidre_tests
    sidre_opaque.cpp
    sidre_view.cpp
    sidre_native_layout.cpp
+   sidre_attribute.cpp
    )
 
 set(gtest_sidre_C_tests
-   C_sidre_smoke.cpp
-   C_sidre_buffer.cpp
-   C_sidre_external.cpp
-   C_sidre_group.cpp
-   C_sidre_opaque.cpp
-   C_sidre_types.cpp
-   C_sidre_view.cpp
+   sidre_smoke_C.cpp
+   sidre_buffer_C.cpp
+   sidre_external_C.cpp
+   sidre_group_C.cpp
+   sidre_opaque_C.cpp
+   sidre_types_C.cpp
+   sidre_view_C.cpp
    )
 
 set(fruit_sidre_tests
-   F_sidre_smoke.f
-   F_sidre_group.f
-   F_sidre_buffer.f
-   F_sidre_view.f
-   F_sidre_external.f
-   F_sidre_opaque.f
-   F_sidre_allocatable.f
+   sidre_smoke_F.f
+   sidre_group_F.f
+   sidre_buffer_F.f
+   sidre_view_F.f
+   sidre_external_F.f
+   sidre_opaque_F.f
+   sidre_allocatable_F.f
 )
 
 #
@@ -41,14 +42,14 @@ set(fruit_sidre_tests
 #
 foreach(test ${gtest_sidre_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}
+    blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
                         )
 
     blt_add_test( NAME ${test_name} 
-                  COMMAND ${test_name}
+                  COMMAND ${test_name}_test
                   )
 endforeach()
 
@@ -58,13 +59,13 @@ endforeach()
 if (ENABLE_FORTRAN)
     foreach(test ${gtest_sidre_C_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME ${test_name}
+        blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
                             )
         blt_add_test( NAME ${test_name} 
-                      COMMAND ${test_name}
+                      COMMAND ${test_name}_test
                       )
     endforeach()
 endif()
@@ -75,13 +76,13 @@ endif()
 if (ENABLE_FORTRAN)
     foreach(test ${fruit_sidre_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME ${test_name}
+        blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON sidre conduit conduit_relay hdf5 slic fruit
                             )
         blt_add_test( NAME ${test_name} 
-                      COMMAND ${test_name}
+                      COMMAND ${test_name}_test
                       )
     endforeach()
 endif()

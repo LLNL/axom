@@ -4,11 +4,11 @@
 types:
 
   Names:
-    base = wrapped
-    cpp_type = Names
-    c_type = TES_names
-    f_derived_type = FNames
-    f_to_c = "{f_var}%get_instance()"
+    base: wrapped
+    cpp_type: Names
+    c_type: TES_names
+    f_derived_type: FNames
+    f_to_c: "{f_var}%get_instance()"
     f_module:
       name_module:
       - names

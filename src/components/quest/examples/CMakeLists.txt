@@ -21,24 +21,35 @@ if (BOOST_FOUND)
 endif()
 
 blt_add_executable(
-    NAME        quest_driver
-    SOURCES     quest_driver.cpp
+    NAME        quest_distance_driver_ex
+    SOURCES     distance_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 blt_add_executable(
-    NAME        quest_sphere
-    SOURCES     sphere.cpp
+    NAME        quest_sphere_distance_ex
+    SOURCES     sphere_distance.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 blt_add_executable(
-    NAME        quest_octree_driver
-    SOURCES     octree_driver.cpp
+    NAME        quest_containment_driver_ex
+    SOURCES     containment_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} fmt
+    USE_OPENMP  ${ENABLE_OPENMP}
+    )
+
+blt_add_executable(
+    NAME        quest_mesh_tester_ex
+    SOURCES     mesh_tester.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 if (ENABLE_MPI)
@@ -49,21 +60,23 @@ if (ENABLE_MPI)
   endif()
 
   blt_add_executable(
-    NAME        quest_interface
+    NAME        quest_interface_ex
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
   if (ENABLE_FORTRAN)
     blt_add_executable(
-        NAME        quest_interface_fortran
+        NAME        quest_interface_F_ex
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        USE_OPENMP  ${ENABLE_OPENMP}
         DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
         )
 
-    set_target_properties(quest_interface_fortran
+    set_target_properties(quest_interface_F_ex
                           PROPERTIES LINKER_LANGUAGE Fortran)
 
   endif()

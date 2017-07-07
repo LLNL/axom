@@ -21,14 +21,14 @@
 #ifndef ORIENTATION_HPP_
 #define ORIENTATION_HPP_
 
-#include "primal/Determinants.hpp"
+#include "axom_utils/Determinants.hpp"
+#include "axom_utils/Utilities.hpp"
+
 #include "primal/Point.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
 
 #include "slic/slic.hpp"
-
-#include "axom_utils/Utilities.hpp"
 
 namespace axom {
 namespace primal {
@@ -64,10 +64,10 @@ inline
 int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 {
 
-  double det = primal::determinant( tri[0][0], tri[0][1], tri[0][2], 1.0,
-                                    tri[1][0], tri[1][1], tri[1][2], 1.0,
-                                    tri[2][0], tri[2][1], tri[2][2], 1.0,
-                                    p[0],      p[1],      p[2], 1.0  );
+  double det = numerics::determinant( tri[0][0], tri[0][1], tri[0][2], 1.0,
+                                      tri[1][0], tri[1][1], tri[1][2], 1.0,
+                                      tri[2][0], tri[2][1], tri[2][2], 1.0,
+                                      p[0],      p[1],      p[2], 1.0  );
 
   int orient = -1;
 
@@ -117,9 +117,9 @@ template < typename T >
 inline
 int orientation( const Point< T,2 >& p, const Segment< T,2 >& seg )
 {
-  double det = primal::determinant( seg.source()[0], seg.source()[1], 1.0,
-                                    seg.target()[0], seg.target()[1], 1.0,
-                                    p[0],            p[1], 1.0  );
+  double det = numerics::determinant( seg.source()[0], seg.source()[1], 1.0,
+                                      seg.target()[0], seg.target()[1], 1.0,
+                                      p[0],            p[1], 1.0  );
 
   int orient = -1;
 

@@ -9,144 +9,693 @@ via the iso_c_binding module.
 Other types, such as logical and in particular strings, require additional
 conversions.
 
+Shroud maintains type maps which are used to generate conversion code
+between Fortran, C and C++.  Many of the conversions reference other
+format variables to describe the context.  These variables are
 
-Logical Type
-------------
+c_var
+    The C name of the argument.
 
-The f_statements is::
+cpp_var
+    Name of the C++ variable.
 
-                f_statements=dict(
-                    intent_in=dict(
-                        c_local_var=True,
-                        pre_call=[
-                            '{c_var} = {f_var}  ! coerce to C_BOOL',
-                            ],
-                        ),
-                    intent_out=dict(
-                        c_local_var=True,
-                        post_call=[
-                            '{f_var} = {c_var}  ! coerce to logical',
-                            ],
-                        ),
-                    result=dict(
-                        # The wrapper is needed to convert bool to logical
-                        need_wrapper=True,
-                        ),
-                    ),
+f_var
+    Fortran variable name for argument.
+
+All of the fields are defined in the references section and will only be used
+by example in this section.
 
 
+Types
+-----
 
-Character Type
---------------
+.. Shroud predefines many of the native types.
 
-Fortran, C, and C++ all have their own semantics for character variables.
+  * void
+  * int
+  * long
+  * size_t
+  * bool
+  * float
+  * double
+  * std::string
+
+  Fortran has no support for unsigned types.
+          ``size_t`` will be the correct number of bytes, but
+          will be signed.
+
+
+
+Integer and Real
+----------------
+
+The numeric types usually require no conversion.
+In this case the type map is mainly used to generate declaration code 
+for wrappers::
+
+    types:
+      int:
+        c_type: int 
+        cpp_type: int
+        f_type: integer(C_INT)
+        f_module:
+          iso_c_binding:
+          - C_INT
+        f_cast: int({f_var}, C_INT)
+
+One case where a converstion is required is when the Fortran argument
+is one type and the C++ argument is another. This may happen when an
+overloaded function is generated so that a ``C_INT`` or ``C_LONG``
+argument may be passed to a C++ function function expecting a
+``long``.  The **f_cast** field is used to convert the argument to the
+type expected by the C++ function.
+
+
+
+
+
+Bool
+----
+
+C++ functions with a ``bool`` argument generate a Fortran wrapper with
+a ``logical`` argument.  One of the goals of Shroud is to produce an
+ideomatic interface.  Converting the types in the wrapper avoids the
+awkardness of requiring the Fortran user to passing in
+``.true._c_bool`` instead of just ``.true.``.
+
+The type map is defined as::
+
+    types:
+      bool:
+        c_type: bool 
+        cpp_type: bool 
+        f_type: logical 
+        f_c_type: logical(C_BOOL) 
+        f_module:
+            iso_c_binding:
+            -  C_BOOL
+        f_statements:
+           intent_in:
+              c_local_var: true 
+              pre_call:
+              -  {c_var} = {f_var}  ! coerce to C_BOOL
+           intent_out:
+              c_local_var: true 
+              post_call:
+              -  {f_var} = {c_var}  ! coerce to logical
+           result:
+              need_wrapper: true
+
+The first thing to notice is that **f_c_type** is defined.  This is
+the type used in the Fortran interface for the C wrapper.  The type
+is ``logical(C_BOOL)`` while **f_type**, the type of the Fortran
+wrapper argument, is ``logical``.
+
+The **f_statements** section describes code to add into the Fortran
+wrapper to perform the converstion.  *c_var* and *f_var* default to
+the same value as the argument name.  By setting **c_local_var**, a
+local variable is generated for the call to the C wrapper.  It will be
+named ``SH_{f_var}``.
+
+There is no Fortran intrinsic function to convert between default
+``logical`` and ``logical(C_BOOL)``. The **pre_call** and
+**post_call** sections will insert an assignment statement to allow
+the compiler to do the conversion.
+
+Example of using intent with ``bool`` arguments::
+
+    decl: void checkBool(bool arg1, bool * arg2+intent(out), bool * arg3+intent(inout))
+
+The resulting wrappers are::
+
+    module userlibrary_mod
+        interface
+            subroutine c_check_bool(arg1, arg2, arg3) &
+                    bind(C, name="AA_check_bool")
+                use iso_c_binding
+                implicit none
+                logical(C_BOOL), value, intent(IN) :: arg1
+                logical(C_BOOL), intent(OUT) :: arg2
+                logical(C_BOOL), intent(INOUT) :: arg3
+            end subroutine c_check_bool
+        end interface
+    contains
+        subroutine check_bool(arg1, arg2, arg3)
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical, value, intent(IN) :: arg1
+            logical(C_BOOL) SH_arg1
+            logical, intent(OUT) :: arg2
+            logical(C_BOOL) SH_arg2
+            logical, intent(INOUT) :: arg3
+            logical(C_BOOL) SH_arg3
+            SH_arg1 = arg1  ! coerce to C_BOOL
+            SH_arg3 = arg3  ! coerce to C_BOOL
+            ! splicer begin check_bool
+            call c_check_bool(  &
+                SH_arg1,  &
+                SH_arg2,  &
+                SH_arg3)
+            ! splicer end check_bool
+            arg2 = SH_arg2  ! coerce to logical
+            arg3 = SH_arg3  ! coerce to logical
+        end subroutine check_bool
+    end module userlibrary_mod
+
+Since ``arg1`` in the YAML declaration is not a pointer it defaults to
+``intent(IN)``.  The intent of the other two arguments are explicitly
+annotated.
+
+If a function returns a ``bool`` result then a wrapper is always needed
+to convert the result.  The **result** section sets **need_wrapper**
+to force the wrapper to be created.  By default a function with no
+argument would not need a wrapper since there will be no **pre_call**
+or **post_call** code blocks.  Only the C interface would be required
+since Fortran could call the C function directly.
+
+
+Character
+---------
+
+Fortran, C, and C++ each have their own semantics for character variables.
 
   * Fortran ``character`` variables know their length and are blank filled
   * C ``char *`` variables are assumed to be ``NULL`` terminated.
-  * C++ ``std::string`` know their own length and are ``NULL`` terminated.
+  * C++ ``std::string`` know their own length and can provied a ``NULL`` terminated pointer.
 
 It is not sufficient to pass an address between Fortran and C++ like
 it is with other native types.  In order to get ideomatic behavior in
 the Fortran wrappers it is often necessary to copy the values.  This
-is to account for blank filled vs ``NULL`` terminated.  It also helps
-support ``const`` vs non-``const`` strings.
+is to account for blank filled vs ``NULL`` terminated.
 
-A C 'bufferify' wrapper is created which accepts the address of the
-Fortran character variable with a ``int`` argument for the declared
-length of the variable (``len``) and/or a ``int`` argument for the
-length with blanks trimmed off (``len_trim``).
-The wrapper then uses these arguments to create a ``NULL`` terminated string
-or a std::string instance.
+..  It also helps support ``const`` vs non-``const`` strings.
 
-Character Arguments
-^^^^^^^^^^^^^^^^^^^
+Any C++ function which has ``char`` or ``std::string`` arguments or
+result will create an additional C function which include additional
+arguments for the length of the strings.  Most Fortran compiler use
+this convention when passing ``CHARACTER`` arguments. Shroud makes
+this convention explicit for three reasons:
 
-When an argument has intent *out*, then *len* attribute is added.
-This allows the wrapper routine to know how much space as available for the output string.
+* It allows an interface to be used.  Functions with an interface may
+  not pass the hidden, non-standard length argument, depending on compiler.
+* It may pass the result of ``len`` and/or ``len_trim``.
+  The convention just passes the length.
+* Returning character argument from C to Fortran is non-portable.
 
-When the argument has intent *in*, then the *len_trim* attribute is added to the *bufferify*
-wrapper only.  The non-bufferify version will use ``strlen`` to compute the length of data.
+Arguments with the *intent(in)* annotation are given the *len_trim*
+annotation.  The assumption is that the trailing blanks are not part
+of the data but only padding.  Return values and *intent(out)*
+arguments add a *len* annotation with the assumption that the wrapper
+will copy the result and blank fill the argument so it need to know
+the declared length.
 
-Character Function
-^^^^^^^^^^^^^^^^^^
+The additional function will be named the same as the original
+function with the option **C_bufferify_suffix** appended to the end.
+The Fortran wrapper will use the original function name, but call the
+C function which accepts the length arguments.
 
-.. This stuff was moved here from the tutorial and should be cleaned up
-
-This attribute marks the routine as Fortran ``pure`` meaning there are
-no side effects.  This is necessary because the function will be
-called twice.  Once to compute the length of the result and once to
-return the result.
-
-The length of result variable ``rv`` is computed by calling the
-function.  Once the result is declared, ``tut_function4a`` is called
-which returns a ``type(C_PTR)``.  This result is dereferenced by
-``fstr`` and copied into ``rv``.
-
-
-.. XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-It is possible to avoid calling the C++ function twice by passing in
-another argument to hold the result.  It would be up to the caller to
-ensure it is long enough.  This is done by setting the option
-**F_string_result_as_arg** to true.  Like all options, it may also be
-set in the global **options** and it will apply to all functions::
-
-.. update code examples from current output
+The character type maps use the **c_statements** section to define
+code which will be inserted into the C wrapper. *intent_in*,
+*intent_out*, and *result* subsections add actions for the C wrapper.
+*intent_in_buf*, *intent_out_buf*, and *result_buf* are used for
+arguments with the *len* and *len_trim* annotations in the additional
+C wrapper.
 
 
+Char
+^^^^
 
+The type map::
 
+    types:
+        char:
+            base: string
+            cpp_type: char
+            c_type: char
+            c_statements:
+                intent_in_buf:
+                    cpp_local_var: True
+                    cpp_header: <cstring>
+                    pre_call:
+                      - char * {cpp_var} = new char [{c_var_trim} + 1];
+                      - std::strncpy({cpp_var}, {c_var}, {c_var_trim});
+                      - {cpp_var}[{c_var_trim}] = '\0';
+                    post_call:
+                      -  delete [] {cpp_var};
+                intent_out_buf:
+                    cpp_local_var: True
+                    cpp_header: shroudrt.hpp
+                    pre_call:
+                      - char * {cpp_var} = new char [{c_var_len} + 1];
+                    post_call:
+                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                      - delete [] {cpp_var};
+                result_buf:
+                    cpp_header: <cstring> shroudrt.hpp
+                    post_call:
+                      - if ({cpp_var} == NULL) {{
+                      -   std::memset({c_var}, ' ', {c_var_len});
+                      - }} else {{
+                      -   shroud_FccCopy({c_var}, {c_var_len}, {cpp_var});
+                      - }}
 
+            f_type: character(*)
+            f_c_type: character(kind=C_CHAR)
+            f_c_module:
+                iso_c_binding:
+                  - C_CHAR
 
-    - decl: const std::string& Function4b(
-        const std::string& arg1,
-        const std::string& arg2)
-      options:
-        F_string_result_as_arg: output
+The function ``passCharPtr(dest, src)`` is equivalent to the Fortran
+statement ``dest = str``::
 
-The generated Fortran wrapper::
+    - decl: void passCharPtr(char *dest, const char *src)
 
-    subroutine function4b(arg1, arg2, output)
-        use iso_c_binding, only : C_INT
-        implicit none
-        character(*), intent(IN) :: arg1
-        character(*), intent(IN) :: arg2
-        character(*), intent(OUT) :: output
-        rv = c_function4b_bufferify(  &
-            arg1,  &
-            len_trim(arg1),  &
-            arg2,  &
-            len_trim(arg2),
-            output,  &
-            len(output))
-    end subroutine function4b
+.. from tests/strings.cpp
 
-The generated C wrapper::
+The intent of the arguments is inferred from the declaration.
+``dest`` is *intent(out)* since it is a pointer.  ``src`` is
+*intent(in)* since it is ``const``.
 
-    void TUT_function4b_bufferify(const char * arg1, int Larg1,
-                                  const char * arg2, int Larg2,
-                                  char * output, int Loutput) {
-        const std::string SH_arg1(arg1, Larg1);
-        const std::string SH_arg2(arg2, Larg2);
-        const std::string & rv = Function4b(SH_arg1, SH_arg2);
-        shroud_FccCopy(output, Loutput, rv.c_str());
+This single line will create five different wrappers.  The first is the 
+pure C version.  The only feature this provides to Fortran is the ability
+to call a C++ function by wrapping it in an ``extern "C"`` function::
+
+    void STR_pass_char_ptr(char * dest, const char * src)
+    {
+        passCharPtr(dest, src);
         return;
     }
 
+A Fortran interface for the routine is generated which will allow the
+function to be called directly::
 
- ``FccCopy`` will copy the result into ``output`` and blank fill.
+        subroutine c_pass_char_ptr(dest, src) &
+                bind(C, name="STR_pass_char_ptr")
+            use iso_c_binding, only : C_CHAR
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: dest(*)
+            character(kind=C_CHAR), intent(IN) :: src(*)
+        end subroutine c_pass_char_ptr
+
+The user is responsible for providing the ``NULL`` termination.
+The result in ``str`` will also be ``NULL`` terminated instead of 
+blank filled.::
+
+    character(30) str
+    call c_pass_char_ptr(dest=str, src="mouse" // C_NULL_CHAR)
+
+An additional C function is automatically declared which is summarized as::
+
+    - decl: void passCharPtr(char * dest+intent(out)+len(Ndest),
+                             const char * src+intent(in)+len_trim(Lsrc))
+
+And generates::
+
+    void STR_pass_char_ptr_bufferify(char * dest, int Ndest, const char * src, int Lsrc)
+    {
+        char * SH_dest = new char [Ndest + 1];
+        char * SH_src = new char [Lsrc + 1];
+        std::strncpy(SH_src, src, Lsrc);
+        SH_src[Lsrc] = '\0';
+        passCharPtr(SH_dest, SH_src);
+        shroud_FccCopy(dest, Ndest, SH_dest);
+        delete [] SH_dest;
+        delete [] SH_src;
+        return;
+    }
+
+``Ndest`` is the declared length of argument ``dest`` and ``Lsrc`` is
+the trimmed length of argument ``src``.  These generated names must
+not conflict with any other arguments.  There are two ways to set the
+names.  First by using the options **C_var_len_template** and
+**C_var_trim_template**. This can be used to control how the names are
+generated for all functions if set globally or just a single function
+if set in the function's options.  The other is by explicitly setting
+the *len* and *len_trim* annotations which only effect a single
+declaration.
+
+The pre_call code creates space for the C strings by allocating
+buffers with space for an additional character (the ``NULL``).  The
+*intent(in)* string copies the data and adds an explicit terminating
+``NULL``.  The function is called then the post_call section copies
+the result back into the ``dest`` argument and deletes the scratch
+space.  ``shroud_FccCopy`` is a function provided by Shroud which
+copies character into the destination up to ``Ndest`` characters, then
+blank fills any remaining space.
+
+The Fortran interface is generated::
+
+        subroutine c_pass_char_ptr_bufferify(dest, Ndest, src, Lsrc) &
+                bind(C, name="STR_pass_char_ptr_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: dest(*)
+            integer(C_INT), value, intent(IN) :: Ndest
+            character(kind=C_CHAR), intent(IN) :: src(*)
+            integer(C_INT), value, intent(IN) :: Lsrc
+        end subroutine c_pass_char_ptr_bufferify
+
+And finally, the Fortran wrapper with calls to ``len`` and ``len_trim``::
+
+    subroutine pass_char_ptr(dest, src)
+        use iso_c_binding, only : C_INT
+        character(*), intent(OUT) :: dest
+        character(*), intent(IN) :: src
+        call c_pass_char_ptr_bufferify(  &
+            dest,  &
+            len(dest, kind=C_INT),  &
+            src,  &
+            len_trim(src, kind=C_INT))
+    end subroutine pass_char_ptr
+
+Now the function can be called without the user aware that it is written in C++::
+
+    character(30) str
+    call pass_char_ptr(dest=str, src="mouse")
 
 
-.. char **
+std::string
+^^^^^^^^^^^
+
+The ``std::string`` type map is very similar to ``char`` but provides some
+additional sections to convert between ``char *`` and ``std::string``::
+
+    types:
+        string:
+            base: string
+            cpp_type: std::string
+            cpp_header: <string>
+            cpp_to_c: {cpp_var}.c_str()
+            c_type: char
+    
+            c_statements:
+                intent_in:
+                    cpp_local_var: true
+                    pre_call:
+                      - {c_const}std::string {cpp_var}({c_var});
+                intent_out:
+                    cpp_header: <cstring>
+                    post_call:
+                      - strcpy({c_var}, {cpp_val});
+
+                intent_in_buf:
+                    cpp_local_var: True
+                    pre_call:
+                      - {c_const}std::string {cpp_var}({c_var});
+                    pre_call_buf:
+                      - {c_const}std::string {cpp_var}({c_var}, {c_var_trim});
+                intent_out_buf:
+                    cpp_header: shroudrt.hpp
+                    post_call:
+                      - shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                result_buf:
+                    cpp_header: <cstring> shroudrt.hpp
+                    post_call:
+                       - if ({cpp_var}.empty()) {{
+                       -   std::memset({c_var}, ' ', {c_var_len});
+                       - }} else {{
+                       -   shroud_FccCopy({c_var}, {c_var_len}, {cpp_val});
+                       - }}
+    
+            f_type: character(*)
+            f_c_type: character(kind=C_CHAR)
+            f_c_module:
+                iso_c_binding:
+                  - C_CHAR
 
 
-Complex Type
-------------
+To demonstrate this type map, ``acceptStringReference`` is a function which
+will accept and modify a string reference::
+
+    - decl: void acceptStringReference(std::string & arg1)
+
+A reference defaults to *intent(inout)* and will add both the *len*
+and *len_trim* annotations.
+
+Both generated functions will convert ``arg`` into a ``std::string``,
+call the function, then copy the results back into the argument. The
+important thing to notice is that the pure C version could do very bad
+things since it does not know how much space it has to copy into.  The
+bufferify version knows the allocated length of the argument.
+However, since the input argument is a fixed length it may be too
+short for the new string value::
+
+    void STR_accept_string_reference(char * arg1)
+    {
+        std::string SH_arg1(arg1);
+        acceptStringReference(SH_arg1);
+        strcpy(arg1, SH_arg1.c_str());
+        return;
+    }
+
+    void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
+    {
+        std::string SH_arg1(arg1, Larg1);
+        acceptStringReference(SH_arg1);
+        shroud_FccCopy(arg1, Narg1, SH_arg1.c_str());
+        return;
+    }
+
+Each interface matches the C wrapper::
+
+        subroutine c_accept_string_reference(arg1) &
+                bind(C, name="STR_accept_string_reference")
+            use iso_c_binding, only : C_CHAR
+            implicit none
+            character(kind=C_CHAR), intent(INOUT) :: arg1(*)
+        end subroutine c_accept_string_reference
+
+        subroutine c_accept_string_reference_bufferify(arg1, Larg1, Narg1) &
+                bind(C, name="STR_accept_string_reference_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(INOUT) :: arg1(*)
+            integer(C_INT), value, intent(IN) :: Larg1
+            integer(C_INT), value, intent(IN) :: Narg1
+        end subroutine c_accept_string_reference_bufferify
+
+And the Fortran wrapper provides the correct values for the *len* and
+*len_trim* arguments::
+
+    subroutine accept_string_reference(arg1)
+        use iso_c_binding, only : C_INT
+        character(*), intent(INOUT) :: arg1
+        ! splicer begin accept_string_reference
+        call c_accept_string_reference_bufferify(  &
+            arg1,  &
+            len_trim(arg1, kind=C_INT),  &
+            len(arg1, kind=C_INT))
+        ! splicer end accept_string_reference
+    end subroutine accept_string_reference
+
+char functions
+^^^^^^^^^^^^^^
+
+Functions which return a ``char *`` provide an additional challenge.
+Taken literally they should return a ``type(C_PTR)``.  And if you call
+the function via the interface, that's what you get.  However,
+Shroud provides several options to provide a more ideomatic usage.
+
+Each of these declaration call identical C++ functions but they are
+wrapped differently::
+
+    - decl: const char * getChar1()  +pure
+    - decl: const char * getChar2+len(30)()
+    - decl: const char * getChar3()
+      options:
+         F_string_result_as_arg: output
+
+All of the generated C wrappers are very similar.  The buffer version
+copies the result into a buffer of known length::
+
+    const char * STR_get_char1()
+    {
+        const char * SH_rv = getChar1();
+        return SH_rv;
+    }
+
+    void STR_get_char1_bufferify(char * SH_F_rv, int NSH_F_rv)
+    {
+        const char * SH_rv = getChar1();
+        if (SH_rv == NULL) {
+           std::memset(SH_F_rv, ' ', NSH_F_rv);
+        } else {
+          shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv);
+        }
+        return;
+    }
+
+``getChar1`` adds the pure annotation.  This annotation is passed to
+the Fortran interface where it declares the function as ``pure``::
+
+        pure function c_get_char1() &
+                result(SH_rv) &
+                bind(C, name="STR_get_char1")
+            use iso_c_binding, only : C_PTR
+            implicit none
+            type(C_PTR) SH_rv
+        end function c_get_char1
+
+The Fortran wrapper calls the C wrapper twice.  Once in a declaration
+to get the length of the string and once to copy the value.  The
+functions ``strlen_ptr`` and ``fstr`` are provided by Shroud to get
+the length of a ``NULL`` terminated string and to copy and blank fill
+a variable.  This creates a Fortran function which returns a string of
+variable length.  The *pure* annotation tells the compiler there are
+no side effects which is important because it will be called twice.
+You'd also want the C++ function to be fast::
+
+    function get_char1() result(SH_rv)
+        use iso_c_binding, only : C_CHAR
+        character(kind=C_CHAR, len=strlen_ptr(c_get_char1())) :: SH_rv
+        SH_rv = fstr(c_get_char1())
+    end function get_char1
+
+If you know the maximum size of string that you expect the function to
+return, then the *len* attribute is used to declare the length.  The
+advantage is that the C function is only called once.  The downside is
+that any result which is longer than the length will be silently
+truncated::
+
+    function get_char2() result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        character(kind=C_CHAR, len=30) :: SH_rv
+        call c_get_char2_bufferify(  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+    end function get_char2
+
+The third option gives the best of both worlds.  The C wrapper is only
+called once and any size result can be returned.  The result of the C
+function will be returned in the Fortran argument named by option
+**F_string_result_as_arg**.  The potential downside is that a Fortran
+subroutine is generated instead of a function::
+
+    subroutine get_char3(output)
+        use iso_c_binding, only : C_INT
+        character(*), intent(OUT) :: output
+        call c_get_char3_bufferify(  &
+            output,  &
+            len(output, kind=C_INT))
+    end subroutine get_char3
+
+.. char ** not supported
+
+string functions
+^^^^^^^^^^^^^^^^
+
+Function which return ``std::string`` values are similar but must provide the
+extra step of converting the result into a ``char *``::
+
+    - decl: const string& getString1()  +pure
+
+The generated wrappers are::
+
+    const char * STR_get_string1()
+    {
+        const std::string & SH_rv = getString1();
+        const char * XSH_rv = SH_rv.c_str();
+        return XSH_rv;
+    }
+    
+    void STR_get_string1_bufferify(char * SH_F_rv, int NSH_F_rv)
+    {
+        const std::string & SH_rv = getString1();
+        if (SH_rv.empty()) {
+          std::memset(SH_F_rv, ' ', NSH_F_rv);
+        } else {
+          shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+        }
+        return;
+    }
+
+.. note:: These example assume that a pointer to an existing string is returned.
+          If the C++ function allocates a string, the C wrapper should deallocate
+          it after copying the contents. Shroud does not deal with this case
+          and will result in leaked memory.
+
+MPI_Comm
+--------
+
+MPI_Comm is provided by Shroud and serves as an example of how to wrap
+a non-native type.  MPI provides a Fortran interface and the ability
+to convert MPI_comm between Fortran and C. The type map tells Shroud
+how to use these routines::
+
+    types:
+        MPI_Comm:
+            cpp_type: MPI_Comm
+            c_header: mpi.h
+            c_type: MPI_Fint
+            f_type: integer
+            f_c_type: integer(C_INT)
+            f_c_module:
+                iso_c_binding:
+                  - C_INT
+            cpp_to_c: MPI_Comm_c2f({cpp_var})
+            c_to_cpp: MPI_Comm_f2c({c_var})
 
 
-Derived Types
--------------
+This mapping makes the assumption that ``integer`` and
+``integer(C_INT)`` are the same type.
+
+
+.. Complex Type
+   ------------
+
+
+.. Derived Types
+   -------------
+
+Class Type
+----------
+
+Each class in the input file will create a Fortran derived type which
+acts as a shadow class for the C++ class.  A pointer to an instance is
+saved as a ``type(C_PTR)`` value.  The *f_to_c* field uses the
+generated ``get_instance`` function to return the pointer which will
+be passed to C.
+
+In C an opaque typedef for a struct is created as the type for the C++
+instance pointer.  The *c_to_cpp* and *cpp_to_c* fields casts this
+pointer to C++ and back to C.
+
+The class example from the tutorial is::
+
+    classes:
+     - name: Class1
+
+Shroud will generate a type map for this class as::
+
+    types:
+      Class1:
+        base: wrapped
+        c_type: TUT_class1
+        cpp_type: Class1
+        c_to_cpp: static_cast<{c_const}Class1{c_ptr}>(static_cast<{c_const}void *>({c_var}))
+        cpp_to_c: static_cast<{c_const}TUT_class1 *>(static_cast<{c_const}void *>({cpp_var}))
+
+        f_type: type(class1)
+        f_derived_type: class1
+        f_c_type: type(C_PTR)
+        f_c_module:
+            iso_c_binding:
+              - C_PTR
+        f_module:
+            tutorial_mod:
+              - class1
+        f_return_code: {F_result}%{F_derived_member} = {F_C_call}({F_arg_c_call_tab})
+        f_to_c: {f_var}%get_instance()
+        forward: Class1
+
+
+The type map will be written to a file to allow its used by other
+wrapped libraries.  The file is named by the global field
+**YAML_type_filename**. This file will only list some of the fields
+show above with the remainder set to default values by Shroud.
 
 
 
-* chained function calls
+    
+
+..  chained function calls

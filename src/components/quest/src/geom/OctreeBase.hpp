@@ -132,7 +132,7 @@ public:
   typedef Point<CoordType,DIM> GridPt;
   typedef Vector<CoordType,DIM> GridVec;
 
-  typedef axom::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
+  typedef axom::slam::policies::CompileTimeSize<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
   typedef axom::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
   typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
@@ -163,8 +163,8 @@ public:
           NUM_FACE_NEIGHBORS = 2 * DIM
       };
   private:
-      typedef axom::slam::policies::CompileTimeSizeHolder<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
-      typedef axom::slam::policies::CompileTimeSizeHolder<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
+      typedef axom::slam::policies::CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
+      typedef axom::slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
 
   public:
       typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;

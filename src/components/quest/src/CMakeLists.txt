@@ -63,7 +63,7 @@ if (ENABLE_MPI)
   endif()
 endif()
 
-if(ENABLE_SHROUD)
+if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
@@ -81,4 +81,5 @@ blt_add_library(
     HEADERS     ${quest_headers}
     HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
+    USE_OPENMP  ${ENABLE_OPENMP}
     )

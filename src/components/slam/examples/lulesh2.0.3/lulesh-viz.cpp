@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 #include "silo.h"
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 # include "pmpio.h"
 #endif
 #ifdef __cplusplus
@@ -36,7 +36,7 @@ namespace slamLulesh {
   static
 
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 // For some reason, earlier versions of g++ (e.g. 4.2) won't let me
 // put the 'static' qualifier on this prototype, even if it's done
 // consistently in the prototype and definition
@@ -75,7 +75,7 @@ namespace slamLulesh {
     sprintf(basename,   "lulesh_plot_c%d",  domain.cycle());
     sprintf(subdirName, "data_%d",          myRank);
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 
     PMPIO_baton_t *bat = PMPIO_Init(numFiles,
             PMPIO_WRITE,
@@ -150,8 +150,8 @@ namespace slamLulesh {
 
     for (int ei = 0; ei < domain.numElem(); ++ei)
     {
-      Index_t *elemToNode = domain.nodelist(ei);
-      for (int ni = 0; ni < 8; ++ni)
+      ElemNodeSet elemToNode = domain.nodelist(ei);
+      for (int ni = 0; ni < elemToNode.size(); ++ni)
       {
         conn[ci++] = elemToNode[ni];
       }
@@ -283,7 +283,7 @@ namespace slamLulesh {
 
 /**********************************************************************/
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
   void
   DumpMultiblockObjects(DBfile *db, PMPIO_baton_t *bat,
       char basename[], int numRanks)
@@ -333,7 +333,7 @@ namespace slamLulesh {
     // Build up the multiobject names
     for(int i = 0; i<numRanks; ++i)
     {
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       int iorank = PMPIO_GroupRank(bat, i);
 #else
       int iorank = 0;
@@ -401,7 +401,7 @@ namespace slamLulesh {
     }
   }
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
 
 /**********************************************************************/
 

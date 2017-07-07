@@ -75,7 +75,7 @@ namespace detail {
  *          PTRDIFF_MIN, PTRDIFF_MAX, SIG_ATOMIC_MIN, and SIG_ATOMIC_MAX
  *          to be 64-bit aware.
  *
- * KW for asc toolkit:
+ * KW for axom project:
  *      - Only took parts of file that we needed for fixed-bitwidth types in the toolkit
  *      - Appended 'AXOM_COMMON_' to macros to avoid possible collisions with stdint
  */

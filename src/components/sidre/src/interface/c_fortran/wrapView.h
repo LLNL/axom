@@ -21,6 +21,9 @@
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
 
+// splicer begin class.View.CXX_declarations
+// splicer end class.View.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,8 +36,8 @@ typedef struct s_SIDRE_group SIDRE_group;
 struct s_SIDRE_view;
 typedef struct s_SIDRE_view SIDRE_view;
 
-// splicer begin class.View.C_definition
-// splicer end class.View.C_definition
+// splicer begin class.View.C_declarations
+// splicer end class.View.C_declarations
 
 void SIDRE_view_allocate_simple(SIDRE_view * self);
 
@@ -99,10 +102,12 @@ bool SIDRE_view_is_scalar(const SIDRE_view * self);
 
 bool SIDRE_view_is_string(const SIDRE_view * self);
 
+SIDRE_IndexType SIDRE_view_get_index(SIDRE_view * self);
+
 const char * SIDRE_view_get_name(const SIDRE_view * self);
 
 void SIDRE_view_get_name_bufferify(const SIDRE_view * self, char * SH_F_rv,
-                                   int LSH_F_rv);
+                                   int NSH_F_rv);
 
 SIDRE_buffer * SIDRE_view_get_buffer(SIDRE_view * self);
 
@@ -135,7 +140,7 @@ void SIDRE_view_set_external_data_ptr_shape(SIDRE_view * self, int type,
 
 const char * SIDRE_view_get_string(SIDRE_view * self);
 
-void SIDRE_view_get_string_bufferify(SIDRE_view * self, char * name, int Lname);
+void SIDRE_view_get_string_bufferify(SIDRE_view * self, char * name, int Nname);
 
 int SIDRE_view_get_data_int(SIDRE_view * self);
 

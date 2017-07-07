@@ -6,6 +6,8 @@ set(sidre_headers
     core/Group.hpp
     core/DataStore.hpp
     core/View.hpp
+    core/Attribute.hpp
+    core/AttrValues.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
@@ -20,10 +22,12 @@ set(sidre_sources
     core/Group.cpp
     core/DataStore.cpp
     core/View.cpp
+    core/Attribute.cpp
+    core/AttrValues.cpp
     core/SidreUtilities.cpp
 )
 
-if(ENABLE_SHROUD)
+if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
@@ -85,6 +89,12 @@ blt_add_library( NAME
 #    add_dependencies(copy_headers_sidre sidre_generate)
 #endif()
 
+if(SPARSEHASH_FOUND)
+   blt_add_target_definitions(TO
+                              sidre
+                              TARGET_DEFINITIONS
+                              ${SPARSEHASH_COMPILER_DEFS})
+endif()
 
 if(FALSE)  # The Python module is not create yet.
 #if(ENABLE_PYTHON_API)

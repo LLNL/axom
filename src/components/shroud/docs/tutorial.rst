@@ -159,7 +159,7 @@ When this function is wrapped it is necessary to give some annotations
 in the YAML file to describe how the variables should be mapped to
 Fortran::
 
-  - decl: void Sum(int len, int *values+dimension+intent(in),
+  - decl: void Sum(int len, int *values+dimension(len)+intent(in),
                    int *result+intent(out))
 
 In the ``BIND(C)`` interface only *len* uses the ``value`` attribute.
@@ -172,7 +172,7 @@ passes a pointer::
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: len
-            integer(C_INT), intent(IN) :: values(*)
+            integer(C_INT), intent(IN) :: values(len)
             integer(C_INT), intent(OUT) :: result
         end subroutine sum
     end interface
@@ -257,10 +257,11 @@ YAML input::
         const std::string& arg1,
         const std::string& arg2 )
 
-This is the C++ prototype with the addition of **+len(30)**.
-This attribute defines the declared length of the returned string.
-Since *Function4a* is returning a ``std::string`` the contents of the
-string must be copied out into a Fortran variable so that the ``std::string`` may be deallocated by C++. Otherwise, it would leak memory. 
+This is the C++ prototype with the addition of **+len(30)**.  This
+attribute defines the declared length of the returned string.  Since
+*Function4a* is returning a ``std::string`` the contents of the string
+must be copied out into a Fortran variable so that the ``std::string``
+may be deallocated by C++. Otherwise, it would leak memory.
 
 Attributes may also be added by assign new fields in **attrs**::
 
@@ -289,14 +290,18 @@ computed using ``len``::
     {
         const std::string SH_arg1(arg1, Larg1);
         const std::string SH_arg2(arg2, Larg2);
-        const std::string rv = Function4a(SH_arg1, SH_arg2);
-        shroud_FccCopy(SH_F_rv, LSH_F_rv, rv.c_str());
-        return rv;
+        const std::string SH_rv = Function4a(SH_arg1, SH_arg2);
+        if (SH_rv.empty()) {
+          std::memset(SH_F_rv, ' ', NSH_F_rv);
+        } else {
+          shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+        }
+        return;
     }
 
-Before the C wrapper returns ``rv`` will be deleted.
 The contents of the ``std::string`` are copied into the result argument and blank
 filled by FccCopy.
+Before the C wrapper returns, ``rv`` will be deleted.
 
 The Fortran wrapper::
 
@@ -305,7 +310,7 @@ The Fortran wrapper::
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
-        character(kind=C_CHAR, len=(30)) :: rv
+        character(kind=C_CHAR, len=30) :: rv
         call c_function4a_bufferify(  &
             arg1, len_trim(arg1, kind=C_INT),  &
             arg2, len_trim(arg2, kind=C_INT),  &
@@ -637,25 +642,9 @@ It may now be used with single or double precision arguments::
   call function9(1.0d0)
 
 
-
-
 Types
 -----
 
-Shroud predefines many of the native types.
-
-  * void
-  * int
-  * long
-  * size_t
-  * bool
-  * float
-  * double
-  * std::string
-
-.. note:: Fortran has no support for unsigned types.
-          ``size_t`` will be the correct number of bytes, but
-          will be signed.
 
 Typedef
 ^^^^^^^
@@ -782,14 +771,14 @@ pointers for every instance::
 
     TUT_class1 * TUT_class1_new()
     {
-        Class1 *selfobj = new Class1();
-        return static_cast<TUT_class1 *>(static_cast<void *>(selfobj));
+        Class1 *SH_rv = new Class1();
+        return static_cast<TUT_class1 *>(static_cast<void *>(SH_rv));
     }
 
     void TUT_class1_method1(TUT_class1 * self)
     {
-        Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
-        selfobj->Method1();
+        Class1 *SH_this = static_cast<Class1 *>(static_cast<void *>(self));
+        SH_this->Method1();
         return;
     }
 

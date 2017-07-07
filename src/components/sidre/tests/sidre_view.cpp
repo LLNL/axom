@@ -178,12 +178,14 @@ TEST(sidre_view,create_views)
   View * dv_0 = root->createViewAndAllocate("field0", INT_ID, 1);
   View * dv_1 = root->createViewAndAllocate("field1", INT_ID, 1);
 
+  EXPECT_EQ(0, dv_0->getIndex());
+  EXPECT_EQ(1, dv_1->getIndex());
 
   Buffer * db_0 = dv_0->getBuffer();
   Buffer * db_1 = dv_1->getBuffer();
 
-  EXPECT_EQ(db_0->getIndex(), 0);
-  EXPECT_EQ(db_1->getIndex(), 1);
+  EXPECT_EQ(0, db_0->getIndex());
+  EXPECT_EQ(1, db_1->getIndex());
   delete ds;
 }
 #endif
@@ -197,6 +199,7 @@ TEST(sidre_view,get_path_name)
   View * v1 = root->createView("test/a/b/v1");
   View * v2 = root->createView("test/v2");
   View * v3 = root->createView("v3");
+  View * v4 = root->createView("v4");
 
   EXPECT_EQ(std::string("v1"), v1->getName());
   EXPECT_EQ(std::string("test/a/b"), v1->getPath());
@@ -206,9 +209,12 @@ TEST(sidre_view,get_path_name)
   EXPECT_EQ(std::string("test"), v2->getPath());
   EXPECT_EQ(std::string("test/v2"), v2->getPathName());
 
+  EXPECT_EQ(0, v3->getIndex());
   EXPECT_EQ(std::string("v3"), v3->getName());
   EXPECT_EQ(std::string(""), v3->getPath());
   EXPECT_EQ(std::string("v3"), v3->getPathName());
+
+  EXPECT_EQ(1, v4->getIndex());
 }
 
 //------------------------------------------------------------------------------
@@ -409,7 +415,7 @@ TEST(sidre_view,alloc_zero_items)
   dv = root->createView("z0");
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
   dv->allocate(INT_ID, 0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   // Reallocate zero items
@@ -419,10 +425,58 @@ TEST(sidre_view,alloc_zero_items)
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
   dv->reallocate(0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, 0));
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
+  // Allocate View of size 0 into non-empty buffer
+  Buffer* nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+  
+  dv = root->createView("z_nonEmptyBuf_attach_apply");
+  dv->attachBuffer(nonEmptyBuf)->apply(0);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+  dv = root->createView("z_nonEmptyBuf_described_attach", INT_ID, 0);
+  dv->attachBuffer(nonEmptyBuf);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+
+  // Allocate View of size 0 into empty buffer
+  Buffer* emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
+  dv = root->createView("z_emptyBuf_attach_apply");
+  dv->attachBuffer(emptyBuf)->allocate()->apply(0);
+  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+  dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
+  dv->attachBuffer(emptyBuf);
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+  
   delete ds;
+}
+
+TEST(sidre_view,save_empty_view_non_empty_buffer)
+{
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  Buffer* buf = ds.createBuffer(INT_ID, 10)->allocate();  // allocate non-empty buffer
+
+  root->createView("a")->attachBuffer(buf)->apply(0);  // attach zero-sized array to it
+
+  root->save("empty_view_non_empty_buffer.sidre.json", "sidre_json"); // ok
+  root->save("empty_view_non_empty_buffer.sidre.hdf5", "sidre_hdf5"); // ok
+}
+
+TEST(sidre_view,save_empty_view)
+{
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  root->createView("a", INT_ID, 0)->allocate()->apply();  // create View and allocate view of size 0
+
+  root->save("empty_view.sidre.json", "sidre_json");   // this is ok
+  // root->save("empty_view.sidre.hdf5", "sidre_hdf5");   // <-- problem here (in conduit 0.2.1)
 }
 
 //------------------------------------------------------------------------------

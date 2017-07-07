@@ -9,20 +9,23 @@
  */
 
 
+#include "lulesh.hpp"
+
 #include <math.h>
-#ifdef USE_MPI
+
+#ifdef AXOM_USE_MPI
   #include <mpi.h>
 #endif
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
   #include <omp.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 #include <cstdlib>
 #include <algorithm>
-#include "lulesh.hpp"
 
 
 namespace slamLulesh {
@@ -131,7 +134,7 @@ namespace slamLulesh {
 
     BuildMesh(nx, edgeNodes, edgeElems);
 
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
     SetupThreadSupportStructures();
 #endif
 
@@ -173,8 +176,8 @@ namespace slamLulesh {
     for (Index_t i = 0; i<numElem(); ++i)
     {
       Real_t x_local[8], y_local[8], z_local[8];
-      const Index_t *elemToNode = nodelist(i);
-      for( Index_t lnode = 0; lnode<8; ++lnode )
+      ElemNodeSet elemToNode = nodelist(i);
+      for( Index_t lnode = 0; lnode< elemToNode.size(); ++lnode )
       {
         Index_t gnode = elemToNode[lnode];
         x_local[lnode] = x(gnode);
@@ -245,12 +248,12 @@ namespace slamLulesh {
 
 
     // embed hexahedral elements in nodal point lattice
-    // SLAM NOTE: This should really be a DynamicConstantRelation
-    // SLAM TODO: Change this once DynamicConstantRelation becomes available
-    // SLAM TODO: Actually the underlying connectivity should be derivable from an implicit Fixed grid in 3D.
-    std::vector<Index_t>  local_nodelist( 8 * numElem() );
+    // SLAM NOTE: This could be represented using an implicit relation, when available
+    // SLAM NOTE: Alternatively, the underlying connectivity should be derivable from an implicit Cartesian grid.
+    IntsRegistry::BufferType& local_nodelist = m_intsRegistry.addBuffer("hex_node_boundary", 8 * numElem() );
     Index_t zidx = 0;
     nidx = 0;
+    const int planeNodes = edgeNodes * edgeNodes;
     for (Index_t plane = 0; plane<edgeElems; ++plane)
     {
       for (Index_t row = 0; row<edgeElems; ++row)
@@ -260,13 +263,13 @@ namespace slamLulesh {
           Index_t *localNode = &local_nodelist[Index_t(8) * zidx];
 
           localNode[0] = nidx;
-          localNode[1] = nidx                                   + 1;
-          localNode[2] = nidx                       + edgeNodes + 1;
-          localNode[3] = nidx                       + edgeNodes;
-          localNode[4] = nidx + edgeNodes * edgeNodes;
-          localNode[5] = nidx + edgeNodes * edgeNodes             + 1;
-          localNode[6] = nidx + edgeNodes * edgeNodes + edgeNodes + 1;
-          localNode[7] = nidx + edgeNodes * edgeNodes + edgeNodes;
+          localNode[1] = nidx                          + 1;
+          localNode[2] = nidx              + edgeNodes + 1;
+          localNode[3] = nidx              + edgeNodes;
+          localNode[4] = nidx + planeNodes;
+          localNode[5] = nidx + planeNodes             + 1;
+          localNode[6] = nidx + planeNodes + edgeNodes + 1;
+          localNode[7] = nidx + planeNodes + edgeNodes;
           ++zidx;
           ++nidx;
         }
@@ -275,10 +278,7 @@ namespace slamLulesh {
       nidx += edgeNodes;
     }
 
-    // SLAM NOTE: The following call copies the data array.
-    //               The actual data should just be referenced by the relation.
-    m_nodelist.bindRelationData(local_nodelist, 8);
-
+    m_nodelist.bindIndices(local_nodelist.size(), &local_nodelist);
     SLIC_ASSERT( m_nodelist.isValid());
   }
 
@@ -287,7 +287,7 @@ namespace slamLulesh {
   void
   Domain::SetupThreadSupportStructures()
   {
-#if _OPENMP
+#ifdef AXOM_USE_OPENMP
     Index_t numthreads = omp_get_max_threads();
 #else
     Index_t numthreads = 1;
@@ -299,41 +299,42 @@ namespace slamLulesh {
 
       for (Index_t i = 0; i<numElem(); ++i)               // foreach elem
       {
-        const Index_t *nl = nodelist(i);                //   grab the Elem2Node relation for the element
-        for (Index_t j = 0; j < 8; ++j)                   //   for each node of the element
+        ElemNodeSet nl = nodelist(i);                     //   grab the Elem2Node relation for the element
+        for (Index_t j = 0; j < nl.size(); ++j)           //   for each node of the element
         {
-          ++(nodeCornerCount[nl[j]] );                    //     increment the count for that node
+          ++(nodeCornerCount[ nl[j]] );                   //     increment the count for that node
         }
       }
 
-      typedef NodeToCornerRelation::RelationVec PositionsVec;
+      // Invert the zones to corner relation
+      IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("node_corner_begins", numNode() + 1 );
+      IntsRegistry::BufferType& local_relIndices = m_intsRegistry.addBuffer("node_corner_rel_indices", m_cornerSet.size() );
 
-      PositionsVec nodeBegins( numNode() + 1);              // begins array for the StaticVariableRelation: Node to Corner
-      nodeBegins[0] = 0;                                    // use the counts array to set the begins array
+      local_begins[0] = 0;                                    // use the counts array to set the begins array
       for (Index_t i = 1; i <= numNode(); ++i)
       {
-        nodeBegins[i] = nodeBegins[i - 1] + nodeCornerCount[i - 1];
+        local_begins[i] = local_begins[i - 1] + nodeCornerCount[i - 1];
         nodeCornerCount[i - 1] = 0;
       }
 
-      PositionsVec cornerOffsets( m_cornerSet.size() );
-      for (Index_t i = 0; i < numElem(); ++i)                         // foreach elem
+      for (Index_t i = 0; i < numElem(); ++i)                    // foreach elem
       {
-        const Index_t *nl = nodelist(i);                            //   grab the Elem2Node relation for the elem
-        for (Index_t j = 0; j < 8; ++j)                               //   foreach node of the elem
+        ElemNodeSet nl = nodelist(i);                            //   grab the Elem2Node relation for the elem
+        for (Index_t j = 0; j < nl.size(); ++j)                  //   foreach node of the elem
         {
-          Index_t m = nl[j];                                        //     m is the node index pointed to by this corner
-          Index_t k = i * 8 + j;                                     //     k is the corner index (elem*8+offset)
-          Index_t offset = nodeBegins[m] + nodeCornerCount[m];          //     offset is where this element belongs in the offsets array
-          cornerOffsets[offset] = k;                         //     this is the offsets array of the node to corner relation
-          ++(nodeCornerCount[m]);                                     //     increment the count for this node
+          Index_t m = nl[j];                                     //     m is the node index pointed to by this corner
+          Index_t k = i * 8 + j;                                 //     k is the corner index (elem*8+offset)
+          Index_t offset = local_begins[m] + nodeCornerCount[m]; //     offset is where this element belongs in the offsets array
+          local_relIndices[offset] = k;                             //     this is the offsets array of the node to corner relation
+          ++(nodeCornerCount[m]);                                //     increment the count for this node
         }
       }
 
-
       // Finally create the relation over these arrays and check validity
       m_nodeCornerRelation = NodeToCornerRelation(&m_nodeSet, &m_cornerSet);
-      m_nodeCornerRelation.bindRelationData(nodeBegins, cornerOffsets);
+      m_nodeCornerRelation.bindBeginOffsets(numNode(), &local_begins);
+      m_nodeCornerRelation.bindIndices(local_relIndices.size(), &local_relIndices);
+
       SLIC_ASSERT_MSG(m_nodeCornerRelation.isValid(), "Generating Node to Corner relation: Corner index out of range." );
     }
   }
@@ -357,7 +358,7 @@ namespace slamLulesh {
     m_planeMin = (m_planeLoc == 0)        ? 0 : 1;
     m_planeMax = (m_planeLoc == m_tp - 1) ? 0 : 1;
 
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
     // account for face communication
     Index_t comBufSize =
         (m_rowMin + m_rowMax + m_colMin + m_colMax + m_planeMin + m_planeMax) *
@@ -398,10 +399,7 @@ namespace slamLulesh {
   {
     typedef axom::slam::DynamicVariableRelation RegionToElemDynamicRelation;
 
-
-
-
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
     Index_t myRank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     srand(myRank);
@@ -410,102 +408,86 @@ namespace slamLulesh {
     Index_t myRank = 0;
 #endif
 
-    // Create a region set over the number of regions in the mesh
-    m_regionSet = RegionSet(nr);
+    // Create a region set over the number of regions in the mesh -- regions are offset by one
+    m_regionSet = RegionSet::SetBuilder().size(nr).offset(1);
 
     // Generate the region to element map as a dynamic relation.
     // We will linearize this into a static relation below...
     RegionToElemDynamicRelation reg2Elems(&m_regionSet, &m_elemSet);
 
-    // Create the region material number map over the elements
-    m_elemRegNum = ElemIntMap(&m_elemSet);      // replaces m_regElemSize and m_regElemlist
-
     //if we only have one region just fill it
-    // Fill out the regNumList with material numbers, which are always the region index plus one
     if(numReg() == 1)
     {
       // Create the region material number map over the elements
-      const Index_t regMatID = 1;
+      const Index_t regMatID = m_regionSet[0];
       m_elemRegNum = ElemIntMap(&m_elemSet, regMatID);
     }
     //If we have more than one region distribute the elements.
     else {
-      Int_t regionNum;
-      Int_t regionVar;
+      Int_t regionNum, regionIdx;
       Int_t lastReg = -1;
-      Int_t binSize;
       Index_t elements;
       Index_t runto = 0;
 
       // Create the region material map over the elements
       m_elemRegNum = ElemIntMap(&m_elemSet);
 
-      RegionIntMap regBinEnd(&m_regionSet);
+      // Setup an unnormalized CDF to randomly choose the region
+      RegionIntMap regChooserProbs(&m_regionSet);
 
-      //Determine the relative weights of all the regions.  This is based off the -b flag.  Balance is the value passed into b.
+      // Determine the relative weights of all the regions as a CDF.
+      // This is based off the -b flag.  Balance is the value passed into b.
       Int_t costDenominator = 0;
       for (Index_t i = 0; i< numReg(); ++i)
       {
         costDenominator += pow((i + 1), balance); //Total sum of all regions weights
-        regBinEnd[i] = costDenominator;   //Chance of hitting a given region is (regBinEnd[i] - regBinEdn[i-1])/costDenominator
+        regChooserProbs[i] = costDenominator;   //Chance of hitting a given region is (regChooserProbs[i] - regChooserProbs[i-1])/costDenominator
       }
 
-      //Until all elements are assigned
+      // Setup an unnormalized CDF to randomly choose the number of elements in each run
+      const int sizeChooserProbs[7] = {773, 937, 970, 974, 978, 981, 1000};
+      typedef axom::slam::RangeSet::SetBuilder Builder;
+      axom::slam::RangeSet sizeChooser[7];
+      sizeChooser[0] = Builder().range(1,16);
+      sizeChooser[1] = Builder().range(16,32);
+      sizeChooser[2] = Builder().range(32,64);
+      sizeChooser[3] = Builder().range(64,128);
+      sizeChooser[4] = Builder().range(128,256);
+      sizeChooser[5] = Builder().range(256,512);
+      sizeChooser[6] = Builder().range(512,2048);
+
+
+      // Assign an element to each region
       Index_t nextIndex = 0;
       while (nextIndex < numElem())
       {
-        //pick the region
-        regionVar = rand() % costDenominator;
-        Index_t i = 0;
-        while(regionVar >= regBinEnd[i])
-          i++;
-        //rotate the regions based on MPI rank.  Rotation is Rank % NumRegions this makes each domain have a different region with
-        //the highest representation
-        regionNum = ((i + myRank) % numReg()) + 1;
-        // make sure we don't pick the same region twice in a row
-        while(regionNum == lastReg)
-        {
-          regionVar = rand() % costDenominator;
-          i = 0;
-          while(regionVar >= regBinEnd[i])
+        //pick the region; make sure we don't pick the same region twice in a row
+        do {
+          Int_t regionVar = rand() % costDenominator;
+          Index_t i = 0;
+          while(regionVar >= regChooserProbs[i])
             i++;
-          regionNum = ((i + myRank) % numReg()) + 1;
-        }
 
-        //Pick the bin size of the region and determine the number of elements.
-        binSize = rand() % 1000;
-        if(binSize < 773)
-        {
-          elements = rand() % 15 + 1;
-        }
-        else if(binSize < 937)
-        {
-          elements = rand() % 16 + 16;
-        }
-        else if(binSize < 970)
-        {
-          elements = rand() % 32 + 32;
-        }
-        else if(binSize < 974)
-        {
-          elements = rand() % 64 + 64;
-        }
-        else if(binSize < 978)
-        {
-          elements = rand() % 128 + 128;
-        }
-        else if(binSize < 981)
-        {
-          elements = rand() % 256 + 256;
-        }
-        else
-          elements = rand() % 1537 + 512;
+          // Rotate regions based on MPI rank to give each domain a different region with the highest representation
+          regionIdx = (i + myRank) % numReg();
+          regionNum = m_regionSet[ regionIdx ];
+        } while(regionNum == lastReg);
+
+        // Determine the number of elements in this run using the sizeChooserProbs CDF and sizeChooser sets.
+        Int_t binSize = rand() % 1000;
+        Index_t binIndex = 0;
+        while(binSize >= sizeChooserProbs[binIndex])
+          ++binIndex;
+
+        const axom::slam::RangeSet& rset = sizeChooser[ binIndex ];
+        elements = rset[ rand() % rset.size() ]; // gets a random number from this bin's sizeChooser set
+
         runto = elements + nextIndex;
 
         //Store the elements.  If we hit the end before we run out of elements then just stop.
         for(; nextIndex < runto && nextIndex < numElem(); nextIndex++)
         {
-          reg2Elems.insert(regionNum - 1, nextIndex);
+          reg2Elems.insert(regionIdx, nextIndex);
           m_elemRegNum[nextIndex] = regionNum;
         }
         lastReg = regionNum;
@@ -515,25 +497,25 @@ namespace slamLulesh {
     SLIC_ASSERT(reg2Elems.isValid());    // Ensure that the dynamic relation is valid
 
     // Convert from a Dynamic to a Static relation
-    typedef RegionToElemRelation::RelationVec RelVec;
-    RelVec begins( numReg() + 1 );
-    RelVec offsets( numElem() );
+    IntsRegistry::BufferType& local_begins = m_intsRegistry.addBuffer("reg_elem_begins", numReg() + 1 );
+    IntsRegistry::BufferType& local_relIndices = m_intsRegistry.addBuffer("reg_elem_rel_indices", numElem() );
     Index_t curOffIdx = 0;
     for(Index_t regionPos = 0; regionPos < numReg(); ++regionPos)
     {
-      begins[ regionPos] = curOffIdx;
+      local_begins[ regionPos] = curOffIdx;
       for(Index_t elemRelPos = 0; elemRelPos < reg2Elems.size( regionPos); ++elemRelPos)
       {
-        offsets[curOffIdx++] = reg2Elems[ regionPos][elemRelPos];
+        local_relIndices[curOffIdx++] = reg2Elems[ regionPos][elemRelPos];
       }
     }
-    begins[ numReg()] = offsets.size();
+    local_begins[ numReg()] = local_relIndices.size();
 
+    /// We can finally create the region to elem relation
     m_regionElementsRel = RegionToElemRelation(&m_regionSet, &m_elemSet);
-    m_regionElementsRel.bindRelationData(begins,offsets);
+    m_regionElementsRel.bindBeginOffsets(numReg(), &local_begins);
+    m_regionElementsRel.bindIndices(local_relIndices.size(), &local_relIndices);
 
-    SLIC_ASSERT(m_regionElementsRel.isValid());    // Ensure that the relation is valid
-
+    SLIC_ASSERT(m_regionElementsRel.isValid(true));    // Ensure that the relation is valid
   }
 
 /////////////////////////////////////////////////////////////
@@ -595,47 +577,51 @@ namespace slamLulesh {
   Domain::SetupElementConnectivities(Int_t edgeElems)
   {
     // Create temporary arrays to hold the data
-    std::vector<Index_t> indices_m( numElem() );
-    std::vector<Index_t> indices_p( numElem() );
+    IntsRegistry::BufferType& indices_xim = m_intsRegistry.addBuffer("zone_face_xi_m", numElem());
+    IntsRegistry::BufferType& indices_xip = m_intsRegistry.addBuffer("zone_face_xi_p", numElem());
 
     // Setup xi face adjacencies
-    indices_m[0] = 0;
+    indices_xim[0] = 0;
     for (Index_t i = 1; i<numElem(); ++i)
     {
-      indices_m[i]   = i - 1;
-      indices_p[i - 1] = i;
+      indices_xim[i]   = i - 1;
+      indices_xip[i - 1] = i;
     }
-    indices_p[numElem() - 1] = numElem() - 1;
-    m_lxim.bindRelationData( indices_m, 1);
-    m_lxip.bindRelationData( indices_p, 1);
+    indices_xip[numElem() - 1] = numElem() - 1;
+    m_lxim.bindIndices(numElem(), &indices_xim);
+    m_lxip.bindIndices(numElem(), &indices_xip);
 
     // Setup eta face adjacencies
+    IntsRegistry::BufferType& indices_etam = m_intsRegistry.addBuffer("zone_face_eta_m", numElem());
+    IntsRegistry::BufferType& indices_etap = m_intsRegistry.addBuffer("zone_face_eta_p", numElem());
     for (Index_t i = 0; i<edgeElems; ++i)
     {
-      indices_m[i] = i;
-      indices_p[numElem() - edgeElems + i] = numElem() - edgeElems + i;
+      indices_etam[i] = i;
+      indices_etap[numElem() - edgeElems + i] = numElem() - edgeElems + i;
     }
     for (Index_t i = edgeElems; i<numElem(); ++i)
     {
-      indices_m[i] = i - edgeElems;
-      indices_p[i - edgeElems] = i;
+      indices_etam[i] = i - edgeElems;
+      indices_etap[i - edgeElems] = i;
     }
-    m_letam.bindRelationData( indices_m, 1);
-    m_letap.bindRelationData( indices_p, 1);
+    m_letam.bindIndices( numElem(), &indices_etam);
+    m_letap.bindIndices( numElem(), &indices_etap);
 
     // Setup zeta face adjacencies
+    IntsRegistry::BufferType& indices_zetam = m_intsRegistry.addBuffer("zone_face_zeta_m", numElem());
+    IntsRegistry::BufferType& indices_zetap = m_intsRegistry.addBuffer("zone_face_zeta_p", numElem());
     for (Index_t i = 0; i<edgeElems * edgeElems; ++i)
     {
-      indices_m[i] = i;
-      indices_p[numElem() - edgeElems * edgeElems + i] = numElem() - edgeElems * edgeElems + i;
+      indices_zetam[i] = i;
+      indices_zetap[numElem() - edgeElems * edgeElems + i] = numElem() - edgeElems * edgeElems + i;
     }
     for (Index_t i = edgeElems * edgeElems; i<numElem(); ++i)
     {
-      indices_m[i] = i - edgeElems * edgeElems;
-      indices_p[i - edgeElems * edgeElems] = i;
+      indices_zetam[i] = i - edgeElems * edgeElems;
+      indices_zetap[i - edgeElems * edgeElems] = i;
     }
-    m_lzetam.bindRelationData( indices_m, 1);
-    m_lzetap.bindRelationData( indices_p, 1);
+    m_lzetam.bindIndices(numElem(), &indices_zetam);
+    m_lzetap.bindIndices(numElem(), &indices_zetap);
 
     // Ensure that all the indices in the relations are valid
     SLIC_ASSERT(  m_lxim.isValid() );
@@ -700,17 +686,16 @@ namespace slamLulesh {
     }
 
 
-    // SLAM HACK: We are directly accessing the relation data of a StaticConstantRelation (ElemFaceAdjacencyRelation)
-    //               so that we can modify it. A nicer solution can be implemented once we define DynamicConstantRelations
-    //               which we can use to wrap the code.  However, the code should still look similar for now...
+    // SLAM HACK: We want to modify the data of a StaticRelation (ElemFaceAdjacencyRelation).
+    //            This will be addressed in ATK-927.
+    //            For now, grab the underlying array from the registry
 
-    typedef Domain::ElemFaceAdjacencyRelation::RelationVec IndexVec;
-    IndexVec& local_xi_m = m_lxim.toSetPositionsData();
-    IndexVec& local_xi_p = m_lxip.toSetPositionsData();
-    IndexVec& local_eta_m = m_letam.toSetPositionsData();
-    IndexVec& local_eta_p = m_letap.toSetPositionsData();
-    IndexVec& local_zeta_m = m_lzetam.toSetPositionsData();
-    IndexVec& local_zeta_p = m_lzetap.toSetPositionsData();
+    IntsRegistry::BufferType& local_xi_m = m_intsRegistry.getBuffer("zone_face_xi_m");
+    IntsRegistry::BufferType& local_xi_p = m_intsRegistry.getBuffer("zone_face_xi_p");
+    IntsRegistry::BufferType& local_eta_m = m_intsRegistry.getBuffer("zone_face_eta_m");
+    IntsRegistry::BufferType& local_eta_p = m_intsRegistry.getBuffer("zone_face_eta_p");
+    IntsRegistry::BufferType& local_zeta_m = m_intsRegistry.getBuffer("zone_face_zeta_m");
+    IntsRegistry::BufferType& local_zeta_p = m_intsRegistry.getBuffer("zone_face_zeta_p");
 
     // symmetry plane or free surface BCs
     for (Index_t i = 0; i<edgeElems; ++i)
@@ -797,7 +782,7 @@ namespace slamLulesh {
     if (testProcs * testProcs * testProcs != numRanks)
     {
       SLIC_WARNING("Num processors must be a cube of an integer (1, 8, 27, ...)");
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);
@@ -806,7 +791,7 @@ namespace slamLulesh {
     if (sizeof(Real_t) != 4 && sizeof(Real_t) != 8)
     {
       SLIC_WARNING("MPI operations only support float and double right now...");
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);
@@ -815,7 +800,7 @@ namespace slamLulesh {
     if (MAX_FIELDS_PER_MPI_COMM > CACHE_COHERENCE_PAD_REAL)
     {
       SLIC_WARNING("Corner element comm buffers too small.  Fix code.");
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);
@@ -830,7 +815,7 @@ namespace slamLulesh {
     if (dx * dy * dz != numRanks)
     {
       SLIC_WARNING("Error -- must have as many domains as procs.");
-#ifdef USE_MPI
+#ifdef AXOM_USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);

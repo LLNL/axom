@@ -1,4 +1,5 @@
-Common infrastructure {#commontop}
-========
+Axom utilities {#axomutiltop}
+=============================
 
-The common infrastructure supporting other ASC Toolkit components.
+Shared utility functions supporting all Axom components 
+

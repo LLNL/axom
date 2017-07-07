@@ -21,16 +21,21 @@
 #include "mpi.h"
 #include "sidre/wrapGroup.h"
 
+// splicer begin class.IOManager.CXX_declarations
+// splicer end class.IOManager.CXX_declarations
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // declaration of wrapped types
+struct s_SIDRE_group;
+typedef struct s_SIDRE_group SIDRE_group;
 struct s_SPIO_iomanager;
 typedef struct s_SPIO_iomanager SPIO_iomanager;
 
-// splicer begin class.IOManager.C_definition
-// splicer end class.IOManager.C_definition
+// splicer begin class.IOManager.C_declarations
+// splicer end class.IOManager.C_declarations
 
 SPIO_iomanager * SPIO_iomanager_new(MPI_Fint com);
 
@@ -51,6 +56,10 @@ void SPIO_iomanager_read_0_bufferify(SPIO_iomanager * self, SIDRE_group * group,
 void SPIO_iomanager_read_1(SPIO_iomanager * self, SIDRE_group * group, const char * root_file);
 
 void SPIO_iomanager_read_1_bufferify(SPIO_iomanager * self, SIDRE_group * group, const char * root_file, int Lroot_file);
+
+void SPIO_iomanager_read_2(SPIO_iomanager * self, SIDRE_group * group, const char * root_file, bool preserve_contents);
+
+void SPIO_iomanager_read_2_bufferify(SPIO_iomanager * self, SIDRE_group * group, const char * root_file, int Lroot_file, bool preserve_contents);
 
 void SPIO_iomanager_load_external_data(SPIO_iomanager * self, SIDRE_group * group, const char * root_file);
 
