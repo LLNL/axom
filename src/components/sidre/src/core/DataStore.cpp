@@ -425,40 +425,6 @@ void DataStore::destroyAllAttributes()
 /*
  *************************************************************************
  *
- * Return pointer to non-const Attribute with given name.
- *
- * If no such Attribute exists, AXOM_NULLPTR is returned.
- *
- *************************************************************************
- */
-Attribute * DataStore::getAttribute( const std::string& name )
-{
-  SLIC_CHECK_MSG( hasAttribute(name),
-                  "DataStore has no Attribute with name " << name);
-
-  return m_attribute_coll->getItem(name);
-}
-
-/*
- *************************************************************************
- *
- * Return pointer to const Attribute with given name.
- *
- * If no such Attribute exists, AXOM_NULLPTR is returned.
- *
- *************************************************************************
- */
-const Attribute * DataStore::getAttribute( const std::string& name ) const
-{
-  SLIC_CHECK_MSG( hasAttribute(name),
-                  "DataStore has no Attribute with name " << name);
-
-  return m_attribute_coll->getItem(name);
-}
-
-/*
- *************************************************************************
- *
  * Return pointer to non-const Attribute with given index.
  *
  * If no such Attribute exists, AXOM_NULLPTR is returned.
@@ -488,6 +454,40 @@ const Attribute * DataStore::getAttribute( IndexType idx ) const
                   "DataStore has no Attribute with index " << idx);
 
   return m_attribute_coll->getItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to non-const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::getAttribute( const std::string& name )
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const Attribute * DataStore::getAttribute( const std::string& name ) const
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
 }
 
 /*

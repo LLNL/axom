@@ -948,11 +948,11 @@ public:
 //@{
 //!  @name View query and accessor methods
 
-//  Attribute * getAttribute(IndexType idx);
+  Attribute * getAttribute(IndexType idx);
 
   const Attribute * getAttribute(IndexType idx) const;
 
-  //  Attribute * getAttribute(const std::string & name);
+  Attribute * getAttribute(const std::string & name);
 
   const Attribute * getAttribute(const std::string & name) const;
 

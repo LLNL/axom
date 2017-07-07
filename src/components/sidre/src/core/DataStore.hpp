@@ -278,20 +278,6 @@ public:
 //!  @name Attribute access and iteration methods.
 
   /*!
-   * \brief Return pointer to non-const Attribute with given name.
-   *
-   * If no such Attribute exists, AXOM_NULLPTR is returned.
-   */
-  Attribute * getAttribute( const std::string& name );
-
-  /*!
-   * \brief Return pointer to const Attribute with given name.
-   *
-   * If no such Attribute exists, AXOM_NULLPTR is returned.
-   */
-  const Attribute * getAttribute( const std::string& name ) const;
-
-  /*!
    * \brief Return pointer to non-const Attribute with given index.
    *
    * If no such Attribute exists, AXOM_NULLPTR is returned.
@@ -304,6 +290,20 @@ public:
    * If no such Attribute exists, AXOM_NULLPTR is returned.
    */
   const Attribute * getAttribute( IndexType idx ) const;
+
+  /*!
+   * \brief Return pointer to non-const Attribute with given name.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  Attribute * getAttribute( const std::string& name );
+
+  /*!
+   * \brief Return pointer to const Attribute with given name.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  const Attribute * getAttribute( const std::string& name ) const;
 
   /*!
    * \brief Return first valid Attribute index in DataStore object

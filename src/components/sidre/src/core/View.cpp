@@ -1269,9 +1269,7 @@ void View::importAttribute(conduit::Node& data_holder)
       Node& n_attr = attrs_itr.next();
       std::string attr_name = attrs_itr.name();
 
-      Attribute * attr = 
-	getOwningGroup()->getDataStore()->getAttribute(attr_name);
-	//getAttribute(attr_name);
+      Attribute * attr = getAttribute(attr_name);
       if (attr != AXOM_NULLPTR)
       {
 	m_attr_values.setNode(attr, n_attr);
@@ -1328,23 +1326,21 @@ bool View::rename(const std::string& new_name)
 /*
  *************************************************************************
  *
- * Return pointer to Attribute.
+ * Return pointer to Attribute from Attribute index.
  *
  *************************************************************************
  */
-#if 0
 Attribute * View::getAttribute(IndexType idx)
 {
-  const Attribute * attr = 
+  Attribute * attr = 
       getOwningGroup()->getDataStore()->getAttribute(idx);
   return attr;
 }
-#endif
 
 /*
  *************************************************************************
  *
- * Return pointer to Attribute.
+ * Return pointer to Attribute from Attribute index.
  *
  *************************************************************************
  */
@@ -1358,22 +1354,21 @@ const Attribute * View::getAttribute(IndexType idx) const
 /*
  *************************************************************************
  *
- * Return pointer to Attribute.
+ * Return pointer to Attribute from Attribute name.
  *
  *************************************************************************
  */
-#if 0
 Attribute * View::getAttribute(const std::string & name)
 {
-  const Attribute * attr = 
+  Attribute * attr = 
       getOwningGroup()->getDataStore()->getAttribute(name);
   return attr;
 }
-#endif
+
 /*
  *************************************************************************
  *
- * Return pointer to Attribute.
+ * Return pointer to Attribute from Attribute name.
  *
  *************************************************************************
  */
