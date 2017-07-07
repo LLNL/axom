@@ -82,7 +82,7 @@ private:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasValue( IndexType iattr ) const;
+  bool hasValue( const Attribute * attr ) const;
 
   /*!
    * \brief Create a Conduit Node to store an attribute.

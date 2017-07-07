@@ -964,20 +964,34 @@ public:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( IndexType iattr ) const
+  bool hasAttributeValue( IndexType idx ) const
   {
-    return m_attr_values.hasValue(iattr);
+    const Attribute * attr = getAttribute(idx);
+    return m_attr_values.hasValue(attr);
   }
 
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const std::string & name ) const;
+  bool hasAttributeValue( const std::string & name ) const
+  {
+    const Attribute * attr = getAttribute(name);
+    return m_attr_values.hasValue(attr);
+  }
 
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const Attribute * attr ) const;
+  bool hasAttributeValue( const Attribute * attr ) const
+  {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+  		     "hasAttributeValue: called without an Attribute");
+    }
+
+    return m_attr_values.hasValue(attr);
+  }
 
   /*!
    * \brief Set Attribute to its default value from Attribute index.

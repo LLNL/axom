@@ -39,12 +39,10 @@ namespace sidre
  *
  *************************************************************************
  */
-bool AttrValues::hasValue( IndexType iattr ) const
+bool AttrValues::hasValue( const Attribute * attr ) const
 {
-  if (! indexIsValid(iattr))
+  if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(indexIsValid(iattr),
-		   "hasValue: called with invalid index");
     return false;
   }
 
@@ -53,6 +51,8 @@ bool AttrValues::hasValue( IndexType iattr ) const
     // No attributes have been set in this View.
     return false;
   }
+
+  IndexType iattr = attr->getIndex();
 
   if ((size_t) iattr >= m_values->size())
   {

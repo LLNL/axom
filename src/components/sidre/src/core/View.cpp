@@ -1244,8 +1244,7 @@ void View::exportAttribute(conduit::Node& data_holder) const
 
   while ( indexIsValid(aidx) )
   {
-    const Attribute * attr =
-      getOwningGroup()->getDataStore()->getAttribute(aidx);
+    const Attribute * attr = getAttribute(aidx);
 
     node[attr->getName()] = getAttributeNodeRef(attr);
 
@@ -1272,6 +1271,7 @@ void View::importAttribute(conduit::Node& data_holder)
 
       Attribute * attr = 
 	getOwningGroup()->getDataStore()->getAttribute(attr_name);
+	//getAttribute(attr_name);
       if (attr != AXOM_NULLPTR)
       {
 	m_attr_values.setNode(attr, n_attr);
@@ -1387,55 +1387,13 @@ const Attribute * View::getAttribute(const std::string & name) const
 /*
  *************************************************************************
  *
- * Return true if the attribute has been explicitly set; else false.
- *
- *************************************************************************
- */
-bool View::hasAttributeValue( const std::string & name ) const
-{
-  const Attribute * attr = 
-    getOwningGroup()->getDataStore()->getAttribute(name);
-
-  if (attr == AXOM_NULLPTR)
-  {
-    return false;
-  }
-
-  IndexType iattr = attr->getIndex();
-  return m_attr_values.hasValue(iattr);
-}
-
-/*
- *************************************************************************
- *
- * Return true if the attribute has been explicitly set; else false.
- *
- *************************************************************************
- */
-bool View::hasAttributeValue( const Attribute * attr ) const
-{
-  if (attr == AXOM_NULLPTR)
-  {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "hasAttributeValue: called without an Attribute");
-    return false;
-  }
-    
-  IndexType iattr = attr->getIndex();
-  return m_attr_values.hasValue(iattr);
-}
-
-/*
- *************************************************************************
- *
  * Set Attribute for a View from Attribute name.
  *
  *************************************************************************
  */
 bool View::setAttributeString( IndexType idx, const std::string & value )
 {
-  const Attribute * attr = 
-    getOwningGroup()->getDataStore()->getAttribute(idx);
+  const Attribute * attr = getAttribute(idx);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1454,8 +1412,7 @@ bool View::setAttributeString( IndexType idx, const std::string & value )
  */
 bool View::setAttributeString( const std::string & name, const std::string & value )
 {
-  const Attribute * attr = 
-    getOwningGroup()->getDataStore()->getAttribute(name);
+  const Attribute * attr = getAttribute(name);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1495,8 +1452,7 @@ bool View::setAttributeString( const Attribute * attr, const std::string & value
  */
 const char * View::getAttributeString( IndexType idx ) const
 {
-  const Attribute * attr = 
-    getOwningGroup()->getDataStore()->getAttribute(idx);
+  const Attribute * attr = getAttribute(idx);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1517,8 +1473,7 @@ const char * View::getAttributeString( IndexType idx ) const
  */
 const char * View::getAttributeString( const std::string & name ) const
 {
-  const Attribute * attr = 
-    getOwningGroup()->getDataStore()->getAttribute(name);
+  const Attribute * attr = getAttribute(name);
 
   if (attr == AXOM_NULLPTR)
   {

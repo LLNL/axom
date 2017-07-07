@@ -518,12 +518,21 @@ TEST(sidre_attribute,overloads)
   const Node & node3 = view->getAttributeNodeRef(name_dump);
   EXPECT_EQ(dump_yes, node3.as_int());
 
+  EXPECT_TRUE(view->hasAttributeValue(attr_dump));
+  EXPECT_TRUE(view->hasAttributeValue(idump));
+  EXPECT_TRUE(view->hasAttributeValue(name_dump));
+
   ok = view->setAttributeToDefault(attr_dump);
   EXPECT_TRUE(ok);
   ok = view->setAttributeToDefault(idump);
   EXPECT_TRUE(ok);
   ok = view->setAttributeToDefault(name_dump);
   EXPECT_TRUE(ok);
+
+  // Attribute no longer set
+  EXPECT_FALSE(view->hasAttributeValue(attr_dump));
+  EXPECT_FALSE(view->hasAttributeValue(idump));
+  EXPECT_FALSE(view->hasAttributeValue(name_dump));
 
   // Check some errors
   EXPECT_EQ(0, view->getAttributeScalar<int>(AXOM_NULLPTR));
