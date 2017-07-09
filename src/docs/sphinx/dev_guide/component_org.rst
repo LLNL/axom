@@ -134,7 +134,7 @@ system. Specifically:
 
     #. Add option to enable component. For example,::
 
-         blt_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+         axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
     #. Add component dependency target by adding component name to the `axom_components` variable.
     
