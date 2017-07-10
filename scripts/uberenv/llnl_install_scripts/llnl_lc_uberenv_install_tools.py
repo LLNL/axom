@@ -141,9 +141,16 @@ def build_and_test_host_config(test_root,host_config):
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
+    print "[testing build, test, and install of host config file: %s]" % host_config
+    print "[ build dir: %s]"   % build_dir
+    print "[ install dir: %s]" % install_dir
+
     # configure
+    cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
+    print "[starting configure of %s]" % host_config
+    print "[log file: %s]" % cfg_output_file
     res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
-               output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root),
+               output_file = cfg_output_file,
                echo=True)
     
     if res != 0:
@@ -153,34 +160,46 @@ def build_and_test_host_config(test_root,host_config):
     ####
     # build, test, and install
     ####
+    bld_output_file =  pjoin(build_dir,"output.log.make.txt")
+    print "[starting build]"
+    print "[log file: %s]" % bld_output_file
     res = sexe("cd %s && make -j 8 " % build_dir,
-                output_file = pjoin(build_dir,"output.log.make.txt"),
+                output_file = bld_output_file,
                 echo=True)
 
     if res != 0:
         print "[ERROR: Build for host-config: %s failed]" % host_config
         return res
 
+    tst_output_file = pjoin(build_dir,"output.log.make.test.txt"),
+    print "[starting unit tests]"
+    print "[log file: %s]" % tst_output_file
 
     if "bgqos_0" in os.getenv('SYS_TYPE', ""):
         # Need to use ctest-3.0 on bg/q
         ctest_exe = "/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"
-        res = sexe("cd {} && {} -T Test -j16".format(build_dir,ctest_exe),
-                   output_file = pjoin(build_dir,"output.log.make.test.txt"),
-                   echo=True)
+        tst_cmd = "cd {} && {} -T Test -j16".format(build_dir,ctest_exe)
 
     else:
-        res = sexe("cd %s && make test " % build_dir,
-                   output_file = pjoin(build_dir,"output.log.make.test.txt"),
-                   echo=True)
+        tst_cmd = "cd %s && make test " % build_dir
+
+    res = sexe(tst_cmd,
+               output_file = tst_output_file,
+               echo=True)
+
+                   
 
     if res != 0:
         print "[ERROR: Tests for host-config: %s failed]" % host_config
         return res
 
 
+    inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
+    print "[starting install]"
+    print "[log file: %s]" % inst_output_file
+
     res = sexe("cd %s && make install " % build_dir,
-               output_file = pjoin(build_dir,"output.log.make.install.txt"),
+               output_file = inst_output_file,
                echo=True)
 
     if res != 0:
