@@ -1004,7 +1004,9 @@ private:
     bool blockIndexesVertex(VertexIndex vIdx, const BlockIndex& blk) const
     {
         SLIC_ASSERT(m_generationState >= INOUTOCTREE_MESH_REORDERED);
-        return vIdx >=0 && m_vertexToBlockMap[vIdx] == blk;
+
+        // Needs to account for non-leaf ancestors of the block
+        return vIdx >=0 && m_vertexToBlockMap[vIdx].isDescendantOf(blk);
     }
 
     /**
@@ -1022,8 +1024,8 @@ private:
         TriVertIndices tVerts = m_meshWrapper.triangleVertexIndices(tIdx);
         for(int i=0; i< tVerts.size(); ++i)
         {
-            // Note: Use the vertex to block cache to avoid numerical degeneracies
-            if( blk == m_vertexToBlockMap[ tVerts[i]])
+            // Using the vertex-to-block cache to avoid numerical degeneracies
+            if( blockIndexesVertex(tVerts[i], blk) )
                 return true;
         }
         return false;
@@ -1483,9 +1485,10 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
                     for(int j=0; j< BlockIndex::numChildren(); ++j)
                     {
-                        bool shouldAddTriangle = childDataPtr[j]->isLeaf()
-                                ? blockIndexesElementVertex(tIdx, childBlk[j]) || intersect(spaceTri, childBB[j])
-                                : intersect(tBB, childBB[j])
+                        bool shouldAddTriangle = blockIndexesElementVertex(tIdx, childBlk[j]) 
+                                ||  ( childDataPtr[j]->isLeaf()
+                                        ? intersect(spaceTri, childBB[j])
+                                        : intersect(tBB, childBB[j]) )
                                 ;
 
                         QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == childBlk[j]
@@ -1757,16 +1760,17 @@ typename InOutOctree<DIM>::TriangleIndexSet InOutOctree<DIM>::leafTriangles(cons
 template<int DIM>
 bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
 {
-   /// The algorithm finds a ray from queryPt to a point of any triangle within leafBlk.
-   /// It then finds the first triangle along this ray and tests this vector
-   /// against the triangle normal. queryPt is inside if the dot product is positive.
+    /// The algorithm finds a ray from queryPt to a point of any triangle within leafBlk.
+    /// It then finds the first triangle along this ray and tests this vector
+    /// against the triangle normal. queryPt is inside if the dot product is positive.
+
+    // Bounding box scaling factor for dealing with grazing triangles
+    const double BB_SCALE_FACTOR = 1.005;
 
     SLIC_ASSERT( leafData.color() == InOutBlockData::Gray );
     SLIC_ASSERT( leafData.hasData() );
 
     GeometricBoundingBox blockBB = this->blockBoundingBox(leafBlk);
-    GeometricBoundingBox expandedBB = blockBB;
-    expandedBB.scale(1.005);
 
     SpacePt triPt;
 
@@ -1782,15 +1786,23 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex
       primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
       if(poly.numVertices() == 0)
       {
-        continue;
+        // Account for cases where the triangle only grazes the bounding box.
+        // Here, intersect(tri,blockBB) is true, but the clipping algorithm
+        // produces an empty polygon.  To resolve this, clip against a
+        // slightly expanded bounding box
+        GeometricBoundingBox expandedBB = blockBB;
+        expandedBB.scale(BB_SCALE_FACTOR);
+
+        poly = primal::clip(tri, expandedBB);
+
+        // If that still doesn't work, move on to the next triangle
+        if(poly.numVertices() == 0)
+        {
+          continue;
+        }
       }
 
       triPt = poly.centroid();
-
-      if(! expandedBB.contains(triPt))
-      {
-        continue;
-      }
 
       /// Use a ray from the query point to the triangle point to find an intersection
       /// Note: We have to check all triangles to ensure that there is not a closer
