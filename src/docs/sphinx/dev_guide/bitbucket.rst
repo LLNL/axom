@@ -150,7 +150,7 @@ Likewise, if you are using tcsh/csh, you can do the following:
       $ mv git-completion.tcsh $HOME/.git-completion.tcsh
       $ mv git-completion.bash $HOME/.git-completion.bash
   
-#. Add the following to your *.tcshrc or *.cshrc ::
+#. Add the following to your `.tcshrc` or `.cshrc` ::
 
       source ~/.git-completion.tcsh
       
@@ -198,8 +198,8 @@ Step 1 -- Create a topic branch
     Most development occurs on a topic branch created off the develop branch.
     Occasions where a branch is created from another branch, such as a
     'hotfix' branch created off master, are described in :ref:`gitflow-label`.
-    To create a branch in Git, provide the '-b' option to the 
-    'git checkout' command, followed by the name of your topic branch. 
+    To create a branch in Git, provide the ``-b`` option to the 
+    ``git checkout`` command, followed by the name of your topic branch. 
     A topic branch name should include your username (i.e., login id) and a 
     brief description indicating the purpose of the branch. 
     Typically, we label such branches using "feature", "bugfix", etc. to make 
@@ -433,7 +433,7 @@ for release:
      without interruption.
 
   #. Update the version number information in the 
-     `axom/src/include`config.hpp.in` file.
+     ``axom/src/include/config.hpp.in`` file.
 
   #. Create a pull request to merge the release branch into master so that
      it can be reviewed.
@@ -467,4 +467,14 @@ for release:
        $ git show vMM.mm.pp
 
      will show information about the tagged commit.
+
+  #. Push the new tag to bitbucket.  You can push a single tag
+     to bitbucket by running the command ::
+
+       $ git push vMM.mm.pp
+
+     To push all local tags to bitbucket, use this command::
+     
+       $ git push --tags
+     
 
