@@ -11,6 +11,8 @@
 #ifndef MINT_FEM_BASIS_TYPES_HPP_
 #define MINT_FEM_BASIS_TYPES_HPP_
 
+#include <string>
+
 /*!
  *******************************************************************************
  * \enum FEBasisTypes
@@ -40,7 +42,7 @@ namespace mint {
  *  e.g., for, debugging etc.
  *******************************************************************************
  */
-static const char* basis_name[] = {
+static const std::string basis_name[] = {
    "LAGRANGE_BASIS",
 };
 

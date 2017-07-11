@@ -11,6 +11,8 @@
 #ifndef CELLTYPE_HPP_
 #define CELLTYPE_HPP_
 
+#include <string>
+
 /*!
  * \file
  *
@@ -66,7 +68,7 @@ static const int num_nodes[] = {
   5     // MIXED
 };
 
-static const char* name[] = {
+static const std::string name[] = {
   "MINT_VERTEX",         //!< VERTEX
   "MINT_SEGMENT",        //!< LINE_SEGMENT
   "MINT_TRIANGLE",       //!< LINEAR_TRIANGLE
