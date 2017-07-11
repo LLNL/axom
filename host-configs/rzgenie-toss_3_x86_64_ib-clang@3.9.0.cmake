@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_09_12_55_49/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/cmake-3.3.1-usuntzhfbmwz5ci5fryejg52swgb5ruo/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_10_16_01_24/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0/cmake-3.8.2-25bnxxthb45hflhnxgyejhv4dhkeeofu/bin/cmake
 
 #######
 # using clang@3.9.0 compiler spec
@@ -25,13 +25,13 @@ set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-3.9.0/bin/clang++" CACHE P
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_09_12_55_49/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_10_16_01_24/spack/opt/spack/toss_3_x86_64_ib/clang-3.9.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-qy646zjgaj4crjrgwrlqj2slnvjel5re" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-spqnui5wsqcmq46b3uyaimo5gxz3bttj" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-yn37dxz7uztyzca2fdjs7xykugzfdbg2" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-2lr5tv7roznsowa2oactqmrwx3cq6dwy" CACHE PATH "")
@@ -46,7 +46,7 @@ set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-dozo3tjzgctvcgazuvlp4gcnduc43er
 set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-izxbfxhlava24dron2y7i2pruwx3cuh3" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-bprlm2fmh7jvshvtty2a2c6utnyw6u7s/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-3ecnik7zucj7hig5k5pzl7rbivf27pjm/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-dozo3tjzgctvcgazuvlp4gcnduc43ery/bin/sphinx-build" CACHE PATH "")

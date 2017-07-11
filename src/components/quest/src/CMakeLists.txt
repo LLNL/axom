@@ -48,6 +48,7 @@ set( quest_depends_on
      slic
      mint
      slam
+     primal
      )
 
 if (BOOST_FOUND)
@@ -67,16 +68,18 @@ if (ENABLE_MPI)
   endif()
 endif()
 
-if(SHROUD_FOUND)
-    add_subdirectory(interface)
-endif()
+if (ENABLE_FORTRAN)
+  if (SHROUD_FOUND)
+      add_subdirectory(interface)
+  endif()
 
-if (ENABLE_FORTRAN AND ENABLE_MPI)
-  ## append shroud generated headers/sources to corresponding lists
-  list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
-  list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
-  list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
-  list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+  if (ENABLE_MPI)
+    ## append shroud generated headers/sources to corresponding lists
+    list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+    list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+    list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
+    list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+  endif()
 endif()
 
 blt_add_library(

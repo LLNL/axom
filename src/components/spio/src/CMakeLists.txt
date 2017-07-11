@@ -14,11 +14,11 @@ set(spio_sources
     IOManager.cpp
     )
 
-if(SHROUD_FOUND)
-    add_subdirectory(interface)
-endif()
+if (ENABLE_FORTRAN)
+    if(SHROUD_FOUND)
+        add_subdirectory(interface)
+    endif()
 
-if(ENABLE_FORTRAN)
     set(spio_fortran_headers
         # generated headers
         interface/c_fortran/wrapIOManager.h

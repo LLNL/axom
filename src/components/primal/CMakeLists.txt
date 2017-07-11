@@ -48,4 +48,4 @@ endif()
 # Create CMake importable
 # exports for all of our targets
 ################################
-#install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)

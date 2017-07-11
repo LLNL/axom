@@ -35,20 +35,19 @@ set(slic_sources
     )
 
 if (ENABLE_MPI)
-   list(APPEND slic_headers streams/SynchronizedStream.hpp)
-   list(APPEND slic_sources streams/SynchronizedStream.cpp)
-   if (ENABLE_LUMBERJACK)
-      list(APPEND slic_headers streams/LumberjackStream.hpp)
-      list(APPEND slic_sources streams/LumberjackStream.cpp)
-   endif()
+    list(APPEND slic_headers streams/SynchronizedStream.hpp)
+    list(APPEND slic_sources streams/SynchronizedStream.cpp)
+    if (ENABLE_LUMBERJACK)
+        list(APPEND slic_headers streams/LumberjackStream.hpp)
+        list(APPEND slic_sources streams/LumberjackStream.cpp)
+    endif()
 endif()
 
-if(SHROUD_FOUND)
-    add_subdirectory(interface)
-endif()
-
-# XXX ENABLE_FORTRAN_WRAPPER
 if (ENABLE_FORTRAN)
+    if(SHROUD_FOUND)
+        add_subdirectory(interface)
+    endif()
+
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
     )

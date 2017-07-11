@@ -27,13 +27,13 @@ set(sidre_sources
     core/SidreUtilities.cpp
 )
 
-if(SHROUD_FOUND)
-    add_subdirectory(interface)
-endif()
-
-# The CAPI is only built to provide a Fortran interface.  If no Fortran,
-# disable CAPI.
 if (ENABLE_FORTRAN)
+    if(SHROUD_FOUND)
+        add_subdirectory(interface)
+    endif()
+
+    # The CAPI is only built to provide a Fortran interface.  If no Fortran,
+    # disable CAPI.
     list(APPEND sidre_headers
         interface/sidre.h
         interface/SidreTypes.h

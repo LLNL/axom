@@ -36,10 +36,13 @@ set( primal_headers
      spatial_acceleration/UniformGrid.hpp
    )
 
+# For now header only libraries cannot have dependencies until blt_setup_target is fixed
+#   to toggle to INTERFACE only for them
+#     DEPENDS_ON            slic
 blt_add_library(
     NAME                  primal
     HEADERS               ${primal_headers}
-    HEADERS_OUTPUT_SUBDIR primal slic
+    HEADERS_OUTPUT_SUBDIR primal
     )
 install(TARGETS              primal
         EXPORT               ${PROJECT_NAME}-targets
