@@ -24,6 +24,7 @@
 ##############################################################################
 
 from spack import *
+import os
 
 
 class Hdf5(Package):
@@ -33,7 +34,7 @@ class Hdf5(Package):
     """
 
     homepage = "http://www.hdfgroup.org/HDF5/"
-    url = "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.13/src/hdf5-1.8.13.tar.gz"
+    url      = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.16/src/hdf5-1.8.16.tar.gz"
     list_url = "http://www.hdfgroup.org/ftp/HDF5/releases"
     list_depth = 3
 
@@ -80,6 +81,10 @@ class Hdf5(Package):
         # combinations of other arguments. Enabling it just skips a
         # sanity check in configure, so this doesn't merit a variant.
         extra_args.append("--enable-unsupported")
+
+#        if os.environ['SYS_TYPE'].find("blueos_3") == 0:
+        if 'blueos_3' in os.getenv('SYS_TYPE', ""):
+            extra_args.append('ac_cv_build=powerpc64le-unknown-linux-gnu')
 
         if '+debug' in spec:
             extra_args.append('--enable-debug=all')
@@ -139,10 +144,4 @@ class Hdf5(Package):
 
     def url_for_version(self, version):
         v = str(version)
-
-        if version == Version("1.2.2"):
-            return "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-" + v + ".tar.gz"
-        elif version < Version("1.7"):
-            return "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-" + version.up_to(2) + "/hdf5-" + v + ".tar.gz"
-        else:
-            return "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-" + v + "/src/hdf5-" + v + ".tar.gz"
+        return "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-" + version.up_to(2) + "/hdf5-" + v + "/src/hdf5-" + v + ".tar.gz"

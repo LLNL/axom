@@ -1,5 +1,5 @@
 #
-# API for Datastore
+# API for Sidre
 #
 copyright:
   -
@@ -20,6 +20,7 @@ options:
   C_prefix: SIDRE_
   F_module_per_class: False
   F_impl_filename_library_template: wrapf{library_lower}.F
+  F_module_name_library_template: axom_{library_lower}
 
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
@@ -257,7 +258,7 @@ classes:
     -  decl: void save(const std::string& file_path, const std::string& protocol) const
 #   -  decl: void save(const hid_t& h5_id) const
 #      function_suffix: _hdf
-    -  decl: void load(const std::string& file_path, const std::string& protocol)
+    -  decl: void load(const std::string& file_path, const std::string& protocol, bool preserve_contents = false)
 #   -  decl: void load(const hid_t& h5_id)
 #      function_suffix: _hdf
     -  decl: void loadExternalData(const std::string& file_path)

@@ -10,8 +10,8 @@
 !
 
 program spio_parallel_write_read
-  use sidre_mod
-  use spio_mod
+  use axom_sidre
+  use axom_spio
   implicit none
 
   include 'mpif.h'

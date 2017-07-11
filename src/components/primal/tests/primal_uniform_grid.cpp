@@ -36,14 +36,14 @@ TEST( primal_uniform_grid, indexing)
 {
   const int DIM = 3;
   typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
-
+  typedef axom::primal::Point<CoordType, DIM> QPoint;
+    
   double p_max[DIM] = {100, 100, 100};
   double p_min[DIM] = {0, 0, 0};
   const int resolution = 100;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::primal::UniformGrid< int, DIM > valid(p_min, p_max, res);
+  axom::primal::UniformGrid<int, DIM> valid(p_min, p_max, res);
 
   // valid has 100 bins in each dimension, and each bin has a
   // width of 1.0.  The bins are laid out in row-major order.
@@ -52,11 +52,11 @@ TEST( primal_uniform_grid, indexing)
   // increment in the z-dimension increases the bin by 100*100 = 10000.
 
   QPoint pt1 = QPoint::make_point(1.5,0,0);
-  int expectedBin = 1;    // The 0th z-slab, the 0th y-row, the 1st x-bin
+  int expectedBin = 1;  // The 0th z-slab, the 0th y-row, the 1st x-bin
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt1));
 
   QPoint pt2 = QPoint::make_point(0,1.5,0);
-  expectedBin = 100;    // The 0th z-slab, the 1st y-row, the 0th x-bin
+  expectedBin = 100;  // The 0th z-slab, the 1st y-row, the 0th x-bin
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt2));
 
   QPoint pt3 = QPoint::make_point(99.5, 0, 99.5);
@@ -69,26 +69,54 @@ TEST( primal_uniform_grid, indexing)
   expectedBin = 89*100*100 + 99*100 + 16;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt4));
 
-  // Now go outside the grid, and get some invalid ones.
+  // This is a set of upper-boundary cases.
+  // In general, a bin is "half-open", including its lower-boundary
+  // planes but excluding its upper boundary planes.  The bins located
+  // on the max-x, max-y, and max-z planes are exceptions: they include
+  // the upper boundary, so that points on all faces of the UniformGrid
+  // are indexed in the UniformGrid.
 
-  QPoint pt5 = QPoint::make_point(12.5, 100.1, 0);
-  // Above 100 is over the fence.
-  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  // The max point, in the top-most bucket.
+  QPoint pt5 = QPoint::make_point(100., 100., 100.);
+  expectedBin = 99*100*100 + 99*100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt5));
 
-  QPoint pt6 = QPoint::make_point(-0.5, 12, 54.3);
-  // Below 0 is over (under?) the fence.
-  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  // A point on the max-x plane
+  QPoint pt6 = QPoint::make_point(100., 55., 62.);
+  expectedBin = 62*100*100 + 55*100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt6));
-
-  QPoint pt7 = QPoint::make_point(100., 100., 100.);
-  // This is (ahem) a boundary case.  As implemented on 3 April 2017,
-  // a bin does not include its upper limit in each dimension, so
-  // (100., 100., 100.) is not included in the bin or the index.
-  // TODO: Move this test case to right below pt4 in the event this
-  // behavior changes.
-  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  // A point on the max-y plane
+  QPoint pt7 = QPoint::make_point(81.4, 100., 2.1);
+  expectedBin = 2*100*100 + 99*100 + 81;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt7));
+  // A point on the max-z plane
+  QPoint pt8 = QPoint::make_point(45.6, 1.8, 100.);
+  expectedBin = 99*100*100 + 1*100 + 45;
+  EXPECT_EQ(expectedBin, valid.getBinIndex(pt8));
+  // A point on the max-xy edge
+  QPoint pt9 = QPoint::make_point(100., 100., 62.);
+  expectedBin = 62*100*100 + 99*100 + 99;
+  EXPECT_EQ(expectedBin, valid.getBinIndex(pt9));
+  // A point on the max-yz edge
+  QPoint pt10 = QPoint::make_point(81.4, 100., 100.);
+  expectedBin = 99*100*100 + 99*100 + 81;
+  EXPECT_EQ(expectedBin, valid.getBinIndex(pt10));
+  // A point on the max-xz edge
+  QPoint pt11 = QPoint::make_point(100., 1.8, 100.);
+  expectedBin = 99*100*100 + 1*100 + 99;
+  EXPECT_EQ(expectedBin, valid.getBinIndex(pt11));
+
+  // Now go outside the grid, and get some invalid ones.
+
+  QPoint pt12 = QPoint::make_point(12.5, 100.1, 0);
+  // Above 100 is over the fence.
+  expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
+  EXPECT_EQ(expectedBin, valid.getBinIndex(pt12));
+
+  QPoint pt13 = QPoint::make_point(-0.5, 12, 54.3);
+  // Below 0 is over (under?) the fence.
+  expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
+  EXPECT_EQ(expectedBin, valid.getBinIndex(pt13));
 }
 
 // For insertions and deletions, we use these next few helper functions

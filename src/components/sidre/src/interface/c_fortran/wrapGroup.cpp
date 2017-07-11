@@ -1126,29 +1126,54 @@ void SIDRE_group_save_bufferify(const SIDRE_group * self,
 // splicer end class.Group.method.save_bufferify
 }
 
-void SIDRE_group_load(SIDRE_group * self, const char * file_path,
-                      const char * protocol)
+void SIDRE_group_load_0(SIDRE_group * self, const char * file_path,
+                        const char * protocol)
 {
-// splicer begin class.Group.method.load
+// splicer begin class.Group.method.load_0
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
   SH_this->load(SH_file_path, SH_protocol);
   return;
-// splicer end class.Group.method.load
+// splicer end class.Group.method.load_0
 }
 
-void SIDRE_group_load_bufferify(SIDRE_group * self, const char * file_path,
-                                int Lfile_path, const char * protocol,
-                                int Lprotocol)
+void SIDRE_group_load_0_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol)
 {
-// splicer begin class.Group.method.load_bufferify
+// splicer begin class.Group.method.load_0_bufferify
   Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
   SH_this->load(SH_file_path, SH_protocol);
   return;
-// splicer end class.Group.method.load_bufferify
+// splicer end class.Group.method.load_0_bufferify
+}
+
+void SIDRE_group_load_1(SIDRE_group * self, const char * file_path,
+                        const char * protocol, bool preserve_contents)
+{
+// splicer begin class.Group.method.load_1
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  const std::string SH_file_path(file_path);
+  const std::string SH_protocol(protocol);
+  SH_this->load(SH_file_path, SH_protocol, preserve_contents);
+  return;
+// splicer end class.Group.method.load_1
+}
+
+void SIDRE_group_load_1_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol, bool preserve_contents)
+{
+// splicer begin class.Group.method.load_1_bufferify
+  Group * SH_this = static_cast<Group *>(static_cast<void *>(self));
+  const std::string SH_file_path(file_path, Lfile_path);
+  const std::string SH_protocol(protocol, Lprotocol);
+  SH_this->load(SH_file_path, SH_protocol, preserve_contents);
+  return;
+// splicer end class.Group.method.load_1_bufferify
 }
 
 void SIDRE_group_load_external_data(SIDRE_group * self, const char * file_path)

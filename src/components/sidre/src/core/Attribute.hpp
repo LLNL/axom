@@ -121,6 +121,15 @@ public:
   }
 
   /*!
+   * \brief Set default value of Attribute to a Node.
+   */
+  bool setDefaultNodeRef(Node & node)
+  {
+    m_default_value = node;
+    return true;
+  }
+
+  /*!
    * \brief Return default value of Attribute.
    */
   const Node & getDefaultNodeRef() const

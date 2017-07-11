@@ -982,9 +982,9 @@ bool View::isApplyValid() const
     rv = isDescribed();
     break;
   case BUFFER:
-    rv = 0 < getTotalBytes() &&
+    rv = 0 <= getTotalBytes() &&
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
-    SLIC_CHECK_MSG( 0 < getTotalBytes(),
+    SLIC_CHECK_MSG( 0 <= getTotalBytes(),
                     "Apply is not valid on data with zero length." );
     SLIC_CHECK_MSG(
       getTotalBytes() <= m_data_buffer->getTotalBytes(),
@@ -1084,6 +1084,7 @@ void View::exportTo(conduit::Node& data_holder,
                         std::set<IndexType>& buffer_indices) const
 {
   data_holder["state"] = getStateStringName(m_state);
+  exportAttribute(data_holder);
 
   switch (m_state)
   {
@@ -1134,6 +1135,7 @@ void View::importFrom(conduit::Node& data_holder,
                           const std::map<IndexType, IndexType>& buffer_id_map)
 {
   m_state = getStateId(data_holder["state"].as_string());
+  importAttribute(data_holder);
 
   switch (m_state)
   {
@@ -1223,6 +1225,62 @@ void View::importDescription(conduit::Node& data_holder)
 /*
  *************************************************************************
  *
+ * PRIVATE method to save view's attributes to a conduit tree.
+ * Only add "attribute" Node if the View has any attributes.
+ *
+ *************************************************************************
+ */
+void View::exportAttribute(conduit::Node& data_holder) const
+{
+  IndexType aidx = getFirstValidAttrValueIndex();
+
+  if (aidx == InvalidIndex)
+  {
+    return;
+  }
+
+  Node & node = data_holder["attribute"];
+  node.set(DataType::object());
+
+  while ( indexIsValid(aidx) )
+  {
+    const Attribute * attr = getAttribute(aidx);
+
+    node[attr->getName()] = getAttributeNodeRef(attr);
+
+    aidx = getNextValidAttrValueIndex(aidx);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to restore a view's attributes from a conduit tree.
+ *
+ *************************************************************************
+ */
+void View::importAttribute(conduit::Node& data_holder)
+{
+  if (data_holder.has_path("attribute"))
+  {
+    conduit::NodeIterator attrs_itr = data_holder["attribute"].children();
+    while (attrs_itr.has_next())
+    {
+      Node& n_attr = attrs_itr.next();
+      std::string attr_name = attrs_itr.name();
+
+      Attribute * attr = getAttribute(attr_name);
+      if (attr != AXOM_NULLPTR)
+      {
+        m_attr_values.setNode(attr, n_attr);
+      }
+    }
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Rename this View with a new string name.
  *
  *************************************************************************
@@ -1263,6 +1321,182 @@ bool View::rename(const std::string& new_name)
   }
 
   return do_rename;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute from Attribute index.
+ *
+ *************************************************************************
+ */
+Attribute * View::getAttribute(IndexType idx)
+{
+  Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(idx);
+  return attr;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute from Attribute index.
+ *
+ *************************************************************************
+ */
+const Attribute * View::getAttribute(IndexType idx) const
+{
+  const Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(idx);
+  return attr;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute from Attribute name.
+ *
+ *************************************************************************
+ */
+Attribute * View::getAttribute(const std::string & name)
+{
+  Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(name);
+  return attr;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to Attribute from Attribute name.
+ *
+ *************************************************************************
+ */
+const Attribute * View::getAttribute(const std::string & name) const
+{
+  const Attribute * attr = 
+      getOwningGroup()->getDataStore()->getAttribute(name);
+  return attr;
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View from Attribute name.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeString( IndexType idx, const std::string & value )
+{
+  const Attribute * attr = getAttribute(idx);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return false;
+  }
+
+  return m_attr_values.setString(attr, value);
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View from Attribute name.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeString( const std::string & name, const std::string & value )
+{
+  const Attribute * attr = getAttribute(name);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return false;
+  }
+
+  return m_attr_values.setString(attr, value);
+}
+
+/*
+ *************************************************************************
+ *
+ * Set Attribute for a View from Attribute pointer.
+ *
+ *************************************************************************
+ */
+bool View::setAttributeString( const Attribute * attr, const std::string & value )
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "setAttributeString: called without an Attribute");
+    return false;
+  }
+    
+  return m_attr_values.setString(attr, value);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return a string attribute from the Attribute index.
+ *
+ * If the value has not been explicitly set, return the current default.
+ *
+ *************************************************************************
+ */
+const char * View::getAttributeString( IndexType idx ) const
+{
+  const Attribute * attr = getAttribute(idx);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return AXOM_NULLPTR;
+  }
+
+  return m_attr_values.getString(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return a string attribute from the Attribute name.
+ *
+ * If the value has not been explicitly set, return the current default.
+ *
+ *************************************************************************
+ */
+const char * View::getAttributeString( const std::string & name ) const
+{
+  const Attribute * attr = getAttribute(name);
+
+  if (attr == AXOM_NULLPTR)
+  {
+    return AXOM_NULLPTR;
+  }
+
+  return m_attr_values.getString(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return a string attribute from the Attribute pointer.
+ *
+ * If the value has not been explicitly set, return the current default.
+ *
+ *************************************************************************
+ */
+const char * View::getAttributeString( const Attribute * attr ) const
+{
+  if (attr == AXOM_NULLPTR)
+  {
+    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+		   "getAttributeString: called without an Attribute");
+    return AXOM_NULLPTR;
+  }
+
+  return m_attr_values.getString(attr);
 }
 
 } /* end namespace sidre */

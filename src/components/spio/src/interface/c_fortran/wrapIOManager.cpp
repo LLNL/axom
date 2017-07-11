@@ -135,6 +135,28 @@ void SPIO_iomanager_read_1_bufferify(SPIO_iomanager * self, SIDRE_group * group,
 // splicer end class.IOManager.method.read_1_bufferify
 }
 
+void SPIO_iomanager_read_2(SPIO_iomanager * self, SIDRE_group * group, const char * root_file, bool preserve_contents)
+{
+// splicer begin class.IOManager.method.read_2
+    IOManager *SH_this = static_cast<IOManager *>(static_cast<void *>(self));
+    axom::sidre::Group * SH_group = static_cast<axom::sidre::Group *>(static_cast<void *>(group));
+    const std::string SH_root_file(root_file);
+    SH_this->read(SH_group, SH_root_file, preserve_contents);
+    return;
+// splicer end class.IOManager.method.read_2
+}
+
+void SPIO_iomanager_read_2_bufferify(SPIO_iomanager * self, SIDRE_group * group, const char * root_file, int Lroot_file, bool preserve_contents)
+{
+// splicer begin class.IOManager.method.read_2_bufferify
+    IOManager *SH_this = static_cast<IOManager *>(static_cast<void *>(self));
+    axom::sidre::Group * SH_group = static_cast<axom::sidre::Group *>(static_cast<void *>(group));
+    const std::string SH_root_file(root_file, Lroot_file);
+    SH_this->read(SH_group, SH_root_file, preserve_contents);
+    return;
+// splicer end class.IOManager.method.read_2_bufferify
+}
+
 void SPIO_iomanager_load_external_data(SPIO_iomanager * self, SIDRE_group * group, const char * root_file)
 {
 // splicer begin class.IOManager.method.load_external_data

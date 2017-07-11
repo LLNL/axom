@@ -16,7 +16,7 @@
 ! splicer begin file_top
 #include "axom/config.hpp"
 ! splicer end file_top
-module sidre_mod
+module axom_sidre
     use, intrinsic :: iso_c_binding, only : C_PTR
     ! splicer begin module_use
     ! map conduit type names to sidre type names
@@ -152,7 +152,8 @@ module sidre_mod
         procedure :: print => group_print
         procedure :: is_equivalent_to => group_is_equivalent_to
         procedure :: save => group_save
-        procedure :: load => group_load
+        procedure :: load_0 => group_load_0
+        procedure :: load_1 => group_load_1
         procedure :: load_external_data => group_load_external_data
         procedure :: get_instance => group_get_instance
         procedure :: set_instance => group_set_instance
@@ -205,6 +206,11 @@ module sidre_mod
             ! splicer end class.Group.generic.get_view
             get_view_from_name,  &
             get_view_from_index
+        generic :: load => &
+            ! splicer begin class.Group.generic.load
+            ! splicer end class.Group.generic.load
+            load_0,  &
+            load_1
         ! splicer begin class.Group.type_bound_procedure_part
         procedure :: get_scalar_int => group_get_scalar_int
         procedure :: get_scalar_long => group_get_scalar_long
@@ -1554,17 +1560,17 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_group_save_bufferify
 
-        subroutine c_group_load(self, file_path, protocol) &
-                bind(C, name="SIDRE_group_load")
+        subroutine c_group_load_0(self, file_path, protocol) &
+                bind(C, name="SIDRE_group_load_0")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_group_load
+        end subroutine c_group_load_0
 
-        subroutine c_group_load_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
-                bind(C, name="SIDRE_group_load_bufferify")
+        subroutine c_group_load_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+                bind(C, name="SIDRE_group_load_0_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -1572,7 +1578,29 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_group_load_bufferify
+        end subroutine c_group_load_0_bufferify
+
+        subroutine c_group_load_1(self, file_path, protocol, preserve_contents) &
+                bind(C, name="SIDRE_group_load_1")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+        end subroutine c_group_load_1
+
+        subroutine c_group_load_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, preserve_contents) &
+                bind(C, name="SIDRE_group_load_1_bufferify")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: file_path(*)
+            integer(C_INT), value, intent(IN) :: Lfile_path
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+        end subroutine c_group_load_1_bufferify
 
         subroutine c_group_load_external_data(self, file_path) &
                 bind(C, name="SIDRE_group_load_external_data")
@@ -3100,20 +3128,39 @@ contains
         ! splicer end class.Group.method.save
     end subroutine group_save
 
-    subroutine group_load(obj, file_path, protocol)
+    subroutine group_load_0(obj, file_path, protocol)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
-        ! splicer begin class.Group.method.load
-        call c_group_load_bufferify(  &
+        ! splicer begin class.Group.method.load_0
+        call c_group_load_0_bufferify(  &
             obj%voidptr,  &
             file_path,  &
             len_trim(file_path, kind=C_INT),  &
             protocol,  &
             len_trim(protocol, kind=C_INT))
-        ! splicer end class.Group.method.load
-    end subroutine group_load
+        ! splicer end class.Group.method.load_0
+    end subroutine group_load_0
+
+    subroutine group_load_1(obj, file_path, protocol, preserve_contents)
+        use iso_c_binding, only : C_BOOL, C_INT
+        class(SidreGroup) :: obj
+        character(*), intent(IN) :: file_path
+        character(*), intent(IN) :: protocol
+        logical, value, intent(IN) :: preserve_contents
+        logical(C_BOOL) SH_preserve_contents
+        SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
+        ! splicer begin class.Group.method.load_1
+        call c_group_load_1_bufferify(  &
+            obj%voidptr,  &
+            file_path,  &
+            len_trim(file_path, kind=C_INT),  &
+            protocol,  &
+            len_trim(protocol, kind=C_INT),  &
+            SH_preserve_contents)
+        ! splicer end class.Group.method.load_1
+    end subroutine group_load_1
 
     subroutine group_load_external_data(obj, file_path)
         use iso_c_binding, only : C_INT
@@ -6378,4 +6425,4 @@ contains
         endif
     end function view_ne
 
-end module sidre_mod
+end module axom_sidre

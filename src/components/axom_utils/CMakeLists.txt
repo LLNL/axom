@@ -5,7 +5,7 @@ project(axom_utils)
 
 
 ################################
-# Add the common sources
+# Add the axom_utils sources
 ################################
 add_subdirectory(src)
 

@@ -37,9 +37,8 @@ bool isLeq(double x, double y, double EPS=1.0e-12);
 bool isLpeq(double x, double y, const bool includeEqual = false,
             double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
-bool isGpeq(double x, double y, const bool includeEqual = false,
-            double EPS=1.0e-12);
-bool signMatch(double x, double y, double z, double EPS=1.0e-12);
+bool isGpeq(double x, double y, const bool includeEqual = false, double EPS=1.0e-12);
+bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
 bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
 bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
 int  countZeros(double x, double y, double z, double EPS=1.0e-12);
@@ -139,7 +138,7 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
   double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
   double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
 
-  if (signMatch(dp1, dq1, dr1)) {
+  if (nonzeroSignMatch(dp1, dq1, dr1)) {
     return false;
   }
 
@@ -159,7 +158,7 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
   double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
   double dr2 = (Vector3(t1[2],t2[2])).dot(t1Normal);
 
-  if (signMatch(dp2, dq2, dr2)) {
+  if (nonzeroSignMatch(dp2, dq2, dr2)) {
     return false;
   }
 
@@ -798,9 +797,13 @@ inline bool isGpeq(double x, double y, const bool includeEqual, double EPS)
  * \brief Check if x, y, and z all have the same sign.
  *******************************************************************************
  */
-inline bool signMatch(double x, double y, double z, double EPS)
+inline bool nonzeroSignMatch(double x, double y, double z, double EPS)
 {
-  return ((isGt(x*y, 0.0, EPS)) && (isGt(x*z, 0.0, EPS)));
+  return !(axom::utilities::isNearlyEqual(x, 0., EPS)) &&
+         !(axom::utilities::isNearlyEqual(y, 0., EPS)) &&
+         !(axom::utilities::isNearlyEqual(z, 0., EPS)) &&
+         (0 < x) - (x < 0) == (0 < y) - (y < 0) &&
+         (0 < x) - (x < 0) == (0 < z) - (z < 0);
 }
 
 /*!

@@ -9,35 +9,59 @@
 .. ## further review from Lawrence Livermore National Laboratory.
 .. ##
 
+.. ##  '#' with overline for parts
+.. ##  '*' with overline for chapters
+.. ##  '=' for sections
+.. ##  '-' for subsections
+.. ##  '^' for subsubsections
+.. ##  '"' for paragraphs
+
+#####################
 Axom Developer Guide
-=========================================================
+#####################
 
-This guide describes key aspects of the software development processes used
-in the Axom project. The guide is intended for all team members and 
-contributors. It is especially helpful for familiarizing new individuals
-about how the team works. The overarching goal is that all Axom
-development follows similar practices to ensure robustness, consistency,
-ease of use, and comprehensive testing. Everyone who contributes to 
-Axom should be aware of and follow these guidelines. However, the
-benefits of uniformity should be balanced with allowances for individual 
-preferences, which may be superior to rigid conventions in certain situations.
+This guide describes important aspects of software development processes used
+by the Axom project. It does not contain information about building the code or
+coding guidelines. Please see the note below.
 
-Our processes should not be viewed as fixed for all time. They should evolve 
-with project needs and be improved when processes can be improved. Changes 
-should be agreed to by team members after assessing their merits using 
-their collective professional judgment. When changes are made, this guide
-should be updated accordingly.
+This development guide is intended for all team members and contributors. 
+It is especially helpful for individuals who are less familiar with the project
+and wish to understand how the team works. We attempt to employ simple 
+practices that are easy to understand and follow and which improve our software
+without being overly burdensome. We believe that when everyone on our team 
+follows similar practices, the likelihood that our software will be 
+high quality (i.e., robust, correct, easy to use, etc.) is improved. Everyone 
+who contributes to Axom should be aware of and follow these guidelines.
+
+We also believe that the benefits of uniformity and rigor are best balanced 
+with allowances for individual preferences, which may work better in 
+certain situations. Therefore, we do not view these processes as fixed 
+for all time. They should evolve with project needs and be improved when 
+it makes sense. Changes should be agreed to by team members after 
+assessing their merits using our collective professional judgment. When 
+changes are made, this guide should be updated accordingly.
+
+.. note:: This document does not describe how to configure and build the
+          Axom code, or discuss Axom coding guidelines. For information
+          on those topics please refer to the following documents:
+          `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_,
+          `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_.
 
 
 **Contents:**
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
-   dev_model
-   dev_tools
-   add_new_component
+   dev_summary
+   jira
+   semantic_versioning
+   gitflow_branching
+   bitbucket
+   pull_requests
+   component_org
    testing
+   bamboo
    misc_tasks
 
 

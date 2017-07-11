@@ -17,6 +17,7 @@ namespace: axom spio
 
 options:
   C_prefix: SPIO_
+  F_module_name_library_template: axom_{library_lower}
   F_module_per_class: False
 
   # Any C++ function which returns a string will be wrapped in
@@ -31,7 +32,7 @@ types:
     cpp_type: axom::sidre::Group
     f_derived_type: SidreGroup
     f_module:
-      sidre_mod: [ SidreGroup ]
+      axom_sidre: [ SidreGroup ]
     c_type: SIDRE_group
     c_header: sidre/wrapGroup.h
     f_to_c: '{f_var}%get_instance()'
@@ -47,5 +48,5 @@ classes:
     - decl: void write(Group * group, int num_files, const std::string& file_string, const std::string& protocol)
     - decl: void writeGroupToRootFile(Group * group, const std::string& file_name)
     - decl: void read(Group * group, const std::string& file_string, const std::string& protocol)
-    - decl: void read(Group * group, const std::string& root_file)
+    - decl: void read(Group * group, const std::string& root_file, bool preserve_contents = false)
     - decl: void loadExternalData(Group * group, const std::string& root_file)
