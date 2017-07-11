@@ -440,7 +440,7 @@ public:
    * \return status true iff the matrix has an external buffer, else, false.
    *****************************************************************************
    */
-  bool hasExternalBuffer() const { return m_external; };
+  bool usesExternalBuffer() const { return m_usingExternal; };
 
   /*!
    *****************************************************************************
@@ -884,10 +884,10 @@ private:
   /// \name Private Data Members
   /// @{
 
-  int m_rows;      /*!< the number of rows in the matrix */
-  int m_cols;      /*!< the number of columns in the matrix */
-  T* m_data;       /*!< raw storage buffer for the matrix data */
-  bool m_external; /*!< flag that indicates if an external buffer is used */
+  int m_rows;           /*!< the number of rows in the matrix */
+  int m_cols;           /*!< the number of columns in the matrix */
+  T* m_data;            /*!< raw storage buffer for the matrix data */
+  bool m_usingExternal; /*!< indicates if an external buffer is used */
 
   /// @}
 
@@ -906,7 +906,7 @@ template < typename T >
 Matrix< T >::Matrix( int rows, int cols, T val ) :
   m_rows( rows ),
   m_cols( cols ),
-  m_external( false )
+  m_usingExternal( false )
 {
   // sanity checks
   assert( m_rows > 0 );
@@ -921,13 +921,13 @@ template < typename T >
 Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
  m_rows( rows ),
  m_cols( cols ),
- m_external( external )
+ m_usingExternal( external )
 {
   assert( data != AXOM_NULLPTR );
 
   const int nitems = m_rows*m_cols;
 
-  if ( m_external ) {
+  if ( m_usingExternal ) {
 
      m_data = data;
 
@@ -942,7 +942,7 @@ Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
 template < typename T >
 Matrix< T >::Matrix( const Matrix< T >& rhs )
 {
-  m_external = false;
+  m_usingExternal = false;
   m_rows     = m_cols = 0;
   m_data     = AXOM_NULLPTR;
   this->copy( rhs );
@@ -1204,7 +1204,7 @@ template < typename T >
 void Matrix< T >::copy( const Matrix< T >& rhs )
 {
   bool do_allocate =
-       m_external || (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols);
+       m_usingExternal || (m_rows != rhs.m_rows) || (m_cols != rhs.m_cols);
 
   if ( do_allocate ) {
 
@@ -1228,7 +1228,7 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 template < typename T >
 void Matrix< T >::clear( )
 {
-  if ( !m_external ) {
+  if ( !m_usingExternal ) {
     delete [ ] m_data;
     m_data = AXOM_NULLPTR;
   }

@@ -55,7 +55,7 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_TRUE( centroid != AXOM_NULLPTR );
 
-  const int ndims  = fe->getDimension();
+  const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   numerics::Matrix< double > physical_nodes(
           ndims, nnodes, fe->getPhysicalNodes(), true );
@@ -255,7 +255,7 @@ void check_reference_element( mint::FiniteElement* fe )
   EXPECT_EQ( sf.numDofs(), fe->getNumDofs() );
   EXPECT_EQ( sf.dimension(), fe->getReferenceDimension() );
 
-  const int fe_dim = fe->getDimension();
+  const int fe_dim = fe->getPhysicalDimension();
   EXPECT_TRUE( (fe_dim >= 1) && (fe_dim <= 3) );
 
   const int ref_dim = fe->getReferenceDimension();
@@ -317,7 +317,7 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
-  EXPECT_TRUE( fe->getReferenceDimension()==fe->getDimension() );
+  EXPECT_TRUE( fe->getReferenceDimension()==fe->getPhysicalDimension() );
   EXPECT_TRUE( fe->getNumNodes()==fe->getNumDofs() );
 
   int numdofs = fe->getNumDofs();
@@ -390,11 +390,11 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
-  EXPECT_TRUE( fe->getReferenceDimension()==fe->getDimension() );
+  EXPECT_TRUE( fe->getReferenceDimension()==fe->getPhysicalDimension() );
   EXPECT_TRUE( fe->getNumNodes()==fe->getNumDofs() );
 
   // STEP 0: get Matrix of physical nodes; nodal coordinates stored in columns.
-  const int ndims  = fe->getDimension();
+  const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   numerics::Matrix< double > physical_nodes(
        ndims, nnodes, fe->getPhysicalNodes(), true );
@@ -460,7 +460,7 @@ template < int BasisType, int CellType >
 void check_shape( )
 {
   EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
@@ -503,7 +503,7 @@ template < int BasisType, int CellType >
 void check_jacobian( double TOL=1.e-9 )
 {
   EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
@@ -524,7 +524,7 @@ void check_jacobian( double TOL=1.e-9 )
   EXPECT_EQ( 1, m->getNumberOfCells() );
 
   // STEP 1: construct a Matrix object to store the jacobian
-  const int ndims = fe->getDimension();
+  const int ndims = fe->getPhysicalDimension();
   numerics::Matrix< double > J( ndims, ndims );
 
   // STEP 2: test jacobian at the reference nodes
@@ -582,7 +582,7 @@ template < int BasisType, int CellType >
 void check_forward_map( double TOL=1.e-9 )
 {
   EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
@@ -623,7 +623,7 @@ template < int BasisType, int CellType >
 void check_inverse_map( double TOL=1.e-9 )
 {
   EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                           << mint::cell::name[ CellType ] );
@@ -662,7 +662,7 @@ template < int BasisType, int CellType >
 void point_in_cell( double TOL=1.e-9 )
 {
   EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                           << mint::cell::name[ CellType ] );
@@ -681,7 +681,7 @@ void point_in_cell( double TOL=1.e-9 )
 
   // STEP 0: test variables
   const int nnodes = fe->getNumNodes();
-  const int ndims  = fe->getDimension();
+  const int ndims  = fe->getPhysicalDimension();
   double* xi       = new double[ ndims ];
   double* xc       = new double[ ndims ];
   double* rp       = new double[ ndims ];
@@ -828,7 +828,7 @@ template < int BasisType, int CellType >
 void check_interp( double TOL=1.e-9 )
 {
   EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                           << mint::cell::name[ CellType ] );
@@ -845,7 +845,7 @@ void check_interp( double TOL=1.e-9 )
   EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
   EXPECT_EQ( 1, m->getNumberOfCells() );
 
-  const int ndims  = fe->getDimension();
+  const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   double* wgts = new double[ nnodes ];
 
@@ -906,11 +906,11 @@ TEST( mint_single_fe, check_override_max_newton )
   mint::FiniteElement* fe = AXOM_NULLPTR;
   get_fe_mesh< MINT_LAGRANGE_BASIS, MINT_QUAD >( m, fe );
 
-  EXPECT_FALSE( MAX_NEWTON==fe->getMaxNewtonIterations() );
+  EXPECT_FALSE( MAX_NEWTON==fe->getMaxSolverIterations() );
 
   // STEP 1: override max newton iterations
-  fe->setMaxNewtonIterations( MAX_NEWTON );
-  EXPECT_EQ( MAX_NEWTON, fe->getMaxNewtonIterations() );
+  fe->setMaxSolverIterations( MAX_NEWTON );
+  EXPECT_EQ( MAX_NEWTON, fe->getMaxSolverIterations() );
 
   // clean up
   delete fe;

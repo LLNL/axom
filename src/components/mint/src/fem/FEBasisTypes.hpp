@@ -24,7 +24,7 @@ enum FEBasisTypes {
   MINT_UNDEFINED_BASIS=-1, /*!< Undefined basis type */
   MINT_LAGRANGE_BASIS,     /*!< Lagrange basis type */
 
-  MINT_NUM_BASIS           /*!< MINT_NUM_BASIS */
+  MINT_NUM_BASIS_TYPES           /*!< MINT_NUM_BASIS */
 };
 
 namespace axom {

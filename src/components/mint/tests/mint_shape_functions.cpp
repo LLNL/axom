@@ -52,7 +52,7 @@ void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
   EXPECT_TRUE( (ctype >= 0) && (ctype < MINT_NUM_CELL_TYPES) );
 
   const int type = sf.type();
-  EXPECT_TRUE( (type >= 0) && ( type < MINT_NUM_BASIS ) );
+  EXPECT_TRUE( (type >= 0) && ( type < MINT_NUM_BASIS_TYPES ) );
 
   const int ndofs = sf.numDofs();
   EXPECT_TRUE( ndofs > 0 );

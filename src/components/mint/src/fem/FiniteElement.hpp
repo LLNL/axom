@@ -146,7 +146,7 @@ public:
    * \param [in] N user-supplied number for
    *****************************************************************************
    */
-  void setMaxNewtonIterations( int N ) { m_maxNewtonIterations=N; };
+  void setMaxSolverIterations(int numIters) { m_maxNewtonIterations=numIters; };
 
   /*!
    *****************************************************************************
@@ -154,7 +154,7 @@ public:
    * \return N max number of iterations for the Newton-Raphson
    *****************************************************************************
    */
-  int getMaxNewtonIterations( ) const { return m_maxNewtonIterations; };
+  int getMaxSolverIterations( ) const { return m_maxNewtonIterations; };
 
   /*!
    *****************************************************************************
@@ -191,7 +191,7 @@ public:
    * \return dim the dimension of this FiniteElement.
    *****************************************************************************
    */
-  int getDimension() const { return m_dim; };
+  int getPhysicalDimension() const { return m_dim; };
 
   /*!
    *****************************************************************************

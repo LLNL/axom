@@ -60,7 +60,7 @@ void testExternalBufferPassByValue( numerics::Matrix< int > A )
 {
   const int FILL_VAL = 42;
 
-  EXPECT_FALSE( A.hasExternalBuffer() );
+  EXPECT_FALSE( A.usesExternalBuffer() );
   A.fill( FILL_VAL );
 
   const int nrows = A.getNumRows();
@@ -147,7 +147,7 @@ TEST( numerics_matrix, array_constructor_with_external_buffer )
   // BEGIN SCOPE
   {
     numerics::Matrix< int > A( MROWS, NCOLS, data, true );
-    EXPECT_TRUE( A.hasExternalBuffer() );
+    EXPECT_TRUE( A.usesExternalBuffer() );
 
     for ( int i=0; i < NCOLS; ++i ) {
        int* col = A.getColumn( i );
@@ -171,12 +171,12 @@ TEST( numerics_matrix, array_constructor_with_external_buffer )
   // BEGIN SCOPE
   {
     numerics::Matrix< int > A( MROWS, NCOLS, data, true );
-    EXPECT_TRUE( A.hasExternalBuffer() );
+    EXPECT_TRUE( A.usesExternalBuffer() );
     A.swapColumns( 0, 1 );
 
     // deep copy A into B
     numerics::Matrix< int > B = A;
-    EXPECT_FALSE( B.hasExternalBuffer() );
+    EXPECT_FALSE( B.usesExternalBuffer() );
 
     const int nrows = B.getNumRows();
     const int ncols = B.getNumColumns();
@@ -213,7 +213,7 @@ TEST( numerics_matrix, array_constructor_with_external_buffer )
   // BEGIN SCOPE
   {
     numerics::Matrix< int > A( MROWS, NCOLS, data, true );
-    EXPECT_TRUE( A.hasExternalBuffer() );
+    EXPECT_TRUE( A.usesExternalBuffer() );
 
     testExternalBufferPassByValue( A );
 
