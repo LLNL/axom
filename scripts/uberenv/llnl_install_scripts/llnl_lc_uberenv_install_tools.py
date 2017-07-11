@@ -77,6 +77,30 @@ def write_build_info(ofile):
     print binfo_str
     open(ofile,"w").write(binfo_str)
 
+def log_success(prefix,msg):
+    """
+    Called at the end of the process to signal success.
+    """
+    info = {}
+    info["prefix"] = prefix
+    info["status"] = "success"
+    info["message"] = msg
+    info["timestamp"] = timestamp()
+    json.dump(info,open(pjoin(prefix,"success.json"),"w"),indent=2)
+
+def log_failure(prefix,msg):
+    """
+    Called when the process failed.
+    """
+    info = {}
+    info["prefix"] = prefix
+    info["status"] = "failed"
+    info["message"] = msg
+    info["timestamp"] = timestamp()
+    json.dump(info,open(pjoin(prefix,"failed.json"),"w"),indent=2)
+
+
+
 def uberenv_create_mirror(prefix,mirror_path):
     """
     Calls uberenv to create a spack mirror.
@@ -96,9 +120,12 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec)
     print "[starting tpl install of spec %s]" % spec
     print "[log file: %s]" % spack_tpl_build_log
-    return sexe(cmd,
-                echo=True,
-                output_file = spack_tpl_build_log)
+    res = sexe(cmd,
+               echo=True,
+               output_file = spack_tpl_build_log)
+
+    log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
+    return res
 
 def patch_host_configs(prefix):
     """
@@ -131,6 +158,7 @@ def patch_host_configs(prefix):
                     ofile.write(host_cfg_txt)
                     ofile.write(patch_txt)
                     ofile.write("\n")
+    return 0
 
 ############################################################
 # helpers for testing a set of host configs
@@ -187,8 +215,6 @@ def build_and_test_host_config(test_root,host_config):
                output_file = tst_output_file,
                echo=True)
 
-                   
-
     if res != 0:
         print "[ERROR: Tests for host-config: %s failed]" % host_config
         return res
@@ -203,7 +229,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Install for host-config: %s failed]" % host_config
+        print "[ERROR: Tests for host-config: %s failed]" % host_config
         return res
 
     # simple sanity check for make install
@@ -221,10 +247,21 @@ def build_and_test_host_configs(prefix):
         test_root =  pjoin(prefix,"_asctk_build_and_test_%s" % timestamp())
         os.mkdir(test_root)
         write_build_info(pjoin(test_root,"info.json")) 
+        ok  = []
+        bad = []
         for host_config in host_configs:
-            build_and_test_host_config(test_root,host_config)
+            if build_and_test_host_config(test_root,host_config) == 0:
+                ok.append(host_config)
+            else:
+                bad.apend(host_config)
+        if len(bad) > 0:
+            log_failure(prefix,"Build failed for host configs: %s" % bad)
+            return 1
+        else:
+            log_success(prefix,"uberenv/spack tpl build and test succeeded!")
     else:
-        print "[ERROR: No host configs found at %s]" % prefix
+        log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
+        return 1
 
 
 def set_axom_group_and_perms(directory):
@@ -243,7 +280,40 @@ def set_axom_group_and_perms(directory):
     print "[changing perms for all users to rX]"
     sexe("chmod -f -R a+rX %s" % (directory),echo=True)
     print "[done setting perms for: %s]" % directory
+    return 0
 
+
+def full_build_and_test_of_tpls(builds_dir,specs):
+    print "[Building and testing tpls for specs: %s]" % str(specs)
+    mirror_dir = pjoin(builds_dir,"mirror")
+    # unique install location
+    prefix =  pjoin(builds_dir,timestamp())
+    # create a mirror
+    uberenv_create_mirror(prefix,mirror_dir)
+    # write info about this build
+    write_build_info(pjoin(prefix,"info.json"))
+    # use uberenv to install for all specs
+    for spec in specs:
+        res = uberenv_install_tpls(prefix,spec,mirror_dir)
+        if res != 0:
+            print "[ERROR: Failed build of tpls for spec %s]" % spec
+            return res
+        else:
+            print "[SUCCESS: Finished build tpls for spec %s]" % spec
+    # patch manual edits into host config files
+    patch_host_configs(prefix)
+    # build the axom against the new tpls
+    res = build_and_test_host_configs(prefix)
+    if res != 0:
+        print "[ERROR: build and test of axom vs tpls test failed.]"
+        return res
+    else:
+        print "[SUCCESS: build and test of axom vs tpls test passed.]"
+    # set proper perms for installed tpls
+    set_axom_group_and_perms(prefix)
+    # set proper perms for the mirror files
+    set_axom_group_and_perms(mirror_dir)
+    return 0
 
 
 
