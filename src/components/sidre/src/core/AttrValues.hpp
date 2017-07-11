@@ -55,6 +55,15 @@ namespace sidre
  *
  * Space can be minimized by creating more common Attribute first so that they
  * will have a lower index.
+ *
+ * Methods which accept a Attribute pointer will check for
+ * AXOM_NULLPTR but will not print a message.  The calling routines in
+ * the View class are expected to print any error message.  This will
+ * avoid multiple messages for the same error.  For example, if the
+ * index cannot be converted to an Attribute pointer in the View
+ * class, an error message will be printing and then a NULL pointer
+ * passed to the AttrValues class which will not print another
+ * message.
  */
 class AttrValues
 {
@@ -72,6 +81,14 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(AttrValues);
 
   /*!
+   * \brief Return true if attribute is set in value.
+   */
+  static bool isEmpty(Node & value)
+  {
+    return value.schema().dtype().is_empty();
+  }
+
+  /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
   bool hasValue(const Attribute * attr) const;
@@ -83,7 +100,7 @@ private:
    * Called as part of View::createAttributeScalar and
    * View::createAttributeString.
    */
-  bool createNode(const Attribute * attr);
+  bool createNode(IndexType idx);
 
   /*!
    * \brief Set attribute to its default value.
@@ -91,7 +108,7 @@ private:
   bool setToDefault(const Attribute * attr);
 
   /*!
-   * \brief Set attribute value.
+   * \brief Set attribute value from a scalar.
    */
   template<typename ScalarType>
   bool setScalar(const Attribute * attr, ScalarType value)
@@ -108,17 +125,17 @@ private:
       return false;
     }
 
-    bool ok = createNode(attr);
+    IndexType iattr = attr->getIndex();
+    bool ok = createNode(iattr);
     if (ok)
     {
-      IndexType iattr = attr->getIndex();
       (*m_values)[iattr] = value;
     }
     return ok;
   }
 
   /*!
-   * \brief Set attribute value.
+   * \brief Set attribute value from a string.
    */
   bool setString(const Attribute * attr, const std::string & value)
   {
@@ -134,22 +151,39 @@ private:
       return false;
     }
 
-    bool ok = createNode(attr);
+    IndexType iattr = attr->getIndex();
+    bool ok = createNode(iattr);
     if (ok)
     {
-      IndexType iattr = attr->getIndex();
       (*m_values)[iattr] = value;
     }
     return ok;
   }
 
   /*!
-   * \brief Return a value.
+   * \brief Set attribute value from a Node.
+   *
+   * Used when restoring attributes from a file.
+   * The type of node is not check.
+   */
+  bool setNode(const Attribute * attr, const Node & node)
+  {
+    IndexType iattr = attr->getIndex();
+    bool ok = createNode(iattr);
+    if (ok)
+    {
+      (*m_values)[iattr] = node;
+    }
+    return ok;
+  }
+
+  /*!
+   * \brief Return a scalar attribute value.
    */
   Node::ConstValue getScalar( const Attribute * attr ) const;
 
   /*!
-   * \brief Return a string value.
+   * \brief Return a string attribute value.
    */
   const char * getString( const Attribute * attr ) const;
 
@@ -168,6 +202,25 @@ private:
     static const Node empty;
     return empty;
   }
+
+  /*!
+   * \brief Return first valid Attribute index for a set Attribute.
+   *        (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if AttrValue has no Attributes.
+   */
+  IndexType getFirstValidAttrValueIndex() const;
+
+  /*!
+   * \brief Return next valid Attribute index for a set Attribute
+   *        after given index (i.e., smallest index over all Attribute
+   *        indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   * getNextAttrValueIndex(InvalidIndex) returns InvalidIndex.
+   */
+  IndexType getNextValidAttrValueIndex(IndexType idx) const;
 
 //@{
 //!  @name Private AttrValues ctor and dtor
