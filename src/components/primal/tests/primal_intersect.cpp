@@ -1306,6 +1306,7 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
     u2[i][0] = 1.;
     u2[i][1] = 1. - 2*i;
   }
+
   QVector e1(1.);
   QVector e2(1.42);
   QPoint pt2(2.);

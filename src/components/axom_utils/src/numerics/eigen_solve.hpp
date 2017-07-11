@@ -44,10 +44,11 @@ namespace numerics {
  *******************************************************************************
  */
 template < typename T >
-int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas );
+int eigen_solve(Matrix< T >& A, int k, int depth, T* u, T* lambdas);
 
 } /* end namespace numerics */
 } /* end namespace axom */
+
 
 //------------------------------------------------------------------------------
 // Implementation
@@ -55,13 +56,35 @@ int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas );
 namespace axom {
 namespace numerics {
 
+namespace { /* anonymous namespace */
+
+  // TODO: make this work with non-CXX11 compilers
+  template < typename T >
+  T getRandom() {
+    static std::default_random_engine gen(time(0));
+    static std::normal_distribution< T > dist(static_cast< T >(0.0),
+      static_cast< T >(1.0));
+    return dist(gen);
+  }
+
+} /* end namespace anonymous */
+
+// helper function which computes the dot product of u and v
 template < typename T >
-int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas )
+T dot_product(T* u, T* v, int dim)
 {
-  // TODO: assert for PSD-ness?
-  assert( "pre: input matrix must be square" && A.isSquare() );
-  assert( "pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR) );
-  assert( "pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR) );
+  T res = T();
+  for (int i = 0; i < dim; i++) res += u[i]*v[i];
+
+  return res;
+}
+
+template < typename T >
+int eigen_solve(Matrix< T >& A, int k, int depth, T* u, T* lambdas)
+{
+  assert("pre: input matrix must be square" && A.isSquare());
+  assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
+  assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
 
   if (!A.isSquare()) {
     return LU_NONSQUARE_MATRIX;
@@ -73,11 +96,6 @@ int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas )
 
   int N = A.getNumColumns();
 
-  std::default_random_engine gen(time(0));
-  std::normal_distribution< T > dist(static_cast< T >(0.0),
-    static_cast< T >(1.0));
-
-
   for (int i = 0; i < k; i++) {
     // COMPUTING EIGENVECTORS AND VALUES VIA POWER METHOD:
     //   1: generate random vec
@@ -86,15 +104,12 @@ int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas )
     //   4: store
 
     // 1: generate random vec
-    for (int j = 0; j < N; j++) {
-      u[i*N + j] = dist(gen);
-    }
+    for (int j = 0; j < N; j++) u[i*N + j] = getRandom< T >();
 
     // 2: make ortho to previous eigenvecs
     for (int j = 0; j < i; j++) {
       // first compute projection onto this other eigenvec
-      T dot = T();
-      for (int l = 0; l < N; l++) dot += u[i*N + l]*u[j*N + l];
+      T dot = dot_product< T >(u + i*N, u + j*N, N);
 
       // then subtract off the projection
       for (int l = 0; l < N; l++) u[i*N + l] -= dot*u[j*N + l];
@@ -102,13 +117,21 @@ int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas )
 
     // 3: run depth iterations of power method
     T temp[N];
+
     for (int j = 0; j < depth; j++) {
       // multiply
       vector_multiply(A, u + i*N, temp);
 
+      // make ortho to previous (for stability)
+      for (int n = 0; n < i; n++) {
+        T dot = dot_product< T >(temp, u + n*N, N);
+
+        // then subtract off the projection
+        for (int l = 0; l < N; l++) temp[l] -= dot*u[n*N + l];
+      }
+
       // normalize
-      double norm = 0.0;
-      for (int l = 0; l < N; l++) norm += temp[l]*temp[l];
+      double norm = static_cast< double >(dot_product(temp, temp, N));
       T tnorm = static_cast< T >(std::sqrt(norm));
 
       if (norm < EPS) {
@@ -118,14 +141,17 @@ int eigen_solve( Matrix< T >& A, int k, int depth, T* u, T* lambdas )
         break;
       }
 
-      for (int l = 0; l < N; l++) u[i*N + l]= temp[l]/tnorm;
+      for (int l = 0; l < N; l++) {
+        u[i*N + l] = temp[l]/tnorm;
+      }
     }
 
     // 4: store the eigenval (already stored the eigenvec)
     vector_multiply(A, u + i*N, temp);
 
-    lambdas[i] = T();
-    for (int l = 0; l < N; l++) lambdas[i] += u[i*N + l]*temp[l];
+    //lambdas[i] = T();
+    //for (int l = 0; l < N; l++) lambdas[i] += u[i*N + l]*temp[l];
+    lambdas[i] = dot_product(u + i*N, temp, N);
   }
 
 

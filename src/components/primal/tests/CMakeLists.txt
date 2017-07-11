@@ -17,6 +17,7 @@ set( primal_tests
     primal_intersect_impl.cpp
     primal_intersect.cpp
     primal_numeric_array.cpp
+    primal_compute_bounding_box.cpp
     primal_orientation.cpp
     primal_point.cpp
     primal_squared_distance.cpp

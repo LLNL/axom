@@ -209,22 +209,19 @@ Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
 {
   if (obb.contains(pt)) return pt;
 
-  Vector< T, NDIMS > c = obb.centroid();
   Vector< T, NDIMS > e = obb.extents();
   Vector< T, NDIMS > u[NDIMS];
   obb.axes(u);
 
-  Vector< T, NDIMS > d = Vector< T, NDIMS >(pt) - c;
-  Vector< T, NDIMS > res(c);
+  Vector< T, NDIMS > pt_l = obb.toLocal(pt);
+  Vector< T, NDIMS > res(obb.centroid());
 
   for (int i = 0; i < NDIMS; i++) {
-    // since the local coordinates are individually constrained, we can simply
-    // choose the "best" local coordinate in each axis direction
-    T dot = d.dot(u[i]);
-
-    if (abs< T >(dot) <= e[i]) {
-      res += dot*u[i];
-    } else if (dot > e[i]) {
+    // since the local coorpt_linates are inpt_livipt_lually constrainept_l, we can simply
+    // choose the "best" local coorpt_linate in each axis pt_lirection
+    if (pt_l[i] <= e[i] && pt_l[i] >= -e[i]) {
+      res += pt_l[i]*u[i];
+    } else if (pt_l[i] > e[i]) {
       res += e[i]*u[i];
     } else {
       res -= e[i]*u[i];

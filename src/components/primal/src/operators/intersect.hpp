@@ -225,6 +225,14 @@ bool intersect(const OrientedBoundingBox< T, 1 > & b1,
   return false;
 }
 
+// static helper method
+template < typename T >
+static inline T abs(T x)
+{
+  if (x < T()) return -x;
+  return x;
+}
+
 /*!
  *******************************************************************************
  * \brief Determines if a 2D OBB intersects a 2D OBB.
