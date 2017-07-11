@@ -27,12 +27,10 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
 
   numerics::Matrix< double > A(N, N);
 
-  for (int i = 0; i < N; i++) {
+  for (int i = 0; i < N; i++)
     A(i,i) = N - i;
-  }
 
-  int rc = numerics::eigen_solve(A, N, depth, u, lambdas);
-  EXPECT_EQ(0, rc);
+  EXPECT_EQ(0, numerics::eigen_solve(A, N, depth, u, lambdas));
 
   for (int i = 0; i < N; i++) {
     EXPECT_TRUE(utilities::isNearlyEqual(lambdas[i], static_cast<double>(N - i)));
@@ -50,7 +48,7 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
 }
 
 TEST( numerics_eigen_solve, eigen_solve_with_two_by_two ) {
-  const int depth = 1000;
+  const int depth = 50;
   const int N = 2;
 
   double* u = new double[N*N];
@@ -66,19 +64,15 @@ TEST( numerics_eigen_solve, eigen_solve_with_two_by_two ) {
   int rc = numerics::eigen_solve(A, N, depth, u, lambdas);
   EXPECT_EQ(0, rc);
 
-  for (int i = 0; i < N; i++) {
-    std::cout << "Find " << i << "th eigenval = " << lambdas[i] << std::endl;
-  }
-
   // check lambdas are correct
   EXPECT_TRUE(utilities::isNearlyEqual(lambdas[0], 4.));
   EXPECT_TRUE(utilities::isNearlyEqual(lambdas[1], 2.));
 
   // check it has correct eigen vecs approximately
-  EXPECT_TRUE(utilities::isNearlyEqual(u[0], 0.7071, 1.0E-3));
-  EXPECT_TRUE(utilities::isNearlyEqual(u[1], 0.7071, 1.0E-3));
-  EXPECT_TRUE(utilities::isNearlyEqual(u[2], 0.7071, 1.0E-3));
-  EXPECT_TRUE(utilities::isNearlyEqual(u[3], -0.7071, 1.0E-3));
+  EXPECT_TRUE(utilities::isNearlyEqual(u[0]*u[0], 0.7071*0.7071, 1.0E-3));
+  EXPECT_TRUE(utilities::isNearlyEqual(u[1]*u[1], 0.7071*0.7071, 1.0E-3));
+  EXPECT_TRUE(utilities::isNearlyEqual(u[2]*u[2], 0.7071*0.7071, 1.0E-3));
+  EXPECT_TRUE(utilities::isNearlyEqual(u[3]*u[3], 0.7071*0.7071, 1.0E-3));
 
   delete [] u;
   delete [] lambdas;
