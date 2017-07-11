@@ -4,88 +4,110 @@
 
 
 if (ENABLE_MPI)
-   blt_add_executable(NAME spio_basicWriteRead
+   blt_add_executable(NAME spio_basicWriteRead_test
                       SOURCES spio_basicWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON spio conduit hdf5
                       )
    blt_add_test(NAME spio_basicWriteRead
-                COMMAND spio_basicWriteRead
+                COMMAND spio_basicWriteRead_test
                 NUM_PROCS 1
                 )
 
-   blt_add_executable(NAME spio_parallelWriteRead
+   blt_add_executable(NAME spio_parallelWriteRead_test
                       SOURCES spio_parallelWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON spio conduit hdf5
                       )
    blt_add_test(NAME spio_parallelWriteRead
-                COMMAND spio_parallelWriteRead
+                COMMAND spio_parallelWriteRead_test
                 NUM_PROCS 4
                 )
                 
-   blt_add_executable(NAME spio_irregularWriteRead
+   blt_add_executable(NAME spio_irregularWriteRead_test
                       SOURCES spio_irregularWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON spio conduit hdf5
                       )
    blt_add_test(NAME spio_irregularWriteRead
-                COMMAND spio_irregularWriteRead
+                COMMAND spio_irregularWriteRead_test
                 NUM_PROCS 4
                 )
                 
-   blt_add_executable(NAME spio_externalWriteRead
+   blt_add_executable(NAME spio_externalWriteRead_test
                       SOURCES spio_externalWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON slic spio conduit hdf5
                       )
    blt_add_test(NAME spio_externalWriteRead
-                COMMAND spio_externalWriteRead
+                COMMAND spio_externalWriteRead_test
                 NUM_PROCS 4
                 )
+
+   blt_add_executable(NAME spio_preserveWriteRead_test
+                      SOURCES spio_preserveWriteRead.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON spio conduit hdf5
+                      )
+   blt_add_test(NAME spio_preserveWriteRead
+                COMMAND spio_preserveWriteRead_test
+                NUM_PROCS 4
+                )
+
 endif()
 
 if(ENABLE_FORTRAN)
    if (ENABLE_MPI)
-      blt_add_executable(NAME F_spio_basicWriteRead
+      blt_add_executable(NAME spio_basicWriteRead_F_test
                          SOURCES F_spio_basicWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON spio conduit hdf5
                          )
       blt_add_test(NAME F_spio_basicWriteRead
-                   COMMAND F_spio_basicWriteRead
+                   COMMAND spio_basicWriteRead_F_test
                    NUM_PROCS 1
                    )
                    
-      blt_add_executable(NAME F_spio_parallelWriteRead
+      blt_add_executable(NAME spio_parallelWriteRead_F_test
                          SOURCES F_spio_parallelWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON spio conduit hdf5
                          )
       blt_add_test(NAME F_spio_parallelWriteRead
-                   COMMAND F_spio_parallelWriteRead
+                   COMMAND spio_parallelWriteRead_F_test
                    NUM_PROCS 4
                    )
                    
-      blt_add_executable(NAME F_spio_irregularWriteRead
+      blt_add_executable(NAME spio_irregularWriteRead_F_test
                          SOURCES F_spio_irregularWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON spio conduit hdf5
                          )
       blt_add_test(NAME F_spio_irregularWriteRead
-                   COMMAND F_spio_irregularWriteRead
+                   COMMAND spio_irregularWriteRead_F_test
                    NUM_PROCS 4
                    )
                    
-      blt_add_executable(NAME F_spio_externalWriteRead
+      blt_add_executable(NAME spio_externalWriteRead_F_test
                          SOURCES F_spio_externalWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON spio conduit hdf5
                          )
       blt_add_test(NAME F_spio_externalWriteRead
-                   COMMAND F_spio_externalWriteRead
+                   COMMAND spio_externalWriteRead_F_test
                    NUM_PROCS 4
                    )
+
+      blt_add_executable(NAME spio_preserveWriteRead_F_test
+                         SOURCES F_spio_preserveWriteRead.f
+                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                         DEPENDS_ON spio conduit hdf5 fruit
+                         )
+      blt_add_test(NAME F_spio_preserveWriteRead
+                   COMMAND spio_preserveWriteRead_F_test
+                   NUM_PROCS 4
+                   )
+
    endif()
 endif()
 

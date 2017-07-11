@@ -245,7 +245,7 @@ void parse_args( int argc, char** argv )
 //------------------------------------------------------------------------------
 void showHelp()
 {
-   SLIC_INFO("Usage: ./quest_sphere --file <sphere.stl> [options]" );
+   SLIC_INFO("Usage: ./quest_sphere_distance_ex --file <sphere.stl> [options]" );
    SLIC_INFO("--file <file> sets the filename of the STL file. Required.");
    SLIC_INFO("--n2 flag that indicates whether to run the N^2 algorithm.");
    SLIC_INFO("--radius <radius> the radius of the sphere. Default 0.5.");

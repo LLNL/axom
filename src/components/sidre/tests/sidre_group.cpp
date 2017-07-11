@@ -1757,3 +1757,98 @@ TEST(sidre_group,save_load_all_protocols)
 
   }
 }
+
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_load_preserve_contents)
+{
+  const std::string file_path_tree0("sidre_save_load_preserve_contents.tree0.");
+  const std::string file_path_tree1("sidre_save_load_preserve_contents.tree1.");
+  DataStore ds;
+
+  Group * tree0 = ds.getRoot()->createGroup("tree0");
+
+  Group * ga = tree0->createGroup("a");
+  Group * gb = tree0->createGroup("b");
+  Group * gc = tree0->createGroup("c");
+  int ndata = 10;
+
+  // prep a tree that can exactly restored by all
+  // i/o protocols.
+  // Specially, use int64 and float64 b/c the
+  // json i/o case uses those types for parsed integers
+  // and floating point numbers.
+
+  ga->createViewScalar<conduit::int64>("i0", 100);
+  ga->createViewScalar<conduit::float64>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
+
+  gc->createViewAndAllocate("int10", DataType::int64(ndata));
+  conduit::int64 * data_ptr = gc->getView("int10")->getArray();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    data_ptr[i] = (conduit::int64)i;
+  }
+
+  std::string file_path0 = file_path_tree0 + "sidre_hdf5";
+  tree0->save(file_path0, "sidre_hdf5");
+
+  Group * tree1 = tree0->createGroup("tree1");
+
+  Group * gx = tree1->createGroup("x");
+  Group * gy = tree1->createGroup("y");
+  Group * gz = tree1->createGroup("z");
+
+  gx->createViewAndAllocate("int20", DataType::int64(ndata*2));
+  conduit::int64 * data_ptr20 = gx->getView("int20")->getArray();
+  for (int i = 0 ; i < ndata*2 ; ++i)
+  {
+    data_ptr20[i] = (conduit::int64)(i*2);
+  }
+  gy->createViewScalar<conduit::int64>("i0", 400);
+  gz->createViewScalar<conduit::float64>("d0", 17.00);
+
+  std::string file_path1 = file_path_tree1 + "sidre_hdf5";
+
+  tree1->save(file_path1, "sidre_hdf5");
+
+  // show the source tree
+  SLIC_INFO("Source tree");
+  ds.print();
+
+  DataStore ds_load;
+  Group * loadtree0 = ds_load.getRoot()->createGroup("tree0");
+  loadtree0->load(file_path0, "sidre_hdf5");
+  loadtree0->load(file_path1, "sidre_hdf5", true);
+
+  SLIC_INFO("Tree from protocol: sidre_hdf5");
+  // show the result
+  ds_load.print();
+
+  Group * ds_load_root = ds_load.getRoot();
+
+  // check that the values are the same
+  EXPECT_EQ(ds_load_root->getView(
+              "tree1/a/i0")->getData<conduit::int64>(),100);
+  EXPECT_NEAR(ds_load_root->getView(
+                "tree1/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+  EXPECT_EQ(ds_load_root->getView("tree1/b/s0")->getString(),
+              std::string("foo"));
+  EXPECT_EQ(ds_load_root->getView(
+              "tree1/y/i0")->getData<conduit::int64>(),400);
+  EXPECT_NEAR(ds_load_root->getView(
+              "tree1/z/d0")->getData<conduit::float64>(),17.00,1e-12);
+
+  conduit::int64 * load_data_ptr =
+    ds_load_root->getView("tree1/c/int10")->getData();
+  for(int j=0 ; j< ndata ; j++)
+  {
+    EXPECT_EQ(data_ptr[j],load_data_ptr[j]);
+  }
+  load_data_ptr = ds_load_root->getView("tree1/x/int20")->getData();
+  for(int j=0 ; j< ndata*2 ; j++)
+  {
+    EXPECT_EQ(data_ptr20[j],load_data_ptr[j]);
+  }
+
+}

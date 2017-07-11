@@ -167,18 +167,23 @@ public:
    * \param group         Group to fill with input data
    * \param file_string   base name of input files
    * \param protocol      identifies I/O protocol
+   * \param preserve_contents   Preserves group's existing contents if true
    */
   void read(sidre::Group * group,
             const std::string& file_string,
-            const std::string& protocol);
+            const std::string& protocol,
+            bool preserve_contents = false);
 
   /*!
    * \brief read from a root file
    *
    * \param group         Group to fill with input data
    * \param root_file     root file containing input data
+   * \param preserve_contents   Preserves group's existing contents if true
    */
-  void read(sidre::Group * group, const std::string& root_file);
+  void read(sidre::Group * group,
+            const std::string& root_file,
+            bool preserve_contents = false);
 
   /*!
    * \brief load external data into a group
@@ -217,7 +222,7 @@ private:
 
   std::string getProtocol(const std::string& root_name);
 
-  void readSidreHDF5(sidre::Group * group, const std::string& root_file);
+  void readSidreHDF5(sidre::Group * group, const std::string& root_file, bool preserve_contents = false);
 
 
   int m_comm_size;  // num procs in the MPI communicator

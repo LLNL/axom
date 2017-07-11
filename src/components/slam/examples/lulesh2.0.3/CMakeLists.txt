@@ -36,7 +36,7 @@ if (ENABLE_OPENMP)
 endif()
 
 blt_add_executable(
-    NAME        slam_lulesh
+    NAME        slam_lulesh_ex
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tests_depends_on}
@@ -44,12 +44,12 @@ blt_add_executable(
 
 if(ENABLE_MPI)
     blt_add_test(NAME        slam_lulesh
-                 COMMAND     slam_lulesh
+                 COMMAND     slam_lulesh_ex
                  NUM_PROCS   8
                 )
 else()
     blt_add_test(NAME        slam_lulesh
-                 COMMAND     slam_lulesh
+                 COMMAND     slam_lulesh_ex
                 )
 endif()
 

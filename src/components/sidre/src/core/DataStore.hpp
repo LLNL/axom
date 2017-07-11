@@ -193,24 +193,6 @@ public:
    */
   SidreLength getNumAttributes() const;
 
-#if 0
-  /*!
-   * \brief Return (non-const) pointer to Attribute object with given index,
-   *        or AXOM_NULLPTR if none exists.
-   */
-  Attribute * getAttribute( IndexType idx ) const;
-
-  /*!
-   * \brief Create an undescribed Attribute object and return a pointer to it.
-   *
-   *        The Attribute must be described before it can be allocated.
-   *
-   *        The Attribute object is assigned a unique index when created and the
-   *        Attribute object is owned by the DataStore object.
-   */
-  Attribute * createAttribute();
-#endif
-
   /*!
    * \brief Create a Attribute object with a default scalar value.
    *
@@ -296,20 +278,6 @@ public:
 //!  @name Attribute access and iteration methods.
 
   /*!
-   * \brief Return pointer to non-const Attribute with given name.
-   *
-   * If no such Attribute exists, AXOM_NULLPTR is returned.
-   */
-  Attribute * getAttribute( const std::string& name );
-
-  /*!
-   * \brief Return pointer to const Attribute with given name.
-   *
-   * If no such Attribute exists, AXOM_NULLPTR is returned.
-   */
-  const Attribute * getAttribute( const std::string& name ) const;
-
-  /*!
    * \brief Return pointer to non-const Attribute with given index.
    *
    * If no such Attribute exists, AXOM_NULLPTR is returned.
@@ -322,6 +290,20 @@ public:
    * If no such Attribute exists, AXOM_NULLPTR is returned.
    */
   const Attribute * getAttribute( IndexType idx ) const;
+
+  /*!
+   * \brief Return pointer to non-const Attribute with given name.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  Attribute * getAttribute( const std::string& name );
+
+  /*!
+   * \brief Return pointer to const Attribute with given name.
+   *
+   * If no such Attribute exists, AXOM_NULLPTR is returned.
+   */
+  const Attribute * getAttribute( const std::string& name ) const;
 
   /*!
    * \brief Return first valid Attribute index in DataStore object
@@ -339,6 +321,17 @@ public:
    * than given one.
    */
   IndexType getNextValidAttributeIndex(IndexType idx) const;
+
+  /*!
+   * \brief Copy Attribute and default value to Conduit node.
+   *        Return true if attributes were copied.
+   */
+  bool saveAttributeLayout(Node& node) const;
+
+  /*!
+   * \brief Create attributes from name/value pairs in node["attribute"].
+   */
+  void loadAttributeLayout(Node& node);
 
 //@}
 //----------------

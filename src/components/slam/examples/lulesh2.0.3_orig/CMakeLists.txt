@@ -35,21 +35,21 @@ set_source_files_properties(${lulesh_sources} ${lulesh_headers}
 
 if ( lulesh_depends_on )
     blt_add_executable(
-        NAME        slam_lulesh_orig
+        NAME        slam_lulesh_orig_ex
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${lulesh_depends_on}
         )
 else()
     blt_add_executable(
-        NAME        slam_lulesh_orig
+        NAME        slam_lulesh_orig_ex
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         )
 endif()
 
 if ( ENABLE_MPI )
-    target_compile_definitions(slam_lulesh_orig PRIVATE USE_MPI=1)
+    target_compile_definitions(slam_lulesh_orig_ex PRIVATE USE_MPI=1)
 else()
-    target_compile_definitions(slam_lulesh_orig PRIVATE USE_MPI=0)
+    target_compile_definitions(slam_lulesh_orig_ex PRIVATE USE_MPI=0)
 endif()

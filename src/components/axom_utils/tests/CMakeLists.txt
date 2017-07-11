@@ -25,12 +25,12 @@ set(utils_tests_depends
 #
 foreach(test ${gtest_utils_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}
+    blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${utils_tests_depends} )
     blt_add_test( NAME ${test_name}
-                  COMMAND ${test_name} )
+                  COMMAND ${test_name}_test )
 endforeach()
 
 
@@ -50,38 +50,38 @@ if(MFEM_FOUND)
     list(APPEND utils_config_test_depends mfem)    
 endif()
 
-blt_add_executable( NAME utils_config
+blt_add_executable( NAME utils_config_test
                     SOURCES utils_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_config_test_depends}
                     )
 
 blt_add_test( NAME utils_config
-              COMMAND utils_config )
+              COMMAND utils_config_test )
 
 # Add flag to ignore unknown openmp pragmas in utils_config
-set_property(TARGET utils_config
+set_property(TARGET utils_config_test
     APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 
 # Have to ignore unused parameters for mfem
 if(MFEM_FOUND)
-    set_property(TARGET utils_config
+    set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
 
 
 if(ENABLE_OPENMP)
     # Add a config test that uses OpenMP
-    blt_add_executable( NAME utils_config_openmp
+    blt_add_executable( NAME utils_config_openmp_test
                         SOURCES utils_config.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${utils_config_test_depends} openmp)
 
     blt_add_test( NAME utils_config_openmp
-                  COMMAND utils_config_openmp )
+                  COMMAND utils_config_openmp_test )
 
     if(MFEM_FOUND)
-        set_property(TARGET utils_config_openmp
+        set_property(TARGET utils_config_openmp_test
             APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
     endif()
 

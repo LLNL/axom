@@ -330,12 +330,19 @@ void SIDRE_group_save_bufferify(const SIDRE_group * self,
                                 const char * file_path, int Lfile_path,
                                 const char * protocol, int Lprotocol);
 
-void SIDRE_group_load(SIDRE_group * self, const char * file_path,
-                      const char * protocol);
+void SIDRE_group_load_0(SIDRE_group * self, const char * file_path,
+                        const char * protocol);
 
-void SIDRE_group_load_bufferify(SIDRE_group * self, const char * file_path,
-                                int Lfile_path, const char * protocol,
-                                int Lprotocol);
+void SIDRE_group_load_0_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol);
+
+void SIDRE_group_load_1(SIDRE_group * self, const char * file_path,
+                        const char * protocol, bool preserve_contents);
+
+void SIDRE_group_load_1_bufferify(SIDRE_group * self, const char * file_path,
+                                  int Lfile_path, const char * protocol,
+                                  int Lprotocol, bool preserve_contents);
 
 void SIDRE_group_load_external_data(SIDRE_group * self, const char * file_path);
 

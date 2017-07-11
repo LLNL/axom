@@ -34,14 +34,14 @@ endif()
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
-        NAME ${test_name}
+        NAME ${test_name}_test
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
     )
     blt_add_test(
         NAME ${test_name}
-        COMMAND ${test_name}
+        COMMAND ${test_name}_test
     )
 endforeach()
 
@@ -49,8 +49,10 @@ endforeach()
 # Regression tests for quest signed distance and InOutOctree point containment queries
 if (ENABLE_MPI AND ENABLE_SIDRE)
 
+    set(test_name quest_regression_test)
+    
     blt_add_executable(
-        NAME quest_regression
+        NAME ${test_name}
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
@@ -59,13 +61,13 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
 
     if ( NOT ENABLE_OPENMP )
         set_property(
-            TARGET quest_regression
+            TARGET ${test_name}
             APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
     endif()
 
     if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
        set_property(
-           TARGET quest_regression
+           TARGET ${test_name}
            APPEND_STRING PROPERTY LINK_FLAGS ${AXOM_ALLOW_MULTIPLE_DEFINITIONS}
        )
 
@@ -102,7 +104,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         foreach(res ${quest_regression_resolutions})
             blt_add_test(
                 NAME quest_regression_${dataset}_${res}
-                COMMAND quest_regression
+                COMMAND ${test_name}
                         --mesh ${quest_data_dir}/${dataset}.stl
                         --baseline ${quest_data_dir}/${dataset}_${res}_baseline.root
                 NUM_PROCS 1
