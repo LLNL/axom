@@ -10,6 +10,24 @@
 
 ## mint headers
 set( mint_headers
+
+    ## FEM classes
+    fem/FEBasis.hpp
+    fem/FEBasisTypes.hpp
+    fem/FiniteElement.hpp
+    fem/shape_functions/Lagrange.hpp
+    fem/shape_functions/ShapeFunction.hpp
+
+    ## Lagrange Basis
+    fem/shape_functions/Lagrange.hpp
+    fem/shape_functions/lagrange/lagrange_hexa_8.hpp
+    fem/shape_functions/lagrange/lagrange_prism_6.hpp
+    fem/shape_functions/lagrange/lagrange_pyra_5.hpp
+    fem/shape_functions/lagrange/lagrange_quad_4.hpp
+    fem/shape_functions/lagrange/lagrange_tetra_4.hpp
+    fem/shape_functions/lagrange/lagrange_tri_3.hpp
+
+    ## Mesh data-model
     mesh/CellConnectivity.hpp
     mesh/CellType.hpp
     mesh/CurvilinearMesh.hpp
@@ -30,6 +48,11 @@ set( mint_headers
 
 ## mint sources
 set( mint_sources
+
+    ## FEM classes
+    fem/FiniteElement.cpp
+
+    ## Mesh data-model
     mesh/CurvilinearMesh.cpp
     mesh/Field.cpp
     mesh/FieldData.cpp
@@ -47,4 +70,5 @@ blt_add_library(
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
+    DEPENDS_ON axom_utils slic
    )

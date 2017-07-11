@@ -12,24 +12,29 @@
 #define CELLTYPE_HPP_
 
 /*!
+ * \file
+ *
+ * \enum CellType
  * \brief Defines the basic cell types supported by mint.
  */
-enum  {
+enum {
   MINT_UNDEFINED_CELL = -1, //!< UNDEFINED
 
-  MINT_VERTEX,         //!< VERTEX
-  MINT_SEGMENT,        //!< LINE_SEGMENT
+  MINT_VERTEX,         ///< VERTEX
+  MINT_SEGMENT,        ///< LINE_SEGMENT
 
-  MINT_TRIANGLE,       //!< LINEAR_TRIANGLE
-  MINT_QUAD,           //!< LINEAR_QUAD
-  MINT_TET,            //!< LINEAR_TET
-  MINT_HEX,            //!< LINEAR_HEX
-  MINT_PRISM,          //!< LINEAR_PRISM
-  MINT_PYRAMID,        //!< LINEAR_PYRAMID
+  MINT_TRIANGLE,       ///< LINEAR_TRIANGLE
+  MINT_QUAD,           ///< LINEAR_QUAD
+  MINT_TET,            ///< LINEAR_TET
+  MINT_HEX,            ///< LINEAR_HEX
+  MINT_PRISM,          ///< LINEAR_PRISM
+  MINT_PYRAMID,        ///< LINEAR_PYRAMID
 
-  MINT_MIXED_CELL,     //!< MIXED
-  MINT_NUM_CELL_TYPES  //!< NUM_CELL_TYPES
+  MINT_MIXED_CELL,     ///< MIXED
+  MINT_NUM_CELL_TYPES  ///< NUM_CELL_TYPES
 };
+
+#define MINT_MAX_NUM_NODES 8
 
 namespace axom {
 namespace mint {
@@ -59,6 +64,17 @@ static const int num_nodes[] = {
   5,    // LINEAR_PYRAMID
 
   5     // MIXED
+};
+
+static const char* name[] = {
+  "MINT_VERTEX",         //!< VERTEX
+  "MINT_SEGMENT",        //!< LINE_SEGMENT
+  "MINT_TRIANGLE",       //!< LINEAR_TRIANGLE
+  "MINT_QUAD",           //!< LINEAR_QUAD
+  "MINT_TET",            //!< LINEAR_TET
+  "MINT_HEX",            //!< LINEAR_HEX
+  "MINT_PRISM",          //!< LINEAR_PRISM
+  "MINT_PYRAMID",        //!< LINEAR_PYRAMID
 };
 
 } /* namespace cell */

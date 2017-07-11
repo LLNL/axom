@@ -232,6 +232,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Inserts a new node in the mesh.
+   * \param [in] node pointer to buffer consisting of the coordinates
+   * \pre node != AXOM_NULLPTR
+   * \pre node must at least be m_ndims long
+   *****************************************************************************
+   */
+  void insertNode( const double* node );
+
+  /*!
+   *****************************************************************************
    * \brief Returns pointer to coordinates array for the requested dimension.
    * \param [in] dim the requested dimension.
    * \return ptr pointer to the coordinates array for the given dimension.
@@ -353,6 +363,26 @@ void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
   SLIC_ASSERT(  m_ndims==3 );
   SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x, y, z );
+}
+
+//------------------------------------------------------------------------------
+template < int CellType >
+inline void UnstructuredMesh< CellType >::insertNode( const double* node )
+{
+  SLIC_ASSERT( node != AXOM_NULLPTR );
+  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
+
+  if ( m_ndims== 2 ) {
+
+    m_node_coordinates->insertPoint( node[0], node[1] );
+
+  } else {
+
+    SLIC_ASSERT( m_ndims==3 );
+    m_node_coordinates->insertPoint( node[0], node[1], node[2] );
+
+  }
+
 }
 
 //------------------------------------------------------------------------------
