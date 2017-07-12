@@ -1,8 +1,7 @@
 #!/bin/bash
 #BSUB -n 1
-#BSUB -q pdebug
-#BSUB -w 240
-#BSUB -A guests
+#BSUB -W 240
+#BSUB -G guests
 #BSUB -x 
 #
 # usage: 
