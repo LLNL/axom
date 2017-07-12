@@ -226,8 +226,8 @@ follow the same style.
 
           For example, the following method names are acceptable for a class 
           with camelCase style names::
-
-          push_back(), push_front()
+          
+              push_back(), push_front()
 
           if those methods are similar in behavior to C++ standard methods.
 

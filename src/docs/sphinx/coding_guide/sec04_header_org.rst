@@ -217,7 +217,7 @@ are contained in the guidelines after the summary.
     *
     * ...detailed comment text...
     */
-   Class MyClass {
+   class MyClass {
       ...
    };
 
