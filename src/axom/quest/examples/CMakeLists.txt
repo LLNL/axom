@@ -41,6 +41,14 @@ if(MFEM_FOUND)
         )
 endif()
 
+blt_add_executable(
+    NAME        quest_delaunay_triangulation_ex
+    SOURCES     delaunay_triangulation.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
+
 ## Quest interface examples
 
 blt_add_executable(
