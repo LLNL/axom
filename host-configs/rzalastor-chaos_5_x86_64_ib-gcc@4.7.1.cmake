@@ -70,6 +70,8 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-tvagnsw74h4kwgos22odgtzjcbegi2xt/usr/bin
 # lc chaos5 gcc@4.7.1  host configs
 ##############################################################################
 
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
 ##############################################################################
 # MPI - manually added for now.
 ##############################################################################

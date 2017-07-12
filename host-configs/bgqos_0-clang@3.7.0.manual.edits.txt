@@ -6,6 +6,7 @@
 ##############################################################################
 
 set(ENABLE_DOCS OFF CACHE PATH "")
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 ##############################################################################
 # MPI - manually added for now

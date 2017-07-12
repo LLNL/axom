@@ -70,6 +70,8 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-fiwdecmhqvashhs323poq5mdr6uqnrio/usr/bin
 # lc toss3 intel@16.0.4  host configs
 ##############################################################################
 
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################

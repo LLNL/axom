@@ -64,7 +64,7 @@ if (ENABLE_MPI)
   list(APPEND quest_sources stl/PSTLReader.cpp)
 
   if(ENABLE_LUMBERJACK)
-      list(APPEND quest_depends_on lumberjack)
+      list(APPEND quest_depends_on lumberjack mpi)
   endif()
 endif()
 

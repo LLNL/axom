@@ -21,7 +21,7 @@ git submodule update")
 
 endif()
 
-set(ENABLE_COPY_HEADERS ON CACHE PATH "")
+set(ENABLE_COPY_HEADERS ON CACHE BOOL "")
 
 include(blt/SetupBLT.cmake)
 

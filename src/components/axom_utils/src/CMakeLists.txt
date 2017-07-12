@@ -28,12 +28,21 @@ set(axom_utils_sources
 #
 # make the library
 #
-blt_add_library( NAME                  axom_utils
-                 SOURCES              "${axom_utils_sources}"
-                 HEADERS              "${axom_utils_headers}"
-                 HEADERS_OUTPUT_SUBDIR axom_utils
-                 DEPENDS_ON            mpi
-                 )
+if (ENABLE_MPI)
+    blt_add_library( NAME                  axom_utils
+                     SOURCES              "${axom_utils_sources}"
+                     HEADERS              "${axom_utils_headers}"
+                     HEADERS_OUTPUT_SUBDIR axom_utils
+                     DEPENDS_ON            mpi
+                     )
+else()
+    blt_add_library( NAME                  axom_utils
+                     SOURCES              "${axom_utils_sources}"
+                     HEADERS              "${axom_utils_headers}"
+                     HEADERS_OUTPUT_SUBDIR axom_utils
+                     )
+
+endif()
 install(TARGETS              axom_utils
         EXPORT               ${PROJECT_NAME}-targets
         DESTINATION          lib
