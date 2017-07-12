@@ -17,6 +17,7 @@ def main():
     builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
     specs = ["%gcc@4.7.2~cmake~devtools~python~lua",
              "%clang~cmake~devtools~python~lua"]
+    return full_build_and_test_of_tpls(builds_dir,specs)
 
 if __name__ == "__main__":
     sys.exit(main())

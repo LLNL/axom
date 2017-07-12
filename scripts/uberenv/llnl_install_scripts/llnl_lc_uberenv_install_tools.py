@@ -123,8 +123,8 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     res = sexe(cmd,
                echo=True,
                output_file = spack_tpl_build_log)
-
-    log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
+    if res != 0:
+        log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
     return res
 
 def patch_host_configs(prefix):
@@ -258,7 +258,7 @@ def build_and_test_host_configs(prefix):
             log_failure(prefix,"Build failed for host configs: %s" % bad)
             return 1
         else:
-            log_success(prefix,"uberenv/spack tpl build and test succeeded!")
+            log_success(prefix,"uberenv/spack tpl build and test succeeded for host configs: %s" % ok)
     else:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
         return 1
