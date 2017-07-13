@@ -39,8 +39,22 @@
  */
 #define AXOM_NOT_USED(x)
 
-
-
+/*!
+ *******************************************************************************
+ * \def AXOM_STATIC_ASSERT(cond)
+ * \def AXOM_STATIC_ASSERT_MSG(cond, MSG)
+ *
+ * \brief This macro wraps C++11 compile time static_assert functionality. Used
+ *  for backwards compatibility with non C++11 compilers.
+ *******************************************************************************
+ */
+#ifdef AXOM_USE_CXX11
+#define AXOM_STATIC_ASSERT( cond ) static_assert( cond, #cond )
+#define AXOM_STATIC_ASSERT_MSG( cond, MSG ) static_assert( cond, MSG )
+#else
+#define AXOM_STATIC_ASSERT( cond )
+#define AXOM_STATIC_ASSERT_MSG( cond, MSG )
+#endif
 
 /*!
  *******************************************************************************
@@ -61,7 +75,6 @@
  *******************************************************************************
  */
 #define AXOM_DEBUG_VAR(_x)   static_cast<void>(_x)
-
 
 /*!
  *******************************************************************************

@@ -1280,11 +1280,13 @@ bool Group::isEquivalentTo(const Group * other) const
 void Group::save(const std::string& path,
                      const std::string& protocol) const
 {
+  const DataStore * ds = getDataStore();
 
   if (protocol == "sidre_hdf5")
   {
     Node n;
     exportTo(n["sidre"]);
+    ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "hdf5");
@@ -1293,6 +1295,7 @@ void Group::save(const std::string& path,
   {
     Node n;
     exportTo(n["sidre"]);
+    ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "conduit_json");
@@ -1301,6 +1304,7 @@ void Group::save(const std::string& path,
   {
     Node n;
     exportTo(n["sidre"]);
+    ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
@@ -1856,6 +1860,8 @@ void Group::importFrom(conduit::Node & node, bool preserve_contents)
     destroyGroups();
     destroyViews();
   }
+
+  getDataStore()->loadAttributeLayout(node);
 
   // First - Import Buffers into the DataStore.
   std::map<IndexType, IndexType> buffer_indices_map;
