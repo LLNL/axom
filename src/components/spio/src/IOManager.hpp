@@ -22,7 +22,9 @@
 #define IOPARALLEL_HPP_
 
 #include "mpi.h"
+#ifdef USE_SCR
 #include "scr.h"
+#endif
 #include "hdf5.h"
 
 // Other axom headers
