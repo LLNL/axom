@@ -16,14 +16,22 @@
 #ifdef AXOM_USE_CXX11
   #include "axom_utils/ChronoTimer.hpp"
 #else
-  #include "axom_utils/TimeofdayTimer.hpp"
+  #ifdef WIN32
+    #include "axom_utils/TickCountTimer.hpp"
+  #else
+    #include "axom_utils/TimeofdayTimer.hpp"
+  #endif
 #endif
 
 namespace {
 #ifdef AXOM_USE_CXX11
   typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
 #else
-  typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+  #ifdef WIN32
+    typedef axom::utilities::detail::TickCountTimer HighPrecisionTimer;
+  #else
+    typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+  #endif
 #endif
 }
 

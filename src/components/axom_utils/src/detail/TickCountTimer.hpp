@@ -8,52 +8,57 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-#ifndef TIMEOFDAY_TIMER_HPP_
-#define TIMEOFDAY_TIMER_HPP_
+#ifndef TICK_COUNT_TIMER_HPP_
+#define TICK_COUNT_TIMER_HPP_
+ 
+#ifndef WIN32
+  #error TickTimer is a Windows timer
+#endif
 
 #include "axom/Types.hpp"   // For AXOM_NULLPTR
-#include <sys/time.h>       // for gettimeofday() and timeval
-                            // Note: located in <time> on some systems
 
+#define NOMINMAX
+#include <Windows.h>
+ 
 namespace axom {
 namespace utilities {
 namespace detail {
 
   /**
    * \class
-   * \brief A simple timer utility based on the glibc gettimeofday() function
+   * \brief A simple timer utility based on the Windows GetTickCount64 function
    * \note This is a simple class without any checks to ensure proper usage of the timer.
    *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
    *       Specifically, we do not check that start() was called before stop(),
    *       or if stop() was called before attempting to find the elapsed time.
    */
-  class TimeofdayTimer
-  {
-    typedef timeval                             TimeStruct;
-    typedef long int                            TimeDiff;
 
+   class TickCountTimer
+   {
+     typedef ULONGLONG                         TimeStruct;
+     typedef long int                            TimeDiff;
+ 
      enum { TIMER_ONE      = 1, 
             TIMER_THOUSAND = 1000, 
             TIMER_MILLION  = 1000000 };
 
-  public:
-    /** \brief Constructor for TimeOfDayTimer instance */
-    TimeofdayTimer() { reset(); }
-
-    /** \brief Sets the start time of the timer */
-    void start() { gettimeofday(&m_startTime, AXOM_NULLPTR); }
+   public:
+    TickCountTimer() { reset(); }
+ 
+     /** \brief Sets the start time of the timer */
+    void start() {m_startTime = GetTickCount64();}
 
     /** \brief Sets the stop time of the timer */
-    void stop()  { gettimeofday(&m_stopTime, AXOM_NULLPTR); }
-
-    /**  \brief Resets the timer */
-    void reset()
-    {
-        m_startTime = (struct timeval){0,0};
-        m_stopTime =  (struct timeval){0,0};
-    }
-
-    /** \brief Returns the number of seconds between start() and stop() */
+    void stop() {m_stopTime = GetTickCount64();}
+ 
+     /**  \brief Resets the timer */
+     void reset()
+     {
+       m_startTime=0 ;
+       m_stopTime=0 ;
+     }
+  
+         /** \brief Returns the number of seconds between start() and stop() */
     double elapsedTimeInSec() const
     {
         return clockDiff() / static_cast<double>(TIMER_MILLION);
@@ -71,16 +76,15 @@ namespace detail {
         return clockDiff() / static_cast<double>(TIMER_ONE);
     }
 
-  private:
-    /** \brief Computes the time difference between start() and stop() */
-    TimeDiff clockDiff() const
-    {
-        const TimeDiff sDiff = m_stopTime.tv_sec - m_startTime.tv_sec;
-        const TimeDiff uDiff = m_stopTime.tv_usec - m_startTime.tv_usec;
-        return sDiff * TIMER_MILLION + uDiff;
-    }
+   private:
+      /** \brief Computes the time difference between start() and stop() */
+     TimeDiff clockDiff() const
+     {
+        const TimeDiff sDiff = m_stopTime - m_startTime;
+        return sDiff * TIMER_THOUSAND ;
+     }
 
-  private:
+   private:
     TimeStruct m_startTime;
     TimeStruct m_stopTime;
   };
@@ -90,4 +94,5 @@ namespace detail {
 } /* namespace utilities */
 } /* namespace axom */
 
-#endif // TIMEOFDAY_TIMER_HPP_
+
+#endif // TICK_COUNT_TIMER_HPP_
