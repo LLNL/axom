@@ -55,15 +55,12 @@ namespace filesystem {
  * \brief Make directories for a given path string
  *
  * \param [in] path  string representing an absolute or relative directory path
- * \param [in] mode  controls the permissions of the new directories
  *
  * Everything in the path is assumed to be intended to be a directory.  If
  * a directory in the path already exists, nothing is done.  If a directory
  * doesn't exist, it is created.
  */
-  int makeDirsForPath(
-    const std::string& path,
-    mode_t mode = 0700);
+  int makeDirsForPath(const std::string& path);
 
 /**
  * \brief Get directory name from a path that contains a file name
