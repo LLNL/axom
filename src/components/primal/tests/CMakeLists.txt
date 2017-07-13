@@ -12,6 +12,7 @@ set( primal_tests
     primal_boundingbox.cpp
     primal_bvhtree.cpp
     primal_clip.cpp
+    primal_grid.cpp
     primal_intersect_impl.cpp
     primal_intersect.cpp
     primal_morton.cpp
