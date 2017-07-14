@@ -68,6 +68,10 @@ if (ENABLE_LUMBERJACK)
     list(APPEND slic_depends_on lumberjack mpi)
 endif()
 
+if (WIN32)
+    list(APPEND slic_depends_on dbghelp)  
+endif()
+
 blt_add_library( NAME
                     slic
 
