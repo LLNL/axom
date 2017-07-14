@@ -1,5 +1,5 @@
 #!/bin/bash
-#BSUB -n 1
+#BSUB -n 8
 #BSUB -W 240
 #BSUB -G guests
 #BSUB -x 

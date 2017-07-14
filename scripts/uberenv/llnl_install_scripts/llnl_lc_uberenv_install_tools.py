@@ -153,7 +153,7 @@ def build_and_test_host_config(test_root,host_config):
     ####
     # build, test, and install
     ####
-    res = sexe("cd %s && make -j 8 " % build_dir,
+    res = sexe("cd %s && make -j 8 VERBOSE=1 " % build_dir,
                 output_file = pjoin(build_dir,"output.log.make.txt"),
                 echo=True)
 
@@ -170,7 +170,7 @@ def build_and_test_host_config(test_root,host_config):
                    echo=True)
 
     else:
-        res = sexe("cd %s && make test " % build_dir,
+        res = sexe("cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test " % build_dir,
                    output_file = pjoin(build_dir,"output.log.make.test.txt"),
                    echo=True)
 
@@ -189,9 +189,9 @@ def build_and_test_host_config(test_root,host_config):
 
     # simple sanity check for make install
     print "[checking install dir %s]" % install_dir 
-    sexe("ls %s/docs" %    install_dir, echo=True)
     sexe("ls %s/include" % install_dir, echo=True)
     sexe("ls %s/lib" %     install_dir, echo=True)
+    sexe("ls %s/bin" %     install_dir, echo=True)
     print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
     return 0
 
