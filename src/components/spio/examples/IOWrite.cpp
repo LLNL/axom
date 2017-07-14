@@ -73,8 +73,8 @@ int main(int argc, char * argv[])
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
-  IOManager writer(MPI_COMM_WORLD, true);
-  writer.write(root, num_files, file_base, "scr_hdf5");
+  IOManager writer(MPI_COMM_WORLD);
+  writer.write(root, num_files, file_base, "sidre_hdf5");
 
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0) {

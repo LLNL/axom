@@ -53,13 +53,14 @@ IOManager::IOManager(MPI_Comm comm,
   m_my_rank(0),
   m_baton(AXOM_NULLPTR),
   m_mpi_comm(comm),
-  m_scr_initialized(use_scr)
+  m_scr_initialized(false)
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
-#ifdef USE_SCR
-  if (use_scr) {
-    SCR_Init(); 
+#ifdef AXOM_USE_SCR
+ if (use_scr) {
+    SCR_Init();
+    m_scr_initialized = true;
   }
 #endif
 }
@@ -77,7 +78,7 @@ IOManager::~IOManager()
   if (m_baton) {
     delete m_baton;
   }
-#ifdef USE_SCR
+#ifdef AXOM_USE_SCR
   if (m_scr_initialized) {
     SCR_Finalize();
   }
@@ -106,7 +107,7 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
   }
 
   std::string root_string = file_string;
-#ifdef USE_SCR
+#ifdef AXOM_USE_SCR
   if (m_scr_initialized) { 
     SCR_Start_checkpoint();
 
@@ -179,7 +180,7 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
   }
   (void)m_baton->pass();
 
-#ifdef USE_SCR
+#ifdef AXOM_USE_SCR
   if (m_scr_initialized) {
     MPI_Barrier(m_mpi_comm);
     int valid = 1;
@@ -400,7 +401,7 @@ void IOManager::createRootFile(const std::string& file_base,
   if (!m_scr_initialized) {
     conduit::relay::io::save(n, root_file_name, conduit_protocol);
   } else {
-#ifdef USE_SCR
+#ifdef AXOM_USE_SCR
     SCR_Start_checkpoint();
 
     std::string root_name = root_file_name;
@@ -408,7 +409,7 @@ void IOManager::createRootFile(const std::string& file_base,
     sprintf(checkpoint_file, "%s/rank_%d.ckpt", root_name.c_str(), m_my_rank);
     char scr_file[SCR_MAX_FILENAME];
     SCR_Route_file(checkpoint_file, scr_file);
-    root_file_name = scr_file
+    root_file_name = scr_file;
 
     std::string dir_name;
     utilities::filesystem::getDirName(dir_name, root_file_name);
