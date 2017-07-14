@@ -46,7 +46,8 @@ TEST(gtest_slam_set_positionset,construct_valid)
 
   EXPECT_EQ(MAX_SET_SIZE, s.size() );
 
-  if(MAX_SET_SIZE > SetPosition())
+  static const bool eltsNonZero = MAX_SET_SIZE > SetPosition();
+  if(eltsNonZero)
     EXPECT_FALSE(s.empty());
 }
 

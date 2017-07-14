@@ -116,7 +116,8 @@ int main(int argc, char * argv[])
 
   // Change the directory to one that we know will contain the desired file
   SLIC_ERROR_IF(argc !=2, "slam_utilities requires a parameter for the working directory");
-  ChangeCurrentDir( argv[1] );
+  int err = ChangeCurrentDir( argv[1] );
+  SLIC_ERROR_IF( err != 0, "chdir failed");
 
   result = RUN_ALL_TESTS();
 

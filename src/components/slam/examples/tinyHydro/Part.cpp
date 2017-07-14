@@ -58,7 +58,7 @@ namespace tinyHydro {
     SLIC_DEBUG("in Part copy .ctor");
 
     IndexBuffer& zoneBuf = DataRegistry::setRegistry.addNamelessBuffer(arg.zones.size());
-    std::copy(arg.zones.begin(), arg.zones.end(), zoneBuf.begin());
+    std::copy(&arg.zones[0], &arg.zones[0] + arg.zones.size(), zoneBuf.begin());
     zones            = ZoneSubset::SetBuilder().size(zoneBuf.size()).data(&zoneBuf);
 
     // copy field data
@@ -82,7 +82,7 @@ namespace tinyHydro {
 
 
     IndexBuffer& zoneBuf = DataRegistry::setRegistry.addNamelessBuffer(rhs.zones.size());
-    std::copy(rhs.zones.begin(), rhs.zones.end(), zoneBuf.begin());
+    std::copy(&rhs.zones[0], &rhs.zones[0] + rhs.zones.size(), zoneBuf.begin());
     zones            = ZoneSubset::SetBuilder().size(zoneBuf.size()).data(&zoneBuf);
 
     // copy field data
