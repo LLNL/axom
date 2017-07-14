@@ -53,7 +53,7 @@ TEST( quest_octree, topological_octree_parent_child)
           CoordType coordVal = childBlock.pt()[dim];
           EXPECT_TRUE(  coordVal == 0 || coordVal == 1);
 
-          bool expBit = (childIndexSet[i] & 1<<dim);
+          bool expBit = (childIndexSet[i] & 1<<dim) > 0;
           EXPECT_EQ(  coordVal, expBit? 1 : 0);
 
           recombineIndex += (coordVal<<dim);

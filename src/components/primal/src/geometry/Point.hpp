@@ -306,7 +306,7 @@ inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
 
   for ( int i=0; i < NDIMS; ++i ) {
 
-    mid_point[ i ] = 0.5*( A[i]+B[i] );
+    mid_point[ i ] = static_cast<T>(0.5*( A[i]+B[i] ) );
   }
 
   return mid_point;

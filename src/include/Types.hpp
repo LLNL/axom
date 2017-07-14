@@ -54,7 +54,7 @@ namespace common {
 
 
   /** 
-   * A type that evaluates as false.
+   * Variable of a type that evaluates as false.
    *
    * \note Elides compiler warnings about constant expressions in Axom macros.
    */

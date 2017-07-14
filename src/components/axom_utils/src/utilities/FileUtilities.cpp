@@ -30,7 +30,7 @@
 #ifdef WIN32
     #include <direct.h>
     #include <sys/stat.h>
-    // Warning: not yet tested on windows
+
     #define GetCurrentDir _getcwd
     #define Stat _stat
 #else
