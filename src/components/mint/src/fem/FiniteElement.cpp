@@ -176,7 +176,7 @@ int FiniteElement::computeReferenceCoords( const double* xp,
     return INVERSE_MAP_FAILED;
   }
 
-  int rc = ( this->inside(xr,TOL) )? INSIDE_ELEMENT : OUTSIDE_ELEMENT;
+  int rc = ( this->inReferenceElement(xr,TOL) )? INSIDE_ELEMENT:OUTSIDE_ELEMENT;
 
   return rc;
 }
@@ -302,7 +302,7 @@ void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
 }
 
 //------------------------------------------------------------------------------
-bool FiniteElement::inside( const double* xi, double TOL )
+bool FiniteElement::inReferenceElement( const double* xi, double TOL )
 {
   SLIC_ASSERT( xi != AXOM_NULLPTR );
 

@@ -519,7 +519,7 @@ private:
    * \pre xr != AXOM_NULLPTR
    *****************************************************************************
    */
-  bool inside( const double* xr, double TOL=1.e-12 );
+  bool inReferenceElement( const double* xr, double TOL=1.e-12 );
 
   /// @}
 
