@@ -111,6 +111,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
                   INTEL   "-diag-disable 3180"
+                  MSVC    "/wd4068"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 
@@ -119,6 +120,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
                   XL      "-qinfo=nopar"
+                  MSVC    "/wd4100"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 
@@ -127,6 +129,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
                   XL      "-qinfo=nouse"
+                  MSVC    "/wd4101"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 
@@ -135,6 +138,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNINITIALIZED_WARNINGS
                   DEFAULT "-Wno-uninitialized"
                   XL      "-qsuppress=1540-1102"
+                  MSVC    "/wd4700"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 
@@ -143,6 +147,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
                   DEFAULT "-Wno-strict-aliasing"
                   XL      " "
+                  MSVC    " "
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
                   
@@ -156,6 +161,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   DEFAULT " "
                   CLANG   "${clang_unused_local_typedef}"
                   GNU     "-Wno-unused-local-typedefs"
+                  MSVC    " "
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
@@ -164,6 +170,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
                   DEFAULT " "
                   CLANG   "-Wl,--allow-multiple-definition"
                   GNU     "-Wl,--allow-multiple-definition"
+                  MSVC    " "
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 
