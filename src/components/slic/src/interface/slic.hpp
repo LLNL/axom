@@ -54,7 +54,7 @@
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /*!
  ******************************************************************************
@@ -79,7 +79,7 @@
       oss << msg;                                                             \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);               \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /// @}
 
@@ -105,7 +105,7 @@
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /*!
  ******************************************************************************
@@ -129,7 +129,7 @@
       oss << msg;                                                             \
       axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );            \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /// @}
 
@@ -162,7 +162,7 @@
       oss << "Failed Assert: " << # EXP << std::ends;                         \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /*!
  ******************************************************************************
@@ -188,7 +188,7 @@
       oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;     \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /// @}
 
@@ -224,7 +224,7 @@
         axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
       }                                                                       \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /*!
  ******************************************************************************
@@ -254,7 +254,7 @@
         axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
       }                                                                       \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 /// @}
 
@@ -289,7 +289,7 @@
                            , oss.str()                                        \
                            ,__FILE__                                          \
                            , __LINE__ );                                      \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 #ifdef AXOM_DEBUG
 
@@ -315,7 +315,7 @@
                            , oss.str()                                        \
                            ,__FILE__                                          \
                            , __LINE__ );                                      \
-  } while ( 0 )
+  } while ( axom::common::false_value )
 
 #else // turn off debug macros
 

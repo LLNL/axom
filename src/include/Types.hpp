@@ -53,6 +53,15 @@ namespace common {
   #endif
 
 
+  /** 
+   * A type that evaluates as false.
+   *
+   * \note Elides compiler warnings about constant expressions in Axom macros.
+   */
+  static const struct {
+    inline operator bool() const { return false; }
+  } false_value;
+
 } // end namespace common
 } // end namespace axom
 
