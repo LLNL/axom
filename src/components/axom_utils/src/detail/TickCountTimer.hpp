@@ -80,7 +80,7 @@ namespace detail {
       /** \brief Computes the time difference between start() and stop() */
      TimeDiff clockDiff() const
      {
-        const TimeDiff sDiff = m_stopTime - m_startTime;
+        const TimeDiff sDiff = static_cast<TimeDiff>(m_stopTime - m_startTime);
         return sDiff * TIMER_THOUSAND ;
      }
 

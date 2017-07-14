@@ -1404,7 +1404,7 @@ void vector_multiply( const Matrix< T >& A, const T* x, T* b )
        sum += A( i,j )*x[ j ];
     } // END for all columns
 
-    b[ i ] = sum;
+    b[ i ] = static_cast<T>(sum);
 
   } // END for all rows
 
