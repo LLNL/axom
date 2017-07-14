@@ -30,7 +30,7 @@
 template < >                                                                  \
 struct FEBasis< MINT_LAGRANGE_BASIS, C > {                                    \
 static const int BasisType = MINT_LAGRANGE_BASIS;                             \
-typedef typename mint::ShapeFunction< mint::Lagrange< C > > ShapeFunctionType;\
+typedef mint::ShapeFunction< mint::Lagrange< C > > ShapeFunctionType;\
 }
 
 namespace axom {
