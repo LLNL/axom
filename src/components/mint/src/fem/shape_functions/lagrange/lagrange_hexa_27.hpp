@@ -25,7 +25,10 @@ namespace mint {
 
 /*!
  *******************************************************************************
- * \brief Lagrange Finite Element definition for the Quadratic Hexahedron.
+ * \brief Lagrange Finite Element definition for the triquadratic Hexahedron.
+ *
+ * \note The nodes are numbered in the following order: corners(8),
+ *  edges(12), faces(6) and last the centroid (1) as depicted below.
  *
  * \verbatim
  *

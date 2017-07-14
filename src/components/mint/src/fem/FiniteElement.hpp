@@ -496,7 +496,7 @@ private:
   /*!
    *****************************************************************************
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
-   *  this method checks if the point is inside the FiniteElement instance.
+   *  this method checks if the point is inside the reference element.
    *
    * \param [in] xr reference coordinates of the point in query.
    * \param [in] TOL optional user-supplied tolerance. Default is 1.e-12.
@@ -514,7 +514,7 @@ private:
    *    </li>
    *  </ul>
    *
-   * \return status true if inside, otherwise, false.
+   * \return status true if inside the reference element, otherwise, false.
    *
    * \pre xr != AXOM_NULLPTR
    *****************************************************************************

@@ -27,6 +27,9 @@ namespace mint {
  *******************************************************************************
  * \brief Lagrange Finite Element definition for the Quadratic Quadrilateral.
  *
+ * \note The nodes are numbered in the following order: corners(4), edges(4)
+ *  and last the centroid (1) as depicted below.
+ *
  * \verbatim
  *
  * quad_9:
