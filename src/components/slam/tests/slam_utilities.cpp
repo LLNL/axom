@@ -27,8 +27,7 @@
 #include "slam/Utilities.hpp"
 #include "slic/slic.hpp"
 
-#ifdef WINDOWS
-// Warning: not yet tested on windows
+#ifdef WIN32
     #include <direct.h>
     #define ChangeCurrentDir _chdir
 #else
