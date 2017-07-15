@@ -174,9 +174,29 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 
+# Flag for allowing constant conditionals e.g. if(sizeof(T) > sizeof(int)) {...}
+# There appears to be a bug in how some versions of Visual Studio treat this
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_CONSTANT_CONDITIONALS
+                  DEFAULT " "
+                  MSVC    "/wd4127"
+                  )                  
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_CONSTANT_CONDITIONALS)
+
+# Flag for allowing truncation of constant values.
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
+                  DEFAULT " "
+                  MSVC    "/wd4309"
+                  )                  
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 
    
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
 #    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
 # endforeach()
+
+# Disable warnings about conditionals over constants
+if(WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
+endif()
+
