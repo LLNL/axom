@@ -253,7 +253,7 @@ def build_and_test_host_configs(prefix):
             if build_and_test_host_config(test_root,host_config) == 0:
                 ok.append(host_config)
             else:
-                bad.apend(host_config)
+                bad.append(host_config)
         if len(bad) > 0:
             log_failure(prefix,"Build failed for host configs: %s" % bad)
             return 1
