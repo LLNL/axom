@@ -1,16 +1,24 @@
-#ifndef PRIMAL_LATTICE__HPP_
-#define PRIMAL_LATTICE__HPP_
+/*
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
+#ifndef PRIMAL_RECTANGULAR_LATTICE_HPP_
+#define PRIMAL_RECTANGULAR_LATTICE_HPP_
 
 #include "axom/config.hpp"
-
-#include "fmt/fmt.hpp"
-#include "slic/slic.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
-#include <cmath>  // for std::floor
+#include <cmath>     // for std::floor
+#include <iostream>  // for ostream
 
 namespace axom {
 namespace primal {
@@ -31,6 +39,10 @@ namespace primal {
  * RectangularLattice also maps GridCell coordinates back to spatial coordinates
  * or to the bounding box of the GridCell.
  *
+ * GridCells follow a half-open boundary convention. Points on their lower
+ * boundaries get mapped to the cell, while points on their upper boundaries
+ * get mapped to neighboring cells.
+ *
  * A RectangularLattice is defined by an origin (a SpacePoint)
  * and a grid spacing (a SpaceVector).
  */
@@ -46,10 +58,6 @@ public:
 
   typedef primal::BoundingBox< SpaceCoordType, NDIMS >   SpatialBoundingBox;
 
-  static const SpacePoint s_DefaultOrigin;      /// Default lattice origin
-  static const SpaceVector s_DefaultSpacing;    /// Default lattice spacing
-
-
   /**
    * \brief Default constructor
    *
@@ -57,8 +65,8 @@ public:
    */
   RectangularLattice()
     : m_origin(SpaceCoordType(0)),
-      m_spacing( SpacePoint(SpaceCoordType(1)) ),
-      m_invSpacing( SpacePoint(SpaceCoordType(1)) )
+    m_spacing( SpacePoint(SpaceCoordType(1)) ),
+    m_invSpacing( SpacePoint(SpaceCoordType(1)) )
   {}
 
   /**
@@ -69,14 +77,14 @@ public:
    */
   RectangularLattice(const SpacePoint& origin)
     : m_origin(origin),
-      m_spacing( SpacePoint(SpaceCoordType(1)) ),
-      m_invSpacing( SpacePoint(SpaceCoordType(1)) )
+    m_spacing( SpacePoint(SpaceCoordType(1)) ),
+    m_invSpacing( SpacePoint(SpaceCoordType(1)) )
   {}
 
   /**
    * Constructor using a given origin and spacing along each dimension.
-   * \param origin The lattice's origin (Default: s_DefaultOrigin)
-   * \param spacing The lattice's spacing (Default: s_DefaultSpacing)
+   * \param origin The lattice's origin
+   * \param spacing The lattice's spacing
    */
   RectangularLattice(const SpacePoint& origin, const SpaceVector & spacing)
     : m_origin(origin), m_spacing(spacing)
@@ -85,9 +93,9 @@ public:
     // multiplications, and handles dealing with 0-sized spacings
     for (int i=0; i< NDIMS; ++i) {
       m_invSpacing[i] =
-       axom::utilities::isNearlyEqual(spacing[i], SpaceCoordType(0))
-          ? SpaceCoordType(0)
-          : SpaceCoordType(1) / spacing[i];
+        axom::utilities::isNearlyEqual(spacing[i], SpaceCoordType(0))
+        ? SpaceCoordType(0)
+        : SpaceCoordType(1) / spacing[i];
     }
   }
 
@@ -97,22 +105,22 @@ public:
   /** Accessor for lattice spacing   */
   const SpaceVector& spacing() const { return m_spacing; }
 
-  /** Finds the lattices cell associated with the given space point pt */
-  GridCell getGridCell(const SpacePoint& pt) const
+  /** Returns the lattice cell associated with the given space point pt */
+  GridCell gridCell(const SpacePoint& pt) const
   {
     GridCell cell;
 
     for (int i=0; i< NDIMS; ++i) {
-      // Note: Need floor to round down on the negative axes
+      // Note: Always round down to negative infinity
       cell[i] = static_cast< CellCoordType >(
-        std::floor( ( pt[i] - m_origin[i]) * m_invSpacing[i] ) );
+        std::floor( (pt[i] - m_origin[i]) * m_invSpacing[i] ) );
     }
 
     return cell;
   }
 
-  /** Finds the space point associated with the lowest corner of GridCell cell */
-  SpacePoint getSpacePoint(const GridCell& cell) const
+  /** Returns the space point associated with lowest corner of GridCell cell */
+  SpacePoint spacePoint(const GridCell& cell) const
   {
     SpacePoint pt;
     for (int i=0; i< NDIMS; ++i) {
@@ -127,11 +135,19 @@ public:
    *
    * \note The bounding box covers all points in space that map to gridCell
    */
-  SpatialBoundingBox getCellBounds(const GridCell& cell) const
+  SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
-    return SpatialBoundingBox( getSpacePoint(cell),
-                               getSpacePoint(cell.array() +
-                                             GridCell(1).array()));
+    return SpatialBoundingBox( spacePoint(cell),
+                               spacePoint(cell.array() +
+                                          GridCell(1).array()));
+  }
+
+  /** Simple formatted print of a rectangular lattice */
+  std::ostream& print(std::ostream& os) const
+  {
+    os  <<"{ origin:"<<m_origin
+        <<"; spacing:"<< m_spacing <<" }";
+    return os;
   }
 
 private:
@@ -139,7 +155,6 @@ private:
   SpaceVector m_spacing;     /// Spacing of the grid
   SpaceVector m_invSpacing;  /// Inverse spacing (for efficiency)
 };
-
 
 /**
  * \brief Helper function to create a Rectangular Lattice from
@@ -159,7 +174,8 @@ rectangular_lattice_from_bounding_box(
   const primal::BoundingBox< SpaceCoordType, NDIMS >& bbox,
   const primal::NumericArray< CellCoordType, NDIMS >& gridRes)
 {
-  typedef RectangularLattice< NDIMS, SpaceCoordType, CellCoordType > LatticeType;
+  typedef RectangularLattice< NDIMS, SpaceCoordType,
+                              CellCoordType > LatticeType;
   typedef typename LatticeType::SpaceVector SpaceVector;
 
   SpaceVector spacing;
@@ -174,7 +190,38 @@ rectangular_lattice_from_bounding_box(
   return LatticeType(bbox.getMin(), spacing);
 }
 
+//------------------------------------------------------------------------------
+/// Free functions implementing comparison and arithmetic operators
+//------------------------------------------------------------------------------
+
+/** Equality operator on two RectangularLattices */
+template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+bool operator==(
+  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs ,
+  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
+{
+  return lhs.origin() == rhs.origin() && lhs.spacing() == rhs.spacing();
+}
+
+/** Inequality operator on two RectangularLattices */
+template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+bool operator!=(
+  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs ,
+  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
+{
+  return !(lhs == rhs);
+}
+
+/** Stream output operator on a RectangularLattice */
+template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+std::ostream& operator<<(
+  std::ostream & os,
+  const RectangularLattice< NDIMS, SpaceCoordType, CellCoordType > & lattice)
+{
+  return lattice.print(os);
+}
+
 } // end namespace primal
 } // end namespace axom
 
-#endif  // PRIMAL_LATTICE__HPP_
+#endif  // PRIMAL_RECTANGULAR_LATTICE_HPP_
