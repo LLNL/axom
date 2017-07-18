@@ -1,6 +1,6 @@
 
 /**
- * \file
+ * \file MortonIndex
  * \brief Classes and functions to convert between points on an integer grid and their unidimensional MortonIndex.
  *
  * Also has some utility functions for 'mortonizing' and 'demortonizing' points and a PointHash functor class
@@ -18,14 +18,10 @@
 
 #ifdef AXOM_USE_CXX11
     #include <type_traits>
-#else
-    #include <boost/static_assert.hpp>
-    #include <boost/type_traits.hpp>
 #endif
 
 #include <limits>           // for numeric_limits
 
-using axom::primal::Point;
 
 namespace {
     /**
@@ -51,7 +47,7 @@ namespace {
 
 
 namespace axom {  
-namespace quest {
+namespace primal {
 
     /**
      * \class
@@ -67,9 +63,6 @@ namespace quest {
 #ifdef AXOM_USE_CXX11
         static_assert( std::is_integral<CoordType>::value, "Coordtype must be integral for Morton indexing" );
         static_assert( std::is_integral<MortonIndexType>::value, "MortonIndexType must be integral for Morton indexing" );
-#elif defined(AXOM_USE_BOOST)
-        BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
-        BOOST_STATIC_ASSERT(boost::is_integral<MortonIndexType>::value);
 #endif
 
     private:
@@ -522,14 +515,14 @@ namespace quest {
             typedef Point<MortonIndex,2> Pt2M;
 
             Pt2M pMorton = Pt2M::make_point(
-                      Mortonizer<CoordType,MortonIndex,2>::mortonize(pt[0], pt[2])
-                    , Mortonizer<CoordType,MortonIndex,2>::mortonize(pt[1], pt[3]));
+                      Mortonizer<CoordType,MortonIndex,2>::mortonize(pt[0], pt[2]),
+                      Mortonizer<CoordType,MortonIndex,2>::mortonize(pt[1], pt[3]));
 
             return Mortonizer<MortonIndex,MortonIndex,2>::mortonize(pMorton);
         }
     };
 
-} // end namespace quest
+} // end namespace primal
 } // end namespace axom 
 
 #endif  // MORTON_INDEX_HXX_

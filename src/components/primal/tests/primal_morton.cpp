@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "primal/Point.hpp"
-#include "quest/MortonIndex.hpp"
+#include "primal/MortonIndex.hpp"
 
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
@@ -60,14 +60,14 @@ namespace {
 }
 
 
-TEST( quest_point, test_max_set_bit)
+TEST( primal_morton, test_max_set_bit)
 {
     SLIC_INFO(" This test checks that MortonBase's maxSetBit function works properly");
 
     typedef int CoordType;
     typedef std::size_t MortonIndexType;
 
-    axom::quest::Mortonizer<CoordType,MortonIndexType,2> morton2;
+    axom::primal::Mortonizer<CoordType,MortonIndexType,2> morton2;
     EXPECT_EQ( morton2.maxSetBit( 0), 0);
 
 
@@ -87,9 +87,9 @@ TEST( quest_point, test_max_set_bit)
 }
 
 
-TEST( quest_point, test_mortonizer)
+TEST( primal_morton, test_mortonizer)
 {
-  using namespace axom::quest ;
+  using namespace axom::primal ;
 
   SLIC_INFO("Testing Morton conversion on some simple points");
 
@@ -138,11 +138,11 @@ TEST( quest_point, test_mortonizer)
 template<typename CoordType, typename MortonIndexType, int DIM>
 void testMortonizer()
 {
-    using namespace axom::quest ;
+    using namespace axom::primal ;
 
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = axom::quest::Mortonizer<CoordType,MortonIndexType,DIM>::maxBitsPerCoord();
+    int maxBits = axom::primal::Mortonizer<CoordType,MortonIndexType,DIM>::maxBitsPerCoord();
     SLIC_INFO("\tMax bits per dimension: " << std::numeric_limits<CoordType>::digits);
     SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
 
@@ -225,7 +225,7 @@ void testIntegralTypes()
     testMortonizer<common::uint64,common::uint64,DIM>();
 }
 
-TEST( quest_point, test_integral_types_2D)
+TEST( primal_morton, test_integral_types_2D)
 {
     SLIC_INFO("*** Testing morton indexing in 2D with different coord and Morton index types");
 
@@ -234,7 +234,7 @@ TEST( quest_point, test_integral_types_2D)
 }
 
 
-TEST( quest_point, test_integral_types_3D)
+TEST( primal_morton, test_integral_types_3D)
 {
     SLIC_INFO("*** Testing morton indexing in 3D with different coord and Morton index types");
 
@@ -243,9 +243,9 @@ TEST( quest_point, test_integral_types_3D)
 }
 
 
-TEST( quest_point, test_point_hasher)
+TEST( primal_morton, test_point_hasher)
 {
-    using namespace axom::quest ;
+    using namespace axom::primal;
 
     SLIC_INFO("** Here we test the point hasher which can be used e.g. in an unordered_map");
 

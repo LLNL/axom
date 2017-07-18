@@ -16,7 +16,6 @@ set( quest_headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
     geom/InOutOctree.hpp
-    geom/MortonIndex.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
     geom/SparseOctreeLevel.hpp

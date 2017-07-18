@@ -10,7 +10,6 @@
 
 set(quest_tests
     quest_inout_octree.cpp
-    quest_morton.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
