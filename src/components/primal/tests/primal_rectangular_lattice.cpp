@@ -68,13 +68,13 @@ TEST( primal_rectangle_lattice, lattice_ctor)
     SpacePt origin(1.1);
     SpaceVector spacing( SpacePt(.1) );
 
-    LatticeT defaultGrid;
-    EXPECT_EQ(SpacePt::zero(), defaultGrid.origin());
-    EXPECT_EQ(SpaceVector(SpacePt(1)), defaultGrid.spacing());
+    LatticeT defaultLattice;
+    EXPECT_EQ(SpacePt::zero(), defaultLattice.origin());
+    EXPECT_EQ(SpaceVector(SpacePt(1)), defaultLattice.spacing());
 
-    LatticeT grid(origin, spacing);
-    EXPECT_EQ(origin, grid.origin());
-    EXPECT_EQ(spacing, grid.spacing());
+    LatticeT lattice(origin, spacing);
+    EXPECT_EQ(origin, lattice.origin());
+    EXPECT_EQ(spacing, lattice.spacing());
   }
 
   //2D
@@ -83,13 +83,13 @@ TEST( primal_rectangle_lattice, lattice_ctor)
     SpacePt origin(1.1);
     SpaceVector spacing( SpacePt(.1) );
 
-    LatticeT defaultGrid;
-    EXPECT_EQ(SpacePt::zero(), defaultGrid.origin());
-    EXPECT_EQ(SpaceVector(SpacePt(1)), defaultGrid.spacing());
+    LatticeT defaultLattice;
+    EXPECT_EQ(SpacePt::zero(), defaultLattice.origin());
+    EXPECT_EQ(SpaceVector(SpacePt(1)), defaultLattice.spacing());
 
-    LatticeT grid(origin, spacing);
-    EXPECT_EQ(origin, grid.origin());
-    EXPECT_EQ(spacing, grid.spacing());
+    LatticeT lattice(origin, spacing);
+    EXPECT_EQ(origin, lattice.origin());
+    EXPECT_EQ(spacing, lattice.spacing());
   }
 
   //3D
@@ -98,19 +98,92 @@ TEST( primal_rectangle_lattice, lattice_ctor)
     SpacePt origin(1.1);
     SpaceVector spacing( SpacePt(.1) );
 
-    LatticeT defaultGrid;
-    EXPECT_EQ(SpacePt::zero(), defaultGrid.origin());
-    EXPECT_EQ(SpaceVector(SpacePt(1)), defaultGrid.spacing());
+    LatticeT defaultLattice;
+    EXPECT_EQ(SpacePt::zero(), defaultLattice.origin());
+    EXPECT_EQ(SpaceVector(SpacePt(1)), defaultLattice.spacing());
 
-    LatticeT grid(origin, spacing);
-    EXPECT_EQ(origin, grid.origin());
-    EXPECT_EQ(spacing, grid.spacing());
+    LatticeT lattice(origin, spacing);
+    EXPECT_EQ(origin, lattice.origin());
+    EXPECT_EQ(spacing, lattice.spacing());
+  }
+}
+
+TEST( primal_rectangle_lattice, lattice_array_ctor)
+{
+  SLIC_INFO("Testing lattice constructors from arrays in 1D, 2D and 3D");
+  //1D
+  {
+    using namespace lattice_1D;
+    SpacePt origin(1.1);
+    SpaceVector spacing( SpacePt(.1) );
+
+    LatticeT emptyLattice(AXOM_NULLPTR, AXOM_NULLPTR);
+    EXPECT_EQ(SpacePt::zero(), emptyLattice.origin());
+    EXPECT_EQ(SpaceVector(1.), emptyLattice.spacing());
+
+    LatticeT latticeFromOrigin(origin.data(), AXOM_NULLPTR);
+    EXPECT_EQ(origin, latticeFromOrigin.origin());
+    EXPECT_EQ(SpaceVector(1.), latticeFromOrigin.spacing());
+
+    LatticeT latticeFromSpacing(AXOM_NULLPTR, spacing.data());
+    EXPECT_EQ(SpacePt::zero(), latticeFromSpacing.origin());
+    EXPECT_EQ(spacing, latticeFromSpacing.spacing());
+
+    LatticeT latticeFromArrays(origin.data(), spacing.data());
+    EXPECT_EQ(origin, latticeFromArrays.origin());
+    EXPECT_EQ(spacing, latticeFromArrays.spacing());
+  }
+
+  //2D
+  {
+    using namespace lattice_2D;
+    SpacePt origin(1.1);
+    SpaceVector spacing( SpacePt(.1) );
+
+    LatticeT emptyLattice(AXOM_NULLPTR, AXOM_NULLPTR);
+    EXPECT_EQ(SpacePt::zero(), emptyLattice.origin());
+    EXPECT_EQ(SpaceVector(1.), emptyLattice.spacing());
+
+    LatticeT latticeFromOrigin(origin.data(), AXOM_NULLPTR);
+    EXPECT_EQ(origin, latticeFromOrigin.origin());
+    EXPECT_EQ(SpaceVector(1.), latticeFromOrigin.spacing());
+
+    LatticeT latticeFromSpacing(AXOM_NULLPTR, spacing.data());
+    EXPECT_EQ(SpacePt::zero(), latticeFromSpacing.origin());
+    EXPECT_EQ(spacing, latticeFromSpacing.spacing());
+
+    LatticeT latticeFromArrays(origin.data(), spacing.data());
+    EXPECT_EQ(origin, latticeFromArrays.origin());
+    EXPECT_EQ(spacing, latticeFromArrays.spacing());
+  }
+
+  //3D
+  {
+    using namespace lattice_3D;
+    SpacePt origin(1.1);
+    SpaceVector spacing( SpacePt(.1) );
+
+    LatticeT emptyLattice(AXOM_NULLPTR, AXOM_NULLPTR);
+    EXPECT_EQ(SpacePt::zero(), emptyLattice.origin());
+    EXPECT_EQ(SpaceVector(1.), emptyLattice.spacing());
+
+    LatticeT latticeFromOrigin(origin.data(), AXOM_NULLPTR);
+    EXPECT_EQ(origin, latticeFromOrigin.origin());
+    EXPECT_EQ(SpaceVector(1.), latticeFromOrigin.spacing());
+
+    LatticeT latticeFromSpacing(AXOM_NULLPTR, spacing.data());
+    EXPECT_EQ(SpacePt::zero(), latticeFromSpacing.origin());
+    EXPECT_EQ(spacing, latticeFromSpacing.spacing());
+
+    LatticeT latticeFromArrays(origin.data(), spacing.data());
+    EXPECT_EQ(origin, latticeFromArrays.origin());
+    EXPECT_EQ(spacing, latticeFromArrays.spacing());
   }
 }
 
 TEST( primal_rectangle_lattice, operators)
 {
-  SLIC_INFO("Testing binary and print operators in 1D, 2D and 3D");
+  SLIC_INFO("Testing free operators in 1D, 2D and 3D");
   //1D
   {
     using namespace lattice_1D;

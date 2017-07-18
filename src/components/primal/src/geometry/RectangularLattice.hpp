@@ -12,6 +12,7 @@
 #define PRIMAL_RECTANGULAR_LATTICE_HPP_
 
 #include "axom/config.hpp"
+#include "axom/Types.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
@@ -70,10 +71,10 @@ public:
   {}
 
   /**
-   * \brief Constructor using a given origin.
+   * \brief Constructor from a given origin.
    *
    * \param origin The lattice's origin
-   * \note Sets the default spacing to 1 in each dimension
+   * \note Spacing will be set to default (vector of ones)
    */
   RectangularLattice(const SpacePoint& origin)
     : m_origin(origin),
@@ -82,7 +83,8 @@ public:
   {}
 
   /**
-   * Constructor using a given origin and spacing along each dimension.
+   * Constructor from a given origin and spacing.
+   *
    * \param origin The lattice's origin
    * \param spacing The lattice's spacing
    */
@@ -96,6 +98,38 @@ public:
         axom::utilities::isNearlyEqual(spacing[i], SpaceCoordType(0))
         ? SpaceCoordType(0)
         : SpaceCoordType(1) / spacing[i];
+    }
+  }
+
+  /**
+   * Constructor from SpaceCoordType arrays
+   *
+   * \param origin_date An array containing the origin's coordinates
+   * \param spacing_data An array containing the spacing coordinates
+   *
+   * \pre When origin_data is not NULL, it must have at least NDIMS entries
+   * \note Origin will be set to the zero vector if origin_data pointer is NULL
+   *
+   * \pre When spacing_data is not NULL, it must have at least NDIMS entries
+   * \note Spacing will be set to vector or ones if pointer is NULL
+   */
+  RectangularLattice(SpaceCoordType* origin_data, SpaceCoordType* spacing_data)
+  {
+    m_origin = (origin_data != AXOM_NULLPTR)
+               ? SpacePoint(origin_data)
+               : SpacePoint::zero();
+
+    m_spacing = (spacing_data != AXOM_NULLPTR)
+                ? SpaceVector(spacing_data)
+                : SpaceVector(SpaceCoordType(1));
+
+    // Note: m_invSpacing is for efficiency.  It trades divisions for
+    // multiplications, and handles dealing with 0-sized spacings
+    for (int i=0; i< NDIMS; ++i) {
+      m_invSpacing[i] =
+        axom::utilities::isNearlyEqual(m_spacing[i], SpaceCoordType(0))
+        ? SpaceCoordType(0)
+        : SpaceCoordType(1) / m_spacing[i];
     }
   }
 
