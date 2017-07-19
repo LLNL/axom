@@ -31,8 +31,10 @@ namespace quest
 using DataType = double;
 using IndexType = int;
 
+#define TOPO_DIM 2
+#define VERT_PER_ELEMENT 3
 using PointType = primal::Point<DataType, 2>;
-using IATriMeshType = slam::IAMesh<2, 2, PointType>;
+using IATriMeshType = slam::IAMesh<TOPO_DIM, 2, PointType>;
 using Triangle2D = axom::primal::Triangle<double, 2>;
 
 class Delaunay
@@ -56,6 +58,8 @@ private:
   bool has_boundary = false;
   int num_removed_elements_since_last_compact = 0;
 };
+
+void Delaunay::printMesh() { mesh.print_all(); }
 
 void Delaunay::startWithBoundary(DataType xmin,
                                  DataType xmax,
@@ -104,131 +108,115 @@ void Delaunay::insertPoint(const PointType& new_pt)
   SLIC_ASSERT_MSG(elements_to_remove.size() > 0,
                   "Error: New point is not contained in the mesh");
 
-  //remove each elements from the mesh, keeping a list of cavity edges and their connected elements
+  // typedef for map structures for cavity edges and new elements
+  //cavity_edge_map: <vlist, <vlist, element_idx> >
+  // cavity_edge_map is a map from sorted face vertices to pair of face vertices and element idx.
+  // It keeps track of the edges that forms the cavity, which will be edges of the new element.
+  //new_element_face_map: <vlist, <element_idx,face_idx> >
+  // new_element_face_map is a map from sorted face vertices to pair of element and its face idx.
+  // It keep tracks of the new elements added, to correctly construct element->element relation
+
+  typedef axom::slam::IndexListType IndexListType;
   typedef std::pair<IndexType, IndexType> IndexPairType;
-  typedef std::pair<IndexPairType, IndexType> CavityPairType;
-  typedef std::map<IndexPairType, IndexType> CavityMapType;
-  CavityMapType cavity_edges;
-  std::vector<IndexPairType> insertOrder;  //to keep track of the insertion order.
-    // This is to prevent multiple (temporary) holes in the mesh, which will result
-    // in wrong functionality of IA's getElementWithVertex(v_id)
+
+  typedef std::map<IndexListType, IndexListType> CavityMapType;
+  typedef std::pair<IndexListType, IndexListType> CavityMapPairType;
+
+  typedef std::pair<IndexListType, IndexPairType> NewElemFacePairType;
+  typedef std::map<IndexListType, IndexPairType> NewElemFaceMapType;
+
+  CavityMapType cavity_edge_map;
+  NewElemFaceMapType new_element_face_map;
+
+  // Take out the elements one by one, keeping track of the cavity edges
   for(unsigned int i = 0; i < elements_to_remove.size(); i++)
   {
     IndexType element_i = elements_to_remove[i];
-    std::vector<IndexType> verts_in_this_element =
-      mesh.getVertexInElement(element_i);
-    for(unsigned int j = 0; j < verts_in_this_element.size(); j++)
+
+    //For each face of the element, insert its face into the map (or remove if duplicate)
+    for(unsigned int face_i = 0; face_i < VERT_PER_ELEMENT; face_i++)
     {
-      IndexType n1 = verts_in_this_element[(j * 2) % 3];
-      IndexType n2 = verts_in_this_element[(1 + j * 2) % 3];
-      CavityMapType::iterator iter = cavity_edges.find(IndexPairType(n2, n1));
-      if(iter == cavity_edges.end())
+      IndexListType face_vlist = mesh.getElementFace(element_i, face_i);
+
+      IndexListType face_vlist_sorted(
+        face_vlist);  //sort the list to make the key for the map
+      std::sort(face_vlist_sorted.begin(), face_vlist_sorted.end());
+
+      std::pair<CavityMapType::iterator, bool> ret =
+        cavity_edge_map.insert(CavityMapPairType(face_vlist_sorted, face_vlist));
+      if(!ret.second)
       {
-        cavity_edges.insert(CavityPairType(IndexPairType(n1, n2), element_i));
-        insertOrder.push_back(IndexPairType(n1, n2));
-      }
-      else
-      {  //already exists
-        cavity_edges.erase(iter);
+        cavity_edge_map.erase(ret.first);
       }
     }
+
     mesh.removeElement(element_i);
     num_removed_elements_since_last_compact++;
   }
 
   //SLIC_INFO("DT: After removing elements");
-  //print_out_mesh(mesh);
-  //std::cout<<"pt = [" << pt_coord[0]<<" "<<pt_coord[1] <<"];" << std::endl;
+  //mesh.print_all();
 
-  //new triangles from the cavity edges
-
+  //Add the new point
   IndexType new_pt_i = mesh.addVertex(new_pt);
 
-  /*// Replaced by the code below that reduces number of 2+ holes in the mesh
-  for(CavityMapType::iterator iter = cavity_edges.begin(); iter != cavity_edges.end(); iter++)
+  //Add new triangles from the cavity edges
+  for(CavityMapType::iterator cav_edge_iter = cavity_edge_map.begin();
+      cav_edge_iter != cavity_edge_map.end();
+      cav_edge_iter++)
   {
-    IndexType n1 = iter->first.first;
-    IndexType n2 = iter->first.second;
+    //SLIC_INFO("new element " << new_el <<": "<<cav_edge_iter->second.first[0]<<" "<<cav_edge_iter->second.first[1] << " " <<new_pt_i);
 
-    IndexType starting_element = mesh.addElement(n1, n2, new_pt_i);
-    //SLIC_INFO("DT: New cell: " << starting_element <<" with "<< n1 <<", " << n2 << ", "<<new_pt_i );
+    IndexType new_el = mesh.addElement(cav_edge_iter->second[0],
+                                       cav_edge_iter->second[1],
+                                       new_pt_i);
 
-    this->newest_element_i= starting_element;
-  }*/
-
-  std::vector<IndexType> new_cells;
-
-  for(unsigned int i = 0; i < insertOrder.size(); i++)
-  {
-    CavityMapType::iterator iter = cavity_edges.find(insertOrder[i]);
-    if(iter != cavity_edges.end())
+    // Check the new element's face neighbor, because it can be wrong sometimes
+    // due to the mesh being temporarily non-manifold.
+    for(int fi = 0; fi < VERT_PER_ELEMENT; fi++)
     {
-      IndexType n1 = iter->first.first;
-      IndexType n2 = iter->first.second;
+      IndexListType vlist_sorted = mesh.getElementFace(new_el, fi);
+      std::sort(vlist_sorted.begin(), vlist_sorted.end());
 
-      IndexType new_element = mesh.addElement(n1, n2, new_pt_i);
-      //SLIC_INFO("DT: New cell: " << starting_element <<" with "<< n1 <<", " << n2 << ", "<<new_pt_i );
-      new_cells.push_back(new_element);
-      this->newest_element_i = new_element;
+      NewElemFaceMapType::iterator iter = new_element_face_map.find(vlist_sorted);
+
+      if(iter == new_element_face_map.end())
+      {
+        new_element_face_map.insert(
+          NewElemFacePairType(vlist_sorted, IndexPairType(new_el, fi)));
+      }
+      else
+      {
+        IndexType nbr_el = iter->second.first;
+        IndexType nbr_fi = iter->second.second;
+
+        if(mesh.ee_rel[new_el][fi] < 0)
+        {
+          //SLIC_INFO("found neighbor " << iter->second.first <<"-"<<nbr_fi);
+
+          mesh.ee_rel.modify(new_el, fi, nbr_el);
+          mesh.ee_rel.modify(nbr_el, nbr_fi, new_el);
+        }
+
+        new_element_face_map.erase(iter);
+      }
     }
   }
 
   //SLIC_INFO("DT: After adding elements");
   //mesh.print_all();
 
-  // Here is some ugly code that checks and fixes element neighbors that are incorrect.
-  // This is because IA::getElementWithVertex() only guarantee to work on manifold mesh, which
-  // can result in incorrect ee_rel.
-  bool all_element_valid = false;
-  //Check for incorrect element
-  while(!all_element_valid)
-  {
-    all_element_valid = true;
-
-    for(unsigned int i = 0; i < new_cells.size(); i++)
-    {
-      IndexType new_el = new_cells[i];
-
-      int invalid_nbr_count = 0;
-      for(int j = 0; j < mesh.VERTS_PER_ELEM; j++)
-      {
-        invalid_nbr_count += mesh.ee_rel[new_el][j] < 0;
-      }
-
-      if(invalid_nbr_count > 0)
-      {
-        int num_boundary_box_vert = 0;
-        for(int j = 0; j < mesh.VERTS_PER_ELEM; j++)
-        {
-          num_boundary_box_vert += mesh.ev_rel[new_el][j] < 4;
-        }
-        if(invalid_nbr_count == 1 &&
-           num_boundary_box_vert == mesh.VERTS_PER_ELEM - 1)
-        {
-          //it's a correct boundary element
-        }
-        else
-        {
-          //Reinsert this element
-          all_element_valid = false;
-          axom::slam::IndexListType vlist = mesh.getVertexInElement(new_el);
-          mesh.removeElement(new_el);
-          new_cells[i] = mesh.addElement(vlist[0], vlist[1], vlist[2]);
-        }
-      }
-    }
-
-  }  //end while, end ugly code
-
   //Make sure ee_rel has only 4 invalid
   int invalid_nbr_count = 0;
   for(int i = 0; i < mesh.ee_rel.size(); i++)
   {
     if(mesh.ee_rel.isValidEntry(i))
-      for(int j = 0; j < 3; j++)
+    {
+      for(int j = 0; j < VERT_PER_ELEMENT; j++)
       {
         invalid_nbr_count += mesh.ee_rel[i][j] < 0;
       }
+    }
   }
   SLIC_ASSERT(invalid_nbr_count == 4);
 
@@ -240,45 +228,34 @@ void Delaunay::insertPoint(const PointType& new_pt)
     num_removed_elements_since_last_compact = 0;
   }
 
-  /*if(! mesh.isValid(true) )
-    SLIC_INFO("Something wrong with Delaunay on IA.");*/
+  if(!mesh.isValid(true))
+  {
+    SLIC_INFO("IA mesh is invalid after adding new point");
+  }
 }
 
 IndexType Delaunay::findContainingElement(PointType query_pt)
 {
-  IndexType element_i = newest_element_i;
-
   //SLIC_INFO("DT: find_containing_element " << element_i );
-  //assumes the point is definitely contained within a triangle
-  //TODO fix that assumption ^
   //SLIC_INFO("Query Pt " << query_pt);
 
-  if(!mesh.isValidElementEntry(element_i))
+  SLIC_ASSERT(!mesh.isEmpty());
+
+  //find the last valid element to use as starting element
+  IndexType element_i;
+  for(int i = mesh.element_set.size() - 1; true; i--)
   {
-    if(mesh.isEmpty() == 0)
-    {  //There are no elements in the mesh? How did this happen?
-      SLIC_WARNING("Warning: no element in the mesh.");
-      return -1;
-    }
-
-    SLIC_WARNING("Warning: Element "
-                 << element_i
-                 << " is not a valid element. Replacing with a valid one.");
-
-    //find the first valid element
-    for(int i = 0; true; i++)
+    if(mesh.isValidElementEntry(i))
     {
-      if(mesh.isValidElementEntry(i))
-      {
-        element_i = i;
-        break;
-      }
+      element_i = i;
+      break;
     }
   }
 
   while(1)
   {
     //SLIC_INFO("DT: step into element"<<element_i);
+
     std::vector<IndexType> verts = mesh.getVertexInElement(element_i);
 
     Triangle2D tri(mesh.getVertexPoint(verts[0]),
@@ -294,16 +271,18 @@ IndexType Delaunay::findContainingElement(PointType query_pt)
     if(bary_co[i] > bary_co[2]) i = 2;
 
     if(bary_co[i] >= 0)
-    {                    //smaller than i -> outside of the triangle
+    {                    // bary_val bigger than zero -> inside triangle
       return element_i;  //return if inside or on triangle
     }
 
     std::vector<IndexType> zlist = mesh.getElementNeighbor(element_i);
-    IndexType next_el = element_i = zlist[2 - i];
+    IndexType next_el = element_i = zlist[(i + 1) % 3];
 
     if(next_el < 0)
     {
-      //Either there is a hole in the mesh, or the point is outside of the mesh
+      SLIC_WARNING(
+        "Either there is a hole in the mesh, or the point is outside of the "
+        "mesh.");
       return element_i;
     }
   }
@@ -336,6 +315,7 @@ std::vector<IndexType> Delaunay::findViolatingElements(PointType query_pt,
     PointType p1 = mesh.getVertexPoint(verts[1]);
     PointType p2 = mesh.getVertexPoint(verts[2]);
     bool is_in_circle = axom::primal::point_in_circle(query_pt, p0, p1, p2);
+
     if(is_in_circle)
     {
       ret.push_back(element_i);

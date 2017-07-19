@@ -187,6 +187,8 @@ int main(int argc, char** argv)
   sprintf(fname, "%s.vtk", params.outputVTKFile.c_str());
   dt.writeToVTKFile(fname);
 
+  dt.printMesh();
+
   SLIC_INFO("Done!");
 
   return retval;
