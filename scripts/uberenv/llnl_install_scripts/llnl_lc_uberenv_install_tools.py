@@ -165,7 +165,7 @@ def build_and_test_host_config(test_root,host_config):
     if "bgqos_0" in os.getenv('SYS_TYPE', ""):
         # Need to use ctest-3.0 on bg/q
         ctest_exe = "/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"
-        res = sexe("cd {} && {} -T Test -j16".format(build_dir,ctest_exe),
+        res = sexe("cd {} && {} -T Test -j16 --verbose".format(build_dir,ctest_exe),
                    output_file = pjoin(build_dir,"output.log.make.test.txt"),
                    echo=True)
 

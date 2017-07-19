@@ -191,14 +191,14 @@ class UberenvAxom(Package):
             cfg.write("# python from uberenv\n")
             cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))
         else:
-            cfg.write("# python not build by uberenv\n\n")
+            cfg.write("# python not built by uberenv\n\n")
 
         if "lua" in spec:
             lua_dir = get_spec_path(spec, "lua", path_replacements)
             cfg.write("# lua from uberenv\n")
             cfg.write(cmake_cache_entry("LUA_DIR",lua_dir))
         else:
-            cfg.write("# lua not build by uberenv\n\n")
+            cfg.write("# lua not built by uberenv\n\n")
 
         # optional tpls (dev tools)
 
@@ -223,9 +223,9 @@ class UberenvAxom(Package):
         else:
             cfg.write("# uncrustify not built by uberenv\n\n")
 
-        cfg.write("# lcov and genhtml from uberenv\n")
         if "lcov" in spec:
             lcov_dir = get_spec_path(spec, "lcov", path_replacements)
+            cfg.write("# lcov and genhtml from uberenv\n")
             cfg.write(cmake_cache_entry("LCOV_PATH", pjoin(lcov_dir,"usr","bin","lcov")))
             cfg.write(cmake_cache_entry("GENHTML_PATH",pjoin(lcov_dir,"usr","bin","genhtml")))
         else:
