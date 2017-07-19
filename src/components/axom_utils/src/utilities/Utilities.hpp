@@ -55,7 +55,7 @@ namespace utilities {
      a = b; b = tmp;
   }
 
-  /**
+  /*!
    * Tests the endianness of the system
    *
    * \return True, if the system is little endian, false otherwise
@@ -76,8 +76,6 @@ namespace utilities {
 
     return host_order.value == O32_LITTLE_ENDIAN;
   }
-
-
 
   /*!
    * \brief Swaps the endianness of the input value
@@ -130,8 +128,6 @@ namespace utilities {
 
     return swp.val;
   }
-
-
 
 /*!
  * \brief Fuzzy comparison of two real valued quantities
