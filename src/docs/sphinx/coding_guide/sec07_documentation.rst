@@ -178,8 +178,7 @@ of the C++ comment forms described below.
       For these C++ style comment forms, the comment delimiter is required on
       each line.
 
-7.12 Whichever Doxygen comment block style is used, it **must** be the same 
-within each file.
+7.12 A consistent Doxygen comment block style **must** be used within a component.
 
 7.13 Doxygen comment blocks **must** appear immediately before the items they 
 describe; i.e., no blank lines between comment and documented item. This
