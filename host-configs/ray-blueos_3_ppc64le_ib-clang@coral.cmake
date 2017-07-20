@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_06_08_12_06_56/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral/cmake-3.3.1-jhmutfnw7d6xvakakktdol5ap5wzinag/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_04_01/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral/cmake-3.8.2-ze553yn73s3b32uhop7jlgvjfxo4tjuc/bin/cmake
 
 #######
 # using clang@coral compiler spec
@@ -25,13 +25,13 @@ set(CMAKE_CXX_COMPILER "/usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/cl
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_06_08_12_06_56/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_04_01/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-jybmvmtpcohhrq4trij72mbwj6blad4l" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-cckkbhx7wihc6xio7zvzziiy44jstkmv" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-yjoop56c7fektxu4afrq6xtmz27ujtzz" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-kspkyktmme44udo7ysji4d6ufwiq2fuq" CACHE PATH "")
@@ -39,9 +39,9 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-kspkyktmme44udo7ysji4d6ufwiq2fuq" CACHE PATH 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-h5ezasjj2b4jbmznzonrpayzubdzb4fl" CACHE PATH "")
 
-# python not build by uberenv
+# python not built by uberenv
 
-# lua not build by uberenv
+# lua not built by uberenv
 
 # doxygen not built by uberenv
 
@@ -49,7 +49,6 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-h5ezasjj2b4jbmznzonrpayzubdzb4fl
 
 # uncrustify not built by uberenv
 
-# lcov and genhtml from uberenv
 # lcov and genhtml not built by uberenv
 
 ##################################
@@ -63,6 +62,8 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-h5ezasjj2b4jbmznzonrpayzubdzb4fl
 # lc blueos clang@coral  host configs
 ##############################################################################
 
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
@@ -70,7 +71,6 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-h5ezasjj2b4jbmznzonrpayzubdzb4fl
 set(ENABLE_MPI ON CACHE BOOL "")
 
 set(MPI_HOME                 "/usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-clang-coral-2017.05.19" CACHE PATH "")
-set(MPI_Fortran_HOME         "/usr/tcetmp/packages/xlflang/xlflang-2016-11-30/xlf" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
@@ -93,12 +93,8 @@ set(MPI_Fortran_LIBRARIES    "${MPI_LIBS}" CACHE PATH "")
 set(MPI_Fortran_INCLUDE_PATH "${MPI_INCLUDE_PATHS}" CACHE PATH "")
 
 set(MPIEXEC              "mpirun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 
-##############################################################################
-# SHROUD - manually added for now. Use a public build add to TPL later
-##############################################################################
-set(SHROUD_EXECUTABLE "/usr/apps/shroud/bin/shroud" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
