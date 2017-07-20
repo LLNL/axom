@@ -5,6 +5,8 @@
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
 #include "axom/Types.hpp"
 
+#include "primal/MortonIndex.hpp"
+
 #include "quest/Brood.hpp"
 #include "quest/OctreeLevel.hpp"
 
@@ -72,10 +74,10 @@ namespace quest {
 
       #if defined(AXOM_USE_CXX11)
         static_assert( std::is_integral<CoordType>::value, "CoordType must be integral" );
-        typedef std::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
+        typedef std::unordered_map<GridPt, BroodDataType, primal::PointHash<int> > MapType;
       #elif defined(AXOM_USE_BOOST)
         BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
-        typedef boost::unordered_map<GridPt, BroodDataType, PointHash<int> > MapType;
+        typedef boost::unordered_map<GridPt, BroodDataType, primal::PointHash<int> > MapType;
       #endif
 
         typedef Brood<GridPt, GridPt> BroodType;

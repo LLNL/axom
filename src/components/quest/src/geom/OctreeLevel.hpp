@@ -24,7 +24,6 @@
 #include "primal/Point.hpp"
 
 #include "quest/Brood.hpp"
-#include "quest/MortonIndex.hpp"
 
 #include <boost/iterator/iterator_facade.hpp>
 

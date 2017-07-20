@@ -18,6 +18,7 @@
 #include "primal/Vector.hpp"
 #include "primal/Ray.hpp"
 #include "primal/Polygon.hpp"
+#include "primal/MortonIndex.hpp"
 
 #include "primal/intersect.hpp"
 #include "primal/orientation.hpp"
@@ -2117,9 +2118,9 @@ public:
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
 #if defined(AXOM_USE_CXX11)
-  typedef std::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
+  typedef std::unordered_map<GridPt, int, primal::PointHash<int> > GridIntMap;
 #else
-  typedef boost::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
+  typedef boost::unordered_map<GridPt, int, primal::PointHash<int> > GridIntMap;
 #endif
   typedef typename GridIntMap::iterator GridIntIter;
 
