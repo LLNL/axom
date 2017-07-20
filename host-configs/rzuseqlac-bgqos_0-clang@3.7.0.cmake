@@ -65,6 +65,8 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj
 set(ENABLE_DOCS    OFF CACHE BOOL "")
 set(ENABLE_PYTHON  OFF CACHE BOOL "")
 
+set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
+
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
