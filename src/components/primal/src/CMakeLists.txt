@@ -18,6 +18,7 @@ set( primal_headers
      geometry/Point.hpp
      geometry/Polygon.hpp
      geometry/Ray.hpp
+     geometry/RectangularLattice.hpp
      geometry/Segment.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp

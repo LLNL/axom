@@ -18,6 +18,7 @@ set( primal_tests
     primal_numeric_array.cpp
     primal_orientation.cpp
     primal_point.cpp
+    primal_rectangular_lattice.cpp
     primal_squared_distance.cpp
     primal_triangle.cpp
     primal_vector.cpp
