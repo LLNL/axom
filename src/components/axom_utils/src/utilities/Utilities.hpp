@@ -22,10 +22,17 @@
 #ifndef AXOM_UTILITIES_HPP_
 #define AXOM_UTILITIES_HPP_
 
+#include "axom/config.hpp"
 #include "axom/Types.hpp"
+#include "axom/Macros.hpp"
 
 #include <cmath>
 #include <algorithm>
+
+#ifdef AXOM_USE_CXX11
+  #include <type_traits>
+#endif
+
 
 namespace axom {
 namespace utilities {
@@ -83,47 +90,34 @@ namespace utilities {
    * \param val The input value
    * \return The value with endianness swapped
    * \note Assumes endianness is either little or big (not PDP)
+   * \pre T is a native arithmetic type (i.e. integral or floating point)
+   * \pre sizeof(T) must be 2, 4, or 8 bytes
    */
   template < typename T >
   T swapEndian(T val)
   {
+    const int NBYTES = sizeof(T);
+
+    AXOM_STATIC_ASSERT_MSG( NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
+        "swapEndian only valid for types of size 2, 4 or 8 bytes.");
+
+#ifdef AXOM_USE_CXX11
+    AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
+       "swapEndian only valid for native arithmetic types");
+#endif
+
     union
     {
-      axom::common::uint8 raw[ sizeof(T) ];
+      axom::common::uint8 raw[ NBYTES ];
       T val;
     } swp;
 
     axom::common::uint8* src = reinterpret_cast<axom::common::uint8*>(&val);
 
-    switch(sizeof(T))
+    // Reverse the bytes
+    for(int i=0; i < NBYTES; ++i)
     {
-    case 2:
-      swp.raw[0] = src[1];
-      swp.raw[1] = src[0];
-      break;
-
-    case 4:
-      swp.raw[0] = src[3];
-      swp.raw[1] = src[2];
-      swp.raw[2] = src[1];
-      swp.raw[3] = src[0];
-      break;
-
-    case 8:
-      swp.raw[0] = src[7];
-      swp.raw[1] = src[6];
-      swp.raw[2] = src[5];
-      swp.raw[3] = src[4];
-
-      swp.raw[4] = src[3];
-      swp.raw[5] = src[2];
-      swp.raw[6] = src[1];
-      swp.raw[7] = src[0];
-      break;
-
-    default:
-      swp.val = val;
-      break;
+      swp.raw[i] = src[(NBYTES-1)-i];
     }
 
     return swp.val;

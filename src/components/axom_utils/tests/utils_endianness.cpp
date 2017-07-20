@@ -212,3 +212,46 @@ TEST(axom_utils_endianness,endianness_64)
       EXPECT_EQ( valOrig.d_val, v3);
     }
 }
+
+#if 0
+// Note: Checks that swapEndian static_asserts for types within invalid sizes.
+//       Commented out since it should lead to a compile error
+TEST(axom_utils_endianness,invalid_byte_width)
+{
+  {
+    axom::common::int8 v1 = 5;
+    axom::common::int8 v2 = axom::utilities::swapEndian(v1);
+
+    EXPECT_EQ(v1, v2);
+  }
+
+  {
+    axom::common::uint8 v1 = 5;
+    axom::common::uint8 v2 = axom::utilities::swapEndian(v1);
+
+    EXPECT_EQ(v1, v2);
+  }
+}
+#endif
+
+
+#if 0
+// Note: Checks that swapEndian static_asserts for non-native types.
+//       Commented out since it should lead to a compile error.
+TEST(axom_utils_endianness,invalid_non_native_types)
+{
+  struct AxomUtilsTestsNonNative {
+    axom::common::uint16 a;
+    axom::common::uint16 b;
+  };
+
+  AxomUtilsTestsNonNative v1;
+  v1.a = 5;
+  v1.b = 12;
+
+  AxomUtilsTestsNonNative v2 = axom::utilities::swapEndian(v1);
+
+  EXPECT_NE(v1.a, v2.a);
+  EXPECT_NE(v1.b, v2.b);
+}
+#endif
