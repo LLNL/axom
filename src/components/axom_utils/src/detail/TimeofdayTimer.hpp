@@ -8,6 +8,17 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ ***********************************************************************************
+ * \file TimeOfDayTimer.hpp
+ * 
+ * \brief A glibc based timer implementation for axom's Timer class
+ *
+ * \note TimeOfDayTimer is an internal helper class, not meant for external usage.
+ * It is intended to be used by axom's Timer class in unix-based configurations.
+ ***********************************************************************************
+ */
+
 #ifndef TIMEOFDAY_TIMER_HPP_
 #define TIMEOFDAY_TIMER_HPP_
 

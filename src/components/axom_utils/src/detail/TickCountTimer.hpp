@@ -8,6 +8,17 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ ***********************************************************************************
+ * \file TickCountTimer.hpp
+ * 
+ * \brief A Windows-based timer implementation for axom's Timer class
+ *
+ * \note TickCountTimer is an internal helper class, not meant for external usage.
+ * It is intended to be used by axom's Timer class in Windows configurations.
+ ***********************************************************************************
+ */
+
 #ifndef TICK_COUNT_TIMER_HPP_
 #define TICK_COUNT_TIMER_HPP_
  
@@ -27,14 +38,13 @@ namespace detail {
   /**
    * \class
    * \brief A simple timer utility based on the Windows GetTickCount64 function
-   * \note This is a simple class without any checks to ensure proper usage of the timer.
-   *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
-   *       Specifically, we do not check that start() was called before stop(),
-   *       or if stop() was called before attempting to find the elapsed time.
-   */
-
-   class TickCountTimer
-   {
+  * \note This is a simple class without any checks to ensure proper usage of the timer.
+  *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
+  *       Specifically, we do not check that start() was called before stop(),
+  *       or if stop() was called before attempting to find the elapsed time.
+  */
+  class TickCountTimer
+  {
      typedef ULONGLONG                         TimeStruct;
      typedef long int                            TimeDiff;
  
@@ -42,23 +52,23 @@ namespace detail {
             TIMER_THOUSAND = 1000, 
             TIMER_MILLION  = 1000000 };
 
-   public:
+  public:
     TickCountTimer() { reset(); }
  
-     /** \brief Sets the start time of the timer */
+    /** \brief Sets the start time of the timer */
     void start() {m_startTime = GetTickCount64();}
 
     /** \brief Sets the stop time of the timer */
     void stop() {m_stopTime = GetTickCount64();}
  
-     /**  \brief Resets the timer */
-     void reset()
-     {
-       m_startTime=0 ;
-       m_stopTime=0 ;
-     }
+    /**  \brief Resets the timer */
+    void reset()
+    {
+      m_startTime=0 ;
+      m_stopTime=0 ;
+    }
   
-         /** \brief Returns the number of seconds between start() and stop() */
+    /** \brief Returns the number of seconds between start() and stop() */
     double elapsedTimeInSec() const
     {
         return clockDiff() / static_cast<double>(TIMER_MILLION);
