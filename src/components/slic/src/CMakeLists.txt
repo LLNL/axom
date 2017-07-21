@@ -43,11 +43,11 @@ if (ENABLE_MPI)
     endif()
 endif()
 
-if (ENABLE_FORTRAN)
-    if(SHROUD_FOUND)
-        add_subdirectory(interface)
-    endif()
+if(SHROUD_FOUND)
+    add_subdirectory(interface)
+endif()
 
+if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
     )
@@ -92,4 +92,6 @@ install(TARGETS              slic
 install(FILES       ${slic_headers}
         DESTINATION include/slic
         )
-
+if(ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_slic.mod DESTINATION lib/fortran)
+endif()

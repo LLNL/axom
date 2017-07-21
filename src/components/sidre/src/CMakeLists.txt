@@ -27,11 +27,11 @@ set(sidre_sources
     core/SidreUtilities.cpp
 )
 
-if (ENABLE_FORTRAN)
-    if(SHROUD_FOUND)
-        add_subdirectory(interface)
-    endif()
+if(SHROUD_FOUND)
+    add_subdirectory(interface)
+endif()
 
+if (ENABLE_FORTRAN)
     # The CAPI is only built to provide a Fortran interface.  If no Fortran,
     # disable CAPI.
     list(APPEND sidre_headers
@@ -94,6 +94,9 @@ install(TARGETS              sidre
 install(FILES       ${sidre_headers}
         DESTINATION include/sidre
         )
+if(ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
+endif()
 
 # Only needed if building the Fortran interface
 # XXX this can be used to automatically generate the files

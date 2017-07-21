@@ -60,26 +60,26 @@ if (ENABLE_OPENMP)
 endif()
 
 if (ENABLE_MPI)
-  list(APPEND quest_headers stl/PSTLReader.hpp)
-  list(APPEND quest_sources stl/PSTLReader.cpp)
+    list(APPEND quest_headers stl/PSTLReader.hpp)
+    list(APPEND quest_sources stl/PSTLReader.cpp)
 
-  if(ENABLE_LUMBERJACK)
-      list(APPEND quest_depends_on lumberjack mpi)
-  endif()
+    if(ENABLE_LUMBERJACK)
+        list(APPEND quest_depends_on lumberjack mpi)
+    endif()
+endif()
+
+if (SHROUD_FOUND)
+    add_subdirectory(interface)
 endif()
 
 if (ENABLE_FORTRAN)
-  if (SHROUD_FOUND)
-      add_subdirectory(interface)
-  endif()
-
-  if (ENABLE_MPI)
-    ## append shroud generated headers/sources to corresponding lists
-    list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
-    list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
-    list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
-    list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
-  endif()
+    if (ENABLE_MPI)
+        ## append shroud generated headers/sources to corresponding lists
+        list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+        list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+        list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
+        list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+    endif()
 endif()
 
 blt_add_library(
@@ -97,3 +97,6 @@ install(TARGETS              quest
 install(FILES       ${quest_headers}
         DESTINATION include/quest
         )
+if (ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_quest.mod DESTINATION lib/fortran)
+endif()

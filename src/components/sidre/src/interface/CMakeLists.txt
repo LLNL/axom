@@ -14,7 +14,6 @@ add_shroud(
         python/pysidresplicer.c
     DEPENDS_BINARY genfsidresplicer.f
 )
-install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
 
 add_custom_command(
     OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
