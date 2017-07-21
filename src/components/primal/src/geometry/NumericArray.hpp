@@ -22,26 +22,6 @@
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 
-namespace {
-
-/*!
- *****************************************************************************
- * \brief Utility function that clamps an input val to a given range.
- * \param [in] val  The value to clamp
- * \param [in] lower The lower range
- * \param [in] upper The upper range
- * \return The clamped value.
- * \post lower <= returned value <= upper.
- *****************************************************************************
- */
-template < typename T >
-T clampVal( T val, T lower, T upper )
-{
-  SLIC_ASSERT( lower <= upper);
-  return std::min( std::max( val, lower), upper);
-}
-
-}
 
 namespace axom {
 namespace primal {
@@ -505,7 +485,7 @@ NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
 {
   SLIC_ASSERT( SIZE >= 1 );
 
-  const int nvals = ::clampVal(sz, 0, SIZE);
+  const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
   std::copy( vals, vals+nvals, m_components);
@@ -667,8 +647,8 @@ NumericArray< T,SIZE >::clamp( const T& lowerVal, const T& upperVal )
   SLIC_ASSERT( lowerVal <= upperVal);
 
   for ( int i=0; i < SIZE; ++i ) {
-    m_components[ i ] = std::min( std::max( m_components[ i ],lowerVal),
-                                  upperVal);
+    m_components[ i ] =
+        axom::utilities::clampVal(m_components[ i ],lowerVal, upperVal);
   }
 
   return *this;
