@@ -7,17 +7,17 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/global/tools/CMake/bgqos_0/cmake-3.1.2/bin/cmake
+# cmake executable path: /usr/local/tools/cmake-3.4.3/bin/cmake
 
 #######
 # using clang@3.7.0 compiler spec
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/local/bin/bgclang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/local/bin/bgclang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang++" CACHE PATH "")
 
 # fortran compiler used by spack
 # no fortran compiler
@@ -25,7 +25,7 @@ set(CMAKE_CXX_COMPILER "/usr/local/bin/bgclang++" CACHE PATH "")
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_17_28_06/spack/opt/spack/bgqos_0/clang-3.7.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_04_05/spack/opt/spack/bgqos_0/clang-3.7.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-bosaqxj3xd5fhyovqnda3rgj2kjsj4ah" CACHE PATH "")
@@ -39,9 +39,9 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-2ctejypbka5bdvs43cnv3twskptqpfjs" CACHE PATH 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
 
-# python not build by uberenv
+# python not built by uberenv
 
-# lua not build by uberenv
+# lua not built by uberenv
 
 # doxygen not built by uberenv
 
@@ -49,7 +49,6 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj
 
 # uncrustify not built by uberenv
 
-# lcov and genhtml from uberenv
 # lcov and genhtml not built by uberenv
 
 ##################################
@@ -63,7 +62,10 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj
 # lc bgq clang@3.7.0 host configs
 ##############################################################################
 
-set(ENABLE_DOCS OFF CACHE PATH "")
+set(ENABLE_DOCS    OFF CACHE BOOL "")
+set(ENABLE_PYTHON  OFF CACHE BOOL "")
+
+set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
 
 ##############################################################################
 # MPI - manually added for now
@@ -107,12 +109,7 @@ set(MPI_CXX_LIBRARIES     ${MPI_LIBS} CACHE PATH "")
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
-
-# GTest death tests use forked threads, which does now work on BG/Q 
-set(EXTRA_C_FLAGS   -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
-set(EXTRA_CXX_FLAGS -DGTEST_HAS_DEATH_TEST=0 CACHE PATH "")
-
-set(BLT_ALWAYS_WRAP_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
+set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

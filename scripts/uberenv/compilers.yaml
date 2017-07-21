@@ -74,8 +74,8 @@ compilers:
             f77: /usr/local/bin/bgxlf2003_r
             fc:  /usr/local/bin/bgxlf2003_r
           clang@3.7.0:
-             cc:  /usr/local/bin/bgclang
-             cxx: /usr/local/bin/bgclang++
+             cc:  /usr/apps/gnu/bgclang/3.7/bin/bgclang
+             cxx: /usr/apps/gnu/bgclang/3.7/bin/bgclang++
              f77: None
              fc:  None
     macosx_10.9_x86_64:

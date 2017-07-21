@@ -49,7 +49,7 @@
 
 
 // toolkit includes
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 
 #include "axom/Types.hpp"
 #include "axom_utils/Timer.hpp"

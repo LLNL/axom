@@ -28,8 +28,9 @@ class Cmake(Package):
     """A cross-platform, open-source build system. CMake is a family of
        tools designed to build, test and package software."""
     homepage  = 'https://www.cmake.org'
-    url       = 'https://cmake.org/files/v3.4/cmake-3.4.3.tar.gz'
+    url       = 'https://cmake.org/files/v3.8/cmake-3.8.2.tar.gz'
 
+    version('3.8.2',    'b5dff61f6a7f1305271ab3f6ae261419')
     version('3.7.2',    '79bd7e65cd81ea3aa2619484ad6ff25a')
     version('3.3.1',    '52638576f4e1e621fed6c3410d3a1b12')
     version('3.0.2',    'db4c687a31444a929d2fdc36c4dfb95f')

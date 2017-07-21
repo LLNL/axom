@@ -31,13 +31,15 @@ if (BOOST_FOUND)
     list(APPEND slam_tests_depends_on boost)
 endif()
 
+if (ENABLE_OPENMP)
+    list(APPEND slam_tests_depends_on openmp)
+endif()
 
 blt_add_executable(
     NAME        slam_lulesh_ex
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tests_depends_on}
-    USE_OPENMP  ${ENABLE_OPENMP}
     )
 
 if(ENABLE_MPI)
