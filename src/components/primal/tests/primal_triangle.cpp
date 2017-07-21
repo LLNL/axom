@@ -13,7 +13,7 @@
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 #include "slic/slic.hpp"
 
 #include <cmath>

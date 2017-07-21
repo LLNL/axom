@@ -411,7 +411,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 #else
 //------------------------------------------------------------------------------
 void initialize( const std::string& fileName,
-                 bool requireDistance, int ndims, int maxElements, int maxLevels )
+                 bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
@@ -435,7 +435,7 @@ void initialize( const std::string& fileName,
   delete reader;
 
   // Initialize the appropriate acceleration structure
-  if(requireDistance)
+  if(requiresDistance)
   {
     accelerator3D.initializeSignedDistance(surface_mesh, maxElements, maxLevels );
   }

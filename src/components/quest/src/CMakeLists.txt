@@ -16,7 +16,6 @@ set( quest_headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
     geom/InOutOctree.hpp
-    geom/MortonIndex.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
     geom/SparseOctreeLevel.hpp
@@ -51,31 +50,38 @@ set( quest_depends_on
      slic
      mint
      slam
+     primal
      )
 
 if (BOOST_FOUND)
     list(APPEND quest_depends_on boost)
 endif()
 
-if (ENABLE_MPI)
-  list(APPEND quest_headers stl/PSTLReader.hpp)
-  list(APPEND quest_sources stl/PSTLReader.cpp)
-
-  if(ENABLE_LUMBERJACK)
-      list(APPEND quest_depends_on lumberjack)
-  endif()
+if (ENABLE_OPENMP)
+    list(APPEND quest_depends_on openmp)
 endif()
 
-if(SHROUD_FOUND)
+if (ENABLE_MPI)
+    list(APPEND quest_headers stl/PSTLReader.hpp)
+    list(APPEND quest_sources stl/PSTLReader.cpp)
+
+    if(ENABLE_LUMBERJACK)
+        list(APPEND quest_depends_on lumberjack mpi)
+    endif()
+endif()
+
+if (SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
-if (ENABLE_FORTRAN AND ENABLE_MPI)
-  ## append shroud generated headers/sources to corresponding lists
-  list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
-  list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
-  list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
-  list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+if (ENABLE_FORTRAN)
+    if (ENABLE_MPI)
+        ## append shroud generated headers/sources to corresponding lists
+        list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+        list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+        list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
+        list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
+    endif()
 endif()
 
 blt_add_library(
@@ -84,5 +90,15 @@ blt_add_library(
     HEADERS     ${quest_headers}
     HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
-    USE_OPENMP  ${ENABLE_OPENMP}
     )
+install(TARGETS              quest
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/quest
+        )
+install(FILES       ${quest_headers}
+        DESTINATION include/quest
+        )
+if (ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_quest.mod DESTINATION lib/fortran)
+endif()

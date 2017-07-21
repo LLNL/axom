@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_08_21_38_20/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/cmake-3.3.1-leegihjenbrwm6vzsbekeu5pknapqtol/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_10_15_58_37/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/cmake-3.8.2-o55qeefhlmunbygv2vtxnbibaao7gcny/bin/cmake
 
 #######
 # using intel@16.0.109 compiler spec
@@ -25,13 +25,13 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-16.0.109/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_05_08_21_38_20/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_10_15_58_37/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-lkavbwiq2g26mxzbmdpvtji6t6np2hex" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-7x7anog2j57nnvfu5whm4ypl7wvznm3a" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-btylrdvyqlz3ktx4ct6l5h25sriojf74" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-r67cgn6jxgfmexi3qosmpzl2sxr5pqjq" CACHE PATH "")
@@ -46,7 +46,7 @@ set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-3ylay5hhgxrjdh53fafxesjsh4tllmw
 set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-25nzqxaaljfyf6eixkd2bczlmsmpxplv" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-cdk454rpagxntsv5c3mtctuerovao4f2/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-54sx3wjkp5pvzwxp3onj7u6rwgld5ewg/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-3ylay5hhgxrjdh53fafxesjsh4tllmwh/bin/sphinx-build" CACHE PATH "")
@@ -59,7 +59,7 @@ set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-nrsx4h6lyz4ajjrqi45dphsnbppj3da3/usr/bin/lc
 
 set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-nrsx4h6lyz4ajjrqi45dphsnbppj3da3/usr/bin/genhtml" CACHE PATH "")
 
-# Temporarily disable CXX11 on intel builds until we resolve issue ATK-619
+# Disable CXX11 on chaos5 intel/clang builds
 set(BLT_CXX_STD "c++98" CACHE PATH "")
 
 ##################################
@@ -72,6 +72,8 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 # Options added manually to 
 # lc chaos5 intel@16.0.109 host configs
 ##############################################################################
+
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 ##############################################################################
 # MPI - manually added for now
