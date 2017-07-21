@@ -27,9 +27,10 @@ namespace quest {
 /*!
  *******************************************************************************
  * \brief Initializes quest.
- * \param [in] comm communicator to use (if running in parallel)
+ * \param [in] comm communicator to use (when running in parallel)
  * \param [in] fileName the name of the file to read in the surface.
  * \param [in] requiresDistance flag to determine which structure to build.
+ * \param [in] ndims the surface's spatial dimension
  * \param [in] maxElements max elements per bucket.
  * \param [in] maxLevel max levels of subdivision.
  * \note If requiresDistance is true, we will build a structure that supports
@@ -41,8 +42,8 @@ namespace quest {
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements, int maxLevels );
 #else
-void initialize( const std::string& fileName, int ndims,
-                 bool requiresDistance, int maxElements, int maxLevels );
+void initialize( const std::string& fileName,
+                 bool requiresDistance, int ndims, int maxElements, int maxLevels );
 #endif
 
 /*!

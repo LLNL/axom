@@ -14,7 +14,6 @@
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
-#include "quest/MortonIndex.hpp"
 #include "quest/OctreeLevel.hpp"
 #include "quest/DenseOctreeLevel.hpp"
 #include "quest/SparseOctreeLevel.hpp"

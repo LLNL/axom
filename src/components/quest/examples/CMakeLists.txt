@@ -52,21 +52,40 @@ blt_add_executable(
     DEPENDS_ON  ${quest_example_depends}
     )
 
-if (ENABLE_MPI)
 
-  set(quest_interface_extra_depends)
-  if (ENABLE_LUMBERJACK)
+
+## Quest interface examples
+
+set(quest_interface_extra_depends)
+if (ENABLE_LUMBERJACK)
     list(APPEND quest_interface_extra_depends lumberjack)
-  endif()
+endif()
 
-  blt_add_executable(
+blt_add_executable(
     NAME        quest_interface_ex
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
     )
 
-  if (ENABLE_FORTRAN)
+# Add a test for the quest interface.  Set up for MPI, when available
+set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
+if (ENABLE_MPI)
+    blt_add_test(
+        NAME quest_interface_mpi_test
+        COMMAND quest_interface_ex ${quest_data_dir}/sphere_binary.stl
+        NUM_PROCS 2
+        )
+else()
+    blt_add_test(
+        NAME quest_interface_test
+        COMMAND quest_interface_ex ${quest_data_dir}/sphere_binary.stl
+        )
+endif()
+
+
+# The quest fortran API depends on MPI
+if (ENABLE_MPI AND ENABLE_FORTRAN)
     blt_add_executable(
         NAME        quest_interface_F_ex
         SOURCES     quest_interface_fortran.F
@@ -76,7 +95,5 @@ if (ENABLE_MPI)
 
     set_target_properties(quest_interface_F_ex
                           PROPERTIES LINKER_LANGUAGE Fortran)
-
-  endif()
 
 endif()

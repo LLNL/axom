@@ -5,10 +5,9 @@
 
 #include "axom/config.hpp"
 
-#include "quest/MortonIndex.hpp"
-
 #include "primal/NumericArray.hpp"
 #include "primal/Point.hpp"
+#include "primal/MortonIndex.hpp"
 
 
 namespace axom {  
@@ -31,7 +30,7 @@ namespace quest {
                BROOD_BITMASK = (1 << DIM) -1
         };
 
-        typedef Mortonizer<typename GridPt::CoordType, MortonIndexType, DIM> MortonizerType;
+        typedef primal::Mortonizer<typename GridPt::CoordType, MortonIndexType, DIM> MortonizerType;
 
         /**
         * \brief Constructor for a brood offset relative to the given grid point pt

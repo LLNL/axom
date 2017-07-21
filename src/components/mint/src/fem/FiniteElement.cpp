@@ -176,7 +176,7 @@ int FiniteElement::computeReferenceCoords( const double* xp,
     return INVERSE_MAP_FAILED;
   }
 
-  int rc = ( this->inside(xr,TOL) )? INSIDE_ELEMENT : OUTSIDE_ELEMENT;
+  int rc = ( this->inReferenceElement(xr,TOL) )? INSIDE_ELEMENT:OUTSIDE_ELEMENT;
 
   return rc;
 }
@@ -302,23 +302,30 @@ void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
 }
 
 //------------------------------------------------------------------------------
-bool FiniteElement::inside( const double* xi, double TOL )
+bool FiniteElement::inReferenceElement( const double* xi, double TOL )
 {
   SLIC_ASSERT( xi != AXOM_NULLPTR );
 
   const double LTOL = m_reference_min - TOL;
   const double HTOL = m_reference_max + TOL;
 
-  this->evaluateShapeFunctions( xi, m_phi );
-
   bool is_inside = true;
-  double sum = 0.0;
-  for ( int i=0; is_inside && (i < m_numdofs); ++i ) {
-     sum += m_phi[ i ];
-     is_inside = is_inside && ( m_phi[i] > LTOL ) && ( m_phi[i] < HTOL );
-  }
 
-  is_inside = is_inside && utilities::isNearlyEqual(sum,1.0,TOL);
+  switch ( m_ctype ) {
+    case MINT_TRIANGLE:
+    case MINT_TET:
+    case MINT_PRISM:
+    case MINT_PYRAMID:
+         this->evaluateShapeFunctions( xi, m_phi );
+         for ( int i=0; is_inside && (i < m_numdofs); ++i ) {
+            is_inside = is_inside && (m_phi[i] > LTOL) && (m_phi[i] < HTOL);
+         }
+         break;
+    default:
+         for ( int i=0; is_inside && i < m_dim; ++i ) {
+            is_inside = is_inside && ( xi[i] > LTOL ) && ( xi[i] < HTOL );
+         }
+  } // END switch
 
   return is_inside;
 }

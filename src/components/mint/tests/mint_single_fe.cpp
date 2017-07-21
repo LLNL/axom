@@ -34,7 +34,7 @@
 // C/C++ includes
 #include <cmath>   // for sin(), cos(), sqrt(), etc.
 
-//#define MINT_FEM_DEBUG
+#define MINT_FEM_DEBUG
 
 using namespace axom;
 
@@ -926,6 +926,9 @@ TEST( mint_single_fe, check_fe_shape_function )
   check_shape< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_shape< MINT_LAGRANGE_BASIS, MINT_HEX27 > ( );
 }
 
 //------------------------------------------------------------------------------
@@ -937,6 +940,9 @@ TEST( mint_single_fe, check_fe_jacobian )
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  check_jacobian< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -948,6 +954,9 @@ TEST( mint_single_fe, check_fe_forward_map )
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
+
+  check_forward_map< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -959,6 +968,9 @@ TEST( mint_single_fe, check_fe_inverse_map )
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
+
+  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -970,6 +982,9 @@ TEST( mint_single_fe, check_fe_point_in_cell )
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  point_in_cell< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX27 >( 1.e-7 );
 }
 
 //------------------------------------------------------------------------------
@@ -981,6 +996,9 @@ TEST( mint_single_fe, check_fe_interp )
   check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >( 1.e-24 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >( 1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-12 );
+
+  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( 1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX27 >( 1.e-24 );
 }
 
 //------------------------------------------------------------------------------
