@@ -37,7 +37,8 @@ bool isLeq(double x, double y, double EPS=1.0e-12);
 bool isLpeq(double x, double y, const bool includeEqual = false,
             double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
-bool isGpeq(double x, double y, const bool includeEqual = false, double EPS=1.0e-12);
+bool isGpeq(double x, double y, const bool includeEqual = false,
+            double EPS=1.0e-12);
 bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
 bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
 bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);

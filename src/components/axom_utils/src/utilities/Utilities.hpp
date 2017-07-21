@@ -63,7 +63,7 @@ namespace utilities {
   }
 
   /*!
-   * \brief Clamps an input val to a given range.
+   * \brief Clamps an input value to a given range.
    * \param [in] val  The value to clamp
    * \param [in] lower The lower range
    * \param [in] upper The upper range

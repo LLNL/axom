@@ -22,7 +22,6 @@
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 
-
 namespace axom {
 namespace primal {
 
@@ -648,7 +647,7 @@ NumericArray< T,SIZE >::clamp( const T& lowerVal, const T& upperVal )
 
   for ( int i=0; i < SIZE; ++i ) {
     m_components[ i ] =
-        axom::utilities::clampVal(m_components[ i ],lowerVal, upperVal);
+      axom::utilities::clampVal(m_components[ i ],lowerVal, upperVal);
   }
 
   return *this;
