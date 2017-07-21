@@ -607,9 +607,13 @@ namespace detail {
    * \note Workaround for warnings about constant expressions in slic macros.
    ****************************************************************************
    */
-  const struct {
+  struct FalseType 
+  {
+    FalseType() {}
     inline operator bool() const { return false; }
-  } false_value;
+  };
+  
+  static const FalseType false_value;
 
 } /* namespace detail */
 
