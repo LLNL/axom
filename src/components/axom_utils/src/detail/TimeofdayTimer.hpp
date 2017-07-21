@@ -40,6 +40,7 @@ namespace detail {
    */
   class TimeofdayTimer
   {
+  private:
     typedef timeval                             TimeStruct;
     typedef long int                            TimeDiff;
 

@@ -42,6 +42,7 @@ namespace detail {
    */
   class ChronoTimer
   {
+  private:
     typedef std::chrono::high_resolution_clock        ClockType;
     typedef std::chrono::time_point<ClockType>        TimeStruct;
     typedef std::chrono::duration<double>             TimeDiff;

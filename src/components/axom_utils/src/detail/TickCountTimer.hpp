@@ -45,6 +45,7 @@ namespace detail {
   */
   class TickCountTimer
   {
+  private:
      typedef ULONGLONG                         TimeStruct;
      typedef long int                            TimeDiff;
  
