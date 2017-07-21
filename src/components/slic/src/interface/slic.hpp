@@ -604,10 +604,10 @@ namespace detail {
    ****************************************************************************
    * Variable of a type that evaluates as false.
    *
-   * \note Elides compiler warnings about constant expressions in Axom macros.
+   * \note Workaround for warnings about constant expressions in slic macros.
    ****************************************************************************
    */
-  static struct {
+  const struct {
     inline operator bool() const { return false; }
   } false_value;
 
