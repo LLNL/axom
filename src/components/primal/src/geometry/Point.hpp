@@ -107,7 +107,7 @@ public:
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
-  Point(T* vals, int sz = NDIMS): m_components(vals,sz) { }
+  Point(const T* vals, int sz = NDIMS): m_components(vals,sz) { }
 
   /*!
    *****************************************************************************

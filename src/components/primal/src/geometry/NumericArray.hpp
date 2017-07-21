@@ -262,7 +262,7 @@ public:
    * \note If sz is greater than SIZE, we only take the first SIZE values.
    *****************************************************************************
    */
-  NumericArray( T* vals, int sz = SIZE);
+  NumericArray(const T* vals, int sz = SIZE);
 
   /*!
    *****************************************************************************
@@ -490,7 +490,7 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
   SLIC_ASSERT( SIZE >= 1 );
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
-  const int nvals = ::clampVal(sz, 0, SIZE);
+  const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
   std::fill( m_components, m_components+nvals, val );
 
   // Fill any remaining coordinates with zero
@@ -501,7 +501,7 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-NumericArray< T, SIZE >::NumericArray(T* vals, int sz)
+NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
 {
   SLIC_ASSERT( SIZE >= 1 );
 
