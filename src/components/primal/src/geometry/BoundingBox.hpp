@@ -55,7 +55,7 @@ bool operator!=( const BoundingBox< T, NDIMS > & lhs,
  */
 template < typename T,int NDIMS >
 std::ostream& operator<<( std::ostream & os,
-                          const BoundingBox< T,NDIMS >& pt );
+                          const BoundingBox< T,NDIMS >& bb );
 
 ///@}
 
@@ -790,8 +790,7 @@ bool operator!=( const BoundingBox< T, NDIMS >& lhs,
 template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const BoundingBox< T,NDIMS > & bb)
 {
-  bb.print(os);
-  return os;
+  return bb.print(os);
 }
 
 } /* namespace primal */

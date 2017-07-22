@@ -43,7 +43,7 @@
 #include "slam/Utilities.hpp"
 #include "slam/FieldRegistry.hpp"
 
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 
 
 namespace slamUnstructuredHex {

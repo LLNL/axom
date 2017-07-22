@@ -16,8 +16,8 @@ from llnl_lc_uberenv_install_tools import *
 
 def main():
     builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"
-    specs = ["%gcc@4.9.3~devtools~python~lua",
-             "%clang@coral~devtools~python~lua"]
+    specs = ["%gcc@4.9.3",
+             "%clang@coral"]
     return full_build_and_test_of_tpls(builds_dir,specs)
 
 if __name__ == "__main__":

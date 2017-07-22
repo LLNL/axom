@@ -43,8 +43,6 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "hasValue: called without an Attribute");
     return false;
   }
 
@@ -64,7 +62,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
 
   Node & value = (*m_values)[iattr];
   
-  if (value.schema().dtype().is_empty())
+  if (isEmpty(value))
   {
     return false;
   }
@@ -86,8 +84,6 @@ bool AttrValues::setToDefault( const Attribute * attr )
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "setDefault: called without an Attribute");
     return false;
   }
 
@@ -120,21 +116,12 @@ bool AttrValues::setToDefault( const Attribute * attr )
  *
  *************************************************************************
  */
-bool AttrValues::createNode(const Attribute * attr)
+bool AttrValues::createNode(IndexType iattr)
 {
-  if (attr == AXOM_NULLPTR)
-  {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "createNode: called without an Attribute");
-    return false;
-  }
-
   if (m_values == AXOM_NULLPTR)
   {
     m_values = new(std::nothrow) Values( );
   }
-
-  IndexType iattr = attr->getIndex();
 
   if ((size_t) iattr >= m_values->size())
   {
@@ -152,19 +139,12 @@ bool AttrValues::createNode(const Attribute * attr)
 /*
  *************************************************************************
  *
- * Return attribute.
+ * Return a scalar attribute value.
  *
  *************************************************************************
  */
 Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
 {
-  if (attr == AXOM_NULLPTR)
-  {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getScalar: called without an Attribute");
-    return getEmptyNodeRef().value();
-  }
-
   const Node & node = getValueNodeRef(attr);
   return node.value();
 }
@@ -172,7 +152,9 @@ Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
 /*
  *************************************************************************
  *
- * Return attribute.
+ * Return a string attribute value.
+ *
+ * The caller must ensure that attr is not NULL.
  *
  *************************************************************************
  */
@@ -180,8 +162,6 @@ const char * AttrValues::getString( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getString: called without an Attribute");
     return AXOM_NULLPTR;
   }
 
@@ -211,8 +191,6 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
-    SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getValueNodeRef: called without an Attribute");
     return getEmptyNodeRef();
   }
 
@@ -232,12 +210,68 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
 
   Node & value = (*m_values)[iattr];
   
-  if (value.schema().dtype().is_empty())
+  if (isEmpty(value))
   {
     return attr->getDefaultNodeRef();
   }
 
   return value;
+}
+
+/*
+ *************************************************************************
+ * Return first valid Attribute index for a set Attribute.
+ * (i.e., smallest index over all Attributes).
+ *
+ * sidre::InvalidIndex is returned if DataStore has no Attributes.
+ *************************************************************************
+ */
+IndexType AttrValues::getFirstValidAttrValueIndex() const
+{
+  if (m_values == AXOM_NULLPTR)
+  {
+    // No attributes have been set in this View.
+    return InvalidIndex;
+  }
+
+  for(size_t iattr = 0; iattr < m_values->size(); ++iattr)
+  {
+    // Find first, non-empty attribute.
+    Node & value = (*m_values)[iattr];
+    if (! isEmpty(value))
+    {
+      return iattr;
+    }
+  }
+
+  return InvalidIndex;
+}
+
+/*
+ *************************************************************************
+ * Return next valid Attribute index for a set Attribute after given
+ * index (i.e., smallest index over all Attribute indices larger than
+ * given one).
+ *
+ * sidre::InvalidIndex is returned if there is no valid index greater
+ * than given one.
+ * getNextAttrValueIndex(InvalidIndex) returns InvalidIndex.
+ *************************************************************************
+ */
+IndexType AttrValues::getNextValidAttrValueIndex(IndexType idx) const
+{
+  if (idx == InvalidIndex)
+  {
+    return InvalidIndex;
+  }
+
+  idx++;
+  while ( static_cast<unsigned>(idx) < m_values->size() &&
+          isEmpty((*m_values)[idx]))
+  {
+    idx++;
+  }
+  return ( (static_cast<unsigned>(idx) < m_values->size()) ? idx : InvalidIndex );
 }
 
 /*
