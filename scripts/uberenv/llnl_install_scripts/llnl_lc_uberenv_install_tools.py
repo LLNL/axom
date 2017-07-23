@@ -199,7 +199,7 @@ def build_and_test_host_config(test_root,host_config):
         print "[ERROR: Build for host-config: %s failed]" % host_config
         return res
 
-    tst_output_file = pjoin(build_dir,"output.log.make.test.txt"),
+    tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
     print "[starting unit tests]"
     print "[log file: %s]" % tst_output_file
 
