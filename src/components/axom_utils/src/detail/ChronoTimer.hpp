@@ -32,8 +32,9 @@ namespace axom {
 namespace utilities {
 namespace detail {
 
-  /**
+  /*!
    * \class
+   *
    * \brief A simple timer utility based on the C++11 chrono library
    * \note This is a simple class without any checks to ensure proper usage of the timer.
    *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
@@ -50,38 +51,39 @@ namespace detail {
     typedef std::chrono::duration<double, std::micro> MicroTimeDiff;
 
   public:
-    /**  \brief Constructor for a ChronoTimer instance */
+    /*!  \brief Constructor for a ChronoTimer instance */
     ChronoTimer() : m_startTime( TimeStruct() ), m_stopTime( TimeStruct() ) {}
 
-    /**  \brief Sets the start time of the timer */
+    /*!  \brief Sets the start time of the timer */
     void start() { m_startTime = ClockType::now(); }
 
-    /**  \brief Sets the stop time of the timer */
+    /*!  \brief Sets the stop time of the timer */
     void stop()  { m_stopTime = ClockType::now(); }
 
-    /**  \brief Resets the timer */
+    /*!  \brief Resets the timer */
     void reset() { m_startTime = m_stopTime = TimeStruct(); }
 
-    /**  \brief Returns the number of seconds between start() and stop() */
+    /*!  \brief Returns the number of seconds between start() and stop() */
     double elapsedTimeInSec() const
     {
-        return clockDiff().count();
+      return clockDiff().count();
     }
 
-    /**  \brief Returns the number of milliseconds between start() and stop() */
+    /*!  \brief Returns the number of milliseconds between start() and stop() */
     double elapsedTimeInMilliSec() const
     {
-        return std::chrono::duration_cast< MilliTimeDiff >( clockDiff() ).count();
+      return std::chrono::duration_cast< MilliTimeDiff >( clockDiff() ).count();
     }
 
-    /**  \brief Returns the number of microseconds between start() and stop() */
+    /*! \brief Returns the number of microseconds between start() and stop() */
     double elapsedTimeInMicroSec() const
     {
-        return std::chrono::duration_cast< MicroTimeDiff >( clockDiff() ).count();
+      return std::chrono::duration_cast< MicroTimeDiff >( clockDiff() ).count();
     }
 
   private:
-    /**  \brief Computes the difference between start() and stop() */
+
+    /*! \brief Computes the difference between start() and stop() */
     TimeDiff clockDiff() const { return m_stopTime - m_startTime;}
 
   private:

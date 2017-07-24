@@ -30,7 +30,7 @@ namespace axom {
 namespace utilities {
 namespace detail {
 
-  /**
+  /*!
    * \class
    * \brief A simple timer utility based on the glibc gettimeofday() function
    * \note This is a simple class without any checks to ensure proper usage of the timer.
@@ -49,42 +49,42 @@ namespace detail {
             TIMER_MILLION  = 1000000 };
 
   public:
-    /** \brief Constructor for TimeOfDayTimer instance */
+    /*! \brief Constructor for TimeOfDayTimer instance */
     TimeofdayTimer() { reset(); }
 
-    /** \brief Sets the start time of the timer */
+    /*! \brief Sets the start time of the timer */
     void start() { gettimeofday(&m_startTime, AXOM_NULLPTR); }
 
-    /** \brief Sets the stop time of the timer */
+    /*! \brief Sets the stop time of the timer */
     void stop()  { gettimeofday(&m_stopTime, AXOM_NULLPTR); }
 
-    /**  \brief Resets the timer */
+    /*!  \brief Resets the timer */
     void reset()
     {
         m_startTime = (struct timeval){0,0};
         m_stopTime =  (struct timeval){0,0};
     }
 
-    /** \brief Returns the number of seconds between start() and stop() */
+    /*! \brief Returns the number of seconds between start() and stop() */
     double elapsedTimeInSec() const
     {
         return clockDiff() / static_cast<double>(TIMER_MILLION);
     }
 
-    /** \brief Returns the number of milliseconds between start() and stop() */
+    /*! \brief Returns the number of milliseconds between start() and stop() */
     double elapsedTimeInMilliSec() const
     {
         return clockDiff() / static_cast<double>(TIMER_THOUSAND);
     }
 
-    /** \brief Returns the number of microseconds between start() and stop() */
+    /*! \brief Returns the number of microseconds between start() and stop() */
     double elapsedTimeInMicroSec() const
     {
         return clockDiff() / static_cast<double>(TIMER_ONE);
     }
 
   private:
-    /** \brief Computes the time difference between start() and stop() */
+    /*! \brief Computes the time difference between start() and stop() */
     TimeDiff clockDiff() const
     {
         const TimeDiff sDiff = m_stopTime.tv_sec - m_startTime.tv_sec;
