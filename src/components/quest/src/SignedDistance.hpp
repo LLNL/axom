@@ -66,35 +66,28 @@ private:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Creates a SignedDistance instance for queries on the given mesh.
    * \param [in] surfaceMesh user-supplied surface mesh.
    * \param [in] maxObjects max number of objects for spatial decomposition.
    * \param [in] maxLevels max levels for spatial decomposition (optional).
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != AXOM_NULLPTR
-   *****************************************************************************
    */
   SignedDistance( axom::mint::Mesh* surfaceMesh, int maxObjects, int maxLevels=5 );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~SignedDistance();
 
   /*!
-   *****************************************************************************
    * \brief Computes the distance of the given point to the surface mesh.
    * \param [in] queryPnt user-supplied point.
    * \return minDist the signed minimum distance to the surface mesh.
-   *****************************************************************************
    */
   double computeDistance( const PointType& queryPnt ) const;
 
   /*!
-   *****************************************************************************
    * \brief Computes the distance of the given point to the surface mesh.
    * \note This is an overloaded method that also returns the BVH buckets and
    *  corresponding triangles used to calculate the signed distance.
@@ -107,7 +100,6 @@ public:
    * \note The variables 'triangles'/'my_triangles' are relevant in debug mode.
    *
    * \return minDist the minimum signed distance to the surface mesh.
-   *****************************************************************************
    */
   double computeDistance( const PointType& queryPnt,
                           std::vector< int >& bvh_buckets,
@@ -116,29 +108,24 @@ public:
                           PointType& closest_pt ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns a const reference to the underlying bucket tree.
    * \return ptr pointer to the underlying bucket tree
    * \post ptr != AXOM_NULLPTR
-   *****************************************************************************
    */
   const BVHTreeType* getBVHTree( ) const { return m_bvhTree; };
 
 private:
 
   /*!
-   *****************************************************************************
    * \brief Computes the bounding box of the given cell on the surface mesh.
    * \param [in] icell the index of the cell on the surface mesh.
    * \return box bounding box of the cell.
    * \pre m_surfaceMesh != AXOM_NULLPTR
    * \pre icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells()
-   *****************************************************************************
    */
   BoxType getCellBoundingBox( int icell );
 
   /*!
-   *****************************************************************************
    * \brief Searches through the list of candidates surface elements and
    *  computes the minimum squared distance and closest point to a surface
    *  element.
@@ -162,7 +149,6 @@ private:
    * \post index >= 0 && index < nelems
    *
    * \return dist minimum squared distance to the surface.
-   *****************************************************************************
    */
   double getMinSqDistance( const PointType& pt,
                            const int* candidates,
@@ -170,7 +156,6 @@ private:
                            cpt_data* cpt) const;
 
   /*!
-   *****************************************************************************
    * \brief Computes the sign of the given query point given the closest point
    *  and surface element on the surface mesh and neighboring surface elements.
    *
@@ -184,14 +169,12 @@ private:
    * \pre surface_elements != AXOM_NULLPTR
    * \pre closest_pts != AXOM_NULLPTR
    * \pre clocs != AXOM_NULLPTR
-   *****************************************************************************
    */
   double computeSign( const PointType& pt,
                       const cpt_data* cpt,
                       std::vector< int >& my_elements ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns a sorted list of the candidate surface elements.
    *
    * \param [in] pt the query point.
@@ -209,7 +192,6 @@ private:
    *  \pre m_surfaceMesh != AXOM_NULLPTR
    *  \pre surface_elements != AXOM_NULLPTR
    *  \pre indx != AXOM_NULLPTR
-   *****************************************************************************
    */
   void getCandidateSurfaceElements( const PointType& pt,
                                     const int* bins,
@@ -217,20 +199,16 @@ private:
                                     std::vector< int >& candidates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the maximum distance between a given point and box.
    * \param [in] b user-supplied axis-aligned bounding box.
    * \param [in] pt user-supplied point.
    * \return d maximum distance from a point to a box.
-   *****************************************************************************
    */
   double getMaxSqDistance( const BoxType& b, const PointType& pt ) const;
 
   /*!
-   *****************************************************************************
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent its use from the calling application.
-   *****************************************************************************
    */
   SignedDistance(): m_surfaceMesh(AXOM_NULLPTR), m_bvhTree(AXOM_NULLPTR) { };
 

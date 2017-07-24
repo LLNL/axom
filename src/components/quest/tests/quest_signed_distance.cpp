@@ -46,11 +46,9 @@ namespace detail
 {
 
 /*!
- *******************************************************************************
  * \brief Gets a surface mesh instance for the sphere.
  * \param [in] mesh pointer to the mesh instance.
  * \pre mesh != AXOM_NULLPTR
- *******************************************************************************
  */
 void getMesh( TriangleMesh* mesh )
 {
@@ -149,11 +147,9 @@ void getMesh( TriangleMesh* mesh )
 }
 
 /*!
- *******************************************************************************
  * \brief Returns the bounding box of the mesh.
  * \param [in] mesh pointer to the mesh instance.
  * \return bb bounding box of the mesh
- *******************************************************************************
  */
 BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
@@ -172,11 +168,9 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 }
 
 /*!
- *******************************************************************************
  * \brief Generates a uniform mesh surrounding the given triangle mesh.
  * \param [in] mesh pointer to the input mesh.
  * \param [in] umesh pointer to the uniform mesh;
- *******************************************************************************
  */
 void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
 {

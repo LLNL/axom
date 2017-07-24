@@ -310,8 +310,8 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
     // Retrieve the triangle at index z and construct a bounding box around it
     SpatialBoundingBox triBB2;
     t1 = getMeshTriangle(z,  surface_mesh);
- 
-    if (t1.degenerate()) { 
+
+    if (t1.degenerate()) {
       degenerate.push_back(z);
       continue;
     }
@@ -329,11 +329,11 @@ std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
     const std::vector<int> binsToCheck = ugrid.getBinsForBbox(triBB2);
     for (size_t curbin = 0; curbin < binsToCheck.size(); ++curbin) {
       std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
-      neighborTriangles.insert(neighborTriangles.end(), 
+      neighborTriangles.insert(neighborTriangles.end(),
         ntlist.begin(), ntlist.end());
     }
     std::sort(neighborTriangles.begin(), neighborTriangles.end());
-    std::vector<int>::iterator nend = 
+    std::vector<int>::iterator nend =
       std::unique(neighborTriangles.begin(), neighborTriangles.end());
     std::vector<int>::iterator nit = neighborTriangles.begin();
 
@@ -383,7 +383,7 @@ bool writeCollisions(const std::vector<TrianglePair> & c,
 }
 
 
-/***************************************************************************
+/*!
  * The mesh tester checks a triangulated surface mesh for several problems.
  *
  * Currently the mesh tester checks for intersecting triangles.  This is
@@ -394,7 +394,6 @@ bool writeCollisions(const std::vector<TrianglePair> & c,
  * triangles in all the bins the triangle's bounding box falls into.
  *
  * Currently, the mesh tester works only with Triangle meshes.
- ***************************************************************************
  */
 
 int main( int argc, char** argv )
