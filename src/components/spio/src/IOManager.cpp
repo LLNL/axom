@@ -130,7 +130,7 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
     root_name = m_scr_checkpoint_dir + "/" + root_name;
   }
 
-  if (protocol == "sidre_hdf5" || protocol == "scr_hdf5") {
+  if (protocol == "sidre_hdf5") {
     std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
@@ -359,13 +359,13 @@ void IOManager::createRootFile(const std::string& file_base,
 
   conduit::Node n;
   std::string root_file_name;
-  std::string conduit_protocol; 
+  std::string conduit_protocol;
+  std::string local_file_base;
 
-  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5" || protocol == "scr_hdf5") {
+  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {
 
     n["number_of_files"] = num_files;
-    if (protocol == "sidre_hdf5" || protocol == "scr_hdf5") {
-      std::string local_file_base;
+    if (protocol == "sidre_hdf5") {
       std::string next;
       std::string slash = "/";
       conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
@@ -407,6 +407,10 @@ void IOManager::createRootFile(const std::string& file_base,
   } else {
 #ifdef AXOM_USE_SCR
 //    SCR_Start_checkpoint();
+
+    if (protocol == "sidre_hdf5") {
+      n["file_pattern"] = local_file_base + "_" + "%07d.hdf5"; 
+    }
 
     std::string root_name = root_file_name;
     char checkpoint_file[256];
