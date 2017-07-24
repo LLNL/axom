@@ -14,13 +14,11 @@
 #include <string>
 
 /*!
- *******************************************************************************
  * \enum FEBasisTypes
  *
  * \brief Enumerates the different types of supported Finite Element basis.
  *
  * \see FEBasis
- *******************************************************************************
  */
 enum FEBasisTypes {
   MINT_UNDEFINED_BASIS=-1, /*!< Undefined basis type */
@@ -33,14 +31,12 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Array of strings corresponding to each Finite Element Basis.
  *
  * \note The length of the array is MINT_NUM_BASIS
  *
  * \note It is used to get a string representation for a Finite Element basis,
  *  e.g., for, debugging etc.
- *******************************************************************************
  */
 static const std::string basis_name[] = {
    "LAGRANGE_BASIS",

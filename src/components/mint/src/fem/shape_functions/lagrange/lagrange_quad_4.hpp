@@ -23,7 +23,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for Bilinear Quadrilateral.
  *
  * \verbatim
@@ -40,7 +39,6 @@ namespace mint {
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_QUAD > : public ShapeFunction< Lagrange< MINT_QUAD > >

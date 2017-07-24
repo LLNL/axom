@@ -18,13 +18,11 @@
 #include "mint/FEBasisTypes.hpp"
 
 /*!
- *******************************************************************************
  * \def REGISTER_LAGRANGE_BASIS( C )
  *
  * \brief Macro used to register a new Lagrange Finite Element. This macro
  *  expands to a specialization of the FEBasis trait class that binds a
  *  Finite Element basis to a cell type.
- *******************************************************************************
  */
 #define REGISTER_LAGRANGE_BASIS( C )                                          \
 template < >                                                                  \
@@ -37,7 +35,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief FEBasis is a traits class that binds a Finite Element basis type,
  *  e.g., MINT_LAGRANGE_BASIS, to a particular cell type, e.g., MINT_QUAD.
  *
@@ -45,7 +42,6 @@ namespace mint {
  *
  * \see ShapeFunction
  * \see FEBasisTypes
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 struct FEBasis { };

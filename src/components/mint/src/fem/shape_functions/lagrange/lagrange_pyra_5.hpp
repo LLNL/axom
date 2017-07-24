@@ -23,7 +23,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the Linear Pyramnid
  *
  * \verbatim
@@ -45,7 +44,6 @@ namespace mint {
  *  apex in which case the isoparametric mapping will fail.
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_PYRAMID > :

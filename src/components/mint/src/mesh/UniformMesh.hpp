@@ -22,13 +22,11 @@ class UniformMesh:public StructuredMesh
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructs a uniform mesh defined by the origin, spacing and extent.
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] origin the origin coordinates of the mesh
    * \param [in] h the spacing in each dimension.
    * \param [in] ext the extent of this mesh instance.
-   *****************************************************************************
    */
   UniformMesh( int dimension,
                const double origin[3],
@@ -36,7 +34,6 @@ public:
                const int ext[6] );
 
   /*!
-   *****************************************************************************
    * \brief Constructs a uniform mesh defined by the origin, spacing and extent.
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] origin the origin coordinates of the mesh
@@ -44,7 +41,6 @@ public:
    * \param [in] ext the extent of this mesh instance.
    * \param [in] blockId the block ID of this mesh.
    * \param [in] partitionId the partition ID of this mesh.
-   *****************************************************************************
    */
   UniformMesh( int dimension,
                const double origin[3],
@@ -54,76 +50,61 @@ public:
                int partitionId );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~UniformMesh();
 
   /*!
-   *****************************************************************************
    * \brief Returns the origin of the Uniform Mesh
    * \param [out] origin user-supplied buffer to store the mesh origin.
-   *****************************************************************************
    */
   void getOrigin( double origin[3] ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the spacing of the Uniform Mesh.
    * \param [out] h user-supplied buffer to store the spacing of the mesh.
-   *****************************************************************************
    */
   void getSpacing( double h[3] ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
-   *****************************************************************************
    */
   virtual void getNode( int nodeIdx, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, int k, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate of the given node.
    * \param [in] nodeIdx index of the node in query.
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int nodeIdx, int idim  ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -131,12 +112,10 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int idim ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -145,7 +124,6 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int k, int idim ) const;
 
@@ -154,10 +132,8 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \note Made private to prevent users from calling it.
-   *****************************************************************************
    */
   UniformMesh();
 
