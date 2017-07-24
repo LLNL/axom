@@ -32,7 +32,6 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \class UniformGrid
  *
  * \brief A spatial index defined by origin, spacing, and resolution.
@@ -54,7 +53,6 @@ namespace primal {
  * of objects (each with its own bounding box).  The insert operation puts the
  * object into some of the bins.  The user may retrieve the bin index of any
  * point, then retrieve any objects associated with the bin at that index.
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 class UniformGrid
@@ -76,7 +74,6 @@ private:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructor specifying bounding box (min and max points) and
    *        number of bins.
    *
@@ -89,7 +86,6 @@ public:
    * x-dimension and from 0 up to 4 divided into four bins in the y dimension.
    * The points in the set {(2., y), (x, 4.)} are not included in the
    * UniformGrid.
-   *****************************************************************************
    */
   UniformGrid(const double * lower_bound, const double * upper_bound,
               const int * res);
@@ -98,7 +94,6 @@ public:
   ~UniformGrid();
 
   /*!
-   *****************************************************************************
    * \brief Returns the index of the bin containing the specified point.
    *
    * If the specified point is outside the grid, the function returns a
@@ -108,7 +103,6 @@ public:
    *     getBinIndex(PointType::makePoint(10., 10.))
    * will return INVALID_BIN_INDEX,
    * \param [in] pt The point to query.
-   *****************************************************************************
    */
   int getBinIndex(const PointType & pt) const;
 
@@ -116,37 +110,30 @@ public:
   int getNumBins() const;
 
   /*!
-   *****************************************************************************
    * \brief Returns whether the bin specified by index is empty.
    *
    * Returns true if index is invalid.
    * \param [in] index The index of the bin to test.
-   *****************************************************************************
    */
   bool isBinEmpty(int index) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the contents of the bin indicated by index.
    *
    * It is an error if index is invalid.
    * \param [in] index The index of the bin to retrieve.
-   *****************************************************************************
    */
   std::vector< T >& getBinContents(int index);
 
   /*!
-   *****************************************************************************
    * \brief Returns the contents of the bin indicated by index.
    *
    * It is an error if index is invalid.  This is the const version.
    * \param [in] index The index of the bin to retrieve.
-   *****************************************************************************
    */
   const std::vector< T >& getBinContents(int index) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns true if index is valid; that is, refers to a valid bin.
    *
    * The region of space indexed by this UniformGrid is divided into bins.
@@ -154,52 +141,43 @@ public:
    * equal to zero and less than or equal to the greatest bin index, this
    * method will return true.  Otherwise, the integer does not refer to any
    * bin and this method will return false.
-   *****************************************************************************
    */
   bool isValidIndex(int index) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the indices of the bins for a given bounding box.
    *
    * This method returns the indices of the bins that intersect BB.  Any part
    * of BB that falls outside this UniformGrid is disregarded.  If BB falls
    * completely outside this UniformGrid, this method returns an empty list.
-   *****************************************************************************
    */
   const std::vector< int > getBinsForBbox(const BoxType& BB) const;
 
   /*!
-   *****************************************************************************
    * \brief Clears the bin indicated by index.
    *
    * No-op if index is invalid.
    * \param [in] index The index of the bin to clear.
-   *****************************************************************************
    */
   void clear(int index);
 
   /*!
-   *****************************************************************************
    * \brief Inserts obj into each bin overlapped by BB.
    *
    * No error is signalled if BB falls partly or wholly outside the UniformGrid.
    *
    * \param [in] BB The region in which to record obj
    * \param [in] obj The object to insert into any bins overlapped by BB
-   *****************************************************************************
    */
   void insert(const BoxType& BB, const T& obj);
 
   /*!
-   *****************************************************************************
    * \brief A special value indicating any location not in the UniformGrid.
    *
    * Returned by getBinIndex() if that function is passed an exterior point.
    * An error is thrown if getBinContents() is passed INVALID_BIN_INDEX.
    * clear(INVALID_BIN_INDEX) is a no-op; isBinEmpty(INVALID_BIN_INDEX) returns
    * true.
-   *****************************************************************************
    */
   enum {
     INVALID_BIN_INDEX = -1

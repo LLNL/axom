@@ -9,11 +9,9 @@
  */
 
 /*!
- *******************************************************************************
  * \file Polygon.hpp
  *
  * \brief A Polygon primitive for primal
- *******************************************************************************
  */
 
 #ifndef PRIMAL_POLYGON_HPP_
@@ -38,7 +36,6 @@ template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
 
 /*!
- *******************************************************************************
  * \class Polygon
  *
  * \brief Represents a polygon defined by an array of points
@@ -46,7 +43,6 @@ std::ostream& operator<<(std::ostream & os, const Polygon< T,NDIMS > & poly);
  * \tparam NDIMS the number of dimensions
  * \note The polygon vertices should be ordered in a counter clockwise
  *       orientation with respect to the polygon's desired normal vector
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 class Polygon
@@ -64,14 +60,12 @@ public:
   Polygon() {}
 
   /*!
-   ********************************************************************************
    * \brief Constructor for an empty polygon that reserves space for
    *    the given number of vertices
    *
    * \param [in] numExpectedVerts The number of vertices for which to reserve space
    * \pre numExpectedVerts is not negative
    *
-   ********************************************************************************
    */
   Polygon(int numExpectedVerts)
   {
@@ -100,12 +94,10 @@ public:
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
   /*!
-   *******************************************************************************
    * \brief Computes the centroid as the average of the polygon's vertex positions
    *
    * \return The centroid of the polygon's vertices
    * \pre  polygon.isValid() is true
-   *******************************************************************************
    */
   PointType centroid() const
   {
@@ -122,12 +114,10 @@ public:
   }
 
   /*!
-   *******************************************************************************
    * \brief Simple formatted print of a polygon instance
    *
    * \param os The output stream to write to
    * \return A reference to the modified ostream
-   *******************************************************************************
    */
   std::ostream& print(std::ostream& os) const
   {
@@ -146,12 +136,10 @@ public:
   }
 
   /*!
-   *******************************************************************************
    * \brief Simple check for validity of a polygon
    *
    * Initial check is that the polygon has three or more vertices
    * \return True, if the polygon is valid, False otherwise
-   *******************************************************************************
    */
   bool isValid() const
   {

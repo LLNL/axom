@@ -9,13 +9,11 @@
  */
 
 /*!
- *******************************************************************************
  * \file
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the orientation of a given point to another geometric entity.
  *
- *******************************************************************************
  */
 
 #ifndef ORIENTATION_HPP_
@@ -34,9 +32,7 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \brief Enumerates possible return values for orientation methods
- *******************************************************************************
  */
 enum OrientedSide {
   ON_BOUNDARY,         /*!< point is on boundary of the given primitive      */
@@ -45,7 +41,6 @@ enum OrientedSide {
 };
 
 /*!
- *******************************************************************************
  * \brief Computes the orientation of the given point, p, with respect to a
  *  supplied oriented triangle.
  * \param [in] p the query point.
@@ -57,7 +52,6 @@ enum OrientedSide {
  *  <li> ON_POSITIVE_SIDE </li>
  *  <li> ON_NEGATIVE_SIDE </li>
  * </ul>
- *******************************************************************************
  */
 template < typename T >
 inline
@@ -93,7 +87,6 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the orientation of the given point, p, with respect to a
  *  supplied oriented segment.
  * \param [in] p the query point.
@@ -111,7 +104,6 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
  *       left of the directed segment.
  *  </li>
  * </ul>
- *******************************************************************************
  */
 template < typename T >
 inline
