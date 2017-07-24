@@ -259,6 +259,7 @@ def build_and_test_host_configs(prefix):
             return 1
         else:
             log_success(prefix,"uberenv/spack tpl build and test succeeded for host configs: %s" % ok)
+            return 0
     else:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
         return 1
