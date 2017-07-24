@@ -9,13 +9,8 @@
  */
 
 /*!
- *******************************************************************************
  * \file SynchronizedStream.hpp
  *
- * \date May 7, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 #ifndef SYNCHRONIZEDSTREAM_HPP_
@@ -36,7 +31,6 @@ namespace axom {
 namespace slic {
 
 /*!
- *******************************************************************************
  * \class SynchronizedStream
  *
  * \brief A concrete instance of LogStream that dumps messages to a C++
@@ -50,7 +44,6 @@ namespace slic {
  * \warning The intent of this class is to be used primarily with std::cout,
  *  std::cerr, etc. It is suggested that applications do not use this class
  *  with an std::ofstream object.
- *******************************************************************************
  */
 class SynchronizedStream:public LogStream
 {
@@ -62,7 +55,6 @@ public:
   virtual ~SynchronizedStream();
 
   /*!
-   *****************************************************************************
    * \brief Appends the given message to the stream.
    *
    * \param [in] msgLevel the level of the message.
@@ -76,7 +68,6 @@ public:
    * \note This method doesn't put anything to the console. Instead the
    *  messages are cached locally to each ranks and are dumped to the console
    *  in rank order when flush is called.
-   *****************************************************************************
    */
   virtual void append( message::Level msgLevel,
                        const std::string& message,
@@ -86,9 +77,7 @@ public:
                        bool filter_duplicates );
 
   /*!
-   *****************************************************************************
    * \brief Dumps the messages to the console in rank-order.
-   *****************************************************************************
    */
   virtual void flush();
 
@@ -106,11 +95,9 @@ private:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Default constructor. Made private to prevent applications from
    *  using it. Instead the constructor that passes the underlying MPI comm
    *  should be used.
-   *****************************************************************************
    */
   SynchronizedStream(): m_comm(MPI_COMM_NULL),
     m_cache( static_cast< MessageCache* >(AXOM_NULLPTR) ),
