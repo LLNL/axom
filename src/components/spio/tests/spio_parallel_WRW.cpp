@@ -22,6 +22,7 @@
 #include "mpi.h"
 
 #include <string>
+#include <sstream>
 
 using axom::spio::IOManager;
 using axom::sidre::Group;
@@ -58,7 +59,9 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   int num_files = std::max( num_ranks / 2, 1);
-  std::string filename = "out_spio_RWR";
+  std::stringstream sstr;
+  sstr << "out_spio_WRW_" << num_ranks;
+  std::string filename = sstr.str();
 
   // Initialize a datastore and dump to disk
   DataStore * ds = new DataStore();
