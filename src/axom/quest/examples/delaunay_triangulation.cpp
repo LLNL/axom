@@ -17,17 +17,24 @@
 #include "axom/quest/Delaunay.hpp"
 
 #include <time.h>  //for random number generation
+#include <iomanip>
 
 using namespace axom;
 
 double BOUNDING_BOX_DIM[] = {
-  2,
-  2};  //This is the dimension of the rectangle to contain the random points
+  2.0,
+  2.0};  //This is the length of the bounding rectangle to contain the random points
 
 typedef axom::quest::Delaunay Delaunay;
 
 typedef axom::primal::Point2D Point2D;
 typedef axom::primal::Point3D Point3D;
+typedef axom::primal::BoundingBox<double, 2> BoundingBox;
+
+typedef int IndexType;
+typedef double DataType;
+
+typedef std::vector<IndexType> IndexListType;
 
 enum InputStatus
 {
@@ -126,7 +133,7 @@ int main(int argc, char** argv)
   int retval = EXIT_SUCCESS;
 
   // Initialize the SLIC logger
-  axom::slic::UnitTestLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // Initialize default parameters and update with command line arguments:
   Input params(argc, argv);
@@ -146,16 +153,19 @@ int main(int argc, char** argv)
     }
   }
 
+  bool outputVTKsteps = params.outputSteps;
+  int num_points = params.numRandPoints;
+
   // Create Delaunay Triangulation on random points
 
   Delaunay dt;
-  dt.startWithBoundary(-BOUNDING_BOX_DIM[0] / 2.0,
-                       BOUNDING_BOX_DIM[0] / 2.0,
-                       -BOUNDING_BOX_DIM[1] / 2.0,
-                       BOUNDING_BOX_DIM[1] / 2.0);
 
-  bool outputVTKsteps = params.outputSteps;
-  int num_points = params.numRandPoints;
+  double bb_min_arr[] = {-BOUNDING_BOX_DIM[0] / 2.0, -BOUNDING_BOX_DIM[1] / 2.0};
+  double bb_max_arr[] = {BOUNDING_BOX_DIM[0] / 2.0, BOUNDING_BOX_DIM[1] / 2.0};
+  Point2D bb_min(bb_min_arr);
+  Point2D bb_max(bb_max_arr);
+  BoundingBox bb(bb_min, bb_max);
+  dt.initializeBoundary(bb);
 
   //Adding a number of random points
   time_t rseed_val = time(NULL);
@@ -165,6 +175,7 @@ int main(int argc, char** argv)
   char fname[256];
   for(int pt_i = 0; pt_i < num_points; pt_i++)
   {
+    SLIC_INFO("Adding point #" << pt_i);
     double x = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[0] -
       BOUNDING_BOX_DIM[0] / 2.0;
     double y = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[1] -
@@ -176,8 +187,10 @@ int main(int argc, char** argv)
 
     if(outputVTKsteps)
     {
-      sprintf(fname, "%s%02d.vtk", params.outputVTKFile.c_str(), pt_i);
-      dt.writeToVTKFile(fname);
+      std::ostringstream stm;
+      stm << params.outputVTKFile << std::setfill('0') << std::setw(2) << pt_i
+          << ".vtk";
+      dt.writeToVTKFile(stm.str());
     }
   }
 
@@ -187,7 +200,7 @@ int main(int argc, char** argv)
   sprintf(fname, "%s.vtk", params.outputVTKFile.c_str());
   dt.writeToVTKFile(fname);
 
-  dt.printMesh();
+  //dt.printMesh();
 
   SLIC_INFO("Done!");
 
