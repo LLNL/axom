@@ -80,6 +80,17 @@ public:
     copy( otherMap);
   }
 
+    /** Assignment operator for Map     */
+    Map& operator=(const Map& otherMap)
+    {
+      if(this != &otherMap)
+      {
+        m_set = otherMap.m_set;
+        m_data = otherMap.m_data;
+      }
+
+      return *this;
+    }
 
   ~Map(){}
 

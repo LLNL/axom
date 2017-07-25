@@ -52,6 +52,26 @@ foreach(test ${quest_tests})
 endforeach()
 
 
+if(MFEM_FOUND)
+    set(test_name quest_point_in_cell)
+    blt_add_executable(
+        NAME ${test_name}
+        SOURCES ${test_name}.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_tests_depends} mfem axom_utils
+        )
+
+    set_property(
+        TARGET ${test_name}
+        APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}"
+        )
+
+    blt_add_test(
+        NAME ${test_name}
+        COMMAND ${test_name}
+        )
+endif()
+
 # Regression tests for quest signed distance and InOutOctree point containment queries
 if (ENABLE_MPI AND ENABLE_SIDRE)
 

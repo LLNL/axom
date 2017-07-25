@@ -38,6 +38,11 @@ set( quest_headers
 
    )
 
+if (MFEM_FOUND)
+   list(APPEND quest_headers PointInCell.hpp)
+endif()
+
+
 set( quest_sources
 
     ## Geometry Sources
@@ -57,6 +62,7 @@ set( quest_depends_on
      mint
      slam
      primal
+     fmt
      )
 
 if (BOOST_FOUND)
