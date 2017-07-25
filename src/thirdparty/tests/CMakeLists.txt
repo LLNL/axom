@@ -110,7 +110,11 @@ set_target_properties(compiler_flag_unused_local_typedef_test
     
 # the aliasing test requires optimization, set this up as custom compiler flag
 # in case we need more flexibility for this flag (e.g. for MSVC)
-blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG DEFAULT "-O2")
+blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG 
+    DEFAULT "-O2"
+    MSVC    " "
+)
+
 set_target_properties(compiler_flag_strict_aliasing_test
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${AXOM_DISABLE_ALIASING_WARNINGS}")
 
