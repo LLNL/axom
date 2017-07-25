@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -10,10 +10,10 @@
 
 
 /*!
- * \file
+ * \file spio_parallel_WRW.cpp
  *
- * Simple reproducer for bug in Spio dealing with consecutive
- * reading and writing on same set of files.
+ * Regression test for bug in Spio dealing with consecutive reads
+ * and writes on the same set of files. See JIRA issue ATK-798.
  */
 
 #include "spio/IOManager.hpp"
@@ -33,18 +33,14 @@ const std::string PROTOCOL = "sidre_hdf5";
 const std::string ROOT_EXT = ".root";
 
 
-/*!
- * Dump a Sidre Group using Spio
- */
+/*! Dump a Sidre Group using Spio  */
 void dump(const std::string& fName, Group* grp, int numFiles = 1)
 {
     IOManager writer(MPI_COMM_WORLD);
     writer.write(grp, numFiles, fName, PROTOCOL);
 }
 
-/*!
- * Load a Sidre Group using Spio
- */
+/*! Load a Sidre Group using Spio  */
 void load(const std::string& fName, Group* grp)
 {
     IOManager reader(MPI_COMM_WORLD);
@@ -64,20 +60,18 @@ int main(int argc, char** argv)
   int num_files = std::max( num_ranks / 2, 1);
   std::string filename = "out_spio_RWR";
 
-
+  // Initialize a datastore and dump to disk
   DataStore * ds = new DataStore();
   ds->getRoot()->createViewScalar("grp/i",2);
   ds->getRoot()->createViewScalar("grp/f",3.0);
-
   dump(filename, ds->getRoot(), num_files);
 
   // Create another DataStore to read into.
   DataStore ds_r;
-
   load(filename, ds_r.getRoot());
 
-  // BUG HERE.  The following dump() produces an HDF5 error
-  //    When loading the root file
+  // Dump this datastore to disk.
+  // Regression: This used to produce the following HDF5 error:
   //  HDF5-DIAG: Error detected in HDF5 (1.8.16) thread 0:
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file
   //      major: File accessibility
