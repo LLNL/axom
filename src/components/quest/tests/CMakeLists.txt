@@ -13,6 +13,7 @@
 #------------------------------------------------------------------------------
 
 set(quest_tests
+    quest_implicit_grid.cpp
     quest_inout_octree.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
