@@ -162,7 +162,7 @@ public:
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    *****************************************************************************
    */
-  Vector(T* vals, int sz = NDIMS): m_components(vals, sz) {}
+  Vector(const T* vals, int sz = NDIMS): m_components(vals, sz) {}
 
   /*!
    *****************************************************************************
