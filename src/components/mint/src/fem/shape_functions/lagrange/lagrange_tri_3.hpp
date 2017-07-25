@@ -25,7 +25,6 @@ namespace mint {
 static const double TRI_ONE_THIRD =  1.0/3.0;
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the Linear Triangle.
  *
  * \verbatim
@@ -43,7 +42,6 @@ static const double TRI_ONE_THIRD =  1.0/3.0;
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_TRIANGLE > :

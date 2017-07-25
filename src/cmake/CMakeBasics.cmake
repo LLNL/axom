@@ -51,10 +51,6 @@ include(cmake/AxomMacros.cmake)
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
-#
-# We don't try to use this approach for CMake generators that support
-# multiple configurations. See: CZ JIRA: ATK-45
-#
 if(NOT CMAKE_CONFIGURATION_TYPES)
     ######################################################
     # Add define we can use when debug builds are enabled

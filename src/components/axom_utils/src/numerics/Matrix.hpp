@@ -30,7 +30,6 @@ class Matrix;
 /// \name Overloaded Matrix Operators
 /// @{
 /*!
- *******************************************************************************
  * \brief Computes \f$ \mathcal{C} = \mathcal{A} + \mathcal{B} \f$
  *
  * \param [in] A \f$ M \times N \f$ matrix on the left-hand side.
@@ -51,13 +50,11 @@ class Matrix;
  *  performance considerably. Consider using a variant for this method.
  *
  * \see add() variant
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > operator+( const Matrix< T >& A, const Matrix< T >& B );
 
 /*!
- *******************************************************************************
  * \brief Computes \f$ \mathcal{C} = \mathcal{A} - \mathcal{B} \f$
  *
  * \param [in] A \f$ M \times N \f$ matrix on the left-hand side.
@@ -78,13 +75,11 @@ Matrix< T > operator+( const Matrix< T >& A, const Matrix< T >& B );
  *  performance considerably. Consider using a variant for this method.
  *
  * \see subtract() variant
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > operator-( const Matrix< T >& A, const Matrix< T >& B );
 
 /*!
- *******************************************************************************
  * \brief Computes a scalar-matrix product of a matrix \f$ \mathcal{A} \f$ and
  *  a scalar \f$ c \f$
  *
@@ -103,7 +98,6 @@ Matrix< T > operator-( const Matrix< T >& A, const Matrix< T >& B );
  *  performance considerably. Consider using a variant for this method.
  *
  * \see scalar_multiply() variant
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > operator*( const Matrix< T >& A, const T& c );
@@ -111,7 +105,6 @@ template < typename T >
 Matrix< T > operator*( const T& c,const Matrix< T >& A) { return A*c; };
 
 /*!
- *******************************************************************************
  * \brief Computes the matrix-vector product of a matrix \f$\mathcal{A}\f$
  *  and a vector \f$\mathbf{x}\f$
  *
@@ -130,13 +123,11 @@ Matrix< T > operator*( const T& c,const Matrix< T >& A) { return A*c; };
  *  performance considerably. Consider using a variant for this method.
  *
  * \see vector_multiply() variant
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > operator*( const Matrix< T >& A, const T* x );
 
 /*!
- *******************************************************************************
  * \brief Computes the matrix-matrix product of \f$ \mathcal{A} \f$ and
  *  \f$ \mathcal{B} \f$
  *
@@ -155,20 +146,17 @@ Matrix< T > operator*( const Matrix< T >& A, const T* x );
  *  performance considerably. Consider using a variant for this method.
  *
  * \see matrix_multiply() variant
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > operator*( const Matrix< T >& A, const Matrix< T >& B );
 
 /*!
- *******************************************************************************
  * \brief Overloaded output stream operator. Outputs the matrix coefficients
  *  in to the given output stream.
  *
  * \param [in,out] os output stream object.
  * \param [in] A user-supplied matrix instance.
  * \return os the updated output stream object.
- *******************************************************************************
  */
 template < typename T >
 std::ostream& operator<<( std::ostream& os, const Matrix< T >& A );
@@ -179,7 +167,6 @@ std::ostream& operator<<( std::ostream& os, const Matrix< T >& A );
 /// @{
 
 /*!
- *******************************************************************************
  * \brief Computes \f$ \mathcal{C} = \mathcal{A} + \mathcal{B} \f$
  *
  * \param [in]  A \f$ M \times N \f$ matrix on the left-hand side.
@@ -192,13 +179,11 @@ std::ostream& operator<<( std::ostream& os, const Matrix< T >& A );
  *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
  *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
  *  matrix is returned in \f$ \mathcal{C} \f$
- *******************************************************************************
  */
 template < typename T >
 void add( const Matrix< T >& A, const Matrix< T >&B, Matrix< T >& C );
 
 /*!
- *******************************************************************************
  * \brief Computes \f$ \mathcal{C} = \mathcal{A} - \mathcal{B} \f$
  *
  * \param [in]  A \f$ M \times N \f$ matrix on the left-hand side.
@@ -211,13 +196,11 @@ void add( const Matrix< T >& A, const Matrix< T >&B, Matrix< T >& C );
  *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
  *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
  *  matrix is returned in \f$ \mathcal{C} \f$
- *******************************************************************************
  */
 template < typename T >
 void subtract( const Matrix< T >& A, const Matrix< T >& B, Matrix< T >& C );
 
 /*!
- *******************************************************************************
  * \brief Computes a scalar-matrix produect of a matrix \f$ \mathcal{A} \f$ and
  *  a scalar \f$ c \f$ and stores the result in \f$ \mathcal{A} \f$
  *
@@ -225,13 +208,11 @@ void subtract( const Matrix< T >& A, const Matrix< T >& B, Matrix< T >& C );
  * \param [in] c scalar value to multiply the matrix coefficients
  *
  * \post \f$ a_{ij} = c \cdot a_{ij} \f$, \f$ \forall a_{ij} \in mathcal{A} \f$
- *******************************************************************************
  */
 template < typename T >
 void scalar_multiply( Matrix< T >& A, const T& c );
 
 /*!
- *******************************************************************************
  * \brief Computes the matrix-vector product of a matrix \f$\mathcal{A}\f$ and
  *  a vector \f$\mathbf{x}\f$ and store the result in the user-supplied output
  *  vector.
@@ -247,13 +228,11 @@ void scalar_multiply( Matrix< T >& A, const T& c );
  *
  * \post \f$ b_i = \sum\limits_{j=0}^N a_{ij} \cdot x_j \f$,
  *  \f$\forall i \in [0,M-1] \f$
- *******************************************************************************
  */
 template < typename T >
 void vector_multiply( const Matrix< T >& A, const T* vec, T* output );
 
 /*!
- *******************************************************************************
  * \brief Computes the matrix-matrix product of \f$ \mathcal{A} \f$ and
  *  \f$ \mathcal{B} \f$ and stores the result in \f$ \mathcal{C} \f$
  *
@@ -267,7 +246,6 @@ void vector_multiply( const Matrix< T >& A, const T* vec, T* output );
  * \note Matrix multiplication is undefined for matrices with different inner
  *  dimension. If the inner dimensions are not matching, the code returns a
  *  \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{C} \f$
- *******************************************************************************
  */
 template < typename T >
 void matrix_multiply( const Matrix< T >&A,
@@ -275,17 +253,14 @@ void matrix_multiply( const Matrix< T >&A,
                       Matrix< T >& C );
 
 /*!
- *****************************************************************************
  * \brief Computes the matrix transpose of a given matrix \f$ \mathcal{A} \f$
  * \param [in] A an \f$ M \times N \f$ matrix
  * \return \f$ A^\top \f$ the matrix transpose.
- *****************************************************************************
  */
 template < typename T >
 Matrix< T > transpose( const Matrix< T >& A );
 
 /*!
- *******************************************************************************
  * \brief Extracts the lower triangular part of a square matrix.
  *
  * \param [in] A a square matrix
@@ -298,13 +273,11 @@ Matrix< T > transpose( const Matrix< T >& A );
  *
  * \pre A.isSquare() == true
  * \post upper-triangular of matrix L is set to zeros (0s)
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > lower_triangular( const Matrix< T >& A, bool unit_diagonal=false );
 
 /*!
- *******************************************************************************
  * \brief Extract the upper triangular part of a square matrix.
  *
  * \param [in] A a square matrix
@@ -317,7 +290,6 @@ Matrix< T > lower_triangular( const Matrix< T >& A, bool unit_diagonal=false );
  *
  * \pre A.isSquare() == true
  * \post lower-triangular of matrix U is set to zeros (0s)
- *******************************************************************************
  */
 template < typename T >
 Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
@@ -325,7 +297,6 @@ Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
 /// @}
 
 /*!
- *******************************************************************************
  * \class Matrix
  *
  * \brief The Matrix class is used to represent \f$ M \times N \f$ matrices. It
@@ -360,7 +331,6 @@ Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
  * \endcode
  *
  * \tparam T the underlying matrix data type, e.g., float, double, etc.
- *******************************************************************************
  */
 template < typename T >
 class Matrix
@@ -371,7 +341,6 @@ public:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructor, creates a Matrix with the given rows and columns.
    *
    * \param [in] rows the number of rows in the matrix.
@@ -381,12 +350,10 @@ public:
    *
    * \pre rows >= 1
    * \pre cols >= 1
-   *****************************************************************************
    */
   Matrix( int rows, int cols, T val=static_cast< T >( 0 ) );
 
   /*!
-   *****************************************************************************
    * \brief Array constructor, creates a Matrix with the given rows and columns
    *  and initializes its entries with the data from the supplied array.
    *
@@ -399,76 +366,58 @@ public:
    * \pre rows >= 1
    * \pre cols >= 1
    * \pre data != AXOM_NULLPTR
-   *****************************************************************************
    */
   Matrix( int rows, int cols, T* data, bool shallowCopy=false );
 
   /*!
-   *****************************************************************************
    * \brief Copy constructor.
    * \param [in] m the matrix instance that is being passed.
-   *****************************************************************************
    */
   Matrix( const Matrix< T >& m );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~Matrix();
 
   /*!
-   *****************************************************************************
    * \brief Check to see if the matrix is square.
    * \return status true iff this instance is a square matrix, else, false.
-   *****************************************************************************
    */
   bool isSquare() const { return (m_rows==m_cols); };
 
   /*!
-   *****************************************************************************
    * \brief Checks if the matrix is empty
    * \return status true iff the matrix is empty, else, false.
-   *****************************************************************************
    */
   bool empty() const { return (m_rows*m_cols==0); };
 
   /*!
-   *****************************************************************************
    * \brief Checks to see if the matrix has an external buffer.
    * \return status true iff the matrix has an external buffer, else, false.
-   *****************************************************************************
    */
   bool usesExternalBuffer() const { return m_usingExternal; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of rows in the matrix..
    * \return numRows the number of rows in the matrix.
-   *****************************************************************************
    */
   int getNumRows() const { return m_rows; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of columns in the matrix.
    * \return numCols the number of columns in the matrix.
-   *****************************************************************************
    */
   int getNumColumns() const { return m_cols; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the size of the diagonal.
    * \return N the size of the diagonal.
    * \note For non-square matrices, \f$ N=min(num\_rows, num\_cols) \f$
-   *****************************************************************************
    */
   int getDiagonalSize() const { return (m_rows < m_cols)? m_rows : m_cols; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the diagonal entries of this Matrix instance.
    *
    * \param [in] diagonal user-supplied buffer to store the diagonal entries.
@@ -479,69 +428,56 @@ public:
    * \note For non-square matrices, this method will retrieve all the entries
    *  along the main diagonal, \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
    *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
-   *****************************************************************************
    */
   void getDiagonal( T* diagonal ) const;
 
   /*!
-   *****************************************************************************
    * \brief Assigns <em>val</em> to all entries in the diagonal.
    * \param [in] val value to assign to all diagonal entries.
    *
    * \note For non-square matrices, this method will fill all the entries
    *  along the main diagonal, \f$ \alpha_{ii} \in \mathcal{A} \f$, where,
    *  \f$ i \in [0,N] \f$, \f$ N=min(num\_rows, num\_cols) \f$
-   *****************************************************************************
    */
   void fillDiagonal( const T& val );
 
   /*!
-   *****************************************************************************
    * \brief Assigns <em>val</em> to all elements in the given matrix row.
    * \param [in] i the row index.
    * \param [in] val value to assign to all elements in the given row.
    * \pre i >= 0 && i < m_rows
-   *****************************************************************************
    */
   void fillRow( IndexType i, const T& val );
 
   /*!
-   *****************************************************************************
    * \brief Assigns <em>val</em> to all elements in the given matrix column.
    * \param [in] j the column index.
    * \param [in] val value to assign to all elements in the given column.
    * \pre j >= 0 && j < m_cols
-   *****************************************************************************
    */
   void fillColumn( IndexType j, const T& val );
 
   /*!
-   *****************************************************************************
    * \brief Assigns <em>val</em> to all elements of the matrix.
    * \param [in] val value to assign to all elements of the matrix.
-   *****************************************************************************
    */
   void fill( const T& val );
 
   /*!
-   ****************************************************************************
    * \brief Swaps the rows of this matrix instance.
    * \param [in] i index of the first row to swap
    * \param [in] j index of the second row to swap
    * \pre i >= 0 && i < m_rows
    * \pre j >= 0 && j < m_rows
-   ****************************************************************************
    */
   void swapRows( IndexType i, IndexType j );
 
   /*!
-   *****************************************************************************
    * \brief Swaps the columns of this matrix instance.
    * \param [in] i index of the first column to swap
    * \param [in] j index of the second column to swap
    * \pre i >= 0 && i < m_cols
    * \pre j >= 0 && j < m_cols
-   *****************************************************************************
    */
   void swapColumns( IndexType i, IndexType j );
 
@@ -549,7 +485,6 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Given an \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$, return
    *  a const reference to matrix element \f$ \alpha_{ij} \f$
    *
@@ -559,12 +494,10 @@ public:
    *
    * \pre i >= 0 && i < m_rows
    * \pre j >= 0 && j < m_cols
-   *****************************************************************************
    */
   const T& operator()(IndexType i, IndexType j) const;
 
   /*!
-   *****************************************************************************
    * \brief Given an \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$, return a
    *  reference to matrix element \f$ \alpha_{ij} \f$
    *
@@ -574,12 +507,10 @@ public:
    *
    * \pre i >= 0 && i < m_rows
    * \pre j >= 0 && j < m_cols
-   *****************************************************************************
    */
   T& operator()(IndexType i, IndexType j);
 
   /*!
-   *****************************************************************************
    * \brief Returns a const pointer to the  \f$ jth \f$ column of an
    *  \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$
    *
@@ -599,12 +530,10 @@ public:
    *  }
    *  ...
    * \endcode
-   *****************************************************************************
    */
   const T* getColumn( IndexType j ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns pointer to the \f$ jth \f$ column of an \f$ M \times N \f$
    *  matrix, \f$ \mathcal{A} \f$
    *
@@ -624,12 +553,10 @@ public:
    *  }
    *  ...
    * \endcode
-   *****************************************************************************
    */
   T* getColumn( IndexType j );
 
   /*!
-   *****************************************************************************
    * \brief Returns a const pointer for strided access along the main diagonal.
    *
    * \param [out] p stride used to access elements along the main diagonal.
@@ -659,12 +586,10 @@ public:
    *  }
    *  ...
    * \endcode
-   *****************************************************************************
    */
   const T* getDiagonal( IndexType& p, IndexType& N ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns a pointer for strided access along the main diagonal.
    *
    * \param [out] p stride used to access elements along the main diagonal.
@@ -694,12 +619,10 @@ public:
    *  }
    *  ...
    * \endcode
-   *****************************************************************************
    */
   T* getDiagonal( IndexType& p, IndexType& N );
 
   /*!
-   *****************************************************************************
    * \brief Returns a const pointer to the \f$ ith \f$ row of an
    *  \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$
    *
@@ -726,12 +649,10 @@ public:
    *   }
    *   ...
    * \endcode
-   *****************************************************************************
    */
   const T* getRow( IndexType i, IndexType& p, IndexType& N ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns a pointer to the \f$ ith \f$ row of an  \f$ M \times N \f$
    *  matrix, \f$ \mathcal{A} \f$
    *
@@ -759,29 +680,24 @@ public:
    *   ...
    * \endcode
    *
-   *****************************************************************************
    */
   T* getRow( IndexType i, IndexType& p, IndexType& N );
 
   /*!
-   *****************************************************************************
    * \brief Returns a const pointer to the raw data.
    *
    * \return ptr pointer to the raw data.
    * \note The raw data are stored in column-major layout.
    * \post ptr != AXOM_NULLPTR
-   *****************************************************************************
    */
   const T* data() const;
 
   /*!
-   *****************************************************************************
    * \brief Returns pointer to the raw data.
    *
    * \return ptr pointer to the raw data.
    * \note The raw data are stored in column-major layout.
    * \post ptr != AXOM_NULLPTR
-   *****************************************************************************
    */
   T* data();
 
@@ -791,12 +707,10 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Overloaded assignment operator.
    *
    * \param [in] rhs matrix instance on the right-hand side.
    * \return M a copy of the matrix instance in rhs.
-   *****************************************************************************
    */
   Matrix< T >& operator=(const Matrix< T >& rhs);
 
@@ -806,7 +720,6 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns an <em> identity matrix </em> \f$ \mathcal{I}_n \f$
    *
    * \param [in] n the size of the identity matrix.
@@ -815,12 +728,10 @@ public:
    * \pre n >= 1
    * \post M.isSquare()==true
    * \post M.getNumRows() == M.getNumCols() == n
-   *****************************************************************************
    */
   static Matrix< T > identity( int n );
 
   /*!
-   *****************************************************************************
    * \brief Returns a <em>zero</em> matrix, \f$ \mathcal{A} \f$
    *
    * \param [in] nrows the number of rows in the matrix.
@@ -830,12 +741,10 @@ public:
    * \pre nrows >= 1
    * \pre ncols >= 1
    * \post \f$ \alpha_{ij}=0 \forall \alpha_{ij} \in \mathcal{A} \f$
-   *****************************************************************************
    */
   static Matrix< T > zeros( int nrows, int ncols );
 
   /*!
-   *****************************************************************************
    * \brief Returns a <em>unity</em> matrix, \f$ \mathcal{A} \f$
    *
    * \param [in] nrows the number of rows in the matrix.
@@ -845,7 +754,6 @@ public:
    * \pre nrows >= 1
    * \pre ncols >= 1
    * \post \f$ \alpha_{ij}=1 \forall \alpha_{ij} \in \mathcal{A} \f$
-   *****************************************************************************
    */
   static Matrix< T > ones( int nrows, int ncols );
 
@@ -854,10 +762,8 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent host-code from calling this.
-   *****************************************************************************
    */
   Matrix() : m_rows(0), m_cols(0), m_data(AXOM_NULLPTR) { };
 
@@ -865,17 +771,13 @@ private:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Copies the matrix into this matrix instance.
    * \param [in] rhs matrix on the right-hand side.
-   *****************************************************************************
    */
   void copy( const Matrix< T >& rhs );
 
   /*!
-   ****************************************************************************
    * \brief Deallocates all matrix data.
-   ****************************************************************************
    */
   void clear();
 

@@ -30,9 +30,7 @@ class StructuredMesh:public Mesh
 public:
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~StructuredMesh();
 
@@ -40,39 +38,32 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of nodes in the mesh.
    * \return numNodes the total number of nodes.
    * \post numNodes >= 0
    * \warning This is a virtual method -- do not call inside a loop.
-   *****************************************************************************
    */
   virtual int getMeshNumberOfNodes() const { return this->getNumberOfNodes(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of cells in the mesh.
    * \return numCells the total number of cells.
    * \post numCells >= 0
    * \warning This is a virtual method -- do not call inside a loop.
-   *****************************************************************************
    */
   virtual int getMeshNumberOfCells() const { return this->getNumberOfCells(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes for the given cell.
    * \param cellIdx the index of the cell in query.
    * \return numCellNodes the number of nodes in the given cell.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual int getMeshNumberOfCellNodes( int AXOM_NOT_USED(cellIdx) ) const
   { return this->getNumberOfCellNodes(); }
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell connectivity of the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \param [out] cell user-supplied buffer to store cell connectivity info.
@@ -81,42 +72,35 @@ public:
    * \pre cell != AXOM_NULLPTR.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual void getMeshCell( int cellIdx, int* cell ) const
   { this->getCell(cellIdx,cell); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell type of the cell associated with the given Id.
    * \param [in] cellIdx the index of the cell in query.
    * \return cellType the cell type of the cell at the given index.
-   *****************************************************************************
    */
   virtual int getMeshCellType( int AXOM_NOT_USED(cellIdx) ) const
   { return ( (m_ndims==3) ? MINT_HEX : MINT_QUAD ); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] coordinates user-supplied buffer to store the node coordinates.
    * \pre nodeIdx >= && nodeIdx < this->getMeshNumberOfNodes()
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual void getMeshNode( int nodeIdx, double* coordinates ) const
   { this->getNode(nodeIdx,coordinates); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate of a mesh node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
    * \return c the coordinate value of the node at
    * \pre dim >= 0 && dim < m_ndims
-   *****************************************************************************
    */
   virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
   { return (this->getNodeCoordinate(nodeIdx,dim) ); };
@@ -127,11 +111,9 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the dimensions of this mesh instance.
    * \param [in] ndims 3-tuple holding the number of nodes in each dimension.
    * \post ndims[ i ] >= 1, \$ \forall i \in [0,2] \$
-   *****************************************************************************
    */
   void getDimensions( int ndims[3] ) const
   {
@@ -142,93 +124,77 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes in this mesh instance.
    * \return N the total number of nodes in the mesh.
    * \pre m_extent != AXOM_NULLPTR
    * \post N >= 0.
-   *****************************************************************************
    */
   int getNumberOfNodes() const
   { return m_extent->getNumNodes(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of cells in this mesh instance.
    * \return N the total number of cells in the mesh.
    * \pre m_extent != AXOM_NULLPTR.
    * \post N >= 0.
-   *****************************************************************************
    */
   int getNumberOfCells() const
   { return m_extent->getNumCells(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of cell nodes.
    * \return N the number of nodes per cell.
    * \post N=4 if 2-D, else N=8.
-   *****************************************************************************
    */
   int getNumberOfCellNodes( ) const
   { return( (m_ndims==2) ? 4 : 8); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the linear index corresponding to the given logical indices.
    * \param [in] i logical index of the first dimension.
    * \param [in] j logical index of the second dimension.
    * \param [in] k logical index of the third dimension (optional)
    * \return idx the corresponding linear index.
-   *****************************************************************************
    */
   int getLinearIndex( int i, int j, int k=0) const
   { return m_extent->getLinearIndex(i,j,k); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the linear index corresponding to the given logical grid cell
    * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.
    * \param [in] k logical cell index of the third dimension (optional)
    * \return idx the corresponding linear index of the cell.
-   *****************************************************************************
    */
   int getCellLinearIndex( int i, int j, int k=0) const
   { return m_extent->getCellLinearIndex(i,j,k); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell connectivity for the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
    * \pre the user-supplied cell buffer must be of getNumberOfCellNodes() size.
-   *****************************************************************************
    */
   void getCell( int cellIdx, int* cell ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell connectivity of the cell at (i,j)
    * \param [in] i logical index of the cell along the first dimension.
    * \param [in] j logical index of the cell along the second dimension.
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 2.
-   *****************************************************************************
    */
   void getCell( int i, int j, int* cell ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell connectivity of the cell at (i,j,k)
    * \param [in] i logical index of the cell along the first dimension.
    * \param [in] j logical index of the cell along the second dimension.
    * \param [in] k logical index of the cell along the third dimension.
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 3.
-   *****************************************************************************
    */
   void getCell( int i, int j, int k, int* cell) const;
 
@@ -236,53 +202,44 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
-   *****************************************************************************
    */
   virtual void getNode( int nodeIdx, double* coordinates ) const = 0;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, double* coordinates ) const = 0;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, int k, double* coordinates ) const = 0;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate of the given node.
    * \param [in] nodeIdx index of the node in query.
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int nodeIdx, int idim  ) const = 0;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -290,12 +247,10 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int idim ) const = 0;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -304,7 +259,6 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int k, int idim ) const = 0;
 
@@ -315,30 +269,24 @@ public:
 protected:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \note Made private to prevent users from calling it.
-   *****************************************************************************
    */
   StructuredMesh();
 
   /*!
-   *****************************************************************************
    * \brief Constructs a structured mesh instance from the given extent.
    * \param [in] ext the structured mesh extent.
-   *****************************************************************************
    */
   StructuredMesh( int meshType, int ndims, int ext[6] );
 
   /*!
-   *****************************************************************************
    * \brief Constructs a structured mesh instance from the given extent that is
    *  identified by the given blockId and partitionId pair.
    * \param [in] meshType the structured mesh type.
    * \param [in] ext the structured mesh extent.
    * \param [in] blockId the block ID of the mesh.
    * \param [in] partId the partition ID of the mesh.
-   *****************************************************************************
    */
   StructuredMesh( int meshType,int ndims,int ext[6],int blockId,int partId );
 

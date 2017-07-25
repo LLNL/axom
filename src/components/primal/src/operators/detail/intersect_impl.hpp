@@ -1,10 +1,18 @@
+/*
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
 /*!
- *******************************************************************************
  * \file Intersection.hpp
  *
  * This file provides several functions to test whether geometric primitives
  * intersect.
- *******************************************************************************
  */
 
 #ifndef INTERSECTION_IMPL_HPP_
@@ -97,7 +105,6 @@ bool TriangleIntersection2D(const Triangle2& t1,
 /** @{ @name 3D triangle-triangle intersection */
 
 /*!
- *******************************************************************************
  * \brief Tests if 3D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
@@ -113,7 +120,6 @@ bool TriangleIntersection2D(const Triangle2& t1,
 
  * Olivier Devillers and Phillipe Guigue, Faster Triangle-Triangle Intersection
  * Tests, RR-4488, INRIA (2002).  https://hal.inria.fr/inria-00072100/
- *******************************************************************************
  */
 template < typename T >
 bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
@@ -276,7 +282,6 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
 }
 
 /*!
- *****************************************************************************
  * Triangle 1 vertices have been permuted to CCW: permute t2 to CCW
  * and call worker function to test for intersection.
  *
@@ -284,7 +289,6 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
  * t2's plane or in its positive half-space.
  * The sign of dp2, dq2, and dr2 indicates whether the associated vertex
  * of t2 lies in the positive or negative half-space defined by t1.
- *****************************************************************************
  */
 inline bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
@@ -349,7 +353,6 @@ inline bool intersectOnePermutedTriangle(
 }
 
 /*!
- *****************************************************************************
  * \brief Tests for general 3D triangle-triangle intersection.
  * \return status true iff triangles 1 and 2 intersect.
  *
@@ -370,7 +373,6 @@ inline bool intersectOnePermutedTriangle(
  * using a hint from p.10 that greatly simplifies the computation.
  *
  * Helper function for T-T intersect.
- *****************************************************************************
  */
 inline bool intersectTwoPermutedTriangles(const Point3 p1,
                                           const Point3 q1,
@@ -396,10 +398,8 @@ inline bool intersectTwoPermutedTriangles(const Point3 p1,
 }
 
 /*!
- *****************************************************************************
  * Project (nearly) coplanar triangles 1 and 2 on an axis; call 2D worker
  * function to test for intersection.
- *****************************************************************************
  */
 inline bool intersectCoplanar3DTriangles(const Point3& p1,
                                          const Point3& q1,
@@ -461,14 +461,12 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
 
 /** @{ @name 2D triangle-triangle intersection */
 /*
- *******************************************************************************
  * \brief Tests if 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
  * Note that edge and vertex intersections are reported as hits: an edge or
  * vertex intersecting any part of another triangle causes a return value of
  * true.  This is consistent with the paper.
- ********************************************************************************
  */
 template < typename T >
 bool intersect_tri2D_tri2D(const primal::Triangle< T, 2 >& t1,
@@ -486,13 +484,11 @@ bool intersect_tri2D_tri2D(const primal::Triangle< T, 2 >& t1,
 }
 
 /*!
- *****************************************************************************
  * \brief Orients triangle vertices so both triangles are CCW; calls worker.
  * \return status true iff t1 and t2 intersect
  *
  * Determine triangle orientation, then call the worker function with
  * vertices from t1 and t2 permuted to ensure CCW orientation.
- *****************************************************************************
  */
 inline bool TriangleIntersection2D(const Triangle2& t1,
                                    const Triangle2& t2,
@@ -525,11 +521,9 @@ inline bool TriangleIntersection2D(const Triangle2& t1,
 }
 
 /*!
- *****************************************************************************
  * This function finds where p1 lies in relation to the vertices of t2
  * and calls either checkEdge() or checkVertex().
  * \return status true iff triangle p1 q1 r1 intersects triangle p2 q2 r2.
- *****************************************************************************
  */
 inline bool intersectPermuted2DTriangles(const Point2& p1,
                                          const Point2& q1,
@@ -581,10 +575,8 @@ inline bool intersectPermuted2DTriangles(const Point2& p1,
 }
 
 /*!
- *****************************************************************************
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2p2.
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
- *****************************************************************************
  */
 inline bool checkEdge(const Point2 p1,
                       const Point2 q1,
@@ -625,10 +617,8 @@ inline bool checkEdge(const Point2 p1,
 }
 
 /*!
- *****************************************************************************
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2.
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
- *****************************************************************************
  */
 inline bool checkVertex(const Point2 p1,
                         const Point2 q1,
@@ -696,7 +686,6 @@ inline bool checkVertex(const Point2 p1,
 }
 
 /*!
- *****************************************************************************
  * \brief Compute cross product of two 2D vectors as if they were 3D.
  * \return Cross product of A C and B C.
  *
@@ -704,7 +693,6 @@ inline bool checkVertex(const Point2 p1,
  * zero Z-coordinate.  Thus we can calculate the cross product of A C with
  * B C using only the k-hat term, since the other terms go to zero.  A
  * positive value indicates CCW orientation.
- *****************************************************************************
  */
 inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
@@ -712,9 +700,7 @@ inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 }
 
 /*!
- *****************************************************************************
  * \brief Checks if x > y, within a specified tolerance.
- *****************************************************************************
  */
 inline bool isGt(double x, double y, double EPS)
 {
@@ -722,9 +708,7 @@ inline bool isGt(double x, double y, double EPS)
 }
 
 /*!
- *****************************************************************************
  * \brief Checks if x < y, within a specified tolerance.
- *****************************************************************************
  */
 inline bool isLt(double x, double y, double EPS)
 {
@@ -732,9 +716,7 @@ inline bool isLt(double x, double y, double EPS)
 }
 
 /*!
- *****************************************************************************
  * \brief Checks if x <= y, within a specified tolerance.
- *****************************************************************************
  */
 inline bool isLeq(double x, double y, double EPS)
 {
@@ -742,7 +724,6 @@ inline bool isLeq(double x, double y, double EPS)
 }
 
 /*!
- *****************************************************************************
  * \brief Checks if x < y, or possibly x == y, within a specified tolerance.
  *
  * The check for equality is controlled by parameter includeEqual.  This
@@ -750,7 +731,6 @@ inline bool isLeq(double x, double y, double EPS)
  * border points are reported as intersecting or not.
  *
  * Supports checkEdge and checkVertex
- *****************************************************************************
  */
 inline bool isLpeq(double x, double y, const bool includeEqual, double EPS)
 {
@@ -762,9 +742,7 @@ inline bool isLpeq(double x, double y, const bool includeEqual, double EPS)
 }
 
 /*!
- *****************************************************************************
  * \brief Checks if x >= y, within a specified tolerance.
- *****************************************************************************
  */
 inline bool isGeq(double x, double y, double EPS)
 {
@@ -772,7 +750,6 @@ inline bool isGeq(double x, double y, double EPS)
 }
 
 /*!
- *****************************************************************************
  * \brief Checks if x > y, or possibly x == y, within a specified tolerance.
  *
  * The check for equality is controlled by parameter includeEqual.  This
@@ -780,7 +757,6 @@ inline bool isGeq(double x, double y, double EPS)
  * border points are reported as intersecting or not.
  *
  * Supports checkEdge and checkVertex
- *****************************************************************************
  */
 inline bool isGpeq(double x, double y, const bool includeEqual, double EPS)
 {
@@ -792,9 +768,7 @@ inline bool isGpeq(double x, double y, const bool includeEqual, double EPS)
 }
 
 /*!
- *******************************************************************************
  * \brief Check if x, y, and z all have the same sign.
- *******************************************************************************
  */
 inline bool nonzeroSignMatch(double x, double y, double z, double EPS)
 {
@@ -806,9 +780,7 @@ inline bool nonzeroSignMatch(double x, double y, double z, double EPS)
 }
 
 /*!
- *******************************************************************************
  * \brief Check if two of x, y, and z are near zero.
- *******************************************************************************
  */
 inline bool twoZeros(double x, double y, double z, double EPS)
 {
@@ -816,9 +788,7 @@ inline bool twoZeros(double x, double y, double z, double EPS)
 }
 
 /*!
- *******************************************************************************
  * \brief Check if one of x, y, and z is near zero and the others' signs match.
- *******************************************************************************
  */
 inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
 {
@@ -830,9 +800,7 @@ inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
 }
 
 /*!
- *******************************************************************************
  * \brief Count the number of arguments near zero.
- *******************************************************************************
  */
 inline int countZeros(double x, double y, double z, double EPS)
 {
@@ -844,11 +812,9 @@ inline int countZeros(double x, double y, double z, double EPS)
 /** @} */
 
 /*!
- *******************************************************************************
  * \brief Computes the intersection of the given ray, R, with the segment, S.
  *      ip returns the intersection point on S.
  * \return status true iff R intersects with S, otherwise, false.
- *******************************************************************************
  */
 template < typename T >
 bool intersect_ray_seg( const primal::Ray< T,2 >& R,
@@ -905,14 +871,12 @@ bool intersect_ray_seg( const primal::Ray< T,2 >& R,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the intersection of the given ray, R, with the Box, bb.
  *      ip the point of intersection on R.
  * \return status true iff bb intersects with R, otherwise, false.
  *
  * Computes Ray Box intersection using the slab method from pg 180 of
  * Real Time Collision Detection by Christer Ericson.
- *******************************************************************************
  */
 template < typename T, int DIM >
 bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
@@ -958,7 +922,6 @@ bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the intersection of the given segment, S, with the Box, bb.
  *     ip the point of intersection on S.
  * \return status true iff bb intersects with S, otherwise, false.
@@ -966,7 +929,6 @@ bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
  * Computes Segment Box intersection using the slab method from pg 180 of
  * Real Time Collision Detection by Christer Ericson.
  * WIP: More test cases for this
- *******************************************************************************
  */
 template < typename T, int DIM >
 bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
@@ -1024,13 +986,11 @@ bool crossEdgesDisjoint(double d0, double d1, double r);
 /** @{ @name Triangle-bbox intersection */
 
 /*!
- *******************************************************************************
  * \brief Determines if a triangle and a bounding box intersect
  *        (but does not find the intersections)
  * \param [in] tri user-supplied triangle (with three vertices).
  * \param [in] bb user-supplied axis aligned bounding box.
  * \return true iff tri intersects with bb, otherwise, false.
- *******************************************************************************
  */
 template < typename T >
 bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
@@ -1148,7 +1108,6 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
 /** @{ @name Triangle-ray intersection */
 
 /*!
- *******************************************************************************
  * \brief Tests if 3D triangle tri intersects with 3D ray R.
  * \param [in] tri The input triangle
  * \param [in] R The input ray
@@ -1169,7 +1128,6 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle
  * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2,
  * no. 1, 65–82, 2013  http://jcgt.org/published/0002/01/05/
- *******************************************************************************
  */
 template < typename T >
 bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)

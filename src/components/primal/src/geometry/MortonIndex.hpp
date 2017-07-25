@@ -1,12 +1,20 @@
+/*
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
 /*!
- ***********************************************************************************
  * \file MortonIndex
  * \brief Classes and functions to convert between points on an integer grid and
  *        their unidimensional MortonIndex.
  *
  * Also has some utility functions for 'mortonizing' and 'demortonizing' points and
  * a PointHash functor class that can be used as a std::hash for unordered_maps
- ***********************************************************************************
  */
 
 #ifndef MORTON_INDEX_HXX_
@@ -26,12 +34,10 @@
 
 namespace {
 /*!
- ***********************************************************************************
  * \brief A helper type trait class for the Mortonizer class
  *
  * This type trait helps determine the number of iterations required
  * to convert between Points and a 1D Morton index.
- ***********************************************************************************
  */
 template < typename IntegerType >
 struct NumReps {  enum {value = 5}; };
@@ -61,13 +67,11 @@ namespace axom {
 namespace primal {
 
 /*!
- ***********************************************************************************
  * \class
  * \brief Base class for Dimension independent Morton indexing
  *
  * \note Uses CRTP to access dimension-dependent data from the derived class
  * \note This class only works for integral CoordTypes
- ***********************************************************************************
  */
 template < typename CoordType, typename MortonIndexType, typename Derived >
 struct MortonBase
@@ -88,7 +92,6 @@ private:
 protected:
 
   /*!
-   *********************************************************************************
    * \brief Expands bits in bitwise representation of an integral type
    *        and zero-fills the holes
    *
@@ -96,7 +99,6 @@ protected:
    * \return A zero-filled expanded MortonIndex
    * In dimension D, it adds (D-1) zeros between each bit,
    * so, e.g. in 2D, 6 == 0b0110 becomes 0b*0*1*1*0 == 0b00010100 == 20
-   *********************************************************************************
    */
   static MortonIndexType expandBits(MortonIndexType x)
   {
@@ -108,7 +110,6 @@ protected:
   }
 
   /*!
-   *********************************************************************************
    * \brief Contracts bits in bitwise representation of x
    *
    * \param [in] x The Morton index that we are contracting
@@ -116,7 +117,6 @@ protected:
    *
    * In dimension D, it retains every (D-1)\f$^th\f$ bit,
    * so, e.g. in 2D, 20 = 0b00010100 == 0b*0*1*1*0 becomes  0b0110 = 6
-   *********************************************************************************
    */
   static MortonIndexType contractBits(MortonIndexType x)
   {
@@ -145,7 +145,6 @@ public:
 };
 
 /*!
- ***********************************************************************************
  * \class Mortonizer
  * \brief Helper class for MortonIndexing of a point's coordinate
  *
@@ -157,13 +156,11 @@ public:
  * we get (0b*0*a*b*0,0b*0*0*y*z).
  * Finally, by shifting the y-coordinate and interleaving, we get
  * the Morton index of this point: 0b000yazb0 == 0b00011110 ==  30
- ***********************************************************************************
  */
 template < typename CoordType, typename MortonIndexType, int DIM >
 struct Mortonizer;
 
 /*!
- ***********************************************************************************
  * \class
  * \brief A 2D specialization of Mortonizer
  *
@@ -172,7 +169,6 @@ struct Mortonizer;
  * Expand bits will add a 0 between every bit and contract bits
  * will remove every other bit
  * \see Mortonizer
- ***********************************************************************************
  */
 template < typename CoordType, typename MortonIndexType >
 struct Mortonizer< CoordType,MortonIndexType, 2 >
@@ -200,35 +196,28 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
     MB_PER_DIM = MORTON_BITS / NDIM,
 
     /*!
-     *******************************************************************************
      * The maximum number of unique bits from each coordinate of type CoordType
      *  that can be represented in a MortonIndex.
      *  \note If we are use Mortonizer as a (one-way) hash function, it is ok to use
      *        more bits. But, if we would like to be able to reverse the MortonIndex,
      *        then we cannot safely use more than MAX_UNIQUE_BITS per coordinate.
-     *******************************************************************************
      */
     MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
 
     /*!
-     *******************************************************************************
      * The number of iterations required for converting from MortonIndexes to
      * CoordType using the bit interleaving algorithm in MortonBase.
-     *******************************************************************************
      */
     CONTRACT_MAX_ITER = NumReps< MortonIndexType >::value,
 
     /*!
-     *******************************************************************************
      * The number of iterations required for converting between CoordTypes
      * and MortonIndexes using the bit interleaving algorithm in MortonBase.
-     *******************************************************************************
      */
     EXPAND_MAX_ITER = NumReps< MortonIndexType >::value
   };
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a 2D point to a Morton index
    *
    * Morton indexing interleaves the bits of the point's coordinates
@@ -239,7 +228,6 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
    * \note These preconditions can easily be relaxed, if desired
    *       (e.g. to 32 bits for 64 bit Morton indices)
    * \return The MortonIndex of the 2D point
-   *********************************************************************************
    */
   static inline MortonIndexType mortonize(CoordType x, CoordType y)
   {
@@ -248,11 +236,9 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
   }
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a 2D point to a Morton index
    *
    * \see mortonize(CoordType, CoordType)
-   *********************************************************************************
    */
   static inline MortonIndexType mortonize(const Point< CoordType,NDIM > & pt)
   {
@@ -261,7 +247,6 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
   }
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a Morton index back to a 2D point
    *
    * \param [in] morton The MortonIndex of the desired point
@@ -269,7 +254,6 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
    * \param [out] y The y-coordinate of the point
    *  Morton indexing interleaves the bits of the point's coordinates
    * \note The point's coordinates are returned in the x and y parameters
-   *********************************************************************************
    */
   static inline void demortonize(MortonIndexType morton, CoordType &x,
                                  CoordType & y)
@@ -281,11 +265,9 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
   }
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a Morton index back to a 2D point
    *
    * \see demortonize(MortonIndex,CoordType,CoordType)
-   *********************************************************************************
    */
   static inline Point< CoordType,NDIM > demortonize(MortonIndexType morton)
   {
@@ -295,16 +277,13 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
   }
 
   /*!
-   *********************************************************************************
    * \brief returns the maximum number of bits per coordinate
-   *********************************************************************************
    */
   static int maxBitsPerCoord() { return MAX_UNIQUE_BITS; }
 
 };
 
 /*!
- ***********************************************************************************
  * \class
  * \brief A 3D specialization of Mortonizer
  *
@@ -313,7 +292,6 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
  * Expand bits will add a 0 between every bit
  * and contract bits will remove every other bit
  * \see Mortonizer
- ***********************************************************************************
  */
 template < typename CoordType, typename MortonIndexType >
 struct Mortonizer< CoordType,MortonIndexType, 3 >
@@ -340,36 +318,29 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
     MB_PER_DIM = MORTON_BITS / NDIM,
 
     /*!
-     *******************************************************************************
      * The maximum number of unique bits from each coordinate of type CoordType
      *  that can be represented in a MortonIndex.
      *  \note If we are use Mortonizer as a (one-way) hash function,
      *        it is ok to use more bits. But, if we would like to be
      *        able to reverse the MortonIndex, then we cannot safely use
      *        more than MAX_UNIQUE_BITS per coordinate.
-     *******************************************************************************
      */
     MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
 
     /*!
-     *******************************************************************************
      * The number of iterations required for converting from MortonIndexes
      * to CoordType using the bit interleaving algorithm in MortonBase.
-     *******************************************************************************
      */
     CONTRACT_MAX_ITER = NumReps< MortonIndexType >::value,
 
     /*!
-     *******************************************************************************
      * The number of iterations required for converting between CoordTypes
      * and MortonIndexes using the bit interleaving algorithm in MortonBase.
-     *******************************************************************************
      */
     EXPAND_MAX_ITER = NumReps< MortonIndexType >::value -1
   };
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a 3D point to a Morton index
    *
    *  Morton indexing interleaves the bits of the point's coordinates
@@ -381,7 +352,6 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
    * \note These preconditions can easily be relaxed, if desired
    * (e.g. to 21 bits for 64 bit Morton indices)
    * \return The MortonIndex of the 2D point
-   *********************************************************************************
    */
   static inline MortonIndexType mortonize(CoordType x, CoordType y, CoordType z)
   {
@@ -393,11 +363,9 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
   }
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a 3D point to a Morton index
    *
    * \see mortonize(CoordType, CoordType, CoordType)
-   *********************************************************************************
    */
   static inline MortonIndexType mortonize(const Point< CoordType,NDIM > & pt)
   {
@@ -409,7 +377,6 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
   }
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a Morton index back to a 3D point
    *
    * \param [in] morton The MortonIndex of the desired point
@@ -418,7 +385,6 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
    * \param [out] z The z-coordinate of the point
    *  Morton indexing interleaves the bits of the point's coordinates
    * \note The point's coordinates are returned in the x, y and z parameters
-   *********************************************************************************
    */
   static inline void demortonize(MortonIndexType morton, CoordType &x,
                                  CoordType & y, CoordType &z)
@@ -431,11 +397,9 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
   }
 
   /*!
-   *********************************************************************************
    * \brief A function to convert a Morton index back to a 3D point
    *
    * \see demortonize(MortonIndex,CoordType,CoordType,CoordType)
-   *********************************************************************************
    */
   static inline Point< CoordType,NDIM > demortonize(MortonIndexType morton)
   {
@@ -445,9 +409,7 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
   }
 
   /*!
-   *********************************************************************************
    * \brief returns the maximum number of bits per coordinate
-   *********************************************************************************
    */
   static int maxBitsPerCoord() { return MAX_UNIQUE_BITS; }
 
@@ -500,11 +462,9 @@ const int Mortonizer< CoordType,MortonIndexType,
                       3 >::S[] = { 2, 4, 8, 16, 32, 0};
 
 /*!
- ***********************************************************************************
  * \brief A helper function to convert a point directly to a MortonIndex
  *
  * \return The Morton index of the point
- ***********************************************************************************
  */
 template < typename MortonIndexType, typename CoordType, int DIM >
 inline MortonIndexType convertPointToMorton(const Point< CoordType,DIM >& pt)
@@ -513,11 +473,9 @@ inline MortonIndexType convertPointToMorton(const Point< CoordType,DIM >& pt)
 }
 
 /*!
- ***********************************************************************************
  * \brief A helper function to convert a MortonIndex back to a point
  *
  * \return The demortonized Point
- ***********************************************************************************
  */
 template < typename CoordType, int DIM, typename MortonIndexType >
 inline Point< CoordType,DIM > convertMortonToPoint(MortonIndexType idx)
@@ -526,12 +484,10 @@ inline Point< CoordType,DIM > convertMortonToPoint(MortonIndexType idx)
 }
 
 /*!
- ***********************************************************************************
  * \class
  * \brief A functor class for Mortonizing points.
  *
  * This can be used as a hashing function for Points in dimensions 1..4
- ***********************************************************************************
  */
 template < typename CoordType >
 struct PointHash
@@ -539,13 +495,11 @@ struct PointHash
   typedef std::size_t MortonIndex;
 
   /*!
-   *********************************************************************************
    * \brief Mortonizes a coordinate (viewed as a 1D point)
    *
    * \note This is a no-op and is provided for genericity in point dimension
    * \param [in] coord The coordinate of the
    * \returns The morton index of the 1D point
-   *********************************************************************************
    */
   std::size_t operator()(CoordType & coord) const
   {
@@ -553,13 +507,11 @@ struct PointHash
   }
 
   /*!
-   *********************************************************************************
    * \brief Mortonizes a 1D point
    *
    * \note This is a no-op and is provided for genericity in point dimension
    * \param [in] pt The 1D point
    * \returns The morton index of the point
-   *********************************************************************************
    */
   std::size_t operator()(Point< CoordType,1 > const& pt) const
   {
@@ -567,12 +519,10 @@ struct PointHash
   }
 
   /*!
-   *********************************************************************************
    * \brief Mortonizes a 2D point
    *
    * \param [in] pt The 2D point
    * \returns The morton index of the point
-   *********************************************************************************
    */
   std::size_t operator()(Point< CoordType,2 > const& pt) const
   {
@@ -580,12 +530,10 @@ struct PointHash
   }
 
   /*!
-   *********************************************************************************
    * \brief Mortonizes a 3D point
    *
    * \param [in] pt The 3D point
    * \returns The morton index of the point
-   *********************************************************************************
    */
   std::size_t operator()(Point< CoordType,3 > const& pt) const
   {
@@ -593,12 +541,10 @@ struct PointHash
   }
 
   /*!
-   *********************************************************************************
    * \brief Mortonizes a 4D point
    *
    * \param [in] pt The 4D point
    * \returns A morton index of the point
-   *********************************************************************************
    */
   std::size_t operator()(Point< CoordType,4 > const& pt) const
   {

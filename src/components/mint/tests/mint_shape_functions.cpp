@@ -31,12 +31,10 @@ using mint::Lagrange;
 namespace {
 
 /*!
- *******************************************************************************
  * \brief Tests basic attributes of the shape function
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
@@ -84,9 +82,7 @@ void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
 }
 
 /*!
- *******************************************************************************
  * \brief Ensures shape functions satisfy the kronecker delta property.
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void kronecker_delta( )
@@ -123,9 +119,7 @@ void kronecker_delta( )
 }
 
 /*!
- *******************************************************************************
  * \brief Ensures shape functions satisfy the partition of unity property.
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void partition_of_unity()

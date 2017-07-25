@@ -36,48 +36,36 @@ class STLReader
 public:
 
     /*!
-     ***************************************************************************
      * \brief Constructor.
-     ***************************************************************************
      */
     STLReader();
 
     /*!
-     ***************************************************************************
      * \brief Destructor.
-     ***************************************************************************
      */
     virtual ~STLReader();
 
     /*!
-     ***************************************************************************
      * \brief Sets the name of the file to read.
      * \param [in] fileName the name of the file to read.
-     ***************************************************************************
      */
     void setFileName( const std::string& fileName ) { m_fileName = fileName; };
 
     /*!
-     ***************************************************************************
      * \brief Clears all internal data-structures
-     ***************************************************************************
      */
     void clear();
 
     /*!
-     ***************************************************************************
      * \brief Reads in the surface mesh from an STL file.
      * \pre m_fileName != ""
-     ***************************************************************************
      */
     virtual void read();
 
     /*!
-     ***************************************************************************
      * \brief Stores the STL data in the supplied unstructured mesh object.
      * \param [in,out] mesh pointer to the unstructured mesh.
      * \pre mesh != AXOM_NULLPTR.
-     ***************************************************************************
      */
     void getMesh( axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );
 

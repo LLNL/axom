@@ -23,7 +23,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the Linear Tetrahedron
  *
  * \verbatim
@@ -46,7 +45,6 @@ namespace mint {
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_TET > : public ShapeFunction< Lagrange< MINT_TET > >

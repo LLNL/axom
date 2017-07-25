@@ -24,7 +24,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the Quadratic Quadrilateral.
  *
  * \note The nodes are numbered in the following order: corners(4), edges(4)
@@ -45,7 +44,6 @@ namespace mint {
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_QUAD9 > : public ShapeFunction< Lagrange< MINT_QUAD9 > >

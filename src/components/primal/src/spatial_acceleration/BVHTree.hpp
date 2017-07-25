@@ -31,7 +31,6 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \class BVHTree
  *
  * \brief The BVHTree class provides functionality for generating a
@@ -46,7 +45,6 @@ namespace primal {
  * \tparam NDIMS the number of dimensions
  *
  * \see BoundingBox, Point
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 class BVHTree
@@ -58,63 +56,49 @@ public:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor, creates an empty BVHTree instance.
    * \param [in] maxNumLevel maximum number of subdivision levels. Default is 5.
-   *****************************************************************************
    */
   BVHTree( int maxNumLevel=5 );
 
   /*!
-   *****************************************************************************
    * \brief Creates a BoundingBoxTree instance that can grow up to the specified
    *  number of levels and can hold approximately the given number of objects.
    * \param [in] estNumObjects user-supplied estimated number of objects.
    * \param [in] maxNumLevels the maximum number of levels.
    * \note It is recommended to use this constructor for best-performance.
-   *****************************************************************************
    */
   BVHTree( int estNumObjects, int maxNumLevels );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~BVHTree();
 
   /*!
-   *****************************************************************************
    * \brief Returns the maximum number of levels in the tree possible.
    * \return N the maximum number of levels in the tree.
-   *****************************************************************************
    */
   int getMaxNumLevels() const { return m_maxNumLevels; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of levels in the given BVHTree instance.
    * \return N the number of levels in the BVHTree.
-   *****************************************************************************
    */
   int getNumLevels() const { return m_numLevels; };
 
   /*!
-   *****************************************************************************
    * \brief Inserts an object, identified by its bounding box and user-supplied
    *  data, to the bucket tree.
    * \param [in] box Axis-Aligned bounding box enclosing the object.
    * \param [in] data user-supplied data associated with the object.
-   *****************************************************************************
    */
   void insert( const BoxType& box, const T& data );
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of inserted objects in the tree.
    * \return N the total number of objects.
    * \post N >= 0.
-   *****************************************************************************
    */
   int getNumberOfObjects() const
   {
@@ -122,29 +106,23 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Builds a hierarchical decomposition of axis-aligned bounding boxes
    *  that partitions the set of objects in different buckets.
    * \param [in] threshold subdivision threshold, buckets consisting of a number
    *  of objects greater than the given threshold will be subdivided.
-   *****************************************************************************
    */
   void build( int threshold=25 );
 
   /*!
-   *****************************************************************************
    * \brief Checks if the tree is empty.
    * \return status true if the tree is empty, otherwise, false.
-   *****************************************************************************
    */
   bool empty() const { return m_tree.empty(); };
 
   /*!
-   *****************************************************************************
    * \brief Deletes the tree and all associated objects.
    * \post this->empty() == true.
    * \post this->getNumberOfObjects() == 0.
-   *****************************************************************************
    */
   void clear();
 
@@ -152,22 +130,18 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Checks if the point is inside the BVHTree.
    * \param [in] pt the point in query.
    * \return status true if the point is inside, else false.
-   *****************************************************************************
    */
   bool contains( const PointType& pt ) const;
 
   /*!
-   *****************************************************************************
    * \brief Finds a subset of candidate buckets for the given point query.
    * \param [in] pt the point in query.
    * \param [out] candidate_buckets list of bucket IDs for the given point query.
    * \pre this->empty()==false.
    * \pre candidate_buckets.size()==0
-   *****************************************************************************
    */
   void find( const PointType& pt, std::vector< int >& candidate_buckets ) const;
 
@@ -177,61 +151,50 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns a const reference to the bounding box of the given bucket.
    * \param [in] bucketIdx the index of the bucket in query.
    * \return Box the bounding box of the bucket.
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
    * \post Box.isValid() == true.
-   *****************************************************************************
    */
   const BoxType& getBucketBox( int bucketIdx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of object within the given bucket.
    * \param [in] bucketIdx the index of the bucket in query.
    * \return N the number of object within the given bucket.
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
    * \post N >= 0
-   *****************************************************************************
    */
   int getBucketNumObjects( int bucketIdx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Return const pointer to the object array of the given bucket.
    * \param [in] bucketIdx the index of the bucket in query.
    * \return arrayPtr pointer to the buckets object array
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
    * \post arryPtr != AXOM_NULLPTR
-   *****************************************************************************
    */
   const int* getBucketObjectArray( int bucketIdx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns a const reference to the bounding box of the given object.
    * \param [in] objIdx the ID of the object in query.
    * \return Box the bounding box of the given object.
    * \post Box.isValid() == true.
-   *****************************************************************************
    */
   const BoxType& getObjectBox( int objIdx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns const reference to the data associated with the given object.
    * \param objIdx the ID of the object in query.
    * \return data the data associated with the object.
    * \note The return data is the data supplied when the object was inserted.
    * \pre objIdx >= 0 && objIdx < this->getNumberOfObjects()
-   *****************************************************************************
    */
   const T& getObjectData( int objIdx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the bucket index of the given object.
    * \param [in] objIdx the ID of the object in query.
    * \return bucketIdx the bucket index.
@@ -241,31 +204,26 @@ public:
    *   <li> bucketIdx < 0, iff the tree is not built </li>
    *   <li> bucketIdx >= 0 && bucektIdx < this->getNumberO</li>
    *  </ul>
-   *****************************************************************************
    */
   int getObjectBucketIndex( int objIdx ) const;
 
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Writes the hierarchical decomposition in a VTK file.
    * \param [in] fileName the name of the VTK formatted file to generate.
    * \param [in] include_objects optional parameter, when true it also writes
    *  out the bounding boxes of the supplied objects.
-   *****************************************************************************
    */
   void writeVtkFile( const std::string& fileName,
                      bool include_objects=false ) const;
 
   /*!
-   *****************************************************************************
    * \brief Writes the user-supplied set of bins in a VTK file.
    * \param [in] fileName the name of the VTK formatted file to generate.
    * \param [in] bins array of bins to dump in the VTK file.
    * \param [in] nbins the number of bins.
    * \note Primarily used for debugging.
-   *****************************************************************************
    */
   void writeVtkFile( const std::string& fileName,
                      const int* bins,
@@ -277,13 +235,11 @@ private:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Given a flat index of a bucket, find its parent index in the tree.
    * \param [in] i the index of the bucket in query.
    * \return p the flat index of the parent bucket.
    * \post p==-1 if i corresponds to the root bucket, otherwise, p >= 0.
    * \pre i >= 0
-   *****************************************************************************
    */
   static int parent( int i)
   {
@@ -292,13 +248,11 @@ private:
   };
 
   /*!
-   *****************************************************************************
    * \brief Given a flat index of a bucket, find its right child tree index.
    * \param [in] i the index of the bucket in query.
    * \return r the flat index of the right child bucket.
    * \pre i >= 0
    * \post r > 0
-   *****************************************************************************
    */
   static int right_child( int i)
   {
@@ -307,13 +261,11 @@ private:
   };
 
   /*!
-   *****************************************************************************
    * \brief Given the flat index of a bucket, find its left child tree index.
    * \param [in] i the index of the bucket in query.
    * \return l the flat index of the left child bucket.
    * \pre i >= 0
    * \post l > 0
-   *****************************************************************************
    */
   static int left_child( int i)
   {
@@ -322,13 +274,11 @@ private:
   };
 
   /*!
-   *****************************************************************************
    * \brief Computes the value of 2 raised to the nth power.
    * \param n user-supplied power.
    * \note Uses bit shifting to avoid potentially expensive calls to std::pow().
    * \return result the value of \f$ 2^n \f$
    * \pre n >= 0
-   *****************************************************************************
    */
   static int pow2( int n )
   {
@@ -337,12 +287,10 @@ private:
   };
 
   /*!
-   *****************************************************************************
    * \brief Computes the linear index of the 1st bucket within the level.
    * \param [in] l the level index in query (starting from 0).
    * \return idx the index of the 1st bucket within the level.
    * \pre l >= 0
-   *****************************************************************************
    */
   static int level_begin( int l )
   {
@@ -351,12 +299,10 @@ private:
   }
 
   /*!
-   *****************************************************************************
    * \brief Computes the linear index of the last bucket within the level.
    * \param [in] l the level index in query (starting from 0).
    * \return idx the index of the last bucket within the level.
    * \pre l >= 0
-   *****************************************************************************
    */
   static int level_end( int l )
   {
@@ -365,12 +311,10 @@ private:
   }
 
   /*!
-   *****************************************************************************
    * \brief Writes the box to the given C++ stream.
    * \param [in,out] oss the output string stream to write the box coordinates.
    * \param [in] box a 2-D bounding box instance.
    * \note This is just a helper routine used when writing out the tree.
-   *****************************************************************************
    */
   static int write_box( std::ostringstream& oss,
                         const BoundingBox< double,2 >& box )
@@ -388,12 +332,10 @@ private:
   }
 
   /*!
-   *****************************************************************************
    * \brief Writes the box to the given C++ stream.
    * \param [in,out] oss the output string stream to write the box coordinates.
    * \param [in] box a 3-D bounding box instance.
    * \note This is just a helper routine used when writing out the tree.
-   *****************************************************************************
    */
   static int write_box( std::ostringstream& oss,
                         const BoundingBox< double,3 >& box )
@@ -417,7 +359,6 @@ private:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Helper routine used to determine if bucket should be refined.
    * \param [in] idx index of the bucket in the tree.
    * \param [in] threshold allowable number of objects in a bucket.
@@ -429,32 +370,26 @@ private:
    *  </ol>
    * \note Used in BVHTree::build()
    * \pre idx >= 0 && idx < m_tree.size()
-   *****************************************************************************
    */
   bool shouldRefine( int idx, int threshold );
 
   /*!
-   *****************************************************************************
    * \brief Helper routine used to refine a bucket in the tree.
    * \param [in] idx index of the bucket in the tree.
    * \note Used in BVHTree::build()
    * \pre idx >= 0 && idx  < m_tree.size()
-   *****************************************************************************
    */
   void refine( int idx );
 
   /*!
-   *****************************************************************************
    * \brief Resizes this BVHTree instance (as needed) to store the level.
    * \param [in] level the level to resize the tree to.
    * \note Helper method used in refine().
    * \note Method resizes as needed, otherwise, this method returns immediately.
-   *****************************************************************************
    */
   void resizeToLevel( int level );
 
   /*!
-   *****************************************************************************
    * \brief Propagates the data from the parent bucket to the children.
    * \param [in] parent the ID of the parent bucket.
    * \param [in] rChild the ID of the right child.
@@ -465,29 +400,24 @@ private:
    * \pre lChild >= 0 && lChild < m_tree.size()
    * \pre m_tree[ rChild ].Level > m_tree[ parent ].Level
    * \pre m_tree[ lChild ].Level > m_tree[ parent ].Level
-   *****************************************************************************
    */
   void percolateDown( int parent, int rChild, int lChild );
 
   /*!
-   *****************************************************************************
    * \brief Computes the min squared distance of a point to the given bucket.
    * \param [in] bucketIdx index of the bucket in query.
    * \param [in] pt the user-supplied point in query.
    * \return min the minimum squared distance to the bucket.
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
-   *****************************************************************************
    */
   double getMinSqDistanceToBucket( int bucketIdx, const PointType& pt ) const;
 
   /*!
-   *****************************************************************************
    * \brief Computes the max squared distance of a point to the given bucket.
    * \param [in] bucketIdx index of the bucket in query.
    * \param [in] pt the user-supplied point in query.
    * \return max the maximum squared distance to the bucket.
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
-   *****************************************************************************
    */
   double getMaxSqDistanceToBucket( int bucketIdx, const PointType& pt ) const;
 
