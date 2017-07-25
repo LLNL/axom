@@ -9,6 +9,7 @@ set(axom_utils_headers
 
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
+    detail/TickCountTimer.hpp
 
     numerics/Determinants.hpp
     numerics/linear_solve.hpp

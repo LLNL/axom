@@ -335,7 +335,7 @@ TEST( numerics_matrix, getRow )
 
   int row_sums[ ] = { 0, 0, 0 };
 
-  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  typedef numerics::Matrix< int >::IndexType IndexType;
   for ( IndexType i=0; i < N; ++i ) {
      A.fillRow( i, i+1 );
      row_sums[ i ] = N*(i+1);
@@ -494,7 +494,7 @@ TEST( numerics_matrix, swapRows )
 
   A.swapRows( 0, 1 );
 
-  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  typedef numerics::Matrix< int >::IndexType IndexType;
 
   for ( IndexType i=0; i < N; ++i ) {
      int* column = A.getColumn( i );
@@ -511,7 +511,7 @@ TEST( numerics_matrix, swapColumns )
   const int M=3;
   const int N=4;
 
-  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  typedef numerics::Matrix< int >::IndexType IndexType;
 
   // setup a test matrix
   numerics::Matrix< int > A( M,N );

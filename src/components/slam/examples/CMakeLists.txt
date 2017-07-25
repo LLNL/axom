@@ -39,18 +39,6 @@ foreach(example_source ${example_sources})
         )
 endforeach()
 
-#
-# Slam (MeshAPI) version of lulesh 2.0
-#
-add_subdirectory(lulesh2.0.3)
-
-# Original lulesh example
-
-set(buildOrigLulesh TRUE)        # ---- Controls whether original Lulesh should build
-if ( ${buildOrigLulesh} )
-   add_subdirectory(lulesh2.0.3_orig)
-endif()
-
 
 #
 # Slam (MeshAPI) version of tinyHydro
@@ -77,4 +65,20 @@ if(BOOST_FOUND)
         COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data
         )
 
+endif()
+
+
+#
+# Slam (MeshAPI) version of lulesh 2.0
+# Note: Disabled on windows builds due to usage of unix APIs.
+#
+if(NOT WIN32)
+	add_subdirectory(lulesh2.0.3)
+
+	# Original lulesh example
+
+	set(buildOrigLulesh TRUE)        # ---- Controls whether original Lulesh should build
+	if ( ${buildOrigLulesh} )
+	   add_subdirectory(lulesh2.0.3_orig)
+	endif()
 endif()

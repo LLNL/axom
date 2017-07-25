@@ -654,7 +654,7 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
 
   // STEP 1: pre-allocated space for object at the children
   const int numObjects   = m_tree[ parent ].ObjectArray.size();
-  const int estChildSize = 0.5 * numObjects;
+  const int estChildSize = static_cast<int>(0.5 * numObjects);
   m_tree[ rChild ].ObjectArray.reserve( estChildSize );
   m_tree[ lChild  ].ObjectArray.reserve( estChildSize );
 

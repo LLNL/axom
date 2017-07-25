@@ -36,7 +36,8 @@
 #cmakedefine AXOM_USE_STD_UNORDERED_MAP
 
 
-/* OpenMP is a special case since it varies by target and the compiler
+/* 
+ * OpenMP is a special case since it varies by target and the compiler
  * provides its own definition. For consistency, the project exposes
  * and uses this through its own AXOM_USE define.
  */
@@ -44,6 +45,14 @@
 #define AXOM_USE_OPENMP
 #else
 #undef AXOM_USE_OPENMP
+#endif
+
+
+/* 
+ * We need to explicitly add math definitions on Windows 
+ */
+#ifdef WIN32
+#define _USE_MATH_DEFINES
 #endif
 
 

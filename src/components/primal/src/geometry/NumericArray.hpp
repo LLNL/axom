@@ -574,7 +574,7 @@ inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator*=( double scalar )
 {
   for ( int i=0; i < SIZE; ++i ) {
-    m_components[ i ] *= scalar;
+    m_components[ i ] = static_cast<T>(m_components[ i ] * scalar);
   }
 
   return *this;

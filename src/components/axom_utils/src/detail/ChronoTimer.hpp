@@ -8,6 +8,16 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ ***********************************************************************************
+ * \file ChronoTimer.hpp
+ * 
+ * \brief A C++11 chrono-based timer implementation for axom's Timer class
+ *
+ * \note ChronoTimer is an internal helper class, not meant for external usage.
+ * It is intended to be used by axom's Timer class in C++11 configurations.
+ ***********************************************************************************
+ */
 
 #ifndef CHRONO_TIMER_HPP_
 #define CHRONO_TIMER_HPP_
@@ -32,6 +42,7 @@ namespace detail {
    */
   class ChronoTimer
   {
+  private:
     typedef std::chrono::high_resolution_clock        ClockType;
     typedef std::chrono::time_point<ClockType>        TimeStruct;
     typedef std::chrono::duration<double>             TimeDiff;

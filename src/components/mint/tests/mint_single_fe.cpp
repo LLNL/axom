@@ -75,7 +75,7 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 
     for ( int i=0; i < ndims; ++i ) {
 
-      typedef typename numerics::Matrix< double >::IndexType IndexType;
+      typedef numerics::Matrix< double >::IndexType IndexType;
       IndexType p = 0;
       IndexType N = 0;
       const double* xp_i = physical_nodes.getRow(i,p,N);
@@ -897,7 +897,7 @@ void check_interp( double TOL=1.e-9 )
 //------------------------------------------------------------------------------
 TEST( mint_single_fe, check_override_max_newton )
 {
-  typedef typename mint::UnstructuredMesh< MINT_QUAD > MeshType;
+  typedef mint::UnstructuredMesh< MINT_QUAD > MeshType;
 
   const int MAX_NEWTON = 42; // test value to override max newton
 

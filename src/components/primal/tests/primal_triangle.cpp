@@ -73,7 +73,7 @@ TEST( primal_triangle, triangle_area_3D)
   EXPECT_NEAR(tri.area(), 0.5,              EPS );
 
   tri = QTri(pt[1],pt[2],pt[3]);
-  EXPECT_NEAR(tri.area(), std::sqrt(3)/2.,  EPS );
+  EXPECT_NEAR(tri.area(), std::sqrt(3.)/2.,  EPS );
 }
 
 //------------------------------------------------------------------------------

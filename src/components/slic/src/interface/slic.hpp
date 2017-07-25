@@ -54,7 +54,7 @@
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
  ******************************************************************************
@@ -79,7 +79,7 @@
       oss << msg;                                                             \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);               \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -105,7 +105,7 @@
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
  ******************************************************************************
@@ -129,7 +129,7 @@
       oss << msg;                                                             \
       axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );            \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -162,7 +162,7 @@
       oss << "Failed Assert: " << # EXP << std::ends;                         \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
  ******************************************************************************
@@ -188,7 +188,7 @@
       oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;     \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -224,7 +224,7 @@
         axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
       }                                                                       \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
  ******************************************************************************
@@ -254,7 +254,7 @@
         axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
       }                                                                       \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -289,7 +289,7 @@
                            , oss.str()                                        \
                            ,__FILE__                                          \
                            , __LINE__ );                                      \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 #ifdef AXOM_DEBUG
 
@@ -315,7 +315,7 @@
                            , oss.str()                                        \
                            ,__FILE__                                          \
                            , __LINE__ );                                      \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 #else // turn off debug macros
 
@@ -597,6 +597,25 @@ void finalize();
  *******************************************************************************
  */
 std::string stacktrace( );
+
+
+namespace detail {
+  /*!
+   ****************************************************************************
+   * Variable of a type that evaluates as false.
+   *
+   * \note Workaround for warnings about constant expressions in slic macros.
+   ****************************************************************************
+   */
+  struct FalseType 
+  {
+    FalseType() {}
+    inline operator bool() const { return false; }
+  };
+  
+  static const FalseType false_value;
+
+} /* namespace detail */
 
 } /* namespace slic */
 

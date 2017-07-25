@@ -444,19 +444,17 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
 
     return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
   }
-  else{
-    //if z projection area greatest, project on XY and return 2D checker
-    const Triangle2 t1_2da = Triangle2(Point2::make_point(p1[0],p1[1]),
-                                       Point2::make_point(q1[0],q1[1]),
-                                       Point2::make_point(r1[0],r1[1]));
 
-    const Triangle2 t2_2da = Triangle2(Point2::make_point(p2[0],p2[1]),
-                                       Point2::make_point(q2[0],q2[1]),
-                                       Point2::make_point(r2[0],r2[1]));
+  //if z projection area greatest, project on XY and return 2D checker
+  const Triangle2 t1_2da = Triangle2(Point2::make_point(p1[0],p1[1]),
+                                      Point2::make_point(q1[0],q1[1]),
+                                      Point2::make_point(r1[0],r1[1]));
 
-    return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
-  }
-  return false;
+  const Triangle2 t2_2da = Triangle2(Point2::make_point(p2[0],p2[1]),
+                                      Point2::make_point(q2[0],q2[1]),
+                                      Point2::make_point(r2[0],r2[1]));
+
+  return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
 }
 
 /** @} */

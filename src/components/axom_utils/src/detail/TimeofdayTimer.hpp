@@ -8,6 +8,17 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ ***********************************************************************************
+ * \file TimeOfDayTimer.hpp
+ * 
+ * \brief A glibc based timer implementation for axom's Timer class
+ *
+ * \note TimeOfDayTimer is an internal helper class, not meant for external usage.
+ * It is intended to be used by axom's Timer class in unix-based configurations.
+ ***********************************************************************************
+ */
+
 #ifndef TIMEOFDAY_TIMER_HPP_
 #define TIMEOFDAY_TIMER_HPP_
 
@@ -29,13 +40,13 @@ namespace detail {
    */
   class TimeofdayTimer
   {
+  private:
     typedef timeval                             TimeStruct;
     typedef long int                            TimeDiff;
 
-    enum { TIMER_ONE      = 1
-         , TIMER_THOUSAND = 1000
-         , TIMER_MILLION  = 1000000
-    };
+     enum { TIMER_ONE      = 1, 
+            TIMER_THOUSAND = 1000, 
+            TIMER_MILLION  = 1000000 };
 
   public:
     /** \brief Constructor for TimeOfDayTimer instance */

@@ -75,7 +75,7 @@ bool STLReader::isAsciiFormat() const
 
     // Find out the file size
     ifs.seekg(0, ifs.end);
-    axom::common::int32 fileSize = ifs.tellg();
+    axom::common::int32 fileSize = static_cast<axom::common::int32>(ifs.tellg());
     
     const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(axom::common::int32));
     if(fileSize < totalHeaderSize)

@@ -209,9 +209,10 @@ TEST(gtest_slam_relation_dynamic_variable,iterate_relation)
     }
   }
 #else
-  SLIC_WARNING("Must compile with boost enabled to test iterators")
+  SLIC_WARNING("Must compile with boost enabled to test iterators");
 #endif
 }
+
 
 
 //----------------------------------------------------------------------
