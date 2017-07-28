@@ -224,12 +224,12 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
 
   SLIC_INFO(" *** PASS ***");
 
-  if(false)
-  {
-    // tmp workaround for compiler error about unused variables
-    SLIC_INFO(f12 << f13 << u0 << u11 << u12);
-  }
-
+  // Deal with unused variables
+  AXOM_DEBUG_VAR(f12);
+  AXOM_DEBUG_VAR(f13);
+  AXOM_DEBUG_VAR(u0);
+  AXOM_DEBUG_VAR(u11);
+  AXOM_DEBUG_VAR(u12);
 }
 
 

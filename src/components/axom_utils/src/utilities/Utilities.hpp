@@ -10,13 +10,11 @@
 
 
 /*!
- ******************************************************************************
  *
  * \file Utilities.hpp
  *
  * \brief Header file containing utility functions.
  *
- ******************************************************************************
  */
 
 #ifndef AXOM_UTILITIES_HPP_
@@ -63,6 +61,21 @@ namespace utilities {
   }
 
   /*!
+   * \brief Clamps an input value to a given range.
+   * \param [in] val  The value to clamp
+   * \param [in] lower The lower range
+   * \param [in] upper The upper range
+   * \return The clamped value.
+   * \post lower <= returned value <= upper.
+   */
+  template < typename T >
+  inline T clampVal( T val, T lower, T upper )
+  {
+    return (val < lower) ? lower
+        : (val > upper) ? upper : val;
+  }
+
+  /*!
    * Tests the endianness of the system
    *
    * \return True, if the system is little endian, false otherwise
@@ -101,10 +114,10 @@ namespace utilities {
     AXOM_STATIC_ASSERT_MSG( NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
         "swapEndian only valid for types of size 2, 4 or 8 bytes.");
 
-#ifdef AXOM_USE_CXX11
+  #ifdef AXOM_USE_CXX11
     AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
        "swapEndian only valid for native arithmetic types");
-#endif
+  #endif
 
     union
     {
@@ -160,7 +173,7 @@ namespace utilities {
   }
 
 
-}  // ending brace for utilities namespace
-}  // ending brace for axom namespace
+}  // namespace utilities
+}  // namespace axom
 
 #endif  // AXOM_UTILITIES_HPP_

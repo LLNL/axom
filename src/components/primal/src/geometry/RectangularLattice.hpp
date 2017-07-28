@@ -25,7 +25,6 @@ namespace axom {
 namespace primal {
 
 /*!
- ***********************************************************************************
  * \class RectangularLattice
  * \brief A rectangular lattice maps all of space (of dimension NDIMS)
  *        into a rectangular grid of cells identified by integer coordinates.
@@ -47,7 +46,6 @@ namespace primal {
  *
  * A RectangularLattice is defined by an origin (a SpacePoint)
  * and a grid spacing (a SpaceVector).
- ***********************************************************************************
  */
 template < int NDIMS,
            typename SpaceCoordType = double,
@@ -62,11 +60,9 @@ public:
   typedef primal::BoundingBox< SpaceCoordType, NDIMS >   SpatialBoundingBox;
 
   /*!
-   *********************************************************************************
    * \brief Default constructor
    *
    * \note Sets the origin to 0 and spacing to 1 in each dimension
-   *********************************************************************************
    */
   RectangularLattice()
     : m_origin(SpaceCoordType(0)),
@@ -75,12 +71,10 @@ public:
   {}
 
   /*!
-   *********************************************************************************
    * \brief Constructor from a given origin.
    *
    * \param origin The lattice's origin
    * \note Spacing will be set to default (vector of ones)
-   *********************************************************************************
    */
   RectangularLattice(const SpacePoint& origin)
     : m_origin(origin),
@@ -89,12 +83,10 @@ public:
   {}
 
   /*!
-   *********************************************************************************
    * \brief Constructor from a given origin and spacing.
    *
    * \param origin The lattice's origin
    * \param spacing The lattice's spacing
-   *********************************************************************************
    */
   RectangularLattice(const SpacePoint& origin, const SpaceVector & spacing)
     : m_origin(origin), m_spacing(spacing)
@@ -110,7 +102,6 @@ public:
   }
 
   /*!
-   *********************************************************************************
    * \brief Constructor from SpaceCoordType arrays
    *
    * \param origin_date An array containing the origin's coordinates
@@ -121,7 +112,6 @@ public:
    *
    * \pre When spacing_data is not NULL, it must have at least NDIMS entries
    * \note Spacing will be set to vector or ones if pointer is NULL
-   *********************************************************************************
    */
   RectangularLattice(SpaceCoordType* origin_data, SpaceCoordType* spacing_data)
   {
@@ -175,11 +165,9 @@ public:
   }
 
   /*!
-   *********************************************************************************
    * \brief Find the spatial bounding box of a lattice cell
    *
    * \note The bounding box covers all points in space that map to gridCell
-   *********************************************************************************
    */
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
@@ -203,7 +191,6 @@ private:
 };
 
 /*!
- ***********************************************************************************
  * \brief Helper function to create a Rectangular Lattice from
  * a supplied bounding box and grid resolution
  *
@@ -214,7 +201,6 @@ private:
  * It extracts the lattice spacing from the supplied bounding box
  * and resolution, and sets the lattice origin to the bounding box's
  * minimum corner position.
- ***********************************************************************************
  */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
 RectangularLattice< NDIMS, SpaceCoordType, CellCoordType >

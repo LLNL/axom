@@ -25,13 +25,11 @@ namespace mint {
 class Mesh;
 
 /*!
- *******************************************************************************
  * \enum
  *
  * \brief Enum of return codes from FiniteElement::computeReferenceCoords()
  *
  * \see FiniteElement::computeReferenceCoords()
- *******************************************************************************
  */
 enum {
   INVERSE_MAP_FAILED = -1, /*!< INVERSE_MAP_FAILED */
@@ -40,7 +38,6 @@ enum {
 };
 
 /*!
- *******************************************************************************
  * \brief The FiniteElement object is used to represent a mesh element
  *  \f$ \Omega^e \f$ corresponding to a mesh \f$ \mathcal{M} \f$ .
  *
@@ -97,14 +94,12 @@ enum {
  * \see CellType.hpp
  * \see FEBasisTypes.hpp
  * \see ShapeFunction
- *******************************************************************************
  */
 class FiniteElement
 {
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructs a FiniteElement instance corresponding to a mesh element.
    *
    * \param [in] mesh pointer to the mesh object
@@ -118,19 +113,15 @@ public:
    * \pre cellIdx >= 0 && cellIdx < mesh->MeshNumberOfCells()
    *
    * \see mint::Mesh
-   *****************************************************************************
    */
   FiniteElement( const Mesh* mesh, int cellIdx );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~FiniteElement();
 
   /*!
-   *****************************************************************************
    * \brief Overrides the max number of iterations for the Newton-Raphson, used
    *  for the isoparametric inverse mapping from physical coordinates to
    *  reference coordinates.
@@ -144,84 +135,66 @@ public:
    *  method should be called after bind_basis() is invoked.
    *
    * \param [in] N user-supplied number for
-   *****************************************************************************
    */
   void setMaxSolverIterations(int numIters) { m_maxNewtonIterations=numIters; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the max number of iterations used for the Newton-Raphson.
    * \return N max number of iterations for the Newton-Raphson
-   *****************************************************************************
    */
   int getMaxSolverIterations( ) const { return m_maxNewtonIterations; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the Cell ID on the mesh corresponding to this FiniteElement.
    * \return idx ID of the cell corresponding to this instance.
-   *****************************************************************************
    */
   int getCellId() const { return m_cellIdx; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell type associated with this FiniteElement instance.
    * \return ctype the corresponding cell type.
    * \post (ctype != MINT_UNDEFINED_CELL) && (ctype < MINT_NUM_CELL_TYPES)
    * \see CellType.hpp for a list of possible return values.
-   *****************************************************************************
    */
   int getCellType() const { return m_ctype; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the Basis associated with this FiniteElement instance.
    * \return basis the basis type, may be MINT_UNDEFINED_BASIS if no basis
    *  is bound to this FiniteElement.
    *
    * \see FEBasis
-   *****************************************************************************
    */
   int getBasisType() const { return m_shape_func_type; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the physical dimension for this FiniteElement instance.
    * \return dim the dimension of this FiniteElement.
-   *****************************************************************************
    */
   int getPhysicalDimension() const { return m_dim; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the dimension of the element in reference space.
    * \return ref_dim the reference dimension of the element.
    * \post ref_dim \f$ \in [1,3] \f$
-   *****************************************************************************
    */
   int getReferenceDimension() const { return m_reference_dim; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes, i.e., degrees-of-freedom (dofs) of the
    *  FiniteElement.
    * \return N the number of nodes of the element
-   *****************************************************************************
    */
   int getNumNodes() const { return m_numnodes; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of degrees of freedom associated with the
    *  Finite Element basis bound to this FiniteElement instance.
    * \return N the number of degrees of freedom, or -1 if no basis is set.
-   *****************************************************************************
    */
   int getNumDofs() const { return m_numdofs; };
 
   /*!
-   *****************************************************************************
    * \brief Returns a pointer to the nodes of the element in physical space,
    *  \f$ \forall\hat{x_i} \in \Omega^e \f$
    *
@@ -253,7 +226,6 @@ public:
    * \see numerics::Matrix
    *
    * \post ptr != AXOM_NULLPTR
-   *****************************************************************************
    */
   /// @{
 
@@ -263,7 +235,6 @@ public:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Returns a pointer to the nodes of the element in reference space,
    *  \f$ \forall\hat{\xi_i} \in \bar{\Omega}^e \f$
    *
@@ -292,7 +263,6 @@ public:
    *  \endcode
    *
    * \post ptr == AXOM_NULLPTR iff getBasisType()==MINT_UNDEFINED_BASIS
-   *****************************************************************************
    */
   /// @{
 
@@ -302,7 +272,6 @@ public:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Returns a pointer to the centroid of the reference element
    *  \f$ \xi_c \in \bar{\Omega}^e \f$
    *
@@ -312,7 +281,6 @@ public:
    *
    * \note ptr points to a buffer that is ndims long, where ndims is the
    *  dimension of the reference element.
-   *****************************************************************************
    */
   /// @{
 
@@ -322,7 +290,6 @@ public:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Given a point in physical space, \f$ \bar{x_p} \f$, this
    *  method computes the corresponding reference coordinates,
    *  \f$ \bar{xi} \f$ in the reference space of the element.
@@ -341,14 +308,12 @@ public:
    * \pre xp != AXOM_NULLPTR
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
-   *****************************************************************************
    */
   int computeReferenceCoords( const double* xp,
                               double* xr,
                               double TOL=1.e-12 );
 
   /*!
-   *****************************************************************************
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
    *  this method computes the corresponding physical coordinates, given by
    *  \f$ \mathbf{x}(\xi)=\sum\limits_{i=0}^n{N}_i^e({\xi}){x_i} \f$
@@ -359,12 +324,10 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre xp != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
-   *****************************************************************************
    */
   void computePhysicalCoords( const double* xr, double* xp);
 
   /*!
-   *****************************************************************************
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
    *  this method computes the jacobian, \f$ \mathcal{J}(\xi) \f$
    *
@@ -373,12 +336,10 @@ public:
    *
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
-   *****************************************************************************
    */
   void jacobian( const double* xr, numerics::Matrix<double>& J );
 
   /*!
-   *****************************************************************************
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
    *  this method evaluates the shape functions at each degree of freedom,
    *  \f$ \phi_i(\xi)=N_i^e(\xi) \f$
@@ -390,12 +351,10 @@ public:
    *
    * \pre xr != AXOM_NULLPTR
    * \pre phi != AXOM_NULLPTR
-   *****************************************************************************
    */
   void evaluateShapeFunctions( const double* xr, double* phi );
 
   /*!
-   *****************************************************************************
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
    *  this method evaluates the first derivatives of the shape function at
    *  each degree of freedom, \f$ \partial\phi_i(\xi)=N_i^e(\xi) \f$
@@ -435,7 +394,6 @@ public:
    *
    * \pre xr != AXOM_NULLPTR
    * \pre phidot != AXOM_NULLPTR
-   *****************************************************************************
    */
   void evaluateDerivatives( const double* xr, double* phidot );
 
@@ -443,7 +401,6 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Binds the given FiniteElement instance to a FiniteElement basis.
    *
    * \param [in] fe reference to a finite element object.
@@ -452,7 +409,6 @@ public:
    * \tparam CellType  the cell type, e.g., MINT_QUAD, etc.
    *
    * \post fe.getBasisType() != MINT_UNDEFINED_BASIS
-   *****************************************************************************
    */
   template < int BasisType, int CellType >
   friend void bind_basis( FiniteElement& fe );
@@ -465,22 +421,17 @@ private:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Helper method used to allocate internal data-structures.
-   *****************************************************************************
    */
   void setUp();
 
   /*!
-   *****************************************************************************
    * \brief Helper method used to deallocate all dynamically allocated memory
    *  and destroy internal data-structures.
-   *****************************************************************************
    */
   void tearDown();
 
   /*!
-   *****************************************************************************
    * \brief Helper method to get the coordinates of this FiniteElement instance
    *  from a corresponding cell on a given mesh.
    *
@@ -489,12 +440,10 @@ private:
    *
    * \pre m != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < m->getMeshNumberOfCells()
-   *****************************************************************************
    */
   void getCellCoords( const Mesh* m, int cellIdx );
 
   /*!
-   *****************************************************************************
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
    *  this method checks if the point is inside the reference element.
    *
@@ -517,17 +466,14 @@ private:
    * \return status true if inside the reference element, otherwise, false.
    *
    * \pre xr != AXOM_NULLPTR
-   *****************************************************************************
    */
   bool inReferenceElement( const double* xr, double TOL=1.e-12 );
 
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent host-code from calling this.
-   *****************************************************************************
    */
   FiniteElement(): m_dim( -1 ),
                    m_cellIdx( -1 ),

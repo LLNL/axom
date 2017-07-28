@@ -9,9 +9,7 @@
  */
 
 /*!
- *******************************************************************************
  * \file utils_TaskTimer.cpp
- *******************************************************************************
  */
 
 #include "gtest/gtest.h"
@@ -22,7 +20,8 @@
 #include "windows.h"
 void sleep(int numSeconds)
 {
-  Sleep( numSeconds );
+  int numMilliSecs = numSeconds * 1000;
+  Sleep( numMilliSecs );
 }
 #else
 #include <unistd.h> // for sleep()

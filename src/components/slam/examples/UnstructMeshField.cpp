@@ -107,7 +107,7 @@ namespace slamUnstructuredHex {
           STLIndirection,
           NodeSet,
           ZoneSet>                                                                NodeToZoneRelation;
-    typedef typename NodeToZoneRelation::RelationConstIterator                    NodeZoneIterator;
+    typedef NodeToZoneRelation::RelationConstIterator                    NodeZoneIterator;
 
     typedef axom::slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE> ZNStride;
     typedef axom::slam::policies::ConstantCardinality<PositionType, ZNStride>     ConstantCardinality;

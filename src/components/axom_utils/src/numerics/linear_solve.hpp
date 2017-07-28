@@ -24,7 +24,6 @@ namespace axom {
 namespace numerics {
 
 /*!
- *******************************************************************************
  * \brief Solves a linear system of the form \f$ Ax=b \f$.
  *
  * \param [in] A a square input matrix
@@ -37,7 +36,6 @@ namespace numerics {
  * \pre x != AXOM_NULLPTR
  *
  * \note The input matrix is destroyed (modified) in the process.
- *******************************************************************************
  */
 template < typename T >
 int linear_solve( Matrix< T >& A, const T* b, T* x );

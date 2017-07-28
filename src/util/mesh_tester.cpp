@@ -244,7 +244,7 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
 }
 
 
-/***************************************************************************
+/*!
  * The mesh tester checks a triangulated surface mesh for several problems.
  *
  * Currently the mesh tester checks for intersecting triangles.  This is
@@ -255,7 +255,6 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
  * triangles in all the bins the triangle's bounding box falls into.
  *
  * Currently, the mesh tester works only with Triangle meshes.
- ***************************************************************************
  */
 
 int main( int argc, char** argv )

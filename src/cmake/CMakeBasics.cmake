@@ -51,19 +51,18 @@ include(cmake/AxomMacros.cmake)
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
-#
-# We don't try to use this approach for CMake generators that support
-# multiple configurations. See: CZ JIRA: ATK-45
-#
 if(NOT CMAKE_CONFIGURATION_TYPES)
     ######################################################
     # Add define we can use when debug builds are enabled
     ######################################################
-    if( (CMAKE_BUILD_TYPE MATCHES Debug)
-        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
-      )
+    if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
         add_definitions(-DAXOM_DEBUG)
     endif()
+else ()
+    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
+      $<$<CONFIG:Debug>:AXOM_DEBUG>
+      $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
+    )
 endif()
 
 ################################
@@ -111,6 +110,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
                   INTEL   "-diag-disable 3180"
+                  MSVC    "/wd4068"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 
@@ -119,6 +119,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
                   XL      "-qinfo=nopar"
+                  MSVC    "/wd4100"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 
@@ -127,6 +128,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
                   XL      "-qinfo=nouse"
+                  MSVC    "/wd4101"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 
@@ -135,6 +137,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNINITIALIZED_WARNINGS
                   DEFAULT "-Wno-uninitialized"
                   XL      "-qsuppress=1540-1102"
+                  MSVC    "/wd4700"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 
@@ -143,6 +146,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
                   DEFAULT "-Wno-strict-aliasing"
                   XL      " "
+                  MSVC    " "
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
                   
@@ -156,6 +160,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   DEFAULT " "
                   CLANG   "${clang_unused_local_typedef}"
                   GNU     "-Wno-unused-local-typedefs"
+                  MSVC    " "
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
@@ -164,12 +169,33 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
                   DEFAULT " "
                   CLANG   "-Wl,--allow-multiple-definition"
                   GNU     "-Wl,--allow-multiple-definition"
+                  MSVC    " "
                   )                  
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 
+# Flag for allowing constant conditionals e.g. if(sizeof(T) > sizeof(int)) {...}
+# There appears to be a bug in how some versions of Visual Studio treat this
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_CONSTANT_CONDITIONALS
+                  DEFAULT " "
+                  MSVC    "/wd4127"
+                  )                  
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_CONSTANT_CONDITIONALS)
+
+# Flag for allowing truncation of constant values.
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
+                  DEFAULT " "
+                  MSVC    "/wd4309"
+                  )                  
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 
    
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
 #    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
 # endforeach()
+
+# Disable warnings about conditionals over constants
+if(WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
+endif()
+

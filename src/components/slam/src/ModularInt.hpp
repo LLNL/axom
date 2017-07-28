@@ -92,7 +92,7 @@ namespace slam {
       // This solution avoids branching (at the expense of a second mod operation), but appears to be slower on chaos
       m_val = (sz + (m_val % sz)) % sz;
 
-        #elif 1 or MODINT_STRAIGHTFORWARD
+        #elif 1 || MODINT_STRAIGHTFORWARD
       // Straightforward solution -- possibly adds sz to ensure that m_val is non-negative -- which involves a branch
       m_val %= sz;
       if(m_val < 0)

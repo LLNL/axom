@@ -91,10 +91,11 @@ TEST( primal_morton, test_mortonizer)
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
   typedef std::size_t MortonIndexType;
 
-  Point< int,2 > pt2(2);  // (0b10, 0b10)
-  Mortonizer< int,MortonIndexType,2 > morton2;
-  MortonIndexType mIdx2 = morton2.mortonize(pt2);
-  EXPECT_EQ( mIdx2, static_cast< MortonIndexType >(0b1100) ); // interleaved bits
+
+  Point<int,2> pt2(2);  // (0b10, 0b10)
+  Mortonizer<int,MortonIndexType,2> morton2;
+  MortonIndexType mIdx2 = morton2.mortonize(pt2);         // interleaved bits
+  EXPECT_EQ( mIdx2, static_cast<MortonIndexType>(0xC) );  // 0b1100
 
   MortonIndexType mIdx2Alt = morton2.mortonize(pt2[0],pt2[1]);
   EXPECT_EQ( mIdx2, mIdx2Alt );
@@ -103,19 +104,20 @@ TEST( primal_morton, test_mortonizer)
   // Example from doxygen documentation Point(6,3) has MortonIndex 29
   Point< int,2 > ptDoxygenExample;
   ptDoxygenExample[0] = 6;
-  EXPECT_EQ(ptDoxygenExample[0], 0b0110 );
+  EXPECT_EQ(ptDoxygenExample[0], 0x6 ); // 0b0110
 
   ptDoxygenExample[1] = 3;
-  EXPECT_EQ(ptDoxygenExample[1], 0b0011 );
+  EXPECT_EQ(ptDoxygenExample[1], 0x3 ); // 0b0011
 
   MortonIndexType mEx = morton2.mortonize(ptDoxygenExample);
-  EXPECT_EQ( mEx, static_cast< MortonIndexType >(30) ); // interleaved bits
-  EXPECT_EQ(30, 0b00011110 );
+  EXPECT_EQ( mEx, static_cast<MortonIndexType>(30) ); // interleaved bits
+  EXPECT_EQ(30,  0x1e);  // 0b 0001 1110
 
-  Point< int,3 > pt3(2);  // (0b10, 0b10, 0b10)
-  Mortonizer< int,MortonIndexType,3 > morton3;
-  MortonIndexType mIdx3 = morton3.mortonize(pt3);
-  EXPECT_EQ( mIdx3, static_cast< MortonIndexType >(0b111000) ); // interleaved bits
+
+  Point<int,3> pt3(2);  // (0b10, 0b10, 0b10)
+  Mortonizer<int,MortonIndexType,3> morton3;
+  MortonIndexType mIdx3 = morton3.mortonize(pt3);             // interleaved bits
+  EXPECT_EQ( mIdx3, static_cast<MortonIndexType>(0x38) );     // 0b 0011 1000
 
   MortonIndexType mIdx3Alt = morton3.mortonize(pt3[0],pt3[1],pt3[2]);
   EXPECT_EQ( mIdx3, mIdx3Alt );
@@ -247,38 +249,38 @@ TEST( primal_morton, test_point_hasher)
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
-  typedef int CoordType;
-  PointHash< CoordType > ptHash;
-  Point< CoordType,1 > p1(2);
-  std::size_t exp = 0b10;
-  EXPECT_EQ( ptHash(p1), exp );
+    typedef int CoordType;
+    PointHash<CoordType> ptHash;
+    Point<CoordType,1> p1(2);
+    std::size_t exp = 0x2;      // 0b10
+    EXPECT_EQ( ptHash(p1), exp );
 
-  Point< CoordType,2 > p2(2);
-  exp = 0b1100;
-  EXPECT_EQ( ptHash(p2), exp);
-  p2[0] = 0b111000;
-  p2[1] = 0b001100;
-  exp = 0b010111100000;
-  EXPECT_EQ( ptHash(p2), exp);
+    Point<CoordType,2> p2(2);
+    exp = 0xC;                  // 0b1100
+    EXPECT_EQ( ptHash(p2), exp);
+    p2[0] = 0x38;               // 0b 0011 1000
+    p2[1] = 0x0C;               // 0b 0000 1100
+    exp = 0x5E0;                // 0b 0101 1110 0000
+    EXPECT_EQ( ptHash(p2), exp);
 
-  Point< CoordType,3 > p3(2);
-  exp = 0b111000;
-  EXPECT_EQ( ptHash(p3), exp);
-  p3[0] = 0b011111;
-  p3[1] = 0b000100;
-  p3[2] = 0b010000;
-  exp = 051311;                     // in octal (read bits bottom up, left to right)
-  EXPECT_EQ( ptHash(p3), exp);
+    Point<CoordType,3> p3(2);
+    exp = 0x38;                 // 0b 0011 1000
+    EXPECT_EQ( ptHash(p3), exp);
+    p3[0] = 0x1F;               // 0b 0001 1111
+    p3[1] = 0X04;               // 0b 0000 0100
+    p3[2] = 0x10;               // 0b 0001 0000
+    exp = 051311;               // in octal (read bits bottom up, left to right)
+    EXPECT_EQ( ptHash(p3), exp);
 
-  Point< CoordType,4 > p4(2);
-  exp = 0b11110000;
-  EXPECT_EQ( ptHash(p4), exp);
-  p4[0] = 0b111111;
-  p4[1] = 0b001000;
-  p4[2] = 0b010000;
-  p4[3] = 0b100000;
-  exp = 0x953111;                   // in hex (read bits bottom up, left to right)
-  EXPECT_EQ( ptHash(p4), exp);
+    Point<CoordType,4> p4(2);
+    exp = 0XF0;                 // 0b 1111 0000
+    EXPECT_EQ( ptHash(p4), exp);
+    p4[0] = 0x3F;               // 0b 0011 1111
+    p4[1] = 0x08;               // 0b 0000 1000
+    p4[2] = 0x10;               // 0b 0001 0000
+    p4[3] = 0x20;               // 0b 0010 0000
+    exp = 0x953111;             // in hex (read bits bottom up, left to right)
+    EXPECT_EQ( ptHash(p4), exp);
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 

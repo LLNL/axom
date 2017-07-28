@@ -32,7 +32,6 @@ enum ReturnCodes {
 /// @{
 
 /*!
- *******************************************************************************
  * \brief Perform LU-decomposition on a given square matrix, \f$ A \f$ using
  *  partial pivoting.
  *
@@ -57,13 +56,11 @@ enum ReturnCodes {
  * \pre pivots != AXOM_NULLPTR
  * \pre pivots must be able to hold A.getNumRows() entries
  * \pre A.isSquare()==true
- *******************************************************************************
  */
 template < typename T >
 int lu_decompose( Matrix< T >& A, int* pivots );
 
 /*!
- *******************************************************************************
  * \brief Solve the system \f$ Ax=b \f$ by back-substitution, where, A is an LU
  *  decomposed matrix produced via a call to lu_decompose().
  *
@@ -77,7 +74,6 @@ int lu_decompose( Matrix< T >& A, int* pivots );
  * \pre pivots != AXOM_NULLPTR
  * \pre b != AXOM_NULLPTR
  * \pre x != AXOM_NULLPTR
- *******************************************************************************
  */
 template < typename T >
 int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x );

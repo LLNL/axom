@@ -32,38 +32,30 @@ class FieldVariable:public Field
 public:
 
   /*!
-   ****************************************************************************
    * \brief Creates a FieldVariable instance associated by the given name,
    *  size and number of components per tuple.
    * \param [in] name the name of this FieldVariable.
    * \param [in] size the number of tuples
    * \param [in] num_components the number of components per tuple.
-   ****************************************************************************
    */
   FieldVariable(const std::string& name, int size, int num_components=1);
 
   /*!
-   ****************************************************************************
    * \brief Destructor.
-   ****************************************************************************
    */
   virtual ~FieldVariable();
 
   /*!
-   ****************************************************************************
    * \brief Returns a double pointer to the field data.
    * \return ptr pointer to the field data of type double.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
-   ****************************************************************************
    */
   virtual double* getDoublePtr();
 
   /*!
-   ****************************************************************************
    * \brief Returns an integer pointer to the field data.
    * \return ptr pointer to the field data of type int.
    * \post ptr==AXOM_NULLPTR iff the data is not of type int.
-   ****************************************************************************
    */
   virtual int* getIntPtr();
 
@@ -72,10 +64,8 @@ private:
   FieldType* m_data;
 
   /*!
-   ****************************************************************************
    * \brief FieldVariable constructor. Does nothing. Made private to prevent
    *  its use in application code.
-   ****************************************************************************
    */
   FieldVariable() { m_data=AXOM_NULLPTR; };
 

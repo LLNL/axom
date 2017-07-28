@@ -25,7 +25,6 @@ namespace mint {
 static const double PRISM_ONE_THIRD =  1.0/3.0;
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the Linear Prism
  *
  * \verbatim
@@ -41,7 +40,6 @@ static const double PRISM_ONE_THIRD =  1.0/3.0;
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_PRISM > : public ShapeFunction< Lagrange< MINT_PRISM > >

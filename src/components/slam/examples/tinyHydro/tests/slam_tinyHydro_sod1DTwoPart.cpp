@@ -37,7 +37,7 @@ void tinyHydroSod1D_2part()
 
   double goalTime = 0.171;   // puts shock right on 0.80
   double gamma = 7.0 / 5.0;
-  double steps = 0;
+  int steps = 0;
 
   // zoning
   int n = 200;

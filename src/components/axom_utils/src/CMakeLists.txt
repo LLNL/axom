@@ -1,3 +1,13 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Produced at the Lawrence Livermore National Laboratory.
+#
+# All rights reserved.
+#
+# This source code cannot be distributed without permission and further
+# review from Lawrence Livermore National Laboratory.
+#-------------------------------------------------------------------------------
+
 #
 # Specify all headers
 #
@@ -9,6 +19,7 @@ set(axom_utils_headers
 
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
+    detail/TickCountTimer.hpp
 
     numerics/Determinants.hpp
     numerics/linear_solve.hpp

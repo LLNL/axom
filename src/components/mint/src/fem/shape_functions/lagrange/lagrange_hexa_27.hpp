@@ -24,7 +24,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the triquadratic Hexahedron.
  *
  * \note The nodes are numbered in the following order: corners(8),
@@ -68,7 +67,6 @@ namespace mint {
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_HEX27 > : public ShapeFunction< Lagrange< MINT_HEX27 > >

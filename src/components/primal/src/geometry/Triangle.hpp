@@ -36,13 +36,11 @@ template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const Triangle< T,NDIMS > & tri);
 
 /*!
- *******************************************************************************
  * \class
  *
  * \brief Represents a triangular geometric shape defined by three points.
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 class Triangle
@@ -58,37 +56,29 @@ public:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor. Creates a degenerate triangle.
-   *****************************************************************************
    */
   Triangle() { }
 
   /*!
-   *****************************************************************************
    * \brief Custom Constructor. Creates a triangle from the 3 points A,B,C.
    * \param [in] A point instance corresponding to vertex A of the triangle.
    * \param [in] B point instance corresponding to vertex B of the triangle.
    * \param [in] C point instance corresponding to vertex C of the triangle.
-   *****************************************************************************
    */
   Triangle( const PointType& A,
             const PointType& B,
             const PointType& C );
 
   /*!
-   *****************************************************************************
    * \brief Destructor
-   *****************************************************************************
    */
   ~Triangle() { }
 
   /*!
-   *****************************************************************************
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1 or 2
-   *****************************************************************************
    */
   PointType& operator[](int idx)
   {
@@ -97,11 +87,9 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1 or 2
-   *****************************************************************************
    */
   const PointType& operator[](int idx) const
   {
@@ -110,11 +98,9 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the normal of the triangle (not normalized)
    * \pre This function is only valid when NDIMS = 3
    * \return n triangle normal when NDIMS=3, zero vector otherwise
-   *****************************************************************************
    */
   VectorType normal() const
   {
@@ -127,10 +113,8 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the area of the triangle
    * \pre Only defined when dimension NDIMS is 2 or 3
-   *****************************************************************************
    */
   double area() const
   {
@@ -149,13 +133,11 @@ public:
 
 private:
   /*!
-   *****************************************************************************
    * \brief Return the volume of the parallelepiped defined by this triangle
    *  instance and the given point.
    * \param [in] p user-supplied point.
    * \note If the volume is approx. zero, all four points are (nearly) coplanar.
    * \return vol the volume or 0.0 iff NDIMS < 3
-   *****************************************************************************
    */
   double ppedVolume(const PointType& p) const
   {
@@ -184,13 +166,11 @@ private:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Returns the barycentric coordinates of a point within a triangle
    * \return The barycentric coordinates of the triangle inside a Point<T,3>
    * \pre The point lies in this triangle's plane.
    * \post The barycentric coordinates sum to 1.
    * Adapted from Real Time Collision Detection by Christer Ericson.
-   *****************************************************************************
    */
   Point< T,3 > barycentricCoords(const PointType& p) const
   {
@@ -242,11 +222,9 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns whether the triangle is degenerate
    * \return true iff the triangle is degenerate (0 area)
    * \see primal::Point
-   *****************************************************************************
    */
   bool degenerate(double eps = 1.0e-12) const
   {
@@ -254,11 +232,9 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns whether Point P is in the triangle for some 3d Triangle
    * \return true iff P is in the triangle
    * \see primal::Point
-   *****************************************************************************
    */
   bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
   {
@@ -272,21 +248,17 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Computes the request angle corresponding to the given vertex ID.
    * \param [in] idx the index of the corresponding vertex
    * \return alpha the incidence angle in the range [0, pi].
    * \pre idx >= 0 && idx < NUM_TRI_VERTS
-   *****************************************************************************
    */
   double angle( int idx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Simple formatted print of a triangle instance
    * \param os The output stream to write to
    * \return A reference to the modified ostream
-   *****************************************************************************
    */
   std::ostream& print(std::ostream& os) const
   {

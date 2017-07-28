@@ -9,12 +9,10 @@
  */
 
 /*!
- *******************************************************************************
  * \file quest_interface.cpp
  *
  * \brief Simple example that exercises the quest interface for point
  *        containment and signed distance queries.
- *******************************************************************************
  */
 
 #include "axom_utils/Utilities.hpp"
@@ -202,7 +200,6 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
 
 
 /*!
- *******************************************************************************
  * \brief A simple example illustrating the use of the Quest C-Style interface.
  * \param [in] argc argument counter.
  * \param [in] argv argument vector.
@@ -214,7 +211,6 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
  *   [mpirun -np N] ./quest_interface_ex <stl_file>
  *
  * \endverbatim
- *******************************************************************************
  */
 int main( int argc, char**argv )
 {
