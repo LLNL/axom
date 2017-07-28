@@ -181,7 +181,7 @@ Buffer * Buffer::deallocate()
   releaseBytes(getVoidPtr());
   m_node.set_external( DataType( m_node.dtype() ), AXOM_NULLPTR );
 
-  std::set<DataView *>::iterator vit = m_views.begin();
+  std::set<View *>::iterator vit = m_views.begin();
   for ( ; vit != m_views.end(); ++vit)
   {
     (*vit)->unapply();
@@ -346,7 +346,7 @@ void Buffer::detachFromView( View * view )
  */
 void Buffer::detachFromAllViews()
 {
-  std::set<DataView *>::iterator vit = m_views.begin();
+  std::set<View *>::iterator vit = m_views.begin();
   for ( ; vit != m_views.end(); ++vit)
   {
     (*vit)->setBufferViewToEmpty();

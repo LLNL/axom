@@ -343,7 +343,7 @@ private:
   IndexType m_index;
 
   /// Container of Views attached to this Buffer.
-  std::set<DataView *> m_views;
+  std::set<View *> m_views;
 
   /// Conduit Node that holds Buffer data.
   Node m_node;

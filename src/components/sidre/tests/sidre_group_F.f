@@ -45,6 +45,40 @@ contains
   end subroutine get_name
 
   !------------------------------------------------------------------------------
+  ! get_path_name()
+  !------------------------------------------------------------------------------
+  subroutine get_path_name
+    type(SidreDataStore) ds
+    type(SidreGroup) root, group, grp2, grp3
+
+    call set_case_name("get_path_name")
+
+    ds = datastore_new()
+    root = ds%get_root()
+    group = root%create_group("test/a/b/c")
+    grp2 = root%get_group("test/a")
+    grp3 = root%get_group("test")
+
+    call assert_true(root%get_name() == "" )
+    call assert_true(root%get_path() == "" )
+    call assert_true(root%get_path_name() == "" )
+
+    call assert_true(grp2%get_name() == "a" )
+    call assert_true(grp2%get_path() == "test" )
+    call assert_true(grp2%get_path_name() == "test/a" )
+
+    call assert_true(grp3%get_name() == "test" )
+    call assert_true(grp3%get_path() == "" )
+    call assert_true(grp3%get_path_name() == "test" )
+
+    call assert_true(group%get_name() == "c" )
+    call assert_true(group%get_path() == "test/a/b" )
+    call assert_true(group%get_path_name() == "test/a/b/c" )
+
+    call ds%delete()
+  end subroutine get_path_name
+
+  !------------------------------------------------------------------------------
   ! get_parent()
   !------------------------------------------------------------------------------
   subroutine get_parent
@@ -1160,6 +1194,7 @@ program fortran_test
   call init_fruit
 
   call get_name
+  call get_path_name
   call get_parent
   call get_datastore
   call get_group

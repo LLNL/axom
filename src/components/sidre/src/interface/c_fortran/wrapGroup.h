@@ -48,6 +48,12 @@ const char * SIDRE_group_get_name(const SIDRE_group * self);
 void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
                                     int NSH_F_rv);
 
+void SIDRE_group_get_path_bufferify(const SIDRE_group * self, char * SH_F_rv,
+                                    int NSH_F_rv);
+
+void SIDRE_group_get_path_name_bufferify(const SIDRE_group * self,
+                                         char * SH_F_rv, int NSH_F_rv);
+
 const SIDRE_group * SIDRE_group_get_parent(const SIDRE_group * self);
 
 const SIDRE_datastore * SIDRE_group_get_data_store(const SIDRE_group * self);
