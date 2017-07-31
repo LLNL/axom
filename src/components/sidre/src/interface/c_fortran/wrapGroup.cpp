@@ -69,6 +69,44 @@ void SIDRE_group_get_name_bufferify(const SIDRE_group * self, char * SH_F_rv,
 // splicer end class.Group.method.get_name_bufferify
 }
 
+void SIDRE_group_get_path_bufferify(const SIDRE_group * self, char * SH_F_rv,
+                                    int NSH_F_rv)
+{
+// splicer begin class.Group.method.get_path_bufferify
+  const Group * SH_this =
+    static_cast<const Group *>(static_cast<const void *>(self));
+  std::string SH_rv = SH_this->getPath();
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
+  return;
+// splicer end class.Group.method.get_path_bufferify
+}
+
+void SIDRE_group_get_path_name_bufferify(const SIDRE_group * self,
+                                         char * SH_F_rv, int NSH_F_rv)
+{
+// splicer begin class.Group.method.get_path_name_bufferify
+  const Group * SH_this =
+    static_cast<const Group *>(static_cast<const void *>(self));
+  std::string SH_rv = SH_this->getPathName();
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
+  return;
+// splicer end class.Group.method.get_path_name_bufferify
+}
+
 const SIDRE_group * SIDRE_group_get_parent(const SIDRE_group * self)
 {
 // splicer begin class.Group.method.get_parent
