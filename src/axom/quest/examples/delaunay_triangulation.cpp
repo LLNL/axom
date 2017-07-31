@@ -16,7 +16,7 @@
 #include "axom/slic.hpp"
 #include "axom/quest/Delaunay.hpp"
 
-#include <time.h>  //for random number generation
+#include <time.h>
 #include <iomanip>
 
 using namespace axom;
@@ -27,14 +27,14 @@ double BOUNDING_BOX_DIM[] = {
 
 typedef axom::quest::Delaunay Delaunay;
 
-typedef axom::primal::Point2D Point2D;
-typedef axom::primal::Point3D Point3D;
-typedef axom::primal::BoundingBox<double, 2> BoundingBox;
-
 typedef int IndexType;
 typedef double DataType;
 
-typedef std::vector<IndexType> IndexListType;
+typedef axom::primal::Point2D Point2D;
+typedef axom::primal::Point3D Point3D;
+typedef axom::primal::BoundingBox<DataType, 2> BoundingBox;
+
+typedef Delaunay::IndexListType IndexListType;
 
 enum InputStatus
 {
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
   int retval = EXIT_SUCCESS;
 
   // Initialize the SLIC logger
-  axom::slic::SimpleLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   // Initialize default parameters and update with command line arguments:
   Input params(argc, argv);
@@ -175,7 +175,7 @@ int main(int argc, char** argv)
   char fname[256];
   for(int pt_i = 0; pt_i < num_points; pt_i++)
   {
-    SLIC_INFO("Adding point #" << pt_i);
+    //SLIC_INFO("Adding point #" << pt_i );
     double x = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[0] -
       BOUNDING_BOX_DIM[0] / 2.0;
     double y = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[1] -

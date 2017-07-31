@@ -27,24 +27,20 @@ namespace quest
 class Delaunay
 {
 public:
+#define TOPO_DIM 2
+#define VERT_PER_ELEMENT TOPO_DIM + 1
+#define SPATIAL_DIM 2
+
   using DataType = double;
   using Indextype = int;
 
-#define TOPO_DIM 2
-#define VERT_PER_ELEMENT 3
-  using PointType = primal::Point<DataType, 2>;
-  using IATriMeshType = slam::IAMesh<TOPO_DIM, 2, PointType>;
-  using Triangle2D = axom::primal::Triangle<DataType, 2>;
-  using BoundingBox = axom::primal::BoundingBox<DataType, 2>;
+  using PointType = primal::Point<DataType, SPATIAL_DIM>;
+  using IATriMeshType = slam::IAMesh<TOPO_DIM, SPATIAL_DIM, PointType>;
+  using Triangle2D = axom::primal::Triangle<DataType, SPATIAL_DIM>;
+  using BoundingBox = axom::primal::BoundingBox<DataType, SPATIAL_DIM>;
 
-  using IndexListType = axom::slam::IndexListType;
+  using IndexListType = IATriMeshType::IndexListType;
   using IndexPairType = std::pair<IndexType, IndexType>;
-
-  using CavityMapType = std::map<IndexListType, IndexListType>;
-  using CavityMapPairType = std::pair<IndexListType, IndexListType>;
-
-  using NewElemFacePairType = std::pair<IndexListType, IndexPairType>;
-  using NewElemFaceMapType = std::map<IndexListType, IndexPairType>;
 
 private:
   IATriMeshType m_mesh;
@@ -52,7 +48,22 @@ private:
   bool m_has_boundary;
   int m_num_removed_elements_since_last_compact;
 
-  CavityMapType m_cavity_boundary_map;
+  template <unsigned int TOP_DIM>
+  struct ElementFacePair
+  {
+    int element_idx;
+    int face_vidx[TOP_DIM];
+    ElementFacePair(int el, int* vlist)
+    {
+      element_idx = el;
+      for(int i = 0; i < (int)TOP_DIM; i++) face_vidx[i] = vlist[i];
+    }
+  };
+
+  std::vector<ElementFacePair<TOPO_DIM>> cavity_face_list;
+  std::vector<IndexType> cavity_element_list;
+  std::vector<IndexType> new_elements;
+  std::set<IndexType> checked_element_set;
 
 public:
   /**
@@ -115,20 +126,18 @@ public:
 
     //SLIC_INFO("DT: Containing element: "<<element_i );
 
-    std::vector<IndexType> elements_to_remove =
-      findViolatingElements(new_pt, element_i);
+    findCavityElements(new_pt, element_i);
 
-    ///*
-    std::cout << "DT: violating elements:";
-    for(unsigned int i = 0; i < elements_to_remove.size(); i++)
-      std::cout << elements_to_remove[i] << " ";
-    std::cout << std::endl;
-    //*/
+    /*
+    std::cout<<"DT: violating elements:" ;
+    for(unsigned int i=0; i<elements_to_remove.size(); i++)
+      std::cout<<elements_to_remove[i] <<" ";
+    std::cout<<std::endl;
+    */
 
-    SLIC_ASSERT_MSG(elements_to_remove.size() > 0,
-                    "Error: New point is not contained in the m_mesh");
+    //SLIC_ASSERT_MSG(elements_to_remove.size() > 0, "Error: New point is not contained in the m_mesh");
 
-    createCavity(elements_to_remove);
+    createCavity();
 
     //SLIC_INFO("DT: After removing elements");
     //m_mesh.print_all();
@@ -137,6 +146,8 @@ public:
     IndexType new_pt_i = m_mesh.addVertex(new_pt);
 
     delaunayBall(new_pt_i);
+
+    m_mesh.fixVertexNeighborhood(new_pt_i, new_elements);
 
     //SLIC_INFO("DT: After adding elements");
     //m_mesh.print_all();
@@ -192,9 +203,9 @@ public:
     for(int i = 0; i < m_mesh.ev_rel.size(); i++)
     {
       if(!m_mesh.ev_rel.isValidEntry(i)) continue;
-      const int ptr[] = {m_mesh.ev_rel[i][0],
-                         m_mesh.ev_rel[i][1],
-                         m_mesh.ev_rel[i][2]};
+
+      const int* ptr = &(m_mesh.ev_rel[i][0]);
+
       mint_mesh.insertCell(ptr, MINT_TRIANGLE, 3);
     }
     mint_mesh.toVtkFile(filename);
@@ -226,7 +237,7 @@ public:
 private:
   Triangle2D getTriangle(IndexType element_idx)
   {
-    std::vector<IndexType> verts = m_mesh.getVertexInElement(element_idx);
+    IndexListType verts = m_mesh.getVertexInElement(element_idx);
 
     Triangle2D tri(m_mesh.getVertexPoint(verts[0]),
                    m_mesh.getVertexPoint(verts[1]),
@@ -245,12 +256,12 @@ private:
     //find the last valid element to use as starting element
     IndexType element_i = m_mesh.getValidElementIndex();
 
-    SLIC_INFO("DT: find_containing_element " << element_i);
-    SLIC_INFO("Query Pt " << query_pt);
+    //SLIC_INFO("DT: find_containing_element " << element_i );
+    //SLIC_INFO("Query Pt " << query_pt);
 
     while(1)
     {
-      SLIC_INFO("DT: step into element " << element_i);
+      //SLIC_INFO("DT: step into element "<<element_i);
 
       Triangle2D tri = getTriangle(element_i);
 
@@ -277,6 +288,59 @@ private:
   }
 
   /**
+   * \brief recursive function to find cavity elements given a point to be added
+   * \detail Check if the point is in the circle/sphere of the element, if so, call
+   * recursively on the neighboring elements.
+   */
+  bool findCavityElementsRec(const PointType& query_pt, IndexType element_idx)
+  {
+    IndexListType verts = m_mesh.getVerticesInElement(element_idx);
+    const PointType p0 = m_mesh.getVertexPoint(verts[0]);
+    const PointType p1 = m_mesh.getVertexPoint(verts[1]);
+    const PointType p2 = m_mesh.getVertexPoint(verts[2]);
+    bool is_in_circle = axom::primal::in_circle(query_pt, p0, p1, p2);
+
+    //SLIC_INFO(element_idx << " InCircle:" << is_in_circle);
+
+    if(is_in_circle)
+    {
+      //add to cavity elements
+      cavity_element_list.push_back(element_idx);
+
+      //check for each faces
+      IndexListType nbr_elements = m_mesh.getElementNeighbors(element_idx);
+      SLIC_ASSERT(nbr_elements.size() == TOPO_DIM + 1);
+
+      for(int face_i = 0; face_i < VERT_PER_ELEMENT; face_i++)
+      {
+        IndexType nbr_elem = nbr_elements[face_i];
+
+        //SLIC_INFO("nbr "<< face_i <<" "<<nbr_elem);
+
+        if(nbr_elem < 0 ||
+           (checked_element_set.insert(nbr_elem).second
+              ? findCavityElementsRec(query_pt, nbr_elem)
+              : !axom::slam::is_subset(
+                  nbr_elem,
+                  cavity_element_list)  //checked but not a cavity element
+            ))
+        {
+          IndexListType vlist = m_mesh.getElementFace(element_idx, face_i);
+          cavity_face_list.push_back(
+            ElementFacePair<TOPO_DIM>(element_idx, &vlist[0]));
+          //SLIC_INFO("Added "<<vlist[0]<< " "<<vlist[1]);
+        }
+      }
+      return false;
+    }
+    else
+    {
+      //add to cavity faces
+      return true;
+    }
+  }
+
+  /**
    * \brief Find the list of element indices whose circle/sphere contains the query point.
    * \detail This function start from an element, and search through the neighboring elements,
    * returning a list of element indices whose circle/sphere defined by its vertices contains the
@@ -284,90 +348,47 @@ private:
    * \param @query_pt the query point
    * \param @element_i the element to start the search at
    */
-  std::vector<IndexType> findViolatingElements(const PointType& query_pt,
-                                               IndexType element_i)
+  void findCavityElements(const PointType& query_pt, IndexType element_i)
   {
-    //SLIC_INFO("find_violating_elements from element " << q_element_i );
+    //SLIC_INFO("find_violating_elements from element " << element_i );
 
-    std::vector<IndexType> ret;
-    std::list<IndexType> element_list_to_check;
-    element_list_to_check.push_back(element_i);
+    cavity_element_list.clear();
+    cavity_face_list.clear();
+    checked_element_set.clear();
+    checked_element_set.insert(element_i);
+    findCavityElementsRec(query_pt, element_i);
 
-    std::set<IndexType> checked_elements;
-    checked_elements.insert(element_i);
-    checked_elements.insert(-1);
-
-    //starting from element_i, which contains the point, try its neighbors, and the neighbor's neighbors
-    //for point in circle test
-
-    while(element_list_to_check.size() > 0)
+    /*
+    std::cout<<"violating elements: " ;
+    for(unsigned int i=0; i<cavity_element_list.size(); i++)
     {
-      element_i = element_list_to_check.front();
-      element_list_to_check.pop_front();
-      if(element_i < 0) continue;
-
-      std::vector<IndexType> verts = m_mesh.getVertexInElement(element_i);
-      const PointType p0 = m_mesh.getVertexPoint(verts[0]);
-      const PointType p1 = m_mesh.getVertexPoint(verts[1]);
-      const PointType p2 = m_mesh.getVertexPoint(verts[2]);
-      bool is_in_circle = axom::primal::in_circle(query_pt, p0, p1, p2);
-
-      if(is_in_circle)
-      {
-        ret.push_back(element_i);
-        std::vector<IndexType> nbr_elem_list =
-          m_mesh.getElementNeighbor(element_i);
-        for(int i = 0; i < (int)nbr_elem_list.size(); i++)
-        {
-          IndexType nbr_element = nbr_elem_list[i];
-          std::set<IndexType>::iterator it = checked_elements.find(nbr_element);
-          if(it == checked_elements.end())
-          {
-            element_list_to_check.push_back(nbr_element);
-            checked_elements.insert(nbr_element);
-          }
-        }
-      }
+      std::cout<< cavity_element_list[i] <<" ";
     }
-    return ret;
+    std::cout<< std::endl;
+
+    std::cout<<"adding elements: " ;
+    for(unsigned int i=0; i<cavity_face_list.size(); i++)
+    {
+      std::cout<< cavity_face_list[i].face_vidx[0] << "-" << cavity_face_list[i].face_vidx[1] <<", ";
+    }
+    std::cout<< std::endl;
+    //*/
+
+    return;
   }
 
   /**
     * \brief Remove the elements in the delaunay cavity
     */
-  void createCavity(const std::vector<IndexType>& elements_to_remove)
+  void createCavity()
   {
-    //m_cavity_boundary_map: <vlist, <vlist, element_idx> >
-    // m_cavity_boundary_map is a map from sorted face vertices to pair of face vertices and element idx.
-    // It keeps track of the edges that forms the cavity, which will be edges of the new element.
-    m_cavity_boundary_map.clear();
-
-    // Take out the elements one by one, keeping track of the cavity edges
-    for(unsigned int i = 0; i < elements_to_remove.size(); i++)
+    for(unsigned int i = 0; i < cavity_element_list.size(); i++)
     {
-      IndexType element_i = elements_to_remove[i];
-
-      //For each face of the element, insert its face into the map (or remove if duplicate)
-      for(unsigned int face_i = 0; face_i < VERT_PER_ELEMENT; face_i++)
-      {
-        IndexListType face_vlist = m_mesh.getElementFace(element_i, face_i);
-
-        IndexListType face_vlist_sorted(
-          face_vlist);  //sort the list to make the key for the map
-        std::sort(face_vlist_sorted.begin(), face_vlist_sorted.end());
-
-        std::pair<CavityMapType::iterator, bool> ret =
-          m_cavity_boundary_map.insert(
-            CavityMapPairType(face_vlist_sorted, face_vlist));
-        if(!ret.second)
-        {
-          m_cavity_boundary_map.erase(ret.first);
-        }
-      }
-
-      m_mesh.removeElement(element_i);
+      m_mesh.removeElement(cavity_element_list[i]);
       m_num_removed_elements_since_last_compact++;
     }
+
+    return;
   }
 
   /**
@@ -375,53 +396,17 @@ private:
     */
   void delaunayBall(IndexType new_pt_i)
   {
-    //new_element_face_map: <vlist, <element_idx,face_idx> >
-    // new_element_face_map is a map from sorted face vertices to pair of element and its face idx.
-    // It keep tracks of the new elements added, to correctly construct element->element relation
-    NewElemFaceMapType new_element_face_map;
+    new_elements.clear();
 
-    //Add new triangles from the cavity edges
-    for(CavityMapType::iterator cav_edge_iter = m_cavity_boundary_map.begin();
-        cav_edge_iter != m_cavity_boundary_map.end();
-        cav_edge_iter++)
+    for(unsigned int i = 0; i < cavity_face_list.size(); i++)
     {
-      IndexType n0 = cav_edge_iter->second[0];
-      IndexType n1 = cav_edge_iter->second[1];
+      IndexType n0 = cavity_face_list[i].face_vidx[0];
+      IndexType n1 = cavity_face_list[i].face_vidx[1];
       IndexType new_el = m_mesh.addElement(n0, n1, new_pt_i);
-      //SLIC_INFO("new element " << new_el <<": "<< n0 <<" "<< n1<< " " <<new_pt_i);
-
-      // Check the new element's face neighbor, because it can be wrong sometimes
-      // due to the m_mesh being temporarily non-manifold.
-      for(int fi = 0; fi < VERT_PER_ELEMENT; fi++)
-      {
-        IndexListType vlist_sorted = m_mesh.getElementFace(new_el, fi);
-        std::sort(vlist_sorted.begin(), vlist_sorted.end());
-
-        NewElemFaceMapType::iterator iter =
-          new_element_face_map.find(vlist_sorted);
-
-        if(iter == new_element_face_map.end())
-        {
-          new_element_face_map.insert(
-            NewElemFacePairType(vlist_sorted, IndexPairType(new_el, fi)));
-        }
-        else
-        {
-          IndexType nbr_el = iter->second.first;
-          IndexType nbr_fi = iter->second.second;
-
-          if(m_mesh.ee_rel[new_el][fi] < 0)
-          {
-            //SLIC_INFO("found neighbor " << iter->second.first <<"-"<<nbr_fi);
-
-            m_mesh.ee_rel.modify(new_el, fi, nbr_el);
-            m_mesh.ee_rel.modify(nbr_el, nbr_fi, new_el);
-          }
-
-          new_element_face_map.erase(iter);
-        }
-      }
+      new_elements.push_back(new_el);
     }
+
+    return;
   }
 };
 
