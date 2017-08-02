@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------------------
 
 #
-# CMakeConfigureFile.cmake - Create header of configuration options
+# AxomConfig.cmake - Create header of configuration options
 #
 
 ## Get Axom version information
