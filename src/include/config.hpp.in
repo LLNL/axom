@@ -16,10 +16,22 @@
  *       since it might be included from a C file
  */
 
+
+/*
+ * Axom Version Information
+ */
+#define AXOM_VERSION_MAJOR "@AXOM_VERSION_MAJOR@"
+#define AXOM_VERSION_MINOR "@AXOM_VERSION_MINOR@"
+#define AXOM_VERSION_PATCH "@AXOM_VERSION_PATCH@"
+#define AXOM_VERSION_FULL  "@AXOM_VERSION_FULL@"
+#cmakedefine AXOM_VERSION_EXTRA "@AXOM_VERSION_EXTRA@"
+
+
 /*
  * Compiler tests
  */
 #cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
+
 
 /*
  * Compiler defines for libraries (built-in and third party)
@@ -36,7 +48,7 @@
 #cmakedefine AXOM_USE_STD_UNORDERED_MAP
 
 
-/* 
+/*
  * OpenMP is a special case since it varies by target and the compiler
  * provides its own definition. For consistency, the project exposes
  * and uses this through its own AXOM_USE define.
@@ -48,8 +60,8 @@
 #endif
 
 
-/* 
- * We need to explicitly add math definitions on Windows 
+/*
+ * We need to explicitly add math definitions on Windows
  */
 #ifdef WIN32
 #define _USE_MATH_DEFINES
@@ -68,9 +80,6 @@
 #cmakedefine AXOM_USE_SLAM
 #cmakedefine AXOM_USE_SLIC
 #cmakedefine AXOM_USE_SPIO
-
-
-
 
 
 #endif  /* AXOM_COMMON_CONFIG_CPP */

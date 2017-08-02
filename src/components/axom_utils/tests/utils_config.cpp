@@ -32,6 +32,18 @@
 #include <algorithm>        // copy
 
 
+TEST(gtest_utils_config, axom_version )
+{
+  std::cout << "AXOM_VERSION_FULL: "  << AXOM_VERSION_FULL  << std::endl;
+  std::cout << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
+  std::cout << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
+  std::cout << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
+
+#ifdef AXOM_VERSION_EXTRA
+  std::cout << "AXOM_VERSION_EXTRA: " << AXOM_VERSION_EXTRA << std::endl;
+#endif
+}
+
 TEST(gtest_utils_config,config_libraries)
 {
   // This test checks which libraries are available in the configuration
