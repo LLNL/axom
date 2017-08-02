@@ -189,11 +189,11 @@ template < typename T >
 bool intersect(const OrientedBoundingBox< T, 1 > & b1,
   const OrientedBoundingBox< T, 1 >& b2)
 {
-  T c1 = b1.centroid().array()[0];
-  T c2 = b2.centroid().array()[0];
+  T c1 = b1.getCentroid().array()[0];
+  T c2 = b2.getCentroid().array()[0];
 
-  T e1 = b1.extents()[0];
-  T e2 = b2.extents()[0];
+  T e1 = b1.getExtents()[0];
+  T e2 = b2.getExtents()[0];
 
   if (c1 + e1 > c2 - e2) return true;
   if (c2 + e2 > c1 - e1) return true;
@@ -221,16 +221,14 @@ template < typename T >
 bool intersect(const OrientedBoundingBox< T, 2 >& b1,
   const OrientedBoundingBox< T, 2 >& b2)
 {
-  Vector< T, 2 > c1(b1.centroid());
-  Vector< T, 2 > c2(b2.centroid());
+  Vector< T, 2 > c1(b1.getCentroid());
+  Vector< T, 2 > c2(b2.getCentroid());
 
-  Vector< T, 2 > e1 = b1.extents();
-  Vector< T, 2 > e2 = b2.extents();
+  Vector< T, 2 > e1 = b1.getExtents();
+  Vector< T, 2 > e2 = b2.getExtents();
 
-  Vector< T, 2 > u1[2];
-  b1.axes(u1);
-  Vector< T, 2 > u2[2];
-  b2.axes(u2);
+  const Vector< T, 2 > *u1 = b1.getAxes();
+  const Vector< T, 2 > *u2 = b2.getAxes();
 
   Vector< T, 2 > d = c2 - c1;
 
@@ -264,16 +262,14 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
   const OrientedBoundingBox< T, 3 >& b2)
 {
   static const double EPS = 1.0e-4;
-  Vector< T, 3 > d = Vector< T, 3 >(b1.centroid())
-    - Vector< T, 3 >(b2.centroid());
+  Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
+    - Vector< T, 3 >(b2.getCentroid());
 
-  Vector< T, 3 > e1 = b1.extents();
-  Vector< T, 3 > e2 = b2.extents();
+  Vector< T, 3 > e1 = b1.getExtents();
+  Vector< T, 3 > e2 = b2.getExtents();
 
-  Vector< T, 3 > u1[3];
-  b1.axes(u1);
-  Vector< T, 3 > u2[3];
-  b2.axes(u2);
+  const Vector< T, 3 > *u1 = b1.getAxes();
+  const Vector< T, 3 > *u2 = b2.getAxes();
 
   // compute r and r^T here:
   Vector< T, 3 > r[3];

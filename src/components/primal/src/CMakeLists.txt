@@ -37,6 +37,7 @@ set( primal_headers
 
      ## spatial acceleration
      spatial_acceleration/BVHTree.hpp
+     spatial_acceleration/IncrementalBVHTree.hpp
      spatial_acceleration/UniformGrid.hpp
    )
 

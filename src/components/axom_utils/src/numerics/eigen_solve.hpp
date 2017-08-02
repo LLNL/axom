@@ -13,6 +13,7 @@
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 
+#include "axom_utils/vector_utilities.hpp" // for Determinants
 #include "axom_utils/Determinants.hpp" // for Determinants
 #include "axom_utils/LU.hpp"           // for lu_decompose()/lu_solve()
 #include "axom_utils/Matrix.hpp"       // for Matrix
@@ -28,23 +29,30 @@ namespace numerics {
 
 /*!
  *******************************************************************************
- * \brief Approximates first k eigenvectors and eigenvalues of the passed in 
- * square PSD matrix.
+ * \brief Approximates k eigenvectors and eigenvalues of the passed in square
+ * matrix using the power method.
+ * 
+ * We compute eigenvectors and eigenvalues from the power method as follows:
+ *    1. Generate a random vector
+ *    2. Make ortho to previous eigenvectors if any
+ *    3. Run depth iterations of power method
+ *    4. Store the result
  *
- * \param [in] A a square input matrix (must be PSD to be valid)
- * \param [in] k number of eigenvectors to find
+ * \param [in] A a square input matrix
+ * \param [in] k number of eigenvalue-eigenvectors to find
  * \param [in] depth number of iterations for the power method
- * \param [out] u pointer to k eigenvectors in order by eigenvalue size
+ * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
- * \return rc return value, 0 if the solve is successful.
+ * \return rc return value, nonzero if the solve is successful.
  *
- * \pre A.isSquare() == true && A is PSD
+ * \pre A.isSquare() == true
  * \pre u != AXOM_NULLPTR
  * \pre lambdas != AXOM_NULLPTR
  *******************************************************************************
  */
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, int depth, T* u, T* lambdas);
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth=20);
+
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -69,93 +77,69 @@ namespace { /* anonymous namespace */
 
 } /* end namespace anonymous */
 
-// helper function which computes the dot product of u and v
 template < typename T >
-T dot_product(T* u, T* v, int dim)
-{
-  T res = T();
-  for (int i = 0; i < dim; i++) res += u[i]*v[i];
-
-  return res;
-}
-
-template < typename T >
-int eigen_solve(Matrix< T >& A, int k, int depth, T* u, T* lambdas)
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
 {
   assert("pre: input matrix must be square" && A.isSquare());
   assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
 
   if (!A.isSquare()) {
-    return LU_NONSQUARE_MATRIX;
+    return 0;
   }
 
-  if (k <= 0) return 0;
-
-  static const double EPS = 1E-8;
+  if (k <= 0) return 1;
 
   int N = A.getNumColumns();
 
+  // allocate memory for a temp var
+  T *temp = new T[N];
+
   for (int i = 0; i < k; i++) {
-    // COMPUTING EIGENVECTORS AND VALUES VIA POWER METHOD:
-    //   1: generate random vec
-    //   2: make ortho to previous eigenvecs
-    //   3: run depth iterations of power on it
-    //   4: store
+
+    T *vec = &u[i*N];
 
     // 1: generate random vec
-    for (int j = 0; j < N; j++) u[i*N + j] = getRandom< T >();
+    for (int j = 0; j < N; j++) vec[j] = getRandom< T >();
 
-    // 2: make ortho to previous eigenvecs
-    for (int j = 0; j < i; j++) {
-      // first compute projection onto this other eigenvec
-      T dot = dot_product< T >(u + i*N, u + j*N, N);
+    // 2: make ortho to previous eigenvecs then normalize
+    for (int j = 0; j < i; j++) make_orthogonal< T >(vec, u + j*N, N);
 
-      // then subtract off the projection
-      for (int l = 0; l < N; l++) u[i*N + l] -= dot*u[j*N + l];
+    int res = normalize< T >(vec, N);
+
+    if (!res) {  // something went wrong
+      return 0;
     }
 
-    // 3: run depth iterations of power method
-    T temp[N];
-
+    // 3: run depth iterations of power method; note that a loop invariant
+    // of this is that vec is normalized
     for (int j = 0; j < depth; j++) {
       // multiply
-      vector_multiply(A, u + i*N, temp);
+      vector_multiply(A, vec, temp);
 
       // make ortho to previous (for stability)
-      for (int n = 0; n < i; n++) {
-        T dot = dot_product< T >(temp, u + n*N, N);
+      for (int k = 0; k < i; k++) make_orthogonal< T >(temp, u + k*N, N);
 
-        // then subtract off the projection
-        for (int l = 0; l < N; l++) temp[l] -= dot*u[n*N + l];
-      }
+      res = normalize< T >(temp, N);
 
-      // normalize
-      double norm = static_cast< double >(dot_product(temp, temp, N));
-      T tnorm = static_cast< T >(std::sqrt(norm));
-
-      if (norm < EPS) {
-        for (int l = 0; l < N; l++) {
-          u[i*N + l] = T();
-        }
+      if (!res) {  // must be 0 eigenvalue; done in that case, since vec
+        // is guaranteed to be orthogonal to previous eigenvecs and normal
         break;
-      }
-
-      for (int l = 0; l < N; l++) {
-        u[i*N + l] = temp[l]/tnorm;
+      } else {  // else copy it over
+        for (int l = 0; l < N; l++) vec[l] = temp[l];
       }
     }
 
     // 4: store the eigenval (already stored the eigenvec)
-    vector_multiply(A, u + i*N, temp);
+    vector_multiply(A, vec, temp);
 
-    //lambdas[i] = T();
-    //for (int l = 0; l < N; l++) lambdas[i] += u[i*N + l]*temp[l];
-    lambdas[i] = dot_product(u + i*N, temp, N);
+    lambdas[i] = dot_product(vec, temp, N);
   }
 
+  // free up allocated memory
+  delete [] temp;
 
-  return 0;
+  return 1;
 }
 
 } /* end namespace numerics */

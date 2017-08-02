@@ -59,13 +59,13 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
   EXPECT_TRUE(obbox1.isValid());
   EXPECT_TRUE(obbox1.contains(pt1));
   EXPECT_FALSE(obbox1.contains(pt2));
-  EXPECT_TRUE(obbox1.centroid() == pt1)
-    <<"OBBox only has a single point, so bbox1.centroid()==pt1";
-  QVector u_in[DIM];
-  obbox1.axes(u_in);
+  EXPECT_TRUE(obbox1.getCentroid() == pt1)
+    <<"OBBox only has a single point, so bbox1.getCentroid()==pt1";
+  const QVector *u_in = obbox1.getAxes();
+
   for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
 
-  EXPECT_TRUE(obbox1.extents() == e)
+  EXPECT_TRUE(obbox1.getExtents() == e)
     << "Extents should be 0";
 
 
@@ -74,11 +74,11 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
   EXPECT_TRUE(obbox2.isValid());
   EXPECT_TRUE(obbox2.contains(pt2));
   EXPECT_FALSE(obbox2.contains(pt1));
-  EXPECT_TRUE(obbox2.centroid() == pt2)
-    <<"OBBox only has a single point, so obbox2.centroid()==pt2";
-  obbox2.axes(u_in);
+  EXPECT_TRUE(obbox2.getCentroid() == pt2)
+    <<"OBBox only has a single point, so obbox2.getCentroid()==pt2";
+  u_in = obbox2.getAxes();
   for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
-  EXPECT_TRUE(e == obbox2.extents())
+  EXPECT_TRUE(e == obbox2.getExtents())
     << "Extents should be 0";
 
 }
@@ -111,11 +111,10 @@ TEST( primal_OBBox, obb_ctor_from_data)
   EXPECT_FALSE(obbox1.contains(pt3));
 
   // check settings
-  QVector u_in[DIM];
-  obbox1.axes(u_in);
+  const QVector *u_in = obbox1.getAxes();
   for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
-  EXPECT_TRUE(obbox1.centroid() == pt1);
-  EXPECT_TRUE(obbox1.extents() == e);
+  EXPECT_TRUE(obbox1.getCentroid() == pt1);
+  EXPECT_TRUE(obbox1.getExtents() == e);
 }
 
 
@@ -212,7 +211,7 @@ TEST( primal_OBBox, obb_test_add_point )
   obbox2.addPoint(pt2);
   EXPECT_TRUE(obbox2.contains(pt2));
 
-  QVector e2 = obbox2.extents();
+  QVector e2 = obbox2.getExtents();
 
   for (int i = 0; i < 3; i++) EXPECT_EQ(e2[i], 10.);
 
@@ -291,16 +290,16 @@ TEST( primal_OBBox, obb_test_expand )
   QOBBox obbox1(pt1, u, e);
 
   (obbox1.expand(0.5)).expand(-0.5);
-  EXPECT_TRUE(pt1 == obbox1.centroid());
-  EXPECT_TRUE(e == obbox1.extents());
-  QVector u_in[DIM];
-  obbox1.axes(u_in);
+  EXPECT_TRUE(pt1 == obbox1.getCentroid());
+  EXPECT_TRUE(e == obbox1.getExtents());
+  const QVector *u_in = obbox1.getAxes();
+
   for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
   obbox1.expand(10.);
   QVector newE = QVector(11.);
-  EXPECT_TRUE(pt1 == obbox1.centroid());
-  EXPECT_TRUE(newE == obbox1.extents());
-  obbox1.axes(u_in);
+  EXPECT_TRUE(pt1 == obbox1.getCentroid());
+  EXPECT_TRUE(newE == obbox1.getExtents());
+
   for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
 }
 
@@ -414,11 +413,10 @@ TEST( primal_OBBox, obb_copy_and_assignment )
   EXPECT_TRUE(obbox1 == obbox3);
   EXPECT_TRUE(obbox2 == obbox3);
 
-  QVector u_in[DIM];
-  obbox2.axes(u_in);
+  const QVector *u_in = obbox2.getAxes();
   for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
-  EXPECT_TRUE(e == obbox2.extents());
-  EXPECT_TRUE(pt1 == obbox2.centroid());
+  EXPECT_TRUE(e == obbox2.getExtents());
+  EXPECT_TRUE(pt1 == obbox2.getCentroid());
 
   // test out infinitesimal box
   obbox2 = QOBBox(pt1);
@@ -508,8 +506,8 @@ TEST( primal_OBBox, obb_to_local )
 
   QOBBox obbox2(pt1, u_o, e);
 
-  // local coordinates of centroid should be 0
-  EXPECT_EQ(vec0, obbox2.toLocal(obbox2.centroid()));
+  // local coordinates of getCentroid should be 0
+  EXPECT_EQ(vec0, obbox2.toLocal(obbox2.getCentroid()));
 
   // can roughly compute local coords of pt2
   QVector vec2 = obbox2.toLocal(pt2);

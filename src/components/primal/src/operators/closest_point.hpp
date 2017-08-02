@@ -199,22 +199,30 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 #undef C
 }
 
+/*!
+ *******************************************************************************
+ * \brief Computes the closest point from a point to a given OBB.
+ *
+ * \param [in] pt the query pt.
+ * \param [in] obb user-supplied oriented bounding box.
+ * \return cp the closest point from a point pt and an OBB. 
+ *******************************************************************************
+ */
 template < typename T, int NDIMS >
-Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
+inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
   const OrientedBoundingBox< T, NDIMS >& obb)
 {
   if (obb.contains(pt)) return pt;
 
-  Vector< T, NDIMS > e = obb.extents();
-  Vector< T, NDIMS > u[NDIMS];
-  obb.axes(u);
+  Vector< T, NDIMS > e = obb.getExtents();
+  const Vector< T, NDIMS > *u = obb.getAxes(); 
 
   Vector< T, NDIMS > pt_l = obb.toLocal(pt);
-  Vector< T, NDIMS > res(obb.centroid());
+  Vector< T, NDIMS > res(obb.getCentroid());
 
   for (int i = 0; i < NDIMS; i++) {
-    // since the local coorpt_linates are inpt_livipt_lually constrainept_l, we can simply
-    // choose the "best" local coorpt_linate in each axis pt_lirection
+    // since the local coordinates are individually constrained, we can simply
+    // choose the "best" local coordinate in each axis direction
     if (pt_l[i] <= e[i] && pt_l[i] >= -e[i]) {
       res += pt_l[i]*u[i];
     } else if (pt_l[i] > e[i]) {

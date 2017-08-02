@@ -21,7 +21,7 @@
 
 using namespace axom;
 
-TEST( primal_compute_bounding_box, OBB_from_points_test)
+TEST( primal_compute_bounding_box, compute_oriented_box_test)
 {
   static const int DIM = 3;
   typedef double CoordType;
@@ -44,7 +44,7 @@ TEST( primal_compute_bounding_box, OBB_from_points_test)
   QPoint verts[8];
   for (int i = 0; i < 8; i++) verts[i] = v[i];
 
-  QOBBox obbox2 = primal::OBB_from_points< CoordType, DIM >(verts, 8);
+  QOBBox obbox2 = primal::compute_oriented_bounding_box< CoordType, DIM >(verts, 8);
 
   EXPECT_TRUE(obbox2.contains(obbox1));
 
@@ -55,12 +55,12 @@ TEST( primal_compute_bounding_box, OBB_from_points_test)
   verts[1] = pt2;
   verts[2] = pt3;
 
-  QOBBox obbox3 = primal::OBB_from_points< CoordType, DIM >(verts, 3);
+  QOBBox obbox3 = primal::compute_oriented_bounding_box< CoordType, DIM >(verts, 3);
 
   EXPECT_TRUE(obbox3.contains(pt1));
   EXPECT_TRUE(obbox3.contains(pt2));
   EXPECT_TRUE(obbox3.contains(pt3));
 
-  EXPECT_TRUE(obbox3.extents()[1] < 1E-8);
-  EXPECT_TRUE(obbox3.extents()[2] < 1E-8);
+  EXPECT_TRUE(obbox3.getExtents()[1] < 1E-8);
+  EXPECT_TRUE(obbox3.getExtents()[2] < 1E-8);
 }
