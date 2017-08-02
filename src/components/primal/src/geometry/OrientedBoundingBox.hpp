@@ -16,12 +16,13 @@
 #include "axom/config.hpp"   // defines AXOM_USE_CXX11
 
 #include "primal/NumericArray.hpp" // for numeric arrays
+#include "axom_utils/vector_utilities.hpp" // for vector calculations
 #include "axom_utils/Utilities.hpp" // for nearly equal
 #include "axom_utils/Matrix.hpp" // for Matrix
-#include "axom_utils/eigen_solve.hpp" // for eigen_solve
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 #include "primal/BoundingBox.hpp"
+#include "primal/compute_bounding_box.hpp"
 
 #include "slic/slic.hpp"
 
@@ -38,6 +39,7 @@ class OrientedBoundingBox;
 /*!
  *******************************************************************************
  * \brief Equality comparison operator for oriented bounding boxes.
+ *
  * Two oriented bounding boxes are equal when they have the same bounds and axes.
  *******************************************************************************
  */
@@ -48,6 +50,7 @@ bool operator==( const OrientedBoundingBox< T, NDIMS > &lhs,
 /*!
  *******************************************************************************
  * \brief Inequality comparison operator for oriented bounding boxes.
+ *
  * Two bounding boxes are unequal when they have different bounds
  *******************************************************************************
  */
@@ -57,20 +60,26 @@ bool operator!=( const OrientedBoundingBox< T, NDIMS > & lhs,
 
 /*!
  *******************************************************************************
- * \brief Overloaded output operator for oriented bounding boxes
+ * \brief Overloaded output operator for oriented bounding boxes.
  *******************************************************************************
  */
 template < typename T,int NDIMS >
 std::ostream& operator<<( std::ostream & os,
                           const OrientedBoundingBox< T,NDIMS >& box );
+
+// Forward declared methods
+template < typename T, int NDIMS >
+OrientedBoundingBox< T, NDIMS > compute_oriented_bounding_box(
+  const Point< T, NDIMS > *pts, int n);
+
 ///@}
 
 /*!
  *******************************************************************************
- * \class
+ * \class OrientedBoundingBox
  *
  * \brief OrientedBoundingBox represents an oriented bounding box defined by
- * its min and max coordinates and it's axes.
+ * its centroid, axes, and extents.
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
@@ -81,6 +90,7 @@ template < typename T, int NDIMS >
 class OrientedBoundingBox
 {
 public:
+  typedef T CoordType;
   typedef Point< T, NDIMS > PointType;
   typedef Vector< T, NDIMS > VectorType;
   typedef OrientedBoundingBox< T, NDIMS > OrientedBoxType;
@@ -103,6 +113,14 @@ public:
    *****************************************************************************
    */
   OrientedBoundingBox( const PointType& pt );
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor. Creates an oriented bounding box from a collection of
+   * points.
+   *****************************************************************************
+   */
+  OrientedBoundingBox( const PointType *pts, int n );
 
   /*!
    *****************************************************************************
@@ -135,8 +153,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Resets the bounds to those of the default constructor
-   * \note This invalidates the bounding box (i.e. isValid() will be false)
+   * \brief Resets the bounds to those of the default constructor.
+   * \note This invalidates the bounding box (i.e. isValid() will be false).
    *****************************************************************************
    */
   void clear();
@@ -147,28 +165,28 @@ public:
    * \return Point at the bounding box centroid.
    *****************************************************************************
    */
-  PointType centroid() const { return m_c; }
+  PointType getCentroid() const { return m_c; }
 
   /*!
    *****************************************************************************
-   * \brief Return the axes
-   * \param [in] u. Array of vectors the result will be passed through.
+   * \brief Return the axes.
+   * \return Pointer to the axes.
    *****************************************************************************
    */
-  void axes(VectorType u[NDIMS]) const;
+  const VectorType* getAxes() const { return m_u; };
 
   /*!
    *****************************************************************************
    * \brief Returns the extents of the oriented bounding box.
-   * \return extents in a vector
+   * \return Extents in a vector.
    *****************************************************************************
    */
-  VectorType extents() const { return m_e; }
+  VectorType getExtents() const { return m_e; }
 
   /*!
    *****************************************************************************
    * \brief Returns the vertices of the oriented bounding box.
-   * \return vertices in a std::vector<VectorType>
+   * \return vertices in a std::vector<VectorType>.
    *****************************************************************************
    */
   std::vector< PointType > vertices() const;
@@ -207,7 +225,7 @@ public:
    * \brief Expands the extents by the given amount.
    * \param [in] expansionAmount an absolute amount to expand
    * \note This function checks to ensure the bounding box is valid afterwards.
-   * \return A reference to the bounding box after it has been expanded
+   * \return A reference to the bounding box after it has been expanded.
    *****************************************************************************
    */
   OrientedBoundingBox& expand(T expansionAmount);
@@ -221,7 +239,7 @@ public:
    * \note If scaleFactor is 0, the bounding box will shrink to its midpoint
    *  towards the center, and we fix the bounds after shrinking
    * \note if scaleFactor is less than 0, we use -scaleFactor.
-   *  \return A reference to the bounding box after it has been scaled
+   *  \return A reference to the bounding box after it has been scaled.
    *****************************************************************************
    */
   OrientedBoundingBox& scale(double scaleFactor);
@@ -231,7 +249,7 @@ public:
    * \brief Shifts the bounding box by a fixed displacement.
    * \param [in] displacement the amount with which to move the bounding box
    * \note This function checks to ensure the bounding box is valid afterwards.
-   * \return A reference to the bounding box after it has been shifted
+   * \return A reference to the bounding box after it has been shifted.
    *****************************************************************************
    */
   OrientedBoundingBox& shift(const VectorType& displacement);
@@ -247,7 +265,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks whether the box contains the point
+   * \brief Checks whether the box contains the point.
    * \param [in] otherPt the point that we are checking
    * \return status true if point inside the box, else false.
    *
@@ -262,7 +280,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks whether the box fully contains another bounding box
+   * \brief Checks whether the box fully contains another bounding box.
    * \param [in] otherOBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
@@ -275,8 +293,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the same point but in the local coordinates of this.
-   * \param [in] pt the pt we want to find in local coordinates
+   * \brief Returns the same point but in the local coordinates of this OBB.
+   * \param [in] pt the pt in world coords we want to convert to local coords
    * \return Vector which is just pt in local coordinates, i.e. is the
    *  projection of the difference between pt and m_c onto the axes m_u.
    *****************************************************************************
@@ -285,10 +303,9 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the furthest point in this OBB from the passed in pt.
+   * \brief Returns the furthest point in this OBB from pt.
    * \param [in] pt the pt we want to find the furthest point from
-   * \note If there are multiple furthest point the are no guarantees
-   * on which one it returns..
+   * \note If there are multiple furthest points, any one may be returned.
    * \return furthest point in this OBB from pt
    *****************************************************************************
    */
@@ -296,7 +313,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Checks that we have a valid bounding box.
+   * \brief Checks if this bounding box is valid.
    *****************************************************************************
    */
   bool isValid() const;
@@ -322,6 +339,18 @@ public:
 
   /// @}
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the list of vertices in an OBB instance.
+   * \param  [in] bb the OBB whose vertices will be returned
+   * \param [out] pnts the list of points
+   * \post pnts.size() == (1 << NDIMS)
+   *****************************************************************************
+   */
+  static void getPoints( const OrientedBoundingBox< T, NDIMS >& bb,
+                         std::vector< Point< T, NDIMS > >& pnts )
+  { pnts = bb.vertices(); }
+
  private:
 
   /// \name Internal Helper Routines
@@ -329,7 +358,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Recursively enumerates the vertices of this, storing them in l.
+   * \brief Recursively enumerates the vertices of this box, storing them in l.
    *****************************************************************************
    */ 
   static void vertex_enum(std::vector< Point< T, NDIMS > > &l, int i,
@@ -351,9 +380,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Ensures the axes are an orthonormal basis and all extents are
-   * nonnegative. Applies Gram-Schmidt to them. If any extent is negative it
-   * sets it to 0.
+   * \brief Iterates through the axes, making each orthogonal to the previous
+   * ones and then normalizing it. If after a given axis' components in the
+   * previous axes' direction is subtracted off it is nearly 0, it is set to 0.
+   * This is the case when a box is "flat" in one or more dimensions. If any
+   * extent is negative, it is set to zero.
    *****************************************************************************
    */
   void checkAndFix();
@@ -403,6 +434,13 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n )
+{
+  *this = compute_oriented_bounding_box< T, NDIMS >(pts, n);
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox( const Point< T,NDIMS > &c,
   const Vector< T,NDIMS > u[NDIMS], const Vector< T,NDIMS > &e )
 {
@@ -417,9 +455,10 @@ template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
   const OrientedBoundingBox& other )
 {
-  this->m_c = other.centroid();
-  this->m_e = other.extents();
-  other.axes(this->m_u);
+  this->m_c = other.getCentroid();
+  this->m_e = other.getExtents();
+  const Vector< T, NDIMS > *u = other.getAxes();
+  for (int i = 0; i < NDIMS; i++) this->m_u[i] = u[i];
   this->checkAndFix();
 }
 
@@ -428,13 +467,6 @@ template < typename T, int NDIMS >
 void OrientedBoundingBox< T, NDIMS >::clear()
 {
   (this->m_u[0])[0] = ValueRange< T >::lowest();
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-void OrientedBoundingBox< T, NDIMS >::axes( Vector< T, NDIMS > u[NDIMS] ) const
-{
-  for (int i = 0; i < NDIMS; i++) u[i] = this->m_u[i];
 }
 
 //------------------------------------------------------------------------------
@@ -456,8 +488,7 @@ void OrientedBoundingBox< T, NDIMS >::addBox( OrientedBoundingBox< T, NDIMS > ob
 {
   SLIC_CHECK_MSG(obb.isValid(), "Passed in OBB is invalid.");
   if (!obb.isValid()) {
-    // make this invalid
-    this->clear();
+    // don't do anything
     return;
   }
 
@@ -523,9 +554,10 @@ OrientedBoundingBox< T, NDIMS >& OrientedBoundingBox< T, NDIMS >::operator=(
   const OrientedBoundingBox& rhs )
 {
   if (this != &rhs) {
-    this->m_e = rhs.extents();
-    this->m_c = rhs.centroid();
-    rhs.axes(this->m_u);
+    this->m_e = rhs.getExtents();
+    this->m_c = rhs.getCentroid();
+    const Vector< T, NDIMS > *u = rhs.getAxes();
+    for (int i = 0; i < NDIMS; i++) this->m_u[i] = u[i];
     this->checkAndFix();
   }
   return *this;
@@ -667,29 +699,20 @@ void OrientedBoundingBox< T, NDIMS >::checkAndFix()
   // if this is invalid, don't do anything!
   if (!this->isValid()) return;
 
-  // TODO: talk with someone about whether this EPS thing makes sense.
-  // Got the idea from Vector.hpp
-  static const double EPS = 1.0e-8;
-
   // do Gram-Schmidt
   for (int i = 0; i < NDIMS; i++) {
     Vector< T, NDIMS > temp(this->m_u[i]);
 
-    for (int j = 0; j < i; j++)
-      temp -= (this->m_u[i].dot(this->m_u[j]))*(this->m_u[j]);
+    // make orthogonal
+    for (int j = 0; j < i; j++) {
+      numerics::make_orthogonal< T >(this->m_u[i].data(),
+        this->m_u[j].data(), NDIMS);
+    }
 
-    double norm = temp.norm();
+    int res = numerics::normalize< T >(this->m_u[i].data(), NDIMS);
 
-    if (norm < EPS) {
-      // this one lies in the span of the others
-      // so set it to 0
+    if (!res) {  // it's nearly 0, so in the span of the others; set it to 0
       this->m_u[i] = Vector< T, NDIMS >();
-      continue;
-    } else if (norm - 1. > EPS || norm - 1. < -EPS) {
-      for (int k = 0; k < NDIMS; k++) {
-        this->m_u[i][k] = static_cast< T >(
-          static_cast< double >(temp[k])/norm);
-      }
     }
   }
 

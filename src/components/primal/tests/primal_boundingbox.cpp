@@ -432,7 +432,7 @@ TEST( primal_boundingBox, bb_scale)
   QBBox bbox3( bbox);
   bbox3.scale( 0.);
   EXPECT_EQ(  bbox3.getMin(), bbox3.getMax());
-  QPoint midpoint = bbox.centroid();
+  QPoint midpoint = bbox.getCentroid();
   EXPECT_EQ(  bbox3.getMin(), midpoint);
 
   // Show that scaling by a negative is the same as a positive value
@@ -567,13 +567,13 @@ TEST( primal_boundingBox, bb_bisect )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_boundingBox, bb_centroid )
+TEST( primal_boundingBox, bb_get_centroid )
 {
   typedef primal::Point< double,2 > PointType;
   typedef primal::BoundingBox< double,2 > BoxType;
 
   BoxType bbox( PointType::zero(), PointType::ones() );
-  PointType centroid = bbox.centroid();
+  PointType centroid = bbox.getCentroid();
   EXPECT_DOUBLE_EQ( 0.5,  centroid[0] );
   EXPECT_DOUBLE_EQ( 0.5,  centroid[1] );
 }
