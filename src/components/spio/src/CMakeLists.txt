@@ -6,6 +6,20 @@ set(spio_headers
     IOManager.hpp
     )
 
+set(spio_depends
+    hdf5
+    conduit
+    sidre
+    fmt
+    )
+
+if(SCR_FOUND)
+     set(spio_depends
+         ${spio_depends}
+         scr
+         )
+endif()
+
 #
 # Specify all sources
 #
@@ -49,9 +63,5 @@ blt_add_library( NAME
                      spio
 
                  DEPENDS_ON
-                     hdf5
-                     conduit
-                     sidre
-                     scr
-                     fmt
+                     ${spio_depends}
                 )

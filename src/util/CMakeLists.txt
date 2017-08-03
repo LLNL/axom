@@ -14,7 +14,7 @@ set(datastore_converter_sources
     convert_sidre_protocol.cpp
 )
 set(datastore_converter_depends 
-    spio sidre conduit conduit_relay scr hdf5
+    spio sidre conduit conduit_relay hdf5
     slic fmt 
     slam 
     )
@@ -26,6 +26,10 @@ endif()
 
 if(BOOST_FOUND)
   list(APPEND datastore_converter_depends boost)
+endif()
+
+if(SCR_FOUND)
+  list(APPEND datastore_converter_depends scr)
 endif()
 
 

@@ -53,15 +53,12 @@ IOManager::IOManager(MPI_Comm comm,
   m_my_rank(0),
   m_baton(AXOM_NULLPTR),
   m_mpi_comm(comm),
-  m_scr_initialized(false)
+  m_scr_initialized(use_scr)
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
-#ifdef AXOM_USE_SCR
-  if (use_scr) {
-//    SCR_Init();
-    m_scr_initialized = true;
-  }
+#ifndef AXOM_USE_SCR
+  m_scr_initialized = false;
 #endif
 }
 
@@ -123,12 +120,31 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
     createRootFile(root_string, num_files, protocol);
   }
   MPI_Barrier(m_mpi_comm);
-////**** BROADCAST m_checkpoint_dir to all procs!!!!!!
 
   std::string root_name = root_string + ".root";
   if (m_scr_initialized) {
+    int buf_size = 0;
+    if (m_my_rank == 0) {
+      buf_size = m_scr_checkpoint_dir.size() + 1;
+    }
+
+    MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
+
+    char scr_dir_buf[buf_size];
+    if (m_my_rank == 0) {
+      strcpy(scr_dir_buf, m_scr_checkpoint_dir.c_str());
+    }
+
+    MPI_Bcast(scr_dir_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
+
+    if (m_my_rank != 0) {
+      m_scr_checkpoint_dir = std::string(scr_dir_buf);
+    }
+
     root_name = m_scr_checkpoint_dir + "/" + root_name;
   }
+
+  MPI_Barrier(m_mpi_comm);
 
   if (protocol == "sidre_hdf5") {
     std::string file_pattern = getHDF5FilePattern(root_name);
