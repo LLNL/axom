@@ -304,12 +304,23 @@ private:
 template <typename TYPE>
 IndexType MapCollection<TYPE>::getFirstValidIndex() const
 {
-  return getNextValidIndex(-1);
+  IndexType idx = 0;
+  while ( static_cast<unsigned>(idx) < m_items.size() &&
+          m_items[static_cast<unsigned>(idx)] == AXOM_NULLPTR )
+  {
+    idx++;
+  }
+  return ( (static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex );
 }
 
 template <typename TYPE>
 IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 {
+  if (idx == InvalidIndex)
+  {
+    return InvalidIndex;
+  }
+
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
           m_items[static_cast<unsigned>(idx)] == AXOM_NULLPTR )

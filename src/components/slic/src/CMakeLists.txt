@@ -35,19 +35,18 @@ set(slic_sources
     )
 
 if (ENABLE_MPI)
-   list(APPEND slic_headers streams/SynchronizedStream.hpp)
-   list(APPEND slic_sources streams/SynchronizedStream.cpp)
-   if (ENABLE_LUMBERJACK)
-      list(APPEND slic_headers streams/LumberjackStream.hpp)
-      list(APPEND slic_sources streams/LumberjackStream.cpp)
-   endif()
+    list(APPEND slic_headers streams/SynchronizedStream.hpp)
+    list(APPEND slic_sources streams/SynchronizedStream.cpp)
+    if (ENABLE_LUMBERJACK)
+        list(APPEND slic_headers streams/LumberjackStream.hpp)
+        list(APPEND slic_sources streams/LumberjackStream.cpp)
+    endif()
 endif()
 
 if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
-# XXX ENABLE_FORTRAN_WRAPPER
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
@@ -66,7 +65,11 @@ set(slic_depends_on
     axom_utils
 )
 if (ENABLE_LUMBERJACK)
-    list(APPEND slic_depends_on lumberjack)
+    list(APPEND slic_depends_on lumberjack mpi)
+endif()
+
+if (WIN32)
+    list(APPEND slic_depends_on dbghelp)  
 endif()
 
 blt_add_library( NAME
@@ -85,3 +88,14 @@ blt_add_library( NAME
                  DEPENDS_ON
                     "${slic_depends_on}"
               )
+install(TARGETS              slic
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/slic
+        )
+install(FILES       ${slic_headers}
+        DESTINATION include/slic
+        )
+if(ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_slic.mod DESTINATION lib/fortran)
+endif()

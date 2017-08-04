@@ -164,14 +164,14 @@ public:
   /*!
    * \brief Return full path of Group object, including its name.
    *
-   * If a DataStore contains a Group tree structure a/b/c/d/e, with
-   * group d owning a view v, the following results are expected:
+   * If a DataStore contains a Group tree structure a/b/c/d/e, the 
+   * following results are expected:
    *
    * Method Call      | Result
    * -----------------|----------
-   * d->getName()     | d
-   * d->getPath()     | a/b/c
-   * d->getPathName() | a/b/c/d
+   * e->getName()     | e
+   * e->getPath()     | a/b/c/d
+   * e->getPathName() | a/b/c/d/e
    *
    * \sa getName(), getPath(), View::getPathName()
    */

@@ -52,7 +52,6 @@ namespace common {
   typedef detail::uint64_t uint64;    /** Sixty-four bit unsigned integer type */
   #endif
 
-
 } // end namespace common
 } // end namespace axom
 

@@ -15,8 +15,10 @@
 
 #include "slic/slic.hpp"
 
-#include "primal/BoundingBox.hpp"
+#include "primal/NumericArray.hpp"
 #include "primal/Point.hpp"
+#include "primal/BoundingBox.hpp"
+#include "primal/RectangularLattice.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -30,7 +32,6 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \class UniformGrid
  *
  * \brief A spatial index defined by origin, spacing, and resolution.
@@ -52,7 +53,6 @@ namespace primal {
  * of objects (each with its own bounding box).  The insert operation puts the
  * object into some of the bins.  The user may retrieve the bin index of any
  * point, then retrieve any objects associated with the bin at that index.
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 class UniformGrid
@@ -64,10 +64,16 @@ public:
   /*! \brief The type used to query the index */
   typedef Point< double, NDIMS > PointType;
 
+private:
+  /*! \brief The type used for mapping points in space to grid cells */
+  typedef RectangularLattice< NDIMS, double, int > LatticeType;
+
+  /*! \brief The type used to represent integer-valued grid cells */
+  typedef typename LatticeType::GridCell GridCell;
+
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructor specifying bounding box (min and max points) and
    *        number of bins.
    *
@@ -80,7 +86,6 @@ public:
    * x-dimension and from 0 up to 4 divided into four bins in the y dimension.
    * The points in the set {(2., y), (x, 4.)} are not included in the
    * UniformGrid.
-   *****************************************************************************
    */
   UniformGrid(const double * lower_bound, const double * upper_bound,
               const int * res);
@@ -89,7 +94,6 @@ public:
   ~UniformGrid();
 
   /*!
-   *****************************************************************************
    * \brief Returns the index of the bin containing the specified point.
    *
    * If the specified point is outside the grid, the function returns a
@@ -99,7 +103,6 @@ public:
    *     getBinIndex(PointType::makePoint(10., 10.))
    * will return INVALID_BIN_INDEX,
    * \param [in] pt The point to query.
-   *****************************************************************************
    */
   int getBinIndex(const PointType & pt) const;
 
@@ -107,37 +110,30 @@ public:
   int getNumBins() const;
 
   /*!
-   *****************************************************************************
    * \brief Returns whether the bin specified by index is empty.
    *
    * Returns true if index is invalid.
    * \param [in] index The index of the bin to test.
-   *****************************************************************************
    */
   bool isBinEmpty(int index) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the contents of the bin indicated by index.
    *
    * It is an error if index is invalid.
    * \param [in] index The index of the bin to retrieve.
-   *****************************************************************************
    */
   std::vector< T >& getBinContents(int index);
 
   /*!
-   *****************************************************************************
    * \brief Returns the contents of the bin indicated by index.
    *
    * It is an error if index is invalid.  This is the const version.
    * \param [in] index The index of the bin to retrieve.
-   *****************************************************************************
    */
   const std::vector< T >& getBinContents(int index) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns true if index is valid; that is, refers to a valid bin.
    *
    * The region of space indexed by this UniformGrid is divided into bins.
@@ -145,56 +141,68 @@ public:
    * equal to zero and less than or equal to the greatest bin index, this
    * method will return true.  Otherwise, the integer does not refer to any
    * bin and this method will return false.
-   *****************************************************************************
    */
   bool isValidIndex(int index) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the indices of the bins for a given bounding box.
    *
    * This method returns the indices of the bins that intersect BB.  Any part
    * of BB that falls outside this UniformGrid is disregarded.  If BB falls
    * completely outside this UniformGrid, this method returns an empty list.
-   *****************************************************************************
    */
-  const std::vector<int> getBinsForBbox(const BoxType& BB) const;
+  const std::vector< int > getBinsForBbox(const BoxType& BB) const;
 
   /*!
-   *****************************************************************************
    * \brief Clears the bin indicated by index.
    *
    * No-op if index is invalid.
    * \param [in] index The index of the bin to clear.
-   *****************************************************************************
    */
   void clear(int index);
 
   /*!
-   *****************************************************************************
    * \brief Inserts obj into each bin overlapped by BB.
    *
    * No error is signalled if BB falls partly or wholly outside the UniformGrid.
    *
    * \param [in] BB The region in which to record obj
    * \param [in] obj The object to insert into any bins overlapped by BB
-   *****************************************************************************
    */
   void insert(const BoxType& BB, const T& obj);
 
   /*!
-   *****************************************************************************
    * \brief A special value indicating any location not in the UniformGrid.
    *
    * Returned by getBinIndex() if that function is passed an exterior point.
    * An error is thrown if getBinContents() is passed INVALID_BIN_INDEX.
    * clear(INVALID_BIN_INDEX) is a no-op; isBinEmpty(INVALID_BIN_INDEX) returns
    * true.
-   *****************************************************************************
    */
   enum {
     INVALID_BIN_INDEX = -1
   };
+
+private:
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the closest UniformGrid cell to the query point pt.
+   *
+   * When pt lies within an integer valued grid cell, that cell is returned.
+   * When pt is on the boundary, or outside the bounding box of the
+   * UniformGrid, the returned grid cell is clamped to its closest grid cell.
+   * I.e. each coordinate i of the returned GridCell is between
+   * zero and (m_resolution[i] -1).
+   *
+   * \param [in] pt The query point
+   * \return The integer valued grid cell closest to pt
+   *****************************************************************************
+   */
+  GridCell getClampedGridCell(const PointType& pt) const;
+
+  /*! \brief Adds an object obj to the bin at index index */
+  void addObj(const T& obj, int index);
 
 protected:
 
@@ -203,11 +211,11 @@ protected:
 
 private:
 
-  PointType m_origin;
-  double m_spacing[NDIMS];
-  int m_resolution[NDIMS];
+  BoxType m_boundingBox;
+  LatticeType m_lattice;
 
-  void addObj(const T& obj, int index);
+  int m_resolution[NDIMS];
+  int m_strides[NDIMS];
 
   struct Bin
   {
@@ -233,19 +241,27 @@ namespace primal {
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 UniformGrid< T, NDIMS >::UniformGrid()
+  : m_boundingBox(PointType::zero(), PointType(100)),
+  m_lattice(PointType::zero(), PointType(1))
 {
 
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
-  size_t newsize = 1;
-  for (int i=0; i<NDIMS; ++i) {
-    m_origin[i] = 0;
-    m_spacing[i] = 1.0;
-    m_resolution[i] = 100;
-    newsize *= 100;
+  const int DEFAULT_RES = 100;
+
+  m_resolution[0] = DEFAULT_RES;
+  m_strides[0] = 1;
+  for (int i=1; i< NDIMS; ++i) {
+    m_resolution[i] = DEFAULT_RES;
+    m_strides[i] = m_strides[i-1] * m_resolution[i-1];
   }
 
-  m_bins.resize(newsize);
+  const int numBins = m_strides[NDIMS-1] * m_resolution[NDIMS-1];
+  m_bins.resize(numBins);
+
+  // scale the bounding box by a little to account for boundaries
+  const double EPS = 1e-12;
+  m_boundingBox.scale(1. + EPS);
 }
 
 template < typename T, int NDIMS >
@@ -258,18 +274,26 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
   SLIC_ASSERT(res != AXOM_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
-  size_t newsize = 1;
-  for (int i=0; i<NDIMS; ++i) {
-    m_origin[i] = lower_bound[i];
-
-    SLIC_ASSERT(lower_bound[i] <= upper_bound[i]);
-    SLIC_ASSERT(res[i] > 0 );
-    m_spacing[i] = (upper_bound[i] - lower_bound[i]) / res[i];
+  // set up the grid resolution and (row-major) strides
+  m_resolution[0] = res[0];
+  m_strides[0] = 1;
+  for (int i=1; i< NDIMS; ++i) {
     m_resolution[i] = res[i];
-    newsize *= res[i];
+    m_strides[i] = m_strides[i-1] * m_resolution[i-1];
   }
 
-  m_bins.resize(newsize);
+  // initialize space for the bins
+  const int numBins = m_strides[NDIMS-1] * m_resolution[NDIMS-1];
+  m_bins.resize(numBins);
+
+  // set up the bounding box and lattice for point conversions
+  m_boundingBox = BoxType(PointType(lower_bound), PointType(upper_bound));
+  m_lattice = rectangular_lattice_from_bounding_box(
+    m_boundingBox, NumericArray< T,NDIMS >(m_resolution));
+
+  // scale the bounding box by a small epsilon to account for boundaries
+  const double EPS = 1e-12;
+  m_boundingBox.scale(1. + EPS);
 }
 
 template < typename T, int NDIMS >
@@ -280,34 +304,21 @@ UniformGrid< T, NDIMS >::~UniformGrid()
 template < typename T, int NDIMS >
 int UniformGrid< T, NDIMS >::getBinIndex(const PointType & pt) const
 {
-  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
-
-  int retval = 0;
-  for (int i = 0; i < NDIMS; ++i) {
-    int tmp = static_cast< int >(floor((pt[i] - m_origin[i]) / m_spacing[i]));
-
-    if (tmp < 0 || tmp > m_resolution[i]) {
-      return INVALID_BIN_INDEX;
-    }
-    if (tmp == m_resolution[i]) {
-      if (! axom::utilities::isNearlyEqual(pt[i],
-             m_origin[i] + m_resolution[i] * m_spacing[i],
-             1.0e-12) ) {
-        return INVALID_BIN_INDEX;
-      } else {
-        tmp = tmp - 1;
-      }
-    }
-
-    int factor = 1;
-    for (int j = 0; j < i; ++j) {
-      factor *= m_resolution[j];
-    }
-
-    retval += tmp * factor;
+  // Index is only valid when the point is within the bounding box
+  if (!m_boundingBox.contains(pt) ) {
+    return INVALID_BIN_INDEX;
   }
 
-  return retval;
+  // Find pt's integer grid cell within the uniform grid
+  GridCell cell = getClampedGridCell(pt);
+
+  // compute the linear index (row-major) of the cell
+  int res = cell[0];
+  for (int i=1; i< NDIMS; ++i) {
+    res += m_strides[i] * cell[i];
+  }
+
+  return res;
 }
 
 template < typename T, int NDIMS >
@@ -349,58 +360,30 @@ const std::vector< T >& UniformGrid< T, NDIMS >::getBinContents(int index) const
   return m_bins[index].ObjectArray;
 }
 
-template< typename T, int NDIMS >
-const std::vector<int> UniformGrid<T, NDIMS>::getBinsForBbox(const BoxType& BB) const
+template < typename T, int NDIMS >
+const std::vector< int >
+UniformGrid< T, NDIMS >::getBinsForBbox( const BoxType& BB) const
 {
-  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
+  std::vector< int > retval;
 
-  PointType bmin = BB.getMin();
-  PointType bmax = BB.getMax();
-
-  std::vector<int> retval;
-
-  // Clamp the input bounding-box to at most the UniformGrid bounding box
-  for (int dim = 0; dim < NDIMS; ++dim) {
-    if (bmin[dim] < m_origin[dim]) {
-      bmin[dim] = m_origin[dim];
-    }
-    double dimlimit = m_origin[dim] + m_spacing[dim] * m_resolution[dim];
-    if (bmax[dim] > dimlimit) {
-      bmax[dim] = dimlimit;
-    }
+  if ( !m_boundingBox.intersectsWith(BB) ) {
+    return retval;
   }
 
-  int start = getBinIndex(bmin);
-  int end = getBinIndex(bmax);
+  const GridCell lowerCell = getClampedGridCell(BB.getMin() );
+  const GridCell upperCell = getClampedGridCell(BB.getMax() );
 
-  // Guard against BB not overlapping the grid at all
-  if (isValidIndex(start) && isValidIndex(end)) {
-    int res = 1;
-    // Find how many bboxes in each dimension (at least one)
-    // Initialize bincount.  Note that NDIMS == 2 or NDIMS == 3.
-    int bincount[3] = {1, 1, 1};
-    for (int dim = 0; dim < NDIMS; ++dim) {
-      PointType extent(bmin);
-      extent[dim] = bmax[dim];
-      int bextent = getBinIndex(extent);
-      bincount[dim] = 1 + (bextent - start) / res;
+  // Recall that NDIMS is 2 or 3
+  const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
+  const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
+  const int kStride = (NDIMS == 2) ? 1 : m_strides[2];
 
-      // res accumulates the factor separating each dimension
-      res *= m_resolution[dim];
-    }
-
-    const int x_res = m_resolution[0];
-
-    const int y_res = m_resolution[1];
-    const int kstep = x_res * y_res;
-
-    for (int k = 0; k < bincount[2]; ++k) {
-      const int k_offset = k * kstep;
-      for (int j = 0; j < bincount[1]; ++j) {
-        const int j_offset = j * x_res;
-        for (int i = 0; i < bincount[0]; ++i) {
-          retval.push_back(start + i + j_offset + k_offset);
-        }
+  for (int k=kLower; k <= kUpper; ++k) {
+    const int kOffset = k * kStride;
+    for (int j=lowerCell[1]; j <= upperCell[1]; ++j) {
+      const int jOffset = j * m_strides[1] + kOffset;
+      for (int i = lowerCell[0]; i <= upperCell[0]; ++i) {
+        retval.push_back( i + jOffset );
       }
     }
   }
@@ -409,8 +392,8 @@ const std::vector<int> UniformGrid<T, NDIMS>::getBinsForBbox(const BoxType& BB) 
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS >
-void UniformGrid<T, NDIMS>::clear(int index)
+template < typename T, int NDIMS >
+void UniformGrid< T, NDIMS >::clear(int index)
 {
   if (isValidIndex(index)) {
     m_bins[index].ObjectArray.clear();
@@ -418,8 +401,8 @@ void UniformGrid<T, NDIMS>::clear(int index)
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS >
-void UniformGrid<T, NDIMS>::addObj(const T& obj, int index)
+template < typename T, int NDIMS >
+void UniformGrid< T, NDIMS >::addObj(const T& obj, int index)
 {
   SLIC_CHECK(isValidIndex(index));
 
@@ -429,18 +412,33 @@ void UniformGrid<T, NDIMS>::addObj(const T& obj, int index)
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int NDIMS>
-void UniformGrid<T, NDIMS>::insert(const BoxType& BB,
-                                  const T& obj)
+template < typename T, int NDIMS >
+void UniformGrid< T, NDIMS >::insert(const BoxType& BB,
+                                     const T& obj)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
-  const std::vector<int> bidxs = getBinsForBbox(BB);
-  
+  const std::vector< int > bidxs = getBinsForBbox(BB);
+
   const int numBins = bidxs.size();
   for (int i = 0; i < numBins; ++i) {
     addObj(obj, bidxs[i]);
   }
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
+typename UniformGrid< T, NDIMS >::GridCell
+UniformGrid< T, NDIMS >::getClampedGridCell(const PointType& pt) const
+{
+  GridCell cell = m_lattice.gridCell(pt);
+
+  // clamp the grid coordinates to lie in a cell of the grid
+  for (int i=0; i<NDIMS; ++i) {
+    cell[i] = axom::utilities::clampVal(cell[i], 0, m_resolution[i]-1);
+  }
+
+  return cell;
 }
 
 }  /* end namespace primal */

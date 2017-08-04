@@ -25,52 +25,42 @@ class Extent
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructor. Creates an extent instance of the given dimension.
    * \param [in] ndims the number of dimensions.
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
-   *****************************************************************************
    */
   Extent( int ndims, IndexType* ext );
 
   /*!
-   *****************************************************************************
    * \brief Returns the dimension of this extent.
    * \return ndims the number of dimensions.
    * \pre ndims >= 1 && ndims <= 3.
-   *****************************************************************************
    */
   int getDimension() const { return m_ndims; }
 
   /*!
-   *****************************************************************************
    * \brief Returns the min along the given dimension.
    * \param [in] idim the dimension in query.
    * \return the min along the given dimension.
    * \pre idim >= 0 && idim < this->getDimension();
    * \pre this->getDimension() >= 1.
-   *****************************************************************************
    */
   IndexType min( int idim ) const { return m_extent[ idim*2 ]; }
 
   /*!
-   *****************************************************************************
    * \brief Returns the max along the given dimension.
    * \param [in] idim the dimension in query.
    * \return the max along the given dimension.
    * \pre idim >= 0 && idim < this->getDimension();
    * \pre this->getDimension() >= 1
-   *****************************************************************************
    */
   IndexType max( int idim ) const { return m_extent[ idim*2+1 ]; }
 
   /*!
-   *****************************************************************************
    * \brief Returns the size along the given dimension, max()-min()+1.
    * \param [in] idim the dimension in query.
    * \return n size of the given dimension.
-   *****************************************************************************
    */
   int size( int idim ) const
   {
@@ -78,53 +68,42 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns stride to the second dimension.
    * \return jp stride to the second dimension.
    * \post jp >= 0.
-   *****************************************************************************
    */
   IndexType jp() const { return m_jp; };
 
   /*!
-   *****************************************************************************
    * \brief Returns stride to the third dimension.
    * \return kp stride to the third dimension.
    * \post kp >= 0.
-   *****************************************************************************
    */
   IndexType kp() const { return m_kp; };
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes covered by this extent instance.
    * \return N the total number of nodes in the extent.
    * \pre this->getDimension() >= 1.
-   *****************************************************************************
    */
   IndexType getNumNodes() const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the number cells covered by this extent instance.
    * \return N the total number of cells in the extent.
    * \pre this->getDimension() >= 1.
-   *****************************************************************************
    */
   IndexType getNumCells() const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell offset lookup table
    * \return offsets pointer to the cell offsets table.
    *
    * \note The indent for the cell offsets table
-   *****************************************************************************
    */
   const IndexType* getCellOffSets() const
   { return &m_cell_offsets[0]; };
 
   /*!
-   *****************************************************************************
    * \brief Converts the given grid indices to a one-dimensional linear index.
    * \param [in] i the grid index along the first dimension.
    * \param [in] j the grid index along the second dimension.
@@ -135,12 +114,10 @@ public:
    * \pre j >= 0 && j < this->size( 1 )
    * \pre k >= 0 && k < this->size( 2 )
    * \note i,j,k are local grid indices.
-   *****************************************************************************
    */
   IndexType getLinearIndex(IndexType i, IndexType j, IndexType k=0) const;
 
   /*!
-   *****************************************************************************
    * \brief Converts the given grid cell indices to a one-dimensional linear index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
@@ -151,24 +128,20 @@ public:
    * \pre j >= 0 && j < this->size( 1 )-1
    * \pre k >= 0 && k < this->size( 2 )-1
    * \note i,j,k are local grid cell indices.
-   *****************************************************************************
    */
   IndexType getCellLinearIndex(IndexType i, IndexType j, IndexType k=0) const;
 
   /*!
-   *****************************************************************************
    * \brief Given a one-dimensional linear index, this method computes the
    *  corresponding (i,j) grid indices.
    * \param [in] linearIdx local flat index.
    * \param [out] i the corresponding grid index along the first dimension.
    * \param [out] j the corresponding grid index along the second dimension.
    * \pre this->getDimension() == 2.
-   *****************************************************************************
    */
   void getGridIndex( IndexType linearIdx, IndexType& i, IndexType& j) const;
 
   /*!
-   *****************************************************************************
    * \brief Given a one-dimensional linear index, this method computes the
    *  corresponding (i,j,k) grid indices.
    * \param [in] linearIdx local flat index.
@@ -176,7 +149,6 @@ public:
    * \param [out] j the corresponding grid index along the second dimension.
    * \param [out] k the corresponding grid index along the third dimension.
    * \pre this->getDimension() == 3.
-   *****************************************************************************
    */
   void getGridIndex( IndexType linearIdx,
                      IndexType& i, IndexType& j, IndexType& k ) const;
@@ -184,18 +156,14 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \note Made private to prevent from calling it.
-   *****************************************************************************
    */
   Extent();
 
   /*!
-   *****************************************************************************
    * \brief Builds the cell offsets lookup table.
    * \note Called from the constructor.
-   *****************************************************************************
    */
   void buildCellOffsets();
 

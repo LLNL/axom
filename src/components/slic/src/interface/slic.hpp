@@ -9,13 +9,7 @@
  */
 
 /*!
- *******************************************************************************
  * \file slic.hpp
- *
- * \date May 31, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 #ifndef SLIC_HPP_
@@ -35,7 +29,6 @@
 /// @{
 
 /*!
- ******************************************************************************
  * \def SLIC_ERROR( msg )
  * \brief Logs an error and aborts the application.
  * \param [in] msg user-supplied message
@@ -47,17 +40,15 @@
  *   SLIC_ERROR( "my_val should always be positive" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_ERROR( msg )                                                     \
   do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logErrorMessage( oss.str(),__FILE__, __LINE__);               \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
- ******************************************************************************
  * \def SLIC_ERROR_IF( EXP, msg )
  * \brief Logs an error iff EXP is true and aborts the application.
  * \param [in] EXP user-supplied boolean expression.
@@ -70,7 +61,6 @@
  *   SLIC_ERROR_IF( (val < 0), "my_val should always be positive" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_ERROR_IF( EXP, msg )                                             \
   do {                                                                        \
@@ -79,7 +69,7 @@
       oss << msg;                                                             \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__);               \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -87,7 +77,6 @@
 /// @{
 
 /*!
- ******************************************************************************
  * \def SLIC_WARNING( msg )
  * \brief Logs a warning message.
  * \param [in] msg user-supplied message
@@ -98,17 +87,15 @@
  *   SLIC_WARNING( "my_val should always be positive" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_WARNING( msg )                                                   \
   do {                                                                        \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
     axom::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );             \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
- ******************************************************************************
  * \def SLIC_WARNING_IF( EXP, msg )
  * \brief Logs an error iff EXP is true and aborts the application.
  * \param [in] EXP user-supplied boolean expression.
@@ -120,7 +107,6 @@
  *   SLIC_WARNING_IF( (val < 0), "my_val should always be positive" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_WARNING_IF( EXP, msg )                                           \
   do {                                                                        \
@@ -129,7 +115,7 @@
       oss << msg;                                                             \
       axom::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );            \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -140,7 +126,6 @@
 /// @{
 
 /*!
- ******************************************************************************
  * \def SLIC_ASSERT( EXP )
  * \brief Asserts that a given expression is true. If the expression is not true
  *  an error will be logged and the application will be aborted.
@@ -153,7 +138,6 @@
  *   SLIC_ASSERT( my_val >= 0 );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_ASSERT( EXP )                                                    \
   do {                                                                        \
@@ -162,10 +146,9 @@
       oss << "Failed Assert: " << # EXP << std::ends;                         \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
- ******************************************************************************
  * \def SLIC_ASSERT_MSG( EXP, msg )
  * \brief Same as SLIC_ASSERT, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
@@ -179,7 +162,6 @@
  *   SLIC_ASSERT_MSG( my_val >= 0, "my_val must always be positive" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_ASSERT_MSG( EXP, msg )                                           \
   do {                                                                        \
@@ -188,7 +170,7 @@
       oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;     \
       axom::slic::logErrorMessage(oss.str(),__FILE__,__LINE__ );              \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -197,7 +179,6 @@
 /// @{
 
 /*!
- ******************************************************************************
  * \def SLIC_CHECK( EXP )
  * \brief Checks that a given expression is true. If the expression is not true
  *  a warning is logged, but, in contrast to the similar SLIC_ASSERT macro the
@@ -210,7 +191,6 @@
  *   SLIC_CHECK( my_val >= 0 );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_CHECK( EXP )                                                     \
   do {                                                                        \
@@ -224,10 +204,9 @@
         axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
       }                                                                       \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /*!
- ******************************************************************************
  * \def SLIC_CHECK_MSG( EXP, msg )
  * \brief Same as SLIC_CHECK, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
@@ -240,7 +219,6 @@
  *   SLIC_CHECK_MSG( my_val >= 0, "my_val must always be positive" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_CHECK_MSG( EXP, msg )                                            \
   do {                                                                        \
@@ -254,7 +232,7 @@
         axom::slic::logWarningMessage( oss.str(),__FILE__, __LINE__);         \
       }                                                                       \
     }                                                                         \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 /// @}
 
@@ -268,7 +246,6 @@
 #endif /* END ifdef AXOM_DEBUG */
 
 /*!
- ******************************************************************************
  * \def SLIC_INFO( msg )
  * \brief Logs an Info message.
  * \param [in] msg user-supplied message
@@ -279,7 +256,6 @@
  *   SLIC_INFO( "informative text goes here" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_INFO( msg )                                                      \
   do {                                                                        \
@@ -289,12 +265,11 @@
                            , oss.str()                                        \
                            ,__FILE__                                          \
                            , __LINE__ );                                      \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 #ifdef AXOM_DEBUG
 
 /*!
- ******************************************************************************
  * \def SLIC_DEBUG( msg )
  * \brief Logs a Debug message.
  * \param [in] msg user-supplied message
@@ -305,7 +280,6 @@
  *   SLIC_DEBUG( "debug message goes here" );
  * \endcode
  *
- ******************************************************************************
  */
 #define SLIC_DEBUG( msg )                                                     \
   do {                                                                        \
@@ -315,7 +289,7 @@
                            , oss.str()                                        \
                            ,__FILE__                                          \
                            , __LINE__ );                                      \
-  } while ( 0 )
+  } while ( axom::slic::detail::false_value )
 
 #else // turn off debug macros
 
@@ -332,165 +306,130 @@ struct debug
 };
 
 /*!
- *******************************************************************************
  * \brief Initializes the SLIC logging environment.
- *******************************************************************************
  */
 void initialize();
 
 /*!
- *******************************************************************************
  * \brief Checks if the SLIC logging environment is initialized.
  * \return status true if initialized, else, false.
- *******************************************************************************
  */
 bool isInitialized();
 
 /*!
- *******************************************************************************
  * \brief Creates a new logger associated with the given name.
  * \param [in] name the name to associate with the new logger.
  * \param [in] imask inheritance mask, indicates the log level streams that
  *  will be inherited from the "root" logger. By default, nothing is inherited.
- *******************************************************************************
  */
 void createLogger( const std::string& name,
                    char imask=inherit::nothing );
 
 /*!
- *******************************************************************************
  * \brief Activates the logger associated with the given name.
  * \param [in] name the name of the logger to activate.
  * \return True if the named logger was activated, False otherwise
- *******************************************************************************
  */
 bool activateLogger( const std::string& name );
 
 /*!
- *******************************************************************************
  * \brief Returns the name of the active logger.
  * \return s a string corresponding to the name of the active logger.
- *******************************************************************************
  */
 std::string getActiveLoggerName();
 
 /*!
- *******************************************************************************
  * \brief Sets desired logging level.
  * \param [in] level user-supplied level to log.
- *******************************************************************************
  */
 void setLoggingMsgLevel( message::Level level );
 
 /*!
- *******************************************************************************
  * \brief Toggles the abort behavior for errors on the current active logger.
  * \param [in] status user-supplied flag.
- *******************************************************************************
  */
 void setAbortOnError( bool status );
 
 /*!
- *******************************************************************************
  * \brief Enables aborts on error messages for the current active logger.
  * \note This is equivalent to calling slic::setAbortOnError( true )
  * \post slic::isAbortOnErrorsEnabled() == true.
  * \pre slic::isInitialized() == true
- *******************************************************************************
  */
 void enableAbortOnError();
 
 /*!
- *******************************************************************************
  * \brief Disables aborts on error messages for the current active logger.
  * \note this is equivalent to calling slic::setAbortOnError( false )
  * \post slic::isAbortOnErrorsEnabled() == false.
  * \pre slic::isInitialized() == true
- *******************************************************************************
  */
 void disableAbortOnError();
 
 /*!
- *******************************************************************************
  * \brief Checks whether aborts on errors are enabled for the current logger.
  * \return status true if aborts on errors are enabled, otherwise, false.
  * \pre slic::isInitialized() == true.
- *******************************************************************************
  */
 bool isAbortOnErrorsEnabled();
 
 /*!
- *******************************************************************************
  * \brief Toggles the abort behavior for warnings on the current active logger.
  * \param [in] status user-supplied flag.
- *******************************************************************************
  */
 void setAbortOnWarning( bool status );
 
 /*!
- *******************************************************************************
  * \brief Enables aborts on warnings messages for the current active logger.
  * \note This is equivalent to calling slic::setAbortOnWarning( true )
  * \post slic::isAbortOnWarningsEnabled() == true.
  * \pre slic::isInitialized() == true.
- *******************************************************************************
  */
 void enableAbortOnWarning();
 
 /*!
- *******************************************************************************
  * \brief Disables aborts on warnings messages for the curernt active logger.
  * \note This is equivalent to calling slic::setAbortOnWarnings( false )
  * \post slic::isAbortOnWarnigsEnabled() == true.
  * \pre slic::isInitialized() == true.
- *******************************************************************************
  */
 void disableAbortOnWarning();
 
 /*!
- *******************************************************************************
  * \brief Checks whether aborts on warnings are enabled for the current logger.
  * \return status true if aborts on warnings are enabled, otherwise, false.
  * \pre slic::isInitialized() == true.
- *******************************************************************************
  */
 bool isAbortOnWarningsEnabled();
 
 /*!
- *******************************************************************************
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != AXOM_NULLPTR
- *******************************************************************************
  */
 void addStreamToMsgLevel( LogStream* ls, message::Level level);
 
 /*!
- *******************************************************************************
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
  * \pre ls != AXOM_NULLPTR.
- *******************************************************************************
  */
 void addStreamToAllMsgLevels( LogStream* ls );
 
 /*!
- *******************************************************************************
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- *******************************************************************************
  */
 void logMessage( message::Level level,
                  const std::string& message,
                  bool filter_duplicates=false );
 
 /*!
- *******************************************************************************
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
@@ -498,7 +437,6 @@ void logMessage( message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- *******************************************************************************
  */
 void logMessage( message::Level level,
                  const std::string& message,
@@ -506,7 +444,6 @@ void logMessage( message::Level level,
                  bool filter_duplicates=false );
 
 /*!
- *******************************************************************************
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
@@ -515,7 +452,6 @@ void logMessage( message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- *******************************************************************************
  */
 void logMessage( message::Level level,
                  const std::string& message,
@@ -524,7 +460,6 @@ void logMessage( message::Level level,
                  bool filter_duplicates=false );
 
 /*!
- *******************************************************************************
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
@@ -534,7 +469,6 @@ void logMessage( message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- *******************************************************************************
  */
 void logMessage( message::Level level,
                  const std::string& message,
@@ -544,59 +478,66 @@ void logMessage( message::Level level,
                  bool filter_duplicates=false );
 
 /*!
- *******************************************************************************
  * \brief Convenience method to log an error message.
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
- *******************************************************************************
  */
 void logErrorMessage( const std::string& message,
                       const std::string& fileName,
                       int line);
 
 /*!
- *******************************************************************************
  * \brief Convenience method to log warning messages.
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
- *******************************************************************************
  */
 void logWarningMessage( const std::string& message,
                         const std::string& fileName,
                         int line );
 
 /*!
- *******************************************************************************
  * \brief Flushes all streams.
  * \see Logger::flushStreams.
- *******************************************************************************
  */
 void flushStreams();
 
 /*!
- *******************************************************************************
  * \brief Pushes all streams.
  * \see Logger::pushStreams.
- *******************************************************************************
  */
 void pushStreams();
 
 /*!
- *******************************************************************************
  * \brief Finalizes the slic logging environment.
- *******************************************************************************
  */
 void finalize();
 
 /*!
- *******************************************************************************
  * \brief Uses glibc's backtrace() functionality to return a stacktrace
  * \return s a string corresponding to the stacktrace.
- *******************************************************************************
  */
 std::string stacktrace( );
+
+
+namespace detail {
+  /*!
+   ****************************************************************************
+   * Variable of a type that evaluates as false.
+   *
+   * \note Workaround for warnings about constant expressions in slic macros.
+   ****************************************************************************
+   */
+  struct FalseType
+  {
+    FalseType() {}
+    inline operator bool() const { return false; }
+  };
+
+  static const FalseType false_value;
+
+} /* namespace detail */
 
 } /* namespace slic */
 

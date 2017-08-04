@@ -9,13 +9,8 @@
  */
 
 /*!
- *******************************************************************************
  * \file LumberjackStream.hpp
  *
- * \date January 13, 2016
- * \author Chris White (white238@llnl.gov)
- *
- *******************************************************************************
  */
 
 #ifndef LUMBERJACKSTREAM_HPP_
@@ -46,7 +41,6 @@ namespace axom {
 namespace slic {
 
 /*!
- *******************************************************************************
  * \class LumberjackStream
  *
  * \brief A concrete instance of LogStream that dumps messages to a C++
@@ -60,7 +54,6 @@ namespace slic {
  * \warning The intent of this class is to be used primarily with std::cout,
  *  std::cerr, etc. It is suggested that applications do not use this class
  *  with an std::ofstream object.
- *******************************************************************************
  */
 class LumberjackStream:public LogStream
 {
@@ -77,7 +70,6 @@ public:
   virtual ~LumberjackStream();
 
   /*!
-   *****************************************************************************
    * \brief Appends the given message to the stream.
    *
    * \param [in] msgLevel the level of the message.
@@ -91,7 +83,6 @@ public:
    * \note This method doesn't put anything to the console. Instead the
    *  messages are cached locally to each ranks and are dumped to the console
    *  in rank order when flush is called.
-   *****************************************************************************
    */
   virtual void append( message::Level msgLevel,
                        const std::string& message,
@@ -101,28 +92,22 @@ public:
                        bool filter_duplicates );
 
   /*!
-   *****************************************************************************
    * \brief Pushes all messages to the output node according to Lumberjack's
    *  Communication scheme. Then writes it to the given stream.
-   *****************************************************************************
    */
   virtual void flush();
 
   /*!
-   *****************************************************************************
    * \brief Pushes all messages once to their parent node according to Lumberjack's
    *  Communication scheme. This does not guarantee all messages have reached the
    *  output node. This does not write out to the given stream.
-   *****************************************************************************
    */
   virtual void push();
 
   /*!
-   *****************************************************************************
    * \brief Writes the messages that are at the output node to the given stream.
    *  It does not flush any messages and not all messages are guaranteed to be
    *  at the output node.
-   *****************************************************************************
    */
   virtual void write();
 
@@ -140,12 +125,10 @@ private:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Default constructor. Made private to prevent applications from
    *  using it. Instead the constructor that passes the underlying Lumberjack
    * instance
    *  should be used.
-   *****************************************************************************
    */
   LumberjackStream(): m_lj( static_cast< axom::lumberjack::Lumberjack* >(
                               AXOM_NULLPTR) ),

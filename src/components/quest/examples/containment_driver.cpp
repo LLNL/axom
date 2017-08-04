@@ -10,10 +10,8 @@
 
 
 /*!
- *******************************************************************************
- * \file octree_driver.cpp
+ * \file containment_driver.cpp
  * \brief Basic demo of point containment acceleration structure over surfaces.
- *******************************************************************************
  */
 
 // axom includes
@@ -45,7 +43,7 @@
 
 #include "slam/Utilities.hpp"
 
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 
 
 // C/C++ includes

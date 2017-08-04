@@ -33,12 +33,15 @@ if(SCR_FOUND)
 endif()
 
 
-if(ENABLE_SLAM AND ENABLE_SPIO )
+if( ENABLE_SLAM AND ENABLE_SPIO )
     blt_add_executable(
-        NAME convert_sidre_protocol
-        SOURCES ${datastore_converter_sources}
+        NAME       convert_sidre_protocol
+        SOURCES    ${datastore_converter_sources}
         OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON ${datastore_converter_depends}
         )
+    install(TARGETS              convert_sidre_protocol
+            DESTINATION          bin
+            )
 endif()
 

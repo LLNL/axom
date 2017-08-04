@@ -37,28 +37,22 @@ class UnstructuredMesh:public Mesh
 public:
 
   /*!
-   *****************************************************************************
    * \brief Custom constructor. Creates an unstructured mesh of given dimension.
    * \param [in] ndims the number of dimension.
-   *****************************************************************************
    */
   explicit UnstructuredMesh(int ndims);
 
   /*!
-   *****************************************************************************
    * \brief Creates an unstructured mesh of given dimension that is identified
    *  by the supplied blockId and partitionId pair.
    * \param [in] ndims the number of dimension.
    * \param [in] blockId the block ID of the mesh
    * \param [in] partId the partition ID of the mesh
-   *****************************************************************************
    */
   UnstructuredMesh(int ndims, int blockId, int partId);
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~UnstructuredMesh();
 
@@ -66,41 +60,34 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of nodes in the mesh.
    * \return numNodes the total number of nodes.
    * \post numNodes >= 0
    * \warning This is a virtual method -- do not call inside a loop.
-   *****************************************************************************
    */
   virtual int getMeshNumberOfNodes() const
   { return this->getNumberOfNodes(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of cells in the mesh.
    * \return numCells the total number of cells.
    * \post numCells >= 0
    * \warning This is a virtual method -- do not call inside a loop.
-   *****************************************************************************
    */
   virtual int getMeshNumberOfCells() const
   { return this->getNumberOfCells(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes for the given cell.
    * \param cellIdx the index of the cell in query.
    * \return numCellNodes the number of nodes in the given cell.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual int getMeshNumberOfCellNodes( int cellIdx ) const
   { return this->getNumberOfCellNodes( cellIdx ); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell connectivity of the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \param [out] cell user-supplied buffer to store cell connectivity info.
@@ -109,7 +96,6 @@ public:
    * \pre cell != AXOM_NULLPTR.
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual void getMeshCell( int cellIdx, int* cell ) const
   {
@@ -119,24 +105,20 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell type of the cell associated with the given Id.
    * \param [in] cellIdx the index of the cell in query.
    * \return cellType the cell type of the cell at the given index.
-   *****************************************************************************
    */
   virtual int getMeshCellType( int cellIdx ) const
   { return m_cell_connectivity->getCellType( cellIdx ); }
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] coordinates user-supplied buffer to store the node coordinates.
    * \pre nodeIdx >= && nodeIdx < this->getMeshNumberOfNodes()
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual void getMeshNode( int nodeIdx, double* coordinates ) const
   {
@@ -147,7 +129,6 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate of a mesh node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
@@ -155,7 +136,6 @@ public:
    * \pre dim >= 0 && dim < m_ndims
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
-   *****************************************************************************
    */
   virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
   {
@@ -166,111 +146,99 @@ public:
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of nodes in the mesh.
    * \return N the total number of nodes in the mesh.
    * \pre m_node_coordinates != AXOM_NULLPTR.
    * \post N >= 0.
-   *****************************************************************************
    */
   int getNumberOfNodes() const
   { return m_node_coordinates->getNumberOfPoints(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number cells in the mesh.
    * \return N the total number of cells in the mesh.
    * \pre m_cell_connectivity != AXOM_NULLPTR.
    * \post N >= 0.
-   *****************************************************************************
    */
   int getNumberOfCells() const
   { return m_cell_connectivity->getNumberOfCells(); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes for the given cell.
    * \param cellIdx the index of the cell in query.
    * \return nnodes the number of nodes for the given cell.
    * \pre nnodes >= 1.
-   *****************************************************************************
    */
   int getNumberOfCellNodes( int cellIdx ) const
   { return m_cell_connectivity->getNumberOfNodes( cellIdx ); };
 
   /*!
-   *****************************************************************************
    * \brief Inserts a new cell in the mesh
    * \param [in] cell pointer to the connectivity of the cell.
    * \param [in] cell_type the type of cell to insert.
    * \param [in] numNodes number of nodes for the cell.
    * \pre cell != AXOM_NULLPTR.
-   *****************************************************************************
    */
   void insertCell( const int* cell, int cell_type, int numNodes );
 
   /*!
-   *****************************************************************************
    * \brief Inserts a new node in the mesh.
    * \param [in] x the x--coordinate of the new mesh node.
    * \param [in] y the y--coordinate of the new mesh node.
    * \pre m_ndims == 2.
-   *****************************************************************************
    */
   void insertNode( double x, double y );
 
   /*!
-   *****************************************************************************
    * \brief Inserts a new node in the mesh.
    * \param [in] x the x--coordinate of the new mesh node.
    * \param [in] y the y--coordinate of the new mesh node.
    * \param [in] z the z--coordinate of the new mesh node.
    * \pre m_ndims == 3.
-   *****************************************************************************
    */
   void insertNode( double x, double y, double z );
 
   /*!
-   *****************************************************************************
+   * \brief Inserts a new node in the mesh.
+   * \param [in] node pointer to buffer consisting of the coordinates
+   * \pre node != AXOM_NULLPTR
+   * \pre node must at least be m_ndims long
+   */
+  void insertNode( const double* node );
+
+  /*!
    * \brief Returns pointer to coordinates array for the requested dimension.
    * \param [in] dim the requested dimension.
    * \return ptr pointer to the coordinates array for the given dimension.
    * \pre m_coordinates != AXOM_NULLPTR.
    * \pre dim < m_ndims
    * \post ptr != AXOM_NULLPTR.
-   *****************************************************************************
    */
   const double* getMeshCoordinateArray( int dim ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns pointer to the connectivity array of the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \return cell_ptr pointer to the connectivity array of the cell.
    * \pre m_cell_connectivity != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
    * \post cell_ptr != AXOM_NULLPTR.
-   *****************************************************************************
    */
   const int* getCell( int cellIdx ) const;
 
   /*!
-   *****************************************************************************
    * \brief Writes a VTK file corresponding to this mesh instance in the VTK
    *  Legacy ASCII format that can be visualized with VisIt or ParaView.
    * \param [in] vtkFileName the name of the VTK file.
    * \note This method is primarily intended for debugging.
-   *****************************************************************************
    */
   void toVtkFile(const std::string& vtkFileName);
 
 private:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \note Made private to prevent users from calling it.
-   *****************************************************************************
    */
   UnstructuredMesh();
 
@@ -353,6 +321,26 @@ void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
   SLIC_ASSERT(  m_ndims==3 );
   SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x, y, z );
+}
+
+//------------------------------------------------------------------------------
+template < int CellType >
+inline void UnstructuredMesh< CellType >::insertNode( const double* node )
+{
+  SLIC_ASSERT( node != AXOM_NULLPTR );
+  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
+
+  if ( m_ndims== 2 ) {
+
+    m_node_coordinates->insertPoint( node[0], node[1] );
+
+  } else {
+
+    SLIC_ASSERT( m_ndims==3 );
+    m_node_coordinates->insertPoint( node[0], node[1], node[2] );
+
+  }
+
 }
 
 //------------------------------------------------------------------------------

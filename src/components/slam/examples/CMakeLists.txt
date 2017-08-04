@@ -13,7 +13,7 @@
 #
 set(example_sources
     ShockTube.cpp
-    TemplateEx.cpp
+    PolicyPrototype.cpp
     )
 
 set(slam_tests_depends_on slic slam)
@@ -27,7 +27,7 @@ endif()
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
     blt_add_executable(
-        NAME        "slam_${example_name}"
+        NAME        "slam_${example_name}_ex"
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
@@ -35,21 +35,9 @@ foreach(example_source ${example_sources})
 
     blt_add_test(
         NAME        slam_${example_name}
-        COMMAND     slam_${example_name}
+        COMMAND     slam_${example_name}_ex
         )
 endforeach()
-
-#
-# Slam (MeshAPI) version of lulesh 2.0
-#
-add_subdirectory(lulesh2.0.3)
-
-# Original lulesh example
-
-set(buildOrigLulesh TRUE)        # ---- Controls whether original Lulesh should build
-if ( ${buildOrigLulesh} )
-   add_subdirectory(lulesh2.0.3_orig)
-endif()
 
 
 #
@@ -66,7 +54,7 @@ if(BOOST_FOUND)
 
     # Unstructured hexahedral mesh
     blt_add_executable(
-        NAME        slam_unstructMesh
+        NAME        slam_unstructMesh_ex
         SOURCES     UnstructMeshField.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
@@ -74,7 +62,23 @@ if(BOOST_FOUND)
 
     blt_add_test(
         NAME        slam_unstructMesh
-        COMMAND     slam_unstructMesh ${CMAKE_CURRENT_SOURCE_DIR}/../data
+        COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data
         )
 
+endif()
+
+
+#
+# Slam (MeshAPI) version of lulesh 2.0
+# Note: Disabled on windows builds due to usage of unix APIs.
+#
+if(NOT WIN32)
+	add_subdirectory(lulesh2.0.3)
+
+	# Original lulesh example
+
+	set(buildOrigLulesh TRUE)        # ---- Controls whether original Lulesh should build
+	if ( ${buildOrigLulesh} )
+	   add_subdirectory(lulesh2.0.3_orig)
+	endif()
 endif()

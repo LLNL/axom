@@ -9,13 +9,8 @@
  */
 
 /*!
- *******************************************************************************
  * \file GenericOutputStream.cpp
  *
- * \date May 21, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 #include "GenericOutputStream.hpp"

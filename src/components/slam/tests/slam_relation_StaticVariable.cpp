@@ -191,6 +191,7 @@ namespace policies = axom::slam::policies;
       }
     }
 #else
+    AXOM_DEBUG_VAR(rel);
     SLIC_INFO("Skipping iterator tests when boost unavailable");
 #endif
   }
@@ -226,6 +227,7 @@ namespace policies = axom::slam::policies;
       }
     }
 #else
+    AXOM_DEBUG_VAR(rel);
     SLIC_INFO("Skipping iterator tests when boost unavailable");
 #endif
   }

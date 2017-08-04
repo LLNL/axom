@@ -62,7 +62,7 @@ class UberenvAxom(Package):
     depends_on("mfem~mpi",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.3.1",when="+cmake")
+    depends_on("cmake@3.8.2",when="+cmake")
 
     depends_on("python",    when="+devtools")
     depends_on("doxygen",   when="+devtools")
@@ -199,14 +199,14 @@ class UberenvAxom(Package):
             cfg.write("# python from uberenv\n")
             cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))
         else:
-            cfg.write("# python not build by uberenv\n\n")
+            cfg.write("# python not built by uberenv\n\n")
 
         if "lua" in spec:
             lua_dir = get_spec_path(spec, "lua", path_replacements)
             cfg.write("# lua from uberenv\n")
             cfg.write(cmake_cache_entry("LUA_DIR",lua_dir))
         else:
-            cfg.write("# lua not build by uberenv\n\n")
+            cfg.write("# lua not built by uberenv\n\n")
 
         # optional tpls (dev tools)
 
@@ -231,9 +231,9 @@ class UberenvAxom(Package):
         else:
             cfg.write("# uncrustify not built by uberenv\n\n")
 
-        cfg.write("# lcov and genhtml from uberenv\n")
         if "lcov" in spec:
             lcov_dir = get_spec_path(spec, "lcov", path_replacements)
+            cfg.write("# lcov and genhtml from uberenv\n")
             cfg.write(cmake_cache_entry("LCOV_PATH", pjoin(lcov_dir,"usr","bin","lcov")))
             cfg.write(cmake_cache_entry("GENHTML_PATH",pjoin(lcov_dir,"usr","bin","genhtml")))
         else:
@@ -253,10 +253,9 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",mpif90))
             cfg.write(cmake_cache_entry("MPIEXEC",mpiexec))
 
-
-        # Note (KW 3/2016) -- per ATK-659, we are temporarily disabling CXX11 for default configurations on intel builds 
-        if "intel" in spec.compiler.name:
-            cfg.write("# Temporarily disable CXX11 on intel builds until we resolve issue ATK-619\n")
+        # Note: We are disabling CXX11 for default configurations on chaos5 intel/clang builds, machine is being retired
+        if "chaos_5_x86_64_ib" in sys_type and (("intel" in spec.compiler.name) or ("clang" in spec.compiler.name)):
+            cfg.write("# Disable CXX11 on chaos5 intel/clang builds\n")
             cfg.write(cmake_cache_entry("BLT_CXX_STD","c++98"))
 
         cfg.write("##################################\n")

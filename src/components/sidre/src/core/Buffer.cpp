@@ -181,9 +181,10 @@ Buffer * Buffer::deallocate()
   releaseBytes(getVoidPtr());
   m_node.set_external( DataType( m_node.dtype() ), AXOM_NULLPTR );
 
-  for (size_t i = 0 ; i < m_views.size() ; ++i)
+  std::set<View *>::iterator vit = m_views.begin();
+  for ( ; vit != m_views.end(); ++vit)
   {
-    m_views[i]->unapply();
+    (*vit)->unapply();
   }
 
   return this;
@@ -313,7 +314,7 @@ void Buffer::attachToView( View * view )
 
   if (view->m_data_buffer == this)
   {
-    m_views.push_back( view );
+    m_views.insert( view );
   }
 }
 
@@ -327,18 +328,12 @@ void Buffer::attachToView( View * view )
 void Buffer::detachFromView( View * view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
+  SLIC_ASSERT(m_views.count(view) > 0);
 
-  if (view->m_data_buffer == this)
+  if (view->m_data_buffer == this && m_views.count(view) > 0)
   {
-    std::vector<View *>::iterator pos = std::find(m_views.begin(),
-                                                  m_views.end(),
-                                                  view);
-    if ( pos != m_views.end() )
-    {
-      SLIC_ASSERT(pos != m_views.end());
-      m_views.erase(pos);
-      view->setBufferViewToEmpty();
-    }
+    m_views.erase(view);
+    view->setBufferViewToEmpty();
   }
 }
 
@@ -351,9 +346,10 @@ void Buffer::detachFromView( View * view )
  */
 void Buffer::detachFromAllViews()
 {
-  for (size_t i = 0 ; i < m_views.size() ; ++i)
+  std::set<View *>::iterator vit = m_views.begin();
+  for ( ; vit != m_views.end(); ++vit)
   {
-    m_views[i]->setBufferViewToEmpty();
+    (*vit)->setBufferViewToEmpty();
   }
 
   m_views.clear();

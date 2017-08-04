@@ -11,6 +11,7 @@ set(spio_depends
     conduit
     sidre
     fmt
+    mpi
     )
 
 if(SCR_FOUND)
@@ -32,7 +33,7 @@ if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
-if(ENABLE_FORTRAN)
+if (ENABLE_FORTRAN)
     set(spio_fortran_headers
         # generated headers
         interface/c_fortran/wrapIOManager.h
@@ -65,3 +66,14 @@ blt_add_library( NAME
                  DEPENDS_ON
                      ${spio_depends}
                 )
+install(TARGETS              spio
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/spio
+        )
+install(FILES       ${spio_headers}
+        DESTINATION include/spio
+        )
+if (ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
+endif()

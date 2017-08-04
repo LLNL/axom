@@ -31,9 +31,9 @@ if(SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
-# The CAPI is only built to provide a Fortran interface.  If no Fortran,
-# disable CAPI.
 if (ENABLE_FORTRAN)
+    # The CAPI is only built to provide a Fortran interface.  If no Fortran,
+    # disable CAPI.
     list(APPEND sidre_headers
         interface/sidre.h
         interface/SidreTypes.h
@@ -63,10 +63,6 @@ set(sidre_depends
     hdf5
     slic)
 
-if(SPARSEHASH_FOUND)
-   set(sidre_depends ${sidre_depends} sparsehash)
-endif()
-
 #
 # make the library
 #
@@ -83,18 +79,30 @@ blt_add_library( NAME
                      ${sidre_depends}
                  )
 
+if(SPARSEHASH_FOUND)
+    blt_add_target_definitions(TO                 sidre
+                               TARGET_DEFINITIONS ${SPARSEHASH_COMPILER_DEFS})
+    target_include_directories(sidre PRIVATE
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/thirdparty/sparsehash>)
+endif()
+
+install(TARGETS              sidre
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/sidre
+        )
+install(FILES       ${sidre_headers}
+        DESTINATION include/sidre
+        )
+if(ENABLE_FORTRAN)
+    install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
+endif()
+
 # Only needed if building the Fortran interface
 # XXX this can be used to automatically generate the files
 #if (ENABLE_FORTRAN)
 #    add_dependencies(copy_headers_sidre sidre_generate)
 #endif()
-
-if(SPARSEHASH_FOUND)
-   blt_add_target_definitions(TO
-                              sidre
-                              TARGET_DEFINITIONS
-                              ${SPARSEHASH_COMPILER_DEFS})
-endif()
 
 if(FALSE)  # The Python module is not create yet.
 #if(ENABLE_PYTHON_API)
@@ -126,6 +134,14 @@ if(FALSE)  # The Python module is not create yet.
             hdf5
             slic
     )
+    install(TARGETS              sidre
+            EXPORT               ${PROJECT_NAME}-targets
+            DESTINATION          lib
+            INCLUDES DESTINATION include/sidre
+            )
+    install(FILES       ${sidre_headers}
+            DESTINATION include/sidre
+            )
 
 #http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
 # object library to avoid compile files twice

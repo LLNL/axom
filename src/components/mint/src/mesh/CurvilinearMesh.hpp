@@ -23,29 +23,23 @@ class CurvilinearMesh:public StructuredMesh
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructs a curvilinear mesh instance.
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the logical extent of this mesh instance.
-   *****************************************************************************
    */
   CurvilinearMesh( int dimension, int ext[6] );
 
   /*!
-   *****************************************************************************
    * \brief Constructs a curvilinear mesh instance.
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the logical extent of this mesh instance.
    * \param [in] blockId the block ID of this mesh
    * \param [in] partId the partition ID of this mesh
-   *****************************************************************************
    */
   CurvilinearMesh( int dimension, int ext[6], int blockId, int partId );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~CurvilinearMesh();
 
@@ -53,53 +47,44 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
-   *****************************************************************************
    */
   virtual void getNode( int nodeIdx, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, int k, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate of the given node.
    * \param [in] nodeIdx index of the node in query.
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int nodeIdx, int idim  ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -107,12 +92,10 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int idim ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -121,7 +104,6 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int k, int idim ) const;
 
@@ -131,7 +113,6 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Sets the coordinates of the node at the given index.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] x the x--coordinate to set at the given node.
@@ -139,12 +120,10 @@ public:
    * \param [in] z the z--coorindate to set at the given node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
    * \pre this->getDimension()==3
-   *****************************************************************************
    */
   void setNode( int nodeIdx, double x, double y, double z );
 
   /*!
-   *****************************************************************************
    * \brief Sets the coordinates of the node at (i,j,k).
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -153,54 +132,45 @@ public:
    * \param [in] y the y--coordinate to set at the given node.
    * \param [in] z the z--coordinate to set at the given node.
    * \pre this->getDimension()==3
-   *****************************************************************************
    */
   void setNode( int i, int j, int k,
                 double x, double y, double z );
 
   /*!
-   *****************************************************************************
    * \brief Sets the coordinates of the node at the given index.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] x the x--coordinate to set at the given node.
    * \param [in] y the y--coordinate to set at the given node.
    * \pre this->getDimension()==2
-   *****************************************************************************
    */
   void setNode( int nodeIdx, double x, double y );
 
   /*!
-   *****************************************************************************
    * \brief Sets the coordinates of the node at the given index.
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] x the x--coordinate to set at the given node.
    * \param [in] y the y--coordinate to set at the given node.
    * \pre this->getDimension()==2
-   *****************************************************************************
    */
   void setNode( int i, int j, double x, double y );
 
   /// @}
 
   /*!
-   *****************************************************************************
    * \brief Returns a pointer to the coordinates array for the given dimension.
    * \param [in] idim the requested coordinate dimension.
    * \return ptr pointer to the coordinates array.
    * \pre idim >= 0 && idim < this->getDimension().
    * \post ptr != AXOM_NULLPTR.
-   *****************************************************************************
    */
   const double* getMeshCoordinateArray( int idim ) const;
 
 private:
 
   /*!
-   ***************************************************************************
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent applications from calling it.
-   ***************************************************************************
    */
   CurvilinearMesh();
 

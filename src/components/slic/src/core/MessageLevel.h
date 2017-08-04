@@ -9,13 +9,8 @@
  */
 
 /*!
- *******************************************************************************
  * \file MessageLevel.h
  *
- * \date May 8, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 #ifndef MESSAGELEVEL_H_
@@ -29,7 +24,6 @@ namespace slic {
 namespace message {
 
 /*!
- *******************************************************************************
  * \enum MessageType
  *
  * \brief Enumerates the different types of messaging.
@@ -38,7 +32,6 @@ namespace message {
  *  a message.
  *
  * \see Logger
- *******************************************************************************
  */
 enum Level {
   Error,     //!< ERROR log an error that *may* be recoverable.
@@ -60,13 +53,11 @@ static const std::string MessageLevelName[ Num_Levels ] = {
 };
 
 /*!
- *******************************************************************************
  * \brief Returns the string name representation of the given level.
  * \param [in] l the level in query.
  * \return name a string corresponding to the name of the given leve.
  * \pre l >= 0 && l < Num_levels
  * \post name="UNKNOWN-LEVEL" \iff (l < 0) || (l >= Num_Levels)
- *******************************************************************************
  */
 static inline std::string getLevelAsString( Level l )
 {
@@ -84,11 +75,9 @@ static inline std::string getLevelAsString( Level l )
 namespace inherit {
 
 /*!
- *******************************************************************************
  * \enum flags
  *
  * \brief Holds the bit flags associated with each level.
- *******************************************************************************
  */
 enum flags {
   nothing =  0,    //!< nothing, no bit is set.

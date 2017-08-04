@@ -303,6 +303,44 @@ void SIDRE_view_get_name_bufferify(const SIDRE_view * self, char * SH_F_rv,
 // splicer end class.View.method.get_name_bufferify
 }
 
+void SIDRE_view_get_path_bufferify(const SIDRE_view * self, char * SH_F_rv,
+                                   int NSH_F_rv)
+{
+// splicer begin class.View.method.get_path_bufferify
+  const View * SH_this =
+    static_cast<const View *>(static_cast<const void *>(self));
+  std::string SH_rv = SH_this->getPath();
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
+  return;
+// splicer end class.View.method.get_path_bufferify
+}
+
+void SIDRE_view_get_path_name_bufferify(const SIDRE_view * self, char * SH_F_rv,
+                                        int NSH_F_rv)
+{
+// splicer begin class.View.method.get_path_name_bufferify
+  const View * SH_this =
+    static_cast<const View *>(static_cast<const void *>(self));
+  std::string SH_rv = SH_this->getPathName();
+  if (SH_rv.empty())
+  {
+    std::memset(SH_F_rv, ' ', NSH_F_rv);
+  }
+  else
+  {
+    shroud_FccCopy(SH_F_rv, NSH_F_rv, SH_rv.c_str());
+  }
+  return;
+// splicer end class.View.method.get_path_name_bufferify
+}
+
 SIDRE_buffer * SIDRE_view_get_buffer(SIDRE_view * self)
 {
 // splicer begin class.View.method.get_buffer

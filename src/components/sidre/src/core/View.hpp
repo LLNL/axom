@@ -948,67 +948,328 @@ public:
 //@{
 //!  @name View query and accessor methods
 
+  Attribute * getAttribute(IndexType idx);
+
+  const Attribute * getAttribute(IndexType idx) const;
+
+  Attribute * getAttribute(const std::string & name);
+
+  const Attribute * getAttribute(const std::string & name) const;
+
+//@}
+
+//@{
+//!  @name Attribute Value query and accessor methods
+
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttributeValue( IndexType idx ) const
+  {
+    const Attribute * attr = getAttribute(idx);
+    return m_attr_values.hasValue(attr);
+  }
+
+  /*!
+   * \brief Return true if the attribute has been explicitly set; else false.
+   */
+  bool hasAttributeValue( const std::string & name ) const
+  {
+    const Attribute * attr = getAttribute(name);
+    return m_attr_values.hasValue(attr);
+  }
+
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
   bool hasAttributeValue( const Attribute * attr ) const
   {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                     "hasAttributeValue: called without an Attribute");
+    }
+
     return m_attr_values.hasValue(attr);
   }
 
   /*!
-   * \brief Set Attribute to its default value.
+   * \brief Set Attribute to its default value from Attribute index.
+   *
+   * This causes hasAttributeValue to return false for the attribute.
+   */
+  bool setAttributeToDefault( IndexType idx )
+  {
+    const Attribute * attr = getAttribute(idx);
+    return m_attr_values.setToDefault(attr);
+  }
+
+  /*!
+   * \brief Set Attribute to its default value from Attribute name.
+   *
+   * This causes hasAttributeValue to return false for the attribute.
+   */
+  bool setAttributeToDefault( const std::string & name )
+  {
+    const Attribute * attr = getAttribute(name);
+    return m_attr_values.setToDefault(attr);
+  }
+
+  /*!
+   * \brief Set Attribute to its default value from Attribute pointer.
    *
    * This causes hasAttributeValue to return false for the attribute.
    */
   bool setAttributeToDefault( const Attribute * attr )
   {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                     "getAttributeToDefault: called without an Attribute");
+    }
+
     return m_attr_values.setToDefault(attr);
   }
 
   /*!
-   * \brief Set Attribute for a View.
+   * \brief Set Attribute for a View from Attribute index.
    */
   template<typename ScalarType>
-  bool setAttributeScalar( const Attribute * attr, ScalarType value )
+  bool setAttributeScalar( IndexType idx, ScalarType value )
   {
+    const Attribute * attr = getAttribute(idx);
+    if (attr == AXOM_NULLPTR)
+    {
+      return false;
+    }
+
     return m_attr_values.setScalar(attr, value);
   }
 
   /*!
-   * \brief Set Attribute for a View.
+   * \brief Set Attribute for a View from Attribute name.
    */
-  bool setAttributeString( const Attribute * attr, const std::string & value )
+  template<typename ScalarType>
+  bool setAttributeScalar( const std::string & name, ScalarType value )
   {
-    return m_attr_values.setString(attr, value);
+    const Attribute * attr = getAttribute(name);
+    if (attr == AXOM_NULLPTR)
+    {
+      return false;
+    }
+
+    return m_attr_values.setScalar(attr, value);
   }
 
   /*!
-   * \brief Return scalar attribute value.
+   * \brief Set Attribute for a View from Attribute pointer.
+   */
+  template<typename ScalarType>
+  bool setAttributeScalar( const Attribute * attr, ScalarType value )
+  {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                    "setAttributeScalar: called without an Attribute");
+      return false;
+    }
+    
+    return m_attr_values.setScalar(attr, value);
+  }
+
+  /*!
+   * \brief Set Attribute for a View from Attribute index.
+   */
+  bool setAttributeString( IndexType indx, const std::string & value );
+
+  /*!
+   * \brief Set Attribute for a View from Attribute name.
+   */
+  bool setAttributeString( const std::string & name, const std::string & value );
+
+  /*!
+   * \brief Set Attribute for a View from Attribute pointer.
+   */
+  bool setAttributeString( const Attribute * attr, const std::string & value );
+
+  /*!
+   * \brief Return scalar attribute value from Attribute indx.
+   */
+  Node::ConstValue getAttributeScalar(IndexType idx) const
+  {
+    const Attribute * attr = getAttribute(idx);
+    if (attr == AXOM_NULLPTR)
+    {
+      return m_attr_values.getEmptyNodeRef().value();
+    }
+
+    return m_attr_values.getScalar(attr);
+  }
+
+  /*!
+   * \brief Return scalar attribute value from Attribute name.
+   */
+  Node::ConstValue getAttributeScalar(const std::string & name) const
+  {
+    const Attribute * attr = getAttribute(name);
+    if (attr == AXOM_NULLPTR)
+    {
+      return m_attr_values.getEmptyNodeRef().value();
+    }
+
+    return m_attr_values.getScalar(attr);
+  }
+
+  /*!
+   * \brief Return scalar attribute value from Attribute pointer.
    */
   Node::ConstValue getAttributeScalar(const Attribute * attr) const
   {
-      return m_attr_values.getScalar(attr);
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                     "getScalar: called without an Attribute");
+      return m_attr_values.getEmptyNodeRef().value();
+    }
+
+    return m_attr_values.getScalar(attr);
   }
 
   /*!
-   * \brief Return a string attribute.
+   * \brief Lightweight templated wrapper around getAttributeScalar()
+   *        that can be used when you are calling
+   *        getAttributeScalar(), but not assigning the return type.
+   *
+   * \sa getAttributeScalar()
+   */
+  template<typename DataType>
+  DataType getAttributeScalar(IndexType idx)
+  {
+    const Attribute * attr = getAttribute(idx);
+    const Node & node = m_attr_values.getValueNodeRef(attr);
+    DataType data = node.value();
+    return data;
+  }
+
+  /*!
+   * \brief Lightweight templated wrapper around getAttributeScalar()
+   *        that can be used when you are calling
+   *        getAttributeScalar(), but not assigning the return type.
+   *
+   * \sa getAttributeScalar()
+   */
+  template<typename DataType>
+    DataType getAttributeScalar(const std::string & name)
+  {
+    const Attribute * attr = getAttribute(name);
+    const Node & node = m_attr_values.getValueNodeRef(attr);
+    DataType data = node.value();
+    return data;
+  }
+
+  /*!
+   * \brief Lightweight templated wrapper around getAttributeScalar()
+   *        that can be used when you are calling
+   *        getAttributeScalar(), but not assigning the return type.
+   *
+   * \sa getAttributeScalar()
+   */
+  template<typename DataType>
+  DataType getAttributeScalar(const Attribute *attr)
+  {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                     "getAttributeScalar: called without an Attribute");
+    }
+
+    const Node & node = m_attr_values.getValueNodeRef(attr);
+    DataType data = node.value();
+    return data;
+  }
+
+  /*!
+   * \brief Return a string attribute from the Attribute index.
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeString( const Attribute * attr ) const
+  const char * getAttributeString( IndexType idx ) const;
+
+  /*!
+   * \brief Return a string attribute from the Attribute name.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const char * getAttributeString( const std::string & name ) const;
+
+  /*!
+   * \brief Return a string attribute from the Attribute pointer.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const char * getAttributeString( const Attribute * attr ) const;
+
+  /*!
+   * \brief Return reference to attribute node from Attribute index.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeNodeRef( IndexType idx ) const
   {
-    return m_attr_values.getString(attr);
+    const Attribute * attr = getAttribute(idx);
+    return m_attr_values.getValueNodeRef(attr);
   }
 
   /*!
-   * \brief Return reference to attribute node.
+   * \brief Return reference to attribute node from Attribute name.
+   *
+   * If the value has not been explicitly set, return the current default.
+   */
+  const Node & getAttributeNodeRef( const std::string & name ) const
+  {
+    const Attribute * attr = getAttribute(name);
+    return m_attr_values.getValueNodeRef(attr);
+  }
+
+  /*!
+   * \brief Return reference to attribute node from Attribute pointer.
    *
    * If the value has not been explicitly set, return the current default.
    */
   const Node & getAttributeNodeRef( const Attribute * attr ) const
   {
+    if (attr == AXOM_NULLPTR)
+    {
+      SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
+                     "getAttributeNodeRef: called without an Attribute");
+    }
+
     return m_attr_values.getValueNodeRef(attr);
+  }
+
+  /*!
+   * \brief Return first valid Attribute index for a set Attribute in
+   *        View object (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if View has no Attributes set.
+   */
+  IndexType getFirstValidAttrValueIndex() const
+  {
+    return m_attr_values.getFirstValidAttrValueIndex();
+  }
+
+  /*!
+   * \brief Return next valid Attribute index for a set Attribute in
+   *        View object after given index (i.e., smallest index over
+   *        all Attribute indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   * getNextAttrValueIndex(InvalidIndex) returns InvalidIndex.
+   */
+  IndexType getNextValidAttrValueIndex(IndexType idx) const
+  {
+    return m_attr_values.getNextValidAttrValueIndex(idx);
   }
 
 //@}
@@ -1130,6 +1391,16 @@ private:
    * \brief Restore a view's description from a conduit tree.
    */
   void importDescription(conduit::Node& data_holder);
+
+  /*!
+   * \brief Add view's attributes to a conduit tree.
+   */
+  void exportAttribute(conduit::Node& data_holder) const;
+
+  /*!
+   * \brief Restore a view's attributes from a conduit tree.
+   */
+  void importAttribute(conduit::Node& data_holder);
 
   /*!
    *  \brief Private method to remove any applied description;

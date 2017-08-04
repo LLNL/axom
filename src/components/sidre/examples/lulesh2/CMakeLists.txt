@@ -16,7 +16,7 @@ set(lulesh_sources
     )
 
 blt_add_executable(
-    NAME sidre_lulesh2
+    NAME sidre_lulesh2_ex
     SOURCES ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON axom_utils sidre conduit conduit_relay hdf5 slic
@@ -24,11 +24,11 @@ blt_add_executable(
 
 if(ENABLE_MPI)
     blt_add_test(NAME sidre_lulesh2
-                 COMMAND sidre_lulesh2 -s 5
+                 COMMAND sidre_lulesh2_ex -s 5
                  NUM_PROCS 8
                 )
 else()
     blt_add_test(NAME sidre_lulesh2
-                 COMMAND sidre_lulesh2 -s 5
+                 COMMAND sidre_lulesh2_ex -s 5
                 )
 endif()

@@ -25,7 +25,7 @@ def main():
     write_build_info(pjoin(prefix,"info.json"))
     # spack specs for the rz bgq systems
     specs = ["%gcc@4.7.2~cmake~devtools~python~lua",
-             "%clang~cmake~devtools~python~lua"]
+             "%clang@3.7.0~cmake~devtools~python~lua"]
     # use uberenv to install for all specs
     for spec in specs:
         uberenv_install_tpls(prefix,spec,mirror_dir)

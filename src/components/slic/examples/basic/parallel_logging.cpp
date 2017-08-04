@@ -9,23 +9,17 @@
  */
 
 /*!
- *******************************************************************************
  * \file parallel_logging_example.cc
  *
- * \date May 7, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 // C/C++ includes
 #include <cstdlib> // for rand()
-#include <fstream> // for ofstream
 #include <sstream> // for ostringstream
 
 // Logging includes
 #include "slic/slic.hpp"
-#include "slic/GenericOutputStream.hpp"
+#include "slic/SynchronizedStream.hpp"
 
 // MPI
 #include <mpi.h>
@@ -44,28 +38,35 @@ int main( int argc, char** argv )
 {
   // STEP 0: initialize MPI & logging environment
   MPI_Init( &argc, &argv );
+
+  int rank=-1;
+  MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+
+  std::string format = std::string( "[<RANK>]: <MESSAGE>\n") +
+                       std::string( "\t<TIMESTAMP>\n" ) +
+                       std::string( "\tLEVEL=<LEVEL>\n") +
+                       std::string( "\tFILE=<FILE>\n") +
+                       std::string( "\tLINE=<LINE>\n");
+
   slic::initialize();
 
-  int rank = -1;
-  MPI_Comm_rank( MPI_COMM_WORLD, &rank);
-
-  std::ostringstream oss;
-  oss << "logfile_" << rank << ".dat";
-
-  std::ofstream ofs;
-  ofs.open( oss.str().c_str() );
 
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::disableAbortOnError();
-  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&ofs) );
-
+  slic::addStreamToAllMsgLevels(
+      new slic::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
-    slic::logMessage(
-        getRandomEvent(0,slic::message::Num_Levels),
-        "a random message", __FILE__,  __LINE__  );
+    std::ostringstream oss;
+    oss << "message " << i << "/" << N-1;
+
+    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
+                         oss.str(),
+                         __FILE__,
+                         __LINE__
+                         );
 
     // Flush every 5 cycles
     if ( (i % 5)==0 ) {
@@ -76,11 +77,8 @@ int main( int argc, char** argv )
 
   }
 
-  ofs.close();
-
   // STEP 4: shutdown logging environment
   slic::finalize();
-
 
   // STEP 5: Finalize MPI
   MPI_Finalize();

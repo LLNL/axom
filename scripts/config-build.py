@@ -29,7 +29,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Configure cmake build.",
                                      epilog="Note: Additional or unrecognized parameters will be passed directly to cmake."
                                             " For example, append '-DENABLE_OPENMP=ON' to enable OpenMP."
-                                            " See the toolkit QuickStart guide for a list of available CMake options."
+                                            " See Axom's QuickStart guide for a list of available CMake options."
                                             )
 
     parser.add_argument("-bp",
@@ -70,6 +70,10 @@ def parse_arguments():
                         required=True,
                         type=str,
                         help="select a specific host-config file to initalize CMake's cache")
+
+    parser.add_argument("--docs-only",
+                        action='store_true',
+                        help="generate a configuration for working on documentation.  Disables features not required for building the docs.")
 
     args, unknown_args = parser.parse_known_args()
     if unknown_args:
@@ -165,6 +169,13 @@ def create_cmake_command_line(args, unknown_args, buildpath, hostconfigpath, ins
 
     if args.xcode:
         cmakeline += ' -G "Xcode"'
+
+    if args.docs_only:
+        cmakeline += ' -DENABLE_ALL_COMPONENTS=OFF'
+        cmakeline += ' -DENABLE_TESTS=OFF'
+        cmakeline += ' -DENABLE_EXAMPLES=OFF'
+        cmakeline += ' -DENABLE_DOCS=ON'
+        cmakeline += ' -DENABLE_PYTHON=ON'
 
     if unknown_args:
         cmakeline += " " + " ".join( unknown_args )

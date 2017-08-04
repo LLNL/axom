@@ -199,7 +199,7 @@ namespace slam {
         // Note: Since we return a reference to the pointed-to value, we need different functions
         //       for OrderedSets with indirection buffers than with those that have no indirection
         typedef policies::NoIndirection<PositionType,ElementType> NoIndirectionType;
-        return indirection( HasIndirection< not boost::is_same<IndirectionType, NoIndirectionType>::value >(), 0);
+        return indirection( HasIndirection< ! boost::is_same<IndirectionType, NoIndirectionType>::value >(), 0);
       }
 
 

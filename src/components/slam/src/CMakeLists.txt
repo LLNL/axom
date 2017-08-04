@@ -71,3 +71,12 @@ blt_add_library(
     HEADERS_OUTPUT_SUBDIR slam
     DEPENDS_ON  ${slam_depends_on}
     )
+install(TARGETS              slam
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/slam
+        )
+install(FILES       ${slam_headers}
+        DESTINATION include/slam
+        )
+

@@ -105,6 +105,8 @@ classes:
     methods:
     -  decl: IndexType getIndex()
     -  decl: const std::string& getName+len(MAXNAMESIZE)() const
+    -  decl: std::string getPath+len(MAXNAMESIZE)() const
+    -  decl: std::string getPathName+len(MAXNAMESIZE)() const
 #    -  decl: Group* getParent()
     -  decl: const Group* getParent() const
 #    -  decl: DataStore* getDataStore() const
@@ -382,6 +384,8 @@ classes:
     - decl: bool isString() const
     - decl: IndexType getIndex()
     - decl: const std::string& getName+len(MAXNAMESIZE)() const
+    - decl: std::string getPath+len(MAXNAMESIZE)() const
+    - decl: std::string getPathName+len(MAXNAMESIZE)() const
     - decl: Buffer* getBuffer()
 #    - decl: Buffer const* getBuffer() const
     - decl: void * getVoidPtr() const
