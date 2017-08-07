@@ -14,7 +14,9 @@
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 2)
 set(AXOM_VERSION_PATCH 3)
-set(AXOM_VERSION_FULL "v0.2.3")
+set(AXOM_VERSION_FULL "v${AXOM_VERSION_MAJOR}.")
+string(APPEND AXOM_VERSION_FULL "${AXOM_VERSION_MINOR}.")
+string(APPEND AXOM_VERSION_FULL "${AXOM_VERSION_PATCH}" )
 
 ##------------------------------------------------------------------------------
 ## extract_version_components( <tag>, <prefix> )
@@ -24,7 +26,6 @@ set(AXOM_VERSION_FULL "v0.2.3")
 ##   <prefix>_VERSION_MAJOR
 ##   <prefix>_VERSION_MINOR
 ##   <prefix>_VERSION_PATCH
-##   <prefix>_VERSION_EXTRA
 ##   <prefix>_VERSION_FULL
 ##
 ## Note: This function assumes tags of the form "vMAJOR.MINOR.PATCH"
