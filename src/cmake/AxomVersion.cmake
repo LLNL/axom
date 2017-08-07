@@ -57,16 +57,8 @@ if (Git_FOUND)
 
     ## get latest tag from master
     blt_git_tag( OUTPUT_TAG axom_tag RETURN_CODE rc ON_BRANCH master )
-    if ( NOT ${rc} EQUAL 0)
-      message( FATAL_ERROR "blt_git_tag failed!" )
-    endif()
-
-    axom_extract_version( "${axom_tag}" AXOM )
-
-    ## check current active branch
-    blt_git_branch( BRANCH_NAME axom_branch RETURN_CODE rc )
-    if ( NOT ${rc} EQUAL 0 )
-      message( FATAL_ERROR "blt_git_branch failed!" )
+    if ( {rc} EQUAL 0)
+      axom_extract_version( "${axom_tag}" AXOM )
     endif()
 
     blt_git_hashcode( HASHCODE sha1 RETURN_CODE rc )
