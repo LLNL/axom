@@ -1,0 +1,6 @@
+tetrahedron.test
+tet2.test
+tet3.test
+tet3extra.test
+planesmall.test
+golfball.test

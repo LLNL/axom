@@ -13,6 +13,7 @@ set(quest_tests
     quest_octree.cpp
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
+    quest_meshtester.cpp
    )
 
 set(quest_tests_depends

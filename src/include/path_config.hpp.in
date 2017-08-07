@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
+#ifndef PATH_CONFIG_HPP
+#define PATH_CONFIG_HPP
+
+// #define axom src and bin dir
+
+#define AXOM_SRC_DIR "@AXOM_SRC_DIR@"
+#define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
+
+#endif  //   PATH_CONFIG_HPP
+

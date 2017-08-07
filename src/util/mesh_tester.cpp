@@ -84,13 +84,6 @@ struct Input
   };
 };
 
-typedef struct TrianglePair
-{
-  int a, b;
-
-  TrianglePair(const int na, const int nb) : a(na), b(nb) {};
-} TrianglePair;
-
 Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh);
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);

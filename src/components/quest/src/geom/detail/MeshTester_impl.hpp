@@ -8,6 +8,8 @@
 #include "primal/intersect.hpp"
 #include "primal/UniformGrid.hpp"
 
+#include "mint/UnstructuredMesh.hpp"
+
 // C++ includes
 #include <algorithm>
 #include <map>
@@ -72,9 +74,10 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
   return false;
 }
 
-std::vector<std::pair<int, int> > findTriMeshIntersections_impl(mint::Mesh* surface_mesh,
-                                                                std::vector<int> & degenerateIndices,
-                                                                int spatialIndexResolution)
+std::vector<std::pair<int, int> > 
+findTriMeshIntersections_impl(mint::Mesh* surface_mesh,
+			      std::vector<int> & degenerateIndices,
+			      int spatialIndexResolution)
 {
   std::vector<std::pair<int, int> > retval;
   std::set<int> seen, hit;
@@ -84,13 +87,11 @@ std::vector<std::pair<int, int> > findTriMeshIntersections_impl(mint::Mesh* surf
   SLIC_INFO("Running mesh_tester with UniformGrid index");
 
   // Create a bounding box around mesh to find the minimum point
-  SpatialBoundingBox meshBB  = compute_bounds(surface_mesh);
-  const Point3 minBBPt= meshBB.getMin();
-  const Point3 maxBBPt= meshBB.getMax();
+  SpatialBoundingBox meshBB = compute_bounds(surface_mesh);
+  const Point3 minBBPt = meshBB.getMin();
+  const Point3 maxBBPt = meshBB.getMax();
 
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  // reportInterval is used for progress reporting; that code is commented out.
-  // const int reportInterval = (int)(ncells / 5.0) + 1;
 
   // find the specified resolution.  If we're passed a number less than one,
   // use the cube root of the number of triangles.
@@ -103,11 +104,6 @@ std::vector<std::pair<int, int> > findTriMeshIntersections_impl(mint::Mesh* surf
   UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
 
   for (int i=0; i < ncells; i++) {
-    // Should we provide a callback to notify users of progress while reading and querying?
-    // if (reportInterval > 0 && i % reportInterval == 0) {
-    //   std::cerr << "Building grid is " << 100.0 * (double(i)/double(ncells)) <<
-    //     " percent done" << std::endl;
-    // }
     SpatialBoundingBox triBB;
     t1=getMeshTriangle(i,  surface_mesh);
     triBB.addPoint(t1[0]);
@@ -125,12 +121,6 @@ std::vector<std::pair<int, int> > findTriMeshIntersections_impl(mint::Mesh* surf
   for (int z=0; z< ncells; z++) {
     seen.clear();
     hit.clear();
-
-    // Should we provide a callback to notify users of progress while reading and querying?
-    // if (reportInterval > 0 && z % reportInterval == 0) {
-    //   std::cerr << "Querying grid is " << 100.0 * (double(z)/double(ncells)) <<
-    //     " percent done" << std::endl;
-    // }
 
     // Retrieve the triangle at index z and construct a bounding box around it
     SpatialBoundingBox triBB2;
