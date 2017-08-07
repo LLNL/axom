@@ -44,11 +44,6 @@ TEST(gtest_utils_config, axom_version )
   const std::string AXOM_FULL = AXOM_VERSION_FULL;
   EXPECT_FALSE( AXOM_FULL.empty() );
 
-  std::ostringstream axom_full_version;
-  axom_full_version << "v" << AXOM_MAJOR << "." << AXOM_MINOR << ".";
-  axom_full_version << AXOM_PATCH;
-  EXPECT_EQ( AXOM_FULL, axom_full_version.str() );
-
   std::cout << "AXOM_VERSION_FULL: "  << AXOM_VERSION_FULL  << std::endl;
   std::cout << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
   std::cout << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
