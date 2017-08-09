@@ -16,7 +16,7 @@
 #include "axom/slic.hpp"
 #include "axom/quest/Delaunay.hpp"
 
-#include <time.h>
+#include <ctime>
 #include <iomanip>
 
 using namespace axom;
@@ -149,22 +149,13 @@ int run_delaunay(int num_points, bool outputVTKsteps, std::string outputVTKFile)
   dt.initializeBoundary(bb);
 
   //Adding a number of random points
-  time_t rseed_val = time(NULL);
+  time_t rseed_val = std::time(NULL);
   SLIC_INFO("Using " << rseed_val << " as seed for rand()");
   srand(rseed_val);
-
-  if(outputVTKsteps)
-  {
-    std::ostringstream stm;
-    stm << outputVTKFile << "_box.vtk";
-    dt.writeToVTKFile(stm.str());
-  }
 
   for(int pt_i = 0; pt_i < num_points; pt_i++)
   {
     //SLIC_INFO("Adding point #" << pt_i );
-    //double x = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[0] - BOUNDING_BOX_DIM[0]/2.0;
-    //double y = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[1] - BOUNDING_BOX_DIM[1]/2.0;
 
     double pt_coord[dimension];
     for(unsigned int d = 0; d < dimension; d++)
