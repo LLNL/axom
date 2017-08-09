@@ -129,7 +129,7 @@ void Lumberjack::pushMessagesOnce()
 
     for (int i=0;i<(int)receivedPackedMessages.size(); ++i){
         unpackMessages(receivedPackedMessages[i]);
-        delete receivedPackedMessages[i];
+        delete [] receivedPackedMessages[i];
     }
     receivedPackedMessages.clear();
 
@@ -152,7 +152,7 @@ void Lumberjack::pushMessagesFully()
 
         for (int i=0; i<(int)receivedPackedMessages.size(); ++i){
             unpackMessages(receivedPackedMessages[i]);
-            delete receivedPackedMessages[i];
+            delete [] receivedPackedMessages[i];
         }
         receivedPackedMessages.clear();
     }
