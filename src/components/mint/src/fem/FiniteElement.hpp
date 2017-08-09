@@ -117,9 +117,34 @@ public:
   FiniteElement( const Mesh* mesh, int cellIdx );
 
   /*!
+   * \brief Constructs a FiniteElement instance from a matrix consisting of the
+   *  element coordinates and a cell type.
+   *
+   * \param [in] M (ndims x nnodes) matrix consisting of the element coordinates
+   * \param [in] cellType the celltype, e.g., MINT_QUAD, etc.
+   * \param [in] shallowCopy optional argument that indicates whether the
+   *  coordinate data will be shallow copied to the internal data-structures.
+   *  Defaults to false if argument is not specified.
+   *
+   * \note The element coordinates are arranged in the supplied matrix, M, such
+   *  that the number of rows corresponds to the dimension of the element and
+   *  number of columns corresponds to the number of nodes.
+   */
+  FiniteElement( numerics::Matrix< double >& M, int cellType,
+                 bool shallowCopy=false );
+
+  /*!
    * \brief Destructor.
    */
   ~FiniteElement();
+
+  /*!
+   * \brief Checks if this instance is pointing to an external, user-supplied,
+   *  buffer for the element coordinate information.
+   *
+   * \return status true if an external buffer is used, otherwise, false.
+   */
+  bool usesExternalBuffer( ) const { return m_usingExternal; };
 
   /*!
    * \brief Overrides the max number of iterations for the Newton-Raphson, used
@@ -143,12 +168,6 @@ public:
    * \return N max number of iterations for the Newton-Raphson
    */
   int getMaxSolverIterations( ) const { return m_maxNewtonIterations; };
-
-  /*!
-   * \brief Returns the Cell ID on the mesh corresponding to this FiniteElement.
-   * \return idx ID of the cell corresponding to this instance.
-   */
-  int getCellId() const { return m_cellIdx; };
 
   /*!
    * \brief Returns the cell type associated with this FiniteElement instance.
@@ -476,7 +495,6 @@ private:
    * \note Made private to prevent host-code from calling this.
    */
   FiniteElement(): m_dim( -1 ),
-                   m_cellIdx( -1 ),
                    m_ctype( -1 ),
                    m_shape_func_type( -1 ),
                    m_maxNewtonIterations( -1 ),
@@ -485,6 +503,7 @@ private:
                    m_xyz( AXOM_NULLPTR ),
                    m_phi( AXOM_NULLPTR ),
                    m_phidot( AXOM_NULLPTR ),
+                   m_usingExternal( false ),
                    m_shapeFunction( AXOM_NULLPTR ),
                    m_shapeFunctionDerivatives( AXOM_NULLPTR ),
                    m_reference_min( -1 ),
@@ -499,7 +518,6 @@ private:
   /// @{
 
   int m_dim;                   /*!< physical dimension */
-  int m_cellIdx;               /*!< cell index on associated mesh */
   int m_ctype;                 /*!< cell type, e.g., MINT_QUAD, etc. */
   int m_shape_func_type;       /*!< basis type, e.g., MINT_LAGRANGE */
   int m_maxNewtonIterations;   /*!< max newton iterations for inverse map */
@@ -510,6 +528,8 @@ private:
   double* m_phi;               /*!< stores shape functions at some point */
   double* m_phidot;            /*!< stores shape function derivatives */
 
+  bool m_usingExternal;        /*!< indicates whether the element coordinates
+                                    are pointing to an external buffer. */
   /// @}
 
   /// \name Reference Element Attributes

@@ -56,7 +56,6 @@ bool diverged( const double* xi, int N )
 //------------------------------------------------------------------------------
 FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
   m_dim( mesh->getDimension() ),
-  m_cellIdx( cellIdx ),
   m_ctype( mesh->getMeshCellType( cellIdx ) ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
   m_maxNewtonIterations( -1 ),
@@ -65,6 +64,7 @@ FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
   m_xyz( AXOM_NULLPTR ),
   m_phi( AXOM_NULLPTR ),
   m_phidot( AXOM_NULLPTR ),
+  m_usingExternal( false ),
   m_shapeFunction( AXOM_NULLPTR ),
   m_shapeFunctionDerivatives( AXOM_NULLPTR ),
   m_reference_min( -1 ),
@@ -75,7 +75,49 @@ FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
   m_reference_center( AXOM_NULLPTR )
 {
   this->setUp( );
-  this->getCellCoords( mesh, m_cellIdx );
+  this->getCellCoords( mesh, cellIdx );
+}
+
+//------------------------------------------------------------------------------
+FiniteElement::FiniteElement( numerics::Matrix< double >& M,
+                              int cellType,
+                              bool shallowCopy ) :
+  m_dim( M.getNumRows() ),
+  m_ctype( cellType ),
+  m_shape_func_type( MINT_UNDEFINED_BASIS ),
+  m_maxNewtonIterations( -1 ),
+  m_numnodes( M.getNumColumns() ),
+  m_jac( AXOM_NULLPTR ),
+  m_xyz( AXOM_NULLPTR ),
+  m_phi( AXOM_NULLPTR ),
+  m_phidot( AXOM_NULLPTR ),
+  m_usingExternal( shallowCopy ),
+  m_shapeFunction( AXOM_NULLPTR ),
+  m_shapeFunctionDerivatives( AXOM_NULLPTR ),
+  m_reference_min( -1 ),
+  m_reference_max( -1 ),
+  m_reference_dim( -1 ),
+  m_numdofs( -1 ),
+  m_reference_coords( AXOM_NULLPTR ),
+  m_reference_center( AXOM_NULLPTR )
+{
+  this->setUp( );
+
+  if ( m_usingExternal ) {
+
+    // shallow copy the data
+    m_xyz = M.data( );
+
+  } else {
+
+    // make a deep copy of the data
+    const int N = m_dim*m_numnodes;
+    for ( int i=0; i < N; ++i ) {
+       m_xyz[ i ] = M.data()[ i ];
+    }
+
+  }
+
 }
 
 //------------------------------------------------------------------------------
@@ -267,7 +309,11 @@ void FiniteElement::evaluateDerivatives( const double* xr, double* phidot )
 void FiniteElement::setUp()
 {
   m_jac              = new double[ m_dim*m_dim ];
-  m_xyz              = new double[ m_numnodes*m_dim ];
+
+  if ( !m_usingExternal ) {
+     m_xyz = new double[ m_numnodes*m_dim ];
+  }
+
   m_phi              = new double[ m_numnodes ];
   m_phidot           = new double[ m_numnodes*m_dim ];
   m_reference_coords = new double[ m_numnodes*m_dim ];
@@ -278,7 +324,11 @@ void FiniteElement::setUp()
 void FiniteElement::tearDown()
 {
   delete [] m_jac;
-  delete [] m_xyz;
+
+  if ( !m_usingExternal ) {
+    delete [] m_xyz;
+  }
+
   delete [] m_phi;
   delete [] m_phidot;
   delete [] m_reference_coords;
