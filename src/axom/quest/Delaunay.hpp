@@ -45,16 +45,16 @@ public:
   using Point2DType = primal::Point<DataType, 2>;
   using Point3DType = primal::Point<DataType, 3>;
   using Point4DType = primal::Point<DataType, 4>;
-  using IATriMeshType = slam::IAMesh<DIMENSION, DIMENSION, PointType>;
+  using IAMeshType = slam::IAMesh<DIMENSION, DIMENSION, PointType>;
   using Triangle2D = axom::primal::Triangle<DataType, 2>;
   using Tetrahedron3D = axom::primal::Tetrahedron<DataType, 3>;
   using BoundingBox = axom::primal::BoundingBox<DataType, DIMENSION>;
 
-  using IndexListType = typename IATriMeshType::IndexListType;
+  using IndexListType = typename IAMeshType::IndexListType;
   using IndexPairType = std::pair<IndexType, IndexType>;
 
 private:
-  IATriMeshType m_mesh;
+  IAMeshType m_mesh;
   BoundingBox m_bounding_box;
   bool m_has_boundary;
   int m_num_removed_elements_since_last_compact;
@@ -76,12 +76,6 @@ private:
   std::vector<IndexType> new_elements;
   std::set<IndexType> checked_element_set;
 
-private:
-  /**
-   * \brief A utility class that wraps the simplex of different dimension
-   */
-  struct SimplexWrapper;
-
 public:
   /**
    * \brief Default Constructor. User need to call initializeBoundary(BoundingBox) before adding points.
@@ -102,9 +96,9 @@ public:
     std::vector<DataType> points;
     std::vector<IndexType> elem;
 
-    getInitialMesh(points, elem, bb);
+    generateInitialMesh(points, elem, bb);
 
-    m_mesh = IATriMeshType(points, elem);
+    m_mesh = IAMeshType(points, elem);
 
     m_bounding_box = bb;
     m_has_boundary = true;
@@ -165,7 +159,7 @@ public:
         for(int j = 0; j < (int)VERT_PER_ELEMENT; j++)
         {
           invalid_nbr_count += m_mesh.ee_rel[i][j] ==
-            IATriMeshType::ElementToElementRelation::INVALID_INDEX;
+            IAMeshType::ElementToElementRelation::INVALID_INDEX;
         }
       }
     }
@@ -175,6 +169,8 @@ public:
     //printMesh();
 
     //call compact() if there are too many invalid points
+    //This auto-compacting feature is hard coded. It may be good to let user have control
+    // of this option in the future.
     if(m_num_removed_elements_since_last_compact > 64 &&
        m_num_removed_elements_since_last_compact > (m_mesh.element_set.size() / 2))
     {
@@ -205,10 +201,7 @@ public:
 
     for(int i = 0; i < m_mesh.vertex_set.size(); i++)
     {
-      DataType coords[DIMENSION];
-      for(unsigned int j = 0; j < DIMENSION; j++)
-        coords[j] = m_mesh.vcoord_map[i][j];
-      mint_mesh.insertNode(coords);
+      mint_mesh.insertNode(m_mesh.getVertexPoint(i).data());
     }
 
     for(int i = 0; i < m_mesh.ev_rel.size(); i++)
@@ -229,6 +222,23 @@ public:
     {
       //remove the boundary box, which will be the first 4 points for triangles, first 8 for tetrahedron
       unsigned int num_boundary_pts = DIMENSION == 2 ? 4 : 8;
+
+      //Collect a list of elements to remove first, because
+      //the list may be incomplete if generated during the removal.
+      IndexListType elements_to_remove;
+      for(unsigned int i = 0; i < num_boundary_pts; i++)
+      {
+        IndexListType elist = m_mesh.getElementsWithVertex(i);
+        elements_to_remove.insert(elements_to_remove.end(),
+                                  elist.begin(),
+                                  elist.end());
+      }
+      for(unsigned int i = 0; i < elements_to_remove.size(); i++)
+      {
+        if(m_mesh.isValidElementEntry(elements_to_remove[i]))
+          m_mesh.removeElement(elements_to_remove[i]);
+      }
+
       for(unsigned int i = 0; i < num_boundary_pts; i++) m_mesh.removeVertex(i);
 
       m_has_boundary = false;
@@ -241,7 +251,7 @@ public:
   /**
     * \brief Get the IA mesh data pointer
     */
-  const IATriMeshType* getMeshData() const { return &m_mesh; }
+  const IAMeshType* getMeshData() const { return &m_mesh; }
 
 private:
   /**
@@ -280,11 +290,11 @@ private:
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
       // Logically, this should never happen.
-      SLIC_ASSERT(next_el != IATriMeshType::ElementSet::INVALID_ENTRY);
+      SLIC_ASSERT(next_el != IAMeshType::ElementSet::INVALID_ENTRY);
     }
   }
 
-  /*
+  /**
    * \brief Helper function returns true if the query point is in the sphere formed by the element vertices
    */
   bool isPointInSphere(const PointType& query_pt, IndexType element_idx);
@@ -315,7 +325,7 @@ private:
 
         //SLIC_INFO("this element's "<< face_i <<" neighbor is elem "<<nbr_elem);
 
-        if(nbr_elem == IATriMeshType::ElementSet::INVALID_ENTRY ||
+        if(nbr_elem == IAMeshType::ElementSet::INVALID_ENTRY ||
            (checked_element_set.insert(nbr_elem).second
               ? findCavityElementsRec(query_pt, nbr_elem)
               : !axom::slam::is_subset(
@@ -423,24 +433,30 @@ private:
     return;
   }
 
-  /*
+  /**
    * \brief Helper function to fill the array with the initial mesh.
    * \details create a rectangle for 2D, cube for 3D, and fill the array with the mesh data.
    */
-  void getInitialMesh(std::vector<DataType>& points,
-                      std::vector<IndexType>& elem,
-                      const BoundingBox& bb);
+  void generateInitialMesh(std::vector<DataType>& points,
+                           std::vector<IndexType>& elem,
+                           const BoundingBox& bb);
 
-  /*
+  /**
    * \brief helper function to retrieve the barycentric coordinate of the query point in the element
    */
   BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt);
-};
 
+};  //END class Delaunay
+
+//********************************************************************************
+// Below are specialization functions for 2D and 3D methods in the Delaunay class
+//********************************************************************************
+
+// this is the 2D specialization for generateInitialMesh(...)
 template <>
-void Delaunay<2>::getInitialMesh(std::vector<DataType>& points,
-                                 std::vector<IndexType>& elem,
-                                 const BoundingBox& bb)
+void Delaunay<2>::generateInitialMesh(std::vector<DataType>& points,
+                                      std::vector<IndexType>& elem,
+                                      const BoundingBox& bb)
 {
   //Set up the initial IA mesh of 2 triangles forming a rectangle
 
@@ -455,10 +471,11 @@ void Delaunay<2>::getInitialMesh(std::vector<DataType>& points,
   elem.assign(tri_arr, tri_arr + sizeof(tri_arr) / sizeof(tri_arr[0]));
 }
 
+// this is the 3D specialization for generateInitialMesh(...)
 template <>
-void Delaunay<3>::getInitialMesh(std::vector<DataType>& points,
-                                 std::vector<IndexType>& elem,
-                                 const BoundingBox& bb)
+void Delaunay<3>::generateInitialMesh(std::vector<DataType>& points,
+                                      std::vector<IndexType>& elem,
+                                      const BoundingBox& bb)
 {
   //Set up the initial IA mesh of 6 tetrahedrons forming a cube
 
@@ -480,6 +497,7 @@ void Delaunay<3>::getInitialMesh(std::vector<DataType>& points,
   elem.assign(tet_arr, tet_arr + sizeof(tet_arr) / sizeof(tet_arr[0]));
 }
 
+// this is the 2D specialization for getBaryCoords(...)
 template <>
 Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
@@ -495,6 +513,7 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
   return bary_co;
 }
 
+// this is the 3D specialization for getBaryCoords(...)
 template <>
 Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
@@ -511,6 +530,7 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
   return bary_co;
 }
 
+// this is the 2D specialization for isPointInSphere(...)
 template <>
 bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
 {
@@ -521,6 +541,7 @@ bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_i
   return axom::primal::in_sphere(query_pt, p0, p1, p2);
 }
 
+// this is the 3D specialization for isPointInSphere(...)
 template <>
 bool Delaunay<3>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
 {
@@ -531,18 +552,6 @@ bool Delaunay<3>::isPointInSphere(const PointType& query_pt, IndexType element_i
   const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
   return axom::primal::in_sphere(query_pt, p0, p1, p2, p3);
 }
-
-template <>
-struct Delaunay<3>::SimplexWrapper
-{
-  int test() { return 3; }
-};
-
-template <>
-struct Delaunay<2>::SimplexWrapper
-{
-  int test() { return 2; }
-};
 
 }  // end namespace quest
 }  // end namespace axom

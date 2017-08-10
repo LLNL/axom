@@ -9,14 +9,15 @@
  * \brief This file contains an example that creates Delaunay triangulation
  * sequentially from a set of random points contained within a rectangle
  * centered at the origin.
+ * This example can run in 2D with triangles or in 3D with tetrahedrons.
  * It uses SLAM IA, a topological mesh data structure.
  *******************************************************************************
  */
 
 #include "axom/slic.hpp"
-#include "axom/quest/Delaunay.hpp"
+#include "axom/quest.hpp"
 
-#include <ctime>
+#include <ctime>  //for random number generation
 #include <iomanip>
 
 using namespace axom;
@@ -45,6 +46,7 @@ struct Input
   std::string outputVTKFile;
   int numRandPoints;
   bool outputSteps;
+  int numOutputSteps;
   int dimension;
 
   InputStatus errorCode;
@@ -62,16 +64,22 @@ struct Input
     std::cout << "Argument usage:" << std::endl
               << "  --help(-h)             Show this help message." << std::endl
               << "  --nrandpt(-n) [N]      The number of random points.  "
-                 "Default N = 10.  "
+                 "Default is N = 20.  "
               << std::endl
               << "  --dim(-d) [D]          The dimension of the mesh. 2 = "
                  "triangles in 2D, 3 = tetrahedrons in 3D."
               << std::endl
-              << "  --outputsteps(-s)      The intermediate steps will be "
-                 "written out as VTK files"
-              << std::endl
               << "  --outfile(-o) [fname]  The VTK output file. Default fname "
                  "= delaunay_output."
+              << std::endl
+              << "  --outputsteps(-s) [S]  S number of intermediate steps will "
+                 "be written out as VTK files."
+              << std::endl
+              << "                         S must be a strictly positive "
+                 "integer, or obmit to write one file per step."
+              << std::endl
+              << "                         By default no internediate VTK file "
+                 "is written."
               << std::endl
               << std::endl;
   };
@@ -79,8 +87,9 @@ struct Input
 
 Input::Input(int argc, char** argv)
   : outputVTKFile("delaunay_output")
-  , numRandPoints(10)
+  , numRandPoints(20)
   , outputSteps(false)
+  , numOutputSteps(-1)
   , dimension(2)
   , errorCode(SUCCESS)
 {
@@ -102,6 +111,20 @@ Input::Input(int argc, char** argv)
       else if(arg == "--outputsteps" || arg == "-s")
       {
         outputSteps = true;
+        if(argc > i + 1)
+        {
+          numOutputSteps = atoi(argv[i + 1]);
+          //Check that it is actually a non-zero number
+          if(numOutputSteps != 0 || *argv[i + 1] == '0')
+          {
+            // it's a number
+            i++;
+          }
+          else
+          {
+            numOutputSteps = -1;
+          }
+        }
       }
       else if(arg == "--outfile" || arg == "-o")
       {
@@ -120,22 +143,31 @@ Input::Input(int argc, char** argv)
     }
   }
 
+  // if -s is specified but the number is obmitted, then output one file for each step.
+  if(outputSteps && (numOutputSteps == -1 || numOutputSteps > numRandPoints))
+  {
+    numOutputSteps = numRandPoints;
+  }
+
   SLIC_INFO("Using parameter values: "
             << std::endl
             << "  nrandpt = " << numRandPoints << std::endl
             << "  dimension = " << dimension << std::endl
-            << "  outputSteps = " << outputSteps << std::endl
+            << "  outputSteps = " << (numOutputSteps == -1 ? 0 : numOutputSteps)
+            << std::endl
             << "  outfile = " << outputVTKFile << std::endl);
 }
 
 template <unsigned int dimension>
-int run_delaunay(int num_points, bool outputVTKsteps, std::string outputVTKFile)
+int run_delaunay(int numPoints, int numOutputVTKsteps, std::string outputVTKFile)
 {
   // Create Delaunay Triangulation on random points
   typedef axom::quest::Delaunay<dimension> Delaunay;
   typedef typename Delaunay::PointType PointType;
   typedef axom::primal::BoundingBox<DataType, dimension> BoundingBox;
   Delaunay dt;
+
+  int stepOutputCount = 1;
 
   double bb_min_arr[] = {-BOUNDING_BOX_DIM[0] / 2.0,
                          -BOUNDING_BOX_DIM[1] / 2.0,
@@ -153,7 +185,7 @@ int run_delaunay(int num_points, bool outputVTKsteps, std::string outputVTKFile)
   SLIC_INFO("Using " << rseed_val << " as seed for rand()");
   srand(rseed_val);
 
-  for(int pt_i = 0; pt_i < num_points; pt_i++)
+  for(int pt_i = 0; pt_i < numPoints; pt_i++)
   {
     //SLIC_INFO("Adding point #" << pt_i );
 
@@ -165,22 +197,28 @@ int run_delaunay(int num_points, bool outputVTKsteps, std::string outputVTKFile)
 
     dt.insertPoint(new_pt);
 
-    if(outputVTKsteps)
+    if(numOutputVTKsteps != -1)
     {
-      std::ostringstream stm;
-      stm << outputVTKFile << std::setfill('0') << std::setw(2) << pt_i << ".vtk";
-      dt.writeToVTKFile(stm.str());
+      if(stepOutputCount * numPoints / (numOutputVTKsteps + 1) == pt_i)
+      {
+        std::ostringstream stm;
+        stm << outputVTKFile << "_" << std::setfill('0') << std::setw(6) << pt_i
+            << ".vtk";
+        dt.writeToVTKFile(stm.str());
+        stepOutputCount++;
+      }
     }
   }
 
   dt.removeBoundary();  //Remove the starting rectangular box
 
+  //dt.printMesh();
+  dt.getMeshData()->isValid(true);
+
   // Write the final mesh to a vtk file
   std::ostringstream stm;
   stm << outputVTKFile << ".vtk";
   dt.writeToVTKFile(stm.str());
-
-  //dt.printMesh();
 
   SLIC_INFO("Done!");
 
@@ -210,18 +248,18 @@ int main(int argc, char** argv)
     }
   }
 
-  const bool outputVTKsteps = params.outputSteps;
-  const int num_points = params.numRandPoints;
+  const int numOutputSteps = params.numOutputSteps;
+  const int numPoints = params.numRandPoints;
   const std::string outputVTKFile = params.outputVTKFile;
   const int dimension = params.dimension;
 
   if(dimension == 2)
   {
-    run_delaunay<2>(num_points, outputVTKsteps, outputVTKFile);
+    run_delaunay<2>(numPoints, numOutputSteps, outputVTKFile);
   }
   else if(dimension == 3)
   {
-    run_delaunay<3>(num_points, outputVTKsteps, outputVTKFile);
+    run_delaunay<3>(numPoints, numOutputSteps, outputVTKFile);
   }
   else
   {
