@@ -37,12 +37,12 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm)
     MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
     MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
-    // Recieve packed Message
-    charArray = (char*)malloc((messageSize+1)*sizeof(char));
+    // Receive packed Message
+    charArray = new char[messageSize+1];
     MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm, &mpiStatus);
 
     if (messageSize == 1) {
-        delete charArray;
+        delete [] charArray;
         return AXOM_NULLPTR;
     }
 

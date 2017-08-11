@@ -55,6 +55,21 @@ if (ENABLE_MPI)
                 COMMAND spio_externalWriteRead_test
                 NUM_PROCS 4
                 )
+                
+   blt_add_executable(NAME spio_WRW_test
+                      SOURCES spio_parallel_WRW.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON spio conduit hdf5
+                      )
+   blt_add_test(NAME spio_WRW_1
+                COMMAND spio_WRW_test
+                NUM_PROCS 1
+                )
+     
+   blt_add_test(NAME spio_WRW_4
+                COMMAND spio_WRW_test
+                NUM_PROCS 4
+                )
 
    blt_add_executable(NAME spio_preserveWriteRead_test
                       SOURCES spio_preserveWriteRead.cpp

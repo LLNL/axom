@@ -1,40 +1,12 @@
-###############################################################################
-# Copyright (c) 2014, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-666778
+#-------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Produced at the Lawrence Livermore National Laboratory.
 #
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the disclaimer below.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the disclaimer (as noted below) in the
-#   documentation and/or other materials provided with the distribution.
-#
-# * Neither the name of the LLNS/LLNL nor the names of its contributors may
-#   be used to endorse or promote products derived from this software without
-#   specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-# LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-###############################################################################
+# This source code cannot be distributed without permission and further
+# review from Lawrence Livermore National Laboratory.
+#-------------------------------------------------------------------------------
 
 ################################
 # Setup build options and their default values
@@ -74,7 +46,7 @@ if(ENABLE_FORTRAN)
     include(FortranCInterface)
     FortranCInterface_VERIFY()
     FortranCInterface_VERIFY(CXX)
-    
+
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module
         find_path(mpif_path
@@ -82,7 +54,7 @@ if(ENABLE_FORTRAN)
             PATHS ${MPI_Fortran_INCLUDE_PATH}
             NO_DEFAULT_PATH
             )
-        
+
         if(mpif_path)
             set(MPI_Fortran_USE_MPIF ON CACHE PATH "")
             message(STATUS "Using MPI Fortran header: mpif.h")
@@ -99,7 +71,7 @@ endif()
 # These are stored in their own variables.
 # Usage: To add one of these sets of flags to some source files:
 #   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
-#   set_source_files_properties(<list_of_src_files> 
+#   set_source_files_properties(<list_of_src_files>
 #        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
 ##############################################################################
 
@@ -149,7 +121,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
                   MSVC    " "
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
-                  
+
 # Flag for disabling warnings about unused local typedefs.
 # Note: Clang 3.5 and below are not aware of this warning, but later versions are
 if(COMPILER_FAMILY_IS_CLANG AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5))
@@ -161,7 +133,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   CLANG   "${clang_unused_local_typedef}"
                   GNU     "-Wno-unused-local-typedefs"
                   MSVC    " "
-                  )                  
+                  )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
 # Linker flag for allowing multiple definitions of a symbol
@@ -170,7 +142,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
                   CLANG   "-Wl,--allow-multiple-definition"
                   GNU     "-Wl,--allow-multiple-definition"
                   MSVC    " "
-                  )                  
+                  )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 
 # Flag for allowing constant conditionals e.g. if(sizeof(T) > sizeof(int)) {...}
@@ -178,17 +150,17 @@ list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_CONSTANT_CONDITIONALS
                   DEFAULT " "
                   MSVC    "/wd4127"
-                  )                  
+                  )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_CONSTANT_CONDITIONALS)
 
 # Flag for allowing truncation of constant values.
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
                   DEFAULT " "
                   MSVC    "/wd4309"
-                  )                  
+                  )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 
-   
+
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
 #    message(STATUS "\tvalue of ${flag} is '${${flag}}'")

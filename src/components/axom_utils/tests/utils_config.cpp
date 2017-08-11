@@ -25,12 +25,37 @@
   #include "mfem.hpp"
 #endif
 
-#include <string>
-#include <sstream>          // stringstream
-#include <iostream>         // cout
-#include <vector>
-#include <algorithm>        // copy
+#include <algorithm>  // copy
+#include <iostream>   // for cout
+#include <sstream>    // for stringstream
+#include <string>     // for C++ string
+#include <vector>     // for STL vector
 
+
+TEST(gtest_utils_config, axom_version )
+{
+  const int AXOM_MAJOR = AXOM_VERSION_MAJOR;
+  const int AXOM_MINOR = AXOM_VERSION_MINOR;
+  const int AXOM_PATCH = AXOM_VERSION_PATCH;
+  EXPECT_TRUE( AXOM_MAJOR >= 0 );
+  EXPECT_TRUE( AXOM_MINOR >= 0 );
+  EXPECT_TRUE( AXOM_PATCH >= 0 );
+
+  const std::string AXOM_FULL = AXOM_VERSION_FULL;
+  EXPECT_FALSE( AXOM_FULL.empty() );
+
+  std::cout << "AXOM_VERSION_FULL: "  << AXOM_VERSION_FULL  << std::endl;
+  std::cout << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
+  std::cout << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
+  std::cout << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
+
+#ifdef AXOM_VERSION_EXTRA
+  const std::string AXOM_EXTRA = AXOM_VERSION_EXTRA;
+  EXPECT_FALSE( AXOM_EXTRA.empty() );
+
+  std::cout << "AXOM_VERSION_EXTRA: " << AXOM_VERSION_EXTRA << std::endl;
+#endif
+}
 
 TEST(gtest_utils_config,config_libraries)
 {

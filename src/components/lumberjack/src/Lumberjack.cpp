@@ -127,9 +127,13 @@ void Lumberjack::pushMessagesOnce()
 
     m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
+    if (!m_communicator->isOutputNode()) {
+      delete [] packedMessagesToBeSent;
+    }
+
     for (int i=0;i<(int)receivedPackedMessages.size(); ++i){
         unpackMessages(receivedPackedMessages[i]);
-        delete receivedPackedMessages[i];
+        delete [] receivedPackedMessages[i];
     }
     receivedPackedMessages.clear();
 
@@ -150,9 +154,13 @@ void Lumberjack::pushMessagesFully()
 
         m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
+        if (!m_communicator->isOutputNode()) {
+          delete [] packedMessagesToBeSent;
+        }
+
         for (int i=0; i<(int)receivedPackedMessages.size(); ++i){
             unpackMessages(receivedPackedMessages[i]);
-            delete receivedPackedMessages[i];
+            delete [] receivedPackedMessages[i];
         }
         receivedPackedMessages.clear();
     }
@@ -173,7 +181,9 @@ const char* Lumberjack::packMessages()
     // <message count><packed message size><packed message><packed message size>...
 
     if (m_messages.size() == 0) {
-        return "0";
+        char* zero = new char[2];
+        std::strcpy(zero, "0");
+        return zero;
     }
 
     int totalSize = 1; // include size for null terminator

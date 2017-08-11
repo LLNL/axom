@@ -311,9 +311,10 @@ void testIntersectionOnRegularGrid()
 }
 
 
-void testContainmentOnRegularGrid(const Octree3D& inOutOctree
-           , const GeometricBoundingBox& queryBounds
-           , int gridRes)
+void testContainmentOnRegularGrid(
+    const Octree3D& inOutOctree,
+    const GeometricBoundingBox& queryBounds,
+    int gridRes)
 {
     SpaceVector h( queryBounds.getMin(), queryBounds.getMax());
     for(int i=0; i<3; ++i)
@@ -345,8 +346,8 @@ void testContainmentOnRegularGrid(const Octree3D& inOutOctree
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO(fmt::format("\tQuerying {}^3 containment field took {} seconds (@ {} queries per second)"
-                    , gridRes, timer.elapsed(), nnodes / timer.elapsed()));
+    SLIC_INFO(fmt::format("\tQuerying {}^3 containment field took {} seconds (@ {} queries per second)",
+        gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
   #ifdef DUMP_VTK_MESH
     std::stringstream sstr;
@@ -611,16 +612,13 @@ int main( int argc, char** argv )
           // = GeometricBoundingBox(  SpacePt::make_point(68.326,740.706,187.349)
           //                     , SpacePt::make_point(68.5329,740.923,187.407));
 
-// We can scale the query region here
-//  queryBB.scale(1.1);
-
+  // We can scale the query region here
+  //  queryBB.scale(1.1);
 
 
   // STEP 7: Query the mesh
   for(int i=1; i< MAX_CONTAINMENT_QUERY_LEVEL; ++i)
       testContainmentOnRegularGrid( octree, queryBB, 1<<i);
-
-
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 
@@ -648,6 +646,13 @@ int main( int argc, char** argv )
   refineAndPrint(octree, queryPt, false);
 //  for(int i=0; i< octree.maxInternalLevel(); ++i)
 //      refineAndPrint(octree, queryPt);
+
+  // STEP 8: Reclaim memory
+  if(surface_mesh != AXOM_NULLPTR)
+  {
+    delete surface_mesh;
+    surface_mesh = AXOM_NULLPTR;
+  }
 
   return 0;
 }
