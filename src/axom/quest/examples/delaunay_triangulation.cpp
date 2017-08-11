@@ -17,8 +17,10 @@
 #include "axom/slic.hpp"
 #include "axom/quest.hpp"
 
-#include <ctime>  //for random number generation
+#include <ctime>
 #include <iomanip>
+
+using namespace axom;
 
 using namespace axom;
 
@@ -187,8 +189,6 @@ int run_delaunay(int numPoints, int numOutputVTKsteps, std::string outputVTKFile
 
   for(int pt_i = 0; pt_i < numPoints; pt_i++)
   {
-    //SLIC_INFO("Adding point #" << pt_i );
-
     double pt_coord[dimension];
     for(unsigned int d = 0; d < dimension; d++)
       pt_coord[d] = (double)rand() / (double)RAND_MAX * BOUNDING_BOX_DIM[d] -
@@ -211,9 +211,6 @@ int run_delaunay(int numPoints, int numOutputVTKsteps, std::string outputVTKFile
   }
 
   dt.removeBoundary();  //Remove the starting rectangular box
-
-  //dt.printMesh();
-  dt.getMeshData()->isValid(true);
 
   // Write the final mesh to a vtk file
   std::ostringstream stm;

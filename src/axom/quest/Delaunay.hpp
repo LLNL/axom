@@ -124,20 +124,11 @@ public:
     SLIC_ASSERT_MSG(m_bounding_box.contains(new_pt),
                     "Error: new point is outside of the boundary box.");
 
-    //m_mesh.print_all();
-    //SLIC_INFO("DT: Inserting point");
-    //new_pt.print(std::cout); std::cout << std::endl;
-
     IndexType element_i = findContainingElement(new_pt);
-
-    //SLIC_INFO("DT: Containing element: "<<element_i );
 
     findCavityElements(new_pt, element_i);
 
     createCavity();
-
-    //SLIC_INFO("DT: After removing elements");
-    //m_mesh.print_all();
 
     //Add the new point
     IndexType new_pt_i = m_mesh.addVertex(new_pt);
@@ -145,28 +136,6 @@ public:
     delaunayBall(new_pt_i);
 
     m_mesh.fixVertexNeighborhood(new_pt_i, new_elements);
-
-    //SLIC_INFO("DT: After adding elements");
-    //m_mesh.print_all();
-
-    //Make sure ee_rel has only 4 invalid for triangles, 12 invalids for tetrahedrons
-    //This traversed the whole mesh, and should be removed for pull request TODO
-    int invalid_nbr_count = 0;
-    for(int i = 0; i < m_mesh.ee_rel.size(); i++)
-    {
-      if(m_mesh.ee_rel.isValidEntry(i))
-      {
-        for(int j = 0; j < (int)VERT_PER_ELEMENT; j++)
-        {
-          invalid_nbr_count += m_mesh.ee_rel[i][j] ==
-            IAMeshType::ElementToElementRelation::INVALID_INDEX;
-        }
-      }
-    }
-    SLIC_ASSERT(invalid_nbr_count == (DIMENSION == 2 ? 4 : 12));
-
-    //SLIC_INFO("After insert");
-    //printMesh();
 
     //call compact() if there are too many invalid points
     //This auto-compacting feature is hard coded. It may be good to let user have control
@@ -242,9 +211,6 @@ public:
       for(unsigned int i = 0; i < num_boundary_pts; i++) m_mesh.removeVertex(i);
 
       m_has_boundary = false;
-
-      //SLIC_INFO("After removing boundary");
-      //m_mesh.print_all();
     }
   }
 
@@ -264,13 +230,8 @@ private:
     //find the last valid element to use as starting element
     IndexType element_i = m_mesh.getValidElementIndex();
 
-    //SLIC_INFO("DT: find_containing_element " << element_i );
-    //SLIC_INFO("Query Pt " << query_pt);
-
     while(1)
     {
-      //SLIC_INFO("DT: step into element "<<element_i);
-
       BaryCoordType bary_coord = getBaryCoords(element_i, query_pt);
 
       //Find the most negative
@@ -286,11 +247,11 @@ private:
       }
 
       std::vector<IndexType> zlist = m_mesh.getElementNeighbors(element_i);
-      IndexType next_el = element_i = zlist[(i + 1) % VERT_PER_ELEMENT];
+      element_i = zlist[(i + 1) % VERT_PER_ELEMENT];
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
       // Logically, this should never happen.
-      SLIC_ASSERT(next_el != IAMeshType::ElementSet::INVALID_ENTRY);
+      SLIC_ASSERT(m_mesh.isValidElementEntry(element_i));
     }
   }
 
@@ -308,8 +269,6 @@ private:
   {
     bool is_in_circle = isPointInSphere(query_pt, element_idx);
 
-    //SLIC_INFO( "element " << element_idx << " is in Circle? " << is_in_circle);
-
     if(is_in_circle)
     {
       //add to cavity elements
@@ -323,9 +282,7 @@ private:
       {
         IndexType nbr_elem = nbr_elements[face_i];
 
-        //SLIC_INFO("this element's "<< face_i <<" neighbor is elem "<<nbr_elem);
-
-        if(nbr_elem == IAMeshType::ElementSet::INVALID_ENTRY ||
+        if(!m_mesh.isValidElementEntry(nbr_elem) ||
            (checked_element_set.insert(nbr_elem).second
               ? findCavityElementsRec(query_pt, nbr_elem)
               : !axom::slam::is_subset(
@@ -345,7 +302,6 @@ private:
 
           cavity_face_list.push_back(
             ElementFacePair<DIMENSION>(element_idx, &vlist[0]));
-          //SLIC_INFO("Added vertices to cavity face list "<<vlist[0]<< " "<<vlist[1] << " " << vlist[2]);
         }
       }
       return false;
@@ -367,8 +323,6 @@ private:
    */
   void findCavityElements(const PointType& query_pt, IndexType element_i)
   {
-    //SLIC_INFO("find_violating_elements from element " << element_i );
-
     cavity_element_list.clear();
     cavity_face_list.clear();
     checked_element_set.clear();
@@ -378,22 +332,6 @@ private:
     SLIC_ASSERT_MSG(cavity_element_list.size() > 0,
                     "Error: New point is not contained in the mesh");
     SLIC_ASSERT(cavity_face_list.size() > 0);
-
-    /*
-    std::cout<<"cavity elements: " ;
-    for(unsigned int i=0; i<cavity_element_list.size(); i++)
-    {
-      std::cout<< cavity_element_list[i] <<" ";
-    }
-    std::cout<< std::endl;
-
-    std::cout<<"adding elements: " ;
-    for(unsigned int i=0; i<cavity_face_list.size(); i++)
-    {
-      std::cout<< cavity_face_list[i].face_vidx[0] << "-" << cavity_face_list[i].face_vidx[1] <<", ";
-    }
-    std::cout<< std::endl;
-    //*/
 
     return;
   }
@@ -423,7 +361,9 @@ private:
     {
       IndexType vlist[VERT_PER_ELEMENT];
       for(unsigned int d = 0; d < VERT_PER_ELEMENT - 1; d++)
+      {
         vlist[d] = cavity_face_list[i].face_vidx[d];
+      }
       vlist[VERT_PER_ELEMENT - 1] = new_pt_i;
 
       IndexType new_el = m_mesh.addElement(vlist);
