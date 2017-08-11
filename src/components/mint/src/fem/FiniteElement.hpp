@@ -122,7 +122,7 @@ public:
    *
    * \param [in] M (ndims x nnodes) matrix consisting of the element coordinates
    * \param [in] cellType the celltype, e.g., MINT_QUAD, etc.
-   * \param [in] shallowCopy optional argument that indicates whether the
+   * \param [in] useExternal optional argument that indicates whether the
    *  coordinate data will be shallow copied to the internal data-structures.
    *  Defaults to false if argument is not specified.
    *
@@ -131,7 +131,7 @@ public:
    *  number of columns corresponds to the number of nodes.
    */
   FiniteElement( numerics::Matrix< double >& M, int cellType,
-                 bool shallowCopy=false );
+                 bool useExternal=false );
 
   /*!
    * \brief Destructor.

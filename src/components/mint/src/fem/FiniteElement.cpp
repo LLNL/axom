@@ -81,7 +81,7 @@ FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
 //------------------------------------------------------------------------------
 FiniteElement::FiniteElement( numerics::Matrix< double >& M,
                               int cellType,
-                              bool shallowCopy ) :
+                              bool useExternal ) :
   m_dim( M.getNumRows() ),
   m_ctype( cellType ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
@@ -91,7 +91,7 @@ FiniteElement::FiniteElement( numerics::Matrix< double >& M,
   m_xyz( AXOM_NULLPTR ),
   m_phi( AXOM_NULLPTR ),
   m_phidot( AXOM_NULLPTR ),
-  m_usingExternal( shallowCopy ),
+  m_usingExternal( useExternal ),
   m_shapeFunction( AXOM_NULLPTR ),
   m_shapeFunctionDerivatives( AXOM_NULLPTR ),
   m_reference_min( -1 ),
