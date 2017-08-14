@@ -40,6 +40,7 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm)
     // Receive packed Message
     charArray = new char[messageSize+1];
     MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm, &mpiStatus);
+    charArray[messageSize] = '\0';
 
     if (messageSize == 1) {
         delete [] charArray;
