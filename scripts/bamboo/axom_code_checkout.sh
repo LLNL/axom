@@ -1,5 +1,5 @@
 #!/bin/bash
-# axom_codeCheckout.sh branch_name
+# axom_code_checkout.sh branch_name
 
 echo  axom_code_checkout.sh 1.0
 set -ev
