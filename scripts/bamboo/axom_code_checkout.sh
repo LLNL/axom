@@ -1,0 +1,11 @@
+#!/bin/bash
+# axom_codeCheckout.sh branch_name
+
+echo  axom_codeCheckout.sh 1.0
+set -ev
+ 
+rm -rf axom
+ 
+git clone ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git --branch $1 --recursive
+cd axom
+git branch
