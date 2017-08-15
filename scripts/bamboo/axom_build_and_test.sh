@@ -2,6 +2,7 @@
 # 
 # axom_build_and_test.sh "Debug" "" "clang@3.5.0" "cab" "chaos5" 
 #
+echo  axom_build_and_test.sh 1.0
 BUILD_TYPE=$1
 BUILD_OPT=$2
 COMPILER=$3

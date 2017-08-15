@@ -1,7 +1,7 @@
 #!/bin/bash
 # axom_codeCheckout.sh branch_name
 
-echo  axom_codeCheckout.sh 1.0
+echo  axom_code_checkout.sh 1.0
 set -ev
  
 rm -rf axom
