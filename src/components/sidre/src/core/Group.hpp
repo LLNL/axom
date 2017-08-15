@@ -52,6 +52,7 @@ namespace sidre
 class Buffer;
 class Group;
 class DataStore;
+class QueryIterator;
 template <typename TYPE> class MapCollection;
 
 /*!
@@ -1127,6 +1128,11 @@ public:
    * /return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
+
+  /*!
+   * \brief Create an QueryIterator which starts at this Group.
+   */
+  QueryIterator * queryDepthFirst();
 
 private:
   DISABLE_DEFAULT_CTOR(Group);

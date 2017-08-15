@@ -417,6 +417,7 @@ TEST(sidre_attribute,set_default)
 }
 
 //------------------------------------------------------------------------------
+// get attribute as Conduit::Node
 
 TEST(sidre_attribute,as_node)
 {
@@ -546,7 +547,6 @@ TEST(sidre_attribute,overloads)
 }
 
 //------------------------------------------------------------------------------
-
 // Test looping over Attributes and Attribute Values.
 
 TEST(sidre_attribute, loop_attributes)
@@ -649,6 +649,7 @@ TEST(sidre_attribute, loop_attributes)
 }
 
 //------------------------------------------------------------------------------
+// save and load attributes from a file
 
 TEST(sidre_attribute,save_attributes)
 {
@@ -785,6 +786,79 @@ TEST(sidre_attribute,save_attributes)
     delete ds2;
   }
 
+}
+
+//------------------------------------------------------------------------------
+// Internal routine to create a datastore to be used with various iteration schemes
+// Error checks here are minimal since it is assumed all of the routines used
+// have already been tested.
+
+DataStore *sample_datastore(void)
+{
+  DataStore * ds = new DataStore();
+
+  // Create all attributes for DataStore
+  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
+  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
+  Attribute * attr_animal = ds->createAttributeString(name_animal, animal_none);
+
+  EXPECT_TRUE( attr_dump   != AXOM_NULLPTR );
+  EXPECT_TRUE( attr_color  != AXOM_NULLPTR );
+  EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
+
+  Group * root = ds->getRoot();
+
+  root->createViewScalar("root1", 1);
+  root->createViewScalar("root2", 2);
+  root->createViewScalar("root3", 3);
+
+  Group * grp = root->createGroup("grpA");
+  grp->createViewScalar("grpA1", 4);
+  grp->createViewScalar("grpA2", 5);
+  grp->createViewScalar("grpA3", 6);
+
+  root->createGroup("grpB");
+  grp->createViewScalar("grpB1", 7);
+
+  grp->createGroup("grpBB");
+  grp->createViewScalar("grpBB1", 8);
+  grp->createViewScalar("grpBB2", 9);
+
+  return ds;
+}
+
+//------------------------------------------------------------------------------
+// Iterate thru datastore with a cursor
+
+TEST(sidre_attribute,depth_first)
+{
+
+  DataStore * ds = sample_datastore();
+
+#if 0
+  Group * root = ds->getRoot();
+
+  QueryIterator qitr = root->queryDepthFirst();
+ 
+  while(qitr.hasNext()
+  {
+    qitr.getNext();
+ 
+    // check if I have a view and access it :
+    qitr.isView();
+    View *v = qitr.asView();
+ 
+    // check if I have a group and access it :
+    qitr.isGroup();
+    Group *g = qitr.asGroup();
+ 
+    // find our current path
+    std::string path = qitr.path();
+
+  }
+#endif
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
