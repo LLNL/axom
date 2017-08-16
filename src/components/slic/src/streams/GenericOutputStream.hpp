@@ -9,13 +9,8 @@
  */
 
 /*!
- *******************************************************************************
  * \file GenericOutputStream.hpp
  *
- * \date May 21, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 #ifndef GENERICOUTPUTSTREAM_HPP_
@@ -33,7 +28,6 @@ namespace axom {
 namespace slic {
 
 /*!
- *******************************************************************************
  * \class GenericOutputStream
  *
  * \brief Concrete instance of LogStream, which implements functionality for
@@ -41,36 +35,29 @@ namespace slic {
  *  std::ofstream, std::ostringstream, etc.
  *
  * \see LogStream Logger
- *******************************************************************************
  */
 class GenericOutputStream:public LogStream
 {
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructs a GenericOutpuStream instance with the given stream.
    * \param [in] os pointer to a user-supplied ostream instance.
    * \pre os != NULL
-   *****************************************************************************
    */
   GenericOutputStream( std::ostream* os );
 
   /*!
-   *****************************************************************************
    * \brief Constructs a GenericOutputStream instance with the given stream and
    *  message formatting.
    * \param [in] os pointer to a user-supplied ostream instance.
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
-   *****************************************************************************
    */
   GenericOutputStream( std::ostream* os, const std::string& format );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~GenericOutputStream();
 
@@ -86,10 +73,8 @@ private:
   std::ostream* m_stream;
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
-   *****************************************************************************
    */
   GenericOutputStream(): m_stream( static_cast< std::ostream* >( AXOM_NULLPTR ) )
   {};

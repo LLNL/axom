@@ -18,6 +18,7 @@
 #include "primal/Vector.hpp"
 #include "primal/Ray.hpp"
 #include "primal/Polygon.hpp"
+#include "primal/MortonIndex.hpp"
 
 #include "primal/intersect.hpp"
 #include "primal/orientation.hpp"
@@ -64,7 +65,7 @@
 //    #define DEBUG_OCTREE_ACTIVE
 #endif
 
-#if defined(DEBUG_OCTREE_ACTIVE) and defined(AXOM_DEBUG)
+#if defined(DEBUG_OCTREE_ACTIVE) && defined(AXOM_DEBUG)
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  if( _cond ) SLIC_DEBUG( _msg )
 #else
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  ( (void)0 )
@@ -2117,9 +2118,9 @@ public:
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
 #if defined(AXOM_USE_CXX11)
-  typedef std::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
+  typedef std::unordered_map<GridPt, int, primal::PointHash<int> > GridIntMap;
 #else
-  typedef boost::unordered_map<GridPt, int, PointHash<int> > GridIntMap;
+  typedef boost::unordered_map<GridPt, int, primal::PointHash<int> > GridIntMap;
 #endif
   typedef typename GridIntMap::iterator GridIntIter;
 

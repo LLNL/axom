@@ -26,7 +26,6 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \class HyperSphere
  *
  * \brief The HyperSphere class provides the means to represent a hypersphere,
@@ -37,7 +36,6 @@ namespace primal {
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 class HyperSphere
@@ -45,82 +43,64 @@ class HyperSphere
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructs HyperSphere centered at origin with the given radius.
    * \param [in] radius radius of the HyperSphere. Default is 1.0
-   *****************************************************************************
    */
   HyperSphere( T radius=1.0 );
 
   /*!
-   *****************************************************************************
    * \brief Constructs HyperSphere with given center and radius
    * \param [in] center user-supplied center.
    * \param [in] radius user-supplied radius. Default is 1.0.
-   *****************************************************************************
    */
   HyperSphere( T* center, T radius=1.0 );
 
   /*!
-   *****************************************************************************
    * \brief Copy constructor.
    * \param [in] other The hypersphere to copy
-   *****************************************************************************
    */
   HyperSphere( const HyperSphere< T,NDIMS >& other ) { *this = other; };
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~HyperSphere();
 
   /*!
-   *****************************************************************************
    * \brief Assignment operator.
    * \param [in] rhs  HyperSphere instance on right-hand-side.
-   *****************************************************************************
    */
   HyperSphere< T,NDIMS >& operator=(const HyperSphere< T,NDIMS >& rhs);
 
   /*!
-   *****************************************************************************
    * \brief Returns the radius of the HyperSphere.
    * \return r the radius of the HyperSphere.
-   *****************************************************************************
    */
   T radius() const { return m_radius; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the center of the HyperSphere
    * \return c pointer to array that holds the center of the HyperSphere.
    * \note The length of the array is NDIMS.
-   *****************************************************************************
    */
   T* center() { return m_center; };
   const T* center() const { return m_center; };
 
   /*!
-   *****************************************************************************
    * \brief Computes signed distance of a point to the HyperSphere boundary.
    * \param [in] q pointer to user-supplied point q.
    * \return dist signed distance
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
-   *****************************************************************************
    */
   T getSignedDistance( T* q);
 
   /*!
-   *****************************************************************************
    * \brief Computes orientation of a point with respect to the HyperSphere.
    * \param [in] q pointer to user-supplied point q.
    * \return orient orientation of q with respect to the sphere.
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
-   *****************************************************************************
    */
   int getOrientation( T* q );
 

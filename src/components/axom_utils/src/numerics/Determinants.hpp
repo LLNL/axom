@@ -22,14 +22,12 @@ namespace numerics {
 /// @{
 
 /*!
- *******************************************************************************
  * \brief Computes a 2X2 determinant of the given matrix.
  * \param [in] a00 matrix element
  * \param [in] a01 matrix element
  * \param [in] a10 matrix element
  * \param [in] a11 matrix element
  * \return det the determinant of the 2X2 matrix
- *******************************************************************************
  */
 template < typename real >
 inline real determinant( const real& a00, const real& a01,
@@ -40,7 +38,6 @@ inline real determinant( const real& a00, const real& a01,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the 3x3 determinant of the given matrix.
  * \param [in] a00 matrix element
  * \param [in] a01 matrix element
@@ -52,7 +49,6 @@ inline real determinant( const real& a00, const real& a01,
  * \param [in] a21 matrix element
  * \param [in] a22 matrix element
  * \return det the determinant of the 3x3 matrix.
- *******************************************************************************
  */
 template < typename real >
 inline real determinant( const real& a00,  const real& a01,  const real& a02,
@@ -68,7 +64,6 @@ inline real determinant( const real& a00,  const real& a01,  const real& a02,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the 4x4 determinant of the given matrix.
  * \param [in] a00 matrix element
  * \param [in] a01 matrix element
@@ -87,7 +82,6 @@ inline real determinant( const real& a00,  const real& a01,  const real& a02,
  * \param [in] a32 matrix element
  * \param [in] a33 matrix element
  * \return det the determinant of the 4x4 matrix
- *******************************************************************************
  */
 template < typename real >
 inline real determinant(
@@ -113,12 +107,10 @@ inline real determinant(
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the determinant of the given square matrix.
  * \param [in] A an \f$ N \times N \f$ input matrix
  * \return det the computed determinant.
  * \note if \f$ A \f$ is not square or empty, this function will return 0.0
- *******************************************************************************
  */
 template < typename real >
 inline real determinant( const Matrix< real >& A )

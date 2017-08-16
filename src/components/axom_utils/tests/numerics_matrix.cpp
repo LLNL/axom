@@ -55,6 +55,25 @@ void testCopyConstructor( numerics::Matrix< double > A )
 
 }
 
+//------------------------------------------------------------------------------
+void testExternalBufferPassByValue( numerics::Matrix< int > A )
+{
+  const int FILL_VAL = 42;
+
+  EXPECT_FALSE( A.usesExternalBuffer() );
+  A.fill( FILL_VAL );
+
+  const int nrows = A.getNumRows();
+  const int ncols = A.getNumColumns();
+
+  for ( int i=0; i < nrows; ++i ) {
+     for ( int j=0; j < ncols; ++j ) {
+        EXPECT_EQ( FILL_VAL, A( i,j ) );
+     } // END for all columns
+  } // END for all rows
+
+}
+
 } /* end unnamed namespace */
 
 //-----------------------------------------------------------------------------
@@ -115,6 +134,98 @@ TEST( numerics_matrix, array_constructor )
         EXPECT_EQ( idx, A(i,j) );
      }
   }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matrix, array_constructor_with_external_buffer )
+{
+  const int MROWS = 4;
+  const int NCOLS = 2;
+  int data[ 8 ]   = { 1, 1, 1, 1,
+                      2, 2, 2, 2  };
+  // BEGIN SCOPE
+  {
+    numerics::Matrix< int > A( MROWS, NCOLS, data, true );
+    EXPECT_TRUE( A.usesExternalBuffer() );
+
+    for ( int i=0; i < NCOLS; ++i ) {
+       int* col = A.getColumn( i );
+       for ( int j=0; j < MROWS; ++j ) {
+          EXPECT_EQ( i+1, col[j] );
+       } // END for all rows
+    } // END for all cols
+
+    A.swapColumns( 0, 1 );
+
+  }
+  // END SCOPE
+
+  // ensure the data is still there when the matrix goes out-of-scope
+  for ( int i=0; i < 8; ++i ) {
+     int expected = ( i < 4 )? 2 : 1;
+     EXPECT_EQ( expected, data[ i ] );
+  }
+
+  // test assignment
+  // BEGIN SCOPE
+  {
+    numerics::Matrix< int > A( MROWS, NCOLS, data, true );
+    EXPECT_TRUE( A.usesExternalBuffer() );
+    A.swapColumns( 0, 1 );
+
+    // deep copy A into B
+    numerics::Matrix< int > B = A;
+    EXPECT_FALSE( B.usesExternalBuffer() );
+
+    const int nrows = B.getNumRows();
+    const int ncols = B.getNumColumns();
+    EXPECT_EQ( nrows, A.getNumRows() );
+    EXPECT_EQ( ncols, A.getNumColumns() );
+
+    for ( int i=0; i < nrows; ++i ) {
+       for ( int j=0; j < ncols; ++j ) {
+          EXPECT_EQ( A(i,j), B(i,j) );
+       }
+    }
+
+    const int FILL_VAL = 3;
+    B.fill( FILL_VAL );
+    for ( int i=0; i < nrows; ++i ) {
+       for ( int j=0; j < ncols; ++j ) {
+          EXPECT_EQ( FILL_VAL, B(i,j) );
+          EXPECT_FALSE( A(i,j)==B(i,j) ) ;
+       }
+    }
+
+
+    for ( int i=0; i < NCOLS; ++i ) {
+       int* col = A.getColumn( i );
+       for ( int j=0; j < MROWS; ++j ) {
+          EXPECT_EQ( i+1, col[j] );
+       } // END for all rows
+    } // END for all cols
+
+  }
+  // END SCOPE
+
+  // test copy constructor
+  // BEGIN SCOPE
+  {
+    numerics::Matrix< int > A( MROWS, NCOLS, data, true );
+    EXPECT_TRUE( A.usesExternalBuffer() );
+
+    testExternalBufferPassByValue( A );
+
+    for ( int i=0; i < NCOLS; ++i ) {
+       int* col = A.getColumn( i );
+       for ( int j=0; j < MROWS; ++j ) {
+          EXPECT_EQ( i+1, col[j] );
+       } // END for all rows
+    } // END for all cols
+
+  }
+  // END SCOPE
 
 }
 
@@ -224,7 +335,7 @@ TEST( numerics_matrix, getRow )
 
   int row_sums[ ] = { 0, 0, 0 };
 
-  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  typedef numerics::Matrix< int >::IndexType IndexType;
   for ( IndexType i=0; i < N; ++i ) {
      A.fillRow( i, i+1 );
      row_sums[ i ] = N*(i+1);
@@ -383,7 +494,7 @@ TEST( numerics_matrix, swapRows )
 
   A.swapRows( 0, 1 );
 
-  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  typedef numerics::Matrix< int >::IndexType IndexType;
 
   for ( IndexType i=0; i < N; ++i ) {
      int* column = A.getColumn( i );
@@ -400,7 +511,7 @@ TEST( numerics_matrix, swapColumns )
   const int M=3;
   const int N=4;
 
-  typedef typename numerics::Matrix< int >::IndexType IndexType;
+  typedef numerics::Matrix< int >::IndexType IndexType;
 
   // setup a test matrix
   numerics::Matrix< int > A( M,N );

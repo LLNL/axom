@@ -46,5 +46,13 @@ blt_add_library( NAME
                  HEADERS_OUTPUT_SUBDIR
                      lumberjack
                  DEPENDS_ON
-                     axom_utils
+                     axom_utils mpi
                  )
+install(TARGETS              lumberjack
+        EXPORT               ${PROJECT_NAME}-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/lumberjack
+        )
+install(FILES       ${lumberjack_headers}
+        DESTINATION include/lumberjack
+        )

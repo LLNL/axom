@@ -112,7 +112,7 @@ Add CMake macro definitions
 ------------------------------
 
 The top-level CMake directory `axom/src/cmake` contains a file called
-`CMakeConfigureFile.cmake` that defines macro constants for enabling
+`AxomConfig.cmake` that defines macro constants for enabling
 Axom components and setting third-party library (TPL) dependencies that 
 are used to enforce consistency for conditionally-compiled code. When a new
 component or dependency is added, that file must be modified by:
@@ -134,7 +134,7 @@ system. Specifically:
 
     #. Add option to enable component. For example,::
 
-         blt_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+         axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
     #. Add component dependency target by adding component name to the `axom_components` variable.
     

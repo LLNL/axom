@@ -36,14 +36,14 @@ TEST( primal_uniform_grid, indexing)
 {
   const int DIM = 3;
   typedef double CoordType;
-  typedef axom::primal::Point<CoordType, DIM> QPoint;
-    
+  typedef axom::primal::Point< CoordType, DIM > QPoint;
+
   double p_max[DIM] = {100, 100, 100};
   double p_min[DIM] = {0, 0, 0};
   const int resolution = 100;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::primal::UniformGrid<int, DIM> valid(p_min, p_max, res);
+  axom::primal::UniformGrid< int, DIM > valid(p_min, p_max, res);
 
   // valid has 100 bins in each dimension, and each bin has a
   // width of 1.0.  The bins are laid out in row-major order.
@@ -110,12 +110,12 @@ TEST( primal_uniform_grid, indexing)
 
   QPoint pt12 = QPoint::make_point(12.5, 100.1, 0);
   // Above 100 is over the fence.
-  expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
+  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt12));
 
   QPoint pt13 = QPoint::make_point(-0.5, 12, 54.3);
   // Below 0 is over (under?) the fence.
-  expectedBin = axom::primal::UniformGrid<int, DIM>::INVALID_BIN_INDEX;  
+  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt13));
 }
 

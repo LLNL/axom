@@ -425,40 +425,6 @@ void DataStore::destroyAllAttributes()
 /*
  *************************************************************************
  *
- * Return pointer to non-const Attribute with given name.
- *
- * If no such Attribute exists, AXOM_NULLPTR is returned.
- *
- *************************************************************************
- */
-Attribute * DataStore::getAttribute( const std::string& name )
-{
-  SLIC_CHECK_MSG( hasAttribute(name),
-                  "DataStore has no Attribute with name " << name);
-
-  return m_attribute_coll->getItem(name);
-}
-
-/*
- *************************************************************************
- *
- * Return pointer to const Attribute with given name.
- *
- * If no such Attribute exists, AXOM_NULLPTR is returned.
- *
- *************************************************************************
- */
-const Attribute * DataStore::getAttribute( const std::string& name ) const
-{
-  SLIC_CHECK_MSG( hasAttribute(name),
-                  "DataStore has no Attribute with name " << name);
-
-  return m_attribute_coll->getItem(name);
-}
-
-/*
- *************************************************************************
- *
  * Return pointer to non-const Attribute with given index.
  *
  * If no such Attribute exists, AXOM_NULLPTR is returned.
@@ -493,6 +459,40 @@ const Attribute * DataStore::getAttribute( IndexType idx ) const
 /*
  *************************************************************************
  *
+ * Return pointer to non-const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+Attribute * DataStore::getAttribute( const std::string& name )
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return pointer to const Attribute with given name.
+ *
+ * If no such Attribute exists, AXOM_NULLPTR is returned.
+ *
+ *************************************************************************
+ */
+const Attribute * DataStore::getAttribute( const std::string& name ) const
+{
+  SLIC_CHECK_MSG( hasAttribute(name),
+                  "DataStore has no Attribute with name " << name);
+
+  return m_attribute_coll->getItem(name);
+}
+
+/*
+ *************************************************************************
+ *
  * \brief Return first valid Attribute index in DataStore object
  *        (i.e., smallest index over all Attributes).
  *
@@ -519,6 +519,61 @@ IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const
   return m_attribute_coll->getNextValidIndex(idx);
 }
 
+/*
+ *************************************************************************
+ *
+ * Copy Attribute and default value to Conduit node.
+ * Return true if attributes were copied.
+ *
+ *************************************************************************
+ */
+bool DataStore::saveAttributeLayout(Node& node) const
+{
+  // Adds a conduit node for this group if it has external views,
+  // or if any of its children groups has an external view
+
+  node.set(DataType::object());
+
+  bool hasAttributes = false;
+
+  IndexType aidx = getFirstValidAttributeIndex();
+  while ( indexIsValid(aidx) )
+  {
+    const Attribute * attr = getAttribute(aidx);
+
+    node[attr->getName()] = attr->getDefaultNodeRef();
+
+    aidx = getNextValidAttributeIndex(aidx);
+    hasAttributes = true;
+  }
+
+  return hasAttributes;
+}
+
+/*
+ *************************************************************************
+ *
+ * Create attributes from name/value pairs in node["attribute"].  If no
+ * attributes are available, do nothing. The values are used as the
+ * default value of the name attribute.
+ *
+ *************************************************************************
+ */
+void DataStore::loadAttributeLayout(Node& node)
+{
+  if (node.has_path("attribute") )
+  {
+    conduit::NodeIterator attrs_itr = node["attribute"].children();
+    while (attrs_itr.has_next())
+    {
+      Node& n_attr = attrs_itr.next();
+      std::string attr_name = attrs_itr.name();
+
+      Attribute * attr = createAttributeEmpty(attr_name);
+      attr->setDefaultNodeRef(n_attr);
+    }
+  }
+}
 
 /*
  *************************************************************************

@@ -17,7 +17,7 @@
 
 #include "VectorXY.hpp"
 
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 
 #include "slam/OrderedSet.hpp"
 #include "slam/RangeSet.hpp"

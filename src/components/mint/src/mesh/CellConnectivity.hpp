@@ -31,9 +31,7 @@ class CellConnectivity
 public:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
-   *****************************************************************************
    */
   CellConnectivity(): m_stride( cell::num_nodes[ cell_type ] )
   {
@@ -41,67 +39,53 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~CellConnectivity() { m_connectivity.clear(); };
 
   /*!
-   *****************************************************************************
    * \brief Checks if this CellConnecitivity instance has mixed cells.
    * \return status true if mixed cells else false.
-   *****************************************************************************
    */
   bool hasMixedCellTypes() const { return false; }
 
   /*!
-   *****************************************************************************
    * \brief Checks if this CellConnectivity instance is empty()
    * \return status true iff empty, else, false.
-   *****************************************************************************
    */
   bool empty() const { return (this->getNumberOfCells()==0); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of cells.
    * \return ncells number of cells.
    * \post ncells >= 0
-   *****************************************************************************
    */
   int getNumberOfCells() const { return( m_connectivity.size()/m_stride ); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes of the given cell.
    * \param [in] cellIdx the index of the cell in question.
    * \return nnodes number of nodes for the given cell.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post nnodes >= 0
-   *****************************************************************************
    */
   int getNumberOfNodes( int AXOM_NOT_USED(cellIdx) ) const { return m_stride; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell type of the given cell.
    * \param [in] cellIdx the index of the cell in question.
    * \return ctype the cell type.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
-   *****************************************************************************
    */
   int getCellType( int AXOM_NOT_USED(cellIdx) ) const { return cell_type; }
 
   /*!
-   *****************************************************************************
    * \brief Access operator for the connectivity of the given cell.
    * \param [in] cellIdx the index of the cell in question.
    * \return cell_ptr pointer to the connectivity of the given cell.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
-   *****************************************************************************
    */
   const index_type* operator[]( int cellIdx )
   {
@@ -110,12 +94,10 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Inserts a cell in to this cell connectivity instance.
    * \param [in] cell array pointer to the connectivity of the cell to insert.
    * \param [in] type the cell type.
    * \note type is only used for mixed cell connectivity.
-   *****************************************************************************
    */
   void insertCell( const index_type* cell,
                    int AXOM_NOT_USED(type),
@@ -130,13 +112,11 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Sets the cell associated with the given cell index.
    * \param [in] cellIdx the index of the cell to set.
    * \param [in] cell array pointer to the source cell connectivity.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
-   *****************************************************************************
    */
   void setCell( int cellIdx, const index_type* cell )
   {
@@ -166,9 +146,7 @@ class CellConnectivity< index_type, MINT_MIXED_CELL >
 public:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
-   *****************************************************************************
    */
   CellConnectivity(): m_num_cells(0)
   {
@@ -178,9 +156,7 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~CellConnectivity()
   {
@@ -189,38 +165,30 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Checks if this CellConnecitivity instance has mixed cells.
    * \return status true if mixed cells else false.
-   *****************************************************************************
    */
   bool hasMixedCellTypes() const { return true; }
 
   /*!
-   *****************************************************************************
    * \brief Checks if this CellConnectivity instance is empty()
    * \return status true iff empty, else, false.
-   *****************************************************************************
    */
   bool empty() const { return (this->getNumberOfCells()==0); };
 
   /*!
-   *****************************************************************************
    * \brief Returns the total number of cells.
    * \return ncells number of cells.
    * \post ncells >= 0
-   *****************************************************************************
    */
   int getNumberOfCells() const { return m_num_cells; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of nodes of the given cell.
    * \param [in] cellIdx the index of the cell in question.
    * \return nnodes number of nodes for the given cell.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post nnodes >= 0
-   *****************************************************************************
    */
   int getNumberOfNodes( int cellIdx ) const
   {
@@ -229,13 +197,11 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell type of the given cell.
    * \param [in] cellIdx the index of the cell in question.
    * \return ctype the cell type.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
-   *****************************************************************************
    */
   int getCellType( int cellIdx ) const
   {
@@ -244,13 +210,11 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Access operator for the connectivity of the given cell.
    * \param [in] cellIdx the index of the cell in question.
    * \return cell_ptr pointer to the connectivity of the given cell.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
-   *****************************************************************************
    */
   const index_type* operator[]( int cellIdx )
   {
@@ -259,14 +223,12 @@ public:
   };
 
   /*!
-   *****************************************************************************
    * \brief Inserts a cell in to this cell connectivity instance.
    * \param [in] cell array pointer to the connectivity of the cell to insert.
    * \param [in] type the cell type.
    * \param [in] nnodes the number of nodes in the cell.
    * \note type is only used for mixed cell connectivity.
    * \pre cell != AXOM_NULLPTR .
-   *****************************************************************************
    */
   void insertCell( const index_type* cell, int type, int nnodes )
   {
@@ -295,13 +257,11 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Sets the cell associated with the given cell index.
    * \param [in] cellIdx the index of the cell to set.
    * \param [in] cell array pointer to the source cell connectivity.
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
-   *****************************************************************************
    */
   void setCell( int cellIdx, const index_type* cell )
   {

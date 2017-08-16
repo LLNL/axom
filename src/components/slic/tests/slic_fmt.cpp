@@ -9,14 +9,12 @@
  */
 
 /*!
- *******************************************************************************
  * \file
  *
  * \brief A simple test to see if we can use the fmt library within slic macros.
- *******************************************************************************
  */
 
-#include "fmt/fmt.hpp"
+#include "fmt/format.h"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

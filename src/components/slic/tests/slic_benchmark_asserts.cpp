@@ -15,10 +15,12 @@
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-/**
+/*!
  * \file
  *
- * A series of tests of SLIC logging macros (SLIC_WARNING to avoid killing the program) in the TPL benchmark framework.
+ * A series of tests of SLIC logging macros (SLIC_WARNING to avoid killing the
+ * program) in the TPL benchmark framework.
+ *
  * These tests were written to see why SLIC macros was not being logged
  * when called from a benchmark fixture's destructor.
  * It turns out that the fixtures are destructed after main exits,

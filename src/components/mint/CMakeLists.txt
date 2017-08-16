@@ -14,7 +14,7 @@
 project(mint)
 
 ################################
-# Add the quest sources
+# Add mint sources
 ################################
 add_subdirectory(src)
 

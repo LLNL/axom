@@ -10,6 +10,8 @@
 
 set( mint_tests
      mint_mesh_extent.cpp
+     mint_shape_functions.cpp
+     mint_single_fe.cpp
    )
 
 foreach( test ${mint_tests} )
@@ -20,7 +22,7 @@ foreach( test ${mint_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON slic mint gtest
+        DEPENDS_ON axom_utils slic mint gtest
         )
 
    blt_add_test( NAME    ${test_name}

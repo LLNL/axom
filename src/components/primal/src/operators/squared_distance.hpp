@@ -9,12 +9,10 @@
  */
 
 /*!
- *******************************************************************************
  * \file
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the "signed" squared distance between two geometric entities.
- *******************************************************************************
  */
 
 #ifndef SQUAREDDISTANCE_HPP_
@@ -33,12 +31,10 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \brief Computes the squared distance from point A to point B.
  * \param [in] A source point
  * \param [in] B end point.
  * \return d the distance from point A to point B.
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 inline double squared_distance( const Point< T,NDIMS >& A,
@@ -49,13 +45,11 @@ inline double squared_distance( const Point< T,NDIMS >& A,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the minimum squared distance from a query point, P, to a
  *  given axis-aligned bounding box B.
  * \param [in] P the query point.
  * \param [in] B the axis-aligned bounding box.
  * \return d the signed distance from P to the closest point on B.
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 inline double squared_distance( const Point< T,NDIMS >& P,
@@ -85,13 +79,11 @@ inline double squared_distance( const Point< T,NDIMS >& P,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the minimum squared distance from a query point, P, to the
  *  given segment, S.
  * \param [in] P the query point.
  * \param [in] S the input segment.
  * \return d the minimum distance from P on the
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 inline double squared_distance( const Point< T,NDIMS >& P,
@@ -127,13 +119,11 @@ inline double squared_distance( const Point< T,NDIMS >& P,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the minimum squared distance from a query point, P, to the
  *  closest point on the given triangle.
  * \param [in] P the query point.
  * \param [in] tri the supplied triangle.
  * \return d the distance from Q to the closest point on the triangle T.
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 inline

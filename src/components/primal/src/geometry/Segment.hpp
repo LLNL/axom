@@ -18,7 +18,6 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \class
  *
  * \brief Represents a directed straight line connecting two points
@@ -27,7 +26,6 @@ namespace primal {
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 class Segment
@@ -38,41 +36,31 @@ public:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Creates a segment instance from point A to point B.
    * \param A user-supplied source point
    * \param B user-supplied target point
-   *****************************************************************************
    */
   Segment(const PointType& A, const PointType& B);
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~Segment();
 
   /*!
-   *****************************************************************************
    * \brief Returns the source point of the segment.
    * \return s the source point of the segment.
-   *****************************************************************************
    */
   const PointType& source() const { return m_source; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the target point of the segment.
    * \return t the target point of the segment.
-   *****************************************************************************
    */
   const PointType& target() const { return m_target; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the length of the segment
-   *****************************************************************************
    */
   double length() const
   {
@@ -82,10 +70,8 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent its use in application code.
-   *****************************************************************************
    */
   Segment() { };
 

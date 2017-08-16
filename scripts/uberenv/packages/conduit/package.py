@@ -58,7 +58,7 @@ class Conduit(Package):
     variant('cmake',  default=True, description="Build cmake.")
     variant('shared', default=True, description="Build shared libraries.")
     
-    depends_on("cmake@3.3.1",when="+cmake")
+    depends_on("cmake@3.8.2",when="+cmake")
     depends_on("hdf5~shared~fortran")
     
     if "darwin" in platform.system().lower():

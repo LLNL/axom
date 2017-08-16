@@ -9,13 +9,11 @@
  */
 
 /*!
- ******************************************************************************
  *
  * \file
  *
  * \brief   Implementation file for file utility functions.
  *
- ******************************************************************************
  */
 
 #include "axom_utils/FileUtilities.hpp"
@@ -27,10 +25,10 @@
 
 #include <cstdio>                       // defines FILENAME_MAX
 
-#ifdef WINDOWS
+#ifdef WIN32
     #include <direct.h>
     #include <sys/stat.h>
-    // Warning: not yet tested on windows
+
     #define GetCurrentDir _getcwd
     #define Stat _stat
 #else
@@ -88,7 +86,7 @@ namespace filesystem {
   }
 
 //-----------------------------------------------------------------------------
-  int makeDirsForPath(const std::string& path, mode_t mode)
+  int makeDirsForPath(const std::string& path)
   {
 
     char separator = '/';
@@ -98,7 +96,12 @@ namespace filesystem {
     do {
       pos = path.find(separator, pos+1);
       std::string dir_name = path.substr(0, pos);
+#ifdef WIN32
+      err = _mkdir(dir_name.c_str());
+#else
+      mode_t mode = 0770;   // user and group rwx permissions
       err = mkdir(dir_name.c_str(), mode);
+#endif
       err = (err && (errno != EEXIST)) ? 1 : 0;
 
     } while (pos != std::string::npos);

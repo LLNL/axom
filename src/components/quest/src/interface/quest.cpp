@@ -306,6 +306,7 @@ namespace quest {
 
             const std::string questLoggerName = "quest_logger";
             m_originalLoggerName = slic::getActiveLoggerName();
+
             slic::flushStreams();
             if( ! slic::activateLogger(questLoggerName) )
             {
@@ -336,11 +337,11 @@ namespace quest {
         void teardownQuestLogger()
         {
             namespace slic = axom::slic;
+            slic::flushStreams();
 
             if(m_originalLoggerName != "")
             {
                 // Revert to original Slic logger
-                slic::flushStreams();
                 slic::activateLogger(m_originalLoggerName);
                 m_originalLoggerName = "";
             }
@@ -411,7 +412,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 #else
 //------------------------------------------------------------------------------
 void initialize( const std::string& fileName,
-                 bool requireDistance, int ndims, int maxElements, int maxLevels )
+                 bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
@@ -435,7 +436,7 @@ void initialize( const std::string& fileName,
   delete reader;
 
   // Initialize the appropriate acceleration structure
-  if(requireDistance)
+  if(requiresDistance)
   {
     accelerator3D.initializeSignedDistance(surface_mesh, maxElements, maxLevels );
   }
@@ -443,6 +444,8 @@ void initialize( const std::string& fileName,
   {
     accelerator3D.initializeContainmentTree(surface_mesh);
   }
+
+  accelerator3D.teardownQuestLogger();
 }
 #endif
 

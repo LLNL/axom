@@ -13,7 +13,8 @@
 date
 . /usr/local/tools/dotkit/init.sh
 use python-2.7.3
-use cmake-3.1
+use git
+use cmake-3.4.3
 python ./llnl_cz_uberenv_install_bgqos_0_all_compilers.py
 date
 

@@ -25,50 +25,40 @@ class RectilinearMesh:public StructuredMesh
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructs a rectilinear mesh instance.
    * \param [in] dimension the dimension of the mesh.
    * \param [in] ext the mesh extent.
-   *****************************************************************************
    */
   RectilinearMesh( int dimension, int ext[6] );
 
   /*!
-   *****************************************************************************
    * \brief Constructs a rectilinear mesh instance.
    * \param [in] dimension the dimension of the mesh.
    * \param [in] ext the mesh extent.
    * \param [in] blockId the block ID.
    * \param [in] partitionId the partition ID.
-   *****************************************************************************
    */
   RectilinearMesh( int dimension, int ext[6], int blockId, int partitionId );
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   virtual ~RectilinearMesh();
 
   /*!
-   *****************************************************************************
    * \brief Sets the coordinate along the given dimension.
    * \param [in] idim the dimension in query.
    * \param [in] i the index of the coordinate to set.
    * \param [in] coord the coordinate to set.
    * \pre idim >= 0 && idim < this->getDimension()
    * \pre i >= 0 && i < ndims[ i ]
-   *****************************************************************************
    */
   void setCoordinate( int idim, int i, double coord );
 
   /*!
-   *****************************************************************************
    * \brief Returns pointer to the coordinates array along the given dimension.
    * \param [in] idim the requested dimension.
    * \return coordsPtr pointer to the coordinates array.
-   *****************************************************************************
    */
   const double* getCoordinateArray( int idim ) const
   { return m_coordinates->getCoordinateArray( idim ); };
@@ -77,53 +67,44 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
-   *****************************************************************************
    */
   virtual void getNode( int nodeIdx, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
-   *****************************************************************************
    */
   virtual void getNode( int i, int j, int k, double* coordinates ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate of the given node.
    * \param [in] nodeIdx index of the node in query.
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int nodeIdx, int idim  ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -131,12 +112,10 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int idim ) const;
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinate value of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
@@ -145,7 +124,6 @@ public:
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
    * \pre idim >= 0 && idim < m_ndims.
-   *****************************************************************************
    */
   virtual double getNodeCoordinate( int i, int j, int k, int idim ) const;
 
@@ -154,10 +132,8 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \note Made private to prevent users from calling it.
-   *****************************************************************************
    */
   RectilinearMesh();
 
