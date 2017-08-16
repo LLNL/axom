@@ -216,6 +216,50 @@ void QueryIterator::getNext()
 /*
  *************************************************************************
  *
+ * Return true if QueryIterator references a View.
+ *
+ *************************************************************************
+ */
+bool QueryIterator::isView() const
+{
+  if (m_stack->stack.empty())
+  {
+    return false;
+  }
+
+  if (m_stack->stack.back().iview != InvalidIndex)
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if QueryIterator references a Group.
+ *
+ *************************************************************************
+ */
+bool QueryIterator::isGroup() const
+{
+  if (m_stack->stack.empty())
+  {
+    return false;
+  }
+
+  if (m_stack->stack.back().iview != InvalidIndex)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+/*
+ *************************************************************************
+ *
  * Return const reference to name of current iterator object.
  *
  *************************************************************************

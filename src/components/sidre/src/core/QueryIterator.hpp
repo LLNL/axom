@@ -55,8 +55,7 @@ class QueryIterator
 public:
 
 //@{
-//!  @name Private QueryIterator ctor and dtor
-//!        (callable only by Group methods).
+//!  @name QueryIterator ctor and dtor
 
   /*!
    *  \brief Private ctor that creates an QueryIterator which starts at grp.
@@ -69,17 +68,34 @@ public:
   ~QueryIterator();
 //@}
 
+//@{
+//!  @name Methods to iteratate through a Group.
   /*!
-   *  \brief Return true if the Query references a Group or View.
+   *  \brief Return true if the QueryIterator references a Group or View.
    *         Return false if there are no more nodes to visit.
    */
   bool isValid();
 
   /*!
-   *  \brief Update iterator to the next available node.
+   *  \brief Update QueryIterator to the next available node.
    */
   void getNext();
+//@}
 
+//@{
+//!  @name Methods to query iterator.
+
+  /*!
+   *  \brief Return true if the QueryIterator references a View.
+   */
+  bool isView() const;
+
+  /*!
+   *  \brief Return true if the QueryIterator references a Group.
+   */
+  bool isGroup() const;
+
+//@}
 
   /*!
    * \brief Return const reference to name of current iterator object.

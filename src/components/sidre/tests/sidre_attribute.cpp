@@ -846,6 +846,12 @@ DataStore *sample_datastore(void)
 
 TEST(sidre_attribute,depth_first)
 {
+  enum nodeclass { GROUP, VIEW };
+
+  struct reference {
+    const char *name;
+    nodeclass cls;
+  };
 
   DataStore * ds = sample_datastore();
 
@@ -854,25 +860,26 @@ TEST(sidre_attribute,depth_first)
   QueryIterator qitr(root);
 
   int iorder = 0;
-  const char * order[] = {
-    "grpA_view1",
-    "grpA_view2",
-    "grpA",
-    "grpBB_view3",
-    "grpBB",
-    "grpB_view4",
-    "grpB",
-    "grpC",
-    "grpD2",
-    "grpD3",
-    "grpD1",
-    "grpD5",
-    "grpD4",
-    "grpD0",
-    "root_view5",
-    "root_view6",
-    "root_view7",
-    ""};
+  reference order[] = {
+    {"grpA_view1", VIEW},
+    {"grpA_view2", VIEW},
+    {"grpA", GROUP},
+    {"grpBB_view3", VIEW},
+    {"grpBB", GROUP},
+    {"grpB_view4", VIEW},
+    {"grpB", GROUP},
+    {"grpC", GROUP},
+    {"grpD2", GROUP},
+    {"grpD3", GROUP},
+    {"grpD1", GROUP},
+    {"grpD5", GROUP},
+    {"grpD4", GROUP},
+    {"grpD0", GROUP},
+    {"root_view5", VIEW},
+    {"root_view6", VIEW},
+    {"root_view7", VIEW},
+    {"", GROUP},
+};
  
   while(qitr.isValid())
   {
@@ -890,11 +897,26 @@ TEST(sidre_attribute,depth_first)
     const std::string & name = qitr.getName();
     //std::cout << name << std::endl;
 
-    EXPECT_EQ(order[iorder], name);
-    iorder++;
+    EXPECT_EQ(order[iorder].name, name);
+
+    if (order[iorder].cls == GROUP)
+    {
+      EXPECT_TRUE(qitr.isGroup());
+      EXPECT_FALSE(qitr.isView());
+    }
+    else
+    {
+      EXPECT_FALSE(qitr.isGroup());
+      EXPECT_TRUE(qitr.isView());
+    }
 
     qitr.getNext();
+    iorder++;
   }
+
+  // Check invalid iterator
+  EXPECT_FALSE(qitr.isGroup());
+  EXPECT_FALSE(qitr.isView());
 
   delete ds;
 }
