@@ -811,12 +811,25 @@ DataStore *sample_datastore(void)
 
   Group * grpA = root->createGroup("grpA");
   Group * grpB = root->createGroup("grpB");
+  Group * grpBB = grpB->createGroup("grpBB");
                  root->createGroup("grpC");  // No Views
+
+  // Tree of empty views
+  Group * grpD0 = root->createGroup("grpD0");
+  Group * grpD1 = grpD0->createGroup("grpD1");
+  Group * grpD2 = grpD1->createGroup("grpD2");
+  Group * grpD3 = grpD1->createGroup("grpD3");
+  Group * grpD4 = grpD0->createGroup("grpD4");
+  Group * grpD5 = grpD4->createGroup("grpD5");
+
+  // checks to silence compiler about unused variables
+  EXPECT_TRUE( grpD2 != AXOM_NULLPTR );
+  EXPECT_TRUE( grpD3 != AXOM_NULLPTR );
+  EXPECT_TRUE( grpD5 != AXOM_NULLPTR );
 
   grpA->createViewScalar("grpA_view1", 1);
   grpA->createViewScalar("grpA_view2", 2);
 
-  Group * grpBB = grpB->createGroup("grpBB");
   grpBB->createViewScalar("grpBB_view3", 3);
 
   grpB->createViewScalar("grpB_view4", 4);
@@ -850,6 +863,12 @@ TEST(sidre_attribute,depth_first)
     "grpB_view4",
     "grpB",
     "grpC",
+    "grpD2",
+    "grpD3",
+    "grpD1",
+    "grpD5",
+    "grpD4",
+    "grpD0",
     "root_view5",
     "root_view6",
     "root_view7",
@@ -869,7 +888,7 @@ TEST(sidre_attribute,depth_first)
 
     // find our current path
     const std::string & name = qitr.getName();
-    //    std::cout << name << std::endl;
+    //std::cout << name << std::endl;
 
     EXPECT_EQ(order[iorder], name);
     iorder++;
