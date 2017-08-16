@@ -28,7 +28,6 @@
 
 // Standard C++ headers
 #include <string>
-#include <vector>
 
 // Other axom headers
 #include "axom/config.hpp"
@@ -64,12 +63,10 @@ public:
    */
   QueryIterator(Group * grp);
 
-#if 0
   /*!
    * \brief Private dtor.
    */
   ~QueryIterator();
-#endif
 //@}
 
   /*!
@@ -133,40 +130,18 @@ private:
    */
   void findDeepestGroup(Group *grp);
 
-  /*
-   *  first_view will be true if the Curor represents the first view
-   *  of a Group.  This will be true for the deepest Group returned
-   *  from findDeepestGroup.  Note that iview may be InvalidGroup if
-   *  the group has no views.  Intermediate Groups will process their
-   *  own Groups first before proceeding to processing their Views.
-   *
-   *  If false, the first View has already been visited and it is
-   *  necessary to call getNextValidViewIndex.
-   *
-   *  finished_views will be true when there are no views to process.
-   *  Either the group initially had no views, or all of the views
-   *  have been visited.  The Cursor represent the Group grp, and not
-   *  any views in the Group.
-   */
-  struct Cursor
-  {
-    Group *grp;
-    IndexType igroup;
-    IndexType iview;
-    bool grp_done;
-    bool first_view;   // true if started processing views
-  };
 
   /// start of iteration
   Group * m_root;
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef std::vector< Cursor > StateStack;
+  struct CursorStack;
+  struct Cursor;
   ///////////////////////////////////////////////////////////////////
 
   /// Current position in tree
-  StateStack m_stack; 
+  CursorStack * m_stack; 
 
 };
 

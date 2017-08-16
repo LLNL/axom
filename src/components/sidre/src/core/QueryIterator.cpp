@@ -23,6 +23,7 @@
 
 // Standard C++ headers
 //#include <string>
+#include <vector>
 
 // Other axom headers
 //#include "axom/config.hpp"
@@ -38,6 +39,35 @@ namespace axom
 {
 namespace sidre
 {
+
+/*
+ *  first_view will be true if the Curor represents the first view
+ *  of a Group.  This will be true for the deepest Group returned
+ *  from findDeepestGroup.  Note that iview may be InvalidGroup if
+ *  the group has no views.  Intermediate Groups will process their
+ *  own Groups first before proceeding to processing their Views.
+ *
+ *  If false, the first View has already been visited and it is
+ *  necessary to call getNextValidViewIndex.
+ *
+ *  finished_views will be true when there are no views to process.
+ *  Either the group initially had no views, or all of the views
+ *  have been visited.  The Cursor represent the Group grp, and not
+ *  any views in the Group.
+ */
+struct QueryIterator::Cursor
+{
+  Group *grp;
+  IndexType igroup;
+  IndexType iview;
+  bool grp_done;
+  bool first_view;   // true if started processing views
+};
+
+struct QueryIterator::CursorStack {
+  std::vector< Cursor > stack;
+};
+
 
 /*
  *************************************************************************
@@ -76,7 +106,7 @@ void QueryIterator::findDeepestGroup(Group *grp)
 #endif
     state.first_view = false;
 
-    m_stack.push_back(state);
+    m_stack->stack.push_back(state);
 
     if (state.igroup == InvalidIndex)
     {
@@ -88,10 +118,10 @@ void QueryIterator::findDeepestGroup(Group *grp)
     grp = grp->getGroup(state.igroup);
   }
 
-  //  if (m_stack.back().iview != InvalidIndex)
+  //  if (m_stack->stack.back().iview != InvalidIndex)
   //{
     // The current state represents the first view in a Group.
-    m_stack.back().first_view = true;
+    m_stack->stack.back().first_view = true;
     //}
 
 }
@@ -106,8 +136,15 @@ void QueryIterator::findDeepestGroup(Group *grp)
 QueryIterator::QueryIterator(Group * root) :
     m_root(root)
 {
+  m_stack = new CursorStack;
   findDeepestGroup(root);
 }
+
+QueryIterator::~QueryIterator()
+{
+  delete m_stack;
+}
+
 
 /*
  *************************************************************************
@@ -116,7 +153,7 @@ QueryIterator::QueryIterator(Group * root) :
  */
 bool QueryIterator::isValid()
 {
-  if (m_stack.empty())
+  if (m_stack->stack.empty())
   {
     return false;
   }
@@ -134,14 +171,14 @@ bool QueryIterator::isValid()
  */
 void QueryIterator::getNext()
 {
-  while ( ! m_stack.empty())
+  while ( ! m_stack->stack.empty())
   {
-    IndexType igroup = m_stack.back().igroup;
+    IndexType igroup = m_stack->stack.back().igroup;
     if (igroup != InvalidIndex)
     {
-      Group * grp = m_stack.back().grp;
+      Group * grp = m_stack->stack.back().grp;
       IndexType inext = grp->getNextValidGroupIndex(igroup);
-      m_stack.back().igroup = inext;
+      m_stack->stack.back().igroup = inext;
       if (inext != InvalidIndex)
       {
 	Group *nextgrp = grp->getGroup(inext);
@@ -150,20 +187,20 @@ void QueryIterator::getNext()
       }
     }
 
-    IndexType iview = m_stack.back().iview;
+    IndexType iview = m_stack->stack.back().iview;
     if (iview != InvalidIndex)
     {
-      if (m_stack.back().first_view == false) 
+      if (m_stack->stack.back().first_view == false) 
       {
 	// Finished visiting intermediate groups, now starting on views.
-	m_stack.back().first_view = true;
+	m_stack->stack.back().first_view = true;
 	return;      // iview is the first view
       }
       else
       {
-	Group * grp = m_stack.back().grp;
+	Group * grp = m_stack->stack.back().grp;
 	IndexType inext = grp->getNextValidViewIndex(iview);
-	m_stack.back().iview = inext;
+	m_stack->stack.back().iview = inext;
 	if (inext != InvalidIndex)
         {
 	  return;    // Found a View.
@@ -171,27 +208,27 @@ void QueryIterator::getNext()
       }
     }
 
-    if (m_stack.back().grp_done == false) 
+    if (m_stack->stack.back().grp_done == false) 
     {
-      m_stack.back().grp_done = true;
+      m_stack->stack.back().grp_done = true;
       return;      // Use Group in this stack entry
     }
 
 
 #if 0
     // Finished with this Group, go up the tree.
-    m_stack.pop_back();
-    if (m_stack.empty())
+    m_stack->stack.pop_back();
+    if (m_stack->stack.empty())
     {
       return;     // No more nodes
     }
 #else
-    m_stack.pop_back();
+    m_stack->stack.pop_back();
 #endif
 
 
     // Finished with this Group, go up the tree.
-    //    m_stack.pop_back();
+    //    m_stack->stack.pop_back();
   }
 
   return;
@@ -206,12 +243,12 @@ void QueryIterator::getNext()
  */
 const std::string & QueryIterator::getName() const
 {
-  if (m_stack.empty())
+  if (m_stack->stack.empty())
   {
     return InvalidName;
   }
 
-  QueryIterator::Cursor state = m_stack.back();
+  QueryIterator::Cursor state = m_stack->stack.back();
 
   if (state.iview != InvalidIndex)
   {
