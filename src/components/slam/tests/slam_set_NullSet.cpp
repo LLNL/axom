@@ -22,7 +22,7 @@
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
-TEST(gtest_slam_set_nullset,construct)
+TEST(slam_set_nullset,construct)
 {
   axom::slam::NullSet ns;
 
@@ -40,7 +40,7 @@ TEST(gtest_slam_set_nullset,construct)
   EXPECT_FALSE( ns.isSubset() );
 }
 
-TEST(gtest_slam_set_nullset,subscript_fails)
+TEST(slam_set_nullset,subscript_fails)
 {
   SLIC_INFO("Testing subscript access on NullSet -- code is expected to assert and die.");
 

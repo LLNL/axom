@@ -116,7 +116,7 @@ public:
 
 // ********  A series of tests exercising SLIC_ASSERT
 
-TEST(gtest_slic_usage,in_test)
+TEST(slic_usage,in_test)
 {
   SLIC_ASSERT_MSG(true, "Testing SLIC assert (true) in test body");
 #ifdef AXOM_DEBUG
@@ -135,7 +135,7 @@ TEST(gtest_slic_usage,in_test)
 #endif
 }
 
-TEST(gtest_slic_usage,in_ctor)
+TEST(slic_usage,in_ctor)
 {
 #ifdef AXOM_DEBUG
   EXPECT_DEATH_IF_SUPPORTED( AssertCtor(), "" ) << " SLIC assert from class .ctor ";
@@ -144,7 +144,7 @@ TEST(gtest_slic_usage,in_ctor)
 #endif
 }
 
-TEST(gtest_slic_usage,in_method)
+TEST(slic_usage,in_method)
 {
   AssertMethod am;
 #ifdef AXOM_DEBUG
@@ -154,7 +154,7 @@ TEST(gtest_slic_usage,in_method)
 #endif
 }
 
-TEST(gtest_slic_usage,in_dtor)
+TEST(slic_usage,in_dtor)
 {
 #ifdef AXOM_DEBUG
   EXPECT_DEATH_IF_SUPPORTED( AssertDtor(), "" ) << " SLIC assert from class .ctor ";

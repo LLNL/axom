@@ -13,30 +13,18 @@
 #include "slic/slic.hpp"
 
 
-TEST(gtest_slic_interface,initialize_finalize)
+TEST(slic_interface,initialize_finalize)
 {
   EXPECT_FALSE(axom::slic::isInitialized());
 
-  axom::slic::initialize();
-  EXPECT_TRUE(axom::slic::isInitialized());
-
-  axom::slic::finalize();
-  EXPECT_FALSE(axom::slic::isInitialized());
-}
-
-TEST(gtest_slic_interface,initialize_finalize_twice)
-{
-  EXPECT_FALSE(axom::slic::isInitialized());
-
-  // Call initialize and finalize
+  // Initialize and finalize slic
   axom::slic::initialize();
   EXPECT_TRUE(axom::slic::isInitialized());
 
   axom::slic::finalize();
   EXPECT_FALSE(axom::slic::isInitialized());
 
-
-  // Call initialize and finalize again
+  // Check that we can Initialize and finalize slic a second time
   axom::slic::initialize();
   EXPECT_TRUE(axom::slic::isInitialized());
 

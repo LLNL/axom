@@ -43,7 +43,7 @@ namespace {
 }
 
 
-TEST(gtest_slam_range_set,construct)
+TEST(slam_range_set,construct)
 {
   SLIC_INFO("Testing construction RangeSets using constructors");
 
@@ -87,7 +87,7 @@ TEST(gtest_slam_range_set,construct)
 
 }
 
-TEST(gtest_slam_range_set,set_builder)
+TEST(slam_range_set,set_builder)
 {
   SLIC_INFO("Testing construction RangeSets using SetBuilders");
 
@@ -162,7 +162,7 @@ TEST(gtest_slam_range_set,set_builder)
 
 }
 
-TEST(gtest_slam_range_set,iterate)
+TEST(slam_range_set,iterate)
 {
   SetType s(lowerIndex, upperIndex);
 
@@ -207,7 +207,7 @@ TEST(gtest_slam_range_set,iterate)
 #endif
 }
 
-TEST(gtest_slam_range_set,out_of_range)
+TEST(slam_range_set,out_of_range)
 {
   SetType s(lowerIndex, upperIndex);
 
@@ -226,7 +226,7 @@ TEST(gtest_slam_range_set,out_of_range)
   SLIC_INFO("done.");
 }
 
-TEST(gtest_slam_generic_range_set,virtual_parent_set)
+TEST(slam_generic_range_set,virtual_parent_set)
 {
   namespace policies = axom::slam::policies;
 
@@ -272,7 +272,7 @@ TEST(gtest_slam_generic_range_set,virtual_parent_set)
 }
 
 
-TEST(gtest_slam_generic_range_set,concrete_parent_set)
+TEST(slam_generic_range_set,concrete_parent_set)
 {
   namespace policies = axom::slam::policies;
 

@@ -36,7 +36,6 @@
   #include "quest/PSTLReader.hpp"
 #endif
 
-
 namespace axom {  
 namespace quest {
 
@@ -44,6 +43,9 @@ namespace quest {
     // Note: Define everything in a local namespace
   namespace
   {
+
+    namespace slic = axom::slic;
+
     typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
@@ -297,8 +299,6 @@ namespace quest {
         void setupQuestLogger()
 #endif
         {
-            namespace slic = axom::slic;
-
             // Ensure slic has been initialized
             if( ! slic::isInitialized() )
             {
@@ -341,8 +341,6 @@ namespace quest {
          */
         void teardownQuestLogger()
         {
-            namespace slic = axom::slic;
-
             if( ! slic::isInitialized())
             {
               m_shouldFinalizeSlic = false;
@@ -360,7 +358,7 @@ namespace quest {
 
             if( m_shouldFinalizeSlic )
             {
-              axom::slic::finalize();
+              slic::finalize();
               m_shouldFinalizeSlic = false;
             }
 
