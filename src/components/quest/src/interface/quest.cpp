@@ -61,11 +61,12 @@ namespace quest {
 
         /** \brief Default constructor */
         QuestAccelerator()
-            : m_surface_mesh(AXOM_NULLPTR)
-            , m_region(AXOM_NULLPTR)
-            , m_containmentTree(AXOM_NULLPTR)
-            , m_queryMode(QUERY_MODE_NONE)
-            , m_originalLoggerName("")
+            : m_surface_mesh(AXOM_NULLPTR),
+              m_region(AXOM_NULLPTR),
+              m_containmentTree(AXOM_NULLPTR),
+              m_queryMode(QUERY_MODE_NONE),
+              m_originalLoggerName(""),
+              m_shouldFinalizeSlic(false)
         {
         }
 
@@ -298,10 +299,11 @@ namespace quest {
         {
             namespace slic = axom::slic;
 
-            // Setup the formatted quest logger
+            // Ensure slic has been initialized
             if( ! slic::isInitialized() )
             {
                 slic::initialize();
+                m_shouldFinalizeSlic = true;  // mark that we need to finalize slic
             }
 
             const std::string questLoggerName = "quest_logger";
@@ -332,11 +334,21 @@ namespace quest {
         }
 
         /**
-         * \brief Restores the original Slic logger
+         * \brief Deactivates the quest logger
+         *
+         * If there was a previous logger, it is restored.
+         * If slic was initialized by a call to setupQuestLogger(), slic is finalized.
          */
         void teardownQuestLogger()
         {
             namespace slic = axom::slic;
+
+            if( ! slic::isInitialized())
+            {
+              m_shouldFinalizeSlic = false;
+              return;
+            }
+
             slic::flushStreams();
 
             if(m_originalLoggerName != "")
@@ -345,6 +357,13 @@ namespace quest {
                 slic::activateLogger(m_originalLoggerName);
                 m_originalLoggerName = "";
             }
+
+            if( m_shouldFinalizeSlic )
+            {
+              axom::slic::finalize();
+              m_shouldFinalizeSlic = false;
+            }
+
         }
 
 
@@ -358,6 +377,7 @@ namespace quest {
         GeometricBoundingBox m_meshBoundingBox;
 
         std::string          m_originalLoggerName;
+        bool                 m_shouldFinalizeSlic;
     };
 
     /**
