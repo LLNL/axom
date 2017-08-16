@@ -16,6 +16,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Attribute;
 using axom::sidre::Group;
 using axom::sidre::View;
+using axom::sidre::QueryIterator;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
 using axom::sidre::Node;
@@ -808,21 +809,21 @@ DataStore *sample_datastore(void)
 
   Group * root = ds->getRoot();
 
-  root->createViewScalar("root1", 1);
-  root->createViewScalar("root2", 2);
-  root->createViewScalar("root3", 3);
+  Group * grpA = root->createGroup("grpA");
+  Group * grpB = root->createGroup("grpB");
+                 root->createGroup("grpC");  // No Views
 
-  Group * grp = root->createGroup("grpA");
-  grp->createViewScalar("grpA1", 4);
-  grp->createViewScalar("grpA2", 5);
-  grp->createViewScalar("grpA3", 6);
+  grpA->createViewScalar("grpA_view1", 1);
+  grpA->createViewScalar("grpA_view2", 2);
 
-  root->createGroup("grpB");
-  grp->createViewScalar("grpB1", 7);
+  Group * grpBB = grpB->createGroup("grpBB");
+  grpBB->createViewScalar("grpBB_view3", 3);
 
-  grp->createGroup("grpBB");
-  grp->createViewScalar("grpBB1", 8);
-  grp->createViewScalar("grpBB2", 9);
+  grpB->createViewScalar("grpB_view4", 4);
+
+  root->createViewScalar("root_view5", 5);
+  root->createViewScalar("root_view6", 6);
+  root->createViewScalar("root_view7", 7);
 
   return ds;
 }
@@ -835,15 +836,28 @@ TEST(sidre_attribute,depth_first)
 
   DataStore * ds = sample_datastore();
 
-#if 0
   Group * root = ds->getRoot();
 
-  QueryIterator qitr = root->queryDepthFirst();
+  QueryIterator qitr(root);
+
+  int iorder = 0;
+  const char * order[] = {
+    "grpA_view1",
+    "grpA_view2",
+    "grpA",
+    "grpBB_view3",
+    "grpBB",
+    "grpB_view4",
+    "grpB",
+    "grpC",
+    "root_view5",
+    "root_view6",
+    "root_view7",
+    ""};
  
-  while(qitr.hasNext()
+  while(qitr.isValid())
   {
-    qitr.getNext();
- 
+#if 0
     // check if I have a view and access it :
     qitr.isView();
     View *v = qitr.asView();
@@ -851,12 +865,17 @@ TEST(sidre_attribute,depth_first)
     // check if I have a group and access it :
     qitr.isGroup();
     Group *g = qitr.asGroup();
- 
-    // find our current path
-    std::string path = qitr.path();
+ #endif
 
+    // find our current path
+    const std::string & name = qitr.getName();
+    //    std::cout << name << std::endl;
+
+    EXPECT_EQ(order[iorder], name);
+    iorder++;
+
+    qitr.getNext();
   }
-#endif
 
   delete ds;
 }

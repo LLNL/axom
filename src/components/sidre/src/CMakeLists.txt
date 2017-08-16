@@ -25,7 +25,7 @@ set(sidre_sources
     core/View.cpp
     core/Attribute.cpp
     core/AttrValues.cpp
-#    core/QueryIterator.cpp
+    core/QueryIterator.cpp
     core/SidreUtilities.cpp
 )
 
