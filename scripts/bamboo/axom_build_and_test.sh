@@ -1,6 +1,6 @@
 #!/bin/bash
 # 
-# axom_build_and_test.sh "Debug" "" "clang@3.5.0" "cab" "chaos5" 
+# axom_build_and_test.sh "Debug" "" "clang@3.5.0" "cab" "chaos5" "/usr/workspace/wsb/axomdev/bamboo/cab/build/clang350/axom" 
 #
 echo  axom_build_and_test.sh 1.0
 set -ev
@@ -9,6 +9,7 @@ BUILD_OPT=$2
 COMPILER=$3
 HOST=$4
 SYSTEM_TYPE=$5
+WORKSPACE=$6
 
 if [ $SYSTEM_TYPE == "chaos5" ] || [ $SYSTEM_TYPE == "toss3" ]; then
    SCRIPT="srun -N1 --exclusive -ppdebug ./scripts/bamboo/${SYSTEM_TYPE}_build_test_uno_compiler.sh";
@@ -17,8 +18,7 @@ else
 fi
 echo $SCRIPT
 
-cur_dir=`pwd`
-ssh $HOST "hostname; cd $cur_dir && \
+ssh $HOST "hostname; cd $WORKSPACE && \
    pwd && \
    $SCRIPT '$BUILD_TYPE' '$BUILD_OPT'  '$COMPILER'"
 
