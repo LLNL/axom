@@ -236,7 +236,7 @@ private:
 
   MPI_Comm m_mpi_comm;
 
-  bool m_scr_initialized;
+  bool m_use_scr;
   std::string m_scr_checkpoint_dir;
 
 };

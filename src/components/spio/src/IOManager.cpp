@@ -53,12 +53,12 @@ IOManager::IOManager(MPI_Comm comm,
   m_my_rank(0),
   m_baton(AXOM_NULLPTR),
   m_mpi_comm(comm),
-  m_scr_initialized(use_scr)
+  m_use_scr(use_scr)
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
 #ifndef AXOM_USE_SCR
-  m_scr_initialized = false;
+  m_use_scr = false;
 #endif
 }
 
@@ -75,11 +75,6 @@ IOManager::~IOManager()
   if (m_baton) {
     delete m_baton;
   }
-#ifdef AXOM_USE_SCR
-  if (m_scr_initialized) {
-//    SCR_Finalize();
-  }
-#endif
 }
 
 
@@ -105,15 +100,8 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
 
   std::string root_string = file_string;
 #ifdef AXOM_USE_SCR
-  if (m_scr_initialized) { 
+  if (m_use_scr) { 
     SCR_Start_checkpoint();
-
-//    char checkpoint_file[256];
-//    sprintf(checkpoint_file, "%s_%6d", file_string.c_str(), m_my_rank);
-//    char scr_file[SCR_MAX_FILENAME];
-//    SCR_Route_file(checkpoint_file, scr_file);
-//    SCR_Route_file(file_string.c_str(), scr_file);
-//    root_string = std::string(scr_file);
   }
 #endif
   if (m_my_rank == 0) {
@@ -122,7 +110,7 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = root_string + ".root";
-  if (m_scr_initialized) {
+  if (m_use_scr) {
     int buf_size = 0;
     if (m_my_rank == 0) {
       buf_size = m_scr_checkpoint_dir.size() + 1;
@@ -201,7 +189,7 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
   (void)m_baton->pass();
 
 #ifdef AXOM_USE_SCR
-  if (m_scr_initialized) {
+  if (m_use_scr) {
     MPI_Barrier(m_mpi_comm);
     int valid = 1;
     SCR_Complete_checkpoint(valid);
@@ -418,11 +406,10 @@ void IOManager::createRootFile(const std::string& file_base,
     }
   }
 
-  if (!m_scr_initialized) {
+  if (!m_use_scr) {
     conduit::relay::io::save(n, root_file_name, conduit_protocol);
   } else {
 #ifdef AXOM_USE_SCR
-//    SCR_Start_checkpoint();
 
     if (protocol == "sidre_hdf5") {
       n["file_pattern"] = local_file_base + "_" + "%07d.hdf5"; 
@@ -442,8 +429,6 @@ void IOManager::createRootFile(const std::string& file_base,
     }
     m_scr_checkpoint_dir = dir_name;
     conduit::relay::io::save(n, root_file_name, conduit_protocol);
-//    int valid = 1;
-//    SCR_Complete_checkpoint(valid);
 #endif
   }
 
