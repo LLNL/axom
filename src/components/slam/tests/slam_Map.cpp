@@ -36,7 +36,7 @@ typedef SetType::ElementType    ElementType;
 
 static PositionType const MAX_SET_SIZE = 10;
 
-TEST(gtest_slam_map,construct_empty_map)
+TEST(slam_map,construct_empty_map)
 {
   IntMap m;
 
@@ -75,17 +75,17 @@ bool constructAndTestMap()
   return true;
 }
 
-TEST(gtest_slam_map,construct_int_map)
+TEST(slam_map,construct_int_map)
 {
   EXPECT_TRUE( constructAndTestMap<int>() );
 }
 
-TEST(gtest_slam_map,construct_double_map)
+TEST(slam_map,construct_double_map)
 {
   EXPECT_TRUE( constructAndTestMap<double>());
 }
 
-TEST(gtest_slam_map,out_of_bounds)
+TEST(slam_map,out_of_bounds)
 {
   int defaultElt = 2;
 
