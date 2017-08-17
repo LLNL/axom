@@ -275,7 +275,7 @@ public:
    *****************************************************************************
    */
   template < typename OtherType >
-  bool contains( const Point< OtherType, NDIMS >& otherPt, double EPS=1E-4)
+  bool contains( const Point< OtherType, NDIMS >& otherPt, double EPS=1E-8)
     const;
 
   /*!
@@ -289,7 +289,7 @@ public:
    *****************************************************************************
    */
   template < typename OtherType >
-  bool contains( const OrientedBoundingBox< OtherType, NDIMS >& otherOBB ) const;
+  bool contains( const OrientedBoundingBox< OtherType, NDIMS >& otherOBB, double EPS=1E-8) const;
 
   /*!
    *****************************************************************************
@@ -299,7 +299,7 @@ public:
    *  projection of the difference between pt and m_c onto the axes m_u.
    *****************************************************************************
    */
-  VectorType toLocal( const PointType &pt ) const;
+  PointType toLocal( const PointType &pt ) const;
 
   /*!
    *****************************************************************************
@@ -347,9 +347,9 @@ public:
    * \post pnts.size() == (1 << NDIMS)
    *****************************************************************************
    */
-  static void getPoints( const OrientedBoundingBox< T, NDIMS >& bb,
+  static void getPoints( const OrientedBoundingBox< T, NDIMS >& obb,
                          std::vector< Point< T, NDIMS > >& pnts )
-  { pnts = bb.vertices(); }
+  { pnts = obb.vertices(); }
 
  private:
 
@@ -365,7 +365,6 @@ public:
     const Vector< T, NDIMS > u[NDIMS], const Vector< T, NDIMS > &e,
     Vector< T, NDIMS > curr)
   {
-
     if (i == NDIMS) {  // base case
       l.push_back(Point< T, NDIMS >(curr.array()));
     } else {
@@ -473,7 +472,7 @@ void OrientedBoundingBox< T, NDIMS >::clear()
 template < typename T, int NDIMS >
 void OrientedBoundingBox< T, NDIMS >::addPoint( Point< T, NDIMS > pt )
 {
-  Vector< T, NDIMS > pt_l = this->toLocal(pt);
+  Point< T, NDIMS > pt_l = this->toLocal(pt);
   for (int i = 0; i < NDIMS; i++) {
     T proj = pt_l[i];
     if (proj < T()) proj = -proj;
@@ -497,7 +496,6 @@ void OrientedBoundingBox< T, NDIMS >::addBox( OrientedBoundingBox< T, NDIMS > ob
 
   for (int i = 0; i < size; i++)
     this->addPoint(res[i]);
-
 }
 
 //------------------------------------------------------------------------------
@@ -506,6 +504,7 @@ std::vector< Point< T, NDIMS > > OrientedBoundingBox< T, NDIMS >::vertices()
   const
 {
   std::vector< Point< T, NDIMS > > res;
+  res.reserve(1 << NDIMS);
   Vector< T, NDIMS > curr(this->m_c);
 
   OrientedBoundingBox< T, NDIMS >::vertex_enum(res, 0, this->m_u, this->m_e,
@@ -588,14 +587,14 @@ bool OrientedBoundingBox< T, NDIMS >::contains(
 template < typename T, int NDIMS >
 template < typename OtherType >
 bool OrientedBoundingBox< T, NDIMS >::contains(
-  const OrientedBoundingBox< OtherType, NDIMS >& otherOBB) const
+  const OrientedBoundingBox< OtherType, NDIMS >& otherOBB, double EPS) const
 {
   std::vector< Point< T, NDIMS > > l = otherOBB.vertices();
 
   int size = l.size();
 
   for (int i = 0; i < size; i++) {
-    if (!this->contains(l[i])) return false;
+    if (!this->contains(l[i], EPS)) return false;
   }
 
   return true;
@@ -603,15 +602,12 @@ bool OrientedBoundingBox< T, NDIMS >::contains(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-Vector< T, NDIMS > OrientedBoundingBox< T, NDIMS >::toLocal(
+Point< T, NDIMS > OrientedBoundingBox< T, NDIMS >::toLocal(
   const Point< T, NDIMS > &pt ) const
 {
-  Vector< T, NDIMS > d(pt);
-  for (int i = 0; i < NDIMS; i++) {
-    d[i] -= (this->m_c[i]);
-  }
+  Vector< T, NDIMS > d(m_c, pt);
 
-  Vector< T, NDIMS > res;
+  Point< T, NDIMS > res;
   for (int i = 0; i < NDIMS; i++) {
     res[i] = d.dot(this->m_u[i]);
   }
@@ -623,16 +619,14 @@ template < typename T, int NDIMS >
 Point< T, NDIMS > OrientedBoundingBox< T, NDIMS >::furthestPoint(
   const PointType &pt ) const
 {
-  // TODO: toLocal()
-  Vector< T, NDIMS > d = Vector< T, NDIMS >(pt) - Vector<T, NDIMS >(this->m_c);
-  Vector< T, NDIMS > res(this->m_c);
+  Point< T, NDIMS > pt_l = this->toLocal(pt);
+  Vector< T, NDIMS > res;
   for (int i = 0; i < NDIMS; i++) {
     // since the local coordinates are individually constrained, we can simply
-    // choose maximize the objective in each direction independently, meaning
-    // meaning there is a simple analytical solution
-    T dot = d.dot(this->m_u[i]);
+    // maximize the objective in each direction independently, meaning there
+    // is a simple analytical solution
 
-    if (dot > T()) {
+    if (pt_l[i] > T()) {
       res -= (this->m_e[i])*(this->m_u[i]);
     } else {
       res += (this->m_e[i])*(this->m_u[i]);

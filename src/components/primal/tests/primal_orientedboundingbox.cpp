@@ -264,7 +264,7 @@ TEST( primal_OBBox, obb_test_add_box )
   QOBBox obbox5;
   obbox3.addBox(obbox5);
   EXPECT_FALSE(obbox5.isValid());
-  EXPECT_FALSE(obbox3.isValid());
+  EXPECT_TRUE(obbox3.isValid());
 }
 
 
