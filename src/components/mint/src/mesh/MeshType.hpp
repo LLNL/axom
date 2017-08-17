@@ -39,11 +39,9 @@ namespace mint {
 namespace mesh_properties {
 
 /*!
- *******************************************************************************
  * \brief Defines corresponding mesh type for each cell type.
  * \note The array is mint::NUM_CELL_TYPES long
  * \see mint::CellType
- *******************************************************************************
  */
 static const int mesh_of_cell_type[] = {
 
@@ -58,15 +56,16 @@ static const int mesh_of_cell_type[] = {
   MINT_UNDEFINED_MESH,                // LINEAR_PRISM,
   MINT_UNDEFINED_MESH,                // LINEAR_PYRAMID,
 
+  MINT_UNSTRUCTURED_QUAD_MESH,        // Q2 quad mesh
+  MINT_UNSTRUCTURED_HEX_MESH,         // Q2 hex mesh
+
   MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH,   // MIXED
 };
 
 /*!
- *******************************************************************************
  * \brief Defines whether a mesh type stores explicit coordinates.
  * \note The array is mint::NUM_MESH_TYPES long
  * \see mint::MeshType
- *******************************************************************************
  */
 static const bool explicit_coordinates[] = {
   true,    // UNSTRUCTURED_SEGMENT_MESH
@@ -84,11 +83,9 @@ static const bool explicit_coordinates[] = {
 };
 
 /*!
- *******************************************************************************
  * \brief Defines whether a mesh type stores explicit connectivity.
  * \note The array is mint::NUM_MESH_TYPES long
  * \see mint::MeshType
- *******************************************************************************
  */
 static const bool explicit_connectivity[] = {
   true,    // UNSTRUCTURED_SEGMENT_MESH

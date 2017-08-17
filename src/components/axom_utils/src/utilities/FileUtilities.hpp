@@ -19,21 +19,21 @@ namespace axom {
 namespace utilities {
 namespace filesystem {
 
-/**
+/*!
  * \brief Helper function to print out the current working directory within the file system
  * \return path of cwd if found, else, returns "./"
  */
   std::string getCWD();
 
 
-/**
+/*!
  * \brief Helper function to check if the path pointed to by fileName exists
  * \param [in] fileName string name of a file (possibly including relative or absolute path)
  * \return true if file system contains a file named fileName, false otherwise
  */
   bool pathExists(const std::string& fileName);
 
-/**
+/*!
  * \brief Joins a file directory fileDir and a file name fileName with the given separator char
  * \param [in] fileDir The directory of the file
  * \param [in] fileName The name of the file
@@ -51,21 +51,18 @@ namespace filesystem {
                        const std::string& separator = "/");
 
 
-/**
+/*!
  * \brief Make directories for a given path string
  *
  * \param [in] path  string representing an absolute or relative directory path
- * \param [in] mode  controls the permissions of the new directories
  *
  * Everything in the path is assumed to be intended to be a directory.  If
  * a directory in the path already exists, nothing is done.  If a directory
  * doesn't exist, it is created.
  */
-  int makeDirsForPath(
-    const std::string& path,
-    mode_t mode = 0700);
+  int makeDirsForPath(const std::string& path);
 
-/**
+/*!
  * \brief Get directory name from a path that contains a file name
  *
  * \param [out] dir  a directory path formed by removing the file name from
@@ -75,7 +72,7 @@ namespace filesystem {
  * This function assumes that the input path has a file name at the end, and
  * it removes that file name, leaving a string containing only a directory
  * path.
- * 
+ *
  * For example, if the path string is "abc/def/ghi/file.txt", the output dir
  * string will be "abc/def/ghi".
  */

@@ -36,7 +36,6 @@
   #include "quest/PSTLReader.hpp"
 #endif
 
-
 namespace axom {  
 namespace quest {
 
@@ -44,6 +43,9 @@ namespace quest {
     // Note: Define everything in a local namespace
   namespace
   {
+
+    namespace slic = axom::slic;
+
     typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
@@ -61,11 +63,12 @@ namespace quest {
 
         /** \brief Default constructor */
         QuestAccelerator()
-            : m_surface_mesh(AXOM_NULLPTR)
-            , m_region(AXOM_NULLPTR)
-            , m_containmentTree(AXOM_NULLPTR)
-            , m_queryMode(QUERY_MODE_NONE)
-            , m_originalLoggerName("")
+            : m_surface_mesh(AXOM_NULLPTR),
+              m_region(AXOM_NULLPTR),
+              m_containmentTree(AXOM_NULLPTR),
+              m_queryMode(QUERY_MODE_NONE),
+              m_originalLoggerName(""),
+              m_shouldFinalizeSlic(false)
         {
         }
 
@@ -296,16 +299,16 @@ namespace quest {
         void setupQuestLogger()
 #endif
         {
-            namespace slic = axom::slic;
-
-            // Setup the formatted quest logger
+            // Ensure slic has been initialized
             if( ! slic::isInitialized() )
             {
                 slic::initialize();
+                m_shouldFinalizeSlic = true;  // mark that we need to finalize slic
             }
 
             const std::string questLoggerName = "quest_logger";
             m_originalLoggerName = slic::getActiveLoggerName();
+
             slic::flushStreams();
             if( ! slic::activateLogger(questLoggerName) )
             {
@@ -331,19 +334,34 @@ namespace quest {
         }
 
         /**
-         * \brief Restores the original Slic logger
+         * \brief Deactivates the quest logger
+         *
+         * If there was a previous logger, it is restored.
+         * If slic was initialized by a call to setupQuestLogger(), slic is finalized.
          */
         void teardownQuestLogger()
         {
-            namespace slic = axom::slic;
+            if( ! slic::isInitialized())
+            {
+              m_shouldFinalizeSlic = false;
+              return;
+            }
+
+            slic::flushStreams();
 
             if(m_originalLoggerName != "")
             {
                 // Revert to original Slic logger
-                slic::flushStreams();
                 slic::activateLogger(m_originalLoggerName);
                 m_originalLoggerName = "";
             }
+
+            if( m_shouldFinalizeSlic )
+            {
+              slic::finalize();
+              m_shouldFinalizeSlic = false;
+            }
+
         }
 
 
@@ -357,6 +375,7 @@ namespace quest {
         GeometricBoundingBox m_meshBoundingBox;
 
         std::string          m_originalLoggerName;
+        bool                 m_shouldFinalizeSlic;
     };
 
     /**
@@ -411,7 +430,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 #else
 //------------------------------------------------------------------------------
 void initialize( const std::string& fileName,
-                 bool requireDistance, int ndims, int maxElements, int maxLevels )
+                 bool requiresDistance, int ndims, int maxElements, int maxLevels )
 {
   SLIC_ASSERT( ! accelerator3D.isInitialized() );
 
@@ -435,7 +454,7 @@ void initialize( const std::string& fileName,
   delete reader;
 
   // Initialize the appropriate acceleration structure
-  if(requireDistance)
+  if(requiresDistance)
   {
     accelerator3D.initializeSignedDistance(surface_mesh, maxElements, maxLevels );
   }
@@ -443,6 +462,8 @@ void initialize( const std::string& fileName,
   {
     accelerator3D.initializeContainmentTree(surface_mesh);
   }
+
+  accelerator3D.teardownQuestLogger();
 }
 #endif
 

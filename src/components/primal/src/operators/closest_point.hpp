@@ -9,13 +9,11 @@
  */
 
 /*!
- *******************************************************************************
  * \file
  *
  * \brief Consists of a set of methods that compute the closest point on a
  *  geometric primitive B from another geometric primitive A.
  *
- *******************************************************************************
  */
 
 #ifndef CLOSEST_POINT_HPP_
@@ -29,7 +27,6 @@ namespace axom {
 namespace primal {
 
 /*!
- *******************************************************************************
  * \brief Computes the closest point from a point, P, to a given triangle.
  *
  * \param [in] P the query point
@@ -63,7 +60,6 @@ namespace primal {
  *
  * \note Implementation is based on "Real Time Collision Detection,
  *  Chapter 5.1.5 Closest Point on Triangle to Point".
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,

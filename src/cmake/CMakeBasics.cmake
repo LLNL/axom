@@ -1,40 +1,12 @@
-###############################################################################
-# Copyright (c) 2014, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-666778
+#-------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Produced at the Lawrence Livermore National Laboratory.
 #
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the disclaimer below.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the disclaimer (as noted below) in the
-#   documentation and/or other materials provided with the distribution.
-#
-# * Neither the name of the LLNS/LLNL nor the names of its contributors may
-#   be used to endorse or promote products derived from this software without
-#   specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-# LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-###############################################################################
+# This source code cannot be distributed without permission and further
+# review from Lawrence Livermore National Laboratory.
+#-------------------------------------------------------------------------------
 
 ################################
 # Setup build options and their default values
@@ -51,19 +23,18 @@ include(cmake/AxomMacros.cmake)
 ################################
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
-#
-# We don't try to use this approach for CMake generators that support
-# multiple configurations. See: CZ JIRA: ATK-45
-#
 if(NOT CMAKE_CONFIGURATION_TYPES)
     ######################################################
     # Add define we can use when debug builds are enabled
     ######################################################
-    if( (CMAKE_BUILD_TYPE MATCHES Debug)
-        OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo )
-      )
+    if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
         add_definitions(-DAXOM_DEBUG)
     endif()
+else ()
+    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
+      $<$<CONFIG:Debug>:AXOM_DEBUG>
+      $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
+    )
 endif()
 
 ################################
@@ -75,7 +46,7 @@ if(ENABLE_FORTRAN)
     include(FortranCInterface)
     FortranCInterface_VERIFY()
     FortranCInterface_VERIFY(CXX)
-    
+
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module
         find_path(mpif_path
@@ -83,7 +54,7 @@ if(ENABLE_FORTRAN)
             PATHS ${MPI_Fortran_INCLUDE_PATH}
             NO_DEFAULT_PATH
             )
-        
+
         if(mpif_path)
             set(MPI_Fortran_USE_MPIF ON CACHE PATH "")
             message(STATUS "Using MPI Fortran header: mpif.h")
@@ -100,7 +71,7 @@ endif()
 # These are stored in their own variables.
 # Usage: To add one of these sets of flags to some source files:
 #   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
-#   set_source_files_properties(<list_of_src_files> 
+#   set_source_files_properties(<list_of_src_files>
 #        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
 ##############################################################################
 
@@ -111,6 +82,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT "-Wno-unknown-pragmas"
                   XL      "-qignprag=omp"
                   INTEL   "-diag-disable 3180"
+                  MSVC    "/wd4068"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 
@@ -119,6 +91,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT "-Wno-unused-parameter"
                   XL      "-qinfo=nopar"
+                  MSVC    "/wd4100"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 
@@ -127,6 +100,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT "-Wno-unused-variable"
                   XL      "-qinfo=nouse"
+                  MSVC    "/wd4101"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 
@@ -135,6 +109,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNINITIALIZED_WARNINGS
                   DEFAULT "-Wno-uninitialized"
                   XL      "-qsuppress=1540-1102"
+                  MSVC    "/wd4700"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 
@@ -143,9 +118,10 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_ALIASING_WARNINGS
                   DEFAULT "-Wno-strict-aliasing"
                   XL      " "
+                  MSVC    " "
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
-                  
+
 # Flag for disabling warnings about unused local typedefs.
 # Note: Clang 3.5 and below are not aware of this warning, but later versions are
 if(COMPILER_FAMILY_IS_CLANG AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5))
@@ -156,7 +132,8 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   DEFAULT " "
                   CLANG   "${clang_unused_local_typedef}"
                   GNU     "-Wno-unused-local-typedefs"
-                  )                  
+                  MSVC    " "
+                  )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
 # Linker flag for allowing multiple definitions of a symbol
@@ -164,12 +141,33 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_MULTIPLE_DEFINITIONS
                   DEFAULT " "
                   CLANG   "-Wl,--allow-multiple-definition"
                   GNU     "-Wl,--allow-multiple-definition"
-                  )                  
+                  MSVC    " "
+                  )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 
+# Flag for allowing constant conditionals e.g. if(sizeof(T) > sizeof(int)) {...}
+# There appears to be a bug in how some versions of Visual Studio treat this
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_CONSTANT_CONDITIONALS
+                  DEFAULT " "
+                  MSVC    "/wd4127"
+                  )
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_CONSTANT_CONDITIONALS)
 
-   
+# Flag for allowing truncation of constant values.
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
+                  DEFAULT " "
+                  MSVC    "/wd4309"
+                  )
+list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
+
+
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
 #    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
 # endforeach()
+
+# Disable warnings about conditionals over constants
+if(WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
+endif()
+

@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_18_49_53/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/cmake-3.3.1-topto6ayaoqsg36mlt4tnxdafjtz3t2y/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_03_48/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/cmake-3.8.2-rnnrpn5n5tj4szuytsvylyfqe4o7eeqc/bin/cmake
 
 #######
 # using gcc@4.7.1 compiler spec
@@ -25,13 +25,13 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/apps/gnu/4.7.1/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_05_15_18_49_53/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_03_48/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-xsesubbul5rxxvgxh2fo76qzxtn3qjgm" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3j42b5cmds7mv3nkrhra2m7uprclz5id" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-qtjykscwq52nipeuokeb3464uut3puw2" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-wfp4sgov5z54rtcvi7zl4b3cdllnnofz" CACHE PATH "")
@@ -46,7 +46,7 @@ set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-mps32mjq56gsjox5ushhnt4ts5mio5s
 set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-3m2omxvef6q3n6hfuimtcmajeeei2fa3" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-nzxxtekulhng4rxxjlji57wejhhkbxdm/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-rczbifoyohcuz3bozk5xkdgoj2aozeek/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-mps32mjq56gsjox5ushhnt4ts5mio5sn/bin/sphinx-build" CACHE PATH "")
@@ -69,6 +69,8 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-tvagnsw74h4kwgos22odgtzjcbegi2xt/usr/bin
 # Options added manually to 
 # lc chaos5 gcc@4.7.1  host configs
 ##############################################################################
+
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 ##############################################################################
 # MPI - manually added for now.

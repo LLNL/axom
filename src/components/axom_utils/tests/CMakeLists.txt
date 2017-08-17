@@ -4,6 +4,7 @@
 
 set(gtest_utils_tests
    utils_TaskTimer.cpp
+   utils_endianness.cpp
    utils_fileUtilities.cpp
    utils_types.cpp
 
@@ -77,8 +78,7 @@ if(ENABLE_OPENMP)
     blt_add_executable( NAME utils_config_openmp_test
                         SOURCES utils_config.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_config_test_depends}
-                        USE_OPENMP True)
+                        DEPENDS_ON ${utils_config_test_depends} openmp)
 
     blt_add_test( NAME utils_config_openmp
                   COMMAND utils_config_openmp_test )

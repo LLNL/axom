@@ -33,7 +33,6 @@ template < typename T, int NDIMS >
 std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray);
 
 /*!
- *******************************************************************************
  * \class
  *
  * \brief Represents a ray, \f$ R(t) \in \mathcal{R}^d \f$ , defined by an
@@ -42,7 +41,6 @@ std::ostream& operator<<(std::ostream & os, const Ray< T,NDIMS > & ray);
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 class Ray
@@ -55,63 +53,49 @@ public:
 public:
 
   /*!
-   ***************************************************************************
    * \brief Constructs a ray object with the given origin and direction.
    * \param [in] origin the origin of the ray.
    * \param [in] direction the direction of the ray.
    * \pre direction.squared_norm()!= 0.0
-   ***************************************************************************
    */
   Ray( const PointType& origin, const VectorType& direction );
 
   /*!
-   ***************************************************************************
    * \brief Constructs a ray object from a directed segment.
    * \param [in] S user-supplied segment.
-   ***************************************************************************
    */
   explicit Ray( const SegmentType& S );
 
   /*!
-   ***************************************************************************
    * \brief Ray Destructor.
-   ***************************************************************************
    */
   ~Ray();
 
   /*!
-   ***************************************************************************
    * \brief Returns the point of origin of this Ray instance.
    * \return origin a point instance corresponding to the origin of the ray.
-   ***************************************************************************
    */
   const PointType& origin() const { return m_origin; };
 
   /*!
-   ***************************************************************************
    * \brief Returns a point along the ray by evaluating \f$ R(t) \f$
    * \param [in] t user-supplied value for R(t).
    * \return p a point along the ray.
    * \pre \f$ t \ge 0 \f$
-   ***************************************************************************
    */
   PointType at( const T& t) const;
 
   /*!
-   ***************************************************************************
    * \brief Returns the direction vector of this Ray instance.
    * \return direction the direction vector of the ray.
    * \post direction.norm()==1
-   ***************************************************************************
    */
   const VectorType& direction() const { return m_direction; };
 
   /*!
-   *****************************************************************************
    * \brief Simple formatted print of a ray instance
    * \param os The output stream to write to
    * \return A reference to the modified ostream
-   *****************************************************************************
    */
   std::ostream& print(std::ostream& os) const
   {
@@ -122,10 +106,8 @@ public:
 private:
 
   /*!
-   ***************************************************************************
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent its use in application code.
-   ***************************************************************************
    */
   Ray() { };
 

@@ -31,12 +31,10 @@ using mint::Lagrange;
 namespace {
 
 /*!
- *******************************************************************************
  * \brief Tests basic attributes of the shape function
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
@@ -84,9 +82,7 @@ void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
 }
 
 /*!
- *******************************************************************************
  * \brief Ensures shape functions satisfy the kronecker delta property.
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void kronecker_delta( )
@@ -123,9 +119,7 @@ void kronecker_delta( )
 }
 
 /*!
- *******************************************************************************
  * \brief Ensures shape functions satisfy the partition of unity property.
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void partition_of_unity()
@@ -209,6 +203,9 @@ TEST( mint_shape_functions, check_reference_element )
   reference_element< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   reference_element< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   reference_element< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  reference_element< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  reference_element< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -220,6 +217,9 @@ TEST( mint_shape_functions, check_kronecker_delta )
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -231,6 +231,9 @@ TEST( mint_shape_functions, check_partition_of_unity )
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------

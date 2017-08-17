@@ -14,17 +14,17 @@
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-/**
+/*!
  * \file
  *
- * The tests in this file check that SLIC macros properly output their message and
- * exit (when appropriate)
- * when run from constructors and destructors.
+ * The tests in this file check that SLIC macros properly output their message
+ * and exit (when appropriate) when run from constructors and destructors.
  * They also exercise the SLIC UnitTestLogger.
  */
 
 namespace {
-/**
+
+/*!
  * A simple struct with an assert in the constructor
  */
 struct AssertCtor
@@ -32,7 +32,7 @@ struct AssertCtor
   AssertCtor() { SLIC_ASSERT_MSG(false,"Testing assert in .ctor"); }
 };
 
-/**
+/*!
  *  A simple struct with an assert in a method (foo)
  */
 struct AssertMethod
@@ -40,7 +40,7 @@ struct AssertMethod
   void foo() { SLIC_ASSERT_MSG(false,"Testing assert in class method"); }
 };
 
-/**
+/*!
  *  A simple struct with an assert in the destructor
  */
 struct AssertDtor
@@ -48,9 +48,10 @@ struct AssertDtor
   ~AssertDtor() { SLIC_ASSERT_MSG(false,"Testing assert in .dtor"); }
 };
 
-/**
+/*!
  *  A simple testing fixture with a SLIC_WARNING in the constructor.
- *  Note: gtest EXPECT_DEATH_IF_SUPPORTED has a return, so it cannot be used in a constructor.
+ *  Note: gtest EXPECT_DEATH_IF_SUPPORTED has a return, so it cannot be
+ *  used in a constructor.
  */
 class SetFixtureC:public ::testing::Test
 {
@@ -62,7 +63,7 @@ public:
   }
 };
 
-/**
+/*!
  *  A simple testing fixture with an assert in the SetUp function.
  */
 class SetFixtureS:public ::testing::Test
@@ -78,7 +79,7 @@ public:
   }
 };
 
-/**
+/*!
  *  A simple testing fixture with an assert in the TearDown function.
  */
 class SetFixtureT:public ::testing::Test
@@ -95,9 +96,10 @@ public:
   }
 };
 
-/**
+/*!
  *  A simple testing fixture with a SLIC_WARNING in the destructor.
- *  Note: gtest EXPECT_DEATH_IF_SUPPORTED has a return, so it cannot be used in a destructor.
+ *  Note: gtest EXPECT_DEATH_IF_SUPPORTED has a return, so it cannot be used
+ *  in a destructor.
  *
  */
 class SetFixtureD:public::testing::Test
@@ -106,7 +108,7 @@ public:
   ~SetFixtureD()
   {
     SLIC_WARNING(
-      "Testing warning in fixture .dtor -- this warning message should be logged");
+   "Testing warning in fixture .dtor -- this warning message should be logged");
   }
 };
 
@@ -114,17 +116,17 @@ public:
 
 // ********  A series of tests exercising SLIC_ASSERT
 
-TEST(gtest_slic_usage,in_test)
+TEST(slic_usage,in_test)
 {
   SLIC_ASSERT_MSG(true, "Testing SLIC assert (true) in test body");
 #ifdef AXOM_DEBUG
-  EXPECT_DEATH_IF_SUPPORTED( 
+  EXPECT_DEATH_IF_SUPPORTED(
         SLIC_ASSERT_MSG(false,
             "Testing SLIC assert(false) in test body"),
             "" )
          << "SLIC assert (false) from a test";
 #else
-  EXPECT_DEATH_IF_SUPPORTED( 
+  EXPECT_DEATH_IF_SUPPORTED(
         SLIC_ERROR_IF(true,
             "Testing SLIC error in test body for release mode"),
             "" )
@@ -133,7 +135,7 @@ TEST(gtest_slic_usage,in_test)
 #endif
 }
 
-TEST(gtest_slic_usage,in_ctor)
+TEST(slic_usage,in_ctor)
 {
 #ifdef AXOM_DEBUG
   EXPECT_DEATH_IF_SUPPORTED( AssertCtor(), "" ) << " SLIC assert from class .ctor ";
@@ -142,7 +144,7 @@ TEST(gtest_slic_usage,in_ctor)
 #endif
 }
 
-TEST(gtest_slic_usage,in_method)
+TEST(slic_usage,in_method)
 {
   AssertMethod am;
 #ifdef AXOM_DEBUG
@@ -152,7 +154,7 @@ TEST(gtest_slic_usage,in_method)
 #endif
 }
 
-TEST(gtest_slic_usage,in_dtor)
+TEST(slic_usage,in_dtor)
 {
 #ifdef AXOM_DEBUG
   EXPECT_DEATH_IF_SUPPORTED( AssertDtor(), "" ) << " SLIC assert from class .ctor ";

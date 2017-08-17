@@ -9,9 +9,7 @@
  */
 
 /*!
- *******************************************************************************
  * \file utils_TaskTimer.cpp
- *******************************************************************************
  */
 
 #include "gtest/gtest.h"
@@ -22,13 +20,14 @@
 #include "windows.h"
 void sleep(int numSeconds)
 {
-  Sleep( numSeconds );
+  int numMilliSecs = numSeconds * 1000;
+  Sleep( numMilliSecs );
 }
 #else
 #include <unistd.h> // for sleep()
 #endif
 
-TEST(gtest_utils_Timer, timer_check )
+TEST(axom_utils_Timer, timer_check )
 {
   axom::utilities::Timer t;
 
@@ -53,7 +52,7 @@ TEST(gtest_utils_Timer, timer_check )
 }
 
 
-TEST(gtest_utils_Timer, timer_check_duration )
+TEST(axom_utils_Timer, timer_check_duration )
 {
   axom::utilities::Timer t;
   t.start();

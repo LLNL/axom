@@ -8,6 +8,16 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ ******************************************************************************
+ * \file Timer.hpp
+ * 
+ * \brief Defines a simple Timer class to measure execution time.
+ *
+ * \note The actual underlying timers are platform dependent and are defined
+ * in the axom::utilities::detail namespace.
+ ******************************************************************************
+ */
 
 #ifndef TIMER_HPP_
 #define TIMER_HPP_
@@ -16,14 +26,22 @@
 #ifdef AXOM_USE_CXX11
   #include "axom_utils/ChronoTimer.hpp"
 #else
-  #include "axom_utils/TimeofdayTimer.hpp"
+  #ifdef WIN32
+    #include "axom_utils/TickCountTimer.hpp"
+  #else
+    #include "axom_utils/TimeofdayTimer.hpp"
+  #endif
 #endif
 
 namespace {
 #ifdef AXOM_USE_CXX11
   typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
 #else
-  typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+  #ifdef WIN32
+    typedef axom::utilities::detail::TickCountTimer HighPrecisionTimer;
+  #else
+    typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+  #endif
 #endif
 }
 
@@ -33,12 +51,12 @@ namespace axom {
 namespace utilities {
 
 /*!
- *******************************************************************************
  * \brief A simple Timer class to measure execution time.
  *
  * \note The actual timing functionality is implemented using a HighPrecisionTimer
- *  instance.  These are located in the detail namespace using the chrono library in C++11
- *  and glibc gettimeofday() otherwise.
+ *  instance.  These are located in the detail namespace 
+ *  using the chrono library in C++11, GetTickCount64() on Windows 
+ *  and glibc's gettimeofday() otherwise.
  *
  *  \note We might want to extend the functionality of the timer class
  *   by making HighPrecisionTimer a template parameter.
@@ -70,19 +88,15 @@ namespace utilities {
  *     t.reset();
  *
  *  \endcode
- *******************************************************************************
  */
-
 class Timer
 {
 public:
 
   /*!
-   *****************************************************************************
    * \brief Default constructor.
    * \param startRunning Indicates whether to start the timer
    *        during construction (default is false)
-   *****************************************************************************
    */
   Timer(bool startRunning = false): m_running(startRunning)
   {
@@ -91,32 +105,24 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Starts the timer.Sets the start time of this Timer instance.
-   *****************************************************************************
    */
   void start() { m_running = true; m_hpTimer.start(); }
 
   /*!
-   *****************************************************************************
    * \brief Stops the timer. Sets the end time of this Timer instance.
-   *****************************************************************************
    */
   void stop() { m_hpTimer.stop(); m_running = false; }
 
   /*!
-   *****************************************************************************
    * \brief Returns the elapsed time in seconds.
    * \return t the elapsed time in seconds.
-   *****************************************************************************
    */
   double elapsed() { return elapsedTimeInSec();};
 
   /*!
-   *****************************************************************************
    * \brief Returns the elapsed time in seconds.
    * \return t the elapsed time in seconds.
-   *****************************************************************************
    */
   double elapsedTimeInSec()
   {
@@ -126,10 +132,8 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the elapsed time in milliseconds.
    * \return t the elapsed time in milliseconds.
-   *****************************************************************************
    */
   double elapsedTimeInMilliSec()
   {
@@ -139,10 +143,8 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the elapsed time in microseconds.
    * \return t the elapsed time in microseconds.
-   *****************************************************************************
    */
   double elapsedTimeInMicroSec()
   {
@@ -152,10 +154,8 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Resets the timer.
    * \post this->elapsed()==0.0
-   *****************************************************************************
    */
   void reset() { m_running = false; m_hpTimer.reset(); }
 

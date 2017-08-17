@@ -43,6 +43,8 @@
  */
 
 
+#include "axom/config.hpp"
+
 #include <cmath>
 #include <string>
 #include <iomanip>

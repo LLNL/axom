@@ -23,7 +23,6 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Lagrange Finite Element definition for the Linear Hexahedron
  *
  * \verbatim
@@ -43,7 +42,6 @@ namespace mint {
  * \endverbatim
  *
  * \see ShapeFunction
- *******************************************************************************
  */
 template < >
 class Lagrange< MINT_HEX > : public ShapeFunction< Lagrange< MINT_HEX > >

@@ -64,7 +64,7 @@ namespace {
   }
 }
 
-TEST(gtest_slam_relation_dynamic_variable,construct_empty)
+TEST(slam_relation_dynamic_variable,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be true.");
 
@@ -73,7 +73,7 @@ TEST(gtest_slam_relation_dynamic_variable,construct_empty)
   EXPECT_TRUE(emptyRel.isValid(true));
 }
 
-TEST(gtest_slam_relation_dynamic_variable,construct_uninitialized)
+TEST(slam_relation_dynamic_variable,construct_uninitialized)
 {
   SLIC_INFO("Testing uninitialized relation.  isValid() should be false.");
 
@@ -87,7 +87,7 @@ TEST(gtest_slam_relation_dynamic_variable,construct_uninitialized)
 
 
 
-TEST(gtest_slam_relation_dynamic_variable,construct_relation)
+TEST(slam_relation_dynamic_variable,construct_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
@@ -110,7 +110,7 @@ TEST(gtest_slam_relation_dynamic_variable,construct_relation)
 
 /// Tests for data access
 
-TEST(gtest_slam_relation_dynamic_variable,iterate_relation)
+TEST(slam_relation_dynamic_variable,iterate_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
@@ -209,9 +209,10 @@ TEST(gtest_slam_relation_dynamic_variable,iterate_relation)
     }
   }
 #else
-  SLIC_WARNING("Must compile with boost enabled to test iterators")
+  SLIC_WARNING("Must compile with boost enabled to test iterators");
 #endif
 }
+
 
 
 //----------------------------------------------------------------------

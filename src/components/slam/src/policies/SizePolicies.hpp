@@ -84,7 +84,7 @@ namespace policies {
 
     inline IntType operator ()() const { return size(); }
 
-    inline IntType          empty() const { return INT_VAL == IntType(); }
+    inline bool             empty() const { return INT_VAL == IntType(); }
     inline bool             isValid(bool) const { return INT_VAL >= IntType(); } // We do not (currently) allow negatively sized sets
   };
 
@@ -106,7 +106,7 @@ namespace policies {
 
     inline IntType          size() const { return DEFAULT_VALUE; }
     inline IntType operator ()()  const { return size(); }
-    inline IntType          empty() const { return true; }
+    inline bool             empty() const { return true; }
     inline bool             isValid(bool) const { return true; }
   };
 

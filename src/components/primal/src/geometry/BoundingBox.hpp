@@ -29,40 +29,32 @@ class BoundingBox;
 ///@{
 
 /*!
- *******************************************************************************
  * \brief Equality comparison operator for bounding boxes.
  * Two bounding boxes are equal when they have the same bounds
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 bool operator==( const BoundingBox< T, NDIMS > & lhs,
                  const BoundingBox< T, NDIMS >& rhs   );
 
 /*!
- *******************************************************************************
  * \brief Inequality comparison operator for bounding boxes.
  * Two bounding boxes are unequal when they have different bounds
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 bool operator!=( const BoundingBox< T, NDIMS > & lhs,
                  const BoundingBox< T, NDIMS >& rhs   );
 
 /*!
- *******************************************************************************
  * \brief Overloaded output operator for bounding boxes
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 std::ostream& operator<<( std::ostream & os,
-                          const BoundingBox< T,NDIMS >& pt );
+                          const BoundingBox< T,NDIMS >& bb );
 
 ///@}
 
 /*!
- *******************************************************************************
  * \brief Type trait to find highest and lowest values for a given type.
- *******************************************************************************
  */
 
 // NOTE: numeric_limits::min() for floats and doubles returns the smallest
@@ -91,10 +83,8 @@ struct ValueRange
 
 #ifndef AXOM_USE_CXX11
 /*!
- *******************************************************************************
  * \brief Template specialization of ValueRange for float types
  * \note Only necessary for pre-CXX11
- *******************************************************************************
  */
 template < >
 struct ValueRange< float >
@@ -105,10 +95,8 @@ struct ValueRange< float >
 };
 
 /*!
- *******************************************************************************
  * \brief Template specialization of ValueRange for double types
  * \note Only necessary for pre-CXX11
- *******************************************************************************
  */
 template < >
 struct ValueRange< double >
@@ -120,7 +108,6 @@ struct ValueRange< double >
 #endif  // AXOM_USE_CXX11
 
 /*!
- *******************************************************************************
  * \class
  *
  * \brief BoundingBox represents and axis-aligned bounding box defined by
@@ -128,7 +115,6 @@ struct ValueRange< double >
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
- *******************************************************************************
  */
 template < typename T,int NDIMS >
 class BoundingBox
@@ -142,20 +128,16 @@ public:
 public:
 
   /*!
-   *****************************************************************************
    * \brief Constructor. Creates a bounding box with an invalid bound
    * The lower bound is set to the greatest possible point and the upper bound
    * is set to the smallest possible point.  This way adding any point resets
    * the bounds to a valid range.
-   *****************************************************************************
    */
   BoundingBox(): m_min( PointType( ValueRange< T >::highest() ) ),
     m_max( PointType( ValueRange< T >::lowest() ) ) { }
 
   /*!
-   *****************************************************************************
    * \brief Constructor. Creates a bounding box containing a single point
-   *****************************************************************************
    */
   BoundingBox( const PointType& pt )
     : m_min( pt), m_max( pt) { }
@@ -172,134 +154,105 @@ public:
   BoundingBox(PointType *pts, int n);
 
   /*!
-   *****************************************************************************
    * \brief Constructor. Creates a bounding box with a given min and max point
    *  The code ensures that the bounds are valid.
-   *****************************************************************************
    */
   BoundingBox( const PointType& lowerPt, const PointType& upperPt )
     : m_min( lowerPt), m_max( upperPt)
   { this->checkAndFixBounds(); }
 
   /*!
-   *****************************************************************************
    * \brief Copy Constructor.
    * \param [in] other The bounding box to copy
-   *****************************************************************************
    */
   BoundingBox( const BoundingBox& other ) { *this = other; };
 
   /*!
-   *****************************************************************************
    * \brief Destructor.
-   *****************************************************************************
    */
   ~BoundingBox() { }
 
   /*!
-   *****************************************************************************
    * \brief Resets the bounds to those of the default constructor
    * \note This invalidates the bounding box (i.e. isValid() will be false)
-   *****************************************************************************
    */
   void clear();
 
   /*!
-   *****************************************************************************
    * \brief Returns const reference to the min corner of the bounding box.
    * \return const reference to the min corner of the bounding box.
-   *****************************************************************************
    */
   const PointType& getMin() const { return m_min; };
 
   /*!
-   *****************************************************************************
    * \brief Returns const reference to the max corner of the bounding box.
    * \return const reference to the max corner of the bounding box.
-   *****************************************************************************
    */
   const PointType& getMax() const { return m_max; };
 
   /*!
-   *****************************************************************************
    * \brief Returns the centroid (midpoint) of the bounding box.
    * \return Point at the bounding box centroid.
-   *****************************************************************************
    */
   PointType getCentroid() const { return PointType::midpoint(m_min, m_max); }
 
   /*!
-   *****************************************************************************
    * \brief Returns a vector from the min to the max points of the bounding box
    * \return Vector from min point to max point of bounding box.
-   *****************************************************************************
    */
   VectorType range() const { return VectorType(m_min, m_max); };
 
   /*!
-   *****************************************************************************
    * \brief Updates bounds to include the provided point.
    * \param [in] pt to include.
-   *****************************************************************************
    */
   template < typename OtherType >
   void addPoint(const Point< OtherType,NDIMS >& pt);
 
   /*!
-   *****************************************************************************
    * \brief Updates bounds to include the provided bounding box.
    * Convenience function -- equivalent to adding the min and max point of bbox
    * \param [in] bbox to include.
-   *****************************************************************************
    */
   template < typename OtherType >
   void addBox(const BoundingBox< OtherType,NDIMS >& bbox);
 
   /*!
-   *****************************************************************************
    * \brief Returns the dimension of the ambient space for this bounding box.
    * \return d the dimension of this bounding box instance.
    * \post d >= 1.
-   *****************************************************************************
    */
   int dimension() const { return NDIMS; };
 
   /*!
-   *****************************************************************************
    * \brief Finds the longest dimension of the bounding box
    * \return idx the index of the longest dimension.
    * \post idx >= 0 < NDIMS
    * \note In the case of ties, where the bounding box has more than one side
    *  with the same length, the code picks the first dimension as the longest
    *  dimension.
-   *****************************************************************************
    */
   int getLongestDimension() const;
 
   /*!
-   *****************************************************************************
    * \brief Intersects the current bounding box with another bounding box
    * \param [in] otherBox The other box to intersect
    * \note If the intersection is empty, the bounding box will be cleared
    * \return A reference to the bounding box after it has been intersected
-   *****************************************************************************
    */
   BoundingBox& intersect(const BoundingBox& otherBox);
 
   /*!
-   *****************************************************************************
    * \brief Expands the lower and upper bounds by the given amount.
    * \param [in] expansionAmount an absolute amount to expand
    * \note Moves min & max point expansionAmount away from the center.
    * \note This function checks to ensure the bounding box is valid afterwards.
    * \note If expansionAmount is negative, the bounding box will contract
    * \return A reference to the bounding box after it has been expanded
-   *****************************************************************************
    */
   BoundingBox& expand(T expansionAmount);
 
   /*!
-   *****************************************************************************
    * \brief Scales the bounding box about its center by a given amount.
    * \param [in] scaleFactor the multiplicative factor by which to scale
    * \note Checks to ensure that the bounding box is valid after inflation.
@@ -308,30 +261,24 @@ public:
    * \note The sign of the shrinkFactor has no effect since we are shrinking
    *  towards the center, and we fix the bounds after shrinking
    *  \return A reference to the bounding box after it has been scaled
-   *****************************************************************************
    */
   BoundingBox& scale(double scaleFactor);
 
   /*!
-   *****************************************************************************
    * \brief Shifts the bounding box by a fixed displacement.
    * \param [in] displacement the amount with which to move the bounding box
    * \return A reference to the bounding box after it has been shifted
-   *****************************************************************************
    */
   BoundingBox& shift(const VectorType& displacement);
 
   /*!
-   *****************************************************************************
    * \brief Overloaded assignment operator.
    * \param [in] rhs bounding box instance on the right-hand side
    * \return
-   *****************************************************************************
    */
   BoundingBox& operator=(const BoundingBox& rhs );
 
   /*!
-   *****************************************************************************
    * \brief Checks whether the box contains the point
    * \param [in] otherPt the point that we are checking
    * \return status true if point inside the box, else false.
@@ -339,48 +286,40 @@ public:
    * \note This function assumes all intervals are closed
    * (i.e. contain their boundaries).  We may need to deal with open
    * and half open boundaries in the future.
-   *****************************************************************************
    */
   template < typename OtherType >
   bool contains( const Point< OtherType, NDIMS >& otherPt) const;
 
   /*!
-   *****************************************************************************
    * \brief Checks whether the box fully contains another bounding box
    * \param [in] otherBB the bounding box that we are checking
    * \return status true if bb is inside the box, else false.
    * \note We are allowing the other bounding box to have a different coordinate
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
-   *****************************************************************************
    */
   template < typename OtherType >
   bool contains( const BoundingBox< OtherType, NDIMS >& otherBB) const;
 
   /*!
-   *****************************************************************************
    * \param [in] otherBB the bounding box that we are checking.
    * \return status true if bb intersects otherBB, else false.
    * \note We are allowing the other bounding box to have a different coordinate
    *  type. This should work as long as the two Ts are comparable with
    *  operator<().
-   *****************************************************************************
    */
   template < typename OtherType >
   bool intersectsWith( const BoundingBox< OtherType, NDIMS >& otherBB ) const;
 
   /*!
-   *****************************************************************************
    * \brief Checks that we have a valid bounding box.
    * \note A bounding box is valid when the length of each dimension is greater
    *  than or equal to zero.
    * \return status true if point inside the box, else false.
-   *****************************************************************************
    */
   bool isValid() const;
 
   /*!
-   *****************************************************************************
    * \brief Subdivides this bounding box instance into two sub-boxes by
    *  splitting along the given dimension. If a dimension is not provided, this
    *  method will split the bounding box along the longest dimension.
@@ -389,16 +328,13 @@ public:
    * \param [in] dimension the dimension to split along (optional)
    * \pre dimension >= -1 && dimension < NDIMS
    * \note if dimension==-1, the bounding box is split along its longest edge.
-   *****************************************************************************
    */
   void bisect( BoxType& right, BoxType& left, int dimension=-1) const;
 
   /*!
-   *****************************************************************************
    * \brief Simple formatted print of a bounding box instance
    * \param os The output stream to write to
    * \return A reference to the modified ostream
-   *****************************************************************************
    */
   std::ostream& print(std::ostream& os) const;
 
@@ -406,7 +342,6 @@ public:
   /// @{
 
   /*!
-   *****************************************************************************
    * \brief Returns the list of points of a 2-D BoundingBox instance.
    * \param [in]  bb user-supplied instance of the bounding box.
    * \param [out] pnts the list of points
@@ -422,13 +357,11 @@ public:
    *     0      1
    *
    * \endverbatim
-   *****************************************************************************
    */
   static void getPoints( const BoundingBox< T,2 >& bb,
                          std::vector< Point< T,2 > >& pnts );
 
   /*!
-   *****************************************************************************
    * \brief Returns the list of points of a 3-D BoundingBox instance.
    * \param [in]  bb user-supplied instance of the bounding box.
    * \param [out] pnts the list of points
@@ -448,7 +381,6 @@ public:
    *      1          2
    *
    * \endverbatim
-   *****************************************************************************
    */
   static void getPoints( const BoundingBox< T,3 >& bb,
                          std::vector< Point< T,3 > >& pnts );
@@ -458,27 +390,21 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Sets the min point for this bounding box instance.
    * \param [in] newMin the new min point.
-   *****************************************************************************
    */
   inline void setMin( const PointType& newMin ) { m_min = newMin; };
 
   /*!
-   *****************************************************************************
    * \brief Sets the max point for this bounding box instance.
    * \param [in] newMax the new max point.
-   *****************************************************************************
    */
   inline void setMax( const PointType& newMax ) { m_max = newMax; };
 
   /*!
-   *****************************************************************************
    * \brief Ensures that the bounds are valid.
    * A bounding box is valid when its extent in each dimension
    * (max coordinate minus min coordinate) is greater than or equal to zero
-   *****************************************************************************
    */
   void checkAndFixBounds();
 
@@ -820,8 +746,7 @@ bool operator!=( const BoundingBox< T, NDIMS >& lhs,
 template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const BoundingBox< T,NDIMS > & bb)
 {
-  bb.print(os);
-  return os;
+  return bb.print(os);
 }
 
 } /* namespace primal */

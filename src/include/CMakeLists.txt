@@ -20,14 +20,13 @@ set( axom_headers
 ## set include path for build and install spaces
 set(build_axom_includes ${HEADER_INCLUDES_DIRECTORY}/axom )
 set(install_axom_includes ${CMAKE_INSTALL_PREFIX}/include/axom )
-set(blt_dir ${CMAKE_SOURCE_DIR}/blt/cmake)
 
 ## custom target to copy the include headers
 add_custom_target( copy_axom_includes ALL
         COMMAND ${CMAKE_COMMAND}
                  -DOUTPUT_DIRECTORY=${build_axom_includes}
                  -DLIBHEADERS="${axom_headers}"
-                 -P ${blt_dir}/copy_headers.cmake
+                 -P ${BLT_ROOT_DIR}/cmake/copy_headers.cmake
 
         DEPENDS
             ${axom_headers}
@@ -43,3 +42,4 @@ include_directories( ${build_axom_includes} )
 
 ## add rules for the make install target
 install( FILES ${axom_headers} DESTINATION ${install_axom_includes} )
+install( FILES ${build_axom_includes}/config.hpp DESTINATION ${install_axom_includes} )

@@ -14,6 +14,9 @@
 // axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
+
+#include "axom_utils/Utilities.hpp"  // For isLittleEndian() and swapEndian()
+
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -72,7 +75,7 @@ bool STLReader::isAsciiFormat() const
 
     // Find out the file size
     ifs.seekg(0, ifs.end);
-    axom::common::int32 fileSize = ifs.tellg();
+    axom::common::int32 fileSize = static_cast<axom::common::int32>(ifs.tellg());
     
     const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(axom::common::int32));
     if(fileSize < totalHeaderSize)
@@ -83,6 +86,11 @@ bool STLReader::isAsciiFormat() const
     ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
     ifs.read( (char*)&numTris, sizeof(axom::common::int32));
     
+    if(! axom::utilities::isLittleEndian() )
+    {
+      numTris = axom::utilities::swapEndian(numTris);
+    }
+
     // Check if the size matches our expectation
     int expectedBinarySize = totalHeaderSize + (numTris * BINARY_TRI_SIZE);
     return (fileSize != expectedBinarySize);
@@ -125,7 +133,6 @@ void STLReader::readBinarySTL()
   //    followed by a 32 bit int encoding the number of faces
   //    followed by the triangles, each of which is 50 bytes (BINARY_TRI_SIZE)
 
-
   // A local union data structure for triangles in a binary STL
   union BinarySTLTri {
     axom::common::int8 raw[BINARY_TRI_SIZE];
@@ -136,13 +143,19 @@ void STLReader::readBinarySTL()
     };
   } tri;
 
-  std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
+  bool const isLittleEndian = axom::utilities::isLittleEndian();
 
-  // skip the header
+  // Open binary file, skip the header
+  std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
   ifs.seekg(BINARY_HEADER_SIZE);
 
   // read the num faces and reserve room for the vertex positions
   ifs.read( (char*)&m_num_faces, sizeof(axom::common::int32));
+
+  if(! isLittleEndian )
+  {
+    m_num_faces = axom::utilities::swapEndian(m_num_faces);
+  }
 
   m_num_nodes = m_num_faces * 3;
   m_nodes.reserve( m_num_nodes * 3);
@@ -154,7 +167,11 @@ void STLReader::readBinarySTL()
 
     for(int j=0; j<9; ++j)
     {
-      m_nodes.push_back( static_cast<double>( tri.vert[j]));
+      float coord = isLittleEndian
+          ? tri.vert[j]
+          : axom::utilities::swapEndian(tri.vert[j]);
+
+      m_nodes.push_back( static_cast<double>( coord) );
     }
   }
 

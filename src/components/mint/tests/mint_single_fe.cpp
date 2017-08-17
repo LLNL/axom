@@ -34,7 +34,7 @@
 // C/C++ includes
 #include <cmath>   // for sin(), cos(), sqrt(), etc.
 
-//#define MINT_FEM_DEBUG
+#define MINT_FEM_DEBUG
 
 using namespace axom;
 
@@ -44,11 +44,9 @@ using namespace axom;
 namespace {
 
 /*!
- *******************************************************************************
  * \brief Helper method to calculate the centroid of Finite Element instance.
  * \param [in] fe pointer to a finite element instance.
  * \param [out] centroid buffer to store the centroid
- *******************************************************************************
  */
 void compute_centroid( mint::FiniteElement* fe, double* centroid )
 {
@@ -75,7 +73,7 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 
     for ( int i=0; i < ndims; ++i ) {
 
-      typedef typename numerics::Matrix< double >::IndexType IndexType;
+      typedef numerics::Matrix< double >::IndexType IndexType;
       IndexType p = 0;
       IndexType N = 0;
       const double* xp_i = physical_nodes.getRow(i,p,N);
@@ -94,7 +92,6 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 }
 
 /*!
- *******************************************************************************
  * \brief Helper method to construct a single element (unstructured) mesh of
  *  the given cell type.
  *
@@ -116,7 +113,6 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
  *
  * \see get_fe_mesh()
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 mint::UnstructuredMesh< CellType >* single_element_mesh( )
@@ -195,7 +191,6 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
 }
 
 /*!
- *******************************************************************************
  * \brief Constructs a finite element mesh consisting of a single element.
  *
  * \param [out] m pointer to the mesh object
@@ -209,7 +204,6 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
  *
  * \see single_element_mesh()
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void get_fe_mesh( mint::UnstructuredMesh< CellType >*& m,
@@ -235,14 +229,12 @@ void get_fe_mesh( mint::UnstructuredMesh< CellType >*& m,
 }
 
 /*!
- *******************************************************************************
  * \brief Ensures the FiniteElement instance is properly constructed by
  *  checking the underlying ShapeFunction.
  *
  * \param [in] fe pointer to the finite element instance to test
  *
  * \pre fe != AXOM_NULLPTR
- *******************************************************************************
  */
 template < typename ShapeFunctionType >
 void check_reference_element( mint::FiniteElement* fe )
@@ -299,7 +291,6 @@ void check_reference_element( mint::FiniteElement* fe )
 }
 
 /*!
- *******************************************************************************
  * \brief Checks the mapping from reference space to physical space.
  *
  *  The test loops over all the nodes of the reference element, maps them to
@@ -311,7 +302,6 @@ void check_reference_element( mint::FiniteElement* fe )
  * \pre fe != AXOM_NULLPTR
  *
  * \see check_forward_map
- *******************************************************************************
  */
 void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
@@ -372,7 +362,6 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 }
 
 /*!
- *******************************************************************************
  * \brief Checks the mapping from physical space to reference space.
  *
  *  The test loops over all the nodes of the element in physical space, maps
@@ -384,7 +373,6 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
  * \pre fe != AXOM_NULLPTR
  *
  * \see check_inverse_map
- *******************************************************************************
  */
 void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
@@ -446,7 +434,6 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 }
 
 /*!
- *******************************************************************************
  * \brief Performs basic checks on a FiniteElement instance bound to a
  *  corresponding basis function.
  *
@@ -454,7 +441,6 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
  *
  * \see check_reference_element()
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void check_shape( )
@@ -488,7 +474,6 @@ void check_shape( )
 }
 
 /*!
- *******************************************************************************
  * \brief Ensures the jacobian is positive within the element by evaluating
  *  the determinant of the jacobian at the element nodes, center and computed
  *  interior points.
@@ -497,7 +482,6 @@ void check_shape( )
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void check_jacobian( double TOL=1.e-9 )
@@ -567,7 +551,6 @@ void check_jacobian( double TOL=1.e-9 )
 }
 
 /*!
- *******************************************************************************
  * \brief Checks the forward map of a FiniteElement object.
  *
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
@@ -576,7 +559,6 @@ void check_jacobian( double TOL=1.e-9 )
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
  *
  * \see test_forward_map()
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void check_forward_map( double TOL=1.e-9 )
@@ -608,7 +590,6 @@ void check_forward_map( double TOL=1.e-9 )
 }
 
 /*!
- *******************************************************************************
  * \brief Checks the inverse map of a FiniteElement object.
  *
  * \param [in] TOL optional user-supplied tolerange. Default is 1.e-9.
@@ -617,7 +598,6 @@ void check_forward_map( double TOL=1.e-9 )
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
  *
  * \see test_inverse_map()
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void check_inverse_map( double TOL=1.e-9 )
@@ -649,14 +629,12 @@ void check_inverse_map( double TOL=1.e-9 )
 }
 
 /*!
- *******************************************************************************
  * \brief Checks correctness of the inverse map for point-in-cell queries.
  *
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void point_in_cell( double TOL=1.e-9 )
@@ -763,7 +741,6 @@ void point_in_cell( double TOL=1.e-9 )
 }
 
 /*!
- *******************************************************************************
  * \brief Computes a fake node-centered field, using the nodal coordinates, to
  *  test interpolation within the element.
  *
@@ -773,7 +750,6 @@ void point_in_cell( double TOL=1.e-9 )
  * \return f the computed field.
  *
  * \see check_interp()
- *******************************************************************************
  */
 double analytic_function( const double* x, int N )
 {
@@ -785,7 +761,6 @@ double analytic_function( const double* x, int N )
 }
 
 /*!
- *******************************************************************************
  * \brief Given field values and associated weights at the nodes of an element,
  *  this method interpolates the field.
  *
@@ -799,7 +774,6 @@ double analytic_function( const double* x, int N )
  * \return finterp the interpolated field value
  *
  * \see check_interp()
- *******************************************************************************
  */
 double interp( const double* f, const double* wgts, int N )
 {
@@ -814,7 +788,6 @@ double interp( const double* f, const double* wgts, int N )
 }
 
 /*!
- *******************************************************************************
  * \brief Checks the interpolation within the element against a field that
  *  is defined analytically.
  *
@@ -822,7 +795,6 @@ double interp( const double* f, const double* wgts, int N )
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *******************************************************************************
  */
 template < int BasisType, int CellType >
 void check_interp( double TOL=1.e-9 )
@@ -897,7 +869,7 @@ void check_interp( double TOL=1.e-9 )
 //------------------------------------------------------------------------------
 TEST( mint_single_fe, check_override_max_newton )
 {
-  typedef typename mint::UnstructuredMesh< MINT_QUAD > MeshType;
+  typedef mint::UnstructuredMesh< MINT_QUAD > MeshType;
 
   const int MAX_NEWTON = 42; // test value to override max newton
 
@@ -918,6 +890,88 @@ TEST( mint_single_fe, check_override_max_newton )
 }
 
 //------------------------------------------------------------------------------
+TEST( mint_single_fe, matrix_constructor_deepcopy )
+{
+  // STEP 0: constants used in the test
+  const int NROWS = 2;
+  const int NCOLS = 3;
+  const int NSIZE = NROWS * NCOLS;
+
+  // STEP 1: setup element coordinates matrix
+  numerics::Matrix< double > M( NROWS, NCOLS );
+  M.fillColumn( 0, 1.0 );
+  M.fillColumn( 1, 2.0 );
+  M.fillColumn( 2, 3.0 );
+
+  // STEP 2: construct FE object by making a deep-copy
+  mint::FiniteElement fe( M, MINT_TRIANGLE );
+  EXPECT_FALSE( fe.usesExternalBuffer() );
+
+  // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
+  double* physical_nodes = fe.getPhysicalNodes();
+  EXPECT_FALSE( physical_nodes == M.data() );
+
+  // STEP 4: ensure the contents are the same
+  const double* expected = M.data();
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+  }
+
+  // STEP 5: change the matrix data
+  M.swapColumns( 0, 2 );
+  M.swapColumns( 1, 2 );
+
+  // STEP 6: ensure the contents *are not* the same
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_FALSE( utilities::isNearlyEqual( M.data()[i], physical_nodes[i] ) );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_single_fe, matrix_constructor_shallowcopy)
+{
+  // STEP 0: constants used in the test
+  const int NROWS = 2;
+  const int NCOLS = 3;
+  const int NSIZE = NROWS * NCOLS;
+
+  // STEP 1: setup element coordinates matrix
+  numerics::Matrix< double > M( 2, 3 );
+  M.fillColumn( 0, 1.0 );
+  M.fillColumn( 1, 2.0 );
+  M.fillColumn( 2, 3.0 );
+
+  // STEP 2: construct FE object by making a shallow-copy
+  mint::FiniteElement *fe = new mint::FiniteElement( M, MINT_TRIANGLE, true );
+  EXPECT_TRUE( fe->usesExternalBuffer() );
+
+  // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
+  double* physical_nodes = fe->getPhysicalNodes();
+  EXPECT_TRUE( physical_nodes == M.data() );
+
+  // STEP 4: ensure the contents are the same
+  const double* expected = M.data();
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+  }
+
+  // STEP 5: change the matrix data
+  M.swapColumns( 0, 2 );
+  M.swapColumns( 1, 2 );
+
+  // STEP 6: ensure the contents *still* the same
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+  }
+
+  // STEP 7: delete the FE object, ensure Matrix buffer is not corrupted
+  delete fe;
+  fe = AXOM_NULLPTR;
+  EXPECT_FALSE( M.data()==AXOM_NULLPTR );
+}
+
+//------------------------------------------------------------------------------
 TEST( mint_single_fe, check_fe_shape_function )
 {
   check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
@@ -926,6 +980,9 @@ TEST( mint_single_fe, check_fe_shape_function )
   check_shape< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_shape< MINT_LAGRANGE_BASIS, MINT_HEX27 > ( );
 }
 
 //------------------------------------------------------------------------------
@@ -937,6 +994,9 @@ TEST( mint_single_fe, check_fe_jacobian )
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  check_jacobian< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -948,6 +1008,9 @@ TEST( mint_single_fe, check_fe_forward_map )
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
+
+  check_forward_map< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -959,6 +1022,9 @@ TEST( mint_single_fe, check_fe_inverse_map )
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
+
+  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
@@ -970,6 +1036,9 @@ TEST( mint_single_fe, check_fe_point_in_cell )
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+
+  point_in_cell< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX27 >( 1.e-7 );
 }
 
 //------------------------------------------------------------------------------
@@ -981,6 +1050,9 @@ TEST( mint_single_fe, check_fe_interp )
   check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >( 1.e-24 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >( 1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-12 );
+
+  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( 1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX27 >( 1.e-24 );
 }
 
 //------------------------------------------------------------------------------

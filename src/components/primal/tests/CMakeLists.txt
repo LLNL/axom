@@ -16,10 +16,12 @@ set( primal_tests
     primal_closest_point.cpp
     primal_intersect_impl.cpp
     primal_intersect.cpp
+    primal_morton.cpp
     primal_numeric_array.cpp
     primal_compute_bounding_box.cpp
     primal_orientation.cpp
     primal_point.cpp
+    primal_rectangular_lattice.cpp
     primal_squared_distance.cpp
     primal_triangle.cpp
     primal_vector.cpp
@@ -34,7 +36,7 @@ foreach ( test ${primal_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON primal slic gtest
+        DEPENDS_ON fmt primal slic gtest
        )
 
    blt_add_test(

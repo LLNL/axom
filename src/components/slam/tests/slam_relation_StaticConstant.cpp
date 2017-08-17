@@ -203,6 +203,7 @@ namespace policies = axom::slam::policies;
       }
     }
 #else
+    AXOM_DEBUG_VAR(rel);
     SLIC_INFO("Skipping iterator tests when boost unavailable");
 #endif
   }
@@ -239,6 +240,7 @@ namespace policies = axom::slam::policies;
       }
     }
 #else
+    AXOM_DEBUG_VAR(rel);
     SLIC_INFO("Skipping iterator tests when boost unavailable");
 #endif
   }
@@ -246,7 +248,7 @@ namespace policies = axom::slam::policies;
 } // end anonymous namespace
 
 
-TEST(gtest_slam_relation_static_constant,construct_empty)
+TEST(slam_relation_static_constant,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be false.");
 
@@ -254,7 +256,7 @@ TEST(gtest_slam_relation_static_constant,construct_empty)
   EXPECT_FALSE(emptyRel.isValid());
 }
 
-TEST(gtest_slam_relation_static_constant,construct_uninitialized)
+TEST(slam_relation_static_constant,construct_uninitialized)
 {
   SLIC_INFO("Testing uninitialized relation.  isValid() should be false.");
 
@@ -265,7 +267,7 @@ TEST(gtest_slam_relation_static_constant,construct_uninitialized)
   EXPECT_FALSE(emptyRel.isValid(true));
 }
 
-TEST(gtest_slam_relation_static_constant,construct_relation)
+TEST(slam_relation_static_constant,construct_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
@@ -292,7 +294,7 @@ TEST(gtest_slam_relation_static_constant,construct_relation)
 }
 
 
-TEST(gtest_slam_relation_static_constant,construct_builder)
+TEST(slam_relation_static_constant,construct_builder)
 {
   SLIC_INFO("Checking if we can instantiate a concrete StaticRelation (constant).");
 
@@ -326,7 +328,7 @@ TEST(gtest_slam_relation_static_constant,construct_builder)
 
 /// Tests for out-of-bounds access
 
-TEST(gtest_slam_relation_static_constant,out_of_bounds_empty)
+TEST(slam_relation_static_constant,out_of_bounds_empty)
 {
   SLIC_INFO("Testing access on empty relation -- code is expected to assert and die.");
 
@@ -345,7 +347,7 @@ TEST(gtest_slam_relation_static_constant,out_of_bounds_empty)
 
 }
 
-TEST(gtest_slam_relation_static_constant,out_of_bounds_initialized)
+TEST(slam_relation_static_constant,out_of_bounds_initialized)
 {
   SLIC_INFO("Testing out of bounds access on initialized relation.  Code is expected to assert and die.");
 
@@ -372,7 +374,7 @@ TEST(gtest_slam_relation_static_constant,out_of_bounds_initialized)
 
 /// Tests that vary the relation's policies (STL vs. array indirection and compile time vs. runtime offset striding)
 
-TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
+TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and STL Indirection");
 
@@ -429,7 +431,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_STLIndirection)
   iterateRelation_range(builderRel);
 }
 
-TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
+TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and array Indirection");
 
@@ -487,7 +489,7 @@ TEST(gtest_slam_relation_static_constant,runtime_stride_ArrayIndirection)
 }
 
 
-TEST(gtest_slam_relation_static_constant,compileTime_stride_ArrayIndirection)
+TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and array Indirection");
 

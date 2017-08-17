@@ -9,20 +9,24 @@
  */
 
 /*!
- *******************************************************************************
  * \file slic.cpp
  *
- * \date Jun 18, 2015
- * \author George Zagaris (zagaris2@llnl.gov)
- *
- *******************************************************************************
  */
 
 #include "slic/slic.hpp"
 
 #include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
-#include <execinfo.h> // for backtrace()
+
+#ifdef WIN32
+  #define NOMINMAX
+  #include <Windows.h>
+  #include <WinBase.h>
+  #include <DbgHelp.h>
+#else
+  #include <execinfo.h> // for backtrace()
+#endif
+
 
 namespace axom {
 namespace slic {
@@ -265,6 +269,41 @@ void finalize()
 }
 
 //------------------------------------------------------------------------------
+#ifdef WIN32
+ std::string stacktrace( )
+ {
+   void* stack[10];
+   std::ostringstream oss;
+
+   unsigned short frames;
+   SYMBOL_INFO  * symbol;
+   HANDLE         process;
+
+   process = GetCurrentProcess();
+
+   SymInitialize( process, NULL, TRUE );
+
+   frames               = CaptureStackBackTrace( 0, 10, stack, NULL );
+   symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
+   symbol->MaxNameLen   = 255;
+   symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+
+   oss << "\n** StackTrace of " << frames << " frames **\n";
+   for(int i = 0; i < frames; i++ )  {
+     char outString[512] ;
+     SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
+
+     sprintf_s(outString, "%i: %s - 0x%0X", frames - i - 1, symbol->Name, symbol->Address );
+     oss << outString << std::endl ;
+  }
+
+   free( symbol );
+   oss << "=====\n\n";
+
+   return ( oss.str() );
+ }
+
+#else
 std::string stacktrace( )
 {
   void* array[10];
@@ -282,6 +321,7 @@ std::string stacktrace( )
 
   return ( oss.str() );
 }
+#endif
 
 } /* namespace slic */
 

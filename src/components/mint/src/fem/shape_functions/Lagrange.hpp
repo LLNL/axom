@@ -26,14 +26,12 @@ namespace axom {
 namespace mint {
 
 /*!
- *******************************************************************************
  * \brief Defines the Lagrange family of Finite Elements
  *
  * \tparam CellType the cell type of the element, e.g., MINT_QUAD, etc.
  *
  * \note This is the default implementation. Only stubs are defined at this
  *  level.This class is specialized according to cell type.
- *******************************************************************************
  */
 template < int CellType >
 class Lagrange : public ShapeFunction< Lagrange< CellType > >
@@ -42,13 +40,11 @@ class Lagrange : public ShapeFunction< Lagrange< CellType > >
 public:
 
   /*!
-   *****************************************************************************
    * \brief Returns the cell type of this instance.
    * \return c the cell type, e.g., MINT_QUAD etc.
    * \see CellType.hpp
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getCellType()
   {
@@ -58,13 +54,11 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the Basis function type.
    * \return b the basis thpe, e.g., MINT_LAGRANGE_BASIS
    * \see FEBasisTypes.hpp
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getType()
   {
@@ -74,12 +68,10 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the number of degrees of freedom on this Finite Element.
    * \return nodfs the number of degrees of freedom.
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getNumDofs()
   {
@@ -89,13 +81,11 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the max number of newton iterations for this Finite Element
    * \return N the max number of newton iterations
    * \post N >= 1
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getMaxNewtonIters()
   {
@@ -105,13 +95,11 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the dimension of the reference element.
    * \return dim the dimension of the reference element
    * \post dim >= 1 && dim <= 3
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getDimension()
   {
@@ -121,12 +109,10 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the min coordinate of the element's reference space
    * \return min the min coordinate of the element's reference space, e.g., 0
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getMin()
   {
@@ -136,12 +122,10 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the max coordinate of the element's reference space
    * \return max the max coordinate of the element's reference space, e.g., 1
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static int getMax()
   {
@@ -151,14 +135,12 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the centroid of the reference element.
    *
    * \param [out] center ndims long buffer to store the centroid
    * \pre center != AXOM_NULLPTR
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static void getCenter( double* AXOM_NOT_USED(center) )
   {
@@ -167,7 +149,6 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Returns the coordinates of the reference element.
    *
    * \param [out] coords ndims*ndofs long buffer to store the coordinates
@@ -175,7 +156,6 @@ public:
    *
    * \note The coordinates are arranged in column-major flat array layout.
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static void getCoords( double* AXOM_NOT_USED(coords) )
   {
@@ -184,7 +164,6 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Computes the shape functions of the Finite Element at the given
    *  natural coordinates, \f$ \xi \f$
    *
@@ -195,7 +174,6 @@ public:
    * \pre phi != AXOM_NULLPTR
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static void computeShape( const double* AXOM_NOT_USED(nc),
                             double* AXOM_NOT_USED(phi) )
@@ -205,7 +183,6 @@ public:
   }
 
   /*!
-   *****************************************************************************
    * \brief Computes the shape function first derivatives for the Finite
    *  Element at the given natural coordinates, \f$ \xi \f$
    *
@@ -216,7 +193,6 @@ public:
    * \pre phidot != AXOM_NULLPTR
    *
    * \note This method is implemented in specialized instances.
-   *****************************************************************************
    */
   static void computeDerivatives( const double* AXOM_NOT_USED(nc),
                                   double* AXOM_NOT_USED(phidot) )
@@ -228,9 +204,7 @@ public:
 private:
 
   /*!
-   *****************************************************************************
    * \brief Checks if the CellType is valid and supported in the Lagrange basis.
-   *****************************************************************************
    */
   static void checkCellType( )
   {
@@ -252,11 +226,13 @@ private:
 } /* namespace axom */
 
 // Template Specializations for Lagrange
-#include "mint/lagrange_quad_4.hpp"
-#include "mint/lagrange_tri_3.hpp"
-#include "mint/lagrange_tetra_4.hpp"
+#include "mint/lagrange_hexa_27.hpp"
 #include "mint/lagrange_hexa_8.hpp"
 #include "mint/lagrange_prism_6.hpp"
 #include "mint/lagrange_pyra_5.hpp"
+#include "mint/lagrange_quad_4.hpp"
+#include "mint/lagrange_quad_9.hpp"
+#include "mint/lagrange_tetra_4.hpp"
+#include "mint/lagrange_tri_3.hpp"
 
 #endif /* MINT_LAGRANGE_SHAPEFUNCTION_HPP_ */

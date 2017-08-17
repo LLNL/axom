@@ -112,7 +112,7 @@ Add CMake macro definitions
 ------------------------------
 
 The top-level CMake directory `axom/src/cmake` contains a file called
-`CMakeConfigureFile.cmake` that defines macro constants for enabling
+`AxomConfig.cmake` that defines macro constants for enabling
 Axom components and setting third-party library (TPL) dependencies that 
 are used to enforce consistency for conditionally-compiled code. When a new
 component or dependency is added, that file must be modified by:

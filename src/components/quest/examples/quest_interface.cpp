@@ -9,14 +9,13 @@
  */
 
 /*!
- *******************************************************************************
  * \file quest_interface.cpp
  *
  * \brief Simple example that exercises the quest interface for point
  *        containment and signed distance queries.
- * \note This file assumes that MPI is enabled.  MPI usage is not guarded.
- *******************************************************************************
  */
+
+#include "axom_utils/Utilities.hpp"
 
 // Quest includes
 #include "quest/quest.hpp"
@@ -24,19 +23,24 @@
 // SLIC includes
 #include "slic/slic.hpp"
 
-#ifdef AXOM_USE_LUMBERJACK
-  #include "slic/LumberjackStream.hpp"
+#ifdef AXOM_USE_MPI
+  #include <mpi.h>
+
+  #ifdef AXOM_USE_LUMBERJACK
+    #include "slic/LumberjackStream.hpp"
+  #else
+    #include "slic/SynchronizedStream.hpp"
+  #endif
 #else
-  #include "slic/SynchronizedStream.hpp"
-#endif
+  #include "slic/GenericOutputStream.hpp"
+#endif  // AXOM_USE_MPI
+
 
 // C/C++ includes
 #include <cstdlib>   // for std::rand(), RAND_MAX
 #include <ctime>     // for time
 #include <iostream>  // for std::cout
 
-// MPI includes
-#include "mpi.h"
 
 using namespace axom;
 
@@ -80,7 +84,12 @@ void outputMeshStats()
 void runQuestDistance(const std::string& fileName, const CoordsVec& points)
 {
     const bool useDistance = true;
+
+  #ifdef AXOM_USE_MPI
     quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
+  #else
+    quest::initialize( fileName, useDistance, 3, 25, 20 );
+  #endif
 
     outputMeshStats();
 
@@ -135,7 +144,12 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
 {
     const bool useDistance = false;
     const int unusedVar = -1;
+
+  #ifdef AXOM_USE_MPI
     quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, unusedVar, unusedVar);
+  #else
+    quest::initialize( fileName, useDistance, 3, unusedVar, unusedVar );
+  #endif
 
     outputMeshStats();
 
@@ -186,7 +200,6 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
 
 
 /*!
- *******************************************************************************
  * \brief A simple example illustrating the use of the Quest C-Style interface.
  * \param [in] argc argument counter.
  * \param [in] argv argument vector.
@@ -195,15 +208,16 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
  * \note To run the example
  * \verbatim
  *
- *   [mpirun -np N] ./quest_interface <stl_file>
+ *   [mpirun -np N] ./quest_interface_ex <stl_file>
  *
  * \endverbatim
- *******************************************************************************
  */
 int main( int argc, char**argv )
 {
+#ifdef AXOM_USE_MPI
   // Initialize MPI
   MPI_Init( &argc, &argv );
+#endif
 
   // Initialize Logger
   axom::slic::initialize();
@@ -211,6 +225,7 @@ int main( int argc, char**argv )
 
   axom::slic::LogStream* logStream;
 
+#ifdef AXOM_USE_MPI
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef AXOM_USE_LUMBERJACK
     const int RLIMIT = 8;
@@ -218,15 +233,22 @@ int main( int argc, char**argv )
   #else
     logStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
   #endif
+#else
+    std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
+    logStream = new axom::slic::GenericOutputStream(&std::cout, fmt);
+#endif // AXOM_USE_MPI
 
   axom::slic::addStreamToAllMsgLevels( logStream );
 
   if(argc != 2)
   {
-      SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface <stl_file>");
+  #ifdef AXOM_USE_MPI
+      SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface_ex <stl_file>");
+  #else
+      SLIC_WARNING("Usage: ./quest_interface_ex <stl_file>");
+  #endif
       axom::slic::finalize();
-      MPI_Finalize();
-      exit(1);
+      axom::utilities::processAbort();
   }
 
   // Generate the query points
@@ -256,7 +278,9 @@ int main( int argc, char**argv )
 
   axom::slic::finalize();
 
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
+#endif
 
   return 0;
 }

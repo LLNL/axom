@@ -27,8 +27,7 @@
 #include "slam/Utilities.hpp"
 #include "slic/slic.hpp"
 
-#ifdef WINDOWS
-// Warning: not yet tested on windows
+#ifdef WIN32
     #include <direct.h>
     #define ChangeCurrentDir _chdir
 #else
@@ -51,7 +50,7 @@ namespace {
   const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 }
 
-TEST(gtest_slam_utilities,findingAncestorPaths)
+TEST(slam_utilities,findingAncestorPaths)
 {
   SLIC_INFO("Testing function that recursively finds a valid path in cwd ancestors.");
 
@@ -117,7 +116,8 @@ int main(int argc, char * argv[])
 
   // Change the directory to one that we know will contain the desired file
   SLIC_ERROR_IF(argc !=2, "slam_utilities requires a parameter for the working directory");
-  ChangeCurrentDir( argv[1] );
+  int err = ChangeCurrentDir( argv[1] );
+  SLIC_ERROR_IF( err != 0, "chdir failed");
 
   result = RUN_ALL_TESTS();
 
