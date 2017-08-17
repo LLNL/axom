@@ -17,8 +17,8 @@
  *
  * The QueryIterator is used to visit Views and Groups in a Group.
  *
- * Creating Views or Groups while traversing the tree may invalidate
- * the QueryIterator and is not recommended.
+ * Creating or deleting Views or Groups while iterating over the tree
+ * may invalidate the QueryIterator and is not recommended.
  *
  ******************************************************************************
  */
@@ -32,10 +32,6 @@
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
-//#include "slic/slic.hpp"
-
-// Sidre project headers
-#include "sidre/SidreTypes.hpp"
 
 namespace axom
 {
@@ -142,13 +138,10 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(QueryIterator);
 
   /*!
-   * \brief Push grp on the stack and find the deepest right-most group.
+   * \brief Push grp on the stack and push child Groups until a Group
+   *  is encountered which contains no other Groups.
    */
   void findDeepestGroup(Group *grp);
-
-
-  /// start of iteration
-  Group * m_root;
 
   ///////////////////////////////////////////////////////////////////
   //

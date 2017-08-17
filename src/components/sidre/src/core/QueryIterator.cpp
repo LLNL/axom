@@ -41,19 +41,33 @@ namespace sidre
 {
 
 /*
- *  first_view will be true if the Curor represents the first View
- *  of a Group.  This will be true for the deepest Group returned
- *  from findDeepestGroup.  Note that iview may be InvalidGroup if
- *  the group has no Views.  Intermediate Groups will process their
- *  own Groups first before proceeding to processing their Views.
+ * Groups are traversed in a depth first order by keeping a stack of
+ * Groups in the current path starting with the initial group at the
+ * bottom of the stack and the right-most deepest Group at the top.
+ * Each group will eventually be at the top of the stack.
  *
- *  If false, the first View has already been visited and it is
- *  necessary to call getNextValidViewIndex.
+ * Views are traversed starting at the initial View found by 
+ * getFirstValidViewIndex then traversed using getNextValidViewIndex.
+ * View visits do not push anything onto the Cursor stack.
  *
- *  is_group will be true when there are no views to process.
- *  Either the group initially had no views, or all of the views
- *  have been visited.  The Cursor represent the Group grp, and not
- *  any views in the Group.
+ * iview is the current View being visited.
+ * igroup is the current Group being visited.
+ *
+ * first_view will be set true to indicate that the first View has
+ * been visited.  This will be true for the deepest Group returned
+ * from findDeepestGroup if it contains Views.  Any intermediate
+ * Groups between the initial Group and the deepest Group will have
+ * first_view set to false. This is necessary because when any
+ * intermediate Group is at the top of the stack, its Group are first
+ * traversed, then its Views.  first_view is set to true by getNext to
+ * flag that the first View has been visited and the next call to
+ * getNext should update iview before using it.
+ *
+ * Once all of the Views for a group are visited, is_group is set to
+ * true to indicate that Cursor represents the parent Group.  The next
+ * call to getNext will then pop the stack and update igroup.
+ * is_group is also set to true by findDeepestGroup if the Group found
+ * has no Views to signal getNext that the Group has been visited.
  */
 struct QueryIterator::Cursor
 {
@@ -61,26 +75,28 @@ struct QueryIterator::Cursor
   IndexType igroup;
   IndexType iview;
   bool is_group;
-  bool first_view;   // true if started processing views
+  bool first_view;
 };
 
+/*
+ * CursorStack exists to isolate implementation of the stack in this file
+ * instead of QueryIterator.hpp.
+ */
 struct QueryIterator::CursorStack {
   std::vector< Cursor > stack;
 };
-
 
 /*
  *************************************************************************
  * Find the deepest right-most group.
  *
  * Iterate over the right-most Group until no more Groups are found.
- * Upon return, top of the stack will represent the first View of the
- * deepest Group.  If the Group is empty then iview==InvalidIndex and
- * first_view==true.
  *
- * Any intermediate Groups pushed onto the stack will not have
- * first_view set since their Groups will be visited before their
- * Views.
+ * If the Group has Views, then first_view is set to true to indicate
+ * that the Cursor represents the first view in a Group. If it does
+ * not have Views, then is_group is set to true indicating that the
+ * Cursor represents the Group.  i.e. it has no Groups or Views.
+ *
  *************************************************************************
  */
 void QueryIterator::findDeepestGroup(Group *grp)
@@ -122,18 +138,22 @@ void QueryIterator::findDeepestGroup(Group *grp)
 
 /*
  *************************************************************************
- * Construct a QueryIterator object.
+ * Construct a QueryIterator instance.
  *
- * Setup for a depth first query by following down the first group to the bottom.
+ * Setup for a depth first query by following down root to the bottom.
  *************************************************************************
  */
-QueryIterator::QueryIterator(Group * root) :
-    m_root(root)
+QueryIterator::QueryIterator(Group * root)
 {
   m_stack = new CursorStack;
   findDeepestGroup(root);
 }
 
+/*
+ *************************************************************************
+ * Destructor for QueryIterator.
+ *************************************************************************
+ */
 QueryIterator::~QueryIterator()
 {
   delete m_stack;
@@ -158,9 +178,10 @@ bool QueryIterator::isValid()
  *************************************************************************
  * Update iterator to the next available Group or View.
  *
- * If nothing on the stack, must be done.
- * First, look for next Group.  If one is found, start with the deepest node.
- * Once all Groups are exhausted, loop over Views.
+ * If nothing on the stack, nothing to do.  Else, look for next Group.
+ * If one is found, start with its deepest node.  Once all Groups are
+ * exhausted, loop over Views. Finally, the Cursor represents the Group
+ * since all of its child Groups and Views have been visited.
  *************************************************************************
  */
 void QueryIterator::getNext()
@@ -186,7 +207,6 @@ void QueryIterator::getNext()
     {
       if (m_stack->stack.back().first_view == false) 
       {
-	// Finished visiting intermediate groups, now starting on views.
 	m_stack->stack.back().first_view = true;
 	return;      // iview is the first view
       }
@@ -204,7 +224,7 @@ void QueryIterator::getNext()
     if (m_stack->stack.back().is_group == false) 
     {
       m_stack->stack.back().is_group = true;
-      return;      // Use Group in this stack entry
+      return;
     }
 
     m_stack->stack.pop_back();
