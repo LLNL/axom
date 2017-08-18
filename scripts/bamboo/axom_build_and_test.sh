@@ -16,5 +16,5 @@ ssh $HOST  " echo $hostname && \
    cd $WORKSPACE && \
    pwd && \
    echo SYS_TYPE = $SYS_TYPE && \
-   ./scripts/bamboo/axom_launch.sh 'BUILD_TYPE' 'BUILD_OPT' 'COMPILER' "
+   ./scripts/bamboo/axom_launch.sh '$BUILD_TYPE' '$BUILD_OPT' '$COMPILER' "
 
