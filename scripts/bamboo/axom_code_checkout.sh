@@ -5,13 +5,7 @@ echo  axom_code_checkout.sh 1.0
 set -ev
  
 rm -rf axom
-
-BRANCH=develop
- 
-if [ $1 != "" ]; then
-   BRANCH=$1
-fi
-
+BRANCH=${1:-develop}
 echo $BRANCH
 git clone ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git --branch $BRANCH --recursive
 cd axom
