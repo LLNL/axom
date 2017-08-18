@@ -8,10 +8,13 @@ BUILD_TYPE=$1
 BUILD_OPT=$2
 COMPILER=$3
 HOST=$4
-SYSTEM_TYPE=$5
-WORKSPACE=$6
+WORKSPACE=$5
 
-
-ssh $HOST "hostname; cd $WORKSPACE && \
+echo $SYS_TYPE
+echo $WORKSPACE
+ssh $HOST  " echo $hostname && \
+   cd $WORKSPACE && \
    pwd && \
-   ./scripts/bamboo/axom_launch.sh 'BUILD_TYPE' 'BUILD_OPT' 'COMPILER'"
+   echo SYS_TYPE = $SYS_TYPE && \
+   ./scripts/bamboo/axom_launch.sh 'BUILD_TYPE' 'BUILD_OPT' 'COMPILER' "
+
