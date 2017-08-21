@@ -159,9 +159,9 @@ std::vector<std::string> findIntersectTests()
 {
   std::vector<std::string> tests;
 
-  std::string catalogue =
-    axom::utilities::filesystem::joinPath(AXOM_SRC_DIR,
-                                          "components/quest/data/meshtester/catalogue.txt");
+  std::string catalogue = 
+    axom::utilities::filesystem::
+    joinPath(AXOM_SRC_DIR, "components/quest/data/meshtester/catalogue.txt");
 
   std::string testdir;
   axom::utilities::filesystem::getDirName(testdir, catalogue);
@@ -192,20 +192,6 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection )
     std::vector< int > expdegen;
     std::string tfname;
     std::string tname = readIntersectTest(test, tfname, expisect, expdegen);
-
-    // std::cout << "Read test." << std::endl <<
-    //   "  Name:  " << test << std::endl <<
-    //   "  File:  " << tfname << std::endl <<
-    //   "  Title: " << tname << std::endl <<
-    //   "  Intersecting tri pairs:  ";
-    // for (int i = 0; i < expisect.size(); ++i) {
-    //   std::cout << expisect[i].first << " " << expisect[i].second << "  ";
-    // }
-    // std::cout << std::endl << "  Degenerate tris:  ";
-    // for (int i = 0; i < expdegen.size(); ++i) {
-    //   std::cout << expdegen[i] << " ";
-    // }
-    // std::cout << std::endl;
 
     runIntersectTest(test, tfname, tname, expisect, expdegen);
   }
