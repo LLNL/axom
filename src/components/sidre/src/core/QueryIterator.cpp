@@ -21,11 +21,6 @@
 // Associated header file
 #include "QueryIterator.hpp"
 
-// Standard C++ headers
-#include <stack>
-
-// Other axom headers
-
 // Sidre project headers
 #include "sidre/Group.hpp"
 #include "sidre/View.hpp"
@@ -75,14 +70,6 @@ struct QueryIterator::Cursor
 };
 
 /*
- * CursorStack exists to isolate implementation of the stack in this file
- * instead of QueryIterator.hpp.
- */
-struct QueryIterator::CursorStack {
-  std::stack< Cursor > stack;
-};
-
-/*
  *************************************************************************
  * Find the deepest right-most group.
  *
@@ -99,35 +86,36 @@ void QueryIterator::findDeepestGroup(Group *grp)
 {
   while (true)
   {
-    QueryIterator::Cursor state;
-    state.grp    = grp;
-    state.igroup = grp->getFirstValidGroupIndex();
-    state.iview  = grp->getFirstValidViewIndex();
-    state.is_group = false;
-    state.first_view = false;
+    QueryIterator::Cursor * state = new QueryIterator::Cursor;
+    state->grp    = grp;
+    state->igroup = grp->getFirstValidGroupIndex();
+    state->iview  = grp->getFirstValidViewIndex();
+    state->is_group = false;
+    state->first_view = false;
 
-    m_stack->stack.push(state);
+    m_stack.push(state);
 
-    if (state.igroup == InvalidIndex)
+    if (state->igroup == InvalidIndex)
     {
       // This Group has no Groups.
       break;
     }
 
     // Must go deeper...
-    grp = grp->getGroup(state.igroup);
+    grp = grp->getGroup(state->igroup);
   }
 
   // Check last Group pushed to see if it represents a Group or View
-  if (m_stack->stack.top().iview == InvalidIndex)
+  QueryIterator::Cursor * state = m_stack.top();
+  if (state->iview == InvalidIndex)
   {
     // No Views in the group
-    m_stack->stack.top().is_group = true;
+    state->is_group = true;
   }
   else
   {
     // Start by visiting the first View
-    m_stack->stack.top().first_view = true;
+    state->first_view = true;
   }
 
 }
@@ -141,7 +129,6 @@ void QueryIterator::findDeepestGroup(Group *grp)
  */
 QueryIterator::QueryIterator(Group * root)
 {
-  m_stack = new CursorStack;
   findDeepestGroup(root);
 }
 
@@ -152,7 +139,13 @@ QueryIterator::QueryIterator(Group * root)
  */
 QueryIterator::~QueryIterator()
 {
-  delete m_stack;
+  // If the Iterator is destory before it has iterated over all nodes,
+  // m_stack will not be empty.
+  while ( ! m_stack.empty())
+  {
+    delete m_stack.top();
+    m_stack.pop();
+  }
 }
 
 
@@ -163,7 +156,7 @@ QueryIterator::~QueryIterator()
  */
 bool QueryIterator::isValid()
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return false;
   }
@@ -182,14 +175,16 @@ bool QueryIterator::isValid()
  */
 void QueryIterator::getNext()
 {
-  while ( ! m_stack->stack.empty())
+  while ( ! m_stack.empty())
   {
-    Group * grp = m_stack->stack.top().grp;
-    IndexType igroup = m_stack->stack.top().igroup;
+    QueryIterator::Cursor * state = m_stack.top();
+
+    Group * grp = state->grp;
+    IndexType igroup = state->igroup;
     if (igroup != InvalidIndex)
     {
       IndexType inext = grp->getNextValidGroupIndex(igroup);
-      m_stack->stack.top().igroup = inext;
+      state->igroup = inext;
       if (inext != InvalidIndex)
       {
 	Group *nextgrp = grp->getGroup(inext);
@@ -198,18 +193,18 @@ void QueryIterator::getNext()
       }
     }
 
-    IndexType iview = m_stack->stack.top().iview;
+    IndexType iview = state->iview;
     if (iview != InvalidIndex)
     {
-      if (m_stack->stack.top().first_view == false) 
+      if (state->first_view == false) 
       {
-	m_stack->stack.top().first_view = true;
+	state->first_view = true;
 	return;      // iview is the first view
       }
       else
       {
 	IndexType inext = grp->getNextValidViewIndex(iview);
-	m_stack->stack.top().iview = inext;
+	state->iview = inext;
 	if (inext != InvalidIndex)
         {
 	  return;    // Found a View.
@@ -217,13 +212,14 @@ void QueryIterator::getNext()
       }
     }
 
-    if (m_stack->stack.top().is_group == false) 
+    if (state->is_group == false) 
     {
-      m_stack->stack.top().is_group = true;
+      state->is_group = true;
       return;
     }
 
-    m_stack->stack.pop();
+    delete state;
+    m_stack.pop();
   }
 
   return;
@@ -238,12 +234,12 @@ void QueryIterator::getNext()
  */
 bool QueryIterator::isGroup() const
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return false;
   }
 
-  if (m_stack->stack.top().iview != InvalidIndex)
+  if (m_stack.top()->iview != InvalidIndex)
   {
     return false;
   }
@@ -260,12 +256,12 @@ bool QueryIterator::isGroup() const
  */
 bool QueryIterator::isView() const
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return false;
   }
 
-  if (m_stack->stack.top().iview != InvalidIndex)
+  if (m_stack.top()->iview != InvalidIndex)
   {
     return true;
   }
@@ -282,19 +278,19 @@ bool QueryIterator::isView() const
  */
 Group * QueryIterator::asGroup()
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor state = m_stack->stack.top();
+  QueryIterator::Cursor * state = m_stack.top();
 
-  if (state.iview != InvalidIndex)
+  if (state->iview != InvalidIndex)
   {
     return AXOM_NULLPTR;
   }
 
-  return state.grp;
+  return state->grp;
 }
 
 /*
@@ -306,19 +302,19 @@ Group * QueryIterator::asGroup()
  */
 Group const * QueryIterator::asGroup() const
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor state = m_stack->stack.top();
+  QueryIterator::Cursor * state = m_stack.top();
 
-  if (state.iview != InvalidIndex)
+  if (state->iview != InvalidIndex)
   {
     return AXOM_NULLPTR;
   }
 
-  return state.grp;
+  return state->grp;
 }
 
 /*
@@ -330,16 +326,16 @@ Group const * QueryIterator::asGroup() const
  */
 View * QueryIterator::asView()
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor state = m_stack->stack.top();
+  QueryIterator::Cursor * state = m_stack.top();
 
-  if (state.iview != InvalidIndex)
+  if (state->iview != InvalidIndex)
   {
-    return state.grp->getView(state.iview);
+    return state->grp->getView(state->iview);
   }
 
   return AXOM_NULLPTR;
@@ -354,16 +350,16 @@ View * QueryIterator::asView()
  */
 View const * QueryIterator::asView() const
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor state = m_stack->stack.top();
+  QueryIterator::Cursor * state = m_stack.top();
 
-  if (state.iview != InvalidIndex)
+  if (state->iview != InvalidIndex)
   {
-    return state.grp->getView(state.iview);
+    return state->grp->getView(state->iview);
   }
 
   return AXOM_NULLPTR;
@@ -378,20 +374,20 @@ View const * QueryIterator::asView() const
  */
 const std::string & QueryIterator::getName() const
 {
-  if (m_stack->stack.empty())
+  if (m_stack.empty())
   {
     return InvalidName;
   }
 
-  QueryIterator::Cursor state = m_stack->stack.top();
+  QueryIterator::Cursor * state = m_stack.top();
 
-  if (state.iview != InvalidIndex)
+  if (state->iview != InvalidIndex)
   {
-    View * view = state.grp->getView(state.iview);
+    View * view = state->grp->getView(state->iview);
     return view->getName();
   }
 
-  return state.grp->getName();
+  return state->grp->getName();
 }
 
 #if 0

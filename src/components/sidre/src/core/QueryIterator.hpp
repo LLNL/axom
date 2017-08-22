@@ -28,6 +28,7 @@
 
 // Standard C++ headers
 #include <string>
+#include <stack>
 
 // Other axom headers
 #include "axom/config.hpp"
@@ -173,12 +174,11 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  struct CursorStack;
   struct Cursor;
   ///////////////////////////////////////////////////////////////////
 
   /// Current position in tree
-  CursorStack * m_stack; 
+  std::stack< Cursor * > m_stack;
 
 };
 
