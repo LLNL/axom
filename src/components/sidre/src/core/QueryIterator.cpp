@@ -44,21 +44,22 @@ namespace sidre
  * iview is the current View being visited.
  * igroup is the current Group being visited.
  *
- * first_view will be set true to indicate that the first View has
+ * is_first_view will be set true to indicate that the first View has
  * been visited.  This will be true for the deepest Group returned
  * from findDeepestGroup if it contains Views.  Any intermediate
  * Groups between the initial Group and the deepest Group will have
- * first_view set to false. This is necessary because when any
+ * is_first_view set to false. This is necessary because when any
  * intermediate Group is at the top of the stack, its Group are first
- * traversed, then its Views.  first_view is set to true by getNext to
- * flag that the first View has been visited and the next call to
- * getNext should update iview before using it.
+ * traversed, then its Views.  is_first_view is set to true by
+ * advanceToNext to flag that the first View has been visited and the
+ * next call to advanceToNext should update iview before using it.
  *
  * Once all of the Views for a group are visited, is_group is set to
  * true to indicate that Cursor represents the parent Group.  The next
- * call to getNext will then pop the stack and update igroup.
+ * call to advanceToNext will then pop the stack and update igroup.
  * is_group is also set to true by findDeepestGroup if the Group found
- * has no Views to signal getNext that the Group has been visited.
+ * has no Views to signal advanceToNext that the Group has been
+ * visited.
  */
 struct QueryIterator::Cursor
 {
@@ -66,7 +67,65 @@ struct QueryIterator::Cursor
   IndexType igroup;
   IndexType iview;
   bool is_group;
-  bool first_view;
+  bool is_first_view;
+
+/*
+ *************************************************************************
+ * Return true if Cursor references a Group.
+ *************************************************************************
+ */
+  bool isGroup()
+  {
+    if (iview != InvalidIndex)
+    {
+      return false;
+    }
+    return true;
+  }
+
+/*
+ *************************************************************************
+ * Return true if Cursor references a View.
+ *************************************************************************
+ */
+  bool isView()
+  {
+    if (iview != InvalidIndex)
+    {
+      return true;
+    }
+    return false;
+  }
+
+/*
+ *************************************************************************
+ *  If the Cursor represents a Group, return the Group. Else,
+ *  return AXOM_NULLPTR
+ *************************************************************************
+ */
+  Group * getCurrentGroup()
+  {
+    if (iview != InvalidIndex)
+    {
+      return AXOM_NULLPTR;
+    }
+    return grp;
+  }
+
+/*
+ *************************************************************************
+ *  If the Cursor represents a View, return the View. Else,
+ *  return AXOM_NULLPTR
+ *************************************************************************
+ */
+  View * getCurrentView()
+  {
+    if (iview != InvalidIndex)
+    {
+      return grp->getView(iview);
+    }
+    return AXOM_NULLPTR;
+  }
 };
 
 /*
@@ -75,7 +134,7 @@ struct QueryIterator::Cursor
  *
  * Iterate over the right-most Group until no more Groups are found.
  *
- * If the Group has Views, then first_view is set to true to indicate
+ * If the Group has Views, then is_first_view is set to true to indicate
  * that the Cursor represents the first view in a Group. If it does
  * not have Views, then is_group is set to true indicating that the
  * Cursor represents the Group.  i.e. it has no Groups or Views.
@@ -91,7 +150,7 @@ void QueryIterator::findDeepestGroup(Group *grp)
     state->igroup = grp->getFirstValidGroupIndex();
     state->iview  = grp->getFirstValidViewIndex();
     state->is_group = false;
-    state->first_view = false;
+    state->is_first_view = false;
 
     m_stack.push(state);
 
@@ -107,15 +166,14 @@ void QueryIterator::findDeepestGroup(Group *grp)
 
   // Check last Group pushed to see if it represents a Group or View
   QueryIterator::Cursor * state = m_stack.top();
-  if (state->iview == InvalidIndex)
+  if (state->isView())
   {
-    // No Views in the group
-    state->is_group = true;
+    // Start by visiting the first View
+    state->is_first_view = true;
   }
   else
   {
-    // Start by visiting the first View
-    state->first_view = true;
+    state->is_group = true;
   }
 
 }
@@ -193,9 +251,9 @@ void QueryIterator::advanceToNext()
 
     if (state->iview != InvalidIndex)
     {
-      if (state->first_view == false) 
+      if (state->is_first_view == false) 
       {
-	state->first_view = true;
+	state->is_first_view = true;
 	return;      // iview is the first view
       }
       else
@@ -235,12 +293,7 @@ bool QueryIterator::isGroup() const
     return false;
   }
 
-  if (m_stack.top()->iview != InvalidIndex)
-  {
-    return false;
-  }
-
-  return true;
+  return m_stack.top()->isGroup();
 }
 
 /*
@@ -257,12 +310,7 @@ bool QueryIterator::isView() const
     return false;
   }
 
-  if (m_stack.top()->iview != InvalidIndex)
-  {
-    return true;
-  }
-
-  return false;
+  return m_stack.top()->isView();
 }
 
 /*
@@ -279,14 +327,7 @@ Group * QueryIterator::asGroup()
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor * state = m_stack.top();
-
-  if (state->iview != InvalidIndex)
-  {
-    return AXOM_NULLPTR;
-  }
-
-  return state->grp;
+  return m_stack.top()->getCurrentGroup();
 }
 
 /*
@@ -303,14 +344,7 @@ Group const * QueryIterator::asGroup() const
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor * state = m_stack.top();
-
-  if (state->iview != InvalidIndex)
-  {
-    return AXOM_NULLPTR;
-  }
-
-  return state->grp;
+  return m_stack.top()->getCurrentGroup();
 }
 
 /*
@@ -327,14 +361,7 @@ View * QueryIterator::asView()
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor * state = m_stack.top();
-
-  if (state->iview != InvalidIndex)
-  {
-    return state->grp->getView(state->iview);
-  }
-
-  return AXOM_NULLPTR;
+  return m_stack.top()->getCurrentView();
 }
 
 /*
@@ -351,14 +378,7 @@ View const * QueryIterator::asView() const
     return AXOM_NULLPTR;
   }
 
-  QueryIterator::Cursor * state = m_stack.top();
-
-  if (state->iview != InvalidIndex)
-  {
-    return state->grp->getView(state->iview);
-  }
-
-  return AXOM_NULLPTR;
+  return m_stack.top()->getCurrentView();
 }
 
 /*
