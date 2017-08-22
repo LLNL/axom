@@ -53,11 +53,25 @@ public:
   virtual double* getDoublePtr();
 
   /*!
+   * \brief Returns a constant double pointer to the field data.
+   * \return ptr constant pointer to the field data of type double.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
+   */
+  virtual const double* getDoublePtr() const;
+
+  /*!
    * \brief Returns an integer pointer to the field data.
    * \return ptr pointer to the field data of type int.
    * \post ptr==AXOM_NULLPTR iff the data is not of type int.
    */
   virtual int* getIntPtr();
+
+  /*!
+   * \brief Returns a constant integer pointer to the field data.
+   * \return ptr constant pointer to the field data of type int.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type int.
+   */
+  virtual const int* getIntPtr() const;
 
 private:
 
@@ -91,7 +105,7 @@ FieldVariable< FieldType >::FieldVariable(
   SLIC_ASSERT(  nc >= 1 );
 
   m_type = field_of< FieldType >::type;
-  m_data = new FieldType[ size*nc ];
+  m_data = new FieldType[ size * nc ];
 }
 
 //------------------------------------------------------------------------------
@@ -116,12 +130,28 @@ double* FieldVariable< FieldType >::getDoublePtr()
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
+const double* FieldVariable< FieldType >::getDoublePtr() const
+{
+  return const_cast< const double* >( 
+         const_cast< FieldVariable* >( this )->getDoublePtr() );
+}
+
+//------------------------------------------------------------------------------
+template < typename FieldType >
 int* FieldVariable< FieldType >::getIntPtr()
 {
   if ( m_type == INTEGER_FIELD_TYPE ) {
     return reinterpret_cast< int* >( m_data );
   }
   return AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+template < typename FieldType >
+const int* FieldVariable< FieldType >::getIntPtr() const
+{
+  return const_cast< const int* >( 
+         const_cast< FieldVariable* >( this )->getIntPtr() );
 }
 
 } /* namespace mint */
