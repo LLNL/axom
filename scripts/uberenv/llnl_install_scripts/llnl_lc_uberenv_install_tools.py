@@ -298,6 +298,11 @@ def full_build_and_test_of_tpls(builds_dir,specs):
         res = uberenv_install_tpls(prefix,spec,mirror_dir)
         if res != 0:
             print "[ERROR: Failed build of tpls for spec %s]" % spec
+            # set perms, then early exit
+            # set proper perms for installed tpls
+            set_axom_group_and_perms(prefix)
+            # set proper perms for the mirror files
+            set_axom_group_and_perms(mirror_dir)
             return res
         else:
             print "[SUCCESS: Finished build tpls for spec %s]" % spec
@@ -307,14 +312,13 @@ def full_build_and_test_of_tpls(builds_dir,specs):
     res = build_and_test_host_configs(prefix)
     if res != 0:
         print "[ERROR: build and test of axom vs tpls test failed.]"
-        return res
     else:
         print "[SUCCESS: build and test of axom vs tpls test passed.]"
     # set proper perms for installed tpls
     set_axom_group_and_perms(prefix)
     # set proper perms for the mirror files
     set_axom_group_and_perms(mirror_dir)
-    return 0
+    return res
 
 
 
