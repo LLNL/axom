@@ -22,8 +22,9 @@
 #include "QueryIterator.hpp"
 
 // Standard C++ headers
-//#include <string>
 #include <stack>
+
+// Other axom headers
 
 // Sidre project headers
 #include "sidre/Group.hpp"
@@ -231,6 +232,28 @@ void QueryIterator::getNext()
 /*
  *************************************************************************
  *
+ * Return true if QueryIterator references a Group.
+ *
+ *************************************************************************
+ */
+bool QueryIterator::isGroup() const
+{
+  if (m_stack->stack.empty())
+  {
+    return false;
+  }
+
+  if (m_stack->stack.top().iview != InvalidIndex)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+/*
+ *************************************************************************
+ *
  * Return true if QueryIterator references a View.
  *
  *************************************************************************
@@ -253,23 +276,97 @@ bool QueryIterator::isView() const
 /*
  *************************************************************************
  *
- * Return true if QueryIterator references a Group.
+ *  Return pointer to non-const Group at current iterator position.
  *
  *************************************************************************
  */
-bool QueryIterator::isGroup() const
+Group * QueryIterator::asGroup()
 {
   if (m_stack->stack.empty())
   {
-    return false;
+    return AXOM_NULLPTR;
   }
 
-  if (m_stack->stack.top().iview != InvalidIndex)
+  QueryIterator::Cursor state = m_stack->stack.top();
+
+  if (state.iview != InvalidIndex)
   {
-    return false;
+    return AXOM_NULLPTR;
   }
 
-  return true;
+  return state.grp;
+}
+
+/*
+ *************************************************************************
+ *
+ *  Return pointer to const Group at current iterator position.
+ *
+ *************************************************************************
+ */
+Group const * QueryIterator::asGroup() const
+{
+  if (m_stack->stack.empty())
+  {
+    return AXOM_NULLPTR;
+  }
+
+  QueryIterator::Cursor state = m_stack->stack.top();
+
+  if (state.iview != InvalidIndex)
+  {
+    return AXOM_NULLPTR;
+  }
+
+  return state.grp;
+}
+
+/*
+ *************************************************************************
+ *
+ *  Return pointer to non-const View at current iterator position.
+ *
+ *************************************************************************
+ */
+View * QueryIterator::asView()
+{
+  if (m_stack->stack.empty())
+  {
+    return AXOM_NULLPTR;
+  }
+
+  QueryIterator::Cursor state = m_stack->stack.top();
+
+  if (state.iview != InvalidIndex)
+  {
+    return state.grp->getView(state.iview);
+  }
+
+  return AXOM_NULLPTR;
+}
+
+/*
+ *************************************************************************
+ *
+ *  Return pointer to const View at current iterator position.
+ *
+ *************************************************************************
+ */
+View const * QueryIterator::asView() const
+{
+  if (m_stack->stack.empty())
+  {
+    return AXOM_NULLPTR;
+  }
+
+  QueryIterator::Cursor state = m_stack->stack.top();
+
+  if (state.iview != InvalidIndex)
+  {
+    return state.grp->getView(state.iview);
+  }
+
+  return AXOM_NULLPTR;
 }
 
 /*

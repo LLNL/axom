@@ -39,11 +39,12 @@ namespace sidre
 {
 
 class Group;
+class View;
 
 /*!
- * \class Attribute
+ * \class QueryIterator
  *
- * \brief Attributes for a View
+ * \brief Iterate recursively over a Group.
  *
  */
 class QueryIterator
@@ -59,7 +60,7 @@ public:
   QueryIterator(Group * grp);
 
   /*!
-   * \brief Private dtor.
+   * \brief dtor.
    */
   ~QueryIterator();
 //@}
@@ -82,16 +83,42 @@ public:
 //!  @name Methods to query iterator.
 
   /*!
+   *  \brief Return true if the QueryIterator references a Group.
+   */
+  bool isGroup() const;
+
+  /*!
    *  \brief Return true if the QueryIterator references a View.
    */
   bool isView() const;
 
   /*!
-   *  \brief Return true if the QueryIterator references a Group.
+   *  \brief Return pointer to non-const Group at current iterator position.
+   *
+   *  If the current position is not a Group, return AXOM_NULLPTR.
    */
-  bool isGroup() const;
+  Group * asGroup();
 
-//@}
+  /*!
+   *  \brief Return pointer to const Group at current iterator position.
+   *
+   *  If the current position is not a Group, return AXOM_NULLPTR.
+   */
+  Group const * asGroup() const;
+
+  /*!
+   *  \brief Return pointer to non-const View at current iterator position.
+   *
+   *  If the current position is not a View, return AXOM_NULLPTR.
+   */
+  View * asView();
+
+  /*!
+   *  \brief Return pointer to const View at current iterator position.
+   *
+   *  If the current position is not a View, return AXOM_NULLPTR.
+   */
+  View const * asView() const;
 
   /*!
    * \brief Return const reference to name of current iterator object.
@@ -132,6 +159,7 @@ public:
     return getPath() + getPathDelimiter() + getName();
   }
 #endif
+//@}
 
 private:
   DISABLE_DEFAULT_CTOR(QueryIterator);

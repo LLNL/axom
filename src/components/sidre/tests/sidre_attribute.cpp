@@ -883,16 +883,6 @@ TEST(sidre_attribute,depth_first)
  
   while(qitr.isValid())
   {
-#if 0
-    // check if I have a view and access it :
-    qitr.isView();
-    View *v = qitr.asView();
- 
-    // check if I have a group and access it :
-    qitr.isGroup();
-    Group *g = qitr.asGroup();
- #endif
-
     // find our current path
     const std::string & name = qitr.getName();
     //std::cout << name << std::endl;
@@ -903,11 +893,35 @@ TEST(sidre_attribute,depth_first)
     {
       EXPECT_TRUE(qitr.isGroup());
       EXPECT_FALSE(qitr.isView());
+
+      Group * grp_out = qitr.asGroup();
+      EXPECT_EQ(order[iorder].name, grp_out->getName());
+
+      Group const * grp_const = qitr.asGroup();
+      EXPECT_EQ(order[iorder].name, grp_const->getName());
+
+      View * view_out = qitr.asView();
+      EXPECT_EQ(view_out, AXOM_NULLPTR);
+
+      View const * view_const = qitr.asView();
+      EXPECT_EQ(view_const, AXOM_NULLPTR);
     }
     else
     {
       EXPECT_FALSE(qitr.isGroup());
       EXPECT_TRUE(qitr.isView());
+
+      Group * grp_out = qitr.asGroup();
+      EXPECT_EQ(grp_out, AXOM_NULLPTR);
+
+      Group const * grp_const = qitr.asGroup();
+      EXPECT_EQ(grp_const, AXOM_NULLPTR);
+
+      View * view_out = qitr.asView();
+      EXPECT_EQ(order[iorder].name, view_out->getName());
+
+      View const * view_const = qitr.asView();
+      EXPECT_EQ(order[iorder].name, view_const->getName());
     }
 
     qitr.getNext();
