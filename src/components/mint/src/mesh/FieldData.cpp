@@ -29,7 +29,7 @@ FieldData::~FieldData()
 }
 
 //------------------------------------------------------------------------------
-bool FieldData::hasField( const std::string& name )
+bool FieldData::hasField( const std::string& name ) const
 {
   bool status = false;
 
@@ -49,13 +49,13 @@ void FieldData::addField( Field* f )
   m_fields.push_back( f->getName() );
   m_container[ f->getName() ] = f;
 
-  SLIC_ASSERT( m_fields.size()==m_container.size() );
+  SLIC_ASSERT( m_fields.size() == m_container.size() );
 }
 
 //------------------------------------------------------------------------------
 int FieldData::getNumberOfFields() const
 {
-  SLIC_ASSERT( m_fields.size()==m_container.size() );
+  SLIC_ASSERT( m_fields.size() == m_container.size() );
   return static_cast< int >( m_fields.size() );
 }
 
@@ -72,10 +72,24 @@ Field* FieldData::getField( int i )
 }
 
 //------------------------------------------------------------------------------
+const Field* FieldData::getField( int i ) const 
+{
+  return const_cast< const Field* >(
+         const_cast< FieldData* >( this )->getField( i ) );
+}
+
+//------------------------------------------------------------------------------
 Field* FieldData::getField( const std::string& name )
 {
   SLIC_ASSERT( this->hasField( name ) );
   return m_container[ name ];
+}
+
+//------------------------------------------------------------------------------
+const Field* FieldData::getField( const std::string& name ) const
+{
+  return const_cast< const Field* >(
+         const_cast< FieldData* >( this )->getField( name ) );
 }
 
 //------------------------------------------------------------------------------
