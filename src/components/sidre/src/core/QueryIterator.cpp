@@ -48,11 +48,11 @@ namespace sidre
  * been visited.  This will be true for the deepest Group returned
  * from findDeepestGroup if it contains Views.  Any intermediate
  * Groups between the initial Group and the deepest Group will have
- * is_first_view set to false. This is necessary because when any
- * intermediate Group is at the top of the stack, its Group are first
- * traversed, then its Views.  is_first_view is set to true by
- * advanceToNext to flag that the first View has been visited and the
- * next call to advanceToNext should update iview before using it.
+ * is_first_view set to false. This is necessary when any intermediate
+ * Group is at the top of the stack, its Group are first traversed,
+ * then its Views.  is_first_view is set to true by advanceToNext to
+ * flag that the first View has been visited and the next call to
+ * advanceToNext should update iview before using it.
  *
  * Once all of the Views for a group are visited, is_group is set to
  * true to indicate that Cursor represents the parent Group.  The next
