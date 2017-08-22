@@ -37,7 +37,7 @@ namespace sidre
  * bottom of the stack and the right-most deepest Group at the top.
  * Each group will eventually be at the top of the stack.
  *
- * Views are traversed starting at the initial View found by 
+ * Views are traversed starting at the initial View found by
  * getFirstValidViewIndex then traversed using getNextValidViewIndex.
  * View visits do not push anything onto the Cursor stack.
  *
@@ -63,7 +63,7 @@ namespace sidre
  */
 struct QueryIterator::Cursor
 {
-  Group *grp;
+  Group * grp;
   IndexType igroup;
   IndexType iview;
   bool is_group;
@@ -141,7 +141,7 @@ struct QueryIterator::Cursor
  *
  *************************************************************************
  */
-void QueryIterator::findDeepestGroup(Group *grp)
+void QueryIterator::findDeepestGroup(Group * grp)
 {
   while (true)
   {
@@ -199,7 +199,7 @@ QueryIterator::~QueryIterator()
 {
   // If the Iterator is destory before it has iterated over all nodes,
   // m_stack will not be empty.
-  while ( ! m_stack.empty())
+  while ( !m_stack.empty())
   {
     delete m_stack.top();
     m_stack.pop();
@@ -233,7 +233,7 @@ bool QueryIterator::isValid()
  */
 void QueryIterator::advanceToNext()
 {
-  while ( ! m_stack.empty())
+  while ( !m_stack.empty())
   {
     QueryIterator::Cursor * state = m_stack.top();
     Group * grp = state->grp;
@@ -243,30 +243,30 @@ void QueryIterator::advanceToNext()
       state->igroup = grp->getNextValidGroupIndex(state->igroup);
       if (state->igroup != InvalidIndex)
       {
-	Group *nextgrp = grp->getGroup(state->igroup);
-	findDeepestGroup(nextgrp);
-	return;    // Found a Group
+        Group * nextgrp = grp->getGroup(state->igroup);
+        findDeepestGroup(nextgrp);
+        return; // Found a Group
       }
     }
 
     if (state->iview != InvalidIndex)
     {
-      if (state->is_first_view == false) 
+      if (state->is_first_view == false)
       {
-	state->is_first_view = true;
-	return;      // iview is the first view
+        state->is_first_view = true;
+        return; // iview is the first view
       }
       else
       {
-	state->iview = grp->getNextValidViewIndex(state->iview);
-	if (state->iview != InvalidIndex)
+        state->iview = grp->getNextValidViewIndex(state->iview);
+        if (state->iview != InvalidIndex)
         {
-	  return;    // Found a View.
-	}
+          return; // Found a View.
+        }
       }
     }
 
-    if (state->is_group == false) 
+    if (state->is_group == false)
     {
       state->is_group = true;
       return;

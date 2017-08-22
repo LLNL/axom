@@ -68,10 +68,10 @@ public:
 
 //@{
 //!  @name Methods to iteratate through a Group.
-  /*!
-   *  \brief Return true if the QueryIterator references a Group or View.
-   *         Return false if there are no more nodes to visit.
-   */
+/*!
+ *  \brief Return true if the QueryIterator references a Group or View.
+ *         Return false if there are no more nodes to visit.
+ */
   bool isValid();
 
   /*!
@@ -139,7 +139,7 @@ public:
   /*!
    * \brief Return full path of Group object, including its name.
    *
-   * If a DataStore contains a Group tree structure a/b/c/d/e, the 
+   * If a DataStore contains a Group tree structure a/b/c/d/e, the
    * following results are expected:
    *
    * Method Call      | Result
@@ -170,7 +170,7 @@ private:
    * \brief Push grp on the stack and push child Groups until a Group
    *  is encountered which contains no other Groups.
    */
-  void findDeepestGroup(Group *grp);
+  void findDeepestGroup(Group * grp);
 
   ///////////////////////////////////////////////////////////////////
   //
