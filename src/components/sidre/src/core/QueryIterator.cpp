@@ -165,7 +165,7 @@ bool QueryIterator::isValid()
 
 /*
  *************************************************************************
- * Update iterator to the next available Group or View.
+ * Advance iterator to the next available Group or View.
  *
  * If nothing on the stack, nothing to do.  Else, look for next Group.
  * If one is found, start with its deepest node.  Once all Groups are
@@ -173,28 +173,25 @@ bool QueryIterator::isValid()
  * since all of its child Groups and Views have been visited.
  *************************************************************************
  */
-void QueryIterator::getNext()
+void QueryIterator::advanceToNext()
 {
   while ( ! m_stack.empty())
   {
     QueryIterator::Cursor * state = m_stack.top();
-
     Group * grp = state->grp;
-    IndexType igroup = state->igroup;
-    if (igroup != InvalidIndex)
+
+    if (state->igroup != InvalidIndex)
     {
-      IndexType inext = grp->getNextValidGroupIndex(igroup);
-      state->igroup = inext;
-      if (inext != InvalidIndex)
+      state->igroup = grp->getNextValidGroupIndex(state->igroup);
+      if (state->igroup != InvalidIndex)
       {
-	Group *nextgrp = grp->getGroup(inext);
+	Group *nextgrp = grp->getGroup(state->igroup);
 	findDeepestGroup(nextgrp);
 	return;    // Found a Group
       }
     }
 
-    IndexType iview = state->iview;
-    if (iview != InvalidIndex)
+    if (state->iview != InvalidIndex)
     {
       if (state->first_view == false) 
       {
@@ -203,9 +200,8 @@ void QueryIterator::getNext()
       }
       else
       {
-	IndexType inext = grp->getNextValidViewIndex(iview);
-	state->iview = inext;
-	if (inext != InvalidIndex)
+	state->iview = grp->getNextValidViewIndex(state->iview);
+	if (state->iview != InvalidIndex)
         {
 	  return;    // Found a View.
 	}

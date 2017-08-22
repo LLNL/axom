@@ -75,9 +75,9 @@ public:
   bool isValid();
 
   /*!
-   *  \brief Update QueryIterator to the next available node.
+   *  \brief Advance QueryIterator to the next available node.
    */
-  void getNext();
+  void advanceToNext();
 //@}
 
 //@{

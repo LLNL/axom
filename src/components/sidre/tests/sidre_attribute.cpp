@@ -924,7 +924,7 @@ TEST(sidre_attribute,depth_first)
       EXPECT_EQ(order[iorder].name, view_const->getName());
     }
 
-    qitr.getNext();
+    qitr.advanceToNext();
     iorder++;
   }
 
