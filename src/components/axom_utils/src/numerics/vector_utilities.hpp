@@ -9,14 +9,12 @@
  */
 
 /*!
- ******************************************************************************
  *
  * \file vector_utilities.hpp
  *
  * \brief Header file containing utility functions to be used for vector
  *  calculations where "vectors" are arrays.
  *
- ******************************************************************************
  */
 
 #ifndef AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
@@ -33,7 +31,6 @@ namespace axom {
 namespace numerics {
 
 /*!
- *******************************************************************************
  * \brief Computes the dot product of the arrays u and v.
  *
  * \tparam T data type
@@ -45,13 +42,13 @@ namespace numerics {
  * \pre dim >= 1
  * \pre u != AXOM_NULLPTR
  * \pre v != AXOM_NULLPTR
- *******************************************************************************
+ * \pre u has at least dim entries
+ * \pre v has at least dim entries
  */
 template < typename T >
 T dot_product(T* u, T* v, int dim);
 
 /*!
- *******************************************************************************
  * \brief Makes vec orthogonal to other.
  *
  * \tparam T data type
@@ -62,14 +59,13 @@ T dot_product(T* u, T* v, int dim);
  * \pre dim >= 1
  * \pre vec != AXOM_NULLPTR
  * \pre other != AXOM_NULLPTR
- *******************************************************************************
  */
 template < typename T >
 void make_orthogonal(T* vec, T* other, int dim);
 
 /*!
- *******************************************************************************
- * \brief Performs Gram-Schmidt in-place on the size vectors of size dim.
+ * \brief Performs Gram-Schmidt orthonormalization in-place on a 2D array
+ * of shape size,size where it treats the rows as the individual vectors.
  *
  * \tparam T data type
  * \param [in, out] basis vectors to be made orthonormal; saves them in-place
@@ -81,16 +77,13 @@ void make_orthogonal(T* vec, T* other, int dim);
  * \return return value, nonzero if the orthonormalization is successful
  *
  * \pre dim >= 1
- * \pre size >= 1
- * \pre size <= dim
+ * \pre 1 <= size <= dim
  * \pre basis != AXOM_NULLPTR
- *******************************************************************************
  */
 template < typename T >
-int orthonormalize(T* basis, int size, int dim, double eps = 1e-16);
+bool orthonormalize(T* basis, int size, int dim, double eps = 1e-16);
 
 /*!
- *******************************************************************************
  * \brief Normalizes the passed in array.
  *
  * \tparam T data type
@@ -100,14 +93,13 @@ int orthonormalize(T* basis, int size, int dim, double eps = 1e-16);
  * \note If squared norm of v is less than eps, the normalization
  *  fails and we do nothing to v
  *
- * \return 1 if normalization is successful, 0 otherwise.
+ * \return true if normalization is successful, false otherwise.
  *
  * \pre dim >= 1
  * \pre v != AXOM_NULLPTR
- *******************************************************************************
  */
 template < typename T >
-int normalize(T* v, int dim, double eps = 1e-16);
+bool normalize(T* v, int dim, double eps = 1e-16);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -126,8 +118,8 @@ T dot_product(T* u, T* v, int dim)
   assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
   assert("pre: dim >= 1" && (dim >= 1));
 
-  T res = T();
-  for (int i = 0; i < dim; i++) res += u[i]*v[i];
+  T res = u[0]*v[0];
+  for (int i = 1; i < dim; ++i) res += u[i]*v[i];
 
   return res;
 }
@@ -139,48 +131,48 @@ void make_orthogonal(T* vec, T* other, int dim)
   assert("pre: other pointer is null" && (other != AXOM_NULLPTR));
   assert("pre: dim >= 1" && (dim >= 1));
 
-  double norm = static_cast< double >(dot_product< T >(other, other, dim));
+  double norm = static_cast< double >(dot_product(other, other, dim));
 
   if (norm < 1e-16) return;
 
   T tnorm = static_cast< T >(norm);
 
-  T dot = dot_product< T >(vec, other, dim);
+  T dot = dot_product(vec, other, dim);
 
-  for (int l = 0; l < dim; l++) vec[l] -= ((dot*other[l])/tnorm);
+  for (int l = 0; l < dim; ++l) vec[l] -= ((dot*other[l])/tnorm);
 }
 
 template < typename T >
-int orthonormalize(T* basis, int size, int dim, double eps)
+bool orthonormalize(T* basis, int size, int dim, double eps)
 {
   assert("pre: basis pointer is null" && (basis != AXOM_NULLPTR));
   assert("pre: dim >= 1" && (dim >= 1));
   assert("pre: size >= 1" && (size >= 1));
   assert("pre: size <= dim" && (size <= dim));
 
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < size; ++i) {
     T* curr = &basis[i*dim];
 
     // make curr orthogonal to previous ones
-    for (int j = 0; j < i; j++) {
+    for (int j = 0; j < i; ++j) {
       T* other = &basis[j*dim];
 
-      make_orthogonal< T >(curr, other, dim);
+      make_orthogonal(curr, other, dim);
     }
 
-    int res = normalize< T >(curr, dim, eps);
+    bool res = normalize(curr, dim, eps);
 
     if (!res) {
-      return 0;
+      return false;
     }
   }
 
   // success
-  return 1;
+  return true;
 }
 
 template < typename T >
-int normalize(T* v, int dim, double eps)
+bool normalize(T* v, int dim, double eps)
 {
   assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
   assert("pre: dim >= 1" && (dim >= 1));
@@ -188,17 +180,17 @@ int normalize(T* v, int dim, double eps)
   double norm = static_cast< double >(dot_product< T >(v, v, dim));
 
   if (utilities::isNearlyEqual< double >(norm, 0., eps)) {
-    return 0;
+    return false;
   }
 
 
   T tnorm = static_cast< T >(std::sqrt(norm));
-  for (int l = 0; l < dim; l++) {
+  for (int l = 0; l < dim; ++l) {
     v[l] /= tnorm;
   }
 
   // success
-  return 1;
+  return true;
 }
 
 } /* end namespace numerics */

@@ -210,12 +210,10 @@ static inline T abs(T x)
 }
 
 /*!
- *******************************************************************************
  * \brief Determines if a 2D OBB intersects a 2D OBB.
  * \param [in] b1 A 2D OrientedBoundingBox
  * \param [in] b2 A 2D OrientedBoundingBox
  * \return true iff b1 intersects with b2, otherwise, false.
- *******************************************************************************
  */
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 2 >& b1,
@@ -250,12 +248,10 @@ bool intersect(const OrientedBoundingBox< T, 2 >& b1,
 }
 
 /*!
- *******************************************************************************
  * \brief Determines if a 3D OBB intersects a 3D OBB.
  * \param [in] b1 A 3D OrientedBoundingBox
  * \param [in] b2 A 3D OrientedBoundingBox
  * \return true iff b1 intersects with b2, otherwise, false.
- *******************************************************************************
  */
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 3 >& b1,
