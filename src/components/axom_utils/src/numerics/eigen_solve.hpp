@@ -20,15 +20,13 @@
 
 // C/C++ includes
 #include <cassert> // for assert()
-#include <cmath> // for sqrt()
-#include <random> // for std::srand
+#include <cmath> // for sqrt() and rand()
 #include <ctime> // for time(0)
 
 namespace axom {
 namespace numerics {
 
 /*!
- *******************************************************************************
  * \brief Approximates k eigenvectors and eigenvalues of the passed in square
  * matrix using the power method.
  * 
@@ -40,15 +38,15 @@ namespace numerics {
  *
  * \param [in] A a square input matrix
  * \param [in] k number of eigenvalue-eigenvectors to find
- * \param [in] depth number of iterations for the power method
  * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
+ * \param [in] depth optional number of iterations for the power method
  * \return rc return value, nonzero if the solve is successful.
  *
  * \pre A.isSquare() == true
  * \pre u != AXOM_NULLPTR
  * \pre lambdas != AXOM_NULLPTR
- *******************************************************************************
+ * \pre T is a floating point type
  */
 template < typename T >
 int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth=20);
@@ -64,18 +62,19 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth=20);
 namespace axom {
 namespace numerics {
 
-namespace { /* anonymous namespace */
 
-  // TODO: make this work with non-CXX11 compilers
-  template < typename T >
-  T getRandom() {
-    static std::default_random_engine gen(time(0));
-    static std::normal_distribution< T > dist(static_cast< T >(0.0),
-      static_cast< T >(1.0));
-    return dist(gen);
+// Helper method which returns a uniformly distributed random between 0 and 1.
+template < typename T >
+T getRandom()
+{
+  // This is hacky, but allows us to avoid re-seeding
+  static bool seeded = false;
+  if (!seeded) {
+    srand((unsigned) time(0));
+    seeded = true;
   }
-
-} /* end namespace anonymous */
+  return static_cast< T >(((double) rand())/RAND_MAX);
+}
 
 template < typename T >
 int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
@@ -84,11 +83,18 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
   assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
 
+  #ifdef AXOM_USE_CXX11
+    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+      "pre: T is a floating point type");
+  #endif
+
   if (!A.isSquare()) {
     return 0;
   }
 
-  if (k <= 0) return 1;
+  if (k <= 0) {
+    return 1;
+  }
 
   int N = A.getNumColumns();
 
@@ -105,7 +111,7 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
     // 2: make ortho to previous eigenvecs then normalize
     for (int j = 0; j < i; j++) make_orthogonal< T >(vec, u + j*N, N);
 
-    int res = normalize< T >(vec, N);
+    bool res = normalize< T >(vec, N);
 
     if (!res) {  // something went wrong
       return 0;
@@ -118,7 +124,9 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
       vector_multiply(A, vec, temp);
 
       // make ortho to previous (for stability)
-      for (int k = 0; k < i; k++) make_orthogonal< T >(temp, u + k*N, N);
+      for (int k = 0; k < i; k++) {
+        make_orthogonal< T >(temp, u + k*N, N);
+      }
 
       res = normalize< T >(temp, N);
 
@@ -126,7 +134,9 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
         // is guaranteed to be orthogonal to previous eigenvecs and normal
         break;
       } else {  // else copy it over
-        for (int l = 0; l < N; l++) vec[l] = temp[l];
+        for (int l = 0; l < N; l++) {
+          vec[l] = temp[l];
+        }
       }
     }
 

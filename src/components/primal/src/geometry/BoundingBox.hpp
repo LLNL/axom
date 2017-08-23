@@ -144,12 +144,10 @@ public:
 
 
   /*!
-   *****************************************************************************
    * \brief Constructor. Creates a bounding box containing the collection of
    * points.
    * \pre pt must point to at least n valid point
    * \note If n <= 0, defaults to default constructor values
-   *****************************************************************************
    */
   BoundingBox(PointType *pts, int n);
 
@@ -461,7 +459,7 @@ template < typename T, int NDIMS >
 BoundingBox< T, NDIMS>::BoundingBox(PointType *pts, int n)
 {
   if (n <= 0) {
-    *this = BoundingBox< T, NDIMS >();
+    clear();
   }
   // sanity check:
   SLIC_ASSERT(pts != AXOM_NULLPTR);

@@ -200,13 +200,11 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
 }
 
 /*!
- *******************************************************************************
  * \brief Computes the closest point from a point to a given OBB.
  *
  * \param [in] pt the query pt.
  * \param [in] obb user-supplied oriented bounding box.
  * \return cp the closest point from a point pt and an OBB. 
- *******************************************************************************
  */
 template < typename T, int NDIMS >
 inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
