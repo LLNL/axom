@@ -99,6 +99,8 @@ module axom_sidre
     contains
         procedure :: get_index => group_get_index
         procedure :: get_name => group_get_name
+        procedure :: get_path => group_get_path
+        procedure :: get_path_name => group_get_path_name
         procedure :: get_parent => group_get_parent
         procedure :: get_data_store => group_get_data_store
         procedure :: get_num_views => group_get_num_views
@@ -399,6 +401,8 @@ module axom_sidre
         procedure :: is_string => view_is_string
         procedure :: get_index => view_get_index
         procedure :: get_name => view_get_name
+        procedure :: get_path => view_get_path
+        procedure :: get_path_name => view_get_path_name
         procedure :: get_buffer => view_get_buffer
         procedure :: get_void_ptr => view_get_void_ptr
         procedure :: set_scalar_int => view_set_scalar_int
@@ -682,6 +686,24 @@ module axom_sidre
             character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
             integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_group_get_name_bufferify
+
+        subroutine c_group_get_path_bufferify(self, SH_F_rv, NSH_F_rv) &
+                bind(C, name="SIDRE_group_get_path_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
+        end subroutine c_group_get_path_bufferify
+
+        subroutine c_group_get_path_name_bufferify(self, SH_F_rv, NSH_F_rv) &
+                bind(C, name="SIDRE_group_get_path_name_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
+        end subroutine c_group_get_path_name_bufferify
 
         pure function c_group_get_parent(self) &
                 result(SH_rv) &
@@ -1963,6 +1985,24 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: NSH_F_rv
         end subroutine c_view_get_name_bufferify
 
+        subroutine c_view_get_path_bufferify(self, SH_F_rv, NSH_F_rv) &
+                bind(C, name="SIDRE_view_get_path_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
+        end subroutine c_view_get_path_bufferify
+
+        subroutine c_view_get_path_name_bufferify(self, SH_F_rv, NSH_F_rv) &
+                bind(C, name="SIDRE_view_get_path_name_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
+            integer(C_INT), value, intent(IN) :: NSH_F_rv
+        end subroutine c_view_get_path_name_bufferify
+
         function c_view_get_buffer(self) &
                 result(SH_rv) &
                 bind(C, name="SIDRE_view_get_buffer")
@@ -2401,6 +2441,30 @@ contains
             len(SH_rv, kind=C_INT))
         ! splicer end class.Group.method.get_name
     end function group_get_name
+
+    function group_get_path(obj) result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        class(SidreGroup) :: obj
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        ! splicer begin class.Group.method.get_path
+        call c_group_get_path_bufferify(  &
+            obj%voidptr,  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+        ! splicer end class.Group.method.get_path
+    end function group_get_path
+
+    function group_get_path_name(obj) result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        class(SidreGroup) :: obj
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        ! splicer begin class.Group.method.get_path_name
+        call c_group_get_path_name_bufferify(  &
+            obj%voidptr,  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+        ! splicer end class.Group.method.get_path_name
+    end function group_get_path_name
 
     function group_get_parent(obj) result(SH_rv)
         class(SidreGroup) :: obj
@@ -5037,6 +5101,30 @@ contains
             len(SH_rv, kind=C_INT))
         ! splicer end class.View.method.get_name
     end function view_get_name
+
+    function view_get_path(obj) result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        class(SidreView) :: obj
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        ! splicer begin class.View.method.get_path
+        call c_view_get_path_bufferify(  &
+            obj%voidptr,  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+        ! splicer end class.View.method.get_path
+    end function view_get_path
+
+    function view_get_path_name(obj) result(SH_rv)
+        use iso_c_binding, only : C_CHAR, C_INT
+        class(SidreView) :: obj
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        ! splicer begin class.View.method.get_path_name
+        call c_view_get_path_name_bufferify(  &
+            obj%voidptr,  &
+            SH_rv,  &
+            len(SH_rv, kind=C_INT))
+        ! splicer end class.View.method.get_path_name
+    end function view_get_path_name
 
     function view_get_buffer(obj) result(SH_rv)
         class(SidreView) :: obj

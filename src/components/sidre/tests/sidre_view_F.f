@@ -70,6 +70,36 @@ contains
 
 !------------------------------------------------------------------------------
 
+  subroutine get_path_name
+    type(SidreDataStore) ds
+    type(SidreGroup) root
+    type(SidreView) v1, v2, v3
+
+    call set_case_name("get_path_name")
+
+    ds = datastore_new()
+    root = ds%get_root()
+    v1 = root%create_view("test/a/b/v1")
+    v2 = root%create_view("test/v2")
+    v3 = root%create_view("v3")
+
+    call assert_true(v1%get_name() == "v1")
+    call assert_true(v1%get_path() == "test/a/b")
+    call assert_true(v1%get_path_name() == "test/a/b/v1")
+
+    call assert_true(v2%get_name() == "v2")
+    call assert_true(v2%get_path() == "test")
+    call assert_true(v2%get_path_name() == "test/v2")
+
+    call assert_true(v3%get_name() == "v3")
+    call assert_true(v3%get_path() == "")
+    call assert_true(v3%get_path_name() == "v3")
+
+    call ds%delete()
+  end subroutine get_path_name
+
+!------------------------------------------------------------------------------
+
   subroutine scalar_view
     type(SidreDataStore) ds
     type(SidreGroup) root
@@ -952,6 +982,7 @@ program fortran_test
   call init_fruit
 
   call create_views
+  call get_path_name
 ! create_view_from_path
   call scalar_view
 ! dealloc

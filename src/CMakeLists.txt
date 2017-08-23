@@ -63,5 +63,5 @@ endif()
 ################################
 # Create header of configuration options
 ################################s
-include(cmake/CMakeConfigureFile.cmake)
+include(cmake/AxomConfig.cmake)
 

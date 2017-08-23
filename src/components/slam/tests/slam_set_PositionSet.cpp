@@ -36,7 +36,7 @@ typedef SetType::ElementType    SetElement;
 static const SetPosition MAX_SET_SIZE = 10;
 
 
-TEST(gtest_slam_set_positionset,construct_valid)
+TEST(slam_set_positionset,construct_valid)
 {
   SLIC_INFO("Testing that we can construct a PositionSet from an integer");
 
@@ -51,7 +51,7 @@ TEST(gtest_slam_set_positionset,construct_valid)
 }
 
 
-TEST(gtest_slam_set_positionset,construct_empty)
+TEST(slam_set_positionset,construct_empty)
 {
   SLIC_INFO("Testing that we can construct PositionSets of size 0");
 
@@ -69,7 +69,7 @@ TEST(gtest_slam_set_positionset,construct_empty)
 }
 
 
-TEST(gtest_slam_set_positionset,construct_strictly_positive)
+TEST(slam_set_positionset,construct_strictly_positive)
 {
   SLIC_INFO("Testing that PositionSets with negative size are invalid");
 
@@ -78,7 +78,7 @@ TEST(gtest_slam_set_positionset,construct_strictly_positive)
   EXPECT_FALSE( s.isValid());
 }
 
-TEST(gtest_slam_set_positionset,construct_set_builder)
+TEST(slam_set_positionset,construct_set_builder)
 {
   SLIC_INFO("Testing construction of PositionSets using SetBuilders");
 
@@ -120,7 +120,7 @@ TEST(gtest_slam_set_positionset,construct_set_builder)
 }
 
 
-TEST(gtest_slam_set_positionset,construct_runtime)
+TEST(slam_set_positionset,construct_runtime)
 {
   SLIC_INFO("Testing that PositionSets can be constructed with runtime sizes");
 
@@ -136,7 +136,7 @@ TEST(gtest_slam_set_positionset,construct_runtime)
 }
 
 
-TEST(gtest_slam_set_positionset,iterate)
+TEST(slam_set_positionset,iterate)
 {
   SetType s(MAX_SET_SIZE);
 
@@ -185,7 +185,7 @@ TEST(gtest_slam_set_positionset,iterate)
 }
 
 
-TEST(gtest_slam_set_positionset,out_of_bounds_at)
+TEST(slam_set_positionset,out_of_bounds_at)
 {
   SLIC_INFO("Testing out of bounds access using at() -- code is expected to assert and die.");
   SetType s(MAX_SET_SIZE);
@@ -203,7 +203,7 @@ TEST(gtest_slam_set_positionset,out_of_bounds_at)
   SLIC_INFO("done.");
 }
 
-TEST(gtest_slam_set_positionset,out_of_bounds_bracket)
+TEST(slam_set_positionset,out_of_bounds_bracket)
 {
   SLIC_INFO("Testing out of bounds access using operator[] -- code is expected to assert and die.");
 
@@ -221,7 +221,7 @@ TEST(gtest_slam_set_positionset,out_of_bounds_bracket)
 }
 
 
-TEST(gtest_slam_set_positionset,awkward_resize)
+TEST(slam_set_positionset,awkward_resize)
 {
   SLIC_INFO("This test shows that we can modify the underlying size of a PositionSet through"
       << "its RuntimeSizePolicy parent class");

@@ -27,7 +27,7 @@ void sleep(int numSeconds)
 #include <unistd.h> // for sleep()
 #endif
 
-TEST(gtest_utils_Timer, timer_check )
+TEST(axom_utils_Timer, timer_check )
 {
   axom::utilities::Timer t;
 
@@ -52,7 +52,7 @@ TEST(gtest_utils_Timer, timer_check )
 }
 
 
-TEST(gtest_utils_Timer, timer_check_duration )
+TEST(axom_utils_Timer, timer_check_duration )
 {
   axom::utilities::Timer t;
   t.start();

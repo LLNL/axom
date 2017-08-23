@@ -25,14 +25,39 @@
   #include "mfem.hpp"
 #endif
 
-#include <string>
-#include <sstream>          // stringstream
-#include <iostream>         // cout
-#include <vector>
-#include <algorithm>        // copy
+#include <algorithm>  // copy
+#include <iostream>   // for cout
+#include <sstream>    // for stringstream
+#include <string>     // for C++ string
+#include <vector>     // for STL vector
 
 
-TEST(gtest_utils_config,config_libraries)
+TEST(axom_utils_config, axom_version )
+{
+  const int AXOM_MAJOR = AXOM_VERSION_MAJOR;
+  const int AXOM_MINOR = AXOM_VERSION_MINOR;
+  const int AXOM_PATCH = AXOM_VERSION_PATCH;
+  EXPECT_TRUE( AXOM_MAJOR >= 0 );
+  EXPECT_TRUE( AXOM_MINOR >= 0 );
+  EXPECT_TRUE( AXOM_PATCH >= 0 );
+
+  const std::string AXOM_FULL = AXOM_VERSION_FULL;
+  EXPECT_FALSE( AXOM_FULL.empty() );
+
+  std::cout << "AXOM_VERSION_FULL: "  << AXOM_VERSION_FULL  << std::endl;
+  std::cout << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
+  std::cout << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
+  std::cout << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
+
+#ifdef AXOM_VERSION_EXTRA
+  const std::string AXOM_EXTRA = AXOM_VERSION_EXTRA;
+  EXPECT_FALSE( AXOM_EXTRA.empty() );
+
+  std::cout << "AXOM_VERSION_EXTRA: " << AXOM_VERSION_EXTRA << std::endl;
+#endif
+}
+
+TEST(axom_utils_config,config_libraries)
 {
   // This test checks which libraries are available in the configuration
 
@@ -92,7 +117,7 @@ TEST(gtest_utils_config,config_libraries)
 }
 
 
-TEST(gtest_utils_config,config_components)
+TEST(axom_utils_config,config_components)
 {
   // This test checks which toolkit components are available in the configuration
 
@@ -144,7 +169,7 @@ TEST(gtest_utils_config,config_components)
   EXPECT_TRUE(true);
 }
 
-TEST(gtest_utils_config,config_openmp)
+TEST(axom_utils_config,config_openmp)
 {
     // This test checks that the per-target OpenMP guards
     // in our configuration file 'axom/config.hpp' are working properly
@@ -186,7 +211,7 @@ TEST(gtest_utils_config,config_openmp)
 }
 
 #ifdef AXOM_USE_BOOST
-TEST(gtest_utils_config,boost_version)
+TEST(axom_utils_config,boost_version)
 {
     std::cout << "Using boost version "
           << BOOST_VERSION / 100000     << "."  // major version
@@ -197,7 +222,7 @@ TEST(gtest_utils_config,boost_version)
 #endif // AXOM_USE_BOOST
 
 #ifdef AXOM_USE_MFEM
-TEST(gtest_utils_config,mfem_configuration)
+TEST(axom_utils_config,mfem_configuration)
 {
     // Verify that this copy of mfem is configured without MPI
     bool hasMPI = false;

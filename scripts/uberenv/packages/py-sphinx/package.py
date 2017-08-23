@@ -65,9 +65,12 @@ class PySphinx(Package):
     depends_on("py-babel")
     depends_on("py-sphinx-rtd-theme")
     
-    
+    # w/o this patch sphinx generates grammar pickle files
+    # on first use, which can lead to perms problems
+    patch('sphinx-1.4.5-add-setup-compile-grammar-cmd.patch')
 
     def install(self, spec, prefix):
+        #
         # simply install to the spack python
         python('setup.py', 'install') #, '--prefix=%s' % prefix)
         # sphinx_build lives in python's bin dir

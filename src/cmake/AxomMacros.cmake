@@ -1,3 +1,12 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Produced at the Lawrence Livermore National Laboratory.
+#
+# All rights reserved.
+#
+# This source code cannot be distributed without permission and further
+# review from Lawrence Livermore National Laboratory.
+#-------------------------------------------------------------------------------
 
 ##------------------------------------------------------------------------------
 ## axom_add_component( COMPONENT_NAME <name> DEFAULT_STATE [ON/OFF] )
