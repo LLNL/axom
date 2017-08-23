@@ -88,6 +88,8 @@ void runIntersectTest(const std::string &test,
 
   SCOPED_TRACE(tname);
 
+  SLIC_INFO("Intersection test " << tname);
+
   typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
   // read in the test file into a Mesh
