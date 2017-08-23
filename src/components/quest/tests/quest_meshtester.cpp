@@ -27,21 +27,31 @@
 #include <fstream>
 #include <sstream>
 
-std::ostream & operator<<(std::ostream & os, const std::vector<int> & m)
+template <typename T>
+std::string vecToString(const std::vector<T> & v)
 {
-  for (unsigned int i = 0; i < m.size(); ++i) {
-    os << m[i] << "  ";
-  }
-  return os;
+  std::string retval;
+  return retval;
 }
 
-std::ostream & operator<<(std::ostream & os,
-                          const std::vector< std::pair<int, int> > & m)
+template <>
+std::string vecToString(const std::vector<int> & v)
 {
-  for (unsigned int i = 0; i < m.size(); ++i) {
-    os << "(" << m[i].first << " " << m[i].second << ")  ";
+  std::stringstream retval;
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    retval << v[i] << "  ";
   }
-  return os;
+  return retval.str();
+}
+
+template <>
+std::string vecToString(const std::vector< std::pair<int, int> > & v)
+{
+  std::stringstream retval;
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    retval << "(" << v[i].first << " " << v[i].second << ")  ";
+  }
+  return retval.str();
 }
 
 template<typename T>
@@ -59,9 +69,9 @@ void reportVectorMismatch(const std::vector<T> & standard,
                       std::inserter(unexpected, unexpected.begin()));
 
   EXPECT_TRUE(missing.size() == 0) << "Missing " << missing.size() <<
-    " " << label << ":" << std::endl << missing;
+    " " << label << ":" << std::endl << vecToString(missing);
   EXPECT_TRUE(unexpected.size() == 0) << "Unexpectedly, " << unexpected.size() <<
-    " extra " << label << ":" << std::endl << unexpected;
+    " extra " << label << ":" << std::endl << vecToString(unexpected);
 }
 
 void runIntersectTest(const std::string &test,
