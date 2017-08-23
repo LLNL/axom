@@ -56,7 +56,7 @@ public:
 //!  @name QueryIterator ctor and dtor
 
   /*!
-   *  \brief Private ctor that creates an QueryIterator which starts at grp.
+   *  \brief ctor that creates a QueryIterator which starts at grp.
    */
   QueryIterator(Group * grp);
 
@@ -67,15 +67,16 @@ public:
 //@}
 
 //@{
-//!  @name Methods to iteratate through a Group.
+//!  @name Methods to iterate through a Group.
+
 /*!
  *  \brief Return true if the QueryIterator references a Group or View.
- *         Return false if there are no more nodes to visit.
+ *         Return false if there are no more Groups or Views to visit.
  */
   bool isValid();
 
   /*!
-   *  \brief Advance QueryIterator to the next available node.
+   *  \brief Advance QueryIterator to the next available Group or View.
    */
   void advanceToNext();
 //@}
