@@ -11,6 +11,7 @@ if (SCR_FOUND)
     set(example_sources
         ${example_sources}
         IOSCRWrite.cpp
+        IOSCRRead.cpp
        )
 endif() 
 

@@ -189,6 +189,10 @@ public:
             const std::string& root_file,
             bool preserve_contents = false);
 
+  void readWithSCR(sidre::Group * group,
+                   const std::string& root_file,
+                   bool preserve_contents = false);
+
   /*!
    * \brief load external data into a group
    *
