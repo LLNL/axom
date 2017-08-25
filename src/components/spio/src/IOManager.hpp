@@ -61,6 +61,9 @@ public:
    * \brief Constructor
    *
    * \param com               MPI communicator
+   * \param use_scr           Use SCR library for scalable I/O management.
+   *                          If true, the calling code must have already
+   *                          called SCR_Init() afer MPI_Init().
    */
   IOManager(MPI_Comm com, bool use_scr = false);
 
@@ -189,9 +192,19 @@ public:
             const std::string& root_file,
             bool preserve_contents = false);
 
+  /*!
+   * \brief read from a root file that was dumped as part of an SCR checkpoint
+   *
+   * \param group         Group to fill with input data
+   * \param root_file     root file containing input data - file name only,
+   *                      not a path 
+   * \param preserve_contents   Preserves group's existing contents if true
+   */
+#ifdef AXOM_USE_SCR
   void readWithSCR(sidre::Group * group,
                    const std::string& root_file,
                    bool preserve_contents = false);
+#endif
 
   /*!
    * \brief load external data into a group

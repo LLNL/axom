@@ -249,13 +249,26 @@ void IOManager::read(sidre::Group * datagroup, const std::string& root_file, boo
   read(datagroup, root_file, protocol, preserve_contents);
 }
 
-void IOManager::readWithSCR(sidre::Group * datagroup, const std::string& root_file, bool preserve_contents)
+/*
+ *************************************************************************
+ *
+ * Read based on root file that was dumped in an SCR checkpoint.
+ *
+ *************************************************************************
+ */
+#ifdef AXOM_USE_SCR
+void IOManager::readWithSCR(
+   sidre::Group * datagroup,
+   const std::string& root_file,
+   bool preserve_contents)
 {
+  SLIC_ASSERT(m_use_scr); 
   char file[SCR_MAX_FILENAME];
   if (SCR_Route_file(root_file.c_str(), file) == SCR_SUCCESS) {
     read(datagroup, std::string(file), preserve_contents);
   }
 }
+#endif
 
 /*
  *************************************************************************

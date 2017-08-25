@@ -36,16 +36,18 @@ if (ENABLE_MPI)
                 NUM_PROCS 4
                 )
 
-   blt_add_executable(NAME spio_SCRWriteRead_test
-                      SOURCES spio_SCRWriteRead.cpp
-                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON ${spio_test_depends}
-                      )
-   blt_add_test(NAME spio_SCRWriteRead
-                COMMAND spio_SCRWriteRead_test
-                NUM_PROCS 4
-                )
-                
+   if (SCR_FOUND)
+      blt_add_executable(NAME spio_SCRWriteRead_test
+                         SOURCES spio_SCRWriteRead.cpp
+                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                         DEPENDS_ON ${spio_test_depends}
+                         )
+      blt_add_test(NAME spio_SCRWriteRead
+                   COMMAND spio_SCRWriteRead_test
+                   NUM_PROCS 4
+                   )
+   endif()
+
    blt_add_executable(NAME spio_irregularWriteRead_test
                       SOURCES spio_irregularWriteRead.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
