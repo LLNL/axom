@@ -27,7 +27,7 @@
 #include "Group.hpp"
 #include "DataStore.hpp"
 #include "View.hpp"
-#include "QueryIterator.hpp"
+#include "Iterator.hpp"
 #include "SidreTypes.hpp"
 
 #endif /* SIDRE_HPP_ */

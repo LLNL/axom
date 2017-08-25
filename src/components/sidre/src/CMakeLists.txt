@@ -8,7 +8,7 @@ set(sidre_headers
     core/View.hpp
     core/Attribute.hpp
     core/AttrValues.hpp
-    core/QueryIterator.hpp
+    core/Iterator.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
@@ -25,7 +25,7 @@ set(sidre_sources
     core/View.cpp
     core/Attribute.cpp
     core/AttrValues.cpp
-    core/QueryIterator.cpp
+    core/Iterator.cpp
     core/SidreUtilities.cpp
 )
 

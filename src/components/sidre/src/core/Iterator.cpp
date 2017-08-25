@@ -11,15 +11,15 @@
 /*!
  ******************************************************************************
  *
- * \file QueryIterator.cpp
+ * \file Iterator.cpp
  *
- * \brief   Implementation file for QueryIterator class.
+ * \brief   Implementation file for Iterator class.
  *
  ******************************************************************************
  */
 
 // Associated header file
-#include "QueryIterator.hpp"
+#include "Iterator.hpp"
 
 // Sidre project headers
 #include "sidre/Group.hpp"
@@ -67,7 +67,7 @@ namespace sidre
  * found has no Views to signal advanceToNext that the Group has been
  * visited.
  */
-struct QueryIterator::Cursor
+struct Iterator::Cursor
 {
   Group * m_grp;
   IndexType m_igroup;
@@ -131,11 +131,11 @@ struct QueryIterator::Cursor
  *
  *************************************************************************
  */
-void QueryIterator::findDeepestGroup(Group * grp)
+void Iterator::findDeepestGroup(Group * grp)
 {
   while (true)
   {
-    QueryIterator::Cursor * state = new QueryIterator::Cursor;
+    Iterator::Cursor * state = new Iterator::Cursor;
     state->m_grp    = grp;
     state->m_igroup = grp->getFirstValidGroupIndex();
     state->m_iview  = grp->getFirstValidViewIndex();
@@ -155,7 +155,7 @@ void QueryIterator::findDeepestGroup(Group * grp)
   }
 
   // Check last Group pushed to see if it represents a Group or View
-  QueryIterator::Cursor * state = m_stack.top();
+  Iterator::Cursor * state = m_stack.top();
   if (state->isView())
   {
     // Start by visiting the first View
@@ -170,24 +170,24 @@ void QueryIterator::findDeepestGroup(Group * grp)
 
 /*
  *************************************************************************
- * Construct a QueryIterator instance.
+ * Construct a Iterator instance.
  *
  * Setup for a depth first query by following down grp to the bottom.
  *************************************************************************
  */
-QueryIterator::QueryIterator(Group * grp)
+Iterator::Iterator(Group * grp)
 {
   findDeepestGroup(grp);
 }
 
 /*
  *************************************************************************
- * Destructor for QueryIterator.
+ * Destructor for Iterator.
  *************************************************************************
  */
-QueryIterator::~QueryIterator()
+Iterator::~Iterator()
 {
-  // If the QueryIterator is destoryed before it has iterated over all
+  // If the Iterator is destoryed before it has iterated over all
   // Groups or Views, m_stack will not be empty.
   while ( !m_stack.empty())
   {
@@ -199,11 +199,11 @@ QueryIterator::~QueryIterator()
 
 /*
  *************************************************************************
- *  Return true if the QueryIterator references a Group or View.
+ *  Return true if the Iterator references a Group or View.
  *  Return false if the Iterator has finished its traversal.
  *************************************************************************
  */
-bool QueryIterator::isValid()
+bool Iterator::isValid()
 {
   return ! m_stack.empty();
 }
@@ -219,11 +219,11 @@ bool QueryIterator::isValid()
  * been visited.
  *************************************************************************
  */
-void QueryIterator::advanceToNext()
+void Iterator::advanceToNext()
 {
   while ( !m_stack.empty())
   {
-    QueryIterator::Cursor * state = m_stack.top();
+    Iterator::Cursor * state = m_stack.top();
     Group * grp = state->m_grp;
 
     if (state->m_igroup != InvalidIndex)
@@ -270,11 +270,11 @@ void QueryIterator::advanceToNext()
 /*
  *************************************************************************
  *
- * Return true if QueryIterator references a Group.
+ * Return true if Iterator references a Group.
  *
  *************************************************************************
  */
-bool QueryIterator::isGroup() const
+bool Iterator::isGroup() const
 {
   if (m_stack.empty())
   {
@@ -287,11 +287,11 @@ bool QueryIterator::isGroup() const
 /*
  *************************************************************************
  *
- * Return true if QueryIterator references a View.
+ * Return true if Iterator references a View.
  *
  *************************************************************************
  */
-bool QueryIterator::isView() const
+bool Iterator::isView() const
 {
   if (m_stack.empty())
   {
@@ -308,7 +308,7 @@ bool QueryIterator::isView() const
  *
  *************************************************************************
  */
-Group * QueryIterator::asGroup()
+Group * Iterator::asGroup()
 {
   if (m_stack.empty())
   {
@@ -325,7 +325,7 @@ Group * QueryIterator::asGroup()
  *
  *************************************************************************
  */
-Group const * QueryIterator::asGroup() const
+Group const * Iterator::asGroup() const
 {
   if (m_stack.empty())
   {
@@ -342,7 +342,7 @@ Group const * QueryIterator::asGroup() const
  *
  *************************************************************************
  */
-View * QueryIterator::asView()
+View * Iterator::asView()
 {
   if (m_stack.empty())
   {
@@ -359,7 +359,7 @@ View * QueryIterator::asView()
  *
  *************************************************************************
  */
-View const * QueryIterator::asView() const
+View const * Iterator::asView() const
 {
   if (m_stack.empty())
   {
@@ -376,14 +376,14 @@ View const * QueryIterator::asView() const
  *
  *************************************************************************
  */
-const std::string & QueryIterator::getName() const
+const std::string & Iterator::getName() const
 {
   if (m_stack.empty())
   {
     return InvalidName;
   }
 
-  QueryIterator::Cursor * state = m_stack.top();
+  Iterator::Cursor * state = m_stack.top();
 
   if (state->isView())
   {
@@ -402,7 +402,7 @@ const std::string & QueryIterator::getName() const
  *
  *************************************************************************
  */
-std::string QueryIterator::getPath() const
+std::string Iterator::getPath() const
 {
 #if 1
   std::string thePath("here");

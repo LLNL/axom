@@ -23,8 +23,8 @@
  ******************************************************************************
  */
 
-#ifndef SIDRE_QUERYITERATOR_HPP_
-#define SIDRE_QUERYITERATOR_HPP_
+#ifndef SIDRE_ITERATOR_HPP_
+#define SIDRE_ITERATOR_HPP_
 
 // Standard C++ headers
 #include <string>
@@ -43,40 +43,40 @@ class Group;
 class View;
 
 /*!
- * \class QueryIterator
+ * \class Iterator
  *
  * \brief Iterate recursively over a Group.
  *
  */
-class QueryIterator
+class Iterator
 {
 public:
 
 //@{
-//!  @name QueryIterator ctor and dtor
+//!  @name Iterator ctor and dtor
 
   /*!
-   *  \brief ctor that creates a QueryIterator which starts at grp.
+   *  \brief ctor that creates a Iterator which starts at grp.
    */
-  QueryIterator(Group * grp);
+  Iterator(Group * grp);
 
   /*!
    * \brief dtor.
    */
-  ~QueryIterator();
+  ~Iterator();
 //@}
 
 //@{
 //!  @name Methods to iterate through a Group.
 
 /*!
- *  \brief Return true if the QueryIterator references a Group or View.
+ *  \brief Return true if the Iterator references a Group or View.
  *         Return false if the Iterator has finished its traversal.
  */
   bool isValid();
 
   /*!
-   *  \brief Advance QueryIterator to the next Group or View.
+   *  \brief Advance Iterator to the next Group or View.
    *
    *  After calling advanceToNext, isValid will return true if the
    *  Iterator represents a Group or View and false if the traversal
@@ -90,12 +90,12 @@ public:
 //!  @name Methods to query iterator.
 
   /*!
-   *  \brief Return true if the QueryIterator references a Group.
+   *  \brief Return true if the Iterator references a Group.
    */
   bool isGroup() const;
 
   /*!
-   *  \brief Return true if the QueryIterator references a View.
+   *  \brief Return true if the Iterator references a View.
    */
   bool isView() const;
 
@@ -169,8 +169,8 @@ public:
 //@}
 
 private:
-  DISABLE_DEFAULT_CTOR(QueryIterator);
-  DISABLE_MOVE_AND_ASSIGNMENT(QueryIterator);
+  DISABLE_DEFAULT_CTOR(Iterator);
+  DISABLE_MOVE_AND_ASSIGNMENT(Iterator);
 
   /*!
    * \brief Push grp on the stack and push child Groups until a Group
@@ -191,4 +191,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* SIDRE_QUERYITERATOR_HPP_ */
+#endif /* SIDRE_ITERATOR_HPP_ */

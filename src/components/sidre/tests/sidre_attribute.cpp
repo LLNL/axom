@@ -16,7 +16,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Attribute;
 using axom::sidre::Group;
 using axom::sidre::View;
-using axom::sidre::QueryIterator;
+using axom::sidre::Iterator;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
 using axom::sidre::Node;
@@ -857,7 +857,7 @@ TEST(sidre_attribute,depth_first)
 
   Group * root = ds->getRoot();
 
-  QueryIterator qitr(root);
+  Iterator qitr(root);
 
   int iorder = 0;
   reference order[] = {
