@@ -210,8 +210,6 @@ template < typename T, int NDIMS >
 inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
   const OrientedBoundingBox< T, NDIMS >& obb)
 {
-  if (obb.contains(pt)) return pt;
-
   Vector< T, NDIMS > e = obb.getExtents();
   const Vector< T, NDIMS > *u = obb.getAxes(); 
 

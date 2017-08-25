@@ -200,6 +200,12 @@ public:
   OrientedBoundingBox& expand(T expansionAmount);
 
   /*!
+   * \brief Returns the product of the extents.
+   * \return Product of the extents.
+   */
+  T volume() const;
+
+  /*!
    * \brief Scales the bounding box about its center by a given amount.
    * \param [in] scaleFactor the multiplicative factor by which to scale
    * \note Checks to ensure that the bounding box is valid after inflation.
@@ -354,7 +360,7 @@ namespace primal {
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox()
 {
-  (this->m_u[0])[0] = ValueRange< T >::lowest();
+  this->clear();
 }
 
 //------------------------------------------------------------------------------
@@ -379,7 +385,7 @@ template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n)
 {
   if (n <= 0) {
-    (this->m_u[0])[0] = ValueRange< T >::lowest();
+    this->clear();
     return;
   }
 
@@ -392,13 +398,13 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n
   c /= static_cast< T >(n);
 
   // save space for pts minus the centroid
-  NumericArray< T, NDIMS > *ptsMinusCentroid = new NumericArray< T, NDIMS >[n];
+  NumericArray< T, NDIMS > diff;
 
   for (int i = 0; i < n; i++) {
-    ptsMinusCentroid[i] = pts[i].array() - c;
+    diff = pts[i].array() - c;
     for (int j = 0; j < NDIMS; j++) {
       for(int k = 0; k < NDIMS; k++) {
-        covar(j, k) += ptsMinusCentroid[i][j]*ptsMinusCentroid[i][k];
+        covar(j, k) += diff[j]*diff[k];
       }
     }
   }
@@ -413,30 +419,29 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n
   int eigen_res = numerics::eigen_solve< T >(covar, NDIMS, u, lambdas);
   SLIC_ASSERT(eigen_res);
 
-  T maxima;
-  T dot;
-
-  for (int i = 0; i < NDIMS; i++) {
+  // save the axes
+  for (int i = 0; i < NDIMS; ++i) {
     this->m_u[i] = Vector< T, NDIMS >(u + NDIMS*i);
-
-    // compute extent in this direction
-    maxima = T();
-    for (int j = 0; j < n; j++) {
-      dot = T();
-      for (int k = 0; k < NDIMS; k++) {
-        dot += u[NDIMS*i + k]*((ptsMinusCentroid[j])[k]);
-      }
-
-      if (dot < T()) dot = -dot;
-
-      if (maxima < dot) maxima = dot;
-    }
-    this->m_e[i] = maxima;
   }
 
-  // free up allocated memory
-  delete [] ptsMinusCentroid;
+  // compute the extents
+  Vector< T, NDIMS > maxima;
+  T dot;
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < NDIMS; ++j) {
+      diff = pts[i].array() - c;
+      dot = utilities::abs< T >(
+        numerics::dot_product< T >(&(m_u[j][0]), &diff[0], NDIMS));
+      if (maxima[j] < dot) {
+        maxima[j] = dot;
+      }
+    }
+  }
 
+  // save the extents
+  this->m_e = maxima;
+
+  // save the centroid
   this->m_c = Point< T, NDIMS >(c);
 }
 

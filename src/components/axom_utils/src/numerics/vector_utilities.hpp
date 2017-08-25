@@ -49,23 +49,24 @@ template < typename T >
 T dot_product(T* u, T* v, int dim);
 
 /*!
- * \brief Makes vec orthogonal to other.
+ * \brief Makes u orthogonal to v.
  *
  * \tparam T data type
- * \param [in, out] vec vector to be made orthogonal to other; saves in-place
- * \param [in] other vector that vec is made orthogonal to
+ * \param [in, out] u vector to be made orthogonal to other; saves in-place
+ * \param [in] v vector that u is made orthogonal to
  * \param [in] dim dimension of vectors
+ * \param [in] tol tolerance; if the norm of v is less than tol we do nothing
  *
  * \pre dim >= 1
- * \pre vec != AXOM_NULLPTR
- * \pre other != AXOM_NULLPTR
+ * \pre u != AXOM_NULLPTR
+ * \pre v != AXOM_NULLPTR
  */
 template < typename T >
-void make_orthogonal(T* vec, T* other, int dim);
+void make_orthogonal(T* u, T* v, int dim, double tol=1E-16);
 
 /*!
  * \brief Performs Gram-Schmidt orthonormalization in-place on a 2D array
- * of shape size,size where it treats the rows as the individual vectors.
+ * of shape size,dim where it treats the rows as the individual vectors.
  *
  * \tparam T data type
  * \param [in, out] basis vectors to be made orthonormal; saves them in-place
@@ -125,21 +126,21 @@ T dot_product(T* u, T* v, int dim)
 }
 
 template < typename T >
-void make_orthogonal(T* vec, T* other, int dim)
+void make_orthogonal(T* u, T* v, int dim, double tol)
 {
-  assert("pre: vec pointer is null" && (vec != AXOM_NULLPTR));
-  assert("pre: other pointer is null" && (other != AXOM_NULLPTR));
+  assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
+  assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
   assert("pre: dim >= 1" && (dim >= 1));
 
-  double norm = static_cast< double >(dot_product(other, other, dim));
+  double norm = static_cast< double >(dot_product(v, v, dim));
 
-  if (norm < 1e-16) return;
+  if (norm < tol) return;
 
   T tnorm = static_cast< T >(norm);
 
-  T dot = dot_product(vec, other, dim);
+  T dot = dot_product(u, v, dim);
 
-  for (int l = 0; l < dim; ++l) vec[l] -= ((dot*other[l])/tnorm);
+  for (int l = 0; l < dim; ++l) u[l] -= ((dot*v[l])/tnorm);
 }
 
 template < typename T >
