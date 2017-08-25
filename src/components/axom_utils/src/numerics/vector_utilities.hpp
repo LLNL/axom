@@ -82,7 +82,7 @@ void make_orthogonal(T* u, T* v, int dim, double tol=1E-16);
  * \pre basis != AXOM_NULLPTR
  */
 template < typename T >
-bool orthonormalize(T* basis, int size, int dim, double eps = 1e-16);
+bool orthonormalize(T* basis, int size, int dim, double eps = 1E-16);
 
 /*!
  * \brief Normalizes the passed in array.
