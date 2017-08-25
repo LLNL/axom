@@ -23,6 +23,7 @@
 #include "primal/Ray.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/intersect_impl.hpp"
 
@@ -189,8 +190,8 @@ template < typename T >
 bool intersect(const OrientedBoundingBox< T, 1 > & b1,
   const OrientedBoundingBox< T, 1 >& b2)
 {
-  T c1 = b1.getCentroid().array()[0];
-  T c2 = b2.getCentroid().array()[0];
+  T c1 = b1.getCentroid()[0];
+  T c2 = b2.getCentroid()[0];
 
   T e1 = b1.getExtents()[0];
   T e2 = b2.getExtents()[0];
@@ -199,14 +200,6 @@ bool intersect(const OrientedBoundingBox< T, 1 > & b1,
   if (c2 + e2 > c1 - e1) return true;
 
   return false;
-}
-
-// static helper method
-template < typename T >
-static inline T abs(T x)
-{
-  if (x < T()) return -x;
-  return x;
 }
 
 /*!
@@ -230,16 +223,18 @@ bool intersect(const OrientedBoundingBox< T, 2 >& b1,
 
   Vector< T, 2 > d = c2 - c1;
 
-  for (int i = 0; i < 2; i++) {
-    if (abs< T >(d.dot(u1[i])) > e1[i] + abs< T >((e2[0]*u2[0]).dot(u1[i]))
-        + abs< T >((e2[1]*u2[1]).dot(u1[i]))) {
+  for (int i = 0; i < 2; ++i) {
+    if (utilities::abs< T >(d.dot(u1[i])) > e1[i]
+        + utilities::abs< T >((e2[0]*u2[0]).dot(u1[i]))
+        + utilities::abs< T >((e2[1]*u2[1]).dot(u1[i]))) {
       return false;
     }
   }
 
-  for (int i = 0; i < 2; i++) {
-    if (abs< T >(d.dot(u2[i])) > e2[i] + abs< T >((e1[0]*u1[0]).dot(u2[i]))
-        + abs< T >((e1[1]*u1[1]).dot(u2[i]))) {
+  for (int i = 0; i < 2; ++i) {
+    if (utilities::abs< T >(d.dot(u2[i])) > e2[i]
+        + utilities::abs< T >((e1[0]*u1[0]).dot(u2[i]))
+        + utilities::abs< T >((e1[1]*u1[1]).dot(u2[i]))) {
       return false;
     }
   }
@@ -251,13 +246,13 @@ bool intersect(const OrientedBoundingBox< T, 2 >& b1,
  * \brief Determines if a 3D OBB intersects a 3D OBB.
  * \param [in] b1 A 3D OrientedBoundingBox
  * \param [in] b2 A 3D OrientedBoundingBox
+ * \param [in] EPS error tolerance for intersection
  * \return true iff b1 intersects with b2, otherwise, false.
  */
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 3 >& b1,
-  const OrientedBoundingBox< T, 3 >& b2)
+  const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-8)
 {
-  static const double EPS = 1.0e-4;
   Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
     - Vector< T, 3 >(b2.getCentroid());
 
@@ -270,34 +265,38 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
   // compute r and r^T here:
   Vector< T, 3 > r[3];
   Vector< T, 3 > rt[3];
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      r[i][j] = abs< T >(u1[i].dot(u2[j]));
-      rt[i][j] = abs< T >(u1[j].dot(u2[i]));
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      r[i][j] = utilities::abs< T >(u1[i].dot(u2[j]));
+      rt[i][j] = utilities::abs< T >(u1[j].dot(u2[i]));
     }
   }
 
   // check for separating planes parallel to faces
-  for (int i = 0; i < 3; i++) {
-    if (abs< T >(d.dot(u1[i])) > e1[i] + e2.dot(r[i]) + EPS) {
+  for (int i = 0; i < 3; ++i) {
+    if (utilities::abs< T >(d.dot(u1[i])) > e1[i] + e2.dot(r[i]) + EPS) {
       return false;
     }
   }
 
-  for (int i = 0; i < 3; i++) {
-    if (abs< T >(d.dot(u2[i])) > e2[i] + e1.dot(rt[i]) + EPS) return false;
+  for (int i = 0; i < 3; ++i) {
+    if (utilities::abs< T >(d.dot(u2[i])) > e2[i] + e1.dot(rt[i]) + EPS) {
+      return false;
+    }
   }
 
   // check for separating planes with normals parallel to cross product of edges
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      T left = abs< T >(d.dot(u1[(i + 2) % 3])*r[(i + 1) % 3][j]
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      T left = utilities::abs< T >(d.dot(u1[(i + 2) % 3])*r[(i + 1) % 3][j]
         - (d.dot(u1[(i + 1) % 3])*r[(i + 2) % 3][j]));
       T right = (e1[(i + 1) % 3]*r[(i + 2) % 3][j]
         + e1[(i + 2) % 3]*r[(i + 1) % 3][j]);
       right += (e2[(i + 1) % 3]*r[i][(j + 2) % 3]
         + e2[(i + 2) % 3]*r[i][(j + 1) % 3]);
-      if (left > right + EPS) return false;
+      if (left > right + EPS) {
+        return false;
+      }
     }
   }
 

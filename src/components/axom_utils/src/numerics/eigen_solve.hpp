@@ -32,7 +32,7 @@ namespace numerics {
  * 
  * We compute eigenvectors and eigenvalues from the power method as follows:
  *    1. Generate a random vector
- *    2. Make ortho to previous eigenvectors if any
+ *    2. Make orthonormal to previous eigenvectors if any
  *    3. Run depth iterations of power method
  *    4. Store the result
  *
@@ -40,16 +40,18 @@ namespace numerics {
  * \param [in] k number of eigenvalue-eigenvectors to find
  * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
- * \param [in] depth optional number of iterations for the power method
+ * \param [in] numIterations optional number of iterations for the power method
+ * \note if k <= 0, solve is declared unsuccessful
  * \return rc return value, nonzero if the solve is successful.
  *
  * \pre A.isSquare() == true
  * \pre u != AXOM_NULLPTR
  * \pre lambdas != AXOM_NULLPTR
+ * \pre k <= A.getNumRows()
  * \pre T is a floating point type
  */
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth=20);
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=100);
 
 
 } /* end namespace numerics */
@@ -62,6 +64,7 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth=20);
 namespace axom {
 namespace numerics {
 
+namespace {
 
 // Helper method which returns a uniformly distributed random between 0 and 1.
 template < typename T >
@@ -76,10 +79,13 @@ T getRandom()
   return static_cast< T >(((double) rand())/RAND_MAX);
 }
 
+} /* end anonymous namespace */
+
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
 {
   assert("pre: input matrix must be square" && A.isSquare());
+  assert("pre: can't have more eigenvectors than rows" && (k <= A.getNumRows()));
   assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
 
@@ -119,7 +125,7 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int depth)
 
     // 3: run depth iterations of power method; note that a loop invariant
     // of this is that vec is normalized
-    for (int j = 0; j < depth; j++) {
+    for (int j = 0; j < numIterations; j++) {
       // multiply
       vector_multiply(A, vec, temp);
 
