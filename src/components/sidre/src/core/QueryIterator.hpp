@@ -76,7 +76,12 @@ public:
   bool isValid();
 
   /*!
-   *  \brief Advance QueryIterator to the next available Group or View.
+   *  \brief Advance QueryIterator to the next Group or View.
+   *
+   *  After calling advanceToNext, isValid will return true if the
+   *  Iterator represents a Group or View and false if the traversal
+   *  has finished.  Additional calls to advanceToNext will do nothing
+   *  once isValid returns false.
    */
   void advanceToNext();
 //@}

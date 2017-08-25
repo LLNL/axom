@@ -210,7 +210,7 @@ bool QueryIterator::isValid()
 
 /*
  *************************************************************************
- * Advance iterator to the next available Group or View.
+ * Advance iterator to the next Group or View.
  *
  * If nothing on the stack, nothing to do.  Else, look for next Group.
  * If one is found, start with its deepest Group or View.  Once all
