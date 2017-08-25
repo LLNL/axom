@@ -251,7 +251,7 @@ bool intersect(const OrientedBoundingBox< T, 2 >& b1,
  */
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 3 >& b1,
-  const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-8)
+  const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-4)
 {
   Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
     - Vector< T, 3 >(b2.getCentroid());

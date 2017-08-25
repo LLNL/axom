@@ -51,7 +51,7 @@ namespace numerics {
  * \pre T is a floating point type
  */
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=100);
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=125);
 
 
 } /* end namespace numerics */
