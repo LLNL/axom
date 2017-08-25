@@ -71,7 +71,7 @@ public:
 
 /*!
  *  \brief Return true if the QueryIterator references a Group or View.
- *         Return false if there are no more Groups or Views to visit.
+ *         Return false if the Iterator has finished its traversal.
  */
   bool isValid();
 

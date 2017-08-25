@@ -82,11 +82,7 @@ struct QueryIterator::Cursor
  */
   bool isGroup()
   {
-    if (m_iview != InvalidIndex)
-    {
-      return false;
-    }
-    return true;
+    return m_iview == InvalidIndex ? true : false;
   }
 
 /*
@@ -96,11 +92,7 @@ struct QueryIterator::Cursor
  */
   bool isView()
   {
-    if (m_iview != InvalidIndex)
-    {
-      return true;
-    }
-    return false;
+    return m_iview == InvalidIndex ? false : true;
   }
 
 /*
@@ -111,11 +103,7 @@ struct QueryIterator::Cursor
  */
   Group * getCurrentGroup()
   {
-    if (m_iview != InvalidIndex)
-    {
-      return AXOM_NULLPTR;
-    }
-    return m_grp;
+    return m_iview == InvalidIndex ? m_grp : AXOM_NULLPTR;
   }
 
 /*
@@ -126,11 +114,7 @@ struct QueryIterator::Cursor
  */
   View * getCurrentView()
   {
-    if (m_iview != InvalidIndex)
-    {
-      return m_grp->getView(m_iview);
-    }
-    return AXOM_NULLPTR;
+    return m_iview == InvalidIndex ? AXOM_NULLPTR : m_grp->getView(m_iview);
   }
 };
 
@@ -216,16 +200,12 @@ QueryIterator::~QueryIterator()
 /*
  *************************************************************************
  *  Return true if the QueryIterator references a Group or View.
- *  Return false if there are no more Groups or Views to visit.
+ *  Return false if the Iterator has finished its traversal.
  *************************************************************************
  */
 bool QueryIterator::isValid()
 {
-  if (m_stack.empty())
-  {
-    return false;
-  }
-  return true;
+  return ! m_stack.empty();
 }
 
 /*
