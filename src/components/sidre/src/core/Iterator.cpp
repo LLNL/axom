@@ -34,7 +34,7 @@ namespace sidre
 /*
  * Groups are traversed in a depth first order by keeping a stack of
  * Groups in the current path starting with the initial group at the
- * bottom of the stack and the right-most deepest Group at the top.
+ * bottom of the stack and the deepest Group at the top.
  *
  * m_igroup is the current Group being visited. When a Group is
  * visited, a new Cursor is pushed onto the stack with m_grp pointing
@@ -120,9 +120,7 @@ struct Iterator::Cursor
 
 /*
  *************************************************************************
- * Find the deepest right-most group.
- *
- * Iterate over the right-most Group until no more Groups are found.
+ * Find the next Group in a depth-first traversal of grp.
  *
  * If the Group has Views, then m_is_first_view is set to true to indicate
  * that the Cursor represents the first view in a Group. If it does

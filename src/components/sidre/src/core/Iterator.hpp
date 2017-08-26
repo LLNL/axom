@@ -78,6 +78,12 @@ public:
   /*!
    *  \brief Advance Iterator to the next Group or View.
    *
+   *  For each group, its child Groups are traversed first, then its
+   *  child Views.  They are traversed in index order.  Typically,
+   *  this is the order in which Groups and Views are created.
+   *  However, if a Group or View is deleted and a new one created,
+   *  the index number will be reused.
+   *
    *  After calling advanceToNext, isValid will return true if the
    *  Iterator represents a Group or View and false if the traversal
    *  has finished.  Additional calls to advanceToNext will do nothing
