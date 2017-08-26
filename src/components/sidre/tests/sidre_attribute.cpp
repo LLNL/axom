@@ -417,6 +417,7 @@ TEST(sidre_attribute,set_default)
 }
 
 //------------------------------------------------------------------------------
+// get attribute as Conduit::Node
 
 TEST(sidre_attribute,as_node)
 {
@@ -546,7 +547,6 @@ TEST(sidre_attribute,overloads)
 }
 
 //------------------------------------------------------------------------------
-
 // Test looping over Attributes and Attribute Values.
 
 TEST(sidre_attribute, loop_attributes)
@@ -649,6 +649,7 @@ TEST(sidre_attribute, loop_attributes)
 }
 
 //------------------------------------------------------------------------------
+// save and load attributes from a file
 
 TEST(sidre_attribute,save_attributes)
 {
@@ -787,4 +788,3 @@ TEST(sidre_attribute,save_attributes)
 
 }
 
-//------------------------------------------------------------------------------
