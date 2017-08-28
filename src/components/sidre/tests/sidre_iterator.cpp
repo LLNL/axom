@@ -146,10 +146,10 @@ TEST(sidre_iterator,depth_first)
       EXPECT_EQ(order[iorder].name, grp_const->getName());
 
       View * view_out = qitr.asView();
-      EXPECT_EQ(view_out, AXOM_NULLPTR);
+      EXPECT_EQ(view_out, static_cast<void *>(AXOM_NULLPTR));
 
       View const * view_const = qitr.asView();
-      EXPECT_EQ(view_const, AXOM_NULLPTR);
+      EXPECT_EQ(view_const, static_cast<void *>(AXOM_NULLPTR));
     }
     else
     {
@@ -157,10 +157,10 @@ TEST(sidre_iterator,depth_first)
       EXPECT_TRUE(qitr.isView());
 
       Group * grp_out = qitr.asGroup();
-      EXPECT_EQ(grp_out, AXOM_NULLPTR);
+      EXPECT_EQ(grp_out, static_cast<void *>(AXOM_NULLPTR));
 
       Group const * grp_const = qitr.asGroup();
-      EXPECT_EQ(grp_const, AXOM_NULLPTR);
+      EXPECT_EQ(grp_const, static_cast<void *>(AXOM_NULLPTR));
 
       View * view_out = qitr.asView();
       EXPECT_EQ(order[iorder].name, view_out->getName());
