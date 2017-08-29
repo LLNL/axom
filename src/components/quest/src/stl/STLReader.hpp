@@ -67,8 +67,9 @@ public:
   /*!
    * \brief Reads in the surface mesh from an STL file.
    * \pre m_fileName != ""
+   * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual void read();
+  virtual int read();
 
   /*!
    * \brief Stores the STL data in the supplied unstructured mesh object.
@@ -76,7 +77,6 @@ public:
    * \pre mesh != AXOM_NULLPTR.
    */
   void getMesh( axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
-
 
 private:
   /*!
@@ -96,13 +96,13 @@ private:
    * \brief Reads an ascii-encoded STL file into memory
    * \note The filename should be set with STLReader::setFileName()
    */
-  void readAsciiSTL();
+  int readAsciiSTL();
 
   /*!
    * \brief Reads a binary-encoded STL file into memory
    * \note The filename should be set with STLReader::setFileName()
    */
-  void readBinarySTL();
+  int readBinarySTL();
 
 protected:
   std::string m_fileName;

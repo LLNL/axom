@@ -47,8 +47,9 @@ public:
    * \brief Reads in an STL file to all ranks in the associated communicator.
    * \note Rank 0 reads in the STL mesh file and broadcasts the data the rest
    *  of the ranks.
+   * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual void read();
+  virtual int read();
 
 private:
 
