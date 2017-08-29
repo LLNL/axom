@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -9,17 +9,18 @@
  */
 
 
-
-#include "gtest/gtest.h"
-
-#include "quest/MeshTester.hpp"
-
-#include "slic/slic.hpp"
-#include "mint/Mesh.hpp"
-#include "quest/STLReader.hpp"
+// Axom includes
 #include "axom/path_config.hpp"
 #include "axom_utils/FileUtilities.hpp"
+#include "mint/Mesh.hpp"
+#include "quest/STLReader.hpp"
+#include "quest/MeshTester.hpp"
+#include "slic/slic.hpp"
 
+// Google test include
+#include "gtest/gtest.h"
+
+// C++ includes
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -27,14 +28,6 @@
 #include <fstream>
 #include <sstream>
 
-template <typename T>
-std::string vecToString(const std::vector<T> & v)
-{
-  std::string retval;
-  return retval;
-}
-
-template <>
 std::string vecToString(const std::vector<int> & v)
 {
   std::stringstream retval;
@@ -44,7 +37,6 @@ std::string vecToString(const std::vector<int> & v)
   return retval.str();
 }
 
-template <>
 std::string vecToString(const std::vector< std::pair<int, int> > & v)
 {
   std::stringstream retval;
@@ -103,8 +95,8 @@ void runIntersectTest(const std::string &test,
   // call findTriMeshIntersections() and compare results
 
   std::vector< int > degenerate;
-  std::vector< std::pair<int, int> > collisions = 
-    axom::quest::findTriMeshIntersections(surface_mesh, degenerate);
+  std::vector< std::pair<int, int> > collisions;
+  int status = axom::quest::findTriMeshIntersections(surface_mesh, collisions, degenerate);
 
   // report discrepancies
   // assume that expisect and expdegen are sorted (as required by
@@ -187,7 +179,22 @@ std::vector<std::string> findIntersectTests()
   return tests;
 }
 
-TEST( quest_mesh_tester, surfacemesh_self_intersection )
+TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
+{
+  // void runIntersectTest(const std::string &test,
+  //       	      const std::string &tfname,
+  //       	      const std::string &tname,
+  //       	      const std::vector< std::pair<int, int> > & expisect,
+  //       	      const std::vector< int > & expdegen);
+
+  std::vector< std::pair<int, int> > intersections;
+  std::vector< int > degenerate;
+
+  runIntersectTest("tetrahedron", "", "closed tetrahedron", intersections, 
+                   degenerate);
+}
+
+TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
 {
   std::vector<std::string> tests = findIntersectTests();
 
@@ -208,3 +215,20 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection )
     runIntersectTest(test, tfname, tname, expisect, expdegen);
   }
 }
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+
+  int result = RUN_ALL_TESTS();
+  return result;
+}
+

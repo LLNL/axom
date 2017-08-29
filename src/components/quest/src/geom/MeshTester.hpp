@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
 /**
  * \file
  * \brief Defines functions to test Quest meshes for common defects.
@@ -8,14 +18,12 @@
 
 // Axom includes
 #include "mint/Mesh.hpp"
-
-// C/C++ includes
-#include <vector>
-#include <utility>
-
+#include "quest/MeshTester_impl.hpp"
 #include "slic/slic.hpp"
 
-#include "quest/MeshTester_impl.hpp"
+// C/C++ includes
+#include <utility>
+#include <vector>
 
 namespace axom {
 namespace quest {
@@ -36,12 +44,14 @@ namespace quest {
  * default value of 0 causes this routine to calculate a heuristic bin size
  * based on the cube root of the number of cells in the mesh.
  */
-std::vector< std::pair<int, int> >
+int
 findTriMeshIntersections(mint::Mesh* surface_mesh,
+                         std::vector<std::pair<int, int> > & intersections,
 			 std::vector<int> & degenerateIndices,
 			 int spatialIndexResolution = 0)
 {
-  return detail::findTriMeshIntersections_impl(surface_mesh, 
+  return detail::findTriMeshIntersections_impl(surface_mesh,
+                                               intersections,
                                                degenerateIndices, 
                                                spatialIndexResolution);
 }

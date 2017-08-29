@@ -13,27 +13,26 @@
 // Axom includes
 #include "axom_utils/FileUtilities.hpp"
 
+#include "mint/Mesh.hpp"
+#include "mint/UniformMesh.hpp"
+
 #include "primal/BoundingBox.hpp"
+#include "primal/intersect.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
-#include "primal/intersect.hpp"
 #include "primal/UniformGrid.hpp"
 
-#include "quest/STLReader.hpp"
 #include "quest/MeshTester.hpp"
-
-#include "mint/UniformMesh.hpp"
-#include "mint/Mesh.hpp"
+#include "quest/STLReader.hpp"
 
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
 
 
 // C/C++ includes
-// #include <cmath>
 #include <iostream>
-#include <vector>
 #include <utility>
+#include <vector>
 
 using namespace axom;
 
@@ -304,13 +303,16 @@ int main( int argc, char** argv )
 
   std::vector< std::pair<int, int> > collisions;
   std::vector<int> degenerate;
+  int status = 0;
   if (params.resolution == 1) {
     // Naive method
     collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
   } else {
     // Use a spatial index
-    collisions = quest::findTriMeshIntersections(surface_mesh, degenerate,
-                                                 params.resolution);
+    status = quest::findTriMeshIntersections(surface_mesh,
+                                             collisions,
+                                             degenerate,
+                                             params.resolution);
   }
   if (!writeCollisions(collisions, degenerate, params.textOutput)) {
     SLIC_ERROR("Couldn't write results to " << params.textOutput);
