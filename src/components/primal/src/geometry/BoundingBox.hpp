@@ -464,13 +464,13 @@ BoundingBox< T, NDIMS>::BoundingBox(PointType *pts, int n)
   // sanity check:
   SLIC_ASSERT(pts != AXOM_NULLPTR);
 
-  BoundingBox< T, NDIMS > res = BoundingBox< T, NDIMS >(pts[0]);
-  for (int i = 1; i < n; i++) {
-    res.addPoint(pts[i]);
-  }
+  this->m_min = this->m_max = pts[0];
 
-  *this = res;
+  for (int i = 1; i < n; i++) {
+    this->addPoint(pts[i]);
+  }
 }
+
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >

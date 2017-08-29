@@ -118,6 +118,37 @@ TEST( primal_boundingBox, bb_ctor_from_twoPoints)
 }
 
 //------------------------------------------------------------------------------
+TEST( primal_boundingBox, bb_ctor_from_many_points)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > QPoint;
+  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+
+  // test single point
+  QPoint pt1(0.);
+  QBBox bbox1(&pt1, 1);
+
+  QBBox bbox2(pt1);
+
+  EXPECT_TRUE(bbox1 == bbox2);
+
+  // test many points
+
+  QPoint ptArr[10];
+
+  for (int i = 0; i < 10; i++) {
+    ptArr[i] = QPoint(i);
+  }
+
+  QBBox bbox3(&ptArr[0], 10);
+
+  for (int i = 0; i < 10; i++) {
+    EXPECT_TRUE(bbox3.contains(ptArr[i]));
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST( primal_boundingBox, bb_addPoint)
 {
   static const int DIM = 3;

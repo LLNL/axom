@@ -27,9 +27,6 @@
 namespace axom {
 namespace primal {
 
-template < typename T, int NDIMS >
-class OrientedBoundingBox;
-
 /*!
  * \brief Creates a bounding box which contains the collection of passed in
  * points.
@@ -55,13 +52,14 @@ template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS >
   &l, const OrientedBoundingBox< T, NDIMS > &r)
 {
+
+  // TODO: See if this initial check can be improved so it's not so costly in
+  // cases where it doesn't end up helping
   if (l.contains(r)) {
-    OrientedBoundingBox< T, NDIMS > res = l;
-    return res;
+    return l;
   }
   if (r.contains(l)) {
-    OrientedBoundingBox< T, NDIMS > res = r;
-    return res;
+    return r;
   }
 
   std::vector< Point< T, NDIMS > > lv = l.vertices();
