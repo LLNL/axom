@@ -190,20 +190,7 @@ template < typename T >
 bool intersect(const OrientedBoundingBox< T, 1 > & b1,
                const OrientedBoundingBox< T, 1 >& b2)
 {
-  T c1 = b1.getCentroid()[0];
-  T c2 = b2.getCentroid()[0];
-
-  T e1 = b1.getExtents()[0];
-  T e2 = b2.getExtents()[0];
-
-  if (c1 + e1 > c2 - e2) {
-    return true;
-  }
-  if (c2 + e2 > c1 - e1) {
-    return true;
-  }
-
-  return false;
+  return detail::intersect_obb1D_obb1D(b1, b2);
 }
 
 /*!
@@ -216,34 +203,7 @@ template < typename T >
 bool intersect(const OrientedBoundingBox< T, 2 >& b1,
                const OrientedBoundingBox< T, 2 >& b2)
 {
-  Vector< T, 2 > c1(b1.getCentroid());
-  Vector< T, 2 > c2(b2.getCentroid());
-
-  Vector< T, 2 > e1 = b1.getExtents();
-  Vector< T, 2 > e2 = b2.getExtents();
-
-  const Vector< T, 2 > *u1 = b1.getAxes();
-  const Vector< T, 2 > *u2 = b2.getAxes();
-
-  Vector< T, 2 > d = c2 - c1;
-
-  for (int i = 0; i < 2; ++i) {
-    if (utilities::abs< T >(d.dot(u1[i])) > e1[i]
-        + utilities::abs< T >((e2[0]*u2[0]).dot(u1[i]))
-        + utilities::abs< T >((e2[1]*u2[1]).dot(u1[i]))) {
-      return false;
-    }
-  }
-
-  for (int i = 0; i < 2; ++i) {
-    if (utilities::abs< T >(d.dot(u2[i])) > e2[i]
-        + utilities::abs< T >((e1[0]*u1[0]).dot(u2[i]))
-        + utilities::abs< T >((e1[1]*u1[1]).dot(u2[i]))) {
-      return false;
-    }
-  }
-
-  return true;
+  return detail::intersect_obb2D_obb2D(b1, b2);
 }
 
 /*!
@@ -257,56 +217,7 @@ template < typename T >
 bool intersect(const OrientedBoundingBox< T, 3 >& b1,
                const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-4)
 {
-  Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
-                     - Vector< T, 3 >(b2.getCentroid());
-
-  Vector< T, 3 > e1 = b1.getExtents();
-  Vector< T, 3 > e2 = b2.getExtents();
-
-  const Vector< T, 3 > *u1 = b1.getAxes();
-  const Vector< T, 3 > *u2 = b2.getAxes();
-
-  // compute r and r^T here:
-  Vector< T, 3 > r[3];
-  Vector< T, 3 > rt[3];
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      r[i][j] = utilities::abs< T >(u1[i].dot(u2[j]));
-      rt[i][j] = utilities::abs< T >(u1[j].dot(u2[i]));
-    }
-  }
-
-  // check for separating planes parallel to faces
-  for (int i = 0; i < 3; ++i) {
-    if (utilities::abs< T >(d.dot(u1[i])) > e1[i] + e2.dot(r[i]) + EPS) {
-      return false;
-    }
-  }
-
-  for (int i = 0; i < 3; ++i) {
-    if (utilities::abs< T >(d.dot(u2[i])) > e2[i] + e1.dot(rt[i]) + EPS) {
-      return false;
-    }
-  }
-
-  // check for separating planes with normals parallel to cross product of edges
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      T left = utilities::abs< T >(d.dot(u1[(i + 2) % 3])*r[(i + 1) % 3][j]
-                                   - (d.dot(u1[(i + 1) % 3])*
-                                      r[(i + 2) % 3][j]));
-      T right = (e1[(i + 1) % 3]*r[(i + 2) % 3][j]
-                 + e1[(i + 2) % 3]*r[(i + 1) % 3][j]);
-      right += (e2[(i + 1) % 3]*r[i][(j + 2) % 3]
-                + e2[(i + 2) % 3]*r[i][(j + 1) % 3]);
-      if (left > right + EPS) {
-        return false;
-      }
-    }
-  }
-
-  // didn't find a separating anything
-  return true;
+  return detail::intersect_obb3D_obb3D(b1, b2, EPS);
 }
 
 } /* namespace primal */
