@@ -386,7 +386,7 @@ TEST(sidre_datastore,create_delete_buffers_iterate)
   for (int i = 0 ; i < bufcount ; ++i)
   {
     Buffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
-                                      400*i % 10000)->allocate();
+                                  400*i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
   }
@@ -394,7 +394,7 @@ TEST(sidre_datastore,create_delete_buffers_iterate)
   int i = 0;
   std::map<IndexType, Buffer *> nbs;
   std::map<IndexType, Buffer *>::iterator bsit = bs.begin(),
-                                              bsend = bs.end();
+                                          bsend = bs.end();
   for ( ; bsit != bsend ; ++bsit)
   {
     // Eliminate some buffers (arbitrarily chosen)
@@ -427,7 +427,7 @@ TEST(sidre_datastore,loop_create_delete_buffers_iterate)
   for (int i = 0 ; i < initbufcount ; ++i)
   {
     Buffer * b = ds->createBuffer(axom::sidre::FLOAT64_ID,
-                                      400*i % 10000)->allocate();
+                                  400*i % 10000)->allocate();
     IndexType idx = b->getIndex();
     bs[idx] = b;
     idxlist.push_back(idx);

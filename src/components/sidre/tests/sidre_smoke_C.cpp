@@ -40,7 +40,7 @@ TEST(sidre_smoke,valid_invalid)
   EXPECT_TRUE(gp_name == SIDRE_InvalidName);
   EXPECT_FALSE(SIDRE_name_is_valid(gp_name));
   EXPECT_TRUE(SIDRE_group_get_group_index(root,
-                                              name) == SIDRE_InvalidIndex);
+                                          name) == SIDRE_InvalidIndex);
 
   SIDRE_datastore_delete(ds);
 }

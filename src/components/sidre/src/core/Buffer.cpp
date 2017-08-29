@@ -182,7 +182,7 @@ Buffer * Buffer::deallocate()
   m_node.set_external( DataType( m_node.dtype() ), AXOM_NULLPTR );
 
   std::set<View *>::iterator vit = m_views.begin();
-  for ( ; vit != m_views.end(); ++vit)
+  for ( ; vit != m_views.end() ; ++vit)
   {
     (*vit)->unapply();
   }
@@ -199,7 +199,7 @@ Buffer * Buffer::deallocate()
  *************************************************************************
  */
 Buffer * Buffer::copyBytesIntoBuffer(const void * src,
-                                             SidreLength nbytes)
+                                     SidreLength nbytes)
 {
   if ( src == AXOM_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
   {
@@ -347,7 +347,7 @@ void Buffer::detachFromView( View * view )
 void Buffer::detachFromAllViews()
 {
   std::set<View *>::iterator vit = m_views.begin();
-  for ( ; vit != m_views.end(); ++vit)
+  for ( ; vit != m_views.end() ; ++vit)
   {
     (*vit)->setBufferViewToEmpty();
   }

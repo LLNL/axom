@@ -55,8 +55,7 @@ Attribute::Attribute( const std::string& name) :
  *************************************************************************
  */
 Attribute::~Attribute()
-{
-}
+{}
 
 } /* end namespace sidre */
 } /* end namespace axom */

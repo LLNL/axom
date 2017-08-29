@@ -429,8 +429,8 @@ TEST(sidre_view,alloc_zero_items)
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
 
   // Allocate View of size 0 into non-empty buffer
-  Buffer* nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
-  
+  Buffer * nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+
   dv = root->createView("z_nonEmptyBuf_attach_apply");
   dv->attachBuffer(nonEmptyBuf)->apply(0);
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
@@ -442,7 +442,7 @@ TEST(sidre_view,alloc_zero_items)
 
 
   // Allocate View of size 0 into empty buffer
-  Buffer* emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
+  Buffer * emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
   dv = root->createView("z_emptyBuf_attach_apply");
   dv->attachBuffer(emptyBuf)->allocate()->apply(0);
   EXPECT_TRUE(dv->getBuffer()->isAllocated());
@@ -451,16 +451,16 @@ TEST(sidre_view,alloc_zero_items)
   dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
   dv->attachBuffer(emptyBuf);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
-  
+
   delete ds;
 }
 
 TEST(sidre_view,save_empty_view_non_empty_buffer)
 {
   DataStore ds;
-  Group* root = ds.getRoot();
+  Group * root = ds.getRoot();
 
-  Buffer* buf = ds.createBuffer(INT_ID, 10)->allocate();  // allocate non-empty buffer
+  Buffer * buf = ds.createBuffer(INT_ID, 10)->allocate();  // allocate non-empty buffer
 
   root->createView("a")->attachBuffer(buf)->apply(0);  // attach zero-sized array to it
 
@@ -471,7 +471,7 @@ TEST(sidre_view,save_empty_view_non_empty_buffer)
 TEST(sidre_view,save_empty_view)
 {
   DataStore ds;
-  Group* root = ds.getRoot();
+  Group * root = ds.getRoot();
 
   root->createView("a", INT_ID, 0)->allocate()->apply();  // create View and allocate view of size 0
 
@@ -976,7 +976,7 @@ TEST(sidre_view,view_offset_and_stride)
 
   const SidreLength nelems = 15;
   Buffer * dbuff = ds->createBuffer(DOUBLE_ID, nelems)
-                       ->allocate();
+                   ->allocate();
 
   double * data_ptr = dbuff->getData();
   for(int i=0 ; i< nelems ; ++i)
@@ -1213,7 +1213,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   Group * r_old = root->createGroup("r_old");
   // create a view to hold the base buffer and allocate
   View * base_old = r_old->createViewAndAllocate("base_data",
-                                                     DataType::c_int(40));
+                                                 DataType::c_int(40));
 
   // we will create 4 sub views of this array
   int * data_ptr = base_old->getData();
@@ -1283,7 +1283,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   Group * r_new = root->createGroup("r_new");
   // create a view to hold the base buffer and allocate
   View * base_new = r_new->createViewAndAllocate("base_data",
-                                                     DataType::c_int(4 * 12));
+                                                 DataType::c_int(4 * 12));
 
   int * base_new_data = base_new->getData();
   for (int i = 0 ; i < 4 * 12 ; ++i)
@@ -1487,9 +1487,9 @@ TEST(sidre_datastore,destroy_buffer)
 
   Buffer * dbuff1 = ds->createBuffer()->allocate(INT_ID, BLEN);
   View * view1a = root->createView("view1a", INT_ID, BLEN)
-                      ->attachBuffer(dbuff1);
+                  ->attachBuffer(dbuff1);
   View * view1b = root->createView("view1b", INT_ID, BLEN)
-                      ->attachBuffer(dbuff1);
+                  ->attachBuffer(dbuff1);
 
   EXPECT_TRUE(checkViewValues(view1a, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(checkViewValues(view1b, BUFFER, true, true, true, BLEN));

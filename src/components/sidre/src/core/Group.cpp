@@ -216,8 +216,8 @@ View * Group::createView( const std::string& path )
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  TypeID type,
-                                  SidreLength num_elems )
+                          TypeID type,
+                          SidreLength num_elems )
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -247,9 +247,9 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  TypeID type,
-                                  int ndims,
-                                  SidreLength * shape )
+                          TypeID type,
+                          int ndims,
+                          SidreLength * shape )
 {
   if ( type == NO_TYPE_ID || ndims < 0 || shape == AXOM_NULLPTR )
   {
@@ -281,7 +281,7 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  const DataType& dtype )
+                          const DataType& dtype )
 {
   View * view = createView(path);
   if (view != AXOM_NULLPTR)
@@ -308,7 +308,7 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  Buffer * buff )
+                          Buffer * buff )
 {
   View * view = createView(path);
   if ( view != AXOM_NULLPTR )
@@ -327,9 +327,9 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  TypeID type,
-                                  SidreLength num_elems,
-                                  Buffer * buff )
+                          TypeID type,
+                          SidreLength num_elems,
+                          Buffer * buff )
 {
   View * view = createView(path, type, num_elems);
   if (view != AXOM_NULLPTR)
@@ -348,10 +348,10 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  TypeID type,
-                                  int ndims,
-                                  SidreLength * shape,
-                                  Buffer * buff )
+                          TypeID type,
+                          int ndims,
+                          SidreLength * shape,
+                          Buffer * buff )
 {
   View * view = createView(path, type, ndims, shape);
   if (view != AXOM_NULLPTR)
@@ -370,8 +370,8 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  const DataType& dtype,
-                                  Buffer * buff )
+                          const DataType& dtype,
+                          Buffer * buff )
 {
   View * view = createView(path, dtype);
   if (view != AXOM_NULLPTR)
@@ -398,7 +398,7 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  void * external_ptr )
+                          void * external_ptr )
 {
   View * view = createView(path);
   if ( view != AXOM_NULLPTR )
@@ -417,9 +417,9 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  TypeID type,
-                                  SidreLength num_elems,
-                                  void * external_ptr )
+                          TypeID type,
+                          SidreLength num_elems,
+                          void * external_ptr )
 {
   View * view = createView(path, type, num_elems);
   if (view != AXOM_NULLPTR)
@@ -438,10 +438,10 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  TypeID type,
-                                  int ndims,
-                                  SidreLength * shape,
-                                  void * external_ptr )
+                          TypeID type,
+                          int ndims,
+                          SidreLength * shape,
+                          void * external_ptr )
 {
   View * view = createView(path, type, ndims, shape);
   if (view != AXOM_NULLPTR)
@@ -460,8 +460,8 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createView( const std::string& path,
-                                  const DataType& dtype,
-                                  void * external_ptr )
+                          const DataType& dtype,
+                          void * external_ptr )
 {
   View * view = createView(path, dtype);
   if (view != AXOM_NULLPTR)
@@ -487,8 +487,8 @@ View * Group::createView( const std::string& path,
  *************************************************************************
  */
 View * Group::createViewAndAllocate( const std::string& path,
-                                             TypeID type,
-                                             SidreLength num_elems )
+                                     TypeID type,
+                                     SidreLength num_elems )
 {
   View * view = createView(path, type, num_elems);
   if ( view != AXOM_NULLPTR )
@@ -507,9 +507,9 @@ View * Group::createViewAndAllocate( const std::string& path,
  *************************************************************************
  */
 View * Group::createViewAndAllocate( const std::string& path,
-                                             TypeID type,
-                                             int ndims,
-                                             SidreLength * shape )
+                                     TypeID type,
+                                     int ndims,
+                                     SidreLength * shape )
 {
   View * view = createView(path, type, ndims, shape);
   if ( view != AXOM_NULLPTR )
@@ -528,7 +528,7 @@ View * Group::createViewAndAllocate( const std::string& path,
  *************************************************************************
  */
 View * Group::createViewAndAllocate( const std::string& path,
-                                             const DataType& dtype)
+                                     const DataType& dtype)
 {
   View * view = createView(path, dtype);
   if ( view != AXOM_NULLPTR )
@@ -546,7 +546,7 @@ View * Group::createViewAndAllocate( const std::string& path,
  *************************************************************************
  */
 View * Group::createViewString( const std::string& path,
-                                        const std::string& value)
+                                const std::string& value)
 {
   View * view = createView(path);
   if (view != AXOM_NULLPTR)
@@ -1149,7 +1149,7 @@ void Group::print(std::ostream& os) const
  *************************************************************************
  */
 void Group::printTree( const int nlevels,
-                           std::ostream& os ) const
+                       std::ostream& os ) const
 {
   for ( int i=0 ; i<nlevels ; ++i )
   {
@@ -1278,7 +1278,7 @@ bool Group::isEquivalentTo(const Group * other) const
  */
 
 void Group::save(const std::string& path,
-                     const std::string& protocol) const
+                 const std::string& protocol) const
 {
   const DataStore * ds = getDataStore();
 
@@ -1339,7 +1339,7 @@ void Group::save(const std::string& path,
  *************************************************************************
  */
 void Group::save(const hid_t& h5_id,
-                     const std::string& protocol) const
+                 const std::string& protocol) const
 {
   // supported here:
   // "sidre_hdf5"
@@ -1381,14 +1381,15 @@ void Group::load(const std::string& path,
                  const std::string& protocol,
                  bool preserve_contents)
 {
-  std::string new_name; 
+  std::string new_name;
   if (protocol == "sidre_hdf5")
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"], preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1398,7 +1399,8 @@ void Group::load(const std::string& path,
     conduit::relay::io::load(path,"conduit_json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"], preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1408,7 +1410,8 @@ void Group::load(const std::string& path,
     conduit::relay::io::load(path,"json", n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"], preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1417,7 +1420,8 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     importConduitTree(n, preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1428,7 +1432,8 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,protocol, n);
     importConduitTree(n, preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1461,7 +1466,8 @@ void Group::load(const hid_t& h5_id,
     conduit::relay::io::hdf5_read(h5_id,n);
     SLIC_ASSERT(n.has_path("sidre"));
     importFrom(n["sidre"], preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1471,7 +1477,8 @@ void Group::load(const hid_t& h5_id,
     Node n;
     conduit::relay::io::hdf5_read(h5_id, n);
     importConduitTree(n, preserve_contents);
-    if (n.has_path("sidre_group_name")) {
+    if (n.has_path("sidre_group_name"))
+    {
       new_name = n["sidre_group_name"].as_string();
     }
   }
@@ -1492,8 +1499,9 @@ void Group::load(const hid_t& h5_id,
  */
 void Group::renameOrWarn(const std::string& new_name)
 {
-  if (new_name != m_name) {
-    if (new_name.empty()) 
+  if (new_name != m_name)
+  {
+    if (new_name.empty())
     {
       SLIC_WARNING("Attempted to rename group " << m_name <<
                    " with an empty string. The name will not be changed.");
@@ -1577,7 +1585,7 @@ void Group::loadExternalData(const hid_t& h5_id)
  *************************************************************************
  */
 Group::Group(const std::string& name,
-                     DataStore * datastore)
+             DataStore * datastore)
   : m_name(name),
   m_index(InvalidIndex),
   m_parent(AXOM_NULLPTR),
@@ -1805,7 +1813,7 @@ void Group::exportTo(conduit::Node & result) const
  *************************************************************************
  */
 void Group::exportTo(conduit::Node& result,
-                         std::set<IndexType>& buffer_indices) const
+                     std::set<IndexType>& buffer_indices) const
 {
   if (getNumViews() > 0)
   {
@@ -1977,7 +1985,8 @@ void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
       }
       else if(cld_dtype.is_string())
       {
-        if (cld_name != "sidre_group_name") {
+        if (cld_name != "sidre_group_name")
+        {
           //create string view
           createViewString(cld_name,cld_node.as_string());
         }
@@ -2040,7 +2049,7 @@ void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
  *************************************************************************
  */
 Group * Group::walkPath( std::string& path,
-                                 bool create_groups_in_path )
+                         bool create_groups_in_path )
 {
   Group * group_ptr = this;
 
@@ -2415,35 +2424,44 @@ IndexType Group::getNextValidGroupIndex(IndexType idx) const
 bool Group::rename(const std::string& new_name)
 {
   bool do_rename = true;
-  if (new_name != m_name) {
+  if (new_name != m_name)
+  {
 
-    if (new_name.empty()) {
+    if (new_name.empty())
+    {
       SLIC_WARNING("Cannot rename Group " << m_name << " to an empty " <<
                    "string.");
       do_rename = false;
-    } else if (new_name.find(s_path_delimiter) != std::string::npos) {
+    }
+    else if (new_name.find(s_path_delimiter) != std::string::npos)
+    {
       SLIC_WARNING("Cannot rename Group "<< m_name << " to path name " <<
                    new_name << ". Only strings without path delimiters can " <<
                    "be passed into the rename method.");
       do_rename = false;
     }
 
-    if (do_rename) {
+    if (do_rename)
+    {
       const Group * root = getDataStore()->getRoot();
       Group * parent = getParent();
 
       //If this is the root group, we don't need
       //to do anything to change the parent's handle to this group.
-      if (this != root && parent != AXOM_NULLPTR) {
+      if (this != root && parent != AXOM_NULLPTR)
+      {
 
-        if (parent->hasGroup(new_name) || parent->hasView(new_name)) {
+        if (parent->hasGroup(new_name) || parent->hasView(new_name))
+        {
           SLIC_WARNING("Parent group " << parent->getName() <<
                        " already has a child group named " << new_name <<
-                       ". Group " << m_name << " will not be renamed."); 
+                       ". Group " << m_name << " will not be renamed.");
           do_rename = false;
-        } else {
+        }
+        else
+        {
           Group * detached_group = parent->detachGroup(m_name);
-          SLIC_CHECK(detached_group == this); 
+          SLIC_CHECK(detached_group == this);
 
           m_name = new_name;
 
@@ -2451,7 +2469,9 @@ bool Group::rename(const std::string& new_name)
           AXOM_DEBUG_VAR(attached_group);
           SLIC_CHECK(attached_group == this);
         }
-      } else {
+      }
+      else
+      {
         m_name = new_name;
       }
     }
