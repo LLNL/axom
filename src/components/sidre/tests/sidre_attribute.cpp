@@ -658,6 +658,7 @@ TEST(sidre_attribute,save_attributes)
 
   const std::string file_path_base("sidre_attribute_datastore_");
   DataStore * ds1 = new DataStore();
+  Group * root1 = ds1->getRoot();
 
   // Create attributes for DataStore
   Attribute * color = ds1->createAttributeString(name_color, color_none);
@@ -670,8 +671,6 @@ TEST(sidre_attribute,save_attributes)
   EXPECT_TRUE( size != AXOM_NULLPTR );
 
   EXPECT_EQ(3, ds1->getNumAttributes());
-
-  Group * root1 = ds1->getRoot();
 
   // empty
   View * view1a = root1->createView("empty");
@@ -785,5 +784,110 @@ TEST(sidre_attribute,save_attributes)
 
     delete ds2;
   }
+
+}
+
+//------------------------------------------------------------------------------
+// save views with a specific attribute
+
+TEST(sidre_attribute,save_by_attribute)
+{
+  //  bool ok;
+
+  const std::string file_path_base("sidre_attribute_by_attribute_");
+  DataStore * ds1 = new DataStore();
+  Group * root1 = ds1->getRoot();
+
+  // Create attributes for DataStore
+  Attribute * dump = ds1->createAttributeScalar(name_dump, dump_no);
+  EXPECT_TRUE( dump != AXOM_NULLPTR );
+
+  // scalar
+  View * view1a = root1->createViewScalar("scalar1", 1);
+  view1a->setAttributeScalar(dump, dump_yes);
+
+  root1->createViewScalar("scalar2", 2);
+
+  //----------------------------------------
+
+  for (int i = 0 ; i < nprotocols ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+    root1->save(file_path, protocols[i], dump);
+  }
+
+  delete ds1;
+
+#if 0
+  //----------------------------------------
+  // Only restore conduit_hdf5
+  for (int i = 1 ; i < 2 ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+
+    DataStore * ds2 = new DataStore();
+    Group * root2 = ds2->getRoot();
+
+    root2->load(file_path, protocols[i]);
+    EXPECT_EQ(3, ds2->getNumAttributes());
+
+    // Check available attributes
+
+    Attribute * attr_color = ds2->getAttribute(name_color);
+    EXPECT_EQ(color_none, attr_color->getDefaultNodeRef().as_string());
+
+    Attribute * attr_dump = ds2->getAttribute(name_dump);
+    EXPECT_EQ(dump_no, attr_dump->getDefaultNodeRef().as_int());
+
+    Attribute * attr_size = ds2->getAttribute(name_size);
+    EXPECT_EQ(size_small, attr_size->getDefaultNodeRef().as_double());
+
+    // Check attributes assigned to Views
+
+    View * view2a = root2->getView("empty");
+    EXPECT_TRUE(view2a->hasAttributeValue(name_color));
+    EXPECT_TRUE(view2a->hasAttributeValue(name_dump));
+    EXPECT_TRUE(view2a->hasAttributeValue(name_size));
+    EXPECT_TRUE(strcmp("color-empty",
+                       view2a->getAttributeString(attr_color)) == 0);
+    EXPECT_EQ(dump_yes, view2a->getAttributeScalar<int>(attr_dump));
+    EXPECT_EQ(size_small, view2a->getAttributeScalar<double>(attr_size));
+
+    View * view2b = root2->getView("buffer");
+    EXPECT_TRUE(view2b->hasAttributeValue(name_color));
+    EXPECT_FALSE(view2b->hasAttributeValue(name_dump));
+    EXPECT_TRUE(view2b->hasAttributeValue(name_size));
+    EXPECT_TRUE(strcmp("color-buffer",
+                       view2b->getAttributeString(attr_color)) == 0);
+    EXPECT_EQ(size_medium, view2b->getAttributeScalar<double>(attr_size));
+
+    View * view2c = root2->getView("external");
+    EXPECT_FALSE(view2c->hasAttributeValue(name_color));
+    EXPECT_FALSE(view2c->hasAttributeValue(name_dump));
+    EXPECT_TRUE(view2c->hasAttributeValue(name_size));
+    EXPECT_EQ(size_large, view2c->getAttributeScalar<double>(attr_size));
+
+    View * view2d = root2->getView("scalar");
+    EXPECT_TRUE(view2d->hasAttributeValue(name_color));
+    EXPECT_FALSE(view2d->hasAttributeValue(name_dump));
+    EXPECT_FALSE(view2d->hasAttributeValue(name_size));
+    EXPECT_TRUE(strcmp("color-scalar",
+                       view2d->getAttributeString(attr_color)) == 0);
+
+    View * view2e = root2->getView("string");
+    EXPECT_TRUE(view2e->hasAttributeValue(name_color));
+    EXPECT_FALSE(view2e->hasAttributeValue(name_dump));
+    EXPECT_FALSE(view2e->hasAttributeValue(name_size));
+    EXPECT_TRUE(strcmp("color-string",
+                       view2e->getAttributeString(attr_color)) == 0);
+
+    View * view2f = root2->getView("empty-no-attributes");
+    EXPECT_FALSE(view2f->hasAttributeValue(name_color));
+    EXPECT_FALSE(view2f->hasAttributeValue(name_dump));
+    EXPECT_FALSE(view2f->hasAttributeValue(name_size));
+
+    delete ds2;
+  }
+#endif
 
 }
