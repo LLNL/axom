@@ -30,12 +30,14 @@ TEST( primal_closest_point, obb_test_closest_point_interior )
   typedef primal::Vector< CoordType, DIM > QVector;
   typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
 
+  const double ONE_OVER_SQRT_TWO = 0.7071;
   QPoint pt1;  // origin
-  QVector u[DIM];  // make standard axes
-  for (int i = 0; i < DIM; i++) {
-    u[i] = QVector();
-    u[i][i] = 1.;
-  }
+  QVector u[DIM];  // make axes
+  u[0][0] = ONE_OVER_SQRT_TWO;
+  u[0][1] = ONE_OVER_SQRT_TWO;
+  u[1][0] = ONE_OVER_SQRT_TWO;
+  u[1][1] = -ONE_OVER_SQRT_TWO;
+  u[2][2] = 1.;
 
   QVector e = QVector(1.);
 
@@ -54,18 +56,21 @@ TEST( primal_closest_point, obb_test_closest_point_vertex )
   typedef primal::Vector< CoordType, DIM > QVector;
   typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
 
+  const double ONE_OVER_SQRT_TWO = 0.7071;
   QPoint pt1;  // origin
-  QVector u[DIM];  // make standard axes
-  for (int i = 0; i < DIM; i++) {
-    u[i] = QVector();
-    u[i][i] = 1.;
-  }
+  QVector u[DIM];  // make axes
+  u[0][0] = ONE_OVER_SQRT_TWO;
+  u[0][1] = ONE_OVER_SQRT_TWO;
+  u[1][0] = ONE_OVER_SQRT_TWO;
+  u[1][1] = -ONE_OVER_SQRT_TWO;
+  u[2][2] = 1.;
 
   QVector e = QVector(1.);
-  QPoint pt2 = QPoint(1.);
-  QPoint pt3 = QPoint(2.);;
-
   QOBBox obbox1(pt1, u, e);
+  std::vector< QPoint > verts = obbox1.vertices();
+
+  QPoint pt2 = verts[0];
+  QPoint pt3(10.*pt2.array());
 
   // closest point is a vertex
   EXPECT_TRUE(primal::closest_point(pt3, obbox1) == pt2);
@@ -80,24 +85,27 @@ TEST( primal_closest_point, obb_test_closest_point_face )
   typedef primal::Vector< CoordType, DIM > QVector;
   typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
 
+  const double ONE_OVER_SQRT_TWO = 0.7071;
+  const double EPS = 0.01;
   QPoint pt1;  // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0; i < DIM; i++) {
-    u[i] = QVector();
-    u[i][i] = 1.;
-  }
+  u[0][0] = ONE_OVER_SQRT_TWO;
+  u[0][1] = ONE_OVER_SQRT_TWO;
+  u[1][0] = ONE_OVER_SQRT_TWO;
+  u[1][1] = -ONE_OVER_SQRT_TWO;
+  u[2][2] = 1.;
 
   QVector e = QVector(1.);
-  QPoint pt2;
-  QPoint pt3;
-
   QOBBox obbox1(pt1, u, e);
 
-  pt2.array()[2] = 2.;
-  pt3.array()[2] = 1.;
+  QPoint pt2(u[0].array());
+  QPoint pt3(10.*pt2.array());
+
+  QVector found(primal::closest_point(pt3, obbox1));
+  QVector expected(pt2);
 
   // closest point is on a face
-  EXPECT_TRUE(primal::closest_point(pt2, obbox1) == pt3);
+  EXPECT_TRUE((found - expected).squared_norm() < EPS);
 }
 
 //------------------------------------------------------------------------------
@@ -109,22 +117,25 @@ TEST( primal_closest_point, obb_test_closest_point_edge )
   typedef primal::Vector< CoordType, DIM > QVector;
   typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
 
+  const double ONE_OVER_SQRT_TWO = 0.7071;
+  const double EPS = 0.01;
   QPoint pt1;  // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0; i < DIM; i++) {
-    u[i] = QVector();
-    u[i][i] = 1.;
-  }
+  u[0][0] = ONE_OVER_SQRT_TWO;
+  u[0][1] = ONE_OVER_SQRT_TWO;
+  u[1][0] = ONE_OVER_SQRT_TWO;
+  u[1][1] = -ONE_OVER_SQRT_TWO;
+  u[2][2] = 1.;
 
   QVector e = QVector(1.);
-  QPoint pt2(2.);
-  QPoint pt3(1.);
-
   QOBBox obbox1(pt1, u, e);
 
-  pt2.array()[0] = 0.;
-  pt3.array()[0] = 0.;
+  QPoint pt2(u[0].array() + u[1].array());
+  QPoint pt3(10.*pt2.array());
+
+  QVector found(primal::closest_point(pt3, obbox1));
+  QVector expected(pt2);
 
   // closest point is on an edge
-  EXPECT_TRUE(primal::closest_point(pt2, obbox1) == pt3);
+  EXPECT_TRUE((found - expected).squared_norm() < EPS);
 }
