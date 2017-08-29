@@ -346,8 +346,8 @@ View * View::apply()
  *************************************************************************
  */
 View * View::apply(SidreLength num_elems,
-                           SidreLength offset,
-                           SidreLength stride)
+                   SidreLength offset,
+                   SidreLength stride)
 {
   if ( num_elems < 0 )
   {
@@ -382,8 +382,8 @@ View * View::apply(SidreLength num_elems,
  *************************************************************************
  */
 View * View::apply(TypeID type, SidreLength num_elems,
-                           SidreLength offset,
-                           SidreLength stride)
+                   SidreLength offset,
+                   SidreLength stride)
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -1081,7 +1081,7 @@ View::State View::getStateId(const std::string &name)
  *************************************************************************
  */
 void View::exportTo(conduit::Node& data_holder,
-                        std::set<IndexType>& buffer_indices) const
+                    std::set<IndexType>& buffer_indices) const
 {
   data_holder["state"] = getStateStringName(m_state);
   exportAttribute(data_holder);
@@ -1132,7 +1132,7 @@ void View::exportTo(conduit::Node& data_holder,
  *************************************************************************
  */
 void View::importFrom(conduit::Node& data_holder,
-                          const std::map<IndexType, IndexType>& buffer_id_map)
+                      const std::map<IndexType, IndexType>& buffer_id_map)
 {
   m_state = getStateId(data_holder["state"].as_string());
   importAttribute(data_holder);
@@ -1157,7 +1157,7 @@ void View::importFrom(conduit::Node& data_holder,
                      old_buffer_id );
 
     Buffer * buffer = m_owning_group->getDataStore()->
-                          getBuffer( buffer_id_map.at(old_buffer_id) );
+                      getBuffer( buffer_id_map.at(old_buffer_id) );
 
     importDescription(data_holder);
     attachBuffer( buffer );
@@ -1288,26 +1288,34 @@ void View::importAttribute(conduit::Node& data_holder)
 bool View::rename(const std::string& new_name)
 {
   bool do_rename = true;
-  if (new_name != m_name) {
+  if (new_name != m_name)
+  {
 
     Group * parent = getOwningGroup();
     SLIC_CHECK(parent != AXOM_NULLPTR);
 
-    if (new_name.empty()) {
+    if (new_name.empty())
+    {
       SLIC_WARNING("Cannot rename View " << m_name << " to an empty " <<
                    "string.");
       do_rename = false;
-    } else if (new_name.find(parent->getPathDelimiter()) != std::string::npos) {
+    }
+    else if (new_name.find(parent->getPathDelimiter()) != std::string::npos)
+    {
       SLIC_WARNING("Cannot rename View "<< m_name << " to path name " <<
                    new_name << ". Only strings without path delimiters can " <<
                    "be passed into the rename method.");
       do_rename = false;
-    } else if (parent->hasGroup(new_name) || parent->hasView(new_name)) {
+    }
+    else if (parent->hasGroup(new_name) || parent->hasView(new_name))
+    {
       SLIC_WARNING("Parent group " << parent->getName() <<
                    " already has a child object named " << new_name <<
                    ". View " << m_name << " will not be renamed.");
       do_rename = false;
-    } else {
+    }
+    else
+    {
 
       View * detached_view = parent->detachView(m_name);
       SLIC_CHECK(detached_view == this);
@@ -1332,8 +1340,8 @@ bool View::rename(const std::string& new_name)
  */
 Attribute * View::getAttribute(IndexType idx)
 {
-  Attribute * attr = 
-      getOwningGroup()->getDataStore()->getAttribute(idx);
+  Attribute * attr =
+    getOwningGroup()->getDataStore()->getAttribute(idx);
   return attr;
 }
 
@@ -1346,8 +1354,8 @@ Attribute * View::getAttribute(IndexType idx)
  */
 const Attribute * View::getAttribute(IndexType idx) const
 {
-  const Attribute * attr = 
-      getOwningGroup()->getDataStore()->getAttribute(idx);
+  const Attribute * attr =
+    getOwningGroup()->getDataStore()->getAttribute(idx);
   return attr;
 }
 
@@ -1360,8 +1368,8 @@ const Attribute * View::getAttribute(IndexType idx) const
  */
 Attribute * View::getAttribute(const std::string & name)
 {
-  Attribute * attr = 
-      getOwningGroup()->getDataStore()->getAttribute(name);
+  Attribute * attr =
+    getOwningGroup()->getDataStore()->getAttribute(name);
   return attr;
 }
 
@@ -1374,8 +1382,8 @@ Attribute * View::getAttribute(const std::string & name)
  */
 const Attribute * View::getAttribute(const std::string & name) const
 {
-  const Attribute * attr = 
-      getOwningGroup()->getDataStore()->getAttribute(name);
+  const Attribute * attr =
+    getOwningGroup()->getDataStore()->getAttribute(name);
   return attr;
 }
 
@@ -1405,7 +1413,8 @@ bool View::setAttributeString( IndexType idx, const std::string & value )
  *
  *************************************************************************
  */
-bool View::setAttributeString( const std::string & name, const std::string & value )
+bool View::setAttributeString( const std::string & name,
+                               const std::string & value )
 {
   const Attribute * attr = getAttribute(name);
 
@@ -1424,15 +1433,16 @@ bool View::setAttributeString( const std::string & name, const std::string & val
  *
  *************************************************************************
  */
-bool View::setAttributeString( const Attribute * attr, const std::string & value )
+bool View::setAttributeString( const Attribute * attr,
+                               const std::string & value )
 {
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "setAttributeString: called without an Attribute");
+                   "setAttributeString: called without an Attribute");
     return false;
   }
-    
+
   return m_attr_values.setString(attr, value);
 }
 
@@ -1492,7 +1502,7 @@ const char * View::getAttributeString( const Attribute * attr ) const
   if (attr == AXOM_NULLPTR)
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-		   "getAttributeString: called without an Attribute");
+                   "getAttributeString: called without an Attribute");
     return AXOM_NULLPTR;
   }
 

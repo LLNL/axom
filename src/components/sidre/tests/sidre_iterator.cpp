@@ -39,7 +39,7 @@ const int dump_no = 0;
 // Error checks here are minimal since it is assumed all of the routines used
 // have already been tested.
 
-DataStore *sample_datastore(void)
+DataStore * sample_datastore(void)
 {
   DataStore * ds = new DataStore();
 
@@ -57,7 +57,7 @@ DataStore *sample_datastore(void)
   Group * grpA = root->createGroup("grpA");
   Group * grpB = root->createGroup("grpB");
   Group * grpBB = grpB->createGroup("grpBB");
-                 root->createGroup("grpC");  // No Views
+  root->createGroup("grpC");                 // No Views
 
   // Tree of empty views
   Group * grpD0 = root->createGroup("grpD0");
@@ -93,8 +93,9 @@ TEST(sidre_iterator,depth_first)
 {
   enum nodeclass { GROUP, VIEW };
 
-  struct reference {
-    const char *name;
+  struct reference
+  {
+    const char * name;
     nodeclass cls;
   };
 
@@ -124,8 +125,8 @@ TEST(sidre_iterator,depth_first)
     {"root_view6", VIEW},
     {"root_view7", VIEW},
     {"", GROUP},
-};
- 
+  };
+
   while(qitr.isValid())
   {
     // find our current path

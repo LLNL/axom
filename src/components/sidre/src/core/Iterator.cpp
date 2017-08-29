@@ -203,7 +203,7 @@ Iterator::~Iterator()
  */
 bool Iterator::isValid()
 {
-  return ! m_stack.empty();
+  return !m_stack.empty();
 }
 
 /*

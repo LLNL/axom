@@ -95,8 +95,8 @@ void DataStoreConduitInfoHandler( const std::string& message,
  */
 DataStore::DataStore()
   : m_RootGroup(AXOM_NULLPTR),
-    m_attribute_coll(new AttributeCollection()),
-    m_need_to_finalize_slic(false)
+  m_attribute_coll(new AttributeCollection()),
+  m_need_to_finalize_slic(false)
 {
 
   if ( !axom::slic::isInitialized() )
@@ -371,7 +371,7 @@ bool DataStore::hasAttribute( IndexType idx ) const
  */
 void DataStore::destroyAttribute( const std::string & name )
 {
-  Attribute *attr = getAttribute(name);
+  Attribute * attr = getAttribute(name);
   destroyAttribute(attr);
 }
 

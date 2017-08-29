@@ -164,7 +164,7 @@ public:
   /*!
    * \brief Return full path of Group object, including its name.
    *
-   * If a DataStore contains a Group tree structure a/b/c/d/e, the 
+   * If a DataStore contains a Group tree structure a/b/c/d/e, the
    * following results are expected:
    *
    * Method Call      | Result
@@ -373,8 +373,8 @@ public:
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         SidreLength num_elems );
+                     TypeID type,
+                     SidreLength num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -386,9 +386,9 @@ public:
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape );
+                     TypeID type,
+                     int ndims,
+                     SidreLength * shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -397,7 +397,7 @@ public:
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   View * createView( const std::string& path,
-                         const DataType& dtype);
+                     const DataType& dtype);
 
 //@}
 
@@ -434,7 +434,7 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         Buffer * buff );
+                     Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -453,9 +453,9 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         SidreLength num_elems,
-                         Buffer * buff );
+                     TypeID type,
+                     SidreLength num_elems,
+                     Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -474,10 +474,10 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape,
-                         Buffer * buff );
+                     TypeID type,
+                     int ndims,
+                     SidreLength * shape,
+                     Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -492,8 +492,8 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         const DataType& dtype,
-                         Buffer * buff );
+                     const DataType& dtype,
+                     Buffer * buff );
 
 //@}
 
@@ -527,7 +527,7 @@ public:
    * \sa View::setExternalDataPtr
    */
   View * createView( const std::string& path,
-                         void * external_ptr );
+                     void * external_ptr );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -547,9 +547,9 @@ public:
    * \sa View::setExternalDataPtr
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         SidreLength num_elems,
-                         void * external_ptr );
+                     TypeID type,
+                     SidreLength num_elems,
+                     void * external_ptr );
 
 
   /*!
@@ -571,10 +571,10 @@ public:
    * \sa View::setExternalDataPtr
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape,
-                         void * external_ptr );
+                     TypeID type,
+                     int ndims,
+                     SidreLength * shape,
+                     void * external_ptr );
   /*!
    * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned
@@ -589,8 +589,8 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         const DataType& dtype,
-                         void * external_ptr );
+                     const DataType& dtype,
+                     void * external_ptr );
 
 //@}
 
@@ -620,8 +620,8 @@ public:
    * \sa View::allocate
    */
   View * createViewAndAllocate( const std::string& path,
-                                    TypeID type,
-                                    SidreLength num_elems );
+                                TypeID type,
+                                SidreLength num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -639,9 +639,9 @@ public:
    * \sa View::allocate
    */
   View * createViewAndAllocate( const std::string& path,
-                                    TypeID type,
-                                    int ndims,
-                                    SidreLength * shape );
+                                TypeID type,
+                                int ndims,
+                                SidreLength * shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -658,7 +658,7 @@ public:
    * \sa View::allocate
    */
   View * createViewAndAllocate( const std::string& path,
-                                    const DataType& dtype);
+                                const DataType& dtype);
 
   /*!
    * \brief Create View object with given name or path in this Group
@@ -697,7 +697,7 @@ public:
    * \sa View::setString
    */
   View * createViewString( const std::string& path,
-                               const std::string& value);
+                           const std::string& value);
 
 //@}
 
