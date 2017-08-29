@@ -448,12 +448,12 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
 
   //if z projection area greatest, project on XY and return 2D checker
   const Triangle2 t1_2da = Triangle2(Point2::make_point(p1[0],p1[1]),
-                                      Point2::make_point(q1[0],q1[1]),
-                                      Point2::make_point(r1[0],r1[1]));
+                                     Point2::make_point(q1[0],q1[1]),
+                                     Point2::make_point(r1[0],r1[1]));
 
   const Triangle2 t2_2da = Triangle2(Point2::make_point(p2[0],p2[1]),
-                                      Point2::make_point(q2[0],q2[1]),
-                                      Point2::make_point(r2[0],r2[1]));
+                                     Point2::make_point(q2[0],q2[1]),
+                                     Point2::make_point(r2[0],r2[1]));
 
   return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
 }
@@ -1265,7 +1265,7 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
  */
 template < typename T >
 bool intersect_obb1D_obb1D(const OrientedBoundingBox< T, 1 > &b1,
-  const OrientedBoundingBox< T, 1 > &b2)
+                           const OrientedBoundingBox< T, 1 > &b2)
 {
   T c1 = b1.getCentroid()[0];
   T c2 = b2.getCentroid()[0];
@@ -1291,7 +1291,7 @@ bool intersect_obb1D_obb1D(const OrientedBoundingBox< T, 1 > &b1,
  */
 template < typename T >
 bool intersect_obb2D_obb2D(const OrientedBoundingBox< T, 2 > &b1,
-  const OrientedBoundingBox< T, 2 > &b2)
+                           const OrientedBoundingBox< T, 2 > &b2)
 {
   Vector< T, 2 > c1(b1.getCentroid());
   Vector< T, 2 > c2(b2.getCentroid());
@@ -1332,7 +1332,7 @@ bool intersect_obb2D_obb2D(const OrientedBoundingBox< T, 2 > &b1,
  */
 template < typename T >
 bool intersect_obb3D_obb3D(const OrientedBoundingBox< T, 3 > &b1,
-  const OrientedBoundingBox< T, 3 > &b2, double EPS)
+                           const OrientedBoundingBox< T, 3 > &b2, double EPS)
 {
   Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
                      - Vector< T, 3 >(b2.getCentroid());

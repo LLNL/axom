@@ -449,7 +449,8 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts,
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
-  const Point< T,NDIMS > &c, const Vector< T, NDIMS > (&u)[NDIMS], const Vector< T, NDIMS > &e )
+  const Point< T,NDIMS > &c, const Vector< T, NDIMS > (&u)[NDIMS],
+  const Vector< T, NDIMS > &e )
 {
   this->m_c = Point< T, NDIMS >(c);
   for (int i = 0; i < NDIMS; i++) {
