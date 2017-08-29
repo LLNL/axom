@@ -66,9 +66,7 @@ OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS
   std::vector< Point< T, NDIMS > > lv = l.vertices();
   std::vector< Point< T, NDIMS > > rv = r.vertices();
 
-  int size = lv.size();
-
-  Point< T, NDIMS > pts[2*size];
+  Point< T, NDIMS > pts[2*(1 << NDIMS)];
 
   for (int i = 0; i < size; i++) {
     pts[i] = lv[i];
