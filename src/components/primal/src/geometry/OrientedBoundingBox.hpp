@@ -161,7 +161,6 @@ public:
    */
   std::vector< PointType > vertices() const;
 
-  
   /*!
    * \brief Returns the dimension of the ambient space for this bounding box.
    * \return d the dimension of this bounding box instance.
@@ -243,7 +242,7 @@ public:
    */
   template < typename OtherType >
   bool contains( const Point< OtherType, NDIMS >& otherPt, double EPS=1E-8)
-    const;
+  const;
 
   /*!
    * \brief Checks whether the box fully contains another bounding box.
@@ -254,7 +253,8 @@ public:
    *  operator<().
    */
   template < typename OtherType >
-  bool contains( const OrientedBoundingBox< OtherType, NDIMS >& otherOBB, double EPS=1E-8) const;
+  bool contains( const OrientedBoundingBox< OtherType, NDIMS >& otherOBB,
+                 double EPS=1E-8) const;
 
   /*!
    * \brief Returns the same point but in the local coordinates of this OBB.
@@ -304,21 +304,23 @@ public:
                          std::vector< Point< T, NDIMS > >& pnts )
   { pnts = obb.vertices(); }
 
- private:
+private:
 
   /// \name Internal Helper Routines
   /// @{
 
   /*!
    * \brief Recursively enumerates the vertices of this box, storing them in l.
-   */ 
+   */
   static void vertex_enum(std::vector< Point< T, NDIMS > > &l, int i,
-    const Vector< T, NDIMS > u[NDIMS], const Vector< T, NDIMS > &e,
-    Vector< T, NDIMS > curr)
+                          const Vector< T, NDIMS > u[NDIMS], const Vector< T,
+                                                                           NDIMS > &e,
+                          Vector< T, NDIMS > curr)
   {
     if (i == NDIMS) {  // base case
       l.push_back(Point< T, NDIMS >(curr.array()));
-    } else {
+    }
+    else {
       curr += e[i]*u[i];
       vertex_enum(l, i + 1, u, e, curr);
       curr -= (static_cast< T >(2.)*e[i])*u[i];
@@ -337,8 +339,7 @@ public:
    */
   void checkAndFix();
 
-
- private:
+private:
   PointType m_c;  // centroid
   VectorType m_u[NDIMS];  // axes (all unit length)
   VectorType m_e;  // extents (each coord >= 0 or it's invalid)
@@ -354,7 +355,6 @@ public:
 
 namespace axom {
 namespace primal {
-
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
@@ -382,7 +382,8 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n)
+OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts,
+                                                     int n)
 {
   if (n <= 0) {
     this->clear();
@@ -403,7 +404,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n
   for (int i = 0; i < n; i++) {
     diff = pts[i].array() - c;
     for (int j = 0; j < NDIMS; j++) {
-      for(int k = 0; k < NDIMS; k++) {
+      for (int k = 0; k < NDIMS; k++) {
         covar(j, k) += diff[j]*diff[k];
       }
     }
@@ -448,10 +449,15 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts, int n
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox( const Point< T,NDIMS > &c,
-  const Vector< T,NDIMS > (&u)[NDIMS], const Vector< T,NDIMS > &e )
+                                                      const Vector< T,
+                                                                    NDIMS > (&u)[
+                                                        NDIMS], const Vector< T,
+                                                                              NDIMS > &e )
 {
   this->m_c = Point< T, NDIMS >(c);
-  for (int i = 0; i < NDIMS; i++) this->m_u[i] = Vector< T, NDIMS >(u[i]);
+  for (int i = 0; i < NDIMS; i++) {
+    this->m_u[i] = Vector< T, NDIMS >(u[i]);
+  }
   this->m_e = Vector< T, NDIMS >(e);
   this->checkAndFix();
 }
@@ -464,7 +470,9 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
   this->m_c = other.getCentroid();
   this->m_e = other.getExtents();
   const Vector< T, NDIMS > *u = other.getAxes();
-  for (int i = 0; i < NDIMS; i++) this->m_u[i] = u[i];
+  for (int i = 0; i < NDIMS; i++) {
+    this->m_u[i] = u[i];
+  }
   this->checkAndFix();
 }
 
@@ -482,15 +490,20 @@ void OrientedBoundingBox< T, NDIMS >::addPoint( Point< T, NDIMS > pt )
   Point< T, NDIMS > pt_l = this->toLocal(pt);
   for (int i = 0; i < NDIMS; i++) {
     T proj = pt_l[i];
-    if (proj < T()) proj = -proj;
+    if (proj < T()) {
+      proj = -proj;
+    }
 
-    if (proj > this->m_e[i]) this->m_e[i] = proj;
+    if (proj > this->m_e[i]) {
+      this->m_e[i] = proj;
+    }
   }
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-void OrientedBoundingBox< T, NDIMS >::addBox( OrientedBoundingBox< T, NDIMS > obb )
+void OrientedBoundingBox< T, NDIMS >::addBox( OrientedBoundingBox< T,
+                                                                   NDIMS > obb )
 {
   SLIC_CHECK_MSG(obb.isValid(), "Passed in OBB is invalid.");
   if (!obb.isValid()) {
@@ -501,21 +514,22 @@ void OrientedBoundingBox< T, NDIMS >::addBox( OrientedBoundingBox< T, NDIMS > ob
   std::vector< Point< T, NDIMS > > res = obb.vertices();
   int size = res.size();
 
-  for (int i = 0; i < size; i++)
+  for (int i = 0; i < size; i++) {
     this->addPoint(res[i]);
+  }
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 std::vector< Point< T, NDIMS > > OrientedBoundingBox< T, NDIMS >::vertices()
-  const
+const
 {
   std::vector< Point< T, NDIMS > > res;
   res.reserve(1 << NDIMS);
   Vector< T, NDIMS > curr(this->m_c);
 
   OrientedBoundingBox< T, NDIMS >::vertex_enum(res, 0, this->m_u, this->m_e,
-    curr);
+                                               curr);
   return res;
 }
 
@@ -524,7 +538,9 @@ template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >& OrientedBoundingBox< T, NDIMS >::expand(
   T expansionAmount)
 {
-  for (int i = 0; i < NDIMS; i++) this->m_e[i] += expansionAmount;
+  for (int i = 0; i < NDIMS; i++) {
+    this->m_e[i] += expansionAmount;
+  }
   this->checkAndFix();
 
   return *this;
@@ -535,8 +551,12 @@ template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS >& OrientedBoundingBox< T, NDIMS >::scale(
   double scaleFactor)
 {
-  if (scaleFactor < T()) scaleFactor = -scaleFactor;
-  for (int i = 0; i < NDIMS; i++) this->m_e[i] *= scaleFactor;
+  if (scaleFactor < T()) {
+    scaleFactor = -scaleFactor;
+  }
+  for (int i = 0; i < NDIMS; i++) {
+    this->m_e[i] *= scaleFactor;
+  }
   return *this;
 }
 
@@ -547,7 +567,9 @@ OrientedBoundingBox< T, NDIMS >& OrientedBoundingBox< T, NDIMS >::shift(
 {
   NumericArray< T, NDIMS > &coords = (this->m_c).array();
   NumericArray< T, NDIMS > c;
-  for (int i = 0; i < NDIMS; i++) c[i] = coords[i] + displacement[i];
+  for (int i = 0; i < NDIMS; i++) {
+    c[i] = coords[i] + displacement[i];
+  }
   this->m_c = Point< T, NDIMS >(c);
   checkAndFix();
   return *this;
@@ -562,7 +584,9 @@ OrientedBoundingBox< T, NDIMS >& OrientedBoundingBox< T, NDIMS >::operator=(
     this->m_e = rhs.getExtents();
     this->m_c = rhs.getCentroid();
     const Vector< T, NDIMS > *u = rhs.getAxes();
-    for (int i = 0; i < NDIMS; i++) this->m_u[i] = u[i];
+    for (int i = 0; i < NDIMS; i++) {
+      this->m_u[i] = u[i];
+    }
     this->checkAndFix();
   }
   return *this;
@@ -574,7 +598,9 @@ template < typename OtherType >
 bool OrientedBoundingBox< T, NDIMS >::contains(
   const Point< OtherType, NDIMS >& otherPt, double EPS) const
 {
-  if (!(this->isValid())) return false;
+  if (!(this->isValid())) {
+    return false;
+  }
   Vector< T, NDIMS > pt_l = this->toLocal(otherPt);
   T proj;
   T margin = static_cast< T >(EPS);
@@ -582,9 +608,13 @@ bool OrientedBoundingBox< T, NDIMS >::contains(
     proj = pt_l[i];
 
     // make proj nonnegative
-    if (proj < T()) proj = -proj;
+    if (proj < T()) {
+      proj = -proj;
+    }
 
-    if (proj > (m_e[i] + margin)) return false;
+    if (proj > (m_e[i] + margin)) {
+      return false;
+    }
   }
   return true;
 }
@@ -600,7 +630,9 @@ bool OrientedBoundingBox< T, NDIMS >::contains(
   int size = l.size();
 
   for (int i = 0; i < size; i++) {
-    if (!this->contains(l[i], EPS)) return false;
+    if (!this->contains(l[i], EPS)) {
+      return false;
+    }
   }
 
   return true;
@@ -634,7 +666,8 @@ Point< T, NDIMS > OrientedBoundingBox< T, NDIMS >::furthestPoint(
 
     if (pt_l[i] > T()) {
       res -= (this->m_e[i])*(this->m_u[i]);
-    } else {
+    }
+    else {
       res += (this->m_e[i])*(this->m_u[i]);
     }
   }
@@ -662,7 +695,6 @@ void OrientedBoundingBox< T, NDIMS >::bisect(
     }
   }
 
-
   Vector< T, NDIMS > c1 = Vector< T, NDIMS >(this->m_c);
   Vector< T, NDIMS > c2 = Vector< T, NDIMS >(this->m_c);
 
@@ -673,11 +705,10 @@ void OrientedBoundingBox< T, NDIMS >::bisect(
   e[bi] *= (static_cast< T >(0.5));
 
   right = OrientedBoundingBox< T, NDIMS >(Point< T, NDIMS >(c1.array()),
-    this->m_u, e);
+                                          this->m_u, e);
   left = OrientedBoundingBox< T, NDIMS >(Point< T, NDIMS >(c2.array()),
-    this->m_u, e);
+                                         this->m_u, e);
 }
-
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
@@ -697,7 +728,9 @@ template < typename T, int NDIMS >
 void OrientedBoundingBox< T, NDIMS >::checkAndFix()
 {
   // if this is invalid, don't do anything!
-  if (!this->isValid()) return;
+  if (!this->isValid()) {
+    return;
+  }
 
   // do Gram-Schmidt
   for (int i = 0; i < NDIMS; i++) {
@@ -706,7 +739,7 @@ void OrientedBoundingBox< T, NDIMS >::checkAndFix()
     // make orthogonal
     for (int j = 0; j < i; j++) {
       numerics::make_orthogonal< T >(this->m_u[i].data(),
-        this->m_u[j].data(), NDIMS);
+                                     this->m_u[j].data(), NDIMS);
     }
 
     bool res = numerics::normalize< T >(this->m_u[i].data(), NDIMS);
@@ -717,10 +750,12 @@ void OrientedBoundingBox< T, NDIMS >::checkAndFix()
   }
 
   // check and fix extents
-  for (int i = 0; i < NDIMS; i++)
-    if (this->m_e[i] < T()) this->m_e[i] = T();
+  for (int i = 0; i < NDIMS; i++) {
+    if (this->m_e[i] < T()) {
+      this->m_e[i] = T();
+    }
+  }
 }
-
 
 //------------------------------------------------------------------------------
 /// Free functions implementing comparison and arithmetic operators
@@ -749,15 +784,7 @@ std::ostream& operator<<( std::ostream & os,
   return box.print(os);
 }
 
-
-
 } /* namespace primal */
 } /* namespace axom */
 
 #endif /* ORIENTEDBOUNDINGBOX_HPP_ */
-
-
-
-
-
-

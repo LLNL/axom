@@ -21,8 +21,8 @@ TEST( numerics_vector_utilities, dot_product_test )
   const int dim = 10;
   const double EPS = 1E-4;
 
-  double *u = new double[dim]();  // 0 initialization
-  double *v = new double[dim]();  // 0 initialization
+  double * u = new double[dim]();  // 0 initialization
+  double * v = new double[dim]();  // 0 initialization
 
   u[0] = 1.;
   v[1] = 1.;
@@ -50,8 +50,8 @@ TEST( numerics_vector_utilities, make_orthogonal_test )
   const double ONE_THIRD = 0.3333333333;
   const double EPS = 1E-4;
 
-  double *u = new double[dim]();  // 0 initialization
-  double *v = new double[dim]();  // 0 initialization
+  double * u = new double[dim]();  // 0 initialization
+  double * v = new double[dim]();  // 0 initialization
 
   u[0] = 1.;
   u[1] = 1.;
@@ -85,10 +85,10 @@ TEST( numerics_vector_utilities, orthonormalize_test )
   const double EPS = 1E-4;
   const double ONE_OVER_SQRT_TWO = 0.70710678;
 
-  double *basis = new double[dim*dim]();  // 0 initialization
+  double * basis = new double[dim*dim]();  // 0 initialization
 
-  double *u = basis;
-  double *v = basis + dim;
+  double * u = basis;
+  double * v = basis + dim;
 
   u[0] = 1.;
   u[1] = 1.;
@@ -118,8 +118,8 @@ TEST( numerics_vector_utilities, normalize_test )
   const double ONE_OVER_SQRT_THREE = 0.57735026;
   const double ONE_OVER_SQRT_TEN = 0.316227766;
 
-  double *u = new double[dim]();  // 0 initialization
-  double *v = new double[dim]();  // 0 initialization
+  double * u = new double[dim]();  // 0 initialization
+  double * v = new double[dim]();  // 0 initialization
 
   u[0] = 1.;
   u[1] = 1.;

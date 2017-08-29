@@ -50,7 +50,8 @@ OrientedBoundingBox< T, NDIMS > compute_oriented_bounding_box(
  */
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS >
-  &l, const OrientedBoundingBox< T, NDIMS > &r)
+                                             &l, const OrientedBoundingBox< T,
+                                                                            NDIMS > &r)
 {
 
   // TODO: See if this initial check can be improved so it's not so costly in
@@ -86,7 +87,7 @@ OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS
  */
 template < typename T, int NDIMS >
 BoundingBox< T, NDIMS > merge_boxes( const BoundingBox< T, NDIMS >
-  &l, const BoundingBox< T, NDIMS > &r)
+                                     &l, const BoundingBox< T, NDIMS > &r)
 {
   BoundingBox< T, NDIMS > res(l);
   res.addBox(r);
@@ -95,6 +96,5 @@ BoundingBox< T, NDIMS > merge_boxes( const BoundingBox< T, NDIMS >
 
 }  /* namespace axom */
 }  /* namespace primal */
-
 
 #endif  /* COMPUTE_BOUNDING_BOX_HPP_ */

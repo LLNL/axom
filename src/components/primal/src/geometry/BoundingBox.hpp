@@ -142,7 +142,6 @@ public:
   BoundingBox( const PointType& pt )
     : m_min( pt), m_max( pt) { }
 
-
   /*!
    * \brief Constructor. Creates a bounding box containing the collection of
    * points.
@@ -453,10 +452,9 @@ bool BoundingBox< T,
   return true;
 }
 
-
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-BoundingBox< T, NDIMS>::BoundingBox(PointType *pts, int n)
+BoundingBox< T, NDIMS >::BoundingBox(PointType *pts, int n)
 {
   if (n <= 0) {
     clear();
