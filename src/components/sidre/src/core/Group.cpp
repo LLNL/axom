@@ -1278,14 +1278,15 @@ bool Group::isEquivalentTo(const Group * other) const
  */
 
 void Group::save(const std::string& path,
-                 const std::string& protocol) const
+                 const std::string& protocol,
+                 const Attribute * attr) const
 {
   const DataStore * ds = getDataStore();
 
   if (protocol == "sidre_hdf5")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
@@ -1294,7 +1295,7 @@ void Group::save(const std::string& path,
   else if (protocol == "sidre_conduit_json")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
@@ -1303,7 +1304,7 @@ void Group::save(const std::string& path,
   else if (protocol == "sidre_json")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
@@ -1339,7 +1340,8 @@ void Group::save(const std::string& path,
  *************************************************************************
  */
 void Group::save(const hid_t& h5_id,
-                 const std::string& protocol) const
+                 const std::string& protocol,
+                 const Attribute * attr) const
 {
   // supported here:
   // "sidre_hdf5"
@@ -1347,7 +1349,7 @@ void Group::save(const hid_t& h5_id,
   if(protocol == "sidre_hdf5")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     createExternalLayout(n["sidre/external"]);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n,h5_id);
@@ -1763,7 +1765,8 @@ Group * Group::detachGroup(IndexType idx)
  *
  *************************************************************************
  */
-void Group::exportTo(conduit::Node & result) const
+void Group::exportTo(conduit::Node & result,
+                     const Attribute * attr) const
 {
   result.set(DataType::object());
   // TODO - This implementation will change in the future.  We want to write
@@ -1780,7 +1783,7 @@ void Group::exportTo(conduit::Node & result) const
   // Tell Group to add itself and all sub-Groups and Views to node.
   // Any Buffers referenced by those Views will be tracked in the
   // buffer_indices
-  exportTo(result, buffer_indices);
+  exportTo(result, attr, buffer_indices);
 
   if (!buffer_indices.empty())
   {
@@ -1813,6 +1816,7 @@ void Group::exportTo(conduit::Node & result) const
  *************************************************************************
  */
 void Group::exportTo(conduit::Node& result,
+                     const Attribute * attr,
                      std::set<IndexType>& buffer_indices) const
 {
   if (getNumViews() > 0)
@@ -1822,8 +1826,11 @@ void Group::exportTo(conduit::Node& result,
     while ( indexIsValid(vidx) )
     {
       const View * view = getView(vidx);
-      Node& n_view = vnode.fetch(view->getName());
-      view->exportTo( n_view, buffer_indices );
+      if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
+      {
+        Node& n_view = vnode.fetch(view->getName());
+        view->exportTo( n_view, buffer_indices );
+      }
       vidx = getNextValidViewIndex(vidx);
     }
   }
@@ -1836,7 +1843,7 @@ void Group::exportTo(conduit::Node& result,
     {
       const Group * group =  getGroup(gidx);
       Node& n_group = gnode.fetch(group->getName());
-      group->exportTo(n_group, buffer_indices);
+      group->exportTo(n_group, attr, buffer_indices);
 
       gidx = getNextValidGroupIndex(gidx);
     }

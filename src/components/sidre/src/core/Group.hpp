@@ -1057,7 +1057,8 @@ public:
    *  \param protocol  I/O protocol
    */
   void save( const std::string& path,
-             const std::string& protocol = "sidre_hdf5") const;
+             const std::string& protocol = "sidre_hdf5",
+             const Attribute * attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Save the Group to an hdf5 handle.
@@ -1066,7 +1067,8 @@ public:
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    */
   void save( const hid_t& h5_id,
-             const std::string &protocol = "sidre_hdf5") const;
+             const std::string& protocol = "sidre_hdf5",
+             const Attribute * attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Load the Group from a file.
@@ -1077,7 +1079,7 @@ public:
    */
   void load(const std::string& path,
             const std::string& protocol = "sidre_hdf5",
-            bool preserve_contents = "false");
+            bool preserve_contents = false);
 
   /*!
    * \brief Load the Group from an hdf5 handle.
@@ -1230,7 +1232,7 @@ private:
    *
    * Note: This is for the "sidre_hdf5" protocol.
    */
-  void exportTo(conduit::Node& result) const;
+  void exportTo(conduit::Node& result, const Attribute * attr) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1239,6 +1241,7 @@ private:
    * by the Views in this Group and Groups in the sub-tree below it.
    */
   void exportTo(conduit::Node& data_holder,
+                const Attribute * attr,
                 std::set<IndexType>& buffer_indices) const;
 
   /*!
