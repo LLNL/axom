@@ -63,11 +63,12 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
     <<"OBBox only has a single point, so bbox1.getCentroid()==pt1";
   const QVector *u_in = obbox1.getAxes();
 
-  for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
+  for (int i = 0; i < DIM; i++) {
+    EXPECT_TRUE(u_in[i] == u[i]);
+  }
 
   EXPECT_TRUE(obbox1.getExtents() == e)
     << "Extents should be 0";
-
 
   QOBBox obbox2(pt2);
 
@@ -77,7 +78,9 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
   EXPECT_TRUE(obbox2.getCentroid() == pt2)
     <<"OBBox only has a single point, so obbox2.getCentroid()==pt2";
   u_in = obbox2.getAxes();
-  for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
+  for (int i = 0; i < DIM; i++) {
+    EXPECT_TRUE(u_in[i] == u[i]);
+  }
   EXPECT_TRUE(e == obbox2.getExtents())
     << "Extents should be 0";
 
@@ -112,11 +115,12 @@ TEST( primal_OBBox, obb_ctor_from_data)
 
   // check settings
   const QVector *u_in = obbox1.getAxes();
-  for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
+  for (int i = 0; i < DIM; i++) {
+    EXPECT_TRUE(u_in[i] == u[i]);
+  }
   EXPECT_TRUE(obbox1.getCentroid() == pt1);
   EXPECT_TRUE(obbox1.getExtents() == e);
 }
-
 
 //------------------------------------------------------------------------------
 TEST( primal_OBBox, obb_test_clear )
@@ -206,15 +210,16 @@ TEST( primal_OBBox, obb_test_add_point )
 
   EXPECT_EQ(obbox1, obbox2);
 
-  // add point 
+  // add point
   QPoint pt2(10.);
   obbox2.addPoint(pt2);
   EXPECT_TRUE(obbox2.contains(pt2));
 
   QVector e2 = obbox2.getExtents();
 
-  for (int i = 0; i < 3; i++) EXPECT_EQ(e2[i], 10.);
-
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(e2[i], 10.);
+  }
 
   // test when it's shifted away from the origin
   obbox2.shift(QVector(10.));
@@ -222,7 +227,7 @@ TEST( primal_OBBox, obb_test_add_point )
 
   QOBBox obbox4 = QOBBox(pt2, u, QVector(20.));
   EXPECT_EQ(obbox4, obbox2);
-  
+
   // test adding a vertex does nothing
   QOBBox obbox3 = obbox2;
   obbox2.addPoint(obbox2.vertices()[0]);
@@ -267,7 +272,6 @@ TEST( primal_OBBox, obb_test_add_box )
   EXPECT_TRUE(obbox3.isValid());
 }
 
-
 //------------------------------------------------------------------------------
 TEST( primal_OBBox, obb_test_expand )
 {
@@ -294,13 +298,17 @@ TEST( primal_OBBox, obb_test_expand )
   EXPECT_TRUE(e == obbox1.getExtents());
   const QVector *u_in = obbox1.getAxes();
 
-  for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
+  for (int i = 0; i < DIM; i++) {
+    EXPECT_TRUE(u_in[i] == u[i]);
+  }
   obbox1.expand(10.);
   QVector newE = QVector(11.);
   EXPECT_TRUE(pt1 == obbox1.getCentroid());
   EXPECT_TRUE(newE == obbox1.getExtents());
 
-  for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
+  for (int i = 0; i < DIM; i++) {
+    EXPECT_TRUE(u_in[i] == u[i]);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -335,7 +343,7 @@ TEST( primal_OBBox, obb_test_scale )
   EXPECT_TRUE(obbox1.isValid());
   EXPECT_TRUE(obbox1 == obbox2);
   EXPECT_TRUE(obbox1.contains(pt2));
-  
+
   obbox1.scale(0.);
   EXPECT_TRUE(obbox1.isValid());
   EXPECT_TRUE(obbox1 == obbox3);
@@ -346,7 +354,7 @@ TEST( primal_OBBox, obb_test_scale )
   EXPECT_TRUE(obbox1.isValid());
   EXPECT_TRUE(obbox1 == obbox3);
   EXPECT_TRUE(obbox1.contains(pt1));
-  
+
   obbox2.scale(5.);
   EXPECT_TRUE(obbox2.isValid());
   EXPECT_TRUE(obbox2.contains(pt3));
@@ -414,7 +422,9 @@ TEST( primal_OBBox, obb_copy_and_assignment )
   EXPECT_TRUE(obbox2 == obbox3);
 
   const QVector *u_in = obbox2.getAxes();
-  for (int i = 0; i < DIM; i++) EXPECT_TRUE(u_in[i] == u[i]);
+  for (int i = 0; i < DIM; i++) {
+    EXPECT_TRUE(u_in[i] == u[i]);
+  }
   EXPECT_TRUE(e == obbox2.getExtents());
   EXPECT_TRUE(pt1 == obbox2.getCentroid());
 
@@ -494,7 +504,7 @@ TEST( primal_OBBox, obb_to_local )
   QVector vec1(10.);
 
   QOBBox obbox1(pt1, u, e);
-  
+
   // if box is standard one centered at origin, nothing should change
   EXPECT_EQ(vec0, obbox1.toLocal(pt1));
   EXPECT_EQ(vec1, obbox1.toLocal(pt2));
@@ -514,7 +524,7 @@ TEST( primal_OBBox, obb_to_local )
   EXPECT_EQ(vec2[0], 0.);
   EXPECT_TRUE(((vec2[1] - 14.142) < 0.1) && ((14.142 - vec2[1]) < 0.1));
   EXPECT_TRUE(((vec2[2] - 10.) < 0.1) && ((10. - vec2[2]) < 0.1));
-  
+
 }
 
 //------------------------------------------------------------------------------

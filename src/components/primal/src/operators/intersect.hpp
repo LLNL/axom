@@ -188,7 +188,7 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
 
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 1 > & b1,
-  const OrientedBoundingBox< T, 1 >& b2)
+               const OrientedBoundingBox< T, 1 >& b2)
 {
   T c1 = b1.getCentroid()[0];
   T c2 = b2.getCentroid()[0];
@@ -196,8 +196,12 @@ bool intersect(const OrientedBoundingBox< T, 1 > & b1,
   T e1 = b1.getExtents()[0];
   T e2 = b2.getExtents()[0];
 
-  if (c1 + e1 > c2 - e2) return true;
-  if (c2 + e2 > c1 - e1) return true;
+  if (c1 + e1 > c2 - e2) {
+    return true;
+  }
+  if (c2 + e2 > c1 - e1) {
+    return true;
+  }
 
   return false;
 }
@@ -210,7 +214,7 @@ bool intersect(const OrientedBoundingBox< T, 1 > & b1,
  */
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 2 >& b1,
-  const OrientedBoundingBox< T, 2 >& b2)
+               const OrientedBoundingBox< T, 2 >& b2)
 {
   Vector< T, 2 > c1(b1.getCentroid());
   Vector< T, 2 > c2(b2.getCentroid());
@@ -251,10 +255,10 @@ bool intersect(const OrientedBoundingBox< T, 2 >& b1,
  */
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 3 >& b1,
-  const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-4)
+               const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-4)
 {
   Vector< T, 3 > d = Vector< T, 3 >(b1.getCentroid())
-    - Vector< T, 3 >(b2.getCentroid());
+                     - Vector< T, 3 >(b2.getCentroid());
 
   Vector< T, 3 > e1 = b1.getExtents();
   Vector< T, 3 > e2 = b2.getExtents();
@@ -289,11 +293,12 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
       T left = utilities::abs< T >(d.dot(u1[(i + 2) % 3])*r[(i + 1) % 3][j]
-        - (d.dot(u1[(i + 1) % 3])*r[(i + 2) % 3][j]));
+                                   - (d.dot(u1[(i + 1) % 3])*
+                                      r[(i + 2) % 3][j]));
       T right = (e1[(i + 1) % 3]*r[(i + 2) % 3][j]
-        + e1[(i + 2) % 3]*r[(i + 1) % 3][j]);
+                 + e1[(i + 2) % 3]*r[(i + 1) % 3][j]);
       right += (e2[(i + 1) % 3]*r[i][(j + 2) % 3]
-        + e2[(i + 2) % 3]*r[i][(j + 1) % 3]);
+                + e2[(i + 2) % 3]*r[i][(j + 1) % 3]);
       if (left > right + EPS) {
         return false;
       }
@@ -303,7 +308,6 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
   // didn't find a separating anything
   return true;
 }
-
 
 } /* namespace primal */
 } /* namespace axom */

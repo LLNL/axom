@@ -1397,7 +1397,7 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
   obbox4.shift(shift2);
   // edge-edge
   EXPECT_TRUE(axom::primal::intersect(obbox1, obbox4));
-  
+
   QOBBox obbox5;
   QOBBox obbox6;
   obbox1.bisect(obbox5, obbox6);

@@ -204,14 +204,15 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
  *
  * \param [in] pt the query pt.
  * \param [in] obb user-supplied oriented bounding box.
- * \return cp the closest point from a point pt and an OBB. 
+ * \return cp the closest point from a point pt and an OBB.
  */
 template < typename T, int NDIMS >
 inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
-  const OrientedBoundingBox< T, NDIMS >& obb)
+                                       const OrientedBoundingBox< T,
+                                                                  NDIMS >& obb)
 {
   Vector< T, NDIMS > e = obb.getExtents();
-  const Vector< T, NDIMS > *u = obb.getAxes(); 
+  const Vector< T, NDIMS > *u = obb.getAxes();
 
   Vector< T, NDIMS > pt_l = obb.toLocal(pt);
   Vector< T, NDIMS > res(obb.getCentroid());
@@ -221,9 +222,11 @@ inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
     // choose the "best" local coordinate in each axis direction
     if (pt_l[i] <= e[i] && pt_l[i] >= -e[i]) {
       res += pt_l[i]*u[i];
-    } else if (pt_l[i] > e[i]) {
+    }
+    else if (pt_l[i] > e[i]) {
       res += e[i]*u[i];
-    } else {
+    }
+    else {
       res -= e[i]*u[i];
     }
   }

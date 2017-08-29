@@ -42,9 +42,12 @@ TEST( primal_compute_bounding_box, compute_oriented_box_test)
 
   std::vector< QPoint > v = obbox1.vertices();
   QPoint verts[8];
-  for (int i = 0; i < 8; i++) verts[i] = v[i];
+  for (int i = 0; i < 8; i++) {
+    verts[i] = v[i];
+  }
 
-  QOBBox obbox2 = primal::compute_oriented_bounding_box< CoordType, DIM >(verts, 8);
+  QOBBox obbox2 = primal::compute_oriented_bounding_box< CoordType, DIM >(verts,
+                                                                          8);
 
   EXPECT_TRUE(obbox2.contains(obbox1));
 
@@ -55,7 +58,8 @@ TEST( primal_compute_bounding_box, compute_oriented_box_test)
   verts[1] = pt2;
   verts[2] = pt3;
 
-  QOBBox obbox3 = primal::compute_oriented_bounding_box< CoordType, DIM >(verts, 3);
+  QOBBox obbox3 = primal::compute_oriented_bounding_box< CoordType, DIM >(verts,
+                                                                          3);
 
   EXPECT_TRUE(obbox3.contains(pt1));
   EXPECT_TRUE(obbox3.contains(pt2));
@@ -85,9 +89,9 @@ TEST( primal_compute_bounding_box, merge_oriented_box_test)
   QVector e = QVector(1.);
   QOBBox obbox1(pt1, u, e);
 
-
   // test when they're identical
-  EXPECT_TRUE((obbox1 == primal::merge_boxes< CoordType, DIM >(obbox1, obbox1)));
+  EXPECT_TRUE((obbox1 ==
+               primal::merge_boxes< CoordType, DIM >(obbox1, obbox1)));
 
   // test when they're completely separate
   QPoint pt2(10.);

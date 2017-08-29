@@ -22,13 +22,14 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
   const int N = 10;
   const double EPS = 1E-4;
 
-  double* u = new double[N*N];
-  double* lambdas = new double[N];
+  double * u = new double[N*N];
+  double * lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
   // make a diagonal matrix with descending values on the diagonal
-  for (int i = 0; i < N; i++) {
+  for (int i = 0 ; i < N ; i++)
+  {
     A(i,i) = N - i;
   }
 
@@ -36,12 +37,17 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
 
   // eigenvalues should be N, N - 1, ... etc. vectors should be standard basis
   // vectors in standard order
-  for (int i = 0; i < N; i++) {
+  for (int i = 0 ; i < N ; i++)
+  {
     EXPECT_NEAR(lambdas[i], static_cast< double >(N - i), EPS);
-    for (int j = 0; j < N; j++) {
-      if (j == i) {
+    for (int j = 0 ; j < N ; j++)
+    {
+      if (j == i)
+      {
         EXPECT_NEAR(u[i*N + j]*u[i*N + j], 1., EPS);
-      } else {
+      }
+      else
+      {
         EXPECT_NEAR(u[i*N + j], 0, EPS);
       }
     }
@@ -56,13 +62,14 @@ TEST( numerics_eigen_solve, eigen_solve_with_partial_diagonal )
   const int N = 10;
   const double EPS = 1E-4;
 
-  double* u = new double[N*N];
-  double* lambdas = new double[N];
+  double * u = new double[N*N];
+  double * lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
   // same thing as above test, but zero out the diagonal halfway through
-  for (int i = 0; i < N/2; i++) {
+  for (int i = 0 ; i < N/2 ; i++)
+  {
     A(i,i) = N - i;
   }
 
@@ -72,24 +79,34 @@ TEST( numerics_eigen_solve, eigen_solve_with_partial_diagonal )
   // vecs are same as before for first half. After that any basis for the
   // remaining subspace would be valid; we'll verify the last half of
   // eigenvecs are orthonormal
-  for (int i = 0; i < N/2; i++) {
+  for (int i = 0 ; i < N/2 ; i++)
+  {
     EXPECT_NEAR(lambdas[i], static_cast< double >(N - i), EPS);
-    for (int j = 0; j < N; j++) {
-      if (j == i) {
+    for (int j = 0 ; j < N ; j++)
+    {
+      if (j == i)
+      {
         EXPECT_NEAR(u[i*N + j]*u[i*N + j], 1., EPS);
-      } else {
+      }
+      else
+      {
         EXPECT_NEAR(u[i*N + j], 0., EPS);
       }
     }
   }
 
-  for (int i = N/2; i < N; i++) {
+  for (int i = N/2 ; i < N ; i++)
+  {
     EXPECT_NEAR(lambdas[i], 0., EPS);
-    for (int j = N/2; j < N; j++) {
+    for (int j = N/2 ; j < N ; j++)
+    {
       double dot = numerics::dot_product< double >(u + i*N, u + j*N, N);
-      if (j == i) {  // check it's unit norm
+      if (j == i)    // check it's unit norm
+      {
         EXPECT_NEAR(dot, 1., EPS);
-      } else {  // check they're orthogonal
+      }
+      else      // check they're orthogonal
+      {
         EXPECT_NEAR(dot, 0., EPS);
       }
     }
@@ -104,8 +121,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_two_by_two )
   const int N = 2;
   const double EPS = 1E-4;
 
-  double* u = new double[N*N];
-  double* lambdas = new double[N];
+  double * u = new double[N*N];
+  double * lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -139,8 +156,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
   const int N = 3;
   const double EPS = 1E-4;
 
-  double* u = new double[N*N];
-  double* lambdas = new double[N];
+  double * u = new double[N*N];
+  double * lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
