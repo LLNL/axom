@@ -840,7 +840,7 @@ TEST(sidre_attribute,save_by_attribute)
 
     root2->load(file_path, protocols[i]);
 
-    // Check attributes assigned to Views
+    // Only views with the dump attribute should exist.
 
     EXPECT_TRUE(root2->hasView("view1"));
     EXPECT_FALSE(root2->hasView("view2"));
