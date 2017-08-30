@@ -1075,7 +1075,8 @@ bool Group::createNativeLayout(Node& n, const Attribute * attr) const
  *************************************************************************
  * see ATK-736 - Improvements to createNativeLayout and createExternalLayout
  */
-bool Group::createExternalLayout(Node& n) const
+bool Group::createExternalLayout(Node& n,
+                                 const Attribute * attr) const
 {
   n.set(DataType::object());
 
@@ -1091,13 +1092,16 @@ bool Group::createExternalLayout(Node& n) const
     SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
                     view->getName() << " is the name of a groups and a view");
 
-    if(view->isExternal())
+    if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
     {
-      if(view->isDescribed())
+      if(view->isExternal())
       {
-        view->createNativeLayout(  n[view->getName()]  );
+        if(view->isDescribed())
+        {
+          view->createNativeLayout(  n[view->getName()]  );
+        }
+        hasExternalViews = true;
       }
-      hasExternalViews = true;
     }
 
     vidx = getNextValidViewIndex(vidx);
@@ -1109,7 +1113,7 @@ bool Group::createExternalLayout(Node& n) const
   {
     const Group * group =  getGroup(gidx);
 
-    if( group->createExternalLayout(n[group->getName()]) )
+    if( group->createExternalLayout(n[group->getName()], attr) )
     {
       hasExternalViews = true;
     }
@@ -1299,7 +1303,7 @@ void Group::save(const std::string& path,
     Node n;
     exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "hdf5");
   }
@@ -1308,7 +1312,7 @@ void Group::save(const std::string& path,
     Node n;
     exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "conduit_json");
   }
@@ -1317,7 +1321,7 @@ void Group::save(const std::string& path,
     Node n;
     exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
@@ -1361,7 +1365,7 @@ void Group::save(const hid_t& h5_id,
   {
     Node n;
     exportTo(n["sidre"], attr);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n,h5_id);
   }
