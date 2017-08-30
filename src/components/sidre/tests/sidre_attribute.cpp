@@ -803,10 +803,21 @@ TEST(sidre_attribute,save_by_attribute)
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   // scalar
-  View * view1a = root1->createViewScalar("scalar1", 1);
+  View * view1a = root1->createViewScalar("view1", 1);
   view1a->setAttributeScalar(dump, dump_yes);
 
-  root1->createViewScalar("scalar2", 2);
+  root1->createViewScalar("view2", 2);
+
+  // Create a deep path with and without attribute
+  Group * grp1a = root1->createGroup("grp1a");
+  Group * grp1b = grp1a->createGroup("grp1b");
+  grp1b->createViewScalar("view3", 3);
+
+  Group * grp2a = root1->createGroup("grp2a");
+  grp2a->createViewScalar("view4", 4);   // make sure empty "views" not saved
+  Group * grp2b = grp2a->createGroup("grp2b");
+  View * view5 = grp2b->createViewScalar("view5", 5);
+  view5->setAttributeScalar(dump, dump_yes);
 
   //----------------------------------------
 
@@ -818,7 +829,6 @@ TEST(sidre_attribute,save_by_attribute)
 
   delete ds1;
 
-#if 0
   //----------------------------------------
   // Only restore conduit_hdf5
   for (int i = 1 ; i < 2 ; ++i)
@@ -829,65 +839,16 @@ TEST(sidre_attribute,save_by_attribute)
     Group * root2 = ds2->getRoot();
 
     root2->load(file_path, protocols[i]);
-    EXPECT_EQ(3, ds2->getNumAttributes());
-
-    // Check available attributes
-
-    Attribute * attr_color = ds2->getAttribute(name_color);
-    EXPECT_EQ(color_none, attr_color->getDefaultNodeRef().as_string());
-
-    Attribute * attr_dump = ds2->getAttribute(name_dump);
-    EXPECT_EQ(dump_no, attr_dump->getDefaultNodeRef().as_int());
-
-    Attribute * attr_size = ds2->getAttribute(name_size);
-    EXPECT_EQ(size_small, attr_size->getDefaultNodeRef().as_double());
 
     // Check attributes assigned to Views
 
-    View * view2a = root2->getView("empty");
-    EXPECT_TRUE(view2a->hasAttributeValue(name_color));
-    EXPECT_TRUE(view2a->hasAttributeValue(name_dump));
-    EXPECT_TRUE(view2a->hasAttributeValue(name_size));
-    EXPECT_TRUE(strcmp("color-empty",
-                       view2a->getAttributeString(attr_color)) == 0);
-    EXPECT_EQ(dump_yes, view2a->getAttributeScalar<int>(attr_dump));
-    EXPECT_EQ(size_small, view2a->getAttributeScalar<double>(attr_size));
-
-    View * view2b = root2->getView("buffer");
-    EXPECT_TRUE(view2b->hasAttributeValue(name_color));
-    EXPECT_FALSE(view2b->hasAttributeValue(name_dump));
-    EXPECT_TRUE(view2b->hasAttributeValue(name_size));
-    EXPECT_TRUE(strcmp("color-buffer",
-                       view2b->getAttributeString(attr_color)) == 0);
-    EXPECT_EQ(size_medium, view2b->getAttributeScalar<double>(attr_size));
-
-    View * view2c = root2->getView("external");
-    EXPECT_FALSE(view2c->hasAttributeValue(name_color));
-    EXPECT_FALSE(view2c->hasAttributeValue(name_dump));
-    EXPECT_TRUE(view2c->hasAttributeValue(name_size));
-    EXPECT_EQ(size_large, view2c->getAttributeScalar<double>(attr_size));
-
-    View * view2d = root2->getView("scalar");
-    EXPECT_TRUE(view2d->hasAttributeValue(name_color));
-    EXPECT_FALSE(view2d->hasAttributeValue(name_dump));
-    EXPECT_FALSE(view2d->hasAttributeValue(name_size));
-    EXPECT_TRUE(strcmp("color-scalar",
-                       view2d->getAttributeString(attr_color)) == 0);
-
-    View * view2e = root2->getView("string");
-    EXPECT_TRUE(view2e->hasAttributeValue(name_color));
-    EXPECT_FALSE(view2e->hasAttributeValue(name_dump));
-    EXPECT_FALSE(view2e->hasAttributeValue(name_size));
-    EXPECT_TRUE(strcmp("color-string",
-                       view2e->getAttributeString(attr_color)) == 0);
-
-    View * view2f = root2->getView("empty-no-attributes");
-    EXPECT_FALSE(view2f->hasAttributeValue(name_color));
-    EXPECT_FALSE(view2f->hasAttributeValue(name_dump));
-    EXPECT_FALSE(view2f->hasAttributeValue(name_size));
+    EXPECT_TRUE(root2->hasView("view1"));
+    EXPECT_FALSE(root2->hasView("view2"));
+    EXPECT_FALSE(root2->hasView("grp1a/grp1b/view3"));
+    EXPECT_FALSE(root2->hasView("grp2a/view4"));
+    EXPECT_TRUE(root2->hasView("grp2a/grp2b/view5"));
 
     delete ds2;
   }
-#endif
 
 }

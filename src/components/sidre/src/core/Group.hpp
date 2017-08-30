@@ -1004,7 +1004,8 @@ public:
    *
    * Only the Views which have external data are added to the node.
    *
-   * \return True if the group or any of its children have an external view, false otherwise
+   * \return True if the group or any of its children have an external
+   * view, false otherwise.
    */
   bool createExternalLayout(Node& n) const;
 
@@ -1239,8 +1240,12 @@ private:
    *
    * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
+   *
+   * \return True if the group or any of its children have saved Views,
+   * false otherwise.
+   *
    */
-  void exportTo(conduit::Node& data_holder,
+  bool exportTo(conduit::Node& data_holder,
                 const Attribute * attr,
                 std::set<IndexType>& buffer_indices) const;
 

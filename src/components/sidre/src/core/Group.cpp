@@ -1815,10 +1815,13 @@ void Group::exportTo(conduit::Node & result,
  *
  *************************************************************************
  */
-void Group::exportTo(conduit::Node& result,
+bool Group::exportTo(conduit::Node& result,
                      const Attribute * attr,
                      std::set<IndexType>& buffer_indices) const
 {
+  result.set(DataType::object());
+  bool hasSavedViews = false;
+
   if (getNumViews() > 0)
   {
     Node & vnode = result["views"];
@@ -1830,26 +1833,48 @@ void Group::exportTo(conduit::Node& result,
       {
         Node& n_view = vnode.fetch(view->getName());
         view->exportTo( n_view, buffer_indices );
+        hasSavedViews = true;
       }
       vidx = getNextValidViewIndex(vidx);
     }
+    if (!hasSavedViews)
+    {
+      result.remove("views");
+    }
+
   }
 
   if (getNumGroups() > 0)
   {
+    bool hasSavedGroups = false;
     Node & gnode = result["groups"];
     IndexType gidx = getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
-      const Group * group =  getGroup(gidx);
+      const Group * group = getGroup(gidx);
       Node& n_group = gnode.fetch(group->getName());
-      group->exportTo(n_group, attr, buffer_indices);
+      if ( group->exportTo(n_group, attr, buffer_indices) )
+      {
+        hasSavedGroups = true;
+      }
+      else
+      {
+        gnode.remove(group->getName());
+      }
 
       gidx = getNextValidGroupIndex(gidx);
     }
+    if (hasSavedGroups)
+    {
+      hasSavedViews = true;
+    }
+    else
+    {
+      result.remove("groups");
+    }
   }
 
-  result.set(DataType::object());
+  return hasSavedViews;
 }
 
 /*
