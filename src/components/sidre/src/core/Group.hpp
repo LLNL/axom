@@ -992,8 +992,13 @@ public:
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
    * externally to the Sidre View data so that it can be filled in from the data
    * in the file (independent of file format) and can be accessed as a Conduit tree.
+   *
+   * \return True if the Group or any of its children were added to the Node,
+   * false otherwise.
+   *
    */
-  void createNativeLayout(Node& n) const;
+  bool createNativeLayout(Node& n,
+                          const Attribute * attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Copy data Group native layout to given Conduit node.
@@ -1004,8 +1009,8 @@ public:
    *
    * Only the Views which have external data are added to the node.
    *
-   * \return True if the group or any of its children have an external
-   * view, false otherwise.
+   * \return True if the Group or any of its children have an external
+   * View, false otherwise.
    */
   bool createExternalLayout(Node& n) const;
 
