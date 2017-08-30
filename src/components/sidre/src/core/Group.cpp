@@ -1775,13 +1775,11 @@ Group * Group::detachGroup(IndexType idx)
  * Serialize tree identified by a Group into a conduit node.  Include
  * any Buffers attached to Views in that tree.
  *
- *
- * Note: this is for the "sidre" protocols: sidre_hdf5,
- * sidre_conduit_json, sidre_json.
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
-void Group::exportTo(conduit::Node & result,
+bool Group::exportTo(conduit::Node & result,
                      const Attribute * attr) const
 {
   result.set(DataType::object());
@@ -1799,7 +1797,7 @@ void Group::exportTo(conduit::Node & result,
   // Tell Group to add itself and all sub-Groups and Views to node.
   // Any Buffers referenced by those Views will be tracked in the
   // buffer_indices
-  exportTo(result, attr, buffer_indices);
+  bool hasSavedViews = exportTo(result, attr, buffer_indices);
 
   if (!buffer_indices.empty())
   {
@@ -1817,6 +1815,7 @@ void Group::exportTo(conduit::Node & result,
     }
   }
 
+  return hasSavedViews;
 }
 
 /*
@@ -1826,9 +1825,7 @@ void Group::exportTo(conduit::Node & result,
  * given set of ids to maintain correct association of data Buffers
  * to data Views.
  *
- *
- * Note: this is for the "sidre" protocols: sidre_hdf5,
- * sidre_conduit_json, sidre_json.
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
@@ -1901,7 +1898,7 @@ bool Group::exportTo(conduit::Node& result,
  * any Buffers attached to Views in that tree.
  *
  *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
@@ -1956,8 +1953,7 @@ void Group::importFrom(conduit::Node & node, bool preserve_contents)
  * given map of ids to indicate association of Buffer ids in node to
  * those in datastore.
  *
- *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
