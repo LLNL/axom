@@ -245,7 +245,7 @@ void parse_args( int argc, char** argv )
     {
       Arguments.maxOccupancy = std::atoi( argv[++i] );
     }
-    else if ( strcmp( argv[i], "--box_dims" )==0 )
+    else if ( strcmp( argv[i], "--box-dims" )==0 )
     {
       for ( int j=0 ; j < Arguments.ndims ; ++j )
       {
@@ -290,6 +290,7 @@ void parse_args( int argc, char** argv )
                  "Must provide an STL input file. Provide one with --file" );
   SLIC_ERROR_IF( Arguments.specified_box_max == !Arguments.specified_box_min,
                  "Both min/max bounds must be specified.");
+  slic::flushStreams();
 }
 
 //------------------------------------------------------------------------------

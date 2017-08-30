@@ -247,6 +247,7 @@ void distance_field( axom::mint::Mesh* surface_mesh,
   timer1.start();
 
   SignedDistance< 3 > signedDistance( surface_mesh,
+                                      true,
                                       Arguments.maxObjects,
                                       Arguments.maxLevels );
 

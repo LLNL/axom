@@ -46,21 +46,22 @@ using SignedDistance2D = SignedDistance< 2 >;
  */
 static struct parameters_t
 {
-  int dimension;       /*!< the dimension, 2 or 3 */
-  int geometry_type;   /*!< the geometry type, default is WATERTIGHT */
-  int max_levels;      /*!< max levels of subdivision for the BVH */
-  int max_occupancy;   /*!< max occupancy per BVH bin */
-  bool verbose;        /*!< logger verbosity */
+  int dimension;          /*!< the dimension, 2 or 3 */
+
+  int max_levels;         /*!< max levels of subdivision for the BVH */
+  int max_occupancy;      /*!< max occupancy per BVH bin */
+  bool verbose;           /*!< logger verbosity */
+  bool is_closed_surface; /*!< in*/
 
   /*!
    * \brief Default Constructor. Sets default values for the parameters.
    */
   parameters_t( ) :
     dimension( 3 ),
-    geometry_type( WATERTIGHT ),
     max_levels( 12 ),
     max_occupancy( 5 ),
-    verbose( false )
+    verbose( false ),
+    is_closed_surface( true )
   { }
 
 } Parameters;
@@ -139,6 +140,7 @@ int signed_distance_init( const mint::Mesh* m, MPI_Comm comm )
   }
 
   s_query = new SignedDistance3D( s_surface_mesh,
+                                  Parameters.is_closed_surface,
                                   Parameters.max_occupancy,
                                   Parameters.max_levels );
 
@@ -175,14 +177,13 @@ void signed_distance_set_dimension( int dim )
 }
 
 //------------------------------------------------------------------------------
-void signed_distance_set_geometry( int type )
+void signed_distance_set_closed_surface( bool status )
 {
-  SLIC_ERROR_IF( type != WATERTIGHT, "invalid geometry type" );
   SLIC_ERROR_IF(
     signed_distance_initialized(),
     "signed distance query already initialized; setting option has no effect!");
 
-  Parameters.geometry_type = type;
+  Parameters.is_closed_surface = status;
 }
 
 //------------------------------------------------------------------------------

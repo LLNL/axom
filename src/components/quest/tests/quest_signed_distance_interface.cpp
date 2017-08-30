@@ -15,48 +15,113 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+// Axom utils
+#include "axom_utils/Utilities.hpp"
+
 // Mint includes
-#include "mint/config.hpp"
-#include "mint/CellTypes.hpp"
-#include "mint/Mesh.hpp"
-#include "mint/MeshTypes.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/vtk_utils.hpp"
+#include "mint/config.hpp"            // for mint compile-time definitions
+#include "mint/CellTypes.hpp"         // for cell types enum
+#include "mint/Mesh.hpp"              // defines mint::Mesh
+#include "mint/MeshTypes.hpp"         // for mesh types enum
+#include "mint/UniformMesh.hpp"       // for mint::UniformMesh
+#include "mint/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
+#include "mint/vtk_utils.hpp"         // for mint::write_vtk()
 
 // Primal includes
-#include "primal/BoundingBox.hpp"
-#include "primal/Sphere.hpp"
+#include "primal/BoundingBox.hpp"     // defines primal::BoundingBox
+#include "primal/Plane.hpp"           // defines primal::Plane
+#include "primal/Sphere.hpp"          // defines primal::Sphere
 
 // Quest includes
-#include "quest/signed_distance.hpp"
-
-// Google Test includes
-#include "gtest/gtest.h"
+#include "quest/signed_distance.hpp" // for the signed distance interface
 #include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Slic includes
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "slic/slic.hpp"             // for SLIC macros
+#include "slic/UnitTestLogger.hpp"   // for the unit test logger
 using axom::slic::UnitTestLogger;
 
+// gtest
+#include "gtest/gtest.h"             // for gtest macros
+
 // C/C++ includes
-#include <fstream> // for std::ofstream
+#include <fstream>                   // for std::ofstream
 
 // Aliases
-namespace quest  = axom::quest;
-namespace mint   = axom::mint;
-namespace primal = axom::primal;
+namespace quest     = axom::quest;
+namespace mint      = axom::mint;
+namespace primal    = axom::primal;
+namespace utilities = axom::utilities;
 
 using UnstructuredMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 
 const char IGNORE_OUTPUT[] = ".*";
+
+//#define WRITE_VTK_OUTPUT 1
+#define REMOVE_FILES     1
 
 //------------------------------------------------------------------------------
 //  HELPER METHODS
 //------------------------------------------------------------------------------
 namespace
 {
+
+/*!
+ * \brief Generate a mesh of 4 triangles along the XY plane.
+ *
+ * \param [in] file the file to write to.
+ *
+ * \pre file.empty() == false.
+ * \note Used primarily for debugging.
+ */
+void generate_planar_mesh_stl_file( const std::string& file )
+{
+  EXPECT_FALSE( file.empty() );
+
+  std::ofstream ofs( file.c_str() );
+  EXPECT_TRUE( ofs.is_open() );
+
+  ofs << "solid plane" << std::endl;
+
+  // Triangle T1
+  ofs << "\t facet normal 0.0 0.0 1.0" << std::endl;
+  ofs << "\t\t outer loop" << std::endl;
+  ofs << "\t\t\t vertex -5.0 -5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex 5.0 -5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex 0.0  0.0 0.0" << std::endl;
+  ofs << "\t\t endloop" << std::endl;
+  ofs << "\t endfacet" << std::endl;
+
+  // Triangle T2
+  ofs << "\t facet normal 0.0 0.0 1.0" << std::endl;
+  ofs << "\t\t outer loop" << std::endl;
+  ofs << "\t\t\t vertex 5.0 -5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex 5.0  5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex 0.0  0.0 0.0" << std::endl;
+  ofs << "\t\t endloop" << std::endl;
+  ofs << "\t endfacet" << std::endl;
+
+  // Triangle T3
+  ofs << "\t facet normal 0.0 0.0 1.0" << std::endl;
+  ofs << "\t\t outer loop" << std::endl;
+  ofs << "\t\t\t vertex  5.0 5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex -5.0 5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex  0.0 0.0 0.0" << std::endl;
+  ofs << "\t\t endloop" << std::endl;
+  ofs << "\t endfacet" << std::endl;
+
+  // Triangle T4
+  ofs << "\t facet normal 0.0 0.0 1.0" << std::endl;
+  ofs << "\t\t outer loop" << std::endl;
+  ofs << "\t\t\t vertex -5.0  5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex -5.0 -5.0 0.0" << std::endl;
+  ofs << "\t\t\t vertex  0.0  0.0 0.0" << std::endl;
+  ofs << "\t\t endloop" << std::endl;
+  ofs << "\t endfacet" << std::endl;
+
+  ofs << "endsolid" << std::endl;
+  ofs.close( );
+}
 
 /*!
  * \brief Generates a simple ASCII STL file consisting of a single triangle.
@@ -212,9 +277,8 @@ TEST( quest_signed_distance_interface_DeathTest, set_params_after_init )
   // STEP 1: setting parameters after init() should fail
   EXPECT_DEATH_IF_SUPPORTED( quest::signed_distance_set_dimension( 3 ),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED(
-    quest::signed_distance_set_geometry( quest::WATERTIGHT ),
-    IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( quest::signed_distance_set_closed_surface( true ),
+                             IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED( quest::signed_distance_set_max_levels( 5 ),
                              IGNORE_OUTPUT );
@@ -261,7 +325,9 @@ TEST( quest_signed_distance_interface, initialize )
   EXPECT_FALSE( quest::signed_distance_initialized() );
 
   // remove temp STL file
+#ifdef REMOVE_FILES
   std::remove( fileName.c_str( ) );
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -299,6 +365,56 @@ TEST( quest_signed_distance_interface, get_mesh_bounds )
 
   delete surface_mesh;
   surface_mesh = AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+TEST( quest_signed_distance_interface, analytic_plane )
+{
+  // STEP 0: construct uniform box mesh
+  constexpr int NDIMS = 3;
+  constexpr int N     = 16;
+  double lo[ 3 ]      = { -4.0, -4.0, -4.0 };
+  double hi[ 3 ]      = {  4.0,  4.0,  4.0 };
+  mint::UniformMesh mesh( lo, hi, N, N, N );
+  double* phi = mesh.createField< double >( "phi", mint::NODE_CENTERED );
+  double* err = mesh.createField< double >( "err", mint::NODE_CENTERED );
+
+  // STEP 1: generate planar STL mesh file
+  const std::string file = "plane.stl";
+  generate_planar_mesh_stl_file( file );
+
+  // STEP 2: define analytic plane corresponding to the planar mesh;
+  const double origin[] = { 0.0, 0.0, 0.0 };
+  const double normal[] = { 0.0, 0.0, 1.0 };
+  primal::Plane< double,3 > analytic_plane( normal, origin );
+
+  // STEP 2: initialize the signed distance
+  quest::signed_distance_set_closed_surface( false );
+  quest::signed_distance_init( file );
+  EXPECT_TRUE( quest::signed_distance_initialized() );
+
+  mint::IndexType nnodes = mesh.getNumberOfNodes();
+  for ( mint::IndexType inode=0; inode < nnodes; ++inode )
+  {
+    double pt[ NDIMS ];
+    mesh.getNode( inode, pt );
+    phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
+
+    const double phi_expected = analytic_plane.computeSignedDistance( pt );
+    EXPECT_DOUBLE_EQ( phi[ inode ], phi_expected );
+    err[ inode ] = utilities::abs( phi[ inode ]-phi_expected );
+  }
+
+#ifdef WRITE_VTK_OUTPUT
+  mint::write_vtk( &mesh, "analytic_plane_mesh_test.vtk" );
+#endif
+
+  quest::signed_distance_finalize( );
+  EXPECT_FALSE( quest::signed_distance_initialized() );
+
+#ifdef REMOVE_FILES
+  std::remove( file.c_str( ) );
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -348,6 +464,7 @@ TEST( quest_signed_distance_interface, analytic_sphere )
   // STEP 3: initialize the signed distance query
   quest::signed_distance_set_max_levels( MAX_LEVELS );
   quest::signed_distance_set_max_occupancy( MAX_OCCUPANCY );
+  quest::signed_distance_set_closed_surface( true );
   quest::signed_distance_init( surface_mesh );
   EXPECT_TRUE( quest::signed_distance_initialized() );
 
@@ -367,7 +484,7 @@ TEST( quest_signed_distance_interface, analytic_sphere )
 
     // compute error
     phi_diff[ inode ] = phi_computed[ inode ] - phi_expected[ inode ];
-    phi_err[ inode ]  = std::fabs( phi_diff[ inode ] );
+    phi_err[ inode ]  = utilities::abs( phi_diff[ inode ] );
 
     // update norms
     l1norm += phi_err[ inode ];
@@ -385,6 +502,11 @@ TEST( quest_signed_distance_interface, analytic_sphere )
   // STEP 5: finalize the signed distance query
   quest::signed_distance_finalize( );
   EXPECT_FALSE( quest::signed_distance_initialized() );
+
+#ifdef WRITE_VTK_OUTPUT
+  mint::write_vtk( umesh, "analytic_sphere_test_mesh.vtk" );
+  mint::write_vtk( surface_mesh, "input_sphere_mesh.vtk" );
+#endif
 
   // STEP 6: delete mesh objects
   delete umesh;

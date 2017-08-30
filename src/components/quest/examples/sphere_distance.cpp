@@ -468,7 +468,7 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
-  quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
+  quest::SignedDistance< NDIMS > signedDistance( surface_mesh, true, 25, 32 );
 
   const int nnodes    = umesh->getNumberOfNodes();
   double* phi         = umesh->createField< double >( "phi",

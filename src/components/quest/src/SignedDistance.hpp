@@ -80,14 +80,16 @@ public:
   /*!
    * \brief Creates a SignedDistance instance for queries on the given mesh.
    * \param [in] surfaceMesh user-supplied surface mesh.
+   * \param [in] isWatertight indicates if the surface mesh is closed.
    * \param [in] maxObjects max number of objects for spatial decomposition.
    * \param [in] maxLevels max levels for spatial decomposition (optional).
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != AXOM_NULLPTR
    */
   SignedDistance( const mint::Mesh* surfaceMesh,
+                  bool isWatertight,
                   int maxObjects,
-                  int maxLevels=5 );
+                  int maxLevels   );
 
   /*!
    * \brief Destructor.
@@ -242,7 +244,8 @@ private:
   SignedDistance() : m_surfaceMesh(AXOM_NULLPTR), m_bvhTree(AXOM_NULLPTR) { };
 
 private:
-  const mint::Mesh* m_surfaceMesh;  /*!< User-supplied surface mesh. */
+  bool m_isInputWatertight;         /*!< indicates if input is watertight     */
+  const mint::Mesh* m_surfaceMesh;  /*!< User-supplied surface mesh.          */
   BoxType m_boxDomain;              /*!< bounding box containing surface mesh */
   BVHTreeType* m_bvhTree;           /*!< Spatial acceleration data-structure. */
 
@@ -278,7 +281,9 @@ private:
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-  const mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
+  const mint::Mesh* surfaceMesh, bool isWatertight,
+  int maxObjects, int maxLevels ) :
+  m_isInputWatertight( isWatertight )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != AXOM_NULLPTR );
@@ -384,7 +389,7 @@ double SignedDistance< NDIMS >::computeSign(
 
   // STEP 0: if point is outside the bounding box of the surface mesh, then
   // it is outside, just return 1.0
-  if ( !m_boxDomain.contains( pt ) )
+  if ( m_isInputWatertight && !m_boxDomain.contains( pt ) )
   {
     /* short-circuit, pt outside bounding box of the surface mesh */
     return 1.0;

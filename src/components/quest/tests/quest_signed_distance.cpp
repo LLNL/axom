@@ -139,7 +139,7 @@ TEST( quest_signed_distance, sphere_test )
   const int nnodes = umesh->getNumberOfNodes();
 
   SLIC_INFO( "Generate BVHTree..." );
-  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 10 );
+  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,true, 25, 10 );
 
   SLIC_INFO( "Compute signed distance..." );
 

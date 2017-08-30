@@ -98,15 +98,6 @@ class Mesh;
 namespace quest
 {
 
-/*!
- * \brief Enumerates the supported input types for the Signed Distance Query.
- */
-enum GeometryType
-{
-  WATERTIGHT=0,
-  NUM_GEOMETRY_TYPES
-};
-
 /// \name Signed Distance Query Initialization Methods
 /// @{
 
@@ -187,15 +178,15 @@ void signed_distance_get_mesh_bounds( double* lo, double* hi );
 void signed_distance_set_dimension( int dim );
 
 /*!
- * \brief Sets the surface mesh input type for the Signed Distance Query
- * \param [in] type the input surface mesh type.
+ * \brief Indicates whether the input to the signed distance consists of a
+ *  water-tight surface mesh, or not.
  *
- * \note By default the input type is assumed to be a Watertight surface mesh.
+ * \param [in] status flag indicating whether the input is water-tight
+ *
+ * \note By default the input type is assumed to be a water-tight surface mesh.
  * \note Options must be set before initializing the Signed Distance Query.
- *
- * \see GeometryType
  */
-void signed_distance_set_geometry( int type );
+void signed_distance_set_closed_surface( bool status );
 
 /*!
  * \brief Sets the maximum levels of subdivision for the BVH decomposition.
