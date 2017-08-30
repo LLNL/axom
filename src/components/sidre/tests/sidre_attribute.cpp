@@ -716,7 +716,7 @@ TEST(sidre_attribute,save_attributes)
   delete ds1;
 
   //----------------------------------------
-  // Only restore conduit_hdf5
+  // Only restore sidre_hdf5
   for (int i = 1 ; i < 2 ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
@@ -809,14 +809,10 @@ TEST(sidre_attribute,save_by_attribute)
   root1->createViewScalar("view2", 2);
 
   // Create a deep path with and without attribute
-  Group * grp1a = root1->createGroup("grp1a");
-  Group * grp1b = grp1a->createGroup("grp1b");
-  grp1b->createViewScalar("view3", 3);
+  root1->createViewScalar("grp1a/grp1b/view3", 3);
 
-  Group * grp2a = root1->createGroup("grp2a");
-  grp2a->createViewScalar("view4", 4);   // make sure empty "views" not saved
-  Group * grp2b = grp2a->createGroup("grp2b");
-  View * view5 = grp2b->createViewScalar("view5", 5);
+  root1->createViewScalar("grp2a/view4", 4);   // make sure empty "views" not saved
+  View * view5 = root1->createViewScalar("grp2a/grp2b/view5", 5);
   view5->setAttributeScalar(dump, dump_yes);
 
   //----------------------------------------
@@ -830,7 +826,7 @@ TEST(sidre_attribute,save_by_attribute)
   delete ds1;
 
   //----------------------------------------
-  // Only restore conduit_hdf5
+  // Only restore sidre_hdf5
   for (int i = 1 ; i < 2 ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
