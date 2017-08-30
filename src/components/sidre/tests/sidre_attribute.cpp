@@ -803,8 +803,8 @@ TEST(sidre_attribute,save_by_attribute)
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   // scalar
-  View * view1a = root1->createViewScalar("view1", 1);
-  view1a->setAttributeScalar(dump, dump_yes);
+  root1->createViewScalar("view1", 1)->
+  setAttributeScalar(dump, dump_yes);
 
   root1->createViewScalar("view2", 2);
 
@@ -812,11 +812,11 @@ TEST(sidre_attribute,save_by_attribute)
   root1->createViewScalar("grp1a/grp1b/view3", 3);
 
   root1->createViewScalar("grp2a/view4", 4);   // make sure empty "views" not saved
-  View * view5 = root1->createViewScalar("grp2a/grp2b/view5", 5);
-  view5->setAttributeScalar(dump, dump_yes);
+  root1->createViewScalar("grp2a/grp2b/view5", 5)->
+  setAttributeScalar(dump,dump_yes);
 
-  View * view6 = root1->createView("view6", INT_ID, 5, idata);
-  view6->setAttributeScalar(dump, dump_yes);
+  root1->createView("view6", INT_ID, 5, idata)->
+  setAttributeScalar(dump,dump_yes);
 
   // nested external view without dump, do not create intermediate Groups.
   root1->createView("grp3a/grp3b/view7", INT_ID, 5, jdata);
