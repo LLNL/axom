@@ -1051,11 +1051,15 @@ public:
   /*!
    * \brief Save the Group to a file.
    *
-   *  Saves the tree starting at this group and the buffers used by the views
+   *  Saves the tree starting at this Group and the Buffers used by the Views
    *  in this tree.
    *
-   *  \param path      file path
-   *  \param protocol  I/O protocol
+   *  If attr is AXOM_NULLPTR, dump all Views.  Otherwise, only dump Views
+   *  which have the Attribute set.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
+   * \param attr      Save Views that have Attribute set.
    */
   void save( const std::string& path,
              const std::string& protocol = "sidre_hdf5",
@@ -1064,8 +1068,12 @@ public:
   /*!
    * \brief Save the Group to an hdf5 handle.
    *
+   *  If attr is AXOM_NULLPTR, dump all Views.  Otherwise, only dump Views
+   *  which have the Attribute set.
+   *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   * \param attr       Save Views that have Attribute set.
    */
   void save( const hid_t& h5_id,
              const std::string& protocol = "sidre_hdf5",
