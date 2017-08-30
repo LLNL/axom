@@ -1761,7 +1761,8 @@ Group * Group::detachGroup(IndexType idx)
  * any Buffers attached to Views in that tree.
  *
  *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: this is for the "sidre" protocols: sidre_hdf5,
+ * sidre_conduit_json, sidre_json.
  *
  *************************************************************************
  */
@@ -1811,7 +1812,8 @@ void Group::exportTo(conduit::Node & result,
  * to data Views.
  *
  *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: this is for the "sidre" protocols: sidre_hdf5,
+ * sidre_conduit_json, sidre_json.
  *
  *************************************************************************
  */

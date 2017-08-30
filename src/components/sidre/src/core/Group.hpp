@@ -1054,7 +1054,7 @@ public:
    *  Saves the tree starting at this Group and the Buffers used by the Views
    *  in this tree.
    *
-   *  If attr is AXOM_NULLPTR, dump all Views.  Otherwise, only dump Views
+   *  If attr is a null pointer, dump all Views.  Otherwise, only dump Views
    *  which have the Attribute set.
    *
    * \param path      file path
