@@ -1245,9 +1245,12 @@ private:
   /*!
    * \brief Private method to copy Group to Conduit Node.
    *
-   * Note: This is for the "sidre_hdf5" protocol.
+   * Note: This is for the "sidre_{zzz}" protocols.
+   *
+   * \return True if the group or any of its children have saved Views,
+   * false otherwise.
    */
-  void exportTo(conduit::Node& result, const Attribute * attr) const;
+  bool exportTo(conduit::Node& result, const Attribute * attr) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1257,7 +1260,6 @@ private:
    *
    * \return True if the group or any of its children have saved Views,
    * false otherwise.
-   *
    */
   bool exportTo(conduit::Node& data_holder,
                 const Attribute * attr,
