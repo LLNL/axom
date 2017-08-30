@@ -1012,7 +1012,8 @@ public:
    * \return True if the Group or any of its children have an external
    * View, false otherwise.
    */
-  bool createExternalLayout(Node& n) const;
+  bool createExternalLayout(Node& n,
+                            const Attribute * attr = AXOM_NULLPTR) const;
 
 
   /*!

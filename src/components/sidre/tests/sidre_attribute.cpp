@@ -792,7 +792,7 @@ TEST(sidre_attribute,save_attributes)
 
 TEST(sidre_attribute,save_by_attribute)
 {
-  //  bool ok;
+  int idata[5], jdata[5];
 
   const std::string file_path_base("sidre_attribute_by_attribute_");
   DataStore * ds1 = new DataStore();
@@ -814,6 +814,18 @@ TEST(sidre_attribute,save_by_attribute)
   root1->createViewScalar("grp2a/view4", 4);   // make sure empty "views" not saved
   View * view5 = root1->createViewScalar("grp2a/grp2b/view5", 5);
   view5->setAttributeScalar(dump, dump_yes);
+
+  View * view6 = root1->createView("view6", INT_ID, 5, idata);
+  view6->setAttributeScalar(dump, dump_yes);
+
+  // nested external view without dump, do not create intermediate Groups.
+  root1->createView("grp3a/grp3b/view7", INT_ID, 5, jdata);
+
+  for (int i=0 ; i < 5 ; i++)
+  {
+    idata[i] = i;
+    jdata[i] = i + 10;
+  }
 
   //----------------------------------------
 
@@ -843,6 +855,8 @@ TEST(sidre_attribute,save_by_attribute)
     EXPECT_FALSE(root2->hasView("grp1a/grp1b/view3"));
     EXPECT_FALSE(root2->hasView("grp2a/view4"));
     EXPECT_TRUE(root2->hasView("grp2a/grp2b/view5"));
+    EXPECT_TRUE(root2->hasView("view6"));
+    EXPECT_FALSE(root2->hasView("grp3a/grp3b/view7"));
 
     delete ds2;
   }
