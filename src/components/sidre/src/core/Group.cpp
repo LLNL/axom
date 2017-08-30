@@ -1024,9 +1024,10 @@ Group * Group::copyGroup(Group * group)
  *
  *************************************************************************
  */
-void Group::createNativeLayout(Node& n) const
+bool Group::createNativeLayout(Node& n, const Attribute * attr) const
 {
   n.set(DataType::object());
+  bool hasSavedViews = false;
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -1038,7 +1039,11 @@ void Group::createNativeLayout(Node& n) const
     SLIC_CHECK_MSG( !hasChildGroup(view->getName())
                     , view->getName() << " is the name of a groups and a view");
 
-    view->createNativeLayout( n[view->getName()] );
+    if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
+    {
+      view->createNativeLayout( n[view->getName()] );
+      hasSavedViews = true;
+    }
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -1047,25 +1052,31 @@ void Group::createNativeLayout(Node& n) const
   while ( indexIsValid(gidx) )
   {
     const Group * group =  getGroup(gidx);
-    group->createNativeLayout(n[group->getName()]);
+    if ( group->createNativeLayout(n[group->getName()], attr) )
+    {
+      hasSavedViews = true;
+    }
+    else
+    {
+      n.remove(group->getName());
+    }
     gidx = getNextValidGroupIndex(gidx);
   }
 
+  return hasSavedViews;
 }
 
 /*
  *************************************************************************
  *
- * Copy Group native layout to given Conduit node.
+ * Adds a conduit node for this group if it has external views,
+ * or if any of its children groups has an external view
  *
  *************************************************************************
  * see ATK-736 - Improvements to createNativeLayout and createExternalLayout
  */
 bool Group::createExternalLayout(Node& n) const
 {
-  // Adds a conduit node for this group if it has external views,
-  // or if any of its children groups has an external view
-
   n.set(DataType::object());
 
   bool hasExternalViews = false;
@@ -1313,7 +1324,7 @@ void Group::save(const std::string& path,
   else if (protocol == "conduit_hdf5" )
   {
     Node n;
-    createNativeLayout(n);
+    createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path,"hdf5");
   }
@@ -1322,7 +1333,7 @@ void Group::save(const std::string& path,
            protocol == "json")
   {
     Node n;
-    createNativeLayout(n);
+    createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
   }
@@ -1357,7 +1368,7 @@ void Group::save(const hid_t& h5_id,
   else if( protocol == "conduit_hdf5")
   {
     Node n;
-    createNativeLayout(n);
+    createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n, h5_id);
   }
