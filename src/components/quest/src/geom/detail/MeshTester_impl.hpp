@@ -86,7 +86,7 @@ Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 }
 
 int
-findTriMeshIntersections_impl(mint::Mesh* surface_mesh,
+findTriMeshIntersections_impl(TriangleMesh * surface_mesh,
                               std::vector<std::pair<int, int> > & intersections,
                               std::vector<int> & degenerateIndices,
                               int spatialIndexResolution)

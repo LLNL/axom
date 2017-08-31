@@ -83,7 +83,6 @@ struct Input
   };
 };
 
-Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh);
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
@@ -136,23 +135,6 @@ Input::Input(int argc, char ** argv) :
             "  outfile = " << textOutput << std::endl);
 }
 
-Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
-{
-  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
-  primal::Point<int, 3> triCell;
-  surface_mesh->getMeshCell( i, triCell.data());
-  primal::Point< double,3 > A1;
-  primal::Point< double,3 > B1;
-  primal::Point< double,3 > C1;
-
-  surface_mesh->getMeshNode(triCell[0], A1.data());
-  surface_mesh->getMeshNode(triCell[1], B1.data());
-  surface_mesh->getMeshNode(triCell[2], C1.data());
-  Triangle3 t1 = Triangle3(A1,B1,C1);
-
-  return t1;
-}
-
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
 {
   return axom::utilities::isNearlyEqual(p1[0], p2[0], EPS) && \
@@ -186,7 +168,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(mint::Mesh* surfac
 
   // For each triangle in the mesh
   for (int i = 0; i< ncells; i++) {
-    t1 = getMeshTriangle(i, surface_mesh);
+    t1 = axom::quest::detail::getMeshTriangle(i, surface_mesh);
 
     // Skip if degenerate
     if (t1.degenerate()) {
@@ -197,7 +179,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(mint::Mesh* surfac
     // If the triangle is not degenerate, test against all other
     // triangles that this triangle has not been checked against
     for (int j = i + 1; j < ncells; j++) {
-      t2 = getMeshTriangle(j, surface_mesh);
+      t2 = axom::quest::detail::getMeshTriangle(j, surface_mesh);
       if (checkTT(t1, t2)) {
         retval.push_back(std::make_pair(i, j));
       }
@@ -294,8 +276,8 @@ int main( int argc, char** argv )
   SLIC_INFO("done\n");
 
   // Get surface mesh
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  reader->getMesh( surface_mesh );
 
   // Delete the reader
   delete reader;

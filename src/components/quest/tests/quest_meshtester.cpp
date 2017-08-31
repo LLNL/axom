@@ -90,8 +90,8 @@ void runIntersectTest(const std::string &test,
   reader.read();
 
   // Get surface mesh
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader.getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  reader.getMesh( surface_mesh );
   // call findTriMeshIntersections() and compare results
 
   std::vector< int > degenerate;
@@ -112,19 +112,25 @@ void runIntersectTest(const std::string &test,
 
 void splitStringToIntPairs(std::string & pairs, std::vector< std::pair<int, int> > & dat)
 {
-  std::istringstream iss(pairs);
-  std::string a, b;
-  while (std::getline(iss, a, ' ') && std::getline(iss, b, ' ')) {
-    dat.push_back(std::make_pair(std::atoi(a.c_str()), std::atoi(b.c_str())));
+  if (!pairs.empty()) {
+    std::istringstream iss(pairs);
+    while (iss.good()) {
+      std::pair<int, int> p;
+      iss >> p.first >> p.second;
+      dat.push_back(p);
+    }
   }
 }
 
-void splitStringToInts(std::string & pairs, std::vector< int > & dat)
+void splitStringToInts(std::string & ints, std::vector< int > & dat)
 {
-  std::istringstream iss(pairs);
-  std::string a;
-  while (std::getline(iss, a, ' ')) {
-    dat.push_back(std::atoi(a.c_str()));
+  if (!ints.empty()) {
+    std::istringstream iss(ints);
+    while (iss.good()) {
+      int i;
+      iss >> i;
+      dat.push_back(i);
+    }
   }
 }
 

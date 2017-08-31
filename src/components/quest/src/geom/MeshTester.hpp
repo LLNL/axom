@@ -17,7 +17,7 @@
 #define MESH_TESTER_HPP_
 
 // Axom includes
-#include "mint/Mesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 #include "quest/MeshTester_impl.hpp"
 #include "slic/slic.hpp"
 
@@ -29,10 +29,10 @@ namespace axom {
 namespace quest {
 
 /**
- * \brief For a given Mesh, find self-intersections and degenerate triangles.
+ * \brief For a given triangle Mesh, find self-intersections and degenerate triangles.
  *
  * Input surface_mesh should point to a mint::Mesh in three dimensions
- * containing 2D triangles that form a surface.  After running this function,
+ * containing triangles that form a surface.  After running this function,
  * degenerateIndices will be filled with the mesh cell indices of degenerate
  * triangles.  The return value lists triangle index pairs that intersect.
  * Triangles that share vertex pairs (adjacent triangles in a watertight
@@ -45,7 +45,7 @@ namespace quest {
  * based on the cube root of the number of cells in the mesh.
  */
 int
-findTriMeshIntersections(mint::Mesh* surface_mesh,
+findTriMeshIntersections(mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
                          std::vector<std::pair<int, int> > & intersections,
 			 std::vector<int> & degenerateIndices,
 			 int spatialIndexResolution = 0)
