@@ -1640,11 +1640,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                          || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
                      "Spreading color to block " << leafBlk << " with data " <<  leafData
                      << " and bounding box " << this->blockBoundingBox(leafBlk)
-                     << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
+                     << " -- midpoint " << this->blockBoundingBox(leafBlk).getCentroid()
                      //
                      << "\n\t\t from " << neighborBlk << " with data " << neighborData
                      << " and bounding box " << this->blockBoundingBox(neighborBlk)
-                     << " -- midpoint " << this->blockBoundingBox(neighborBlk).centroid()
+                     << " -- midpoint " << this->blockBoundingBox(neighborBlk).getCentroid()
                     );
 
                 switch(neighborData.color())
@@ -1657,8 +1657,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                     break;
                 case InOutBlockData::Gray:
                 {
-                    SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).centroid(),
-                                                           this->blockBoundingBox(neighborBlk).centroid());
+                    SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
+                                                           this->blockBoundingBox(neighborBlk).getCentroid());
                     if( withinGrayBlock(faceCenter,  neighborBlk, neighborData) )
                         leafData.setBlack();
                     else
@@ -1693,11 +1693,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                              || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
                          , "Spreading color from block " << leafBlk << " with data " <<  leafData
                          << " and bounding box " << this->blockBoundingBox(leafBlk)
-                         << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
+                         << " -- midpoint " << this->blockBoundingBox(leafBlk).getCentroid()
                          //
                          << "\n\t\t to " << neighborBlk << " with data " << neighborData
                          << " and bounding box " << this->blockBoundingBox(neighborBlk)
-                         << " -- midpoint " << this->blockBoundingBox(neighborBlk).centroid()
+                         << " -- midpoint " << this->blockBoundingBox(neighborBlk).getCentroid()
                          );
 
                     switch(leafData.color())
@@ -1710,8 +1710,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                         break;
                     case InOutBlockData::Gray:
                     {
-                        SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).centroid(),
-                                                               this->blockBoundingBox(leafBlk.faceNeighbor(i)).centroid());
+                        SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
+                                                               this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
                         if( withinGrayBlock(faceCenter,  leafBlk, leafData) )
                             neighborData.setBlack();

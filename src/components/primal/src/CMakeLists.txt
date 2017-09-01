@@ -12,6 +12,7 @@ set( primal_headers
 
      ## geometry
      geometry/BoundingBox.hpp
+     geometry/OrientedBoundingBox.hpp
      geometry/HyperSphere.hpp
      geometry/MortonIndex.hpp
      geometry/NumericArray.hpp
@@ -29,6 +30,7 @@ set( primal_headers
      operators/intersect.hpp
      operators/orientation.hpp
      operators/squared_distance.hpp
+     operators/compute_bounding_box.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp

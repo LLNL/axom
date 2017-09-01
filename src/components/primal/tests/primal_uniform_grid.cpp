@@ -185,7 +185,7 @@ TEST(primal_uniform_grid, add_stuff_3D){
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
   incr(check, valid.getBinIndex(pt2));
-  incr(check, valid.getBinIndex(bbox2.centroid()));
+  incr(check, valid.getBinIndex(bbox2.getCentroid()));
   incr(check, valid.getBinIndex(pt3));
   {
     SCOPED_TRACE("Added an overlapping bin");
@@ -329,7 +329,7 @@ TEST(primal_uniform_grid, add_stuff_2D){
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
   incr(check, valid.getBinIndex(pt2));
-  incr(check, valid.getBinIndex(bbox2.centroid()));
+  incr(check, valid.getBinIndex(bbox2.getCentroid()));
   incr(check, valid.getBinIndex(pt3));
   {
     SCOPED_TRACE("Added an overlapping bin");

@@ -10,12 +10,15 @@
 
 set( primal_tests
     primal_boundingbox.cpp
+    primal_orientedboundingbox.cpp
     primal_bvhtree.cpp
     primal_clip.cpp
+    primal_closest_point.cpp
     primal_intersect_impl.cpp
     primal_intersect.cpp
     primal_morton.cpp
     primal_numeric_array.cpp
+    primal_compute_bounding_box.cpp
     primal_orientation.cpp
     primal_point.cpp
     primal_rectangular_lattice.cpp
