@@ -1024,9 +1024,10 @@ Group * Group::copyGroup(Group * group)
  *
  *************************************************************************
  */
-void Group::createNativeLayout(Node& n) const
+bool Group::createNativeLayout(Node& n, const Attribute * attr) const
 {
   n.set(DataType::object());
+  bool hasSavedViews = false;
 
   // Dump the group's views
   IndexType vidx = getFirstValidViewIndex();
@@ -1038,7 +1039,11 @@ void Group::createNativeLayout(Node& n) const
     SLIC_CHECK_MSG( !hasChildGroup(view->getName())
                     , view->getName() << " is the name of a groups and a view");
 
-    view->createNativeLayout( n[view->getName()] );
+    if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
+    {
+      view->createNativeLayout( n[view->getName()] );
+      hasSavedViews = true;
+    }
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -1047,25 +1052,32 @@ void Group::createNativeLayout(Node& n) const
   while ( indexIsValid(gidx) )
   {
     const Group * group =  getGroup(gidx);
-    group->createNativeLayout(n[group->getName()]);
+    if ( group->createNativeLayout(n[group->getName()], attr) )
+    {
+      hasSavedViews = true;
+    }
+    else
+    {
+      n.remove(group->getName());
+    }
     gidx = getNextValidGroupIndex(gidx);
   }
 
+  return hasSavedViews;
 }
 
 /*
  *************************************************************************
  *
- * Copy Group native layout to given Conduit node.
+ * Adds a conduit node for this group if it has external views,
+ * or if any of its children groups has an external view
  *
  *************************************************************************
  * see ATK-736 - Improvements to createNativeLayout and createExternalLayout
  */
-bool Group::createExternalLayout(Node& n) const
+bool Group::createExternalLayout(Node& n,
+                                 const Attribute * attr) const
 {
-  // Adds a conduit node for this group if it has external views,
-  // or if any of its children groups has an external view
-
   n.set(DataType::object());
 
   bool hasExternalViews = false;
@@ -1080,13 +1092,16 @@ bool Group::createExternalLayout(Node& n) const
     SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
                     view->getName() << " is the name of a groups and a view");
 
-    if(view->isExternal())
+    if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
     {
-      if(view->isDescribed())
+      if(view->isExternal())
       {
-        view->createNativeLayout(  n[view->getName()]  );
+        if(view->isDescribed())
+        {
+          view->createNativeLayout(  n[view->getName()]  );
+        }
+        hasExternalViews = true;
       }
-      hasExternalViews = true;
     }
 
     vidx = getNextValidViewIndex(vidx);
@@ -1098,7 +1113,7 @@ bool Group::createExternalLayout(Node& n) const
   {
     const Group * group =  getGroup(gidx);
 
-    if( group->createExternalLayout(n[group->getName()]) )
+    if( group->createExternalLayout(n[group->getName()], attr) )
     {
       hasExternalViews = true;
     }
@@ -1278,41 +1293,42 @@ bool Group::isEquivalentTo(const Group * other) const
  */
 
 void Group::save(const std::string& path,
-                 const std::string& protocol) const
+                 const std::string& protocol,
+                 const Attribute * attr) const
 {
   const DataStore * ds = getDataStore();
 
   if (protocol == "sidre_hdf5")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "hdf5");
   }
   else if (protocol == "sidre_conduit_json")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "conduit_json");
   }
   else if (protocol == "sidre_json")
   {
     Node n;
-    exportTo(n["sidre"]);
+    exportTo(n["sidre"], attr);
     ds->saveAttributeLayout(n["sidre/attribute"]);
-    createExternalLayout(n["sidre/external"]);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
   else if (protocol == "conduit_hdf5" )
   {
     Node n;
-    createNativeLayout(n);
+    createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path,"hdf5");
   }
@@ -1321,7 +1337,7 @@ void Group::save(const std::string& path,
            protocol == "json")
   {
     Node n;
-    createNativeLayout(n);
+    createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
   }
@@ -1339,7 +1355,8 @@ void Group::save(const std::string& path,
  *************************************************************************
  */
 void Group::save(const hid_t& h5_id,
-                 const std::string& protocol) const
+                 const std::string& protocol,
+                 const Attribute * attr) const
 {
   // supported here:
   // "sidre_hdf5"
@@ -1347,15 +1364,15 @@ void Group::save(const hid_t& h5_id,
   if(protocol == "sidre_hdf5")
   {
     Node n;
-    exportTo(n["sidre"]);
-    createExternalLayout(n["sidre/external"]);
+    exportTo(n["sidre"], attr);
+    createExternalLayout(n["sidre/external"], attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n,h5_id);
   }
   else if( protocol == "conduit_hdf5")
   {
     Node n;
-    createNativeLayout(n);
+    createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::hdf5_write(n, h5_id);
   }
@@ -1758,12 +1775,12 @@ Group * Group::detachGroup(IndexType idx)
  * Serialize tree identified by a Group into a conduit node.  Include
  * any Buffers attached to Views in that tree.
  *
- *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
-void Group::exportTo(conduit::Node & result) const
+bool Group::exportTo(conduit::Node & result,
+                     const Attribute * attr) const
 {
   result.set(DataType::object());
   // TODO - This implementation will change in the future.  We want to write
@@ -1780,7 +1797,7 @@ void Group::exportTo(conduit::Node & result) const
   // Tell Group to add itself and all sub-Groups and Views to node.
   // Any Buffers referenced by those Views will be tracked in the
   // buffer_indices
-  exportTo(result, buffer_indices);
+  bool hasSavedViews = exportTo(result, attr, buffer_indices);
 
   if (!buffer_indices.empty())
   {
@@ -1798,6 +1815,7 @@ void Group::exportTo(conduit::Node & result) const
     }
   }
 
+  return hasSavedViews;
 }
 
 /*
@@ -1807,14 +1825,17 @@ void Group::exportTo(conduit::Node & result) const
  * given set of ids to maintain correct association of data Buffers
  * to data Views.
  *
- *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
-void Group::exportTo(conduit::Node& result,
+bool Group::exportTo(conduit::Node& result,
+                     const Attribute * attr,
                      std::set<IndexType>& buffer_indices) const
 {
+  result.set(DataType::object());
+  bool hasSavedViews = false;
+
   if (getNumViews() > 0)
   {
     Node & vnode = result["views"];
@@ -1822,27 +1843,52 @@ void Group::exportTo(conduit::Node& result,
     while ( indexIsValid(vidx) )
     {
       const View * view = getView(vidx);
-      Node& n_view = vnode.fetch(view->getName());
-      view->exportTo( n_view, buffer_indices );
+      if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
+      {
+        Node& n_view = vnode.fetch(view->getName());
+        view->exportTo( n_view, buffer_indices );
+        hasSavedViews = true;
+      }
       vidx = getNextValidViewIndex(vidx);
     }
+    if (!hasSavedViews)
+    {
+      result.remove("views");
+    }
+
   }
 
   if (getNumGroups() > 0)
   {
+    bool hasSavedGroups = false;
     Node & gnode = result["groups"];
     IndexType gidx = getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
-      const Group * group =  getGroup(gidx);
+      const Group * group = getGroup(gidx);
       Node& n_group = gnode.fetch(group->getName());
-      group->exportTo(n_group, buffer_indices);
+      if ( group->exportTo(n_group, attr, buffer_indices) )
+      {
+        hasSavedGroups = true;
+      }
+      else
+      {
+        gnode.remove(group->getName());
+      }
 
       gidx = getNextValidGroupIndex(gidx);
     }
+    if (hasSavedGroups)
+    {
+      hasSavedViews = true;
+    }
+    else
+    {
+      result.remove("groups");
+    }
   }
 
-  result.set(DataType::object());
+  return hasSavedViews;
 }
 
 /*
@@ -1852,7 +1898,7 @@ void Group::exportTo(conduit::Node& result,
  * any Buffers attached to Views in that tree.
  *
  *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
@@ -1907,8 +1953,7 @@ void Group::importFrom(conduit::Node & node, bool preserve_contents)
  * given map of ids to indicate association of Buffer ids in node to
  * those in datastore.
  *
- *
- * Note: this is for the "sidre_hdf5" protocol
+ * Note: This is for the "sidre_{zzz}" protocols.
  *
  *************************************************************************
  */
