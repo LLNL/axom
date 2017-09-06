@@ -41,17 +41,44 @@ namespace utilities {
   void processAbort();
 
   /*!
-   * \brief Returns the absolute value of x
-   * \param x value whose absolute value is computed
-   * \return abs(x) the absolute value of x
+   * \brief Returns the absolute value of x.
+   * \param [in] x value whose absolute value is computed.
+   * \return abs(x) the absolute value of x.
    */
   template < typename T >
-  inline T abs( const T& x) { return ( (x < 0)? -x : x ); }
+  inline T abs( const T& x ) 
+  {
+   return ( x < 0 )? -x : x; 
+  }
 
   /*!
-   * \brief Swaps the values of a, b
-   * \param [in,out] a 1st object to swap
-   * \param [in,out] b 2nd object to swap
+   * \brief Returns the max value of x and y.
+   * \param [in] x the first value to check.
+   * \param [in] y the second value to check.
+   * \return max(x, y) the max value of x and y.
+   */
+  template < typename T >
+  inline T max( const T& x, const T& y ) 
+  { 
+    return ( x > y )? x : y; 
+  }
+
+  /*!
+   * \brief Returns the min value of x and y.
+   * \param [in] x the first value to check.
+   * \param [in] y the second value to check.
+   * \return min(x, y) the min value of x and y.
+   */
+  template < typename T >
+  inline T min( const T& x, const T& y ) 
+  { 
+    return ( x < y )? x : y; 
+  }
+
+  /*!
+   * \brief Swaps the values of a, b.
+   * \param [in,out] a 1st object to swap.
+   * \param [in,out] b 2nd object to swap.
    */
   template < typename T >
   inline void swap( T& a, T& b )
@@ -62,9 +89,9 @@ namespace utilities {
 
   /*!
    * \brief Clamps an input value to a given range.
-   * \param [in] val  The value to clamp
-   * \param [in] lower The lower range
-   * \param [in] upper The upper range
+   * \param [in] val  The value to clamp.
+   * \param [in] lower The lower range.
+   * \param [in] upper The upper range.
    * \return The clamped value.
    * \post lower <= returned value <= upper.
    */
@@ -76,9 +103,8 @@ namespace utilities {
   }
 
   /*!
-   * Tests the endianness of the system
-   *
-   * \return True, if the system is little endian, false otherwise
+   * \brief Tests the endianness of the system.
+   * \return True, if the system is little endian, false otherwise.
    */
   inline bool isLittleEndian()
   {
@@ -98,13 +124,12 @@ namespace utilities {
   }
 
   /*!
-   * \brief Swaps the endianness of the input value
-   *
-   * \param val The input value
-   * \return The value with endianness swapped
-   * \note Assumes endianness is either little or big (not PDP)
-   * \pre T is a native arithmetic type (i.e. integral or floating point)
-   * \pre sizeof(T) must be 2, 4, or 8 bytes
+   * \brief Swaps the endianness of the input value.
+   * \param [in] val The input value.
+   * \return The value with endianness swapped.
+   * \note Assumes endianness is either little or big (not PDP).
+   * \pre T is a native arithmetic type (i.e. integral or floating point).
+   * \pre sizeof(T) must be 2, 4, or 8 bytes.
    */
   template < typename T >
   T swapEndian(T val)
@@ -137,39 +162,37 @@ namespace utilities {
   }
 
 /*!
- * \brief Fuzzy comparison of two real valued quantities
- *
- * \param a The first real valued quantities we are comparing
- * \param b The second real valued quantities we are comparing
- * \param thresh The threshold of the fuzzy comparison.  Default is 1.0e-8
- * \return \c true if the absolute value of the difference is less than thresh and false otherwise
+ * \brief Fuzzy comparison of two real valued quantities.
+ * \param [in] a The first real valued quantities we are comparing.
+ * \param [in] b The second real valued quantities we are comparing.
+ * \param [in] thresh The threshold of the fuzzy comparison.  Default is 1.0e-8.
+ * \return True if the absolute value of the difference is less than thresh and false otherwise.
  */
   template<typename RealType>
   bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
   {
-    return std::fabs(a-b) <= thresh;
+    return abs(a-b) <= thresh;
   }
 
 /*!
- * \brief Fuzzy comparison of two real valued quantities
- *
- * \param a The first real valued quantities we are comparing
- * \param b The second real valued quantities we are comparing
- * \param relThresh The relative threshold of the fuzzy comparison.  Default is 1.0e-6
- * \param absThresh The absolute threshold of the fuzzy comparison.  Default is 1.0e-8
- * \return \c true if the absolute value of the difference is less than the sum of absThresh
- *         and the relative difference (relThresh times the absolute max of a and b)
+ * \brief Fuzzy comparison of two real valued quantities.
+ * \param [in] a The first real valued quantities we are comparing.
+ * \param [in] b The second real valued quantities we are comparing.
+ * \param [in] relThresh The relative threshold of the fuzzy comparison.  Default is 1.0e-6.
+ * \param [in] absThresh The absolute threshold of the fuzzy comparison.  Default is 1.0e-8.
+ * \return True if the absolute value of the difference is less than the sum of absThresh
+ *  and the relative difference (relThresh times the absolute max of a and b).
  */
   template<typename RealType>
   bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
                             RealType absThresh = 1.0e-8)
   {
-    RealType maxFabs = std::max(std::fabs(a), std::fabs(b) );
-    return std::fabs(a-b) <= ( maxFabs * relThresh + absThresh);
+    RealType maxFabs = max(abs(a), abs(b) );
+    return abs(a-b) <= ( maxFabs * relThresh + absThresh);
 
     // Equation from Real-Time Collsion Detection book -- http://realtimecollisiondetection.net/pubs/Tolerances/
     // Note: If we use this, we must update the doxygen
-    // return std::fabs(a-b) <=  std::max(absThresh, relThresh * maxFabs );
+    // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
   }
 
 
