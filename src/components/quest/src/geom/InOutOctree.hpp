@@ -39,6 +39,7 @@
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
+#include "mint/vtk_utils.hpp"
 
 
 #include <vector>   // For InOutLeafData triangle lists -- TODO replace with SLAM DynamicVariableRelation...
@@ -2455,7 +2456,7 @@ private:
             colors[i] = leafColors[i];
     }
 
-    debugMesh->toVtkFile(fNameStr.str());
+    mint::write_vtk(debugMesh, fNameStr.str());
 
     delete debugMesh;
     debugMesh = AXOM_NULLPTR;
@@ -2504,7 +2505,7 @@ private:
     // -- number of blocks that index this triangle (blockCount)?
     // -- vertex field for number of triangles incident in the vertex (vtCount)?
 
-    debugMesh->toVtkFile(fNameStr.str());
+    mint::write_vtk(debugMesh, fNameStr.str());
 
     delete debugMesh;
     debugMesh = AXOM_NULLPTR;
