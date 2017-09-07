@@ -8,19 +8,20 @@
 # Register the fmt header-only library for string formatting 
 ############################################################
 
-# Do not include these in the headers list even though they
-# are included in the headers, it will cause CMake to try to
-# compile them in anything that depends on fmt outside of this
-# directory due to CMake's file property scope (directory based)
-#set(fmt_sources
-#    fmt/format.cc
-#    fmt/ostream.cc
-#    )
-
 set(fmt_headers
     fmt/format.h
     fmt/ostream.h 
     fmt/printf.h    
+    )
+
+# Do not include the following source files in the headers list even 
+# though they are explicitly included by the headers. It will cause CMake 
+# to try to compile them in anything that depends on fmt outside 
+# of this directory due to CMake's file property scope (directory based)
+
+set(fmt_headers_sources
+    fmt/format.cc
+    fmt/ostream.cc
     )
 
 blt_add_library(NAME fmt
@@ -44,6 +45,14 @@ install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
 install(EXPORT fmt-targets DESTINATION lib/cmake)
+
+# Manually copy the souce files for the headers to the build directory
+blt_copy_headers_target( 
+        NAME        fmt-headers-sources
+        HEADERS     ${fmt_headers_sources}
+        DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/fmt)
+add_dependencies(blt_copy_headers_fmt blt_copy_headers_fmt-headers-sources)
+
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
