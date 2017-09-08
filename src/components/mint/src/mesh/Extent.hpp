@@ -109,13 +109,26 @@ public:
    * \param [in] j the grid index along the second dimension.
    * \param [in] k the grid index along the third dimension.
    * \return linearIdx the linear index.
-   * \pre this->getDimension() > 1.
+   * \pre this->getDimension() == 3.
    * \pre i >= 0 && i < this->size( 0 )
    * \pre j >= 0 && j < this->size( 1 )
    * \pre k >= 0 && k < this->size( 2 )
    * \note i,j,k are local grid indices.
    */
-  IndexType getLinearIndex(IndexType i, IndexType j, IndexType k=0) const;
+  IndexType getLinearIndex( IndexType i, IndexType j, IndexType k ) const;
+
+  /*!
+   * \brief Converts the given grid indices to a one-dimensional linear index.
+   * \param [in] i the grid index along the first dimension.
+   * \param [in] j the grid index along the second dimension.
+   * \return linearIdx the linear index.
+   * \pre this->getDimension() == 2.
+   * \pre i >= 0 && i < this->size( 0 )
+   * \pre j >= 0 && j < this->size( 1 )
+   * \pre k >= 0 && k < this->size( 2 )
+   * \note i,j,k are local grid indices.
+   */
+  IndexType getLinearIndex( IndexType i, IndexType j ) const;
 
   /*!
    * \brief Converts the given grid cell indices to a one-dimensional linear index.
@@ -123,13 +136,25 @@ public:
    * \param [in] j the grid cell index along the second dimension.
    * \param [in] k the grid cell index along the third dimension.
    * \return linearIdx the linear index over the cells.
-   * \pre this->getDimension() > 1.
+   * \pre this->getDimension() == 3.
    * \pre i >= 0 && i < this->size( 0 )-1
    * \pre j >= 0 && j < this->size( 1 )-1
    * \pre k >= 0 && k < this->size( 2 )-1
    * \note i,j,k are local grid cell indices.
    */
-  IndexType getCellLinearIndex(IndexType i, IndexType j, IndexType k=0) const;
+  IndexType getCellLinearIndex (IndexType i, IndexType j, IndexType k ) const;
+
+  /*!
+   * \brief Converts the given grid cell indices to a one-dimensional linear index.
+   * \param [in] i the grid cell index along the first dimension.
+   * \param [in] j the grid cell index along the second dimension.
+   * \return linearIdx the linear index over the cells.
+   * \pre this->getDimension() == 2.
+   * \pre i >= 0 && i < this->size( 0 )-1
+   * \pre j >= 0 && j < this->size( 1 )-1
+   * \note i,j,k are local grid cell indices.
+   */
+  IndexType getCellLinearIndex( IndexType i, IndexType j ) const;
 
   /*!
    * \brief Given a one-dimensional linear index, this method computes the
@@ -139,7 +164,7 @@ public:
    * \param [out] j the corresponding grid index along the second dimension.
    * \pre this->getDimension() == 2.
    */
-  void getGridIndex( IndexType linearIdx, IndexType& i, IndexType& j) const;
+  void getGridIndex( IndexType linearIdx, IndexType& i, IndexType& j ) const;
 
   /*!
    * \brief Given a one-dimensional linear index, this method computes the
@@ -208,13 +233,15 @@ Extent< IndexType >::Extent( int ndims, const IndexType* ext ):
   memcpy(m_extent, ext, 2 * ndims * sizeof( IndexType )  );
 
   // compute strides
-  m_jp = this->size( 0 );
+  m_jp = 0;
   m_kp = 0;
-
-  if ( ndims == 3 ) {
-
+  
+  if ( ndims > 1 ) {
     m_jp = this->size( 0 );
-    m_kp = m_jp*this->size( 1 );
+  }
+
+  if ( ndims > 2 ) {
+    m_kp = m_jp * this->size( 1 );
 
   }
 
@@ -267,9 +294,18 @@ IndexType Extent< IndexType >::getNumCells() const
 template < typename IndexType >
 inline
 IndexType Extent< IndexType >::getLinearIndex(
-  IndexType i, IndexType j, IndexType k) const
+  IndexType i, IndexType j, IndexType k ) const
 {
-  IndexType index = i + j*m_jp + k*m_kp;
+  IndexType index = i + j * m_jp + k * m_kp;
+  return( index );
+}
+
+//------------------------------------------------------------------------------
+template < typename IndexType >
+inline
+IndexType Extent< IndexType >::getLinearIndex( IndexType i, IndexType j ) const
+{
+  IndexType index = i + j * m_jp;
   return( index );
 }
 
@@ -281,7 +317,17 @@ IndexType Extent< IndexType >::getCellLinearIndex(
 {
   IndexType cell_jp = (size(0)-1);
   IndexType cell_kp = getDimension() == 3 ? cell_jp * (size(1)-1) : 0;
-  IndexType index = i + j* cell_jp  + k*cell_kp;
+  IndexType index = i + j * cell_jp  + k * cell_kp;
+  return( index );
+}
+
+//------------------------------------------------------------------------------
+template < typename IndexType >
+inline
+IndexType Extent< IndexType >::getCellLinearIndex( IndexType i, IndexType j ) const
+{
+  IndexType cell_jp = (size(0)-1);
+  IndexType index = i + j * cell_jp;
   return( index );
 }
 

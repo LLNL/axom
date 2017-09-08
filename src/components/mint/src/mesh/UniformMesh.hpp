@@ -208,7 +208,6 @@ inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
   for ( int i=0; i < this->getDimension(); ++i ) {
     coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -235,7 +234,6 @@ void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
   for ( int i=0; i < 3; ++i ) {
     coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
   }
-
 }
 
 //------------------------------------------------------------------------------
