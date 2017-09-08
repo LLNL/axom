@@ -41,6 +41,7 @@ namespace numerics {
  * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
  * \param [in] numIterations optional number of iterations for the power method
+ * \param [in] test optional parameter for testing
  * \note if k <= 0, solve is declared unsuccessful
  * \return rc return value, nonzero if the solve is successful.
  *
@@ -50,10 +51,9 @@ namespace numerics {
  * \pre k <= A.getNumRows()
  * \pre T is a floating point type
  */
-  template < typename T >
-  int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas,
-                  int numIterations=125);
-
+template < typename T >
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=125,
+  bool test=false);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -68,109 +68,111 @@ namespace numerics {
 namespace {
 
 // Helper method which returns a uniformly distributed random between 0 and 1.
-  template < typename T >
-  T getRandom()
-  {
-    // This is hacky, but allows us to avoid re-seeding
-    static bool seeded = false;
-    if (!seeded)
-    {
+template < typename T >
+T getRandom(bool test)
+{
+  // This is hacky, but allows us to avoid re-seeding
+  static bool seeded = false;
+  if (!seeded) {
+    if (!test) {
       srand((unsigned) time(0));
-      seeded = true;
+    } else {
+      srand((unsigned) 0);
     }
-    return static_cast< T >(((double) rand())/RAND_MAX);
+    seeded = true;
   }
 
 } /* end anonymous namespace */
 
-  template < typename T >
-  int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas, int numIterations)
-  {
-    assert("pre: input matrix must be square" && A.isSquare());
-    assert(
-      "pre: can't have more eigenvectors than rows" && (k <= A.getNumRows()));
-    assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
-    assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
+template < typename T >
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations,
+  bool test)
+{
+  assert("pre: input matrix must be square" && A.isSquare());
+  assert("pre: can't have more eigenvectors than rows" && (k <= A.getNumRows()));
+  assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
+  assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
 
   #ifdef AXOM_USE_CXX11
     AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                            "pre: T is a floating point type");
   #endif
 
-    if (!A.isSquare())
+  if (!A.isSquare())
+  {
+   return 0;
+  }
+
+  if (k <= 0)
+  {
+    return 1;
+  }
+
+  int N = A.getNumColumns();
+
+  // allocate memory for a temp var
+  T * temp = new T[N];
+
+  for (int i = 0 ; i < k ; i++)
+  {
+
+    T * vec = &u[i*N];
+    // 1: generate random vec
+    for (int j = 0; j < N; j++) {
+      vec[j] = getRandom< T >(test);
+    }
+
+    // 2: make ortho to previous eigenvecs then normalize
+    for (int j = 0 ; j < i ; j++) {
+      make_orthogonal< T >(vec, u + j*N, N);
+    }
+
+    bool res = normalize< T >(vec, N);
+
+    if (!res)  // something went wrong
     {
       return 0;
     }
 
-    if (k <= 0)
+    // 3: run depth iterations of power method; note that a loop invariant
+    // of this is that vec is normalized
+    for (int j = 0 ; j < numIterations ; j++)
     {
-      return 1;
-    }
-
-    int N = A.getNumColumns();
-
-    // allocate memory for a temp var
-    T * temp = new T[N];
-
-    for (int i = 0 ; i < k ; i++)
-    {
-
-      T * vec = &u[i*N];
-
-      // 1: generate random vec
-      for (int j = 0 ; j < N ; j++)
-        vec[j] = getRandom< T >();
-
-      // 2: make ortho to previous eigenvecs then normalize
-      for (int j = 0 ; j < i ; j++)
-        make_orthogonal< T >(vec, u + j*N, N);
-
-      bool res = normalize< T >(vec, N);
-
-      if (!res)  // something went wrong
-      {
-        return 0;
-      }
-
-      // 3: run depth iterations of power method; note that a loop invariant
-      // of this is that vec is normalized
-      for (int j = 0 ; j < numIterations ; j++)
-      {
-        // multiply
-        vector_multiply(A, vec, temp);
-
-        // make ortho to previous (for stability)
-        for (int k = 0 ; k < i ; k++)
-        {
-          make_orthogonal< T >(temp, u + k*N, N);
-        }
-
-        res = normalize< T >(temp, N);
-
-        if (!res)  // must be 0 eigenvalue; done in that case, since vec
-        {// is guaranteed to be orthogonal to previous eigenvecs and normal
-          break;
-        }
-        else    // else copy it over
-        {
-          for (int l = 0 ; l < N ; l++)
-          {
-            vec[l] = temp[l];
-          }
-        }
-      }
-
-      // 4: store the eigenval (already stored the eigenvec)
+      // multiply
       vector_multiply(A, vec, temp);
 
-      lambdas[i] = dot_product(vec, temp, N);
+      // make ortho to previous (for stability)
+      for (int k = 0 ; k < i ; k++)
+      {
+        make_orthogonal< T >(temp, u + k*N, N);
+      }
+
+      res = normalize< T >(temp, N);
+
+      if (!res)  // must be 0 eigenvalue; done in that case, since vec
+      {// is guaranteed to be orthogonal to previous eigenvecs and normal
+        break;
+      }
+      else    // else copy it over
+      {
+        for (int l = 0 ; l < N ; l++)
+        {
+          vec[l] = temp[l];
+        }
+      }
     }
 
-    // free up allocated memory
-    delete [] temp;
+    // 4: store the eigenval (already stored the eigenvec)
+    vector_multiply(A, vec, temp);
 
-    return 1;
+    lambdas[i] = dot_product(vec, temp, N);
   }
+
+  // free up allocated memory
+  delete [] temp;
+
+  return 1;
+}
 
 } /* end namespace numerics */
 } /* end namespace axom */
