@@ -60,7 +60,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual int getMeshNumberOfCellNodes( int AXOM_NOT_USED(cellIdx) ) const
+  virtual int getMeshNumberOfCellNodes( int AXOM_NOT_USED( cellIdx ) ) const
   { return this->getNumberOfCellNodes(); }
 
   /*!
@@ -74,26 +74,26 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshCell( int cellIdx, int* cell ) const
-  { this->getCell(cellIdx,cell); };
+  { this->getCell( cellIdx, cell ); };
 
   /*!
    * \brief Returns the cell type of the cell associated with the given Id.
    * \param [in] cellIdx the index of the cell in query.
    * \return cellType the cell type of the cell at the given index.
    */
-  virtual int getMeshCellType( int AXOM_NOT_USED(cellIdx) ) const
-  { return ( (m_ndims==3) ? MINT_HEX : MINT_QUAD ); };
+  virtual int getMeshCellType( int AXOM_NOT_USED( cellIdx ) ) const
+  { return ( ( m_ndims == 3 ) ? MINT_HEX : MINT_QUAD ); };
 
   /*!
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
-   * \param [in] coordinates user-supplied buffer to store the node coordinates.
+   * \param [out] coordinates user-supplied buffer to store the node coordinates.
    * \pre nodeIdx >= && nodeIdx < this->getMeshNumberOfNodes()
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshNode( int nodeIdx, double* coordinates ) const
-  { this->getNode(nodeIdx,coordinates); };
+  { this->getNode( nodeIdx, coordinates ); };
 
   /*!
    * \brief Returns the coordinate of a mesh node.
@@ -103,7 +103,7 @@ public:
    * \pre dim >= 0 && dim < m_ndims
    */
   virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
-  { return (this->getNodeCoordinate(nodeIdx,dim) ); };
+  { return (this->getNodeCoordinate( nodeIdx, dim ) ); };
 
   /// @}
 
@@ -115,7 +115,7 @@ public:
    * \param [in] ndims 3-tuple holding the number of nodes in each dimension.
    * \post ndims[ i ] >= 1, \$ \forall i \in [0,2] \$
    */
-  void getDimensions( int ndims[3] ) const
+  void getExtentSize( int ndims[ 3 ] ) const
   {
     for ( int i=0; i < 3; ++i ) {
       ndims[ i ] = m_extent->size( i );
@@ -146,8 +146,8 @@ public:
    * \return N the number of nodes per cell.
    * \post N=4 if 2-D, else N=8.
    */
-  int getNumberOfCellNodes( ) const
-  { return( (m_ndims==2) ? 4 : 8); };
+  int getNumberOfCellNodes() const
+  { return( ( m_ndims == 2 ) ? 4 : 8); };
 
   /*!
    * \brief Returns the linear index corresponding to the given logical indices.
@@ -156,8 +156,8 @@ public:
    * \param [in] k logical index of the third dimension (optional)
    * \return idx the corresponding linear index.
    */
-  int getLinearIndex( int i, int j, int k=0) const
-  { return m_extent->getLinearIndex(i,j,k); };
+  int getLinearIndex( int i, int j, int k = 0  ) const
+  { return m_extent->getLinearIndex( i, j, k ); };
 
   /*!
    * \brief Returns the linear index corresponding to the given logical grid cell
@@ -167,8 +167,8 @@ public:
    * \param [in] k logical cell index of the third dimension (optional)
    * \return idx the corresponding linear index of the cell.
    */
-  int getCellLinearIndex( int i, int j, int k=0) const
-  { return m_extent->getCellLinearIndex(i,j,k); };
+  int getCellLinearIndex( int i, int j, int k=0 ) const
+  { return m_extent->getCellLinearIndex(i, j, k); };
 
   /*!
    * \brief Returns the cell connectivity for the given cell.
@@ -278,7 +278,7 @@ protected:
    * \brief Constructs a structured mesh instance from the given extent.
    * \param [in] ext the structured mesh extent.
    */
-  StructuredMesh( int meshType, int ndims, int ext[6] );
+  StructuredMesh( int meshType, int ndims, const int ext[6] );
 
   /*!
    * \brief Constructs a structured mesh instance from the given extent that is
@@ -288,7 +288,9 @@ protected:
    * \param [in] blockId the block ID of the mesh.
    * \param [in] partId the partition ID of the mesh.
    */
-  StructuredMesh( int meshType,int ndims,int ext[6],int blockId,int partId );
+  StructuredMesh( int meshType, int ndims, const int ext[6], int blockId, 
+                  int partId );
+
 
   Extent< int >* m_extent; /*!< grid extent */
 

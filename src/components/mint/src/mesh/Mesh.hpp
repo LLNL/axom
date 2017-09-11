@@ -75,7 +75,7 @@ public:
    * \return status true iff the mesh has mixed cell types.
    */
   inline bool hasMixedCellTypes() const
-  { return (m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH) ? true : false; };
+  { return m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH;};
 
   /*!
    * \brief Returns the FieldData instance associated with node-centered fields.
@@ -149,7 +149,7 @@ public:
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] coordinates user-supplied buffer to store the node coordinates.
-   * \pre nodeIdx >= && nodeIdx < this->getMeshNumberOfNodes()
+   * \pre 0 <= nodeIdx < this->getMeshNumberOfNodes()
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
@@ -181,12 +181,12 @@ protected:
    * \param [in] blockId the block ID for this mesh instance.
    * \param [in] partId the partition ID for this mesh instance.
    */
-  Mesh(int ndims, int type, int blockId, int partId );
+  Mesh( int ndims, int type, int blockId, int partId );
 
   int m_ndims;          /*!< mesh dimension */
+  int m_type;           /*!< the type of the mesh */
   int m_block_idx;      /*!< the Block ID of the mesh */
   int m_part_idx;       /*!< the partition ID of the mesh */
-  int m_type;           /*!< the type of the mesh */
 
   FieldData* m_node_data; /*!< FieldData instance for node-centered fields. */
   FieldData* m_cell_data; /*!< FieldData instance for cell-centered fields. */
