@@ -337,7 +337,7 @@ inline
 void Extent< IndexType >::getGridIndex(
   IndexType linearIdx, IndexType& i, IndexType& j) const
 {
-  SLIC_ASSERT( m_ndims==2 );
+  SLIC_ASSERT( m_ndims == 2 );
 
   j = linearIdx / m_jp;
   i = linearIdx - j*m_jp;
@@ -350,7 +350,7 @@ void Extent< IndexType >::getGridIndex(
   IndexType linearIdx, IndexType& i, IndexType& j, IndexType& k) const
 {
   k = (m_kp > 0) ? (linearIdx / m_kp) : 0;
-  j = (linearIdx - k*m_kp) / m_jp;
+  j = (m_jp > 0) ? (linearIdx - k*m_kp) / m_jp : 0;
   i = linearIdx - k*m_kp - j*m_jp;
 }
 
