@@ -188,3 +188,19 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
   EXPECT_NEAR(lambdas[1], 6., EPS);
   EXPECT_NEAR(lambdas[2], 4., EPS);
 }
+
+
+int main(int argc, char * argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+#ifdef EIGEN_SOLVE_TESTER_SHOULD_SEED
+  std::srand( std::time(0) );
+#else
+  std::srand( 105 );
+#endif
+
+  int result = RUN_ALL_TESTS();
+  return result;
+}
+

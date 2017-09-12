@@ -31,6 +31,9 @@ namespace primal {
  * \brief Creates a bounding box which contains the collection of passed in
  * points.
  *
+ * Call srand() to initialize the random number generator before using this
+ * function.
+ *
  * \param [in] pts array of points
  * \param [in] n number of points
  * \note if n <= 0, invokes default constructor
@@ -44,6 +47,9 @@ OrientedBoundingBox< T, NDIMS > compute_oriented_bounding_box(
 
 /*!
  * \brief Creates an oriented bounding box which contains the passed in OBBs.
+ *
+ * Call srand() to initialize the random number generator before using this
+ * function.
  *
  * \param [in] l left obb
  * \param [in] r right obb
