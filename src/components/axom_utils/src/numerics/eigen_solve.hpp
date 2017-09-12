@@ -81,7 +81,8 @@ T getRandom(bool test)
     }
     seeded = true;
   }
-
+  return static_cast< T >(((double) rand())/RAND_MAX);
+}
 } /* end anonymous namespace */
 
 template < typename T >
