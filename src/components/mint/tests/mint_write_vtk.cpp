@@ -26,9 +26,11 @@
 #include "slic/UnitTestLogger.hpp"      // for UnitTestLogger
 
 #include <cmath>                        // for std::exp
+#include <cstdio>                       // for std::remove
 #include <fstream>                      // for std::ifstream
 #include <string>                       // for std::string
-#include <vector>                       // for std::vector
+#include <sstream>                      // for std::stringstream
+#include <set>                          // for std::set
 
 #if __cplusplus >= 201103L
 #include <random>                       // for random number generator
@@ -36,7 +38,9 @@
 #include <cstdlib>                      // for rand
 #endif
 
-#define DELETE_VTK_FILES 1
+#ifndef DELETE_VTK_FILES
+  #define DELETE_VTK_FILES 1
+#endif
 
 namespace axom {
 namespace mint {
@@ -396,14 +400,14 @@ void check_multidim_data( Field* const field, std::ifstream& file ) {
   const int field_type = field->getType();
   check_scalar( field, file, 0 );
   
-  std::string type, name, d_type, temp;
+  std::string type, name, d_type;
   for ( int comp = 1; comp < num_components; ++comp ) {
     file >> type >> name >> d_type;
     EXPECT_EQ( type, "SCALARS" );
 
-    temp = field->getName() + "[";
-    temp += std::to_string( comp ) + "]";
-    EXPECT_EQ( name, temp );
+    std::stringstream temp;
+    temp << field->getName() << "[" << comp << "]";
+    EXPECT_EQ( name, temp.str() );
 
     if ( d_type == "double" ) {
       EXPECT_EQ( field_type, DOUBLE_FIELD_TYPE );
@@ -426,14 +430,14 @@ void check_multidim_data( Field* const field, std::ifstream& file ) {
 * \pre field_data != AXOM_NULLPTR
 */
 void check_fieldData( FieldData* const field_data, std::ifstream& file ) {
-  std::vector<std::string> fields_read;
+  std::set<std::string> fields_read;
   std::string type, name, d_type;
   int cur_pos;
   while ( file.good() ) {
     file >> type >> name >> d_type;
 
     if ( field_data->hasField( name ) ) {
-      fields_read.push_back( name );
+      fields_read.insert( name );
       Field* field = field_data->getField( name );
 
       if ( d_type == "double" ) {
@@ -462,7 +466,7 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file ) {
       std::string true_name = name.substr( 0, bracket_pos );
       EXPECT_EQ( name.substr(bracket_pos), "[0]" );
       ASSERT_TRUE( field_data->hasField( true_name ) ) << true_name;
-      fields_read.push_back( true_name );
+      fields_read.insert( true_name );
 
 
       Field* field = field_data->getField( true_name );
@@ -490,9 +494,10 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file ) {
   }
 
   EXPECT_EQ( static_cast< int >( fields_read.size() ),
-               field_data->getNumberOfFields() );
-  for ( std::string field_name : fields_read ) {
-    EXPECT_TRUE( field_data->hasField( field_name ) );
+             field_data->getNumberOfFields() );
+  for ( std::set<std::string>::iterator it = fields_read.begin(); 
+        it != fields_read.end(); ++it ) {
+    EXPECT_TRUE( field_data->hasField( *it ) );
   }
 }
 
@@ -776,7 +781,7 @@ TEST( mint_write_vtk, UniformMesh3D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -801,7 +806,7 @@ TEST( mint_write_vtk, UniformMesh2D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -826,7 +831,7 @@ TEST( mint_write_vtk, UniformMesh1D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -857,7 +862,7 @@ TEST( mint_write_vtk, RectilinearMesh3D ) {
   file.close();
   delete r_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -888,7 +893,7 @@ TEST( mint_write_vtk, RectilinearMesh2D ) {
   file.close();
   delete r_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -919,7 +924,7 @@ TEST( mint_write_vtk, RectilinearMesh1D ) {
   file.close();
   delete r_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -955,7 +960,7 @@ TEST( mint_write_vtk, CurvilinearMesh3D ) {
   file.close();
   delete c_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -988,7 +993,7 @@ TEST( mint_write_vtk, CurvilinearMesh2D ) {
   file.close();
   delete c_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1019,7 +1024,7 @@ TEST( mint_write_vtk, CurvilinearMesh1D ) {
   file.close();
   delete c_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1074,7 +1079,7 @@ TEST( mint_write_vtk, UnstructuredMesh3D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1119,7 +1124,7 @@ TEST( mint_write_vtk, UnstructuredMesh2D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1155,7 +1160,7 @@ TEST( mint_write_vtk, UnstructuredMesh1D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1264,7 +1269,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1339,7 +1344,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh2D ) {
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1368,7 +1373,7 @@ TEST( mint_write_vtk, ParticleMesh3D ) {
   file.close();
   delete p_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1396,7 +1401,7 @@ TEST( mint_write_vtk, ParticleMesh2D ) {
   file.close();
   delete p_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1423,7 +1428,7 @@ TEST( mint_write_vtk, ParticleMesh1D ) {
   file.close();
   delete p_mesh;
 #if DELETE_VTK_FILES
-  remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
