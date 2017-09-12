@@ -362,7 +362,11 @@ int write_vtk( const Mesh* mesh, const std::string& file_path ) {
 
 
   file.setf(file.scientific);
-  file.precision(std::numeric_limits<double>::max_digits10);
+#if __cplusplus >= 201103L
+  file.precision( std::numeric_limits< double >::max_digits10 );
+#else
+  file.precision( std::numeric_limits< double >::digits10 + 2 );
+#endif
 
   /* Write the VTK header */
   file << "# vtk DataFile Version 3.0\n";
