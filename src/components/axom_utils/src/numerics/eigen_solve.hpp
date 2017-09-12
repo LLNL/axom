@@ -36,12 +36,15 @@ namespace numerics {
  *    3. Run depth iterations of power method
  *    4. Store the result
  *
+ * Because step 1 and step 3 require random numbers, this function requires
+ * the caller to properly seed the randomizer (for example, by calling
+ * srand()).
+ *
  * \param [in] A a square input matrix
  * \param [in] k number of eigenvalue-eigenvectors to find
  * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
  * \param [in] numIterations optional number of iterations for the power method
- * \param [in] test optional parameter for testing
  * \note if k <= 0, solve is declared unsuccessful
  * \return rc return value, nonzero if the solve is successful.
  *
@@ -50,10 +53,10 @@ namespace numerics {
  * \pre lambdas != AXOM_NULLPTR
  * \pre k <= A.getNumRows()
  * \pre T is a floating point type
+ * \pre System randomizer has been initialized (for example, with srand())
  */
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=125,
-  bool test=false);
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=125);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -67,27 +70,20 @@ namespace numerics {
 
 namespace {
 
-// Helper method which returns a uniformly distributed random between 0 and 1.
+/*!
+ * \brief Returns a uniformly distributed random between 0 and 1.
+ *
+ * Caller must seed the random number generator (for example, with srand()).
+ */
 template < typename T >
-T getRandom(bool test)
+T getRandom()
 {
-  // This is hacky, but allows us to avoid re-seeding
-  static bool seeded = false;
-  if (!seeded) {
-    if (!test) {
-      srand((unsigned) time(0));
-    } else {
-      srand((unsigned) 0);
-    }
-    seeded = true;
-  }
   return static_cast< T >(((double) rand())/RAND_MAX);
 }
 } /* end anonymous namespace */
 
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations,
-  bool test)
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
 {
   assert("pre: input matrix must be square" && A.isSquare());
   assert("pre: can't have more eigenvectors than rows" && (k <= A.getNumRows()));
@@ -120,7 +116,7 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations,
     T * vec = &u[i*N];
     // 1: generate random vec
     for (int j = 0; j < N; j++) {
-      vec[j] = getRandom< T >(test);
+      vec[j] = getRandom< T >();
     }
 
     // 2: make ortho to previous eigenvecs then normalize

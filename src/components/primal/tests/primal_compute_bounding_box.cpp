@@ -134,3 +134,18 @@ TEST( primal_compute_bounding_box, merge_aligned_box_test)
   EXPECT_TRUE(bbox5.contains(bbox3));
   EXPECT_TRUE(bbox5.contains(bbox4));
 }
+
+int main(int argc, char * argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+#ifdef COMPUTE_BOUNDING_BOX_TESTER_SHOULD_SEED
+  std::srand( std::time(0) );
+#else
+  std::srand( 105 );
+#endif
+
+  int result = RUN_ALL_TESTS();
+  return result;
+}
+

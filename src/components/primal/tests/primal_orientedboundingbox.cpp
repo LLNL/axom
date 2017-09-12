@@ -591,3 +591,18 @@ TEST( primal_OBBox, obb_test_furthest_point )
   pt5.array()[1] = -1.;
   EXPECT_TRUE(obbox1.furthestPoint(pt4) == pt5);
 }
+
+int main(int argc, char * argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+#ifdef ORIENTEDBOUNDINGBOX_TESTER_SHOULD_SEED
+  std::srand( std::time(0) );
+#else
+  std::srand( 105 );
+#endif
+
+  int result = RUN_ALL_TESTS();
+  return result;
+}
+

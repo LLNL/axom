@@ -33,7 +33,7 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
     A(i,i) = N - i;
   }
 
-  EXPECT_EQ(1, numerics::eigen_solve(A, N, u, lambdas, 125, true));
+  EXPECT_EQ(1, numerics::eigen_solve(A, N, u, lambdas));
 
   // eigenvalues should be N, N - 1, ... etc. vectors should be standard basis
   // vectors in standard order
@@ -73,7 +73,7 @@ TEST( numerics_eigen_solve, eigen_solve_with_partial_diagonal )
     A(i,i) = N - i;
   }
 
-  EXPECT_EQ(1, numerics::eigen_solve(A, N, u, lambdas, 125, true));
+  EXPECT_EQ(1, numerics::eigen_solve(A, N, u, lambdas));
 
   // now eigenvals should be N, N - 1, ... N/2 + 1, and 0's for the rest
   // vecs are same as before for first half. After that any basis for the
@@ -131,7 +131,7 @@ TEST( numerics_eigen_solve, eigen_solve_with_two_by_two )
   A(1,0) = 1.;
   A(1,1) = 3.;
 
-  int rc = numerics::eigen_solve(A, N, u, lambdas, 125, true);
+  int rc = numerics::eigen_solve(A, N, u, lambdas);
   EXPECT_EQ(1, rc);
 
   // check lambdas are correct
@@ -167,7 +167,7 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
   A(1,1) = 5.;
   A(2,2) = 10.;
 
-  int rc = numerics::eigen_solve(A, N, u, lambdas, 125, true);
+  int rc = numerics::eigen_solve(A, N, u, lambdas);
   EXPECT_EQ(1, rc);
 
   // note we are comparing squares here, since there is some ambiguity
@@ -188,3 +188,19 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
   EXPECT_NEAR(lambdas[1], 6., EPS);
   EXPECT_NEAR(lambdas[2], 4., EPS);
 }
+
+
+int main(int argc, char * argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+
+#ifdef EIGEN_SOLVE_TESTER_SHOULD_SEED
+  std::srand( std::time(0) );
+#else
+  std::srand( 105 );
+#endif
+
+  int result = RUN_ALL_TESTS();
+  return result;
+}
+

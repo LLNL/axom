@@ -105,6 +105,10 @@ public:
   /*!
    * \brief Constructor. Creates an oriented bounding box from a collection of
    * points.
+   *
+   * Initialize the random number generator before using this constructor
+   * (with srand()).  This constructor uses eigen_solve to find a good fit
+   * around the passed-in points, which uses the random number generator.
    */
   OrientedBoundingBox( const PointType *pts, int n );
 
