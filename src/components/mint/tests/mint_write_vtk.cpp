@@ -36,6 +36,7 @@
 #include <cstdlib>                      // for rand
 #endif
 
+#define DELETE_VTK_FILES 1
 
 namespace axom {
 namespace mint {
@@ -774,7 +775,9 @@ TEST( mint_write_vtk, UniformMesh3D ) {
   
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -797,7 +800,9 @@ TEST( mint_write_vtk, UniformMesh2D ) {
   
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -820,7 +825,9 @@ TEST( mint_write_vtk, UniformMesh1D ) {
   
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -849,7 +856,9 @@ TEST( mint_write_vtk, RectilinearMesh3D ) {
 
   file.close();
   delete r_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -878,7 +887,9 @@ TEST( mint_write_vtk, RectilinearMesh2D ) {
 
   file.close();
   delete r_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -907,7 +918,9 @@ TEST( mint_write_vtk, RectilinearMesh1D ) {
 
   file.close();
   delete r_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -941,7 +954,9 @@ TEST( mint_write_vtk, CurvilinearMesh3D ) {
 
   file.close();
   delete c_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -972,7 +987,9 @@ TEST( mint_write_vtk, CurvilinearMesh2D ) {
 
   file.close();
   delete c_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1001,7 +1018,9 @@ TEST( mint_write_vtk, CurvilinearMesh1D ) {
 
   file.close();
   delete c_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1054,7 +1073,9 @@ TEST( mint_write_vtk, UnstructuredMesh3D ) {
 
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1097,7 +1118,9 @@ TEST( mint_write_vtk, UnstructuredMesh2D ) {
 
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1131,7 +1154,9 @@ TEST( mint_write_vtk, UnstructuredMesh1D ) {
 
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1238,7 +1263,9 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D ) {
 
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1311,7 +1338,9 @@ TEST( mint_write_vtk, UnstructuredMixedMesh2D ) {
 
   file.close();
   delete u_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1338,7 +1367,9 @@ TEST( mint_write_vtk, ParticleMesh3D ) {
 
   file.close();
   delete p_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1364,7 +1395,9 @@ TEST( mint_write_vtk, ParticleMesh2D ) {
 
   file.close();
   delete p_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1389,7 +1422,9 @@ TEST( mint_write_vtk, ParticleMesh1D ) {
 
   file.close();
   delete p_mesh;
+#if DELETE_VTK_FILES
   remove( path.c_str() );
+#endif
 }
 
 //------------------------------------------------------------------------------
