@@ -38,11 +38,6 @@ add_custom_target( copy_axom_includes ALL
             "copy axom includes"
         )
 
-convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
-convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
-
-configure_file(path_config.hpp.in "${build_axom_includes}/path_config.hpp")
-
 
 include_directories( ${build_axom_includes} )
 

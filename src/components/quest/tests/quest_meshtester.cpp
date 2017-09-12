@@ -10,7 +10,7 @@
 
 
 // Axom includes
-#include "axom/path_config.hpp"
+#include "axom/config.hpp"
 #include "axom_utils/FileUtilities.hpp"
 #include "mint/Mesh.hpp"
 #include "quest/STLReader.hpp"
