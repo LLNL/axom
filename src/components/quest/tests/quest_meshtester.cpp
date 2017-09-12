@@ -28,6 +28,8 @@
 #include <fstream>
 #include <sstream>
 
+typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+
 std::string vecToString(const std::vector<int> & v)
 {
   std::stringstream retval;
@@ -67,32 +69,14 @@ void reportVectorMismatch(const std::vector<T> & standard,
 }
 
 void runIntersectTest(const std::string &test,
-		      const std::string &tfname,
 		      const std::string &tname,
+                      TriangleMesh * surface_mesh,
 		      const std::vector< std::pair<int, int> > & expisect,
 		      const std::vector< int > & expdegen)
 {
-  if (! axom::utilities::filesystem::pathExists(test)) {
-    SLIC_INFO("Test file does not exist; reporting success and skipping: " << test);
-    SUCCEED();
-    return;
-  }
-
   SCOPED_TRACE(tname);
 
   SLIC_INFO("Intersection test " << tname);
-
-  typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-
-  // read in the test file into a Mesh
-  axom::quest::STLReader reader;
-  reader.setFileName( tfname );
-  reader.read();
-
-  // Get surface mesh
-  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
-  reader.getMesh( surface_mesh );
-  // call findTriMeshIntersections() and compare results
 
   std::vector< int > degenerate;
   std::vector< std::pair<int, int> > collisions;
@@ -106,8 +90,6 @@ void runIntersectTest(const std::string &test,
 
   reportVectorMismatch(expisect, collisions, "triangle collisions");
   reportVectorMismatch(expdegen, degenerate, "degenerate triangles");
-
-  delete surface_mesh;
 }
 
 void splitStringToIntPairs(std::string & pairs, std::vector< std::pair<int, int> > & dat)
@@ -187,17 +169,139 @@ std::vector<std::string> findIntersectTests()
 
 TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 {
-  // void runIntersectTest(const std::string &test,
-  //       	      const std::string &tfname,
-  //       	      const std::string &tname,
-  //       	      const std::vector< std::pair<int, int> > & expisect,
-  //       	      const std::vector< int > & expdegen);
-
   std::vector< std::pair<int, int> > intersections;
   std::vector< int > degenerate;
+  TriangleMesh * surface_mesh = AXOM_NULLPTR;
+  std::string testname;
+  std::string testdescription;
 
-  runIntersectTest("tetrahedron", "", "closed tetrahedron", intersections, 
-                   degenerate);
+  {
+    testname = "tetrahedron";
+    testdescription = "Tetrahedron with no errors";
+
+    // Construct and fill the mesh.
+    // There are many ways to do this, some nicer than others.  Whether the
+    // mesh has nice de-duplicated nodes or is a tiresome STL-style triangle
+    // soup, it should not matter.  We will test the deduplicated triangles.
+    // Nice (non-duplicated) vertices
+    surface_mesh = new TriangleMesh(3);
+    surface_mesh->insertNode( -0.000003, -0.000003, 19.999999);
+    surface_mesh->insertNode(-18.213671,  4.880339, -6.666668);
+    surface_mesh->insertNode(  4.880339,-18.213671, -6.666668);
+    surface_mesh->insertNode( 13.333334, 13.333334, -6.666663);
+    int cell[3];
+    cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+
+    // No self-intersections or degenerate triangles
+    intersections.clear();
+    degenerate.clear();
+    runIntersectTest(testname, testdescription,
+                     surface_mesh, intersections, degenerate);
+    delete surface_mesh;
+  }
+
+  {
+    testname = "cracked tetrahedron";
+    testdescription = "Tetrahedron with a crack but no self-intersections or degenerate triangles";
+
+    // Construct and fill the mesh.
+    surface_mesh = new TriangleMesh(3);
+    surface_mesh->insertNode( -0.000003, -0.000003, 19.999999);
+    surface_mesh->insertNode(-18.213671,  4.880339, -6.666668);
+    surface_mesh->insertNode(  4.880339,-18.213671, -6.666668);
+    surface_mesh->insertNode( 13.333334, 13.333334, -6.666663);
+    surface_mesh->insertNode( -0.200003, -0.100003, 18.999999);
+    int cell[3];
+    cell[0] = 4;    cell[1] = 1;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+
+    // No self-intersections or degenerate triangles
+    intersections.clear();
+    degenerate.clear();
+    runIntersectTest(testname, testdescription,
+                     surface_mesh, intersections, degenerate);
+    delete surface_mesh;
+  }
+
+  {
+    testname = "caved-in tetrahedron";
+    testdescription = "Tetrahedron with one side intersecting two others, no degenerate triangles";
+
+    // Construct and fill the mesh.
+    surface_mesh = new TriangleMesh(3);
+    surface_mesh->insertNode(  2.00003,   1.00003,  18.999999);
+    surface_mesh->insertNode(-18.213671,  4.880339, -6.666668);
+    surface_mesh->insertNode(  4.880339,-18.213671, -6.666668);
+    surface_mesh->insertNode( -0.000003, -0.000003, 19.999999);
+    surface_mesh->insertNode( 13.333334, 13.333334, -6.666663);
+    int cell[3];
+    cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 3;    cell[1] = 2;    cell[2] = 4;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 1;    cell[1] = 4;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+
+    intersections.clear();
+    intersections.push_back(std::make_pair(0, 1));
+    intersections.push_back(std::make_pair(0, 2));
+    // No degenerate triangles
+    degenerate.clear();
+    runIntersectTest(testname, testdescription,
+                     surface_mesh, intersections, degenerate);
+    delete surface_mesh;
+  }
+
+  {
+    testname = "caved-in tet with added degenerate tris";
+    testdescription = "Tetrahedron with one side intersecting two others, some degenerate triangles";
+
+    // Construct and fill the mesh.
+    surface_mesh = new TriangleMesh(3);
+    surface_mesh->insertNode(  2.00003,   1.00003,  18.999999);
+    surface_mesh->insertNode(-18.213671,  4.880339, -6.666668);
+    surface_mesh->insertNode(  4.880339,-18.213671, -6.666668);
+    surface_mesh->insertNode( -0.000003, -0.000003, 19.999999);
+    surface_mesh->insertNode( 13.333334, 13.333334, -6.666663);
+    int cell[3];
+    cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 3;    cell[1] = 2;    cell[2] = 4;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 1;    cell[1] = 4;    cell[2] = 2;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 0;    cell[1] = 0;    cell[2] = 0;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+    cell[0] = 3;    cell[1] = 4;    cell[2] = 3;
+    surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+
+    intersections.clear();
+    intersections.push_back(std::make_pair(0, 1));
+    intersections.push_back(std::make_pair(0, 2));
+    degenerate.clear();
+    degenerate.push_back(4);
+    degenerate.push_back(5);
+    runIntersectTest(testname, testdescription,
+                     surface_mesh, intersections, degenerate);
+    delete surface_mesh;
+  }
 }
 
 TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
@@ -213,12 +317,26 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
   std::vector<std::string>::iterator it = tests.begin();
   for ( ; it != tests.end(); ++it) {
     std::string & test = *it;
-    std::vector< std::pair<int, int> > expisect;
-    std::vector< int > expdegen;
-    std::string tfname;
-    std::string tname = readIntersectTest(test, tfname, expisect, expdegen);
+    if (! axom::utilities::filesystem::pathExists(test)) {
+      SLIC_INFO("Test file does not exist; skipping: " << test);
+    } else {
+      std::vector< std::pair<int, int> > expisect;
+      std::vector< int > expdegen;
+      std::string tfname;
+      std::string tname = readIntersectTest(test, tfname, expisect, expdegen);
 
-    runIntersectTest(test, tfname, tname, expisect, expdegen);
+      // read in the test file into a Mesh
+      axom::quest::STLReader reader;
+      reader.setFileName( tfname );
+      reader.read();
+
+      // Get surface mesh
+      TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+      reader.getMesh( surface_mesh );
+
+      runIntersectTest(test, tname, surface_mesh, expisect, expdegen);
+      delete surface_mesh;
+    }
   }
 }
 
