@@ -360,14 +360,14 @@ public:
    * \param [in] rows the number of rows in the matrix
    * \param [in] cols the number of columns in the matrix
    * \param [in] data pointer to user-supplied buffer to initialize the matrix.
-   * \param [in] shallowCopy optional flag that indicates that this matrix
+   * \param [in] useExternal optional flag that indicates that this matrix
    *  instance should not make a deep copy of the data. Default is false.
    *
    * \pre rows >= 1
    * \pre cols >= 1
    * \pre data != AXOM_NULLPTR
    */
-  Matrix( int rows, int cols, T* data, bool shallowCopy=false );
+  Matrix( int rows, int cols, T* data, bool useExternal=false );
 
   /*!
    * \brief Copy constructor.

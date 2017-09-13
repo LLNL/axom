@@ -12,6 +12,7 @@ set( mint_tests
      mint_mesh_extent.cpp
      mint_shape_functions.cpp
      mint_single_fe.cpp
+     mint_write_vtk.cpp
    )
 
 foreach( test ${mint_tests} )

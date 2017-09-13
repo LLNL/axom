@@ -27,6 +27,7 @@
 #include "mint/Mesh.hpp"
 #include "mint/ShapeFunction.hpp"
 #include "mint/UnstructuredMesh.hpp"
+#include "mint/vtk_utils.hpp"
 
 // Slic includes
 #include "slic/slic.hpp"
@@ -179,7 +180,7 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
 
 #ifdef MINT_FEM_DEBUG
   std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
-  m->toVtkFile( vtkFile );
+  mint::write_vtk( m,  vtkFile );
 #endif
 
   // clean up
@@ -887,6 +888,88 @@ TEST( mint_single_fe, check_override_max_newton )
   // clean up
   delete fe;
   delete m;
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_single_fe, matrix_constructor_deepcopy )
+{
+  // STEP 0: constants used in the test
+  const int NROWS = 2;
+  const int NCOLS = 3;
+  const int NSIZE = NROWS * NCOLS;
+
+  // STEP 1: setup element coordinates matrix
+  numerics::Matrix< double > M( NROWS, NCOLS );
+  M.fillColumn( 0, 1.0 );
+  M.fillColumn( 1, 2.0 );
+  M.fillColumn( 2, 3.0 );
+
+  // STEP 2: construct FE object by making a deep-copy
+  mint::FiniteElement fe( M, MINT_TRIANGLE );
+  EXPECT_FALSE( fe.usesExternalBuffer() );
+
+  // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
+  double* physical_nodes = fe.getPhysicalNodes();
+  EXPECT_FALSE( physical_nodes == M.data() );
+
+  // STEP 4: ensure the contents are the same
+  const double* expected = M.data();
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+  }
+
+  // STEP 5: change the matrix data
+  M.swapColumns( 0, 2 );
+  M.swapColumns( 1, 2 );
+
+  // STEP 6: ensure the contents *are not* the same
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_FALSE( utilities::isNearlyEqual( M.data()[i], physical_nodes[i] ) );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_single_fe, matrix_constructor_shallowcopy)
+{
+  // STEP 0: constants used in the test
+  const int NROWS = 2;
+  const int NCOLS = 3;
+  const int NSIZE = NROWS * NCOLS;
+
+  // STEP 1: setup element coordinates matrix
+  numerics::Matrix< double > M( 2, 3 );
+  M.fillColumn( 0, 1.0 );
+  M.fillColumn( 1, 2.0 );
+  M.fillColumn( 2, 3.0 );
+
+  // STEP 2: construct FE object by making a shallow-copy
+  mint::FiniteElement *fe = new mint::FiniteElement( M, MINT_TRIANGLE, true );
+  EXPECT_TRUE( fe->usesExternalBuffer() );
+
+  // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
+  double* physical_nodes = fe->getPhysicalNodes();
+  EXPECT_TRUE( physical_nodes == M.data() );
+
+  // STEP 4: ensure the contents are the same
+  const double* expected = M.data();
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+  }
+
+  // STEP 5: change the matrix data
+  M.swapColumns( 0, 2 );
+  M.swapColumns( 1, 2 );
+
+  // STEP 6: ensure the contents *still* the same
+  for ( int i=0; i < NSIZE; ++i ) {
+     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+  }
+
+  // STEP 7: delete the FE object, ensure Matrix buffer is not corrupted
+  delete fe;
+  fe = AXOM_NULLPTR;
+  EXPECT_FALSE( M.data()==AXOM_NULLPTR );
 }
 
 //------------------------------------------------------------------------------

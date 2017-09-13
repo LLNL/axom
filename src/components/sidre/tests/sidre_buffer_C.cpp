@@ -38,8 +38,8 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
-                                                                     SIDRE_INT_ID,
-                                                                     10);
+                                                                 SIDRE_INT_ID,
+                                                                 10);
 
 //  SIDRE_buffer_declare(dbuff, SIDRE_INT_ID, 10);
   SIDRE_buffer_allocate_existing(dbuff);
@@ -94,8 +94,8 @@ TEST(C_sidre_buffer,realloc_buffer)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_buffer * dbuff = SIDRE_datastore_create_buffer_from_type(ds,
-                                                                     SIDRE_LONG_ID,
-                                                                     5);
+                                                                 SIDRE_LONG_ID,
+                                                                 5);
 
   SIDRE_buffer_allocate_existing(dbuff);
 

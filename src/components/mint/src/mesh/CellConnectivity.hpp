@@ -235,16 +235,16 @@ public:
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 
     // STEP 0: get the last cell index before inserting the new cell
-    int last_cell_id = this->getNumberOfCells()-1;
-    int new_cell_id  = last_cell_id+1;
+    int last_cell_id = this->getNumberOfCells() - 1;
+    int new_cell_id  = last_cell_id + 1;
 
     if ( this->empty() ) {
-      m_offset.push_back(0);
+      m_offset.push_back( 0 );
     }
 
     // STEP 2: update the offsets array
     const int offset = m_offset[ new_cell_id ];
-    m_offset.push_back( offset+nnodes );
+    m_offset.push_back( offset + nnodes );
 
     // STEP 3: update the cell connectivity
     for ( int i=0; i < nnodes; ++i ) {
@@ -265,8 +265,8 @@ public:
    */
   void setCell( int cellIdx, const index_type* cell )
   {
-    SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    SLIC_ASSERT(  cell != AXOM_NULLPTR );
+    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
+    SLIC_ASSERT( cell != AXOM_NULLPTR );
 
     // STEP 0: get the number of nodes for the given cell type
     const int nnodes = this->getNumberOfNodes( cellIdx );
@@ -287,7 +287,7 @@ private:
   std::vector < int >       m_cell_type;
 
   CellConnectivity( const CellConnectivity& );
-  CellConnectivity& operator=(const CellConnectivity& );
+  CellConnectivity& operator=( const CellConnectivity& );
 };
 
 } /* namespace mint */

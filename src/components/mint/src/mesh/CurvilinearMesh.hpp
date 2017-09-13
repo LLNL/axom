@@ -119,7 +119,7 @@ public:
    * \param [in] y the y--coordinate to set at the given node.
    * \param [in] z the z--coorindate to set at the given node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
-   * \pre this->getDimension()==3
+   * \pre this->getDimension() == 3
    */
   void setNode( int nodeIdx, double x, double y, double z );
 
@@ -131,7 +131,7 @@ public:
    * \param [in] x the x--coordinate to set at the given node.
    * \param [in] y the y--coordinate to set at the given node.
    * \param [in] z the z--coordinate to set at the given node.
-   * \pre this->getDimension()==3
+   * \pre this->getDimension() == 3
    */
   void setNode( int i, int j, int k,
                 double x, double y, double z );
@@ -141,7 +141,7 @@ public:
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] x the x--coordinate to set at the given node.
    * \param [in] y the y--coordinate to set at the given node.
-   * \pre this->getDimension()==2
+   * \pre this->getDimension() == 2
    */
   void setNode( int nodeIdx, double x, double y );
 
@@ -151,9 +151,17 @@ public:
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] x the x--coordinate to set at the given node.
    * \param [in] y the y--coordinate to set at the given node.
-   * \pre this->getDimension()==2
+   * \pre this->getDimension() == 2
    */
   void setNode( int i, int j, double x, double y );
+
+  /*!
+   * \brief Sets the coordinates of the node at the given index.
+   * \param [in] nodeIdx the index of the node in query.
+   * \param [in] x the x--coordinate to set at the given node.
+   * \pre this->getDimension() == 1
+   */
+  void setNode( int nodeIdx, double x );
 
   /// @}
 
@@ -225,6 +233,14 @@ inline void CurvilinearMesh::setNode( int i, int j, double x, double y )
 {
   int nodeIdx = m_extent->getLinearIndex( i, j );
   this->setNode( nodeIdx, x, y );
+}
+
+//------------------------------------------------------------------------------
+inline void CurvilinearMesh::setNode( int nodeIdx, double x )
+{
+  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
+  SLIC_ASSERT(  this->getDimension()==2 );
+  m_coordinates->setPoint( nodeIdx, x );
 }
 
 //------------------------------------------------------------------------------

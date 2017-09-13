@@ -21,6 +21,7 @@
 #include "quest/InOutOctree.hpp"
 
 #include "mint/Mesh.hpp"
+// #include "mint/vtk_utils.hpp"
 
 #include "slic/slic.hpp"
 
@@ -137,7 +138,7 @@ TEST( quest_inout_octree, octahedron_mesh)
 
     // Generate the InOutOctree
     axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
-    // axom::quest::utilities::write_vtk(mesh, "octahedron.vtk");
+    // axom::mint::write_vtk(mesh, "octahedron.vtk");
 
     ///
     SpacePt ptNeg1(-1.);

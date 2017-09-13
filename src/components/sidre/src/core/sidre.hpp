@@ -19,14 +19,15 @@
  ******************************************************************************
  */
 
-#ifndef SIDRE_H_
-#define SIDRE_H_
+#ifndef SIDRE_HPP_
+#define SIDRE_HPP_
 
 #include "Attribute.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "DataStore.hpp"
 #include "View.hpp"
+#include "Iterator.hpp"
 #include "SidreTypes.hpp"
 
-#endif
+#endif /* SIDRE_HPP_ */

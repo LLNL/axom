@@ -12,6 +12,7 @@
 
 #include "slic/slic.hpp"
 
+#include "primal/OrientedBoundingBox.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
@@ -1285,6 +1286,161 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
 }
+
+//------------------------------------------------------------------------------
+TEST(primal_intersect, obb_obb_test_intersection2D)
+{
+  static const int DIM = 2;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > QPoint;
+  typedef primal::Vector< CoordType, DIM > QVector;
+  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+
+  QPoint pt1;  // origin
+  QVector u1[DIM];  // make standard axes
+  QVector u2[DIM];  // axes rotated by 90 degrees
+  for (int i = 0; i < DIM; i++) {
+    u1[i] = QVector();
+    u2[i] = QVector();
+    u1[i][i] = 1.;
+    u2[i][0] = 1.;
+    u2[i][1] = 1. - 2*i;
+  }
+
+  QVector e1(1.);
+  QVector e2(1.42);
+  QPoint pt2(2.);
+
+  // Pass a box which just kisses on an edge initially through the unit box
+  QOBBox obbox1(pt1, u1, e1);
+  QOBBox obbox2(pt2, u2, e2);
+
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox2));
+
+  QVector shift(-0.5);
+  obbox2.shift(shift);
+
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox2));
+
+  obbox2.shift(2.*shift);
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox2));
+
+  obbox2.shift(100.*shift);
+  EXPECT_FALSE(axom::primal::intersect(obbox1, obbox2));
+
+  // check edge-edge intersection
+  QOBBox obbox3;
+  QOBBox obbox4;
+
+  obbox1.bisect(obbox3, obbox4);
+  EXPECT_TRUE(axom::primal::intersect(obbox3, obbox4));
+
+  // check vertex-vertex intersection
+  QOBBox obbox5(obbox1);
+  obbox5.shift(-2.*shift);
+  EXPECT_TRUE(axom::primal::intersect(obbox4, obbox5));
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_intersect, obb_obb_test_intersection3D)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > QPoint;
+  typedef primal::Vector< CoordType, DIM > QVector;
+  typedef primal::OrientedBoundingBox< CoordType, DIM > QOBBox;
+
+  QPoint pt1;  // origin
+  QVector u1[DIM];  // make standard axes
+  QVector u2[DIM];  // first two axes rotated by 90 degrees
+  QVector u3[DIM];  // all axes rotated
+  for (int i = 0; i < DIM; i++) {
+    u1[i] = QVector();
+    u2[i] = QVector();
+    u3[i] = QVector();
+    u1[i][i] = 1.;
+  }
+  u2[0][0] = 1.;
+  u2[0][1] = 1.;
+  u2[1][0] = 1.;
+  u2[1][1] = -1.;
+  u2[2][2] = 1.;
+
+  QVector e1(1.);
+  QVector e2(1.41422);
+  QPoint pt2(2.);
+
+  QOBBox obbox1(pt1, u1, e1);
+  QOBBox obbox2(pt2, u2, e2);
+
+  // test edge-face
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox2));
+
+  // pass obbox2 through obbox1 to test body-body
+  QVector shift(-0.5);
+
+  obbox2.shift(2.*shift);
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox2));
+
+  obbox2.shift(100.*shift);
+  EXPECT_FALSE(axom::primal::intersect(obbox1, obbox2));
+
+  // test vertex-vertex
+  QOBBox obbox3(obbox1);
+  obbox3.shift(-2.*shift);
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox3));
+
+  QVector shift2;
+  shift2[0] = 1.;
+  shift2[1] = 1.;
+  QOBBox obbox4(obbox1);
+  obbox4.shift(shift2);
+  // edge-edge
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox4));
+
+  QOBBox obbox5;
+  QOBBox obbox6;
+  obbox1.bisect(obbox5, obbox6);
+  // face-face
+  EXPECT_TRUE(axom::primal::intersect(obbox5, obbox6));
+
+  // now for vertex-edge and vertex-face
+  //
+  // NOTE: here we are applying an arbitrary rotation to create obbox7. The
+  // only essential point is that it is rotated so that it has a unique vertex
+  // with smallest z coordinate, thus (once we shift it appropriately) we can
+  // look at cases where one vertex (this smallest one) "kisses" parts of the
+  // other bounding box.
+  u3[0][0] = 0.7071;
+  u3[0][2] = 0.7071;
+  u3[1][0] = 0.5;
+  u3[1][1] = 0.7071;
+  u3[1][2] = -0.5;
+  u3[2][0] = -0.5;
+  u3[2][1] = 0.7071;
+  u3[2][2] = 0.5;
+
+  QVector e3(1.);
+  QOBBox obbox7(pt1, u3, e3);
+  QVector shift3;
+  // shift so the lowest vertex is brushing the top face of obbox1 at (0,0,1)
+  shift3[0] = -0.292893;
+  shift3[1] = 0;
+  shift3[2] = 1.70711 + 1.;
+  obbox7.shift(shift3);
+  // vertex-face
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox7));
+
+  shift3[2] = 0.;
+  shift3[1] = 1.;
+  obbox7.shift(shift3);
+  // vertex-edge
+  EXPECT_TRUE(axom::primal::intersect(obbox1, obbox7));
+
+  obbox7.shift(100.*shift3);
+  EXPECT_FALSE(axom::primal::intersect(obbox1, obbox7));
+}
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"

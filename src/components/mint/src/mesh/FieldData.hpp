@@ -43,7 +43,7 @@ public:
    * \param [in] name the name of the field to check.
    * \return status true if the field exists, else, false.
    */
-  bool hasField( const std::string& name );
+  bool hasField( const std::string& name ) const;
 
   /*!
    * \brief Adds a field to this FieldData instance.
@@ -58,7 +58,7 @@ public:
   /*!
    * \brief Returns the number of fields of this FieldData instance.
    * \return N the number of fiels in this instance.
-   * \post N==0 \iff this->empty()==true.
+   * \post N == 0 \iff this->empty() == true.
    */
   int getNumberOfFields() const;
 
@@ -67,18 +67,36 @@ public:
    * \param [in] i the index of the field in query.
    * \return f pointer to the field in query.
    * \pre i >= 0 && i < this->getNumberOfFields()
-   * \post f==AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
+   * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
   Field* getField( int i );
+
+  /*!
+   * \brief Returns the ith field of this FieldData instance as a constant pointer.
+   * \param [in] i the index of the field in query.
+   * \return f constant pointer to the field in query.
+   * \pre i >= 0 && i < this->getNumberOfFields()
+   * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
+   */
+  const Field* getField( int i ) const;
 
   /*!
    * \brief Returns the field with the given name.
    * \param [in] name the name of the field in query.
    * \return f pointer to the field in query.
    * \pre this->hasField( name )==true.
-   * \post f==AXOM_NULLPTR \iff this->hasField( name )==false.
+   * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
   Field* getField( const std::string& name );
+
+  /*!
+   * \brief Returns the field with the given name as a constant pointer.
+   * \param [in] name the name of the field in query.
+   * \return f constant pointer to the field in query.
+   * \pre this->hasField( name )==true.
+   * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
+   */
+  const Field* getField( const std::string& name ) const;
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.

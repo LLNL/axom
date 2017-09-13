@@ -182,35 +182,35 @@ public:
   {
 #if USE_SIDRE==1
     m_x = m_Group->createViewAndAllocate("m_x",axom::sidre::DataType::float64(
-                                               numNode))->getData();
+                                           numNode))->getData();
     m_y = m_Group->createViewAndAllocate("m_y",axom::sidre::DataType::float64(
-                                               numNode))->getData();
+                                           numNode))->getData();
     m_z = m_Group->createViewAndAllocate("m_z",axom::sidre::DataType::float64(
-                                               numNode))->getData();
+                                           numNode))->getData();
 
     m_xd = m_Group->createViewAndAllocate("m_xd",axom::sidre::DataType::float64(
-                                                numNode))->getData();
+                                            numNode))->getData();
     m_yd = m_Group->createViewAndAllocate("m_yd",axom::sidre::DataType::float64(
-                                                numNode))->getData();
+                                            numNode))->getData();
     m_zd = m_Group->createViewAndAllocate("m_zd",axom::sidre::DataType::float64(
-                                                numNode))->getData();
+                                            numNode))->getData();
 
     m_xdd = m_Group->createViewAndAllocate("m_xdd",axom::sidre::DataType::float64(
-                                                 numNode))->getData();
+                                             numNode))->getData();
     m_ydd = m_Group->createViewAndAllocate("m_ydd",axom::sidre::DataType::float64(
-                                                 numNode))->getData();
+                                             numNode))->getData();
     m_zdd = m_Group->createViewAndAllocate("m_zdd",axom::sidre::DataType::float64(
-                                                 numNode))->getData();
+                                             numNode))->getData();
 
     m_fx = m_Group->createViewAndAllocate("m_fx",axom::sidre::DataType::float64(
-                                                numNode))->getData();
+                                            numNode))->getData();
     m_fy = m_Group->createViewAndAllocate("m_fy",axom::sidre::DataType::float64(
-                                                numNode))->getData();
+                                            numNode))->getData();
     m_fz = m_Group->createViewAndAllocate("m_fz",axom::sidre::DataType::float64(
-                                                numNode))->getData();
+                                            numNode))->getData();
 
     m_nodalMass = m_Group->createViewAndAllocate("m_nodalMass",axom::sidre::DataType::float64(
-                                                       numNode))->getData();
+                                                   numNode))->getData();
 
 #else
     m_x.resize(numNode);    // coordinates
@@ -237,61 +237,61 @@ public:
   {
 #if USE_SIDRE==1
     m_nodelist = m_Group->createViewAndAllocate("m_nodelist",axom::sidre::DataType::int32(
-                                                      8*numElem))->getData();
+                                                  8*numElem))->getData();
 
     // elem connectivities through face
     m_lxim = m_Group->createViewAndAllocate("m_lxim",axom::sidre::DataType::int32(
-                                                  numElem))->getData();
+                                              numElem))->getData();
     m_lxip = m_Group->createViewAndAllocate("m_lxip",axom::sidre::DataType::int32(
-                                                  numElem))->getData();
+                                              numElem))->getData();
     m_letam = m_Group->createViewAndAllocate("m_letam",axom::sidre::DataType::int32(
-                                                   numElem))->getData();
+                                               numElem))->getData();
     m_letap = m_Group->createViewAndAllocate("m_letap",axom::sidre::DataType::int32(
-                                                   numElem))->getData();
+                                               numElem))->getData();
     m_lzetam = m_Group->createViewAndAllocate("m_lzetam",axom::sidre::DataType::int32(
-                                                    numElem))->getData();
+                                                numElem))->getData();
     m_lzetap = m_Group->createViewAndAllocate("m_lzetap",axom::sidre::DataType::int32(
-                                                    numElem))->getData();
+                                                numElem))->getData();
 
 
 
     m_elemBC = m_Group->createViewAndAllocate("m_elemBC",axom::sidre::DataType::int32(
-                                                    numElem))->getData();
+                                                numElem))->getData();
 
     m_e = m_Group->createViewAndAllocate("m_e",axom::sidre::DataType::float64(
-                                               numElem))->getData();
+                                           numElem))->getData();
     m_p = m_Group->createViewAndAllocate("m_p",axom::sidre::DataType::float64(
-                                               numElem))->getData();
+                                           numElem))->getData();
 
     m_q = m_Group->createViewAndAllocate("m_q",axom::sidre::DataType::float64(
-                                               numElem))->getData();
+                                           numElem))->getData();
     m_ql = m_Group->createViewAndAllocate("m_ql",axom::sidre::DataType::float64(
-                                                numElem))->getData();
+                                            numElem))->getData();
     m_qq = m_Group->createViewAndAllocate("m_qq",axom::sidre::DataType::float64(
-                                                numElem))->getData();
+                                            numElem))->getData();
 
     m_v = m_Group->createViewAndAllocate("m_v",axom::sidre::DataType::float64(
-                                               numElem))->getData();
+                                           numElem))->getData();
 
     m_volo = m_Group->createViewAndAllocate("m_volo",axom::sidre::DataType::float64(
-                                                  numElem))->getData();
+                                              numElem))->getData();
     m_delv = m_Group->createViewAndAllocate("m_delv",axom::sidre::DataType::float64(
-                                                  numElem))->getData();
+                                              numElem))->getData();
     m_vdov = m_Group->createViewAndAllocate("m_vdov",axom::sidre::DataType::float64(
-                                                  numElem))->getData();
+                                              numElem))->getData();
 
 
 
 
 
     m_arealg = m_Group->createViewAndAllocate("m_arealg",axom::sidre::DataType::float64(
-                                                    numElem))->getData();
-
-    m_ss = m_Group->createViewAndAllocate("m_ss",axom::sidre::DataType::float64(
                                                 numElem))->getData();
 
+    m_ss = m_Group->createViewAndAllocate("m_ss",axom::sidre::DataType::float64(
+                                            numElem))->getData();
+
     m_elemMass = m_Group->createViewAndAllocate("m_elemMass",axom::sidre::DataType::float64(
-                                                      numElem))->getData();
+                                                  numElem))->getData();
 
 #else
     m_nodelist.resize(8*numElem);
@@ -332,19 +332,19 @@ public:
 #if USE_SIDRE==1
     // Position gradients
     m_delx_xi = m_Group->createViewAndAllocate("m_delx_xi",axom::sidre::DataType::float64(
-                                                     numElem))->getData();
+                                                 numElem))->getData();
     m_delx_eta = m_Group->createViewAndAllocate("m_delx_eta",axom::sidre::DataType::float64(
-                                                      numElem))->getData();
+                                                  numElem))->getData();
     m_delx_zeta = m_Group->createViewAndAllocate("m_delx_zeta",axom::sidre::DataType::float64(
-                                                       numElem))->getData();
+                                                   numElem))->getData();
 
     // Velocity gradients
     m_delv_xi = m_Group->createViewAndAllocate("m_delv_xi",axom::sidre::DataType::float64(
-                                                     allElem))->getData();
+                                                 allElem))->getData();
     m_delv_eta = m_Group->createViewAndAllocate("m_delv_eta",axom::sidre::DataType::float64(
-                                                      allElem))->getData();
+                                                  allElem))->getData();
     m_delv_zeta = m_Group->createViewAndAllocate("m_delv_zeta",axom::sidre::DataType::float64(
-                                                       allElem))->getData();
+                                                   allElem))->getData();
 #else
     // Position gradients
     m_delx_xi.resize(numElem);
@@ -383,11 +383,11 @@ public:
   {
 #if USE_SIDRE==1
     m_dxx = m_Group->createViewAndAllocate("m_dxx",axom::sidre::DataType::float64(
-                                                 numElem))->getData();
+                                             numElem))->getData();
     m_dyy = m_Group->createViewAndAllocate("m_dyy",axom::sidre::DataType::float64(
-                                                 numElem))->getData();
+                                             numElem))->getData();
     m_dzz = m_Group->createViewAndAllocate("m_dzz",axom::sidre::DataType::float64(
-                                                 numElem))->getData();
+                                             numElem))->getData();
 #else
     m_dxx.resize(numElem);
     m_dyy.resize(numElem);
@@ -442,16 +442,16 @@ public:
   Index_t symmY(Index_t idx) { return m_symmY[idx]; }
   Index_t symmZ(Index_t idx) { return m_symmZ[idx]; }
   bool symmXempty()          {
-    return ! (m_Group->hasView("m_symmX")
-        && (m_Group->getView("m_symmX")->getNumElements() > 0) );
+    return !(m_Group->hasView("m_symmX")
+             && (m_Group->getView("m_symmX")->getNumElements() > 0) );
   }
   bool symmYempty()          {
-    return ! (m_Group->hasView("m_symmY")
-        && (m_Group->getView("m_symmY")->getNumElements() > 0) );
+    return !(m_Group->hasView("m_symmY")
+             && (m_Group->getView("m_symmY")->getNumElements() > 0) );
   }
   bool symmZempty()          {
-    return ! (m_Group->hasView("m_symmZ")
-        && (m_Group->getView("m_symmZ")->getNumElements() > 0) );
+    return !(m_Group->hasView("m_symmZ")
+             && (m_Group->getView("m_symmZ")->getNumElements() > 0) );
   }
 
   //

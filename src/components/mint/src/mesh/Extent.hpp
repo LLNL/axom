@@ -30,7 +30,7 @@ public:
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
    */
-  Extent( int ndims, IndexType* ext );
+  Extent( int ndims, const IndexType* ext );
 
   /*!
    * \brief Returns the dimension of this extent.
@@ -196,27 +196,22 @@ Extent< IndexType >::Extent():
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent( int ndims, IndexType* ext ):
+Extent< IndexType >::Extent( int ndims, const IndexType* ext ):
   m_ndims( ndims )
 {
   SLIC_ASSERT( ndims >= 1 && ndims <= 3 );
 
   // zero out all extents
-  memset(m_extent, 0, 6*sizeof(IndexType) );
+  memset(m_extent, 0, 6 * sizeof(IndexType) );
 
   // copy in the user-supplied extent
-  memcpy(m_extent, ext, 2*ndims*sizeof( IndexType )  );
+  memcpy(m_extent, ext, 2 * ndims * sizeof( IndexType )  );
 
   // compute strides
-  m_jp = 0;
+  m_jp = this->size( 0 );
   m_kp = 0;
 
-  if ( ndims==2 ) {
-
-    m_jp = this->size( 0 );
-
-  }
-  else if ( ndims==3 ) {
+  if ( ndims == 3 ) {
 
     m_jp = this->size( 0 );
     m_kp = m_jp*this->size( 1 );

@@ -21,6 +21,10 @@ set( quest_headers
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
 
+    # Mesh tester
+    MeshTester.hpp
+    detail/MeshTester_impl.hpp
+
     ## STL library headers
     stl/STLReader.hpp
 

@@ -102,7 +102,7 @@ public:
   /*!
    * \brief Return index of View within owning Group.
    *
-   * If View is detached, return sidre::InvalidIndex. 
+   * If View is detached, return sidre::InvalidIndex.
    */
   IndexType getIndex() const
   {
@@ -492,8 +492,8 @@ public:
    * \return pointer to this View object.
    */
   View * attachBuffer( TypeID type,
-                           SidreLength num_elems,
-                           Buffer * buff )
+                       SidreLength num_elems,
+                       Buffer * buff )
   {
     describe(type, num_elems);
     attachBuffer(buff);
@@ -506,9 +506,9 @@ public:
    * \return pointer to this View object.
    */
   View * attachBuffer( TypeID type,
-                           int ndims,
-                           SidreLength * shape,
-                           Buffer * buff )
+                       int ndims,
+                       SidreLength * shape,
+                       Buffer * buff )
   {
     describe(type, ndims, shape);
     attachBuffer(buff);
@@ -558,8 +558,8 @@ public:
    * \return pointer to this View object.
    */
   View * apply( SidreLength num_elems,
-                    SidreLength offset = 0,
-                    SidreLength stride = 1);
+                SidreLength offset = 0,
+                SidreLength stride = 1);
 
   /*!
    * \brief Apply data description defined by type and number of elements, and
@@ -578,8 +578,8 @@ public:
    * \return pointer to this View object.
    */
   View * apply( TypeID type, SidreLength num_elems,
-                    SidreLength offset = 0,
-                    SidreLength stride = 1);
+                SidreLength offset = 0,
+                SidreLength stride = 1);
 
   /*!
    * \brief Apply data description defined by type and shape information
@@ -756,8 +756,8 @@ public:
    * \return pointer to this View object.
    */
   View * setExternalDataPtr(TypeID type,
-                                SidreLength num_elems,
-                                void * external_ptr)
+                            SidreLength num_elems,
+                            void * external_ptr)
   {
     describe(type, num_elems);
     setExternalDataPtr(external_ptr);
@@ -772,9 +772,9 @@ public:
    * \return pointer to this View object.
    */
   View * setExternalDataPtr(TypeID type,
-                                int ndims,
-                                SidreLength * shape,
-                                void * external_ptr)
+                            int ndims,
+                            SidreLength * shape,
+                            void * external_ptr)
   {
     describe(type, ndims, shape);
     setExternalDataPtr(external_ptr);
@@ -1070,10 +1070,10 @@ public:
     if (attr == AXOM_NULLPTR)
     {
       SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
-                    "setAttributeScalar: called without an Attribute");
+                     "setAttributeScalar: called without an Attribute");
       return false;
     }
-    
+
     return m_attr_values.setScalar(attr, value);
   }
 
@@ -1085,7 +1085,8 @@ public:
   /*!
    * \brief Set Attribute for a View from Attribute name.
    */
-  bool setAttributeString( const std::string & name, const std::string & value );
+  bool setAttributeString( const std::string & name,
+                           const std::string & value );
 
   /*!
    * \brief Set Attribute for a View from Attribute pointer.
@@ -1159,7 +1160,7 @@ public:
    * \sa getAttributeScalar()
    */
   template<typename DataType>
-    DataType getAttributeScalar(const std::string & name)
+  DataType getAttributeScalar(const std::string & name)
   {
     const Attribute * attr = getAttribute(name);
     const Node & node = m_attr_values.getValueNodeRef(attr);
@@ -1175,7 +1176,7 @@ public:
    * \sa getAttributeScalar()
    */
   template<typename DataType>
-  DataType getAttributeScalar(const Attribute *attr)
+  DataType getAttributeScalar(const Attribute * attr)
   {
     if (attr == AXOM_NULLPTR)
     {

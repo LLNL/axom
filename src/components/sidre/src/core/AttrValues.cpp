@@ -61,7 +61,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
   }
 
   Node & value = (*m_values)[iattr];
-  
+
   if (isEmpty(value))
   {
     return false;
@@ -127,12 +127,12 @@ bool AttrValues::createNode(IndexType iattr)
   {
     // Create all attributes up to iattr, push back empty Nodes
     m_values->reserve(iattr + 1);
-    for(int n=m_values->size(); n < iattr + 1; ++n)
+    for(int n=m_values->size() ; n < iattr + 1 ; ++n)
     {
       m_values->push_back(Node());
     }
   }
-   
+
   return true;
 }
 
@@ -168,10 +168,10 @@ const char * AttrValues::getString( const Attribute * attr ) const
   if (attr->getTypeID() != CHAR8_STR_ID)
   {
     SLIC_CHECK_MSG(attr->getTypeID() == CHAR8_STR_ID,
-		   "getString: Called on attribute '"
-		   << attr->getName() 
-		   << "' which is type "
-		   << DataType::id_to_name(attr->getTypeID())
+                   "getString: Called on attribute '"
+                   << attr->getName()
+                   << "' which is type "
+                   << DataType::id_to_name(attr->getTypeID())
                    << ".");
     return AXOM_NULLPTR;
   }
@@ -209,7 +209,7 @@ const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
   }
 
   Node & value = (*m_values)[iattr];
-  
+
   if (isEmpty(value))
   {
     return attr->getDefaultNodeRef();
@@ -234,11 +234,11 @@ IndexType AttrValues::getFirstValidAttrValueIndex() const
     return InvalidIndex;
   }
 
-  for(size_t iattr = 0; iattr < m_values->size(); ++iattr)
+  for(size_t iattr = 0 ; iattr < m_values->size() ; ++iattr)
   {
     // Find first, non-empty attribute.
     Node & value = (*m_values)[iattr];
-    if (! isEmpty(value))
+    if (!isEmpty(value))
     {
       return iattr;
     }
@@ -271,7 +271,8 @@ IndexType AttrValues::getNextValidAttrValueIndex(IndexType idx) const
   {
     idx++;
   }
-  return ( (static_cast<unsigned>(idx) < m_values->size()) ? idx : InvalidIndex );
+  return ( (static_cast<unsigned>(idx) <
+            m_values->size()) ? idx : InvalidIndex );
 }
 
 /*
@@ -293,8 +294,7 @@ AttrValues::AttrValues() :
  *************************************************************************
  */
 AttrValues::~AttrValues()
-{
-}
+{}
 
 } /* end namespace sidre */
 } /* end namespace axom */

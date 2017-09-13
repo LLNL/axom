@@ -23,6 +23,8 @@ set(axom_utils_headers
 
     numerics/Determinants.hpp
     numerics/linear_solve.hpp
+    numerics/eigen_solve.hpp
+    numerics/vector_utilities.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
     )

@@ -37,6 +37,7 @@
 #include "mint/Mesh.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
+#include "mint/vtk_utils.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -96,140 +97,6 @@ GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
    SLIC_ASSERT( meshBB.isValid() );
 
    return meshBB;
-}
-
-
-//------------------------------------------------------------------------------
-void write_vtk( axom::mint::Mesh* mesh, const std::string& fileName )
-{
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-
-  std::ofstream ofs;
-  ofs.open( fileName.c_str() );
-
-  // STEP 0: Write VTK header
-  ofs << "# vtk DataFile Version 3.0\n";
-  ofs << " Unstructured Mesh (";
-  ofs << mesh->getBlockId() << ", " << mesh->getPartitionId() << ")\n";
-
-  ofs << "ASCII\n";
-  ofs << "DATASET UNSTRUCTURED_GRID\n";
-
-  // STEP 1: Write mesh nodes
-  const int num_nodes = mesh->getMeshNumberOfNodes();
-  ofs << "POINTS " << num_nodes << " double\n";
-  for ( int node=0; node < num_nodes; ++node ) {
-
-    ofs << mesh->getMeshNodeCoordinate( node, 0 ) << " ";
-    ofs << mesh->getMeshNodeCoordinate( node, 1 ) << " ";
-    if ( mesh->getDimension()==3 ) {
-
-        ofs << mesh->getMeshNodeCoordinate( node, 2 );
-
-    } else {
-
-        ofs << "0.0";
-    }
-
-    ofs << std::endl;
-
-  } // END for all nodes
-
-  // STEP 2: Write mesh cell connectivity
-  // TODO: note currently this does not work with mixed cell types
-  const int ncells   = mesh->getMeshNumberOfCells();
-  const int maxnodes = mesh->getMeshNumberOfCellNodes( 0 );
-  ofs << "CELLS " << ncells << " " << ncells*(maxnodes+1) << std::endl;
-
-  std::vector< int > cell;
-  for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
-
-    const int nnodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-    cell.resize( nnodes );
-    mesh->getMeshCell( cellIdx, &cell[0] );
-
-    ofs << nnodes << " ";
-    for ( int i=0; i < nnodes; ++i ) {
-      ofs << cell[ i ] << " ";
-    } // END for all nodes
-    ofs << std::endl;
-
-  } // END for all cells
-
-  // STEP 3: Write cell types
-  ofs << "CELL_TYPES " << ncells << std::endl;
-  for ( int cellIdx=0; cellIdx < ncells; ++cellIdx ) {
-    int ctype    = mesh->getMeshCellType( cellIdx );
-    int vtk_type = axom::mint::cell::vtk_types[ ctype ];
-    ofs << vtk_type << std::endl;
-  } // END for all cells
-
-  // STEP 4: Write Cell Data
-  ofs << "CELL_DATA " << ncells << std::endl;
-  axom::mint::FieldData* CD = mesh->getCellFieldData();
-  for ( int f=0; f < CD->getNumberOfFields(); ++f ) {
-
-      axom::mint::Field* field = CD->getField( f );
-
-      ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
-
-          double* dataPtr = field->getDoublePtr();
-          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
-
-          ofs << "double\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < ncells; ++i) {
-              ofs << dataPtr[ i ] << std::endl;
-          }
-
-      } else {
-
-          int* dataPtr = field->getIntPtr();
-          SLIC_ASSERT( dataPtr != AXOM_NULLPTR );
-
-          ofs << "int\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < ncells; ++i ) {
-             ofs << dataPtr[ i ] << std::endl;
-          }
-      }
-
-
-
-  }
-
-  // STEP 5: Write Point Data
-  const int nnodes = mesh->getMeshNumberOfNodes();
-  ofs << "POINT_DATA " << nnodes << std::endl;
-  axom::mint::FieldData* PD = mesh->getNodeFieldData();
-  for ( int f=0; f < PD->getNumberOfFields(); ++f ) {
-
-      axom::mint::Field* field = PD->getField( f );
-
-      ofs << "SCALARS " << field->getName() << " ";
-      if ( field->getType() == axom::mint::DOUBLE_FIELD_TYPE ) {
-
-          double* dataPtr = field->getDoublePtr();
-          ofs << "double\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < nnodes; ++i) {
-              ofs << dataPtr[ i ] << std::endl;
-          }
-
-      } else {
-
-          int* dataPtr = field->getIntPtr();
-          ofs << "int\n";
-          ofs << "LOOKUP_TABLE default\n";
-          for (int i=0; i < nnodes; ++i) {
-              ofs << dataPtr[ i ] << std::endl;
-          }
-
-      }
-  }
-
-  ofs.close();
 }
 
 
@@ -305,7 +172,7 @@ void testIntersectionOnRegularGrid()
     }
 
 
-    debugMesh->toVtkFile("gridIntersections.vtk");
+    axom::mint::write_vtk(debugMesh, "gridIntersections.vtk");
 
     delete debugMesh;
 }
@@ -352,7 +219,7 @@ void testContainmentOnRegularGrid(
   #ifdef DUMP_VTK_MESH
     std::stringstream sstr;
     sstr << "gridContainment_" << gridRes << ".vtk";
-    write_vtk( umesh, sstr.str());
+    axom::mint::write_vtk( umesh, sstr.str());
   #endif
 
     delete umesh;
@@ -600,7 +467,7 @@ int main( int argc, char** argv )
 
 
   print_surface_stats(surface_mesh);
-  write_vtk(surface_mesh, "meldedTriMesh.vtk");
+  axom::mint::write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Querying the octree "));
 

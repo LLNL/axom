@@ -1,0 +1,2 @@
+planesmall.test
+golfball.test

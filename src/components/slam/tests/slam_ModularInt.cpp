@@ -22,7 +22,7 @@
 #include "slam/SizePolicies.hpp"
 #include "slam/ModularInt.hpp"
 
-TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
+TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 {
   typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > ModularIntType;
 
@@ -50,7 +50,7 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
   }
 }
 
-TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
+TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 {
   using namespace axom::slam;
 
@@ -86,7 +86,7 @@ TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 }
 
 
-TEST(gtest_slam_modInt,runtime_modular_int)
+TEST(slam_modInt,runtime_modular_int)
 {
   SLIC_INFO("Checking modular int addition and subtraction when supplying the max value at runtime");
 
@@ -121,7 +121,7 @@ TEST(gtest_slam_modInt,runtime_modular_int)
   }
 }
 
-TEST(gtest_slam_modInt,runtime_modular_int_mult)
+TEST(slam_modInt,runtime_modular_int_mult)
 {
   typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > ModularIntType;
 
@@ -151,7 +151,7 @@ TEST(gtest_slam_modInt,runtime_modular_int_mult)
 
 }
 
-TEST(gtest_slam_modInt,compiletime_modular_int)
+TEST(slam_modInt,compiletime_modular_int)
 {
   SLIC_INFO("Checking modular int addition and subtraction when supplying the max value at compile time");
 

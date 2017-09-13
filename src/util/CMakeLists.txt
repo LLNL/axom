@@ -45,3 +45,26 @@ if( ENABLE_SLAM AND ENABLE_SPIO )
             )
 endif()
 
+##################################################
+# mesh_tester is a utility that tests a mesh for
+# a variety of problems.
+##################################################
+set(mesh_tester_sources
+    mesh_tester.cpp
+)
+set(mesh_tester_depends 
+    axom_utils slic mint slam quest primal
+    )
+
+
+if(ENABLE_QUEST)
+    blt_add_executable(
+        NAME        mesh_tester
+        SOURCES     ${mesh_tester_sources}
+        OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${mesh_tester_depends}
+        )
+    install(TARGETS              mesh_tester
+            DESTINATION          bin
+            )
+endif()

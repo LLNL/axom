@@ -14,7 +14,7 @@
 
 #include "axom/Types.hpp"
 
-TEST(gtest_utils_types,check_types_8)
+TEST(axom_utils_types,check_types_8)
 {
   typedef axom::common::int8 SignedType;
   typedef axom::common::uint8 UnsigneType;
@@ -36,7 +36,7 @@ TEST(gtest_utils_types,check_types_8)
 
 
 
-TEST(gtest_utils_types,check_types_16)
+TEST(axom_utils_types,check_types_16)
 {
   typedef axom::common::int16 SignedType;
   typedef axom::common::uint16 UnsigneType;
@@ -56,7 +56,7 @@ TEST(gtest_utils_types,check_types_16)
 }
 
 
-TEST(gtest_utils_types,check_types_32)
+TEST(axom_utils_types,check_types_32)
 {
   typedef axom::common::int32 SignedType;
   typedef axom::common::uint32 UnsigneType;
@@ -76,7 +76,7 @@ TEST(gtest_utils_types,check_types_32)
 }
 
 
-TEST(gtest_utils_types,check_types_64)
+TEST(axom_utils_types,check_types_64)
 {
 #ifndef AXOM_NO_INT64_T
   typedef axom::common::int64 SignedType;

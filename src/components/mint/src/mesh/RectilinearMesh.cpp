@@ -24,9 +24,9 @@ RectilinearMesh::RectilinearMesh():
 RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ):
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
-  int ndims[3];
-  this->getDimensions( ndims );
-  m_coordinates = new MeshCoordinates( dimension, ndims );
+  int ext_size[3];
+  this->getExtentSize( ext_size );
+  m_coordinates = new MeshCoordinates( dimension, ext_size );
 }
 
 //------------------------------------------------------------------------------
@@ -35,9 +35,9 @@ RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId,
                   partId )
 {
-  int ndims[3];
-  this->getDimensions( ndims );
-  m_coordinates = new MeshCoordinates( dimension, ndims );
+  int ext_size[3];
+  this->getExtentSize( ext_size );
+  m_coordinates = new MeshCoordinates( dimension, ext_size );
 }
 
 //------------------------------------------------------------------------------
