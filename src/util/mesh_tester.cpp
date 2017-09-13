@@ -13,28 +13,26 @@
 // Axom includes
 #include "axom_utils/FileUtilities.hpp"
 
+#include "mint/Mesh.hpp"
+#include "mint/UniformMesh.hpp"
+
 #include "primal/BoundingBox.hpp"
+#include "primal/intersect.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
-#include "primal/intersect.hpp"
 #include "primal/UniformGrid.hpp"
 
+#include "quest/MeshTester.hpp"
 #include "quest/STLReader.hpp"
-
-#include "mint/UniformMesh.hpp"
-#include "mint/Mesh.hpp"
 
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
 
 
 // C/C++ includes
-#include <algorithm>
-#include <cmath>
 #include <iostream>
-#include <map>
-#include <set>
-#include <cstdio>
+#include <utility>
+#include <vector>
 
 using namespace axom;
 
@@ -85,28 +83,14 @@ struct Input
   };
 };
 
-typedef struct TrianglePair
-{
-  int a, b;
-
-  TrianglePair(const int na, const int nb) : a(na), b(nb) {};
-} TrianglePair;
-
-SpatialBoundingBox compute_bounds(mint::Mesh* mesh);
-Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh);
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);
-std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate);
-void markSeen(const int a, const std::set<int> & bs,
-  std::vector<TrianglePair> & list);
-std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate,
-  int resolution);
+std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+                                                              std::vector<int> & degenerate);
 bool canOpenFile(const std::string & fname);
-bool writeCollisions(const std::vector<TrianglePair> & c,
-  const std::vector<int> & d,
-  const std::string & outfile);
+bool writeCollisions(const std::vector< std::pair<int, int> > & c,
+                     const std::vector<int> & d,
+                     const std::string & outfile);
 
 Input::Input(int argc, char ** argv) :
     stlInput(""),
@@ -151,41 +135,6 @@ Input::Input(int argc, char ** argv) :
             "  outfile = " << textOutput << std::endl);
 }
 
-SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
-{
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-
-  SpatialBoundingBox meshBB;
-  Point3 pt;
-
-  for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
-  {
-    mesh->getMeshNode( i, pt.data() );
-    meshBB.addPoint( pt );
-  } // END for all nodes
-
-  SLIC_ASSERT( meshBB.isValid() );
-
-  return meshBB;
-}
-
-Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
-{
-  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
-  primal::Point<int, 3> triCell;
-  surface_mesh->getMeshCell( i, triCell.data());
-  primal::Point< double,3 > A1;
-  primal::Point< double,3 > B1;
-  primal::Point< double,3 > C1;
-
-  surface_mesh->getMeshNode(triCell[0], A1.data());
-  surface_mesh->getMeshNode(triCell[1], B1.data());
-  surface_mesh->getMeshNode(triCell[2], C1.data());
-  Triangle3 t1 = Triangle3(A1,B1,C1);
-
-  return t1;
-}
-
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
 {
   return axom::utilities::isNearlyEqual(p1[0], p2[0], EPS) && \
@@ -203,13 +152,13 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
   return false;
 }
 
-std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
   std::vector<int> & degenerate)
 {
   // For each triangle, check for intersection against
   // every other triangle with a greater index in the mesh, excluding
   // degenerate triangles.
-  std::vector<TrianglePair> retval;
+  std::vector< std::pair<int, int> > retval;
 
   const int ncells = surface_mesh->getMeshNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
@@ -219,7 +168,7 @@ std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
 
   // For each triangle in the mesh
   for (int i = 0; i< ncells; i++) {
-    t1 = getMeshTriangle(i, surface_mesh);
+    t1 = axom::quest::detail::getMeshTriangle(i, surface_mesh);
 
     // Skip if degenerate
     if (t1.degenerate()) {
@@ -230,124 +179,10 @@ std::vector<TrianglePair> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
     // If the triangle is not degenerate, test against all other
     // triangles that this triangle has not been checked against
     for (int j = i + 1; j < ncells; j++) {
-      t2 = getMeshTriangle(j, surface_mesh);
+      t2 = axom::quest::detail::getMeshTriangle(j, surface_mesh);
       if (checkTT(t1, t2)) {
-        retval.push_back(TrianglePair(i, j));
+        retval.push_back(std::make_pair(i, j));
       }
-    }
-  }
-
-  return retval;
-}
-
-void markSeen(const int a, const std::set<int> & bs,
-  std::vector<TrianglePair> & list)
-{
-  list.reserve(list.size() + bs.size());
-  std::set<int>::const_iterator sit = bs.begin(), send = bs.end();
-  for ( ; sit != send; ++sit) {
-    list.push_back(TrianglePair(a, *sit));
-  }
-}
-
-std::vector<TrianglePair> uGridIntersectionAlgorithm(mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate,
-  int resolution)
-{
-  std::vector<TrianglePair> retval;
-  std::set<int> seen, hit;
-
-  Triangle3 t1 = Triangle3();
-  Triangle3 t2 = Triangle3();
-  SLIC_INFO("Running mesh_tester with UniformGrid index");
-
-  // Create a bounding box around mesh to find the minimum point
-  SpatialBoundingBox meshBB  = compute_bounds(surface_mesh);
-  const Point3 minBBPt= meshBB.getMin();
-  const Point3 maxBBPt= meshBB.getMax();
-
-  const int ncells = surface_mesh->getMeshNumberOfCells();
-  const int reportInterval = (int)(ncells / 5.0) + 1;
-
-  // find the specified resolution.  If we're passed a number less than one,
-  // use the cube root of the number of triangles.
-  if (resolution < 1) {
-    resolution = (int)(1 + std::pow(ncells, 1/3.));
-  }
-  int resolutions[3]={resolution,resolution,resolution};
-
-  std::cerr << "Building UniformGrid index..." << std::endl;
-  UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
-
-  for (int i=0; i < ncells; i++) {
-    if (reportInterval > 0 && i % reportInterval == 0) {
-      std::cerr << "Building grid is " << 100.0 * (double(i)/double(ncells)) <<
-        " percent done" << std::endl;
-    }
-    SpatialBoundingBox triBB;
-    t1=getMeshTriangle(i,  surface_mesh);
-    triBB.addPoint(t1[0]);
-    triBB.addPoint(t1[1]);
-    triBB.addPoint(t1[2]);
-
-    ugrid.insert(triBB, i);
-  }
-
-
-  // Iterate through triangle indices z from first index to last index.
-  // Check against each other triangle with index greater than the index z
-  // that also shares a UniformGrid bin.
-  SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
-  for (int z=0; z< ncells; z++) {
-    seen.clear();
-    hit.clear();
-
-    if (reportInterval > 0 && z % reportInterval == 0) {
-      std::cerr << "Querying grid is " << 100.0 * (double(z)/double(ncells)) <<
-        " percent done" << std::endl;
-    }
-
-    // Retrieve the triangle at index z and construct a bounding box around it
-    SpatialBoundingBox triBB2;
-    t1 = getMeshTriangle(z,  surface_mesh);
-
-    if (t1.degenerate()) {
-      degenerate.push_back(z);
-      continue;
-    }
-    triBB2.addPoint(t1[0]);
-    triBB2.addPoint(t1[1]);
-    triBB2.addPoint(t1[2]);
-
-    Point3 minBBPt2,maxBBPt2;
-
-    minBBPt2 = triBB2.getMin();
-    maxBBPt2 = triBB2.getMax();
-
-    // Get a list of all triangles in bins this triangle will touch
-    std::vector<int> neighborTriangles;
-    const std::vector<int> binsToCheck = ugrid.getBinsForBbox(triBB2);
-    for (size_t curbin = 0; curbin < binsToCheck.size(); ++curbin) {
-      std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
-      neighborTriangles.insert(neighborTriangles.end(),
-        ntlist.begin(), ntlist.end());
-    }
-    std::sort(neighborTriangles.begin(), neighborTriangles.end());
-    std::vector<int>::iterator nend =
-      std::unique(neighborTriangles.begin(), neighborTriangles.end());
-    std::vector<int>::iterator nit = neighborTriangles.begin();
-
-    // remove triangles with indices less than or equal to this tri
-    while (nit != nend && *nit <= z) {
-      ++nit;
-    }
-    // test any remaining neighbor tris for intersection
-    while (nit != nend) {
-      t2 = getMeshTriangle(*nit, surface_mesh);
-      if (checkTT(t1, t2)) {
-        retval.push_back(TrianglePair(z, *nit));
-      }
-      ++nit;
     }
   }
 
@@ -360,7 +195,7 @@ bool canOpenFile(const std::string & fname)
   return teststream.good();
 }
 
-bool writeCollisions(const std::vector<TrianglePair> & c,
+bool writeCollisions(const std::vector< std::pair<int, int> > & c,
   const std::vector<int> & d,
   const std::string & outfile)
 {
@@ -371,7 +206,7 @@ bool writeCollisions(const std::vector<TrianglePair> & c,
 
   outf << c.size() << " intersecting triangle pairs:" << std::endl;
   for (size_t i = 0; i < c.size(); ++i) {
-    outf << c[i].a << " " << c[i].b << std::endl;
+    outf << c[i].first << " " << c[i].second << std::endl;
   }
 
   outf << d.size() << " degenerate triangles:" << std::endl;
@@ -441,22 +276,25 @@ int main( int argc, char** argv )
   SLIC_INFO("done\n");
 
   // Get surface mesh
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  reader->getMesh( surface_mesh );
 
   // Delete the reader
   delete reader;
   reader = AXOM_NULLPTR;
 
-  std::vector<TrianglePair> collisions;
+  std::vector< std::pair<int, int> > collisions;
   std::vector<int> degenerate;
+  int status = 0;
   if (params.resolution == 1) {
     // Naive method
     collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
   } else {
     // Use a spatial index
-    collisions = uGridIntersectionAlgorithm(surface_mesh, degenerate,
-      params.resolution);
+    status = quest::findTriMeshIntersections(surface_mesh,
+                                             collisions,
+                                             degenerate,
+                                             params.resolution);
   }
   if (!writeCollisions(collisions, degenerate, params.textOutput)) {
     SLIC_ERROR("Couldn't write results to " << params.textOutput);

@@ -60,7 +60,8 @@ foreach(comp in ${COMPS})
     endif()
 endforeach()
 
-
+convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
+convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
 configure_file(
     include/config.hpp.in
