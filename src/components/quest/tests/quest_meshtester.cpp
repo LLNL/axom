@@ -68,8 +68,7 @@ void reportVectorMismatch(const std::vector<T> & standard,
     " extra " << label << ":" << std::endl << vecToString(unexpected);
 }
 
-void runIntersectTest(const std::string &test,
-		      const std::string &tname,
+void runIntersectTest(const std::string &tname,
                       TriangleMesh * surface_mesh,
 		      const std::vector< std::pair<int, int> > & expisect,
 		      const std::vector< int > & expdegen)
@@ -80,11 +79,10 @@ void runIntersectTest(const std::string &test,
 
   std::vector< int > degenerate;
   std::vector< std::pair<int, int> > collisions;
-  int status = axom::quest::findTriMeshIntersections(surface_mesh, collisions, degenerate);
+  // Later, perhaps capture the return value as a status and report it.
+  (void) axom::quest::findTriMeshIntersections(surface_mesh, collisions, degenerate);
 
   // report discrepancies
-  // assume that expisect and expdegen are sorted (as required by
-  // std::set_difference)
   std::sort(collisions.begin(), collisions.end());
   std::sort(degenerate.begin(), degenerate.end());
 
@@ -202,7 +200,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     // No self-intersections or degenerate triangles
     intersections.clear();
     degenerate.clear();
-    runIntersectTest(testname, testdescription,
+    runIntersectTest(testdescription,
                      surface_mesh, intersections, degenerate);
     delete surface_mesh;
   }
@@ -231,7 +229,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     // No self-intersections or degenerate triangles
     intersections.clear();
     degenerate.clear();
-    runIntersectTest(testname, testdescription,
+    runIntersectTest(testdescription,
                      surface_mesh, intersections, degenerate);
     delete surface_mesh;
   }
@@ -262,7 +260,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     intersections.push_back(std::make_pair(0, 2));
     // No degenerate triangles
     degenerate.clear();
-    runIntersectTest(testname, testdescription,
+    runIntersectTest(testdescription,
                      surface_mesh, intersections, degenerate);
     delete surface_mesh;
   }
@@ -298,7 +296,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     degenerate.clear();
     degenerate.push_back(4);
     degenerate.push_back(5);
-    runIntersectTest(testname, testdescription,
+    runIntersectTest(testdescription,
                      surface_mesh, intersections, degenerate);
     delete surface_mesh;
   }
@@ -334,7 +332,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
       TriangleMesh* surface_mesh = new TriangleMesh( 3 );
       reader.getMesh( surface_mesh );
 
-      runIntersectTest(test, tname, surface_mesh, expisect, expdegen);
+      runIntersectTest(tname, surface_mesh, expisect, expdegen);
       delete surface_mesh;
     }
   }
