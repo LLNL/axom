@@ -184,27 +184,18 @@ public:
   /*!
    * \brief read from a root file
    *
-   * \param group         Group to fill with input data
-   * \param root_file     root file containing input data
+   * \param group      Group to fill with input data
+   * \param root_file  root file containing input data
    * \param preserve_contents   Preserves group's existing contents if true
+   * \param use_scr    Use SCR to find and read the files.  This should be
+   *                   set to true only if the files were written with SCR.
    */
   void read(sidre::Group * group,
             const std::string& root_file,
-            bool preserve_contents = false);
+            bool preserve_contents = false,
+            bool use_scr = false);
 
-  /*!
-   * \brief read from a root file that was dumped as part of an SCR checkpoint
-   *
-   * \param group         Group to fill with input data
-   * \param root_file     root file containing input data - file name only,
-   *                      not a path 
-   * \param preserve_contents   Preserves group's existing contents if true
-   */
-#ifdef AXOM_USE_SCR
-  void readWithSCR(sidre::Group * group,
-                   const std::string& root_file,
-                   bool preserve_contents = false);
-#endif
+public:
 
   /*!
    * \brief load external data into a group
@@ -245,6 +236,11 @@ private:
 
   void readSidreHDF5(sidre::Group * group, const std::string& root_file, bool preserve_contents = false);
 
+#ifdef AXOM_USE_SCR
+  void readWithSCR(sidre::Group * group,
+                   const std::string& root_file,
+                   bool preserve_contents = false);
+#endif
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc

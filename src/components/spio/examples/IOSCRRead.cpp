@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
   }
 
   IOManager reader(MPI_COMM_WORLD, true);
-  reader.readWithSCR(root, root_file);
+  reader.read(root, root_file, false, true);
 
   delete ds;
 

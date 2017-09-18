@@ -83,7 +83,7 @@ int main(int argc, char** argv)
    */
   IOManager reader(MPI_COMM_WORLD, true);
 
-  reader.readWithSCR(ds2->getRoot(), root_name);
+  reader.read(ds2->getRoot(), root_name, false, true);
 
   /*
    * Verify that the contents of ds2 match those written from ds.

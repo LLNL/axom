@@ -58,6 +58,9 @@ IOManager::IOManager(MPI_Comm comm,
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
 #ifndef AXOM_USE_SCR
+  if (m_use_scr) {
+    SLIC_WARNING("IOManager constructor called with use_scr = true, but Axom was not compiled with SCR. IOManager will operate without SCR.");
+  }
   m_use_scr = false;
 #endif
 }
@@ -242,11 +245,28 @@ void IOManager::read(
  *
  *************************************************************************
  */
-void IOManager::read(sidre::Group * datagroup, const std::string& root_file, bool preserve_contents)
+void IOManager::read(sidre::Group * datagroup,
+                     const std::string& root_file,
+                     bool preserve_contents,
+                     bool read_with_scr)
 {
-  std::string protocol = getProtocol(root_file);
 
-  read(datagroup, root_file, protocol, preserve_contents);
+  if (!read_with_scr) {
+    std::string protocol = getProtocol(root_file);
+    read(datagroup, root_file, protocol, preserve_contents);
+  } else {
+#ifdef AXOM_USE_SCR
+    if (m_use_scr) {
+      readWithSCR(datagroup, root_file, preserve_contents);
+    } else {
+      SLIC_WARNING("IOManager::read() requested to read files using SCR, but IOManager was constructed to not use SCR. SCR will not be used");
+      read(datagroup, root_file, preserve_contents, false);
+    }
+#else
+    SLIC_WARNING("IOManager::read() requested to read files using SCR, but Axom was not compiled with SCR. SCR will not be used");
+    read(datagroup, root_file, preserve_contents, false);
+#endif
+  }
 }
 
 /*
@@ -265,7 +285,13 @@ void IOManager::readWithSCR(
   SLIC_ASSERT(m_use_scr); 
   char file[SCR_MAX_FILENAME];
   if (SCR_Route_file(root_file.c_str(), file) == SCR_SUCCESS) {
-    read(datagroup, std::string(file), preserve_contents);
+    std::string scr_root(file);
+    std::string protocol = getProtocol(scr_root);  
+    read(datagroup, scr_root, protocol, preserve_contents);
+  } else {
+    SLIC_WARNING("Root file: " << root_file << " not found by SCR. Attempting to read without SCR.");
+
+    read(datagroup, root_file, preserve_contents, false);
   }
 }
 #endif
@@ -440,9 +466,13 @@ void IOManager::createRootFile(const std::string& file_base,
     char checkpoint_file[256];
     sprintf(checkpoint_file, "%s", root_name.c_str());
     char scr_file[SCR_MAX_FILENAME];
-    SCR_Route_file(checkpoint_file, scr_file);
-    root_file_name = scr_file;
-
+    if (SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS) {
+      root_file_name = scr_file;
+    } else {
+      SLIC_WARNING("Attempt to create SCR route for file: " << root_name <<
+                   " failed. Writing root file without SCR."); 
+    }
+ 
     std::string dir_name; 
     utilities::filesystem::getDirName(dir_name, root_file_name);
     if (!dir_name.empty()) {
@@ -452,7 +482,6 @@ void IOManager::createRootFile(const std::string& file_base,
     conduit::relay::io::save(n, root_file_name, conduit_protocol);
 #endif
   }
-
 
 }
 
