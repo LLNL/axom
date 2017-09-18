@@ -260,15 +260,19 @@ void IOManager::read(sidre::Group * datagroup,
     read(datagroup, root_file, protocol, preserve_contents);
   } else {
 #ifdef AXOM_USE_SCR
+
     if (m_use_scr) {
       readWithSCR(datagroup, root_file, preserve_contents);
     } else {
       SLIC_WARNING("IOManager::read() requested to read files using SCR, but IOManager was constructed to not use SCR. SCR will not be used");
       read(datagroup, root_file, preserve_contents, false);
     }
+
 #else
+
     SLIC_WARNING("IOManager::read() requested to read files using SCR, but Axom was not compiled with SCR. SCR will not be used");
     read(datagroup, root_file, preserve_contents, false);
+
 #endif
   }
 }
@@ -436,7 +440,6 @@ void IOManager::createRootFile(const std::string& file_base,
 
     root_file_name = file_base + ".root";
     conduit_protocol = "hdf5";
-//    conduit::relay::io::save(n, file_base + ".root", "hdf5");
   } else {
 
     n["number_of_files"] = num_files;
@@ -457,11 +460,8 @@ void IOManager::createRootFile(const std::string& file_base,
     }
   }
 
-  if (!m_use_scr) {
-    conduit::relay::io::save(n, root_file_name, conduit_protocol);
-  } else {
 #ifdef AXOM_USE_SCR
-
+  if (m_use_scr) {
     if (protocol == "sidre_hdf5") {
       n["file_pattern"] = local_file_base + "_" + "%07d.hdf5"; 
     }
@@ -483,9 +483,11 @@ void IOManager::createRootFile(const std::string& file_base,
       utilities::filesystem::makeDirsForPath(dir_name);
     }
     m_scr_checkpoint_dir = dir_name;
-    conduit::relay::io::save(n, root_file_name, conduit_protocol);
-#endif
   }
+#endif
+
+  conduit::relay::io::save(n, root_file_name, conduit_protocol);
+
 
 }
 
