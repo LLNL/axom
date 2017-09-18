@@ -129,12 +129,12 @@ void testIntersectionOnRegularGrid()
   DebugMesh* debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
-  debugMesh->insertNode( ptX[0], ptX[1], ptX[2]);
-  debugMesh->insertNode( ptY[0], ptY[1], ptY[2]);
-  debugMesh->insertNode( ptZ[0], ptZ[1], ptZ[2]);
+  debugMesh->addNode( ptX[0], ptX[1], ptX[2]);
+  debugMesh->addNode( ptY[0], ptY[1], ptY[2]);
+  debugMesh->addNode( ptZ[0], ptZ[1], ptZ[2]);
 
   int tArr[3] = {0,1,2};
-  debugMesh->insertCell(tArr, MINT_TRIANGLE, 3);
+  debugMesh->addCell(tArr, MINT_TRIANGLE, 3);
 
   PointType bbMin(-0.1);
   PointType bbMax(1.1);
@@ -152,31 +152,40 @@ void testIntersectionOnRegularGrid()
       for(int k=0 ; k< 1<<lev ; ++k)
       {
         SpaceOctree::BlockIndex block(
-          axom::primal::Point<int,3>::make_point(i,j,k), lev );
+        axom::primal::Point<int,3>::make_point(i,j,k), lev );
         SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
         if( axom::primal::intersect( unitTri, blockBB))
         {
-          // Add to debug mesh
-          int vStart = debugMesh->getMeshNumberOfNodes();
-          const SpacePt& bMin = blockBB.getMin();
-          const SpacePt& bMax = blockBB.getMax();
+          for(int k=0; k< 1<<lev; ++k)
+          {
+            SpaceOctree::BlockIndex block( axom::primal::Point<int,3>::make_point(i,j,k), lev );
+            SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
-          debugMesh->insertNode( bMin[0], bMin[1], bMin[2]);
-          debugMesh->insertNode( bMax[0], bMin[1], bMin[2]);
-          debugMesh->insertNode( bMax[0], bMax[1], bMin[2]);
-          debugMesh->insertNode( bMin[0], bMax[1], bMin[2]);
+            if( axom::primal::intersect( unitTri, blockBB))
+            {
+              // Add to debug mesh
+              int vStart = debugMesh->getMeshNumberOfNodes();
 
-          debugMesh->insertNode( bMin[0], bMin[1], bMax[2]);
-          debugMesh->insertNode( bMax[0], bMin[1], bMax[2]);
-          debugMesh->insertNode( bMax[0], bMax[1], bMax[2]);
-          debugMesh->insertNode( bMin[0], bMax[1], bMax[2]);
+              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
 
-          int data[8];
-          for(int x=0 ; x< 8 ; ++x)
-            data[x] = vStart + x;
+              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
 
-          debugMesh->insertCell( data, MINT_HEX, 8);
+              int data[8];
+              for(int i=0; i< 8; ++i)
+              {
+                data[i] = vStart + i;
+              }
+
+              debugMesh->addCell( data, MINT_HEX, 8);
+            }
+          }
         }
       }
     }

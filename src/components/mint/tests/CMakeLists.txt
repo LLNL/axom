@@ -17,6 +17,7 @@ set( mint_tests
      mint_shape_functions.cpp
      mint_single_fe.cpp
      mint_write_vtk.cpp
+     mint_vector.cpp
    )
 
 foreach( test ${mint_tests} )

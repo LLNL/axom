@@ -19,7 +19,6 @@
 #define STRUCTUREDMESH_HXX_
 
 #include "mint/Mesh.hpp"
-#include "mint/CellType.hpp"
 #include "mint/Extent.hpp"
 
 #include "axom/Types.hpp"
@@ -90,8 +89,7 @@ public:
    * \param [in] cellIdx the index of the cell in query.
    * \return cellType the cell type of the cell at the given index.
    */
-  virtual int getMeshCellType( int AXOM_NOT_USED( cellIdx ) ) const
-  { return ( ( m_ndims == 3 ) ? MINT_HEX : MINT_QUAD ); };
+  virtual int getMeshCellType( int AXOM_NOT_USED( cellIdx ) ) const;
 
   /*!
    * \brief Returns the coordinates of the given node.
@@ -110,7 +108,7 @@ public:
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
    * \return c the coordinate value of the node at
-   * \pre dim >= 0 && dim < m_ndims
+   * \pre dim >= 0 && dim < this->getDimension()
    */
   virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
   { return (this->getNodeCoordinate( nodeIdx, dim ) ); };
@@ -173,8 +171,7 @@ public:
    * \return N the number of nodes per cell.
    * \post N=4 if 2-D, else N=8.
    */
-  inline int getNumberOfCellNodes() const
-  { return( ( m_ndims == 2 ) ? 4 : 8); };
+  int getNumberOfCellNodes() const;
 
   /*!
    * \brief Returns the linear index corresponding to the given logical indices.
@@ -284,7 +281,7 @@ public:
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre idim >= 0 && idim < this->getDimension().
    */
   virtual double getNodeCoordinate( int nodeIdx, int idim  ) const = 0;
 
@@ -295,7 +292,7 @@ public:
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre idim >= 0 && idim < this->getDimension().
    */
   virtual double getNodeCoordinate( int i, int j, int idim ) const = 0;
 
@@ -307,7 +304,7 @@ public:
    * \param [in] idim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre idim >= 0 && idim < this->getDimension().
    */
   virtual double getNodeCoordinate( int i, int j, int k, int idim ) const = 0;
 

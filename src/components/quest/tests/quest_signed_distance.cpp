@@ -78,11 +78,11 @@ void getMesh( TriangleMesh* mesh )
   x[0] = SPHERE_CENTER[0];
   x[1] = SPHERE_CENTER[1];
   x[2] = SPHERE_CENTER[2] + RADIUS;
-  mesh->insertNode( x[0], x[1], x[2] );
+  mesh->addNode( x[0], x[1], x[2] );
 
   // South pole point
   x[2] = SPHERE_CENTER[2] - RADIUS;
-  mesh->insertNode( x[0], x[1], x[2] );
+  mesh->addNode( x[0], x[1], x[2] );
 
   // Calculate spacing
   const double dphi   = ( phi_end-phi_start ) /
@@ -109,7 +109,7 @@ void getMesh( TriangleMesh* mesh )
       x[1] = n[1] + SPHERE_CENTER[1];
       x[2] = n[2] + SPHERE_CENTER[2];
 
-      mesh->insertNode( x[0], x[1], x[2] );
+      mesh->addNode( x[0], x[1], x[2] );
 
     }  // END for all j
 
@@ -119,44 +119,37 @@ void getMesh( TriangleMesh* mesh )
   int stride = phiResolution * THETA_RES;
 
   // Generate mesh connectivity around north pole
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
+  for ( int i=0; i < THETA_RES; ++i ) {
     c[2] = phiResolution*i + /* number of poles */ 2;
     c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
     c[0] = 0;
-    mesh->insertCell( c, MINT_TRIANGLE, 3 );
+    mesh->addCell( c, MINT_TRIANGLE, 3 );
   } // END for
 
   // Generate mesh connectivity around south pole
   int offset = PHI_RES - 1;
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
+  for ( int i=0; i < THETA_RES; ++i ) {
     c[2] = phiResolution*i + offset;
     c[1] = ( phiResolution*(i+1) % stride ) + offset;
     c[0] = 1;
-    mesh->insertCell( c, MINT_TRIANGLE, 3 );
+    mesh->addCell( c, MINT_TRIANGLE, 3 );
   }
 
   // Generate mesh connectivity in between poles
   for ( int i=0 ; i < THETA_RES ; ++i )
   {
-
     for ( int j=0 ; j < PHI_RES-3 ; ++j )
     {
-
       c[ 0 ] = phiResolution*i + j + 2;
       c[ 1 ] = c[0] + 1;
       c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
-
-      mesh->insertCell( c, MINT_TRIANGLE, 3 );
+      mesh->addCell( c, MINT_TRIANGLE, 3 );
 
       c[ 1 ] = c[ 2 ];
       c[ 2 ] = c[ 1 ] - 1;
-      mesh->insertCell( c, MINT_TRIANGLE, 3 );
-    }  // END for all j
-
+      mesh->addCell( c, MINT_TRIANGLE, 3 );
+     } // END for all j
   } // END for all i
-
 }
 
 /*!

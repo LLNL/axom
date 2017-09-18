@@ -37,16 +37,36 @@ CurvilinearMesh::CurvilinearMesh() :
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6] ) :
   StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
-  m_coordinates( new MeshCoordinates(ndims,m_extent->getNumNodes()) )
+  m_coordinates( new MeshCoordinates( ndims, m_extent->getNumNodes() ) )
 {}
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6],
-                                  int blockId, int partId ) :
+CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6], int blockId, 
+                                  int partId ):
   StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId,
                   partId),
-  m_coordinates( new MeshCoordinates(ndims,m_extent->getNumNodes()) )
+  m_coordinates( new MeshCoordinates( ndims, m_extent->getNumNodes() ) )
 {}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6], int nodeCapacity ):
+  StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
+  m_coordinates( new MeshCoordinates( ndims, nodeCapacity ) )
+{
+  SLIC_ERROR_IF( nodeCapacity < m_extent->getNumNodes(), "Node capacity " <<
+                    "isn't large enough to hold all the nodes in the extent." );
+}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( int ndims, int ext[6], int nodeCapacity,
+                                  int blockId, int partId ):
+  StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId,
+                  partId),
+  m_coordinates( new MeshCoordinates( ndims, nodeCapacity ) )
+{
+  SLIC_ERROR_IF( nodeCapacity < m_extent->getNumNodes(), "Node capacity " <<
+                    "isn't large enough to hold all the nodes in the extent." );
+}
 
 //------------------------------------------------------------------------------
 CurvilinearMesh::~CurvilinearMesh()

@@ -215,16 +215,14 @@ void STLReader::getMesh(
   SLIC_ASSERT( static_cast<int>(m_nodes.size()) == 3* m_num_nodes );
 
   // Load the vertices into the mesh
-  for ( int i=0 ; i < m_num_nodes ; ++i )
-  {
-    mesh->insertNode( m_nodes[i*3], m_nodes[i*3+1], m_nodes[i*3+2] );
+  for ( int i=0; i < m_num_nodes; ++i ) {
+    mesh->addNode( m_nodes[i*3], m_nodes[i*3+1], m_nodes[i*3+2] );
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
-  for ( int i=0 ; i < m_num_faces ; ++i )
-  {
+  for ( int i=0; i < m_num_faces; ++i ) {
     int tv[3] = {3*i, 3*i+1, 3*i+2};
-    mesh->insertCell( tv, MINT_TRIANGLE, 3);
+    mesh->addCell( tv, MINT_TRIANGLE, 3);
   }
 
 }

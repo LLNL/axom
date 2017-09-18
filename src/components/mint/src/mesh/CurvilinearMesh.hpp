@@ -46,6 +46,25 @@ public:
    * \param [in] partId the partition ID of this mesh
    */
   CurvilinearMesh( int dimension, int ext[6], int blockId, int partId );
+  
+  /*!
+   * \brief Constructs a curvilinear mesh instance.
+   * \param [in] dimension the dimension of this mesh instance.
+   * \param [in] ext the logical extent of this mesh instance.
+   * \param [in] nodeCapacity the number of nodes to preallocate.
+   */
+  CurvilinearMesh( int ndims, int ext[6], int nodeCapacity );
+  
+  /*!
+   * \brief Constructs a curvilinear mesh instance.
+   * \param [in] dimension the dimension of this mesh instance.
+   * \param [in] ext the logical extent of this mesh instance.
+   * \param [in] nodeCapacity the number of nodes to preallocate.
+   * \param [in] blockId the block ID of this mesh
+   * \param [in] partId the partition ID of this mesh
+   */
+  CurvilinearMesh( int ndims, int ext[6], int nodeCapacity, int blockId,
+                                                            int partId );
 
   /*!
    * \brief Destructor.

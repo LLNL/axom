@@ -19,9 +19,7 @@
 #define MESHCOORDINATES_HXX_
 
 #include "axom/Macros.hpp"
-
-// C/C++ includes
-#include <vector> // for STL vector
+#include "mint/Vector.hpp"
 
 #define X_COORDINATE 0
 #define Y_COORDINATE 1
@@ -42,63 +40,72 @@ class MeshCoordinates
 public:
 
   /*!
-   * \brief Default constructor.
-   */
-  MeshCoordinates();
-
-  /*!
-   * \brief Custom constructor.
-   * \param [in] dimension the dimension of the ambient space.
-   * \pre dimension >= 1 && dimension <= 3
-   */
-  explicit MeshCoordinates(int dimension);
-
-  /*!
    * \brief Creates a MeshCoordinates instance with the given number of points.
    * \param [in] dimension the dimension of the ambient space.
-   * \param [in] npoints the total number of points to allocate space for.
+   * \param [in] capacity the total number of points to allocate space for.
+   * \param [in] resize_ratio the ammount to resize the coordinate array by
+   *  when it exceeds the capacity.
+   * \pre ndims != AXOM_NULLPTR.
    * \note The points are not initialized but, can be set using setPoint
    */
-  MeshCoordinates( int dimension, int npoints );
-
-  /*!
-   * \brief Creates a MeshCoordinates instance where the coordinates are given
-   *  by the cartesian product of the coordinates in each dimension.
-   * \param [in] dimension the dimension of the ambient space.
-   * \param [in] ndims number of coordinate values along each dimension.
-   * \pre dimension >= 1 && dimension <= 3
-   * \pre ndims != AXOM_NULLPTR.
-   */
-  MeshCoordinates( int dimension, int ndims[3] );
+  MeshCoordinates( int dimension=1, int capacity=100, double resize_ratio=2.0 );
 
   /*!
    * \brief Destructor.
    */
-  virtual ~MeshCoordinates();
+  ~MeshCoordinates()
+  {}
 
   /*!
-   * \brief Inserts a new point into this MeshCoordinates instance.
+   * \brief Adds a new point into this MeshCoordinates instance.
    * \param [in] x the x--coordinate.
    * \pre m_ndims == 1.
    */
-  void insertPoint( double x );
+  inline void addPoint( double x );
 
   /*!
-   * \brief Inserts a new point into this MeshCoordinates instance.
+   * \brief Adds new points into this MeshCoordinates instance.
+   * \param [in] x the x--coordinate.
+   * \param [in] n the number of points to add.
+   * \pre m_ndims == 1.
+   */
+  inline void addPoints( double* x, int n );
+
+  /*!
+   * \brief Adds a new point into this MeshCoordinates instance.
    * \param [in] x the x--coordinate.
    * \param [in] y the y--coordinate.
    * \pre m_ndims == 2.
    */
-  void insertPoint( double x, double y );
+  inline void addPoint( double x, double y );
 
   /*!
-   * \brief Inserts a new point into this MeshCoordinates instance.
+   * \brief Adds new points into this MeshCoordinates instance.
+   * \param [in] x the x--coordinate.
+   * \param [in] y the y--coordinate.
+   * \param [in] n the number of points to add.
+   * \pre m_ndims == 2.
+   */
+  inline void addPoints( double* x, double* y, int n );
+
+  /*!
+   * \brief Adds a new point into this MeshCoordinates instance.
    * \param [in] x the x--coordinate.
    * \param [in] y the y--coordinate.
    * \param [in] z the z--coordinate.
    * \pre m_ndims == 3.
    */
-  void insertPoint( double x, double y, double z );
+  inline void addPoint( double x, double y, double z );
+
+  /*!
+   * \brief Adds new points into this MeshCoordinates instance.
+   * \param [in] x the x--coordinate.
+   * \param [in] y the y--coordinate.
+   * \param [in] z the z--coordinate.
+   * \param [in] n the number of points to add.
+   * \pre m_ndims == 3.
+   */
+  inline void addPoints( double* x, double* y, double* z, int n );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -107,7 +114,7 @@ public:
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    * \pre m_ndims == 1.
    */
-  void setPoint( int pntIdx, double x );
+  inline void setPoint( int pntIdx, double x );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -117,7 +124,7 @@ public:
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    * \pre m_ndims == 2.
    */
-  void setPoint( int pntIdx, double x, double y );
+  inline void setPoint( int pntIdx, double x, double y );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -128,7 +135,7 @@ public:
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    * \pre m_ndims == 3.
    */
-  void setPoint( int pntIdx, double x, double y, double z );
+  inline void setPoint( int pntIdx, double x, double y, double z );
 
   /*!
    * \brief Returns the coordinate of a point at the given dimension.
@@ -138,7 +145,7 @@ public:
    * \pre dim < m_ndims
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    */
-  double getCoordinate( int pntIdx, int dim );
+  inline double getCoordinate( int pntIdx, int dim );
 
   /*!
    * \brief Returns a const pointer to the coordinate array.
@@ -147,49 +154,152 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  double* getCoordinateArray( int dim );
+  inline double * getCoordinateArray( int dim );
 
   /*!
-   * \brief Number of coordinates along the given dimension.
-   * \param [in] idim the dimension in query.
-   * \return N the number of coordinates along the given dimension.
-   * \note Used for RectilinearMesh
+   * \brief Get the maximum number of points that can currently be held.
+   * \return N the capacity of m_coordinates.
    */
-  int getCoordinateArraySize( int idim ) const
-  { return static_cast< int >( m_coordinates[ idim ].size() ); };
+  inline int getCapacity() const
+  { return m_coordinates[0].getCapacity(); }
+
+  /*!
+   * \brief Change the maximum number of points that can currently be held.
+   */
+  inline void setCapacity( int capacity );
 
   /*!
    * \brief Returns the number of points in this MeshCoordinates instance.
    * \return npoint the number points in this MeshCoordinates instance.
    */
-  int getNumberOfPoints() const;
+  inline int getSize() const
+  { return m_coordinates[0].getSize(); }
+
+  /*!
+   * \brief Sets the number of points in this MeshCoordinates instance.
+   */
+  inline void setSize( int size );
 
 private:
   // TODO: support different memory layouts...
-  // TODO: replace with flat array, just using vector for now...
-  typedef std::vector< std::vector< double > > Coordinates;
 
   int m_ndims;
-  Coordinates m_coordinates;
-
-  /*!
-   * \brief Helper method used to initialize the MeshCoordinates data-structure.
-   * \note Called only from the constructor.
-   */
-  void initialize();
-
-  /*!
-   * \brief Helper method used to initialize the MeshCoordinate data-structure.
-   *  It creates a MeshCoordinates instance with the given number of points.
-   * \param [in] npoints the number of points.
-   *
-   * \overload
-   */
-  void initialize(int npoints);
+  Vector< double, int > m_coordinates[3]; 
 
   DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates);
   DISABLE_MOVE_AND_ASSIGNMENT(MeshCoordinates);
 };
+
+//------------------------------------------------------------------------------
+// In-lined method implimentation
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::addPoint( double x ) 
+{
+  SLIC_ASSERT( m_ndims == 1 );
+  m_coordinates[ X_COORDINATE ].add( x );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::addPoints( double* x, int n ) 
+{
+  SLIC_ASSERT( m_ndims == 1 );
+  m_coordinates[ X_COORDINATE ].add( x, n );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::addPoint( double x, double y ) 
+{
+  SLIC_ASSERT( m_ndims == 2 );
+  m_coordinates[ X_COORDINATE ].add( x );
+  m_coordinates[ Y_COORDINATE ].add( y );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::addPoints( double* x, double* y, int n ) 
+{
+  SLIC_ASSERT( m_ndims == 1 );
+  m_coordinates[ X_COORDINATE ].add( x, n );
+  m_coordinates[ Y_COORDINATE ].add( y, n );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::addPoint( double x, double y, double z ) 
+{
+  SLIC_ASSERT( m_ndims == 3 );
+  m_coordinates[ X_COORDINATE ].add( x );
+  m_coordinates[ Y_COORDINATE ].add( y );
+  m_coordinates[ Z_COORDINATE ].add( z );
+}
+
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::addPoints( double* x, double* y, double* z, int n ) 
+{
+  SLIC_ASSERT( m_ndims == 1 );
+  m_coordinates[ X_COORDINATE ].add( x, n );
+  m_coordinates[ Y_COORDINATE ].add( y, n );
+  m_coordinates[ Z_COORDINATE ].add( z, n );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::setPoint( int pntIdx, double x ) 
+{
+  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < getSize() ) );
+  SLIC_ASSERT( m_ndims == 1 );
+  m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::setPoint( int pntIdx, double x, double y ) 
+{
+  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < getSize() ) );
+  SLIC_ASSERT( m_ndims == 2 );
+  m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
+  m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
+{
+  SLIC_ASSERT( m_ndims == 3 );
+  m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
+  m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
+  m_coordinates[ Z_COORDINATE ][ pntIdx ] = z;
+}
+
+//------------------------------------------------------------------------------
+inline double MeshCoordinates::getCoordinate( int pntIdx, int dim )
+{
+  SLIC_ASSERT( dim < m_ndims );
+  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < getSize() ) );
+  return m_coordinates[ dim ][ pntIdx ];
+}
+
+//------------------------------------------------------------------------------
+inline double* MeshCoordinates::getCoordinateArray( int dim )
+{
+  SLIC_ASSERT( dim < m_ndims );
+  return m_coordinates[ dim ].getData();
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::setCapacity( int capacity ) 
+{
+  for ( int dim = 0; dim < m_ndims; ++dim ) {
+    m_coordinates[ dim ].setCapacity( capacity );
+  }
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::setSize( int size ) 
+{
+  for ( int dim = 0; dim < m_ndims; ++dim ) {
+    m_coordinates[ dim ].setSize( size );
+  }
+}
 
 } /* namespace mint */
 } /* namespace axom */

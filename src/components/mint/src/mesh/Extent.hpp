@@ -223,11 +223,10 @@ namespace mint
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent() :
-  m_ndims( -1 ),
+Extent< IndexType >::Extent():
+  m_ndims(-1),
   m_jp(0),
   m_kp(0)
-
 {
   this->buildCellOffsets();
 }

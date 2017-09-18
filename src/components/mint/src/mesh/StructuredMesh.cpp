@@ -16,6 +16,7 @@
  */
 
 #include "mint/StructuredMesh.hpp"
+#include "mint/CellType.hpp"
 #include "mint/MeshType.hpp"
 #include "slic/slic.hpp"
 
@@ -52,6 +53,31 @@ StructuredMesh::~StructuredMesh()
   delete m_extent;
   m_extent = AXOM_NULLPTR;
 }
+
+//------------------------------------------------------------------------------
+int StructuredMesh::getMeshCellType( int AXOM_NOT_USED( cellIdx ) ) const {
+  const int dim = this->getDimension();
+  if ( dim == 3 ) {
+    return MINT_HEX;
+  }
+  else if ( dim == 2 ) {
+    return MINT_QUAD;
+  }
+  return MINT_SEGMENT;
+}
+
+//------------------------------------------------------------------------------
+int StructuredMesh::getNumberOfCellNodes() const {
+  int dim = this->getDimension();
+  if ( dim == 3 ) {
+    return 8;
+  }
+  else if ( dim == 2 ) {
+    return 4;
+  }
+  return 2;
+}
+
 
 } /* namespace mint */
 } /* namespace axom */

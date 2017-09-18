@@ -902,20 +902,20 @@ public:
       }
 
       typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-      TriangleMesh* triMesh = new TriangleMesh(3);
+      TriangleMesh* triMesh = new TriangleMesh(3, m_vertexSet.size());
 
       // Add vertices to the mesh (i.e. vertex positions)
-      for(int i=0 ; i< m_vertexSet.size() ; ++i)
+      for(int i=0; i< m_vertexSet.size(); ++i)
       {
         const SpacePt& pt = vertexPosition(i);
-        triMesh->insertNode(pt[0], pt[1], pt[2]);
+        triMesh->addNode(pt[0], pt[1], pt[2]);
       }
 
       // Add triangles to the mesh (i.e. boundary vertices)
-      for(int i=0 ; i< m_elementSet.size() ; ++i)
+      for(int i=0; i< m_elementSet.size(); ++i)
       {
         const TriangleIndex* tv = &triangleVertexIndices(i)[0];
-        triMesh->insertCell(tv, MINT_TRIANGLE, NUM_TRI_VERTS);
+        triMesh->addCell(tv, MINT_TRIANGLE, NUM_TRI_VERTS);
       }
 
       m_surfaceMesh = triMesh;
@@ -2602,8 +2602,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3);
-
+    DebugMesh* debugMesh= new DebugMesh(3, 8 * blocks.size());
     const bool hasTriangles =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED);
     const bool hasColors =
@@ -2717,7 +2716,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3);
+    DebugMesh* debugMesh= new DebugMesh(3, 3 * tris.size());
 
     for(TriIter it = tris.begin() ; it < tris.end() ; ++it)
     {
@@ -2789,15 +2788,15 @@ private:
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
     int vStart = mesh->getMeshNumberOfNodes();
-    mesh->insertNode( triPos[0][0], triPos[0][1], triPos[0][2]);
-    mesh->insertNode( triPos[1][0], triPos[1][1], triPos[1][2]);
-    mesh->insertNode( triPos[2][0], triPos[2][1], triPos[2][2]);
+    mesh->addNode( triPos[0][0], triPos[0][1], triPos[0][2]);
+    mesh->addNode( triPos[1][0], triPos[1][1], triPos[1][2]);
+    mesh->addNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
     int data[3];
     for(int i=0 ; i< 3 ; ++i)
       data[i] = vStart + i;
 
-    mesh->insertCell(data, MINT_TRIANGLE, 3);
+    mesh->addCell(data, MINT_TRIANGLE, 3);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2817,25 +2816,22 @@ private:
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
 
     int vStart = mesh->getMeshNumberOfNodes();
+    
+    mesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+    mesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+    mesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+    mesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
 
-    const SpacePt& bMin = blockBB.getMin();
-    const SpacePt& bMax = blockBB.getMax();
-
-    mesh->insertNode( bMin[0], bMin[1], bMin[2]);
-    mesh->insertNode( bMax[0], bMin[1], bMin[2]);
-    mesh->insertNode( bMax[0], bMax[1], bMin[2]);
-    mesh->insertNode( bMin[0], bMax[1], bMin[2]);
-
-    mesh->insertNode( bMin[0], bMin[1], bMax[2]);
-    mesh->insertNode( bMax[0], bMin[1], bMax[2]);
-    mesh->insertNode( bMax[0], bMax[1], bMax[2]);
-    mesh->insertNode( bMin[0], bMax[1], bMax[2]);
+    mesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+    mesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+    mesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+    mesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
 
     int data[8];
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
-    mesh->insertCell( data, MINT_HEX, 8);
+    mesh->addCell( data, MINT_HEX, 8);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case

@@ -53,6 +53,7 @@ set( mint_headers
 
     ## utils
     utils/vtk_utils.hpp
+    utils/Vector.hpp
    )
 
 ## mint sources

@@ -29,15 +29,16 @@ ParticleMesh::ParticleMesh( ) :
 {}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension ) :
+ParticleMesh::ParticleMesh( int dimension, int particleCapacity ):
   Mesh( dimension, MINT_PARTICLE_MESH, 0, 0 ),
-  m_particle_coordinates( new MeshCoordinates(dimension) )
+  m_particle_coordinates( new MeshCoordinates( dimension, particleCapacity) )
 {}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, int blockId, int partId ) :
+ParticleMesh::ParticleMesh( int dimension, int particleCapacity, int blockId, 
+																 int partId ):
   Mesh( dimension, MINT_PARTICLE_MESH, blockId, partId ),
-  m_particle_coordinates( new MeshCoordinates(dimension) )
+  m_particle_coordinates( new MeshCoordinates( dimension, particleCapacity ) )
 {}
 
 //------------------------------------------------------------------------------

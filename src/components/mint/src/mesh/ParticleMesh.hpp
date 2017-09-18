@@ -39,7 +39,7 @@ public:
    * \brief Constructs a ParticleMesh instance.
    * \param [in] dimension the ambient dimension of the particle mesh.
    */
-  explicit ParticleMesh( int dimension );
+  explicit ParticleMesh( int dimension, int particleCapacity );
 
   /*!
    * \brief Constructs a ParticleMesh instance.
@@ -47,7 +47,7 @@ public:
    * \param [in] blockId the block ID.
    * \param [in] partId the partition ID.
    */
-  ParticleMesh( int dimension, int blockId, int partId );
+  ParticleMesh( int dimension, int particleCapacity, int blockId, int partId );
 
   /*!
    * \brief Destructor.
@@ -133,7 +133,7 @@ public:
    * \return N the total number of particles.
    */
   int getNumberOfParticles() const
-  { return m_particle_coordinates->getNumberOfPoints(); }
+  { return m_particle_coordinates->getSize(); }
 
   /*!
    * \brief Returns the particle coordinates array for the given dimension.
@@ -144,28 +144,28 @@ public:
   double* getParticlesCoordinatesArray( int idim ) const;
 
   /*!
-   * \brief Inserts a particle in to the particle mesh.
+   * \brief Add a particle in to the particle mesh.
    * \param [in] x the x--coordinate of the particle.
    * \pre this->getDimension() == 1
    */
-  void insertParticle( double x );
+  void addParticle( double x );
 
   /*!
-   * \brief Inserts a particle in to the particle mesh.
+   * \brief Add a particle in to the particle mesh.
    * \param [in] x the x--coordinate of the particle.
    * \param [in] y the y--coordinate of the particle.
    * \pre this->getDimension() == 2
    */
-  void insertParticle( double x, double y );
+  void addParticle( double x, double y );
 
   /*!
-   * \brief Inserts a particle in this particle mesh instance.
+   * \brief Add a particle in this particle mesh instance.
    * \param [in] x the x--coordinate of the particle.
    * \param [in] y the y--coordinate of the particle.
    * \param [in] z the z--coordinate of the particle.
    * \pre this->getDimension() == 3.
    */
-  void insertParticle( double x, double y, double z );
+  void addParticle( double x, double y, double z );
 
   /*!
    * \brief Gets the particle particle coordinates of a given particle.
@@ -207,24 +207,21 @@ inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x )
-{
+inline void ParticleMesh::addParticle( double x ) {
   SLIC_ASSERT( this->getDimension() == 1 );
-  m_particle_coordinates->insertPoint( x );
+  m_particle_coordinates->addPoint( x );
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x, double y )
-{
+inline void ParticleMesh::addParticle( double x, double y ) {
   SLIC_ASSERT( this->getDimension() == 2 );
-  m_particle_coordinates->insertPoint( x, y );
+  m_particle_coordinates->addPoint( x, y );
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x, double y, double z )
-{
+inline void ParticleMesh::addParticle( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3);
-  m_particle_coordinates->insertPoint( x, y, z );
+  m_particle_coordinates->addPoint( x, y, z );
 }
 
 //------------------------------------------------------------------------------

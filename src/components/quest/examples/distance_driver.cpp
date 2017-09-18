@@ -194,14 +194,14 @@ void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
     mesh->getMeshNode( cellIds[1], n2.data() );
     mesh->getMeshNode( cellIds[2], n3.data() );
 
-    subset->insertNode( n1[0], n1[1], n1[2] );
-    new_cell[0] = icount; ++icount;
-    subset->insertNode( n2[0], n2[1], n2[2] );
-    new_cell[1] = icount; ++icount;
-    subset->insertNode( n3[0], n3[1], n3[2] );
-    new_cell[2] = icount; ++icount;
+   subset->addNode( n1[0], n1[1], n1[2] );
+   new_cell[0] = icount; ++icount;
+   subset->addNode( n2[0], n2[1], n2[2] );
+   new_cell[1] = icount; ++icount;
+   subset->addNode( n3[0], n3[1], n3[2] );
+   new_cell[2] = icount; ++icount;
 
-    subset->insertCell( new_cell, MINT_TRIANGLE,3 );
+   subset->addCell( new_cell, MINT_TRIANGLE,3 );
   }
 
   axom::mint::write_vtk( subset, fileName );
