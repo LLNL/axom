@@ -34,6 +34,10 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_hdf5.hpp"
 
+#ifdef AXOM_USE_SCR
+#include "scr.h"
+#endif
+
 namespace axom
 {
 namespace spio

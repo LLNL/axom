@@ -25,13 +25,10 @@
 #include "hdf5.h"
 
 // Other axom headers
+#include "axom/config.hpp"
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 #include "sidre/Group.hpp"
-
-#ifdef AXOM_USE_SCR
-#include "scr.h"
-#endif
 
 // Spio headers
 #include "spio/IOBaton.hpp"
