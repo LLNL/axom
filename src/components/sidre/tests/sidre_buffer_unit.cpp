@@ -403,3 +403,78 @@ TEST(sidre_buffer,buffer_delete_view_detach)
 
   delete ds;
 }
+
+
+// Tests that alloc(0) and realloc(0) are valid and have same behavior
+TEST(sidre_buffer,buffer_alloc_realloc_0)
+{
+  const DataTypeId tid = getTypeID(SIDRE_INT_ID);
+  const int ELT_SIZE = sizeof(int);
+
+  const int ZERO_COUNT = 0;
+
+  DataStore * ds = new DataStore();
+
+  Buffer * buf1 = ds->createBuffer();
+  buf1->allocate(tid,ZERO_COUNT);
+  {
+    SCOPED_TRACE("allocate(0) on new buffer");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  buf1->reallocate(ZERO_COUNT);
+  {
+    SCOPED_TRACE("reallocate(0) after allocate(0)");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  const int tenCount = 10;
+  buf1->reallocate(tenCount);
+  {
+    SCOPED_TRACE("reallocate(10) after reallocate(0)");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, tenCount);
+  }
+
+  buf1->reallocate(ZERO_COUNT);
+  {
+    SCOPED_TRACE("reallocate(0) after reallocate(10)");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  buf1->deallocate();
+  const bool expDescribed = true;
+  {
+    SCOPED_TRACE("deallocate() but still described");
+    verifyDescribedBuffer(buf1, expDescribed,tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  buf1->allocate();//tid, ZERO_COUNT);
+  {
+    SCOPED_TRACE("allocate() after deallocate()");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  buf1->deallocate();
+  buf1->allocate(tid, ZERO_COUNT);
+  {
+    SCOPED_TRACE("allocate(0) after deallocate()");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  buf1->deallocate();
+  buf1->reallocate(ZERO_COUNT);
+  {
+    SCOPED_TRACE("reallocate(0) after deallocate()");
+    verifyAllocatedBuffer(buf1, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  Buffer * buf2 = ds->createBuffer();
+  buf2->describe(tid,ZERO_COUNT);
+  buf2->reallocate(ZERO_COUNT);
+  {
+    SCOPED_TRACE("reallocate(0) on empty buffer");
+    verifyAllocatedBuffer(buf2, tid, ELT_SIZE, ZERO_COUNT);
+  }
+
+  delete ds;
+}
