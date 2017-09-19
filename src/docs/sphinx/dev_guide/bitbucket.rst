@@ -433,7 +433,7 @@ for release:
      without interruption.
 
   #. Update the version number information in the 
-     ``axom/src/include/config.hpp.in`` file.
+     ``axom/src/cmake/AxomVersion.cmake`` file.
 
   #. Create a pull request to merge the release branch into master so that
      it can be reviewed.
