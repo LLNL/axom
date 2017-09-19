@@ -60,6 +60,7 @@ namespace numerics {
  * \pre dim >= 1
  * \pre u != AXOM_NULLPTR
  * \pre v != AXOM_NULLPTR
+ * \pre T is a floating point type
  */
   template < typename T >
   void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
@@ -75,11 +76,12 @@ namespace numerics {
  * \param [in] eps If one of the vectors, after being made orthogonal to the
  *  others, has norm less than eps, then the orthonormalization is declared a
  *  failure. Note that this may well destory the data pointed to by basis.
- * \return return value, nonzero if the orthonormalization is successful
+ * \return true if the orthonormalization is successful, false otherwise
  *
  * \pre dim >= 1
  * \pre 1 <= size <= dim
  * \pre basis != AXOM_NULLPTR
+ * \pre T is a floating point type
  */
   template < typename T >
   bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
@@ -98,6 +100,7 @@ namespace numerics {
  *
  * \pre dim >= 1
  * \pre v != AXOM_NULLPTR
+ * \pre T is a floating point type
  */
   template < typename T >
   bool normalize(T * v, int dim, double eps = 1e-16);
@@ -129,6 +132,8 @@ namespace numerics {
   template < typename T >
   void make_orthogonal(T * u, T * v, int dim, double tol)
   {
+    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                       "pre: T is a floating point type");
     assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
     assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
     assert("pre: dim >= 1" && (dim >= 1));
@@ -149,6 +154,8 @@ namespace numerics {
   template < typename T >
   bool orthonormalize(T * basis, int size, int dim, double eps)
   {
+    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                     "pre: T is a floating point type");
     assert("pre: basis pointer is null" && (basis != AXOM_NULLPTR));
     assert("pre: dim >= 1" && (dim >= 1));
     assert("pre: size >= 1" && (size >= 1));
@@ -181,10 +188,12 @@ namespace numerics {
   template < typename T >
   bool normalize(T * v, int dim, double eps)
   {
+    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                   "pre: T is a floating point type");
     assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
     assert("pre: dim >= 1" && (dim >= 1));
 
-    double norm = static_cast< double >(dot_product< T >(v, v, dim));
+    const double norm = static_cast< double >( dot_product(v, v, dim) );
 
     if (utilities::isNearlyEqual< double >(norm, 0., eps))
     {
@@ -192,7 +201,7 @@ namespace numerics {
     }
 
 
-    T tnorm = static_cast< T >(std::sqrt(norm));
+    const T tnorm = static_cast< T >(std::sqrt(norm));
     for (int l = 0 ; l < dim ; ++l)
     {
       v[l] /= tnorm;
