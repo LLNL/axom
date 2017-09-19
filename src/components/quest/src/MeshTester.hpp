@@ -8,8 +8,8 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-/**
- * \file
+/*!
+ * \file MeshTester.hpp
  * \brief Defines functions to test Quest meshes for common defects.
  */
 
@@ -28,13 +28,18 @@
 namespace axom {
 namespace quest {
 
-/**
- * \brief For a given triangle Mesh, find self-intersections and degenerate triangles.
+/*!
+ * \brief Find self-intersections and degenerate triangles in a surface mesh.
  *
- * Input surface_mesh should point to a mint::Mesh in three dimensions
- * containing triangles that form a surface.  After running this function,
- * degenerateIndices will be filled with the mesh cell indices of degenerate
- * triangles.  The return value lists triangle index pairs that intersect.
+ * \param [in] surface_mesh A triangle mesh in three dimensions
+ * \param [out] intersection Pairs of indices of intersecting mesh triangles
+ * \param [out] degenerateIndices indices of degenerate mesh triangles
+ * \param [in] spatialIndexResolution The grid resolution for the index
+ * structure (default: 0)
+ *
+ * After running this function over a surface mesh, intersection will be filled
+ * with pairs of indices of intersecting triangles and degenerateIndices will
+ * be filled with the indices of the degenerate triangles in the mesh.
  * Triangles that share vertex pairs (adjacent triangles in a watertight
  * surface mesh) are not reported as intersecting.  Degenerate triangles
  * are not reported as intersecting other triangles.
@@ -44,16 +49,16 @@ namespace quest {
  * default value of 0 causes this routine to calculate a heuristic bin size
  * based on the cube root of the number of cells in the mesh.
  */
-int
-findTriMeshIntersections(mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
-                         std::vector<std::pair<int, int> > & intersections,
-			 std::vector<int> & degenerateIndices,
-			 int spatialIndexResolution = 0)
+void findTriMeshIntersections(
+    mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
+    std::vector<std::pair<int, int> > & intersections,
+		std::vector<int> & degenerateIndices,
+		int spatialIndexResolution = 0)
 {
-  return detail::findTriMeshIntersections_impl(surface_mesh,
-                                               intersections,
-                                               degenerateIndices, 
-                                               spatialIndexResolution);
+  detail::findTriMeshIntersections_impl(surface_mesh,
+                                        intersections,
+                                        degenerateIndices,
+                                        spatialIndexResolution);
 }
 
 } // end namespace quest
