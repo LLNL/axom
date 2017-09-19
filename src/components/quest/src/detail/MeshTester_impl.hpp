@@ -85,11 +85,16 @@ Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
   return tri;
 }
 
-int
-findTriMeshIntersections_impl(TriangleMesh * surface_mesh,
-                              std::vector<std::pair<int, int> > & intersections,
-                              std::vector<int> & degenerateIndices,
-                              int spatialIndexResolution)
+/*!
+ * \brief Implementation for quest::findTriMeshIntersections
+ *
+ * \see findTriMeshIntersections
+ */
+void  findTriMeshIntersections_impl(
+    TriangleMesh * surface_mesh,
+    std::vector<std::pair<int, int> > & intersections,
+    std::vector<int> & degenerateIndices,
+    int spatialIndexResolution)
 {
   Triangle3 t1 = Triangle3();
   Triangle3 t2 = Triangle3();
@@ -169,8 +174,6 @@ findTriMeshIntersections_impl(TriangleMesh * surface_mesh,
       ++nit;
     }
   }
-
-  return 0;
 }
 
 } // end namespace detail

@@ -285,13 +285,13 @@ int main( int argc, char** argv )
 
   std::vector< std::pair<int, int> > collisions;
   std::vector<int> degenerate;
-  int status = 0;
+
   if (params.resolution == 1) {
     // Naive method
     collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
   } else {
     // Use a spatial index
-    status = quest::findTriMeshIntersections(surface_mesh,
+    quest::findTriMeshIntersections(surface_mesh,
                                              collisions,
                                              degenerate,
                                              params.resolution);
