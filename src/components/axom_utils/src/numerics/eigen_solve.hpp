@@ -45,7 +45,7 @@ namespace numerics {
  * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
  * \param [in] numIterations optional number of iterations for the power method
- * \note if k <= 0, solve is declared unsuccessful
+ * \note if k <= 0, the solve is declared successful
  * \return rc return value, nonzero if the solve is successful.
  *
  * \pre A.isSquare() == true
