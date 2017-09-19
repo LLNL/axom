@@ -1,2 +1,2 @@
 planesmall.test
-golfball.test
+sphere.test
