@@ -57,9 +57,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         hdf5)
 
     if (SCR_FOUND)
-       set(quest_regression_depends
-           ${quest_regression_depends}
-           scr)
+       list(APPEND quest_regression_depends scr)
     endif()
    
     set(test_name quest_regression_test)

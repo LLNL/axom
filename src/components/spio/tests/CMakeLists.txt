@@ -9,10 +9,7 @@ set(spio_test_depends
     )
 
 if(SCR_FOUND)
-     set(spio_test_depends
-         ${spio_test_depends}
-         scr
-         )
+     list(APPEND spio_test_depends scr)
 endif()
 
 if (ENABLE_MPI)

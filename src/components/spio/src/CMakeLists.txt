@@ -15,10 +15,7 @@ set(spio_depends
     )
 
 if(SCR_FOUND)
-     set(spio_depends
-         ${spio_depends}
-         scr
-         )
+     list(APPEND spio_depends scr)
 endif()
 
 #

@@ -12,7 +12,13 @@
 /**************************************************************************
  *************************************************************************/
 
+#include "axom/config.hpp"
+
 #include "mpi.h"
+
+#ifdef AXOM_USE_SCR
+#include "scr.h"
+#endif
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

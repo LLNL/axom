@@ -8,11 +8,17 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+#include "axom/config.hpp"
+
+#include "mpi.h"
+
+#ifdef AXOM_USE_SCR
+#include "scr.h"
+#endif
+
 #include "spio/IOManager.hpp"
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
-
-#include "mpi.h"
 
 using axom::spio::IOManager;
 using axom::sidre::Group;
