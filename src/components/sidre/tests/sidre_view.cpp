@@ -409,48 +409,126 @@ TEST(sidre_view,alloc_zero_items)
 {
   DataStore * ds = new DataStore();
   Group * root = ds->getRoot();
-  View * dv;
 
-  // Allocate zero items
-  dv = root->createView("z0");
-  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
-  dv->allocate(INT_ID, 0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+  // Allocate View with zero items
+  {
+    View * dv = root->createView("z0");
+    EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
-  // Reallocate zero items
-  dv = root->createView("z1");
-  EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
-  dv->allocate(INT_ID, BLEN);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
-  dv->reallocate(0);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    // Allocate with negative value leaves the view unallocated
+    SLIC_INFO("Attempting View::allocate(-1).  Warning expected.");
+    dv->allocate(INT_ID, -1);
+    EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
-  // Allocate View of size 0 into non-empty buffer
-  Buffer * nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+    // Allocate with size zero
+    dv->allocate(INT_ID, 0);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_EQ(0, dv->getBuffer()->getNumElements());
+  }
 
-  dv = root->createView("z_nonEmptyBuf_attach_apply");
-  dv->attachBuffer(nonEmptyBuf)->apply(0);
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+  // Reallocate View with zero items
+  {
+    View * dv = root->createView("z1");
+    EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
-  dv = root->createView("z_nonEmptyBuf_described_attach", INT_ID, 0);
-  dv->attachBuffer(nonEmptyBuf);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    dv->allocate(INT_ID, BLEN);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
+
+    // Try to reallocate with negative size; no-op
+    SLIC_INFO("Attempting View::reallocate(-1).  Warning expected.");
+    dv->reallocate(-1);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
+
+    // Call realloc(0); view and associated buffer are resized
+    dv->reallocate(0);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_EQ(0, dv->getBuffer()->getNumElements());
+
+    // Deallocate and then allocate() when described with zero items
+    dv->deallocate();
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, false, false, 0));
+    dv->allocate();
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+    // Deallocate and then allocate(0) when described with zero items
+    dv->deallocate();
+    dv->allocate(INT_ID, 0);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+    // Deallocate and then reallocate(), size zero
+    dv->deallocate();
+    dv->reallocate(0);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+
+    // Deallocate and then reallocate(), non-zero sized
+    dv->deallocate();
+    dv->reallocate(BLEN);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
+  }
+
+  // Allocate View of size zero into non-empty buffer
+  {
+    Buffer * nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+
+    View * dv = root->createView("z_nonEmptyBuf_attach_apply");
+    dv->attachBuffer(nonEmptyBuf)->apply(0);
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
+
+    // reallocate view to have non-zero size and check that buffer is resized
+    int sz = BLEN / 2;
+    dv->reallocate(sz);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, sz));
+    EXPECT_EQ(sz, dv->getBuffer()->getNumElements());
+
+    // reallocate view to have size zero and check that buffer is resized
+    dv->reallocate(0);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_EQ(0, dv->getBuffer()->getNumElements());
+
+    // reallocate view to have size BLEN and check that buffer is resized
+    dv->reallocate(BLEN);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
+    EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
+
+    dv = root->createView("z_nonEmptyBuf_described_attach", INT_ID, 0);
+    dv->attachBuffer(nonEmptyBuf);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
+  }
 
 
   // Allocate View of size 0 into empty buffer
-  Buffer * emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
-  dv = root->createView("z_emptyBuf_attach_apply");
-  dv->attachBuffer(emptyBuf)->allocate()->apply(0);
-  EXPECT_TRUE(dv->getBuffer()->isAllocated());
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+  {
+    Buffer * emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
+    View * dv = root->createView("z_emptyBuf_attach_apply");
+    dv->attachBuffer(emptyBuf)->allocate()->apply(0);
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
 
-  dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
-  dv->attachBuffer(emptyBuf);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    // reallocate buffer with non-emtpy size; view should still be zero
+    emptyBuf->reallocate(BLEN);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
+
+    // reallocate view to have size zero; view and buffer should be resized
+    dv->reallocate(0);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_EQ(0, dv->getBuffer()->getNumElements());
+
+    // attach a second view with size zero
+    dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
+    dv->attachBuffer(emptyBuf);
+    EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, 0));
+    EXPECT_EQ(0, dv->getBuffer()->getNumElements());
+  }
 
   delete ds;
 }
@@ -1534,4 +1612,23 @@ TEST(sidre_view,value_from_uninited_view)
   int dval = view->getData();
   EXPECT_EQ(dval,0);
 
+}
+
+
+
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }
