@@ -9,7 +9,7 @@
 # first Check for SCR_DIR
 
 if(NOT SCR_DIR)
-    MESSAGE(FATAL_ERROR "Could not find SCR. SCR support needs explicit SCR_DIR")
+    message(FATAL_ERROR "Could not find SCR. SCR support needs explicit SCR_DIR")
 endif()
 
 #find includes
