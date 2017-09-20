@@ -45,7 +45,7 @@ namespace numerics {
  * \param [out] u pointer to k eigenvectors in order by magnitude of eigenvalue
  * \param [out] lambdas pointer to k eigenvales in order by size
  * \param [in] numIterations optional number of iterations for the power method
- * \note if k <= 0, solve is declared unsuccessful
+ * \note if k <= 0, the solve is declared successful
  * \return rc return value, nonzero if the solve is successful.
  *
  * \pre A.isSquare() == true
@@ -85,15 +85,12 @@ T getRandom()
 template < typename T >
 int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
 {
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                         "pre: T is a floating point type");
   assert("pre: input matrix must be square" && A.isSquare());
   assert("pre: can't have more eigenvectors than rows" && (k <= A.getNumRows()));
   assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
-
-  #ifdef AXOM_USE_CXX11
-    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
-                           "pre: T is a floating point type");
-  #endif
 
   if (!A.isSquare())
   {
