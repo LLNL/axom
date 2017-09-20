@@ -46,6 +46,9 @@ set( mint_headers
     mesh/StructuredMesh.hpp
     mesh/UniformMesh.hpp
     mesh/UnstructuredMesh.hpp
+
+    ## utils
+    utils/vtk_utils.hpp
    )
 
 ## mint sources
@@ -64,6 +67,9 @@ set( mint_sources
     mesh/RectilinearMesh.cpp
     mesh/StructuredMesh.cpp
     mesh/UniformMesh.cpp
+
+    ## utils
+    utils/vtk_utils.cpp
    )
 
 ## create the mint library

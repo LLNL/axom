@@ -94,7 +94,7 @@ TEST(C_sidre_external, save_load_external_view)
   SIDRE_view_print(dview);
 
   SIDRE_group_save(root, "out_sidre_external_save_restore_external_view",
-                       "conduit");
+                   "conduit");
 
   SIDRE_datastore_print(ds);
 
@@ -103,7 +103,7 @@ TEST(C_sidre_external, save_load_external_view)
   SIDRE_group * root2 = SIDRE_datastore_get_root(ds);
 
   SIDRE_group_load(root, "out_sidre_external_save_restore_external_view",
-                       "conduit");
+                   "conduit");
 
   SIDRE_datastore_print(ds2);
 

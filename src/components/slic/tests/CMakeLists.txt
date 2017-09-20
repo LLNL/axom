@@ -4,6 +4,7 @@
 
 set(gtest_slic_tests
    slic_asserts.cpp
+   slic_interface.cpp
    )
 
 set(bench_slic_tests

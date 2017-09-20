@@ -27,6 +27,7 @@
 #include "mint/Mesh.hpp"
 #include "mint/ShapeFunction.hpp"
 #include "mint/UnstructuredMesh.hpp"
+#include "mint/vtk_utils.hpp"
 
 // Slic includes
 #include "slic/slic.hpp"
@@ -179,7 +180,7 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
 
 #ifdef MINT_FEM_DEBUG
   std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
-  m->toVtkFile( vtkFile );
+  mint::write_vtk( m,  vtkFile );
 #endif
 
   // clean up

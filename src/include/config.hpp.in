@@ -28,6 +28,13 @@
 
 
 /*
+ * Axom source location
+ */
+#define AXOM_SRC_DIR "@AXOM_SRC_DIR@"
+#define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
+
+
+/*
  * Compiler tests
  */
 #cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE

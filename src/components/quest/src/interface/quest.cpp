@@ -36,7 +36,6 @@
   #include "quest/PSTLReader.hpp"
 #endif
 
-
 namespace axom {  
 namespace quest {
 
@@ -44,6 +43,9 @@ namespace quest {
     // Note: Define everything in a local namespace
   namespace
   {
+
+    namespace slic = axom::slic;
+
     typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
     enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
 
@@ -61,11 +63,12 @@ namespace quest {
 
         /** \brief Default constructor */
         QuestAccelerator()
-            : m_surface_mesh(AXOM_NULLPTR)
-            , m_region(AXOM_NULLPTR)
-            , m_containmentTree(AXOM_NULLPTR)
-            , m_queryMode(QUERY_MODE_NONE)
-            , m_originalLoggerName("")
+            : m_surface_mesh(AXOM_NULLPTR),
+              m_region(AXOM_NULLPTR),
+              m_containmentTree(AXOM_NULLPTR),
+              m_queryMode(QUERY_MODE_NONE),
+              m_originalLoggerName(""),
+              m_shouldFinalizeSlic(false)
         {
         }
 
@@ -296,12 +299,11 @@ namespace quest {
         void setupQuestLogger()
 #endif
         {
-            namespace slic = axom::slic;
-
-            // Setup the formatted quest logger
+            // Ensure slic has been initialized
             if( ! slic::isInitialized() )
             {
                 slic::initialize();
+                m_shouldFinalizeSlic = true;  // mark that we need to finalize slic
             }
 
             const std::string questLoggerName = "quest_logger";
@@ -332,11 +334,19 @@ namespace quest {
         }
 
         /**
-         * \brief Restores the original Slic logger
+         * \brief Deactivates the quest logger
+         *
+         * If there was a previous logger, it is restored.
+         * If slic was initialized by a call to setupQuestLogger(), slic is finalized.
          */
         void teardownQuestLogger()
         {
-            namespace slic = axom::slic;
+            if( ! slic::isInitialized())
+            {
+              m_shouldFinalizeSlic = false;
+              return;
+            }
+
             slic::flushStreams();
 
             if(m_originalLoggerName != "")
@@ -345,6 +355,13 @@ namespace quest {
                 slic::activateLogger(m_originalLoggerName);
                 m_originalLoggerName = "";
             }
+
+            if( m_shouldFinalizeSlic )
+            {
+              slic::finalize();
+              m_shouldFinalizeSlic = false;
+            }
+
         }
 
 
@@ -358,6 +375,7 @@ namespace quest {
         GeometricBoundingBox m_meshBoundingBox;
 
         std::string          m_originalLoggerName;
+        bool                 m_shouldFinalizeSlic;
     };
 
     /**

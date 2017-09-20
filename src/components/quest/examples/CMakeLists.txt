@@ -45,15 +45,6 @@ blt_add_executable(
     DEPENDS_ON  ${quest_example_depends} fmt
     )
 
-blt_add_executable(
-    NAME        quest_mesh_tester_ex
-    SOURCES     mesh_tester.cpp
-    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
-    )
-
-
-
 ## Quest interface examples
 
 set(quest_interface_extra_depends)

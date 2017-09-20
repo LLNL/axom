@@ -20,7 +20,7 @@
 
 static int const NUM_ELEMS = 5;
 
-TEST(gtest_slam_set_virtualbase,construct)
+TEST(slam_set_virtualbase,construct)
 {
   axom::slam::Set* s = new axom::slam::RangeSet(NUM_ELEMS);
 
@@ -44,7 +44,7 @@ TEST(gtest_slam_set_virtualbase,construct)
 }
 
 
-TEST(gtest_slam_set_virtualbase,equality)
+TEST(slam_set_virtualbase,equality)
 {
   axom::slam::Set* s1 = new axom::slam::RangeSet(NUM_ELEMS);
   axom::slam::Set* s2 = new axom::slam::RangeSet(NUM_ELEMS);

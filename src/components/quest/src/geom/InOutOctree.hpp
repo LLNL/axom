@@ -39,6 +39,7 @@
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
+#include "mint/vtk_utils.hpp"
 
 
 #include <vector>   // For InOutLeafData triangle lists -- TODO replace with SLAM DynamicVariableRelation...
@@ -1640,11 +1641,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                          || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
                      "Spreading color to block " << leafBlk << " with data " <<  leafData
                      << " and bounding box " << this->blockBoundingBox(leafBlk)
-                     << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
+                     << " -- midpoint " << this->blockBoundingBox(leafBlk).getCentroid()
                      //
                      << "\n\t\t from " << neighborBlk << " with data " << neighborData
                      << " and bounding box " << this->blockBoundingBox(neighborBlk)
-                     << " -- midpoint " << this->blockBoundingBox(neighborBlk).centroid()
+                     << " -- midpoint " << this->blockBoundingBox(neighborBlk).getCentroid()
                     );
 
                 switch(neighborData.color())
@@ -1657,8 +1658,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                     break;
                 case InOutBlockData::Gray:
                 {
-                    SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).centroid(),
-                                                           this->blockBoundingBox(neighborBlk).centroid());
+                    SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
+                                                           this->blockBoundingBox(neighborBlk).getCentroid());
                     if( withinGrayBlock(faceCenter,  neighborBlk, neighborData) )
                         leafData.setBlack();
                     else
@@ -1693,11 +1694,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                              || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
                          , "Spreading color from block " << leafBlk << " with data " <<  leafData
                          << " and bounding box " << this->blockBoundingBox(leafBlk)
-                         << " -- midpoint " << this->blockBoundingBox(leafBlk).centroid()
+                         << " -- midpoint " << this->blockBoundingBox(leafBlk).getCentroid()
                          //
                          << "\n\t\t to " << neighborBlk << " with data " << neighborData
                          << " and bounding box " << this->blockBoundingBox(neighborBlk)
-                         << " -- midpoint " << this->blockBoundingBox(neighborBlk).centroid()
+                         << " -- midpoint " << this->blockBoundingBox(neighborBlk).getCentroid()
                          );
 
                     switch(leafData.color())
@@ -1710,8 +1711,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                         break;
                     case InOutBlockData::Gray:
                     {
-                        SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).centroid(),
-                                                               this->blockBoundingBox(leafBlk.faceNeighbor(i)).centroid());
+                        SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
+                                                               this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
                         if( withinGrayBlock(faceCenter,  leafBlk, leafData) )
                             neighborData.setBlack();
@@ -2455,7 +2456,7 @@ private:
             colors[i] = leafColors[i];
     }
 
-    debugMesh->toVtkFile(fNameStr.str());
+    mint::write_vtk(debugMesh, fNameStr.str());
 
     delete debugMesh;
     debugMesh = AXOM_NULLPTR;
@@ -2504,7 +2505,7 @@ private:
     // -- number of blocks that index this triangle (blockCount)?
     // -- vertex field for number of triangles incident in the vertex (vtCount)?
 
-    debugMesh->toVtkFile(fNameStr.str());
+    mint::write_vtk(debugMesh, fNameStr.str());
 
     delete debugMesh;
     debugMesh = AXOM_NULLPTR;

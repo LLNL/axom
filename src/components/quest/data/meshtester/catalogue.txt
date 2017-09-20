@@ -1,0 +1,2 @@
+planesmall.test
+sphere.test

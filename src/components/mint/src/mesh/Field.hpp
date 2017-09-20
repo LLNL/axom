@@ -51,7 +51,7 @@ public:
   int getNumTuples() const { return m_num_tuples; };
 
   /*!
-   * \brief Retuns the number of components per tuple.
+   * \brief Returns the number of components per tuple.
    * \return nc the number of components per tuple.
    * \post nc >= 1.
    */
@@ -66,11 +66,25 @@ public:
   virtual double* getDoublePtr();
 
   /*!
+   * \brief Returns a constant double pointer to the field data.
+   * \return ptr constant pointer to the field data.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
+   */
+  virtual const double* getDoublePtr() const;
+
+  /*!
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
   virtual int* getIntPtr();
+
+  /*!
+   * \brief Returns a constant int pointer to the field data.
+   * \return ptr constant pointer to the field data.
+   * \post ptr==AXOM_NULLPTR iff the is not an integer type.
+   */
+  virtual const int* getIntPtr() const;
 
 protected:
 
@@ -85,7 +99,7 @@ protected:
    *  number of components.
    * \param [in] name the name of the field.
    * \param [in] size the size of the field.
-   * \param [in] num_components the number of components per element.
+   * \param [in] num_components the number of components per tuple.
    * \note The custom constructor is intended for use in the constructor of
    *  subclasses to properly initialize the properties associated with this
    *  Field instance.

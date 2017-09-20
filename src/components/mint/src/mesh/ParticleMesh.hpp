@@ -135,6 +135,13 @@ public:
   /*!
    * \brief Inserts a particle in to the particle mesh.
    * \param [in] x the x--coordinate of the particle.
+   * \pre this->getDimension() == 1
+   */
+  void insertParticle( double x );
+
+  /*!
+   * \brief Inserts a particle in to the particle mesh.
+   * \param [in] x the x--coordinate of the particle.
    * \param [in] y the y--coordinate of the particle.
    * \pre this->getDimension() == 2
    */
@@ -180,34 +187,36 @@ private:
 namespace axom {
 namespace mint {
 
-inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
-{
+inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const {
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
   return m_particle_coordinates->getCoordinateArray( idim );
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x, double y )
-{
-  SLIC_ASSERT( this->getDimension()==2 );
+inline void ParticleMesh::insertParticle( double x ) {
+  SLIC_ASSERT( this->getDimension() == 1 );
+  m_particle_coordinates->insertPoint( x );
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::insertParticle( double x, double y ) {
+  SLIC_ASSERT( this->getDimension() == 2 );
   m_particle_coordinates->insertPoint( x, y );
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x, double y, double z )
-{
-  SLIC_ASSERT( this->getDimension()==3);
+inline void ParticleMesh::insertParticle( double x, double y, double z ) {
+  SLIC_ASSERT( this->getDimension() == 3);
   m_particle_coordinates->insertPoint( x, y, z );
 }
 
 //------------------------------------------------------------------------------
-inline void ParticleMesh::getParticleCoordinates(
-  int partIdx, double part_coords[3] ) const
-{
+inline void ParticleMesh::getParticleCoordinates( int partIdx, 
+                                                  double part_coords[3] ) const {
   SLIC_ASSERT( partIdx >= 0 && partIdx < this->getNumberOfParticles() );
 
   for ( int i=0; i < this->getDimension(); ++i ) {
-    double* px       = this->getParticlesCoordinatesArray( i );
+    double* px = this->getParticlesCoordinatesArray( i );
     part_coords[ i ] = px[ partIdx ];
   }
 

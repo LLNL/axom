@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 
 
 
-TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
+TEST(slam_tinyHydro,test_02_density_with_prescribed_velocity)
 {
   SLIC_INFO("\t******************************************************\n"
       << "\tmove mesh with prescribed velocity, test density change.\n"
@@ -111,7 +111,7 @@ TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
 }
 
 
-TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
+TEST(slam_tinyHydro,test_03_gradAndForce)
 {
   SLIC_INFO("\t******************************************************\n"
       << "\t     test gradient operator and force calculation.\n"
@@ -234,7 +234,7 @@ TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
 
 
 
-TEST(gtest_slam_tinyHydro,test_04_BC)
+TEST(slam_tinyHydro,test_04_BC)
 {
   SLIC_INFO("\t******************************************************\n"
       << "\t           testing boundary conditions.\n"
@@ -321,7 +321,7 @@ TEST(gtest_slam_tinyHydro,test_04_BC)
 
 
 
-TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
+TEST(slam_tinyHydro,test_05_newDT_Noh)
 {
   SLIC_INFO("\t******************************************************\n"
       << "\t            testing newDT method -- Noh.\n"
@@ -422,7 +422,7 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
 
 
 
-TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
+TEST(slam_tinyHydro,test_05_newDT_Sedov)
 {
   SLIC_INFO("\t******************************************************\n"
       << "\t              testing newDT method -- Sedov.\n"
@@ -495,7 +495,7 @@ TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
 }
 
 
-TEST(gtest_slam_tinyHydro,test_06_PdV_work)
+TEST(slam_tinyHydro,test_06_PdV_work)
 {
   SLIC_INFO("\t******************************************************\n"
       << "\t              testing PdV work.\n"

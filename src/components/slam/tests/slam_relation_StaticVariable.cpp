@@ -233,7 +233,7 @@ namespace policies = axom::slam::policies;
   }
 
 } // end anonymous namespace
-TEST(gtest_slam_static_variable_relation,construct_empty)
+TEST(slam_static_variable_relation,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be false.");
 
@@ -242,7 +242,7 @@ TEST(gtest_slam_static_variable_relation,construct_empty)
   EXPECT_FALSE(emptyRel.isValid(true));
 }
 
-TEST(gtest_slam_static_variable_relation,construct_uninitialized)
+TEST(slam_static_variable_relation,construct_uninitialized)
 {
   SLIC_INFO("Testing uninitialized relation.  isValid() should be false.");
 
@@ -255,7 +255,7 @@ TEST(gtest_slam_static_variable_relation,construct_uninitialized)
 }
 
 
-TEST(gtest_slam_static_variable_relation,construct_relation)
+TEST(slam_static_variable_relation,construct_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
@@ -290,7 +290,7 @@ TEST(gtest_slam_static_variable_relation,construct_relation)
 }
 
 
-TEST(gtest_slam_static_variable_relation,construct_builder)
+TEST(slam_static_variable_relation,construct_builder)
 {
   SLIC_INFO("Testing construction using builder interface.");
 
@@ -326,7 +326,7 @@ TEST(gtest_slam_static_variable_relation,construct_builder)
 
 
 
-TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
+TEST(slam_static_variable_relation,empty_relation_out_of_bounds)
 {
   StaticVariableRelationType emptyRel;
 
@@ -342,7 +342,7 @@ TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
 
 /// Tests for out-of-bounds access
 
-TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
+TEST(slam_static_variable_relation,initialized_rel_out_of_bounds)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 

@@ -117,11 +117,11 @@ private:
     if (arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
-		     "setScalar: Incorrect type for attribute '"
+                     "setScalar: Incorrect type for attribute '"
                      << attr->getName()
-		     << "' of type "
+                     << "' of type "
                      << attr->getDefaultNodeRef().dtype().name()
-		     << ": " << DataType::id_to_name(arg_id) << ".");
+                     << ": " << DataType::id_to_name(arg_id) << ".");
       return false;
     }
 
@@ -143,11 +143,11 @@ private:
     if (arg_id != attr->getTypeID())
     {
       SLIC_CHECK_MSG(arg_id == attr->getTypeID(),
-		     "setString: Incorrect type for attribute '"
+                     "setString: Incorrect type for attribute '"
                      << attr->getName()
-		     << "' of type "
+                     << "' of type "
                      << attr->getDefaultNodeRef().dtype().name()
-		     << ": " << DataType::id_to_name(arg_id) << ".");
+                     << ": " << DataType::id_to_name(arg_id) << ".");
       return false;
     }
 
