@@ -47,7 +47,7 @@ namespace mint {
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_TET > : public ShapeFunction< Lagrange< MINT_TET > >
+class Lagrange< MINT_TET > :public ShapeFunction< Lagrange< MINT_TET > >
 {
 public:
 
@@ -98,8 +98,8 @@ public:
 
   static void computeShape( const double* xr, double* phi )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phi != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phi != AXOM_NULLPTR );
 
     const double r = xr[0];
     const double s = xr[1];

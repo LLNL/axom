@@ -8,7 +8,6 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
-
 #ifndef MINT_LAGRANGE_HEXA_27_HPP_
 #define MINT_LAGRANGE_HEXA_27_HPP_
 
@@ -69,7 +68,7 @@ namespace mint {
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_HEX27 > : public ShapeFunction< Lagrange< MINT_HEX27 > >
+class Lagrange< MINT_HEX27 > :public ShapeFunction< Lagrange< MINT_HEX27 > >
 {
 public:
 
@@ -89,60 +88,114 @@ public:
 
   static void getCenter( double* center )
   {
-     SLIC_ASSERT( center != AXOM_NULLPTR );
+    SLIC_ASSERT( center != AXOM_NULLPTR );
 
-     center[ 0 ] = 0.5;
-     center[ 1 ] = 0.5;
-     center[ 2 ] = 0.5;
+    center[ 0 ] = 0.5;
+    center[ 1 ] = 0.5;
+    center[ 2 ] = 0.5;
   }
 
   static void getCoords( double* coords )
   {
-     SLIC_ASSERT( coords != AXOM_NULLPTR );
+    SLIC_ASSERT( coords != AXOM_NULLPTR );
 
-     // corner nodes
-     coords[ 0 ] = 0.0; coords[ 1  ] = 0.0; coords[ 2  ] = 0.0; // node 0
-     coords[ 3 ] = 1.0; coords[ 4  ] = 0.0; coords[ 5  ] = 0.0; // node 1
-     coords[ 6 ] = 1.0; coords[ 7  ] = 1.0; coords[ 8  ] = 0.0; // node 2
-     coords[ 9 ] = 0.0; coords[ 10 ] = 1.0; coords[ 11 ] = 0.0; // node 3
+    // corner nodes
+    coords[ 0 ] = 0.0;
+    coords[ 1  ] = 0.0;
+    coords[ 2  ] = 0.0;                                         // node 0
+    coords[ 3 ] = 1.0;
+    coords[ 4  ] = 0.0;
+    coords[ 5  ] = 0.0;                                         // node 1
+    coords[ 6 ] = 1.0;
+    coords[ 7  ] = 1.0;
+    coords[ 8  ] = 0.0;                                         // node 2
+    coords[ 9 ] = 0.0;
+    coords[ 10 ] = 1.0;
+    coords[ 11 ] = 0.0;                                         // node 3
 
-     coords[ 12 ] = 0.0; coords[ 13 ] = 0.0; coords[ 14 ] = 1.0; // node 4
-     coords[ 15 ] = 1.0; coords[ 16 ] = 0.0; coords[ 17 ] = 1.0; // node 5
-     coords[ 18 ] = 1.0; coords[ 19 ] = 1.0; coords[ 20 ] = 1.0; // node 6
-     coords[ 21 ] = 0.0; coords[ 22 ] = 1.0; coords[ 23 ] = 1.0; // node 7
+    coords[ 12 ] = 0.0;
+    coords[ 13 ] = 0.0;
+    coords[ 14 ] = 1.0;                                          // node 4
+    coords[ 15 ] = 1.0;
+    coords[ 16 ] = 0.0;
+    coords[ 17 ] = 1.0;                                          // node 5
+    coords[ 18 ] = 1.0;
+    coords[ 19 ] = 1.0;
+    coords[ 20 ] = 1.0;                                          // node 6
+    coords[ 21 ] = 0.0;
+    coords[ 22 ] = 1.0;
+    coords[ 23 ] = 1.0;                                          // node 7
 
-     // edge nodes
-     coords[ 24 ] = 0.5; coords[ 25 ] = 0.0; coords[ 26 ] = 0.0; // node 8
-     coords[ 27 ] = 1.0; coords[ 28 ] = 0.5; coords[ 29 ] = 0.0; // node 9
-     coords[ 30 ] = 0.5; coords[ 31 ] = 1.0; coords[ 32 ] = 0.0; // node 10
-     coords[ 33 ] = 0.0; coords[ 34 ] = 0.5; coords[ 35 ] = 0.0; // node 11
+    // edge nodes
+    coords[ 24 ] = 0.5;
+    coords[ 25 ] = 0.0;
+    coords[ 26 ] = 0.0;                                          // node 8
+    coords[ 27 ] = 1.0;
+    coords[ 28 ] = 0.5;
+    coords[ 29 ] = 0.0;                                          // node 9
+    coords[ 30 ] = 0.5;
+    coords[ 31 ] = 1.0;
+    coords[ 32 ] = 0.0;                                          // node 10
+    coords[ 33 ] = 0.0;
+    coords[ 34 ] = 0.5;
+    coords[ 35 ] = 0.0;                                          // node 11
 
-     coords[ 36 ] = 0.5; coords[ 37 ] = 0.0; coords[ 38 ] = 1.0; // node 12
-     coords[ 39 ] = 1.0; coords[ 40 ] = 0.5; coords[ 41 ] = 1.0; // node 13
-     coords[ 42 ] = 0.5; coords[ 43 ] = 1.0; coords[ 44 ] = 1.0; // node 14
-     coords[ 45 ] = 0.0; coords[ 46 ] = 0.5; coords[ 47 ] = 1.0; // node 15
+    coords[ 36 ] = 0.5;
+    coords[ 37 ] = 0.0;
+    coords[ 38 ] = 1.0;                                          // node 12
+    coords[ 39 ] = 1.0;
+    coords[ 40 ] = 0.5;
+    coords[ 41 ] = 1.0;                                          // node 13
+    coords[ 42 ] = 0.5;
+    coords[ 43 ] = 1.0;
+    coords[ 44 ] = 1.0;                                          // node 14
+    coords[ 45 ] = 0.0;
+    coords[ 46 ] = 0.5;
+    coords[ 47 ] = 1.0;                                          // node 15
 
-     coords[ 48 ] = 0.0; coords[ 49 ] = 0.0; coords[ 50 ] = 0.5; // node 16
-     coords[ 51 ] = 1.0; coords[ 52 ] = 0.0; coords[ 53 ] = 0.5; // node 17
-     coords[ 54 ] = 1.0; coords[ 55 ] = 1.0; coords[ 56 ] = 0.5; // node 18
-     coords[ 57 ] = 0.0; coords[ 58 ] = 1.0; coords[ 59 ] = 0.5; // node 19
+    coords[ 48 ] = 0.0;
+    coords[ 49 ] = 0.0;
+    coords[ 50 ] = 0.5;                                          // node 16
+    coords[ 51 ] = 1.0;
+    coords[ 52 ] = 0.0;
+    coords[ 53 ] = 0.5;                                          // node 17
+    coords[ 54 ] = 1.0;
+    coords[ 55 ] = 1.0;
+    coords[ 56 ] = 0.5;                                          // node 18
+    coords[ 57 ] = 0.0;
+    coords[ 58 ] = 1.0;
+    coords[ 59 ] = 0.5;                                          // node 19
 
-     // face nodes
-     coords[ 60 ] = 0.0; coords[ 61 ] = 0.5; coords[ 62 ] = 0.5; // node 20
-     coords[ 63 ] = 1.0; coords[ 64 ] = 0.5; coords[ 65 ] = 0.5; // node 21
-     coords[ 66 ] = 0.5; coords[ 67 ] = 0.0; coords[ 68 ] = 0.5; // node 22
-     coords[ 69 ] = 0.5; coords[ 70 ] = 1.0; coords[ 71 ] = 0.5; // node 23
-     coords[ 72 ] = 0.5; coords[ 73 ] = 0.5; coords[ 74 ] = 0.0; // node 24
-     coords[ 75 ] = 0.5; coords[ 76 ] = 0.5; coords[ 77 ] = 1.0; // node 25
+    // face nodes
+    coords[ 60 ] = 0.0;
+    coords[ 61 ] = 0.5;
+    coords[ 62 ] = 0.5;                                          // node 20
+    coords[ 63 ] = 1.0;
+    coords[ 64 ] = 0.5;
+    coords[ 65 ] = 0.5;                                          // node 21
+    coords[ 66 ] = 0.5;
+    coords[ 67 ] = 0.0;
+    coords[ 68 ] = 0.5;                                          // node 22
+    coords[ 69 ] = 0.5;
+    coords[ 70 ] = 1.0;
+    coords[ 71 ] = 0.5;                                          // node 23
+    coords[ 72 ] = 0.5;
+    coords[ 73 ] = 0.5;
+    coords[ 74 ] = 0.0;                                          // node 24
+    coords[ 75 ] = 0.5;
+    coords[ 76 ] = 0.5;
+    coords[ 77 ] = 1.0;                                          // node 25
 
-     // centroid
-     coords[ 78 ] = 0.5; coords[ 79 ] = 0.5; coords[ 80 ] = 0.5; // node 26
+    // centroid
+    coords[ 78 ] = 0.5;
+    coords[ 79 ] = 0.5;
+    coords[ 80 ] = 0.5;                                          // node 26
   }
 
   static void computeShape( const double* xr, double* phi )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phi != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phi != AXOM_NULLPTR );
 
     const double r = xr[0];
     const double s = xr[1];
@@ -205,8 +258,8 @@ public:
 
   static void computeDerivatives( const double* xr, double* phidot )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phidot != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phidot != AXOM_NULLPTR );
 
     const double r = xr[0];
     const double s = xr[1];

@@ -24,17 +24,19 @@
 namespace axom {
 namespace mint {
 
-class Gaussian2D {
+class Gaussian2D
+{
 public:
   /*!
    * \brief Creates a 2D Guassian with the given amplitude, mean, and covariance.
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
-   * \param [in] mean the mean of the gaussian. The format is 
+   * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
    * \param [in] covar the covariance of the gaussian. The format is
    *  \f$ \text{var}(x), \text{var}(y), \text{var}(xy) \f$.
    */
-  Gaussian2D( double amplitude, const double mean[2], const double covar[3] ) {
+  Gaussian2D( double amplitude, const double mean[2], const double covar[3] )
+  {
     setMean( mean );
     setCovar( covar );
     setAmplitude( amplitude );
@@ -42,10 +44,11 @@ public:
 
   /*!
    * \brief Sets the mean.
-   * \param [in] mean the mean of the gaussian. The format is 
+   * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
    */
-  void setMean( const double mean[2] ) {
+  void setMean( const double mean[2] )
+  {
     m_mean[0] = mean[0];
     m_mean[1] = mean[1];
   }
@@ -59,7 +62,8 @@ public:
    * \pre \f$ \text{var}(y) > 0 \f$
    * \pre \f$ \text{var}(xy)^2 < \text{var}(x) \text{var}(y) \f$
    */
-  void setCovar( const double covar[3] ) {
+  void setCovar( const double covar[3] )
+  {
     double det = covar[0] * covar[1] - covar[2] * covar[2];
     if ( covar[0] <= 0 || covar[1] <= 0 || det == 0 ) {
       SLIC_ERROR( "Invalid covariance: (" << covar[0] << ", " << covar[1] <<
@@ -75,18 +79,20 @@ public:
    * \brief Sets the amplitude.
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
    */
-  void setAmplitude( double amplitude ) {
+  void setAmplitude( double amplitude )
+  {
     m_amplitude = amplitude;
   }
 
   /*!
    * \brief Evaluate the gaussian at a point.
    * \param [in] r the position vector at which the gaussian is evaluated.
-   * \return \f$ f\left(\vec{r}\right) = ae^{-\frac{1}{2} \left(\vec{r} - 
-      \vec{\mu}\right)^\top \boldsymbol{\Sigma}^{-1}\left(\vec{r} - 
+   * \return \f$ f\left(\vec{r}\right) = ae^{-\frac{1}{2} \left(\vec{r} -
+      \vec{\mu}\right)^\top \boldsymbol{\Sigma}^{-1}\left(\vec{r} -
       \vec{\mu}\right)} \f$.
    */
-  double evaluate( const double r[2] ) const {
+  double evaluate( const double r[2] ) const
+  {
     double dx = r[0] - m_mean[0];
     double dy = r[1] - m_mean[1];
     double temp = m_half_covar_inv[0] * dx * dx;
@@ -101,8 +107,8 @@ private:
   double m_amplitude;
 };
 
-
-class HeatEquationSolver {
+class HeatEquationSolver
+{
 public:
 
   /*!
@@ -110,11 +116,11 @@ public:
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
-   * \note the equation we are solving is \f$ \frac{\partial U}{\partial t} 
+   * \note the equation we are solving is \f$ \frac{\partial U}{\partial t}
                                           = \alpha \nabla^2 U \f$.
    */
-  HeatEquationSolver( double h, const double lower_bound[2],  
-                                const double upper_bound[2] ):
+  HeatEquationSolver( double h, const double lower_bound[2],
+                      const double upper_bound[2] ):
     m_mesh( create_mesh( h, lower_bound, upper_bound) ),
     m_h(h)
   {}
@@ -122,7 +128,8 @@ public:
   /*!
    * \brief Destroys the heat equation solver by deleting the mesh.
    */
-  ~HeatEquationSolver() {
+  ~HeatEquationSolver()
+  {
     delete m_mesh;
   }
 
@@ -132,8 +139,9 @@ public:
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
    */
-  void setMesh( const double h, const double lower_bound[2], 
-                                const double upper_bound[2] ) {
+  void setMesh( const double h, const double lower_bound[2],
+                const double upper_bound[2] )
+  {
     delete m_mesh;
     m_mesh = create_mesh( h, lower_bound, upper_bound );
     m_h = h;
@@ -143,7 +151,8 @@ public:
    * \brief Apply a two dimensional gaussian to the mesh as an initial condition.
    * \param [in] pulse the pulse to apply.
    */
-  void initialize( const Gaussian2D& pulse ) {
+  void initialize( const Gaussian2D& pulse )
+  {
     double origin[3];
     m_mesh->getOrigin( origin );
     int size[3];
@@ -170,12 +179,13 @@ public:
    * \param [in] period the number of cycles between dumps.
    * \param [in] path the base path of the dump files.
    */
-  void solve( double alpha, double dt, double t_max, int period, 
-                                                     const std::string& path ) {
+  void solve( double alpha, double dt, double t_max, int period,
+              const std::string& path )
+  {
     const int num_nodes = m_mesh->getMeshNumberOfNodes();
     double* new_temp = new double[num_nodes];
     double* prev_temp = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
-    
+
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */
     copy_boundary( prev_temp, new_temp );
@@ -187,24 +197,24 @@ public:
       if ( cycle == num_cycles - 1 ) {
         SLIC_INFO( "Cycle: " << cycle << " Time: " << cur_time << "\n" );
 
-      } else {
+      }
+      else {
         SLIC_INFO( "Cycle: " << cycle << " Time: " << cur_time << "\r" );
       }
       slic::flushStreams();
-      
+
       if ( cycle % period == 0 ) {
         write_dump( path, cur_dump++ );
       }
 
       step( alpha, dt, prev_temp, new_temp );
       std::memcpy( prev_temp, new_temp, num_nodes * sizeof(double) );
-      
+
       if ( cur_time + dt > t_max ) {
         dt = t_max - cur_time;
       }
       cur_time += dt;
     }
-
 
     delete[] new_temp;
     write_dump( path, cur_dump );
@@ -217,17 +227,18 @@ private:
    * \param [in] prev_temp the data to copy.
    * \param [in] new_temp the buffer to copy into.
    */
-  void copy_boundary( const double* prev_temp, double* new_temp ) {
+  void copy_boundary( const double* prev_temp, double* new_temp )
+  {
     int size[3];
     m_mesh->getExtentSize( size );
 
     /* Copy the -y side, which is contiguous. */
     const int memcpy_size = size[0] * sizeof(double);
-    std::memcpy( new_temp, prev_temp, memcpy_size );
+    std:: memcpy( new_temp, prev_temp, memcpy_size );
 
     /* Copy the +y side, which is contiguous. */
     const int offset = (size[1] - 1) * size[0];
-    std::memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
+    std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
     for ( int idx = size[0]; idx < offset; idx += size[0] ) {
@@ -245,11 +256,12 @@ private:
    * \note The timestepping algorithm is an explicit euler scheme with second
    *  order central difference in space. The update equation is \f$
       T_{i, j}^{n + 1} = \left( 1 - 4 \frac{\alpha \Delta t}{h^2} \right)
-      T_{i, j}^n + \frac{\alpha \Delta t}{h^2}  \left( T_{i - 1, j}^n + 
+      T_{i, j}^n + \frac{\alpha \Delta t}{h^2}  \left( T_{i - 1, j}^n +
       T_{i + 1, j}^n + T_{i, j - 1}^n + T_{i, j + 1}^n \right) \f$.
    */
-  void step( double alpha, double dt, const double* prev_temp, 
-                                            double* new_temp ) {
+  void step( double alpha, double dt, const double* prev_temp,
+             double* new_temp )
+  {
     int size[3];
     m_mesh->getExtentSize( size );
     const double neighbors_scale = dt * alpha / ( m_h * m_h );
@@ -259,17 +271,18 @@ private:
        the interior nodes. */
     const int jp = size[0];
     const int Nj = size[1] - 1;
-    const int Ni = size[0] - 1; 
+    const int Ni = size[0] - 1;
     for ( int j = 1; j < Nj; ++j ) {
       const int j_offset = j * jp;
       for ( int i = 1; i < Ni; ++i ) {
-        
+
         const int idx = i + j_offset;
         const int north = idx + jp;
         const int south = idx - jp;
         const int east = idx + 1;
         const int west = idx - 1;
-        const double neighbors_contrib = prev_temp[ north ] + prev_temp[ east ] + 
+        const double neighbors_contrib = prev_temp[ north ] +
+                                         prev_temp[ east ] +
                                          prev_temp[ south ] + prev_temp[ west ];
 
         new_temp[ idx ] = neighbors_scale * neighbors_contrib;
@@ -299,8 +312,9 @@ private:
    * \param [in] upper_bound the upper right corner of the bounding box.
    * \return a pointer to the new uniform mesh.
    */
-  static UniformMesh* create_mesh( const double h, const double lower_bound[2], 
-                                                 const double upper_bound[2] ) {
+  static UniformMesh* create_mesh( const double h, const double lower_bound[2],
+                                   const double upper_bound[2] )
+  {
     int ext[4];
     for ( int i = 0; i < 2; ++i ) {
       double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
@@ -311,8 +325,8 @@ private:
     UniformMesh * mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
     const int num_nodes = mesh->getMeshNumberOfNodes();
 
-    FieldVariable< double >* t = 
-                          new FieldVariable< double >("temperature", num_nodes);
+    FieldVariable< double >* t =
+      new FieldVariable< double >("temperature", num_nodes);
     mesh->getNodeFieldData()->addField(t);
 
     return mesh;
@@ -325,38 +339,38 @@ private:
 } /* end namespace mint */
 } /* end namespace axom */
 
-
-const std::string help_string = 
-"\nUsage: ./mint_heat_equation_ex [options]\n"                                 \
-"-h, -help\n"                                                                  \
-"\tPrint out this message then exit.\n"                                        \
-"-p -path PATH\n"                                                              \
-"\tThe base bath of the dump files. The files will be written to\n"            \
-"path_#.vtk where # is the dump number.\n"                                     \
-"-s, -spacing FLOAT\n"                                                         \
-"\tSet the mesh spacing, must be greater than 0.\n."                           \
-"-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                      \
-"\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n"   \
-"\tand y1 < y2.\n"                                                             \
-"-a FLOAT, -amplitude FLOAT\n"                                                 \
-"\tSet the amplitude of the gaussian pulse.\n"                                 \
-"-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                          \
-"\tSet the mean of the gaussian pulse. Format is x y.\n"                       \
-"-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                        \
-"\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"        \
-"-alpha FLOAT\n"                                                               \
-"\tThe conductivity.\n"                                                        \
-"-dt FLOAT\n"                                                                  \
-"\tThe time step, must be greater than zero.\n"                                \
-"-t FLOAT\n"                                                                   \
-"\tThe time to run the simulation, must be greater than zero.\n"               \
-"-d INT, -dumpPeriod INT\n"                                                    \
-"\tThe number of cycles to wait between writing a dump file.\n";
+const std::string help_string =
+  "\nUsage: ./mint_heat_equation_ex [options]\n"                                 \
+  "-h, -help\n"                                                                  \
+  "\tPrint out this message then exit.\n"                                        \
+  "-p -path PATH\n"                                                              \
+  "\tThe base bath of the dump files. The files will be written to\n"            \
+  "path_#.vtk where # is the dump number.\n"                                     \
+  "-s, -spacing FLOAT\n"                                                         \
+  "\tSet the mesh spacing, must be greater than 0.\n."                           \
+  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                      \
+  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n"   \
+  "\tand y1 < y2.\n"                                                             \
+  "-a FLOAT, -amplitude FLOAT\n"                                                 \
+  "\tSet the amplitude of the gaussian pulse.\n"                                 \
+  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                          \
+  "\tSet the mean of the gaussian pulse. Format is x y.\n"                       \
+  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                        \
+  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"        \
+  "-alpha FLOAT\n"                                                               \
+  "\tThe conductivity.\n"                                                        \
+  "-dt FLOAT\n"                                                                  \
+  "\tThe time step, must be greater than zero.\n"                                \
+  "-t FLOAT\n"                                                                   \
+  "\tThe time to run the simulation, must be greater than zero.\n"               \
+  "-d INT, -dumpPeriod INT\n"                                                    \
+  "\tThe number of cycles to wait between writing a dump file.\n";
 
 /*!
  * \brief A structure that holds the command line arguments.
  */
-typedef struct {
+typedef struct
+{
   double h;
   double lower_bound[2];
   double upper_bound[2];
@@ -376,7 +390,8 @@ typedef struct {
  * \param [in] argc the number of arguments.
  * \param [in] argv the array of arguments.
  */
-void parse_arguments( Arguments& args, int argc, const char** argv ) {
+void parse_arguments( Arguments& args, int argc, const char** argv )
+{
   for ( int i = 1; i < argc; ++i ) {
     if ( std::strcmp( argv[ i ], "-h" ) == 0 ||
          std::strcmp( argv[ i ], "-help" ) == 0 ) {
@@ -452,7 +467,7 @@ void parse_arguments( Arguments& args, int argc, const char** argv ) {
   }
 
   /* Validate arguments. */
-  if ( args.lower_bound[0] >= args.upper_bound[0] || 
+  if ( args.lower_bound[0] >= args.upper_bound[0] ||
        args.lower_bound[1] >= args.upper_bound[1] ) {
     SLIC_ERROR( "Invalid bounding box: (" << args.lower_bound[0] << ", " <<
                 args.lower_bound[1] << ") x (" << args.upper_bound[0] << ", " <<
@@ -461,14 +476,14 @@ void parse_arguments( Arguments& args, int argc, const char** argv ) {
   if ( args.covar[0] <= 0 || args.covar[1] <= 0 ||
        args.covar[2] * args.covar[2] >= args.covar[0] * args.covar[1] ) {
     SLIC_ERROR( "Invalid covariance: (" << args.covar[0] << ", " <<
-                args.covar[1] << ", " << args.covar[2] << 
+                args.covar[1] << ", " << args.covar[2] <<
                 ") must be positive definite." );
   }
 
-  SLIC_ERROR_IF( args.h <= 0, "Invalid spacing: " << args.h );
-  SLIC_ERROR_IF( args.dt <= 0, "Invalid time step: " << args.dt );
-  SLIC_ERROR_IF( args.t_max <= 0, "Invalid run time: " << args.t_max );
-  SLIC_ERROR_IF( args.period < 0, "Invalid dump period: " << args.period );
+  SLIC_ERROR_IF(  args.h <= 0,      "Invalid spacing: " << args.h );
+  SLIC_ERROR_IF(  args.dt <= 0,     "Invalid time step: " << args.dt );
+  SLIC_ERROR_IF(  args.t_max <= 0,  "Invalid run time: " << args.t_max );
+  SLIC_ERROR_IF(  args.period < 0,  "Invalid dump period: " << args.period );
 
   std::string dir;
   axom::utilities::filesystem::getDirName( dir, args.path );
@@ -482,43 +497,46 @@ void parse_arguments( Arguments& args, int argc, const char** argv ) {
                   dt_max << " this will lead to numerical instability.\n" );
   }
 
-  SLIC_INFO( "Mesh bounds: (" << args.lower_bound[0] << ", " << 
-             args.lower_bound[1] << ") x (" << args.upper_bound[0] << ", " <<
-             args.upper_bound[1] << ")\n" );
-  SLIC_INFO( "Mesh spacing: " << args.h << std::endl );
-  SLIC_INFO( "Gaussian amplitude: " << args.amplitude << std::endl );
-  SLIC_INFO( "Gaussian mean: (" << args.mean[0] << ", " << args.mean[1] << 
-             ")\n" );
-  SLIC_INFO( "Gaussian covariance: (" << args.covar[0] << ", " << 
-             args.covar[1] << ", " << args.covar[2] << ")\n" );
-  SLIC_INFO( "Conductivity: " << args.alpha << std::endl );
-  SLIC_INFO( "Time step: " << args.dt << std::endl );
-  SLIC_INFO( "Max stable time step: " << dt_max << std::endl );
-  SLIC_INFO( "CFL Number: " << args.dt / dt_max << std::endl );
-  SLIC_INFO( "Run time: " << args.t_max << std::endl );
-  SLIC_INFO( "Number of cycles: " << std::ceil( args.t_max / args.dt ) << 
-             std::endl );
-  SLIC_INFO( "Dump period: " << args.period << std::endl );
-  SLIC_INFO( "Dump path: " + args.path << std::endl );
+  SLIC_INFO(  "Mesh bounds: (" << args.lower_bound[0] << ", " <<
+              args.lower_bound[1] << ") x (" << args.upper_bound[0] << ", " <<
+              args.upper_bound[1] << ")\n" );
+  SLIC_INFO(  "Mesh spacing: " << args.h << std::endl );
+  SLIC_INFO(  "Gaussian amplitude: " << args.amplitude << std::endl );
+  SLIC_INFO(  "Gaussian mean: (" << args.mean[0] << ", " << args.mean[1] <<
+              ")\n" );
+  SLIC_INFO(  "Gaussian covariance: (" << args.covar[0] << ", " <<
+              args.covar[1] << ", " << args.covar[2] << ")\n" );
+  SLIC_INFO(  "Conductivity: " << args.alpha << std::endl );
+  SLIC_INFO(  "Time step: " << args.dt << std::endl );
+  SLIC_INFO(  "Max stable time step: " << dt_max << std::endl );
+  SLIC_INFO(  "CFL Number: " << args.dt / dt_max << std::endl );
+  SLIC_INFO(  "Run time: " << args.t_max << std::endl );
+  SLIC_INFO(  "Number of cycles: " << std::ceil( args.t_max / args.dt ) <<
+              std::endl );
+  SLIC_INFO(  "Dump period: " << args.period << std::endl );
+  SLIC_INFO(  "Dump path: " + args.path << std::endl );
 }
 
 /*!
  * \brief Initializes SLIC.
  */
-void init() 
+void init()
 {
   axom::slic::initialize();
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
 
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE>";
   axom::slic::GenericOutputStream* defaultStream =
-          new axom::slic::GenericOutputStream( &std::cout );
+    new axom::slic::GenericOutputStream( &std::cout );
   axom::slic::GenericOutputStream* compactStream =
-          new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
-  axom::slic::addStreamToMsgLevel( defaultStream, axom::slic::message::Error );
-  axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Warning );
-  axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Info );
-  axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Debug );
+    new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
+  axom::slic::addStreamToMsgLevel(  defaultStream,
+                                    axom::slic::message::Error );
+  axom::slic::addStreamToMsgLevel(  compactStream,
+                                    axom::slic::message::Warning );
+  axom::slic::addStreamToMsgLevel(  compactStream, axom::slic::message::Info );
+  axom::slic::addStreamToMsgLevel(  compactStream,
+                                    axom::slic::message::Debug );
 }
 
 /*!
@@ -529,8 +547,7 @@ void finalize()
   axom::slic::finalize();
 }
 
-
-int main( int argc, const char** argv ) 
+int main( int argc, const char** argv )
 {
   init();
 
@@ -557,7 +574,8 @@ int main( int argc, const char** argv )
   parse_arguments( args, argc, argv );
 
   /* Solve. */
-  axom::mint::HeatEquationSolver solver( args.h, args.lower_bound, args.upper_bound );
+  axom::mint::HeatEquationSolver solver( args.h, args.lower_bound,
+                                         args.upper_bound );
   axom::mint::Gaussian2D pulse( args.amplitude, args.mean, args.covar );
   SLIC_INFO( "Initializing\n" );
   solver.initialize( pulse );

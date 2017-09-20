@@ -265,8 +265,8 @@ public:
    */
   void setCell( int cellIdx, const index_type* cell )
   {
-    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    SLIC_ASSERT( cell != AXOM_NULLPTR );
+    SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
+    SLIC_ASSERT(  cell != AXOM_NULLPTR );
 
     // STEP 0: get the number of nodes for the given cell type
     const int nnodes = this->getNumberOfNodes( cellIdx );

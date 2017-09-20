@@ -45,7 +45,7 @@ static const double TRI_ONE_THIRD =  1.0/3.0;
  */
 template < >
 class Lagrange< MINT_TRIANGLE > :
-      public ShapeFunction< Lagrange< MINT_TRIANGLE > >
+  public ShapeFunction< Lagrange< MINT_TRIANGLE > >
 {
 public:
 
@@ -88,8 +88,8 @@ public:
 
   static void computeShape( const double* xr, double* phi )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phi != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phi != AXOM_NULLPTR );
 
     const double r  = xr[0];
     const double s  = xr[1];

@@ -34,14 +34,14 @@ public:
                const int ext[6] );
 
   /*!
-   * \brief Constructs a uniform mesh defined by the extent of the mesh in each 
+   * \brief Constructs a uniform mesh defined by the extent of the mesh in each
    *  direction and an axis aligned bounding box.
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
    * \param [in] upper_bound the corner opposite lower_bound of the bounding box.
    */
-  UniformMesh( int dimension, 
+  UniformMesh( int dimension,
                const int ext[6],
                const double lower_bound[3],
                const double upper_bound[3] );
@@ -63,7 +63,7 @@ public:
                int partitionId );
 
   /*!
-   * \brief Constructs a uniform mesh defined by the extent of the mesh in each 
+   * \brief Constructs a uniform mesh defined by the extent of the mesh in each
    *  direction and an axis aligned bounding box.
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the extent of this mesh instance.

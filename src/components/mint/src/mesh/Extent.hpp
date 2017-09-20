@@ -142,7 +142,7 @@ public:
    * \pre k >= 0 && k < this->size( 2 )-1
    * \note i,j,k are local grid cell indices.
    */
-  IndexType getCellLinearIndex (IndexType i, IndexType j, IndexType k ) const;
+  IndexType getCellLinearIndex(IndexType i, IndexType j, IndexType k ) const;
 
   /*!
    * \brief Converts the given grid cell indices to a one-dimensional linear index.
@@ -235,7 +235,7 @@ Extent< IndexType >::Extent( int ndims, const IndexType* ext ):
   // compute strides
   m_jp = 0;
   m_kp = 0;
-  
+
   if ( ndims > 1 ) {
     m_jp = this->size( 0 );
   }
@@ -324,7 +324,8 @@ IndexType Extent< IndexType >::getCellLinearIndex(
 //------------------------------------------------------------------------------
 template < typename IndexType >
 inline
-IndexType Extent< IndexType >::getCellLinearIndex( IndexType i, IndexType j ) const
+IndexType Extent< IndexType >::getCellLinearIndex( IndexType i,
+                                                   IndexType j ) const
 {
   IndexType cell_jp = (size(0)-1);
   IndexType index = i + j * cell_jp;

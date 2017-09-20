@@ -128,7 +128,7 @@ public:
    * \return jp stride to the second dimension.
    * \post jp >= 0.
    */
-  inline int jp() const 
+  inline int jp() const
   { return m_extent->jp(); }
 
   /*!
@@ -136,7 +136,7 @@ public:
    * \return kp stride to the third dimension.
    * \post kp >= 0.
    */
-  inline int kp() const 
+  inline int kp() const
   { return m_extent->kp(); }
 
   /*!
@@ -193,7 +193,7 @@ public:
    * \return idx the corresponding linear index of the cell.
    */
   inline int getCellLinearIndex( int i, int j, int k ) const
-  { return m_extent->getCellLinearIndex( i, j, k) ; };
+  { return m_extent->getCellLinearIndex( i, j, k); };
 
   /*!
    * \brief Returns the linear index corresponding to the given logical grid cell
@@ -324,9 +324,8 @@ protected:
    * \param [in] blockId the block ID of the mesh.
    * \param [in] partId the partition ID of the mesh.
    */
-  StructuredMesh( int meshType, int ndims, const int ext[6], int blockId, 
+  StructuredMesh( int meshType, int ndims, const int ext[6], int blockId,
                   int partId );
-
 
   Extent< int >* m_extent; /*!< grid extent */
 

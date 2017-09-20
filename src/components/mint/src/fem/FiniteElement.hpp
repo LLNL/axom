@@ -356,7 +356,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void jacobian( const double* xr, numerics::Matrix<double>& J );
+  void jacobian( const double* xr, numerics::Matrix< double >& J );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -495,23 +495,23 @@ private:
    * \note Made private to prevent host-code from calling this.
    */
   FiniteElement(): m_dim( -1 ),
-                   m_ctype( -1 ),
-                   m_shape_func_type( -1 ),
-                   m_maxNewtonIterations( -1 ),
-                   m_numnodes( 0 ),
-                   m_jac( AXOM_NULLPTR ),
-                   m_xyz( AXOM_NULLPTR ),
-                   m_phi( AXOM_NULLPTR ),
-                   m_phidot( AXOM_NULLPTR ),
-                   m_usingExternal( false ),
-                   m_shapeFunction( AXOM_NULLPTR ),
-                   m_shapeFunctionDerivatives( AXOM_NULLPTR ),
-                   m_reference_min( -1 ),
-                   m_reference_max( -1 ),
-                   m_reference_dim( -1 ),
-                   m_numdofs( 0 ),
-                   m_reference_coords( AXOM_NULLPTR ),
-                   m_reference_center( AXOM_NULLPTR )
+    m_ctype( -1 ),
+    m_shape_func_type( -1 ),
+    m_maxNewtonIterations( -1 ),
+    m_numnodes( 0 ),
+    m_jac( AXOM_NULLPTR ),
+    m_xyz( AXOM_NULLPTR ),
+    m_phi( AXOM_NULLPTR ),
+    m_phidot( AXOM_NULLPTR ),
+    m_usingExternal( false ),
+    m_shapeFunction( AXOM_NULLPTR ),
+    m_shapeFunctionDerivatives( AXOM_NULLPTR ),
+    m_reference_min( -1 ),
+    m_reference_max( -1 ),
+    m_reference_dim( -1 ),
+    m_numdofs( 0 ),
+    m_reference_coords( AXOM_NULLPTR ),
+    m_reference_center( AXOM_NULLPTR )
   { }
 
   /// \name Private Data Members
@@ -565,9 +565,9 @@ namespace mint {
 template < int BasisType, int CellType >
 void bind_basis( FiniteElement& fe )
 {
-  SLIC_ASSERT( CellType==fe.getCellType() );
-  SLIC_ASSERT( fe.m_reference_center != AXOM_NULLPTR );
-  SLIC_ASSERT( fe.m_reference_coords != AXOM_NULLPTR );
+  SLIC_ASSERT(  CellType==fe.getCellType() );
+  SLIC_ASSERT(  fe.m_reference_center != AXOM_NULLPTR );
+  SLIC_ASSERT(  fe.m_reference_coords != AXOM_NULLPTR );
 
   typedef mint::FEBasis< BasisType, CellType > FEBasisType;
   typedef typename FEBasisType::ShapeFunctionType ShapeType;
@@ -590,9 +590,9 @@ void bind_basis( FiniteElement& fe )
   fe.m_shapeFunction            = &ShapeType::evaluate;
   fe.m_shapeFunctionDerivatives = &ShapeType::derivatives;
 
-  SLIC_ASSERT( fe.m_shape_func_type != MINT_UNDEFINED_BASIS );
-  SLIC_ASSERT( fe.m_shapeFunction != AXOM_NULLPTR );
-  SLIC_ASSERT( fe.m_shapeFunctionDerivatives != AXOM_NULLPTR );
+  SLIC_ASSERT(  fe.m_shape_func_type != MINT_UNDEFINED_BASIS );
+  SLIC_ASSERT(  fe.m_shapeFunction != AXOM_NULLPTR );
+  SLIC_ASSERT(  fe.m_shapeFunctionDerivatives != AXOM_NULLPTR );
 }
 
 } /* namespace mint */

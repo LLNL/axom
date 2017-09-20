@@ -132,8 +132,8 @@ double* FieldVariable< FieldType >::getDoublePtr()
 template < typename FieldType >
 const double* FieldVariable< FieldType >::getDoublePtr() const
 {
-  return const_cast< const double* >( 
-         const_cast< FieldVariable* >( this )->getDoublePtr() );
+  return const_cast< const double* >(
+    const_cast< FieldVariable* >( this )->getDoublePtr() );
 }
 
 //------------------------------------------------------------------------------
@@ -150,8 +150,8 @@ int* FieldVariable< FieldType >::getIntPtr()
 template < typename FieldType >
 const int* FieldVariable< FieldType >::getIntPtr() const
 {
-  return const_cast< const int* >( 
-         const_cast< FieldVariable* >( this )->getIntPtr() );
+  return const_cast< const int* >(
+    const_cast< FieldVariable* >( this )->getIntPtr() );
 }
 
 } /* namespace mint */

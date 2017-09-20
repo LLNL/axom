@@ -25,11 +25,11 @@
  *  Finite Element basis to a cell type.
  */
 #define REGISTER_LAGRANGE_BASIS( C )                                          \
-template < >                                                                  \
-struct FEBasis< MINT_LAGRANGE_BASIS, C > {                                    \
-static const int BasisType = MINT_LAGRANGE_BASIS;                             \
-typedef mint::ShapeFunction< mint::Lagrange< C > > ShapeFunctionType;\
-}
+  template < >                                                                  \
+  struct FEBasis< MINT_LAGRANGE_BASIS, C > {                                    \
+    static const int BasisType = MINT_LAGRANGE_BASIS;                             \
+    typedef mint::ShapeFunction< mint::Lagrange< C > > ShapeFunctionType; \
+  }
 
 namespace axom {
 namespace mint {
@@ -47,15 +47,15 @@ template < int BasisType, int CellType >
 struct FEBasis { };
 
 // Lagrange Basis
-REGISTER_LAGRANGE_BASIS( MINT_QUAD );
-REGISTER_LAGRANGE_BASIS( MINT_TRIANGLE );
-REGISTER_LAGRANGE_BASIS( MINT_TET );
-REGISTER_LAGRANGE_BASIS( MINT_HEX );
-REGISTER_LAGRANGE_BASIS( MINT_PRISM );
-REGISTER_LAGRANGE_BASIS( MINT_PYRAMID );
+REGISTER_LAGRANGE_BASIS(  MINT_QUAD );
+REGISTER_LAGRANGE_BASIS(  MINT_TRIANGLE );
+REGISTER_LAGRANGE_BASIS(  MINT_TET );
+REGISTER_LAGRANGE_BASIS(  MINT_HEX );
+REGISTER_LAGRANGE_BASIS(  MINT_PRISM );
+REGISTER_LAGRANGE_BASIS(  MINT_PYRAMID );
 
-REGISTER_LAGRANGE_BASIS( MINT_QUAD9 );
-REGISTER_LAGRANGE_BASIS( MINT_HEX27 );
+REGISTER_LAGRANGE_BASIS(  MINT_QUAD9 );
+REGISTER_LAGRANGE_BASIS(  MINT_HEX27 );
 
 } /* namespace mint */
 } /* namespace axom */
