@@ -85,7 +85,7 @@ public:
   virtual void getNode( int i, int j, double* coordinates ) const;
 
   /*!
-   * \brief Returns the coordinates of the node at (i,j)
+   * \brief Returns the coordinates of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.

@@ -853,7 +853,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   // use create + alloc convenience methods
   // this one is the DataType & method
   View * const view1 = grp->createViewAndAllocate(viewName1,
-                                                      DataType::c_int(10));
+                                                  DataType::c_int(10));
 
   EXPECT_TRUE(grp->hasChildView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -1833,11 +1833,11 @@ TEST(sidre_group,save_load_preserve_contents)
   EXPECT_NEAR(ds_load_root->getView(
                 "tree1/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
   EXPECT_EQ(ds_load_root->getView("tree1/b/s0")->getString(),
-              std::string("foo"));
+            std::string("foo"));
   EXPECT_EQ(ds_load_root->getView(
               "tree1/y/i0")->getData<conduit::int64>(),400);
   EXPECT_NEAR(ds_load_root->getView(
-              "tree1/z/d0")->getData<conduit::float64>(),17.00,1e-12);
+                "tree1/z/d0")->getData<conduit::float64>(),17.00,1e-12);
 
   conduit::int64 * load_data_ptr =
     ds_load_root->getView("tree1/c/int10")->getData();

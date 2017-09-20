@@ -174,7 +174,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   }
 
   View * view = root->createView("data0", INT_ID, len)
-                    ->setExternalDataPtr(idata);
+                ->setExternalDataPtr(idata);
   EXPECT_TRUE(view->isExternal());
   EXPECT_EQ(idata, view->getVoidPtr());
 

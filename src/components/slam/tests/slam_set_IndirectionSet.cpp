@@ -58,7 +58,7 @@ namespace {
   }
 }
 
-TEST(gtest_slam_set_indirectionset,construct)
+TEST(slam_set_indirectionset,construct)
 {
   SLIC_INFO("Testing constructors for IndirectionSet");
 
@@ -82,7 +82,7 @@ TEST(gtest_slam_set_indirectionset,construct)
   delete [] s.data();
 }
 
-TEST(gtest_slam_set_indirectionset,set_builder)
+TEST(slam_set_indirectionset,set_builder)
 {
   SLIC_INFO("Testing construction of IndirectionSet using SetBuilders");
 
@@ -123,7 +123,7 @@ TEST(gtest_slam_set_indirectionset,set_builder)
   }
 }
 
-TEST(gtest_slam_set_indirectionset,iterate)
+TEST(slam_set_indirectionset,iterate)
 {
   SetType s(SetType::SetBuilder()
       .size(MAX_SET_SIZE)
@@ -176,7 +176,7 @@ TEST(gtest_slam_set_indirectionset,iterate)
   delete [] s.data();
 }
 
-TEST(gtest_slam_set_indirectionset,equality)
+TEST(slam_set_indirectionset,equality)
 {
   SLIC_INFO("Testing equality/inequality for several sets");
 
@@ -230,7 +230,7 @@ TEST(gtest_slam_set_indirectionset,equality)
 }
 
 
-TEST(gtest_slam_set_indirectionset,out_of_bounds)
+TEST(slam_set_indirectionset,out_of_bounds)
 {
   SLIC_INFO("Testing out of bounds access on initialized set-- code is expected to assert and die.");
 
@@ -251,7 +251,7 @@ TEST(gtest_slam_set_indirectionset,out_of_bounds)
 }
 
 
-TEST(gtest_slam_set_indirectionset,vector_indirection)
+TEST(slam_set_indirectionset,vector_indirection)
 {
   SLIC_INFO("Testing basic set operations on a VectorIndirectionSet");
 
@@ -304,7 +304,7 @@ TEST(gtest_slam_set_indirectionset,vector_indirection)
   }
 }
 
-TEST(gtest_slam_set_indirectionset,negative_stride)
+TEST(slam_set_indirectionset,negative_stride)
 {
   SLIC_INFO("Testing negative strides on an indirection set");
 

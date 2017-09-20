@@ -115,7 +115,7 @@ namespace policies = axom::slam::policies;
 
 }
 
-TEST(gtest_slam_set_relation_map,access_pattern)
+TEST(slam_set_relation_map,access_pattern)
 {
   SLIC_INFO("Testing accessing relation data.");
 

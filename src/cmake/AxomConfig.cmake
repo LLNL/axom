@@ -25,7 +25,7 @@ endif()
 ## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
 ##       that are configured with MPI and OPENMP, respectively.
 
-set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT BOOST MPI MFEM)  # vars of the form DEP_FOUND
+set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT BOOST MPI MFEM SCR)  # vars of the form DEP_FOUND
 foreach(dep in ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -60,7 +60,8 @@ foreach(comp in ${COMPS})
     endif()
 endforeach()
 
-
+convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
+convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
 configure_file(
     include/config.hpp.in

@@ -5,9 +5,19 @@
 set(example_sources
     IORead.cpp
     IOWrite.cpp
-)
+    )
 
-set(SPIO_EXAMPLE_DEPENDS spio sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+if (SCR_FOUND)
+    list(APPEND example_sources IOSCRRead.cpp)
+    list(APPEND example_sources IOSCRWrite.cpp)
+endif() 
+
+set(spio_example_depends spio sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+
+if (SCR_FOUND)
+    list(APPEND spio_example_depends scr)
+endif()
+
 
 #
 # Build the example sources
@@ -18,7 +28,7 @@ foreach(src ${example_sources})
         NAME spio_${exe_name}_ex
         SOURCES ${src}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${SPIO_EXAMPLE_DEPENDS}
+        DEPENDS_ON ${spio_example_depends}
         )
 endforeach()
 

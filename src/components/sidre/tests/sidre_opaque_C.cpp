@@ -106,7 +106,7 @@ TEST(C_sidre_opaque,basic_inout)
   AA_extent * ext = AA_extent_new(0, ihi_val);
 
   SIDRE_view * ext_view = SIDRE_group_create_view_external(problem_gp,
-                                                                   "ext", ext);
+                                                           "ext", ext);
 
   bool test_external = SIDRE_view_is_external(ext_view);
   EXPECT_EQ(test_external, true);
@@ -128,7 +128,7 @@ TEST(C_sidre_opaque,basic_inout)
   AA_extent * ext2 = AA_extent_new(0, 2 * ihi_val);
 
   SIDRE_view * ext2_view = SIDRE_group_create_view_empty(problem_gp,
-                                                                 "ext2");
+                                                         "ext2");
   SIDRE_view_set_external_data_ptr_only(ext2_view, ext2);
 
   bool test_opaque2 = SIDRE_view_is_opaque(ext2_view);
@@ -195,17 +195,17 @@ TEST(C_sidre_opaque,meshvar)
     AA_meshvar * zonemv =
       (AA_meshvar *) SIDRE_view_get_void_ptr(zone_mv_view);
     (void) SIDRE_group_create_view_and_allocate_nelems(dom_gp, "zone_data",
-                                                           SIDRE_INT_ID,
-                                                           AA_get_num_vals(
-                                                             zonemv,
-                                                             dom_ext));
+                                                       SIDRE_INT_ID,
+                                                       AA_get_num_vals(
+                                                         zonemv,
+                                                         dom_ext));
 
     AA_meshvar * nodemv =
       (AA_meshvar *)  SIDRE_view_get_void_ptr(node_mv_view);
     (void) SIDRE_group_create_view_and_allocate_nelems(dom_gp, "node_data",
-                                                           SIDRE_DOUBLE_ID, AA_get_num_vals(
-                                                             nodemv,
-                                                             dom_ext));
+                                                       SIDRE_DOUBLE_ID, AA_get_num_vals(
+                                                         nodemv,
+                                                         dom_ext));
 
   }
 

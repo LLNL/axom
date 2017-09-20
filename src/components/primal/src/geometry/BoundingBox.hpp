@@ -120,6 +120,7 @@ template < typename T,int NDIMS >
 class BoundingBox
 {
 public:
+  typedef T CoordType;
   typedef Point< T,NDIMS > PointType;
   typedef Vector< T,NDIMS > VectorType;
   typedef BoundingBox< T,NDIMS > BoxType;
@@ -140,6 +141,14 @@ public:
    */
   BoundingBox( const PointType& pt )
     : m_min( pt), m_max( pt) { }
+
+  /*!
+   * \brief Constructor. Creates a bounding box containing the collection of
+   * points.
+   * \pre pt must point to at least n valid point
+   * \note If n <= 0, defaults to default constructor values
+   */
+  BoundingBox(PointType *pts, int n);
 
   /*!
    * \brief Constructor. Creates a bounding box with a given min and max point
@@ -182,7 +191,7 @@ public:
    * \brief Returns the centroid (midpoint) of the bounding box.
    * \return Point at the bounding box centroid.
    */
-  PointType centroid() const { return PointType::midpoint(m_min, m_max); }
+  PointType getCentroid() const { return PointType::midpoint(m_min, m_max); }
 
   /*!
    * \brief Returns a vector from the min to the max points of the bounding box
@@ -444,6 +453,23 @@ bool BoundingBox< T,
 }
 
 //------------------------------------------------------------------------------
+template < typename T, int NDIMS >
+BoundingBox< T, NDIMS >::BoundingBox(PointType *pts, int n)
+{
+  if (n <= 0) {
+    clear();
+  }
+  // sanity check:
+  SLIC_ASSERT(pts != AXOM_NULLPTR);
+
+  this->m_min = this->m_max = pts[0];
+
+  for (int i = 1; i < n; i++) {
+    this->addPoint(pts[i]);
+  }
+}
+
+//------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
 bool BoundingBox< T, NDIMS >::contains(
@@ -556,7 +582,7 @@ BoundingBox< T, NDIMS >& BoundingBox< T, NDIMS >::expand(T expansionAmount)
 template < typename T,int NDIMS >
 BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::scale(double scaleFactor)
 {
-  const PointType midpoint = centroid();
+  const PointType midpoint = getCentroid();
   const VectorType r = scaleFactor * 0.5 * range();
 
   m_min = PointType( midpoint.array() - r.array());

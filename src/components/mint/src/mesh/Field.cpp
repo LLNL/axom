@@ -47,7 +47,19 @@ double* Field::getDoublePtr()
 }
 
 //------------------------------------------------------------------------------
+const double* Field::getDoublePtr() const
+{
+  return AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
 int* Field::getIntPtr()
+{
+  return AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+const int* Field::getIntPtr() const
 {
   return AXOM_NULLPTR;
 }

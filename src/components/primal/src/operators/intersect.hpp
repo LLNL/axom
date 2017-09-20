@@ -17,11 +17,13 @@
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 
+#include "primal/OrientedBoundingBox.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
+#include "axom_utils/Utilities.hpp"
 
 #include "primal/intersect_impl.hpp"
 
@@ -182,6 +184,40 @@ template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
 {
   return detail::intersect_tri_segment(tri, seg, t);
+}
+
+template < typename T >
+bool intersect(const OrientedBoundingBox< T, 1 > & b1,
+               const OrientedBoundingBox< T, 1 >& b2)
+{
+  return detail::intersect_obb1D_obb1D(b1, b2);
+}
+
+/*!
+ * \brief Determines if a 2D OBB intersects a 2D OBB.
+ * \param [in] b1 A 2D OrientedBoundingBox
+ * \param [in] b2 A 2D OrientedBoundingBox
+ * \return true iff b1 intersects with b2, otherwise, false.
+ */
+template < typename T >
+bool intersect(const OrientedBoundingBox< T, 2 >& b1,
+               const OrientedBoundingBox< T, 2 >& b2)
+{
+  return detail::intersect_obb2D_obb2D(b1, b2);
+}
+
+/*!
+ * \brief Determines if a 3D OBB intersects a 3D OBB.
+ * \param [in] b1 A 3D OrientedBoundingBox
+ * \param [in] b2 A 3D OrientedBoundingBox
+ * \param [in] EPS error tolerance for intersection
+ * \return true iff b1 intersects with b2, otherwise, false.
+ */
+template < typename T >
+bool intersect(const OrientedBoundingBox< T, 3 >& b1,
+               const OrientedBoundingBox< T, 3 >& b2, double EPS=1E-4)
+{
+  return detail::intersect_obb3D_obb3D(b1, b2, EPS);
 }
 
 } /* namespace primal */

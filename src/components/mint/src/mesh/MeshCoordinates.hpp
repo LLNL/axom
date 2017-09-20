@@ -70,6 +70,13 @@ public:
   /*!
    * \brief Inserts a new point into this MeshCoordinates instance.
    * \param [in] x the x--coordinate.
+   * \pre m_ndims == 1.
+   */
+  void insertPoint( double x );
+
+  /*!
+   * \brief Inserts a new point into this MeshCoordinates instance.
+   * \param [in] x the x--coordinate.
    * \param [in] y the y--coordinate.
    * \pre m_ndims == 2.
    */
@@ -83,6 +90,15 @@ public:
    * \pre m_ndims == 3.
    */
   void insertPoint( double x, double y, double z );
+
+  /*!
+   * \brief Sets the point at the supplied index to the given coordinates.
+   * \param [in] pntIdx the index of the point to set
+   * \param [in] x the x--coordinate to set
+   * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
+   * \pre m_ndims == 1.
+   */
+  void setPoint( int pntIdx, double x );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -154,7 +170,7 @@ private:
   void initialize();
 
   /*!
-   * \brief Helper me3thod used to initialize the MeshCoordinate data-structure.
+   * \brief Helper method used to initialize the MeshCoordinate data-structure.
    *  It creates a MeshCoordinates instance with the given number of points.
    * \param [in] npoints the number of points.
    *

@@ -77,6 +77,30 @@ def write_build_info(ofile):
     print binfo_str
     open(ofile,"w").write(binfo_str)
 
+def log_success(prefix,msg):
+    """
+    Called at the end of the process to signal success.
+    """
+    info = {}
+    info["prefix"] = prefix
+    info["status"] = "success"
+    info["message"] = msg
+    info["timestamp"] = timestamp()
+    json.dump(info,open(pjoin(prefix,"success.json"),"w"),indent=2)
+
+def log_failure(prefix,msg):
+    """
+    Called when the process failed.
+    """
+    info = {}
+    info["prefix"] = prefix
+    info["status"] = "failed"
+    info["message"] = msg
+    info["timestamp"] = timestamp()
+    json.dump(info,open(pjoin(prefix,"failed.json"),"w"),indent=2)
+
+
+
 def uberenv_create_mirror(prefix,mirror_path):
     """
     Calls uberenv to create a spack mirror.
@@ -96,9 +120,12 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec)
     print "[starting tpl install of spec %s]" % spec
     print "[log file: %s]" % spack_tpl_build_log
-    return sexe(cmd,
-                echo=True,
-                output_file = spack_tpl_build_log)
+    res = sexe(cmd,
+               echo=True,
+               output_file = spack_tpl_build_log)
+    if res != 0:
+        log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
+    return res
 
 def patch_host_configs(prefix):
     """
@@ -131,6 +158,7 @@ def patch_host_configs(prefix):
                     ofile.write(host_cfg_txt)
                     ofile.write(patch_txt)
                     ofile.write("\n")
+    return 0
 
 ############################################################
 # helpers for testing a set of host configs
@@ -141,9 +169,16 @@ def build_and_test_host_config(test_root,host_config):
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
+    print "[testing build, test, and install of host config file: %s]" % host_config
+    print "[ build dir: %s]"   % build_dir
+    print "[ install dir: %s]" % install_dir
+
     # configure
+    cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
+    print "[starting configure of %s]" % host_config
+    print "[log file: %s]" % cfg_output_file
     res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
-               output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root),
+               output_file = cfg_output_file,
                echo=True)
     
     if res != 0:
@@ -153,38 +188,48 @@ def build_and_test_host_config(test_root,host_config):
     ####
     # build, test, and install
     ####
+    bld_output_file =  pjoin(build_dir,"output.log.make.txt")
+    print "[starting build]"
+    print "[log file: %s]" % bld_output_file
     res = sexe("cd %s && make -j 8 VERBOSE=1 " % build_dir,
-                output_file = pjoin(build_dir,"output.log.make.txt"),
+                output_file = bld_output_file,
                 echo=True)
 
     if res != 0:
         print "[ERROR: Build for host-config: %s failed]" % host_config
         return res
 
+    tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
+    print "[starting unit tests]"
+    print "[log file: %s]" % tst_output_file
 
     if "bgqos_0" in os.getenv('SYS_TYPE', ""):
         # Need to use ctest-3.0 on bg/q
         ctest_exe = "/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"
-        res = sexe("cd {} && {} -T Test -j16 --verbose".format(build_dir,ctest_exe),
-                   output_file = pjoin(build_dir,"output.log.make.test.txt"),
-                   echo=True)
+        tst_cmd = "cd {} && {} -T Test -j16 --verbose".format(build_dir,ctest_exe)
 
     else:
-        res = sexe("cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test " % build_dir,
-                   output_file = pjoin(build_dir,"output.log.make.test.txt"),
-                   echo=True)
+        tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test " % build_dir
+
+    res = sexe(tst_cmd,
+               output_file = tst_output_file,
+               echo=True)
 
     if res != 0:
         print "[ERROR: Tests for host-config: %s failed]" % host_config
         return res
 
 
+    inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
+    print "[starting install]"
+    print "[log file: %s]" % inst_output_file
+
     res = sexe("cd %s && make install " % build_dir,
-               output_file = pjoin(build_dir,"output.log.make.install.txt"),
+               output_file = inst_output_file,
                echo=True)
 
     if res != 0:
-        print "[ERROR: Install for host-config: %s failed]" % host_config
+        print "[ERROR: Tests for host-config: %s failed]" % host_config
         return res
 
     # simple sanity check for make install
@@ -202,10 +247,22 @@ def build_and_test_host_configs(prefix):
         test_root =  pjoin(prefix,"_asctk_build_and_test_%s" % timestamp())
         os.mkdir(test_root)
         write_build_info(pjoin(test_root,"info.json")) 
+        ok  = []
+        bad = []
         for host_config in host_configs:
-            build_and_test_host_config(test_root,host_config)
+            if build_and_test_host_config(test_root,host_config) == 0:
+                ok.append(host_config)
+            else:
+                bad.append(host_config)
+        if len(bad) > 0:
+            log_failure(prefix,"Build failed for host configs: %s" % bad)
+            return 1
+        else:
+            log_success(prefix,"uberenv/spack tpl build and test succeeded for host configs: %s" % ok)
+            return 0
     else:
-        print "[ERROR: No host configs found at %s]" % prefix
+        log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
+        return 1
 
 
 def set_axom_group_and_perms(directory):
@@ -224,7 +281,44 @@ def set_axom_group_and_perms(directory):
     print "[changing perms for all users to rX]"
     sexe("chmod -f -R a+rX %s" % (directory),echo=True)
     print "[done setting perms for: %s]" % directory
+    return 0
 
+
+def full_build_and_test_of_tpls(builds_dir,specs):
+    print "[Building and testing tpls for specs: %s]" % str(specs)
+    mirror_dir = pjoin(builds_dir,"mirror")
+    # unique install location
+    prefix =  pjoin(builds_dir,timestamp())
+    # create a mirror
+    uberenv_create_mirror(prefix,mirror_dir)
+    # write info about this build
+    write_build_info(pjoin(prefix,"info.json"))
+    # use uberenv to install for all specs
+    for spec in specs:
+        res = uberenv_install_tpls(prefix,spec,mirror_dir)
+        if res != 0:
+            print "[ERROR: Failed build of tpls for spec %s]" % spec
+            # set perms, then early exit
+            # set proper perms for installed tpls
+            set_axom_group_and_perms(prefix)
+            # set proper perms for the mirror files
+            set_axom_group_and_perms(mirror_dir)
+            return res
+        else:
+            print "[SUCCESS: Finished build tpls for spec %s]" % spec
+    # patch manual edits into host config files
+    patch_host_configs(prefix)
+    # build the axom against the new tpls
+    res = build_and_test_host_configs(prefix)
+    if res != 0:
+        print "[ERROR: build and test of axom vs tpls test failed.]"
+    else:
+        print "[SUCCESS: build and test of axom vs tpls test passed.]"
+    # set proper perms for installed tpls
+    set_axom_group_and_perms(prefix)
+    # set proper perms for the mirror files
+    set_axom_group_and_perms(mirror_dir)
+    return res
 
 
 

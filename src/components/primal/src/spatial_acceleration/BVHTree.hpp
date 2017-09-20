@@ -601,7 +601,7 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
     SLIC_ASSERT( objBox.isValid() );
 
     // STEP C: get centroid of the object's bounding box
-    const BVHTree::PointType centroid = objBox.centroid();
+    const BVHTree::PointType centroid = objBox.getCentroid();
 
     int bucketIdx = -1;
     if ( rightBox.contains( centroid ) ) {

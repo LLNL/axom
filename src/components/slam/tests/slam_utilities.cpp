@@ -50,7 +50,7 @@ namespace {
   const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 }
 
-TEST(gtest_slam_utilities,findingAncestorPaths)
+TEST(slam_utilities,findingAncestorPaths)
 {
   SLIC_INFO("Testing function that recursively finds a valid path in cwd ancestors.");
 

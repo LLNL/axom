@@ -164,7 +164,7 @@ public:
   /*!
    * \brief Return full path of Group object, including its name.
    *
-   * If a DataStore contains a Group tree structure a/b/c/d/e, the 
+   * If a DataStore contains a Group tree structure a/b/c/d/e, the
    * following results are expected:
    *
    * Method Call      | Result
@@ -373,8 +373,8 @@ public:
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         SidreLength num_elems );
+                     TypeID type,
+                     SidreLength num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -386,9 +386,9 @@ public:
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape );
+                     TypeID type,
+                     int ndims,
+                     SidreLength * shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -397,7 +397,7 @@ public:
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
   View * createView( const std::string& path,
-                         const DataType& dtype);
+                     const DataType& dtype);
 
 //@}
 
@@ -434,7 +434,7 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         Buffer * buff );
+                     Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -453,9 +453,9 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         SidreLength num_elems,
-                         Buffer * buff );
+                     TypeID type,
+                     SidreLength num_elems,
+                     Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -474,10 +474,10 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape,
-                         Buffer * buff );
+                     TypeID type,
+                     int ndims,
+                     SidreLength * shape,
+                     Buffer * buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -492,8 +492,8 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         const DataType& dtype,
-                         Buffer * buff );
+                     const DataType& dtype,
+                     Buffer * buff );
 
 //@}
 
@@ -527,7 +527,7 @@ public:
    * \sa View::setExternalDataPtr
    */
   View * createView( const std::string& path,
-                         void * external_ptr );
+                     void * external_ptr );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -547,9 +547,9 @@ public:
    * \sa View::setExternalDataPtr
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         SidreLength num_elems,
-                         void * external_ptr );
+                     TypeID type,
+                     SidreLength num_elems,
+                     void * external_ptr );
 
 
   /*!
@@ -571,10 +571,10 @@ public:
    * \sa View::setExternalDataPtr
    */
   View * createView( const std::string& path,
-                         TypeID type,
-                         int ndims,
-                         SidreLength * shape,
-                         void * external_ptr );
+                     TypeID type,
+                     int ndims,
+                     SidreLength * shape,
+                     void * external_ptr );
   /*!
    * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned
@@ -589,8 +589,8 @@ public:
    * \sa View::attachBuffer
    */
   View * createView( const std::string& path,
-                         const DataType& dtype,
-                         void * external_ptr );
+                     const DataType& dtype,
+                     void * external_ptr );
 
 //@}
 
@@ -620,8 +620,8 @@ public:
    * \sa View::allocate
    */
   View * createViewAndAllocate( const std::string& path,
-                                    TypeID type,
-                                    SidreLength num_elems );
+                                TypeID type,
+                                SidreLength num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -639,9 +639,9 @@ public:
    * \sa View::allocate
    */
   View * createViewAndAllocate( const std::string& path,
-                                    TypeID type,
-                                    int ndims,
-                                    SidreLength * shape );
+                                TypeID type,
+                                int ndims,
+                                SidreLength * shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -658,7 +658,7 @@ public:
    * \sa View::allocate
    */
   View * createViewAndAllocate( const std::string& path,
-                                    const DataType& dtype);
+                                const DataType& dtype);
 
   /*!
    * \brief Create View object with given name or path in this Group
@@ -697,7 +697,7 @@ public:
    * \sa View::setString
    */
   View * createViewString( const std::string& path,
-                               const std::string& value);
+                           const std::string& value);
 
 //@}
 
@@ -992,8 +992,13 @@ public:
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
    * externally to the Sidre View data so that it can be filled in from the data
    * in the file (independent of file format) and can be accessed as a Conduit tree.
+   *
+   * \return True if the Group or any of its children were added to the Node,
+   * false otherwise.
+   *
    */
-  void createNativeLayout(Node& n) const;
+  bool createNativeLayout(Node& n,
+                          const Attribute * attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Copy data Group native layout to given Conduit node.
@@ -1004,9 +1009,11 @@ public:
    *
    * Only the Views which have external data are added to the node.
    *
-   * \return True if the group or any of its children have an external view, false otherwise
+   * \return True if the Group or any of its children have an external
+   * View, false otherwise.
    */
-  bool createExternalLayout(Node& n) const;
+  bool createExternalLayout(Node& n,
+                            const Attribute * attr = AXOM_NULLPTR) const;
 
 
   /*!
@@ -1050,23 +1057,33 @@ public:
   /*!
    * \brief Save the Group to a file.
    *
-   *  Saves the tree starting at this group and the buffers used by the views
+   *  Saves the tree starting at this Group and the Buffers used by the Views
    *  in this tree.
    *
-   *  \param path      file path
-   *  \param protocol  I/O protocol
+   *  If attr is a null pointer, dump all Views.  Otherwise, only dump Views
+   *  which have the Attribute set.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
+   * \param attr      Save Views that have Attribute set.
    */
   void save( const std::string& path,
-             const std::string& protocol = "sidre_hdf5") const;
+             const std::string& protocol = "sidre_hdf5",
+             const Attribute * attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Save the Group to an hdf5 handle.
    *
+   *  If attr is AXOM_NULLPTR, dump all Views.  Otherwise, only dump Views
+   *  which have the Attribute set.
+   *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   * \param attr       Save Views that have Attribute set.
    */
   void save( const hid_t& h5_id,
-             const std::string &protocol = "sidre_hdf5") const;
+             const std::string& protocol = "sidre_hdf5",
+             const Attribute * attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Load the Group from a file.
@@ -1077,7 +1094,7 @@ public:
    */
   void load(const std::string& path,
             const std::string& protocol = "sidre_hdf5",
-            bool preserve_contents = "false");
+            bool preserve_contents = false);
 
   /*!
    * \brief Load the Group from an hdf5 handle.
@@ -1228,17 +1245,24 @@ private:
   /*!
    * \brief Private method to copy Group to Conduit Node.
    *
-   * Note: This is for the "sidre_hdf5" protocol.
+   * Note: This is for the "sidre_{zzz}" protocols.
+   *
+   * \return True if the group or any of its children have saved Views,
+   * false otherwise.
    */
-  void exportTo(conduit::Node& result) const;
+  bool exportTo(conduit::Node& result, const Attribute * attr) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
    *
    * \param buffer_indices Used to track what Buffers are referenced
    * by the Views in this Group and Groups in the sub-tree below it.
+   *
+   * \return True if the group or any of its children have saved Views,
+   * false otherwise.
    */
-  void exportTo(conduit::Node& data_holder,
+  bool exportTo(conduit::Node& data_holder,
+                const Attribute * attr,
                 std::set<IndexType>& buffer_indices) const;
 
   /*!
