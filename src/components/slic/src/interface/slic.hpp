@@ -267,6 +267,31 @@
                            , __LINE__ );                                      \
   } while ( axom::slic::detail::false_value )
 
+/*!
+ * \def SLIC_INFO_IF( EXP, msg )
+ * \brief Logs an Info message iff EXP is true
+ * \param [in] EXP user-supplied boolean expression.
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_INFO_IF macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_INFO_IF( (val < 0), "my_val should always be positive" );
+ * \endcode
+ *
+ */
+#define SLIC_INFO_IF( EXP, msg )                                           \
+  do {                                                                        \
+    if ( EXP ) {                                                              \
+      std::ostringstream oss;                                                 \
+      oss << msg;                                                             \
+      axom::slic::logMessage(axom::slic::message::Info                        \
+                             , oss.str()                                      \
+                             ,__FILE__                                        \
+                             , __LINE__ );                                    \
+    }                                                                         \
+  } while ( axom::slic::detail::false_value )
+
 #ifdef AXOM_DEBUG
 
 /*!
@@ -291,9 +316,35 @@
                            , __LINE__ );                                      \
   } while ( axom::slic::detail::false_value )
 
+/*!
+ * \def SLIC_DEBUG_IF( EXP, msg )
+ * \brief Logs an Debug message iff EXP is true
+ * \param [in] EXP user-supplied boolean expression.
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_DEBUG_IF macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_DEBUG_IF( (val < 0), "my_val should always be positive" );
+ * \endcode
+ *
+ */
+#define SLIC_DEBUG_IF( EXP, msg )                                             \
+  do {                                                                        \
+    if ( EXP ) {                                                              \
+      std::ostringstream oss;                                                 \
+      oss << msg;                                                             \
+      axom::slic::logMessage(axom::slic::message::Debug                       \
+                             , oss.str()                                      \
+                             ,__FILE__                                        \
+                             , __LINE__ );                                    \
+    }                                                                         \
+  } while ( axom::slic::detail::false_value )
+
 #else // turn off debug macros
 
 #define SLIC_DEBUG( ignore_EXP ) ( (void)0 )
+#define SLIC_DEBUG_IF( ignore_EXP, ignore_EXP ) ( (void)0 )
 
 #endif
 
