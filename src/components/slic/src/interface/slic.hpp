@@ -344,6 +344,7 @@
 #else // turn off debug macros
 
 #define SLIC_DEBUG( ignore_EXP ) ( (void)0 )
+#define SLIC_DEBUG_IF( ignore_EXP, ignore_EXP ) ( (void)0 )
 
 #endif
 
