@@ -101,7 +101,7 @@ void create_scalar_data( Mesh* mesh )
     r2 = std::exp(-r2 / 100.0);
     double temp = (x * x) - 4 * y + (2 * y * z) - (5 * x * y * z + 1) * r2;
     double_ptr[ idx ] = temp;
-    int_ptr[ idx ] = temp;
+    int_ptr[ idx ] = static_cast<int>(temp);
   }
   mesh->getNodeFieldData()->addField( node_field_d );
   mesh->getNodeFieldData()->addField( node_field_i );
@@ -165,15 +165,15 @@ void create_vector_data( Mesh* mesh )
     double_ptr3[ 3 * idx + 1 ] = v2;
     double_ptr3[ 3 * idx + 2 ] = v3;
 
-    int_ptr3[ 3 * idx ] = v1;
-    int_ptr3[ 3 * idx + 1 ] = v2;
-    int_ptr3[ 3 * idx + 2 ] = v3;
+    int_ptr3[ 3 * idx ] = static_cast<int>(v1);
+    int_ptr3[ 3 * idx + 1 ] = static_cast<int>(v2);
+    int_ptr3[ 3 * idx + 2 ] = static_cast<int>(v3);
 
     double_ptr2[ 2 * idx ] = v1;
     double_ptr2[ 2 * idx + 1 ] = v2;
 
-    int_ptr2[ 2 * idx ] = v1;
-    int_ptr2[ 2 * idx + 1 ] = v2;
+    int_ptr2[ 2 * idx ] = static_cast<int>(v1);
+    int_ptr2[ 2 * idx + 1 ] = static_cast<int>(v2);
   }
   mesh->getNodeFieldData()->addField( node_field_3d );
   mesh->getNodeFieldData()->addField( node_field_3i );
@@ -254,10 +254,10 @@ void create_multidim_data( Mesh* mesh )
     double_ptr[4 * idx + 2] = v3;
     double_ptr[4 * idx + 3] = v4;
 
-    int_ptr[4 * idx + 0] = v1;
-    int_ptr[4 * idx + 1] = v2;
-    int_ptr[4 * idx + 2] = v3;
-    int_ptr[4 * idx + 3] = v4;
+    int_ptr[4 * idx + 0] = static_cast<int>(v1);
+    int_ptr[4 * idx + 1] = static_cast<int>(v2);
+    int_ptr[4 * idx + 2] = static_cast<int>(v3);
+    int_ptr[4 * idx + 3] = static_cast<int>(v4);
   }
   mesh->getNodeFieldData()->addField( node_field_d );
   mesh->getNodeFieldData()->addField( node_field_i );
@@ -319,7 +319,7 @@ void check_header( std::ifstream& file )
  * \param [in] offset the offset into the field to start at.
  * \pre field != AXOM_NULLPTR
  */
-void check_scalar( Field* const field, std::ifstream& file, uint offset = 0 )
+void check_scalar( Field* const field, std::ifstream& file, axom::common::uint32 offset = 0 )
 {
   const int num_components = field->getNumComponents();
   const int num_values = field->getNumTuples();
@@ -490,7 +490,7 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
       check_multidim_data( field, file );
     }
 
-    cur_pos = file.tellg();
+    cur_pos = static_cast<int>(file.tellg());
     file >> type;
     file.seekg( cur_pos );
     if ( type == "CELL_DATA" || type == "POINT_DATA" ) {
@@ -696,7 +696,7 @@ void check_cells( Mesh* const mesh, std::ifstream& file )
 
   /* Write out the mesh cell connectivity. */
   int temp;
-  int cell_nodes[ max_cell_nodes ];
+  int* cell_nodes = new int[ max_cell_nodes ];
   for ( int cellIdx = 0; cellIdx < num_cells; ++cellIdx ) {
     const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
     mesh->getMeshCell( cellIdx, cell_nodes );
@@ -708,6 +708,7 @@ void check_cells( Mesh* const mesh, std::ifstream& file )
       EXPECT_EQ( temp, cell_nodes[ i ] );
     }
   }
+  delete[] cell_nodes;
 
   /* Write out the mesh cell types. */
   file >> type >> extracted_cells;
