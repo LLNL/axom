@@ -1112,6 +1112,8 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * \brief Tests if 3D triangle tri intersects with 3D ray R.
  * \param [in] tri The input triangle
  * \param [in] R The input ray
+ * \param [out] p Intersection point of tri and R, in barycentric coordinates
+ *   relative to tri
  * \param [out] t Intersection point of tri and R, w.r.t. parametrization of R
  * \note If there is an intersection, the intersection point pt is:
  *                     pt = R.origin() + t * R.direction()
@@ -1131,7 +1133,8 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * no. 1, 65–82, 2013  http://jcgt.org/published/0002/01/05/
  */
 template < typename T >
-bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)
+bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
+                       Point< double, 3 > & p, T& t)
 {
   // Ray origins inside of the triangle are considered a miss.
   // This is a good thing, as pointed out by Matt Larsen in January 2017,
@@ -1197,6 +1200,9 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)
   const T U = Cx*By - Cy*Bx;
   const T V = Ax*Cy - Ay*Cx;
   const T W = Bx*Ay - By*Ax;
+  p[0] = U;
+  p[1] = V;
+  p[2] = W;
 
   //edge testing
   if ( (U< zero || V< zero || W< zero) && (U>zero || V>zero || W>zero)) {
@@ -1228,9 +1234,20 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R, T& t)
 
 /** @} */
 
+/*!
+ * \brief Tests if 3D triangle tri intersects with 3D ray S.
+ * \param [in] tri The input triangle
+ * \param [in] S The input segment
+ * \param [out] p Intersection point of tri and S, in barycentric coordinates
+ *   relative to tri
+ * \param [out] t Intersection point of tri and S, w.r.t. parametrization of S
+ * \return status true iff tri intersects with R, otherwise, false.
+ *
+ * This routine uses intersect_tri_ray(), which see.
+ */
 template < typename T >
 bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
-                           T& t)
+                           Point< double, 3 > & p, T& t)
 {
   typedef Vector< T,3 > Vector3;
   Ray< T,3 > r(S.source(), Vector3(S.source(), S.target()));
@@ -1251,7 +1268,7 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   // Values of the parameter t between 0 and the length of the segment correspond
   // to points on the segment.
   // Note: if intersect_tri_ray() is true, t must be greater than zero
-  if ( intersect_tri_ray(tri, r, t) ) {
+  if ( intersect_tri_ray(tri, r, p, t) ) {
     return t < static_cast< T >( S.length() );
   }
   return false;
