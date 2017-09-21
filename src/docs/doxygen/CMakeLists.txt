@@ -2,7 +2,7 @@
 # documentation targets
 ################################
 
-add_doxygen_target( axom_doxygen )
+blt_add_doxygen_target( axom_doxygen )
 
 
 

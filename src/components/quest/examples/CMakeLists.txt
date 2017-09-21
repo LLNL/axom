@@ -65,7 +65,7 @@ if (ENABLE_MPI)
     blt_add_test(
         NAME quest_interface_mpi_test
         COMMAND quest_interface_ex ${quest_data_dir}/sphere_binary.stl
-        NUM_PROCS 2
+        NUM_MPI_TASKS 2
         )
 else()
     blt_add_test(

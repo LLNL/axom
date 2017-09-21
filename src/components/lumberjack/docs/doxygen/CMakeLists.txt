@@ -12,4 +12,4 @@
 # documentation targets
 ################################
 
-add_doxygen_target(lumberjack_doxygen)
+blt_add_doxygen_target(lumberjack_doxygen)

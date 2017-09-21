@@ -34,7 +34,7 @@ if (ENABLE_TESTS)
 endif()
 
 #
-#add_code_check_targets(uncrustify.cfg)
+#blt_add_code_check_targets(uncrustify.cfg)
 #
 ################################
 # Add docs

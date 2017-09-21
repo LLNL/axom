@@ -45,7 +45,7 @@ blt_add_executable(
 if(ENABLE_MPI)
     blt_add_test(NAME        slam_lulesh
                  COMMAND     slam_lulesh_ex
-                 NUM_PROCS   8
+                 NUM_MPI_TASKS   8
                 )
 else()
     blt_add_test(NAME        slam_lulesh
