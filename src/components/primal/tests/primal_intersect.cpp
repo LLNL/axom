@@ -1251,17 +1251,27 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 
   EXPECT_FALSE( axom::primal::intersect(t, r));
 
-  PointType intersectionBary;
+  PointType intBary;
   double intersectionParam = 0.;
   TriangleType t2( PointType::make_point(-1,-1,2),
                    PointType::make_point(-1,1,2),
                    PointType::make_point( 2,0,2));
-  EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionBary,
+  EXPECT_TRUE( axom::primal::intersect(t2, r, intBary,
                                        intersectionParam));
+  double baryscale = intBary[0] + intBary[1] + intBary[2];
+
+  EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
+  PointType triIntersectionPoint((intBary[0] * t2[0].array() +
+                                  intBary[1] * t2[1].array() +
+                                  intBary[2] * t2[2].array()) / baryscale);
+  SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
+  EXPECT_NEAR(intersectionPoint[0], triIntersectionPoint[0], 1e-6);
+  EXPECT_NEAR(intersectionPoint[1], triIntersectionPoint[1], 1e-6);
+  EXPECT_NEAR(intersectionPoint[2], triIntersectionPoint[2], 1e-6);
 }
 
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
@@ -1282,16 +1292,24 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
                   PointType::make_point(-1,1,2),
                   PointType::make_point( 2,0,2));
 
-  PointType intersectionBary;
+  PointType intBary;
   double intersectionParam = 0.;
-  EXPECT_TRUE( axom::primal::intersect(t, s, intersectionBary,
+  EXPECT_TRUE( axom::primal::intersect(t, s, intBary,
                                        intersectionParam));
+  double baryscale = intBary[0] + intBary[1] + intBary[2];
 
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
+  PointType triIntersectionPoint((intBary[0] * t[0].array() +
+                                  intBary[1] * t[1].array() +
+                                  intBary[2] * t[2].array()) / baryscale);
+  SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
+  EXPECT_NEAR(intersectionPoint[0], triIntersectionPoint[0], 1e-6);
+  EXPECT_NEAR(intersectionPoint[1], triIntersectionPoint[1], 1e-6);
+  EXPECT_NEAR(intersectionPoint[2], triIntersectionPoint[2], 1e-6);
 }
 
 //------------------------------------------------------------------------------

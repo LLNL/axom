@@ -1112,8 +1112,9 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * \brief Tests if 3D triangle tri intersects with 3D ray R.
  * \param [in] tri The input triangle
  * \param [in] R The input ray
- * \param [out] p Intersection point of tri and R, in barycentric coordinates
- *   relative to tri
+ * \param [out] p Intersection point of tri and R, in **un-normalized**
+ *   barycentric coordinates relative to tri.  To normalize, divide each
+ *   component by the sum of the components.
  * \param [out] t Intersection point of tri and R, w.r.t. parametrization of R
  * \note If there is an intersection, the intersection point pt is:
  *                     pt = R.origin() + t * R.direction()
@@ -1124,9 +1125,12 @@ bool crossEdgesDisjoint(double d0, double d1, double r)
  * to the triangle's vertices.  This transform simplifies the calculation of
  * barycentric coordinates of the positive z-axis's intersection with the
  * triangle.  If any of these coordinates are less than zero, the ray misses.
+ * Note that for efficiency, the barycentric coordinates of the intersection
+ * are not normalized.  To normalize, divide each coordinate by the sum of
+ * the coordinates.
  *
- * If any are equal to zero, more care is needed to check if the ray hits
- * the edge or misses.
+ * If any of the barycentric coordinates are equal to zero, more care is
+ * needed to check if the ray hits the edge or misses.
  *
  * Sven Woop, Carsten Benthin, Ingo Wald, "Watertight Ray/Triangle
  * Intersection," Journal of Computer Graphics Techniques (JCGT), vol. 2,
