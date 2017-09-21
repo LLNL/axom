@@ -43,7 +43,7 @@ if ( ENABLE_MPI )
                             DEPENDS_ON slic )
         blt_add_test( NAME "slic_mpi_${example_name}"
                       COMMAND "slic_mpi_${example_name}_ex" 
-                      NUM_PROCS 4)
+                      NUM_MPI_TASKS 4)
     endforeach()
 endif()
 

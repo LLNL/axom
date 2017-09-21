@@ -20,7 +20,7 @@ if (ENABLE_MPI)
                       )
    blt_add_test(NAME spio_basicWriteRead
                 COMMAND spio_basicWriteRead_test
-                NUM_PROCS 1
+                NUM_MPI_TASKS 1
                 )
 
    blt_add_executable(NAME spio_parallelWriteRead_test
@@ -30,7 +30,7 @@ if (ENABLE_MPI)
                       )
    blt_add_test(NAME spio_parallelWriteRead
                 COMMAND spio_parallelWriteRead_test
-                NUM_PROCS 4
+                NUM_MPI_TASKS 4
                 )
 
    if (SCR_FOUND)
@@ -41,7 +41,7 @@ if (ENABLE_MPI)
                          )
       blt_add_test(NAME spio_SCRWriteRead
                    COMMAND spio_SCRWriteRead_test
-                   NUM_PROCS 4
+                   NUM_MPI_TASKS 4
                    )
    endif()
 
@@ -52,7 +52,7 @@ if (ENABLE_MPI)
                       )
    blt_add_test(NAME spio_irregularWriteRead
                 COMMAND spio_irregularWriteRead_test
-                NUM_PROCS 4
+                NUM_MPI_TASKS 4
                 )
                 
    blt_add_executable(NAME spio_externalWriteRead_test
@@ -62,7 +62,7 @@ if (ENABLE_MPI)
                       )
    blt_add_test(NAME spio_externalWriteRead
                 COMMAND spio_externalWriteRead_test
-                NUM_PROCS 4
+                NUM_MPI_TASKS 4
                 )
                 
    blt_add_executable(NAME spio_WRW_test
@@ -72,12 +72,12 @@ if (ENABLE_MPI)
                       )
    blt_add_test(NAME spio_WRW_1
                 COMMAND spio_WRW_test
-                NUM_PROCS 1
+                NUM_MPI_TASKS 1
                 )
      
    blt_add_test(NAME spio_WRW_4
                 COMMAND spio_WRW_test
-                NUM_PROCS 4
+                NUM_MPI_TASKS 4
                 )
 
    blt_add_executable(NAME spio_preserveWriteRead_test
@@ -87,7 +87,7 @@ if (ENABLE_MPI)
                       )
    blt_add_test(NAME spio_preserveWriteRead
                 COMMAND spio_preserveWriteRead_test
-                NUM_PROCS 4
+                NUM_MPI_TASKS 4
                 )
 
 endif()
@@ -101,7 +101,7 @@ if(ENABLE_FORTRAN)
                          )
       blt_add_test(NAME F_spio_basicWriteRead
                    COMMAND spio_basicWriteRead_F_test
-                   NUM_PROCS 1
+                   NUM_MPI_TASKS 1
                    )
                    
       blt_add_executable(NAME spio_parallelWriteRead_F_test
@@ -111,7 +111,7 @@ if(ENABLE_FORTRAN)
                          )
       blt_add_test(NAME F_spio_parallelWriteRead
                    COMMAND spio_parallelWriteRead_F_test
-                   NUM_PROCS 4
+                   NUM_MPI_TASKS 4
                    )
                    
       blt_add_executable(NAME spio_irregularWriteRead_F_test
@@ -121,7 +121,7 @@ if(ENABLE_FORTRAN)
                          )
       blt_add_test(NAME F_spio_irregularWriteRead
                    COMMAND spio_irregularWriteRead_F_test
-                   NUM_PROCS 4
+                   NUM_MPI_TASKS 4
                    )
                    
       blt_add_executable(NAME spio_externalWriteRead_F_test
@@ -131,7 +131,7 @@ if(ENABLE_FORTRAN)
                          )
       blt_add_test(NAME F_spio_externalWriteRead
                    COMMAND spio_externalWriteRead_F_test
-                   NUM_PROCS 4
+                   NUM_MPI_TASKS 4
                    )
 
       blt_add_executable(NAME spio_preserveWriteRead_F_test
@@ -141,7 +141,7 @@ if(ENABLE_FORTRAN)
                          )
       blt_add_test(NAME F_spio_preserveWriteRead
                    COMMAND spio_preserveWriteRead_F_test
-                   NUM_PROCS 4
+                   NUM_MPI_TASKS 4
                    )
 
    endif()

@@ -2,4 +2,4 @@
 # documentation targets
 ################################
 
-add_doxygen_target( slam_doxygen )
+blt_add_doxygen_target( slam_doxygen )

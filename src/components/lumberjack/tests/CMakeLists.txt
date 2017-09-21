@@ -38,9 +38,9 @@ blt_add_executable(NAME lumberjack_speed_test
                    DEPENDS_ON lumberjack )
 blt_add_test( NAME lumberjack_speedTest_binary
               COMMAND lumberjack_speed_test b 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
-              NUM_PROCS 4)
+              NUM_MPI_TASKS 4)
               
 blt_add_test( NAME lumberjack_speedTest_root
               COMMAND lumberjack_speed_test r 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
-              NUM_PROCS 4)
+              NUM_MPI_TASKS 4)
               

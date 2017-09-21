@@ -55,7 +55,7 @@ How to add a new Component to the Build System
                 endif()
 
 
-                add_code_check_targets(uncrustify.cfg)
+                blt_add_code_check_targets(uncrustify.cfg)
 
              ################################
              # Add docs
