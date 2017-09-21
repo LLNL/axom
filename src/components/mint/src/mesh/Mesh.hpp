@@ -75,7 +75,7 @@ public:
    * \return status true iff the mesh has mixed cell types.
    */
   inline bool hasMixedCellTypes() const
-  { return m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH;};
+  { return m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH; };
 
   /*!
    * \brief Returns the FieldData instance associated with node-centered fields.

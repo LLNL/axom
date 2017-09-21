@@ -39,13 +39,10 @@ namespace mint {
  *  e.g., for, debugging etc.
  */
 static const std::string basis_name[] = {
-   "LAGRANGE_BASIS",
+  "LAGRANGE_BASIS",
 };
 
-
 }
 }
-
-
 
 #endif
