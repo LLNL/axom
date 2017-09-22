@@ -321,7 +321,7 @@
  * \brief Logs an Debug message iff EXP is true
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
- * \note The SLIC_DEBUG_IF macro is always active.
+ * \note The SLIC_DEBUG_IF macro is active in debug mode.
  *
  * Usage:
  * \code
@@ -344,7 +344,7 @@
 #else // turn off debug macros
 
 #define SLIC_DEBUG( ignore_EXP ) ( (void)0 )
-#define SLIC_DEBUG_IF( ignore_EXP, ignore_EXP ) ( (void)0 )
+#define SLIC_DEBUG_IF( ignore_EXP, ignore_msg ) ( (void)0 )
 
 #endif
 
