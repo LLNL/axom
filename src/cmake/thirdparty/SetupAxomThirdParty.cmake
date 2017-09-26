@@ -122,3 +122,14 @@ if (LUA_DIR)
     )
 endif()
 
+################################
+# SCR
+################################
+if (SCR_DIR)
+  include(cmake/thirdparty/FindSCR.cmake)
+  blt_register_library(NAME scr
+                       INCLUDES ${SCR_INCLUDE_DIRS}
+                       LIBRARIES ${SCR_LIBRARY} )
+endif()
+
+

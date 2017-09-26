@@ -36,6 +36,7 @@
  */
 #include "mpi.h"
 
+#include "axom/config.hpp"
 #include "fmt/format.h"
 #include "slic/slic.hpp"
 #include "slic/LogStream.hpp"

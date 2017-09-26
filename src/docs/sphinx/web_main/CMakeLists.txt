@@ -5,4 +5,4 @@
 
 # add a target to generate documentation with Sphinx
 
-add_sphinx_target( web_main_docs )
+blt_add_sphinx_target( web_main_docs )

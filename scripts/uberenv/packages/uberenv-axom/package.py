@@ -52,10 +52,13 @@ class UberenvAxom(Package):
 
     variant("mfem",   default=True, description="Build mfem")
 
+    variant("scr", default=False, description="Build SCR")
+
     depends_on("conduit~shared+cmake",when="+cmake")
     depends_on("conduit~shared~cmake",when="~cmake")
     
     depends_on("hdf5~cxx~shared~fortran")
+    depends_on("scr", when="+scr")
 
     # builds serial version of mfem that does not depend on Sidre
     depends_on("mfem~mpi",   when="+mfem")
@@ -168,6 +171,13 @@ class UberenvAxom(Package):
         hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
         cfg.write("# hdf5 from uberenv\n")
         cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
+
+        if "scr" in spec:
+            scr_dir = get_spec_path(spec, "scr", path_replacements)
+            cfg.write("# scr from uberenv\n")
+            cfg.write(cmake_cache_entry("SCR_DIR",scr_dir))
+        else:
+            cfg.write("# scr not built by uberenv\n")
 
         conduit_dir = get_spec_path(spec, "conduit", path_replacements)
         cfg.write("# conduit from uberenv\n")

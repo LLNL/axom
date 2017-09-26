@@ -21,9 +21,9 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-#if (ENABLE_EXAMPLES)
-#  add_subdirectory(examples)
-#endif()
+if (ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ################################
 # Add tests
@@ -35,7 +35,7 @@ endif()
 ################################
 # add uncrustify
 ################################
-add_code_check_targets(uncrustify.cfg)
+blt_add_code_check_targets(uncrustify.cfg)
 
 ################################
 # Add docs

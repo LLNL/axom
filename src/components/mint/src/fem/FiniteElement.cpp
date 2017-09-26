@@ -42,19 +42,18 @@ bool diverged( const double* xi, int N )
 
   bool divergence_detected = false;
   for ( int i=0; !divergence_detected && (i < N); ++i ) {
-      divergence_detected = divergence_detected || (xi[ i ] > DIVERGED);
+    divergence_detected = divergence_detected || (xi[ i ] > DIVERGED);
   }
 
   return divergence_detected;
 }
-
 
 }
 
 //------------------------------------------------------------------------------
 // FINITE ELEMENT CLASS IMPLEMENTATION
 //------------------------------------------------------------------------------
-FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
+FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ):
   m_dim( mesh->getDimension() ),
   m_ctype( mesh->getMeshCellType( cellIdx ) ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
@@ -81,7 +80,7 @@ FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
 //------------------------------------------------------------------------------
 FiniteElement::FiniteElement( numerics::Matrix< double >& M,
                               int cellType,
-                              bool useExternal ) :
+                              bool useExternal ):
   m_dim( M.getNumRows() ),
   m_ctype( cellType ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
@@ -108,12 +107,13 @@ FiniteElement::FiniteElement( numerics::Matrix< double >& M,
     // shallow copy the data
     m_xyz = M.data( );
 
-  } else {
+  }
+  else {
 
     // make a deep copy of the data
     const int N = m_dim*m_numnodes;
     for ( int i=0; i < N; ++i ) {
-       m_xyz[ i ] = M.data()[ i ];
+      m_xyz[ i ] = M.data()[ i ];
     }
 
   }
@@ -131,9 +131,9 @@ int FiniteElement::computeReferenceCoords( const double* xp,
                                            double* xr,
                                            double TOL )
 {
-  SLIC_ASSERT( xp != AXOM_NULLPTR );
-  SLIC_ASSERT( xr != AXOM_NULLPTR );
-  SLIC_ASSERT( this->getBasisType() != MINT_UNDEFINED_BASIS );
+  SLIC_ASSERT(  xp != AXOM_NULLPTR );
+  SLIC_ASSERT(  xr != AXOM_NULLPTR );
+  SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS ) {
     SLIC_WARNING( "No associated FiniteElement basis!" );
@@ -148,66 +148,66 @@ int FiniteElement::computeReferenceCoords( const double* xp,
   double psi[ MAX_DIM ];   // rhs
 
   // STEP 0: matrix instance to store the jacobian, J
-  numerics::Matrix< double > J ( m_dim, m_dim, m_jac, true );
-  numerics::Matrix< double > coord_matrix ( m_dim, m_numnodes, m_xyz,  true );
+  numerics::Matrix< double > J( m_dim, m_dim, m_jac, true );
+  numerics::Matrix< double > coord_matrix( m_dim, m_numnodes, m_xyz,  true );
 
   // STEP 1: set initial guess for Newton-Raphson at the parametric center
   const int ref_dim = this->getReferenceDimension();
   for ( int i=0; i < m_dim; ++i ) {
-     xr[ i ] = ( i < ref_dim )? this->getReferenceCenter()[ i ] : 0.0;
+    xr[ i ] = ( i < ref_dim ) ? this->getReferenceCenter()[ i ] : 0.0;
   }
 
   // STEP 2: start Newton-Raphson iteration
   for ( int iter=0; !converged && (iter < m_maxNewtonIterations); ++iter ) {
 
-     // evaluate the shape functions and jacobian @ \xi
-     this->evaluateShapeFunctions( xr, m_phi );
-     this->jacobian( xr, J );
+    // evaluate the shape functions and jacobian @ \xi
+    this->evaluateShapeFunctions( xr, m_phi );
+    this->jacobian( xr, J );
 
-     // compute the right-hand side term, -\psi
-     for ( int i=0; i < m_dim; ++i ) {
+    // compute the right-hand side term, -\psi
+    for ( int i=0; i < m_dim; ++i ) {
 
-        psi[ i ] = (-1.0)*xp[ i ];
-        for ( int j=0; j < m_numnodes; ++j ) {
-           psi[ i ] += m_phi[ j ] * coord_matrix(i,j);
-        }
+      psi[ i ] = (-1.0)*xp[ i ];
+      for ( int j=0; j < m_numnodes; ++j ) {
+        psi[ i ] += m_phi[ j ] * coord_matrix(i,j);
+      }
 
-        psi[ i ] = (-1.0) * psi[ i ] ;
-     }
+      psi[ i ] = (-1.0) * psi[ i ];
+    }
 
-     // calculate residual
-     int rc = numerics::linear_solve( J, psi, x );
+    // calculate residual
+    int rc = numerics::linear_solve( J, psi, x );
 
-     // compute l1norm and generate improvements
-     l1norm = 0.0;
-     for ( int i=0; i < m_dim; ++i ) {
-        l1norm  += utilities::abs( x[ i ] );
-        xr[ i ] += x[ i ];
-     }
+    // compute l1norm and generate improvements
+    l1norm = 0.0;
+    for ( int i=0; i < m_dim; ++i ) {
+      l1norm  += utilities::abs( x[ i ] );
+      xr[ i ] += x[ i ];
+    }
 
-     if ( rc != 0 ) {
-       double det = numerics::determinant( J );
-       SLIC_WARNING( "Newton-Raphson failed, system appears singular!" );
-       SLIC_INFO( "singular system => det(J)=" << det );
-       SLIC_INFO( "l1norm=" << l1norm );
-       SLIC_INFO( "Newton iteration=" << iter );
+    if ( rc != 0 ) {
+      double det = numerics::determinant( J );
+      SLIC_WARNING( "Newton-Raphson failed, system appears singular!" );
+      SLIC_INFO(  "singular system => det(J)=" << det );
+      SLIC_INFO(  "l1norm=" << l1norm );
+      SLIC_INFO(  "Newton iteration=" << iter );
 
-       double xr1 = xr[ 0 ];
-       double xr2 = xr[ 1 ];
-       double xr3 = ( m_dim==3 )? xr[ 2 ] : 0.0;
-       SLIC_INFO( "xr=[" << xr1 << " " << xr2 << " " << xr3 << "]" );
-       break;
-     }
+      double xr1 = xr[ 0 ];
+      double xr2 = xr[ 1 ];
+      double xr3 = ( m_dim==3 ) ? xr[ 2 ] : 0.0;
+      SLIC_INFO( "xr=[" << xr1 << " " << xr2 << " " << xr3 << "]" );
+      break;
+    }
 
-     // convergence check
-     converged = ( l1norm < TOL )? true : false;
+    // convergence check
+    converged = ( l1norm < TOL ) ? true : false;
 
-     // divergence check
-     if ( !converged && detail::diverged( xr, m_dim ) ) {
-       SLIC_WARNING( "Newton-Raphson divergence detected!" );
-       SLIC_INFO( "l1norm=" << l1norm << " iter= " << iter );
-       break;
-     }
+    // divergence check
+    if ( !converged && detail::diverged( xr, m_dim ) ) {
+      SLIC_WARNING( "Newton-Raphson divergence detected!" );
+      SLIC_INFO( "l1norm=" << l1norm << " iter= " << iter );
+      break;
+    }
 
   } // END newton iterations
 
@@ -218,7 +218,8 @@ int FiniteElement::computeReferenceCoords( const double* xp,
     return INVERSE_MAP_FAILED;
   }
 
-  int rc = ( this->inReferenceElement(xr,TOL) )? INSIDE_ELEMENT:OUTSIDE_ELEMENT;
+  int rc =
+    ( this->inReferenceElement(xr,TOL) ) ? INSIDE_ELEMENT : OUTSIDE_ELEMENT;
 
   return rc;
 }
@@ -226,9 +227,9 @@ int FiniteElement::computeReferenceCoords( const double* xp,
 //------------------------------------------------------------------------------
 void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
 {
-  SLIC_ASSERT( xr != AXOM_NULLPTR );
-  SLIC_ASSERT( xp != AXOM_NULLPTR );
-  SLIC_ASSERT( this->getBasisType() != MINT_UNDEFINED_BASIS );
+  SLIC_ASSERT(  xr != AXOM_NULLPTR );
+  SLIC_ASSERT(  xp != AXOM_NULLPTR );
+  SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS ) {
     SLIC_WARNING( "No associated FiniteElement basis!" );
@@ -248,10 +249,10 @@ void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
 //------------------------------------------------------------------------------
 void FiniteElement::jacobian( const double* lc, numerics::Matrix< double >& J  )
 {
-  SLIC_ASSERT( lc != AXOM_NULLPTR );
-  SLIC_ASSERT( J.getNumColumns() == m_dim );
-  SLIC_ASSERT( J.getNumRows() == m_dim );
-  SLIC_ASSERT( this->getBasisType() != MINT_UNDEFINED_BASIS );
+  SLIC_ASSERT(  lc != AXOM_NULLPTR );
+  SLIC_ASSERT(  J.getNumColumns() == m_dim );
+  SLIC_ASSERT(  J.getNumRows() == m_dim );
+  SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS ) {
     SLIC_WARNING( "No associated FiniteElement basis!" );
@@ -272,10 +273,10 @@ void FiniteElement::jacobian( const double* lc, numerics::Matrix< double >& J  )
 //------------------------------------------------------------------------------
 void FiniteElement::evaluateShapeFunctions( const double* xr, double* phi )
 {
-  SLIC_ASSERT( xr != AXOM_NULLPTR );
-  SLIC_ASSERT( phi != AXOM_NULLPTR );
-  SLIC_ASSERT( m_shapeFunction != AXOM_NULLPTR );
-  SLIC_ASSERT( this->getBasisType() != MINT_UNDEFINED_BASIS );
+  SLIC_ASSERT(  xr != AXOM_NULLPTR );
+  SLIC_ASSERT(  phi != AXOM_NULLPTR );
+  SLIC_ASSERT(  m_shapeFunction != AXOM_NULLPTR );
+  SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS ) {
     SLIC_WARNING( "No associated FiniteElement basis!" );
@@ -288,10 +289,10 @@ void FiniteElement::evaluateShapeFunctions( const double* xr, double* phi )
 //------------------------------------------------------------------------------
 void FiniteElement::evaluateDerivatives( const double* xr, double* phidot )
 {
-  SLIC_ASSERT( xr != AXOM_NULLPTR );
-  SLIC_ASSERT( phidot != AXOM_NULLPTR );
-  SLIC_ASSERT( m_shapeFunctionDerivatives != AXOM_NULLPTR );
-  SLIC_ASSERT( this->getBasisType() != MINT_UNDEFINED_BASIS );
+  SLIC_ASSERT(  xr != AXOM_NULLPTR );
+  SLIC_ASSERT(  phidot != AXOM_NULLPTR );
+  SLIC_ASSERT(  m_shapeFunctionDerivatives != AXOM_NULLPTR );
+  SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS ) {
     SLIC_WARNING( "No associated FiniteElement basis!" );
@@ -311,7 +312,7 @@ void FiniteElement::setUp()
   m_jac              = new double[ m_dim*m_dim ];
 
   if ( !m_usingExternal ) {
-     m_xyz = new double[ m_numnodes*m_dim ];
+    m_xyz = new double[ m_numnodes*m_dim ];
   }
 
   m_phi              = new double[ m_numnodes ];
@@ -338,15 +339,15 @@ void FiniteElement::tearDown()
 //------------------------------------------------------------------------------
 void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
 {
-  SLIC_ASSERT( m != AXOM_NULLPTR );
-  SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );
+  SLIC_ASSERT(  m != AXOM_NULLPTR );
+  SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );
 
   // TODO: iron out this code
   int cell[ MINT_MAX_NUM_NODES ];
   m->getMeshCell( cellIdx, cell );
 
   for ( int i=0; i < m_numnodes; ++i ) {
-     m->getMeshNode( cell[ i ], &m_xyz[ i*m_dim ]  );
+    m->getMeshNode( cell[ i ], &m_xyz[ i*m_dim ]  );
   }
 
 }
@@ -362,19 +363,19 @@ bool FiniteElement::inReferenceElement( const double* xi, double TOL )
   bool is_inside = true;
 
   switch ( m_ctype ) {
-    case MINT_TRIANGLE:
-    case MINT_TET:
-    case MINT_PRISM:
-    case MINT_PYRAMID:
-         this->evaluateShapeFunctions( xi, m_phi );
-         for ( int i=0; is_inside && (i < m_numdofs); ++i ) {
-            is_inside = is_inside && (m_phi[i] > LTOL) && (m_phi[i] < HTOL);
-         }
-         break;
-    default:
-         for ( int i=0; is_inside && i < m_dim; ++i ) {
-            is_inside = is_inside && ( xi[i] > LTOL ) && ( xi[i] < HTOL );
-         }
+  case MINT_TRIANGLE:
+  case MINT_TET:
+  case MINT_PRISM:
+  case MINT_PYRAMID:
+    this->evaluateShapeFunctions( xi, m_phi );
+    for ( int i=0; is_inside && (i < m_numdofs); ++i ) {
+      is_inside = is_inside && (m_phi[i] > LTOL) && (m_phi[i] < HTOL);
+    }
+    break;
+  default:
+    for ( int i=0; is_inside && i < m_dim; ++i ) {
+      is_inside = is_inside && ( xi[i] > LTOL ) && ( xi[i] < HTOL );
+    }
   } // END switch
 
   return is_inside;

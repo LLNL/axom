@@ -51,13 +51,13 @@ namespace {
  */
 void compute_centroid( mint::FiniteElement* fe, double* centroid )
 {
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_TRUE( centroid != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_TRUE(  centroid != AXOM_NULLPTR );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   numerics::Matrix< double > physical_nodes(
-          ndims, nnodes, fe->getPhysicalNodes(), true );
+    ndims, nnodes, fe->getPhysicalNodes(), true );
 
   if ( fe->getCellType() == MINT_PYRAMID ) {
 
@@ -70,7 +70,8 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
     centroid[ 1 ] = 4.28284;
     centroid[ 2 ] = 2.0;
 
-  } else {
+  }
+  else {
 
     for ( int i=0; i < ndims; ++i ) {
 
@@ -142,45 +143,45 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
 
   MeshType* m = new MeshType( ndims );
 
-  double centroid[ ] = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
+  double centroid[]  = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
 
   for ( int i=0; i < ndofs; ++i ) {
 
-     cell[ i ]    = i;
-     double* node = &nodes[ i*ndims ];
+    cell[ i ]    = i;
+    double* node = &nodes[ i*ndims ];
 
-     // scale & rotate cell from the reference space to get a  test cell
-     const double dx   = node[ 0 ] - center[ 0 ];
-     const double dy   = node[ 1 ] - center[ 1 ];
+    // scale & rotate cell from the reference space to get a  test cell
+    const double dx   = node[ 0 ] - center[ 0 ];
+    const double dy   = node[ 1 ] - center[ 1 ];
 
-     node[ 0 ] = SCALE * ( (dx*COST - dy*SINT) + center[ 0 ] );
-     node[ 1 ] = SCALE * ( (dx*SINT + dy*COST) + center[ 1 ] );
-     if ( ndims==3 ) {
-       node[ 2 ] *= SCALE;
-     }
+    node[ 0 ] = SCALE * ( (dx*COST - dy*SINT) + center[ 0 ] );
+    node[ 1 ] = SCALE * ( (dx*SINT + dy*COST) + center[ 1 ] );
+    if ( ndims==3 ) {
+      node[ 2 ] *= SCALE;
+    }
 
-     if ( CellType==MINT_PYRAMID && i < 4 ) {
-        centroid[ 0 ] += node[ 0 ];
-        centroid[ 1 ] += node[ 1 ];
-        centroid[ 2 ] += node[ 2 ];
-     }
+    if ( CellType==MINT_PYRAMID && i < 4 ) {
+      centroid[ 0 ] += node[ 0 ];
+      centroid[ 1 ] += node[ 1 ];
+      centroid[ 2 ] += node[ 2 ];
+    }
 
-     if ( CellType==MINT_PYRAMID && i==4 ) {
-       // generate right pyramid, ensure the apex is prependicular to the
-       // base of the pyramid to facilitate testing.
-       node[ 0 ] = 0.25*centroid[ 0 ];
-       node[ 1 ] = 0.25*centroid[ 1 ];
-       node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
-     }
+    if ( CellType==MINT_PYRAMID && i==4 ) {
+      // generate right pyramid, ensure the apex is prependicular to the
+      // base of the pyramid to facilitate testing.
+      node[ 0 ] = 0.25*centroid[ 0 ];
+      node[ 1 ] = 0.25*centroid[ 1 ];
+      node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
+    }
 
-     m->insertNode( node );
+    m->insertNode( node );
   }
 
   m->insertCell( cell, CellType, ndofs );
 
 #ifdef MINT_FEM_DEBUG
   std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
-  mint::write_vtk( m,  vtkFile );
+  mint::write_vtk( m, vtkFile );
 #endif
 
   // clean up
@@ -210,20 +211,20 @@ template < int BasisType, int CellType >
 void get_fe_mesh( mint::UnstructuredMesh< CellType >*& m,
                   mint::FiniteElement*& fe )
 {
-  EXPECT_TRUE( m==AXOM_NULLPTR );
-  EXPECT_TRUE( fe==AXOM_NULLPTR );
+  EXPECT_TRUE(  m==AXOM_NULLPTR );
+  EXPECT_TRUE(  fe==AXOM_NULLPTR );
 
   // STEP 0: construct a mesh with a single element
   m = single_element_mesh< BasisType, CellType >( );
 
   EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   // STEP 1: construct FE instance.
   fe = new mint::FiniteElement( m, 0 );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_TRUE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe->getBasisType()==MINT_UNDEFINED_BASIS );
 
   mint::bind_basis< BasisType, CellType >( *fe );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
@@ -245,14 +246,14 @@ void check_reference_element( mint::FiniteElement* fe )
 
   // STEP 0: check reference element attributes, eg, dofs, dimension, etc.
   ShapeFunctionType sf;
-  EXPECT_EQ( sf.numDofs(), fe->getNumDofs() );
-  EXPECT_EQ( sf.dimension(), fe->getReferenceDimension() );
+  EXPECT_EQ(  sf.numDofs(),   fe->getNumDofs() );
+  EXPECT_EQ(  sf.dimension(), fe->getReferenceDimension() );
 
   const int fe_dim = fe->getPhysicalDimension();
-  EXPECT_TRUE( (fe_dim >= 1) && (fe_dim <= 3) );
+  EXPECT_TRUE(  (fe_dim >= 1) && (fe_dim <= 3) );
 
   const int ref_dim = fe->getReferenceDimension();
-  EXPECT_TRUE( ref_dim <= fe_dim );
+  EXPECT_TRUE(  ref_dim <= fe_dim );
 
   // STEP 1: check reference coordinates
   const int ndofs = sf.numDofs();
@@ -264,16 +265,16 @@ void check_reference_element( mint::FiniteElement* fe )
 
   // populate a matrix with the element's reference coordinates to test
   numerics::Matrix< double > ref_coords(
-         ndims, ndofs, fe->getReferenceNodes(), true );
+    ndims, ndofs, fe->getReferenceNodes(), true );
 
   for ( int i=0; i < ndofs; ++i ) {
 
-     const double* xr_expected = shape_coords.getColumn( i );
-     const double* xr          = ref_coords.getColumn( i );
+    const double* xr_expected = shape_coords.getColumn( i );
+    const double* xr          = ref_coords.getColumn( i );
 
-     for ( int j=0; j < ndims; ++j ) {
-        EXPECT_DOUBLE_EQ( xr_expected[ j ], xr[ j ] );
-     }
+    for ( int j=0; j < ndims; ++j ) {
+      EXPECT_DOUBLE_EQ( xr_expected[ j ], xr[ j ] );
+    }
 
   } // END for all dofs
 
@@ -282,9 +283,9 @@ void check_reference_element( mint::FiniteElement* fe )
   sf.center( shape_center );
 
   for ( int j=0; j < ref_dim; ++j ) {
-     const double expected = shape_center[ j ];
-     const double actual   = fe->getReferenceCenter( )[ j ];
-     EXPECT_DOUBLE_EQ( expected, actual );
+    const double expected = shape_center[ j ];
+    const double actual   = fe->getReferenceCenter( )[ j ];
+    EXPECT_DOUBLE_EQ( expected, actual );
   }
 
   // STEP 3: clean up
@@ -308,8 +309,8 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
-  EXPECT_TRUE( fe->getReferenceDimension()==fe->getPhysicalDimension() );
-  EXPECT_TRUE( fe->getNumNodes()==fe->getNumDofs() );
+  EXPECT_TRUE(  fe->getReferenceDimension()==fe->getPhysicalDimension() );
+  EXPECT_TRUE(  fe->getNumNodes()==fe->getNumDofs() );
 
   int numdofs = fe->getNumDofs();
   int nnodes  = fe->getNumNodes();
@@ -317,11 +318,11 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 
   // STEP 0: get the reference coordinates
   numerics::Matrix< double > reference_coords(
-        ndims, numdofs, fe->getReferenceNodes(), true );
+    ndims, numdofs, fe->getReferenceNodes(), true );
 
   // STEP 1: get the physical coordinates of the element
   numerics::Matrix< double > element_coords(
-        ndims, nnodes, fe->getPhysicalNodes(), true );
+    ndims, nnodes, fe->getPhysicalNodes(), true );
 
   // STEP 2: buffer to store the mapped physical coordinates
   numerics::Matrix< double > physical_coords( ndims, nnodes );
@@ -329,17 +330,17 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
   // STEP 3: map each reference coordinate to physical
   for ( int i=0; i < numdofs; ++i ) {
 
-     // forward map
-     const double* xr = reference_coords.getColumn( i );
-     double* xp       = physical_coords.getColumn( i );
-     fe->computePhysicalCoords( xr, xp );
+    // forward map
+    const double* xr = reference_coords.getColumn( i );
+    double* xp       = physical_coords.getColumn( i );
+    fe->computePhysicalCoords( xr, xp );
 
-     double* expected_xp = element_coords.getColumn( i );
+    double* expected_xp = element_coords.getColumn( i );
 
-     // check mapping
-     for ( int j=0; j < ndims; ++j ) {
-        EXPECT_NEAR( expected_xp[ j ], xp[ j ], TOL );
-     }
+    // check mapping
+    for ( int j=0; j < ndims; ++j ) {
+      EXPECT_NEAR( expected_xp[ j ], xp[ j ], TOL );
+    }
 
   } // END for all dofs
 
@@ -354,7 +355,7 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 
   // STEP 5: check mapping of centroid
   for ( int i=0; i < ndims; ++i ) {
-     EXPECT_NEAR( expected_centroid[ i ], xp_center[ i ], TOL );
+    EXPECT_NEAR( expected_centroid[ i ], xp_center[ i ], TOL );
   }
 
   // STEP 6: cleanup
@@ -379,18 +380,18 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
-  EXPECT_TRUE( fe->getReferenceDimension()==fe->getPhysicalDimension() );
-  EXPECT_TRUE( fe->getNumNodes()==fe->getNumDofs() );
+  EXPECT_TRUE(  fe->getReferenceDimension()==fe->getPhysicalDimension() );
+  EXPECT_TRUE(  fe->getNumNodes()==fe->getNumDofs() );
 
   // STEP 0: get Matrix of physical nodes; nodal coordinates stored in columns.
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   numerics::Matrix< double > physical_nodes(
-       ndims, nnodes, fe->getPhysicalNodes(), true );
+    ndims, nnodes, fe->getPhysicalNodes(), true );
 
   // STEP 1: get reference coordinates
   numerics::Matrix< double > reference_nodes(
-       ndims, nnodes, fe->getReferenceNodes(), true );
+    ndims, nnodes, fe->getReferenceNodes(), true );
 
   // STEP 2: allocate buffer to store the computed reference coordinates
   double* xr = new double[ ndims ];
@@ -410,7 +411,7 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 
     // check mapping
     for ( int j=0; j < ndims; ++j ) {
-       EXPECT_NEAR( expected_xr[ j ], xr[ j ], TOL );
+      EXPECT_NEAR( expected_xr[ j ], xr[ j ], TOL );
     }
 
   } // END for all physical nodes
@@ -426,7 +427,7 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
   // STEP 5: check centroid mapping
   const double* refcenter = fe->getReferenceCenter();
   for ( int i=0; i < ndims; ++i ) {
-     EXPECT_NEAR( refcenter[ i ], xr[ i ], TOL );
+    EXPECT_NEAR( refcenter[ i ], xr[ i ], TOL );
   }
 
   // STEP 6: clean up
@@ -446,11 +447,11 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 template < int BasisType, int CellType >
 void check_shape( )
 {
-  EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
+                          << mint::cell::name[ CellType ] );
 
   typedef typename mint::FEBasis< BasisType, CellType > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
@@ -461,10 +462,10 @@ void check_shape( )
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   // STEP 1: test FE instance
   check_reference_element< ShapeFunctionType >( fe );
@@ -487,11 +488,11 @@ void check_shape( )
 template < int BasisType, int CellType >
 void check_jacobian( double TOL=1.e-9 )
 {
-  EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
+                          << mint::cell::name[ CellType ] );
 
   const double LTOL = 0.0-TOL;
   double det = 0.0;
@@ -503,10 +504,10 @@ void check_jacobian( double TOL=1.e-9 )
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   // STEP 1: construct a Matrix object to store the jacobian
   const int ndims = fe->getPhysicalDimension();
@@ -535,18 +536,18 @@ void check_jacobian( double TOL=1.e-9 )
   double* rp = new double[ ndims ];
   for ( int i=0; i < ndofs; ++i ) {
 
-     const double* xi = n.getColumn( i );
-     for ( int j=0; j < ndims; ++j ) {
-        rp[ j ] = 0.5 * ( xi[ j ] +  xi_c[ j ] );
-     }
+    const double* xi = n.getColumn( i );
+    for ( int j=0; j < ndims; ++j ) {
+      rp[ j ] = 0.5 * ( xi[ j ] +  xi_c[ j ] );
+    }
 
-     fe->jacobian( rp, J );
-     det = numerics::determinant( J );
-     EXPECT_GT( det, LTOL );
+    fe->jacobian( rp, J );
+    det = numerics::determinant( J );
+    EXPECT_GT( det, LTOL );
   }
 
   // STEP 5: clean up
-  delete [ ] rp;
+  delete []  rp;
   delete fe;
   delete m;
 }
@@ -564,11 +565,11 @@ void check_jacobian( double TOL=1.e-9 )
 template < int BasisType, int CellType >
 void check_forward_map( double TOL=1.e-9 )
 {
-  EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
+                          << mint::cell::name[ CellType ] );
 
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
@@ -577,10 +578,10 @@ void check_forward_map( double TOL=1.e-9 )
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   // STEP 1: check forward mapping
   test_forward_map( fe, TOL );
@@ -603,10 +604,10 @@ void check_forward_map( double TOL=1.e-9 )
 template < int BasisType, int CellType >
 void check_inverse_map( double TOL=1.e-9 )
 {
-  EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
                           << mint::cell::name[ CellType ] );
 
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
@@ -616,10 +617,10 @@ void check_inverse_map( double TOL=1.e-9 )
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   // STEP 1: check inverse map
   test_inverse_map( fe, TOL );
@@ -640,10 +641,10 @@ void check_inverse_map( double TOL=1.e-9 )
 template < int BasisType, int CellType >
 void point_in_cell( double TOL=1.e-9 )
 {
-  EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
                           << mint::cell::name[ CellType ] );
 
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
@@ -653,10 +654,10 @@ void point_in_cell( double TOL=1.e-9 )
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   // STEP 0: test variables
   const int nnodes = fe->getNumNodes();
@@ -672,14 +673,14 @@ void point_in_cell( double TOL=1.e-9 )
   for ( int i=0; i < nnodes; ++i ) {
 
     if ( fe->getCellType()==MINT_PYRAMID && i==4 ) {
-       // skip inverse map at the apex of the pyramid, system is singular
-       continue;
-     }
+      // skip inverse map at the apex of the pyramid, system is singular
+      continue;
+    }
 
-     const double* xp = nodes.getColumn( i );
+    const double* xp = nodes.getColumn( i );
 
-     status = fe->computeReferenceCoords( xp, xi, TOL );
-     EXPECT_TRUE( status==mint::INSIDE_ELEMENT );
+    status = fe->computeReferenceCoords( xp, xi, TOL );
+    EXPECT_TRUE( status==mint::INSIDE_ELEMENT );
   }
 
   // STEP 2: Ensure center is inside
@@ -689,20 +690,21 @@ void point_in_cell( double TOL=1.e-9 )
   EXPECT_TRUE( status==mint::INSIDE_ELEMENT );
 
   // STEP 3: Ensure other interior nodes are inside
-  numerics::Matrix< double > dofs( ndims, nnodes, fe->getReferenceNodes(),true );
+  numerics::Matrix< double > dofs( ndims, nnodes, fe->getReferenceNodes(),
+                                   true );
 
   for ( int i=0; i < nnodes; ++i ) {
 
-     const double* dof = dofs.getColumn( i );
+    const double* dof = dofs.getColumn( i );
 
-     for ( int j=0; j < ndims; ++j ) {
-       rp[ j ] = 0.5 * ( dof[ j ] +  fe->getReferenceCenter()[ j ] );
-     }
+    for ( int j=0; j < ndims; ++j ) {
+      rp[ j ] = 0.5 * ( dof[ j ] +  fe->getReferenceCenter()[ j ] );
+    }
 
-     fe->computePhysicalCoords( rp, xc );
+    fe->computePhysicalCoords( rp, xc );
 
-     status = fe->computeReferenceCoords( xc, xi, TOL );
-     EXPECT_TRUE( status==mint::INSIDE_ELEMENT );
+    status = fe->computeReferenceCoords( xc, xi, TOL );
+    EXPECT_TRUE( status==mint::INSIDE_ELEMENT );
 
   } // END for
 
@@ -710,27 +712,27 @@ void point_in_cell( double TOL=1.e-9 )
   const double SHIFT = 10;
   for ( int i=0; i < nnodes; ++i ) {
 
-     const double* dof = dofs.getColumn( i );
+    const double* dof = dofs.getColumn( i );
 
-     // Test +SHIFT
-     for ( int j=0; j < ndims; ++j ) {
-       rp[ j ] = dof[ j ] + SHIFT;
-     }
+    // Test +SHIFT
+    for ( int j=0; j < ndims; ++j ) {
+      rp[ j ] = dof[ j ] + SHIFT;
+    }
 
-     fe->computePhysicalCoords( rp, xc );
+    fe->computePhysicalCoords( rp, xc );
 
-     status = fe->computeReferenceCoords( xc, xi, TOL );
-     EXPECT_TRUE( status==mint::OUTSIDE_ELEMENT );
+    status = fe->computeReferenceCoords( xc, xi, TOL );
+    EXPECT_TRUE( status==mint::OUTSIDE_ELEMENT );
 
-     // Test -SHIFT
-     for ( int j=0; j < ndims; ++j ) {
-        rp[ j ] = dof[ j ] - SHIFT;
-     }
+    // Test -SHIFT
+    for ( int j=0; j < ndims; ++j ) {
+      rp[ j ] = dof[ j ] - SHIFT;
+    }
 
-     fe->computePhysicalCoords( rp, xc );
+    fe->computePhysicalCoords( rp, xc );
 
-     status = fe->computeReferenceCoords( xc, xi, TOL );
-     EXPECT_TRUE( status==mint::OUTSIDE_ELEMENT );
+    status = fe->computeReferenceCoords( xc, xi, TOL );
+    EXPECT_TRUE( status==mint::OUTSIDE_ELEMENT );
   }
 
   // STEP 5: clean up
@@ -778,12 +780,12 @@ double analytic_function( const double* x, int N )
  */
 double interp( const double* f, const double* wgts, int N )
 {
-  EXPECT_TRUE( f != AXOM_NULLPTR );
-  EXPECT_TRUE( wgts != AXOM_NULLPTR );
+  EXPECT_TRUE(  f != AXOM_NULLPTR );
+  EXPECT_TRUE(  wgts != AXOM_NULLPTR );
 
   double finterp = 0.0;
   for ( int i=0; i < N; ++i ) {
-     finterp += wgts[ i ]*f[ i ];
+    finterp += wgts[ i ]*f[ i ];
   }
   return ( finterp );
 }
@@ -800,10 +802,10 @@ double interp( const double* f, const double* wgts, int N )
 template < int BasisType, int CellType >
 void check_interp( double TOL=1.e-9 )
 {
-  EXPECT_TRUE( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
                           << mint::cell::name[ CellType ] );
 
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
@@ -813,10 +815,10 @@ void check_interp( double TOL=1.e-9 )
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
+  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
@@ -830,18 +832,18 @@ void check_interp( double TOL=1.e-9 )
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 
   for ( int i=0; i < nnodes; ++i ) {
-     const double* x = nodes.getColumn( i );
-     f[ i ] = analytic_function( x, ndims );
+    const double* x = nodes.getColumn( i );
+    f[ i ] = analytic_function( x, ndims );
   }
 
   // STEP 2: check interpolation at the nodes
   const int ndofs = fe->getNumDofs();
-  numerics::Matrix< double > dofs ( ndims,ndofs,fe->getReferenceNodes(),true );
+  numerics::Matrix< double > dofs( ndims,ndofs,fe->getReferenceNodes(),true );
   for ( int i=0; i < ndofs; ++i ) {
-     const double* xi = dofs.getColumn( i );
-     fe->evaluateShapeFunctions( xi, wgts );
-     double finterp = interp( f, wgts, ndofs );
-     EXPECT_NEAR( f[i], finterp, TOL );
+    const double* xi = dofs.getColumn( i );
+    fe->evaluateShapeFunctions( xi, wgts );
+    double finterp = interp( f, wgts, ndofs );
+    EXPECT_NEAR( f[i], finterp, TOL );
   }
 
   // STEP 3: compute centroid
@@ -900,9 +902,9 @@ TEST( mint_single_fe, matrix_constructor_deepcopy )
 
   // STEP 1: setup element coordinates matrix
   numerics::Matrix< double > M( NROWS, NCOLS );
-  M.fillColumn( 0, 1.0 );
-  M.fillColumn( 1, 2.0 );
-  M.fillColumn( 2, 3.0 );
+  M.fillColumn( 0,  1.0 );
+  M.fillColumn( 1,  2.0 );
+  M.fillColumn( 2,  3.0 );
 
   // STEP 2: construct FE object by making a deep-copy
   mint::FiniteElement fe( M, MINT_TRIANGLE );
@@ -915,16 +917,16 @@ TEST( mint_single_fe, matrix_constructor_deepcopy )
   // STEP 4: ensure the contents are the same
   const double* expected = M.data();
   for ( int i=0; i < NSIZE; ++i ) {
-     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+    EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
   }
 
   // STEP 5: change the matrix data
-  M.swapColumns( 0, 2 );
-  M.swapColumns( 1, 2 );
+  M.swapColumns(  0,  2 );
+  M.swapColumns(  1,  2 );
 
   // STEP 6: ensure the contents *are not* the same
   for ( int i=0; i < NSIZE; ++i ) {
-     EXPECT_FALSE( utilities::isNearlyEqual( M.data()[i], physical_nodes[i] ) );
+    EXPECT_FALSE( utilities::isNearlyEqual( M.data()[i], physical_nodes[i] ) );
   }
 
 }
@@ -939,9 +941,9 @@ TEST( mint_single_fe, matrix_constructor_shallowcopy)
 
   // STEP 1: setup element coordinates matrix
   numerics::Matrix< double > M( 2, 3 );
-  M.fillColumn( 0, 1.0 );
-  M.fillColumn( 1, 2.0 );
-  M.fillColumn( 2, 3.0 );
+  M.fillColumn( 0,  1.0 );
+  M.fillColumn( 1,  2.0 );
+  M.fillColumn( 2,  3.0 );
 
   // STEP 2: construct FE object by making a shallow-copy
   mint::FiniteElement *fe = new mint::FiniteElement( M, MINT_TRIANGLE, true );
@@ -954,16 +956,16 @@ TEST( mint_single_fe, matrix_constructor_shallowcopy)
   // STEP 4: ensure the contents are the same
   const double* expected = M.data();
   for ( int i=0; i < NSIZE; ++i ) {
-     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+    EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
   }
 
   // STEP 5: change the matrix data
-  M.swapColumns( 0, 2 );
-  M.swapColumns( 1, 2 );
+  M.swapColumns(  0,  2 );
+  M.swapColumns(  1,  2 );
 
   // STEP 6: ensure the contents *still* the same
   for ( int i=0; i < NSIZE; ++i ) {
-     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
+    EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
   }
 
   // STEP 7: delete the FE object, ensure Matrix buffer is not corrupted
@@ -1045,15 +1047,15 @@ TEST( mint_single_fe, check_fe_point_in_cell )
 //------------------------------------------------------------------------------
 TEST( mint_single_fe, check_fe_interp )
 {
-  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD >( 1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD >(     1.e-24 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( 1.e-12 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_TET >( 1.e-12 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >( 1.e-24 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >( 1.e-12 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_TET >(      1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >(      1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >(    1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_PYRAMID >(  1.e-12 );
 
-  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( 1.e-24 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX27 >( 1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD9 >(    1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX27 >(    1.e-24 );
 }
 
 //------------------------------------------------------------------------------

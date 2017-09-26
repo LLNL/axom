@@ -37,27 +37,27 @@ namespace {
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
  */
 template < int BasisType, int CellType >
-void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
+void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
 {
   typedef typename mint::FEBasis< BasisType, CellType > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
+                          << mint::cell::name[ CellType ] );
 
   const int ctype = sf.cellType();
-  EXPECT_TRUE( (ctype >= 0) && (ctype < MINT_NUM_CELL_TYPES) );
+  EXPECT_TRUE(  (ctype >= 0) && (ctype < MINT_NUM_CELL_TYPES) );
 
   const int type = sf.type();
-  EXPECT_TRUE( (type >= 0) && ( type < MINT_NUM_BASIS_TYPES ) );
+  EXPECT_TRUE(  (type >= 0) && ( type < MINT_NUM_BASIS_TYPES ) );
 
   const int ndofs = sf.numDofs();
-  EXPECT_TRUE( ndofs > 0 );
-  EXPECT_TRUE( sf.maxNewtonIters() >= 16 );
+  EXPECT_TRUE(  ndofs > 0 );
+  EXPECT_TRUE(  sf.maxNewtonIters() >= 16 );
 
   const int ndims = sf.dimension();
-  EXPECT_TRUE( ndims > 0 && ndims < 4 );
+  EXPECT_TRUE(  ndims > 0 && ndims < 4 );
 
   const double LO = sf.min()-TOL;
   const double HI = sf.max()+TOL;
@@ -65,19 +65,19 @@ void reference_element( double TOL=std::numeric_limits<double>::epsilon() )
   double* xi = new double[ ndims ];
   sf.center( xi );
   for ( int i=0; i < ndims; ++i ) {
-    EXPECT_TRUE( xi[ i ] > LO );
-    EXPECT_TRUE( xi[ i ] < HI );
+    EXPECT_TRUE(  xi[ i ] > LO );
+    EXPECT_TRUE(  xi[ i ] < HI );
   }
-  delete [ ] xi;
+  delete []  xi;
 
   const int N = ndofs*ndims;
   double* coords = new double[ N ];
   sf.coords( coords );
   for ( int i=0; i < N; ++i ) {
-     EXPECT_TRUE( coords[ i ] > LO );
-     EXPECT_TRUE( coords[ i ] < HI );
+    EXPECT_TRUE(  coords[ i ] > LO );
+    EXPECT_TRUE(  coords[ i ] < HI );
   }
-  delete [ ] coords;
+  delete []  coords;
 
 }
 
@@ -91,8 +91,8 @@ void kronecker_delta( )
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
+                          << mint::cell::name[ CellType ] );
 
   int ndims = sf.dimension();
   int ndofs = sf.numDofs();
@@ -104,18 +104,18 @@ void kronecker_delta( )
 
   for ( int i=0; i < ndofs; ++i ) {
 
-     double* nc = &coords[ i*ndims ];
-     sf.evaluate( nc, phi );
+    double* nc = &coords[ i*ndims ];
+    sf.evaluate( nc, phi );
 
-     for ( int j=0; j < ndofs; ++j ) {
-        double expected = ( i==j )? 1.0 : 0.0;
-        EXPECT_DOUBLE_EQ( expected, phi[j] );
-     }
+    for ( int j=0; j < ndofs; ++j ) {
+      double expected = ( i==j ) ? 1.0 : 0.0;
+      EXPECT_DOUBLE_EQ( expected, phi[j] );
+    }
 
   } // END for all dofs
 
-  delete [ ] phi;
-  delete [ ] coords;
+  delete []  phi;
+  delete []  coords;
 }
 
 /*!
@@ -128,8 +128,8 @@ void partition_of_unity()
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
-  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
+                          << mint::cell::name[ CellType ] );
 
   int ndims      = sf.dimension();
   int ndofs      = sf.numDofs();
@@ -143,16 +143,16 @@ void partition_of_unity()
 
   for ( int i=0; i < ndofs; ++i ) {
 
-     double* nc = &coords[ i*ndims ];
-     sf.evaluate( nc, phi );
+    double* nc = &coords[ i*ndims ];
+    sf.evaluate( nc, phi );
 
-     double sum=0.0;
-     for ( int j=0; j < ndofs; ++j ) {
-        sum += phi[ j ];
-     } // END
+    double sum=0.0;
+    for ( int j=0; j < ndofs; ++j ) {
+      sum += phi[ j ];
+    }  // END
 
-     // the sum of the weights should be unity
-     EXPECT_DOUBLE_EQ( 1.0, sum );
+    // the sum of the weights should be unity
+    EXPECT_DOUBLE_EQ( 1.0, sum );
 
   } // END for all dofs
 
@@ -160,7 +160,7 @@ void partition_of_unity()
   sf.evaluate( center, phi );
   double sum=0.0;
   for ( int i=0; i < ndofs; ++i ) {
-     sum += phi[ i ];
+    sum += phi[ i ];
   }
   EXPECT_DOUBLE_EQ( 1.0, sum );
 
@@ -168,18 +168,18 @@ void partition_of_unity()
   double* nc = new double[ ndims ];
   for ( int i=0; i < ndofs; ++i ) {
 
-     double* xi = &coords[i*ndims];
-     for ( int j=0; j < ndims; ++j ) {
-       nc[ j ] = ( xi[ j ] + center[ j ] )*0.5;
-     }
+    double* xi = &coords[i*ndims];
+    for ( int j=0; j < ndims; ++j ) {
+      nc[ j ] = ( xi[ j ] + center[ j ] )*0.5;
+    }
 
-     sf.evaluate( nc, phi );
+    sf.evaluate( nc, phi );
 
-     double sum=0.0;
-     for ( int j=0; j < ndofs; ++j ) {
-        sum += phi[ j ];
-     }
-     EXPECT_DOUBLE_EQ( 1.0, sum );
+    double sum=0.0;
+    for ( int j=0; j < ndofs; ++j ) {
+      sum += phi[ j ];
+    }
+    EXPECT_DOUBLE_EQ( 1.0, sum );
   }
 
   delete [] phi;
@@ -254,5 +254,3 @@ int main(int argc, char * argv[])
 
   return result;
 }
-
-

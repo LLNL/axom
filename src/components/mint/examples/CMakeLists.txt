@@ -8,8 +8,19 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-################################
-# documentation targets
-################################
+set( mint_examples
+     mint_heat_equation.cpp
+   )
 
-blt_add_doxygen_target( axom_utils_doxygen )
+foreach( example ${mint_examples} )
+
+   get_filename_component( example_name ${example} NAME_WE )
+
+   blt_add_executable(
+        NAME       ${example_name}_ex
+        SOURCES    ${example}
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON axom_utils mint slic
+        )
+
+endforeach()

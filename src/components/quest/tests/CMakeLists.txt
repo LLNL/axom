@@ -49,13 +49,24 @@ endforeach()
 # Regression tests for quest signed distance and InOutOctree point containment queries
 if (ENABLE_MPI AND ENABLE_SIDRE)
 
+    set(quest_regression_depends
+        ${quest_tests_depends}
+        conduit
+        sidre
+        spio
+        hdf5)
+
+    if (SCR_FOUND)
+       list(APPEND quest_regression_depends scr)
+    endif()
+   
     set(test_name quest_regression_test)
     
     blt_add_executable(
         NAME ${test_name}
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} conduit sidre spio hdf5
+        DEPENDS_ON ${quest_regression_depends}
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
@@ -107,7 +118,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
                 COMMAND ${test_name}
                         --mesh ${quest_data_dir}/${dataset}.stl
                         --baseline ${quest_data_dir}/${dataset}_${res}_baseline.root
-                NUM_PROCS 1
+                NUM_MPI_TASKS 1
             )
         endforeach()
     endforeach()

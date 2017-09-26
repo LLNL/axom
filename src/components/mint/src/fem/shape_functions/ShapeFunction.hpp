@@ -45,7 +45,7 @@ public:
    * \return type the basis function type, e.g., MINT_LAGRANGE_BASIS
    * \see FEBasisTypes.hpp
    */
-  static int type( ) { return ShapeType::getType(); } ;
+  static int type( ) { return ShapeType::getType(); };
 
   /*!
    * \brief Returns the number of degrees of freedom

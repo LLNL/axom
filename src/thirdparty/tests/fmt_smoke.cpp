@@ -11,10 +11,12 @@
 //-----------------------------------------------------------------------------
 ///
 /// file: fmt_smoke.cpp
-/// A simple test to see if the thirdparty fmt libary is working properly
+/// A simple test to see if the thirdparty fmt libary is working properly.
+/// Note: axom/config.hpp must be #included before fmt's headers.
 ///
 //-----------------------------------------------------------------------------
 
+#include "axom/config.hpp"
 #include "fmt/format.h"
 
 #include "gtest/gtest.h"

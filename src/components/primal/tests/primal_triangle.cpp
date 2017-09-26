@@ -10,6 +10,8 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
+
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 

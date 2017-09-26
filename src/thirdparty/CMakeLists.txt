@@ -30,13 +30,18 @@ blt_add_library(NAME fmt
 
 target_include_directories(fmt INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty/fmt>)
-target_compile_definitions(fmt INTERFACE 
-            FMT_EXCEPTIONS=0
-            FMT_HEADER_ONLY=1)
+
+
+# Setup some variables for fmt in Axom's config.hpp
+set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
+set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
+
 if( COMPILER_FAMILY_IS_CLANG )
-    target_compile_definitions(fmt INTERFACE 
-                FMT_USE_EXTERN_TEMPLATES=0)
+    set(FMT_USE_EXTERN_TEMPLATES FALSE PARENT_SCOPE)
+else()
+    set(FMT_USE_EXTERN_TEMPLATES TRUE PARENT_SCOPE)
 endif()
+
 
 install(TARGETS              fmt
         EXPORT               fmt-targets

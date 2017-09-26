@@ -34,7 +34,7 @@ namespace mint {
  *  level.This class is specialized according to cell type.
  */
 template < int CellType >
-class Lagrange : public ShapeFunction< Lagrange< CellType > >
+class Lagrange:public ShapeFunction< Lagrange< CellType > >
 {
 
 public:
@@ -208,16 +208,17 @@ private:
    */
   static void checkCellType( )
   {
-     if ( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) ) {
+    if ( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) ) {
 
-       SLIC_ERROR( "Lagrange ShapeFunctions does not support " <<
-                    cell::name[ CellType ] );
+      SLIC_ERROR( "Lagrange ShapeFunctions does not support " <<
+                  cell::name[ CellType ] );
 
-     } else {
+    }
+    else {
 
-       SLIC_ERROR( "Invalid CellType: " << CellType );
+      SLIC_ERROR( "Invalid CellType: " << CellType );
 
-     }
+    }
   }
 
 };

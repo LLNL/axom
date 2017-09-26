@@ -51,6 +51,7 @@
 #cmakedefine AXOM_USE_MFEM
 #cmakedefine AXOM_USE_MPI
 #cmakedefine AXOM_USE_MPIF_HEADER
+#cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_STD_UNORDERED_MAP
 
@@ -87,6 +88,14 @@
 #cmakedefine AXOM_USE_SLAM
 #cmakedefine AXOM_USE_SLIC
 #cmakedefine AXOM_USE_SPIO
+
+
+/*
+ * Compiler defines to configure the built-in fmt library
+ */
+#cmakedefine01 FMT_EXCEPTIONS
+#cmakedefine01 FMT_HEADER_ONLY
+#cmakedefine01 FMT_USE_EXTERN_TEMPLATES
 
 
 #endif  /* AXOM_COMMON_CONFIG_CPP */

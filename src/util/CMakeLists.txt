@@ -28,6 +28,10 @@ if(BOOST_FOUND)
   list(APPEND datastore_converter_depends boost)
 endif()
 
+if(SCR_FOUND)
+  list(APPEND datastore_converter_depends scr)
+endif()
+
 
 if( ENABLE_SLAM AND ENABLE_SPIO )
     blt_add_executable(

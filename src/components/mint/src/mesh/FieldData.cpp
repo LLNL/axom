@@ -72,10 +72,10 @@ Field* FieldData::getField( int i )
 }
 
 //------------------------------------------------------------------------------
-const Field* FieldData::getField( int i ) const 
+const Field* FieldData::getField( int i ) const
 {
   return const_cast< const Field* >(
-         const_cast< FieldData* >( this )->getField( i ) );
+    const_cast< FieldData* >( this )->getField( i ) );
 }
 
 //------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ Field* FieldData::getField( const std::string& name )
 const Field* FieldData::getField( const std::string& name ) const
 {
   return const_cast< const Field* >(
-         const_cast< FieldData* >( this )->getField( name ) );
+    const_cast< FieldData* >( this )->getField( name ) );
 }
 
 //------------------------------------------------------------------------------
