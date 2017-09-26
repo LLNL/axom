@@ -15,6 +15,7 @@
  */
 
 // axom includes
+#include "axom/config.hpp"
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 #include "axom_utils/FileUtilities.hpp"

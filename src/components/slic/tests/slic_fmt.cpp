@@ -14,6 +14,7 @@
  * \brief A simple test to see if we can use the fmt library within slic macros.
  */
 
+#include "axom/config.hpp"
 #include "fmt/format.h"
 
 #include "slic/slic.hpp"
