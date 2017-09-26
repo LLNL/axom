@@ -8,6 +8,8 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+#include "axom/Macros.hpp"            // for AXOM_DEBUG_VAR
+
 #include "mint/vtk_utils.hpp"         // file header
 
 #include "axom_utils/Utilities.hpp"   // for utilities::max
@@ -330,6 +332,8 @@ void write_data( const FieldData* field_data, int num_values,
                  std::ofstream& file )
 {
   SLIC_ASSERT( field_data != AXOM_NULLPTR );
+  AXOM_DEBUG_VAR(num_values);
+
   for ( int i = 0; i < field_data->getNumberOfFields(); ++i ) {
     const Field* field = field_data->getField( i );
     SLIC_ASSERT(  field != AXOM_NULLPTR );
