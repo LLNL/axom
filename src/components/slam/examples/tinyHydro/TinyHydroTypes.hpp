@@ -17,6 +17,7 @@
 
 #include "VectorXY.hpp"
 
+#include "axom/config.hpp"
 #include "fmt/format.h"
 
 #include "slam/OrderedSet.hpp"
