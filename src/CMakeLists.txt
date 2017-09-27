@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+message(STATUS "Using cmake version ${CMAKE_VERSION}")
 
 ################################
 # axom project
