@@ -118,6 +118,7 @@ inline T log2( T& val)
  * \param [in] lower The lower range.
  * \param [in] upper The upper range.
  * \return The clamped value.
+ * \pre lower <= upper
  * \post lower <= returned value <= upper.
  */
 template < typename T >
@@ -125,6 +126,35 @@ inline T clampVal( T val, T lower, T upper )
 {
   return (val < lower) ? lower
          : (val > upper) ? upper : val;
+}
+
+
+/*!
+ * \brief Clamps the upper range on an input value
+ *
+ * \param [in] val The value to clamp
+ * \param [in] upper The upper range
+ * \return upper if val > upper, else val
+ * \post returned value is less than or equal to upper
+ */
+template < typename T >
+inline T clampUpper(T val, T upper)
+{
+  return val > upper ? upper : val;
+}
+
+/*!
+ * \brief Clamps the lower range on an input value
+ *
+ * \param [in] val The value to clamp
+ * \param [in] lower The lower range
+ * \return lower if val < lower, else val
+ * \post returned value is greater than or equal to lower
+ */
+template < typename T >
+inline T clampLower(T val, T lower)
+{
+  return val < lower ? lower : val;
 }
 
 /*!

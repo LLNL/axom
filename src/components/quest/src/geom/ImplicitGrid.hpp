@@ -12,6 +12,7 @@
 #define QUEST_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
+#include "axom_utils/Utilities.hpp"  // for clamp functions
 
 #include "slic/slic.hpp"
 
@@ -24,8 +25,6 @@
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
-// #include <ostream>   // for ostream in print
-#include <cmath>  // for std::floor
 #include <vector>
 
 #ifdef AXOM_USE_BOOST
@@ -42,11 +41,33 @@ namespace quest {
  * \class ImplicitGrid
  *
  * \brief An implicit grid is an occupancy-based spatial index over a set of indices
+ *
+ * An ImplicitGrid divides a given rectilinear slab of space (defined by an
+ * axis aligned bounding box) into uniformly sized cells (of a specified resolution).
+ * Users can then insert items into the ImplicitGrid by providing the item's
+ * bounding box and index within the index set. The GridCells of the ImplicitGrid
+ * indexes a subset of the items in the index space.
+ * Users must specify the cardinality of this index space when the ImplicitGrid
+ * is initialized.
+ *
+ * In contrast to a primal::UniformGrid, which encodes an array of indices
+ * for each cell in the underlying multidimensional grid,
+ * the ImplicitGrid encodes a single array of bins per dimension, each of which
+ * has a bitset over the index space.  Thus, the storage overhead of an
+ * ImplicitGrid is fixed at:  numElts * sum_i ( res[i] ) bits.
+ * Queries are implemented in terms of bitset unions and intersections
+ *
+ * One might prefer an ImplicitGrid over a UniformGrid when one expects
+ * a relatively dense index relative to the grid resolution (i.e. that
+ * there will be many items indexed per bucket).  The ImplicitGrid
+ * is designed for quick indexing and searching over a static (and relatively
+ * small index space) in a relatively coarse grid.
  */
-template<int NDIMS, typename IndexType = int>
+template<int NDIMS, typename TheIndexType = int>
 class ImplicitGrid
 {
 public:
+  typedef TheIndexType                          IndexType;
   typedef primal::Point<IndexType, NDIMS>       GridCell;
   typedef primal::Point<double, NDIMS>          SpacePoint;
   typedef primal::Vector<double, NDIMS>         SpaceVec;
@@ -62,9 +83,10 @@ public:
   typedef slam::Map<BitsetType>    BinBitMap;
 
   /*!
-   * \brief Default constructor for an implicit grid
+   * \brief Default constructor for an ImplicitGrid
    *
-   * \post The ImplicitGrid is not initialized after the default constructor
+   * \note Users must call initialize() to initialize the ImplicitGrid
+   *       after constructing with the default constructor
    */
   ImplicitGrid(): m_initialized(false) {}
 
@@ -90,7 +112,7 @@ public:
     m_initialized = true;
   }
   
-  /*! Predicate to see if the implicit grid has been initialized */
+  /*! Predicate to check if the ImplicitGrid has been initialized */
   bool isInitialized() const { return m_initialized; }
 
 
@@ -123,8 +145,9 @@ public:
   }
 
   /*!
-   * Inserts an element with index id and bounding box bbox into the implicit grid
-   * \note bbox is intentionally passed by value since we will slightly inflate its bounds
+   * \brief Inserts an element with index id and bounding box bbox into the implicit grid
+   *
+   * \note bbox is intentionally passed by value since insert() modifies its bounds
    */
   void insert(SpatialBoundingBox bbox, int id)
   {
@@ -137,16 +160,15 @@ public:
     // SLIC_INFO("Inserting element " << id << " with bb " << bbox);
 
 
-    GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
-    GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
+    const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
+    const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
 
     for(int i=0; i< NDIMS; ++i)
     {
       BinBitMap& binData = m_binData[i];
-      IndexType lower = clampLower(lowerCell[i], m_bins[i] );
-      IndexType upper = clampUpper(upperCell[i], m_bins[i] );
 
-      //SLIC_INFO("Updated bounds l0 -- hi -> " << lower << " -- " << upper);
+      const IndexType lower = axom::utilities::clampLower(lowerCell[i], IndexType() );
+      const IndexType upper = axom::utilities::clampUpper(upperCell[i], highestBin(i) );
       for(int j= lower; j <= upper; ++j)
       {
         binData[j].set(id);
@@ -160,16 +182,18 @@ public:
     if(! m_bb.contains(pt) )
       return BitsetType(0);
 
-    GridCell gridCell = m_lattice.gridCell(pt);
+    const GridCell gridCell = m_lattice.gridCell(pt);
 
     // Note: Need to clamp the upper range of the gridCell
     //       to handle points on the upper boundaries of the bbox
     //       This is valid since we've already ensured that pt is in the bbox.
-    BitsetType res = m_binData[0][ clampUpper( gridCell[0], m_bins[0]) ];
+    IndexType idx = axom::utilities::clampUpper(gridCell[0], highestBin(0));
+    BitsetType res = m_binData[0][ idx ];
 
     for(int i=1; i< NDIMS; ++i)
     {
-       res &= m_binData[i][ clampUpper( gridCell[i], m_bins[i]) ];
+      idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
+      res &= m_binData[i][idx];
     }
 
     return res;
@@ -212,30 +236,16 @@ public:
   }
 
 private:
-  /*!
-   * \brief Utility function to ensure that a space point is within a valid bin
-   *
-   * \param val The current bin index
-   * \param binSet The set of valid bins
-   * \return The min of val and binSet.size()-1
-   */
-  IndexType clampUpper(IndexType val, const BinSet& binSet) const
-  {
-    const IndexType upperVal = binSet.size() -1;
-    return val > upperVal ? upperVal : val;
-  }
 
   /*!
-   * \brief Utility function to ensure that a space point is within a valid bin
+   * \brief Returns the bin index in the given dimension dim
    *
-   * \param val The current bin index
-   * \param binSet The set of valid bins
-   * \return The max of val and 0
+   * \pre 0 <= dim < NDIMS
    */
-  IndexType clampLower(IndexType val, const BinSet& AXOM_NOT_USED(binSet)) const
+  IndexType highestBin(int dim) const
   {
-    const IndexType lowerVal = IndexType();
-    return val < lowerVal ? lowerVal : val;
+    SLIC_ASSERT(0 <= dim && dim < NDIMS);
+    return m_bins[dim].size()-1;
   }
 
 private:
