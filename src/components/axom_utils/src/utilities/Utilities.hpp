@@ -88,6 +88,23 @@ namespace utilities {
   }
 
   /*!
+   * \brief Returns the base 2 logarithm of the input.
+   * \param [in] val The input value
+   */
+  template < typename T >
+  inline T log2( T& val)
+  {
+    #ifdef AXOM_USE_CXX11
+      return std::log2(val);
+    #else
+      const double lg2 = std::log(2.);
+      const double lgv = std::log( static_cast<double>(val) );
+      return static_cast<T>( lgv / lg2 );
+    #endif
+  }
+
+
+  /*!
    * \brief Clamps an input value to a given range.
    * \param [in] val  The value to clamp.
    * \param [in] lower The lower range.

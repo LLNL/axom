@@ -26,20 +26,18 @@
 #include <map>
 #include <set>
 
-namespace {
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-typedef axom::primal::Triangle<double, 3> Triangle3;
-
-typedef axom::primal::Point<double, 3> Point3;
-typedef axom::primal::BoundingBox<double, 3> SpatialBoundingBox;
-typedef axom::primal::UniformGrid<int, 3> UniformGrid3;
-typedef axom::primal::Vector<double, 3> Vector3;
-typedef axom::primal::Segment<double, 3> Segment3;
-}
-
 namespace axom {
 namespace quest {
 namespace detail {
+
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef primal::Triangle<double, 3> Triangle3;
+
+typedef primal::Point<double, 3> Point3;
+typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
+typedef primal::UniformGrid<int, 3> UniformGrid3;
+typedef primal::Vector<double, 3> Vector3;
+typedef primal::Segment<double, 3> Segment3;
 
 inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
 {
