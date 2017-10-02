@@ -8,6 +8,8 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+#include "gtest/gtest.h"
+
 #include "axom/config.hpp"
 
 #include "mpi.h"
@@ -26,11 +28,10 @@ using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::sidre::View;
 
-
+#ifdef AXOM_USE_SCR
 //------------------------------------------------------------------------------
-int main(int argc, char** argv)
+TEST(spio_scr, spio_scr_writeread)
 {
-  MPI_Init(&argc, &argv);
   SCR_Init();
 
   int my_rank;
@@ -77,8 +78,6 @@ int main(int argc, char** argv)
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  int return_val = 0;
-
   /*
    * Create another DataStore that holds nothing but the root group.
    */
@@ -94,18 +93,14 @@ int main(int argc, char** argv)
   /*
    * Verify that the contents of ds2 match those written from ds.
    */
-  if (!ds2->getRoot()->isEquivalentTo(root)) {
-    return_val = 1; 
-  }
+  EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root));
 
   int testvalue =
     ds->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
   int testvalue2 =
     ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
-  if (testvalue != testvalue2) {
-    return_val = 1;
-  }
+  EXPECT_EQ(testvalue, testvalue2);
 
   View * view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
@@ -113,29 +108,39 @@ int main(int argc, char** argv)
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();
-  if (view_i1_restored->getNumElements() != num_elems) {
-    return_val = 1;
-  }
-  else
-  {
-    int * i1_orig = view_i1_orig->getData();
-    int * i1_restored = view_i1_restored->getData();
+  EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
 
-    for (int i = 0; i < num_elems; ++i) {
-      if (return_val != 1) {
-	if (i1_orig[i] != i1_restored[i]) {
-	  return_val = 1;
-	}
-      }
-    } 
-  }
+  int * i1_orig = view_i1_orig->getData();
+  int * i1_restored = view_i1_restored->getData();
+
+  for (int i = 0; i < num_elems; ++i) {
+    EXPECT_EQ(i1_orig[i], i1_restored[i]);
+  } 
 
   delete ds;
   delete ds2;
 
   SCR_Finalize();
+}
+#endif
+
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+//------------------------------------------------------------------------------
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  MPI_Init(&argc, &argv);
+  result = RUN_ALL_TESTS();
   MPI_Finalize();
 
-  return return_val;
+  return result;
 }
+
 
