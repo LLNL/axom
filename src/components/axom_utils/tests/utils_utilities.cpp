@@ -52,3 +52,26 @@ TEST(axom_utils_Utilities,log2)
     EXPECT_NEAR(exp, axom::utilities::log2(val), 1e-5);
   }
 }
+
+TEST(axom_utils_Utilities,minmax)
+{
+  std::cout<<"Testing min and max functions."<< std::endl;
+
+  // Test simple min, max comparisons on ints
+  {
+    int a = 5;
+    int b = 7;
+
+    EXPECT_EQ(a, axom::utilities::min(a,b));
+    EXPECT_EQ(b, axom::utilities::max(a,b));
+  }
+
+  // Test simple min, max comparisons on doubles
+  {
+    double a = 5.2;
+    double b = -1.7;
+
+    EXPECT_EQ(b, axom::utilities::min(a,b));
+    EXPECT_EQ(a, axom::utilities::max(a,b));
+  }
+}

@@ -66,9 +66,9 @@ inline T abs( const T& x )
  * \return max(x, y) the max value of x and y.
  */
 template < typename T >
-inline T max( const T& x, const T& y )
+inline const T& max( const T& x, const T& y )
 {
-  return ( x > y ) ? x : y;
+  return ( y < x ) ? x : y;
 }
 
 /*!
@@ -78,9 +78,9 @@ inline T max( const T& x, const T& y )
  * \return min(x, y) the min value of x and y.
  */
 template < typename T >
-inline T min( const T& x, const T& y )
+inline const T& min( const T& x, const T& y )
 {
-  return ( x < y ) ? x : y;
+  return ( y < x ) ? y : x;
 }
 
 /*!
