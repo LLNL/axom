@@ -4,22 +4,15 @@
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
- * LLNL-CODE-738930
+ * LLNL-CODE-xxxxxxx
  *
  * All rights reserved.
  *
- * This file is part of the RAJA Performance Suite.
+ * This file is part of Axom.
  *
- * For details about use and distribution, please read raja-perfsuite/LICENSE.
+ * For details about use and distribution, please read axom/LICENSE.
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-
-/*!
- *******************************************************************************
- * \file basicExample.cpp
- * \author Chris White (white238@llnl.gov)
- *******************************************************************************
  */
 
 #include "lumberjack/Lumberjack.hpp"
