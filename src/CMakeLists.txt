@@ -1,3 +1,18 @@
+###############################################################################
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-xxxxxx
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#
+###############################################################################
+
 cmake_minimum_required(VERSION 3.1)
 message(STATUS "Using cmake version ${CMAKE_VERSION}")
 

@@ -1,7 +1,21 @@
+###############################################################################
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-xxxxxx
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#
+##############################################################################
 
 ################################################################################
 # This directory contains source code for utility executables that utilize
-# the toolkit or that support the toolkit
+# Axom or that support Axom
 ################################################################################
 
 
