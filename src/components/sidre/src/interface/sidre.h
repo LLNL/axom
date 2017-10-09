@@ -17,7 +17,7 @@
 
 
 /**
- * @name c-datastore.h
+ * @name sidre.h
  *
  *  C header file
  */

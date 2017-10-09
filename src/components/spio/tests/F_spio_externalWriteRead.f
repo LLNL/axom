@@ -1,11 +1,15 @@
 !
-! copyright (c) 2015, lawrence livermore national security, llc.
-! produced at the lawrence livermore national laboratory.
+! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! 
+! Produced at the Lawrence Livermore National Laboratory
+! 
+! LLNL-CODE-xxxxxx
+! 
+! All rights reserved.
 !
-! all rights reserved.
-!
-! this source code cannot be distributed without permission and
-! further review from lawrence livermore national laboratory.
+! This file is part of Axom.
+! 
+! For details about use and distribution, please read axom/LICENSE.
 !
 
 program spio_external_write_read
