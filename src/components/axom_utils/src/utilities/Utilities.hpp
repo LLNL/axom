@@ -56,7 +56,7 @@ void processAbort();
 template < typename T >
 inline T abs( const T& x )
 {
-  return ( x < 0 ) ? -x : x;
+  return ( x < T(0) ) ? -x : x;
 }
 
 /*!

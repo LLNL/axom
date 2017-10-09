@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -20,6 +20,11 @@
 #include "primal/BoundingBox.hpp"
 
 #include "quest/ImplicitGrid.hpp"
+
+#include "mint/UnstructuredMesh.hpp"
+#include "mint/vtk_utils.hpp"
+#include "mint/FieldData.hpp"
+#include "mint/FieldVariable.hpp"
 
 
 #ifndef AXOM_USE_MFEM
@@ -289,12 +294,12 @@ public:
   static const IndexType NO_CELL = -1;
 
   /*!
-   * Construct a point in cell query over a given mfem mesh
+   * Construct a point in cell query structure over a given mfem mesh
    * \param mesh A pointer to an mfem mesh
    * \param resolution If the resolution is not provided, we use a heuristic to set the resolution
    */
   PointInCell(mfem::Mesh* mesh, const primal::Point<int, NDIMS>& resolution = primal::Point<int, NDIMS>::zero()) :
-    m_meshWrapper(mesh)
+    m_meshWrapper(mesh), m_transformBackDebugMesh(2), m_numQueries(0)
   {
     int num_elem = m_meshWrapper.numElements();
 
@@ -351,7 +356,7 @@ public:
   }
 
   /*!
-   * Returns the point in space corresponding to isoparateric coordinates isopar
+   * Returns the point in space corresponding to isoparameteric coordinates isopar
    * of the mesh element with index eltIdx
    */
   SpacePoint findInSpace(IndexType eltIdx, const SpacePoint& isopar)
@@ -368,7 +373,6 @@ public:
     tr.Transform(ip, v);
 
     return pt;
-
   }
 
   /*!
@@ -385,18 +389,123 @@ public:
 
     // TransformBack returns zero if the element is properly mapped
     mfem::IntegrationPoint ipRef;
-    bool success = (tr.TransformBack(ptSpace, ipRef) == 0);
-    if( success )
+
+    int err = tr.TransformBack(ptSpace, ipRef);
+
+    int meshStartIndex = m_transformBackDebugMesh.getMeshNumberOfNodes();
+
     {
-      ipRef.Get(isopar->data(), NDIMS);
+      //SLIC_INFO("Used " << tr.tbDebug.numIters << " iterations." );
+
+      // Add vertices, including the last iteration's results
+      mfem::Vector y;
+      tr.Transform(ipRef, y);
+      tr.tbDebug.points.SetCol( tr.tbDebug.numIters, y );
+
+      for(int i=0; i< tr.tbDebug.numIters; ++i)
+      {
+        double x = tr.tbDebug.points(0, i);
+        double y = tr.tbDebug.points(1, i);
+        m_transformBackDebugMesh.insertNode(x,y);
+      }
+
+      for(int i=0; i< tr.tbDebug.numIters-1; ++i)
+      {
+        int currVertIdx = meshStartIndex + i;
+        int indices[2] = { currVertIdx, currVertIdx+1 };
+        m_transformBackDebugMesh.insertCell(indices, MINT_SEGMENT, 2);
+        m_tb_query_index.push_back( m_numQueries );
+        m_tb_query_return_code.push_back( err );
+        m_tb_query_num_iters.push_back( tr.tbDebug.numIters );
+        m_tb_query_iter.push_back(i);
+      }
+
+      m_numQueries++;
     }
 
-    return success;
+    switch(err)
+    {
+    case 0: // success
+      ipRef.Get(isopar->data(), NDIMS);
+
+      return true;
+    case 1: // out-of-bounds, early return
+//      SLIC_INFO("Early return: Point " << pt << " was not found in element " << eltIdx);
+      return false;
+    case 2: // max-iter
+//      SLIC_INFO("Point " << pt << " was not found in element " << eltIdx << " after 16 iterations.");
+      return false;
+    }
+
+    return false;
+  }
+
+  void printDebugMesh(const std::string& filename)
+  {
+    mint::FieldData* CD = m_transformBackDebugMesh.getCellFieldData();
+
+    int size = m_tb_query_index.size();
+
+    if(size == 0)
+    {
+        SLIC_INFO("No mesh data.");
+        return;
+    }
+
+    {
+      std::string name = "query_index";
+      CD->addField( new mint::FieldVariable< int >(name, size) );
+      int* fld = CD->getField( name )->getIntPtr();
+
+      for(int i=0; i < size; ++i)
+      {
+        fld[i] = m_tb_query_index[i];
+      }
+    }
+    {
+      std::string name = "query_status";
+      CD->addField( new mint::FieldVariable< int >(name, size) );
+      int* fld = CD->getField( name )->getIntPtr();
+
+      for(int i=0; i < size; ++i)
+      {
+        fld[i] = m_tb_query_return_code[i];
+      }
+    }
+    {
+      std::string name = "query_num_iters";
+      CD->addField( new mint::FieldVariable< int >(name, size) );
+      int* fld = CD->getField( name )->getIntPtr();
+
+      for(int i=0; i < size; ++i)
+      {
+        fld[i] = m_tb_query_num_iters[i];
+      }
+    }
+    {
+      std::string name = "query_iter";
+      CD->addField( new mint::FieldVariable< int >(name, size) );
+      int* fld = CD->getField( name )->getIntPtr();
+
+      for(int i=0; i < size; ++i)
+      {
+        fld[i] = m_tb_query_iter[i];
+      }
+    }
+
+    mint::write_vtk(&m_transformBackDebugMesh, filename);
   }
 
 private:
   PICMeshWrapper<NDIMS, mfem::Mesh> m_meshWrapper;
   GridType    m_grid;
+
+  mutable mint::UnstructuredMesh<MINT_SEGMENT> m_transformBackDebugMesh;
+  mutable std::vector<int> m_tb_query_index;
+  mutable std::vector<int> m_tb_query_return_code;
+  mutable std::vector<int> m_tb_query_num_iters;
+  mutable std::vector<int> m_tb_query_iter;
+  mutable int m_numQueries;
 
 
 

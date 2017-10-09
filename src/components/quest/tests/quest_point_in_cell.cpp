@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -14,6 +14,7 @@
 
 #include "axom_utils/Timer.hpp"
 
+#include "mint/CurvilinearMesh.hpp"
 
 #include "primal/Point.hpp"
 #include "primal/BoundingBox.hpp"
@@ -36,6 +37,9 @@ using axom::slic::UnitTestLogger;
 namespace
 {
   const unsigned int SRAND_SEED = 42; //105;
+
+  const bool outputMeshMFEM = true;
+  const bool outputMeshVTK = false;
 }
 
 namespace types2D
@@ -149,8 +153,12 @@ std::vector< axom::primal::Point<double, 2> > generate2DIsoParTestPoints(int res
   for(int i=1; i < res; ++i)
     for(int j=1; j < res; ++j)
     {
-      pts.push_back( SpacePt2D::make_point( static_cast<double>(i)/res, 
-                                            static_cast<double>(j)/res) );
+      SpacePt2D pt = SpacePt2D::make_point( static_cast<double>(i)/res,
+                                            static_cast<double>(j)/res);
+
+      SpacePt2D off = axom::quest::utilities::randomSpacePt<2>( -types2D::EPS, +types2D::EPS);
+
+      pts.push_back( pt.array() + off.array() );
     }
 
   return pts;
@@ -211,6 +219,18 @@ struct ExpectedValueCurved
   double m_radius;
 };
 
+
+/*!
+ * Compute the number of expected elements in uniform refinement with
+ * a given refinement factor and level of resolution
+ */
+int expectedNumElts(int refinementFactor, int refinementLevel)
+{
+  double refFac = static_cast<double>(refinementFactor);
+  double refLev = static_cast<double>(refinementLevel);
+
+  return static_cast<int>(std::pow(refFac,refLev) );
+}
 
 /**
  * Jitter all degrees of freedom (dofs) of the mesh's nodal grid function
@@ -273,24 +293,26 @@ void jitterNodalValues(mfem::Mesh* mesh, double dx)
 }
 
 template<typename ExpectedValueFunctor>
-void testMesh(mfem::Mesh* mesh, ExpectedValueFunctor exp, const std::string& meshTypeStr)
+void testRandomPointsOnMesh(mfem::Mesh* mesh, ExpectedValueFunctor exp, const std::string& meshTypeStr)
 {
   using namespace types2D;
 
   // output mesh in mfem and vtk format
-  // output refined mesh to logger in mfem and vtk formats
   bool isCurved = mesh->GetNodes() != AXOM_NULLPTR;
   std::string filename = fmt::format("quest_point_in_cell_{}_quad",meshTypeStr);
+
+  if(outputMeshMFEM)
   {
     mfem::VisItDataCollection dataCol(filename, mesh);
     if(mesh->GetNodes())
       dataCol.RegisterField("nodes", mesh->GetNodes());
     dataCol.Save();
   }
-//  {
-//    std::ofstream mfem_stream(filename + ".vtk");
-//    mesh->PrintVTK(mfem_stream);
-//  }
+  if(outputMeshVTK)
+  {
+    std::ofstream mfem_stream(filename + ".vtk");
+    mesh->PrintVTK(mfem_stream);
+  }
 
   // Add mesh to the grid
   axom::utilities::Timer constructTimer(true);
@@ -302,26 +324,33 @@ void testMesh(mfem::Mesh* mesh, ExpectedValueFunctor exp, const std::string& mes
 
   std::vector<SpacePt> pts = generate2DTestPoints( exp.radius() );
   SpacePt isoPar;
-  int numTested = 0;
+  int numCheckedPoints = 0;
+  int numInverseXforms = 0;
 
   axom::utilities::Timer queryTimer(true);
   for( std::vector<SpacePt>::iterator it= pts.begin(); it != pts.end(); ++it)
   {
     SpacePt& queryPoint = *it;
 
+    // Try to find the point
     int idx = spatialIndex.locatePoint( queryPoint, &isoPar );
     bool isInMesh = (idx != PointInCellType::NO_CELL);
 
+    // Check if result matches our expectations (our simple model
+    // supports verifying many, but not all query points)
     if( exp.canTestPoint(queryPoint) )
     {
-      numTested++;
+      ++numCheckedPoints;
 
       bool expectedInMesh = exp.expectedInMesh(queryPoint);
       EXPECT_EQ( expectedInMesh, isInMesh) << "Point " << *it;
     }
 
+    // Check if the transform's inverse gives us back our original point
     if(isInMesh)
     {
+      ++numInverseXforms;
+
       SpacePt untransformPt = spatialIndex.findInSpace(idx, isoPar);
 
       for(int i=0; i< DIM; ++i)
@@ -332,21 +361,37 @@ void testMesh(mfem::Mesh* mesh, ExpectedValueFunctor exp, const std::string& mes
   }
 
 
-  SLIC_INFO(fmt::format("Querying {} pts on {} quad mesh took {} s -- rate: {} q/s",
+  SLIC_INFO(fmt::format("Querying {} pts on {} quad mesh took {} s -- rate: {} q/s (includes {} inverse xforms)",
       pts.size(),
       meshTypeStr,
       queryTimer.elapsed(),
-      pts.size() / queryTimer.elapsed()  ) );
+      pts.size() / queryTimer.elapsed(),
+      numInverseXforms) );
 
   if(isCurved)
   {
-    SLIC_INFO(fmt::format("On {} mesh, verified plausibility in {} of {} cases ({}%)",
-        meshTypeStr, numTested, pts.size(), static_cast<double>(numTested)/ pts.size() ));
+    SLIC_INFO(fmt::format("On {} mesh, verified plausibility in {} of {} cases ({:.1f}%)",
+        meshTypeStr, numCheckedPoints, pts.size(), 100* static_cast<double>(numCheckedPoints)/ pts.size() ));
   }
+}
+
+void testIsoGridPointsOnMesh(mfem::Mesh* mesh, const std::string& meshTypeStr)
+{
+  using namespace types2D;
+
+  std::string filename = fmt::format("quest_point_in_cell_{}_quad",meshTypeStr);
+
+  // Add mesh to the grid
+  axom::utilities::Timer constructTimer(true);
+  PointInCellType spatialIndex(mesh, GridCell(25));
+  SLIC_INFO(fmt::format("Constructing index over {} quad mesh with {} elems took {} s",
+      meshTypeStr,
+      mesh->GetNE(),
+      constructTimer.elapsed() ) );
 
 
   // Test that a fixed set of isoparametric coords on each cell maps to the correct place.
-  pts = generate2DIsoParTestPoints(10);
+  std::vector<SpacePt> pts = generate2DIsoParTestPoints(10);
   axom::utilities::Timer queryTimer2(true);
   SpacePt foundIsoPar;
   for(int eltId=0; eltId< mesh->GetNE(); ++eltId)
@@ -371,6 +416,7 @@ void testMesh(mfem::Mesh* mesh, ExpectedValueFunctor exp, const std::string& mes
 
     }
   }
+
   SLIC_INFO(fmt::format("Verifying {} pts on {} quad mesh took {} s -- rate: {} q/s",
       pts.size() * mesh->GetNE(),
       meshTypeStr,
@@ -382,8 +428,11 @@ void testMesh(mfem::Mesh* mesh, ExpectedValueFunctor exp, const std::string& mes
 TEST( quest_point_in_cell, simple_bilinear_mesh )
 {
   using namespace types2D;
-
   const double VAL = 0.5;
+
+  SLIC_INFO("Testing that we can create a simple mfem mesh. "
+      << "No point-in-cell queries");
+
 
   // Create a simple mfem mesh over a single quad
   //   -- a diamond with verts at +-(VAL,0) and +-(0, VAL)
@@ -412,8 +461,11 @@ TEST( quest_point_in_cell, simple_bilinear_mesh )
 TEST( quest_point_in_cell, pic_flat_quad )
 {
   using namespace types2D;
-
   const double VAL = 0.5;
+
+  SLIC_INFO("Construction and querying PointInCell structure"
+      << " over flat quad mesh with " << NREFINE << " refinement levels.");
+
 
   // Create a simple mfem mesh over a single quad
   //   -- a diamond with verts at +-(VAL,0) and +-(0, VAL)
@@ -428,14 +480,14 @@ TEST( quest_point_in_cell, pic_flat_quad )
     mesh.UniformRefinement();
 
   // Sanity checks
-  int expectedNE = std::pow<int>(ELT_MULT_FAC, NREFINE);
+  int expectedNE = expectedNumElts(ELT_MULT_FAC, NREFINE);
   EXPECT_EQ( expectedNE, mesh.GetNE() );
   EXPECT_EQ(AXOM_NULLPTR, mesh.GetNodes());
 
-  SCOPED_TRACE("point_in_cell_flat");
+  SCOPED_TRACE("point_in_cell_flat_refined");
   std::string meshTypeStr = fmt::format("flat_{}", NREFINE);;
-  testMesh(&mesh, ExpectedValueFlat(VAL), meshTypeStr);
-
+  testRandomPointsOnMesh(&mesh, ExpectedValueFlat(VAL), meshTypeStr);
+  testIsoGridPointsOnMesh(&mesh, meshTypeStr);
 }
 
 TEST( quest_point_in_cell, pic_curved_quad )
@@ -446,8 +498,13 @@ TEST( quest_point_in_cell, pic_curved_quad )
   const double DIAG_VAL = VERT_VAL * std::sqrt(2.)/2.;
   const std::string feCollName = "Quadratic";
 
+  SLIC_INFO("Construction and querying PointInCell structure"
+      << " over quadratic quad mesh with 0 and " << NREFINE << " refinement levels.");
+
+
   // Create a simple high order mfem mesh over a single quad
-  //  -- a diamond with verts at +-(VAL,0) and +-(0, VAL) and nodes along diagonals (+- VAL2, +-VAL2}
+  //  -- a diamond with verts at +-(VAL,0) and +-(0, VAL)
+  //  -- and nodes along diagonals (+- VAL2, +-VAL2}
   std::stringstream sstr;
   sstr << meshPrefix
        << fmt::format(highOrderNodes, VERT_VAL, DIAG_VAL, feCollName);
@@ -456,24 +513,26 @@ TEST( quest_point_in_cell, pic_curved_quad )
 
   // Test single element mesh
   {
-    SCOPED_TRACE("point_in_cell_curved");
+    SCOPED_TRACE("point_in_cell_curved_level_single_elt");
     std::string meshTypeStr = fmt::format("{}_{}", feCollName, 1);
-    testMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testRandomPointsOnMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testIsoGridPointsOnMesh(&mesh, meshTypeStr);
   }
 
   for(int i=0; i< NREFINE; ++i)
     mesh.UniformRefinement();
 
-  int expectedNE = std::pow<int>(ELT_MULT_FAC, NREFINE);
+  int expectedNE = expectedNumElts(ELT_MULT_FAC, NREFINE);
   EXPECT_EQ( expectedNE, mesh.GetNE() );
   EXPECT_NE(AXOM_NULLPTR, mesh.GetNodes());
   EXPECT_EQ(feCollName, mesh.GetNodalFESpace()->FEColl()->Name());
 
   // Test refined mesh
   {
-    SCOPED_TRACE("point_in_cell_curved");
+    SCOPED_TRACE("point_in_cell_curved_refined");
     std::string meshTypeStr = fmt::format("{}_{}", feCollName, NREFINE);
-    testMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testRandomPointsOnMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testIsoGridPointsOnMesh(&mesh, meshTypeStr);
   }
 }
 
@@ -486,6 +545,10 @@ TEST( quest_point_in_cell, pic_curved_quad_jittered )
   const std::string feCollName = "Quadratic";
   const double jitterFactor = .15;
 
+  SLIC_INFO("Construction and querying PointInCell structure"
+      << " over jittered quadratic quad mesh with " << NREFINE << " refinement levels.");
+
+
   // Create a simple high order mfem mesh over a single quad
   //  -- a diamond with verts at +-(VAL,0) and +-(0, VAL) and nodes along diagonals (+- DIAG_VAL}
   std::stringstream sstr;
@@ -499,21 +562,25 @@ TEST( quest_point_in_cell, pic_curved_quad_jittered )
     mesh.UniformRefinement();
     jitterNodalValues<DIM>(&mesh, jitterFactor);
 
-    SCOPED_TRACE("point_in_cell_curved_jittered_1");
+    SCOPED_TRACE("point_in_cell_curved_jittered_single_elt");
     std::string meshTypeStr = fmt::format("{}_jittered_{}", feCollName, 1);
-    testMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testRandomPointsOnMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testIsoGridPointsOnMesh(&mesh, meshTypeStr);
   }
 
-  for(int i=0; i< NREFINE -1; ++i)
+  // Test refined mesh
   {
-    mesh.UniformRefinement();
-    jitterNodalValues<DIM>(&mesh, jitterFactor);
+    for(int i=0; i< NREFINE -1; ++i)
+    {
+      mesh.UniformRefinement();
+      jitterNodalValues<DIM>(&mesh, jitterFactor);
+    }
+
+    SCOPED_TRACE("point_in_cell_curved_jittered_refined");
+    std::string meshTypeStr = fmt::format("{}_jittered_{}", feCollName, NREFINE);
+    testRandomPointsOnMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testIsoGridPointsOnMesh(&mesh, meshTypeStr);
   }
-
-  SCOPED_TRACE("point_in_cell_curved_jittered");
-  std::string meshTypeStr = fmt::format("{}_jittered_{}", feCollName, NREFINE);
-  testMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
-
 }
 
 
@@ -524,7 +591,11 @@ TEST( quest_point_in_cell, pic_curved_quad_jittered_pos )
   const double VERT_VAL = 0.5;
   const double DIAG_VAL = VERT_VAL * (std::sqrt(2.) - 0.5);
   const std::string feCollName = "QuadraticPos";
-  const double jitterFactor = .25;
+  const double jitterFactor = .15;
+
+  SLIC_INFO("Construction and querying PointInCell structure"
+      << " over jittered quadratic quad mesh with " << NREFINE << " refinement levels."
+      << " Mesh encoded in positive (Bernstein) basis");
 
   // Create a simple high order mfem mesh over a single quad
   //  -- a diamond with verts at +-(VAL,0) and +-(0, VAL) and nodes along diagonals (+- DIAG_VAL}
@@ -539,21 +610,25 @@ TEST( quest_point_in_cell, pic_curved_quad_jittered_pos )
     mesh.UniformRefinement();
     jitterNodalValues<DIM>(&mesh, jitterFactor);
 
-    SCOPED_TRACE("point_in_cell_curved_jittered_positive_1");
+    SCOPED_TRACE("point_in_cell_curved_jittered_positive_single_elet");
     std::string meshTypeStr = fmt::format("{}_jittered_{}", feCollName, 1);
-    testMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testRandomPointsOnMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testIsoGridPointsOnMesh(&mesh, meshTypeStr);
   }
 
-  for(int i=0; i< NREFINE -1; ++i)
+  // Test refined mesh
   {
-    mesh.UniformRefinement();
-    jitterNodalValues<DIM>(&mesh, jitterFactor);
+    for(int i=0; i< NREFINE -1; ++i)
+    {
+      mesh.UniformRefinement();
+      jitterNodalValues<DIM>(&mesh, jitterFactor);
+    }
+
+    SCOPED_TRACE("point_in_cell_curved_jittered_positive_refined");
+    std::string meshTypeStr = fmt::format("{}_jittered_{}", feCollName, NREFINE);
+    testRandomPointsOnMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
+    testIsoGridPointsOnMesh(&mesh, meshTypeStr);
   }
-
-  SCOPED_TRACE("point_in_cell_curved_jittered_positive");
-  std::string meshTypeStr = fmt::format("{}_jittered_{}", feCollName, NREFINE);
-  testMesh(&mesh, ExpectedValueCurved(VERT_VAL), meshTypeStr);
-
 }
 
 
@@ -563,11 +638,17 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
 
   const std::string feCollName = "Quadratic";
 
+  SLIC_INFO("Construction and querying PointInCell structure"
+      << " over C-shaped biquadratic element");
+
+
   // Here we are testing a very curved C-shaped mesh
   // We are comparing a single element mesh to
-  // a refined mesh, and checking that the PointInCell query
-  // gives the same result for both (i.e. both inside or both outside)
+  // a refined mesh (one level of refinement), and checking
+  // that the PointInCell query gives the same result for both
+  // (i.e. both inside or both outside)
 
+  // Note: Mesh1 only has one element, with index 0
   std::stringstream sstr1;
   sstr1 << meshPrefix
        << fmt::format(c_shapedNodes, feCollName);
@@ -585,11 +666,11 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
   // output refined mesh to logger in mfem and vtk formats
   std::string filename = "quest_point_in_cell_c_shaped_quad";
   {
-    mfem::VisItDataCollection dataCol(filename + "001", &mesh1);
+    mfem::VisItDataCollection dataCol(filename + "001_mesh", &mesh1);
     dataCol.Save();
   }
   {
-    mfem::VisItDataCollection dataCol(filename + "002", &mesh2);
+    mfem::VisItDataCollection dataCol(filename + "002_mesh", &mesh2);
     dataCol.Save();
   }
 
@@ -598,9 +679,6 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
   SLIC_INFO("\n-- Elt size sqrt det: " << mesh1.GetElementSize(0, 0) );
   SLIC_INFO("\n-- Elt size h_min: " << mesh1.GetElementSize(0, 1) );
   SLIC_INFO("\n-- Elt size h_max: " << mesh1.GetElementSize(0, 2) );
-
-  if(true )
-    return;
 
 
   // Add mesh to the grid
@@ -616,43 +694,58 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
       mesh2.GetNE(),
       constructTimer2.elapsed() ) );
 
-  // Test that both queries agree
+  // For each random point, check that both queries agree
+  SLIC_INFO("Querying random points in domain of C-shaped mesh.");
+  int numUntransformed = 0;
   axom::utilities::Timer queryTimer(true);
-  const int num_pts = 100;  // NUM_TEST_PTS;
+  const int num_pts = NUM_TEST_PTS;
   for( int i=0; i< num_pts; ++i)
   {
-    SpacePt queryPoint = axom::quest::utilities::randomSpacePt<DIM>(-10, 10);
+    // Create a random point in the domain
+    SpacePt queryPoint = axom::quest::utilities::randomSpacePt<DIM>(0, 8.5);
+    queryPoint[0] *= -1;
 
+    // Try to find point in mesh1
     SpacePt isoPar1;
     int idx1 = spatialIndex1.locatePoint( queryPoint, &isoPar1);
     bool isInMesh1 = (idx1 != PointInCellType::NO_CELL);
 
+    // Try to find point in mesh2
     SpacePt isoPar2;
     int idx2 = spatialIndex2.locatePoint( queryPoint, &isoPar2);
     bool isInMesh2 = (idx2 != PointInCellType::NO_CELL);
 
+    // Results should be the same
     EXPECT_EQ(isInMesh1, isInMesh2)
         << "Point " << queryPoint
         << " was " << (isInMesh1 ? "in" : "not in") << " mesh 1"
         << " and was " << (isInMesh2 ? "in" : "not in") << " mesh 2"
         << " They should agree.";
 
+    // Try to transform back to space using spatialIndex1
+    // Transformed point should match query point
     if(isInMesh1)
     {
+      ++numUntransformed;
       SpacePt untransformPt = spatialIndex1.findInSpace(idx1, isoPar1);
 
       if(! isInMesh2)
       {
         SLIC_INFO("UntransformedPt for mesh 1 was " << untransformPt);
       }
-//      for(int i=0; i< DIM; ++i)
-//      {
-//        EXPECT_NEAR(queryPoint[i],untransformPt[i], EPS);
-//      }
+
+      for(int i=0; i< DIM; ++i)
+      {
+        EXPECT_NEAR(queryPoint[i],untransformPt[i], EPS);
+      }
 
     }
+
+    // Try to transform back to space using spatialIndex2
+    // Transformed point should match query point
     if(isInMesh2)
     {
+      ++numUntransformed;
       SpacePt untransformPt = spatialIndex2.findInSpace(idx2, isoPar2);
 
       if(! isInMesh1)
@@ -660,20 +753,20 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
         SLIC_INFO("UntransformedPt for mesh 2 was " << untransformPt);
       }
 
-//      for(int i=0; i< DIM; ++i)
-//      {
-//        EXPECT_NEAR(queryPoint[i],untransformPt[i], EPS);
-//      }
+      for(int i=0; i< DIM; ++i)
+      {
+        EXPECT_NEAR(queryPoint[i],untransformPt[i], EPS);
+      }
 
     }
   }
 
-  SLIC_INFO(fmt::format("Querying {} pts on C-shaped quadratic quad mesh took {} s -- rate: {} q/s",
+  SLIC_INFO(fmt::format("Querying {} random pts on two C-shaped quadratic quad meshes took {} s -- rate: {} q/s",
       num_pts * 2,
       queryTimer.elapsed(),
-      num_pts * 2 / queryTimer.elapsed()  ) );
-
-
+      num_pts * 2 / queryTimer.elapsed()  )
+    << "\n\t (includes " << numUntransformed << " transfomations back into space)"
+  );
 
     // Test that a fixed set of isoparametric coords on each cell maps to the correct place.
     std::vector<SpacePt> pts = generate2DIsoParTestPoints(10);
@@ -699,15 +792,15 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
         
 
         // Check that the cell ids agree
-        //EXPECT_EQ( eltId, foundCellId)
-        //    << fmt::format("For element {} -- computed midpoint {} @ {} -- found isoPar is {}",
-        //        eltId, spacePt, isoparCenter, foundIsoPar);
+        EXPECT_EQ( eltId, foundCellId1)
+            << fmt::format("For element {} -- computed midpoint {} @ {} -- found isoPar is {}",
+                eltId, spacePt, isoparCenter, foundIsoPar1);
 
         // Check that the isoparametric coordinates agree
-        //for(int i=0; i< DIM; ++i)
-        //{
-        //  EXPECT_NEAR(isoparCenter[i],foundIsoPar[i], EPS);
-        //}
+        for(int i=0; i< DIM; ++i)
+        {
+          EXPECT_NEAR(isoparCenter[i],foundIsoPar1[i], EPS);
+        }
 
       }
     }
@@ -716,8 +809,125 @@ TEST( quest_point_in_cell, pic_curved_quad_c_shaped )
         queryTimer2.elapsed(),
         pts.size() * mesh2.GetNE() * 2 / queryTimer2.elapsed()  ) );
 
+    //spatialIndex1.printDebugMesh( filename + "001.vtk");
+    //spatialIndex2.printDebugMesh( filename + "002.vtk");
 
 
+}
+
+
+TEST(quest_point_in_cell, pic_curved_quad_c_shaped_output_mesh)
+{
+    using namespace types2D;
+    
+    const std::string feCollName = "Quadratic";
+    
+    SLIC_INFO("Generating diagnostic mesh for"
+        << " C-shaped biquadratic element");
+
+
+    // Here we are testing a very curved C-shaped mesh
+    // We are comparing a single element mesh to
+    // a refined mesh, and checking that the PointInCell query
+    // gives the same result for both (i.e. both inside or both outside)
+    
+    std::stringstream sstr1;
+    sstr1 << meshPrefix
+         << fmt::format(c_shapedNodes, feCollName);
+    mfem::Mesh mesh1(sstr1);
+
+    const int res = 25;
+
+    PointInCellType spatialIndex1(&mesh1, GridCell(res));
+    
+    int ext[4] = { 0,res,0,res};
+    axom::mint::CurvilinearMesh cmesh(2, ext);
+
+    {
+      axom::primal::Point<int,3> ext_size;
+      cmesh.getExtentSize( ext_size.data() );
+      SLIC_INFO( "Extents of curvilinear mesh: " << ext_size    );
+    }
+  
+    // Set the positions of the nodes of the diagnostic mesh
+    const double denom = res;
+    for(int i=0; i <= res; ++i)
+    {
+        for(int j=0; j<= res; ++j)
+        {
+            SpacePt pt = spatialIndex1.findInSpace(0, SpacePt::make_point(i/denom,j/denom) );
+            cmesh.setNode(i,j,pt[0],pt[1]);
+        }
+    }
+
+    // Add a scalar field on the cells -- value is 1 when isoparametric transform succeeds, 0 otherwise
+    //if(false)
+    {
+        std::string name = "query_status";
+        axom::mint::FieldData* CD = cmesh.getCellFieldData();     
+        int numSuccesses = 0;
+        const int numCells =   cmesh.getMeshNumberOfCells();
+        SLIC_INFO("Mesh has " << numCells << " cells.");
+        CD->addField( new axom::mint::FieldVariable< int >(name, numCells ) );
+        int* fld = CD->getField( name )->getIntPtr();
+
+        for(int i=0; i < res; ++i)
+        {
+            for(int j=0; j< res; ++j)
+            {
+                // Forward map
+                double midX = (2.*i+1)/(2.*denom);
+                double midY = (2.*j+1)/(2.*denom);
+                
+                SpacePt pt = spatialIndex1.findInSpace(0, SpacePt::make_point(midX, midY) );
+
+                // Reverse map
+                SpacePt isoPt;
+                bool found = spatialIndex1.getIsoparametricCoords(0, pt, &isoPt);
+
+                int idx = cmesh.getCellLinearIndex(i,j);
+                fld[idx] = found ? 1 : -1;
+
+                if(found) { ++numSuccesses; }
+            }
+        }
+
+        SLIC_INFO(fmt::format("Found {} of {} points ({}%)",
+            numSuccesses, numCells, (100. * numSuccesses)/numCells ) );
+
+    }      
+
+    std::stringstream filenameStr;
+    filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res << ".vtk";
+    SLIC_INFO("About to write file " << filenameStr.str());
+    axom::mint::write_vtk(&cmesh, filenameStr.str() );
+
+    std::string filename = "quest_point_in_cell_c_shaped_quad";
+    spatialIndex1.printDebugMesh( filename + "_001.vtk");
+
+}
+
+TEST(quest_point_in_cell, printIsoparams)
+{
+  const int geom = mfem::Geometry::SQUARE;
+  const int dim = 2;
+
+  for(int order = 0; order < 3; ++order)
+  {
+    const mfem::IntegrationRule* ir = &(mfem::RefinedIntRules.Get(geom, order ) );
+
+    const int npts = ir->GetNPoints();
+    for(int i=0; i < npts; ++i)
+    {
+        double x[3];
+        ir->IntPoint(i).Get(x, dim);
+        SLIC_INFO( "integration point  " << i
+            << "\n\t x: " << x[0]
+            << "\n\t y: " << x[1]
+            << "\n\t order " << order
+            );
+    }
+  }
 }
 
 
@@ -732,11 +942,8 @@ int main(int argc, char * argv[])
   UnitTestLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
-  // finalized when exiting main scope
-
   std::srand( SRAND_SEED );
 
   result = RUN_ALL_TESTS();
-
   return result;
 }
