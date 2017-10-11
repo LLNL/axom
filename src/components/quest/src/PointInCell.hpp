@@ -291,7 +291,8 @@ public:
 
   typedef int IndexType;
 
-  static const IndexType NO_CELL = -1;
+  /*!  Special value to indicate an unsuccessful query */
+  static const IndexType NO_CELL;
 
   /*!
    * Construct a point in cell query structure over a given mfem mesh
@@ -510,6 +511,9 @@ private:
 
 
 };
+
+template<int NDIMS>
+const typename PointInCell<NDIMS>::IndexType PointInCell<NDIMS>::NO_CELL = -1;
 
 } // end namespace quest
 } // end namespace axom
