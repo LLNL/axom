@@ -429,19 +429,54 @@ public:
       for( std::vector<SpacePt>::iterator it= pts.begin(); it != pts.end(); ++it)
       {
         SpacePt& isoparCenter = *it;
+
+        // Check if isoparCenter is on element boundary
+        bool isBdry = false;
+        for(int i=0; i< DIM; ++i)
+        {
+          if( axom::utilities::isNearlyEqual(isoparCenter[i], 0.)
+            || axom::utilities::isNearlyEqual(isoparCenter[i], 1.))
+          {
+            isBdry = true;
+          }
+        }
+
         SpacePt spacePt = spatialIndex.findInSpace(eltId, isoparCenter);
 
         int foundCellId = spatialIndex.locatePoint(spacePt, &foundIsoPar);
 
-        // Check that the cell ids agree
-        EXPECT_EQ( eltId, foundCellId)
-            << fmt::format("For element {} -- computed space point {} from isoPar {} -- found isoPar is {}",
-                eltId, spacePt, isoparCenter, foundIsoPar);
+        // Check that we found a cell
+        EXPECT_NE( PointInCellType::NO_CELL, foundCellId)
+          << "element: " << eltId
+          << " -- isopar: " << isoparCenter
+          << " -- spacePt: " << spacePt
+          << " -- isBdry: " << (isBdry ? "yes" : "no");
 
-        // Check that the isoparametric coordinates agree
-        for(int i=0; i< DIM; ++i)
+        if( !isBdry)
         {
-          EXPECT_NEAR(isoparCenter[i],foundIsoPar[i], ::EPS);
+          EXPECT_EQ( eltId, foundCellId)
+              << fmt::format("For element {} -- computed space point {} from isoPar {} -- found isoPar is {}",
+                  eltId, spacePt, isoparCenter, foundIsoPar);
+        }
+
+        // If we found the same cell, check that found isoparametric coordinates agree with original
+        if(eltId == foundCellId)
+        {
+          for(int i=0; i< DIM; ++i)
+          {
+            EXPECT_NEAR(isoparCenter[i],foundIsoPar[i], ::EPS);
+          }
+        }
+
+        // Convert point back to space, and check that it matches our original point
+        if(foundCellId != PointInCellType::NO_CELL)
+        {
+          SpacePt transformedPt = spatialIndex.findInSpace(foundCellId, foundIsoPar);
+
+          for(int i=0; i< DIM; ++i)
+          {
+            EXPECT_NEAR(spacePt[i],transformedPt[i], ::EPS);
+          }
         }
 
       }
@@ -482,15 +517,22 @@ public:
   {
     std::vector<SpacePt> pts;
 
-    for(int i=1; i < res; ++i)
-      for(int j=1; j < res; ++j)
+    for(int i=0; i <= res; ++i)
+      for(int j=0; j <= res; ++j)
       {
+        // Get the corresponding isoparametric value
         SpacePt pt = SpacePt::make_point( static_cast<double>(i)/res,
                                           static_cast<double>(j)/res);
 
-        SpacePt off = axom::quest::utilities::randomSpacePt<DIM>( -::EPS, +::EPS);
+//        // Add a small random offset
+//        SpacePt off = axom::quest::utilities::randomSpacePt<DIM>( -::EPS, +::EPS);
+//
+//        // Clamp to ensure isoparametric pt is in element
+//        for(int i=0; i< SpacePt::DIMENSION; ++i)
+//          pt[i] = axom::utilities::clampVal(pt[i]+off[i], 0., 1.);
 
-        pts.push_back( pt.array() + off.array() );
+
+        pts.push_back( pt );
       }
 
     return pts;
@@ -566,9 +608,15 @@ struct ExpectedValueCurved
   double m_radius;
 };
 
-TEST_F( PointInCell2DTest, simple_bilinear_mesh )
+TEST_F( PointInCell2DTest, pic_flat_single_quad )
 {
-  this->setupTestMesh(FLAT_MESH);
+  const double  vertVal = 0.5;
+  const int numRefine = 0;
+
+  this->setupTestMesh(FLAT_MESH, numRefine, vertVal);
+
+  std::string meshTypeStr = this->getMeshDescriptor();
+  SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
   // Add a bilinear gridfunction
   mfem::Mesh& mesh = *this->getMesh();
@@ -584,18 +632,21 @@ TEST_F( PointInCell2DTest, simple_bilinear_mesh )
     dataCol.RegisterField("data", &gf);
     dataCol.Save();
   }
+
+  this->testRandomPointsOnMesh( ExpectedValueFlat<DIM>(vertVal), meshTypeStr);
+  this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
-TEST_F( PointInCell2DTest, pic_flat_quad )
+TEST_F( PointInCell2DTest, pic_flat_refined_quad )
 {
   const double  vertVal = 0.5;
   const int numRefine = ::NREFINE;
   const int DIM = PointInCell2DTest::DIM;
 
-  std::string meshTypeStr = fmt::format("{}_{}", "Linear", numRefine);
-  SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
-
   this->setupTestMesh(FLAT_MESH, numRefine, vertVal);
+
+  std::string meshTypeStr = this->getMeshDescriptor();
+  SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
   this->testRandomPointsOnMesh( ExpectedValueFlat<DIM>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
