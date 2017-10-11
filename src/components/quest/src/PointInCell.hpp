@@ -257,6 +257,9 @@ public:
       }
     }
 
+    double const EPS = 1e-8;  // TODO -- convert to class member ?
+    bbox.scale(1. + EPS);
+
     return bbox;
   }
 
@@ -307,6 +310,9 @@ public:
     SpatialBoundingBox meshBB = m_meshWrapper.meshBoundingBox();
     SLIC_INFO("Mesh bounding box is: " << meshBB );
 
+    // Slightly scale the bounding box
+    double const EPS = 1e-8; 
+    meshBB.scale(1. + EPS);
     m_grid.initialize(meshBB, resolution, num_elem);
 
     for(int i=0; i< num_elem; ++i)
