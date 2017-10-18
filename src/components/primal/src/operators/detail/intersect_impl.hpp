@@ -1274,7 +1274,7 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   // Values of the parameter t between 0 and the length of the segment correspond
   // to points on the segment.
   // Note: if intersect_tri_ray() is true, t must be greater than zero
-  if ( intersect_tri_ray(tri, r, p, t) ) {
+  if ( intersect_tri_ray(tri, r, t, p) ) {
     return t < static_cast< T >( S.length() );
   }
   return false;

@@ -1024,9 +1024,9 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
   SegmentType seg2(p2, p1);
   if (testtrue) {
     // Find the intersection of segment from p1 to p2
-    PointType tip1;
     double t1 = 0;
-    EXPECT_TRUE(intersect(tri, seg1, tip1, t1));
+    PointType tip1;
+    EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
 
     RayType r1(p1, VectorType(p1,p2));
     PointType ip1 = r1.at(t1);
@@ -1036,9 +1036,9 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
               << ip1 );
 
     // Find the intersection of segment from p1 to p2
-    PointType tip2;
     double t2 = 0;
-    EXPECT_TRUE(intersect(tri, seg2, tip2, t2));
+    PointType tip2;
+    EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
     RayType r2(p2, VectorType(p2,p1));
     PointType ip2 = r2.at(t2);
     SLIC_INFO("\t -- found intersection between triangle "
@@ -1061,11 +1061,11 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     }
   }
   else{
-    EXPECT_FALSE( intersect(tri, seg1, tip, t))
+    EXPECT_FALSE( intersect(tri, seg1, t, tip))
       <<"Expected no intersection; Found one at point "
       << RayType(p1, VectorType(p1,p2)).at(t);
 
-    EXPECT_FALSE( intersect(tri, seg2, tip, t))
+    EXPECT_FALSE( intersect(tri, seg2, t, tip))
       <<"Expected no intersection; Found one at point "
       << RayType(p2, VectorType(p2,p1)).at(t);
   }
@@ -1256,8 +1256,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   TriangleType t2( PointType::make_point(-1,-1,2),
                    PointType::make_point(-1,1,2),
                    PointType::make_point( 2,0,2));
-  EXPECT_TRUE( axom::primal::intersect(t2, r, intBary,
-                                       intersectionParam));
+  EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionParam, intBary));
   double baryscale = intBary[0] + intBary[1] + intBary[2];
 
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
@@ -1294,8 +1293,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 
   PointType intBary;
   double intersectionParam = 0.;
-  EXPECT_TRUE( axom::primal::intersect(t, s, intBary,
-                                       intersectionParam));
+  EXPECT_TRUE( axom::primal::intersect(t, s, intersectionParam, intBary));
   double baryscale = intBary[0] + intBary[1] + intBary[2];
 
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
