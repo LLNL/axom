@@ -14,10 +14,10 @@
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++" CACHE PATH "")
 
 # fortran compiler used by spack
 # no fortran compiler
@@ -71,40 +71,7 @@ set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI ON CACHE BOOL "")
-
-set(MPI_HOME             "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3" CACHE PATH "")
-set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc" CACHE PATH "")
-set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx" CACHE PATH "")
-
-
-set(MPI_DRIVER_ROOT      "/bgsys/drivers/V1R2M4/ppc64" CACHE PATH "")
-
-set(MPI_LIBS 
-    ${MPI_DRIVER_ROOT}/comm/lib/libmpich-gcc.a
-    ${MPI_DRIVER_ROOT}/comm/lib/libopa-gcc.a
-    ${MPI_DRIVER_ROOT}/comm/lib/libmpl-gcc.a
-    ${MPI_DRIVER_ROOT}/comm/lib/libpami-gcc.a
-    ${MPI_DRIVER_ROOT}/spi/lib/libSPI.a
-    ${MPI_DRIVER_ROOT}/spi/lib/libSPI_cnk.a
-    rt
-    pthread
-    stdc++
-    pthread)
-
-set(MPI_INCLUDE_PATHS 
-    ${MPI_DRIVER_ROOT}/comm/include
-    ${MPI_DRIVER_ROOT}/comm/lib/gnu
-    ${MPI_DRIVER_ROOT}
-    ${MPI_DRIVER_ROOT}/comm/sys/include
-    ${MPI_DRIVER_ROOT}/spi/include
-    ${MPI_DRIVER_ROOT}/spi/include/kernel/cnk )
-
-set(MPI_C_INCLUDE_PATH    ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_C_LIBRARIES       ${MPI_LIBS} CACHE PATH "")
-
-set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_CXX_LIBRARIES     ${MPI_LIBS} CACHE PATH "")
-
+set(ENABLE_FIND_MPI OFF CACHE BOOL "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
