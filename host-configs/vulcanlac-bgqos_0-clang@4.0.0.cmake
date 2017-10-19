@@ -3,21 +3,21 @@
 #
 # This is a generated file, edit at own risk.
 ##################################
-# bgqos_0-clang@3.7.0
+# bgqos_0-clang@4.0.0
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/local/tools/cmake-3.4.3/bin/cmake
+# cmake executable path: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/cmake
 
 #######
-# using clang@3.7.0 compiler spec
+# using clang@4.0.0 compiler spec
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++" CACHE PATH "")
 
 # fortran compiler used by spack
 # no fortran compiler
@@ -25,19 +25,21 @@ set(CMAKE_CXX_COMPILER "/usr/apps/gnu/bgclang/3.7/bin/bgclang++" CACHE PATH "")
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_04_05/spack/opt/spack/bgqos_0/clang-3.7.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_10_19_10_29_40/spack/opt/spack/bgqos_0/clang-4.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-bosaqxj3xd5fhyovqnda3rgj2kjsj4ah" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-y7l7rg3y7j7hxdsom3nwcpwwfq3tu75b" CACHE PATH "")
+
+# scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-oiiieme5mlcpao7pqwrk2mdquxnaguqm" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-lps3i452m3y4ebespcl7atv4bukml7xq" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-2ctejypbka5bdvs43cnv3twskptqpfjs" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-gkwllnyyluegb6fi2uxwkkflm3d7sxov" CACHE PATH "")
 
 # boost headers from uberenv
-set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-22q34tajrlunpnme5ezp72t4iwy2qpgz" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -59,7 +61,7 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-qddl3bajxtossmhy4mazvjpah4zgx5aj
 # !---------------------------------------------------------------------------
 ##############################################################################
 # Options added manually to 
-# lc bgq clang@3.7.0 host configs
+# lc bgq clang@4.0.0 host configs
 ##############################################################################
 
 set(ENABLE_DOCS    OFF CACHE BOOL "")
@@ -70,41 +72,8 @@ set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE BOOL "")
-
-set(MPI_HOME             "/usr/apps/gnu/clang/r266321-20160414/mpi/bgclang-mpi3" CACHE PATH "")
-set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc" CACHE PATH "")
-set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx" CACHE PATH "")
-
-
-set(MPI_DRIVER_ROOT      "/bgsys/drivers/V1R2M4/ppc64" CACHE PATH "")
-
-set(MPI_LIBS 
-    ${MPI_DRIVER_ROOT}/comm/lib/libmpich-gcc.a
-    ${MPI_DRIVER_ROOT}/comm/lib/libopa-gcc.a
-    ${MPI_DRIVER_ROOT}/comm/lib/libmpl-gcc.a
-    ${MPI_DRIVER_ROOT}/comm/lib/libpami-gcc.a
-    ${MPI_DRIVER_ROOT}/spi/lib/libSPI.a
-    ${MPI_DRIVER_ROOT}/spi/lib/libSPI_cnk.a
-    rt
-    pthread
-    stdc++
-    pthread)
-
-set(MPI_INCLUDE_PATHS 
-    ${MPI_DRIVER_ROOT}/comm/include
-    ${MPI_DRIVER_ROOT}/comm/lib/gnu
-    ${MPI_DRIVER_ROOT}
-    ${MPI_DRIVER_ROOT}/comm/sys/include
-    ${MPI_DRIVER_ROOT}/spi/include
-    ${MPI_DRIVER_ROOT}/spi/include/kernel/cnk )
-
-set(MPI_C_INCLUDE_PATH    ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_C_LIBRARIES       ${MPI_LIBS} CACHE PATH "")
-
-set(MPI_CXX_INCLUDE_PATH  ${MPI_INCLUDE_PATHS} CACHE PATH "")
-set(MPI_CXX_LIBRARIES     ${MPI_LIBS} CACHE PATH "")
-
+set(ENABLE_MPI      ON CACHE BOOL "")
+set(ENABLE_FIND_MPI OFF CACHE BOOL "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
