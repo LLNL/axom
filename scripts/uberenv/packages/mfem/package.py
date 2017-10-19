@@ -213,7 +213,7 @@ class Mfem(Package):
             options.extend(['MFEM_DEBUG=YES'])
 
         make('config', *options)
-        make('all')
+        make()
 
         # Note (KW): I removed the test example since axom has an mfem smoke test.
 
