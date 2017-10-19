@@ -40,22 +40,22 @@ namespace quest {
 /*!
  * \class ImplicitGrid
  *
- * \brief An implicit grid is an occupancy-based spatial index over a set of indices
+ * \brief An implicit grid is an occupancy-based spatial index over an indexed set
+ * of objects in space.
  *
  * An ImplicitGrid divides a given rectilinear slab of space (defined by an
- * axis aligned bounding box) into uniformly sized cells (of a specified resolution).
- * Users can then insert items into the ImplicitGrid by providing the item's
- * bounding box and index within the index set. The GridCells of the ImplicitGrid
- * indexes a subset of the items in the index space.
- * Users must specify the cardinality of this index space when the ImplicitGrid
- * is initialized.
+ * axis aligned bounding box) into uniformly sized cells of a specified resolution.
+ * The GridCells of the ImplicitGrid index a subset of the items from an indexed
+ * set (whose cardinality is specified during the ImplicitGrid's initialization).
+ * Users can insert items from the indexed set into an ImplicitGrid by providing
+ * the item's bounding box and index.
  *
  * In contrast to a primal::UniformGrid, which encodes an array of indices
  * for each cell in the underlying multidimensional grid,
  * the ImplicitGrid encodes a single array of bins per dimension, each of which
  * has a bitset over the index space.  Thus, the storage overhead of an
- * ImplicitGrid is fixed at:  numElts * sum_i ( res[i] ) bits.
- * Queries are implemented in terms of bitset unions and intersections
+ * ImplicitGrid is fixed at initialization time to numElts * sum_i ( res[i] ) bits.
+ * Queries are implemented in terms of unions and intersections of bitsets.
  *
  * One might prefer an ImplicitGrid over a UniformGrid when one expects
  * a relatively dense index relative to the grid resolution (i.e. that
@@ -117,7 +117,7 @@ public:
 
 
   /*!
-   * Initializes an implicit grid or resolution gridRes over an axis aligned domain covered by boundinbBox.
+   * Initializes an implicit grid or resolution gridRes over an axis aligned domain covered by boundingBox.
    * The implicit grid indexes a set with numElts elements.
    *
    * \pre The ImplicitGrid has not already been initialized
@@ -250,15 +250,15 @@ private:
 
 private:
 
-  SpatialBoundingBox m_bb;
-  LatticeType        m_lattice;
-  double             m_expansionFactor;
+  SpatialBoundingBox m_bb; //!< The bounding box of the ImplicitGrid
+  LatticeType        m_lattice; //!< A lattice to help in converting from points in space to GridCells
+  double             m_expansionFactor; //!< The amount by which to expand bounding boxes
 
-  ElementSet         m_elementSet;
-  BinSet             m_bins[NDIMS];
-  BinBitMap          m_binData[NDIMS];
+  ElementSet         m_elementSet; //!< The index set of the elements
+  BinSet             m_bins[NDIMS]; //!< A set of bins, per dimension
+  BinBitMap          m_binData[NDIMS]; //!< The data associated with each bin
 
-  bool               m_initialized;
+  bool               m_initialized; //!< Tracks whether the ImplicitGrid has been initialized
 
 };
 

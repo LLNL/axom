@@ -50,71 +50,31 @@ public:
   typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
   typedef int IndexType;
 
-  PICMeshWrapper(mfem::Mesh* mesh) :
-    m_mesh(mesh), m_bernsteinNodes(AXOM_NULLPTR), m_mustDeleteNodes(false)
+  PICMeshWrapper(mfem::Mesh* mesh) : m_mesh(mesh), m_isInitialized(false)
   {
     // Some sanity checks
     SLIC_ASSERT( m_mesh != AXOM_NULLPTR);
     SLIC_ASSERT( m_mesh->Dimension() == NDIMS);
 
-    // Generate (or access existing) positive (Bernstein) nodal grid function
-    const mfem::FiniteElementSpace* nodalFESpace = m_mesh->GetNodalFESpace();
-    m_isHighOrder = (nodalFESpace != AXOM_NULLPTR) && (m_mesh->GetNE() > 0);
+    m_isHighOrder = (m_mesh->GetNodalFESpace() != AXOM_NULLPTR) && (m_mesh->GetNE() > 0);
 
-    if( m_isHighOrder )
+    // Initialize bounding boxes -- split into two functions for simplicity
+    double const EPS = 1e-8;
+    double bboxScaleFactor = 1. + EPS;
+    const int numMeshElements = numElements();
+    m_elementBoundingBox = std::vector<SpatialBoundingBox>(numMeshElements);
+
+    if( m_isHighOrder)
     {
-      // Assume that all elements of the mesh have the same order
-      const mfem::FiniteElementCollection* nodalFEColl = nodalFESpace->FEColl();
-      int order = nodalFESpace->GetOrder(0);
-
-      bool isPositive = PICMeshWrapper::isPositiveBasis( nodalFEColl );
-      if(isPositive)
-      {
-        m_bernsteinNodes = m_mesh->GetNodes();
-      }
-      else
-      {
-        int GeomType = m_mesh->GetElementBaseGeometry(0);
-        int mapType = (nodalFEColl != AXOM_NULLPTR)
-            ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
-            : static_cast<int>(mfem::FiniteElement::VALUE);
-
-        mfem::FiniteElementCollection* posFEColl =
-            PICMeshWrapper::getCorrespondingPositiveFEC(nodalFEColl, order, mapType);
-
-        if(posFEColl != AXOM_NULLPTR)
-        {
-          // Create a positive (Bernstein) grid function for the nodes
-          mfem::FiniteElementSpace* posFESpace =
-              new mfem::FiniteElementSpace(m_mesh, posFEColl, NDIMS);
-          m_bernsteinNodes = new mfem::GridFunction(posFESpace);
-          m_bernsteinNodes->MakeOwner(posFEColl);
-          m_mustDeleteNodes = true;
-
-          // Project the nodal grid function onto this
-          m_bernsteinNodes->ProjectGridFunction(*(m_mesh->GetNodes()));
-        }
-      }
-
-      SLIC_INFO("Mesh nodes fec -- " << nodalFEColl->Name()
-          << " with ordering " << nodalFESpace->GetOrdering()
-          << "\n\t -- Positive nodes are fec -- "
-          << m_bernsteinNodes->FESpace()->FEColl()->Name()
-          << " with ordering " << m_bernsteinNodes->FESpace()->GetOrdering() );
-
-
+      initializeBoundingBoxesHighOrder(bboxScaleFactor);
     }
-  }
-
-  ~PICMeshWrapper()
-  {
-    if(m_mustDeleteNodes)
+    else
     {
-      delete m_bernsteinNodes;
-      m_bernsteinNodes = AXOM_NULLPTR;
+      initializeBoundingBoxesLowOrder(bboxScaleFactor);
     }
-  }
 
+    m_isInitialized = true;
+  }
 
   /*! Predicate to check if the given basis is positive (Bernstein) */
   static bool isPositiveBasis(const mfem::FiniteElementCollection* fec)
@@ -147,15 +107,20 @@ public:
   }
 
   /*!
-   * \brief Utility function to get a positive (Bernstein) basis corresponding to the given
-   *        FiniteElementCollection.
+   * \brief Utility function to get a positive (Bernstein) collection of bases
+   * corresponding to the given FiniteElementCollection.
+   *
+   * \return A pointer to a newly allocated FiniteElementCollection
+   * corresponding to \a fec
+   * \note   It is the user's responsibility to deallocate this pointer.
+   * \pre    \a fec is not already positive
    */
   static mfem::FiniteElementCollection* getCorrespondingPositiveFEC(const mfem::FiniteElementCollection* fec, int order, int mapType)
   {
     //   NOTE(KW) Should this use a map<string, string> instead ?
     //         It could then use FECollection::New(string)
 
-   // If fec is already positive, return it
+   // If fec is already positive, return it?
     SLIC_CHECK_MSG( !isPositiveBasis(fec),
         "This function is only meant to be called on non-positive finite element collection"
         );
@@ -192,83 +157,164 @@ public:
   /*! Get a pointer to the mesh */
   mfem::Mesh* getMesh() const { return m_mesh; }
 
-  /*! Returns the vertex (low order) or node (high order) at the given index */
-  SpacePoint getNode(int idx) const
+  /*! Return the bounding box of the mesh */
+  const SpatialBoundingBox& meshBoundingBox() const
   {
-    if(m_isHighOrder)
+    return m_meshBoundingBox;
+  }
+
+  /*! Return the bounding box of mesh element with index idx */
+  const SpatialBoundingBox& elementBoundingBox(IndexType idx) const
+  {
+    SLIC_ASSERT( 0 <= idx && idx < numElements() );
+    return m_elementBoundingBox[idx];
+  }
+
+private:
+  /*!
+   * Helper function to initialize the bounding boxes for a high order mfem mesh
+   * \param bboxScaleFactor Scale factor for expanding bounding boxes
+   * \note This function can only be called before the class is initialized
+   * \pre This function can only be called when m_isHighOrder is true
+   * \pre bboxScaleFactor must be greater than or equal to 1.
+   */
+  void initializeBoundingBoxesHighOrder(double bboxScaleFactor)
+  {
+    // Sanity checks
+    SLIC_ASSERT( !m_isInitialized );
+    SLIC_ASSERT( m_isHighOrder );    SLIC_ASSERT( !m_isInitialized );
+    SLIC_ASSERT(bboxScaleFactor >= 1.);
+
+    /// Generate (or access existing) positive (Bernstein) nodal grid function
+    const mfem::FiniteElementSpace* nodalFESpace = m_mesh->GetNodalFESpace();
+
+    mfem::GridFunction* positiveNodes = AXOM_NULLPTR;
+    bool mustDeleteNodes = false;
+
+    const mfem::FiniteElementCollection* nodalFEColl = nodalFESpace->FEColl();
+
+    // Check if grid function is positive, if not create positive grid function
+    if( PICMeshWrapper::isPositiveBasis( nodalFEColl ) )
     {
-      SpacePoint pt;
-
-      mfem::FiniteElementSpace* fes = m_bernsteinNodes->FESpace();
-      for(int j=0; j< NDIMS; ++j)
-        pt[j] = (*m_bernsteinNodes)(fes->DofToVDof(idx,j));
-
-      return pt;
+      positiveNodes = m_mesh->GetNodes();
     }
     else
     {
-      return SpacePoint(m_mesh->GetVertex(idx) );
+      // Assume that all elements of the mesh have the same order and geom type
+      int order = nodalFESpace->GetOrder(0);
+      int GeomType = m_mesh->GetElementBaseGeometry(0);
+      int mapType = (nodalFEColl != AXOM_NULLPTR)
+          ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
+          : static_cast<int>(mfem::FiniteElement::VALUE);
+
+      mfem::FiniteElementCollection* posFEColl =
+          PICMeshWrapper::getCorrespondingPositiveFEC(nodalFEColl, order, mapType);
+
+      SLIC_ASSERT_MSG(posFEColl != AXOM_NULLPTR,
+          "Problem generating a positive finite element collection "
+          << "corresponding to the mesh's '"<< nodalFEColl->Name()
+          << "' finite element collection.");
+
+      if(posFEColl != AXOM_NULLPTR)
+      {
+        // Create a positive (Bernstein) grid function for the nodes
+        mfem::FiniteElementSpace* posFESpace =
+            new mfem::FiniteElementSpace(m_mesh, posFEColl, NDIMS);
+        positiveNodes = new mfem::GridFunction(posFESpace);
+
+        // m_bernsteinNodes takes ownership of posFEColl's memory
+        positiveNodes->MakeOwner(posFEColl);
+        mustDeleteNodes = true;
+
+        // Project the nodal grid function onto this
+        positiveNodes->ProjectGridFunction(*(m_mesh->GetNodes()));
+      }
     }
 
-  }
+    // Output some information
+    SLIC_INFO("Mesh nodes fec -- " << nodalFEColl->Name()
+        << " with ordering " << nodalFESpace->GetOrdering()
+        << "\n\t -- Positive nodes are fec -- "
+        << positiveNodes->FESpace()->FEColl()->Name()
+        << " with ordering " << positiveNodes->FESpace()->GetOrdering() );
 
-  /*! Compute the bounding box of the mesh */
-  SpatialBoundingBox meshBoundingBox() const
-  {
-    SpatialBoundingBox bbox;
 
-    int numNodes = m_isHighOrder
-        ? m_bernsteinNodes->FESpace()->GetNDofs()
-        : m_mesh->GetNV();
-
-    // Add each vertex (low order) or node (high order) to the bbox
-    for(int i=0; i< numNodes; ++i)
+    /// For each element, compute bounding box, and overall bbox
+    mfem::Array<int> dofIndices;
+    mfem::FiniteElementSpace* fes = positiveNodes->FESpace();
+    const int numMeshElements = numElements();
+    for(int elem=0; elem < numMeshElements; ++elem)
     {
-      bbox.addPoint( getNode(i) );
-    }
+      SpatialBoundingBox& bbox = m_elementBoundingBox[elem];
 
-    return bbox;
-  }
-
-  /*! Compute the bounding box of mesh element with index idx */
-  SpatialBoundingBox elementBoundingBox(IndexType idx) const
-  {
-    SpatialBoundingBox bbox;
-
-    if(m_isHighOrder)
-    {
-      mfem::Array<int> dofIndices;
-
-      m_bernsteinNodes->FESpace()->GetElementDofs(idx, dofIndices);
+      // Add each dof of the element to the bbox
+      fes->GetElementDofs(elem, dofIndices);
       for(int i = 0; i< dofIndices.Size(); ++i)
       {
         int nIdx = dofIndices[i];
-        bbox.addPoint( getNode(nIdx) );
+
+        SpacePoint pt;
+        for(int j=0; j< NDIMS; ++j)
+          pt[j] = (*positiveNodes)(fes->DofToVDof(nIdx,j));
+
+        bbox.addPoint( pt );
       }
+
+      // scale the bbox to account for numerical noise
+      bbox.scale(bboxScaleFactor);
+
+      m_meshBoundingBox.addBox( bbox );
     }
-    else
+
+    /// Clean up -- deallocate grid function if necessary
+    if(mustDeleteNodes)
     {
-      mfem::Element* elt = m_mesh->GetElement(idx);
+      delete positiveNodes;
+      positiveNodes = AXOM_NULLPTR;
+    }
+  }
+
+  /*!
+   * Helper function to initialize the bounding boxes for a low order mfem mesh
+   * \param bboxScaleFactor Scale factor for expanding bounding boxes
+   * \note This function can only be called before the class is initialized
+   * \pre This function can only be called when m_isHighOrder is false
+   * \pre bboxScaleFactor must be greater than or equal to 1.
+   */
+  void initializeBoundingBoxesLowOrder(double bboxScaleFactor)
+  {
+    SLIC_ASSERT( !m_isInitialized );
+    SLIC_ASSERT( !m_isHighOrder );
+    SLIC_ASSERT( bboxScaleFactor >= 1. );
+
+    /// For each element, compute bounding box, and overall bbox
+    const int numMeshElements = numElements();
+    for(int elem=0; elem < numMeshElements; ++elem)
+    {
+      SpatialBoundingBox& bbox = m_elementBoundingBox[elem];
+
+      mfem::Element* elt = m_mesh->GetElement(elem);
       int* eltVerts = elt->GetVertices();
       for(int i = 0; i< elt->GetNVertices(); ++i)
       {
         int vIdx = eltVerts[i];
-        bbox.addPoint( getNode( vIdx ) );
+        bbox.addPoint( SpacePoint( m_mesh->GetVertex( vIdx ) ) );
       }
+
+      // scale the bounding box to account for numerical noise
+      bbox.scale(bboxScaleFactor);
+
+      m_meshBoundingBox.addBox( bbox );
     }
-
-    double const EPS = 1e-8;  // TODO -- convert to class member ?
-    bbox.scale(1. + EPS);
-
-    return bbox;
   }
-
 
 private:
   mfem::Mesh* m_mesh;
-  mfem::GridFunction* m_bernsteinNodes;
   bool m_isHighOrder;
-  bool m_mustDeleteNodes;
+  bool m_isInitialized;
+
+  SpatialBoundingBox m_meshBoundingBox;
+  std::vector<SpatialBoundingBox> m_elementBoundingBox;
 };
 
 
@@ -397,10 +443,12 @@ public:
     // TransformBack returns zero if the element is properly mapped
     mfem::IntegrationPoint ipRef;
 
-    int err = tr.TransformBack(ptSpace, ipRef);
+    const int refineOrder = 1;
+    int err = tr.TransformBack(ptSpace, ipRef, refineOrder);
 
     int meshStartIndex = m_transformBackDebugMesh.getMeshNumberOfNodes();
 
+    if(false)
     {
       //SLIC_INFO("Used " << tr.tbDebug.numIters << " iterations." );
 

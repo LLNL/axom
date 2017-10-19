@@ -308,6 +308,7 @@ public:
         EXPECT_NE( PointInCellType::NO_CELL, foundCellId)
           << "element: " << eltId
           << " -- isopar: " << isoparCenter
+          << " -- foundIsopar: " << foundIsoPar
           << " -- spacePt: " << spacePt
           << " -- isBdry: " << (isBdry ? "yes" : "no");
 
@@ -323,7 +324,11 @@ public:
         {
           for(int i=0; i< DIM; ++i)
           {
-            EXPECT_NEAR(isoparCenter[i],foundIsoPar[i], ::EPS);
+            EXPECT_NEAR(isoparCenter[i],foundIsoPar[i], ::EPS)
+                << "For element " << eltId << " coord " << i
+                << "\tisoparCenter is" << isoparCenter
+                << "\tfoundIsoPar is " << foundIsoPar
+                << "\tpoint in space " << spacePt;
           }
         }
 
@@ -800,9 +805,9 @@ private:
 
 
 enum Metric {
-  L1_METRIC,
-  L2_METRIC,
-  LINF_METRIC
+  L_1_METRIC,
+  L_2_METRIC,
+  L_INF_METRIC
 };
 
 /*!
@@ -853,7 +858,7 @@ private:
   {
     switch(METRIC)
     {
-    case L1_METRIC:
+    case L_1_METRIC:
       {
         double ret = 0.;
         for(int i=0; i < DIM; ++i)
@@ -863,10 +868,10 @@ private:
         return ret;
       }
 
-    case L2_METRIC:
+    case L_2_METRIC:
       return SpaceVec(pt).norm();
 
-    case LINF_METRIC:
+    case L_INF_METRIC:
       return axom::primal::abs( pt.array() ).max();
     }
   }
@@ -902,7 +907,7 @@ TEST_F( PointInCell2DTest, pic_flat_single_quad )
     dataCol.Save();
   }
 
-  this->testRandomPointsOnMesh( ExpectedValue<DIM, L1_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh( ExpectedValue<DIM, L_1_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -917,8 +922,8 @@ TEST_F( PointInCell2DTest, pic_flat_refined_quad )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh( ExpectedValue<DIM,L1_METRIC>(vertVal), meshTypeStr);
-  this->testIsoGridPointsOnMesh(meshTypeStr);
+  this->testRandomPointsOnMesh( ExpectedValue<DIM,L_1_METRIC>(vertVal), meshTypeStr);
+  // this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
 
@@ -933,7 +938,7 @@ TEST_F( PointInCell2DTest, pic_curved_single_quad )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -948,7 +953,7 @@ TEST_F( PointInCell2DTest, pic_curved_refined_quad )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -964,7 +969,7 @@ TEST_F( PointInCell2DTest, pic_curved_single_quad_jittered )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -980,7 +985,7 @@ TEST_F( PointInCell2DTest, pic_curved_refined_quad_jittered )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -996,7 +1001,7 @@ TEST_F( PointInCell2DTest, pic_curved_single_quad_jittered_positive )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -1012,7 +1017,7 @@ TEST_F( PointInCell2DTest, pic_curved_refined_quad_jittered_positive )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -1324,7 +1329,7 @@ TEST_F( PointInCell3DTest, pic_flat_single_hex )
     dataCol.Save();
   }
 
-  this->testRandomPointsOnMesh( ExpectedValue<DIM,LINF_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh( ExpectedValue<DIM,L_INF_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -1339,7 +1344,7 @@ TEST_F( PointInCell3DTest, pic_flat_refined_hex )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-  this->testRandomPointsOnMesh( ExpectedValue<DIM,LINF_METRIC>(vertVal), meshTypeStr);
+  this->testRandomPointsOnMesh( ExpectedValue<DIM,L_INF_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -1364,7 +1369,7 @@ TEST_F( PointInCell3DTest, pic_curved_single_hex )
   }
 
   const double radius = vertVal * std::sqrt(3);
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(radius), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(radius), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
@@ -1388,7 +1393,32 @@ TEST_F( PointInCell3DTest, pic_curved_refined_hex )
   }
 
   const double radius = vertVal * std::sqrt(3);
-  this->testRandomPointsOnMesh(ExpectedValue<DIM,L2_METRIC>(radius), meshTypeStr);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(radius), meshTypeStr);
+  this->testIsoGridPointsOnMesh(meshTypeStr);
+}
+
+TEST_F( PointInCell3DTest, pic_curved_refined_hex_jittered )
+{
+  const double  vertVal = 0.5;
+  const double jitterFactor = .1;
+  const int numRefine = ::NREFINE;
+  const int DIM = PointInCell3DTest::DIM;
+
+  this->setupTestMesh(QUADRATIC_MESH, numRefine, vertVal, jitterFactor);
+
+  std::string meshTypeStr = this->getMeshDescriptor();
+  SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
+
+  std::string filename = fmt::format("quadratic_hex_mesh_refined_jittered");
+  {
+    mfem::Mesh& mesh = *this->getMesh();
+
+    mfem::VisItDataCollection dataCol(filename, &mesh);
+    dataCol.Save();
+  }
+
+  const double radius = vertVal * std::sqrt(3);
+  this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(radius), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
 
