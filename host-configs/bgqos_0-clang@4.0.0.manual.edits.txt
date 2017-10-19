@@ -14,6 +14,8 @@ set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI      ON CACHE BOOL "")
+# Note: On BGQ, CMake uses wrong linker flags when using find MPI, This allows us use the wrapper directly via
+#   the CMake's compiler variables.
 set(ENABLE_FIND_MPI OFF CACHE BOOL "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
