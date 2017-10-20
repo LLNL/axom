@@ -28,7 +28,11 @@
 
 
 #ifndef AXOM_USE_MFEM
-#  error Mfem is a required dependency of quest::PointInCell.
+#  error Mfem is a required dependency for quest::PointInCell.
+#endif
+
+#ifndef MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
+//#  define MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
 #endif
 
 #include "mfem.hpp"
@@ -36,6 +40,7 @@
 namespace axom {
 namespace quest {
 
+namespace detail {
 
 template < int NDIMS, typename MeshType > class PICMeshWrapper;
 
@@ -76,7 +81,7 @@ public:
     m_isInitialized = true;
   }
 
-  /*! Predicate to check if the given basis is positive (Bernstein) */
+  /*! Predicate to check if the given basis is positive (i.e. Bernstein) */
   static bool isPositiveBasis(const mfem::FiniteElementCollection* fec)
   {
     // HACK -- is this sufficient?  Is there a better way to do this?
@@ -107,7 +112,7 @@ public:
   }
 
   /*!
-   * \brief Utility function to get a positive (Bernstein) collection of bases
+   * \brief Utility function to get a positive (i.e. Bernstein) collection of bases
    * corresponding to the given FiniteElementCollection.
    *
    * \return A pointer to a newly allocated FiniteElementCollection
@@ -173,6 +178,7 @@ public:
 private:
   /*!
    * Helper function to initialize the bounding boxes for a high order mfem mesh
+   *
    * \param bboxScaleFactor Scale factor for expanding bounding boxes
    * \note This function can only be called before the class is initialized
    * \pre This function can only be called when m_isHighOrder is true
@@ -239,7 +245,7 @@ private:
         << " with ordering " << positiveNodes->FESpace()->GetOrdering() );
 
 
-    /// For each element, compute bounding box, and overall bbox
+    /// For each element, compute bounding box, and overall mesh bbox
     mfem::Array<int> dofIndices;
     mfem::FiniteElementSpace* fes = positiveNodes->FESpace();
     const int numMeshElements = numElements();
@@ -248,6 +254,8 @@ private:
       SpatialBoundingBox& bbox = m_elementBoundingBox[elem];
 
       // Add each dof of the element to the bbox
+      // Note: positivity of Bernstein bases ensures that convex
+      //       hull of element nodes contain entire element
       fes->GetElementDofs(elem, dofIndices);
       for(int i = 0; i< dofIndices.Size(); ++i)
       {
@@ -260,7 +268,7 @@ private:
         bbox.addPoint( pt );
       }
 
-      // scale the bbox to account for numerical noise
+      // Slightly scale the bbox to account for numerical noise
       bbox.scale(bboxScaleFactor);
 
       m_meshBoundingBox.addBox( bbox );
@@ -276,6 +284,7 @@ private:
 
   /*!
    * Helper function to initialize the bounding boxes for a low order mfem mesh
+   *
    * \param bboxScaleFactor Scale factor for expanding bounding boxes
    * \note This function can only be called before the class is initialized
    * \pre This function can only be called when m_isHighOrder is false
@@ -287,7 +296,7 @@ private:
     SLIC_ASSERT( !m_isHighOrder );
     SLIC_ASSERT( bboxScaleFactor >= 1. );
 
-    /// For each element, compute bounding box, and overall bbox
+    /// For each element, compute bounding box, and overall mesh bbox
     const int numMeshElements = numElements();
     for(int elem=0; elem < numMeshElements; ++elem)
     {
@@ -317,6 +326,204 @@ private:
   std::vector<SpatialBoundingBox> m_elementBoundingBox;
 };
 
+/*!
+ * Utility class for visualizing the point in cell queries.
+ *
+ * \note This class can output a more detailed mesh if mfem's Isoparametric
+ * Transformation class is annotated with the following internal struct:
+ * \code
+ *    struct TransformBackDebug {
+ *       int numIters;
+ *       DenseMatrix points;
+ *    } tbDebug;
+ *  \endcode
+ * This is not included in the mfem release:
+ */
+template<int NDIMS>
+class PICQueryMeshDumper
+{
+public:
+  typedef quest::ImplicitGrid<NDIMS> GridType;
+  typedef typename GridType::SpacePoint SpacePoint;
+
+public:
+  PICQueryMeshDumper() : m_transformBackDebugMesh(NDIMS), m_numQueries(0) {}
+
+public:
+
+  /*!
+   * \brief Adds the path of the query for point \a pt associated with
+   * transformation \a tr to the mesh
+   *
+   * \param [in] pt The query point
+   * \param [in] isopar The isoparametric coordianates found by the query
+   * \param [in] status The status of the query
+   * \param [in] tr The tranformation from the query.
+   * \note Parameter \a tr is an [in] parameter, but cannot be \a const
+   * since this function calls a non-const member function of \a tr
+   */
+  void addQueryPoint(const SpacePoint& pt, const SpacePoint& isopar, int status, mfem::IsoparametricTransformation& tr)
+  {
+
+    int meshStartIndex = m_transformBackDebugMesh.getMeshNumberOfNodes();
+
+    // Transform last found reference pt into space
+    mfem::Vector y;
+    mfem::IntegrationPoint ipRef;
+    ipRef.Set(isopar.data(), NDIMS);
+    tr.Transform(ipRef, y);
+
+  #ifdef MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
+    //SLIC_INFO("Used " << tr.tbDebug.numIters << " iterations." );
+
+    tr.tbDebug.points.SetCol( tr.tbDebug.numIters, y );
+
+    // Insert the segment vertex positions into the mesh
+    for(int i=0; i< tr.tbDebug.numIters; ++i)
+    {
+      double ptx = tr.tbDebug.points(0, i);
+      double pty = tr.tbDebug.points(1, i);
+      if(NDIMS==2)
+      {
+        m_transformBackDebugMesh.insertNode(ptx,pty);
+      }
+      else if(NDIMS == 3)
+      {
+        double ptz = tr.tbDebug.points(2, i);
+        m_transformBackDebugMesh.insertNode(ptx,pty,ptz);
+      }
+    }
+
+    // Add segments to mesh and record associated 'field' data
+    for(int i=0; i< tr.tbDebug.numIters-1; ++i)
+    {
+      int currVertIdx = meshStartIndex + i;
+      int indices[2] = { currVertIdx, currVertIdx+1 };
+      m_transformBackDebugMesh.insertCell(indices, MINT_SEGMENT, 2);
+
+      m_query_spacept.push_back( pt);
+      m_query_refpt.push_back(isopar);
+      m_query_index.push_back( m_numQueries );
+      m_query_return_code.push_back( status );
+      m_query_num_iters.push_back( tr.tbDebug.numIters );
+      m_query_iter.push_back(i);
+    }
+#else
+
+    // Add the point the mesh
+    m_transformBackDebugMesh.insertNode( y.GetData() );
+
+    // Add the fields: status, pt, isopt, index
+    int indices[1] = { meshStartIndex };
+    m_transformBackDebugMesh.insertCell( indices, MINT_VERTEX, 1);
+
+    m_query_spacept.push_back( pt);
+    m_query_refpt.push_back(isopar);
+    m_query_index.push_back( m_numQueries );
+    m_query_return_code.push_back( status );
+
+#endif
+
+    m_numQueries++;
+  }
+
+  /*! Dumps the mesh to disk */
+  void outputDebugMesh(const std::string& filename)
+  {
+    int size = m_query_index.size();
+
+    if(size == 0)
+    {
+        SLIC_INFO("No mesh data.");
+        return;
+    }
+
+    // Add integer fields
+    int* fIndex = addIntField("query_index",size);
+    int* fStatus = addIntField("query_status",size);
+
+    bool hasNIters = m_query_num_iters.size() > 0;
+    int* fNIters = hasNIters ?addIntField("query_num_iters",size) : AXOM_NULLPTR;
+
+    bool hasIters = m_query_iter.size() > 0;
+    int* fIter = hasIters ? addIntField("query_iter",size) : AXOM_NULLPTR;
+
+    for(int i=0; i < size; ++i)
+    {
+      fIndex[i]  = m_query_index[i];
+      fStatus[i] = m_query_return_code[i];
+
+      if(hasNIters)
+        fNIters[i] = m_query_num_iters[i];
+      if(hasIters)
+        fIter[i]   = m_query_iter[i];
+    }
+
+    // Add (vector-like) point fields
+    double* fPt[3];
+    fPt[0] = addDoubleField("query_pt/x", size);
+    fPt[1] = addDoubleField("query_pt/y", size);
+    fPt[2] = NDIMS ==3 ? addDoubleField("query_pt/z", size) : AXOM_NULLPTR;
+
+    double* fIsoPt[3];
+    fIsoPt[0] = addDoubleField("query_iso_pt/x", size);
+    fIsoPt[1] = addDoubleField("query_iso_pt/y", size);
+    fIsoPt[2] = NDIMS ==3 ? addDoubleField("query_iso_pt/z", size) : AXOM_NULLPTR;
+
+    for(int i=0; i < size; ++i)
+    {
+      for(int d=0; d < NDIMS; ++d)
+      {
+        fPt[d][i] = m_query_spacept[i][d];
+        fIsoPt[d][i] = m_query_refpt[i][d];
+      }
+    }
+
+    // Output mesh to disk
+    mint::write_vtk(&m_transformBackDebugMesh, filename);
+  }
+
+private:
+
+  /*! Utility function to add an integer field to the mint mesh */
+  int* addIntField(const std::string& name, int size)
+  {
+    mint::FieldData* CD = m_transformBackDebugMesh.getCellFieldData();
+    CD->addField( new mint::FieldVariable< int >(name, size) );
+
+    int* fld = CD->getField( name )->getIntPtr();
+
+    SLIC_ASSERT(fld != AXOM_NULLPTR);
+    return fld;
+  }
+
+  /*! Utility function to add a double field to the mint mesh */
+  double* addDoubleField(const std::string& name, int size)
+  {
+    mint::FieldData* CD = m_transformBackDebugMesh.getCellFieldData();
+    CD->addField( new mint::FieldVariable< double >(name, size) );
+
+    double* fld = CD->getField( name )->getDoublePtr();
+
+    SLIC_ASSERT(fld != AXOM_NULLPTR);
+    return fld;
+  }
+
+private:
+
+  mint::UnstructuredMesh<MINT_MIXED_CELL> m_transformBackDebugMesh;
+
+  std::vector<int> m_query_index;
+  std::vector<int> m_query_return_code;
+  std::vector<int> m_query_num_iters;
+  std::vector<int> m_query_iter;
+  std::vector<SpacePoint> m_query_spacept;
+  std::vector<SpacePoint> m_query_refpt;
+
+  int m_numQueries;
+};
+
+} // end namespace detail
 
 
 /*!
@@ -348,8 +555,9 @@ public:
    * \param mesh A pointer to an mfem mesh
    * \param resolution If the resolution is not provided, we use a heuristic to set the resolution
    */
-  PointInCell(mfem::Mesh* mesh, const primal::Point<int, NDIMS>& resolution = primal::Point<int, NDIMS>::zero()) :
-    m_meshWrapper(mesh), m_transformBackDebugMesh(2), m_numQueries(0)
+  PointInCell(mfem::Mesh* mesh,
+      const primal::Point<int, NDIMS>& resolution = primal::Point<int, NDIMS>::zero()) :
+    m_meshWrapper(mesh), m_queryPointsMeshDumper(AXOM_NULLPTR), m_queryPathsMeshDumper(AXOM_NULLPTR)
   {
     int num_elem = m_meshWrapper.numElements();
 
@@ -365,6 +573,23 @@ public:
     {
       SpatialBoundingBox elemBBox = m_meshWrapper.elementBoundingBox(i);
       m_grid.insert( elemBBox, i);
+    }
+  }
+
+  ~PointInCell()
+  {
+    if(m_queryPathsMeshDumper != AXOM_NULLPTR)
+    {
+      delete m_queryPathsMeshDumper;
+      m_queryPathsMeshDumper = AXOM_NULLPTR;
+    }
+  }
+
+  void enableDebugMeshGeneration()
+  {
+    if(m_queryPathsMeshDumper == AXOM_NULLPTR)
+    {
+      m_queryPathsMeshDumper = new detail::PICQueryMeshDumper<NDIMS>;
     }
   }
 
@@ -429,13 +654,15 @@ public:
   }
 
   /*!
-   * Attempts to find the isoparametric coordinates isopar of a point in space pt,
-   * with respect to a given element of the mesh (with index eltIdx)
-   * \return True if the pt is contained in the element, in which case
-   *         the coordinates of isopar will be in the unit cube (of dimension NDIMS)
+   * Attempts to find isoparametric coordinates \a isopar of a point \a pt in space
+   * with respect to a given element of the mesh (with index \a eltIdx)
+   * \return True if \a pt is contained in the element, in which case
+   *         the coordinates of \a isopar will be in the unit cube (of dimension NDIMS)
    */
   bool getIsoparametricCoords(IndexType eltIdx, const SpacePoint& pt, SpacePoint* isopar) const
   {
+    const int refineOrder = 1;      // TODO: Make this a class variable
+
     mfem::IsoparametricTransformation tr;
     m_meshWrapper.getMesh()->GetElementTransformation(eltIdx, &tr);
     mfem::Vector ptSpace(const_cast<double*>(pt.data()), NDIMS);
@@ -443,128 +670,36 @@ public:
     // TransformBack returns zero if the element is properly mapped
     mfem::IntegrationPoint ipRef;
 
-    const int refineOrder = 1;
+    // Status codes: {0 -> successful; 1 -> pt was outside; 2-> did not converge}
     int err = tr.TransformBack(ptSpace, ipRef, refineOrder);
+    ipRef.Get(isopar->data(), NDIMS);
 
-    int meshStartIndex = m_transformBackDebugMesh.getMeshNumberOfNodes();
-
-    if(false)
+    // Add query paths to debug mesh, if applicable
+    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
     {
-      //SLIC_INFO("Used " << tr.tbDebug.numIters << " iterations." );
-
-      // Add vertices, including the last iteration's results
-      mfem::Vector y;
-      tr.Transform(ipRef, y);
-      tr.tbDebug.points.SetCol( tr.tbDebug.numIters, y );
-
-      for(int i=0; i< tr.tbDebug.numIters; ++i)
-      {
-        double x = tr.tbDebug.points(0, i);
-        double y = tr.tbDebug.points(1, i);
-        m_transformBackDebugMesh.insertNode(x,y);
-      }
-
-      for(int i=0; i< tr.tbDebug.numIters-1; ++i)
-      {
-        int currVertIdx = meshStartIndex + i;
-        int indices[2] = { currVertIdx, currVertIdx+1 };
-        m_transformBackDebugMesh.insertCell(indices, MINT_SEGMENT, 2);
-        m_tb_query_index.push_back( m_numQueries );
-        m_tb_query_return_code.push_back( err );
-        m_tb_query_num_iters.push_back( tr.tbDebug.numIters );
-        m_tb_query_iter.push_back(i);
-      }
-
-      m_numQueries++;
+      m_queryPathsMeshDumper->addQueryPoint(pt, *isopar, err, tr);
     }
 
-    switch(err)
-    {
-    case 0: // success
-      ipRef.Get(isopar->data(), NDIMS);
-
-      return true;
-    case 1: // out-of-bounds, early return
-//      SLIC_INFO("Early return: Point " << pt << " was not found in element " << eltIdx);
-      return false;
-    case 2: // max-iter
-//      SLIC_INFO("Point " << pt << " was not found in element " << eltIdx << " after 16 iterations.");
-      return false;
-    }
-
-    return false;
+    return (err == 0);
   }
+
 
   void printDebugMesh(const std::string& filename)
   {
-    mint::FieldData* CD = m_transformBackDebugMesh.getCellFieldData();
-
-    int size = m_tb_query_index.size();
-
-    if(size == 0)
+    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
     {
-        SLIC_INFO("No mesh data.");
-        return;
+      m_queryPathsMeshDumper->outputDebugMesh(filename);
     }
-
-    {
-      std::string name = "query_index";
-      CD->addField( new mint::FieldVariable< int >(name, size) );
-      int* fld = CD->getField( name )->getIntPtr();
-
-      for(int i=0; i < size; ++i)
-      {
-        fld[i] = m_tb_query_index[i];
-      }
-    }
-    {
-      std::string name = "query_status";
-      CD->addField( new mint::FieldVariable< int >(name, size) );
-      int* fld = CD->getField( name )->getIntPtr();
-
-      for(int i=0; i < size; ++i)
-      {
-        fld[i] = m_tb_query_return_code[i];
-      }
-    }
-    {
-      std::string name = "query_num_iters";
-      CD->addField( new mint::FieldVariable< int >(name, size) );
-      int* fld = CD->getField( name )->getIntPtr();
-
-      for(int i=0; i < size; ++i)
-      {
-        fld[i] = m_tb_query_num_iters[i];
-      }
-    }
-    {
-      std::string name = "query_iter";
-      CD->addField( new mint::FieldVariable< int >(name, size) );
-      int* fld = CD->getField( name )->getIntPtr();
-
-      for(int i=0; i < size; ++i)
-      {
-        fld[i] = m_tb_query_iter[i];
-      }
-    }
-
-    mint::write_vtk(&m_transformBackDebugMesh, filename);
   }
 
 private:
-  PICMeshWrapper<NDIMS, mfem::Mesh> m_meshWrapper;
+  detail::PICMeshWrapper<NDIMS, mfem::Mesh> m_meshWrapper;
   GridType    m_grid;
 
-  mutable mint::UnstructuredMesh<MINT_SEGMENT> m_transformBackDebugMesh;
-  mutable std::vector<int> m_tb_query_index;
-  mutable std::vector<int> m_tb_query_return_code;
-  mutable std::vector<int> m_tb_query_num_iters;
-  mutable std::vector<int> m_tb_query_iter;
-  mutable int m_numQueries;
-
-
-
+  detail::PICQueryMeshDumper<NDIMS>* m_queryPointsMeshDumper;
+  detail::PICQueryMeshDumper<NDIMS>* m_queryPathsMeshDumper;
 };
+
 
 template<int NDIMS>
 const typename PointInCell<NDIMS>::IndexType PointInCell<NDIMS>::NO_CELL = -1;

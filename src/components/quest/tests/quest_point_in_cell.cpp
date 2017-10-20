@@ -1201,10 +1201,11 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     // mesh1 contains a single C-shaped quadratic quad element
     mfem::Mesh& mesh1 = *this->getMesh();
     
-    const int res = 25;
-    PointInCellType spatialIndex1(&mesh1, GridCell(res));
+    PointInCellType spatialIndex1(&mesh1, GridCell(5));
+    spatialIndex1.enableDebugMeshGeneration();
     
     // Setup linear mint mesh to approximate our mesh
+    const int res = 25;
     int ext[4] = { 0,res,0,res};
     axom::mint::CurvilinearMesh cmesh(2, ext);
 
@@ -1272,15 +1273,20 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     }      
 
     // Dump the mint mesh
-    std::stringstream filenameStr;
-    filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res << ".vtk";
-    SLIC_INFO("About to write file " << filenameStr.str());
-    axom::mint::write_vtk(&cmesh, filenameStr.str() );
+    {
+      std::stringstream filenameStr;
+      filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res << ".vtk";
+      SLIC_INFO("About to write file " << filenameStr.str());
+      axom::mint::write_vtk(&cmesh, filenameStr.str() );
+    }
 
-    // Dump the PIC debug mesh containing the Newton-Raphson paths
-    // Note: This is debug code and will be removed
-    std::string filename = "quest_point_in_cell_c_shaped_quad";
-    spatialIndex1.printDebugMesh( filename + "_001.vtk");
+    {
+      // Dump the PIC debug mesh containing the Newton-Raphson paths
+      // Note: This is debug code and will be removed
+      std::stringstream filenameStr;
+      filenameStr << "quest_point_in_cell_c_shaped_quad_001_" << res << ".vtk";
+      spatialIndex1.printDebugMesh( filenameStr.str() );
+    }
 }
 
 TEST(quest_point_in_cell, printIsoparams)
