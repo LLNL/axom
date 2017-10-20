@@ -213,9 +213,11 @@ class Mfem(Package):
             options.extend(['MFEM_DEBUG=YES'])
 
         make('config', *options)
-        make('all')
 
-        # Note (KW): I removed the test example since axom has an mfem smoke test.
+        # Note: Do not call "make all" as this compiles examples and miniapps which do not
+        #   link properly on bgq in their build system.  The created library links properly
+        #   in our build system. (This seems to not be an issue in their new CMake system)
+        make()
 
         make('install')
 

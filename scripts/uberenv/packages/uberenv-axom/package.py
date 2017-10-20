@@ -177,7 +177,7 @@ class UberenvAxom(Package):
             cfg.write("# scr from uberenv\n")
             cfg.write(cmake_cache_entry("SCR_DIR",scr_dir))
         else:
-            cfg.write("# scr not built by uberenv\n")
+            cfg.write("# scr not built by uberenv\n\n")
 
         conduit_dir = get_spec_path(spec, "conduit", path_replacements)
         cfg.write("# conduit from uberenv\n")
@@ -192,7 +192,7 @@ class UberenvAxom(Package):
             cfg.write("# boost headers from uberenv\n")
             cfg.write(cmake_cache_entry("BOOST_DIR",boost_headers_dir))
         else:
-            cfg.write("# boost headers not installed by uberenv\n")
+            cfg.write("# boost headers not installed by uberenv\n\n")
 
         # optional tpls
 
