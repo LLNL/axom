@@ -1261,10 +1261,12 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   //Ray-triangle intersection does not check endpoints, so we explicitly check here
   if ( tri.checkInTriangle(S.source() ) ) {
     t = 0;
+    p = tri.barycentricCoords(S.source());
     return true;
   }
   if ( tri.checkInTriangle(S.target())) {
-    t = S.length();
+    t = 1;
+    p = tri.barycentricCoords(S.target());
     return true;
   }
 
@@ -1274,8 +1276,10 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   // Values of the parameter t between 0 and the length of the segment correspond
   // to points on the segment.
   // Note: if intersect_tri_ray() is true, t must be greater than zero
-  if ( intersect_tri_ray(tri, r, t, p) ) {
-    return t < static_cast< T >( S.length() );
+  T ttemp = 0;
+  if ( intersect_tri_ray(tri, r, ttemp, p) ) {
+    t = ttemp / static_cast< T >( S.length() );
+    return ttemp < static_cast< T >( S.length() );
   }
   return false;
 }

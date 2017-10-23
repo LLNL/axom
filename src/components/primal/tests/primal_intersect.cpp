@@ -1003,6 +1003,86 @@ TEST( primal_intersect, ray_aabb_intersection_tinyDirectionVector3D )
   //axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
+template < typename T, int DIM >
+bool testPointsClose(const primal::Point< T, DIM > & lhp,
+                     const primal::Point< T, DIM > & rhp,
+                     double EPS = 1e-6)
+{
+  primal::Vector< T, DIM > v(lhp, rhp);
+  return v.norm() < EPS;
+}
+
+// segmentAt() and triangleAt() are temporary.  Ticket ATK-1122 involves moving them
+// into Segment and Triangle class, respectively.
+template < typename T, int DIM >
+primal::Point< T, DIM > segmentAt(const primal::Segment< T, DIM > & seg,
+                                  double t)
+{
+  return primal::Point< T, DIM>::lerp(seg.source(), seg.target(), t);
+}
+
+template < typename T, int DIM >
+primal::Point< T, DIM > triangleAt(const primal::Triangle< T, DIM > & tri,
+                                   const primal::Point< T, 3 > & bary)
+{
+  T denom = bary[0] + bary[1] + bary[2];
+  // if (std::abs(denom) < 1e-3)  This is a problem.
+  primal::NumericArray< T, 3 > weights = bary.array() / denom;
+
+  primal::NumericArray< T, 3 > res = weights[0] * tri[0].array() +
+    weights[1] * tri[1].array() + weights[2] * tri[2].array();
+
+  return primal::Point< T, DIM >(res);
+}
+
+template < typename T, int DIM >
+void ensureTriPointMatchesSegPoint(const primal::Triangle< T, DIM > & tri,
+                                   const primal::Point< T, 3 > & bary,
+                                   const primal::Segment< T, DIM > & seg,
+                                   double t)
+{
+  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
+  primal::Point< T, DIM > segpoint = segmentAt(seg, t);
+  EXPECT_TRUE(testPointsClose(tripoint, segpoint));
+}
+
+template < typename T, int DIM >
+void ensureTriPointMatchesRayPoint(const primal::Triangle< T, DIM > & tri,
+                                   const primal::Point< T, 3 > & bary,
+                                   const primal::Ray< T, DIM > & ray,
+                                   double t)
+{
+  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
+  primal::Point< T, DIM > raypoint = ray.at(t);
+  EXPECT_TRUE(testPointsClose(tripoint, raypoint));
+}
+
+template < int DIM >
+void testRayIntersection(const primal::Triangle< double, DIM > & tri,
+                         const primal::Ray< double, DIM > & ray,
+                        const std::string & whattest,
+                        const bool testtrue)
+{
+  SCOPED_TRACE(whattest);
+
+  typedef primal::Point< double, DIM > PointType;
+
+  PointType tip;
+  double t = 0.;
+
+  if (testtrue) {
+    EXPECT_TRUE(intersect(tri, ray, t, tip));
+    PointType tripoint = triangleAt(tri, tip);
+    PointType raypoint = ray.at(t);
+    EXPECT_TRUE(testPointsClose(tripoint, raypoint)) << "Tripoint is " << tripoint <<
+      " and raypoint is " << raypoint;
+  } else {
+    EXPECT_FALSE( intersect(tri, ray, t, tip))
+      <<"Expected no intersection; Found one at point "
+      << ray.at(t);
+  }
+}
+
 template < int DIM >
 void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
                         const primal::Point< double, DIM > & p1,
@@ -1027,47 +1107,41 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t1 = 0;
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
-
-    RayType r1(p1, VectorType(p1,p2));
-    PointType ip1 = r1.at(t1);
-    SLIC_INFO("\t -- found intersection between triangle "
-              << tri
-              << " and segment [" << p1 << "," << p2 << "] at point "
-              << ip1 );
+    PointType tripoint1 = triangleAt(tri, tip1);
+    PointType segpoint1 = segmentAt(seg1, t1);
+    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
+      " and segpoint is " << segpoint1;
 
     // Find the intersection of segment from p1 to p2
     double t2 = 0;
     PointType tip2;
     EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
-    RayType r2(p2, VectorType(p2,p1));
-    PointType ip2 = r2.at(t2);
-    SLIC_INFO("\t -- found intersection between triangle "
-              << tri
-              << " and segment [" << p2 << "," << p1 << "] at point "
-              << ip2 );
+    PointType tripoint2 = triangleAt(tri, tip2);
+    PointType segpoint2 = segmentAt(seg2, t2);
+    EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
 
     // When intersection is not on the endpoints,
     // check that intersection points are the same
-    bool t1IsEndPoint =
-      ( t1 == 0 || axom::utilities::isNearlyEqual(t1, seg1.length()) );
-    bool t2IsEndPoint =
-      ( t2 == 0 || axom::utilities::isNearlyEqual(t2, seg2.length()) );
-    if (!t1IsEndPoint && !t2IsEndPoint) {
-      for (int i=0; i<DIM; ++i) {
-        EXPECT_NEAR(ip1[i], ip2[i], 1e-4 )
-          << "Points " << ip1 << " and " << ip2
-          << " differed in coordinate " << i;
-      }
-    }
+    // bool t1IsEndPoint =
+    //   ( t1 == 0 || axom::utilities::isNearlyEqual(t1, seg1.length()) );
+    // bool t2IsEndPoint =
+    //   ( t2 == 0 || axom::utilities::isNearlyEqual(t2, seg2.length()) );
+    // if (!t1IsEndPoint && !t2IsEndPoint) {
+    //   for (int i=0; i<DIM; ++i) {
+    //     EXPECT_NEAR(ip1[i], ip2[i], 1e-4 )
+    //       << "Points " << ip1 << " and " << ip2
+    //       << " differed in coordinate " << i;
+    //   }
+    // }
   }
   else{
     EXPECT_FALSE( intersect(tri, seg1, t, tip))
       <<"Expected no intersection; Found one at point "
-      << RayType(p1, VectorType(p1,p2)).at(t);
+      << segmentAt(seg1, t);
 
     EXPECT_FALSE( intersect(tri, seg2, t, tip))
       <<"Expected no intersection; Found one at point "
-      << RayType(p2, VectorType(p2,p1)).at(t);
+      << segmentAt(seg2, t);
   }
 }
 
@@ -1136,7 +1210,8 @@ TEST(primal_intersect, triangle_segment_intersection)
   testp = PointType::make_point(0, .6, .3);
   testTriSegBothEnds( tri,  testp,  testp2, "beyond edge",    true);
   testp = PointType::make_point(0, .7, .3);
-  testTriSegBothEnds( tri,  testp,  ptX,    "beyond edge 2",  true);
+  testTriSegBothEnds( tri,  testp2,  ptM,    "segment endpoint 1",  true);
+  testTriSegBothEnds( tri,  ptM,     r0,     "segment endpoint 2",  true);
 }
 
 TEST(primal_intersect, triangle_ray_intersection)
@@ -1174,63 +1249,65 @@ TEST(primal_intersect, triangle_ray_intersection)
 
   // Clear miss
   testRay = RayType(SegmentType(r0, PointType::make_point(6., 5., 5.)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "clear miss", false);
 
   // More misses
   testRay = RayType(SegmentType(r0, PointType::make_point(0., 1., .6)));
-  EXPECT_FALSE( intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "miss 1", false);
   testRay = RayType(SegmentType(r0, PointType::make_point(0., .5, .6)));
-  EXPECT_FALSE( intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "miss 2", false);
   testRay = RayType(SegmentType(r0, PointType::make_point(0., .85, .16)));
-  EXPECT_FALSE( intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "miss 3", false);
   testRay = RayType(SegmentType(r0, PointType::make_point(.4, 1.2, 0)));
-  EXPECT_FALSE( intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "miss 4", false);
   testRay = RayType(SegmentType(r0, PointType::make_point(1., 0.000001, 0)));
-  EXPECT_FALSE( intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "miss 5", false);
   testRay = RayType(SegmentType(r0, PointType::make_point(0.4, 0, 0.7)));
-  EXPECT_FALSE( intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "miss 6", false);
 
   // Edge intersections should be reported as hits
+  PointType tripoint;
+  double t;
   testRay = RayType(SegmentType(r0, ptX));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "edge hit 1", true);
   testRay = RayType(SegmentType(r0, ptY));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "edge hit 2", true);
   testRay = RayType(SegmentType(r0, ptZ));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "edge hit 3", true);
   testRay = RayType(SegmentType(r0, PointType::make_point(0., 0.7, 0.3)));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "edge hit 4", true);
   testRay = RayType(SegmentType(r0, PointType::make_point(0.7, 0.3, 0.)));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "edge hit 5", true);
   testRay = RayType(SegmentType(o, PointType::make_point(0.2, 0., 0.8)));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "edge hit 6", true);
 
   // Hits
   testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.2)));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "hit 1", true);
   testRay = RayType(SegmentType(r0, PointType::make_point(0., 0., 0.)));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "hit 2", true);
   testRay = RayType(SegmentType(r0, PointType::make_point(0.1, 0.6, 0.)));
-  EXPECT_TRUE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "hit 3", true);
 
   // Coplanar miss
   testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.),
                                 PointType::make_point(-0.1, 0., 1.1)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "coplanar miss", false);
 
   // Coplanar intersection (reported as miss by function)
   testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0),
                                 PointType::make_point(-1, 0.5, 0)));
-  EXPECT_FALSE(intersect(tri2, testRay));
+  testRayIntersection(tri2, testRay, "coplanar intersection, reported as miss by design", false);
 
   // Coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
                                 PointType::make_point(0.5, 0., 0.5)));
-  EXPECT_FALSE(intersect(tri, testRay));
+  testRayIntersection(tri, testRay, "coplanar interior ray origin, reported as miss by design", false);
 
   // Not coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(PointType::make_point(0.2, 0.18, 0),
                                 PointType::make_point(0., 0., 0.5)));
-  EXPECT_FALSE(intersect(tri2, testRay));
+  testRayIntersection(tri2, testRay, "non-coplanar interior ray origin, reported as miss by design", false);
 }
 
 TEST(primal_intersect, triangle_ray_intersection_unit_ray)
@@ -1259,18 +1336,16 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionParam, intBary));
   double baryscale = intBary[0] + intBary[1] + intBary[2];
 
+  // Here, intersectionParam is the distance along the ray, with the source being 0.
+  // This is different from a segment's intersection parameter (see below).
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
-  PointType triIntersectionPoint((intBary[0] * t2[0].array() +
-                                  intBary[1] * t2[1].array() +
-                                  intBary[2] * t2[2].array()) / baryscale);
+  PointType triIntersectionPoint = triangleAt(t2, intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
-  EXPECT_NEAR(intersectionPoint[0], triIntersectionPoint[0], 1e-6);
-  EXPECT_NEAR(intersectionPoint[1], triIntersectionPoint[1], 1e-6);
-  EXPECT_NEAR(intersectionPoint[2], triIntersectionPoint[2], 1e-6);
+  EXPECT_TRUE(testPointsClose(intersectionPoint, triIntersectionPoint));
 }
 
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
@@ -1285,7 +1360,6 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   PointType o = PointType::zero();
   PointType d = PointType::make_point(0,0,4);
   SegmentType s(o,d);
-  RayType r(o, VectorType(o,d));
 
   TriangleType t( PointType::make_point(-1,-1,2),
                   PointType::make_point(-1,1,2),
@@ -1294,20 +1368,18 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   PointType intBary;
   double intersectionParam = 0.;
   EXPECT_TRUE( axom::primal::intersect(t, s, intersectionParam, intBary));
-  double baryscale = intBary[0] + intBary[1] + intBary[2];
 
-  EXPECT_DOUBLE_EQ(2.0, intersectionParam);
+  // Here, intersectionParam is the distance along the segment, with the source being 0
+  // and the target being 1.  This is different from a ray's intersection parameter
+  // (see above).
+  EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
-  PointType intersectionPoint = r.at(intersectionParam);
-  PointType triIntersectionPoint((intBary[0] * t[0].array() +
-                                  intBary[1] * t[1].array() +
-                                  intBary[2] * t[2].array()) / baryscale);
+  PointType intersectionPoint = segmentAt(s, intersectionParam);
+  PointType triIntersectionPoint = triangleAt(t, intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
-  EXPECT_NEAR(intersectionPoint[0], triIntersectionPoint[0], 1e-6);
-  EXPECT_NEAR(intersectionPoint[1], triIntersectionPoint[1], 1e-6);
-  EXPECT_NEAR(intersectionPoint[2], triIntersectionPoint[2], 1e-6);
+  EXPECT_TRUE(testPointsClose(intersectionPoint, triIntersectionPoint));
 }
 
 //------------------------------------------------------------------------------
