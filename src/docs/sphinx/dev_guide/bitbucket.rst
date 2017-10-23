@@ -64,7 +64,7 @@ a directory that you will work in. This is done by typing::
 The '--recursive' argument above is needed to pull in all Git *submodules*
 that we use in the project. In particular, you will need the BLT build system, 
 which is a Git sub-module in Axom, in your local copy of the repo. In case you 
-forget pass the '--recursive' argument to the 'git clone' command, you can
+forget to pass the '--recursive' argument to the 'git clone' command, you can
 type the following commands after cloning::
 
   $ cd axom
