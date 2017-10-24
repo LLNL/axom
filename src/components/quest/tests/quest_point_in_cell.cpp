@@ -71,7 +71,11 @@ public:
   typedef axom::primal::Point<double,DIM> SpacePt;
   typedef axom::primal::Vector<double,DIM> SpaceVec;
   typedef axom::primal::Point<int,DIM> GridCell;
-  typedef axom::quest::PointInCell<DIM> PointInCellType;
+
+  typedef axom::quest::quest_point_in_cell_mfem_tag mesh_tag;
+  typedef axom::quest::detail::PointInCellTraits<mesh_tag> MeshTraits;
+
+  typedef axom::quest::PointInCell<mesh_tag> PointInCellType;
 
 public:
   PointInCellTest() : m_mesh(AXOM_NULLPTR) {}
@@ -180,7 +184,7 @@ public:
 
     // Generate a PointInCell structure over the mesh
     axom::utilities::Timer constructTimer(true);
-    PointInCellType spatialIndex(m_mesh, GridCell(25));
+    PointInCellType spatialIndex(m_mesh, GridCell(25).data() );
     SLIC_INFO(fmt::format("Constructing index over {} quad mesh with {} elems took {} s",
         meshTypeStr,
         m_mesh->GetNE(),
@@ -201,8 +205,8 @@ public:
       const SpacePt& queryPoint = *it;
 
       // Try to find the point
-      int idx = spatialIndex.locatePoint( queryPoint, &isoPar );
-      bool isInMesh = (idx != PointInCellType::NO_CELL);
+      int idx = spatialIndex.locatePoint( queryPoint.data(), isoPar.data() );
+      bool isInMesh = (idx != MeshTraits::NO_CELL);
 
       // Check if result matches our expectations (our simple model
       // supports verifying many, but not all query points)
@@ -219,7 +223,8 @@ public:
       {
         ++numInverseXforms;
 
-        SpacePt untransformPt = spatialIndex.findInSpace(idx, isoPar);
+        SpacePt untransformPt;
+        spatialIndex.findInSpace(idx, isoPar.data(), untransformPt.data() );
 
         for(int i=0; i< DIM; ++i)
         {
@@ -272,7 +277,7 @@ public:
 
     // Add mesh to the grid
     axom::utilities::Timer constructTimer(true);
-    PointInCellType spatialIndex(m_mesh, GridCell(25));
+    PointInCellType spatialIndex(m_mesh, GridCell(25).data() );
     SLIC_INFO(fmt::format("Constructing index over {} quad mesh with {} elems took {} s",
         meshTypeStr,
         m_mesh->GetNE(),
@@ -300,12 +305,13 @@ public:
           }
         }
 
-        SpacePt spacePt = spatialIndex.findInSpace(eltId, isoparCenter);
+        SpacePt spacePt;
+        spatialIndex.findInSpace(eltId, isoparCenter.data(), spacePt.data());
 
-        int foundCellId = spatialIndex.locatePoint(spacePt, &foundIsoPar);
+        int foundCellId = spatialIndex.locatePoint(spacePt.data(), foundIsoPar.data());
 
         // Check that we found a cell
-        EXPECT_NE( PointInCellType::NO_CELL, foundCellId)
+        EXPECT_NE( MeshTraits::NO_CELL, foundCellId)
           << "element: " << eltId
           << " -- isopar: " << isoparCenter
           << " -- foundIsopar: " << foundIsoPar
@@ -333,9 +339,10 @@ public:
         }
 
         // Convert point back to space, and check that it matches our original point
-        if(foundCellId != PointInCellType::NO_CELL)
+        if(foundCellId != MeshTraits::NO_CELL)
         {
-          SpacePt transformedPt = spatialIndex.findInSpace(foundCellId, foundIsoPar);
+          SpacePt transformedPt;
+          spatialIndex.findInSpace(foundCellId, foundIsoPar.data(), transformedPt.data() );
 
           for(int i=0; i< DIM; ++i)
           {
@@ -1062,13 +1069,13 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
 
   // Create PointInCell structures over mesh1 and mesh2
   axom::utilities::Timer constructTimer(true);
-  PointInCellType spatialIndex1(&mesh1, GridCell(10));
+  PointInCellType spatialIndex1(&mesh1, GridCell(10).data() );
   SLIC_INFO(fmt::format("Constructing index over curved quad mesh1 with {} elems took {} s",
       mesh1.GetNE(),
       constructTimer.elapsed() ) );
 
   axom::utilities::Timer constructTimer2(true);
-  PointInCellType spatialIndex2(&mesh2, GridCell(10));
+  PointInCellType spatialIndex2(&mesh2, GridCell(10).data() );
   SLIC_INFO(fmt::format("Constructing index over curved quad mesh2 with {} elems took {} s",
       mesh2.GetNE(),
       constructTimer2.elapsed() ) );
@@ -1086,13 +1093,13 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
 
     // Try to find point in mesh1
     SpacePt isoPar1;
-    int idx1 = spatialIndex1.locatePoint( queryPoint, &isoPar1);
-    bool isInMesh1 = (idx1 != PointInCellType::NO_CELL);
+    int idx1 = spatialIndex1.locatePoint( queryPoint.data(), isoPar1.data());
+    bool isInMesh1 = (idx1 != MeshTraits::NO_CELL);
 
     // Try to find point in mesh2
     SpacePt isoPar2;
-    int idx2 = spatialIndex2.locatePoint( queryPoint, &isoPar2);
-    bool isInMesh2 = (idx2 != PointInCellType::NO_CELL);
+    int idx2 = spatialIndex2.locatePoint( queryPoint.data(), isoPar2.data());
+    bool isInMesh2 = (idx2 != MeshTraits::NO_CELL);
 
     // Results should be the same
     EXPECT_EQ(isInMesh1, isInMesh2)
@@ -1105,7 +1112,8 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     if(isInMesh1)
     {
       ++numUntransformed;
-      SpacePt untransformPt = spatialIndex1.findInSpace(idx1, isoPar1);
+      SpacePt untransformPt;
+      spatialIndex1.findInSpace(idx1, isoPar1.data(), untransformPt.data());
 
       if(! isInMesh2)
       {
@@ -1124,7 +1132,8 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     if(isInMesh2)
     {
       ++numUntransformed;
-      SpacePt untransformPt = spatialIndex2.findInSpace(idx2, isoPar2);
+      SpacePt untransformPt;
+      spatialIndex2.findInSpace(idx2, isoPar2.data(), untransformPt.data());
 
       if(! isInMesh1)
       {
@@ -1160,11 +1169,12 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     SpacePt& isoparCenter = *it;
 
     // Find the corresponding point in space
-    SpacePt spacePt = spatialIndex1.findInSpace(eltId, isoparCenter);
+    SpacePt spacePt;
+    spatialIndex1.findInSpace(eltId, isoparCenter.data(), spacePt.data() );
 
     // Check that we can find this point in mesh1
-    int foundCellId1 = spatialIndex1.locatePoint(spacePt, &foundIsoPar1);
-    EXPECT_NE(PointInCellType::NO_CELL, foundCellId1)
+    int foundCellId1 = spatialIndex1.locatePoint(spacePt.data(), foundIsoPar1.data() );
+    EXPECT_NE(MeshTraits::NO_CELL, foundCellId1)
         << fmt::format("Pt {} was transformed from mesh1 using isoparametric coordinates {}.",
             spacePt, isoparCenter) << " Failed to reverse the transformation.";
 
@@ -1175,8 +1185,8 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     }
 
     // Check that we can find this point in mesh2
-    int foundCellId2 = spatialIndex2.locatePoint(spacePt, &foundIsoPar2);
-    EXPECT_NE(PointInCellType::NO_CELL, foundCellId2)
+    int foundCellId2 = spatialIndex2.locatePoint(spacePt.data(), foundIsoPar2.data() );
+    EXPECT_NE(MeshTraits::NO_CELL, foundCellId2)
         << fmt::format("Pt {} has isoparametric coordinates {} in mesh1, should be in mesh2",
             spacePt, isoparCenter);
 
@@ -1201,9 +1211,10 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     // mesh1 contains a single C-shaped quadratic quad element
     mfem::Mesh& mesh1 = *this->getMesh();
     
-    PointInCellType spatialIndex1(&mesh1, GridCell(5));
-    spatialIndex1.enableDebugMeshGeneration();
+    PointInCellType spatialIndex1(&mesh1, GridCell(5).data() );
     
+    /// spatialIndex1.enableDebugMeshGeneration();
+
     // Setup linear mint mesh to approximate our mesh
     const int res = 25;
     int ext[4] = { 0,res,0,res};
@@ -1222,7 +1233,8 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
         for(int j=0; j<= res; ++j)
         {
             SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
-            SpacePt spacePt = spatialIndex1.findInSpace(0, isoparPt);
+            SpacePt spacePt;
+            spatialIndex1.findInSpace(0, isoparPt.data(), spacePt.data() );
             cmesh.setNode(i,j,spacePt[0],spacePt[1]);
         }
     }
@@ -1247,11 +1259,12 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
               double midX = (2.*i+1)/(2.*denom);
               double midY = (2.*j+1)/(2.*denom);
               SpacePt origIsoPt = SpacePt::make_point(midX, midY);
-              SpacePt pt = spatialIndex1.findInSpace(0,  origIsoPt);
+              SpacePt pt;
+              spatialIndex1.findInSpace(0,  origIsoPt.data(), pt.data() );
 
               // Reverse map
               SpacePt isoPt;
-              bool found = spatialIndex1.getIsoparametricCoords(0, pt, &isoPt);
+              bool found = spatialIndex1.locatePointInCell(0, pt.data(), isoPt.data() );
 
               // Check that we were able to reverse the xform
               EXPECT_TRUE(found);
@@ -1280,12 +1293,13 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
       axom::mint::write_vtk(&cmesh, filenameStr.str() );
     }
 
+    if(false)
     {
       // Dump the PIC debug mesh containing the Newton-Raphson paths
       // Note: This is debug code and will be removed
       std::stringstream filenameStr;
       filenameStr << "quest_point_in_cell_c_shaped_quad_001_" << res << ".vtk";
-      spatialIndex1.printDebugMesh( filenameStr.str() );
+      /// spatialIndex1.printDebugMesh( filenameStr.str() );
     }
 }
 

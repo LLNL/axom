@@ -27,303 +27,176 @@
 #include "mint/FieldVariable.hpp"
 
 
-#ifndef AXOM_USE_MFEM
-#  error Mfem is a required dependency for quest::PointInCell.
+#ifdef AXOM_USE_MFEM
+# include "quest/PointInCell_impl_mfem.hpp"
 #endif
 
 #ifndef MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
 //#  define MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
 #endif
 
-#include "mfem.hpp"
 
 namespace axom {
 namespace quest {
 
+struct quest_point_in_cell_mint_tag {};
+
 namespace detail {
 
-template < int NDIMS, typename MeshType > class PICMeshWrapper;
+/*!
+ * \class
+ * \brief A traits class for the mesh associated with a PointInCell query.
+ *
+ * An implementation of PointInCellTraits must define:
+ * \arg A MeshType (e.g. mfem::Mesh or axom::mint::Mesh)
+ * \arg An IndexType (e.g. int)
+ * \arg An IndexType variable named NO_CELL (e.g. with value -1), indicating an
+ *   invalid index in the mesh
+ */
+template<typename quest_point_in_cell_mesh_tag>
+struct PointInCellTraits;
 
 /*!
- * \brief Wraps MFEM mesh access functionality for the PointInCell class
+ * \class
+ * \brief A wrapper for access to the mesh instance associated with a PointInCell query
+ *
+ * An implementation of a PointInCellMeshWrapper must expose the following API:
+ * \arg computeBoundingBox(...)
+ * \arg findInSpace(...)
+ * \arg getIsoparametricCoords(...)
+ * \arg numElements()
+ * \arg meshDimension()
+ *
+ * \TODO -- fill this in and ensure it is accurate
  */
-template < int NDIMS>
-class PICMeshWrapper<NDIMS, mfem::Mesh>
+template <typename quest_point_in_cell_mesh_tag>
+class PointInCellMeshWrapper;
+
+template<>
+struct PointInCellTraits<quest_point_in_cell_mint_tag>
 {
-public:
-  typedef axom::primal::Point<double, NDIMS> SpacePoint;
-  typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
+  typedef axom::mint::Mesh MeshType;
   typedef int IndexType;
 
-  PICMeshWrapper(mfem::Mesh* mesh) : m_mesh(mesh), m_isInitialized(false)
+  static const IndexType NO_CELL;
+};
+
+/*!
+ * \class
+ *
+ * \brief A class to encapsulate locating a point within a computational mesh
+ */
+template<int NDIMS, typename mesh_tag>
+class PointFinder
+{
+public:
+  typedef quest::ImplicitGrid<NDIMS> GridType;
+
+  typedef typename GridType::SpacePoint SpacePoint;
+  typedef typename GridType::SpatialBoundingBox SpatialBoundingBox;
+
+  typedef PointInCellMeshWrapper<mesh_tag> MeshWrapperType;
+  typedef typename MeshWrapperType::IndexType IndexType;
+
+public:
+  PointFinder(MeshWrapperType* meshWrapper, int* res)
+    : m_meshWrapper(meshWrapper)
   {
-    // Some sanity checks
-    SLIC_ASSERT( m_mesh != AXOM_NULLPTR);
-    SLIC_ASSERT( m_mesh->Dimension() == NDIMS);
+    SLIC_ASSERT( m_meshWrapper != AXOM_NULLPTR);
 
-    m_isHighOrder = (m_mesh->GetNodalFESpace() != AXOM_NULLPTR) && (m_mesh->GetNE() > 0);
+    const int numElem = m_meshWrapper->numElements();
 
-    // Initialize bounding boxes -- split into two functions for simplicity
-    double const EPS = 1e-8;
-    double bboxScaleFactor = 1. + EPS;
-    const int numMeshElements = numElements();
-    m_elementBoundingBox = std::vector<SpatialBoundingBox>(numMeshElements);
+    // setup bounding boxes -- Slightly scaled for robustness
 
-    if( m_isHighOrder)
+    SpatialBoundingBox meshBBox;
+    m_eltBBoxes = std::vector<SpatialBoundingBox>(numElem);
+    double EPS = 1e-8;
+    double bboxScaleFactor = 1 + EPS;
+    m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor, m_eltBBoxes, meshBBox);
+    //SLIC_INFO("Mesh bounding box is: " << meshBBox );
+
+    // initialize implicit grid
+    typedef axom::primal::Point<int, NDIMS> GridResolution;
+    GridResolution gridRes;
+    if(res != AXOM_NULLPTR)
     {
-      initializeBoundingBoxesHighOrder(bboxScaleFactor);
+      gridRes = GridResolution(res);
     }
-    else
-    {
-      initializeBoundingBoxesLowOrder(bboxScaleFactor);
-    }
+    m_grid.initialize(meshBBox, gridRes, numElem);
 
-    m_isInitialized = true;
+    // add mesh elements to grid
+    for(int i=0; i< numElem; ++i)
+    {
+      m_grid.insert( m_eltBBoxes[i], i);
+    }
   }
 
-  /*! Predicate to check if the given basis is positive (i.e. Bernstein) */
-  static bool isPositiveBasis(const mfem::FiniteElementCollection* fec)
+  IndexType locatePoint(const double* pos, double* isoparametric)
   {
-    // HACK -- is this sufficient?  Is there a better way to do this?
+    typedef typename GridType::BitsetType BitsetType;
 
-    if(fec == AXOM_NULLPTR)
+    SLIC_ASSERT( pos != AXOM_NULLPTR);
+    SpacePoint pt(pos);
+
+
+    IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
+
+    SpacePoint isopar;
+
+    // Note: ImplicitGrid::getCandidates() checks the mesh bounding box
+    BitsetType candidates = m_grid.getCandidates(pt);
+
+    // SLIC_INFO("Candidates for space point " <<  pt);
+    bool foundContainingCell = false;
+    for(std::size_t eltIdx = candidates.find_first();
+        !foundContainingCell && eltIdx != BitsetType::npos;
+        eltIdx = candidates.find_next( eltIdx) )
     {
-      return false;
+      // First check that pt is in bounding box of element
+      if( m_eltBBoxes[eltIdx].contains(pt) )
+      {
+        // if isopar is in the proper range
+        if( m_meshWrapper->getIsoparametricCoords(eltIdx, pt.data(), isopar.data() ) )
+        {
+          // then we have found the cellID
+          foundContainingCell = true;
+          containingCell = eltIdx;
+        }
+      }
     }
 
-    if(const mfem::H1_FECollection* h1Fec = dynamic_cast<const mfem::H1_FECollection*>(fec))
+    // Copy data back to input parameter isoparametric, if necessary
+    if(isoparametric != AXOM_NULLPTR)
     {
-      return h1Fec->GetBasisType() == mfem::BasisType::Positive;
+      isopar.array().to_array(isoparametric);
     }
 
-    if(const mfem::L2_FECollection* l2Fec = dynamic_cast<const mfem::L2_FECollection*>(fec))
-    {
-      return l2Fec->GetBasisType() == mfem::BasisType::Positive;
-    }
-
-    if( dynamic_cast<const mfem::NURBSFECollection*>(fec)       ||
-        dynamic_cast<const mfem::LinearFECollection*>(fec)      ||
-        dynamic_cast<const mfem::QuadraticPosFECollection*>(fec) )
-    {
-      return true;
-    }
-
-    return false;
+    return containingCell;
   }
 
-  /*!
-   * \brief Utility function to get a positive (i.e. Bernstein) collection of bases
-   * corresponding to the given FiniteElementCollection.
-   *
-   * \return A pointer to a newly allocated FiniteElementCollection
-   * corresponding to \a fec
-   * \note   It is the user's responsibility to deallocate this pointer.
-   * \pre    \a fec is not already positive
-   */
-  static mfem::FiniteElementCollection* getCorrespondingPositiveFEC(const mfem::FiniteElementCollection* fec, int order, int mapType)
-  {
-    //   NOTE(KW) Should this use a map<string, string> instead ?
-    //         It could then use FECollection::New(string)
-
-   // If fec is already positive, return it?
-    SLIC_CHECK_MSG( !isPositiveBasis(fec),
-        "This function is only meant to be called on non-positive finite element collection"
-        );
-
-    // Attempt to find the corresponding positive H1 fec
-    if(const mfem::H1_FECollection* h1Fec = dynamic_cast<const mfem::H1_FECollection*>(fec))
-    {
-      return new mfem::H1_FECollection(order, NDIMS, mfem::BasisType::Positive);
-    }
-
-    // Attempt to find the corresponding positive L2 fec
-    if(const mfem::L2_FECollection* l2Fec = dynamic_cast<const mfem::L2_FECollection*>(fec))
-    {
-      // should we throw a not supported error here?
-      return new mfem::L2_FECollection(order, NDIMS, mfem::BasisType::Positive, mapType);
-    }
-
-    // Attempt to find the corresponding quadratic or cubic fec
-    if(dynamic_cast<const mfem::QuadraticFECollection*>(fec) ||
-       dynamic_cast<const mfem::CubicFECollection*>(fec) )
-    {
-      SLIC_ASSERT( order == 2 || order == 3);
-      return new mfem::H1_FECollection(order, NDIMS, mfem::BasisType::Positive);
-    }
-
-    // Give up -- return NULL
-    return AXOM_NULLPTR;
-  }
-
-
-  /*! Get the number of elements in the mesh */
-  int numElements() const { return m_mesh->GetNE(); }
-
-  /*! Get a pointer to the mesh */
-  mfem::Mesh* getMesh() const { return m_mesh; }
-
-  /*! Return the bounding box of the mesh */
-  const SpatialBoundingBox& meshBoundingBox() const
-  {
-    return m_meshBoundingBox;
-  }
-
-  /*! Return the bounding box of mesh element with index idx */
-  const SpatialBoundingBox& elementBoundingBox(IndexType idx) const
-  {
-    SLIC_ASSERT( 0 <= idx && idx < numElements() );
-    return m_elementBoundingBox[idx];
-  }
+//  void enableDebugMeshGeneration()
+//  {
+//    if(m_queryPathsMeshDumper == AXOM_NULLPTR)
+//    {
+//      m_queryPathsMeshDumper = new detail::PICQueryMeshDumper<NDIMS>;
+//    }
+//  }
+//  void printDebugMesh(const std::string& filename)
+//  {
+//    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
+//    {
+//      m_queryPathsMeshDumper->outputDebugMesh(filename);
+//    }
+//  }
+//  detail::PICQueryMeshDumper<NDIMS>* m_queryPointsMeshDumper;
+//  detail::PICQueryMeshDumper<NDIMS>* m_queryPathsMeshDumper;
 
 private:
-  /*!
-   * Helper function to initialize the bounding boxes for a high order mfem mesh
-   *
-   * \param bboxScaleFactor Scale factor for expanding bounding boxes
-   * \note This function can only be called before the class is initialized
-   * \pre This function can only be called when m_isHighOrder is true
-   * \pre bboxScaleFactor must be greater than or equal to 1.
-   */
-  void initializeBoundingBoxesHighOrder(double bboxScaleFactor)
-  {
-    // Sanity checks
-    SLIC_ASSERT( !m_isInitialized );
-    SLIC_ASSERT( m_isHighOrder );    SLIC_ASSERT( !m_isInitialized );
-    SLIC_ASSERT(bboxScaleFactor >= 1.);
+  GridType    m_grid;
 
-    /// Generate (or access existing) positive (Bernstein) nodal grid function
-    const mfem::FiniteElementSpace* nodalFESpace = m_mesh->GetNodalFESpace();
+  MeshWrapperType* m_meshWrapper;
 
-    mfem::GridFunction* positiveNodes = AXOM_NULLPTR;
-    bool mustDeleteNodes = false;
-
-    const mfem::FiniteElementCollection* nodalFEColl = nodalFESpace->FEColl();
-
-    // Check if grid function is positive, if not create positive grid function
-    if( PICMeshWrapper::isPositiveBasis( nodalFEColl ) )
-    {
-      positiveNodes = m_mesh->GetNodes();
-    }
-    else
-    {
-      // Assume that all elements of the mesh have the same order and geom type
-      int order = nodalFESpace->GetOrder(0);
-      int GeomType = m_mesh->GetElementBaseGeometry(0);
-      int mapType = (nodalFEColl != AXOM_NULLPTR)
-          ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
-          : static_cast<int>(mfem::FiniteElement::VALUE);
-
-      mfem::FiniteElementCollection* posFEColl =
-          PICMeshWrapper::getCorrespondingPositiveFEC(nodalFEColl, order, mapType);
-
-      SLIC_ASSERT_MSG(posFEColl != AXOM_NULLPTR,
-          "Problem generating a positive finite element collection "
-          << "corresponding to the mesh's '"<< nodalFEColl->Name()
-          << "' finite element collection.");
-
-      if(posFEColl != AXOM_NULLPTR)
-      {
-        // Create a positive (Bernstein) grid function for the nodes
-        mfem::FiniteElementSpace* posFESpace =
-            new mfem::FiniteElementSpace(m_mesh, posFEColl, NDIMS);
-        positiveNodes = new mfem::GridFunction(posFESpace);
-
-        // m_bernsteinNodes takes ownership of posFEColl's memory
-        positiveNodes->MakeOwner(posFEColl);
-        mustDeleteNodes = true;
-
-        // Project the nodal grid function onto this
-        positiveNodes->ProjectGridFunction(*(m_mesh->GetNodes()));
-      }
-    }
-
-    // Output some information
-    SLIC_INFO("Mesh nodes fec -- " << nodalFEColl->Name()
-        << " with ordering " << nodalFESpace->GetOrdering()
-        << "\n\t -- Positive nodes are fec -- "
-        << positiveNodes->FESpace()->FEColl()->Name()
-        << " with ordering " << positiveNodes->FESpace()->GetOrdering() );
-
-
-    /// For each element, compute bounding box, and overall mesh bbox
-    mfem::Array<int> dofIndices;
-    mfem::FiniteElementSpace* fes = positiveNodes->FESpace();
-    const int numMeshElements = numElements();
-    for(int elem=0; elem < numMeshElements; ++elem)
-    {
-      SpatialBoundingBox& bbox = m_elementBoundingBox[elem];
-
-      // Add each dof of the element to the bbox
-      // Note: positivity of Bernstein bases ensures that convex
-      //       hull of element nodes contain entire element
-      fes->GetElementDofs(elem, dofIndices);
-      for(int i = 0; i< dofIndices.Size(); ++i)
-      {
-        int nIdx = dofIndices[i];
-
-        SpacePoint pt;
-        for(int j=0; j< NDIMS; ++j)
-          pt[j] = (*positiveNodes)(fes->DofToVDof(nIdx,j));
-
-        bbox.addPoint( pt );
-      }
-
-      // Slightly scale the bbox to account for numerical noise
-      bbox.scale(bboxScaleFactor);
-
-      m_meshBoundingBox.addBox( bbox );
-    }
-
-    /// Clean up -- deallocate grid function if necessary
-    if(mustDeleteNodes)
-    {
-      delete positiveNodes;
-      positiveNodes = AXOM_NULLPTR;
-    }
-  }
-
-  /*!
-   * Helper function to initialize the bounding boxes for a low order mfem mesh
-   *
-   * \param bboxScaleFactor Scale factor for expanding bounding boxes
-   * \note This function can only be called before the class is initialized
-   * \pre This function can only be called when m_isHighOrder is false
-   * \pre bboxScaleFactor must be greater than or equal to 1.
-   */
-  void initializeBoundingBoxesLowOrder(double bboxScaleFactor)
-  {
-    SLIC_ASSERT( !m_isInitialized );
-    SLIC_ASSERT( !m_isHighOrder );
-    SLIC_ASSERT( bboxScaleFactor >= 1. );
-
-    /// For each element, compute bounding box, and overall mesh bbox
-    const int numMeshElements = numElements();
-    for(int elem=0; elem < numMeshElements; ++elem)
-    {
-      SpatialBoundingBox& bbox = m_elementBoundingBox[elem];
-
-      mfem::Element* elt = m_mesh->GetElement(elem);
-      int* eltVerts = elt->GetVertices();
-      for(int i = 0; i< elt->GetNVertices(); ++i)
-      {
-        int vIdx = eltVerts[i];
-        bbox.addPoint( SpacePoint( m_mesh->GetVertex( vIdx ) ) );
-      }
-
-      // scale the bounding box to account for numerical noise
-      bbox.scale(bboxScaleFactor);
-
-      m_meshBoundingBox.addBox( bbox );
-    }
-  }
-
-private:
-  mfem::Mesh* m_mesh;
-  bool m_isHighOrder;
-  bool m_isInitialized;
-
-  SpatialBoundingBox m_meshBoundingBox;
-  std::vector<SpatialBoundingBox> m_elementBoundingBox;
+  std::vector<SpatialBoundingBox> m_eltBBoxes;
 };
 
 /*!
@@ -523,8 +396,8 @@ private:
   int m_numQueries;
 };
 
-} // end namespace detail
 
+} // end namespace detail
 
 /*!
  * \class PointInCell
@@ -535,64 +408,69 @@ private:
  * containing a given element.  Additionally, when an element is found, the query
  * can find the isoparametric coordinates of the point within the element, and the
  * interpolation weights of the point w.r.t. the element's basis functions.
+ *
+ * \note This class was designed to support point in cell queries against
+ * a 2D or 3D computational mesh. The queries to the mesh are wrapped in a PointInCellMeshWrapper
+ * class templated on a mesh tag. To extend this design, one must create a new mesh tag, e.g.
+ * and add custom implementations of PointInCellMeshWrapper<custom_mesh_tag>
+ * and PointInCellTraits<custom_mesh_tag> in the axom::quest::detail namespace.
+ * See PointInCell_impl_mfem.hpp for an example.
  */
-template < int NDIMS >
+template<typename mesh_tag>
 class PointInCell
 {
 public:
-
-  typedef quest::ImplicitGrid<NDIMS> GridType;
-  typedef typename GridType::SpacePoint SpacePoint;
-  typedef typename GridType::SpatialBoundingBox SpatialBoundingBox;
-
+  typedef detail::PointInCellMeshWrapper<mesh_tag> MeshWrapperType;
+  typedef typename detail::PointInCellTraits<mesh_tag>::MeshType MeshType;
   typedef int IndexType;
 
-  /*!  Special value to indicate an unsuccessful query */
-  static const IndexType NO_CELL;
+  typedef detail::PointFinder<2, mesh_tag> PointFinder2D;
+  typedef detail::PointFinder<3, mesh_tag> PointFinder3D;
+
 
   /*!
    * Construct a point in cell query structure over a given mfem mesh
    * \param mesh A pointer to an mfem mesh
    * \param resolution If the resolution is not provided, we use a heuristic to set the resolution
    */
-  PointInCell(mfem::Mesh* mesh,
-      const primal::Point<int, NDIMS>& resolution = primal::Point<int, NDIMS>::zero()) :
-    m_meshWrapper(mesh), m_queryPointsMeshDumper(AXOM_NULLPTR), m_queryPathsMeshDumper(AXOM_NULLPTR)
+  PointInCell(MeshType* mesh, int* resolution = AXOM_NULLPTR)
+    : m_meshWrapper(mesh), m_pointFinder2D(AXOM_NULLPTR), m_pointFinder3D(AXOM_NULLPTR)
   {
-    int num_elem = m_meshWrapper.numElements();
+    // Allocate a 2D or 3D PointFinder, depending on the mesh dimension.
+    // Note: Only one of these will be allocated in a PointInCell instance
 
-    SpatialBoundingBox meshBB = m_meshWrapper.meshBoundingBox();
-    SLIC_INFO("Mesh bounding box is: " << meshBB );
-
-    // Slightly scale the bounding box
-    double const EPS = 1e-8; 
-    meshBB.scale(1. + EPS);
-    m_grid.initialize(meshBB, resolution, num_elem);
-
-    for(int i=0; i< num_elem; ++i)
+    switch(m_meshWrapper.meshDimension())
     {
-      SpatialBoundingBox elemBBox = m_meshWrapper.elementBoundingBox(i);
-      m_grid.insert( elemBBox, i);
+    case 2:
+      m_pointFinder2D = new PointFinder2D(&m_meshWrapper, resolution);
+      break;
+    case 3:
+      m_pointFinder3D = new PointFinder3D(&m_meshWrapper, resolution);
+      break;
+    default:
+      SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
+      break;
     }
   }
 
   ~PointInCell()
   {
-    if(m_queryPathsMeshDumper != AXOM_NULLPTR)
+    if( m_pointFinder2D != AXOM_NULLPTR)
     {
-      delete m_queryPathsMeshDumper;
-      m_queryPathsMeshDumper = AXOM_NULLPTR;
+      delete m_pointFinder2D;
+      m_pointFinder2D = AXOM_NULLPTR;
+    }
+
+    if( m_pointFinder3D != AXOM_NULLPTR)
+    {
+      delete m_pointFinder3D;
+      m_pointFinder3D = AXOM_NULLPTR;
     }
   }
 
-  void enableDebugMeshGeneration()
-  {
-    if(m_queryPathsMeshDumper == AXOM_NULLPTR)
-    {
-      m_queryPathsMeshDumper = new detail::PICQueryMeshDumper<NDIMS>;
-    }
-  }
-
+  /*! Attempt to find the index of the cell containing the given point.
+   *  If found, also return isoparametric coords in out param isopar
+   */
   /*!
    * \brief Attempts to find the index of the mesh cell containing query point pt
    * \param[in] pt The query point
@@ -601,108 +479,57 @@ public:
    * \return The index of the mesh cell containing pt, when one exists,
    *         otherwise returns the special value PointInCell::NO_CELL
    */
-  IndexType locatePoint(const SpacePoint& pt, SpacePoint* isoparametric = AXOM_NULLPTR) const
+   
+  IndexType locatePoint(const double* pos, double* isopar)
   {
-    typedef typename GridType::BitsetType BitsetType;
+    IndexType cellIndex = detail::PointInCellTraits<mesh_tag>::NO_CELL;
 
-    IndexType containingCell = NO_CELL;
-    static SpacePoint zero = SpacePoint::zero();
-    SpacePoint& isopar = (isoparametric == AXOM_NULLPTR) ? zero : *isoparametric;
-
-    BitsetType candidates = m_grid.getCandidates(pt);
-
-    // SLIC_INFO("Candidates for space point " <<  pt);
-    bool foundContainingCell = false;
-    for(std::size_t eltIdx = candidates.find_first();
-        !foundContainingCell && eltIdx != BitsetType::npos;
-        eltIdx = candidates.find_next( eltIdx) )
+    switch(m_meshWrapper.meshDimension())
     {
-      // First check that pt is in bounding box of element
-      if( m_meshWrapper.elementBoundingBox(eltIdx).contains(pt))
-      {
-        // if isopar is in the proper range
-        if( getIsoparametricCoords(eltIdx, pt, &isopar) )
-        {
-          // then we have found the cellID
-          foundContainingCell = true;
-          containingCell = eltIdx;
-        }
-      }
+    case 2:
+      cellIndex = m_pointFinder2D->locatePoint(pos, isopar);
+      break;
+    case 3:
+      cellIndex = m_pointFinder3D->locatePoint(pos, isopar);
+      break;
+    default:
+      SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
+      break;
     }
 
-    return containingCell;
+    return cellIndex;
   }
 
+  /** Attempt to find the isoparametric coords of a point pos in the given mesh cell */
+  bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar)
+  {
+    // TODO: Check against element's bbox
+
+    return m_meshWrapper.getIsoparametricCoords(cellIdx, pos, isopar);
+  }
+
+  /*! Transform from isoparametric space to physical space */
   /*!
    * Returns the point in space corresponding to isoparameteric coordinates isopar
    * of the mesh element with index eltIdx
    */
-  SpacePoint findInSpace(IndexType eltIdx, const SpacePoint& isopar)
+  
+  void findInSpace(IndexType cellIdx, const double* isopar, double* pos)
   {
-    SpacePoint pt;
-
-    mfem::IsoparametricTransformation tr;
-    m_meshWrapper.getMesh()->GetElementTransformation(eltIdx, &tr);
-
-    mfem::IntegrationPoint ip;
-    ip.Set(isopar.data(), NDIMS);
-
-    mfem::Vector v(pt.data(), NDIMS);
-    tr.Transform(ip, v);
-
-    return pt;
-  }
-
-  /*!
-   * Attempts to find isoparametric coordinates \a isopar of a point \a pt in space
-   * with respect to a given element of the mesh (with index \a eltIdx)
-   * \return True if \a pt is contained in the element, in which case
-   *         the coordinates of \a isopar will be in the unit cube (of dimension NDIMS)
-   */
-  bool getIsoparametricCoords(IndexType eltIdx, const SpacePoint& pt, SpacePoint* isopar) const
-  {
-    const int refineOrder = 1;      // TODO: Make this a class variable
-
-    mfem::IsoparametricTransformation tr;
-    m_meshWrapper.getMesh()->GetElementTransformation(eltIdx, &tr);
-    mfem::Vector ptSpace(const_cast<double*>(pt.data()), NDIMS);
-
-    // TransformBack returns zero if the element is properly mapped
-    mfem::IntegrationPoint ipRef;
-
-    // Status codes: {0 -> successful; 1 -> pt was outside; 2-> did not converge}
-    int err = tr.TransformBack(ptSpace, ipRef, refineOrder);
-    ipRef.Get(isopar->data(), NDIMS);
-
-    // Add query paths to debug mesh, if applicable
-    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
-    {
-      m_queryPathsMeshDumper->addQueryPoint(pt, *isopar, err, tr);
-    }
-
-    return (err == 0);
-  }
-
-
-  void printDebugMesh(const std::string& filename)
-  {
-    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
-    {
-      m_queryPathsMeshDumper->outputDebugMesh(filename);
-    }
+    m_meshWrapper.findInSpace(cellIdx, isopar, pos);
   }
 
 private:
-  detail::PICMeshWrapper<NDIMS, mfem::Mesh> m_meshWrapper;
-  GridType    m_grid;
+  MeshWrapperType m_meshWrapper;
 
-  detail::PICQueryMeshDumper<NDIMS>* m_queryPointsMeshDumper;
-  detail::PICQueryMeshDumper<NDIMS>* m_queryPathsMeshDumper;
+  PointFinder2D* m_pointFinder2D;
+  PointFinder3D* m_pointFinder3D;
+  
+  // double m_eps; // for scaling the bounding boxes? 
 };
 
 
-template<int NDIMS>
-const typename PointInCell<NDIMS>::IndexType PointInCell<NDIMS>::NO_CELL = -1;
+
 
 } // end namespace quest
 } // end namespace axom

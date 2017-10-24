@@ -14,6 +14,7 @@
 
 set( quest_headers
 
+    PointInCell.hpp
     SignedDistance.hpp
 
     ## Geometry Headers
@@ -39,7 +40,7 @@ set( quest_headers
    )
 
 if (MFEM_FOUND)
-   list(APPEND quest_headers PointInCell.hpp)
+   list(APPEND quest_headers detail/PointInCell_impl_mfem.hpp)
 endif()
 
 
