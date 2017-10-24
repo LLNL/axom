@@ -1297,17 +1297,22 @@ TEST(primal_intersect, triangle_ray_intersection)
   // Coplanar intersection (reported as miss by function)
   testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0),
                                 PointType::make_point(-1, 0.5, 0)));
-  testRayIntersection(tri2, testRay, "coplanar intersection, reported as miss by design", false);
+  testRayIntersection(tri2, testRay,
+                      "coplanar intersection, reported as miss by design", false);
 
   // Coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
                                 PointType::make_point(0.5, 0., 0.5)));
-  testRayIntersection(tri, testRay, "coplanar interior ray origin, reported as miss by design", false);
+  testRayIntersection(tri, testRay,
+                      "coplanar interior ray origin, reported as miss by design",
+                      false);
 
   // Not coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(PointType::make_point(0.2, 0.18, 0),
                                 PointType::make_point(0., 0., 0.5)));
-  testRayIntersection(tri2, testRay, "non-coplanar interior ray origin, reported as miss by design", false);
+  testRayIntersection(tri2, testRay,
+                      "non-coplanar interior ray origin, reported as miss by design",
+                      false);
 }
 
 TEST(primal_intersect, triangle_ray_intersection_unit_ray)
