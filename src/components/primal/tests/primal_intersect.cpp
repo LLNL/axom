@@ -1093,8 +1093,6 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
   SCOPED_TRACE(whattest);
 
   typedef primal::Point< double, DIM > PointType;
-  typedef primal::Vector< double, DIM > VectorType;
-  typedef primal::Ray< double, DIM > RayType;
   typedef primal::Segment< double, DIM > SegmentType;
 
   PointType tip;
@@ -1267,7 +1265,6 @@ TEST(primal_intersect, triangle_ray_intersection)
 
   // Edge intersections should be reported as hits
   PointType tripoint;
-  double t;
   testRay = RayType(SegmentType(r0, ptX));
   testRayIntersection(tri, testRay, "edge hit 1", true);
   testRay = RayType(SegmentType(r0, ptY));
@@ -1339,7 +1336,6 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
                    PointType::make_point(-1,1,2),
                    PointType::make_point( 2,0,2));
   EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionParam, intBary));
-  double baryscale = intBary[0] + intBary[1] + intBary[2];
 
   // Here, intersectionParam is the distance along the ray, with the source being 0.
   // This is different from a segment's intersection parameter (see below).
@@ -1357,9 +1353,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 {
   static int const DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
-  typedef primal::Vector< double,DIM >    VectorType;
   typedef primal::Triangle< double, DIM > TriangleType;
-  typedef primal::Ray< double, DIM >      RayType;
   typedef primal::Segment< double, DIM >      SegmentType;
 
   PointType o = PointType::zero();
