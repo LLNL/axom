@@ -21,70 +21,65 @@
 
 #include "quest/ImplicitGrid.hpp"
 
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/vtk_utils.hpp"
-#include "mint/FieldData.hpp"
-#include "mint/FieldVariable.hpp"
-
-
 #ifdef AXOM_USE_MFEM
 # include "quest/PointInCell_impl_mfem.hpp"
 #endif
 
-#ifndef MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
-//#  define MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
-#endif
-
-
 namespace axom {
 namespace quest {
-
-struct quest_point_in_cell_mint_tag {};
 
 namespace detail {
 
 /*!
- * \class
+ * \class PointInCellTraits
  * \brief A traits class for the mesh associated with a PointInCell query.
  *
- * An implementation of PointInCellTraits must define:
- * \arg A MeshType (e.g. mfem::Mesh or axom::mint::Mesh)
- * \arg An IndexType (e.g. int)
- * \arg An IndexType variable named NO_CELL (e.g. with value -1), indicating an
- *   invalid index in the mesh
+ * \tparam mesh_tag A tag struct used to identify the mesh
+ *
+ * An implementation of \a PointInCellTraits on \a mesh_tag must define:
+ * \arg A \a MeshType (e.g. mfem::Mesh or axom::mint::Mesh)
+ * \arg An \a IndexType (e.g. a signed or unsigned integral type)
+ * \arg An \a IndexType variable named \a NO_CELL (e.g. with value -1 for signed ints),
+ * indicating an invalid cell index in the mesh
  */
-template<typename quest_point_in_cell_mesh_tag>
+template<typename mesh_tag>
 struct PointInCellTraits;
 
 /*!
- * \class
- * \brief A wrapper for access to the mesh instance associated with a PointInCell query
+ * \class PointInCellMeshWrapper
+ * \brief A wrapper class for accessing the mesh instance
+ * associated with a PointInCell query
  *
- * An implementation of a PointInCellMeshWrapper must expose the following API:
- * \arg computeBoundingBox(...)
- * \arg findInSpace(...)
- * \arg getIsoparametricCoords(...)
- * \arg numElements()
- * \arg meshDimension()
+ * \tparam mesh_tag A tag struct used to identify the mesh
  *
- * \TODO -- fill this in and ensure it is accurate
+ * An implementation of a \a PointInCellMeshWrapper on \a mesh_tag
+ * must expose the following API:
+ * \arg template<DIM>
+ *      void computeBoundingBox(
+ *          double, const std::vector< BoundingBox<double, DIM>&,
+ *          const BoundingBox<double, DIM>  &) const;
+ * \arg void reconstructPoint(IndexType, const double*, double*) const;
+ * \arg bool locatePointInCell(IndexType, const double*, double*) const;
+ * \arg int numElements() const;
+ * \arg int meshDimension() const;
  */
-template <typename quest_point_in_cell_mesh_tag>
+template <typename mesh_tag>
 class PointInCellMeshWrapper;
 
-template<>
-struct PointInCellTraits<quest_point_in_cell_mint_tag>
-{
-  typedef axom::mint::Mesh MeshType;
-  typedef int IndexType;
-
-  static const IndexType NO_CELL;
-};
-
 /*!
- * \class
+ * \class PointFinder
  *
- * \brief A class to encapsulate locating a point within a computational mesh
+ * \brief A class to encapsulate locating points within the cells
+ * of a computational mesh.
+ *
+ * \tparam NDIMS The dimension of the mesh
+ * \tparam mesh_tag A tag struct used to identify the mesh
+ *
+ * \note This class implements part of the functionality of \a PointInCell
+ * \note This class assumes the existence of specialized implementations of
+ * the following two classes for the provided \a mesh_tag:
+ *   \arg axom::quest::detail::PointInCellTraits
+ *   \arg axom::quest::detail::PointInCellMeshWrapper
  */
 template<int NDIMS, typename mesh_tag>
 class PointFinder
@@ -99,21 +94,28 @@ public:
   typedef typename MeshWrapperType::IndexType IndexType;
 
 public:
+  /*!
+   * Constructor for PointFinder
+   *
+   * \param meshWrapper A non-null MeshWrapperType
+   * \param res The grid resolution for the spatial acceleration structure
+   *
+   * \sa constructors in PointInCell class for more details about parameters
+   */
   PointFinder(MeshWrapperType* meshWrapper, int* res)
     : m_meshWrapper(meshWrapper)
   {
     SLIC_ASSERT( m_meshWrapper != AXOM_NULLPTR);
 
-    const int numElem = m_meshWrapper->numElements();
+    const int numCells = m_meshWrapper->numElements();
 
     // setup bounding boxes -- Slightly scaled for robustness
 
     SpatialBoundingBox meshBBox;
-    m_eltBBoxes = std::vector<SpatialBoundingBox>(numElem);
+    m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
     double EPS = 1e-8;
     double bboxScaleFactor = 1 + EPS;
-    m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor, m_eltBBoxes, meshBBox);
-    //SLIC_INFO("Mesh bounding box is: " << meshBBox );
+    m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor, m_cellBBoxes, meshBBox);
 
     // initialize implicit grid
     typedef axom::primal::Point<int, NDIMS> GridResolution;
@@ -122,45 +124,47 @@ public:
     {
       gridRes = GridResolution(res);
     }
-    m_grid.initialize(meshBBox, gridRes, numElem);
+    m_grid.initialize(meshBBox, gridRes, numCells);
 
     // add mesh elements to grid
-    for(int i=0; i< numElem; ++i)
+    for(int i=0; i< numCells; ++i)
     {
-      m_grid.insert( m_eltBBoxes[i], i);
+      m_grid.insert( m_cellBBoxes[i], i);
     }
   }
 
-  IndexType locatePoint(const double* pos, double* isoparametric)
+  /*!
+   * Query to find the mesh cell containing query point with coordinates \a pos
+   *
+   * \sa PointInCell::locatePoint() for more details about parameters
+   */
+  IndexType locatePoint(const double* pos, double* isoparametric) const
   {
     typedef typename GridType::BitsetType BitsetType;
 
-    SLIC_ASSERT( pos != AXOM_NULLPTR);
-    SpacePoint pt(pos);
-
-
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 
+    SLIC_ASSERT( pos != AXOM_NULLPTR);
+    SpacePoint pt(pos);
     SpacePoint isopar;
 
-    // Note: ImplicitGrid::getCandidates() checks the mesh bounding box
+    // Note: ImplicitGrid::getCandidates() checks the mesh bounding box for us
     BitsetType candidates = m_grid.getCandidates(pt);
 
-    // SLIC_INFO("Candidates for space point " <<  pt);
     bool foundContainingCell = false;
-    for(std::size_t eltIdx = candidates.find_first();
-        !foundContainingCell && eltIdx != BitsetType::npos;
-        eltIdx = candidates.find_next( eltIdx) )
+    for(std::size_t cellIdx = candidates.find_first();
+        !foundContainingCell && cellIdx != BitsetType::npos;
+        cellIdx = candidates.find_next( cellIdx) )
     {
       // First check that pt is in bounding box of element
-      if( m_eltBBoxes[eltIdx].contains(pt) )
+      if( cellBoundingBox(cellIdx).contains(pt) )
       {
         // if isopar is in the proper range
-        if( m_meshWrapper->getIsoparametricCoords(eltIdx, pt.data(), isopar.data() ) )
+        if( m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data() ) )
         {
           // then we have found the cellID
           foundContainingCell = true;
-          containingCell = eltIdx;
+          containingCell = cellIdx;
         }
       }
     }
@@ -174,271 +178,83 @@ public:
     return containingCell;
   }
 
-//  void enableDebugMeshGeneration()
-//  {
-//    if(m_queryPathsMeshDumper == AXOM_NULLPTR)
-//    {
-//      m_queryPathsMeshDumper = new detail::PICQueryMeshDumper<NDIMS>;
-//    }
-//  }
-//  void printDebugMesh(const std::string& filename)
-//  {
-//    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
-//    {
-//      m_queryPathsMeshDumper->outputDebugMesh(filename);
-//    }
-//  }
-//  detail::PICQueryMeshDumper<NDIMS>* m_queryPointsMeshDumper;
-//  detail::PICQueryMeshDumper<NDIMS>* m_queryPathsMeshDumper;
+  /*! Returns a const reference to the given cells's bounding box */
+  const SpatialBoundingBox& cellBoundingBox(IndexType cellIdx) const
+  {
+    return m_cellBBoxes[cellIdx];
+  }
+
 
 private:
   GridType    m_grid;
-
   MeshWrapperType* m_meshWrapper;
-
-  std::vector<SpatialBoundingBox> m_eltBBoxes;
+  std::vector<SpatialBoundingBox> m_cellBBoxes;
 };
-
-/*!
- * Utility class for visualizing the point in cell queries.
- *
- * \note This class can output a more detailed mesh if mfem's Isoparametric
- * Transformation class is annotated with the following internal struct:
- * \code
- *    struct TransformBackDebug {
- *       int numIters;
- *       DenseMatrix points;
- *    } tbDebug;
- *  \endcode
- * This is not included in the mfem release:
- */
-template<int NDIMS>
-class PICQueryMeshDumper
-{
-public:
-  typedef quest::ImplicitGrid<NDIMS> GridType;
-  typedef typename GridType::SpacePoint SpacePoint;
-
-public:
-  PICQueryMeshDumper() : m_transformBackDebugMesh(NDIMS), m_numQueries(0) {}
-
-public:
-
-  /*!
-   * \brief Adds the path of the query for point \a pt associated with
-   * transformation \a tr to the mesh
-   *
-   * \param [in] pt The query point
-   * \param [in] isopar The isoparametric coordianates found by the query
-   * \param [in] status The status of the query
-   * \param [in] tr The tranformation from the query.
-   * \note Parameter \a tr is an [in] parameter, but cannot be \a const
-   * since this function calls a non-const member function of \a tr
-   */
-  void addQueryPoint(const SpacePoint& pt, const SpacePoint& isopar, int status, mfem::IsoparametricTransformation& tr)
-  {
-
-    int meshStartIndex = m_transformBackDebugMesh.getMeshNumberOfNodes();
-
-    // Transform last found reference pt into space
-    mfem::Vector y;
-    mfem::IntegrationPoint ipRef;
-    ipRef.Set(isopar.data(), NDIMS);
-    tr.Transform(ipRef, y);
-
-  #ifdef MFEM_ISO_TRANS_HAS_DEBUG_STRUCT
-    //SLIC_INFO("Used " << tr.tbDebug.numIters << " iterations." );
-
-    tr.tbDebug.points.SetCol( tr.tbDebug.numIters, y );
-
-    // Insert the segment vertex positions into the mesh
-    for(int i=0; i< tr.tbDebug.numIters; ++i)
-    {
-      double ptx = tr.tbDebug.points(0, i);
-      double pty = tr.tbDebug.points(1, i);
-      if(NDIMS==2)
-      {
-        m_transformBackDebugMesh.insertNode(ptx,pty);
-      }
-      else if(NDIMS == 3)
-      {
-        double ptz = tr.tbDebug.points(2, i);
-        m_transformBackDebugMesh.insertNode(ptx,pty,ptz);
-      }
-    }
-
-    // Add segments to mesh and record associated 'field' data
-    for(int i=0; i< tr.tbDebug.numIters-1; ++i)
-    {
-      int currVertIdx = meshStartIndex + i;
-      int indices[2] = { currVertIdx, currVertIdx+1 };
-      m_transformBackDebugMesh.insertCell(indices, MINT_SEGMENT, 2);
-
-      m_query_spacept.push_back( pt);
-      m_query_refpt.push_back(isopar);
-      m_query_index.push_back( m_numQueries );
-      m_query_return_code.push_back( status );
-      m_query_num_iters.push_back( tr.tbDebug.numIters );
-      m_query_iter.push_back(i);
-    }
-#else
-
-    // Add the point the mesh
-    m_transformBackDebugMesh.insertNode( y.GetData() );
-
-    // Add the fields: status, pt, isopt, index
-    int indices[1] = { meshStartIndex };
-    m_transformBackDebugMesh.insertCell( indices, MINT_VERTEX, 1);
-
-    m_query_spacept.push_back( pt);
-    m_query_refpt.push_back(isopar);
-    m_query_index.push_back( m_numQueries );
-    m_query_return_code.push_back( status );
-
-#endif
-
-    m_numQueries++;
-  }
-
-  /*! Dumps the mesh to disk */
-  void outputDebugMesh(const std::string& filename)
-  {
-    int size = m_query_index.size();
-
-    if(size == 0)
-    {
-        SLIC_INFO("No mesh data.");
-        return;
-    }
-
-    // Add integer fields
-    int* fIndex = addIntField("query_index",size);
-    int* fStatus = addIntField("query_status",size);
-
-    bool hasNIters = m_query_num_iters.size() > 0;
-    int* fNIters = hasNIters ?addIntField("query_num_iters",size) : AXOM_NULLPTR;
-
-    bool hasIters = m_query_iter.size() > 0;
-    int* fIter = hasIters ? addIntField("query_iter",size) : AXOM_NULLPTR;
-
-    for(int i=0; i < size; ++i)
-    {
-      fIndex[i]  = m_query_index[i];
-      fStatus[i] = m_query_return_code[i];
-
-      if(hasNIters)
-        fNIters[i] = m_query_num_iters[i];
-      if(hasIters)
-        fIter[i]   = m_query_iter[i];
-    }
-
-    // Add (vector-like) point fields
-    double* fPt[3];
-    fPt[0] = addDoubleField("query_pt/x", size);
-    fPt[1] = addDoubleField("query_pt/y", size);
-    fPt[2] = NDIMS ==3 ? addDoubleField("query_pt/z", size) : AXOM_NULLPTR;
-
-    double* fIsoPt[3];
-    fIsoPt[0] = addDoubleField("query_iso_pt/x", size);
-    fIsoPt[1] = addDoubleField("query_iso_pt/y", size);
-    fIsoPt[2] = NDIMS ==3 ? addDoubleField("query_iso_pt/z", size) : AXOM_NULLPTR;
-
-    for(int i=0; i < size; ++i)
-    {
-      for(int d=0; d < NDIMS; ++d)
-      {
-        fPt[d][i] = m_query_spacept[i][d];
-        fIsoPt[d][i] = m_query_refpt[i][d];
-      }
-    }
-
-    // Output mesh to disk
-    mint::write_vtk(&m_transformBackDebugMesh, filename);
-  }
-
-private:
-
-  /*! Utility function to add an integer field to the mint mesh */
-  int* addIntField(const std::string& name, int size)
-  {
-    mint::FieldData* CD = m_transformBackDebugMesh.getCellFieldData();
-    CD->addField( new mint::FieldVariable< int >(name, size) );
-
-    int* fld = CD->getField( name )->getIntPtr();
-
-    SLIC_ASSERT(fld != AXOM_NULLPTR);
-    return fld;
-  }
-
-  /*! Utility function to add a double field to the mint mesh */
-  double* addDoubleField(const std::string& name, int size)
-  {
-    mint::FieldData* CD = m_transformBackDebugMesh.getCellFieldData();
-    CD->addField( new mint::FieldVariable< double >(name, size) );
-
-    double* fld = CD->getField( name )->getDoublePtr();
-
-    SLIC_ASSERT(fld != AXOM_NULLPTR);
-    return fld;
-  }
-
-private:
-
-  mint::UnstructuredMesh<MINT_MIXED_CELL> m_transformBackDebugMesh;
-
-  std::vector<int> m_query_index;
-  std::vector<int> m_query_return_code;
-  std::vector<int> m_query_num_iters;
-  std::vector<int> m_query_iter;
-  std::vector<SpacePoint> m_query_spacept;
-  std::vector<SpacePoint> m_query_refpt;
-
-  int m_numQueries;
-};
-
 
 } // end namespace detail
+
 
 /*!
  * \class PointInCell
  *
- * \brief A spatial querying class to accelerate Point-In-Cell queries.
+ * \brief A class to accelerate Point-In-Cell queries on a computational mesh.
  *
- * A point in cell query over a given mesh determines the index of the mesh cell
- * containing a given element.  Additionally, when an element is found, the query
- * can find the isoparametric coordinates of the point within the element, and the
- * interpolation weights of the point w.r.t. the element's basis functions.
+ * A point in cell query over a computational mesh determines if a given point is
+ * contained in one of its cells.  If so, it returns the index of the cell
+ * containing the point as well as the isoparametric coordinates of the point
+ * within the cell.
+ *
+ * \tparam mesh_tag A tag type for the the underlying computational mesh
+ * There must also be corresponding template specializations of
+ * \a PointInCellMeshWrapper<mesh_tag> and \a PointInCellTraits<mesh_tag> for
+ * provided mesh_tag \a axom::quest::detail namespace
  *
  * \note This class was designed to support point in cell queries against
- * a 2D or 3D computational mesh. The queries to the mesh are wrapped in a PointInCellMeshWrapper
- * class templated on a mesh tag. To extend this design, one must create a new mesh tag, e.g.
- * and add custom implementations of PointInCellMeshWrapper<custom_mesh_tag>
- * and PointInCellTraits<custom_mesh_tag> in the axom::quest::detail namespace.
- * See PointInCell_impl_mfem.hpp for an example.
+ * 2D or 3D computational meshes. The queries to the mesh are wrapped in a
+ * PointInCellMeshWrapper class templated on a \a mesh_tag type.
+ * To extend this design, one must create a new mesh tag (e.g.. an empty struct
+ * \a custom_mesh_tag) and add custom template specializations of
+ * PointInCellMeshWrapper and PointInCellTraits for this tag in the
+ * axom::quest::detail namespace.
+ *
+ * \sa PointInCell_impl_mfem.hpp for a specialized implementation
+ * for [mfem](http://mfem.org) meshes of arbitrary order.
  */
 template<typename mesh_tag>
 class PointInCell
 {
 public:
+  typedef detail::PointInCellTraits<mesh_tag> MeshTraits;
+  typedef typename MeshTraits::MeshType MeshType;
+  typedef typename MeshTraits::IndexType IndexType;
+
   typedef detail::PointInCellMeshWrapper<mesh_tag> MeshWrapperType;
-  typedef typename detail::PointInCellTraits<mesh_tag>::MeshType MeshType;
-  typedef int IndexType;
 
   typedef detail::PointFinder<2, mesh_tag> PointFinder2D;
   typedef detail::PointFinder<3, mesh_tag> PointFinder3D;
 
 
   /*!
-   * Construct a point in cell query structure over a given mfem mesh
-   * \param mesh A pointer to an mfem mesh
-   * \param resolution If the resolution is not provided, we use a heuristic to set the resolution
+   * Construct a point in cell query structure over a computational mesh
+   *
+   * \param mesh A pointer to the computational mesh
+   * \param resolution Grid resolution for the spatial index.
+   *
+   * \note If the resolution is not provided, a heuristic based on the number
+   * of cells in the mesh is used to set the resolution.
+   * \sa ImplicitGrid
+   *
+   * \pre \a mesh must not be a NULL pointer
+   * \pre If resolution is not NULL, it must have space for at least
+   * meshDimension() entries.
    */
   PointInCell(MeshType* mesh, int* resolution = AXOM_NULLPTR)
     : m_meshWrapper(mesh), m_pointFinder2D(AXOM_NULLPTR), m_pointFinder3D(AXOM_NULLPTR)
   {
-    // Allocate a 2D or 3D PointFinder, depending on the mesh dimension.
-    // Note: Only one of these will be allocated in a PointInCell instance
+    SLIC_ASSERT(mesh != AXOM_NULLPTR);
 
+    // Allocate a 2D or 3D PointFinder instance, depending on mesh dimension.
+    // Note: Only one of these will be allocated in a PointInCell instance
     switch(m_meshWrapper.meshDimension())
     {
     case 2:
@@ -468,21 +284,27 @@ public:
     }
   }
 
-  /*! Attempt to find the index of the cell containing the given point.
-   *  If found, also return isoparametric coords in out param isopar
-   */
   /*!
-   * \brief Attempts to find the index of the mesh cell containing query point pt
-   * \param[in] pt The query point
-   * \param[out] isoparametric When pt is within a cell, this point returns
-   *             the isoparametric coordinates of pt within the cell.
-   * \return The index of the mesh cell containing pt, when one exists,
-   *         otherwise returns the special value PointInCell::NO_CELL
+   * Attempt to find the index of the mesh cell containing the given point.
+   *
+   * If found, and \a isopar is not NULL, \a isopar contains the isoparametric
+   * coordinates the point within this cell.
+   *
+   * \param[in] pos The coordinates of the query point in space
+   * \param[out] isopar The isoparametric coordinates of the query pt.
+   * Only valid when a cell is found.
+   *
+   * \return The index of the mesh cell containing the query point.
+   * If no cell is found, returns the special value \a MeshTraits::NO_CELL
+   *
+   * \pre \a pos is a non-null array with at least \a meshDimension() coordinates
+   * \pre When not NULL, \a isopar has space for at least \a meshDimension() coordinates
    */
-   
-  IndexType locatePoint(const double* pos, double* isopar)
+  IndexType locatePoint(const double* pos, double* isopar = AXOM_NULLPTR) const
   {
-    IndexType cellIndex = detail::PointInCellTraits<mesh_tag>::NO_CELL;
+    SLIC_ASSERT(pos != AXOM_NULLPTR);
+
+    IndexType cellIndex = MeshTraits::NO_CELL;
 
     switch(m_meshWrapper.meshDimension())
     {
@@ -500,24 +322,70 @@ public:
     return cellIndex;
   }
 
-  /** Attempt to find the isoparametric coords of a point pos in the given mesh cell */
-  bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar)
-  {
-    // TODO: Check against element's bbox
-
-    return m_meshWrapper.getIsoparametricCoords(cellIdx, pos, isopar);
-  }
-
-  /*! Transform from isoparametric space to physical space */
   /*!
-   * Returns the point in space corresponding to isoparameteric coordinates isopar
-   * of the mesh element with index eltIdx
+   *  Determine if a query point is located within a specified mesh cell
+   *
+   *  \param [in] cellIdx The index of the cell within the mesh
+   *  \param [in] pos The coordinates of the query point in space
+   *  \param [out] isopar The isoparametric coordinates of the point
+   *  within cell \a cellIdx.  Only valid when the return value is true
+   *
+   *  \return True, if the query point is located within the specified cell
+   *  \pre \a pos is not NULL and has \a meshDimension() entries
+   *  \pre \a isopar is not NULL and has space for \a meshDimension() entries
    */
-  
-  void findInSpace(IndexType cellIdx, const double* isopar, double* pos)
+  bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar) const
   {
-    m_meshWrapper.findInSpace(cellIdx, isopar, pos);
+    // Early return if point is not within cell's bounding box
+    if(! withinBoundingBox(cellIdx, pos) )
+    {
+      return false;
+    }
+
+    return m_meshWrapper.locatePointInCell(cellIdx, pos, isopar);
   }
+
+
+  /*!
+   * Evaluate the position of a point within a mesh cell at the given
+   * isoparametric coordinates.
+   *
+   * \param [in] cellIdx The index of the cell within the mesh
+   * \param [in[ isopar The isoparametric coordinates at which to evaluate
+   * \param [out] pos The computed coordinates of the evaluated point
+   */
+  void reconstructPoint(IndexType cellIdx, const double* isopar, double* pos) const
+  {
+    m_meshWrapper.reconstructPoint(cellIdx, isopar, pos);
+  }
+
+  /*! Returns the dimension of the mesh */
+  int meshDimension() const { return m_meshWrapper.meshDimension(); }
+
+private:
+
+  /*!
+   * Utility function to check the given point against an element's bounding box
+   * \param [in] cellIdx Index of the cell within the mesh
+   * \param [in] pos Position of the point in space
+   *
+   * \return True if the point is contained in the cell's bounding box
+   */
+  bool withinBoundingBox(IndexType cellIdx, const double* pos) const
+  {
+    typedef axom::primal::Point<double, 2> Point2D;
+    typedef axom::primal::Point<double, 3> Point3D;
+
+    switch(meshDimension())
+    {
+    case 2:
+      return m_pointFinder2D->elementBoundingBox(cellIdx).contains(Point2D(pos));
+    case 3:
+      return m_pointFinder3D->elementBoundingBox(cellIdx).contains(Point3D(pos));
+    }
+    return false;
+  }
+
 
 private:
   MeshWrapperType m_meshWrapper;

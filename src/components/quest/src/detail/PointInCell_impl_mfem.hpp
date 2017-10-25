@@ -12,6 +12,23 @@
 #ifndef QUEST_POINT_IN_CELL_MFEM_IMPL_HPP_
 #define QUEST_POINT_IN_CELL_MFEM_IMPL_HPP_
 
+/*!
+ * \file
+ *
+ * This file contains implementation classes for an mfem-based
+ * specialization of quest's PointInCell query on meshes or
+ * arbitrary order.
+ *
+ * It defines a mesh tag \a quest_point_in_cell_mfem_tag
+ * and specializations of \a quest::detail::PointInCellTraits and
+ * \a quest::detail::PointInCellMeshWrapper for this tag.
+ *
+ * \sa axom::quest::PointInCell
+ * \sa axom::quest::detail::PointInCellMeshWrapper
+ * \sa axom::quest::detail::PointInCellTraits
+ */
+
+
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
 
@@ -30,20 +47,26 @@
 namespace axom {
 namespace quest {
 
-/** Tag for mfem-based specialization of PointInCell query code */
+
+/** Tag for mfem-based specialization of the PointInCell query */
 struct quest_point_in_cell_mfem_tag {};
 
 
 namespace detail {
 
-template<typename quest_point_in_cell_mesh_tag>
+// Pre-declare classes to specialize for the mfem mesh_tag
+
+template<typename mesh_tag>
 struct PointInCellTraits;
 
-
-template <typename quest_point_in_cell_mesh_tag>
+template <typename mesh_tag>
 class PointInCellMeshWrapper;
 
-
+/*!
+ * Specialization of PointInCellTraits for \a quest_point_in_cell_mfem_tag
+ *
+ * \sa PointInCellTraits
+ */
 template<>
 struct PointInCellTraits<quest_point_in_cell_mfem_tag>
 {
@@ -55,14 +78,18 @@ public:
   static const IndexType NO_CELL;
 };
 
-/** Initialize the NO_CELL static variable of PointInCellTraits for mfem */
+// Initialize PointInCellTraits's NO_CELL static variable
 const PointInCellTraits<quest_point_in_cell_mfem_tag>::IndexType
 PointInCellTraits<quest_point_in_cell_mfem_tag>::NO_CELL = -1;
 
 
 
 /*!
- * \brief Wraps MFEM mesh access functionality for the PointInCell class
+ * Wraps MFEM mesh access functionality for the PointInCell class.
+ *
+ * \note Specialization of PointInCellMeshWrapper for \a quest_point_in_cell_mfem_tag
+ *
+ * \sa PointInCellMeshWrapper for required interface
  */
 template <>
 class PointInCellMeshWrapper< quest_point_in_cell_mfem_tag >
@@ -76,30 +103,14 @@ public:
     // Some sanity checks
     SLIC_ASSERT( m_mesh != AXOM_NULLPTR);
 
-    m_isHighOrder = (m_mesh->GetNodalFESpace() != AXOM_NULLPTR) && (m_mesh->GetNE() > 0);
-
-/*
-    // Initialize bounding boxes -- split into two functions for simplicity
-    double const EPS = 1e-8;
-    double bboxScaleFactor = 1. + EPS;
-    const int numMeshElements = numElements();
-    m_elementBoundingBox = std::vector<SpatialBoundingBox>(numMeshElements);
-
-    if( m_isHighOrder)
-    {
-      initializeBoundingBoxesHighOrder(bboxScaleFactor);
-    }
-    else
-    {
-      initializeBoundingBoxesLowOrder(bboxScaleFactor);
-    }
-*/
+    m_isHighOrder = (m_mesh->GetNodalFESpace() != AXOM_NULLPTR)
+        && (m_mesh->GetNE() > 0);
   }
 
   /*! Predicate to check if the given basis is positive (i.e. Bernstein) */
   static bool isPositiveBasis(const mfem::FiniteElementCollection* fec)
   {
-    // HACK -- is this sufficient?  Is there a better way to do this?
+    // HACK: Check against several common expected FE types
 
     if(fec == AXOM_NULLPTR)
     {
@@ -141,10 +152,6 @@ public:
       int dim,
       int mapType)
   {
-    //   NOTE(KW) Should this use a map<string, string> instead ?
-    //         It could then use FECollection::New(string)
-
-   // If fec is already positive, return it?
     SLIC_CHECK_MSG( !isPositiveBasis(fec),
         "This function is only meant to be called on non-positive finite element collection"
         );
@@ -163,6 +170,7 @@ public:
     }
 
     // Attempt to find the corresponding quadratic or cubic fec
+    // Note: Linear FECollections are positive
     if(dynamic_cast<const mfem::QuadraticFECollection*>(fec) ||
        dynamic_cast<const mfem::CubicFECollection*>(fec) )
     {
@@ -175,18 +183,29 @@ public:
   }
 
 
-  /*! Get the number of elements in the mesh */
+  /*! Returns the number of elements in the mesh */
   int numElements() const { return m_mesh->GetNE(); }
 
+  /*! Returns the dimension of the mesh */
   int meshDimension() const { return m_mesh->Dimension(); }
 
   /*! Get a pointer to the mesh */
   mfem::Mesh* getMesh() const { return m_mesh; }
 
+  /*!
+   * Computes the bounding boxes of all mesh elements
+   *
+   * \param [in] bboxScaleFactor A scaling factor to expand the bounding boxes
+   * \param [out] eltBBoxes A vector of bounding boxes, one per mesh element
+   * \param [out] meshBBox A bounding box for the mesh
+   *
+   * \pre \a eltBBoxes has sufficient space to store \a numElements() bounding boxes
+   * \pre \a bboxScaleFactor >= 1.
+   */
   template<int NDIMS>
   void computeBoundingBoxes(double bboxScaleFactor,
       std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
-      axom::primal::BoundingBox<double, NDIMS>& meshBBox)
+      axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
     SLIC_ASSERT( static_cast<int>(eltBBoxes.size()) >= numElements() );
 
@@ -200,7 +219,20 @@ public:
     }
   }
 
-  void findInSpace(IndexType eltIdx, const double* isopar, double* pt)
+  /*!
+   * Evaluate the position of a point within a mesh cell at the given
+   * isoparametric coordinates.
+   *
+   * \param [in] eltIdx The index of the element  within the mesh
+   * \param [in[ isopar The isoparametric coordinates at which to evaluate
+   * \param [out] pos The computed coordinates of the evaluated point
+   *
+   * \pre \a isopar must be non-NULL and have \a meshDimension() coordinates
+   * \pre \a pt must be non-NULL and have space for \a meshDimension() coordinates
+   *
+   * \sa PointInCell::reconstructPoint()
+   */
+  void reconstructPoint(IndexType eltIdx, const double* isopar, double* pt) const
   {
     const int dim = meshDimension();
 
@@ -215,12 +247,14 @@ public:
   }
 
   /*!
-   * Attempts to find isoparametric coordinates \a isopar of a point \a pt in space
-   * with respect to a given element of the mesh (with index \a eltIdx)
+   * Attempts to find isoparametric coordinates \a isopar of a point \a pt in space.
+   *
    * \return True if \a pt is contained in the element, in which case
    *         the coordinates of \a isopar will be in the unit cube (of dimension NDIMS)
+   *
+   * \sa PointInCell::locatePointInCell()
    */
-  bool getIsoparametricCoords(IndexType eltIdx, const double* pt, double* isopar)
+  bool locatePointInCell(IndexType eltIdx, const double* pt, double* isopar) const
   {
     const int dim = meshDimension();
     const int refineOrder = 1;      // TODO: Make this a class variable
@@ -247,17 +281,16 @@ public:
 
 private:
   /*!
-   * Helper function to initialize the bounding boxes for a high order mfem mesh
+   * Helper function to initialize the bounding boxes for a high-order mfem mesh
    *
-   * \param bboxScaleFactor Scale factor for expanding bounding boxes
-   * \note This function can only be called before the class is initialized
    * \pre This function can only be called when m_isHighOrder is true
    * \pre bboxScaleFactor must be greater than or equal to 1.
+   * \sa computeBoundingBoxes()
    */
   template<int NDIMS>
   void computeHighOrderBoundingBoxes(double bboxScaleFactor,
       std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
-      axom::primal::BoundingBox<double, NDIMS>& meshBBox)
+      axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
     typedef axom::primal::Point<double, NDIMS> SpacePoint;
     typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
@@ -359,17 +392,19 @@ private:
   }
 
   /*!
-   * Helper function to initialize the bounding boxes for a low order mfem mesh
+   * Helper function to initialize the bounding boxes for a low-order mfem mesh
    *
    * \param bboxScaleFactor Scale factor for expanding bounding boxes
    * \note This function can only be called before the class is initialized
    * \pre This function can only be called when m_isHighOrder is false
    * \pre bboxScaleFactor must be greater than or equal to 1.
+   *
+   * \sa computeBoundingBoxes()
    */
   template<int NDIMS>
   void computeLowOrderBoundingBoxes(double bboxScaleFactor,
       std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
-      axom::primal::BoundingBox<double, NDIMS>& meshBBox)
+      axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
     typedef axom::primal::Point<double, NDIMS> SpacePoint;
     typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
@@ -402,7 +437,6 @@ private:
   mfem::Mesh* m_mesh;
   bool m_isHighOrder;
 };
-
 
 
 

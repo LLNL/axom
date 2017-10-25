@@ -50,7 +50,7 @@ namespace
 #else
   const int NREFINE = 5;
   const int NUM_TEST_PTS = 100000;
-  const int TEST_GRID_RES = 10;
+  const int TEST_GRID_RES = 3;
 #endif
 
 }
@@ -62,6 +62,9 @@ enum MeshType {
   C_SHAPED_MESH
 };
 
+/*!
+ * Test fixture for PointInCell tests on MFEM meshes
+ */
 template<int DIM>
 class PointInCellTest : public ::testing::Test
 {
@@ -224,7 +227,7 @@ public:
         ++numInverseXforms;
 
         SpacePt untransformPt;
-        spatialIndex.findInSpace(idx, isoPar.data(), untransformPt.data() );
+        spatialIndex.reconstructPoint(idx, isoPar.data(), untransformPt.data() );
 
         for(int i=0; i< DIM; ++i)
         {
@@ -306,7 +309,7 @@ public:
         }
 
         SpacePt spacePt;
-        spatialIndex.findInSpace(eltId, isoparCenter.data(), spacePt.data());
+        spatialIndex.reconstructPoint(eltId, isoparCenter.data(), spacePt.data());
 
         int foundCellId = spatialIndex.locatePoint(spacePt.data(), foundIsoPar.data());
 
@@ -342,7 +345,7 @@ public:
         if(foundCellId != MeshTraits::NO_CELL)
         {
           SpacePt transformedPt;
-          spatialIndex.findInSpace(foundCellId, foundIsoPar.data(), transformedPt.data() );
+          spatialIndex.reconstructPoint(foundCellId, foundIsoPar.data(), transformedPt.data() );
 
           for(int i=0; i< DIM; ++i)
           {
@@ -1113,7 +1116,7 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     {
       ++numUntransformed;
       SpacePt untransformPt;
-      spatialIndex1.findInSpace(idx1, isoPar1.data(), untransformPt.data());
+      spatialIndex1.reconstructPoint(idx1, isoPar1.data(), untransformPt.data());
 
       if(! isInMesh2)
       {
@@ -1133,7 +1136,7 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     {
       ++numUntransformed;
       SpacePt untransformPt;
-      spatialIndex2.findInSpace(idx2, isoPar2.data(), untransformPt.data());
+      spatialIndex2.reconstructPoint(idx2, isoPar2.data(), untransformPt.data());
 
       if(! isInMesh1)
       {
@@ -1170,7 +1173,7 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
 
     // Find the corresponding point in space
     SpacePt spacePt;
-    spatialIndex1.findInSpace(eltId, isoparCenter.data(), spacePt.data() );
+    spatialIndex1.reconstructPoint(eltId, isoparCenter.data(), spacePt.data() );
 
     // Check that we can find this point in mesh1
     int foundCellId1 = spatialIndex1.locatePoint(spacePt.data(), foundIsoPar1.data() );
@@ -1234,7 +1237,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
         {
             SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
             SpacePt spacePt;
-            spatialIndex1.findInSpace(0, isoparPt.data(), spacePt.data() );
+            spatialIndex1.reconstructPoint(0, isoparPt.data(), spacePt.data() );
             cmesh.setNode(i,j,spacePt[0],spacePt[1]);
         }
     }
@@ -1260,7 +1263,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
               double midY = (2.*j+1)/(2.*denom);
               SpacePt origIsoPt = SpacePt::make_point(midX, midY);
               SpacePt pt;
-              spatialIndex1.findInSpace(0,  origIsoPt.data(), pt.data() );
+              spatialIndex1.reconstructPoint(0,  origIsoPt.data(), pt.data() );
 
               // Reverse map
               SpacePt isoPt;
