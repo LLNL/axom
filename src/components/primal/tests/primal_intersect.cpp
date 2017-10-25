@@ -1117,20 +1117,6 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     PointType tripoint2 = triangleAt(tri, tip2);
     PointType segpoint2 = segmentAt(seg2, t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
-
-    // When intersection is not on the endpoints,
-    // check that intersection points are the same
-    // bool t1IsEndPoint =
-    //   ( t1 == 0 || axom::utilities::isNearlyEqual(t1, seg1.length()) );
-    // bool t2IsEndPoint =
-    //   ( t2 == 0 || axom::utilities::isNearlyEqual(t2, seg2.length()) );
-    // if (!t1IsEndPoint && !t2IsEndPoint) {
-    //   for (int i=0; i<DIM; ++i) {
-    //     EXPECT_NEAR(ip1[i], ip2[i], 1e-4 )
-    //       << "Points " << ip1 << " and " << ip2
-    //       << " differed in coordinate " << i;
-    //   }
-    // }
   }
   else{
     EXPECT_FALSE( intersect(tri, seg1, t, tip))
