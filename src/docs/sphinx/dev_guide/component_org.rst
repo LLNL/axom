@@ -181,7 +181,7 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
   #. Code formatting target if component-specific uncrustify configuration file
      is provided; e.g.,::
 
-       add_code_check_targets(uncrustify.cfg) 
+       blt_add_code_check_targets(uncrustify.cfg) 
 
 .. note:: Each Axom component can either provide its own *uncrustify* 
           configuration file (e.g., `uncrustify.cfg`) or use the common 

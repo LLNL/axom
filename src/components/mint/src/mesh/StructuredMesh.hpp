@@ -115,7 +115,7 @@ public:
    * \param [in] ndims 3-tuple holding the number of nodes in each dimension.
    * \post ndims[ i ] >= 1, \$ \forall i \in [0,2] \$
    */
-  void getExtentSize( int ndims[ 3 ] ) const
+  inline void getExtentSize( int ndims[ 3 ] ) const
   {
     for ( int i=0; i < 3; ++i ) {
       ndims[ i ] = m_extent->size( i );
@@ -124,12 +124,28 @@ public:
   }
 
   /*!
+   * \brief Returns stride to the second dimension.
+   * \return jp stride to the second dimension.
+   * \post jp >= 0.
+   */
+  inline int jp() const
+  { return m_extent->jp(); }
+
+  /*!
+   * \brief Returns stride to the third dimension.
+   * \return kp stride to the third dimension.
+   * \post kp >= 0.
+   */
+  inline int kp() const
+  { return m_extent->kp(); }
+
+  /*!
    * \brief Returns the number of nodes in this mesh instance.
    * \return N the total number of nodes in the mesh.
    * \pre m_extent != AXOM_NULLPTR
    * \post N >= 0.
    */
-  int getNumberOfNodes() const
+  inline int getNumberOfNodes() const
   { return m_extent->getNumNodes(); };
 
   /*!
@@ -138,7 +154,7 @@ public:
    * \pre m_extent != AXOM_NULLPTR.
    * \post N >= 0.
    */
-  int getNumberOfCells() const
+  inline int getNumberOfCells() const
   { return m_extent->getNumCells(); };
 
   /*!
@@ -146,7 +162,7 @@ public:
    * \return N the number of nodes per cell.
    * \post N=4 if 2-D, else N=8.
    */
-  int getNumberOfCellNodes() const
+  inline int getNumberOfCellNodes() const
   { return( ( m_ndims == 2 ) ? 4 : 8); };
 
   /*!
@@ -156,8 +172,17 @@ public:
    * \param [in] k logical index of the third dimension (optional)
    * \return idx the corresponding linear index.
    */
-  int getLinearIndex( int i, int j, int k = 0  ) const
+  inline int getLinearIndex( int i, int j, int k  ) const
   { return m_extent->getLinearIndex( i, j, k ); };
+
+  /*!
+   * \brief Returns the linear index corresponding to the given logical indices.
+   * \param [in] i logical index of the first dimension.
+   * \param [in] j logical index of the second dimension.
+   * \return idx the corresponding linear index.
+   */
+  inline int getLinearIndex( int i, int j ) const
+  { return m_extent->getLinearIndex( i, j ); };
 
   /*!
    * \brief Returns the linear index corresponding to the given logical grid cell
@@ -167,8 +192,19 @@ public:
    * \param [in] k logical cell index of the third dimension (optional)
    * \return idx the corresponding linear index of the cell.
    */
-  int getCellLinearIndex( int i, int j, int k=0 ) const
-  { return m_extent->getCellLinearIndex(i, j, k); };
+  inline int getCellLinearIndex( int i, int j, int k ) const
+  { return m_extent->getCellLinearIndex( i, j, k); };
+
+  /*!
+   * \brief Returns the linear index corresponding to the given logical grid cell
+   * indices.
+   * \param [in] i logical cell index of the first dimension.
+   * \param [in] j logical cell index of the second dimension.
+   * \param [in] k logical cell index of the third dimension (optional)
+   * \return idx the corresponding linear index of the cell.
+   */
+  inline int getCellLinearIndex( int i, int j ) const
+  { return m_extent->getCellLinearIndex( i, j ); };
 
   /*!
    * \brief Returns the cell connectivity for the given cell.
@@ -177,7 +213,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
    * \pre the user-supplied cell buffer must be of getNumberOfCellNodes() size.
    */
-  void getCell( int cellIdx, int* cell ) const;
+  inline void getCell( int cellIdx, int* cell ) const;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j)
@@ -186,7 +222,7 @@ public:
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 2.
    */
-  void getCell( int i, int j, int* cell ) const;
+  inline void getCell( int i, int j, int* cell ) const;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j,k)
@@ -196,7 +232,7 @@ public:
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 3.
    */
-  void getCell( int i, int j, int k, int* cell) const;
+  inline void getCell( int i, int j, int k, int* cell) const;
 
   /// \name GetNode() methods -- implemented in concrete instances.
   /// @{
@@ -288,9 +324,8 @@ protected:
    * \param [in] blockId the block ID of the mesh.
    * \param [in] partId the partition ID of the mesh.
    */
-  StructuredMesh( int meshType, int ndims, const int ext[6], int blockId, 
+  StructuredMesh( int meshType, int ndims, const int ext[6], int blockId,
                   int partId );
-
 
   Extent< int >* m_extent; /*!< grid extent */
 

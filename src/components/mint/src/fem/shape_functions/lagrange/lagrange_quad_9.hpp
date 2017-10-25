@@ -11,7 +11,6 @@
 #ifndef MINT_QUAD9_HPP_
 #define MINT_QUAD9_HPP_
 
-
 // Mint includes
 #include "mint/CellType.hpp"
 #include "mint/FEBasisTypes.hpp"
@@ -46,7 +45,7 @@ namespace mint {
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_QUAD9 > : public ShapeFunction< Lagrange< MINT_QUAD9 > >
+class Lagrange< MINT_QUAD9 > :public ShapeFunction< Lagrange< MINT_QUAD9 > >
 {
 public:
 
@@ -66,60 +65,60 @@ public:
 
   static void getCenter( double* center )
   {
-     SLIC_ASSERT( center != AXOM_NULLPTR );
+    SLIC_ASSERT( center != AXOM_NULLPTR );
 
-     center[ 0 ] = 0.5;
-     center[ 1 ] = 0.5;
+    center[ 0 ] = 0.5;
+    center[ 1 ] = 0.5;
   }
 
   static void getCoords( double* coords )
   {
-     SLIC_ASSERT( coords != AXOM_NULLPTR );
+    SLIC_ASSERT( coords != AXOM_NULLPTR );
 
-     // corners:
-     // node 0
-     coords[ 0 ] = 0.0;
-     coords[ 1 ] = 0.0;
+    // corners:
+    // node 0
+    coords[ 0 ] = 0.0;
+    coords[ 1 ] = 0.0;
 
-     // node 1
-     coords[ 2 ] = 1.0;
-     coords[ 3 ] = 0.0;
+    // node 1
+    coords[ 2 ] = 1.0;
+    coords[ 3 ] = 0.0;
 
-     // node 2
-     coords[ 4 ] = 1.0;
-     coords[ 5 ] = 1.0;
+    // node 2
+    coords[ 4 ] = 1.0;
+    coords[ 5 ] = 1.0;
 
-     // node 3
-     coords[ 6 ] = 0.0;
-     coords[ 7 ] = 1.0;
+    // node 3
+    coords[ 6 ] = 0.0;
+    coords[ 7 ] = 1.0;
 
-     // edges:
-     // node 4
-     coords[ 8 ] = 0.5;
-     coords[ 9 ] = 0.0;
+    // edges:
+    // node 4
+    coords[ 8 ] = 0.5;
+    coords[ 9 ] = 0.0;
 
-     // node 5
-     coords[ 10 ] = 1.0;
-     coords[ 11 ] = 0.5;
+    // node 5
+    coords[ 10 ] = 1.0;
+    coords[ 11 ] = 0.5;
 
-     // node 6
-     coords[ 12 ] = 0.5;
-     coords[ 13 ] = 1.0;
+    // node 6
+    coords[ 12 ] = 0.5;
+    coords[ 13 ] = 1.0;
 
-     // node 7
-     coords[ 14 ] = 0.0;
-     coords[ 15 ] = 0.5;
+    // node 7
+    coords[ 14 ] = 0.0;
+    coords[ 15 ] = 0.5;
 
     // centroid:
-     // node 8
-     coords[ 16 ] = 0.5;
-     coords[ 17 ] = 0.5;
+    // node 8
+    coords[ 16 ] = 0.5;
+    coords[ 17 ] = 0.5;
   }
 
   static void computeShape( const double* xr, double* phi )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phi != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phi != AXOM_NULLPTR );
 
     const double r  = xr[0];
     const double s  = xr[1];
@@ -147,8 +146,8 @@ public:
 
   static void computeDerivatives( const double* xr, double* phidot )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phidot != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phidot != AXOM_NULLPTR );
 
     const double r  = xr[0];
     const double s  = xr[1];

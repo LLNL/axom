@@ -90,8 +90,8 @@ void MeshCoordinates::insertPoint( double x, double y, double z )
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x )
 {
-  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
-  SLIC_ASSERT( m_ndims == 1 );
+  SLIC_ASSERT(  ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
+  SLIC_ASSERT(  m_ndims == 1 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
 }
@@ -99,8 +99,8 @@ void MeshCoordinates::setPoint( int pntIdx, double x )
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x, double y )
 {
-  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
-  SLIC_ASSERT( m_ndims == 2 );
+  SLIC_ASSERT(  ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
+  SLIC_ASSERT(  m_ndims == 2 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
   m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
@@ -109,8 +109,8 @@ void MeshCoordinates::setPoint( int pntIdx, double x, double y )
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
 {
-  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
-  SLIC_ASSERT( m_ndims == 3 );
+  SLIC_ASSERT(  ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
+  SLIC_ASSERT(  m_ndims == 3 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
   m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
@@ -120,8 +120,8 @@ void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
 //------------------------------------------------------------------------------
 double MeshCoordinates::getCoordinate( int pntIdx, int dim )
 {
-  SLIC_ASSERT( dim < m_ndims );
-  SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
+  SLIC_ASSERT(  dim < m_ndims );
+  SLIC_ASSERT(  ( pntIdx >= 0 ) && ( pntIdx < this->getNumberOfPoints() ) );
   return m_coordinates[ dim ][ pntIdx ];
 }
 

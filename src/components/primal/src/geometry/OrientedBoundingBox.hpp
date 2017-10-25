@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "axom/config.hpp"   // defines AXOM_USE_CXX11
+#include "axom/Macros.hpp"   // for AXOM_DEBUG_VAR
 
 #include "primal/NumericArray.hpp" // for numeric arrays
 #include "axom_utils/vector_utilities.hpp" // for vector calculations
@@ -422,6 +423,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType *pts,
   T lambdas[NDIMS];
 
   int eigen_res = numerics::eigen_solve< T >(covar, NDIMS, u, lambdas);
+  AXOM_DEBUG_VAR(eigen_res);
   SLIC_ASSERT(eigen_res);
 
   // save the axes

@@ -12,4 +12,4 @@
 # documentation targets
 ################################
 
-add_doxygen_target(spio_doxygen)
+blt_add_doxygen_target(spio_doxygen)

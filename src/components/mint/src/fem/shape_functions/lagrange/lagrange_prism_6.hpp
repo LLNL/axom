@@ -42,7 +42,7 @@ static const double PRISM_ONE_THIRD =  1.0/3.0;
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_PRISM > : public ShapeFunction< Lagrange< MINT_PRISM > >
+class Lagrange< MINT_PRISM > :public ShapeFunction< Lagrange< MINT_PRISM > >
 {
 public:
 
@@ -63,7 +63,8 @@ public:
   static void getCenter( double* center )
   {
     SLIC_ASSERT( center != AXOM_NULLPTR );
-    center[ 0 ] = center[ 1 ] = PRISM_ONE_THIRD; center[ 2 ] = 0.5;
+    center[ 0 ] = center[ 1 ] = PRISM_ONE_THIRD;
+    center[ 2 ] = 0.5;
   }
 
   static void getCoords( double* coords )
@@ -103,8 +104,8 @@ public:
 
   static void computeShape( const double* xr, double* phi )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phi != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phi != AXOM_NULLPTR );
 
     const double r  = xr[0];
     const double s  = xr[1];
@@ -124,8 +125,8 @@ public:
 
   static void computeDerivatives( const double* xr, double* phidot )
   {
-    SLIC_ASSERT( xr != AXOM_NULLPTR );
-    SLIC_ASSERT( phidot != AXOM_NULLPTR );
+    SLIC_ASSERT(  xr != AXOM_NULLPTR );
+    SLIC_ASSERT(  phidot != AXOM_NULLPTR );
 
     const double r  = xr[0];
     const double s  = xr[1];

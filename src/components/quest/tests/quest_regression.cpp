@@ -49,11 +49,12 @@
 
 
 // toolkit includes
-#include "fmt/format.h"
-
+#include "axom/config.hpp"
 #include "axom/Types.hpp"
 #include "axom_utils/Timer.hpp"
 #include "axom_utils/Utilities.hpp"
+
+#include "fmt/format.h"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

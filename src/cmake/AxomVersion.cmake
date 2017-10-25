@@ -13,10 +13,11 @@
 ##       otherwise, the hard-coded values will go in to the config.
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 2)
-set(AXOM_VERSION_PATCH 5)
-set(AXOM_VERSION_FULL "v${AXOM_VERSION_MAJOR}.")
-string(APPEND AXOM_VERSION_FULL "${AXOM_VERSION_MINOR}.")
-string(APPEND AXOM_VERSION_FULL "${AXOM_VERSION_PATCH}" )
+set(AXOM_VERSION_PATCH 6)
+string(CONCAT AXOM_VERSION_FULL 
+    "v${AXOM_VERSION_MAJOR}"
+    ".${AXOM_VERSION_MINOR}"
+    ".${AXOM_VERSION_PATCH}" )
 
 ##------------------------------------------------------------------------------
 ## extract_version_components( <tag>, <prefix> )

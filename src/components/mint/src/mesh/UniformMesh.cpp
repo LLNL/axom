@@ -22,7 +22,7 @@ UniformMesh::UniformMesh():
   StructuredMesh( MINT_UNDEFINED_MESH,-1,AXOM_NULLPTR)
 {
   std:: fill( m_origin, m_origin + 3, 0.0);
-  std:: fill( m_h, m_h + 3, 1.0);
+  std:: fill( m_h,      m_h + 3,      1.0);
 }
 
 //------------------------------------------------------------------------------
@@ -35,65 +35,71 @@ UniformMesh::UniformMesh( int dimension, const double origin[3],
   std:: fill( m_h,      m_h + 3,      1.0 );
 
   memcpy( m_origin, origin, dimension * sizeof( double ) );
-  memcpy( m_h, h, dimension * sizeof( double ) );
+  memcpy( m_h,      h,      dimension * sizeof( double ) );
 }
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension, const int ext[6],
-                                         const double lower_bound[3],
-                                         const double upper_bound[3] ):
+                          const double lower_bound[3],
+                          const double upper_bound[3] ):
   StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext )
 
 {
-  std:: fill( m_origin, m_origin + 3, 0.0 );
-  std:: fill( m_h,      m_h + 3,      1.0 );
+  const int MAX_DIM = 3;
 
-  double h[ dimension ];
+  std:: fill( m_origin, m_origin + MAX_DIM, 0.0 );
+  std:: fill( m_h,      m_h + MAX_DIM,      1.0 );
+
+  double h[ MAX_DIM ];
   for ( int dim = 0; dim < dimension; ++dim ) {
-    double dim_length = utilities::abs( lower_bound[ dim ] - upper_bound[ dim ] );
+    double dim_length =
+      utilities::abs( lower_bound[ dim ] - upper_bound[ dim ] );
     h[ dim ] = dim_length / ( m_extent->size( dim ) - 1.0 );
   }
 
-  memcpy( m_origin, lower_bound, dimension * sizeof( double ) );
-  memcpy( m_h, h, dimension * sizeof( double ) );
+  memcpy( m_origin, lower_bound,  dimension * sizeof( double ) );
+  memcpy( m_h,      h,            dimension * sizeof( double ) );
 }
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension, const double origin[3],
-                                         const double h[3],
-                                         const int ext[6],
-                                         int blockId,
-                                         int partitionId ):
-  StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext, blockId, 
+                          const double h[3],
+                          const int ext[6],
+                          int blockId,
+                          int partitionId ):
+  StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext, blockId,
                   partitionId )
 {
   std:: fill( m_origin, m_origin + 3, 0.0 );
   std:: fill( m_h,      m_h + 3,      1.0 );
 
   memcpy( m_origin, origin, dimension * sizeof( double ) );
-  memcpy( m_h, h, dimension * sizeof( double ) );
+  memcpy( m_h,      h,      dimension * sizeof( double ) );
 }
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension, const int ext[6],
-                                         const double lower_bound[3],
-                                         const double upper_bound[3],
-                                         int blockId,
-                                         int partitionId ):
-  StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext, blockId, 
+                          const double lower_bound[3],
+                          const double upper_bound[3],
+                          int blockId,
+                          int partitionId ):
+  StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext, blockId,
                   partitionId )
 {
-  std:: fill( m_origin, m_origin + 3, 0.0 );
-  std:: fill( m_h,      m_h + 3,      1.0 );
+  const int MAX_DIM = 3;
 
-  double h[ dimension ];
+  std:: fill( m_origin, m_origin + MAX_DIM, 0.0 );
+  std:: fill( m_h,      m_h + MAX_DIM,      1.0 );
+
+  double h[ MAX_DIM ];
   for ( int dim = 0; dim < dimension; ++dim ) {
-    double dim_length = utilities::abs( lower_bound[ dim ] - upper_bound[ dim ] );
+    double dim_length =
+      utilities::abs( lower_bound[ dim ] - upper_bound[ dim ] );
     h[ dim ] = dim_length / ( m_extent->size( dim ) - 1.0 );
   }
 
-  memcpy( m_origin, lower_bound, dimension * sizeof( double ) );
-  memcpy( m_h, h, dimension * sizeof( double ) );
+  memcpy( m_origin, lower_bound,  dimension * sizeof( double ) );
+  memcpy( m_h,      h,            dimension * sizeof( double ) );
 }
 
 //------------------------------------------------------------------------------

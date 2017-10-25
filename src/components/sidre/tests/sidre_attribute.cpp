@@ -164,10 +164,12 @@ TEST(sidre_attribute,view_attr)
   DataStore * ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_color = ds->createAttributeString(g_name_color, g_color_none);
+  Attribute * attr_color =
+    ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  Attribute * attr_animal = ds->createAttributeString(g_name_animal, g_animal_none);
+  Attribute * attr_animal = ds->createAttributeString(g_name_animal,
+                                                      g_animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
   Group * root = ds->getRoot();
@@ -425,7 +427,8 @@ TEST(sidre_attribute,as_node)
   DataStore * ds = new DataStore();
 
   // Create attributes for DataStore
-  Attribute * attr_color = ds->createAttributeString(g_name_color, g_color_none);
+  Attribute * attr_color =
+    ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
   Attribute * attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
@@ -463,7 +466,8 @@ TEST(sidre_attribute,overloads)
   DataStore * ds = new DataStore();
 
   // Create string and scalar attributes
-  Attribute * attr_color = ds->createAttributeString(g_name_color, g_color_none);
+  Attribute * attr_color =
+    ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
   IndexType icolor = attr_color->getIndex();
   EXPECT_EQ(0, icolor);

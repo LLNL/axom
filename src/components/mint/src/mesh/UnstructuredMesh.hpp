@@ -283,7 +283,8 @@ UnstructuredMesh< CellType >::UnstructuredMesh(
 
 //------------------------------------------------------------------------------
 template < int CellType >
-UnstructuredMesh< CellType >::~UnstructuredMesh() {
+UnstructuredMesh< CellType >::~UnstructuredMesh()
+{
   delete m_node_coordinates;
   delete m_cell_connectivity;
 }
@@ -292,11 +293,12 @@ UnstructuredMesh< CellType >::~UnstructuredMesh() {
 template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertCell( const int* cell, int cell_type,
-                                               int num_nodes ) {
-  SLIC_ASSERT( cell != AXOM_NULLPTR );
-  SLIC_ASSERT( m_cell_connectivity != AXOM_NULLPTR );
-  SLIC_ASSERT( cell::num_nodes[ cell_type ] == num_nodes );
-  SLIC_ASSERT( (CellType == MINT_MIXED_CELL)? true : CellType == cell_type );
+                                               int num_nodes )
+{
+  SLIC_ASSERT(  cell != AXOM_NULLPTR );
+  SLIC_ASSERT(  m_cell_connectivity != AXOM_NULLPTR );
+  SLIC_ASSERT(  cell::num_nodes[ cell_type ] == num_nodes );
+  SLIC_ASSERT(  (CellType == MINT_MIXED_CELL) ? true : CellType == cell_type );
 
   m_cell_connectivity->insertCell( cell, cell_type, num_nodes );
 }
@@ -304,18 +306,20 @@ void UnstructuredMesh< CellType >::insertCell( const int* cell, int cell_type,
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-void UnstructuredMesh< CellType >::insertNode( double x ) {
-  SLIC_ASSERT( m_ndims == 1 );
-  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
+void UnstructuredMesh< CellType >::insertNode( double x )
+{
+  SLIC_ASSERT(  m_ndims == 1 );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x );
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-void UnstructuredMesh< CellType >::insertNode( double x, double y ) {
-  SLIC_ASSERT( m_ndims == 2 );
-  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
+void UnstructuredMesh< CellType >::insertNode( double x, double y )
+{
+  SLIC_ASSERT(  m_ndims == 2 );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x, y );
 }
 
@@ -324,22 +328,24 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
 {
-  SLIC_ASSERT( m_ndims == 3 );
-  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT(  m_ndims == 3 );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
   m_node_coordinates->insertPoint( x, y, z );
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline void UnstructuredMesh< CellType >::insertNode( const double* node ) {
-  SLIC_ASSERT( node != AXOM_NULLPTR );
-  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
+inline void UnstructuredMesh< CellType >::insertNode( const double* node )
+{
+  SLIC_ASSERT(  node != AXOM_NULLPTR );
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
 
   if ( m_ndims == 2 ) {
 
     m_node_coordinates->insertPoint( node[0], node[1] );
 
-  } else {
+  }
+  else {
 
     SLIC_ASSERT( m_ndims == 3 );
     m_node_coordinates->insertPoint( node[0], node[1], node[2] );
@@ -352,18 +358,20 @@ inline void UnstructuredMesh< CellType >::insertNode( const double* node ) {
 template < int CellType >
 inline
 const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
-const {
-  SLIC_ASSERT( m_node_coordinates != AXOM_NULLPTR );
-  SLIC_ASSERT( dim < m_ndims );
+const
+{
+  SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT(  dim < m_ndims );
   return m_node_coordinates->getCoordinateArray( dim );
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const int* UnstructuredMesh< CellType >::getCell( int cellIdx ) const {
-  SLIC_ASSERT( m_cell_connectivity != AXOM_NULLPTR );
-  SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+const int* UnstructuredMesh< CellType >::getCell( int cellIdx ) const
+{
+  SLIC_ASSERT(  m_cell_connectivity != AXOM_NULLPTR );
+  SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
   return (*m_cell_connectivity)[ cellIdx ];
 }
 

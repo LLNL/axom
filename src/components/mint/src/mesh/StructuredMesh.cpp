@@ -30,8 +30,8 @@ StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ]):
 {}
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ],  
-                int blockId, int partId):
+StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ],
+                                int blockId, int partId):
   Mesh( ndims, meshType, blockId, partId ),
   m_extent( new Extent< int >( ndims, ext ) )
 

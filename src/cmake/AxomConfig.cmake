@@ -14,6 +14,7 @@
 
 ## Get Axom version information
 include(cmake/AxomVersion.cmake)
+message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 
 if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
     set(AXOM_USE_CXX11 TRUE)

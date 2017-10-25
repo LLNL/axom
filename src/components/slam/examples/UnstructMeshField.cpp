@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "axom/config.hpp"
 #include "axom/Macros.hpp"
 #include "axom_utils/FileUtilities.hpp"
 

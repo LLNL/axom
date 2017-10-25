@@ -7,6 +7,7 @@ set(gtest_utils_tests
    utils_endianness.cpp
    utils_fileUtilities.cpp
    utils_types.cpp
+   utils_utilities.cpp
 
    numerics_determinants.cpp
    numerics_linear_solve.cpp
