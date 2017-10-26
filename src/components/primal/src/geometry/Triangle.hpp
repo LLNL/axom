@@ -222,6 +222,25 @@ public:
   }
 
   /*!
+   * \brief Returns the world coordinates of a barycentric point
+   * \pre Components of bary sum to 1
+   */
+  PointType at(const Point<double, 3> & bary) const
+  {
+    double barysum = bary[0] + bary[1] + bary[2];
+
+    SLIC_ASSERT_MSG( std::abs(1 - barysum) < 1e-4,
+                     "Barycentric coordinates must sum to (near) one." );
+
+    NumericArray< T, NDIMS > res =
+      NumericArray< T, NDIMS >(bary[0] * m_points[0].array()) +
+      NumericArray< T, NDIMS >(bary[1] * m_points[1].array()) +
+      NumericArray< T, NDIMS >(bary[2] * m_points[2].array());
+
+    return primal::Point< T, NDIMS >(res);
+  }
+
+  /*!
    * \brief Returns whether the triangle is degenerate
    * \return true iff the triangle is degenerate (0 area)
    * \see primal::Point

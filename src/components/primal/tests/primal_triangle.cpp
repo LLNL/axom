@@ -79,7 +79,7 @@ TEST( primal_triangle, triangle_area_3D)
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_triangle, triangle_barycentric)
+TEST( primal_triangle, triangle_world_to_bary)
 {
   static const int DIM = 3;
   static const double EPS = 1e-12;
@@ -140,6 +140,72 @@ TEST( primal_triangle, triangle_barycentric)
     EXPECT_NEAR(bary[0],  expBary[0], EPS );
     EXPECT_NEAR(bary[1],  expBary[1], EPS );
     EXPECT_NEAR(bary[2],  expBary[2], EPS );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_triangle, triangle_bary_to_world)
+{
+  static const int DIM = 3;
+  static const double EPS = 1e-12;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > QPoint;
+  typedef primal::Triangle< CoordType, DIM > QTri;
+
+  QPoint pt[3] = {
+    QPoint::make_point( 1,0,0),
+    QPoint::make_point( 0,1,0),
+    QPoint::make_point( 0,0,1),
+  };
+
+  QTri tri(pt[0],pt[1],pt[2]);
+
+  typedef std::vector< std::pair< QPoint,QPoint > > TestVec;
+  TestVec testData;
+
+  // Test the three vertices
+  testData.push_back(  std::make_pair( QPoint::make_point(1.,0.,0.), pt[0]));
+  testData.push_back(  std::make_pair( QPoint::make_point(0.,1.,0.), pt[1]));
+  testData.push_back(  std::make_pair( QPoint::make_point(0.,0.,1.), pt[2]));
+
+  // Test the three edge midpoints
+  testData.push_back(  std::make_pair(
+                         QPoint::make_point(0.5,0.5,0.),
+                         QPoint( 0.5 * (pt[0].array() + pt[1].array()))));
+  testData.push_back( std::make_pair(
+                        QPoint::make_point(0.5,0.,0.5),
+                        QPoint( 0.5 * (pt[0].array() + pt[2].array()))));
+  testData.push_back( std::make_pair(
+                        QPoint::make_point(0.,0.5,0.5),
+                        QPoint( 0.5 * (pt[1].array() + pt[2].array()))));
+
+  // Test the triangle midpoint
+  testData.push_back( std::make_pair(
+                        QPoint::make_point(1./3.,1./3.,1./3.),
+                        QPoint( 1./3. *
+                                (pt[0].array() + pt[1].array() +
+                                 pt[2].array()))));
+
+  // Test a point outside the triangle
+  testData.push_back(std::make_pair(
+                       QPoint::make_point(-0.4, 1.2, 0.2),
+                       QPoint(-0.4*pt[0].array() + 1.2*pt[1].array() + 0.2*
+                              pt[2].array())));
+
+  // Now run the actual tests
+  for (TestVec::const_iterator it= testData.begin(); it != testData.end();
+       ++it) {
+    const QPoint& query = it->first;
+    const QPoint& expWorld = it->second;
+    QPoint wcoords = tri.at(query);
+
+    SLIC_DEBUG(fmt::format(
+                 "Computed world coordinates for triangle {} at barycentric {} are {}",
+                 tri, query, wcoords));
+    EXPECT_NEAR(wcoords[0],  expWorld[0], EPS );
+    EXPECT_NEAR(wcoords[1],  expWorld[1], EPS );
+    EXPECT_NEAR(wcoords[2],  expWorld[2], EPS );
   }
 
 }
