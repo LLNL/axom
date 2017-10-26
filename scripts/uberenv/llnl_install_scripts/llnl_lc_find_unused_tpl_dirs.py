@@ -6,8 +6,21 @@
 """
  file: llnl_lc_find_unused_tpl_dirs.py
 
- description: 
-  finds axom tpl installs on lc that are not referenced in host configs
+ description:
+
+  Finds axom tpl installs on lc that are not referenced in host configs.
+  Saves json summary to the file "tpl_dirs_summary.json"
+
+  The json file contains a dictonary with the folloing entries:
+
+      referenced: contains dirs referenced in host-config files
+      found: contains dirs found on the current system
+      active: contains dirs both found and referenced 
+      unused: contains dirs found but not referenced 
+
+  Note: it is possible to have dirs that are referenced but not
+  found (or active, unused) b/c host-configs reference dirs
+  across the center (ex: cz + rz)
 
 """
 
@@ -113,30 +126,39 @@ def list_installed_tpl_dirs():
 
 def check_installed_tpl_dirs():
     """
-    Returns dictonary that contains info about all found tpl 
-    dirs, and which of these are actually beuing used by checked-in
-    host configs
+    Returns a dictionary that contains info about all found tpl 
+    dirs and which of these are actually being used by checked-in
+    host configs.
+
+      referenced: contains dirs referenced in host-config files
+      found: contains dirs found on the current system
+      active: contains dirs both found and referenced 
+      unused: contains dirs found but not referenced 
+
+    Note: it is possible to have dirs that are referenced but not
+    found (or active, unused) b/c host-configs reference dirs
+    across the center (ex: cz + rz)
     """
-    res = {"refed":[],
-           "installed_tpl_dirs":[],
+    res = {"referenced":[],
+           "found":[],
            "active": [], 
            "unused": []}
 
     installed_dirs = list_installed_tpl_dirs()
-    res["installed_tpl_dirs"].extend(installed_dirs)  
+    res["found"].extend(installed_dirs)  
 
     cwd = os.getcwd()
     tmp_dir = clone_axom()
     os.chdir(pjoin(tmp_dir,"axom"))
     refed_dirs = find_tpl_dirs_in_host_configs_for_all_branches()
-    res["refed"].extend(refed_dirs)
+    res["referenced"].extend(refed_dirs)
 
     os.chdir(cwd)
     print "[cleaning up %s]" % tmp_dir
     shutil.rmtree(tmp_dir)
 
-    for l in res["installed_tpl_dirs"]:
-        if not l in res["refed"]:
+    for l in res["found"]:
+        if not l in res["referenced"]:
            res["unused"].append(l)
         else:
            res["active"].append(l)
@@ -150,7 +172,8 @@ def main():
     open(summary_file,"w").write(rjson)
     print rjson
     print ""
-    print "[# of installed %d ]" % len(r["installed_tpl_dirs"])
+    print "[# of referenced %d ]" % len(r["referenced"])
+    print "[# of found %d ]" % len(r["found"])
     print "[# of active %d ]" % len(r["active"])
     print "[# of unused %d ]" % len(r["unused"])
 
