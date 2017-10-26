@@ -3,6 +3,7 @@ PROJECT_BRIEF = "QUEST: Query Surface Tool"
 INPUT = @PROJECT_SOURCE_DIR@/src/mesh @PROJECT_SOURCE_DIR@/src/geom
 GENERATE_XML = YES
 USE_MATHJAX = YES
+MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
 FILE_PATTERNS += *.md *.markdown *.cpp *.hpp
 TAB_SIZE               = 2
 INLINE_INHERITED_MEMB  = YES
