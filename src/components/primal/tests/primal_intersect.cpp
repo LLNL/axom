@@ -1022,26 +1022,12 @@ primal::Point< T, DIM > segmentAt(const primal::Segment< T, DIM > & seg,
 }
 
 template < typename T, int DIM >
-primal::Point< T, DIM > triangleAt(const primal::Triangle< T, DIM > & tri,
-                                   const primal::Point< T, 3 > & bary)
-{
-  T denom = bary[0] + bary[1] + bary[2];
-  // if (std::abs(denom) < 1e-3)  This is a problem.
-  primal::NumericArray< T, 3 > weights = bary.array() / denom;
-
-  primal::NumericArray< T, 3 > res = weights[0] * tri[0].array() +
-    weights[1] * tri[1].array() + weights[2] * tri[2].array();
-
-  return primal::Point< T, DIM >(res);
-}
-
-template < typename T, int DIM >
 void ensureTriPointMatchesSegPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Point< T, 3 > & bary,
                                    const primal::Segment< T, DIM > & seg,
                                    double t)
 {
-  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
+  primal::Point< T, DIM > tripoint = tri.at(bary, true);
   primal::Point< T, DIM > segpoint = segmentAt(seg, t);
   EXPECT_TRUE(testPointsClose(tripoint, segpoint));
 }
@@ -1052,7 +1038,7 @@ void ensureTriPointMatchesRayPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Ray< T, DIM > & ray,
                                    double t)
 {
-  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
+  primal::Point< T, DIM > tripoint = tri.at(bary, true);
   primal::Point< T, DIM > raypoint = ray.at(t);
   EXPECT_TRUE(testPointsClose(tripoint, raypoint));
 }
@@ -1072,7 +1058,7 @@ void testRayIntersection(const primal::Triangle< double, DIM > & tri,
 
   if (testtrue) {
     EXPECT_TRUE(intersect(tri, ray, t, tip));
-    PointType tripoint = triangleAt(tri, tip);
+    PointType tripoint = tri.at(tip, true);
     PointType raypoint = ray.at(t);
     EXPECT_TRUE(testPointsClose(tripoint, raypoint)) << "Tripoint is " << tripoint <<
       " and raypoint is " << raypoint;
@@ -1105,7 +1091,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t1 = 0;
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
-    PointType tripoint1 = triangleAt(tri, tip1);
+    PointType tripoint1 = tri.at(tip1, true);
     PointType segpoint1 = segmentAt(seg1, t1);
     EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
       " and segpoint is " << segpoint1;
@@ -1114,7 +1100,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t2 = 0;
     PointType tip2;
     EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
-    PointType tripoint2 = triangleAt(tri, tip2);
+    PointType tripoint2 = tri.at(tip2, true);
     PointType segpoint2 = segmentAt(seg2, t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
   }
@@ -1328,7 +1314,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
-  PointType triIntersectionPoint = triangleAt(t2, intBary);
+  PointType triIntersectionPoint = t2.at(intBary, true);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
@@ -1360,7 +1346,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
   PointType intersectionPoint = segmentAt(s, intersectionParam);
-  PointType triIntersectionPoint = triangleAt(t, intBary);
+  PointType triIntersectionPoint = t.at(intBary, true);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);

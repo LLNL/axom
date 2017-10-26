@@ -223,19 +223,32 @@ public:
 
   /*!
    * \brief Returns the world coordinates of a barycentric point
-   * \pre Components of bary sum to 1
+   * \param [in] bary Barycentric coordinates relative to this triangle
+   * \param [in] doNormalize Normalize bary before computing result
+   *
+   * This method returns the sum of this triangle's vertices, weighted by the
+   * input argument bary.  By default, the components of bary must sum to 1.
+   * If doNormalize is set to true, the components of bary are divided by
+   * their sum, forcing them to sum to 1.  This is a convenience when working
+   * with the unnormalized barycentric point returned by
+   * intersect(Triangle, Ray) or intersect(Triangle, Segment).
    */
-  PointType at(const Point<double, 3> & bary) const
+  PointType at(const Point<double, 3> & bary, const bool doNormalize = false) const
   {
     double barysum = bary[0] + bary[1] + bary[2];
+    double scale = 1;
 
-    SLIC_ASSERT_MSG( std::abs(1 - barysum) < 1e-4,
-                     "Barycentric coordinates must sum to (near) one." );
+    if (doNormalize) {
+      scale = 1 / barysum;
+    } else {
+      SLIC_ASSERT_MSG( std::abs(1 - barysum) < 1e-4,
+                       "Barycentric coordinates must sum to (near) one." );
+    }
 
     NumericArray< T, NDIMS > res =
-      NumericArray< T, NDIMS >(bary[0] * m_points[0].array()) +
-      NumericArray< T, NDIMS >(bary[1] * m_points[1].array()) +
-      NumericArray< T, NDIMS >(bary[2] * m_points[2].array());
+      NumericArray< T, NDIMS >(scale * bary[0] * m_points[0].array()) +
+      NumericArray< T, NDIMS >(scale * bary[1] * m_points[1].array()) +
+      NumericArray< T, NDIMS >(scale * bary[2] * m_points[2].array());
 
     return primal::Point< T, NDIMS >(res);
   }
