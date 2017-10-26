@@ -60,6 +60,16 @@ public:
   const PointType& target() const { return m_target; };
 
   /*!
+   * \brief Returns a point \f$ (1 - t)A + tB \f$
+   * \param [in] t user-supplied parameter for blending A and B
+   * \pre \f$ t \ge 0 \f$
+   */
+  PointType at( const T& t) const
+  {
+    return PointType::lerp(m_source, m_target, t);
+  }
+
+  /*!
    * \brief Returns the length of the segment
    */
   double length() const

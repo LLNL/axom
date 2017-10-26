@@ -1012,15 +1012,6 @@ bool testPointsClose(const primal::Point< T, DIM > & lhp,
   return v.norm() < EPS;
 }
 
-// segmentAt() and triangleAt() are temporary.  Ticket ATK-1122 involves moving them
-// into Segment and Triangle class, respectively.
-template < typename T, int DIM >
-primal::Point< T, DIM > segmentAt(const primal::Segment< T, DIM > & seg,
-                                  double t)
-{
-  return primal::Point< T, DIM>::lerp(seg.source(), seg.target(), t);
-}
-
 template < typename T, int DIM >
 void ensureTriPointMatchesSegPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Point< T, 3 > & bary,
@@ -1028,7 +1019,7 @@ void ensureTriPointMatchesSegPoint(const primal::Triangle< T, DIM > & tri,
                                    double t)
 {
   primal::Point< T, DIM > tripoint = tri.at(bary, true);
-  primal::Point< T, DIM > segpoint = segmentAt(seg, t);
+  primal::Point< T, DIM > segpoint = seg.at(t);
   EXPECT_TRUE(testPointsClose(tripoint, segpoint));
 }
 
@@ -1092,7 +1083,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
     PointType tripoint1 = tri.at(tip1, true);
-    PointType segpoint1 = segmentAt(seg1, t1);
+    PointType segpoint1 = seg1.at(t1);
     EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
       " and segpoint is " << segpoint1;
 
@@ -1101,17 +1092,17 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     PointType tip2;
     EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
     PointType tripoint2 = tri.at(tip2, true);
-    PointType segpoint2 = segmentAt(seg2, t2);
+    PointType segpoint2 = seg2.at(t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
   }
   else{
     EXPECT_FALSE( intersect(tri, seg1, t, tip))
       <<"Expected no intersection; Found one at point "
-      << segmentAt(seg1, t);
+      << seg1.at(t);
 
     EXPECT_FALSE( intersect(tri, seg2, t, tip))
       <<"Expected no intersection; Found one at point "
-      << segmentAt(seg2, t);
+      << seg2.at(t);
   }
 }
 
@@ -1345,7 +1336,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   // (see above).
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
-  PointType intersectionPoint = segmentAt(s, intersectionParam);
+  PointType intersectionPoint = s.at(intersectionParam);
   PointType triIntersectionPoint = t.at(intBary, true);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
