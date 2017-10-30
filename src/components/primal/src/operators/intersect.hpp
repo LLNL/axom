@@ -148,7 +148,8 @@ template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
 {
   T t = T();
-  return detail::intersect_tri_ray(tri, ray, t);
+  Point< double, 3 > p;
+  return detail::intersect_tri_ray(tri, ray, t, p);
 }
 
 /*!
@@ -162,7 +163,26 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
 template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray, T& t)
 {
-  return detail::intersect_tri_ray(tri, ray, t);
+  Point< double, 3 > p;
+  return detail::intersect_tri_ray(tri, ray, t, p);
+}
+
+/*!
+ * \brief Determines if a 3D triangle intersects a 3D ray.
+ * \param [in] tri A 3D triangle
+ * \param [in] ray A 3D ray
+ * \param [out] t Intersection point of tri and R, w.r.t. parametrization of R
+ * \param [out] p Intersection point of tri and R, in **un-normalized**
+ *   barycentric coordinates relative to tri.  To normalize, divide each
+ *   component by the sum of the components.
+ * \note If there is an intersection, the intersection point is:  R.at(t)
+ * \return true iff tri intersects with ray, otherwise, false.
+ */
+template < typename T >
+bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray,
+               T& t, Point< double, 3 > & p)
+{
+  return detail::intersect_tri_ray(tri, ray, t, p);
 }
 
 /*!
@@ -175,7 +195,8 @@ template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
 {
   T t = T();
-  return detail::intersect_tri_segment(tri, seg, t);
+  Point< double, 3 > p;
+  return detail::intersect_tri_segment(tri, seg, t, p);
 }
 
 /*!
@@ -183,14 +204,32 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
  * \param [in] tri A 3D triangle
  * \param [in] seg A 3D line segment
  * \param [out] t Intersection point of tri and seg, w.r.t. seg's parametrization
- * \note If there is an intersection, the intersection point pt is:
- *                     pt = seg.source() + t * ( seg.dest() - seg.target() )
  * \return true iff tri intersects with seg, otherwise, false.
  */
 template < typename T >
 bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
 {
-  return detail::intersect_tri_segment(tri, seg, t);
+  Point< double, 3 > p;
+  return detail::intersect_tri_segment(tri, seg, t, p);
+}
+
+/*!
+ * \brief Determines if a 3D triangle intersects a 3D segment.
+ * \param [in] tri A 3D triangle
+ * \param [in] seg A 3D line segment
+ * \param [out] t Intersection point of tri and seg, w.r.t. seg's parametrization
+ * \param [out] p Intersection point of tri and R, in **un-normalized**
+ *   barycentric coordinates relative to tri.  To normalize, divide each
+ *   component by the sum of the components.
+ * \note If there is an intersection, the intersection point pt is:
+ *                     pt = seg.source() + t * ( seg.dest() - seg.target() )
+ * \return true iff tri intersects with seg, otherwise, false.
+ */
+template < typename T >
+bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg,
+               T& t, Point< double, 3 > & p)
+{
+  return detail::intersect_tri_segment(tri, seg, t, p);
 }
 
 template < typename T >

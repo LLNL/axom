@@ -79,24 +79,9 @@ compilers:
             f77: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
             fc: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
     bgqos_0:
-          gcc@4.7.2:
-             cc:  /usr/local/tools/toolchain-4.7.2/scripts/bggcc
-             cxx: /usr/local/tools/toolchain-4.7.2/scripts/bgg++
-             f77: None
-             fc:  None
-          gcc@4.8.4:
-             cc:  /usr/local/tools/toolchain-4.8.4/scripts/bggcc-4.8.4
-             cxx: /usr/local/tools/toolchain-4.8.4/scripts/bgg++-4.8.4
-             f77: None
-             fc:  None
-          xlc@12.1:
-            cc:  /usr/local/bin/bgxlc_r
-            cxx: /usr/local/bin/bgxlc++_r
-            f77: /usr/local/bin/bgxlf2003_r
-            fc:  /usr/local/bin/bgxlf2003_r
-          clang@3.7.0:
-             cc:  /usr/apps/gnu/bgclang/3.7/bin/bgclang
-             cxx: /usr/apps/gnu/bgclang/3.7/bin/bgclang++
+          clang@4.0.0:
+             cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
+             cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
              f77: None
              fc:  None
     macosx_10.9_x86_64:
