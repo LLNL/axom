@@ -21,7 +21,6 @@
 #include "primal/Vector.hpp"
 #include "primal/RectangularLattice.hpp"
 
-// #include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
@@ -91,35 +90,55 @@ public:
   ImplicitGrid(): m_initialized(false) {}
 
   /*!
-   * \brief Constructor for an implicit grid from a bounding box, a grid resolution a number of elements
+   * \brief Constructor for an implicit grid from a bounding box,
+   * a grid resolution a number of elements.
+   *
+   * \param [in] boundingBox Bounding box of domain to index
+   * \param [in] gridRes Resolution for lattice covering bounding box
+   * \param [in] numElts The number of elements to be indexed
+   *
+   * \pre \a gridRes is either NULL or has \a NDIMS coordinates
    */
   ImplicitGrid(const SpatialBoundingBox& boundingBox, const GridCell& gridRes, int numElts)
-    : m_bb(boundingBox),
-      m_lattice( primal::rectangular_lattice_from_bounding_box(boundingBox, gridRes.array()))
+    : m_bb(boundingBox), m_initialized(false)
   {
-     m_elementSet = ElementSet(numElts);
-     for(int i=0; i<NDIMS; ++i)
-     {
-        m_bins[i] = BinSet(gridRes[i]);
-        m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
-     }
-
-    // Set the expansion factor for each element to a small fraction of the grid's bounding boxes diameter
-    // TODO: Add a constructor that allows users to set the expansion factor
-    static const double EPS = 1e-8;
-    m_expansionFactor = m_bb.range().norm() * EPS;
-
-    m_initialized = true;
+    initialize(m_bb, gridRes, numElts);
   }
-  
+
+  /*!
+   * \brief Constructor for an implicit grid from arrays of primitive types
+   *
+   * \param [in] bbMin Lower bounds of mesh bounding box
+   * \param [in] bbMax Upper bounds of mesh bounding box
+   * \param [in] gridRes Resolution for lattice covering mesh bounding box
+   * \param [in] numElts The number of elements in the index space
+   *
+   * \pre \a bbMin and \a bbMax are not NULL and has \a NDIMS coordinates
+   * \pre \a gridRes is either NULL or has \a NDIMS coordinates
+   */
+  ImplicitGrid(const double* bbMin, const double* bbMax, const int* gridRes, int numElts)
+    : m_initialized(false)
+  {
+    SLIC_ASSERT( bbMin != AXOM_NULLPTR);
+    SLIC_ASSERT( bbMax != AXOM_NULLPTR);
+
+    initialize(
+        SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
+        GridCell(gridRes), numElts);
+  }
+
   /*! Predicate to check if the ImplicitGrid has been initialized */
   bool isInitialized() const { return m_initialized; }
 
 
   /*!
-   * Initializes an implicit grid or resolution gridRes over an axis aligned domain covered by boundingBox.
-   * The implicit grid indexes a set with numElts elements.
+   * \brief Initializes an implicit grid or resolution gridRes over an axis
+   * aligned domain covered by boundingBox.The implicit grid indexes a set
+   * with numElts elements.
    *
+   * \param [in] boundingBox Bounding box of domain to index
+   * \param [in] gridRes Resolution for lattice covering bounding box
+   * \param [in] numElts The number of elements to be indexed
    * \pre The ImplicitGrid has not already been initialized
    */
   void initialize(const SpatialBoundingBox& boundingBox, const GridCell& gridRes, int numElts) 
@@ -138,7 +157,7 @@ public:
 
     // Set the expansion factor for each element to a small fraction of the grid's bounding boxes diameter
     // TODO: Add a constructor that allows users to set the expansion factor
-    static const double EPS = 1e-8;
+    const double EPS = 1e-8;
     m_expansionFactor = m_bb.range().norm() * EPS;
 
     m_initialized = true;
@@ -147,9 +166,12 @@ public:
   /*!
    * \brief Inserts an element with index id and bounding box bbox into the implicit grid
    *
+   * \param [in] bbox The bounding box of the element
+   * \param [in] idx  The index of the element
+   *
    * \note bbox is intentionally passed by value since insert() modifies its bounds
    */
-  void insert(SpatialBoundingBox bbox, int id)
+  void insert(SpatialBoundingBox bbox, IndexType idx)
   {
     SLIC_ASSERT(m_initialized);
     
@@ -157,8 +179,6 @@ public:
     //       This effectively ensures that objects on grid boundaries are added all nearby grid cells.
 
     bbox.expand(m_expansionFactor);
-    // SLIC_INFO("Inserting element " << id << " with bb " << bbox);
-
 
     const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
     const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
@@ -171,7 +191,7 @@ public:
       const IndexType upper = axom::utilities::clampUpper(upperCell[i], highestBin(i) );
       for(int j= lower; j <= upper; ++j)
       {
-        binData[j].set(id);
+        binData[j].set(idx);
       }
     }
   }
@@ -179,7 +199,7 @@ public:
   /*! Finds the candidate elements in the vicinity of query point pt  */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    if(! m_bb.contains(pt) )
+    if(!m_initialized || ! m_bb.contains(pt) )
       return BitsetType(0);
 
     const GridCell gridCell = m_lattice.gridCell(pt);
@@ -218,18 +238,18 @@ public:
   /*!
    * Tests whether grid cell gridPt indexes the element with index id
    */
-  bool contains(const GridCell& gridCell, int id) const
+  bool contains(const GridCell& gridCell, IndexType idx) const
   {
     bool ret = true;
 
-    if(! m_elementSet.isValidIndex(id) )
+    if(! m_elementSet.isValidIndex(idx) )
       ret = false;
 
     for(int i=0; i< NDIMS; ++i)
     {
       ret = ret
           && m_bins[i].isValidIndex(gridCell[i])
-          && m_binData[ i][ gridCell[i] ].test( id);
+          && m_binData[ i][ gridCell[i] ].test( idx);
     }
 
     return ret;

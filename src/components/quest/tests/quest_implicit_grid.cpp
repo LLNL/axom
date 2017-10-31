@@ -86,6 +86,12 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_ctor)
   // Tests initializing constructor
   GridT grid2( bbox, res, numElts);
   EXPECT_TRUE( grid2.isInitialized() );
+
+
+  // Tests initializing from primitive types
+  GridT grid3( bbox.getMin().data(), bbox.getMax().data(), res.data(), numElts);
+  EXPECT_TRUE( grid3.isInitialized() );
+
 }
 
 TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
