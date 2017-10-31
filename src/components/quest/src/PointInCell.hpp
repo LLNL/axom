@@ -99,13 +99,16 @@ public:
    *
    * \param meshWrapper A non-null MeshWrapperType
    * \param res The grid resolution for the spatial acceleration structure
+   * \param bboxScaleFactor A number slightly larger than 1 by which to expand
+   * cell bounding boxes
    *
    * \sa constructors in PointInCell class for more details about parameters
    */
-  PointFinder(MeshWrapperType* meshWrapper, int* res)
+  PointFinder(MeshWrapperType* meshWrapper, int* res, double bboxScaleFactor)
     : m_meshWrapper(meshWrapper)
   {
     SLIC_ASSERT( m_meshWrapper != AXOM_NULLPTR);
+    SLIC_ASSERT( bboxScaleFactor >= 1.);
 
     const int numCells = m_meshWrapper->numElements();
 
@@ -113,8 +116,6 @@ public:
 
     SpatialBoundingBox meshBBox;
     m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
-    double EPS = 1e-8;
-    double bboxScaleFactor = 1 + EPS;
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor, m_cellBBoxes, meshBBox);
 
     // initialize implicit grid
@@ -238,7 +239,13 @@ public:
    * Construct a point in cell query structure over a computational mesh
    *
    * \param mesh A pointer to the computational mesh
-   * \param resolution Grid resolution for the spatial index.
+   * \param resolution Grid resolution for the spatial index. Default: NULL
+   * \param bboxTolerance A tolerance factor by which to expand
+   * the bounding boxes. Default: 1e-8
+   *
+   * \note The bboxTolerance should be a small positive number.  It helps avoid
+   * numerical issues in the bounding box containment queries by slightly expanding
+   * the cell bounding boxes.
    *
    * \note If the resolution is not provided, a heuristic based on the number
    * of cells in the mesh is used to set the resolution.
@@ -248,20 +255,22 @@ public:
    * \pre If resolution is not NULL, it must have space for at least
    * meshDimension() entries.
    */
-  PointInCell(MeshType* mesh, int* resolution = AXOM_NULLPTR)
+  PointInCell(MeshType* mesh, int* resolution = AXOM_NULLPTR, double bboxTolerance = 1e-8)
     : m_meshWrapper(mesh), m_pointFinder2D(AXOM_NULLPTR), m_pointFinder3D(AXOM_NULLPTR)
   {
     SLIC_ASSERT(mesh != AXOM_NULLPTR);
+
+    const double bboxScaleFactor = 1. + bboxTolerance;
 
     // Allocate a 2D or 3D PointFinder instance, depending on mesh dimension.
     // Note: Only one of these will be allocated in a PointInCell instance
     switch(m_meshWrapper.meshDimension())
     {
     case 2:
-      m_pointFinder2D = new PointFinder2D(&m_meshWrapper, resolution);
+      m_pointFinder2D = new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor);
       break;
     case 3:
-      m_pointFinder3D = new PointFinder3D(&m_meshWrapper, resolution);
+      m_pointFinder3D = new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor);
       break;
     default:
       SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
@@ -379,9 +388,9 @@ private:
     switch(meshDimension())
     {
     case 2:
-      return m_pointFinder2D->elementBoundingBox(cellIdx).contains(Point2D(pos));
+      return m_pointFinder2D->cellBoundingBox(cellIdx).contains(Point2D(pos));
     case 3:
-      return m_pointFinder3D->elementBoundingBox(cellIdx).contains(Point3D(pos));
+      return m_pointFinder3D->cellBoundingBox(cellIdx).contains(Point3D(pos));
     }
     return false;
   }
@@ -392,8 +401,6 @@ private:
 
   PointFinder2D* m_pointFinder2D;
   PointFinder3D* m_pointFinder3D;
-  
-  // double m_eps; // for scaling the bounding boxes? 
 };
 
 

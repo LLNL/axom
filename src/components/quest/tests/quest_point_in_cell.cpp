@@ -8,6 +8,12 @@
  * review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ * \file
+ * \brief Unit tests for quest's PointInCell class
+ *
+ * Uses gtest test fixtures to test meshes in 2D and 3D.
+ */
 
 
 #include "gtest/gtest.h"
@@ -15,6 +21,8 @@
 #include "axom_utils/Timer.hpp"
 
 #include "mint/CurvilinearMesh.hpp"
+#include "mint/FieldVariable.hpp"
+#include "mint/vtk_utils.hpp"
 
 #include "primal/Point.hpp"
 #include "primal/BoundingBox.hpp"
@@ -36,10 +44,10 @@ using axom::slic::UnitTestLogger;
 
 namespace
 {
-  const unsigned int SRAND_SEED = 42; //105;
+  const unsigned int SRAND_SEED = 42;
 
-  const bool outputMeshMFEM = true;
-  const bool outputMeshVTK = false;
+  const bool OUTPUT_MESH_MFEM = true;
+  const bool OUTPUT_MESH_VTK = false;
 
   const double EPS = 1e-8;
 
@@ -56,10 +64,10 @@ namespace
 }
 
 enum MeshType {
-  FLAT_MESH,
-  QUADRATIC_MESH,
-  QUADRATIC_POS_MESH,
-  C_SHAPED_MESH
+  FLAT_MESH,          // Linear mesh, no grid function
+  QUADRATIC_MESH,     // Quadratic mesh in Lagrange basis
+  QUADRATIC_POS_MESH, // Quadratic mesh in Bernstein basis
+  C_SHAPED_MESH       // Single element highly curved quadratic mesh (Lagrange)
 };
 
 /*!
@@ -104,7 +112,26 @@ public:
     return static_cast<int>(std::pow(refFac,refLev) );
   }
 
+  /*! Dump mesh to disk in mfem and/or vtk format */
+  void outputMesh(const std::string& meshTypeStr,
+      bool outputMeshMFEM = OUTPUT_MESH_MFEM,
+      bool outputMeshVTK = OUTPUT_MESH_VTK)
+  {
+    std::string filename = fmt::format("quest_point_in_cell_{}_quad",meshTypeStr);
 
+    if(outputMeshMFEM)
+    {
+      mfem::VisItDataCollection dataCol(filename, m_mesh);
+      if(m_mesh->GetNodes())
+        dataCol.RegisterField("nodes", m_mesh->GetNodes());
+      dataCol.Save();
+    }
+    if(outputMeshVTK)
+    {
+      std::ofstream mfem_stream(filename + ".vtk");
+      m_mesh->PrintVTK(mfem_stream);
+    }
+  }
 
   /*!
    * Jitter all degrees of freedom (dofs) of the mesh's nodal grid function
@@ -114,7 +141,9 @@ public:
   {
     mfem::GridFunction* nodes = mesh->GetNodes();
     if(nodes == AXOM_NULLPTR)
+    {
       return;
+    }
 
     mfem::FiniteElementSpace *fespace = nodes->FESpace();
     mfem::GridFunction rdm(fespace);
@@ -165,26 +194,71 @@ public:
     *nodes +=rdm;
   }
 
+
+  /*!
+   * Generate a set of query points randomly dispersed in a box of the domain
+   *
+   * Query points are in a box with bounds [-val,+val], inflated by
+   * (an unspecified) constant. Also adds a few fixed points (e.g. zero, one)
+   * \param val The domain bounds.
+   * \return A vector of points
+   */
+  std::vector< SpacePt > generateRandomTestPoints(double val)
+  {
+    const int SZ = ::NUM_TEST_PTS;
+
+    std::vector<SpacePt> pts;
+    pts.reserve( SZ + 7 );
+
+    // Add some explicitly given points
+    pts.push_back( SpacePt::zero() );
+    pts.push_back( SpacePt::ones() );
+    pts.push_back( SpacePt(.1) );
+    pts.push_back( SpacePt(.4) );
+    pts.push_back( SpacePt(val, 1) );
+    pts.push_back( SpacePt(2.* val, 1) );
+    pts.push_back( SpacePt(val + 0.005, 1) );
+
+    // Add some random points within a given box
+    const double bds = 1.25 * val;
+    for(int i=0; i< SZ; ++i)
+    {
+      pts.push_back( axom::quest::utilities::randomSpacePt<DIM>(-bds, bds));
+    }
+
+    return pts;
+  }
+
+  /*!
+   *  Generate a set of isoparametric points (in unit cube)
+   *  for testing reverse transform
+   */
+  std::vector< SpacePt > generateIsoParTestPoints(int res)
+  {
+    std::vector<SpacePt> pts;
+
+    const int k_max = (DIM==3) ? res : 0;
+    for(int i=0; i <= res; ++i)
+      for(int j=0; j <= res; ++j)
+        for(int k=0; k <= k_max; ++k)
+        {
+          // Get the corresponding isoparametric value
+          // Note: make_point ignores coordinates higher than point's DIM
+          SpacePt pt = SpacePt::make_point(
+              static_cast<double>(i)/res,
+              static_cast<double>(j)/res,
+              static_cast<double>(k)/res);
+
+          pts.push_back( pt );
+        }
+
+    return pts;
+  }
+
+  /*! Tests PointInCell class using a set of random query points */
   template<typename ExpectedValueFunctor>
   void testRandomPointsOnMesh(ExpectedValueFunctor exp, const std::string& meshTypeStr)
   {
-    // Optionally output mesh in mfem and vtk format
-    // TODO: This can be moved into the mesh generation part
-    std::string filename = fmt::format("quest_point_in_cell_{}_quad",meshTypeStr);
-
-    if(outputMeshMFEM)
-    {
-      mfem::VisItDataCollection dataCol(filename, m_mesh);
-      if(m_mesh->GetNodes())
-        dataCol.RegisterField("nodes", m_mesh->GetNodes());
-      dataCol.Save();
-    }
-    if(outputMeshVTK)
-    {
-      std::ofstream mfem_stream(filename + ".vtk");
-      m_mesh->PrintVTK(mfem_stream);
-    }
-
     // Generate a PointInCell structure over the mesh
     axom::utilities::Timer constructTimer(true);
     PointInCellType spatialIndex(m_mesh, GridCell(25).data() );
@@ -249,31 +323,7 @@ public:
         meshTypeStr, numCheckedPoints, pts.size(), 100* static_cast<double>(numCheckedPoints)/ pts.size() ));
   }
 
-  std::vector< SpacePt > generateRandomTestPoints(double val)
-  {
-    const int SZ = ::NUM_TEST_PTS;
-
-    std::vector<SpacePt> pts;
-    pts.reserve( SZ + 7 );
-
-    pts.push_back( SpacePt::zero() );
-    pts.push_back( SpacePt::ones() );
-    pts.push_back( SpacePt(.1) );
-    pts.push_back( SpacePt(.4) );
-    pts.push_back( SpacePt(val, 1) );
-    pts.push_back( SpacePt(2.* val, 1) );
-    pts.push_back( SpacePt(val + 0.005, 1) );
-
-    for(int i=0; i< SZ; ++i)
-    {
-      pts.push_back( axom::quest::utilities::randomSpacePt<DIM>(-1.25 * val, 1.25 * val));
-    }
-
-    return pts;
-  }
-
-  std::vector< SpacePt > generateIsoParTestPoints(int res);
-
+  /*! Tests PointInCell class using isoparametric points within each cell */
   void testIsoGridPointsOnMesh(const std::string& meshTypeStr)
   {
     std::string filename = fmt::format("quest_point_in_cell_{}_quad",meshTypeStr);
@@ -374,55 +424,9 @@ protected:
   mfem::Mesh* m_mesh;
 };
 
-template<>
-std::vector< typename PointInCellTest<2>::SpacePt >
-PointInCellTest<2>::generateIsoParTestPoints(int res)
-{
-  std::vector<SpacePt> pts;
-
-  for(int i=0; i <= res; ++i)
-    for(int j=0; j <= res; ++j)
-    {
-      // Get the corresponding isoparametric value
-      SpacePt pt = SpacePt::make_point( static_cast<double>(i)/res,
-                                        static_cast<double>(j)/res);
-
-//        // Add a small random offset
-//        SpacePt off = axom::quest::utilities::randomSpacePt<DIM>( -::EPS, +::EPS);
-//
-//        // Clamp to ensure isoparametric pt is in element
-//        for(int i=0; i< SpacePt::DIMENSION; ++i)
-//          pt[i] = axom::utilities::clampVal(pt[i]+off[i], 0., 1.);
-
-
-      pts.push_back( pt );
-    }
-
-  return pts;
-}
-
-template<>
-std::vector< typename PointInCellTest<3>::SpacePt >
-PointInCellTest<3>::generateIsoParTestPoints(int res)
-{
-  std::vector<SpacePt> pts;
-
-  for(int i=0; i <= res; ++i)
-    for(int j=0; j <= res; ++j)
-      for(int k=0; k <= res; ++k)
-      {
-        // Get the corresponding isoparametric value
-        SpacePt pt = SpacePt::make_point(
-            static_cast<double>(i)/res,
-            static_cast<double>(j)/res,
-            static_cast<double>(k)/res);
-
-        pts.push_back( pt );
-      }
-
-  return pts;
-}
-
+/*!
+ * Specialization of PointInCell test fixture for 2D Mfem meshes
+ */
 class PointInCell2DTest : public PointInCellTest<2>
 {
 public:
@@ -500,8 +504,6 @@ protected:
         "-7 4"                          "\n";
   }
 
-  //virtual void TearDown()  {}
-
 public:
   /*!
    * Sets up a test mesh of the desired type with the specified parameters
@@ -571,6 +573,7 @@ public:
           << "\nDescriptor string: " << m_meshDescriptorStr);
     }
 
+    // Create the MFEM mesh
     m_mesh = new mfem::Mesh(sstr);
     EXPECT_NE(AXOM_NULLPTR, m_mesh);
 
@@ -600,6 +603,8 @@ public:
       EXPECT_EQ(feCollName, m_mesh->GetNodalFESpace()->FEColl()->Name());
     }
 
+    // Dump mesh to disk
+    outputMesh( m_meshDescriptorStr);
   }
 
 private:
@@ -609,6 +614,9 @@ private:
   std::string m_CShapedNodesStr;
 };
 
+/*!
+ * Specialization of PointInCell test fixture for 3D Mfem meshes
+ */
 class PointInCell3DTest : public PointInCellTest<3>
 {
 public:
@@ -693,8 +701,6 @@ protected:
 
   }
 
-  //virtual void TearDown()  {}
-
 public:
   /*!
    * Sets up a test mesh of the desired type with the specified parameters
@@ -728,19 +734,9 @@ public:
       sstr << fmt::format(m_highOrderNodesStr, vertVal, vertVal * std::sqrt(1.5), vertVal * std::sqrt(3.), feCollName);
       break;
     case QUADRATIC_POS_MESH:
-//      feCollName = "QuadraticPos";
-//      meshDescSstr << "curved_pos";
-//
-//      sstr << fmt::format(m_highOrderNodesStr, vertVal, vertVal * (std::sqrt(2.) - 0.5), feCollName);
-
       FAIL() << "Undefined for now";
       break;
     case C_SHAPED_MESH:
-//      feCollName = "Quadratic";
-//      meshDescSstr << "c_shaped";
-//
-//      sstr << fmt::format(m_CShapedNodesStr, feCollName);
-
       FAIL() << "Undefined for now";
       break;
     default:
@@ -770,13 +766,9 @@ public:
           << "\nDescriptor string: " << m_meshDescriptorStr);
     }
 
+    // Create the MFEM mesh instance
     m_mesh = new mfem::Mesh(sstr);
     EXPECT_NE(AXOM_NULLPTR, m_mesh);
-
-//    if( meshType == QUADRATIC_MESH)
-//    {
-//      m_mesh->SetCurvature(2, false, DIM, 1);
-//    }
 
     // Refine (and possibly jitter) the mesh several times
     for(int i=0; i< numRefine; ++i)
@@ -804,6 +796,8 @@ public:
       EXPECT_EQ(feCollName, m_mesh->GetNodalFESpace()->FEColl()->Name());
     }
 
+    // Dump mesh to disk
+    outputMesh( m_meshDescriptorStr);
   }
 
 private:
@@ -823,7 +817,7 @@ enum Metric {
 /*!
  * Simple model for when we expect a query point to be found within a cell of the mesh.
  *
- * The mesh is assumed to be a sphere under one of the Lp metrics (L1, L2 or Linf).
+ * The mesh is assumed to be a sphere under one of the L_p metrics (L_1, L_2 or L_inf).
  * In all cases, we assume that there is a narrow band around the sphere's radius
  * where we cannot be sure if we expect the point to be in the mesh.  Otherwise,
  * we use the point's norm to determine if we expect the point to be found within
@@ -933,9 +927,8 @@ TEST_F( PointInCell2DTest, pic_flat_refined_quad )
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
   this->testRandomPointsOnMesh( ExpectedValue<DIM,L_1_METRIC>(vertVal), meshTypeStr);
-  // this->testIsoGridPointsOnMesh(meshTypeStr);
+  this->testIsoGridPointsOnMesh(meshTypeStr);
 }
-
 
 TEST_F( PointInCell2DTest, pic_curved_single_quad )
 {
@@ -1199,9 +1192,6 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
       pts.size() * mesh2.GetNE() * 2,
       queryTimer2.elapsed(),
       pts.size() * mesh2.GetNE() * 2 / queryTimer2.elapsed()  ) );
-
-    //spatialIndex1.printDebugMesh( filename + "001.vtk");
-    //spatialIndex2.printDebugMesh( filename + "002.vtk");
 }
 
 TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
@@ -1308,6 +1298,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
 TEST(quest_point_in_cell, printIsoparams)
 {
+  // Prints the values of mfem's RefinedIntRules for the specified orders
   const int geom = mfem::Geometry::SQUARE;
   const int dim = 2;
 
@@ -1344,7 +1335,6 @@ TEST_F( PointInCell3DTest, pic_flat_single_hex )
   std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(fmt::format("point_in_cell_{}",meshTypeStr));
 
-//  // Add a bilinear gridfunction
   std::string filename = fmt::format("simple_hex_mesh");
   {
     mfem::Mesh& mesh = *this->getMesh();
@@ -1370,7 +1360,6 @@ TEST_F( PointInCell3DTest, pic_flat_refined_hex )
   this->testRandomPointsOnMesh( ExpectedValue<DIM,L_INF_METRIC>(vertVal), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
-
 
 TEST_F( PointInCell3DTest, pic_curved_single_hex )
 {
@@ -1444,7 +1433,6 @@ TEST_F( PointInCell3DTest, pic_curved_refined_hex_jittered )
   this->testRandomPointsOnMesh(ExpectedValue<DIM,L_2_METRIC>(radius), meshTypeStr);
   this->testIsoGridPointsOnMesh(meshTypeStr);
 }
-
 
 
 int main(int argc, char * argv[])

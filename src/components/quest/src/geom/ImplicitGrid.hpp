@@ -46,7 +46,7 @@ namespace quest {
  * An ImplicitGrid divides a given rectilinear slab of space (defined by an
  * axis aligned bounding box) into uniformly sized cells of a specified resolution.
  * The GridCells of the ImplicitGrid index a subset of the items from an indexed
- * set (whose cardinality is specified during the ImplicitGrid's initialization).
+ * set whose cardinality is specified during the ImplicitGrid's initialization.
  * Users can insert items from the indexed set into an ImplicitGrid by providing
  * the item's bounding box and index.
  *
@@ -54,7 +54,7 @@ namespace quest {
  * for each cell in the underlying multidimensional grid,
  * the ImplicitGrid encodes a single array of bins per dimension, each of which
  * has a bitset over the index space.  Thus, the storage overhead of an
- * ImplicitGrid is fixed at initialization time to numElts * sum_i ( res[i] ) bits.
+ * ImplicitGrid is fixed at initialization time to \f$ numElts * sum_i ( res[i] ) \f$ bits.
  * Queries are implemented in terms of unions and intersections of bitsets.
  *
  * One might prefer an ImplicitGrid over a UniformGrid when one expects
