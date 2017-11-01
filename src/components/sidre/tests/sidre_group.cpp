@@ -828,7 +828,7 @@ TEST(sidre_group,groups_move_copy)
   otherB->getView("f1")->setScalar(42.0);
   otherB->createGroup("Q");
   Group * triedCopy = gsub->copyGroup(otherB);
-  EXPECT_EQ(triedCopy, AXOM_NULLPTR);
+  EXPECT_EQ(triedCopy, static_cast<void *>(AXOM_NULLPTR));
   EXPECT_EQ(gsub->getNumGroups(), 1);
   EXPECT_TRUE(gsub->hasChildGroup("b"));
 
