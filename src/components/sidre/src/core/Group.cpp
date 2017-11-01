@@ -959,7 +959,7 @@ Group * Group::moveGroup(Group * group)
     SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getName() <<
-                   "' already has a child Group named'" << group->getName() <<
+                   "' already has a child Group named '" << group->getName() <<
                    "' so Group move operation cannot happen");
 
     return AXOM_NULLPTR;
@@ -987,7 +987,7 @@ Group * Group::copyGroup(Group * group)
     SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getName() <<
-                   "' already has a child Group named'" << group->getName() <<
+                   "' already has a child Group named '" << group->getName() <<
                    "' so Group copy operation cannot happen");
 
     return AXOM_NULLPTR;
