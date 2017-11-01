@@ -233,22 +233,17 @@ public:
    * with the unnormalized barycentric point returned by
    * intersect(Triangle, Ray) or intersect(Triangle, Segment).
    */
-  PointType at(const Point<double, 3> & bary, const bool doNormalize = false) const
+  PointType at(const Point<double, 3> & bary) const
   {
     double barysum = bary[0] + bary[1] + bary[2];
-    double scale = 1;
 
-    if (doNormalize) {
-      scale = 1 / barysum;
-    } else {
-      SLIC_ASSERT_MSG( std::abs(1 - barysum) < 1e-4,
-                       "Barycentric coordinates must sum to (near) one." );
-    }
+    SLIC_ASSERT_MSG( std::abs(1 - barysum) < 1e-6,
+                     "Barycentric coordinates must sum to (near) one." );
 
     NumericArray< T, NDIMS > res =
-      NumericArray< T, NDIMS >(scale * bary[0] * m_points[0].array()) +
-      NumericArray< T, NDIMS >(scale * bary[1] * m_points[1].array()) +
-      NumericArray< T, NDIMS >(scale * bary[2] * m_points[2].array());
+      NumericArray< T, NDIMS >(bary[0] * m_points[0].array()) +
+      NumericArray< T, NDIMS >(bary[1] * m_points[1].array()) +
+      NumericArray< T, NDIMS >(bary[2] * m_points[2].array());
 
     return primal::Point< T, NDIMS >(res);
   }
