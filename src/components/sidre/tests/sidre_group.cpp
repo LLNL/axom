@@ -824,8 +824,7 @@ TEST(sidre_group,groups_move_copy)
 
   // verify that we cannot copy a group when there is a name clash
   Group * otherB = containCopy->createGroup("b");
-  otherB->createViewAndAllocate("f1", DataType::c_double());
-  otherB->getView("f1")->setScalar(42.0);
+  otherB->createView("f1")->setScalar(42.0);
   otherB->createGroup("Q");
   Group * triedCopy = gsub->copyGroup(otherB);
   EXPECT_EQ(triedCopy, static_cast<void *>(AXOM_NULLPTR));
