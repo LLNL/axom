@@ -62,7 +62,6 @@ public:
   /*!
    * \brief Returns a point \f$ (1 - t)A + tB \f$
    * \param [in] t user-supplied parameter for blending A and B
-   * \pre \f$ t \ge 0 \f$
    */
   PointType at( const T& t) const
   {
