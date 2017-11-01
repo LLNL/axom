@@ -104,7 +104,7 @@ public:
    *
    * \sa constructors in PointInCell class for more details about parameters
    */
-  PointFinder(MeshWrapperType* meshWrapper, int* res, double bboxScaleFactor)
+  PointFinder(const MeshWrapperType* meshWrapper, const int* res, double bboxScaleFactor)
     : m_meshWrapper(meshWrapper)
   {
     SLIC_ASSERT( m_meshWrapper != AXOM_NULLPTR);
@@ -118,14 +118,17 @@ public:
     m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor, m_cellBBoxes, meshBBox);
 
-    // initialize implicit grid
-    typedef axom::primal::Point<int, NDIMS> GridResolution;
-    GridResolution gridRes;
+    // initialize implicit grid, handle case where resolution is a NULL pointer
     if(res != AXOM_NULLPTR)
     {
-      gridRes = GridResolution(res);
+      typedef axom::primal::Point<int, NDIMS> GridResolution;
+      GridResolution gridRes(res);
+      m_grid.initialize(meshBBox, &gridRes, numCells);
     }
-    m_grid.initialize(meshBBox, gridRes, numCells);
+    else
+    {
+      m_grid.initialize(meshBBox, AXOM_NULLPTR, numCells);
+    }
 
     // add mesh elements to grid
     for(int i=0; i< numCells; ++i)
@@ -188,7 +191,7 @@ public:
 
 private:
   GridType    m_grid;
-  MeshWrapperType* m_meshWrapper;
+  const MeshWrapperType* m_meshWrapper;
   std::vector<SpatialBoundingBox> m_cellBBoxes;
 };
 

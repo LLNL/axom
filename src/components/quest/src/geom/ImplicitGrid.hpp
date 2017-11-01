@@ -12,6 +12,7 @@
 #define QUEST_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
+#include "axom/Types.hpp"            // AXOM_NULLPTR
 #include "axom_utils/Utilities.hpp"  // for clamp functions
 
 #include "slic/slic.hpp"
@@ -21,6 +22,7 @@
 #include "primal/Vector.hpp"
 #include "primal/RectangularLattice.hpp"
 
+#include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
@@ -74,8 +76,9 @@ public:
   typedef primal::BoundingBox<double, NDIMS>    SpatialBoundingBox;
   typedef primal::RectangularLattice<NDIMS, double, IndexType> LatticeType;
 
-  typedef slam::OrderedSet< slam::policies::RuntimeSize<IndexType> > ElementSet;
-  typedef slam::OrderedSet< slam::policies::RuntimeSize<IndexType> > BinSet;
+  typedef slam::policies::RuntimeSize<IndexType> SizePolicy;
+  typedef slam::OrderedSet< SizePolicy > ElementSet;
+  typedef slam::OrderedSet< SizePolicy > BinSet;
 
 
   typedef boost::dynamic_bitset<>  BitsetType;
@@ -94,12 +97,13 @@ public:
    * a grid resolution a number of elements.
    *
    * \param [in] boundingBox Bounding box of domain to index
-   * \param [in] gridRes Resolution for lattice covering bounding box
+   * \param [in] gridRes Pointer to the resolution for lattice covering bounding box
    * \param [in] numElts The number of elements to be indexed
    *
    * \pre \a gridRes is either NULL or has \a NDIMS coordinates
+   * \sa initialize() for details on setting grid resolution when \a gridRes is NULL
    */
-  ImplicitGrid(const SpatialBoundingBox& boundingBox, const GridCell& gridRes, int numElts)
+  ImplicitGrid(const SpatialBoundingBox& boundingBox, const GridCell* gridRes, int numElts)
     : m_bb(boundingBox), m_initialized(false)
   {
     initialize(m_bb, gridRes, numElts);
@@ -115,6 +119,7 @@ public:
    *
    * \pre \a bbMin and \a bbMax are not NULL and has \a NDIMS coordinates
    * \pre \a gridRes is either NULL or has \a NDIMS coordinates
+   * \sa initialize() for details on setting grid resolution when \a gridRes is NULL
    */
   ImplicitGrid(const double* bbMin, const double* bbMax, const int* gridRes, int numElts)
     : m_initialized(false)
@@ -122,9 +127,15 @@ public:
     SLIC_ASSERT( bbMin != AXOM_NULLPTR);
     SLIC_ASSERT( bbMax != AXOM_NULLPTR);
 
+    // Set up the grid resolution from the gridRes array
+    //   if NULL, GridCell parameter to initialize should also be NULL
+    const GridCell* pRes = (gridRes != AXOM_NULLPTR)
+        ? & m_gridRes
+        : AXOM_NULLPTR;
+
     initialize(
         SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
-        GridCell(gridRes), numElts);
+        pRes, numElts);
   }
 
   /*! Predicate to check if the ImplicitGrid has been initialized */
@@ -140,18 +151,44 @@ public:
    * \param [in] gridRes Resolution for lattice covering bounding box
    * \param [in] numElts The number of elements to be indexed
    * \pre The ImplicitGrid has not already been initialized
+   *
+   * \note When \a gridRes is NULL, we use a heuristic to set the grid resolution
+   * to the N^th root of \a numElts. We also ensure that the resolution along 
+   * any dimension is at least one.
+   *  
    */
-  void initialize(const SpatialBoundingBox& boundingBox, const GridCell& gridRes, int numElts) 
+  void initialize(const SpatialBoundingBox& boundingBox, const GridCell* gridRes, int numElts)
   {
     SLIC_ASSERT( !m_initialized);
 
+    // Setup Grid Resolution, dealing with possible null pointer
+    if(gridRes == AXOM_NULLPTR)
+    {
+      // Heuristic: use the n^th root of the number of elements
+      // add 0.5 to round to nearest integer
+      double nthRoot = std::pow(static_cast<double>(numElts), 1./ NDIMS );
+      int dimRes = static_cast<int>(nthRoot + 0.5);
+      m_gridRes = GridCell(dimRes);
+    }
+    else
+    {
+      m_gridRes = GridCell(*gridRes);
+    }
+
+    // ensure that resolution in each dimension is at least one
+    for(int i=0; i< NDIMS; ++i)
+    {
+      m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
+    }
+
+    // Setup lattice
     m_bb = boundingBox;
-    m_lattice = primal::rectangular_lattice_from_bounding_box(boundingBox, gridRes.array());
+    m_lattice = primal::rectangular_lattice_from_bounding_box(boundingBox, m_gridRes.array());
     m_elementSet = ElementSet(numElts);
 
     for(int i=0; i<NDIMS; ++i)
     {
-      m_bins[i] = BinSet(gridRes[i]);
+      m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
     }
 
@@ -162,6 +199,12 @@ public:
 
     m_initialized = true;
   }
+
+  /*! Accessor for ImplicitGrid's resolution */
+  const GridCell& gridResolution() const { return m_gridRes; }
+
+  /*! Returns the number of elements in the ImplicitGrid's index set */
+  int numIndexElements() const { return m_elementSet.size(); }
 
   /*!
    * \brief Inserts an element with index id and bounding box bbox into the implicit grid
@@ -196,7 +239,14 @@ public:
     }
   }
 
-  /*! Finds the candidate elements in the vicinity of query point pt  */
+  /*!
+   * Finds the candidate elements in the vicinity of query point pt
+   *
+   * \param [in] pt The query point
+   * \return A bitset \a bSet whose bits correspond to the elements of the IndexSet.
+   * The bits of \a bSet are set if their corresponding element bounding boxes
+   * overlap the grid cell containing \a pt.
+   */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
     if(!m_initialized || ! m_bb.contains(pt) )
@@ -219,14 +269,25 @@ public:
     return res;
   }
 
-  /*! Returns the list of candidates as an explicit list of IndexType */
+  /*!
+   * Returns the list of candidates as an explicit list of IndexType
+   *
+   * \param [in] pt The query point
+   * \return An list of indexes from the IndexSet whose corresponding
+   * bounding boxes overlap the grid cell containing \a pt.
+   *
+   * \note This function returns the same indices as \a getCandidates()
+   * But the results here are converted into an explicit list.
+   */
   std::vector<IndexType> getCandidatesAsArray(const SpacePoint& pt) const
   {
     std::vector<IndexType> candidatesVec;
 
     BitsetType candidateBits = getCandidates(pt);
     candidatesVec.reserve( candidateBits.count() );
-    for(std::size_t eltIdx = candidateBits.find_first(); eltIdx != BitsetType::npos; eltIdx = candidateBits.find_next( eltIdx) )
+    for(std::size_t eltIdx = candidateBits.find_first();
+        eltIdx != BitsetType::npos;
+        eltIdx = candidateBits.find_next( eltIdx) )
     {
       candidatesVec.push_back( eltIdx );
     }
@@ -236,7 +297,14 @@ public:
 
 
   /*!
-   * Tests whether grid cell gridPt indexes the element with index id
+   * Tests whether grid cell gridPt indexes the element with index idx
+   *
+   * \param [in] gridCell The cell within the ImplicitGrid that we are testing
+   * \param [in] idx An element index from the IndexSet to test
+   *
+   * \pre \a idx should be in the IndexSet.  I.e. 0 <= idx < numIndexElements()
+   * \return True if the bounding box of element \a idx overlaps
+   * with GridCell \a gridCell.
    */
   bool contains(const GridCell& gridCell, IndexType idx) const
   {
@@ -273,6 +341,7 @@ private:
   SpatialBoundingBox m_bb; //!< The bounding box of the ImplicitGrid
   LatticeType        m_lattice; //!< A lattice to help in converting from points in space to GridCells
   double             m_expansionFactor; //!< The amount by which to expand bounding boxes
+  GridCell           m_gridRes; //!< Resolution of the ImplicitGrid
 
   ElementSet         m_elementSet; //!< The index set of the elements
   BinSet             m_bins[NDIMS]; //!< A set of bins, per dimension

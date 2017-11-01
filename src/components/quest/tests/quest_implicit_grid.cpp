@@ -69,7 +69,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_ctor)
   typedef typename TestFixture::GridT GridT;
   typedef typename TestFixture::SpacePt SpacePt;
 
-  SLIC_INFO("Test the constructor for a quest::ImplicitGrid object in " << DIM << "D");
+  SLIC_INFO("Test ImplicitGrid constructor in " << DIM << "D");
 
   GridCell res(10);
   BBox bbox(SpacePt::zero(), SpacePt::ones());
@@ -79,12 +79,12 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_ctor)
   GridT grid1;
   EXPECT_FALSE( grid1.isInitialized() );
 
-  grid1.initialize(bbox, res, numElts);
+  grid1.initialize(bbox, &res, numElts);
   EXPECT_TRUE( grid1.isInitialized() );
 
 
   // Tests initializing constructor
-  GridT grid2( bbox, res, numElts);
+  GridT grid2( bbox, &res, numElts);
   EXPECT_TRUE( grid2.isInitialized() );
 
 
@@ -93,6 +93,61 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_ctor)
   EXPECT_TRUE( grid3.isInitialized() );
 
 }
+
+
+TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
+{
+  const int DIM = TestFixture::DIM;
+  typedef typename TestFixture::GridCell GridCell;
+  typedef typename TestFixture::BBox BBox;
+  typedef typename TestFixture::GridT GridT;
+  typedef typename TestFixture::SpacePt SpacePt;
+
+  SLIC_INFO("Test ImplicitGrid resolution in " << DIM << "D");
+
+  BBox bbox(SpacePt::zero(), SpacePt::ones());
+
+  // Set the number of elements so that the DIM^th root is an integer
+  const int dimRes = 8;
+  int numElts = 1;
+  for(int i=0; i< DIM; ++i)
+    numElts *= dimRes;
+
+  // Tests explicitly set grid resolution
+  {
+    GridCell res= GridCell::make_point(12, 8, 16);
+    GridT grid( bbox, &res, numElts);
+    EXPECT_EQ( res, grid.gridResolution() );
+    EXPECT_EQ( numElts, grid.numIndexElements() );
+  }
+
+  // Tests implicitly set grid resolution
+  {
+    GridT grid( bbox, AXOM_NULLPTR, numElts);
+    GridCell expRes(dimRes);
+    EXPECT_EQ( expRes, grid.gridResolution() );
+    EXPECT_EQ( numElts, grid.numIndexElements() );
+  }
+
+  // Test that grid resolution is at least one in each dim
+  {
+    // Using NULL pointer for resolution
+    int zeroMeshElts = 0;
+    GridT grid( bbox, AXOM_NULLPTR, zeroMeshElts );
+    GridCell expRes = GridCell::ones();
+    EXPECT_EQ( expRes, grid.gridResolution() );
+    EXPECT_EQ( 0, grid.numIndexElements() );
+  }
+  {
+    // Using a resolution of zero in each dim
+    GridCell zeroRes = GridCell::zero();
+    GridT grid( bbox, &zeroRes, numElts );
+    GridCell expRes = GridCell::ones();
+    EXPECT_EQ( expRes, grid.gridResolution() );
+    EXPECT_EQ( numElts, grid.numIndexElements() );
+  }
+}
+
 
 TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
 {
@@ -103,7 +158,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
   typedef typename TestFixture::SpacePt SpacePt;
   typedef axom::primal::BoundingBox<int, DIM> RangeBox;
 
-  SLIC_INFO("Testing insertion on a quest::ImplicitGrid object in " << DIM << "D");
+  SLIC_INFO("Testing ImplicitGrid insert() and contains() in " << DIM << "D");
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -113,7 +168,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
   const int maxElts = 10;
   const int numDefinedObjs = 7;
 
-  GridT grid( bbox, res, maxElts);
+  GridT grid( bbox, &res, maxElts);
 
   /// Test insertion of several objects under assumption that we're
   /// in a unit cube with 10 grid cells per dimension resolution
@@ -187,9 +242,9 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
   }
 
   // Test that points are contained in the expected grid cells
-  const int i_max = DIM >= 1 ? res[0] : 1;
-  const int j_max = DIM >= 2 ? res[1] : 1;
-  const int k_max = DIM >= 3 ? res[2] : 1;
+  const int i_max = DIM >= 1 ? grid.gridResolution()[0] : 1;
+  const int j_max = DIM >= 2 ? grid.gridResolution()[1] : 1;
+  const int k_max = DIM >= 3 ? grid.gridResolution()[2] : 1;
   for(int i=0; i< i_max; ++i)
   {
     for(int j=0; j< j_max; ++j)
@@ -244,7 +299,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
   typedef typename TestFixture::GridT GridT;
   typedef typename TestFixture::SpacePt SpacePt;
 
-  SLIC_INFO("Query implicit grid using array version in " << DIM << "D");
+  SLIC_INFO("Test ImplicitGrid getCandidates() in " << DIM << "D");
 
   typedef typename GridT::IndexType IndexType;
   typedef typename GridT::BitsetType CandidateBitset;
@@ -256,7 +311,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
   BBox bbox(SpacePt(0.), SpacePt(1.));
   const int maxElts = 10;
 
-  GridT grid( bbox, res, maxElts);
+  GridT grid( bbox, &res, maxElts);
 
   BBox objBox1(
       SpacePt::make_point(.15, .25, .05),
