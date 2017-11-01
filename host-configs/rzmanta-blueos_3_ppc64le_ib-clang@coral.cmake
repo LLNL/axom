@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_14_16_14_42/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral/cmake-3.8.2-ze553yn73s3b32uhop7jlgvjfxo4tjuc/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_13_13/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral/cmake-3.8.2-ze553yn73s3b32uhop7jlgvjfxo4tjuc/bin/cmake
 
 #######
 # using clang@coral compiler spec
@@ -25,10 +25,12 @@ set(CMAKE_CXX_COMPILER "/usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/cl
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_14_16_14_42/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_13_13/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-jybmvmtpcohhrq4trij72mbwj6blad4l" CACHE PATH "")
+
+# scr not built by uberenv
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-yjoop56c7fektxu4afrq6xtmz27ujtzz" CACHE PATH "")
@@ -50,6 +52,9 @@ set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-uhbe3icqodtqq7ctfgcyhgvfrkzqy
 
 # sphinx from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-fwd3h3v2ocwqyhduxnmqu3mkuvmxfjgl/bin/sphinx-build" CACHE PATH "")
+
+# shroud from uberenv
+set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-fwd3h3v2ocwqyhduxnmqu3mkuvmxfjgl/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
 set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-lp45v6mhcw6o4kvbm3yer7e4opwbbx22/bin/uncrustify" CACHE PATH "")
