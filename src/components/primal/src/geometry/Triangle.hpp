@@ -172,20 +172,20 @@ public:
    * \post The barycentric coordinates sum to 1.
    * Adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point< T,3 > barycentricCoords(const PointType& p) const
+  Point< double, 3 > barycentricCoords(const PointType& p) const
   {
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
-    Point< T,3 > bary;
+    Point< double, 3 > bary;
 
-    Vector< T,3 > u =
+    Vector< double, 3 > u =
       VectorType::cross_product( VectorType(m_points[0],m_points[1]),
                                  VectorType(m_points[0],m_points[2]) );
-    const T x= std::abs(u[0]);
-    const T y= std::abs(u[1]);
-    const T z= std::abs(u[2]);
+    const double x = std::abs(u[0]);
+    const double y = std::abs(u[1]);
+    const double z = std::abs(u[2]);
 
-    T ood = 1.0 / u[2];      // compute in xy plane by default
+    double ood = 1.0 / u[2];      // compute in xy plane by default
     int c0 = 0;
     int c1 = 1;
 
@@ -237,15 +237,15 @@ public:
   {
     double barysum = bary[0] + bary[1] + bary[2];
 
-    SLIC_ASSERT_MSG( std::abs(1 - barysum) < 1e-6,
-                     "Barycentric coordinates must sum to (near) one." );
+    SLIC_CHECK_MSG( axom::utilities::isNearlyEqual(1., barysum),
+                    "Barycentric coordinates must sum to (near) one." );
 
     NumericArray< T, NDIMS > res =
       NumericArray< T, NDIMS >(bary[0] * m_points[0].array()) +
       NumericArray< T, NDIMS >(bary[1] * m_points[1].array()) +
       NumericArray< T, NDIMS >(bary[2] * m_points[2].array());
 
-    return primal::Point< T, NDIMS >(res);
+    return PointType(res);
   }
 
   /*!
