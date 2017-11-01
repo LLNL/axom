@@ -25,7 +25,7 @@ set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r2
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_10_19_10_29_40/spack/opt/spack/bgqos_0/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_10_31_17_11_06/spack/opt/spack/bgqos_0/clang-4.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-y7l7rg3y7j7hxdsom3nwcpwwfq3tu75b" CACHE PATH "")
@@ -48,6 +48,8 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-22q34tajrlunpnme5ezp72t4iwy2qpgz
 # doxygen not built by uberenv
 
 # sphinx not built by uberenv
+
+# shroud not built by uberenv
 
 # uncrustify not built by uberenv
 
@@ -73,6 +75,8 @@ set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI      ON CACHE BOOL "")
+# Note: On BGQ, CMake uses wrong linker flags when using find MPI, This allows us use the wrapper directly via
+#   the CMake's compiler variables.
 set(ENABLE_FIND_MPI OFF CACHE BOOL "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
