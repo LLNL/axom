@@ -14,7 +14,6 @@
 
 set( quest_headers
 
-    PointInCell.hpp
     SignedDistance.hpp
 
     ## Geometry Headers
@@ -27,10 +26,14 @@ set( quest_headers
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
 
-    # Mesh tester
+    # Mesh tester headers
     MeshTester.hpp
     detail/MeshTester_impl.hpp
 
+    # PointInCell headers
+    PointInCell.hpp
+    detail/PointFinder.hpp
+    
     ## STL library headers
     stl/STLReader.hpp
 

@@ -20,12 +20,12 @@
  * arbitrary order.
  *
  * It defines a mesh tag \a quest_point_in_cell_mfem_tag
- * and specializations of \a quest::detail::PointInCellTraits and
- * \a quest::detail::PointInCellMeshWrapper for this tag.
+ * and specializations of \a axom::quest::PointInCellTraits and
+ * \a axom::quest::detail::PointInCellMeshWrapper for this tag.
  *
  * \sa axom::quest::PointInCell
+ * \sa axom::quest::PointInCellTraits
  * \sa axom::quest::detail::PointInCellMeshWrapper
- * \sa axom::quest::detail::PointInCellTraits
  */
 
 
@@ -40,7 +40,7 @@
 #ifdef AXOM_USE_MFEM
 #  include "mfem.hpp"
 #else
-#  error PointInCell_mfem_impl depends on mfem.
+#  error "PointInCell_mfem_impl depends on mfem."
 #endif
 
 
@@ -48,19 +48,12 @@ namespace axom {
 namespace quest {
 
 
-/** Tag for mfem-based specialization of the PointInCell query */
+/*! Tag for mfem-based specialization of the PointInCell query */
 struct quest_point_in_cell_mfem_tag {};
 
-
-namespace detail {
-
-// Pre-declare classes to specialize for the mfem mesh_tag
-
+// Predeclare PointInCellTraitsClass
 template<typename mesh_tag>
 struct PointInCellTraits;
-
-template <typename mesh_tag>
-class PointInCellMeshWrapper;
 
 /*!
  * Specialization of PointInCellTraits for \a quest_point_in_cell_mfem_tag
@@ -82,6 +75,14 @@ public:
 const PointInCellTraits<quest_point_in_cell_mfem_tag>::IndexType
 PointInCellTraits<quest_point_in_cell_mfem_tag>::NO_CELL = -1;
 
+
+
+namespace detail {
+
+// Pre-declare classes to specialize for the mfem mesh_tag
+
+template <typename mesh_tag>
+class PointInCellMeshWrapper;
 
 
 /*!

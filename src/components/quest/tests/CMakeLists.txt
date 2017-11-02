@@ -53,7 +53,7 @@ endforeach()
 
 
 if(MFEM_FOUND)
-    set(test_name quest_point_in_cell)
+    set(test_name quest_point_in_cell_mfem)
     blt_add_executable(
         NAME ${test_name}
         SOURCES ${test_name}.cpp

@@ -30,6 +30,12 @@
 #include "quest/ImplicitGrid.hpp"
 #include "quest/PointInCell.hpp"
 
+#ifdef AXOM_USE_MFEM
+# include "quest/PointInCell_impl_mfem.hpp"
+#else
+# error "This file tests the PointInCell class on mfem meshes.  It requires mfem."
+#endif
+
 #include "quest_test_utilities.hpp"
 
 #include "slic/UnitTestLogger.hpp"
@@ -84,7 +90,7 @@ public:
   typedef axom::primal::Point<int,DIM> GridCell;
 
   typedef axom::quest::quest_point_in_cell_mfem_tag mesh_tag;
-  typedef axom::quest::detail::PointInCellTraits<mesh_tag> MeshTraits;
+  typedef axom::quest::PointInCellTraits<mesh_tag> MeshTraits;
 
   typedef axom::quest::PointInCell<mesh_tag> PointInCellType;
 
@@ -904,7 +910,7 @@ TEST_F( PointInCell2DTest, pic_flat_single_quad )
   gf(0) = gf(2) = 1.;
   gf(1) = gf(3) = 0.;
 
-  std::string filename = fmt::format("simple_mesh");
+  std::string filename = "simple_mesh";
   {
     mfem::VisItDataCollection dataCol(filename, &mesh);
     dataCol.RegisterField("data", &gf);
