@@ -78,8 +78,7 @@ class UberenvAxom(Package):
 
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-breathe",when="+devtools")
-    depends_on("py-pyyaml", when="+devtools")
-    depends_on("py-parsley",when="+devtools")
+    depends_on("py-shroud", when="+devtools")
 
     if "darwin" in platform.system().lower():
         depends_on("mpich")
@@ -215,7 +214,7 @@ class UberenvAxom(Package):
         if "doxygen" in spec:
             doxygen_bin_dir = get_spec_path(spec, "doxygen", path_replacements, use_bin=True)
             cfg.write("# doxygen from uberenv\n")
-            cfg.write(cmake_cache_entry("DOXYGEN_EXECUTABLE", pjoin(doxygen_bin_dir ,"doxygen")))
+            cfg.write(cmake_cache_entry("DOXYGEN_EXECUTABLE", pjoin(doxygen_bin_dir, "doxygen")))
         else:
             cfg.write("# doxygen not built by uberenv\n\n")
 
@@ -225,6 +224,13 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", pjoin(python_bin_dir, "sphinx-build")))
         else:
             cfg.write("# sphinx not built by uberenv\n\n")
+
+        if "py-shroud" in spec:
+            python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
+            cfg.write("# shroud from uberenv\n")
+            cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE", pjoin(python_bin_dir, "shroud")))
+        else:
+            cfg.write("# shroud not built by uberenv\n\n")
 
         if "uncrustify" in spec:
             uncrustify_bin_dir = get_spec_path(spec, "uncrustify", path_replacements, use_bin=True)
