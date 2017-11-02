@@ -43,7 +43,7 @@ set( quest_headers
    )
 
 if (MFEM_FOUND)
-   list(APPEND quest_headers detail/PointInCell_impl_mfem.hpp)
+   list(APPEND quest_headers detail/PointInCellMeshWrapper_mfem.hpp)
 endif()
 
 

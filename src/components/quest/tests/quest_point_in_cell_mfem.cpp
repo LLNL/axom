@@ -31,7 +31,7 @@
 #include "quest/PointInCell.hpp"
 
 #ifdef AXOM_USE_MFEM
-# include "quest/PointInCell_impl_mfem.hpp"
+# include "quest/PointInCellMeshWrapper_mfem.hpp"
 #else
 # error "This file tests the PointInCell class on mfem meshes.  It requires mfem."
 #endif

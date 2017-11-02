@@ -111,9 +111,9 @@ public:
   /*!
    * Construct a point in cell query structure over a computational mesh
    *
-   * \param mesh A pointer to the computational mesh
-   * \param resolution Grid resolution for the spatial index. Default: NULL
-   * \param bboxTolerance A tolerance factor by which to expand
+   * \param [in] mesh A pointer to the computational mesh
+   * \param [in] resolution Grid resolution for the spatial index. Default: NULL
+   * \param [in] bboxTolerance A tolerance factor by which to expand
    * the bounding boxes. Default: 1e-8
    *
    * \note The bboxTolerance should be a small positive number.  It helps avoid
@@ -177,7 +177,9 @@ public:
    * Only valid when a cell is found.
    *
    * \return The index of the mesh cell containing the query point.
-   * If no cell is found, returns the special value \a MeshTraits::NO_CELL
+   * If no cell is found, returns the special value \a MeshTraits::NO_CELL.
+   * Otherwise, the result will be between 0 and N, where N is the number
+   * of cells in the mesh.
    *
    * \pre \a pos is a non-null array with at least \a meshDimension() coordinates
    * \pre When not NULL, \a isopar has space for at least \a meshDimension() coordinates
