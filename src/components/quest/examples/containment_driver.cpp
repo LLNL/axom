@@ -39,6 +39,7 @@
 #include "quest/SpatialOctree.hpp"
 #include "quest/InOutOctree.hpp"
 
+#include "mint/DataTypes.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -65,12 +66,12 @@
 
 using namespace axom;
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-typedef axom::quest::InOutOctree<3> Octree3D;
+typedef quest::InOutOctree<3> Octree3D;
 
-typedef axom::primal::Point<int,3> TriVertIndices;
-typedef axom::primal::Triangle<double, 3> SpaceTriangle;
+typedef primal::Point<mint::localIndex,3> TriVertIndices;
+typedef primal::Triangle<double, 3> SpaceTriangle;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
@@ -89,7 +90,7 @@ const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
+GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -111,9 +112,9 @@ GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 void testIntersectionOnRegularGrid()
 {
   static int const DIM = 3;
-  typedef axom::primal::Point< double,DIM >   PointType;
-  typedef axom::primal::Triangle< double,DIM > TriangleType;
-  typedef axom::primal::BoundingBox< double,DIM > BoundingBoxType;
+  typedef primal::Point< double,DIM >   PointType;
+  typedef primal::Triangle< double,DIM > TriangleType;
+  typedef primal::BoundingBox< double,DIM > BoundingBoxType;
 
   double xArr[3] = { 1., 0., 0.};
   double yArr[3] = { 0., 1., 0.};
@@ -125,7 +126,7 @@ void testIntersectionOnRegularGrid()
 
   TriangleType unitTri( ptX, ptY, ptZ );
 
-  typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+  typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
   DebugMesh* debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
@@ -133,14 +134,14 @@ void testIntersectionOnRegularGrid()
   debugMesh->addNode( ptY[0], ptY[1], ptY[2]);
   debugMesh->addNode( ptZ[0], ptZ[1], ptZ[2]);
 
-  int tArr[3] = {0,1,2};
-  debugMesh->addCell(tArr, MINT_TRIANGLE, 3);
+  mint::localIndex tArr[3] = {0,1,2};
+  debugMesh->addCell(tArr, MINT_TRIANGLE);
 
   PointType bbMin(-0.1);
   PointType bbMax(1.1);
   BoundingBoxType bbox( bbMin,bbMax );
 
-  typedef axom::quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
+  typedef quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
   SpaceOctree oct( bbox);
 
 
@@ -164,23 +165,31 @@ void testIntersectionOnRegularGrid()
 
             if( axom::primal::intersect( unitTri, blockBB))
             {
-              // Add to debug mesh
-              int vStart = debugMesh->getMeshNumberOfNodes();
+              SpaceOctree::BlockIndex block( primal::Point<int,3>::make_point(i,j,k), lev );
+              SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
-              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-
-              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-              debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-              debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-
-              int data[8];
-              for(int i=0; i< 8; ++i)
+              if( primal::intersect( unitTri, blockBB))
               {
-                data[i] = vStart + i;
+                // Add to debug mesh
+                mint::localIndex vStart = debugMesh->getMeshNumberOfNodes();
+
+                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+
+                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+
+                mint::localIndex data[8];
+                for(int i=0; i< 8; ++i) 
+                {
+                  data[i] = vStart + i;
+                }
+
+                debugMesh->addCell(data, MINT_HEX);
               }
 
               debugMesh->addCell( data, MINT_HEX, 8);
@@ -191,9 +200,7 @@ void testIntersectionOnRegularGrid()
     }
   }
 
-
-  axom::mint::write_vtk(debugMesh, "gridIntersections.vtk");
-
+  mint::write_vtk(debugMesh, "gridIntersections.vtk");
   delete debugMesh;
 }
 
@@ -205,29 +212,25 @@ void testContainmentOnRegularGrid(
 {
   SpaceVector h( queryBounds.getMin(), queryBounds.getMax());
   for(int i=0 ; i<3 ; ++i)
+  {
     h[i] /= gridRes;
+  }
 
-  int ext[6];
+  mint::globalIndex ext[6];
   ext[0] = ext[2] = ext[4] = 0;
   ext[1] = ext[3] = ext[5] = gridRes;
 
-  axom::mint::UniformMesh* umesh =
-    new axom::mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
+  mint::UniformMesh* umesh =
+          new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
-
-  const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
-
-  PD->addField( new axom::mint::FieldVariable< int >("containment",nnodes) );
-  int* containment = PD->getField( "containment" )->getIntPtr();
+  const int nnodes = umesh->getMeshNumberOfNodes();
+  int* containment = umesh->addNodeField< int >("containment", 1)->getIntPtr();
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
-
-  axom::utilities::Timer timer(true);
-  for ( int inode=0 ; inode < nnodes ; ++inode )
+  utilities::Timer timer(true);
+  for ( int inode=0; inode < nnodes; ++inode )
   {
-    axom::primal::Point< double,3 > pt;
+    primal::Point< double,3 > pt;
     umesh->getMeshNode( inode, pt.data() );
 
     containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
@@ -239,9 +242,9 @@ void testContainmentOnRegularGrid(
                 gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
   #ifdef DUMP_VTK_MESH
-  std::stringstream sstr;
-  sstr << "gridContainment_" << gridRes << ".vtk";
-  axom::mint::write_vtk( umesh, sstr.str());
+    std::stringstream sstr;
+    sstr << "gridContainment_" << gridRes << ".vtk";
+    mint::write_vtk( umesh, sstr.str());
   #endif
 
   delete umesh;
@@ -251,7 +254,7 @@ void testContainmentOnRegularGrid(
 /**
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
-TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
+TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, mint::localIndex cellIndex)
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
@@ -265,8 +268,7 @@ TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
  * \brief Extracts the positions of a traingle's vertices from the mesh
  * \return The triangle vertex positions in a SpaceTriangle instance
  */
-SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh,
-                              const TriVertIndices& vertIndices )
+SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndices )
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
 
@@ -280,17 +282,17 @@ SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh,
 /**
  * \brief Computes some statistics about the surface mesh.
  *
- * Specifically, computes histograms (and ranges) of the edge lengths and
- * triangle areas son a logarithmic scale and logs the results
+ * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
+ * on a logarithmic scale and logs the results
  */
-void print_surface_stats( axom::mint::Mesh* mesh)
+void print_surface_stats( mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   SpacePt pt;
 
-  typedef axom::primal::BoundingBox<double,1> MinMaxRange;
-  typedef MinMaxRange::PointType LengthType;
+   typedef primal::BoundingBox<double,1> MinMaxRange;
+   typedef MinMaxRange::PointType LengthType;
 
   MinMaxRange meshEdgeLenRange;
   MinMaxRange meshTriAreaRange;
@@ -300,16 +302,12 @@ void print_surface_stats( axom::mint::Mesh* mesh)
 
   // simple binning based on the exponent
   typedef std::map<int,int> LogHistogram;
-  LogHistogram edgeLenHist;         // Create histogram of edge lengths (log
-                                    // scale)
-  LogHistogram areaHist;            // Create histogram of triangle areas (log
-                                    // scale)
+  LogHistogram edgeLenHist;         // Create histogram of edge lengths (log scale)
+  LogHistogram areaHist;            // Create histogram of triangle areas (log scale)
 
   typedef std::map<int,MinMaxRange> LogRangeMap;
-  LogRangeMap edgeLenRangeMap;      // Tracks range of edge lengths at each
-                                    // scale
-  LogRangeMap areaRangeMap;         // Tracks range of triangle areas at each
-                                    // scale
+  LogRangeMap edgeLenRangeMap;      // Tracks range of edge lengths at each scale
+  LogRangeMap areaRangeMap;         // Tracks range of triangle areas at each scale
 
   typedef axom::primal::Point<int,3> TriVertIndices;
   int expBase2;
@@ -327,9 +325,24 @@ void print_surface_stats( axom::mint::Mesh* mesh)
       double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
       if(axom::utilities::isNearlyEqual(len,0.))
       {
-        badTriangles.insert(i);
+        double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
+        if(utilities::isNearlyEqual(len,0.))
+        {
+          badTriangles.insert(i);
+        }
+        else
+        {
+          LengthType edgeLen(len);
+          meshEdgeLenRange.addPoint( edgeLen );
+          std::frexp (len, &expBase2);
+          edgeLenHist[expBase2]++;
+          edgeLenRangeMap[expBase2].addPoint( edgeLen );
+        }
       }
-      else
+
+      // Compute triangle area stats
+      double area = tri.area();
+      if( utilities::isNearlyEqual(area, 0.))
       {
         LengthType edgeLen(len);
         meshEdgeLenRange.addPoint( edgeLen );
@@ -411,8 +424,7 @@ void print_surface_stats( axom::mint::Mesh* mesh)
 }
 
 /**
- * \brief Finds the octree leaf containing the given query point, and optionally
- *  refines the leaf
+ * \brief Finds the octree leaf containing the given query point, and optionally refines the leaf
  */
 void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
                     bool shouldRefine = true)
@@ -435,10 +447,10 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, char * * argv )
 {
-  axom::slic::UnitTestLogger logger;  // create & initialize logger
-  // axom::slic::debug::checksAreErrors = true;
+  slic::UnitTestLogger logger;  // create & initialize logger
+  // slic::debug::checksAreErrors = true;
 
   bool hasInputArgs = argc > 1;
 
@@ -453,26 +465,25 @@ int main( int argc, char** argv )
     const std::string defaultFileName = "plane_simp.stl";
     const std::string defaultDir = "src/components/quest/data/";
 
-    stlFile =
-      axom::utilities::filesystem::joinPath(defaultDir, defaultFileName);
+    stlFile = utilities::filesystem::joinPath(defaultDir, defaultFileName);
   }
 
-  stlFile = axom::slam::util::findFileInAncestorDirs(stlFile);
-  SLIC_ASSERT( axom::utilities::filesystem::pathExists( stlFile));
+  stlFile = slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read mesh file
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));
   SLIC_INFO("Reading file: " << stlFile << "...");
 
-  quest::STLReader* reader = new quest::STLReader();
+  quest::STLReader * reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
   SLIC_INFO("done.");
 
 
   // STEP 3: create surface mesh
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
             << surface_mesh->getMeshNumberOfNodes() << " nodes and "
@@ -490,7 +501,7 @@ int main( int argc, char** argv )
 
   testIntersectionOnRegularGrid();
 
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
+  slic::setLoggingMsgLevel( slic::message::Debug);
 
 
   // STEP 6: Create octree over mesh's bounding box and query a point in space
@@ -500,7 +511,7 @@ int main( int argc, char** argv )
 
 
   print_surface_stats(surface_mesh);
-  axom::mint::write_vtk(surface_mesh, "meldedTriMesh.vtk");
+  mint::write_vtk(surface_mesh, "meldedTriMesh.vtk");
 
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Querying the octree "));
 
@@ -520,10 +531,9 @@ int main( int argc, char** argv )
   for(int i=1 ; i< MAX_CONTAINMENT_QUERY_LEVEL ; ++i)
     testContainmentOnRegularGrid( octree, queryBB, 1<<i);
 
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
+  slic::setLoggingMsgLevel( slic::message::Warning);
 
-  // Other -- find leaf block of a given query point at various levels of
-  // resolution
+  // Other -- find leaf block of a given query point at various levels of resolution
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Other octree operations "));
   double alpha = 2./3.;
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);

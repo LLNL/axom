@@ -30,23 +30,44 @@
 #include "axom/Types.hpp"
 #include "axom/Macros.hpp"
 
+#include <algorithm>  
 #include <cmath>
-#include <algorithm>
+#include <cstdlib>                      // for std::malloc, std::realloc, st::free
+
 
 #ifdef AXOM_USE_CXX11
   #include <type_traits>
 #endif
 
 
-namespace axom
-{
-namespace utilities
-{
+#define AXOM_ALLOC( number, type ) \
+  static_cast< type * >( std::malloc( number * sizeof( type ) ) )
 
-/*!
- * \brief Gracefully aborts the application
- */
-void processAbort();
+#define AXOM_REALLOC( pointer, number, type ) \
+  static_cast< type * >( std::realloc(pointer, number * sizeof( type ) ) )
+
+#define AXOM_FREE( pointer ) \
+  std::free( pointer )
+
+
+namespace axom {
+namespace utilities {
+
+  /*!
+   * \brief Gracefully aborts the application
+   */
+  void processAbort();
+
+  /*!
+   * \brief Returns the absolute value of x.
+   * \param [in] x value whose absolute value is computed.
+   * \return abs(x) the absolute value of x.
+   */
+  template < typename T >
+  inline T abs( const T& x ) 
+  {
+   return ( x < 0 )? -x : x; 
+  }
 
 /*!
  * \brief Returns the absolute value of x.

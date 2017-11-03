@@ -23,6 +23,7 @@
 
 #include "axom_utils/Matrix.hpp" // for Matrix definition
 
+#include "mint/DataTypes.hpp"
 #include "mint/FEBasis.hpp"      // for FEBasis traits class
 
 namespace axom
@@ -124,7 +125,7 @@ public:
    *
    * \see mint::Mesh
    */
-  FiniteElement( const Mesh* mesh, int cellIdx );
+  FiniteElement( const Mesh * mesh, int cellIdx );
 
   /*!
    * \brief Constructs a FiniteElement instance from a matrix consisting of the
@@ -258,8 +259,8 @@ public:
    */
   /// @{
 
-  double* getPhysicalNodes() { return m_xyz; };
-  const double* getPhysicalNodes( ) const { return m_xyz; };
+  double * getPhysicalNodes() { return m_xyz; };
+  const double * getPhysicalNodes( ) const { return m_xyz; };
 
   /// @}
 
@@ -295,8 +296,8 @@ public:
    */
   /// @{
 
-  double* getReferenceNodes() { return m_reference_coords; };
-  const double* getReferenceNodes() const { return m_reference_coords; };
+  double * getReferenceNodes() { return m_reference_coords; };
+  const double * getReferenceNodes() const { return m_reference_coords; };
 
   /// @}
 
@@ -313,8 +314,8 @@ public:
    */
   /// @{
 
-  double* getReferenceCenter() { return m_reference_center; };
-  const double* getReferenceCenter() const { return m_reference_center; };
+  double * getReferenceCenter() { return m_reference_center; };
+  const double * getReferenceCenter() const { return m_reference_center; };
 
   /// @}
 
@@ -338,8 +339,8 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  int computeReferenceCoords( const double* xp,
-                              double* xr,
+  int computeReferenceCoords( const double * xp,
+                              double * xr,
                               double TOL=1.e-12 );
 
   /*!
@@ -354,7 +355,7 @@ public:
    * \pre xp != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void computePhysicalCoords( const double* xr, double* xp);
+  void computePhysicalCoords( const double * xr, double * xp);
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -366,7 +367,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void jacobian( const double* xr, numerics::Matrix< double >& J );
+  void jacobian( const double * xr, numerics::Matrix< double >& J );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -381,7 +382,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre phi != AXOM_NULLPTR
    */
-  void evaluateShapeFunctions( const double* xr, double* phi );
+  void evaluateShapeFunctions( const double * xr, double * phi );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -424,7 +425,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre phidot != AXOM_NULLPTR
    */
-  void evaluateDerivatives( const double* xr, double* phidot );
+  void evaluateDerivatives( const double * xr, double * phidot );
 
   /// \name Friend Functions
   /// @{
@@ -470,7 +471,7 @@ private:
    * \pre m != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < m->getMeshNumberOfCells()
    */
-  void getCellCoords( const Mesh* m, int cellIdx );
+  void getCellCoords( const Mesh* m, localIndex cellIdx );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -496,7 +497,7 @@ private:
    *
    * \pre xr != AXOM_NULLPTR
    */
-  bool inReferenceElement( const double* xr, double TOL=1.e-12 );
+  bool inReferenceElement( const double * xr, double TOL=1.e-12 );
 
   /// @}
 
@@ -533,10 +534,10 @@ private:
   int m_maxNewtonIterations;   /*!< max newton iterations for inverse map */
   int m_numnodes;              /*!< number of nodes of the element */
 
-  double* m_jac;                /*!< stores jacobian at some point */
-  double* m_xyz;                /*!< stores element coordinates */
-  double* m_phi;                /*!< stores shape functions at some point */
-  double* m_phidot;             /*!< stores shape function derivatives */
+  double * m_jac;               /*!< stores jacobian at some point */
+  double * m_xyz;               /*!< stores element coordinates */
+  double * m_phi;               /*!< stores shape functions at some point */
+  double * m_phidot;            /*!< stores shape function derivatives */
 
   bool m_usingExternal;        /*!< indicates whether the element coordinates
                                     are pointing to an external buffer. */
@@ -545,7 +546,7 @@ private:
   /// \name Reference Element Attributes
   /// @{
 
-  typedef void (* ShapeFunctionPtr)(const double* lc, double* phi);
+  typedef void (* ShapeFunctionPtr)(const double * lc, double * phi);
   ShapeFunctionPtr m_shapeFunction;             /*! shape function functor */
   ShapeFunctionPtr m_shapeFunctionDerivatives;  /*! derivatives functor */
 
@@ -554,8 +555,8 @@ private:
   int m_reference_dim;     /*!< dimension of the reference space */
   int m_numdofs;           /*!< number of degrees of freedom */
 
-  double* m_reference_coords;  /*!< stores reference coords \f$ \xi_i \f$ */
-  double* m_reference_center;  /*!< stores reference center \f$ \xi_c \f$ */
+  double * m_reference_coords; /*!< stores reference coords \f$ \xi_i \f$ */
+  double * m_reference_center; /*!< stores reference center \f$ \xi_c \f$ */
 
   /// @}
 

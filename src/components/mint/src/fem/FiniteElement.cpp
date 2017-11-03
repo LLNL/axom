@@ -27,6 +27,7 @@
 
 // Mint includes
 #include "mint/CellType.hpp"           // for cell type definitions
+#include "mint/DataTypes.hpp"          // for localIndex
 #include "mint/Lagrange.hpp"           // For Lagrange ShapeFunctions
 #include "mint/Mesh.hpp"               // for mesh data structure
 #include "mint/ShapeFunction.hpp"      // For ShapeFunction definition
@@ -46,7 +47,7 @@ namespace detail
 {
 
 //------------------------------------------------------------------------------
-bool diverged( const double* xi, int N )
+bool diverged( const double * xi, int N )
 {
   const double DIVERGED = 1.e6;
 
@@ -64,7 +65,7 @@ bool diverged( const double* xi, int N )
 //------------------------------------------------------------------------------
 // FINITE ELEMENT CLASS IMPLEMENTATION
 //------------------------------------------------------------------------------
-FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
+FiniteElement::FiniteElement( const Mesh * mesh, int cellIdx ) :
   m_dim( mesh->getDimension() ),
   m_ctype( mesh->getMeshCellType( cellIdx ) ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
@@ -141,8 +142,8 @@ FiniteElement::~FiniteElement()
 }
 
 //------------------------------------------------------------------------------
-int FiniteElement::computeReferenceCoords( const double* xp,
-                                           double* xr,
+int FiniteElement::computeReferenceCoords( const double * xp,
+                                           double * xr,
                                            double TOL )
 {
   SLIC_ASSERT(  xp != AXOM_NULLPTR );
@@ -248,7 +249,7 @@ int FiniteElement::computeReferenceCoords( const double* xp,
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
+void FiniteElement::computePhysicalCoords( const double * xr, double * xp )
 {
   SLIC_ASSERT(  xr != AXOM_NULLPTR );
   SLIC_ASSERT(  xp != AXOM_NULLPTR );
@@ -271,7 +272,7 @@ void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::jacobian( const double* lc,
+void FiniteElement::jacobian( const double * lc,
                               numerics::Matrix< double >& J  )
 {
   SLIC_ASSERT(  lc != AXOM_NULLPTR );
@@ -298,7 +299,7 @@ void FiniteElement::jacobian( const double* lc,
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::evaluateShapeFunctions( const double* xr, double* phi )
+void FiniteElement::evaluateShapeFunctions( const double * xr, double * phi )
 {
   SLIC_ASSERT(  xr != AXOM_NULLPTR );
   SLIC_ASSERT(  phi != AXOM_NULLPTR );
@@ -315,7 +316,7 @@ void FiniteElement::evaluateShapeFunctions( const double* xr, double* phi )
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::evaluateDerivatives( const double* xr, double* phidot )
+void FiniteElement::evaluateDerivatives( const double * xr, double * phidot )
 {
   SLIC_ASSERT(  xr != AXOM_NULLPTR );
   SLIC_ASSERT(  phidot != AXOM_NULLPTR );
@@ -368,13 +369,13 @@ void FiniteElement::tearDown()
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
+void FiniteElement::getCellCoords( const Mesh* m, localIndex cellIdx )
 {
   SLIC_ASSERT(  m != AXOM_NULLPTR );
   SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );
 
   // TODO: iron out this code
-  int cell[ MINT_MAX_NUM_NODES ];
+  localIndex cell[ MINT_MAX_NUM_NODES ];
   m->getMeshCell( cellIdx, cell );
 
   for ( int i=0 ; i < m_numnodes ; ++i )
@@ -385,7 +386,7 @@ void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
 }
 
 //------------------------------------------------------------------------------
-bool FiniteElement::inReferenceElement( const double* xi, double TOL )
+bool FiniteElement::inReferenceElement( const double * xi, double TOL )
 {
   SLIC_ASSERT( xi != AXOM_NULLPTR );
 

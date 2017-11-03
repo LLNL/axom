@@ -20,6 +20,7 @@
 using axom::slic::UnitTestLogger;
 
 #include "mint/CellType.hpp"
+#include "mint/DataTypes.hpp"
 #include "mint/MeshType.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
@@ -72,7 +73,7 @@ void getMesh( TriangleMesh* mesh )
 
   double x[3];
   double n[3];
-  int c[3];
+  axom::mint::localIndex    c[3];
 
   // North pole point
   x[0] = SPHERE_CENTER[0];
@@ -120,34 +121,35 @@ void getMesh( TriangleMesh* mesh )
 
   // Generate mesh connectivity around north pole
   for ( int i=0; i < THETA_RES; ++i ) {
-    c[2] = phiResolution*i + /* number of poles */ 2;
-    c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
-    c[0] = 0;
-    mesh->addCell( c, MINT_TRIANGLE, 3 );
+     c[2] = phiResolution*i + /* number of poles */ 2;
+     c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
+     c[0] = 0;
+     mesh->addCell( c, MINT_TRIANGLE );
   } // END for
 
   // Generate mesh connectivity around south pole
   int offset = PHI_RES - 1;
   for ( int i=0; i < THETA_RES; ++i ) {
-    c[2] = phiResolution*i + offset;
-    c[1] = ( phiResolution*(i+1) % stride ) + offset;
-    c[0] = 1;
-    mesh->addCell( c, MINT_TRIANGLE, 3 );
+     c[2] = phiResolution*i + offset;
+     c[1] = ( phiResolution*(i+1) % stride ) + offset;
+     c[0] = 1;
+     mesh->addCell( c, MINT_TRIANGLE );
   }
 
   // Generate mesh connectivity in between poles
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-    for ( int j=0 ; j < PHI_RES-3 ; ++j )
-    {
-      c[ 0 ] = phiResolution*i + j + 2;
-      c[ 1 ] = c[0] + 1;
-      c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
-      mesh->addCell( c, MINT_TRIANGLE, 3 );
+  for ( int i=0; i < THETA_RES; ++i ) {
 
-      c[ 1 ] = c[ 2 ];
-      c[ 2 ] = c[ 1 ] - 1;
-      mesh->addCell( c, MINT_TRIANGLE, 3 );
+     for ( int j=0; j < PHI_RES-3; ++j ) {
+
+        c[ 0 ] = phiResolution*i + j + 2;
+        c[ 1 ] = c[0] + 1;
+        c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
+
+        mesh->addCell( c, MINT_TRIANGLE );
+
+        c[ 1 ] = c[ 2 ];
+        c[ 2 ] = c[ 1 ] - 1;
+        mesh->addCell( c, MINT_TRIANGLE );
      } // END for all j
   } // END for all i
 }
@@ -194,7 +196,7 @@ void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
   h[1] = (bb.getMax()[1]-bb.getMin()[1]) / N;
   h[2] = (bb.getMax()[2]-bb.getMin()[2]) / N;
 
-  int ext[6];
+  axom::mint::globalIndex ext[6];
   ext[0] = ext[2] = ext[4] = 0;
   ext[1] = ext[3] = ext[5] = N-1;
 

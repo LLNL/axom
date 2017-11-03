@@ -36,7 +36,7 @@ public:
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the logical extent of this mesh instance.
    */
-  CurvilinearMesh( int dimension, int ext[6] );
+  CurvilinearMesh( int dimension, const globalIndex ext[6] );
 
   /*!
    * \brief Constructs a curvilinear mesh instance.
@@ -45,31 +45,14 @@ public:
    * \param [in] blockId the block ID of this mesh
    * \param [in] partId the partition ID of this mesh
    */
-  CurvilinearMesh( int dimension, int ext[6], int blockId, int partId );
-  
-  /*!
-   * \brief Constructs a curvilinear mesh instance.
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the logical extent of this mesh instance.
-   * \param [in] nodeCapacity the number of nodes to preallocate.
-   */
-  CurvilinearMesh( int ndims, int ext[6], int nodeCapacity );
-  
-  /*!
-   * \brief Constructs a curvilinear mesh instance.
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the logical extent of this mesh instance.
-   * \param [in] nodeCapacity the number of nodes to preallocate.
-   * \param [in] blockId the block ID of this mesh
-   * \param [in] partId the partition ID of this mesh
-   */
-  CurvilinearMesh( int ndims, int ext[6], int nodeCapacity, int blockId,
-                                                            int partId );
+  CurvilinearMesh( int dimension, const globalIndex ext[6], int blockId, 
+                   int partId );
 
   /*!
    * \brief Destructor.
    */
-  virtual ~CurvilinearMesh();
+  virtual ~CurvilinearMesh()
+  {}
 
   /// \name GetNode() methods
   /// @{
@@ -81,7 +64,7 @@ public:
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    */
-  virtual void getNode( int nodeIdx, double* coordinates ) const;
+  virtual void getNode( localIndex nodeIdx, double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -90,7 +73,8 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
    */
-  virtual void getNode( int i, int j, double* coordinates ) const;
+  virtual void getNode( localIndex i, localIndex j, 
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -100,40 +84,44 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
    */
-  virtual void getNode( int i, int j, int k, double* coordinates ) const;
+  virtual void getNode( localIndex i, localIndex j, localIndex k, 
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinate of the given node.
    * \param [in] nodeIdx index of the node in query.
-   * \param [in] idim requested coordinate dimension.
+   * \param [in] dim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre dim >= 0 && dim < m_ndims.
    */
-  virtual double getNodeCoordinate( int nodeIdx, int idim  ) const;
+  virtual double getNodeCoordinate( localIndex nodeIdx, 
+                                    int dim ) const override;
 
   /*!
    * \brief Returns the coordinate value of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
-   * \param [in] idim requested coordinate dimension.
+   * \param [in] dim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre dim >= 0 && dim < m_ndims.
    */
-  virtual double getNodeCoordinate( int i, int j, int idim ) const;
+  virtual double getNodeCoordinate( localIndex i, localIndex j, 
+                                    int dim ) const override;
 
   /*!
    * \brief Returns the coordinate value of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.
-   * \param [in] idim requested coordinate dimension.
+   * \param [in] dim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre dim >= 0 && dim < m_ndims.
    */
-  virtual double getNodeCoordinate( int i, int j, int k, int idim ) const;
+  virtual double getNodeCoordinate( localIndex i, localIndex j, localIndex k, 
+                                    int dim ) const override;
 
   /// @}
 
@@ -149,7 +137,7 @@ public:
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
    * \pre this->getDimension() == 3
    */
-  void setNode( int nodeIdx, double x, double y, double z );
+  void setNode( localIndex nodeIdx, double x, double y, double z );
 
   /*!
    * \brief Sets the coordinates of the node at (i,j,k).
@@ -161,8 +149,8 @@ public:
    * \param [in] z the z--coordinate to set at the given node.
    * \pre this->getDimension() == 3
    */
-  void setNode( int i, int j, int k,
-                double x, double y, double z );
+  void setNode( localIndex i, localIndex j, localIndex k, double x, double y,
+                double z );
 
   /*!
    * \brief Sets the coordinates of the node at the given index.
@@ -171,7 +159,7 @@ public:
    * \param [in] y the y--coordinate to set at the given node.
    * \pre this->getDimension() == 2
    */
-  void setNode( int nodeIdx, double x, double y );
+  void setNode( localIndex nodeIdx, double x, double y );
 
   /*!
    * \brief Sets the coordinates of the node at the given index.
@@ -181,7 +169,7 @@ public:
    * \param [in] y the y--coordinate to set at the given node.
    * \pre this->getDimension() == 2
    */
-  void setNode( int i, int j, double x, double y );
+  void setNode( localIndex i, localIndex j, double x, double y );
 
   /*!
    * \brief Sets the coordinates of the node at the given index.
@@ -189,154 +177,157 @@ public:
    * \param [in] x the x--coordinate to set at the given node.
    * \pre this->getDimension() == 1
    */
-  void setNode( int nodeIdx, double x );
+  void setNode( localIndex nodeIdx, double x );
 
   /// @}
 
   /*!
    * \brief Returns a pointer to the coordinates array for the given dimension.
-   * \param [in] idim the requested coordinate dimension.
+   * \param [in] dim the requested coordinate dimension.
    * \return ptr pointer to the coordinates array.
-   * \pre idim >= 0 && idim < this->getDimension().
+   * \pre dim >= 0 && dim < this->getDimension().
    * \post ptr != AXOM_NULLPTR.
    */
-  const double* getMeshCoordinateArray( int idim ) const;
+  const double* getMeshCoordinateArray( int dim ) const;
 
 private:
 
-  /*!
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent applications from calling it.
-   */
+  MeshCoordinates m_coordinates;
+ 
   CurvilinearMesh();
-
-  MeshCoordinates* m_coordinates;
-
+  {}
+  
   CurvilinearMesh(const CurvilinearMesh&); // Not implemented
   CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented
 };
 
-} /* namespace mint */
-} /* namespace axom */
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
-namespace axom
+//------------------------------------------------------------------------------
+inline const double* CurvilinearMesh::getMeshCoordinateArray( int dim ) const
 {
-namespace mint
-{
+  SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
 
-inline const double* CurvilinearMesh::getMeshCoordinateArray( int idim ) const
-{
-  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
-  return( m_coordinates->getCoordinateArray( idim ) );
+  return( m_coordinates.getCoordinateArray( dim ) );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int nodeIdx, double x, double y, double z)
+inline void CurvilinearMesh::setNode( localIndex nodeIdx, double x, double y, 
+                                      double z)
 {
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT(  this->getDimension()==3 );
-  m_coordinates->setPoint( nodeIdx, x, y, z );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT( this->getDimension() == 3 );
+
+  m_coordinates.setPoint( nodeIdx, x, y, z );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int i,    int j,    int k,
+inline void CurvilinearMesh::setNode( localIndex i, localIndex j, localIndex k,
                                       double x, double y, double z )
-{
-  int nodeIdx = m_extent->getLinearIndex( i, j, k );
+{ 
+  SLIC_ASSERT( this->getDimension() == 3 );
+
+  localIndex nodeIdx = m_extent.getLinearIndex( i, j, k );
   this->setNode( nodeIdx, x, y, z );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int nodeIdx, double x, double y )
+inline void CurvilinearMesh::setNode( localIndex nodeIdx, double x, double y )
 {
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
-  SLIC_ASSERT(  this->getDimension()==2 );
-  m_coordinates->setPoint( nodeIdx, x, y );
+  SLIC_ASSERT(  this->getDimension() == 2 );
+
+  m_coordinates.setPoint( nodeIdx, x, y );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int i, int j, double x, double y )
-{
-  int nodeIdx = m_extent->getLinearIndex( i, j );
+inline void CurvilinearMesh::setNode( localIndex i, localIndex j, double x, 
+                                      double y )
+{ 
+  SLIC_ASSERT( this->getDimension() == 2 );
+  
+  localIndex nodeIdx = m_extent.getLinearIndex( i, j );
   this->setNode( nodeIdx, x, y );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int nodeIdx, double x )
+inline void CurvilinearMesh::setNode( localIndex nodeIdx, double x )
 {
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
-  SLIC_ASSERT(  this->getDimension()==2 );
-  m_coordinates->setPoint( nodeIdx, x );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
+  SLIC_ASSERT( this->getDimension() == 1 );
+
+  m_coordinates.setPoint( nodeIdx, x );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
+inline void CurvilinearMesh::getNode( localIndex nodeIdx, 
+                                      double* coordinates) const
 {
-  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT( coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
-  for ( int i=0 ; i < this->getDimension() ; ++i )
-  {
-    const double* coords = m_coordinates->getCoordinateArray( i );
+  for ( int i=0; i < this->getDimension(); ++i ) {
+    const double* coords = m_coordinates.getCoordinateArray( i );
     coordinates[ i ] = coords[ nodeIdx ];
   }
-
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
+inline void CurvilinearMesh::getNode( localIndex i, localIndex j, 
+                                      double* coordinates ) const
 {
-  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
-  SLIC_ASSERT(  this->getDimension()==2 );
+  SLIC_ASSERT( coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( this->getDimension() == 2 );
 
-  const int nodeIdx = m_extent->getLinearIndex( i, j );
+  const localIndex nodeIdx = m_extent.getLinearIndex( i, j );
   this->getNode( nodeIdx, coordinates );
 }
 
 //------------------------------------------------------------------------------
 inline
-void CurvilinearMesh::getNode(int i, int j, int k, double* coordinates) const
+void CurvilinearMesh::getNode( localIndex i, localIndex j, localIndex k, 
+                               double* coordinates) const
 {
-  SLIC_ASSERT(  coordinates !=  AXOM_NULLPTR );
-  SLIC_ASSERT(  this->getDimension()==3 );
+  SLIC_ASSERT( coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( this->getDimension() == 3 );
 
-  const int nodeIdx = m_extent->getLinearIndex( i, j, k );
+  const localIndex nodeIdx = m_extent.getLinearIndex( i, j, k );
   this->getNode( nodeIdx, coordinates );
 }
 
 //------------------------------------------------------------------------------
-inline double CurvilinearMesh::getNodeCoordinate( int nodeIdx, int idim ) const
+inline double CurvilinearMesh::getNodeCoordinate( localIndex nodeIdx, 
+                                                  int dim ) const
 {
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT(  idim >= 0 && idim < this->getDimension() );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
 
-  const double* coord = m_coordinates->getCoordinateArray( idim );
+  const double* coord = m_coordinates.getCoordinateArray( dim );
   return( coord[nodeIdx] );
 }
 
 //------------------------------------------------------------------------------
-inline double CurvilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
+inline double CurvilinearMesh::getNodeCoordinate( localIndex i, localIndex j, 
+                                                  int dim ) const
 {
-  SLIC_ASSERT(  this->getDimension()==2 );
-  SLIC_ASSERT(  idim >= 0 && idim < 2 );
+  SLIC_ASSERT( this->getDimension() == 2 );
 
-  const int nodeIdx = m_extent->getLinearIndex( i, j );
-  return ( this->getNodeCoordinate(nodeIdx, idim) );
+  const localIndex nodeIdx = m_extent.getLinearIndex( i, j );
+  return ( this->getNodeCoordinate(nodeIdx, dim) );
 }
 
 //------------------------------------------------------------------------------
 inline
-double CurvilinearMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
+double CurvilinearMesh::getNodeCoordinate( localIndex i, localIndex j, 
+                                           localIndex k, int dim ) const
 {
-  SLIC_ASSERT(  this->getDimension()==3 );
-  SLIC_ASSERT(  idim >= 0 && idim < 3 );
+  SLIC_ASSERT( this->getDimension() == 3 );
 
-  const int nodeIdx = m_extent->getLinearIndex( i, j, k );
-  return ( this->getNodeCoordinate(nodeIdx, idim) );
+  const localIndex nodeIdx = m_extent.getLinearIndex( i, j, k );
+  return ( this->getNodeCoordinate(nodeIdx, dim) );
 }
 
 } /* namespace mint */

@@ -18,10 +18,10 @@
 #ifndef FIELDTYPES_HPP_
 #define FIELDTYPES_HPP_
 
-namespace axom
-{
-namespace mint
-{
+#include <string>
+
+namespace axom {
+namespace mint {
 
 enum FieldTypes
 {
@@ -39,17 +39,20 @@ struct field_of
   static const int type = UNDEFINED_FIELD_TYPE;
 };
 
+
 template < >
 struct field_of< double >
 {
   static const int type = DOUBLE_FIELD_TYPE;
 };
 
+
 template < >
 struct field_of< int >
 {
   static const int type = INTEGER_FIELD_TYPE;
 };
+
 
 } /* namespace mint */
 } /* namespace axom */

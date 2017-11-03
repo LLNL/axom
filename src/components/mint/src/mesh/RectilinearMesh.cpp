@@ -16,53 +16,55 @@
  */
 
 #include "mint/RectilinearMesh.hpp"
+#include "mint/DataTypes.hpp"         /* For localIndex */
+#include "mint/MeshType.hpp"          /* For MINT_STRUCTURED_RECTILINEAR_MESH */
 
-#include "axom/Types.hpp"
+#include "axom/Types.hpp"             /* For AXOM_NULLPTR */
 
 namespace axom {
 namespace mint {
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
+RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ):
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
-  int ext_size[3];
+  localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0; dim < 3; ++dim ) {
-    m_coordinates[ dim ].setCapacity(0);
-    m_coordinates[ dim ].setResizeRatio(0.0);
+  for ( int dim = 0; dim < m_ndims; ++dim ) {
+    m_coordinates[ dim ].setSize( ext_size[ dim ] );
+    m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
 
-  for ( int dim = 0; dim < dimension; ++dim ) {
-    m_coordinates[ dim ].setSize( ext_size[ dim ] );
+  for (int dim = m_ndims; dim < 3; ++dim ) {
+    m_coordinates[ dim ].setCapacity( 0 );
+    m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
-                                  int blockId, int partId ) :
+RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6],
+                                  int blockId, int partId ):
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId,
                   partId ) 
 {
-  int ext_size[3];
+  localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0; dim < 3; ++dim ) {
-    m_coordinates[ dim ].setCapacity(0);
-    m_coordinates[ dim ].setResizeRatio(0.0);
-  }
-
-  for ( int dim = 0; dim < dimension; ++dim ) {
+  for ( int dim = 0; dim < m_ndims; ++dim ) {
     m_coordinates[ dim ].setSize( ext_size[ dim ] );
+    m_coordinates[ dim ].setResizeRatio( 0.0 );
+  }
+
+  for (int dim = m_ndims; dim < 3; ++dim ) {
+    m_coordinates[ dim ].setCapacity( 0 );
+    m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
 }
 
-//------------------------------------------------------------------------------
-const double* RectilinearMesh::getCoordinateArray( int dim ) const {
-  SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-  return m_coordinates[ dim ].getData();
-}
+RectilinearMesh::RectilinearMesh():
+  StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR )
+{}
 
 } /* namespace mint */
 } /* namespace axom */

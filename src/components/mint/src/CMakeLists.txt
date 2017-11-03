@@ -54,6 +54,7 @@ set( mint_headers
     ## utils
     utils/vtk_utils.hpp
     utils/Vector.hpp
+    utils/DataTypes.hpp
    )
 
 ## mint sources
@@ -64,8 +65,7 @@ set( mint_sources
 
     ## Mesh data-model
     mesh/CurvilinearMesh.cpp
-    mesh/Field.cpp
-    mesh/FieldData.cpp
+    mesh/Extent.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
     mesh/ParticleMesh.cpp

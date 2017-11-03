@@ -2761,10 +2761,7 @@ private:
 
   int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
   {
-    mint::FieldData* CD = mesh->getCellFieldData();
-
-    CD->addField( new mint::FieldVariable< int >(name, size) );
-    int* fld = CD->getField( name )->getIntPtr();
+    int* fld = mesh->addCellField< int >( name, 1 )->getIntPtr();
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
@@ -2773,10 +2770,7 @@ private:
   double* addRealField(DebugMesh* mesh, const std::string& name,
                        int size) const
   {
-    mint::FieldData* CD = mesh->getCellFieldData();
-
-    CD->addField( new mint::FieldVariable< double >(name, size) );
-    double* fld = CD->getField( name )->getDoublePtr();
+    double* fld = mesh->addCellField< double >( name, 1 )->getDoublePtr();
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
@@ -2787,16 +2781,18 @@ private:
   {
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
-    int vStart = mesh->getMeshNumberOfNodes();
+    axom::mint::localIndex vStart = mesh->getMeshNumberOfNodes();
     mesh->addNode( triPos[0][0], triPos[0][1], triPos[0][2]);
     mesh->addNode( triPos[1][0], triPos[1][1], triPos[1][2]);
     mesh->addNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
-    int data[3];
-    for(int i=0 ; i< 3 ; ++i)
-      data[i] = vStart + i;
+    mint::localIndex data[3];
+    for(int i=0; i< 3; ++i) 
+    {
+        data[i] = vStart + i;
+    }
 
-    mesh->addCell(data, MINT_TRIANGLE, 3);
+    mesh->addCell(data, MINT_TRIANGLE);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2815,26 +2811,25 @@ private:
   {
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
 
-    int vStart = mesh->getMeshNumberOfNodes();
-    
-    mesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-    mesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-    mesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-    mesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+    axom::mint::localIndex vStart = mesh->getMeshNumberOfNodes();
 
-    mesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-    mesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-    mesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-    mesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
 
-    int data[8];
-    for(int i=0 ; i< 8 ; ++i)
-      data[i] = vStart + i;
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
 
-    mesh->addCell( data, MINT_HEX, 8);
+    axom::mint::localIndex data[8];
+    for(int i=0; i< 8; ++i)
+        data[i] = vStart + i;
 
-    // Log the triangle info as primal code to simplify adding a test for this
-    // case
+    mesh->addCell(data, MINT_HEX);
+
+    // Log the triangle info as primal code to simplify adding a test for this case
     if(shouldLogBlocks)
     {
       static int counter = 0;
@@ -2911,8 +2906,8 @@ public:
   {
     SLIC_DEBUG("--Checking that each vertex is in a leaf block of the tree.");
 
-    const int numVertices = m_octree.m_meshWrapper.numMeshVertices();
-    for(int i=0 ; i< numVertices ; ++i)
+    const VertexIndex numVertices = m_octree.m_meshWrapper.numMeshVertices();
+    for(VertexIndex i=0; i< numVertices; ++i)
     {
       const SpacePt& pos = m_octree.m_meshWrapper.vertexPosition(i);
       BlockIndex vertBlock = m_octree.findLeafBlock(pos);
@@ -2953,8 +2948,8 @@ public:
     SLIC_DEBUG(
       "--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
 
-    const int numTriangles = m_octree.m_meshWrapper.numMeshElements();
-    for(int tIdx=0 ; tIdx< numTriangles ; ++tIdx)
+    const axom::mint::localIndex numTriangles = m_octree.m_meshWrapper.numMeshElements();
+    for(axom::mint::localIndex tIdx=0; tIdx< numTriangles; ++tIdx)
     {
       TriVertIndices tvRel =
         m_octree.m_meshWrapper.triangleVertexIndices( tIdx );

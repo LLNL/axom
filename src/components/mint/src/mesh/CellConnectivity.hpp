@@ -24,6 +24,7 @@
 #include "axom/Types.hpp"
 #include "mint/CellType.hpp"
 #include "mint/Vector.hpp"
+#include "mint/DataTypes.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -35,7 +36,7 @@ namespace axom
 namespace mint
 {
 
-template < typename nodeIndexT, int cell_type >
+template < int cell_type >
 class CellConnectivity
 {
 public:
@@ -43,13 +44,10 @@ public:
   /*!
    * \brief Default constructor.
    */
-  CellConnectivity( int capacity=100, double resize_ratio=2.0 ): 
-      m_stride( cell::num_nodes[ cell_type ] )
-  {
-    m_connectivity.setChunkSize( m_stride );
-    m_connectivity.setCapacity( capacity );
-    m_connectivity.setResizeRatio( resize_ratio );
-  };
+  CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ): 
+    m_stride( cell::num_nodes[ cell_type ] ),
+    m_connectivity( capacity, cell::num_nodes[ cell_type ], resize_ratio )
+  {};
 
   /*!
    * \brief Destructor.
@@ -61,7 +59,8 @@ public:
    * \brief Checks if this CellConnecitivity instance has mixed cells.
    * \return status true if mixed cells else false.
    */
-  bool hasMixedCellTypes() const { return false; }
+  bool hasMixedCellTypes() const 
+  { return false; }
 
   /*!
    * \brief Checks if this CellConnectivity instance is empty()
@@ -75,7 +74,7 @@ public:
    * \return ncells number of cells.
    * \post ncells >= 0
    */
-  int getNumberOfCells() const 
+  localIndex getNumberOfCells() const 
   { return m_connectivity.getSize() / m_stride; }
 
   /*!
@@ -85,7 +84,8 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post nnodes >= 0
    */
-  int getNumberOfNodes( int AXOM_NOT_USED(cellIdx) ) const { return m_stride; };
+  localIndex getNumberOfNodes( localIndex AXOM_NOT_USED(cellIdx) ) const 
+  { return m_stride; };
 
   /*!
    * \brief Returns the cell type of the given cell.
@@ -94,7 +94,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    */
-  int getCellType( int AXOM_NOT_USED(cellIdx) ) const 
+  int getCellType( localIndex AXOM_NOT_USED(cellIdx) ) const 
   { return cell_type; }
 
   /*!
@@ -104,8 +104,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const nodeIndexT* operator[]( int cellIdx ) const
-  {
+  const localIndex* operator[]( localIndex cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     return m_connectivity.getData() + cellIdx * m_stride;
   }
@@ -116,8 +115,7 @@ public:
    * \param [in] type the cell type.
    * \note type is only used for mixed cell connectivity.
    */
-  void addCell( const nodeIndexT* cell, int AXOM_NOT_USED(type),
-                                        int AXOM_NOT_USED(nnodes) ) {
+  void addCell( const localIndex* cell, int AXOM_NOT_USED(type) ) {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     m_connectivity.add( cell, m_stride );
   }
@@ -129,7 +127,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( int cellIdx, const nodeIndexT* cell ) {
+  void setCell( localIndex cellIdx, const localIndex* cell ) {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     m_connectivity.set( cell, m_stride, cellIdx * m_stride );
@@ -139,26 +137,32 @@ public:
    * \brief Get the maximum number of points that can currently be held.
    * \return N the capacity of m_coordinates.
    */
-  int getCapacity() const
+  localIndex getCapacity() const
   { return m_connectivity.getCapacity(); }
 
-  /*!
-   * \brief Returns the number of points in this MeshCoordinates instance.
-   * \return npoint the number points in this MeshCoordinates instance.
-   */
-  int getSize() const
-  { return m_connectivity.getSize(); }
+
+  void setCapacity( localIndex capacity ) 
+  { m_connectivity.setCapacity( capacity ); }
 
   /*!
-   * \brief Sets the number of points in this MeshCoordinates instance.
+   * \brief Returns the number of points in this CellConnectivity instance.
+   * \return npoint the number points in this CellConnectivity instance.
    */
-  void setSize( int size ) const
-  { m_connectivity.setSize( size ); }
+  localIndex getSize() const
+  { return m_connectivity.getSize(); }
+
+
+  double getResizeRatio() const
+  { return m_connectivity.getResizeRatio(); }
+
+
+  void setResizeRatio( double ratio )
+  { m_connectivity.setResizeRatio( ratio ); } 
 
 private:
 
-  int m_stride;                                      /*!< stride */
-  Vector< nodeIndexT, nodeIndexT > m_connectivity;   /*!< connectivity array */
+  int m_stride;                          /*!< stride */
+  Vector< localIndex > m_connectivity;   /*!< connectivity array */
 
   CellConnectivity( const CellConnectivity& );
   CellConnectivity& operator=(const CellConnectivity& );
@@ -168,24 +172,20 @@ private:
 //          Specialization of CellConnectivity for Mixed Elements
 //------------------------------------------------------------------------------
 
-template < typename nodeIndexT >
-class CellConnectivity< nodeIndexT, MINT_MIXED_CELL >
+template <>
+class CellConnectivity< MINT_MIXED_CELL >
 {
 public:
 
   /*!
    * \brief Default constructor.
    */
-  CellConnectivity( int capacity=100, double resize_ratio=2.0 ): 
-    m_num_cells(0)
-  {
-    m_offset.setCapacity( capacity + 1 );
-    m_offset.setResizeRatio( resize_ratio );
-    m_cell_type.setCapacity( capacity );
-    m_cell_type.setResizeRatio( resize_ratio );
-    m_connectivity.setCapacity( capacity * cell::num_nodes[ MINT_MIXED_CELL ] );
-    m_connectivity.setResizeRatio( resize_ratio );
-  };
+  CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ): 
+    m_num_cells(0),
+    m_offset( capacity + 1, resize_ratio ),
+    m_connectivity( capacity * cell::num_nodes[ MINT_MIXED_CELL ], resize_ratio),
+    m_cell_type( capacity, resize_ratio )
+  {};
 
   /*!
    * \brief Destructor.
@@ -212,7 +212,7 @@ public:
    * \return ncells number of cells.
    * \post ncells >= 0
    */
-  int getNumberOfCells() const 
+  localIndex getNumberOfCells() const 
   { return m_num_cells; };
 
   /*!
@@ -222,7 +222,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post nnodes >= 0
    */
-  int getNumberOfNodes( int cellIdx ) const {
+  localIndex getNumberOfNodes( localIndex cellIdx ) const {
     SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
     return m_offset[ cellIdx + 1 ] - m_offset[ cellIdx ];
   };
@@ -234,7 +234,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    */
-  int getCellType( int cellIdx ) const {
+  int getCellType( localIndex cellIdx ) const {
     SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
     return m_cell_type[ cellIdx ];
   }
@@ -246,8 +246,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const nodeIndexT* operator[]( int cellIdx ) const 
-  {
+  const localIndex* operator[]( localIndex cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     return m_connectivity.getData() + m_offset[ cellIdx ];
   };
@@ -260,22 +259,22 @@ public:
    * \note type is only used for mixed cell connectivity.
    * \pre cell != AXOM_NULLPTR .
    */
-  void addCell( const nodeIndexT* cell, int type, int nnodes ) {
-    SLIC_ASSERT( cell != AXOM_NULLPTR );
+  void addCell( const localIndex* cell, int type ) {
+    int num_nodes = cell::num_nodes[ type ];
 
     /* STEP 0: get the last cell index before adding the new cell. */
-    int new_cell_id  = this->getNumberOfCells();
+    localIndex new_cell_id  = this->getNumberOfCells();
 
     if ( this->empty() ) {
       m_offset.add( 0 );
     }
 
     /* STEP 2: update the offsets array. */
-    const int offset = m_offset[ new_cell_id ];
-    m_offset.add( offset + nnodes );
+    const localIndex offset = m_offset[ new_cell_id ];
+    m_offset.add( offset + num_nodes );
 
     /* STEP 3: update the cell connectivity. */
-    m_connectivity.add( cell, nnodes );
+    m_connectivity.add( cell, num_nodes );
 
     /* STEP 4: update the cell types. */
     m_cell_type.add( type );
@@ -290,23 +289,57 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( int cellIdx, const nodeIndexT* cell ) const {
+  void setCell( localIndex cellIdx, const localIndex* cell ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 
     /* STEP 0: get the number of nodes for the given cell type. */
-    const int nnodes = this->getNumberOfNodes( cellIdx );
+    const localIndex nnodes = this->getNumberOfNodes( cellIdx );
 
     /* STEP 1: get to/from pointers. */
-    const int offset = m_offset[ cellIdx ];
+    const localIndex offset = m_offset[ cellIdx ];
     m_connectivity.set( cell, nnodes, offset );
   }
 
+  /*!
+   * \brief Get the maximum number of points that can currently be held.
+   * \return N the capacity of m_coordinates.
+   */
+  localIndex getCapacity() const
+  { return m_connectivity.getCapacity(); }
+
+
+  void setCapacity( localIndex capacity ) 
+  { 
+    m_offset.setCapacity( capacity + 1 );
+    m_connectivity.setCapacity( capacity );
+    m_cell_type.setCapacity( capacity );
+  }
+
+  /*!
+   * \brief Returns the number of points in this CellConnectivity instance.
+   * \return npoint the number points in this CellConnectivity instance.
+   */
+  localIndex getSize() const
+  { return m_connectivity.getSize(); }
+
+
+  double getResizeRatio() const
+  { return m_connectivity.getResizeRatio(); }
+
+
+  void setResizeRatio( double ratio )
+  {
+    m_offset.setResizeRatio( ratio );
+    m_connectivity.setResizeRatio( ratio );
+    m_cell_type.setResizeRatio( ratio );
+  }
+
 private:
-  int m_num_cells;
-  Vector< int, int > m_offset;
-  Vector< nodeIndexT, nodeIndexT > m_connectivity;
-  Vector< unsigned char, int > m_cell_type;
+  localIndex m_num_cells;
+  Vector< localIndex > m_offset;
+  Vector< localIndex > m_connectivity;
+  Vector< unsigned char > m_cell_type;
 
   CellConnectivity( const CellConnectivity& );
   CellConnectivity& operator=( const CellConnectivity& );

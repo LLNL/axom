@@ -38,6 +38,7 @@
 
 
 // C/C++ includes
+#include <fstream>
 #include <iostream>
 #include <utility>
 #include <vector>

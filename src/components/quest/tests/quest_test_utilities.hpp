@@ -25,6 +25,7 @@
 #include "primal/Triangle.hpp"
 #include "primal/orientation.hpp"
 
+#include "mint/DataTypes.hpp"
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/Field.hpp"
@@ -109,7 +110,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
  */
 axom::mint::Mesh * make_octahedron_mesh()
 {
-  typedef int VertexIndex;
+  typedef axom::mint::localIndex VertexIndex;
   typedef Point<double, 3> SpacePt;
   typedef Triangle<double, 3> SpaceTriangle;
 
@@ -175,12 +176,14 @@ axom::mint::Mesh * make_octahedron_mesh()
   TriangleMesh* triMesh = new TriangleMesh(3);
 
   // insert verts
-  for(int i=0; i< NUM_VERTS; ++i)
+  for(int i=0; i< NUM_VERTS; ++i) {
       triMesh->addNode(verts[i][0], verts[i][1], verts[i][2]);
+  }
 
   // insert triangles
-  for(int i=0; i< NUM_TRIS; ++i)
-      triMesh->addCell( &tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE, 3);
+  for(int i=0; i< NUM_TRIS; ++i) {
+      triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE);
+  }
 
   SLIC_ASSERT( NUM_VERTS == triMesh->getMeshNumberOfNodes() );
   SLIC_ASSERT( NUM_TRIS == triMesh->getMeshNumberOfCells() );

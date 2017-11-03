@@ -19,6 +19,9 @@
 #define FIELDDATA_HPP_
 
 #include "axom/Macros.hpp"
+#include "mint/Field.hpp"
+#include "mint/FieldVariable.hpp"
+#include "mint/DataTypes.hpp"
 
 // C/C++ includes
 #include <map>
@@ -30,46 +33,37 @@ namespace axom
 namespace mint
 {
 
-// Forward Declarations
-class Field;
 
 class FieldData
 {
+
 public:
 
   /*!
    * \brief Default constructor. Creates an empty FieldData instance.
    */
-  FieldData();
+  FieldData()
+  {}
 
   /*!
    * \brief Destructor.
    */
-  virtual ~FieldData();
+  virtual ~FieldData()
+  { clear(); }
 
   /*!
    * \brief Checks if the field with the given name exists.
    * \param [in] name the name of the field to check.
    * \return status true if the field exists, else, false.
    */
-  bool hasField( const std::string& name ) const;
-
-  /*!
-   * \brief Adds a field to this FieldData instance.
-   * \param [in] f pointer to the field
-   * \pre f != NULL
-   * \pre this->hasField( f->getName() ) == false.
-   * \note When a field is added ownership is transfered to the corresponding
-   *  FieldData instance.
-   */
-  void addField( Field* f );
+  inline bool hasField( const std::string& name ) const;
 
   /*!
    * \brief Returns the number of fields of this FieldData instance.
    * \return N the number of fiels in this instance.
    * \post N == 0 \iff this->empty() == true.
    */
-  int getNumberOfFields() const;
+  inline int getNumberOfFields() const;
 
   /*!
    * \brief Returns the ith field of this FieldData instance.
@@ -78,17 +72,16 @@ public:
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  Field* getField( int i );
+  inline Field* getField( int i );
 
   /*!
-   * \brief Returns the ith field of this FieldData instance as a constant
-   * pointer.
+   * \brief Returns the ith field of this FieldData instance as a constant pointer.
    * \param [in] i the index of the field in query.
    * \return f constant pointer to the field in query.
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  const Field* getField( int i ) const;
+  inline const Field* getField( int i ) const;
 
   /*!
    * \brief Returns the field with the given name.
@@ -97,7 +90,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  Field* getField( const std::string& name );
+  inline Field* getField( const std::string& name );
 
   /*!
    * \brief Returns the field with the given name as a constant pointer.
@@ -106,29 +99,173 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  const Field* getField( const std::string& name ) const;
+  inline const Field* getField( const std::string& name ) const;
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
    * \post this->empty() == true.
    */
-  void clear();
+  inline void clear();
 
   /*!
    * \brief Checks if this FieldData instance is empty.
    * \return status true if empty, else, false.
    */
-  bool empty() const;
+  inline bool empty() const
+  { return( m_container.empty() ); }
+
+  template < typename FieldType >
+  inline Field* addField( const std::string& name, localIndex size, 
+                   localIndex capacity, int num_components, 
+                   double resize_ratio );
+
+
+  inline void setSize( localIndex size );
+
+
+  inline void setCapacity( localIndex capacity );
+
+
+  inline void setResizeRatio( double ratio );
 
 private:
 
   // TODO: Revise this. We also need the ability to remove fields (?)
+  // Sidre has an class MapCollection where the vector holds the objects and
+  // the map holds the indices. We should look into using it here. It supports
+  // removal. 
   std::vector< std::string > m_fields;
-  std::map< std::string, Field* > m_container;
+  std::map< std::string, Field * > m_container;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldData);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldData);
 };
+
+
+//------------------------------------------------------------------------------
+// Method implementations
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+inline bool FieldData::hasField( const std::string& name ) const
+{
+  bool status = false;
+
+  if ( m_container.find( name ) != m_container.end() ) {
+    status = true;
+  }
+
+  return status;
+}
+
+//------------------------------------------------------------------------------
+inline int FieldData::getNumberOfFields() const
+{
+  SLIC_ASSERT( m_fields.size() == m_container.size() );
+  return static_cast< int >( m_fields.size() );
+}
+
+//------------------------------------------------------------------------------
+inline Field* FieldData::getField( int i )
+{
+  SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
+
+  if ( i < 0 || i >= this->getNumberOfFields() ) {
+    return AXOM_NULLPTR;
+  }
+
+  return this->getField( m_fields[ i ] );
+}
+
+//------------------------------------------------------------------------------
+inline const Field* FieldData::getField( int i ) const
+{
+  SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
+
+  if ( i < 0 || i >= this->getNumberOfFields() ) {
+    return AXOM_NULLPTR;
+  }
+
+  return this->getField( m_fields[ i ] );
+}
+
+//------------------------------------------------------------------------------
+inline Field* FieldData::getField( const std::string& name )
+{
+  SLIC_ASSERT( this->hasField( name ) );
+  return m_container.at( name );
+}
+
+//------------------------------------------------------------------------------ 
+const Field* FieldData::getField( const std::string& name ) const
+{
+  SLIC_ASSERT( this->hasField( name ) );
+  return m_container.at( name );
+}
+
+//------------------------------------------------------------------------------
+inline void FieldData::clear()
+{
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+    delete it->second;
+    it->second = AXOM_NULLPTR;
+  }
+  m_container.clear();
+}
+
+//------------------------------------------------------------------------------
+template < typename FieldType >
+inline Field* FieldData::addField( const std::string& name, localIndex size, 
+                                   localIndex capacity, int num_components, 
+                                   double resize_ratio )
+{
+  if ( hasField( name ) ) {
+    Field* f = getField( name );
+    if ( f->getType() != field_of< FieldType >::type ) {
+      SLIC_WARNING( "Field with name " << name << " already exists but it " <<
+                    "has a different type." );
+    }
+
+    return f;
+  }
+  
+  Field* f = new FieldVariable< FieldType >( name, size, capacity, 
+                                             num_components, resize_ratio );
+  m_fields.push_back( f->getName() );
+  m_container[ f->getName() ] = f;
+
+  SLIC_ASSERT( m_fields.size() == m_container.size() );
+  return f;
+}
+
+//------------------------------------------------------------------------------
+inline void FieldData::setSize( localIndex size )
+{ 
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+    it->second->setNumTuples( size );
+  }
+}
+
+//------------------------------------------------------------------------------
+inline void FieldData::setCapacity( localIndex capacity )
+{
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+    it->second->setTuplesCapacity( capacity );
+  }
+}
+
+//------------------------------------------------------------------------------
+inline void FieldData::setResizeRatio( double ratio )
+{ 
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+    it->second->setResizeRatio( ratio );
+  }
+}
+
 
 } /* namespace mint */
 } /* namespace axom */

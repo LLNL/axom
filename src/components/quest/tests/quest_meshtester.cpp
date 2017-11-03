@@ -18,6 +18,7 @@
 // Axom includes
 #include "axom/config.hpp"
 #include "axom_utils/FileUtilities.hpp"
+#include "mint/DataTypes.hpp"
 #include "mint/Mesh.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/MeshTester.hpp"
@@ -207,15 +208,15 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
-    int cell[3];
+    axom::mint::localIndex cell[3];
     cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
 
     // No self-intersections or degenerate triangles
     intersections.clear();
@@ -237,15 +238,15 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
     surface_mesh->addNode( -0.200003, -0.100003, 18.999999);
-    int cell[3];
+    axom::mint::localIndex cell[3];
     cell[0] = 4;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
 
     // No self-intersections or degenerate triangles
     intersections.clear();
@@ -267,15 +268,15 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
     surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
-    int cell[3];
+    axom::mint::localIndex cell[3];
     cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 3;    cell[1] = 2;    cell[2] = 4;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 1;    cell[1] = 4;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
 
     intersections.clear();
     intersections.push_back(std::make_pair(0, 1));
@@ -299,19 +300,19 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
     surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
-    int cell[3];
+    axom::mint::localIndex cell[3];
     cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 3;    cell[1] = 2;    cell[2] = 4;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 1;    cell[1] = 4;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 0;    cell[1] = 0;    cell[2] = 0;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
     cell[0] = 3;    cell[1] = 4;    cell[2] = 3;
-    surface_mesh->addCell(cell, MINT_TRIANGLE, 3);
+    surface_mesh->addCell(cell, MINT_TRIANGLE);
 
     intersections.clear();
     intersections.push_back(std::make_pair(0, 1));

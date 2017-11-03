@@ -25,6 +25,7 @@
 
 // Mint includes
 #include "mint/CellType.hpp"
+#include "mint/DataTypes.hpp"
 #include "mint/FEBasis.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
@@ -145,7 +146,7 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  int * cell = new int[ ndofs ];
+  mint::localIndex* cell = new mint::localIndex[ ndofs ];
 
   double * center = new double[ ndims ];
   ShapeFunctionType::center( center );
@@ -188,7 +189,7 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
      m->addNode( node );
   }
 
-  m->addCell( cell, CellType, ndofs );
+  m->addCell( cell, CellType );
 
 #ifdef MINT_FEM_DEBUG
   std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
@@ -841,26 +842,26 @@ void check_interp( double TOL=1.e-9 )
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
 
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  mint::UnstructuredMesh< CellType >* m = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
+  EXPECT_EQ( 1, m->getNumberOfCells() );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   double * wgts = new double[ nnodes ];
 
   // STEP 1: setup a nodal field to interpolate
-  mint::FieldData * PD = m->getNodeFieldData();
-  PD->addField( new mint::FieldVariable< double >("foo",nnodes) );
-  double * f = PD->getField( "foo" )->getDoublePtr();
+  // Note: I don't know why we need to cast as m as a Mesh to add a field
+  // it works just fine other places. -BC
+  mint::Mesh* mesh = m;       
+  mint::Field* F = mesh->addNodeField< double >( "foo", 1 );
+  double* f = F->getDoublePtr();
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 

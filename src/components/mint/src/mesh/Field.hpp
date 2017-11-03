@@ -20,6 +20,9 @@
 
 // axom includes
 #include "axom/Macros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
+#include "axom/Types.hpp" // for AXOM_NULLPTR
+#include "mint/FieldTypes.hpp"
+#include "mint/DataTypes.hpp"
 
 // C/C++ includes
 #include <string>
@@ -31,12 +34,14 @@ namespace mint
 
 class Field
 {
+
 public:
 
   /*!
    * \brief Destructor.
    */
-  virtual ~Field();
+  virtual ~Field()
+  {}
 
   /*!
    * \brief Returns the type of the field.
@@ -44,27 +49,44 @@ public:
    * \post t < NUMBER_OF_FIELD_TYPES
    * \see FieldTypes
    */
-  int getType() const { return m_type; };
+  int getType() const 
+  { return m_type; }
 
   /*!
    * \brief Returns the name of the field.
    * \return name the name of the field.
    */
-  std::string getName() const { return m_name; };
+  std::string getName() const 
+  { return m_name; }
 
   /*!
    * \brief Returns the number of tuples in the field.
    * \return ntuples the number of tuples in the field.
    * \post ntuples >= 0.
    */
-  int getNumTuples() const { return m_num_tuples; };
+  virtual localIndex getNumTuples() const = 0;
 
   /*!
    * \brief Returns the number of components per tuple.
    * \return nc the number of components per tuple.
    * \post nc >= 1.
    */
-  int getNumComponents() const { return m_num_components; };
+  virtual int getNumComponents() const = 0;
+
+
+  virtual localIndex getCapacity() const = 0;
+
+
+  virtual double getResizeRatio() const = 0;
+
+
+  virtual void setNumTuples( localIndex size ) = 0;
+  
+
+  virtual void setTuplesCapacity( localIndex capacity ) = 0;
+  
+
+  virtual void setResizeRatio( double ratio ) = 0;
 
   //TODO: Need to re-think API here!!!
   /*!
@@ -72,55 +94,45 @@ public:
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double* getDoublePtr();
+  virtual double* getDoublePtr()
+  { return AXOM_NULLPTR; }
 
   /*!
    * \brief Returns a constant double pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double* getDoublePtr() const;
+  virtual const double* getDoublePtr() const
+  { return AXOM_NULLPTR; }
 
   /*!
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual int* getIntPtr();
+  virtual int* getIntPtr()
+  { return AXOM_NULLPTR; }
 
   /*!
    * \brief Returns a constant int pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual const int* getIntPtr() const;
+  virtual const int* getIntPtr() const
+  { return AXOM_NULLPTR; }
 
 protected:
 
-  /*!
-   * \brief Default Constructor. Does nothing. Made it protected to prevent
-   *  its use elsewhere.
-   */
-  Field();
-
-  /*!
-   * \brief Custom constructor. Creates a Field instance of the given size and
-   *  number of components.
-   * \param [in] name the name of the field.
-   * \param [in] size the size of the field.
-   * \param [in] num_components the number of components per tuple.
-   * \note The custom constructor is intended for use in the constructor of
-   *  subclasses to properly initialize the properties associated with this
-   *  Field instance.
-   */
-  Field(const std::string& name, int size, int num_components);
+  Field( const std::string& name ):
+    m_name( name ),
+    m_type( UNDEFINED_FIELD_TYPE )
+  {}
 
   std::string m_name;    /*!< the name of the field  */
-  int m_num_tuples;      /*!< total number of tuples */
-  int m_num_components;  /*!< the number of components per tuple */
   int m_type;            /*!< the field type */
 
 private:
+
   DISABLE_COPY_AND_ASSIGNMENT(Field);
   DISABLE_MOVE_AND_ASSIGNMENT(Field);
 };

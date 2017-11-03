@@ -21,6 +21,7 @@
 #include "mint/StructuredMesh.hpp"
 #include "mint/MeshCoordinates.hpp"
 #include "mint/Vector.hpp"
+#include "mint/DataTypes.hpp"
 
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
@@ -41,7 +42,7 @@ public:
    * \param [in] dimension the dimension of the mesh.
    * \param [in] ext the mesh extent.
    */
-  RectilinearMesh( int dimension, int ext[6] );
+  RectilinearMesh( int dimension, globalIndex ext[6] );
 
   /*!
    * \brief Constructs a rectilinear mesh instance.
@@ -50,7 +51,8 @@ public:
    * \param [in] blockId the block ID.
    * \param [in] partitionId the partition ID.
    */
-  RectilinearMesh( int dimension, int ext[6], int blockId, int partitionId );
+  RectilinearMesh( int dimension, globalIndex ext[6], int blockId,
+                   int partitionId );
 
   /*!
    * \brief Destructor.
@@ -66,7 +68,7 @@ public:
    * \pre dim >= 0 && dim < this->getDimension()
    * \pre i >= 0 && i < ndims[ i ]
    */
-  void setCoordinate( int dim, int i, double coord ) const;
+  inline void setCoordinate( int dim, localIndex i, double coord ) const;
 
   /*!
    * \brief Gets the coordinate along the given dimension.
@@ -74,7 +76,7 @@ public:
    * \pre dim >= 0 && dim < this->getDimension()
    * \pre i >= 0 && i < ndims[ i ]
    */
-  double getCoordinate( int dim, int i ) const;
+  inline double getCoordinate( int dim, localIndex i ) const;
 
   /*!
    * \brief Returns pointer to the coordinates array along the given dimension.
@@ -93,7 +95,8 @@ public:
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes().
    */
-  virtual void getNode( int nodeIdx, double * coordinates ) const;
+  virtual void getNode( localIndex nodeIdx, 
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -102,7 +105,8 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
    */
-  virtual void getNode( int i, int j, double * coordinates ) const;
+  virtual void getNode( localIndex i, localIndex j, 
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j,k)
@@ -112,65 +116,65 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
    */
-  virtual void getNode( int i, int j, int k, double * coordinates ) const;
+  virtual void getNode( localIndex i, localIndex j, localIndex k, 
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinate of the given node.
    * \param [in] nodeIdx index of the node in query.
-   * \param [in] idim requested coordinate dimension.
+   * \param [in] dim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes()
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre dim >= 0 && dim < m_ndims.
    */
-  virtual double getNodeCoordinate( int nodeIdx, int idim  ) const;
+  virtual double getNodeCoordinate( localIndex nodeIdx, 
+                                    int dim ) const override;
 
   /*!
    * \brief Returns the coordinate value of the node at (i,j)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
-   * \param [in] idim requested coordinate dimension.
+   * \param [in] dim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==2.
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre dim >= 0 && dim < m_ndims.
    */
-  virtual double getNodeCoordinate( int i, int j, int idim ) const;
+  virtual double getNodeCoordinate( localIndex i, localIndex j, 
+                                    int dim ) const override;
 
   /*!
    * \brief Returns the coordinate value of the node at (i,j,k)
    * \param [in] i logical index of the node along the first dimension.
    * \param [in] j logical index of the node along the second dimension.
    * \param [in] k logical index of the node along the third dimension.
-   * \param [in] idim requested coordinate dimension.
+   * \param [in] dim requested coordinate dimension.
    * \return x the coordinate value of the node.
    * \pre this->getDimension()==3.
-   * \pre idim >= 0 && idim < m_ndims.
+   * \pre dim >= 0 && dim < m_ndims.
    */
-  virtual double getNodeCoordinate( int i, int j, int k, int idim ) const;
+  virtual double getNodeCoordinate( localIndex i, localIndex j, localIndex k, 
+                                    int dim ) const override;
 
   /// @}
 
 private:
 
-  /*!
-   * \brief Default constructor.
-   * \note Made private to prevent users from calling it.
-   */
-  RectilinearMesh()
-  {}
+  RectilinearMesh();
 
-  Vector< double, int > m_coordinates[3];
+  Vector< double > m_coordinates[3];
 
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);
 };
-
 
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::setCoordinate( int dim, int i, double coord ) const {
+inline void RectilinearMesh::setCoordinate( int dim, localIndex i, 
+                                            double coord ) const 
+{
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
   SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ].getSize() );
 
@@ -178,7 +182,8 @@ inline void RectilinearMesh::setCoordinate( int dim, int i, double coord ) const
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getCoordinate( int dim, int i ) const {
+inline double RectilinearMesh::getCoordinate( int dim, localIndex i ) const
+{
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
   SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ].getSize() );
 
@@ -186,12 +191,21 @@ inline double RectilinearMesh::getCoordinate( int dim, int i ) const {
 }
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const {
+inline const double* RectilinearMesh::getCoordinateArray( int dim ) const 
+{
+  SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
+  return m_coordinates[ dim ].getData();
+}
+
+//------------------------------------------------------------------------------
+inline void RectilinearMesh::getNode( localIndex nodeIdx,   
+                                      double* coordinates ) const
+{
   SLIC_ASSERT( coordinates != AXOM_NULLPTR );
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < getNumberOfNodes() );
 
-  int ijk[3];
-  m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
+  localIndex ijk[3];
+  m_extent.getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
 
   for ( int dim = 0; dim < this->getDimension(); ++dim ) {
     coordinates[ dim ] = m_coordinates[ dim ][ ijk[ dim ] ];
@@ -199,7 +213,9 @@ inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const {
 }
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const {
+inline void RectilinearMesh::getNode( localIndex i, localIndex j, 
+                                      double* coordinates ) const
+{
   SLIC_ASSERT( coordinates != AXOM_NULLPTR );
   SLIC_ASSERT( this->getDimension() == 2 );
   SLIC_ASSERT( i >= 0 && j >= 0 );
@@ -209,8 +225,9 @@ inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const 
 }
 
 //------------------------------------------------------------------------------
-inline void RectilinearMesh::getNode( int i, int j, int k, 
-                                      double* coordinates ) const {
+inline void RectilinearMesh::getNode( localIndex i, localIndex j, localIndex k, 
+                                      double* coordinates ) const
+{
   SLIC_ASSERT( coordinates != AXOM_NULLPTR );
   SLIC_ASSERT( this->getDimension() == 3 );
   SLIC_ASSERT( i >= 0 && j >= 0 && k >= 0 );
@@ -221,30 +238,36 @@ inline void RectilinearMesh::getNode( int i, int j, int k,
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getNodeCoordinate( int nodeIdx, int dim  ) const {
+inline double RectilinearMesh::getNodeCoordinate( localIndex nodeIdx, 
+                                                  int dim ) const
+{
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < getNumberOfNodes() );
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
 
-  int ijk[3];
-  m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
+  localIndex ijk[3];
+  m_extent.getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
   return m_coordinates[ dim ][ ijk[dim]  ];
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getNodeCoordinate( int i, int j, int dim ) const {
+inline double RectilinearMesh::getNodeCoordinate( localIndex i, localIndex j, 
+                                                  int dim ) const 
+{
   SLIC_ASSERT( this->getDimension() == 2 );
   SLIC_ASSERT( dim >= 0 && dim < 2 );
 
-  int ijk[2] = { i, j };
+  localIndex ijk[2] = { i, j };
   return m_coordinates[ dim ][ ijk[dim] ];
 }
 
 //------------------------------------------------------------------------------
-inline double RectilinearMesh::getNodeCoordinate( int i, int j, int k, int dim ) const {
+inline double RectilinearMesh::getNodeCoordinate( localIndex i, localIndex j, 
+                                                  localIndex k, int dim ) const 
+{
   SLIC_ASSERT( this->getDimension()==3 );
   SLIC_ASSERT( dim >= 0 && dim < 3 );
 
-  int ijk[3] = { i, j, k };
+  localIndex ijk[3] = { i, j, k };
   return m_coordinates[ dim ][ ijk[dim] ];
 }
 

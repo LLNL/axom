@@ -83,6 +83,7 @@
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
 
+#include "mint/DataTypes.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -562,17 +563,10 @@ void runDistanceQueries(CommandLineArguments& clargs)
   SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
   axom::mint::UniformMesh* umesh = clargs.queryMesh;
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
 
-  PD->addField(
-    new axom::mint::FieldVariable< int >("bvh_containment",nnodes) );
-  int* containment = PD->getField( "bvh_containment" )->getIntPtr();
+  int* containment = umesh->addNodeField< int >("bvh_containment", 1)->getIntPtr();
+  double* distance = umesh->addNodeField< double >("bvh_distance", 1)->getDoublePtr();
   SLIC_ASSERT( containment != AXOM_NULLPTR );
-
-  PD->addField(
-    new axom::mint::FieldVariable< double >("bvh_distance",nnodes) );
-  double* distance = PD->getField( "bvh_distance" )->getDoublePtr();
   SLIC_ASSERT( distance != AXOM_NULLPTR );
 
   double* coords = new double[3*nnodes];

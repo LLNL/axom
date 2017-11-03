@@ -14,20 +14,19 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+#include "axom_utils/FileUtilities.hpp"   /* for getDirName, makeDirsForPath */
+#include "axom_utils/Utilities.hpp"       /* for abs, processAbort */
+#include "mint/FieldData.hpp"             /* for FieldData */
+#include "mint/FieldVariable.hpp"         /* for FieldVariable */
+#include "mint/UniformMesh.hpp"           /* for UniformMesh */
+#include "mint/vtk_utils.hpp"             /* for write_vtk */
+#include "mint/DataTypes.hpp"             /* for localIndex, globalIndex */
+#include "slic/GenericOutputStream.hpp"   /* for GenericOutputStream */
+#include "slic/slic.hpp"                  /* for slic macros */
 
-#include "axom/Types.hpp"                     // for uint32
-#include "axom_utils/FileUtilities.hpp"       // for getDirName, makeDirsForPath
-#include "axom_utils/Utilities.hpp"           // for abs, processAbort
-#include "mint/FieldData.hpp"                 // for FieldData
-#include "mint/FieldVariable.hpp"             // for FieldVariable
-#include "mint/UniformMesh.hpp"               // for UniformMesh
-#include "mint/vtk_utils.hpp"                 // for write_vtk
-#include "slic/GenericOutputStream.hpp"       // for GenericOutputStream
-#include "slic/slic.hpp"                      // for slic macros
-
-#include <cmath>                              // for std::exp, std::ciel
-#include <sstream>                            // for std::stringstream
-#include <string>                             // for std::string
+#include <cmath>                          /* for std::exp, std::ciel */
+#include <sstream>                        /* for std::stringstream */
+#include <string>                         /* for std::string */
 
 namespace axom
 {
@@ -38,9 +37,7 @@ class Gaussian2D
 {
 public:
   /*!
-   * \brief Creates a 2D Guassian with the given amplitude, mean, and
-   *  covariance.
-   *
+   * \brief Creates a 2D Guassian with the given amplitude, mean, and covariance.
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
    * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
@@ -129,8 +126,8 @@ public:
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
-   * \note the equation we are solving is
-   *  \f$ \frac{\partial U}{\partial t} = \alpha \nabla^2 U \f$.
+   * \note the equation we are solving is \f$ \frac{\partial U}{\partial t}
+                                          = \alpha \nabla^2 U \f$.
    */
   HeatEquationSolver( double h, const double lower_bound[2],
                       const double upper_bound[2] ) :
@@ -148,7 +145,6 @@ public:
 
   /*!
    * \brief Set the uniform mesh upon which to solve.
-   *
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
@@ -162,25 +158,21 @@ public:
   }
 
   /*!
-   * \brief Apply a two dimensional gaussian to the mesh as an initial
-   *  condition.
-   *
+   * \brief Apply a two dimensional gaussian to the mesh as an initial condition.
    * \param [in] pulse the pulse to apply.
    */
   void initialize( const Gaussian2D& pulse )
   {
     double origin[3];
     m_mesh->getOrigin( origin );
-    int size[3];
+    localIndex size[3];
     m_mesh->getExtentSize( size );
-    double* t = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    double* t = m_mesh->getNodeFieldData().getField(0)->getDoublePtr();
 
-    int idx = 0;
+    localIndex idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
-    for ( int j = 0 ; j < size[1] ; ++j )
-    {
-      for ( int i = 0 ; i < size[0] ; ++i )
-      {
+    for ( localIndex j = 0; j < size[1]; ++j ) {
+      for ( localIndex i = 0; i < size[0]; ++i ) {
         t[ idx++ ] = pulse.evaluate( node_pos );
         node_pos[0] += m_h;
       }
@@ -200,12 +192,10 @@ public:
   void solve( double alpha, double dt, double t_max, int period,
               const std::string& path )
   {
-    typedef axom::common::uint32 uint32;
-
-    const int num_nodes = m_mesh->getMeshNumberOfNodes();
+    const localIndex num_nodes = m_mesh->getMeshNumberOfNodes();
     double* new_temp = new double[num_nodes];
-    double* prev_temp =
-      m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    double* prev_temp = m_mesh->getNodeFieldData().getField( "temperature" )
+                        ->getDoublePtr();
 
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */
@@ -253,22 +243,21 @@ private:
    * \param [in] prev_temp the data to copy.
    * \param [in] new_temp the buffer to copy into.
    */
-  void copy_boundary( const double* prev_temp, double* new_temp )
+  void copy_boundary( const double * prev_temp, double * new_temp )
   {
-    int size[3];
+    localIndex size[3];
     m_mesh->getExtentSize( size );
 
     /* Copy the -y side, which is contiguous. */
-    const int memcpy_size = size[0] * sizeof(double);
+    const localIndex memcpy_size = size[0] * sizeof(double);
     std:: memcpy( new_temp, prev_temp, memcpy_size );
 
     /* Copy the +y side, which is contiguous. */
-    const int offset = (size[1] - 1) * size[0];
+    const localIndex offset = (size[1] - 1) * size[0];
     std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
-    for ( int idx = size[0] ; idx < offset ; idx += size[0] )
-    {
+    for ( localIndex idx = size[0]; idx < offset; idx += size[0] ) {
       new_temp[ idx ] = prev_temp[ idx ];
       new_temp[ idx + size[0] - 1 ] = prev_temp[ idx + size[0] - 1 ];
     }
@@ -286,33 +275,32 @@ private:
       T_{i, j}^n + \frac{\alpha \Delta t}{h^2}  \left( T_{i - 1, j}^n +
       T_{i + 1, j}^n + T_{i, j - 1}^n + T_{i, j + 1}^n \right) \f$.
    */
-  void step( double alpha, double dt, const double* prev_temp,
-             double* new_temp )
+  void step( double alpha, double dt, const double * prev_temp,
+             double * new_temp )
   {
-    int size[3];
+    localIndex size[3];
     m_mesh->getExtentSize( size );
     const double neighbors_scale = dt * alpha / ( m_h * m_h );
     const double self_scale = 1.0 - (4.0 * neighbors_scale);
 
     /* Since the boundary conditions are fixed we only need to iterate over
        the interior nodes. */
-    const int jp = size[0];
-    const int Nj = size[1] - 1;
-    const int Ni = size[0] - 1;
-    for ( int j = 1 ; j < Nj ; ++j )
-    {
-      const int j_offset = j * jp;
-      for ( int i = 1 ; i < Ni ; ++i )
-      {
+    const localIndex jp = size[0];
+    const localIndex Nj = size[1] - 1;
+    const localIndex Ni = size[0] - 1;
+    for ( localIndex j = 1; j < Nj; ++j ) {
+      const localIndex j_offset = j * jp;
+      for ( localIndex i = 1; i < Ni; ++i ) {
 
-        const int idx = i + j_offset;
-        const int north = idx + jp;
-        const int south = idx - jp;
-        const int east = idx + 1;
-        const int west = idx - 1;
+        const localIndex idx = i + j_offset;
+        const localIndex north = idx + jp;
+        const localIndex south = idx - jp;
+        const localIndex east = idx + 1;
+        const localIndex west = idx - 1;
         const double neighbors_contrib = prev_temp[ north ] +
                                          prev_temp[ east ] +
-                                         prev_temp[ south ] + prev_temp[ west ];
+                                         prev_temp[ south ] + 
+                                         prev_temp[ west ];
 
         new_temp[ idx ] = neighbors_scale * neighbors_contrib;
         new_temp[ idx ] += self_scale * prev_temp[ idx ];
@@ -343,28 +331,22 @@ private:
    * \param [in] upper_bound the upper right corner of the bounding box.
    * \return a pointer to the new uniform mesh.
    */
-  static UniformMesh* create_mesh( const double h, const double lower_bound[2],
-                                   const double upper_bound[2] )
+  static UniformMesh * create_mesh( const double h, const double lower_bound[2],
+                                    const double upper_bound[2] )
   {
-    int ext[4];
-    for ( int i = 0 ; i < 2 ; ++i )
-    {
+    globalIndex ext[4];
+    for ( int i = 0; i < 2; ++i ) {
       double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
       ext[ 2 * i ] = 0;
       ext[ 2 * i + 1 ] = std::ceil( len / h );
     }
 
-    UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
-    const int num_nodes = mesh->getMeshNumberOfNodes();
-
-    FieldVariable< double >* t =
-      new FieldVariable< double >("temperature", num_nodes);
-    mesh->getNodeFieldData()->addField(t);
-
+    UniformMesh * mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
+    mesh->addNodeField< double >("temperature", 1);
     return mesh;
   }
 
-  UniformMesh* m_mesh;
+  UniformMesh * m_mesh;
   double m_h;
 };
 
@@ -372,30 +354,30 @@ private:
 } /* end namespace axom */
 
 const std::string help_string =
-  "\nUsage: ./mint_heat_equation_ex [options]\n"                               \
-  "-h, -help\n"                                                                \
-  "\tPrint out this message then exit.\n"                                      \
-  "-p -path PATH\n"                                                            \
-  "\tThe base bath of the dump files. The files will be written to\n"          \
-  "path_#.vtk where # is the dump number.\n"                                   \
-  "-s, -spacing FLOAT\n"                                                       \
-  "\tSet the mesh spacing, must be greater than 0.\n."                         \
-  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                    \
-  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n" \
-  "\tand y1 < y2.\n"                                                           \
-  "-a FLOAT, -amplitude FLOAT\n"                                               \
-  "\tSet the amplitude of the gaussian pulse.\n"                               \
-  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                        \
-  "\tSet the mean of the gaussian pulse. Format is x y.\n"                     \
-  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                      \
-  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"      \
-  "-alpha FLOAT\n"                                                             \
-  "\tThe conductivity.\n"                                                      \
-  "-dt FLOAT\n"                                                                \
-  "\tThe time step, must be greater than zero.\n"                              \
-  "-t FLOAT\n"                                                                 \
-  "\tThe time to run the simulation, must be greater than zero.\n"             \
-  "-d INT, -dumpPeriod INT\n"                                                  \
+  "\nUsage: ./mint_heat_equation_ex [options]\n"                                 \
+  "-h, -help\n"                                                                  \
+  "\tPrint out this message then exit.\n"                                        \
+  "-p -path PATH\n"                                                              \
+  "\tThe base bath of the dump files. The files will be written to\n"            \
+  "path_#.vtk where # is the dump number.\n"                                     \
+  "-s, -spacing FLOAT\n"                                                         \
+  "\tSet the mesh spacing, must be greater than 0.\n."                           \
+  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                      \
+  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n"   \
+  "\tand y1 < y2.\n"                                                             \
+  "-a FLOAT, -amplitude FLOAT\n"                                                 \
+  "\tSet the amplitude of the gaussian pulse.\n"                                 \
+  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                          \
+  "\tSet the mean of the gaussian pulse. Format is x y.\n"                       \
+  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                        \
+  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"        \
+  "-alpha FLOAT\n"                                                               \
+  "\tThe conductivity.\n"                                                        \
+  "-dt FLOAT\n"                                                                  \
+  "\tThe time step, must be greater than zero.\n"                                \
+  "-t FLOAT\n"                                                                   \
+  "\tThe time to run the simulation, must be greater than zero.\n"               \
+  "-d INT, -dumpPeriod INT\n"                                                    \
   "\tThe number of cycles to wait between writing a dump file.\n";
 
 /*!
@@ -422,7 +404,7 @@ typedef struct
  * \param [in] argc the number of arguments.
  * \param [in] argv the array of arguments.
  */
-void parse_arguments( Arguments& args, int argc, const char** argv )
+void parse_arguments( Arguments& args, int argc, const char * * argv )
 {
   for ( int i = 1 ; i < argc ; ++i )
   {
@@ -575,9 +557,9 @@ void init()
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
 
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE>";
-  axom::slic::GenericOutputStream* defaultStream =
+  axom::slic::GenericOutputStream * defaultStream =
     new axom::slic::GenericOutputStream( &std::cout );
-  axom::slic::GenericOutputStream* compactStream =
+  axom::slic::GenericOutputStream * compactStream =
     new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
   axom::slic::addStreamToMsgLevel(  defaultStream,
                                     axom::slic::message::Error );
@@ -596,7 +578,7 @@ void finalize()
   axom::slic::finalize();
 }
 
-int main( int argc, const char** argv )
+int main( int argc, const char * * argv )
 {
   init();
 
