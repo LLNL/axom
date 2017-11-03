@@ -413,9 +413,9 @@ inline void StructuredMesh::getCell(int i, int j, int* cell) const
 
   const int n0 = m_extent->getLinearIndex(i,j);
 
-  for ( int i=0; i < num_cell_nodes; ++i ) {
+  for ( int d=0; d < num_cell_nodes; ++d ) {
 
-    cell[ i ] = n0 + offsets_table[ i ];
+    cell[ d ] = n0 + offsets_table[ d ];
 
   }
 
@@ -434,9 +434,9 @@ inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
 
   const int n0 = m_extent->getLinearIndex(i,j,k);
 
-  for ( int i=0; i < num_cell_nodes; ++i ) {
+  for ( int d=0; d < num_cell_nodes; ++d ) {
 
-    cell[ i ] = n0 + offsets_table[ i ];
+    cell[ d ] = n0 + offsets_table[ d ];
 
   }
 

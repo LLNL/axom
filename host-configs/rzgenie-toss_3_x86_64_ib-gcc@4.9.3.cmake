@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_10_16_01_24/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.8.2-s65hvfeklaae34jyaoy3ofd7jezjg5cl/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_51_29/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.8.2-s65hvfeklaae34jyaoy3ofd7jezjg5cl/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -25,10 +25,12 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_07_10_16_01_24/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_51_29/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PATH "")
+
+# scr not built by uberenv
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3felyqscssovjmznj4pd7qpuq23lzvyk" CACHE PATH "")
@@ -50,6 +52,9 @@ set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-f5xochsft45cexkd52mnwkxktcc2a
 
 # sphinx from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-lea63zrc2ghlbkp23fwqihgaypyaunaa/bin/sphinx-build" CACHE PATH "")
+
+# shroud from uberenv
+set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-lea63zrc2ghlbkp23fwqihgaypyaunaa/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
 set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-gfugzvve5jxq4p6kpozhysf76qtcwxcc/bin/uncrustify" CACHE PATH "")
@@ -84,11 +89,6 @@ set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
-
-##############################################################################
-# SHROUD - manually added for now. Use a public build add to TPL later
-##############################################################################
-set(SHROUD_EXECUTABLE "/usr/apps/shroud/bin/shroud" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

@@ -15,6 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+#include "axom/Types.hpp"                     // for uint32
 #include "axom_utils/FileUtilities.hpp"       // for getDirName, makeDirsForPath
 #include "axom_utils/Utilities.hpp"           // for abs, processAbort
 #include "mint/FieldData.hpp"                 // for FieldData
@@ -189,6 +190,8 @@ public:
   void solve( double alpha, double dt, double t_max, int period,
               const std::string& path )
   {
+    typedef axom::common::uint32 uint32;
+
     const int num_nodes = m_mesh->getMeshNumberOfNodes();
     double* new_temp = new double[num_nodes];
     double* prev_temp = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
@@ -197,10 +200,10 @@ public:
        during the time step. */
     copy_boundary( prev_temp, new_temp );
 
-    uint cur_dump = 0;
+    uint32 cur_dump = 0;
     double cur_time = 0.0;
-    const uint num_cycles = std::ceil( t_max / dt );
-    for (uint cycle = 0; cycle < num_cycles; ++cycle ) {
+    const uint32 num_cycles = std::ceil( t_max / dt );
+    for (uint32 cycle = 0; cycle < num_cycles; ++cycle ) {
       if ( cycle == num_cycles - 1 ) {
         SLIC_INFO( "Cycle: " << cycle << " Time: " << cur_time << "\n" );
 
@@ -308,7 +311,7 @@ private:
     std::stringstream cur_path; 
     cur_path << path << "_" << cur_dump << ".vtk";
     if ( write_vtk( m_mesh, cur_path.str() ) != 0 ) {
-      SLIC_WARNING( "Unable to write to file: " << cur_path << std::endl );
+      SLIC_WARNING( "Unable to write to file: " << cur_path.str() << std::endl );
     }
   }
 

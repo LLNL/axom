@@ -224,8 +224,8 @@ inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
   SLIC_ASSERT(  this->getDimension()==2 );
 
   int ijk[2] = { i, j };
-  for ( int i=0; i < 2; ++i ) {
-    coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
+  for ( int d=0; d < 2; ++d ) {
+    coordinates[ d ] = m_origin[ d ] + m_h[ d ]*ijk[ d ];
   }
 
 }
@@ -238,8 +238,8 @@ void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
   SLIC_ASSERT(  this->getDimension()==3 );
 
   int ijk[3] = { i, j, k };
-  for ( int i=0; i < 3; ++i ) {
-    coordinates[ i ] = m_origin[ i ] + m_h[ i ]*ijk[ i ];
+  for ( int d=0; d < 3; ++d ) {
+    coordinates[ d ] = m_origin[ d ] + m_h[ d ]*ijk[ d ];
   }
 }
 
