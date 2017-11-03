@@ -66,7 +66,7 @@
 #include "quest/quest.hpp"
 
 #include "sidre/sidre.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 #include "mint/UniformMesh.hpp"
 #include "mint/FieldData.hpp"
@@ -264,7 +264,7 @@ CommandLineArguments parseArguments(int argc, char** argv)
 /** Loads the baseline dataset into the given sidre group */
 void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
 {
-    axom::spio::IOManager reader(MPI_COMM_WORLD);
+    axom::sidre::IOManager reader(MPI_COMM_WORLD);
     reader.read(grp, args.baselineRoot, "sidre_hdf5");
 
     /// Check that the required fields are present
@@ -757,7 +757,7 @@ void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
 
     std::string outfile = fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
     std::string protocol = "sidre_hdf5";
-    axom::spio::IOManager writer(MPI_COMM_WORLD);
+    axom::sidre::IOManager writer(MPI_COMM_WORLD);
     writer.write(grp,1, outfile, protocol);
     SLIC_INFO(fmt::format("** Saved baseline file '{}' using '{}' protocol.", outfile , protocol));
 

@@ -11,9 +11,10 @@ set(gtest_spio_parallel_tests
    )
 
 set(spio_test_depends
-    spio
+    sidre
     conduit
     hdf5
+    mpi
     )
 
 if(SCR_FOUND)
@@ -65,7 +66,7 @@ if(ENABLE_FORTRAN)
                    COMMAND spio_basicWriteRead_F_test
                    NUM_MPI_TASKS 1
                    )
-                   
+
       blt_add_executable(NAME spio_parallelWriteRead_F_test
                          SOURCES F_spio_parallelWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -75,7 +76,7 @@ if(ENABLE_FORTRAN)
                    COMMAND spio_parallelWriteRead_F_test
                    NUM_MPI_TASKS 4
                    )
-                   
+
       blt_add_executable(NAME spio_irregularWriteRead_F_test
                          SOURCES F_spio_irregularWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -85,7 +86,7 @@ if(ENABLE_FORTRAN)
                    COMMAND spio_irregularWriteRead_F_test
                    NUM_MPI_TASKS 4
                    )
-                   
+
       blt_add_executable(NAME spio_externalWriteRead_F_test
                          SOURCES F_spio_externalWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}

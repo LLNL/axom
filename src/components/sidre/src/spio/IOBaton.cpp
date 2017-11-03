@@ -21,11 +21,11 @@
 // Associated header file
 #include "IOBaton.hpp"
 
-const int axom::spio::IOBaton::s_invalid_rank_id = -1;
+const int axom::sidre::IOBaton::s_invalid_rank_id = -1;
 
 namespace axom
 {
-namespace spio
+namespace sidre
 {
 
 
@@ -116,5 +116,5 @@ int IOBaton::pass()
 
 
 
-} /* end namespace spio */
+} /* end namespace sidre */
 } /* end namespace axom */

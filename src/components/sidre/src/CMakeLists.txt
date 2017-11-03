@@ -29,8 +29,22 @@ set(sidre_sources
     core/SidreUtilities.cpp
 )
 
+if(ENABLE_MPI)
+   list(APPEND sidre_headers
+        spio/IOManager.hpp
+        spio/IOBaton.hpp
+       )
+   list(APPEND sidre_sources
+        spio/IOManager.cpp
+        spio/IOBaton.cpp
+       )
+endif()
+
 if(SHROUD_FOUND)
     add_subdirectory(interface)
+    if(ENABLE_MPI)
+        add_subdirectory(spio/interface)
+    endif()
 endif()
 
 if (ENABLE_FORTRAN)
@@ -56,6 +70,16 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapfsidre.F
         interface/c_fortran/shroudrt.cpp
     )
+
+    if(ENABLE_MPI)
+        list(APPEND sidre_headers
+             spio/interface/c_fortran/wrapIOManager.h
+        )
+        list(APPEND sidre_fortran_sources
+             spio/interface/c_fortran/wrapfspio.f
+             spio/interface/c_fortran/wrapIOManager.cpp
+        )
+    endif()
 endif()
 
 set(sidre_depends
@@ -64,6 +88,10 @@ set(sidre_depends
     conduit_relay
     hdf5
     slic)
+
+if(ENABLE_MPI)
+   list(APPEND sidre_depends mpi)
+endif()
 
 #
 # make the library
