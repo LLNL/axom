@@ -196,11 +196,24 @@ public:
   static Point midpoint( const Point& A, const Point& B );
 
   /*!
-   * \brief Linearly interpolates two points.
+   * \brief Performs linear interpolation/extrapolation between two points.
+   *
+   * Given points A, B and a weight \f$ \alpha \f$, this method computes
+   * point \f$ P\f$ defined by \f$ P = (1-\alpha) \cdot A + \alpha \cdot B\f$
+   *
    * \param [in] A user-supplied point
    * \param [in] B user-supplied point
-   * \param [in] alpha weight with which to interpolate
-   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B.
+   * \param [in] alpha user-supplied scalar weight \f$ \alpha\f$
+   *
+   * \return P the computed point.
+   *
+   * \note \f$ \forall\alpha \in [0,1] \f$ this method linearly interpolates
+   *  between the two points A, B.
+   * \note \f$ \forall\alpha \not\in [0,1] \f$ the method extrapolates.
+   *
+   * \post \f$ P==A\f$ when \f$ \alpha=0.0\f$
+   * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
+   * \post The return point, P, and the user-supplied points A, B are collinear.
    */
   static Point lerp( const Point& A, const Point& B, double alpha);
 
@@ -273,7 +286,12 @@ inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
   const Point< T,NDIMS >& B,
   double alpha)
 {
-  return PointType((1.-alpha)*A.array() + alpha*B.array());
+  PointType res;
+  const double beta = 1.-alpha;
+  for ( int i=0; i < NDIMS; ++i ) {
+     res[ i ] = beta*A[ i ] + alpha*B[ i ];
+  }
+  return res;
 }
 
 //------------------------------------------------------------------------------
