@@ -2,28 +2,26 @@
 # !---------------------------------------------------------------------------
 ##############################################################################
 # Options added manually to 
-# lc chaos5 gcc@4.9.3  host configs
+# lc bgq clang@4.0.0 host configs
 ##############################################################################
 
-set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+set(ENABLE_DOCS    OFF CACHE BOOL "")
+set(ENABLE_PYTHON  OFF CACHE BOOL "")
+
+set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
 
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
-set(ENABLE_MPI ON CACHE BOOL "")
-
-set(MPI_HOME             "/usr/local/tools/mvapich2-gnu-2.0" CACHE PATH "")
-set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc" CACHE PATH "")
-set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx" CACHE PATH "")
-set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpif90" CACHE PATH "")
+set(ENABLE_MPI      ON CACHE BOOL "")
+# Note: On BGQ, CMake uses wrong linker flags when using find MPI, This allows us use the wrapper directly via
+#   the CMake's compiler variables.
+set(ENABLE_FIND_MPI OFF CACHE BOOL "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
-##############################################################################
-# GCOV - manually added for now
-##############################################################################
-set(GCOV_PATH "/usr/apps/gnu/4.9.3/bin/gcov" CACHE PATH "")
+set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

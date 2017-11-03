@@ -44,17 +44,18 @@ list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex)
 #
 # Add gtest based tests for tinyHydro
 #
-blt_add_executable(
-    NAME        slam_tinyHydro_unitTests_ex
-    SOURCES     tests/slam_tinyHydro_unitTests.cpp
-    OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} gtest
-    )
-blt_add_test(
-    NAME        slam_tinyHydro_unitTests
-    COMMAND     slam_tinyHydro_unitTests_ex
-    )
-
+if(ENABLE_GTEST)
+    blt_add_executable(
+        NAME        slam_tinyHydro_unitTests_ex
+        SOURCES     tests/slam_tinyHydro_unitTests.cpp
+        OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} gtest
+        )
+    blt_add_test(
+        NAME        slam_tinyHydro_unitTests
+        COMMAND     slam_tinyHydro_unitTests_ex
+        )
+endif()
 
 #
 # Add the standalone executables for the sod example
