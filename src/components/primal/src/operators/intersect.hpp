@@ -178,8 +178,7 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray,
   double normalizer = p[0] + p[1] + p[2];
   SLIC_CHECK_MSG( std::abs(normalizer) > 1e-6,
      "Barycentric coordinates sum to less than 1e-6 prior to normalization." );
-  double scale = 1.0 / normalizer;
-  p = Point< double, 3 >(scale * p.array());
+  p.array() *= 1. / normalizer;
   return retval;
 }
 

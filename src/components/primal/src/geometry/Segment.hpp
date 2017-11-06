@@ -62,6 +62,10 @@ public:
   /*!
    * \brief Returns a point \f$ (1 - t)A + tB \f$
    * \param [in] t user-supplied parameter for blending A and B
+   * \post Return point P will always be collinear with the segment's
+   *       start point A and end point B.
+   * \post If \f$ t = 0, \f$ the return point \f$ P = A. \f$
+   * \post If \f$ t = 1, \f$ the return point \f$ P = B. \f$
    */
   PointType at( const T& t) const
   {

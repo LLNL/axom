@@ -224,7 +224,6 @@ public:
   /*!
    * \brief Returns the world coordinates of a barycentric point
    * \param [in] bary Barycentric coordinates relative to this triangle
-   * \param [in] doNormalize Normalize bary before computing result
    *
    * This method returns the sum of this triangle's vertices, weighted by the
    * input argument bary.  By default, the components of bary must sum to 1.
@@ -235,17 +234,17 @@ public:
    */
   PointType at(const Point<double, 3> & bary) const
   {
-    double barysum = bary[0] + bary[1] + bary[2];
-
-    SLIC_CHECK_MSG( axom::utilities::isNearlyEqual(1., barysum),
+    SLIC_CHECK_MSG( axom::utilities::isNearlyEqual(1., bary[0]+bary[1]+bary[2]),
                     "Barycentric coordinates must sum to (near) one." );
 
-    NumericArray< T, NDIMS > res =
-      NumericArray< T, NDIMS >(bary[0] * m_points[0].array()) +
-      NumericArray< T, NDIMS >(bary[1] * m_points[1].array()) +
-      NumericArray< T, NDIMS >(bary[2] * m_points[2].array());
+    PointType res;
+    for (int i = 0; i < NDIMS; ++i) {
+      res[i] = bary[0] * m_points[0][i] +
+               bary[1] * m_points[1][i] +
+               bary[2] * m_points[2][i];
+    }
 
-    return PointType(res);
+    return res;
   }
 
   /*!
