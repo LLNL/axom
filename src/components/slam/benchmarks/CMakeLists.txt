@@ -26,15 +26,16 @@ if (ENABLE_BENCHMARKS)
         set(test_name "${test_name}_benchmark")
         
         blt_add_executable(
-            NAME ${test_name}
-            SOURCES ${test}
-            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON slic slam gbenchmark boost
+            NAME        ${test_name}
+            SOURCES     ${test}
+            OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON  slic slam gbenchmark boost
+            FOLDER      axom/slam/benchmarks
             )
 
         blt_add_benchmark( 
-            NAME ${test_name} 
-            COMMAND ${test_name}
+            NAME        ${test_name} 
+            COMMAND     ${test_name}
             )
     endforeach()
 endif()

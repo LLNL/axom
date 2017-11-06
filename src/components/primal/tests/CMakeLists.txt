@@ -41,6 +41,7 @@ foreach ( test ${primal_tests} )
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON fmt primal slic gtest
+        FOLDER     axom/primal/tests
        )
 
    blt_add_test(

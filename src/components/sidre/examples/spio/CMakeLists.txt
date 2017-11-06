@@ -42,6 +42,7 @@ foreach(src ${example_sources})
         SOURCES ${src}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON ${spio_example_depends}
+        FOLDER axom/sidre/examples
         )
 endforeach()
 

@@ -28,6 +28,7 @@ foreach( test ${mint_tests} )
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON axom_utils slic mint gtest
+        FOLDER     axom/mint/tests
         )
 
    blt_add_test( NAME    ${test_name}

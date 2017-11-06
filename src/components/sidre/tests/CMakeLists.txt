@@ -61,6 +61,7 @@ foreach(test ${gtest_sidre_tests})
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                        FOLDER axom/sidre/tests
                         )
 
     blt_add_test( NAME ${test_name} 
@@ -78,6 +79,7 @@ if (ENABLE_FORTRAN)
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                            FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}_test
@@ -95,6 +97,7 @@ if (ENABLE_FORTRAN)
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON sidre conduit conduit_relay hdf5 slic fruit
+                            FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}_test

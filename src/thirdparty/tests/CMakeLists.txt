@@ -23,7 +23,8 @@ if (CONDUIT_FOUND)
     blt_add_executable(NAME conduit_smoke_test
                        SOURCES conduit_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON conduit gtest)
+                       DEPENDS_ON conduit gtest
+                       FOLDER axom/thirdparty/tests )
     blt_add_test(NAME conduit_smoke
                  COMMAND conduit_smoke_test)
 
@@ -31,7 +32,8 @@ if (CONDUIT_FOUND)
         blt_add_executable(NAME conduit_smoke_F_test
                            SOURCES f_conduit_smoke.f
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON conduit fruit)
+                           DEPENDS_ON conduit fruit
+                           FOLDER axom/thirdparty/tests )
         blt_add_test(NAME conduit_smoke_F
                      COMMAND conduit_smoke_F_test)
   endif()
@@ -45,8 +47,8 @@ if (MFEM_FOUND)
     blt_add_executable(NAME mfem_smoke_test
                        SOURCES mfem_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON mfem gtest)
-                       
+                       DEPENDS_ON mfem gtest
+                       FOLDER axom/thirdparty/tests )
     set_property(
         TARGET mfem_smoke_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
@@ -63,7 +65,8 @@ blt_add_executable(
     NAME fmt_smoke_test
     SOURCES fmt_smoke.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON fmt gtest)
+    DEPENDS_ON fmt gtest
+    FOLDER axom/thirdparty/tests )
 blt_add_test(NAME fmt_smoke 
              COMMAND fmt_smoke_test)
 
@@ -102,6 +105,7 @@ foreach(test ${BLT_SMOKE_TESTS})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         USE_OPENMP False
+        FOLDER axom/thirdparty/tests
         )
     blt_add_test( 
         NAME ${test_name} 

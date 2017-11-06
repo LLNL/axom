@@ -32,7 +32,8 @@ foreach( example_source ${example_sources} )
     blt_add_executable( NAME "slic_${example_name}_ex" 
                         SOURCES ${example_source} 
                         DEPENDS_ON slic
-                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY} )
+                        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY} 
+                        FOLDER axom/slic/examples )
     blt_add_test( NAME "slic_${example_name}"
                   COMMAND "slic_${example_name}_ex" )
 endforeach()
@@ -44,7 +45,8 @@ if ( ENABLE_MPI )
         blt_add_executable( NAME "slic_mpi_${example_name}_ex" 
                             SOURCES ${example_source} 
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                            DEPENDS_ON slic )
+                            DEPENDS_ON slic 
+                            FOLDER      axom/slic/examples )
         blt_add_test( NAME "slic_mpi_${example_name}"
                       COMMAND "slic_mpi_${example_name}_ex" 
                       NUM_MPI_TASKS 4)

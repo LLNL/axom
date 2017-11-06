@@ -53,12 +53,14 @@ if ( lulesh_depends_on )
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${lulesh_depends_on}
+        FOLDER      axom/slam/examples
         )
 else()
     blt_add_executable(
         NAME        slam_lulesh_orig_ex
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        FOLDER      axom/slam/examples
         )
 endif()
 
