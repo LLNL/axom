@@ -18,7 +18,6 @@
 /*!
  *******************************************************************************
  * \file Communicator.hpp
- * \author Chris White (white238@llnl.gov)
  *
  * \brief This file contains the pure virtual base class definition of the 
  * Communicator.

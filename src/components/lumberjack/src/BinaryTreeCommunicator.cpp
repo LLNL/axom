@@ -15,6 +15,16 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+/*!
+ ******************************************************************************
+ *
+ * \file BinaryTreeCommunicator.cpp
+ *
+ * \brief Implementation of the BinaryTreeCommunicator class.
+ *
+ ******************************************************************************
+ */
+
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 
 #include "axom/Types.hpp"

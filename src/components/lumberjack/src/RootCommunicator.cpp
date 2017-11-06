@@ -15,6 +15,16 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+/*!
+ ******************************************************************************
+ *
+ * \file RootCommunicator.cpp
+ *
+ * \brief Implementation of the RootCommunicator class.
+ *
+ ******************************************************************************
+ */
+
 #include "lumberjack/RootCommunicator.hpp"
 
 #include "axom/Types.hpp"

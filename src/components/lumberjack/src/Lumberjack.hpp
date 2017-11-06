@@ -18,10 +18,9 @@
 /*!
  *******************************************************************************
  * \file Lumberjack.hpp
- * \author Chris White (white238@llnl.gov)
  *
- * \brief This file contains the class definition of the Lumberjack. This class
- * is the main class users will interact with.
+ * \brief This file contains the class definition of the Lumberjack class,
+ * which is the main class users will interact with.
  *******************************************************************************
  */
 

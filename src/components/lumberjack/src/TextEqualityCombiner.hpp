@@ -18,7 +18,6 @@
 /*!
  *******************************************************************************
  * \file TextEqualityCombiner.hpp
- * \author Chris White (white238@llnl.gov)
  *
  * \brief This file contains the class implementation of the TextEqualityCombiner.
  *******************************************************************************

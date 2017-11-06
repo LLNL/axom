@@ -18,7 +18,6 @@
 /*!
  *******************************************************************************
  * \file Combiner.hpp
- * \author Chris White (white238@llnl.gov)
  *
  * \brief This file contains the abstract base class defining the interface of all Combiners.
 *******************************************************************************
