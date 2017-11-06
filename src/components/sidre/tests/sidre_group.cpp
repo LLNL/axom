@@ -759,7 +759,6 @@ TEST(sidre_group,view_copy_move)
 }
 
 //------------------------------------------------------------------------------
-
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
@@ -779,6 +778,8 @@ TEST(sidre_group,groups_move_copy)
   gc->createView("d0")->setScalar(3000.0);
   bschild->createView("val")->setScalar(val);
 
+  int buffercount = ds->getNumBuffers();
+
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("b"));
@@ -797,6 +798,7 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_EQ(gb0->getNumGroups(), 1);
   EXPECT_EQ(gb0->getGroup("childOfB"), bschild);
   EXPECT_EQ(bschild->getNumGroups(), 0);
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
 
   EXPECT_EQ(gb0->getNumViews(), 1);
   EXPECT_TRUE(gb0->hasChildView("f0"));
@@ -817,10 +819,20 @@ TEST(sidre_group,groups_move_copy)
 
   EXPECT_EQ(flds->getGroup("sub")->getGroup("b"),gb);
 
-  // verify that we can copy a group, when there is no name clash
+  // verify that we can copy a group into an empty group
   Group * containCopy = ds->getRoot()->createGroup("containCopy");
   Group * theCopy = containCopy->copyGroup(flds);
   EXPECT_TRUE(theCopy->isEquivalentTo(flds));
+  EXPECT_EQ(containCopy->getNumGroups(), 1);
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
+
+  // verify that we can copy a group, when there is no name clash
+  Group * anotherCopy = ds->getRoot()->createGroup("anotherCopy");
+  anotherCopy->createGroup("futureSiblingGroup");
+  Group * theOtherCopy = anotherCopy->copyGroup(flds);
+  EXPECT_EQ(anotherCopy->getNumGroups(), 2);
+  EXPECT_TRUE(theOtherCopy->isEquivalentTo(flds));
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
 
   // verify that we cannot copy a group when there is a name clash
   Group * otherB = containCopy->createGroup("b");
@@ -830,6 +842,7 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_EQ(triedCopy, static_cast<void *>(AXOM_NULLPTR));
   EXPECT_EQ(gsub->getNumGroups(), 1);
   EXPECT_TRUE(gsub->hasChildGroup("b"));
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
 
   EXPECT_EQ(gb0->getNumGroups(), 1);
   EXPECT_EQ(gb0->getGroup("childOfB"), bschild);
