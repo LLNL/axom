@@ -453,6 +453,7 @@ classes:
     python:
       type: [ init, richcompare ]
 
+
 ######################################################################
 
 functions:

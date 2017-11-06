@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -12,18 +12,24 @@
 /**************************************************************************
  *************************************************************************/
 
+#include "axom/config.hpp"
+
 #include "mpi.h"
+
+#ifdef AXOM_USE_SCR
+#include "scr.h"
+#endif
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 
 /**************************************************************************
  * Subroutine:  main
@@ -33,6 +39,7 @@ using axom::spio::IOManager;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
+  SCR_Init();
   axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 2,
@@ -50,11 +57,12 @@ int main(int argc, char * argv[])
     return 0;
   }
 
-  IOManager reader(MPI_COMM_WORLD);
-  reader.read(root, root_file);
+  IOManager reader(MPI_COMM_WORLD, true);
+  reader.read(root, root_file, false, true);
 
   delete ds;
 
+  SCR_Finalize();
   MPI_Finalize();
 
 

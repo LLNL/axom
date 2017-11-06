@@ -40,7 +40,7 @@
 
 namespace axom
 {
-namespace spio
+namespace sidre
 {
 
 
@@ -802,5 +802,5 @@ void IOManager::writeViewToRootFileAtPath(sidre::View * view,
 
 
 
-} /* end namespace spio */
+} /* end namespace sidre */
 } /* end namespace axom */

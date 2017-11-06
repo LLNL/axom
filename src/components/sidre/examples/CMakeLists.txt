@@ -51,3 +51,6 @@ if(ENABLE_FORTRAN)
 endif()
 
 add_subdirectory(lulesh2)
+if(ENABLE_MPI)
+    add_subdirectory(spio)
+endif()

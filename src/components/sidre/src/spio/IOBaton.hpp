@@ -30,7 +30,7 @@
 
 namespace axom
 {
-namespace spio
+namespace sidre
 {
 
 /*!
@@ -133,7 +133,7 @@ private:
 };
 
 
-} /* end namespace spio */
+} /* end namespace sidre */
 } /* end namespace axom */
 
 #endif /* IOBATON_HPP_ */

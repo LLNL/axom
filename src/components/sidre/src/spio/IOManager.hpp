@@ -31,12 +31,12 @@
 #include "sidre/Group.hpp"
 
 // Spio headers
-#include "spio/IOBaton.hpp"
+#include "sidre/IOBaton.hpp"
 
 
 namespace axom
 {
-namespace spio
+namespace sidre
 {
 
 
@@ -252,7 +252,7 @@ private:
 };
 
 
-} /* end namespace spio */
+} /* end namespace sidre */
 } /* end namespace axom */
 
 #endif /* IOPARALLEL_HPP_ */

@@ -13,7 +13,7 @@ copyright:
   -
 
 library: SPIO
-namespace: axom spio
+namespace: axom sidre
 
 options:
   C_prefix: SPIO_
@@ -41,7 +41,7 @@ types:
 
 classes:
   - name: IOManager
-    cpp_header: spio/IOManager.hpp
+    cpp_header: sidre/IOManager.hpp
     methods:
     - decl: IOManager * new(MPI_Comm com) +constructor
     - decl: void delete() +destructor

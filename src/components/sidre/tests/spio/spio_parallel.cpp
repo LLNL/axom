@@ -14,13 +14,13 @@
 #include "conduit_relay_hdf5.hpp"
 
 #include "sidre/sidre.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::sidre::View;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 
 //------------------------------------------------------------------------------
 

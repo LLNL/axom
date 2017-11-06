@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
@@ -12,13 +12,7 @@
 /**************************************************************************
  *************************************************************************/
 
-#include "axom/config.hpp"
-
 #include "mpi.h"
-
-#ifdef AXOM_USE_SCR
-#include "scr.h"
-#endif
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -26,12 +20,12 @@
 #include "axom_utils/FileUtilities.hpp"
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 using namespace axom::utilities;
 
 /**************************************************************************
@@ -42,7 +36,6 @@ using namespace axom::utilities;
 int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
-  SCR_Init();
   axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 3,
@@ -80,15 +73,27 @@ int main(int argc, char * argv[])
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
-  IOManager writer(MPI_COMM_WORLD, true);
+  IOManager writer(MPI_COMM_WORLD);
   writer.write(root, num_files, file_base, "sidre_hdf5");
 
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (my_rank == 0) {
+    Group * extra = root->createGroup("extra");
+    extra->createViewScalar<double>("dval", 1.1);
+    Group * child = extra->createGroup("child");
+    child->createViewScalar<int>("ival", 7);
+    child->createViewString("word0", "hello");
+    child->createViewString("word1", "world");
+
+    std::string root_name = file_base + ".root";
+    writer.writeGroupToRootFile(extra, root_name);
+  }
   MPI_Barrier(MPI_COMM_WORLD);
 
   delete ds;
 
-  SCR_Finalize();
   MPI_Finalize();
+
 
   return 0;
 }

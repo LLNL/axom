@@ -88,3 +88,6 @@ if (ENABLE_FORTRAN)
     endforeach()
 endif()
 
+if (ENABLE_MPI)
+    add_subdirectory(spio)
+endif()

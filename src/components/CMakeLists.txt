@@ -26,10 +26,6 @@ if ( BOOST_FOUND )
   axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 endif()
 
-if(ENABLE_MPI)
-  axom_add_component(COMPONENT_NAME spio DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-endif()
-
 
 ## Add dependency for each enabled component on the copy_axom_includes target
 ## to ensure that the include files are copied over
