@@ -91,7 +91,7 @@ class PointInCellMeshWrapper;
  * PointInCellMeshWrapper and PointInCellTraits for this tag in the
  * axom::quest namespace.
  *
- * \sa PointInCell_impl_mfem.hpp for a specialized implementation
+ * \sa PointInCellMeshWrapper_mfem.hpp for a specialized implementation
  * for [mfem](http://mfem.org) meshes of arbitrary order.
  */
 template<typename mesh_tag>
@@ -151,6 +151,7 @@ public:
     }
   }
 
+  /*! Destructor */
   ~PointInCell()
   {
     if( m_pointFinder2D != AXOM_NULLPTR)

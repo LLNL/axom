@@ -30,13 +30,6 @@ using axom::slic::UnitTestLogger;
 #include <algorithm>  // for std::find
 
 
-/*! Struct that wraps an integer for the ImplicitGrid's dimension */
-template<int I>
-struct IntWrapper
-{
-  static const int Value = I;
-};
-
 /*!
  * Templated test fixture for ImplicitGrid tests
  *
@@ -46,17 +39,19 @@ template<typename T>
 class ImplicitGridTest : public ::testing::Test
 {
 public:
-  static const int DIM = T::Value;
-
-  typedef axom::quest::ImplicitGrid<DIM> GridT;
+  typedef T GridT;
   typedef typename GridT::GridCell GridCell;
   typedef typename GridT::SpacePoint SpacePt;
   typedef typename GridT::SpatialBoundingBox BBox;
+
+  static const int DIM = SpacePt::DIMENSION;
 };
 
 /*! Typelist for TypedTests on ImplicitGrid */
 typedef ::testing::Types <
-    IntWrapper<1>, IntWrapper<2>, IntWrapper<3> > MyTypes;
+    axom::quest::ImplicitGrid<1>,
+    axom::quest::ImplicitGrid<2>,
+    axom::quest::ImplicitGrid<3> > MyTypes;
 
 TYPED_TEST_CASE( ImplicitGridTest, MyTypes );
 

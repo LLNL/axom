@@ -117,7 +117,7 @@ public:
    * \param [in] gridRes Resolution for lattice covering mesh bounding box
    * \param [in] numElts The number of elements in the index space
    *
-   * \pre \a bbMin and \a bbMax are not NULL and has \a NDIMS coordinates
+   * \pre \a bbMin and \a bbMax are not NULL and have \a NDIMS coordinates
    * \pre \a gridRes is either NULL or has \a NDIMS coordinates
    * \sa initialize() for details on setting grid resolution when \a gridRes is NULL
    */
@@ -144,7 +144,7 @@ public:
 
   /*!
    * \brief Initializes an implicit grid or resolution gridRes over an axis
-   * aligned domain covered by boundingBox.The implicit grid indexes a set
+   * aligned domain covered by boundingBox. The implicit grid indexes a set
    * with numElts elements.
    *
    * \param [in] boundingBox Bounding box of domain to index
@@ -207,12 +207,13 @@ public:
   int numIndexElements() const { return m_elementSet.size(); }
 
   /*!
-   * \brief Inserts an element with index id and bounding box bbox into the implicit grid
+   * \brief Inserts an element with index \a idx and bounding box \a bbox
+   * into the implicit grid
    *
    * \param [in] bbox The bounding box of the element
    * \param [in] idx  The index of the element
    *
-   * \note bbox is intentionally passed by value since insert() modifies its bounds
+   * \note \a bbox is intentionally passed by value since insert() modifies its bounds
    */
   void insert(SpatialBoundingBox bbox, IndexType idx)
   {
