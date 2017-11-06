@@ -26,7 +26,7 @@ if (SCR_FOUND)
     list(APPEND example_sources IOSCRWrite.cpp)
 endif() 
 
-set(spio_example_depends spio sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+set(spio_example_depends sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
 
 if (SCR_FOUND)
     list(APPEND spio_example_depends scr)

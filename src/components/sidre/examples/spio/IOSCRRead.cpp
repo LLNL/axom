@@ -29,16 +29,13 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "axom_utils/FileUtilities.hpp"
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::sidre::DataType;
-using axom::spio::IOManager;
-using namespace axom::utilities;
+using axom::sidre::IOManager;
 
 /**************************************************************************
  * Subroutine:  main
@@ -51,50 +48,29 @@ int main(int argc, char * argv[])
   SCR_Init();
   axom::slic::UnitTestLogger logger;
 
-  SLIC_ERROR_IF(argc != 3,
-      "Missing command line arguments. \n\t"
-      << "Usage: spio_IOWrite <num_files> <base_file_name>");
-
-  size_t num_files = 0;
-  std::string file_base;
-  if (argc == 3) {
-    num_files = static_cast<size_t>(atoi(argv[1]));
-    file_base = argv[2];
-  } else {
-    return 0;
-  }
-
-  int my_rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  SLIC_ERROR_IF(argc != 2,
+      "Missing required command line argument. \n\t"
+      << "Usage: spio_IORead <sidre_root_file>");
 
   DataStore * ds = new DataStore();
   SLIC_ASSERT(ds);
   Group * root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
-
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
-  ga->createViewScalar<int>("i0", my_rank + 101);
-  gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
-
-  if (my_rank == 0) {
-    std::string dir;
-    filesystem::getDirName(dir, file_base);
-    filesystem::makeDirsForPath(dir);
+  std::string root_file;
+  if (argc == 2) {
+    root_file = argv[1];
+  } else {
+    return 0;
   }
-  MPI_Barrier(MPI_COMM_WORLD);
 
-  IOManager writer(MPI_COMM_WORLD, true);
-  writer.write(root, num_files, file_base, "sidre_hdf5");
-
-  MPI_Barrier(MPI_COMM_WORLD);
+  IOManager reader(MPI_COMM_WORLD, true);
+  reader.read(root, root_file, false, true);
 
   delete ds;
 
   SCR_Finalize();
   MPI_Finalize();
+
 
   return 0;
 }

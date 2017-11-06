@@ -26,12 +26,12 @@
 #include "axom_utils/FileUtilities.hpp"
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 using namespace axom::utilities;
 
 /**************************************************************************

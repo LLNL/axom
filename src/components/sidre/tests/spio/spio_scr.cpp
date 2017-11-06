@@ -25,7 +25,7 @@
 #include "scr.h"
 #endif
 
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
 

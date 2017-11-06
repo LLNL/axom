@@ -58,7 +58,6 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         ${quest_tests_depends}
         conduit
         sidre
-        spio
         hdf5)
 
     if (SCR_FOUND)

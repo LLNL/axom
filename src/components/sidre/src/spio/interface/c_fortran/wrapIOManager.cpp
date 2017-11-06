@@ -17,10 +17,10 @@
 #include "wrapIOManager.h"
 #include <string>
 #include "sidre/Group.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 namespace axom {
-namespace spio {
+namespace sidre {
 
 // splicer begin class.IOManager.CXX_definitions
 // splicer end class.IOManager.CXX_definitions
@@ -185,5 +185,5 @@ void SPIO_iomanager_load_external_data_bufferify(SPIO_iomanager * self, SIDRE_gr
 
 }  // extern "C"
 
-}  // namespace spio
+}  // namespace sidre
 }  // namespace axom

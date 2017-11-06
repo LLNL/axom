@@ -18,11 +18,11 @@
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.hpp"
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 
 //------------------------------------------------------------------------------
 
