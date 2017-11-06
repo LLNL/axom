@@ -31,7 +31,7 @@
 #=============================================================================
 # First find all the files with old copyright dates
 #=============================================================================
-find . -type f ! -name \*.git\* -exec grep -l "2017" {} \; > files
+find . -type f ! -name \*.git\* | grep -v 'cmake/thirdparty' -exec grep -l "Copyright (c) 2017" {} \; > files
 
 #=============================================================================
 # Replace the old copyright dates with new dates
