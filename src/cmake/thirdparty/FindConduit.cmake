@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
@@ -10,10 +10,10 @@
 # This file is part of Axom.
 #
 # For details about use and distribution, please read axom/LICENSE.
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Setup Conduit
 #
 # This file defines:
@@ -21,7 +21,7 @@
 #  CONDUIT_INCLUDE_DIRS - The Conduit include directories
 #  
 #  If found, the conduit CMake targets will also be imported
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # first Check for CONDUIT_DIR
 
