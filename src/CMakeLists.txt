@@ -13,7 +13,7 @@
 #
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.4)
 message(STATUS "Using cmake version ${CMAKE_VERSION}")
 
 ################################
@@ -37,7 +37,7 @@ if (DEFINED BLT_SOURCE_DIR)
 else()
     # Use internal BLT if no BLT_SOURCE_DIR is given
 
-    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/blt" CACHE PATH "")
+    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
             "The BLT submodule is not present. "
