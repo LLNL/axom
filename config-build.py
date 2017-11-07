@@ -195,8 +195,8 @@ def create_cmake_command_line(args, unknown_args, buildpath, hostconfigpath, ins
     if unknown_args:
         cmakeline += " " + " ".join( unknown_args )
 
-    scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-    cmakeline += " %s/../src " % scriptsdir
+    rootdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
+    cmakeline += " %s/src " % rootdir
 
     # Dump the cmake command to file for convenience
     with open("%s/cmake_cmd" % buildpath, "w") as cmdfile:
