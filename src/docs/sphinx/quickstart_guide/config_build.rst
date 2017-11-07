@@ -328,7 +328,7 @@ CMake options
 
 .. note :: Summarize (in table) CMake options that users may want to provide
            Check what's there now for correctness. Move options for developers
-           into separate table her (for convenience) or to Dev Guide?
+           into separate table here (for convenience) or to Dev Guide?
 
 +-----------------------------------+-------------------------------+--------+
 |OPTION                             |   Description                 | Default|
@@ -340,8 +340,6 @@ CMake options
 |                                   |in all build targets           |        |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_BENCHMARKS                  |Enable google benchmark        |  OFF   |
-+-----------------------------------+-------------------------------+--------+
-|ENABLE_CFORTRAN_API                |Enable C to Fortran interface  |  ON    |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                     |Enable code coverage via gcov  |  ON    |
 +-----------------------------------+-------------------------------+--------+
