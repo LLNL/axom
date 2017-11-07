@@ -1,5 +1,20 @@
 #!/usr/bin/env python
-# Python script to add the ATK LLNL copyright notice to the top of files in a directory
+
+###############################################################################
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+###############################################################################
+
+# Python script to add Axom LLNL copyright notice at top of files in a directory
 #
 # The script takes a directory and checks all files in the directory.
 # If the second line in the file does not match the copyright string, we add it.
@@ -10,18 +25,25 @@ import os
 import sys
 import argparse
 
-atk_copyright_str = """/*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+axom_copyright_str = """/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 \n\n"""
 
-atk_copyright_begin_str = "Copyright (c) 2015, Lawrence Livermore National Security, LLC."
+axom_copyright_begin_str = "Copyright (c) 2017, Lawrence Livermore National Security, LLC."
 
 def checkAndAddCopyrightHeader(filename, testOnly=False):
 
@@ -31,13 +53,13 @@ def checkAndAddCopyrightHeader(filename, testOnly=False):
     
     print "  Processing file:", filename,
     
-    if not atk_copyright_begin_str in second_line:
+    if not axom_copyright_begin_str in second_line:
         if testOnly:
             print "\t missing copyright statement."
         else:
             lines = f.readlines()
             f.seek(0)
-            f.write(atk_copyright_str)
+            f.write(axom_copyright_str)
             f.write(first_line)
             f.write(second_line)
             f.writelines(lines)

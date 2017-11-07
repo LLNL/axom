@@ -1,22 +1,29 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
- ***********************************************************************************
+ *******************************************************************************
  * \file TimeOfDayTimer.hpp
  * 
  * \brief A glibc based timer implementation for axom's Timer class
  *
- * \note TimeOfDayTimer is an internal helper class, not meant for external usage.
+ * \note TimeOfDayTimer is an internal helper class, not meant for external use.
  * It is intended to be used by axom's Timer class in unix-based configurations.
- ***********************************************************************************
+ *******************************************************************************
  */
 
 #ifndef TIMEOFDAY_TIMER_HPP_

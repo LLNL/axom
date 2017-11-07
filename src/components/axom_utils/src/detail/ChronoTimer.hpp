@@ -1,22 +1,29 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
- ***********************************************************************************
+ *******************************************************************************
  * \file ChronoTimer.hpp
  * 
  * \brief A C++11 chrono-based timer implementation for axom's Timer class
  *
  * \note ChronoTimer is an internal helper class, not meant for external usage.
  * It is intended to be used by axom's Timer class in C++11 configurations.
- ***********************************************************************************
+ *******************************************************************************
  */
 
 #ifndef CHRONO_TIMER_HPP_

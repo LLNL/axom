@@ -1,22 +1,29 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
- ***********************************************************************************
+ *******************************************************************************
  * \file TickCountTimer.hpp
  * 
  * \brief A Windows-based timer implementation for axom's Timer class
  *
- * \note TickCountTimer is an internal helper class, not meant for external usage.
+ * \note TickCountTimer is an internal helper class, not meant for external use.
  * It is intended to be used by axom's Timer class in Windows configurations.
- ***********************************************************************************
+ *******************************************************************************
  */
 
 #ifndef TICK_COUNT_TIMER_HPP_

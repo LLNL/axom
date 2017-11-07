@@ -1,15 +1,18 @@
-/*!
- ******************************************************************************
+/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  *
- * \file
+ * Produced at the Lawrence Livermore National Laboratory
  *
- * \brief   RAJA header file for simple class that can be used to 
- *          time code sections.
- *     
- * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
- * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
+ * LLNL-CODE-741217
  *
- ******************************************************************************
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef RAJA_Timer_HXX
