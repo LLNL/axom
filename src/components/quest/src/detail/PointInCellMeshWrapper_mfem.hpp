@@ -276,24 +276,25 @@ public:
                          double * isopar) const
   {
     const int dim = meshDimension();
-    const int refineOrder = 1;      // TODO: Make this a class variable
 
     mfem::IsoparametricTransformation tr;
     m_mesh->GetElementTransformation(eltIdx, &tr);
     mfem::Vector ptSpace(const_cast<double *>(pt), dim);
 
-    // TransformBack returns zero if the element is properly mapped
     mfem::IntegrationPoint ipRef;
 
-    // Status codes: {0 -> successful; 1 -> pt was outside; 2-> did not converge}
-    int err = tr.TransformBack(ptSpace, ipRef, refineOrder);
-    ipRef.Get(isopar, dim);
+    // Set up the inverse element transformation
+    typedef mfem::InverseElementTransformation InvTransform;
+    InvTransform invTrans(&tr);
 
-//    // Add query paths to debug mesh, if applicable
-//    if( m_queryPathsMeshDumper != AXOM_NULLPTR)
-//    {
-//      m_queryPathsMeshDumper->addQueryPoint(pt, *isopar, err, tr);
-//    }
+    invTrans.SetSolverType( InvTransform::Newton );
+    invTrans.SetInitialGuessType(InvTransform::ClosestPhysNode);
+
+    // Status codes: {0 -> successful; 1 -> outside elt; 2-> did not converge}
+    int err = invTrans.Transform(ptSpace, ipRef);
+
+
+    ipRef.Get(isopar, dim);
 
     return (err == 0);
   }
