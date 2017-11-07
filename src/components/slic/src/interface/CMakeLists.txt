@@ -23,8 +23,3 @@ add_shroud(
     YAML_INPUT_FILE      ${YAML_INPUT_FILE}
     C_FORTRAN_OUTPUT_DIR c_fortran
 )
-
-uncrustify_shroud(
-    YAML_INPUT_FILE      ${YAML_INPUT_FILE}
-)
-

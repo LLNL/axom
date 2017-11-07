@@ -62,7 +62,7 @@ else()
 
 endif()
 install(TARGETS              axom_utils
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               axom_utils-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/axom_utils
         )

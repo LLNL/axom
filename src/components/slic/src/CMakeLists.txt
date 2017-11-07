@@ -94,7 +94,7 @@ blt_add_library( NAME
                     "${slic_depends_on}"
               )
 install(TARGETS              slic
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               slic-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/slic
         )

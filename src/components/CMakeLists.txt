@@ -27,8 +27,8 @@ axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 # reduction capabilities for parallel (MPI) executables.It is not meant for
 # serial (non-mpi) executables.
 if(ENABLE_MPI)
-  axom_add_component( COMPONENT_NAME lumberjack
-                     DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
+    axom_add_component( COMPONENT_NAME lumberjack
+                        DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
 endif()
 
 axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
@@ -38,7 +38,7 @@ axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
 if ( BOOST_FOUND )
-  axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+    axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 endif()
 
 
@@ -48,8 +48,8 @@ endif()
 ## (e.g. that slic has a target named 'slic')
 set(axom_components axom_utils lumberjack slic primal slam sidre mint quest spio)
 foreach(comp ${axom_components})
-   string(TOUPPER ${comp} COMP)
-   if(ENABLE_${COMP})
-       add_dependencies(${comp} copy_axom_includes)
-   endif()
+    string(TOUPPER ${comp} COMP)
+    if(ENABLE_${COMP})
+        add_dependencies(${comp} copy_axom_includes)
+    endif()
 endforeach()

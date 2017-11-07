@@ -53,7 +53,7 @@ blt_add_library(
 target_link_libraries(primal INTERFACE slic)
 
 install(TARGETS              primal
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               primal-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/primal
         )

@@ -16,8 +16,6 @@
 ##################################################################################
 # SLAM component -- Set-theoretic Lightweight API for Meshes (low level mesh API) 
 ##################################################################################
-project(slam)
-
 
 ### Some additional flags that might be useful
 # To avoid warnings from boost: -Wno-missing-braces  
@@ -50,9 +48,6 @@ if (ENABLE_TESTS)
   endif()
 endif()
 
-
-blt_add_code_check_targets(uncrustify.cfg)
-
 ################################
 # Add docs
 ################################
@@ -61,7 +56,12 @@ if (ENABLE_DOCS)
 endif()
 
 ################################
+# Add code checks
+################################
+axom_add_code_checks(BASE_NAME slam)
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+install(EXPORT slam-targets DESTINATION lib/cmake)

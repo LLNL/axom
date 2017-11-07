@@ -86,7 +86,7 @@ blt_add_library(
     DEPENDS_ON axom_utils slic
    )
 install(TARGETS              mint
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               mint-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/mint
         )

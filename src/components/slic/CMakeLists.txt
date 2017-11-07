@@ -14,11 +14,6 @@
 ##############################################################################
 
 ################################
-# slic
-################################
-project(slic)
-
-################################
 # Add the logapi sources
 ################################
 add_subdirectory(src)
@@ -38,11 +33,6 @@ if (ENABLE_TESTS)
 endif()
 
 ################################
-# add uncrustify
-################################
-blt_add_code_check_targets(uncrustify.cfg)
-
-################################
 # Add docs
 ################################
 if (ENABLE_DOCS)
@@ -50,7 +40,12 @@ if (ENABLE_DOCS)
 endif()
 
 ################################
+# Add code checks
+################################
+axom_add_code_checks(BASE_NAME slic)
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+install(EXPORT slic-targets DESTINATION lib/cmake)

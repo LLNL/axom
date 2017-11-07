@@ -87,7 +87,7 @@ blt_add_library(
     DEPENDS_ON  ${slam_depends_on}
     )
 install(TARGETS              slam
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               slam-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/slam
         )

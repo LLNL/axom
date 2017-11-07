@@ -98,7 +98,7 @@ blt_add_library(
     DEPENDS_ON  ${quest_depends_on}
     )
 install(TARGETS              quest
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               quest-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/quest
         )

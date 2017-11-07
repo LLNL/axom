@@ -14,11 +14,6 @@
 ##############################################################################
 
 ################################
-# Lumberjack
-################################
-project(lumberjack)
-
-################################
 # Add the datastore sources
 ################################
 add_subdirectory(src)
@@ -37,7 +32,6 @@ if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-
 ################################
 # Add docs
 ################################
@@ -46,7 +40,12 @@ if (ENABLE_DOCS)
 endif()
 
 ################################
+# Add code checks
+################################
+axom_add_code_checks(BASE_NAME lumberjack)
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+install(EXPORT lumberjack-targets DESTINATION lib/cmake)
