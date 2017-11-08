@@ -32,37 +32,43 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace axom {
-namespace lumberjack {
-
-const char* mpiBlockingRecieveMessages(MPI_Comm comm)
+namespace axom
 {
-    char* charArray = AXOM_NULLPTR;
-    int messageSize = -1;
-    MPI_Status mpiStatus;
+namespace lumberjack
+{
 
-    // Get size and source of MPI message
-    MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
-    MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
+const char * mpiBlockingRecieveMessages(MPI_Comm comm)
+{
+  char * charArray = AXOM_NULLPTR;
+  int messageSize = -1;
+  MPI_Status mpiStatus;
 
-    // Receive packed Message
-    charArray = new char[messageSize+1];
-    MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm, &mpiStatus);
-    charArray[messageSize] = '\0';
+  // Get size and source of MPI message
+  MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
+  MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
-    if (messageSize == 1) {
-        delete [] charArray;
-        return AXOM_NULLPTR;
-    }
+  // Receive packed Message
+  charArray = new char[messageSize+1];
+  MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm,
+           &mpiStatus);
+  charArray[messageSize] = '\0';
 
-    return charArray;
+  if (messageSize == 1)
+  {
+    delete [] charArray;
+    return AXOM_NULLPTR;
+  }
+
+  return charArray;
 }
 
-void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, const char* packedMessagesToBeSent)
+void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
+                                const char * packedMessagesToBeSent)
 {
-    MPI_Request mpiRequest;
-    MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
-             strlen(packedMessagesToBeSent), MPI_CHAR, destinationRank, 0, comm, &mpiRequest);
+  MPI_Request mpiRequest;
+  MPI_Isend(const_cast<char *>(packedMessagesToBeSent),
+            strlen(packedMessagesToBeSent), MPI_CHAR,
+            destinationRank, 0, comm, &mpiRequest);
 }
 
 } // end namespace lumberjack
