@@ -45,7 +45,8 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
 
     OctreeType octree(bb);
 
-    // Check that the point lies in a leaf of the tree and that this is the root of the tree
+    // Check that the point lies in a leaf of the tree 
+    // and that this is the root of the tree
     BlockIndex leafBlock = octree.findLeafBlock(queryPt);
     EXPECT_TRUE( octree.isLeaf(leafBlock));
     EXPECT_EQ( octree.root(), leafBlock );
@@ -54,11 +55,11 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
     EXPECT_TRUE( leafBB.contains( queryPt ));
     EXPECT_TRUE( bb.contains(leafBB));
 
-    SLIC_INFO("Query pt: " << queryPt
-              <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
-              <<" contained in bounding box " << leafBB
-              <<"\n\t of octree root " << leafBlock
-              );
+    SLIC_INFO(
+        "Query pt: " << queryPt
+        <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
+        <<" contained in bounding box " << leafBB
+        <<"\n\t of octree root " << leafBlock   );
 
     for(int i=0; i< octree.maxInternalLevel(); ++i)
     {
@@ -70,11 +71,12 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
         EXPECT_TRUE( leafBB.contains( queryPt ));
         EXPECT_TRUE( bb.contains(leafBB));
 
-        SLIC_INFO("Query pt: " << queryPt
-                  <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
-                  <<" contained in bounding box " << leafBB
-                  <<"\n\t of leaf " << leafBlock
-                  <<" in the octree. ");
+        SLIC_INFO(
+            "Query pt: " << queryPt
+             <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
+             <<" contained in bounding box " << leafBB
+             <<"\n\t of leaf " << leafBlock
+             <<" in the octree. ");
     }
 
 
@@ -100,4 +102,3 @@ int main(int argc, char * argv[])
 
   return result;
 }
-

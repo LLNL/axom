@@ -143,7 +143,8 @@ void  findTriMeshIntersections_impl(
   // that also shares a UniformGrid bin.
   SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
 
-  std::vector<int>::iterator idx = nondegenerateIndices.begin(),
+  std::vector<int>::iterator 
+    idx = nondegenerateIndices.begin(),
     ndgend = nondegenerateIndices.end();
   for (; idx != ndgend; ++idx) {
     // Retrieve the triangle at *idx and construct a bounding box around it

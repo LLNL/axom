@@ -151,23 +151,26 @@ void testIntersectionOnRegularGrid()
         {
             for(int k=0; k< 1<<lev; ++k)
             {
-                SpaceOctree::BlockIndex block( axom::primal::Point<int,3>::make_point(i,j,k), lev );
+                SpaceOctree::BlockIndex block( 
+                    axom::primal::Point<int,3>::make_point(i,j,k), lev );
                 SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
                 if( axom::primal::intersect( unitTri, blockBB))
                 {
                     // Add to debug mesh
                     int vStart = debugMesh->getMeshNumberOfNodes();
+                    const SpacePt& bMin = blockBB.getMin();
+                    const SpacePt& bMax = blockBB.getMax();
 
-                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+                    debugMesh->insertNode( bMin[0], bMin[1], bMin[2]);
+                    debugMesh->insertNode( bMax[0], bMin[1], bMin[2]);
+                    debugMesh->insertNode( bMax[0], bMax[1], bMin[2]);
+                    debugMesh->insertNode( bMin[0], bMax[1], bMin[2]);
 
-                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-                    debugMesh->insertNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-                    debugMesh->insertNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+                    debugMesh->insertNode( bMin[0], bMin[1], bMax[2]);
+                    debugMesh->insertNode( bMax[0], bMin[1], bMax[2]);
+                    debugMesh->insertNode( bMax[0], bMax[1], bMax[2]);
+                    debugMesh->insertNode( bMin[0], bMax[1], bMax[2]);
 
                     int data[8];
                     for(int i=0; i< 8; ++i)
@@ -221,8 +224,10 @@ void testContainmentOnRegularGrid(
         containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
     }
     timer.stop();
-    SLIC_INFO(fmt::format("\tQuerying {}^3 containment field took {} seconds (@ {} queries per second)",
-        gridRes, timer.elapsed(), nnodes / timer.elapsed()));
+    SLIC_INFO(
+       fmt::format("\tQuerying {}^3 containment field "
+       "took {} seconds (@ {} queries per second)",
+       gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
   #ifdef DUMP_VTK_MESH
     std::stringstream sstr;
@@ -382,7 +387,8 @@ void print_surface_stats( axom::mint::Mesh* mesh)
            for(int j=0; j<3; ++j)
            {
                mesh->getMeshNode( vertIndices[j], vertPos.data() );
-               badTriStr.write("\n\t\t vId: {} @ position: {}", vertIndices[j], vertPos);
+               badTriStr.write("\n\t\t vId: {} @ position: {}", 
+                    vertIndices[j], vertPos);
            }
        }
        SLIC_DEBUG(badTriStr.str());
@@ -405,9 +411,10 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt, bool shouldRefine 
     GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
     bool containsPt = blockBB.contains(queryPt);
 
-    SLIC_INFO(fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point.",
-             leafBlock.pt(), leafBlock.level(), blockBB,
-             (containsPt? " contains " : "does not contain ") ));
+    SLIC_INFO(
+        fmt::format("\t(gridPt: {}; lev: {}) with bounds {} {} query point.",
+            leafBlock.pt(), leafBlock.level(), blockBB,
+            (containsPt? " contains " : "does not contain ") ));
 }
 
 //------------------------------------------------------------------------------
@@ -506,14 +513,15 @@ int main( int argc, char** argv )
   for(int lev = 0; lev < octree.maxLeafLevel(); ++lev)
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
-      SLIC_INFO(fmt::format(
-              "  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t bounding box {4}]",
-              lev,
-              gridPt,
-              octree.maxGridCellAtLevel(lev),
-              octree.spacingAtLevel(lev),
-              octree.blockBoundingBox(gridPt, lev)
-              ));
+      SLIC_INFO(
+        fmt::format(
+        "  {1} @ level {0}\n\t[max gridPt: {2}; spacing: {3};\n\t bounding box {4}]",
+            lev,
+            gridPt,
+            octree.maxGridCellAtLevel(lev),
+            octree.spacingAtLevel(lev),
+            octree.blockBoundingBox(gridPt, lev)
+        ));
   }
 
 

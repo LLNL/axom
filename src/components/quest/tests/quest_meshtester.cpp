@@ -96,7 +96,9 @@ void runIntersectTest(const std::string &tname,
   reportVectorMismatch(expdegen, degenerate, "degenerate triangles");
 }
 
-void splitStringToIntPairs(std::string & pairs, std::vector< std::pair<int, int> > & dat)
+void splitStringToIntPairs(
+    std::string & pairs, 
+    std::vector< std::pair<int, int> > & dat)
 {
   if (!pairs.empty()) {
     std::istringstream iss(pairs);
@@ -148,8 +150,7 @@ std::string readIntersectTest(std::string & test,
   std::sort(expdegen.begin(), expdegen.end());
 
   return retval;
-}
-                              
+}                              
 
 std::vector<std::string> findIntersectTests()
 {
@@ -359,4 +360,3 @@ int main(int argc, char * argv[])
   int result = RUN_ALL_TESTS();
   return result;
 }
-

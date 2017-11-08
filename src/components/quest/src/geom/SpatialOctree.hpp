@@ -84,13 +84,15 @@ public:
 
 
     /**
-     * \brief Returns a reference to the octree's bounding box (i.e. the bounding box of the root block)
+     * \brief Returns a reference to the octree's bounding box
+     *  (i.e. the bounding box of the root block)
      */
     const GeometricBoundingBox& boundingBox() const { return m_boundingBox; }
 
 
     /**
-     * \brief Return the spatial bounding box of a grid cell at the given level or resolution
+     * \brief Return the spatial bounding box of a grid cell 
+     * at the given level or resolution
      */
     GeometricBoundingBox blockBoundingBox(const BlockIndex & block) const
     {
@@ -98,7 +100,8 @@ public:
     }
 
     /**
-     * \brief Return the spatial bounding box of a grid cell at the given level or resolution
+     * \brief Return the spatial bounding box of a grid cell 
+     * at the given level or resolution
      */
     GeometricBoundingBox blockBoundingBox(const GridPt & gridPt, int level) const
     {
@@ -138,8 +141,10 @@ public:
      */
     BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = -1) const
     {
-        SLIC_ASSERT_MSG( m_boundingBox.contains(pt)
-                       , "SpatialOctree::findLeafNode -- Did not find " << pt << " in bounding box " << m_boundingBox );
+        SLIC_ASSERT_MSG( 
+            m_boundingBox.contains(pt),
+            "SpatialOctree::findLeafNode -- Did not find "
+            << pt << " in bounding box " << m_boundingBox );
 
         // Perform binary search on levels to find the leaf block containing the point
         int minLev = 0;
@@ -195,7 +200,8 @@ public:
             // Note: quantCell is always positive, and within range of CoordType
             //       so truncating is equivalent to the floor function
             // Note: we need to clamp to avoid setting coordinates past the upper boundaries
-            const CoordType quantCell = static_cast<CoordType>( (pt[i] - bbMin[i]) * invDelta[i] );
+            const CoordType quantCell = 
+                static_cast<CoordType>( (pt[i] - bbMin[i]) * invDelta[i] );
             quantizedPt[i] = std::min( quantCell, highestCell);
         }
 

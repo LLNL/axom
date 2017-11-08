@@ -174,7 +174,8 @@ namespace quest {
         /**
          * \brief Factory function to return a GridBlockIterHelper for this level
          *
-         *  \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
+         *  \param begin A boolean to determine if this is to be 
+         * a begin (true) or end (false) iterator
          */
         BaseBlockIteratorHelper* getIteratorHelper(bool begin)
         {
@@ -184,7 +185,8 @@ namespace quest {
         /**
          * \brief Factory function to return a ConstGridBlockIterHelper for this level
          *
-         *  \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
+         *  \param begin A boolean to determine if this is to be 
+         * a begin (true) or end (false) iterator
          */
         ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
         {
@@ -193,7 +195,8 @@ namespace quest {
 
 
         /**
-         * \brief Predicate to check whether the block associated with the given GridPt pt is in the current level
+         * \brief Predicate to check whether the block associated with 
+         * the given GridPt pt is in the current level
          */
         bool hasBlock(const GridPt& pt) const
         {
@@ -204,17 +207,20 @@ namespace quest {
         /**
          * \brief Adds all children of the given grid point to the octree level
          *
-         * \param [in] pt The gridPoint associated with the parent of the children that are being added
+         * \param [in] pt The gridPoint associated with the parent 
+         * of the children that are being added
          * \pre pt must be in bounds for the level
          * \sa inBounds()
          */
         void addAllChildren(const GridPt& pt)
         {
-            SLIC_ASSERT_MSG(this->inBounds(pt),
-                           "Problem while inserting children of point " << pt
-                           << " into octree level " << this->m_level
-                           << ". Point was out of bounds -- "
-                           << "each coordinate must be between 0 and " << this->maxCoord() << ".");
+            SLIC_ASSERT_MSG(
+               this->inBounds(pt),
+               "Problem while inserting children of point " << pt
+               << " into octree level " << this->m_level
+               << ". Point was out of bounds -- "
+               << "each coordinate must be between 0 and " 
+               << this->maxCoord() << ".");
 
             getBroodData(pt) = BroodData();
 
@@ -242,8 +248,10 @@ namespace quest {
         /** \brief Const accessor for the data associated with pt */
         const BlockDataType& operator[](const GridPt& pt) const
         {
-            SLIC_ASSERT_MSG(hasBlock(pt)
-                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+            SLIC_ASSERT_MSG(
+                hasBlock(pt),
+                "(" << pt <<", "<< this->m_level 
+                << ") was not a block in the tree at level.");
 
             const BroodType brood(pt);
             return m_data[brood.base()][brood.offset()];
@@ -292,7 +300,8 @@ namespace quest {
 
 
         /**
-         * \brief Helper function to determine the status of an octree block within this octree level
+         * \brief Helper function to determine the status of 
+         * an octree block within this octree level
          *
          * \param pt The grid point of the block index that we are testing
          * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)

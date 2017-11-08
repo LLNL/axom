@@ -74,8 +74,10 @@ TEST( quest_octree, topological_octree_parent_child)
 //------------------------------------------------------------------------------
 TEST( quest_octree, topological_octree_refine)
 {
-  SLIC_INFO("*** This test exercises the block refinement in quest::OctreeBase"
-              <<"\nSpecifically, that refining the root block adds all its children to the octree.");
+  SLIC_INFO(
+    "*** This test exercises the block refinement in quest::OctreeBase"
+    <<"\nSpecifically, that refining the root block adds " 
+    << "all its children to the octree.");
 
   static const int DIM = 3;
   typedef axom::quest::BlockData LeafNodeType;
@@ -150,7 +152,8 @@ TEST( quest_octree, octree_coveringLeafBlocks)
       SLIC_INFO(" Face neighbor " << i << " is " << neighborBlk );
 
       // The root has no valid neighbors at the same level
-      EXPECT_EQ( BlockIndex::invalid_index(), octree.coveringLeafBlock(neighborBlk));
+      EXPECT_EQ( BlockIndex::invalid_index(), 
+                 octree.coveringLeafBlock(neighborBlk));
   }
 
 
@@ -206,10 +209,11 @@ TEST( quest_octree, octree_coveringLeafBlocks)
               BlockIndex neighborBlk = blk.faceNeighbor(i);
               BlockIndex coveringBlk = octree.coveringLeafBlock(neighborBlk);
 
-              SLIC_INFO("\tFace neighbor " << i << " is " << neighborBlk
-                        << " -- Covering block is " << coveringBlk
-                        << (coveringBlk == BlockIndex::invalid_index() ? " -- invalid_index" : "")
-                  );
+              SLIC_INFO(
+                "\tFace neighbor " << i << " is " << neighborBlk
+                << " -- Covering block is " << coveringBlk
+                << (coveringBlk == BlockIndex::invalid_index() 
+                        ? " -- invalid_index" : "")  );
 
               if( octree.coveringLeafBlock(neighborBlk) != BlockIndex::invalid_index() )
               {
@@ -376,4 +380,3 @@ int main(int argc, char * argv[])
 
   return result;
 }
-

@@ -84,7 +84,8 @@
 #endif
 
 #if defined(DEBUG_OCTREE_ACTIVE) && defined(AXOM_DEBUG)
-  #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  if( _cond ) SLIC_DEBUG( _msg )
+  #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)           \
+          if( _cond ) SLIC_DEBUG( _msg )
 #else
   #define QUEST_OCTREE_DEBUG_LOG_IF( _cond, _msg)  ( (void)0 )
 #endif
@@ -128,7 +129,8 @@ namespace detail {
         /**
          * \brief Default constructor for an InOutBlockData
          *
-         * \note Default constructed InOutBlockData instances are assumed to be leaf blocks
+         * \note Default constructed InOutBlockData instances 
+         * are assumed to be leaf blocks
          */
         InOutBlockData()
             : m_idx(LEAF_BLOCK_UNCOLORED) {}
@@ -353,15 +355,16 @@ namespace detail {
          *
          * \param vInd The index of a vertex (optional; default is to not set a vertex)
          */
-        DynamicGrayBlockData(VertexIndex vInd, bool isLeaf): m_vertIndex(vInd), m_isLeaf(isLeaf) {}
+        DynamicGrayBlockData(VertexIndex vInd, bool isLeaf)
+            : m_vertIndex(vInd), m_isLeaf(isLeaf) {}
 
         /**
          * \brief Copy constructor for an DynamicGrayBlockData instance
          */
         DynamicGrayBlockData(const DynamicGrayBlockData& other)
-            : m_vertIndex(other.m_vertIndex)
-            , m_tris(other.m_tris)
-            , m_isLeaf(other.m_isLeaf)
+            : m_vertIndex(other.m_vertIndex),
+              m_tris(other.m_tris),
+              m_isLeaf(other.m_isLeaf)
         {}
 
         /**
@@ -372,7 +375,8 @@ namespace detail {
             this->m_vertIndex = other.m_vertIndex;
 
             this->m_tris.reserve( other.m_tris.size());
-            std::copy(other.m_tris.begin(), other.m_tris.end(), std::back_inserter(this->m_tris));
+            std::copy(other.m_tris.begin(), other.m_tris.end(), 
+                std::back_inserter(this->m_tris));
 
             this->m_isLeaf = other.m_isLeaf;
 
@@ -391,11 +395,13 @@ namespace detail {
 //        }
 
         /**
-         * \brief Equality operator to determine if two DynamicGrayBlockData instances are equivalent
+         * \brief Equality operator to determine if two 
+         * DynamicGrayBlockData instances are equivalent
          */
         friend bool operator==(const DynamicGrayBlockData& lhs, const DynamicGrayBlockData& rhs )
         {
-            return //(static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs))
+            return 
+                //(static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs))
                 //&&
                 (lhs.m_vertIndex == rhs.m_vertIndex)
                 && (lhs.m_tris.size() == rhs.m_tris.size())     // Note: We are not checking the contents
@@ -560,14 +566,17 @@ private:
         typedef axom::slam::Map<VertexIndex> VertexIndexMap;
         typedef axom::slam::Map<SpacePt> VertexPositionMap;
 
-        typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex> STLIndirection;
-        typedef axom::slam::policies::CompileTimeStride<VertexIndex, NUM_TRI_VERTS>  TVStride;
-        typedef axom::slam::policies::ConstantCardinality<VertexIndex, TVStride>     ConstantCardinality;
+        typedef axom::slam::policies::
+            STLVectorIndirection<VertexIndex, VertexIndex> STLIndirection;
+        typedef axom::slam::policies::
+            CompileTimeStride<VertexIndex, NUM_TRI_VERTS>  TVStride;
+        typedef axom::slam::policies::
+            ConstantCardinality<VertexIndex, TVStride>     ConstantCardinality;
         typedef axom::slam::StaticRelation<
               ConstantCardinality,
               STLIndirection,
               MeshElementSet,
-              MeshVertexSet>                                                         TriangleVertexRelation;
+              MeshVertexSet>                                TriangleVertexRelation;
         typedef typename TriangleVertexRelation::RelationSet TriVertIndices;
 
     public:
@@ -699,8 +708,11 @@ private:
          */
         VertexIndex distinctVertex(TriangleIndex t0, TriangleIndex t1) const
         {
-            SLIC_ASSERT_MSG(t0 != t1, "Expected two different triangle indices in "
-                            <<"quest::MeshWrapper::findDistinctVertex, got triangle index " << t0 << " twice.");
+            SLIC_ASSERT_MSG(
+                t0 != t1, 
+                "Expected two different triangle indices in "
+                <<"quest::MeshWrapper::findDistinctVertex, got triangle index " 
+                << t0 << " twice.");
 
             // Find a vertex from the local surface that is not incident in the first triangle
             TriVertIndices tvRel0 = triangleVertexIndices( t0 );
@@ -721,7 +733,8 @@ private:
          * \param t0 The index of the first triangle
          * \param t1 The index of the second triangle
          * \param [out] sharedVert The index of the shared vertex, if it exists
-         * \return true if the two triangles have a vertex in common (returned in sharedVert), false otherwise
+         * \return true if the two triangles have a vertex 
+         * in common (returned in sharedVert), false otherwise
          */
         bool haveSharedVertex(TriangleIndex t0, TriangleIndex t1, VertexIndex& sharedVert) const
         {
@@ -747,7 +760,8 @@ private:
          * \param t1 The index of the second triangle
          * \param t2 The index of the second triangle
          * \param [out] sharedVert The index of the shared vertex, if it exists
-         * \return true if the three triangles have a vertex in common (returned in sharedVert), false otherwise
+         * \return true if the three triangles have a vertex in common
+         *  (returned in sharedVert), false otherwise
          */
         bool haveSharedVertex(TriangleIndex t0, TriangleIndex t1, TriangleIndex t2, VertexIndex& sharedVert) const
         {
@@ -758,7 +772,8 @@ private:
             for(int i=0; i< NUM_TRI_VERTS; ++i)
             {
                 // check if a vertex from the third triangle is in the first and second
-                if(incidentInVertex( t0Verts, t2Verts[i]) && incidentInVertex( t1Verts, t2Verts[i]) )
+                if(incidentInVertex( t0Verts, t2Verts[i]) 
+                  && incidentInVertex( t1Verts, t2Verts[i]) )
                 {
                     sharedVert = t2Verts[i];
                     return true;
@@ -790,7 +805,8 @@ private:
                 m_vertexPositions[vInd] = getMeshVertexPosition(i);
             }
 
-            // Update the vertex IDs of the triangles to the new vertices and create a SLAM relation on these
+            // Update the vertex IDs of the triangles to the new vertices
+            // and create a SLAM relation on these
             int numOrigTris = numMeshElements();
 
             m_tv_data.clear();
@@ -805,7 +821,8 @@ private:
                for(int j=0; j< NUM_TRI_VERTS; ++j)
                    vertIds[j] = vertexIndexMap[ vertIds[j] ];
 
-               // Add to relation if not degenerate triangles (namely, we need 3 unique vertex IDs)
+               // Add to relation if not degenerate triangles 
+               // (namely, we need 3 unique vertex IDs)
                if(    (vertIds[0] != vertIds[1])
                    && (vertIds[1] != vertIds[2])
                    && (vertIds[2] != vertIds[0]) )
@@ -817,7 +834,8 @@ private:
             }
 
             m_elementSet = MeshElementSet( m_tv_data.size() / NUM_TRI_VERTS );
-            m_triangleToVertexRelation = TriangleVertexRelation(&m_elementSet, &m_vertexSet);
+            m_triangleToVertexRelation = 
+                TriangleVertexRelation(&m_elementSet, &m_vertexSet);
             m_triangleToVertexRelation.bindIndices(m_tv_data.size(), &m_tv_data);
 
 
@@ -828,7 +846,8 @@ private:
             m_meshWasReindexed = true;
         }
 
-        /** \brief Add the vertex positions and triangle boundary relations to the surface mesh */
+        /** \brief Add the vertex positions and triangle boundary
+         *   relations to the surface mesh */
         void regenerateSurfaceMesh()
         {
           if(m_surfaceMesh != AXOM_NULLPTR)
@@ -893,23 +912,27 @@ public:
     static const int MAX_VERTS_PER_BLOCK = 1;
     typedef axom::slam::Map<BlockIndex> VertexBlockMap;
 
-    typedef axom::slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>             STLIndirection;
+    typedef axom::slam::policies::
+        STLVectorIndirection<VertexIndex, VertexIndex>       STLIndirection;
 
     typedef axom::slam::PositionSet GrayLeafSet;
-    typedef axom::slam::policies::CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
-    typedef axom::slam::policies::ConstantCardinality<VertexIndex, BVStride>           ConstantCardinality;
+    typedef axom::slam::policies::
+        CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
+    typedef axom::slam::policies::
+        ConstantCardinality<VertexIndex, BVStride>           ConstantCardinality;
     typedef axom::slam::StaticRelation<
           ConstantCardinality,
           STLIndirection,
           GrayLeafSet,
-          MeshVertexSet>                                                               GrayLeafVertexRelation;
+          MeshVertexSet>                                     GrayLeafVertexRelation;
 
-    typedef axom::slam::policies::VariableCardinality<VertexIndex, STLIndirection>     VariableCardinality;
+    typedef axom::slam::policies::
+        VariableCardinality<VertexIndex, STLIndirection>     VariableCardinality;
     typedef axom::slam::StaticRelation<
           VariableCardinality,
           STLIndirection,
           GrayLeafSet,
-          MeshElementSet >                                                             GrayLeafElementRelation;
+          MeshElementSet >                                   GrayLeafElementRelation;
     typedef typename GrayLeafElementRelation::RelationSet TriangleIndexSet;
 
     typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
@@ -1302,12 +1325,12 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
     InOutBlockData& blkData = (*this)[block];
 
 
-    QUEST_OCTREE_DEBUG_LOG_IF( idx == DEBUG_VERT_IDX,
-                "\t -- inserting pt " << pt << " with index " << idx
-                  << ". Looking at block " << block
-                  << " w/ blockBB " << this->blockBoundingBox(block)
-                  << " indexing leaf vertex " << blkData.dataIndex()
-              );
+    QUEST_OCTREE_DEBUG_LOG_IF( 
+        idx == DEBUG_VERT_IDX,
+        "\t -- inserting pt " << pt << " with index " << idx
+        << ". Looking at block " << block
+        << " w/ blockBB " << this->blockBoundingBox(block)
+        << " indexing leaf vertex " << blkData.dataIndex()  );
 
     if(! blkData.hasData() )
     {
@@ -1321,7 +1344,8 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
     {
         // check if we should merge the vertices
         VertexIndex origVertInd = blkData.dataIndex();
-        if( squared_distance( pt, m_meshWrapper.getMeshVertexPosition(origVertInd) ) >= EPS_SQ )
+        if( squared_distance( pt, 
+             m_meshWrapper.getMeshVertexPosition(origVertInd) ) >= EPS_SQ )
         {
             blkData.clear();
             this->refineLeaf(block);
@@ -1331,9 +1355,10 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
         }
     }
 
-    QUEST_OCTREE_DEBUG_LOG_IF( blkData.dataIndex() == DEBUG_VERT_IDX
-              , "-- vertex " << idx << " is indexed in block " << block
-                << ". Leaf vertex is " << blkData.dataIndex() );
+    QUEST_OCTREE_DEBUG_LOG_IF( 
+        blkData.dataIndex() == DEBUG_VERT_IDX,
+        "-- vertex " << idx << " is indexed in block " << block
+        << ". Leaf vertex is " << blkData.dataIndex() );
 
 }
 
@@ -1379,17 +1404,21 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     {
         Timer levelTimer(true);
 
-        typename IndexRegistry::BufferType& gvRelData = m_indexRegistry.addNamelessBuffer();
+        typename IndexRegistry::BufferType& gvRelData = 
+            m_indexRegistry.addNamelessBuffer();
 
-        typename IndexRegistry::BufferType& geSizeRelData = m_indexRegistry.addNamelessBuffer();
+        typename IndexRegistry::BufferType& geSizeRelData = 
+            m_indexRegistry.addNamelessBuffer();
         geSizeRelData.push_back(0);
 
-        typename IndexRegistry::BufferType& geIndRelData = m_indexRegistry.addNamelessBuffer();
+        typename IndexRegistry::BufferType& geIndRelData = 
+            m_indexRegistry.addNamelessBuffer();
 
         int nextLevelDataBlockCounter = 0;
 
         LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
-        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); 
+            it != itEnd; ++it)
         {
             InOutBlockData& blkData = *it;
 
@@ -1397,20 +1426,24 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                 continue;
 
             BlockIndex blk(it.pt(), lev);
-            DynamicGrayBlockData& dynamicLeafData = currentLevelData[ blkData.dataIndex() ];
+            DynamicGrayBlockData& dynamicLeafData = 
+                currentLevelData[ blkData.dataIndex() ];
 
             bool isInternal = !dynamicLeafData.isLeaf();
-            bool isLeafThatMustRefine = !isInternal && ! allTrianglesIncidentInCommonVertex(blk, dynamicLeafData);
+            bool isLeafThatMustRefine = !isInternal 
+                && ! allTrianglesIncidentInCommonVertex(blk, dynamicLeafData);
 
-            QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
-                 "Attempting to insert triangles from block" << blk << "."
-                 << "\n\tDynamic data: " << dynamicLeafData
-                 << "\n\tBlock data: " << blkData
-                 << "\n\tAbout to finalize? " << (!isInternal && !isLeafThatMustRefine  ? " yes" : "no" )
-                );
+            QUEST_OCTREE_DEBUG_LOG_IF(
+                DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
+                "Attempting to insert triangles from block" << blk << "."
+                << "\n\tDynamic data: " << dynamicLeafData
+                << "\n\tBlock data: " << blkData
+                << "\n\tAbout to finalize? " 
+                << (!isInternal && !isLeafThatMustRefine  ? " yes" : "no" ) );
 
 
-            // Leaf blocks that don't refine are 'finalized' -- add  them to the current level's relations
+            // Leaf blocks that don't refine are 'finalized' 
+            // -- add  them to the current level's relations
             if( !isInternal && !isLeafThatMustRefine )
             {
                 if( dynamicLeafData.hasTriangles())
@@ -1427,7 +1460,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                                std::back_inserter(geIndRelData));
                     geSizeRelData.push_back( geIndRelData.size());
 
-                    QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
+                    QUEST_OCTREE_DEBUG_LOG_IF(
+                        DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
                          "[Added block" << blk << " into tree as a gray leaf]."
                          << "\n\tDynamic data: " << dynamicLeafData
                          << "\n\tBlock data: " << blkData );
@@ -1456,8 +1490,10 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                     blkData.setInternal();
                 }
 
-                SLIC_ASSERT_MSG( this->isInternal(blk)
-                               , "Block " << blk <<" was refined, so it should be marked as internal." );
+                SLIC_ASSERT_MSG( 
+                    this->isInternal(blk),
+                    "Block " << blk <<" was refined, "
+                    <<" so it should be marked as internal." );
 
 
                 /// Setup caches for data associated with children
@@ -1467,7 +1503,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                 DynamicGrayBlockData*   childDataPtr[BlockIndex::NUM_CHILDREN];
 
 
-                const typename LeavesLevelMap::BroodData& broodData = this->getOctreeLevel( lev+1 ).getBroodData(blk.pt());
+                const typename LeavesLevelMap::BroodData& broodData = 
+                    this->getOctreeLevel( lev+1 ).getBroodData(blk.pt());
 
                 for(int j=0; j< BlockIndex::NUM_CHILDREN; ++j)
                 {
@@ -1510,12 +1547,18 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                                         : intersect(tBB, childBB[j]) )
                                 ;
 
-                        QUEST_OCTREE_DEBUG_LOG_IF( DEBUG_BLOCK_1 == childBlk[j]
-                                                || DEBUG_BLOCK_2 == childBlk[j]  //&& tIdx == DEBUG_TRI_IDX
-                             , "Attempting to insert triangle " << tIdx <<" @ " << spaceTri << " w/ BB " << tBB
-                             << "\n\t into block" << childBlk[j] << " w/ BB " << childBB[j] << " and data " << *childDataPtr[j]
-                             << "\n\tShould add? " << (shouldAddTriangle  ? " yes" : "no" )
-                            );
+                        QUEST_OCTREE_DEBUG_LOG_IF( 
+                            DEBUG_BLOCK_1 == childBlk[j] 
+                                || DEBUG_BLOCK_2 == childBlk[j],  
+                                //&& tIdx == DEBUG_TRI_IDX
+                                "Attempting to insert triangle " << tIdx 
+                                 <<" @ " << spaceTri << " w/ BB " << tBB
+                                 << "\n\t into block" << childBlk[j] 
+                                 << " w/ BB " << childBB[j] 
+                                 << " and data " << *childDataPtr[j]
+                                 << "\n\tShould add? " 
+                                 << (shouldAddTriangle  ? " yes" : "no" )
+                              );
 
                         if(shouldAddTriangle)
                         {
@@ -1526,7 +1569,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                                 nextLevelData.push_back(childData[j]);
 
                                 // Update the child data pointer
-                                childDataPtr[j] = &nextLevelData[nextLevelDataBlockCounter];
+                                childDataPtr[j] = 
+                                    &nextLevelData[nextLevelDataBlockCounter];
 
                                 // Set the data in the octree to this index and update the index
                                 (*this)[childBlk[j]].setData(nextLevelDataBlockCounter++);
@@ -1534,11 +1578,13 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
                             childDataPtr[j]->addTriangle(tIdx);
 
-                            QUEST_OCTREE_DEBUG_LOG_IF(DEBUG_BLOCK_1 == childBlk[j]
-                                                   || DEBUG_BLOCK_2 == childBlk[j], //&& tIdx == DEBUG_TRI_IDX
+                            QUEST_OCTREE_DEBUG_LOG_IF(
+                                DEBUG_BLOCK_1 == childBlk[j] 
+                                || DEBUG_BLOCK_2 == childBlk[j], 
+                                //&& tIdx == DEBUG_TRI_IDX
                                  "Added triangle " << tIdx
-                                 <<" @ " << spaceTri
-                                 << " with verts " << m_meshWrapper.triangleVertexIndices(tIdx)
+                                 <<" @ " << spaceTri << " with verts " 
+                                 << m_meshWrapper.triangleVertexIndices(tIdx)
                                  << "\n\tinto block " << childBlk[j]
                                  << "\n\twith data " << *(childDataPtr[j])
                                  );
@@ -1553,19 +1599,26 @@ void InOutOctree<DIM>::insertMeshTriangles ()
             // Create the relations from gray leaves to mesh vertices and elements
             m_grayLeafsMap[lev] = GrayLeafSet( gvRelData.size() );
 
-            m_grayLeafToVertexRelationLevelMap[lev] = GrayLeafVertexRelation(&m_grayLeafsMap[lev], &m_meshWrapper.vertexSet());
-            m_grayLeafToVertexRelationLevelMap[lev].bindIndices(gvRelData.size(), &gvRelData);
+            m_grayLeafToVertexRelationLevelMap[lev] = 
+                    GrayLeafVertexRelation(&m_grayLeafsMap[lev], &m_meshWrapper.vertexSet());
+            m_grayLeafToVertexRelationLevelMap[lev].
+                    bindIndices(gvRelData.size(), &gvRelData);
 
-            m_grayLeafToElementRelationLevelMap[lev] = GrayLeafElementRelation(&m_grayLeafsMap[lev], &m_meshWrapper.elementSet());
-            m_grayLeafToElementRelationLevelMap[lev].bindBeginOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
-            m_grayLeafToElementRelationLevelMap[lev].bindIndices(geIndRelData.size(), &geIndRelData);
+            m_grayLeafToElementRelationLevelMap[lev] = 
+                    GrayLeafElementRelation(&m_grayLeafsMap[lev], &m_meshWrapper.elementSet());
+            m_grayLeafToElementRelationLevelMap[lev].
+                    bindBeginOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
+            m_grayLeafToElementRelationLevelMap[lev].
+                    bindIndices(geIndRelData.size(), &geIndRelData);
         }
 
         currentLevelData.clear();
         nextLevelData.swap(currentLevelData);
 
         if(! levelLeafMap.empty() )
-          SLIC_DEBUG("\tInserting triangles into level " << lev <<" took " << levelTimer.elapsed() <<" seconds.");
+          SLIC_DEBUG(
+                "\tInserting triangles into level " << lev 
+                <<" took " << levelTimer.elapsed() <<" seconds.");
     }
 }
 
@@ -1618,17 +1671,21 @@ void InOutOctree<DIM>::colorOctreeLeaves()
                     uncoloredBlocks.push_back( *it);
             }
 
-            SLIC_ASSERT_MSG( static_cast<int>(uncoloredBlocks.size()) < prevCount
-                , "Problem coloring leaf blocks at level " << lev
-                << ". There are  " << uncoloredBlocks.size() << " blocks that are still not colored."
-                << " First problem block is: " << BlockIndex( uncoloredBlocks[0], lev)
-                );
+            SLIC_ASSERT_MSG( 
+                static_cast<int>(uncoloredBlocks.size()) < prevCount,
+                "Problem coloring leaf blocks at level " << lev
+                << ". There are  " << uncoloredBlocks.size() 
+                << " blocks that are still not colored."
+                << " First problem block is: " 
+                << BlockIndex( uncoloredBlocks[0], lev) );
         }
 
         if(! levelLeafMap.empty() )
         {
             checkAllLeavesColoredAtLevel(lev);
-            SLIC_DEBUG("\tColoring level "<< lev << " took " << levelTimer.elapsed() << " seconds.");
+            SLIC_DEBUG(
+                "\tColoring level "<< lev 
+                << " took " << levelTimer.elapsed() << " seconds.");
         }
     }
 }
@@ -1639,8 +1696,9 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
 {
     bool isColored = leafData.isColored();
 
-    QUEST_OCTREE_DEBUG_LOG_IF(leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
-                              "Trying to color " << leafBlk << " with data: " << leafData );
+    QUEST_OCTREE_DEBUG_LOG_IF(
+        leafBlk == DEBUG_BLOCK_1 || leafBlk == DEBUG_BLOCK_2,
+         "Trying to color " << leafBlk << " with data: " << leafData );
 
 
     if( ! isColored )
@@ -1654,16 +1712,19 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                 const InOutBlockData& neighborData = (*this)[neighborBlk];
 
                 QUEST_OCTREE_DEBUG_LOG_IF(
-                        DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
-                         || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk,
-                     "Spreading color to block " << leafBlk << " with data " <<  leafData
-                     << " and bounding box " << this->blockBoundingBox(leafBlk)
-                     << " -- midpoint " << this->blockBoundingBox(leafBlk).getCentroid()
+                        DEBUG_BLOCK_1 == neighborBlk 
+                         || DEBUG_BLOCK_2 == neighborBlk
+                         || DEBUG_BLOCK_1 == leafBlk 
+                         || DEBUG_BLOCK_2 == leafBlk,
+                     "Spreading color to block " << leafBlk 
+                     << " with data " <<  leafData << " and bounding box " 
+                     << this->blockBoundingBox(leafBlk) << " -- midpoint " 
+                     << this->blockBoundingBox(leafBlk).getCentroid()
                      //
-                     << "\n\t\t from " << neighborBlk << " with data " << neighborData
-                     << " and bounding box " << this->blockBoundingBox(neighborBlk)
-                     << " -- midpoint " << this->blockBoundingBox(neighborBlk).getCentroid()
-                    );
+                     << "\n\t\t from " << neighborBlk 
+                     << " with data " << neighborData << " and bounding box " 
+                     << this->blockBoundingBox(neighborBlk) << " -- midpoint "
+                     << this->blockBoundingBox(neighborBlk).getCentroid() );
 
                 switch(neighborData.color())
                 {
@@ -1675,8 +1736,9 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                     break;
                 case InOutBlockData::Gray:
                 {
-                    SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
-                                                           this->blockBoundingBox(neighborBlk).getCentroid());
+                    SpacePt faceCenter = SpacePt::midpoint(
+                        this->blockBoundingBox(leafBlk).getCentroid(),
+                        this->blockBoundingBox(neighborBlk).getCentroid() );
                     if( withinGrayBlock(faceCenter,  neighborBlk, neighborData) )
                         leafData.setBlack();
                     else
@@ -1689,8 +1751,11 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
 
                 isColored = leafData.isColored();
 
-                QUEST_OCTREE_DEBUG_LOG_IF(isColored && (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk)
-                     , "Leaf block was colored -- " << leafBlk << " now has data " << leafData);
+                QUEST_OCTREE_DEBUG_LOG_IF(
+                    isColored && (DEBUG_BLOCK_1 == neighborBlk 
+                        || DEBUG_BLOCK_2 == neighborBlk),
+                     "Leaf block was colored -- " << leafBlk 
+                      << " now has data " << leafData);
             }
         }
     }
@@ -1707,16 +1772,19 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                 if (! neighborData.isColored() )
                 {
                     QUEST_OCTREE_DEBUG_LOG_IF(
-                            DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk
-                             || DEBUG_BLOCK_1 == leafBlk || DEBUG_BLOCK_2 == leafBlk
-                         , "Spreading color from block " << leafBlk << " with data " <<  leafData
-                         << " and bounding box " << this->blockBoundingBox(leafBlk)
-                         << " -- midpoint " << this->blockBoundingBox(leafBlk).getCentroid()
+                            DEBUG_BLOCK_1 == neighborBlk 
+                             || DEBUG_BLOCK_2 == neighborBlk
+                             || DEBUG_BLOCK_1 == leafBlk 
+                             || DEBUG_BLOCK_2 == leafBlk, 
+                         "Spreading color from block " << leafBlk 
+                        << " with data " <<  leafData << " and bounding box " 
+                         << this->blockBoundingBox(leafBlk) << " -- midpoint " 
+                         << this->blockBoundingBox(leafBlk).getCentroid()
                          //
-                         << "\n\t\t to " << neighborBlk << " with data " << neighborData
-                         << " and bounding box " << this->blockBoundingBox(neighborBlk)
-                         << " -- midpoint " << this->blockBoundingBox(neighborBlk).getCentroid()
-                         );
+                         << "\n\t\t to " << neighborBlk << " with data " 
+                         << neighborData << " and bounding box "
+                         << this->blockBoundingBox(neighborBlk)  << " -- midpoint "
+                         << this->blockBoundingBox(neighborBlk).getCentroid() );
 
                     switch(leafData.color())
                     {
@@ -1728,8 +1796,9 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                         break;
                     case InOutBlockData::Gray:
                     {
-                        SpacePt faceCenter = SpacePt::midpoint(this->blockBoundingBox(leafBlk).getCentroid(),
-                                                               this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
+                        SpacePt faceCenter = SpacePt::midpoint(
+                            this->blockBoundingBox(leafBlk).getCentroid(),
+                            this->blockBoundingBox(leafBlk.faceNeighbor(i)).getCentroid());
 
                         if( withinGrayBlock(faceCenter,  leafBlk, leafData) )
                             neighborData.setBlack();
@@ -1741,10 +1810,12 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
                         break;
                     }
 
-                    QUEST_OCTREE_DEBUG_LOG_IF(neighborData.isColored()
-                             && (DEBUG_BLOCK_1 == neighborBlk || DEBUG_BLOCK_2 == neighborBlk),
-                             "Neighbor block was colored -- " << neighborBlk
-                             << " now has data " << neighborData);
+                    QUEST_OCTREE_DEBUG_LOG_IF(
+                        neighborData.isColored()
+                         && (DEBUG_BLOCK_1 == neighborBlk 
+                                || DEBUG_BLOCK_2 == neighborBlk),
+                        "Neighbor block was colored -- " << neighborBlk
+                        << " now has data " << neighborData);
                 }
             }
         }
@@ -1755,12 +1826,14 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk, InOutBlo
 
 
 template<int DIM>
-typename InOutOctree<DIM>::VertexIndex InOutOctree<DIM>::leafVertex(const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
+typename InOutOctree<DIM>::VertexIndex InOutOctree<DIM>::
+leafVertex(const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
 {
     if( m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
     {
         SLIC_ASSERT( leafData.hasData() );
-        return m_grayLeafToVertexRelationLevelMap[leafBlk.level()][leafData.dataIndex()][0];
+        return m_grayLeafToVertexRelationLevelMap
+            [leafBlk.level()][leafData.dataIndex()][0];
     }
     else
     {
@@ -1769,15 +1842,21 @@ typename InOutOctree<DIM>::VertexIndex InOutOctree<DIM>::leafVertex(const BlockI
 }
 
 template<int DIM>
-typename InOutOctree<DIM>::TriangleIndexSet InOutOctree<DIM>::leafTriangles(const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
+typename InOutOctree<DIM>::TriangleIndexSet InOutOctree<DIM>::
+leafTriangles(const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
 {
-    SLIC_ASSERT( m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED && leafData.hasData() );
-    return m_grayLeafToElementRelationLevelMap[leafBlk.level()][leafData.dataIndex()];
+    SLIC_ASSERT( m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED 
+            && leafData.hasData() );
+
+    return m_grayLeafToElementRelationLevelMap
+            [leafBlk.level()][leafData.dataIndex()];
 }
 
 
 template<int DIM>
-bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex& leafBlk, const InOutBlockData&  leafData) const
+bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, 
+                                       const BlockIndex& leafBlk, 
+                                       const InOutBlockData&  leafData) const
 {
     /// The algorithm finds a ray from queryPt to a point of any triangle within leafBlk.
     /// It then finds the first triangle along this ray and tests this vector
@@ -1844,7 +1923,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex
         if(localIdx == idx)
           continue;
 
-        if( primal::intersect(m_meshWrapper.trianglePositions(localIdx), ray, rayParam, triParam) )
+        if( primal::intersect(m_meshWrapper.trianglePositions(localIdx), 
+                              ray, rayParam, triParam) )
         {
           if (rayParam < minRayParam )
           {
@@ -1868,7 +1948,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt, const BlockIndex
 
     }
 
-    SLIC_WARNING("Could not determine inside/outside for point " << queryPt << " on block " << leafBlk);
+    SLIC_WARNING(
+        "Could not determine inside/outside for point " 
+        << queryPt << " on block " << leafBlk);
+
     return false;  // should not get here -- revisit this...
 }
 
@@ -1885,7 +1968,8 @@ void InOutOctree<DIM>::updateSurfaceMeshVertices()
     for(int i=0; i< origVerts.size(); ++i)
     {
         // Find the block and its indexed vertex in the octree
-        BlockIndex leafBlock = this->findLeafBlock( m_meshWrapper.getMeshVertexPosition(i) );
+        BlockIndex leafBlock = 
+            this->findLeafBlock( m_meshWrapper.getMeshVertexPosition(i) );
         SLIC_ASSERT( (*this)[leafBlock].hasData() );
         VertexIndex vInd = (*this)[ leafBlock ].dataIndex();
 
@@ -1916,8 +2000,9 @@ void InOutOctree<DIM>::updateSurfaceMeshVertices()
 }
 
 template<int DIM>
-bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(const BlockIndex& leafBlock
-                                                         , DynamicGrayBlockData& leafData) const
+bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
+        const BlockIndex& leafBlock, 
+        DynamicGrayBlockData& leafData) const
 {
     bool shareCommonVert = false;
 
@@ -1932,7 +2017,8 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(const BlockIndex& leaf
         // Loop through the triangles and check that all are incident with this vertex
         for(int i=0; i< numTris; ++i)
         {
-            if( !m_meshWrapper.incidentInVertex(m_meshWrapper.triangleVertexIndices(tris[i]), commonVert) )
+            if( !m_meshWrapper.incidentInVertex(
+                    m_meshWrapper.triangleVertexIndices(tris[i]), commonVert) )
             {
                 return false;
             }
@@ -1946,16 +2032,19 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(const BlockIndex& leaf
         {
         case 1:
             /// Choose an arbitrary vertex from this triangle
-            commonVert = m_meshWrapper.triangleVertexIndices(tris[0])[0];
+            commonVert = 
+                m_meshWrapper.triangleVertexIndices(tris[0])[0];
             shareCommonVert = true;
             break;
         case 2:
             /// Find a vertex that both triangles share
-            shareCommonVert = m_meshWrapper.haveSharedVertex(tris[0],tris[1], commonVert);
+            shareCommonVert = 
+                m_meshWrapper.haveSharedVertex(tris[0],tris[1], commonVert);
             break;
         default :   // numTris >= 3
             /// Find a vertex that the first three triangles share
-            shareCommonVert = m_meshWrapper.haveSharedVertex(tris[0],tris[1],tris[2], commonVert);
+            shareCommonVert = 
+                m_meshWrapper.haveSharedVertex(tris[0],tris[1],tris[2], commonVert);
 
             /// Check that all other triangles have this vertex
             for(int i=3; shareCommonVert && i< numTris; ++i)
@@ -1991,9 +2080,11 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
         case InOutBlockData::Gray:
             return withinGrayBlock( pt, block, data);
         case InOutBlockData::Undetermined:
-            SLIC_ASSERT_MSG(false, "Error -- All leaf blocks must have a color. "
-                        << " The color of leafBlock " << block
-                        << " was 'Undetermined' when querying point " << pt  );
+            SLIC_ASSERT_MSG(
+                false, 
+                "Error -- All leaf blocks must have a color. "
+                << " The color of leafBlock " << block
+                << " was 'Undetermined' when querying point " << pt  );
             break;
         }
     }
@@ -2053,7 +2144,8 @@ template<int DIM>
 void InOutOctree<DIM>::checkValid() const
 {
 #ifdef AXOM_DEBUG
-  SLIC_DEBUG("Inside InOutOctree::checkValid() to verify state of "
+  SLIC_DEBUG(
+      "Inside InOutOctree::checkValid() to verify state of "
       << (m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED ? "PM" : "PR")
       << " octree." );
 
@@ -2175,7 +2267,8 @@ public:
     for(int lev=m_octree.maxLeafLevel()-1; lev >= 0; --lev)
     {
       const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); 
+            it != itEnd; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -2183,7 +2276,8 @@ public:
         {
           for(int i=0; i< block.numFaceNeighbors(); ++i)
           {
-            BlockIndex neighborBlk = m_octree.coveringLeafBlock( block.faceNeighbor(i) );
+            BlockIndex neighborBlk = 
+                m_octree.coveringLeafBlock( block.faceNeighbor(i) );
             if(neighborBlk != BlockIndex::invalid_index() )
             {
               const InOutBlockData& neighborData = m_octree[neighborBlk];
@@ -2216,7 +2310,8 @@ public:
     for(int lev=m_octree.maxLeafLevel()-1; lev >= 0; --lev)
     {
       GridIntMap& levelBlocks = diffBlocks[ lev ];
-      for(GridIntIter it=levelBlocks.begin(), itEnd = levelBlocks.end(); it != itEnd; ++it)
+      for(GridIntIter it=levelBlocks.begin(), itEnd = levelBlocks.end(); 
+            it != itEnd; ++it)
       {
         blocks.push_back( BlockIndex(it->first, lev) );
       }
@@ -2250,7 +2345,8 @@ public:
     triStr << sstr.str() << "_triangles";
     std::vector<TriangleIndex> tris;
 
-    TriangleIndexSet triSet = m_octree.leafTriangles(vertexBlock, m_octree[vertexBlock]);
+    TriangleIndexSet triSet = 
+        m_octree.leafTriangles(vertexBlock, m_octree[vertexBlock]);
     for(int i=0; i < triSet.size(); ++i)
     {
       TriangleIndex tIdx = triSet[i];
@@ -2280,7 +2376,8 @@ public:
     for(int lev=0; lev< m_octree.m_levels.size(); ++lev)
     {
         const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); 
+            it != itEnd; ++it)
         {
             if( it->isLeaf() && it->hasData() )
             {
@@ -2340,7 +2437,8 @@ public:
     for(int lev=0; lev< m_octree.m_levels.size(); ++lev)
     {
         const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-        for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+        for(LeavesIterator it=levelLeafMap.begin(), 
+                           itEnd = levelLeafMap.end(); it != itEnd; ++it)
         {
             if( it->isLeaf())
               blocks.push_back( BlockIndex(it.pt(), lev) );
@@ -2417,13 +2515,15 @@ private:
 
        if(hasTriangles)
        {
-          leafVertID_unique[leafCount] = m_octree.blockIndexesVertex(vIdx, block)
-              ? vIdx
-              : InOutOctreeType::MeshWrapper::NO_VERTEX;
+          leafVertID_unique[leafCount] = 
+              m_octree.blockIndexesVertex(vIdx, block)
+                ? vIdx
+                : InOutOctreeType::MeshWrapper::NO_VERTEX;
 
-          leafTriCount[leafCount] = leafData.hasData()
-              ? m_octree.leafTriangles(block,leafData).size()
-              : 0;
+          leafTriCount[leafCount] = 
+              leafData.hasData()
+                ? m_octree.leafTriangles(block,leafData).size()
+                : 0;
        }
 
       if(hasColors)
@@ -2457,8 +2557,10 @@ private:
 
     if(hasTriangles)
     {
-      VertexIndex* uniqVertID = addIntField(debugMesh, "uniqVertID", leafSet.size() );
-      int* triCount = addIntField(debugMesh, "triCount", leafSet.size() );
+      VertexIndex* uniqVertID = 
+            addIntField(debugMesh, "uniqVertID", leafSet.size() );
+      int* triCount = 
+            addIntField(debugMesh, "triCount", leafSet.size() );
 
       for ( int i=0; i < leafSet.size(); ++i )
       {
@@ -2585,15 +2687,18 @@ private:
 
     int vStart = mesh->getMeshNumberOfNodes();
 
-    mesh->insertNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-    mesh->insertNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-    mesh->insertNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-    mesh->insertNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+    const SpacePt& bMin = blockBB.getMin();
+    const SpacePt& bMax = blockBB.getMax();
 
-    mesh->insertNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-    mesh->insertNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-    mesh->insertNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-    mesh->insertNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+    mesh->insertNode( bMin[0], bMin[1], bMin[2]);
+    mesh->insertNode( bMax[0], bMin[1], bMin[2]);
+    mesh->insertNode( bMax[0], bMax[1], bMin[2]);
+    mesh->insertNode( bMin[0], bMax[1], bMin[2]);
+
+    mesh->insertNode( bMin[0], bMin[1], bMax[2]);
+    mesh->insertNode( bMax[0], bMin[1], bMax[2]);
+    mesh->insertNode( bMax[0], bMax[1], bMax[2]);
+    mesh->insertNode( bMin[0], bMax[1], bMax[2]);
 
     int data[8];
     for(int i=0; i< 8; ++i)
@@ -2606,7 +2711,8 @@ private:
     {
       static int counter = 0;
       SLIC_INFO("// Block index " << block);
-      SLIC_INFO("BoundingBoxType box"<< ++counter
+      SLIC_INFO(
+          "BoundingBoxType box"<< ++counter
           <<"(PointType::make_point" << blockBB.getMin() << ","
           << "PointType::make_point" << blockBB.getMax()<<");" );
     }
@@ -2657,7 +2763,8 @@ public:
   void checkAllLeavesColoredAtLevel(int level) const
   {
     const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( level );
-    for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); it != itEnd; ++it)
+    for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end(); 
+            it != itEnd; ++it)
     {
         if( ! it->isLeaf() )
             continue;
@@ -2687,10 +2794,12 @@ public:
       // Check that we can find the leaf block indexing each vertex from its position
       SLIC_ASSERT_MSG(
           leafData.hasData() &&  vertInBlock == i,
-          " Vertex " << i << " at position " << pos
+          " Vertex " 
+            << i << " at position " << pos
             << " \n\t was not indexed in block " << vertBlock
             << " with bounding box " << m_octree.blockBoundingBox(vertBlock)
-            << " ( point is" << ( m_octree.blockBoundingBox(vertBlock).contains(pos) ? "" : " NOT" )
+            << " ( point is" 
+            << ( m_octree.blockBoundingBox(vertBlock).contains(pos) ? "" : " NOT" )
             << " contained in block )."
             << " \n\n *** \n Leaf data: " << leafData
             << " \n ***" );
@@ -2698,9 +2807,11 @@ public:
       // Check that our cached value of the vertex's block is accurate
       SLIC_ASSERT_MSG(
           vertBlock == m_octree.m_vertexToBlockMap[i],
-          "Cached block for vertex " << i << " differs from its found block. "
+          "Cached block for vertex " 
+            << i << " differs from its found block. "
             << "\n\t -- cached block "<< m_octree.m_vertexToBlockMap[i]
-            << "-- is leaf? " << ( m_octree[ m_octree.m_vertexToBlockMap[i]].isLeaf() ? "yes" : "no")
+            << "-- is leaf? " 
+            << ( m_octree[ m_octree.m_vertexToBlockMap[i]].isLeaf() ? "yes" : "no")
             << "\n\t -- actual block " << vertBlock
             << "-- is leaf? " << ( m_octree[ vertBlock].isLeaf() ? "yes" : "no")
             << "\n\t -- vertex set size: " << numVertices );
@@ -2730,13 +2841,13 @@ public:
                     foundTriangle = true;
             }
 
-            SLIC_ASSERT_MSG( foundTriangle
-                           , "Did not find triangle with index " << tIdx << " and vertices" << tvRel
-                           << " in block " << vertBlock << " containing vertex " << vIdx
-                           << " \n\n *** \n Leaf data: " << leafData
-                           << " \n\t Triangles in block? " << leafTris
-                           << " \n ***"
-                           );
+            SLIC_ASSERT_MSG( 
+                foundTriangle,
+                "Did not find triangle with index " 
+                << tIdx << " and vertices" << tvRel
+                << " in block " << vertBlock << " containing vertex " << vIdx
+                << " \n\n *** \n Leaf data: " << leafData
+                << " \n\t Triangles in block? " << leafTris << " \n ***" );
         }
     }
   }
@@ -2770,7 +2881,9 @@ public:
                         TriangleIndex tIdx = triSet[i];
 
                         // Check that vIdx is one of this triangle's vertices
-                        TriVertIndices tvRel = m_octree.m_meshWrapper.triangleVertexIndices( tIdx );
+                        TriVertIndices tvRel = 
+                            m_octree.m_meshWrapper.triangleVertexIndices( tIdx );
+
                         SLIC_ASSERT_MSG(
                             m_octree.m_meshWrapper.incidentInVertex(tvRel, vIdx),
                             "All triangles in a gray block must be incident on a common vertex,"
@@ -2824,9 +2937,11 @@ public:
                         case InOutBlockData::White:
                             SLIC_CHECK_MSG(
                                 data.color() == neighborData.color(),
-                                "Problem at block " << block << " with data " << data
-                                  <<" --- neighbor " << neighborBlk << " with data " << neighborData
-                                  <<". Neighboring leaves that are not gray must have the same color." );
+                                "Problem at block " 
+                                  << block << " with data " << data
+                                  <<" --- neighbor " << neighborBlk 
+                                 << " with data " << neighborData
+                                 <<". Neighboring leaves that are not gray must have the same color." );
                             break;
                         case InOutBlockData::Gray:              // intentional fallthrough
                         case InOutBlockData::Undetermined:
@@ -2961,7 +3076,8 @@ public:
 
                     if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
                     {
-                        m_levelTriangleRefCount[ lev ] += m_octree.leafTriangles(block, blockData).size();
+                        m_levelTriangleRefCount[ lev ] += 
+                            m_octree.leafTriangles(block, blockData).size();
 
                         BlockIndex blk(it.pt(), lev);
                         TriangleIndexSet tris = m_octree.leafTriangles(blk, blockData);
@@ -2976,10 +3092,17 @@ public:
                 {
                     switch(blockData.color())
                     {
-                    case InOutBlockData::Black:      ++m_levelBlackBlockCount[lev]; break;
-                    case InOutBlockData::White:      ++m_levelWhiteBlockCount[lev]; break;
-                    case InOutBlockData::Gray:       ++m_levelGrayBlockCount[lev];  break;
-                    case InOutBlockData::Undetermined:                            break;
+                    case InOutBlockData::Black:      
+                        ++m_levelBlackBlockCount[lev]; 
+                        break;
+                    case InOutBlockData::White:     
+                        ++m_levelWhiteBlockCount[lev]; 
+                        break;
+                    case InOutBlockData::Gray:       
+                        ++m_levelGrayBlockCount[lev];  
+                        break;
+                    case InOutBlockData::Undetermined:                            
+                        break;
                     }
                 }
             }
@@ -3036,17 +3159,19 @@ public:
 
     double meshNumTriangles = m_octree.m_meshWrapper.numMeshElements();
 
-    int percentWithVert = integerPercentage(m_totals.leavesWithVert, m_totals.leaves);
-    sstr <<"  Mesh has " << m_octree.m_meshWrapper.numMeshVertices() << " vertices."
-         <<"\n  Octree has " << m_totals.blocks << " blocks; "
+    int percentWithVert = 
+        integerPercentage(m_totals.leavesWithVert, m_totals.leaves);
+    sstr <<"  Mesh has " << m_octree.m_meshWrapper.numMeshVertices() 
+         << " vertices." <<"\n  Octree has " << m_totals.blocks << " blocks; "
          <<  m_totals.blocks - m_totals.leaves << " internal; "
          <<  m_totals.leaves << " leaves "
          << " (" <<   percentWithVert  << "% w/ vert); ";
 
     if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
     {
-        sstr <<" \n\t There were " << m_totals.triangleRefCount << " triangle references "
-             <<" (avg. " << ( m_totals.triangleRefCount / meshNumTriangles ) << " refs per triangle).";
+        sstr <<" \n\t There were " << m_totals.triangleRefCount 
+             << " triangle references " <<" (avg. " 
+            << ( m_totals.triangleRefCount / meshNumTriangles ) << " refs per triangle).";
     }
 
     return sstr.str();
@@ -3129,7 +3254,8 @@ public:
   {
       std::stringstream octreeStatsStr;
 
-      octreeStatsStr << "*** "
+      octreeStatsStr 
+           << "*** "
            << (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED ? "PM" : "PR")
            << " octree summary *** \n";
 

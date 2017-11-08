@@ -148,7 +148,9 @@ public:
   typedef Point<CoordType,DIM> GridPt;
   typedef Vector<CoordType,DIM> GridVec;
 
-  typedef axom::slam::policies::CompileTimeSize<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
+  typedef axom::slam::policies::
+        CompileTimeSize<CoordType,std::numeric_limits<CoordType>::digits> 
+        MAX_LEVEL_SIZE;
   typedef axom::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
   typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
@@ -179,12 +181,16 @@ public:
           NUM_FACE_NEIGHBORS = 2 * DIM
       };
   private:
-      typedef axom::slam::policies::CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
-      typedef axom::slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
+      typedef axom::slam::policies::
+            CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
+      typedef axom::slam::policies::
+            CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
 
   public:
-      typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;
-      typedef axom::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE> FaceNeighborIndexSet;
+      typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE> 
+        ChildIndexSet;
+      typedef axom::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE> 
+        FaceNeighborIndexSet;
 
   public:
       /**
@@ -269,7 +275,8 @@ public:
         }
 
         /**
-         * \brief Returns a grid point at the specified offset from the current block index's point
+         * \brief Returns a grid point at the specified offset 
+         * from the current block index's point
          */
         GridPt neighborPt(const GridPt& offset) const
         {
@@ -431,7 +438,8 @@ public:
       static int numChildren() { return ChildIndexSet().size(); }
 
       /**
-       * \brief The number of face neighbors that an octree block can have (ignoring boundaries)
+       * \brief The number of face neighbors that an octree block
+       *  can have (ignoring boundaries)
        */
       static int numFaceNeighbors() { return FaceNeighborIndexSet().size(); }
 
@@ -450,11 +458,16 @@ private:
       ,MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16> DenseOctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint16> Sparse16OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint32> Sparse32OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint64> Sparse64OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>                     SparsePtOctLevType;
+  typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16> 
+        DenseOctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint16> 
+        Sparse16OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint32> 
+        Sparse32OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint64> 
+        Sparse64OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>                     
+        SparsePtOctLevType;
 
   typedef DenseOctLevType*      DenseOctLevPtr;
   typedef Sparse16OctLevType*   Sparse16OctLevPtr;
@@ -485,10 +498,11 @@ public:
       {
           namespace common = axom::common;
 
-          // Use DenseOctreeLevel on first few levels to reduce allocations and fragmentation
-          // Use Morton-based SparseOctreeLevel (key is smallest possible integer) on next few levels.
-          // Use point bases SparseOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex)
-          //    when MortonIndex requires more than 64
+          // Use DenseOctreeLevel on first few levels to reduce allocations
+          // and fragmentation Use Morton-based SparseOctreeLevel 
+          // (key is smallest possible integer) on next few levels.
+          // Use point bases SparseOctreeLevel (key is Point<int, DIM>, 
+          // hashed using a MortonIndex)  when MortonIndex requires more than 64
           if( i <= MAX_DENSE_LEV )
               m_leavesLevelMap[i] = new DenseOctLevType(i);
           else if( i <= MAX_SPARSE16_LEV )
@@ -532,7 +546,8 @@ public:
   //@{
 
   /**
-   * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
+   * \brief Utility function to find the number of (possible) 
+   * grid cells at a given level or resolution
    *
    * \param [in] level The level or resolution.
    * \pre \f$ 0 \le lev

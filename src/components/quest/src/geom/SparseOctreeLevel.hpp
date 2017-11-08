@@ -121,7 +121,8 @@ namespace quest {
      *   or an Morton index (unsigned integer of a specified bitwidth)
      *  and whose value type is a BlockDataType.
      *  For efficiency, the data is associated with an entire brood, a collection of
-     *  siblings that are created simultaneously. In dimension DIM, there are 2^DIM siblings in a brood.
+     *  siblings that are created simultaneously. 
+     *  In dimension DIM, there are 2^DIM siblings in a brood.
      *
      *  \see OctreeLevel
      */
@@ -135,26 +136,37 @@ namespace quest {
       typedef typename Base::BlockIteratorHelper      BaseBlockIteratorHelper;
       typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
 
-      typedef BroodRepresentationTraits<typename GridPt::CoordType, GridPt::DIMENSION, BroodData, PointRepresenationType> BroodTraits;
+      typedef BroodRepresentationTraits<typename GridPt::CoordType, 
+                                        GridPt::DIMENSION, BroodData, 
+                                        PointRepresenationType>         BroodTraits;
       typedef typename BroodTraits::MapType MapType;
       typedef typename BroodTraits::BroodType BroodType;
 
       typedef typename MapType::iterator       MapIter;
       typedef typename MapType::const_iterator ConstMapIter;
 
-      template<typename OctreeLevelType, typename AdaptedIterType, typename ParentType> class IteratorHelper;
+      template<typename OctreeLevelType, 
+                typename AdaptedIterType, 
+                typename ParentType> class IteratorHelper;
 
-      typedef IteratorHelper<SparseOctreeLevel, MapIter, BaseBlockIteratorHelper> IterHelper;
-      typedef IteratorHelper<const SparseOctreeLevel, ConstMapIter, ConstBaseBlockIteratorHelper> ConstIterHelper;
+      typedef IteratorHelper<SparseOctreeLevel, 
+                             MapIter, 
+                             BaseBlockIteratorHelper> IterHelper;
+      typedef IteratorHelper<const SparseOctreeLevel, 
+                             ConstMapIter, 
+                             ConstBaseBlockIteratorHelper> ConstIterHelper;
 
 
 
     public:
 
         /**
-         * \brief Concrete instance of the BlockIteratorHelper class defined in the OctreeLevel base class.
+         * \brief Concrete instance of the BlockIteratorHelper class 
+         * defined in the OctreeLevel base class.
          */
-        template<typename OctreeLevelType, typename AdaptedIterType, typename ParentType>
+        template<typename OctreeLevelType, 
+                 typename AdaptedIterType, 
+                 typename ParentType>
         class IteratorHelper : public ParentType
         {
         public:
@@ -217,7 +229,8 @@ namespace quest {
         /**
          * \brief Factory function to return a SparseBlockIterHelper for this level
          *
-         * \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
+         * \param begin A boolean to determine if this is to be
+         *  a begin (true) or end (false) iterator
          */
         BaseBlockIteratorHelper* getIteratorHelper(bool begin)
         {
@@ -227,7 +240,8 @@ namespace quest {
         /**
          * \brief Factory function to return a ConstSparseBlockIterHelper for this level
          *
-         * \param begin A boolean to determine if this is to be a begin (true) or end (false) iterator
+         * \param begin A boolean to determine if this is to be 
+         * a begin (true) or end (false) iterator
          */
         ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
         {
@@ -236,7 +250,8 @@ namespace quest {
 
 
         /**
-         * \brief Predicate to check whether the block associated with the given GridPt pt is in the current level
+         * \brief Predicate to check whether the block associated with 
+         * the given GridPt pt is in the current level
          */
         bool hasBlock(const GridPt& pt) const
         {
@@ -248,17 +263,20 @@ namespace quest {
         /**
          * \brief Adds all children of the given grid point to the octree level
          *
-         * \param [in] pt The gridPoint associated with the parent of the children that are being added
+         * \param [in] pt The gridPoint associated with the parent of the 
+         * children that are being added
          * \pre pt must be in bounds for the level
          * \sa inBounds()
          */
         void addAllChildren(const GridPt& pt)
         {
-            SLIC_ASSERT_MSG(this->inBounds(pt)
-                           , "Problem while inserting children of point " << pt
-                           << " into octree level " << this->m_level
-                           << ". Point was out of bounds -- "
-                           << "each coordinate must be between 0 and " << this->maxCoord() << ".");
+            SLIC_ASSERT_MSG(
+                this->inBounds(pt), 
+                "Problem while inserting children of point " << pt
+                << " into octree level " << this->m_level
+                << ". Point was out of bounds -- "
+                << "each coordinate must be between 0 and " 
+                << this->maxCoord() << ".");
 
             BroodData& bd = getBroodData(pt);   // Adds entire brood at once (default constructed)
             if( this->level() == 0)
@@ -280,8 +298,10 @@ namespace quest {
         /** \brief Const accessor for the data associated with pt */
         const BlockDataType& operator[](const GridPt& pt) const
         {
-            SLIC_ASSERT_MSG(hasBlock(pt)
-                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+            SLIC_ASSERT_MSG(
+                hasBlock(pt),
+                "(" << pt <<", "<< this->m_level 
+                << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
             const BroodType brood(pt);
@@ -290,12 +310,17 @@ namespace quest {
         }
 
         /** \brief Access the data associated with the entire brood */
-        BroodData& getBroodData(const GridPt& pt) { return m_map[ BroodTraits::convertPoint(pt)]; }
+        BroodData& getBroodData(const GridPt& pt) 
+        { 
+            return m_map[ BroodTraits::convertPoint(pt)]; 
+        }
 
         /** \brief Const access to data associated with the entire brood */
         const BroodData& getBroodData(const GridPt& pt) const {
-            SLIC_ASSERT_MSG(hasBlock(pt)
-                            ,"(" << pt <<", "<< this->m_level << ") was not a block in the tree at level.");
+            SLIC_ASSERT_MSG(
+                hasBlock(pt),
+                "(" << pt <<", "<< this->m_level 
+                << ") was not a block in the tree at level.");
 
             // Note: Using find() method on hashmap since operator[] is non-const
             ConstMapIter blockIt = m_map.find( BroodTraits::convertPoint(pt) );
@@ -323,7 +348,8 @@ namespace quest {
                 return 0;
 
             int count = 0;
-            for(ConstMapIter it = m_map.begin(), itEnd = m_map.end(); it != itEnd; ++it)
+            for(ConstMapIter it = m_map.begin(), 
+                             itEnd = m_map.end(); it != itEnd; ++it)
             {
                 const BroodData& bd  = it->second;
                 for(int i=0; i< Base::BROOD_SIZE; ++i)
@@ -336,7 +362,8 @@ namespace quest {
         }
 
         /**
-         * \brief Helper function to determine the status of an octree block within this octree level
+         * \brief Helper function to determine the status of an 
+         * octree block within this octree level
          *
          * \param pt The grid point of the block index that we are testing
          * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)

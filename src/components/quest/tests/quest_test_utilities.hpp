@@ -64,7 +64,8 @@ double randomDouble(double beg = 0., double end = 1.)
 }
 
  /**
-  * \brief Simple utility to generate a Point whose entries are random values in the range [beg, end]
+  * \brief Simple utility to generate a Point whose entries 
+  * are random values in the range [beg, end]
   */
 template<int DIM>
 Point<double,DIM> randomSpacePt(double beg, double end)

@@ -130,7 +130,8 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bb
     }
     timer.stop();
 
-    SLIC_INFO("-- querying octahedron with " << NUM_PT_TESTS
+    SLIC_INFO("-- querying octahedron with " 
+              << NUM_PT_TESTS
               << " points took " << timer.elapsed() << " seconds.");
     SLIC_INFO("***");
 }
@@ -139,7 +140,8 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bb
 
 TEST( quest_inout_octree, octahedron_mesh)
 {
-    SLIC_INFO("*** This test creates a simple mesh of an octahedron and tests point containment.\n");
+    SLIC_INFO("*** This test creates a simple mesh of an octahedron " 
+        << " and tests point containment.\n");
 
     // Generate the InOutOctree
     axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
@@ -149,18 +151,22 @@ TEST( quest_inout_octree, octahedron_mesh)
     SpacePt ptNeg1(-1.);
     SpacePt ptPos1( 1.);
     GeometricBoundingBox bbox1(ptNeg1, ptPos1);
-    SLIC_INFO("Testing InOutOctree on octahedron mesh with bounding box " << bbox1);
+    SLIC_INFO(
+        "Testing InOutOctree on octahedron mesh with bounding box " << bbox1);
     queryOctahedronMesh(mesh, bbox1);
 
     ///
     SpacePt ptNeg2(-2.);
     SpacePt ptPos2( 2.);
     GeometricBoundingBox bbox2(ptNeg2, ptPos2);
-    SLIC_INFO("Testing InOutOctree on octahedron mesh with bounding box " << bbox2);
+    SLIC_INFO(
+        "Testing InOutOctree on octahedron mesh with bounding box " << bbox2);
     queryOctahedronMesh(mesh, bbox2);
 
     bbox2.shift( SpaceVector(0.01));
-    SLIC_INFO("Testing InOutOctree on octahedron mesh with shifted bounding box " << bbox2);
+    SLIC_INFO(
+        "Testing InOutOctree on octahedron mesh with shifted bounding box " 
+         << bbox2);
     queryOctahedronMesh(mesh, bbox2);
 
 

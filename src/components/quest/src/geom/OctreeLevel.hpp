@@ -87,7 +87,8 @@ namespace quest {
         typedef NumericArray< BlockDataType, BROOD_SIZE> BroodData;
 
         /** Predeclare the BlockIterator type */
-        template<typename OctreeLevel, typename IterHelper, typename DataType> class BlockIterator;
+        template<typename OctreeLevel, typename IterHelper, typename DataType> 
+        class BlockIterator;
 
     protected:
 
@@ -139,8 +140,11 @@ namespace quest {
       };
 
     public:
-      typedef BlockIterator<OctreeLevel, BlockIteratorHelper, BlockDataType> BlockIter;
-      typedef BlockIterator<const OctreeLevel, ConstBlockIteratorHelper, const BlockDataType> ConstBlockIter;
+      typedef BlockIterator<OctreeLevel, 
+                            BlockIteratorHelper, BlockDataType> BlockIter;
+      typedef BlockIterator<const OctreeLevel, 
+                            ConstBlockIteratorHelper, 
+                            const BlockDataType> ConstBlockIter;
 
     public:
       /** \brief Constructor of an OctreeLevel at level lev */
@@ -173,10 +177,12 @@ namespace quest {
       int level() const { return m_level; }
 
       /**
-       * \brief Predicate to check whether the block associated with the given GridPt pt is an allowed block in the level
+       * \brief Predicate to check whether the block associated with the 
+       * given GridPt pt is an allowed block in the level
        *
        * \param [in] pt The gridpoint of the block to check
-       * \note pt is inBounds if each of its coordinates is a non-negative integer less than maxCoord()
+       * \note pt is inBounds if each of its coordinates is a non-negative 
+       * integer less than maxCoord()
        * \sa maxCoord()
        */
       bool inBounds(const GridPt& pt) const
@@ -195,14 +201,15 @@ namespace quest {
        * \class
        * \brief An iterator type for the blocks of an octree level
        *
-       * \note Uses a helper class to manage the polymorphic OctreeLevel's iteration
-       *       The helper defines the following functions: increment(), equal() update(), pt() and data()
+       * \note Uses a helper class to manage the polymorphic OctreeLevel's 
+       * iteration. The helper defines the following functions: 
+       *   \a increment(), \a equal() \a update(), \a pt() and \a data()
        */
       template<typename OctreeLevel, typename IterHelper, typename DataType>
-      class BlockIterator : public boost::iterator_facade< BlockIterator<OctreeLevel, IterHelper, DataType>
-                                 , DataType
-                                 , boost::forward_traversal_tag
-                                 >
+      class BlockIterator : public boost::iterator_facade< 
+                BlockIterator<OctreeLevel, IterHelper, DataType>,
+                DataType, 
+                boost::forward_traversal_tag > 
       {
       public:
         typedef BlockIterator<OctreeLevel, IterHelper, DataType>  iter;
@@ -249,14 +256,22 @@ namespace quest {
     public:
 
       /**
-       * \brief Predicate to check whether the block associated with the given GridPt pt is a leaf block
+       * \brief Predicate to check whether the block associated with the 
+       * given GridPt pt is a leaf block
        */
-      bool isLeaf(const GridPt& pt) const { return this->blockStatus(pt) == LeafBlock; }
+      bool isLeaf(const GridPt& pt) const 
+      { 
+            return this->blockStatus(pt) == LeafBlock; 
+      }
 
       /**
-       * \brief Predicate to check whether the block associated with the given GridPt pt is an internal block
+       * \brief Predicate to check whether the block associated with the
+       *  given GridPt pt is an internal block
        */
-      bool isInternal(const GridPt& pt) const { return this->blockStatus(pt) == InternalBlock; }
+      bool isInternal(const GridPt& pt) const 
+      { 
+        return this->blockStatus(pt) == InternalBlock; 
+      }
 
 
       /** \brief Begin iterator to points and data in tree level */
@@ -272,45 +287,63 @@ namespace quest {
       ConstBlockIter end()   const { return ConstBlockIter(this,false); }
 
 
-      /** \brief Virtual function to check the status of a block (e.g. Leaf, Internal, NotInTree) */
+      /** \brief Virtual function to check the status of a block
+       *  (e.g. Leaf, Internal, NotInTree) 
+       */
       virtual TreeBlockStatus blockStatus(const GridPt & pt) const = 0;
 
       /** \brief Virtual predicate to determine if the OctreeLevel is empty */
       virtual bool empty() const =0;
 
-      /** \brief Virtual predicate to determine if the OctreeLevel has a block with the given grid point pt */
+      /** \brief Virtual predicate to determine if the OctreeLevel has 
+       * a block with the given grid point pt 
+       */
       virtual bool hasBlock(const GridPt& pt) const =0;
 
-      /** \brief Virtual function to add all children of the given grid point pt to the OctreeLevel */
+      /** \brief Virtual function to add all children of the given
+       *   grid point pt to the OctreeLevel 
+       */
       virtual void addAllChildren(const GridPt& pt) = 0;
 
       /** \brief Virtual const accessor for the data associated with grid point pt */
       virtual const BlockDataType& operator[](const GridPt& pt) const = 0;
+
       /** \brief Virtual accessor for the data associated with grid point pt */
       virtual       BlockDataType& operator[](const GridPt& pt)       = 0;
 
-      /** \brief Virtual accessor for the data associated with all children of the given grid point (i.e. the brood) */
+      /** \brief Virtual accessor for the data associated with 
+       * all children of the given grid point (i.e. the brood) 
+       */
       virtual BroodData& getBroodData(const GridPt& pt) =0;
-      /** \brief Virtual const accessor for the data associated with all children of the given grid point (i.e. the brood) */
+
+      /** \brief Virtual const accessor for the data associated 
+       * with all children of the given grid point (i.e. the brood) 
+       */
       virtual const BroodData& getBroodData(const GridPt& pt) const =0;
 
       /**
        *  \brief Virtual factory function to create an iterator helper
-       *  \param A boolean to determine if the iterator should be a begin iterator (true) or an end iterator (false)
+       *  \param A boolean to determine if the iterator should be 
+       *  a begin iterator (true) or an end iterator (false)
        */
       virtual BlockIteratorHelper* getIteratorHelper(bool) = 0;
       /**
        * \brief Virtual factory function to create a const iterator helper
        *
-       * \param A boolean to determine if the iterator should be a begin iterator (true) or an end iterator (false)
+       * \param A boolean to determine if the iterator should be 
+       * a begin iterator (true) or an end iterator (false)
        */
       virtual ConstBlockIteratorHelper* getIteratorHelper(bool) const = 0;
 
 
-      /** \brief Virtual function to compute the number of blocks (internal and leaf) in the level */
+      /** \brief Virtual function to compute the number of 
+       * blocks (internal and leaf) in the level 
+       */
       virtual int numBlocks() const =0;
 
-      /** \brief Virtual function to compute the number of internal blocks in the level */
+      /** \brief Virtual function to compute the number of 
+       * internal blocks in the level 
+       */
       virtual int numInternalBlocks() const =0;
 
       /** \brief Virtual function to compute the number of leaf blocks in the level */

@@ -76,8 +76,9 @@ bool STLReader::isAsciiFormat() const
 
     // Open the file
     std::ifstream ifs( m_fileName.c_str(), std::ios::in| std::ios::binary);
-    SLIC_ASSERT_MSG(ifs.is_open(),
-                   "There was a problem reading the provided STL file " << m_fileName);
+    SLIC_ASSERT_MSG(
+        ifs.is_open(),
+        "There was a problem reading the provided STL file " << m_fileName);
 
     // Find out the file size
     ifs.seekg(0, ifs.end);
@@ -106,8 +107,9 @@ bool STLReader::isAsciiFormat() const
 void STLReader::readAsciiSTL()
 {
     std::ifstream ifs( m_fileName.c_str());
-    SLIC_ASSERT_MSG(ifs.is_open(),
-                    "There was a problem reading the provided STL file " << m_fileName);
+    SLIC_ASSERT_MSG(
+        ifs.is_open(),
+        "There was a problem reading the provided STL file " << m_fileName);
 
     std::string junk;
     double x,y,z;

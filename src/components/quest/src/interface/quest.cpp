@@ -58,8 +58,8 @@ namespace quest {
 
     /**
      * \struct
-     * \brief A simple struct to encapsulate knowledge about which acceleration structure we are using
-     *        -- the SignedDistance or the InOutOctree
+     * \brief A simple struct to encapsulate knowledge about which 
+       acceleration structure we are using -- the SignedDistance or the InOutOctree
      */
     template<int DIM>
     struct QuestAccelerator
@@ -80,7 +80,8 @@ namespace quest {
         }
 
         /**
-         * \brief Sets the internal mesh pointer and computes some surface properties (bounding box and center of mass)
+         * \brief Sets the internal mesh pointer and computes some surface
+         *  properties (bounding box and center of mass)
          */
         void setMesh( axom::mint::Mesh* surface_mesh)
         {
@@ -133,7 +134,8 @@ namespace quest {
             SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
             setMesh(surface_mesh);
-            m_region = new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
+            m_region = 
+                new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
             m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
         }
 
@@ -175,9 +177,10 @@ namespace quest {
          */
         double distance(double x, double y, double z)
         {
-            SLIC_ASSERT_MSG( supportsDistanceQuery()
-                           , "Distance queries only supported when Quest is initialized with "
-                             << " requiresDistance = true." );
+            SLIC_ASSERT_MSG( 
+                supportsDistanceQuery(),
+                "Distance queries only supported when Quest is initialized with "
+                 << " requiresDistance = true." );
 
             SpacePt pt = SpacePt::make_point(x,y,z);
             return m_region->computeDistance( pt );

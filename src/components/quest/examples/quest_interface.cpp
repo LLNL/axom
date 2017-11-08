@@ -75,17 +75,17 @@ void outputMeshStats()
     double bbMin[3], bbMax[3];
     quest::mesh_min_bounds(bbMin);
     quest::mesh_max_bounds(bbMax);
-    SLIC_INFO("Mesh bounding box: "
-            << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
-            << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}"
-            );
+    SLIC_INFO(
+        "Mesh bounding box: "
+        << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
+        << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}" );
 
     // Obtain and log the mesh center of mass
     double cm[3];
     quest::mesh_center_of_mass(cm);
-    SLIC_INFO("Mesh center of mass: "
-            << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"
-            );
+    SLIC_INFO(
+        "Mesh center of mass: "
+         << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"    );
 }
 
 void runQuestDistance(const std::string& fileName, const CoordsVec& points)
@@ -122,7 +122,8 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
         {
             for(int i=0; i< 3; ++i)
             {
-                coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+                coords[i].push_back( 
+                    scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
             }
         }
     }
@@ -139,9 +140,10 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
         const double phi = quest::distance(x,y,z);
         const int ins = quest::inside( x,y,z );
 
-        SLIC_INFO("Point (" << x << ", " << y << ", " << z << ") "
-                  << "is " << (ins? "inside" : "outside") << " surface."
-                  <<" Distance is " << phi << ".");
+        SLIC_INFO(
+            "Point (" << x << ", " << y << ", " << z << ") "
+             << "is " << (ins? "inside" : "outside") << " surface."
+             <<" Distance is " << phi << ".");
     }
 
     quest::finalize();
@@ -182,7 +184,8 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
         {
             for(int i=0; i< 3; ++i)
             {
-                coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+                coords[i].push_back( 
+                    scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
             }
         }
     }
@@ -197,9 +200,9 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
         const double z = coords[2][i];
         const int ins = quest::inside( x,y,z);
 
-        SLIC_INFO("Point (" << x << ", " << y << ", " << z << ") "
-                  << "is " << (ins? "inside" : "outside") << " surface."
-                  );
+        SLIC_INFO(
+            "Point (" << x << ", " << y << ", " << z << ") "
+            << "is " << (ins? "inside" : "outside") << " surface." );
     }
 
     quest::finalize();
