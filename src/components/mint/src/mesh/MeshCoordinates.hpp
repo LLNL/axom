@@ -27,8 +27,10 @@
 #define Y_COORDINATE 1
 #define Z_COORDINATE 2
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 /*!
  * \class MeshCoordinates
@@ -145,7 +147,7 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  double* getCoordinateArray( int dim );
+  double * getCoordinateArray( int dim );
 
   /*!
    * \brief Number of coordinates along the given dimension.

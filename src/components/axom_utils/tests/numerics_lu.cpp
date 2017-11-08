@@ -53,9 +53,9 @@ TEST( numerics_lu, lu_decompose )
 
   // initial matrix
   numerics::Matrix< double > A( N,N );
-  A( 0,0 ) = 1 ; A( 0,1 ) = (-2) ; A( 0,2 ) = 3     ;
-  A( 1,0 ) = 2 ; A( 1,1 ) = (-5) ; A( 1,2 ) = 12    ;
-  A( 2,0 ) = 0 ; A( 2,1 ) =    2 ; A( 2,2 ) = (-10) ;
+  A( 0,0 ) = 1; A( 0,1 ) = (-2); A( 0,2 ) = 3;
+  A( 1,0 ) = 2; A( 1,1 ) = (-5); A( 1,2 ) = 12;
+  A( 2,0 ) = 0; A( 2,1 ) =    2; A( 2,2 ) = (-10);
 
   // decompose matrix
   numerics::Matrix< double > A_decomposed = A;
@@ -68,10 +68,12 @@ TEST( numerics_lu, lu_decompose )
 
   // construct permutation matrix on lhs
   numerics::Matrix< double > P = numerics::Matrix< double >::identity( N );
-  for ( int i=0; i < N; ++i ) {
-     if ( pivots[i] != i ) {
-       P.swapRows( i, pivots[i] );
-     }
+  for ( int i=0 ; i < N ; ++i )
+  {
+    if ( pivots[i] != i )
+    {
+      P.swapRows( i, pivots[i] );
+    }
   }
 
   numerics::Matrix< double > PA = P * A;
@@ -80,8 +82,10 @@ TEST( numerics_lu, lu_decompose )
   // check answer
   EXPECT_EQ( PA.getNumColumns(), LU.getNumColumns() );
   EXPECT_EQ( PA.getNumRows(), LU.getNumRows() );
-  for ( int i=0; i < N; ++i ) {
-    for ( int j=0; j < N; ++j ) {
+  for ( int i=0 ; i < N ; ++i )
+  {
+    for ( int j=0 ; j < N ; ++j )
+    {
       EXPECT_EQ( PA(i,j), LU(i,j) );
     } // END for all colummns
   } // END for all rows
@@ -95,9 +99,9 @@ TEST( numerics_lu, lu_solve )
 
   // initial matrix
   numerics::Matrix< double > A( N,N );
-  A( 0,0 ) = 1 ; A( 0,1 ) = 2 ; A( 0,2 ) = 4  ;
-  A( 1,0 ) = 3 ; A( 1,1 ) = 8 ; A( 1,2 ) = 14 ;
-  A( 2,0 ) = 2 ; A( 2,1 ) = 6 ; A( 2,2 ) = 13 ;
+  A( 0,0 ) = 1; A( 0,1 ) = 2; A( 0,2 ) = 4;
+  A( 1,0 ) = 3; A( 1,1 ) = 8; A( 1,2 ) = 14;
+  A( 2,0 ) = 2; A( 2,1 ) = 6; A( 2,2 ) = 13;
 
   double b[3] = { 3, 13, 4 };
   double x[3];
@@ -111,13 +115,14 @@ TEST( numerics_lu, lu_solve )
   EXPECT_DOUBLE_EQ( 4,  x[1] );
   EXPECT_DOUBLE_EQ( -2, x[2] );
 
-  numerics::Matrix< double > lhs = A * x ;
+  numerics::Matrix< double > lhs = A * x;
   EXPECT_EQ( 1, lhs.getNumColumns() );
   EXPECT_EQ( N, lhs.getNumRows() );
 
   typedef numerics::Matrix< double >::IndexType IndexType;
-  for ( IndexType i=0; i < N; ++i ) {
-     EXPECT_DOUBLE_EQ( b[i], lhs.data()[i] );
+  for ( IndexType i=0 ; i < N ; ++i )
+  {
+    EXPECT_DOUBLE_EQ( b[i], lhs.data()[i] );
   }
 
 }

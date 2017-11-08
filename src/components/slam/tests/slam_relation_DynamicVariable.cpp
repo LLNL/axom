@@ -36,39 +36,40 @@
 #include "slam/DynamicVariableRelation.hpp"
 
 
-namespace {
-  using axom::slam::RangeSet;
-  using axom::slam::DynamicVariableRelation;
+namespace
+{
+using axom::slam::RangeSet;
+using axom::slam::DynamicVariableRelation;
 
-  typedef RangeSet::PositionType  PositionType;
-  typedef RangeSet::ElementType   ElementType;
-  // typedef axom::slam::Set::SetPosition PositionType;
+typedef RangeSet::PositionType PositionType;
+typedef RangeSet::ElementType ElementType;
+// typedef axom::slam::Set::SetPosition PositionType;
 
-  const PositionType FROMSET_SIZE = 5;
-  const PositionType TOSET_SIZE = 8;
+const PositionType FROMSET_SIZE = 5;
+const PositionType TOSET_SIZE = 8;
 
-  template<typename StrType, typename VecType>
-  void printVector(StrType const& msg, VecType const& vec)
+template<typename StrType, typename VecType>
+void printVector(StrType const& msg, VecType const& vec)
+{
+  std::cout << "\n** " << msg << "\n\t";
+  std::cout << "Array of size " << vec.size() << ": ";
+  std::copy(vec.begin(), vec.end(),
+            std::ostream_iterator<PositionType>(std::cout, " "));
+}
+
+void generateIncrementingRelations(DynamicVariableRelation * rel)
+{
+  PositionType curIdx = PositionType();
+
+  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
   {
-    std::cout << "\n** " << msg << "\n\t";
-    std::cout << "Array of size " << vec.size() << ": ";
-    std::copy(vec.begin(), vec.end(), 
-        std::ostream_iterator<PositionType>(std::cout, " "));
-  }
-
-  void generateIncrementingRelations(DynamicVariableRelation* rel)
-  {
-    PositionType curIdx = PositionType();
-
-    for(PositionType i = 0; i < FROMSET_SIZE; ++i)
+    for(PositionType j = 0 ; j <= i ; ++j)
     {
-      for(PositionType j = 0; j <= i; ++j)
-      {
-        rel->insert(i, j % TOSET_SIZE );
-        ++curIdx;
-      }
+      rel->insert(i, j % TOSET_SIZE );
+      ++curIdx;
     }
   }
+}
 }
 
 TEST(slam_relation_dynamic_variable,construct_empty)
@@ -105,7 +106,7 @@ TEST(slam_relation_dynamic_variable,construct_relation)
   generateIncrementingRelations(&incrementingRel);
 
   const PositionType sz = static_cast<PositionType>(fromSet.size());
-  for(PositionType idx = 0; idx< sz; ++idx)
+  for(PositionType idx = 0 ; idx< sz ; ++idx)
   {
     std::stringstream sstr;
     sstr << "Related to index " << idx;
@@ -137,12 +138,12 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
   SLIC_INFO(".. access via double subscript.");
   {
-    for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
+    for(PositionType fromPos = 0 ; fromPos < fromSet.size() ; ++fromPos)
     {
       const PositionType fromSize = incrementingRel.size(fromPos);
       EXPECT_EQ(fromPos + 1, fromSize);
 
-      for(PositionType toPos = 0; toPos < fromSize; ++toPos)
+      for(PositionType toPos = 0 ; toPos < fromSize ; ++toPos)
       {
         PositionType actualVal = incrementingRel[fromPos][toPos]; // double subscript
 
@@ -156,14 +157,14 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   SLIC_INFO(".. access via delayed double subscript.");
   {
     typedef DynamicVariableRelation::RelationVec RelSet;
-    for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
+    for(PositionType fromPos = 0 ; fromPos < fromSet.size() ; ++fromPos)
     {
       RelSet rSet = incrementingRel[fromPos];   // first subscript
 
       const PositionType rSize = rSet.size();
       EXPECT_EQ(fromPos + 1, rSize);
 
-      for(PositionType toPos = 0; toPos < rSize; ++toPos)
+      for(PositionType toPos = 0 ; toPos < rSize ; ++toPos)
       {
         PositionType actualVal = rSet[toPos];   // second subscript
 
@@ -176,12 +177,12 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   SLIC_INFO(".. access via iterators.");
 #ifdef AXOM_USE_BOOST
   {
-    typedef RangeSet::iterator                                SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
     SLIC_INFO("\t using iterator begin()/end() functions");
-    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); 
-        sIt != sItEnd; ++sIt)
+    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end() ;
+        sIt != sItEnd ; ++sIt)
     {
       PositionType fromSetEltNum = std::distance(fromSet.begin(), sIt);
 
@@ -192,8 +193,8 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
       RelSetConstIter toSetBegin = incrementingRel.begin(*sIt);
       RelSetConstIter toSetEnd = incrementingRel.end(*sIt);
-      for(RelSetConstIter innerIt = toSetBegin; 
-            innerIt != toSetEnd; ++innerIt)
+      for(RelSetConstIter innerIt = toSetBegin ;
+          innerIt != toSetEnd ; ++innerIt)
       {
         PositionType eltNum = std::distance(toSetBegin, innerIt);
 
@@ -205,20 +206,20 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
     SLIC_INFO("\t  using iterator range() function");
     typedef DynamicVariableRelation::
-        RelationVecConstIteratorPair RelSetConstIterPair;
-    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); 
-        sIt != sItEnd; ++sIt)
+      RelationVecConstIteratorPair RelSetConstIterPair;
+    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end() ;
+        sIt != sItEnd ; ++sIt)
     {
       // PositionType fromSetEltNum = std::distance(fromSet.begin(), sIt);
 
       RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
-      for(RelSetConstIter it = toSetItPair.first; 
-            it < toSetItPair.second; ++it)
+      for(RelSetConstIter it = toSetItPair.first ;
+          it < toSetItPair.second ; ++it)
       {
         PositionType toSetEltNum = std::distance(toSetItPair.first, it);
         PositionType expectedVal =  toSetEltNum % TOSET_SIZE;
-        ASSERT_EQ( expectedVal, *it) 
-            << "incrementing relation's value was incorrect";
+        ASSERT_EQ( expectedVal, *it)
+          << "incrementing relation's value was incorrect";
       }
     }
   }

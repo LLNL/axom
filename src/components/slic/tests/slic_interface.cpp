@@ -38,4 +38,3 @@ TEST(slic_interface,initialize_finalize)
   axom::slic::finalize();
   EXPECT_FALSE(axom::slic::isInitialized());
 }
-

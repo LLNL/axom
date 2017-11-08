@@ -34,8 +34,10 @@
 
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \brief Computes the squared distance from point A to point B.
@@ -62,20 +64,24 @@ template < typename T, int NDIMS >
 inline double squared_distance( const Point< T,NDIMS >& P,
                                 const BoundingBox< T,NDIMS >& B )
 {
-  if ( B.contains( P ) ) {
+  if ( B.contains( P ) )
+  {
     /* short-circuit */
     return 0.0f;
   }
 
   // compute closest point to the box
   Point< T,NDIMS > cp;
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
     cp[ i ] = P[ i ];
-    if ( cp[i] < B.getMin()[i] ) {
+    if ( cp[i] < B.getMin()[i] )
+    {
       cp[ i ] = B.getMin()[i];
     }
 
-    if ( cp[i] > B.getMax()[i] ) {
+    if ( cp[i] > B.getMax()[i] )
+    {
       cp[ i ] = B.getMax()[i];
     }
   }
@@ -102,14 +108,16 @@ inline double squared_distance( const Point< T,NDIMS >& P,
 
   // outside segment, on the side of a
   // Testing if closest point is A
-  if ( e <= 0.0f ) {
+  if ( e <= 0.0f )
+  {
     return ac.squared_norm();
   }
 
   // outside segment, on the side of b
   // Testing if closest point is B
   const T f = ab.squared_norm();
-  if ( e >= f ) {
+  if ( e >= f )
+  {
     Vector< T,NDIMS > bc( S.target(), P );
     return bc.squared_norm();
   }

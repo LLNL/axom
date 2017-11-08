@@ -27,17 +27,19 @@
 #include <iostream>
 #include "RangeSet.hpp"
 
-namespace axom {
-namespace slam {
+namespace axom
+{
+namespace slam
+{
 
 
 const NullSet RangeSet::s_nullSet;
 
 bool RangeSet::isValid(bool verboseOutput) const
 {
-    bool bValid = true;
+  bool bValid = true;
 
-    std::stringstream errStr;
+  std::stringstream errStr;
 
 //    if( m_size < 0 )
 //    {
@@ -51,29 +53,28 @@ bool RangeSet::isValid(bool verboseOutput) const
 //    }
 
 
-    if(verboseOutput)
+  if(verboseOutput)
+  {
+    std::stringstream sstr;
+
+    sstr<<"\n*** Detailed results of isValid on the OrderedSet.\n";
+    if(bValid)
     {
-        std::stringstream sstr;
-
-        sstr<<"\n*** Detailed results of isValid on the OrderedSet.\n";
-        if(bValid)
-        {
-            sstr<<"Set was valid."<< std::endl;
-        }
-        else
-        {
-            sstr<<"Set was NOT valid.\n"
-                     << errStr.str()
-                     << std::endl;
-        }
-
-        sstr<<"\n** size is " << m_size ;
-        std::cout<< sstr.str() << std::endl;
+      sstr<<"Set was valid."<< std::endl;
+    }
+    else
+    {
+      sstr<<"Set was NOT valid.\n"
+          << errStr.str()
+          << std::endl;
     }
 
-    return bValid;
+    sstr<<"\n** size is " << m_size;
+    std::cout<< sstr.str() << std::endl;
+  }
+
+  return bValid;
 }
 
 } /* namespace slam */
 } /* namespace axom */
-

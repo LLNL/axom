@@ -35,8 +35,8 @@ using axom::slic::UnitTestLogger;
 TEST(slic_fmt, basic_use)
 {
   SLIC_INFO( "Formatting with C++ streams and with "
-              << fmt::format("the '{}' string formatting library", "fmt")
-              << " can be used together in slic macros." );
+             << fmt::format("the '{}' string formatting library", "fmt")
+             << " can be used together in slic macros." );
 
   // Style similar to Python format
   SLIC_INFO( fmt::format("{1} {0}", "world", "Hello") );

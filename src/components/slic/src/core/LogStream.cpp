@@ -26,11 +26,13 @@
 #include <ctime>
 #include <sstream>
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 //------------------------------------------------------------------------------
-LogStream::LogStream():
+LogStream::LogStream() :
   m_formatString(
     "*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
 {}
@@ -46,11 +48,13 @@ void LogStream::replaceKey( std::string& msg,
                             std::size_t pos )
 {
 
-  if ( pos == std::string::npos ) {
+  if ( pos == std::string::npos )
+  {
     pos = msg.find( key );
   }
 
-  if ( pos != std::string::npos ) {
+  if ( pos != std::string::npos )
+  {
 
     msg = msg.substr(0,pos) +
           value +
@@ -68,7 +72,8 @@ std::string LogStream::getTimeStamp( )
   std::string timestamp( std::asctime( std::localtime( &t ) ) );
 
   // Remove trailing newline added by previous line
-  if (timestamp[timestamp.size()-1] == '\n') {
+  if (timestamp[timestamp.size()-1] == '\n')
+  {
     timestamp.erase(timestamp.size()-1);
   }
   return timestamp;
@@ -90,7 +95,8 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
   this->replaceKey( msg, "<FILE>", fileName );
   this->replaceKey( msg, "<RANK>", rank );
 
-  if ( line != MSG_IGNORE_LINE ) {
+  if ( line != MSG_IGNORE_LINE )
+  {
 
     std::ostringstream oss;
     oss << line;
@@ -98,14 +104,16 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
     this->replaceKey( msg, "<LINE>", oss.str() );
 
   }
-  else {
+  else
+  {
 
     this->replaceKey( msg, "<LINE>", "" );
 
   }
 
   std::size_t pos = msg.find( "<TIMESTAMP>" );
-  if ( pos != std::string::npos ) {
+  if ( pos != std::string::npos )
+  {
 
     this->replaceKey( msg, "<TIMESTAMP>", this->getTimeStamp(), pos );
 

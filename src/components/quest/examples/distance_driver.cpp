@@ -60,7 +60,8 @@ using quest::SignedDistance;
 
 typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
-static struct {
+static struct
+{
   std::string fileName;
   int maxLevels;
   int maxObjects;
@@ -83,7 +84,7 @@ void showHelp()
 }
 
 //------------------------------------------------------------------------------
-void parse_args( int argc, char** argv )
+void parse_args( int argc, char * * argv )
 {
   // Defaults
   Arguments.fileName   = "";
@@ -93,40 +94,55 @@ void parse_args( int argc, char** argv )
   Arguments.ny         = 32;
   Arguments.nz         = 32;
 
-  for ( int i=1; i < argc; ++i ) {
+  for ( int i=1 ; i < argc ; ++i )
+  {
 
-    if ( strcmp( argv[i],"--file")==0 ) {
+    if ( strcmp( argv[i],"--file")==0 )
+    {
 
       Arguments.fileName = std::string( argv[ ++i ] );
 
-    } else if ( strcmp(argv[i],"--maxLevels")==0 ) {
+    }
+    else if ( strcmp(argv[i],"--maxLevels")==0 )
+    {
 
       Arguments.maxLevels = std::atoi( argv[++i] );
 
-    } else if ( strcmp(argv[i], "--maxObjects" )==0 ) {
+    }
+    else if ( strcmp(argv[i], "--maxObjects" )==0 )
+    {
 
       Arguments.maxObjects = std::atoi( argv[++i] );
 
-    } else if ( strcmp(argv[i],"--nx")==0 ) {
+    }
+    else if ( strcmp(argv[i],"--nx")==0 )
+    {
 
       Arguments.nx = std::atoi( argv[++i] );
 
-    } else if ( strcmp(argv[i],"--ny")==0 ) {
+    }
+    else if ( strcmp(argv[i],"--ny")==0 )
+    {
 
       Arguments.ny = std::atoi( argv[++i] );
 
-    } else if ( strcmp(argv[i],"--nz")==0 ) {
+    }
+    else if ( strcmp(argv[i],"--nz")==0 )
+    {
 
       Arguments.nz = std::atoi( argv[++i] );
 
-    } else if ( strcmp(argv[i],"--help")==0 ) {
+    }
+    else if ( strcmp(argv[i],"--help")==0 )
+    {
       showHelp();
       exit(0);
     }
 
   } // END for
 
-  if ( Arguments.fileName == "" ) {
+  if ( Arguments.fileName == "" )
+  {
     SLIC_ERROR( "NO STL input file provided. Provide one with --file" );
   }
 
@@ -152,12 +168,12 @@ void write_point( const Point< double, 3 >& pt,
 }
 
 //------------------------------------------------------------------------------
-void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
+void write_triangles( axom::mint::Mesh * mesh, const int * cells, int ncells,
                       const std::string& fileName )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-  TriangleMesh* subset = new TriangleMesh(3);
+  TriangleMesh * subset = new TriangleMesh(3);
   SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
 
   int cellIds[3];
@@ -168,23 +184,24 @@ void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
   int icount = 0;
   int new_cell[3];
 
-  for ( int i=0; i < ncells; ++i ) {
+  for ( int i=0 ; i < ncells ; ++i )
+  {
 
-     const int cellIdx = cells[ i ];
-     mesh->getMeshCell( cellIdx, cellIds );
+    const int cellIdx = cells[ i ];
+    mesh->getMeshCell( cellIdx, cellIds );
 
-     mesh->getMeshNode( cellIds[0], n1.data() );
-     mesh->getMeshNode( cellIds[1], n2.data() );
-     mesh->getMeshNode( cellIds[2], n3.data() );
+    mesh->getMeshNode( cellIds[0], n1.data() );
+    mesh->getMeshNode( cellIds[1], n2.data() );
+    mesh->getMeshNode( cellIds[2], n3.data() );
 
-     subset->insertNode( n1[0], n1[1], n1[2] );
-     new_cell[0] = icount; ++icount;
-     subset->insertNode( n2[0], n2[1], n2[2] );
-     new_cell[1] = icount; ++icount;
-     subset->insertNode( n3[0], n3[1], n3[2] );
-     new_cell[2] = icount; ++icount;
+    subset->insertNode( n1[0], n1[1], n1[2] );
+    new_cell[0] = icount; ++icount;
+    subset->insertNode( n2[0], n2[1], n2[2] );
+    new_cell[1] = icount; ++icount;
+    subset->insertNode( n3[0], n3[1], n3[2] );
+    new_cell[2] = icount; ++icount;
 
-     subset->insertCell( new_cell, MINT_TRIANGLE,3 );
+    subset->insertCell( new_cell, MINT_TRIANGLE,3 );
   }
 
   axom::mint::write_vtk( subset, fileName );
@@ -193,29 +210,30 @@ void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
 }
 
 //------------------------------------------------------------------------------
-BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
+BoundingBox< double,3 > compute_bounds( axom::mint::Mesh * mesh)
 {
-   SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-   using namespace axom::quest ;
+  using namespace axom::quest;
 
-   BoundingBox< double,3 > meshBB;
-   Point< double,3 > pt;
+  BoundingBox< double,3 > meshBB;
+  Point< double,3 > pt;
 
-   for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
-   {
-       mesh->getMeshNode( i, pt.data() );
-       meshBB.addPoint( pt );
-   } // END for all nodes
+  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  {
+    mesh->getMeshNode( i, pt.data() );
+    meshBB.addPoint( pt );
+  }  // END for all nodes
 
-   SLIC_ASSERT( meshBB.isValid() );
+  SLIC_ASSERT( meshBB.isValid() );
 
-   return meshBB;
+  return meshBB;
 }
 
 
 //------------------------------------------------------------------------------
-void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
+void distance_field( axom::mint::Mesh * surface_mesh,
+                     axom::mint::UniformMesh * umesh )
 {
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
@@ -234,23 +252,24 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
 
 #ifdef AXOM_DEBUG
   // write the bucket tree to a file
-  const BVHTree< int, 3>* btree = signedDistance.getBVHTree();
+  const BVHTree< int, 3> * btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != AXOM_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
+  axom::mint::FieldData * CD = surface_mesh->getCellFieldData();
   CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
-  int* bidx = CD->getField( "BucketID" )->getIntPtr();
+  int * bidx = CD->getField( "BucketID" )->getIntPtr();
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
-  for ( int i=0; i < numObjects; ++i ) {
+  for ( int i=0 ; i < numObjects ; ++i )
+  {
 
-     const int idx = btree->getObjectBucketIndex( i );
-     bidx[ i ] = idx;
+    const int idx = btree->getObjectBucketIndex( i );
+    bidx[ i ] = idx;
 
   } // END for all objects
 
@@ -258,16 +277,16 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
 #endif
 
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
+  axom::mint::FieldData * PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
   PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
   PD->addField( new axom::mint::FieldVariable< int >("nbuckets",nnodes) );
   PD->addField( new axom::mint::FieldVariable< int >("ntriangles", nnodes) );
 
-  double* phi     = PD->getField( "phi" )->getDoublePtr();
-  int*  nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
-  int* ntriangles = PD->getField( "ntriangles" )->getIntPtr();
+  double * phi     = PD->getField( "phi" )->getDoublePtr();
+  int * nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
+  int * ntriangles = PD->getField( "ntriangles" )->getIntPtr();
 
   SLIC_ASSERT( phi != AXOM_NULLPTR );
   SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
@@ -276,54 +295,55 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
   utilities::Timer timer2;
   timer2.start();
 
-  for ( int inode=0; inode < nnodes; ++inode ) {
+  for ( int inode=0 ; inode < nnodes ; ++inode )
+  {
 
-      Point< double,3 > pt;
-      umesh->getMeshNode( inode, pt.data() );
+    Point< double,3 > pt;
+    umesh->getMeshNode( inode, pt.data() );
 
-      std::vector< int > buckets;
-      std::vector< int > triangles;
-      std::vector< int > my_triangles;
-      triangles.clear();
-      buckets.clear();
+    std::vector< int > buckets;
+    std::vector< int > triangles;
+    std::vector< int > my_triangles;
+    triangles.clear();
+    buckets.clear();
 
-      Point< double,3 > closest_pt;
-      phi[ inode ] = signedDistance.computeDistance( pt,
-                                                     buckets,
-                                                     triangles,
-                                                     my_triangles,
-                                                     closest_pt );
+    Point< double,3 > closest_pt;
+    phi[ inode ] = signedDistance.computeDistance( pt,
+                                                   buckets,
+                                                   triangles,
+                                                   my_triangles,
+                                                   closest_pt );
 
-      nbuckets[ inode ]   = static_cast< int >( buckets.size() );
-      ntriangles[ inode ] = static_cast< int >( triangles.size() );
+    nbuckets[ inode ]   = static_cast< int >( buckets.size() );
+    ntriangles[ inode ] = static_cast< int >( triangles.size() );
 
 #ifdef AXOM_DEBUG
-      std::ostringstream oss;
-      oss << "BINS_" << inode << ".vtk";
-      signedDistance.getBVHTree()->writeVtkFile(
-            oss.str(), &buckets[0], buckets.size() );
+    std::ostringstream oss;
+    oss << "BINS_" << inode << ".vtk";
+    signedDistance.getBVHTree()->writeVtkFile(
+      oss.str(), &buckets[0], buckets.size() );
 
-      oss.str("");
-      oss.clear();
-      oss << "POINT_" << inode << ".vtk";
-      write_point( pt, oss.str() );
+    oss.str("");
+    oss.clear();
+    oss << "POINT_" << inode << ".vtk";
+    write_point( pt, oss.str() );
 
-      oss.str("");
-      oss.clear();
-      oss << "CLOSEST_POINT_" << inode << ".vtk";
-      write_point( closest_pt, oss.str() );
+    oss.str("");
+    oss.clear();
+    oss << "CLOSEST_POINT_" << inode << ".vtk";
+    write_point( closest_pt, oss.str() );
 
-      oss.str("");
-      oss.clear( );
-      oss << "TRIANGLES_" << inode << ".vtk";
-      write_triangles( surface_mesh, &triangles[0],
-                       ntriangles[inode], oss.str() );
+    oss.str("");
+    oss.clear( );
+    oss << "TRIANGLES_" << inode << ".vtk";
+    write_triangles( surface_mesh, &triangles[0],
+                     ntriangles[inode], oss.str() );
 
-      oss.str("");
-      oss.clear();
-      oss << "MY_TRIANGLES_" << inode << ".vtk";
-      write_triangles( surface_mesh, &my_triangles[0], my_triangles.size(),
-                       oss.str() );
+    oss.str("");
+    oss.clear();
+    oss << "MY_TRIANGLES_" << inode << ".vtk";
+    write_triangles( surface_mesh, &my_triangles[0], my_triangles.size(),
+                     oss.str() );
 #endif
 
   } // END for all nodes
@@ -334,7 +354,7 @@ void distance_field( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* um
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, char * * argv )
 {
   // STEP 0: Initialize SLIC Environment
   axom::slic::initialize();
@@ -342,10 +362,10 @@ int main( int argc, char** argv )
 
   // Create a more verbose message for this application (only level and message)
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  axom::slic::GenericOutputStream* defaultStream =
-          new axom::slic::GenericOutputStream(&std::cout);
-  axom::slic::GenericOutputStream* compactStream =
-          new axom::slic::GenericOutputStream(&std::cout, slicFormatStr);
+  axom::slic::GenericOutputStream * defaultStream =
+    new axom::slic::GenericOutputStream(&std::cout);
+  axom::slic::GenericOutputStream * compactStream =
+    new axom::slic::GenericOutputStream(&std::cout, slicFormatStr);
   axom::slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
   axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
   axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
@@ -356,17 +376,17 @@ int main( int argc, char** argv )
 
   // STEP 2: read file
   SLIC_INFO( "Reading file: " << Arguments.fileName << "...");
-  quest::STLReader* reader = new quest::STLReader();
+  quest::STLReader * reader = new quest::STLReader();
   reader->setFileName( Arguments.fileName );
   reader->read();
   SLIC_INFO("done");
 
   // STEP 3: get surface mesh
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  axom::mint::Mesh * surface_mesh = new TriangleMesh( 3 );
+  reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
   SLIC_INFO("Mesh has "
-          << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-          << surface_mesh->getMeshNumberOfCells() << " cells.");
+            << surface_mesh->getMeshNumberOfNodes() << " nodes and "
+            << surface_mesh->getMeshNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;
@@ -402,8 +422,8 @@ int main( int argc, char** argv )
   node_ext[5] = Arguments.nz;
 
   // STEP 8: Construct uniform mesh
-  axom::mint::UniformMesh* umesh =
-          new axom::mint::UniformMesh(3, queryBounds.getMin().data(), h, node_ext);
+  axom::mint::UniformMesh * umesh =
+    new axom::mint::UniformMesh(3, queryBounds.getMin().data(), h, node_ext);
 
   // STEP 9: Compute the distance field on the uniform mesh
   SLIC_INFO( "computing distance field..." );

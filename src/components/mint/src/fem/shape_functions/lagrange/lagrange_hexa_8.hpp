@@ -26,8 +26,10 @@
 // Slic includes
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 /*!
  * \brief Lagrange Finite Element definition for the Linear Hexahedron
@@ -51,7 +53,7 @@ namespace mint {
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_HEX > :public ShapeFunction< Lagrange< MINT_HEX > >
+class Lagrange< MINT_HEX > : public ShapeFunction< Lagrange< MINT_HEX > >
 {
 public:
 
@@ -69,13 +71,13 @@ public:
 
   static double getMax() { return 1; }
 
-  static void getCenter( double* center )
+  static void getCenter( double * center )
   {
     SLIC_ASSERT( center != AXOM_NULLPTR );
     center[ 0 ] = center[ 1 ] = center[ 2 ] = 0.5;
   }
 
-  static void getCoords( double* coords )
+  static void getCoords( double * coords )
   {
     SLIC_ASSERT( coords != AXOM_NULLPTR );
 
@@ -122,7 +124,7 @@ public:
     coords[ 23 ] = 1.0;
   }
 
-  static void computeShape( const double* xr, double* phi )
+  static void computeShape( const double * xr, double * phi )
   {
     SLIC_ASSERT(  xr != AXOM_NULLPTR );
     SLIC_ASSERT(  phi != AXOM_NULLPTR );
@@ -150,7 +152,7 @@ public:
     phi[ 7 ] = rm_x_s  * t;
   }
 
-  static void computeDerivatives( const double* xr, double* phidot )
+  static void computeDerivatives( const double * xr, double * phidot )
   {
     SLIC_ASSERT(  xr != AXOM_NULLPTR );
     SLIC_ASSERT(  phidot != AXOM_NULLPTR );

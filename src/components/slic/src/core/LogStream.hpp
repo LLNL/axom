@@ -38,8 +38,10 @@
 // C/C++ includes
 #include <string> // For STL string
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class LogStream
@@ -112,7 +114,7 @@ public:
                        const std::string& fileName,
                        int line,
                        bool filter_duplicates
-  ) = 0;
+                       ) = 0;
 
   /*!
    * \brief Flushes the log stream. It's a NO-OP by default.

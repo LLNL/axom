@@ -19,7 +19,7 @@
 /**
  * \file slam_relation_StaticConstant.cpp
  *
- * \brief Unit tests for Slam's StaticRelation class 
+ * \brief Unit tests for Slam's StaticRelation class
  * configured with constant per-element cardinality
  *
  * Exercises several different variants of the class.
@@ -50,217 +50,220 @@
 #include "slam/StridePolicies.hpp"
 #include "slam/StaticRelation.hpp"
 
-namespace {
+namespace
+{
 
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
 
-  typedef slam::RangeSet::ElementType   ElementType;
-  typedef slam::RangeSet::PositionType  PositionType;
+typedef slam::RangeSet::ElementType ElementType;
+typedef slam::RangeSet::PositionType PositionType;
 
-  const PositionType FROMSET_SIZE = 5;
-  const PositionType TOSET_SIZE = 6;
-  const PositionType ELEM_STRIDE = 5;
+const PositionType FROMSET_SIZE = 5;
+const PositionType TOSET_SIZE = 6;
+const PositionType ELEM_STRIDE = 5;
 
-  typedef policies::
-        CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
-  typedef policies::
-        RuntimeStride<PositionType>                       RTStride;
+typedef policies::
+  CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
+typedef policies::
+  RuntimeStride<PositionType>                       RTStride;
 
-  typedef policies::
-        ConstantCardinality<PositionType, CTStride>       ConstantCardinalityCT;
-  typedef policies::
-        ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
+typedef policies::
+  ConstantCardinality<PositionType, CTStride>       ConstantCardinalityCT;
+typedef policies::
+  ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
 
-  typedef policies::
-        STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-  typedef policies::
-        ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+typedef policies::
+  STLVectorIndirection<PositionType, PositionType>  STLIndirection;
+typedef policies::
+  ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
 
-  typedef std::vector<PositionType>                                   IndexVec;
-
-
-  typedef slam::StaticRelation<ConstantCardinalityCT, STLIndirection,
-      slam::RangeSet, slam::RangeSet>              StaticConstantRelationType;
+typedef std::vector<PositionType>                                   IndexVec;
 
 
-  // Use a slam::ModularInt type for more interesting test data
-  typedef policies::CompileTimeSize<int, ELEM_STRIDE> CTSize;
-  typedef slam::ModularInt< CTSize >                  FixedModularInt;
+typedef slam::StaticRelation<ConstantCardinalityCT, STLIndirection,
+                             slam::RangeSet,
+                             slam::RangeSet>
+  StaticConstantRelationType;
 
-  template<typename StrType, typename VecType>
-  void printVector(StrType const& msg, VecType const& vec)
+
+// Use a slam::ModularInt type for more interesting test data
+typedef policies::CompileTimeSize<int, ELEM_STRIDE> CTSize;
+typedef slam::ModularInt< CTSize >                  FixedModularInt;
+
+template<typename StrType, typename VecType>
+void printVector(StrType const& msg, VecType const& vec)
+{
+  std::stringstream sstr;
+
+  sstr << "Array of size " << vec.size() << ": ";
+  std::copy(vec.begin(), vec.end(),
+            std::ostream_iterator<ElementType>(sstr, " "));
+
+  SLIC_INFO(msg << ": " << sstr.str());
+}
+
+PositionType elementCardinality(PositionType AXOM_NOT_USED(fromPos) )
+{
+  return ELEM_STRIDE;
+}
+
+/**
+ * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using slam::ModularInt
+ */
+PositionType relationData(PositionType fromPos, PositionType toPos)
+{
+  return FixedModularInt(fromPos + toPos);
+}
+
+
+template<typename VecType>
+void generateIncrementingRelations(PositionType stride, VecType * offsets)
+{
+  VecType& offsetsVec = *offsets;
+
+  PositionType curIdx = PositionType();
+
+  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
   {
-    std::stringstream sstr;
+    EXPECT_EQ(elementCardinality(i), stride);
 
-    sstr << "Array of size " << vec.size() << ": ";
-    std::copy(vec.begin(), vec.end(), 
-        std::ostream_iterator<ElementType>(sstr, " "));
-
-    SLIC_INFO(msg << ": " << sstr.str());
-  }
-
-  PositionType elementCardinality(PositionType AXOM_NOT_USED(fromPos) )
-  {
-    return ELEM_STRIDE;
-  }
-
-  /**
-   * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using slam::ModularInt
-   */
-  PositionType relationData(PositionType fromPos, PositionType toPos)
-  {
-    return FixedModularInt(fromPos + toPos);
-  }
-
-
-  template<typename VecType>
-  void generateIncrementingRelations(PositionType stride, VecType* offsets)
-  {
-    VecType& offsetsVec = *offsets;
-
-    PositionType curIdx = PositionType();
-
-    for(PositionType i = 0; i < FROMSET_SIZE; ++i)
+    for(PositionType j = 0 ; j < elementCardinality(i) ; ++j)
     {
-      EXPECT_EQ(elementCardinality(i), stride);
-
-      for(PositionType j = 0; j < elementCardinality(i); ++j)
-      {
-        offsetsVec.push_back( relationData(i,j) );
-        ++curIdx;
-      }
+      offsetsVec.push_back( relationData(i,j) );
+      ++curIdx;
     }
   }
+}
 
 
-  /**
-   * \brief Traverses the relation's entities using the double subscript access API
-   *
-   * \note Expects cardinality and relation data for each element to match the results
-   *       of the elementCardinality() and relationData() functions above, respectively.
-   */
-  template<typename RelationType>
-  void traverseRelation_doubleSubscript(RelationType& rel)
+/**
+ * \brief Traverses the relation's entities using the double subscript access API
+ *
+ * \note Expects cardinality and relation data for each element to match the results
+ *       of the elementCardinality() and relationData() functions above, respectively.
+ */
+template<typename RelationType>
+void traverseRelation_doubleSubscript(RelationType& rel)
+{
+  SLIC_INFO("Traversing relation data using double subscript: " );
+  for(PositionType fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
   {
-    SLIC_INFO("Traversing relation data using double subscript: " );
-    for(PositionType fromPos = 0; fromPos < rel.fromSet()->size(); ++fromPos)
-    {
-      const PositionType fromSize = rel.size(fromPos);
-      EXPECT_EQ( elementCardinality(fromPos), fromSize );
+    const PositionType fromSize = rel.size(fromPos);
+    EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
-      for(int toPos = 0; toPos < fromSize; ++toPos)
-      {
-        PositionType actualVal = rel[fromPos][toPos];
-        EXPECT_EQ(relationData(fromPos,toPos), actualVal);
-      }
+    for(int toPos = 0 ; toPos < fromSize ; ++toPos)
+    {
+      PositionType actualVal = rel[fromPos][toPos];
+      EXPECT_EQ(relationData(fromPos,toPos), actualVal);
     }
   }
+}
 
-  /**
-   * \brief Traverses relation using separated subscript operators
-   *
-   * The first subscript operator gets the set of entities in the ToSet that are mapped to the
-   * given element of the relation's FromSet
-   *
-   * \note Expects cardinality and relation data for each element to match the results
-   *       of the elementCardinality() and relationData() functions above, respectively.
-   */
-  template<typename RelationType>
-  void traverseRelation_delayedSubscript(RelationType& rel)
+/**
+ * \brief Traverses relation using separated subscript operators
+ *
+ * The first subscript operator gets the set of entities in the ToSet that are mapped to the
+ * given element of the relation's FromSet
+ *
+ * \note Expects cardinality and relation data for each element to match the results
+ *       of the elementCardinality() and relationData() functions above, respectively.
+ */
+template<typename RelationType>
+void traverseRelation_delayedSubscript(RelationType& rel)
+{
+  SLIC_INFO("Traversing relation data using delayed second subscript: " );
+  for(PositionType fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
   {
-    SLIC_INFO("Traversing relation data using delayed second subscript: " );
-    for(PositionType fromPos = 0; fromPos < rel.fromSet()->size(); ++fromPos)
-    {
-      const PositionType fromSize = rel.size(fromPos);
-      EXPECT_EQ( elementCardinality(fromPos), fromSize );
+    const PositionType fromSize = rel.size(fromPos);
+    EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
-      typename RelationType::RelationSet set = rel[fromPos];
-      for(int toPos = 0; toPos < set.size(); ++toPos)
-      {
-        PositionType actualVal = rel[fromPos][toPos];
-        EXPECT_EQ(relationData(fromPos,toPos), actualVal);
-      }
+    typename RelationType::RelationSet set = rel[fromPos];
+    for(int toPos = 0 ; toPos < set.size() ; ++toPos)
+    {
+      PositionType actualVal = rel[fromPos][toPos];
+      EXPECT_EQ(relationData(fromPos,toPos), actualVal);
     }
   }
+}
 
-  /**
-   * \brief Traverses relation using the iterator API (begin()/end() )
-   *
-   * \note The iterator API depends on boost
-   * \note Expects cardinality and relation data for each element to match the results
-   *       of the elementCardinality() and relationData() functions above, respectively.
-   */
-  template<typename RelationType>
-  void iterateRelation_begin_end(RelationType& rel)
-  {
+/**
+ * \brief Traverses relation using the iterator API (begin()/end() )
+ *
+ * \note The iterator API depends on boost
+ * \note Expects cardinality and relation data for each element to match the results
+ *       of the elementCardinality() and relationData() functions above, respectively.
+ */
+template<typename RelationType>
+void iterateRelation_begin_end(RelationType& rel)
+{
 #ifdef AXOM_USE_BOOST
-    typedef typename RelationType::FromSetType      FromSet;
-    typedef typename FromSet::iterator              FromSetIter;
+  typedef typename RelationType::FromSetType FromSet;
+  typedef typename FromSet::iterator FromSetIter;
 
-    typedef typename RelationType::RelationIterator RelIter;
+  typedef typename RelationType::RelationIterator RelIter;
 
-    SLIC_INFO("Traversing relation data using iterator begin()/end() functions");
-    for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end(); 
-        sIt != sItEnd; ++sIt)
-    {
-      PositionType actualSize = rel.size( *sIt);
-
-      PositionType fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
-      EXPECT_EQ( elementCardinality(fromSetEltNum), actualSize );
-
-      RelIter toSetBegin = rel.begin(*sIt);
-      RelIter toSetEnd   = rel.end(*sIt);
-      for(RelIter relIt = toSetBegin; relIt != toSetEnd; ++relIt)
-      {
-        PositionType toSetEltNum = std::distance(toSetBegin, relIt);
-        ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
-      }
-    }
-#else
-    AXOM_DEBUG_VAR(rel);
-    SLIC_INFO("Skipping iterator tests when boost unavailable");
-#endif
-  }
-
-  /**
-   * \brief Traverses relation using the iterator range API
-   *
-   * \note The iterator API depends on boost
-   * \note Expects cardinality and relation data for each element to match the results
-   *       of the elementCardinality() and relationData() functions above, respectively.
-   */
-  template<typename RelationType>
-  void iterateRelation_range(RelationType& rel)
+  SLIC_INFO("Traversing relation data using iterator begin()/end() functions");
+  for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end() ;
+      sIt != sItEnd ; ++sIt)
   {
-#ifdef AXOM_USE_BOOST
-    typedef typename RelationType::FromSetType          FromSet;
-    typedef typename FromSet::iterator                  FromSetIter;
-    typedef typename FromSet::iterator_pair             FromSetIterPair;
+    PositionType actualSize = rel.size( *sIt);
 
-    typedef typename RelationType::RelationIterator     RelIter;
-    typedef typename RelationType::RelationIteratorPair RelIterPair;
+    PositionType fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
+    EXPECT_EQ( elementCardinality(fromSetEltNum), actualSize );
 
-    SLIC_INFO("Traversing relation data using iterator range() functions");
-    FromSetIterPair itPair = rel.fromSet()->range();
-    for(FromSetIter sIt = itPair.first; sIt != itPair.second; ++sIt)
+    RelIter toSetBegin = rel.begin(*sIt);
+    RelIter toSetEnd   = rel.end(*sIt);
+    for(RelIter relIt = toSetBegin ; relIt != toSetEnd ; ++relIt)
     {
-      PositionType fromSetEltNum = std::distance(itPair.first, sIt);
-
-      RelIterPair toSetItPair = rel.range(*sIt);
-      for(RelIter relIt = toSetItPair.first; 
-            relIt != toSetItPair.second; ++relIt)
-      {
-        PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
-        ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
-      }
+      PositionType toSetEltNum = std::distance(toSetBegin, relIt);
+      ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
-#else
-    AXOM_DEBUG_VAR(rel);
-    SLIC_INFO("Skipping iterator tests when boost unavailable");
-#endif
   }
+#else
+  AXOM_DEBUG_VAR(rel);
+  SLIC_INFO("Skipping iterator tests when boost unavailable");
+#endif
+}
+
+/**
+ * \brief Traverses relation using the iterator range API
+ *
+ * \note The iterator API depends on boost
+ * \note Expects cardinality and relation data for each element to match the results
+ *       of the elementCardinality() and relationData() functions above, respectively.
+ */
+template<typename RelationType>
+void iterateRelation_range(RelationType& rel)
+{
+#ifdef AXOM_USE_BOOST
+  typedef typename RelationType::FromSetType FromSet;
+  typedef typename FromSet::iterator FromSetIter;
+  typedef typename FromSet::iterator_pair FromSetIterPair;
+
+  typedef typename RelationType::RelationIterator RelIter;
+  typedef typename RelationType::RelationIteratorPair RelIterPair;
+
+  SLIC_INFO("Traversing relation data using iterator range() functions");
+  FromSetIterPair itPair = rel.fromSet()->range();
+  for(FromSetIter sIt = itPair.first ; sIt != itPair.second ; ++sIt)
+  {
+    PositionType fromSetEltNum = std::distance(itPair.first, sIt);
+
+    RelIterPair toSetItPair = rel.range(*sIt);
+    for(RelIter relIt = toSetItPair.first ;
+        relIt != toSetItPair.second ; ++relIt)
+    {
+      PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
+      ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
+    }
+  }
+#else
+  AXOM_DEBUG_VAR(rel);
+  SLIC_INFO("Skipping iterator tests when boost unavailable");
+#endif
+}
 
 } // end anonymous namespace
 
@@ -313,7 +316,8 @@ TEST(slam_relation_static_constant,construct_relation)
 
 TEST(slam_relation_static_constant,construct_builder)
 {
-  SLIC_INFO("Checking if we can instantiate a concrete StaticRelation (constant).");
+  SLIC_INFO(
+    "Checking if we can instantiate a concrete StaticRelation (constant).");
 
   typedef StaticConstantRelationType::RelationBuilder RelationBuilder;
 
@@ -323,15 +327,15 @@ TEST(slam_relation_static_constant,construct_builder)
   IndexVec offsets;
   generateIncrementingRelations(ELEM_STRIDE, &offsets);
 
-  StaticConstantRelationType relation =  
-     RelationBuilder()
-      .fromSet( &fromSet)
-      .toSet( &toSet)
-      .begins( RelationBuilder::BeginsSetBuilder()
-          .stride(ELEM_STRIDE))
-      .indices( RelationBuilder::IndicesSetBuilder()
-          .size(offsets.size())
-          .data(&offsets));
+  StaticConstantRelationType relation =
+    RelationBuilder()
+    .fromSet( &fromSet)
+    .toSet( &toSet)
+    .begins( RelationBuilder::BeginsSetBuilder()
+             .stride(ELEM_STRIDE))
+    .indices( RelationBuilder::IndicesSetBuilder()
+              .size(offsets.size())
+              .data(&offsets));
 
   EXPECT_TRUE(relation.isValid(true));
 
@@ -349,14 +353,14 @@ TEST(slam_relation_static_constant,construct_builder)
 TEST(slam_relation_static_constant,out_of_bounds_empty)
 {
   SLIC_INFO("Testing access on empty relation "
-        <<"-- code is expected to assert and die.");
+            <<"-- code is expected to assert and die.");
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
   StaticConstantRelationType emptyRel(&fromSet, &toSet);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, 
+  // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -370,7 +374,7 @@ TEST(slam_relation_static_constant,out_of_bounds_empty)
 TEST(slam_relation_static_constant,out_of_bounds_initialized)
 {
   SLIC_INFO("Testing out of bounds access on initialized relation.  "
-    << "Code is expected to assert and die.");
+            << "Code is expected to assert and die.");
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
@@ -383,7 +387,7 @@ TEST(slam_relation_static_constant,out_of_bounds_initialized)
   incrementingRel.bindIndices(relIndices.size(), &relIndices);   // init the relation indices set
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, 
+  // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -402,7 +406,7 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 
   typedef slam::StaticRelation<
       ConstantCardinalityRT, STLIndirection,
-      slam::RangeSet, slam::RangeSet >              
+      slam::RangeSet, slam::RangeSet >
     StaticConstantRelation_RT_STL;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
@@ -437,13 +441,15 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
   // -- Construction using set and relation builder objects
   typedef StaticConstantRelation_RT_STL::RelationBuilder RelationBuilder;
   StaticConstantRelation_RT_STL builderRel =  RelationBuilder()
-      .fromSet( &fromSet)
-      .toSet( &toSet)
-      .begins( RelationBuilder::BeginsSetBuilder()
-          .stride(ELEM_STRIDE))
-      .indices( RelationBuilder::IndicesSetBuilder()
-          .size(relIndices.size())
-          .data(&relIndices) )
+                                             .fromSet( &fromSet)
+                                             .toSet( &toSet)
+                                             .begins(
+    RelationBuilder::BeginsSetBuilder()
+    .stride(ELEM_STRIDE))
+                                             .indices(
+    RelationBuilder::IndicesSetBuilder()
+    .size(relIndices.size())
+    .data(&relIndices) )
   ;
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -458,11 +464,11 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation "
-     <<" with runtime stride and array Indirection");
+            <<" with runtime stride and array Indirection");
 
   typedef slam::StaticRelation<
-        ConstantCardinalityRT, ArrayIndirection,
-        slam::RangeSet, slam::RangeSet>              
+      ConstantCardinalityRT, ArrayIndirection,
+      slam::RangeSet, slam::RangeSet>
     StaticConstantRelation_RT_Array;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
@@ -470,7 +476,7 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 
   IndexVec relIndices;
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
-  PositionType* data = &relIndices[0];   // Get a pointer to the data
+  PositionType * data = &relIndices[0];   // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -498,13 +504,16 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
   // -- Construction using set and relation builder objects
   typedef StaticConstantRelation_RT_Array::RelationBuilder RelationBuilder;
   StaticConstantRelation_RT_Array builderRel =  RelationBuilder()
-      .fromSet( &fromSet)
-      .toSet( &toSet)
-      .begins( RelationBuilder::BeginsSetBuilder()
-          .stride(ELEM_STRIDE))
-      .indices( RelationBuilder::IndicesSetBuilder()
-          .size(relIndices.size())
-          .data(data));
+                                               .fromSet( &fromSet)
+                                               .toSet( &toSet)
+                                               .begins(
+    RelationBuilder::BeginsSetBuilder()
+    .stride(ELEM_STRIDE))
+                                               .indices(
+    RelationBuilder::IndicesSetBuilder()
+    .size(
+      relIndices.size())
+    .data(data));
   EXPECT_TRUE(builderRel.isValid(true));
 
   // Test traversal of the relation data
@@ -519,11 +528,11 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation with "
-        << " runtime stride and array Indirection");
+            << " runtime stride and array Indirection");
 
   typedef slam::StaticRelation<
-        ConstantCardinalityCT, ArrayIndirection,
-        slam::RangeSet, slam::RangeSet>              
+      ConstantCardinalityCT, ArrayIndirection,
+      slam::RangeSet, slam::RangeSet>
     StaticConstantRelation_CT_Array;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
@@ -531,7 +540,7 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 
   IndexVec relIndices;
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
-  PositionType* data = &relIndices[0];   // Get a pointer to the data
+  PositionType * data = &relIndices[0];   // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -566,13 +575,16 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
   // -- Construction using set and relation builder objects
   typedef StaticConstantRelation_CT_Array::RelationBuilder RelationBuilder;
   StaticConstantRelation_CT_Array builderRel =  RelationBuilder()
-      .fromSet( &fromSet)
-      .toSet( &toSet)
-      .begins( RelationBuilder::BeginsSetBuilder()
-          .stride(ELEM_STRIDE))
-      .indices( RelationBuilder::IndicesSetBuilder()
-          .size(relIndices.size())
-          .data(data) )
+                                               .fromSet( &fromSet)
+                                               .toSet( &toSet)
+                                               .begins(
+    RelationBuilder::BeginsSetBuilder()
+    .stride(ELEM_STRIDE))
+                                               .indices(
+    RelationBuilder::IndicesSetBuilder()
+    .size(
+      relIndices.size())
+    .data(data) )
   ;
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -587,13 +599,16 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
   // Similarly here, it is ok to omit the striding in the setup
   // due to the compile time striding policy
   StaticConstantRelation_CT_Array builderRel_implicitStride =  RelationBuilder()
-      .fromSet( &fromSet)
-      .toSet( &toSet)
+                                                              .fromSet( &fromSet)
+                                                              .toSet( &toSet)
 //      .begins( RelationBuilder::BeginsSetBuilder()
 //          .stride(ELEM_STRIDE))
-      .indices( RelationBuilder::IndicesSetBuilder()
-          .size(relIndices.size())
-          .data(data) );
+                                                              .indices(
+    RelationBuilder::IndicesSetBuilder()
+    .size(
+      relIndices.size())
+    .data(
+      data) );
   EXPECT_TRUE(builderRel_implicitStride.isValid(true));
 
 

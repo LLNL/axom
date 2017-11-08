@@ -31,10 +31,13 @@
 
 #include "primal/orientation.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
-namespace detail {
+namespace detail
+{
 
 /*! Returns true when index is even */
 bool isEven(int index)
@@ -74,10 +77,12 @@ int classifyPointAxisPlane(const Point< T, NDIMS >& pt, int index, T val,
            ? val - pt[ index/2 ]
            : pt[ index/2 ] - val;
 
-  if (dist > eps) {
+  if (dist > eps)
+  {
     return ON_POSITIVE_SIDE;
   }
-  if (dist < -eps) {
+  if (dist < -eps)
+  {
     return ON_NEGATIVE_SIDE;
   }
 
@@ -135,39 +140,45 @@ Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
  */
 template < typename T, int NDIMS >
-void clipAxisPlane(const Polygon< T,NDIMS >* prevPoly,
-                   Polygon< T,NDIMS >* currentPoly, int index, T val)
+void clipAxisPlane(const Polygon< T,NDIMS > * prevPoly,
+                   Polygon< T,NDIMS > * currentPoly, int index, T val)
 {
   typedef Point< T,NDIMS > PointType;
 
   currentPoly->clear();
   int numVerts = prevPoly->numVertices();
 
-  if (numVerts == 0) {
+  if (numVerts == 0)
+  {
     return;
   }
 
   // Initialize point a with the last vertex of the polygon
-  const PointType* a = &(*prevPoly)[numVerts-1];
+  const PointType * a = &(*prevPoly)[numVerts-1];
   int aSide = classifyPointAxisPlane(*a, index, val);
 
-  for (int i=0; i< numVerts; ++i) {
-    const PointType* b = &(*prevPoly)[i];
+  for (int i=0 ; i< numVerts ; ++i)
+  {
+    const PointType * b = &(*prevPoly)[i];
     int bSide = classifyPointAxisPlane(*b, index, val);
 
-    switch (bSide) {
+    switch (bSide)
+    {
     case ON_POSITIVE_SIDE:
-      if (aSide == ON_NEGATIVE_SIDE) {
+      if (aSide == ON_NEGATIVE_SIDE)
+      {
         currentPoly->addVertex(findIntersectionPoint(*a, *b, index, val));
       }
       break;
     case ON_BOUNDARY:
-      if (aSide == ON_NEGATIVE_SIDE) {
+      if (aSide == ON_NEGATIVE_SIDE)
+      {
         currentPoly->addVertex(*b);
       }
       break;
     case ON_NEGATIVE_SIDE:
-      switch (aSide) {
+      switch (aSide)
+      {
       case ON_POSITIVE_SIDE:
         currentPoly->addVertex(findIntersectionPoint(*a, *b, index, val));
         currentPoly->addVertex(*b);

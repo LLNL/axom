@@ -40,7 +40,8 @@ TEST(spio_parallel, parallel_writeread)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   int num_output = num_ranks / 2;
-  if (num_output == 0) {
+  if (num_output == 0)
+  {
     num_output = 1;
   }
 
@@ -82,7 +83,8 @@ TEST(spio_parallel, parallel_writeread)
    * Extra stuff to exercise writeGroupToRootFile
    */
   MPI_Barrier(MPI_COMM_WORLD);
-  if (my_rank == 0) {
+  if (my_rank == 0)
+  {
     DataStore * dsextra = new DataStore();
     Group * extra = dsextra->getRoot()->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
@@ -100,7 +102,8 @@ TEST(spio_parallel, parallel_writeread)
 
     writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
 
-    View * view_test = dsextra->getRoot()->createViewString("word3", "new_view");
+    View * view_test =
+      dsextra->getRoot()->createViewString("word3", "new_view");
 
     writer.writeViewToRootFileAtPath(view_test,
                                      root_name,
@@ -113,7 +116,8 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Read the root file on rank 1, unless this is a serial run.
    */
-  if (my_rank == 1 || num_ranks == 1) {
+  if (my_rank == 1 || num_ranks == 1)
+  {
 
     conduit::Node n;
     conduit::relay::io::load(root_name + ":extra", "hdf5", n);
@@ -169,7 +173,8 @@ TEST(spio_parallel, parallel_writeread)
     int * i1_orig = view_i1_orig->getData();
     int * i1_restored = view_i1_restored->getData();
 
-    for (int i = 0; i < num_elems; ++i) {
+    for (int i = 0 ; i < num_elems ; ++i)
+    {
       EXPECT_EQ(i1_orig[i], i1_restored[i]);
     }
   }
@@ -229,7 +234,8 @@ TEST(spio_parallel, external_writeread)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   int num_output = num_ranks / 2;
-  if (num_output == 0) {
+  if (num_output == 0)
+  {
     num_output = 1;
   }
 
@@ -281,7 +287,8 @@ TEST(spio_parallel, external_writeread)
   reader.read(root2, "out_spio_external_write_read.root");
 
   int restored_vals1[nvals], restored_vals2[nvals];
-  for (int i = 0; i < nvals; ++i) {
+  for (int i = 0 ; i < nvals ; ++i)
+  {
     restored_vals1[i] = -1;
     restored_vals2[i] = -1;
   }
@@ -307,38 +314,47 @@ TEST(spio_parallel, external_writeread)
    * Verify that the contents of ds2 match those written from ds.
    */
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
-  if (!ds2->getRoot()->isEquivalentTo(root1)) {
+  if (!ds2->getRoot()->isEquivalentTo(root1))
+  {
     result |= HIERARCHY_ERROR;
   }
   SLIC_WARNING_IF( result & HIERARCHY_ERROR, "Tree layouts don't match");
 
   EXPECT_EQ(view1->getNumElements(), nvals);
-  if (view1->getNumElements() != nvals) {
+  if (view1->getNumElements() != nvals)
+  {
     result |= EXT_ARRAY_ERROR;
   }
-  else {
-    for (int i = 0; i < nvals; ++i) {
+  else
+  {
+    for (int i = 0 ; i < nvals ; ++i)
+    {
       EXPECT_EQ(orig_vals1[i], restored_vals1[i]);
-      if (orig_vals1[i] != restored_vals1[i]) {
+      if (orig_vals1[i] != restored_vals1[i])
+      {
         result |= EXT_ARRAY_ERROR;
         break;
       }
     }
   }
-  SLIC_WARNING_IF( result & EXT_ARRAY_ERROR, "External_array was not correctly loaded");
+  SLIC_WARNING_IF( result & EXT_ARRAY_ERROR,
+                   "External_array was not correctly loaded");
 
   /*
    * external_undescribed was not written to disk (since it is undescribed)
    * make sure it was not read in.
    */
-  for (int i = 0; i < nvals; ++i) {
+  for (int i = 0 ; i < nvals ; ++i)
+  {
     EXPECT_EQ(-1, restored_vals2[i]);
-    if (-1 != restored_vals2[i]) {
+    if (-1 != restored_vals2[i])
+    {
       result |= EXT_UNDESC_ERROR;
       break;
     }
   }
-  SLIC_WARNING_IF( result & EXT_UNDESC_ERROR, "External_undescribed data was modified.");
+  SLIC_WARNING_IF( result & EXT_UNDESC_ERROR,
+                   "External_undescribed data was modified.");
 
   delete ds1;
   delete ds2;
@@ -357,8 +373,9 @@ TEST(spio_paralle, irregular_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2; 
-  if (num_output == 0) {
+  int num_output = num_ranks / 2;
+  if (num_output == 0)
+  {
     num_output = 1;
   }
 
@@ -374,20 +391,23 @@ TEST(spio_paralle, irregular_writeread)
 
   int num_fields = my_rank + 2;
 
-  for (int f = 0; f < num_fields; ++f) {
+  for (int f = 0 ; f < num_fields ; ++f)
+  {
     std::ostringstream ostream;
     ostream << "fields" << f;
     Group * flds = root1->createGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
-    for (int g = 0; g < num_subgroups; ++g) {
+    for (int g = 0 ; g < num_subgroups ; ++g)
+    {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
       Group * sg = flds->createGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
-      if (g % 2) {
+      if (g % 2)
+      {
         sg->createView(vstream.str())->allocate(DataType::c_int(10+my_rank));
         int * vals = sg->getView(vstream.str())->getData();
 
@@ -396,11 +416,13 @@ TEST(spio_paralle, irregular_writeread)
           vals[i] = (i+10) * (404-my_rank-i-g-f);
         }
 
-      } else {
+      }
+      else
+      {
         sg->createViewScalar<int>(vstream.str(), 101*my_rank*(f+g+1));
-      } 
-    } 
-  } 
+      }
+    }
+  }
 
 
   /*
@@ -429,14 +451,16 @@ TEST(spio_paralle, irregular_writeread)
    */
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-  for (int f = 0; f < num_fields; ++f) {
+  for (int f = 0 ; f < num_fields ; ++f)
+  {
     std::ostringstream ostream;
     ostream << "fields" << f;
     Group * flds1 = ds1->getRoot()->getGroup(ostream.str());
     Group * flds2 = ds2->getRoot()->getGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
-    for (int g = 0; g < num_subgroups; ++g) {
+    for (int g = 0 ; g < num_subgroups ; ++g)
+    {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
       Group * sg1 = flds1->getGroup(gstream.str());
@@ -444,7 +468,8 @@ TEST(spio_paralle, irregular_writeread)
 
       std::ostringstream vstream;
       vstream << "view" << g;
-      if (g % 2) {
+      if (g % 2)
+      {
 
         View * view_orig = sg1->getView(vstream.str());
         View * view_restored = sg2->getView(vstream.str());
@@ -454,17 +479,20 @@ TEST(spio_paralle, irregular_writeread)
         int * vals_orig = view_orig->getData();
         int * vals_restored = view_restored->getData();
 
-        for (int i = 0; i < num_elems; ++i) {
+        for (int i = 0 ; i < num_elems ; ++i)
+        {
           EXPECT_EQ(vals_orig[i], vals_restored[i]);
         }
-      } else {
+      }
+      else
+      {
         int testvalue1 = sg1->getView(vstream.str())->getData();
         int testvalue2 = sg2->getView(vstream.str())->getData();
 
         EXPECT_EQ(testvalue1, testvalue2);
       }
     }
-  } 
+  }
 
   delete ds1;
   delete ds2;
@@ -479,8 +507,9 @@ TEST(spio_parallel, preserve_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2; 
-  if (num_output == 0) {
+  int num_output = num_ranks / 2;
+  if (num_output == 0)
+  {
     num_output = 1;
   }
 
@@ -532,7 +561,7 @@ TEST(spio_parallel, preserve_writeread)
 
   writer.write(extra, num_files, "out_spio_extra", "sidre_hdf5");
   std::string extra_root = "out_spio_extra.root";
- 
+
   MPI_Barrier(MPI_COMM_WORLD);
 
   /*
@@ -570,7 +599,8 @@ TEST(spio_parallel, preserve_writeread)
   int * i1_orig = view_i1_orig->getData();
   int * i1_restored = view_i1_restored->getData();
 
-  for (int i = 0; i < num_elems; ++i) {
+  for (int i = 0 ; i < num_elems ; ++i)
+  {
     EXPECT_EQ(i1_orig[i], i1_restored[i]);
   }
 
@@ -596,9 +626,11 @@ TEST(spio_parallel, preserve_writeread)
   int ival = extra_fields->getView("child/ival")->getData();
   EXPECT_EQ(ival, 7);
 
-  EXPECT_EQ(std::string(extra_fields->getView("child/word0")->getString()), "hello");
+  EXPECT_EQ(std::string(extra_fields->getView(
+                          "child/word0")->getString()), "hello");
 
-  EXPECT_EQ(std::string(extra_fields->getView("child/word1")->getString()), "world");
+  EXPECT_EQ(std::string(extra_fields->getView(
+                          "child/word1")->getString()), "world");
 
   delete ds;
   delete ds2;
@@ -620,4 +652,3 @@ int main(int argc, char * argv[])
 
   return result;
 }
-

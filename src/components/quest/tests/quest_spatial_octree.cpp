@@ -24,61 +24,61 @@
 
 TEST( quest_spatial_octree, spatial_octree_point_location)
 {
-    SLIC_INFO("*** This test verifies that a query point falls into "
+  SLIC_INFO("*** This test verifies that a query point falls into "
             << " a child block.");
 
-    static const int DIM = 3;
-    typedef axom::quest::BlockData  LeafNodeType;
+  static const int DIM = 3;
+  typedef axom::quest::BlockData LeafNodeType;
 
-    typedef axom::quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
-    typedef OctreeType::BlockIndex BlockIndex;
-    typedef OctreeType::SpacePt SpacePt;
-    typedef OctreeType::GeometricBoundingBox GeometricBoundingBox;
+  typedef axom::quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
+  typedef OctreeType::BlockIndex BlockIndex;
+  typedef OctreeType::SpacePt SpacePt;
+  typedef OctreeType::GeometricBoundingBox GeometricBoundingBox;
 
 
-    GeometricBoundingBox bb(SpacePt(10), SpacePt(20));
+  GeometricBoundingBox bb(SpacePt(10), SpacePt(20));
 
-    // Generate a point within the bounding box
-    double alpha = 2./3.;
-    SpacePt queryPt = SpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
-    EXPECT_TRUE( bb.contains(queryPt));
+  // Generate a point within the bounding box
+  double alpha = 2./3.;
+  SpacePt queryPt = SpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
+  EXPECT_TRUE( bb.contains(queryPt));
 
-    OctreeType octree(bb);
+  OctreeType octree(bb);
 
-    // Check that the point lies in a leaf of the tree 
-    // and that this is the root of the tree
-    BlockIndex leafBlock = octree.findLeafBlock(queryPt);
+  // Check that the point lies in a leaf of the tree
+  // and that this is the root of the tree
+  BlockIndex leafBlock = octree.findLeafBlock(queryPt);
+  EXPECT_TRUE( octree.isLeaf(leafBlock));
+  EXPECT_EQ( octree.root(), leafBlock );
+
+  GeometricBoundingBox leafBB = octree.blockBoundingBox(leafBlock);
+  EXPECT_TRUE( leafBB.contains( queryPt ));
+  EXPECT_TRUE( bb.contains(leafBB));
+
+  SLIC_INFO(
+    "Query pt: " << queryPt
+                 <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
+                 <<" contained in bounding box " << leafBB
+                 <<"\n\t of octree root " << leafBlock   );
+
+  for(int i=0 ; i< octree.maxInternalLevel() ; ++i)
+  {
+    octree.refineLeaf( leafBlock );
+    leafBlock = octree.findLeafBlock(queryPt);
     EXPECT_TRUE( octree.isLeaf(leafBlock));
-    EXPECT_EQ( octree.root(), leafBlock );
 
-    GeometricBoundingBox leafBB = octree.blockBoundingBox(leafBlock);
+    leafBB = octree.blockBoundingBox(leafBlock);
     EXPECT_TRUE( leafBB.contains( queryPt ));
     EXPECT_TRUE( bb.contains(leafBB));
 
     SLIC_INFO(
-        "Query pt: " << queryPt
-        <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
-        <<" contained in bounding box " << leafBB
-        <<"\n\t of octree root " << leafBlock   );
-
-    for(int i=0; i< octree.maxInternalLevel(); ++i)
-    {
-        octree.refineLeaf( leafBlock );
-        leafBlock = octree.findLeafBlock(queryPt);
-        EXPECT_TRUE( octree.isLeaf(leafBlock));
-
-        leafBB = octree.blockBoundingBox(leafBlock);
-        EXPECT_TRUE( leafBB.contains( queryPt ));
-        EXPECT_TRUE( bb.contains(leafBB));
-
-        SLIC_INFO(
-            "Query pt: " 
-             << queryPt
-             <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
-             <<" contained in bounding box " << leafBB
-             <<"\n\t of leaf " << leafBlock
-             <<" in the octree. ");
-    }
+      "Query pt: "
+      << queryPt
+      <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
+      <<" contained in bounding box " << leafBB
+      <<"\n\t of leaf " << leafBlock
+      <<" in the octree. ");
+  }
 
 
 }

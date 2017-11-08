@@ -20,8 +20,10 @@
 
 #include <string> // for std::string
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 class Mesh;
 
@@ -34,7 +36,7 @@ class Mesh;
  * \pre mesh != AXOM_NULLPTR
  * \note Thise method is primarily intended for debugging.
  */
-int write_vtk( const Mesh* mesh, const std::string& file_path );
+int write_vtk( const Mesh * mesh, const std::string& file_path );
 
 } /* namespace mint */
 } /* namespace axom */

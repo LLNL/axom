@@ -19,32 +19,35 @@
 
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-MeshCoordinates::MeshCoordinates(): m_ndims(2)
+MeshCoordinates::MeshCoordinates() : m_ndims(2)
 {
   this->initialize();
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates(int dimension): m_ndims(dimension)
+MeshCoordinates::MeshCoordinates(int dimension) : m_ndims(dimension)
 {
   this->initialize();
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates(int dimension,int npoints): m_ndims(dimension)
+MeshCoordinates::MeshCoordinates(int dimension,int npoints) : m_ndims(dimension)
 {
   this->initialize(npoints);
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates(int dimension, int ndims[3]):
+MeshCoordinates::MeshCoordinates(int dimension, int ndims[3]) :
   m_ndims(dimension)
 {
   m_coordinates.resize( m_ndims );
-  for ( int i=0; i < m_ndims; ++i ) {
+  for ( int i=0 ; i < m_ndims ; ++i )
+  {
     m_coordinates[ i ].resize( ndims[ i ] );
   }
 
@@ -53,7 +56,8 @@ MeshCoordinates::MeshCoordinates(int dimension, int ndims[3]):
 //------------------------------------------------------------------------------
 MeshCoordinates::~MeshCoordinates()
 {
-  for ( int i=0; i < m_ndims; ++i ) {
+  for ( int i=0 ; i < m_ndims ; ++i )
+  {
     m_coordinates[ i ].clear();
   }
   m_coordinates.clear();
@@ -133,7 +137,7 @@ double MeshCoordinates::getCoordinate( int pntIdx, int dim )
 }
 
 //------------------------------------------------------------------------------
-double* MeshCoordinates::getCoordinateArray(int dim)
+double * MeshCoordinates::getCoordinateArray(int dim)
 {
   SLIC_ASSERT( dim < m_ndims );
   return &(m_coordinates[ dim ][ 0 ]);
@@ -152,7 +156,8 @@ void MeshCoordinates::initialize()
   SLIC_ASSERT( m_ndims >= 1 );
 
   m_coordinates.resize( m_ndims );
-  for ( int i=0; i < m_ndims; ++i ) {
+  for ( int i=0 ; i < m_ndims ; ++i )
+  {
     m_coordinates[ i ].reserve( 100 );
   }
 }
@@ -163,7 +168,8 @@ void MeshCoordinates::initialize( int npoints )
   SLIC_ASSERT( m_ndims >= 1 );
 
   m_coordinates.resize( m_ndims );
-  for ( int i=0; i < m_ndims; ++i ) {
+  for ( int i=0 ; i < m_ndims ; ++i )
+  {
     m_coordinates[ i ].resize( npoints );
   }
 }

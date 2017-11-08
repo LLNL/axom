@@ -102,7 +102,7 @@ TEST(axom_utils_types,check_types_64)
   EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
 #else
   std::cout<<" Skipping 64-bit tests --"
-           <<" 64-bit integer typedefs not defined in this configuration." 
+           <<" 64-bit integer typedefs not defined in this configuration."
            << std::endl;
 
   EXPECT_TRUE(true);

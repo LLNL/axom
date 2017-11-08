@@ -42,17 +42,20 @@ int main(int argc, char * argv[])
   axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 2,
-      "Missing required command line argument. \n\t"
-      << "Usage: spio_IORead <sidre_root_file>");
+                "Missing required command line argument. \n\t"
+                << "Usage: spio_IORead <sidre_root_file>");
 
   DataStore * ds = new DataStore();
   SLIC_ASSERT(ds);
   Group * root = ds->getRoot();
 
   std::string root_file;
-  if (argc == 2) {
+  if (argc == 2)
+  {
     root_file = argv[1];
-  } else {
+  }
+  else
+  {
     return 0;
   }
 

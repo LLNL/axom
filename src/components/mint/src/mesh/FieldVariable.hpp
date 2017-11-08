@@ -30,11 +30,13 @@
 #include <cstddef> // for NULL
 #include <string>  // for C++ string
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 template < typename FieldType >
-class FieldVariable:public Field
+class FieldVariable : public Field
 {
 public:
 
@@ -57,32 +59,32 @@ public:
    * \return ptr pointer to the field data of type double.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double* getDoublePtr();
+  virtual double * getDoublePtr();
 
   /*!
    * \brief Returns a constant double pointer to the field data.
    * \return ptr constant pointer to the field data of type double.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double* getDoublePtr() const;
+  virtual const double * getDoublePtr() const;
 
   /*!
    * \brief Returns an integer pointer to the field data.
    * \return ptr pointer to the field data of type int.
    * \post ptr==AXOM_NULLPTR iff the data is not of type int.
    */
-  virtual int* getIntPtr();
+  virtual int * getIntPtr();
 
   /*!
    * \brief Returns a constant integer pointer to the field data.
    * \return ptr constant pointer to the field data of type int.
    * \post ptr==AXOM_NULLPTR iff the data is not of type int.
    */
-  virtual const int* getIntPtr() const;
+  virtual const int * getIntPtr() const;
 
 private:
 
-  FieldType* m_data;
+  FieldType * m_data;
 
   /*!
    * \brief FieldVariable constructor. Does nothing. Made private to prevent
@@ -100,12 +102,14 @@ private:
 //------------------------------------------------------------------------------
 //                  FIELD VARIABLE IMPLEMENTATION
 //------------------------------------------------------------------------------
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 template < typename FieldType >
 FieldVariable< FieldType >::FieldVariable(
-  const std::string& name, int size, int nc ):
+  const std::string& name, int size, int nc ) :
   Field( name, size, nc )
 {
   SLIC_ASSERT(  size >= 1 );
@@ -119,7 +123,8 @@ FieldVariable< FieldType >::FieldVariable(
 template < typename FieldType >
 FieldVariable< FieldType >::~FieldVariable( )
 {
-  if ( m_data != AXOM_NULLPTR ) {
+  if ( m_data != AXOM_NULLPTR )
+  {
     delete [] m_data;
     m_data = AXOM_NULLPTR;
   }
@@ -127,38 +132,40 @@ FieldVariable< FieldType >::~FieldVariable( )
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
-double* FieldVariable< FieldType >::getDoublePtr()
+double * FieldVariable< FieldType >::getDoublePtr()
 {
-  if ( m_type == DOUBLE_FIELD_TYPE ) {
-    return reinterpret_cast< double* >( m_data );
+  if ( m_type == DOUBLE_FIELD_TYPE )
+  {
+    return reinterpret_cast< double * >( m_data );
   }
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
-const double* FieldVariable< FieldType >::getDoublePtr() const
+const double * FieldVariable< FieldType >::getDoublePtr() const
 {
-  return const_cast< const double* >(
-    const_cast< FieldVariable* >( this )->getDoublePtr() );
+  return const_cast< const double * >(
+    const_cast< FieldVariable * >( this )->getDoublePtr() );
 }
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
-int* FieldVariable< FieldType >::getIntPtr()
+int * FieldVariable< FieldType >::getIntPtr()
 {
-  if ( m_type == INTEGER_FIELD_TYPE ) {
-    return reinterpret_cast< int* >( m_data );
+  if ( m_type == INTEGER_FIELD_TYPE )
+  {
+    return reinterpret_cast< int * >( m_data );
   }
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
-const int* FieldVariable< FieldType >::getIntPtr() const
+const int * FieldVariable< FieldType >::getIntPtr() const
 {
-  return const_cast< const int* >(
-    const_cast< FieldVariable* >( this )->getIntPtr() );
+  return const_cast< const int * >(
+    const_cast< FieldVariable * >( this )->getIntPtr() );
 }
 
 } /* namespace mint */

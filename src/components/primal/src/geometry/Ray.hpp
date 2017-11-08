@@ -26,8 +26,10 @@
 
 #include <ostream>
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T, int DIM >
@@ -129,12 +131,14 @@ private:
 // Ray Implementation
 //------------------------------------------------------------------------------
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-Ray< T,NDIMS >::Ray( const PointType& origin, const VectorType& direction ):
+Ray< T,NDIMS >::Ray( const PointType& origin, const VectorType& direction ) :
   m_origin( origin ),
   m_direction( direction.unitVector() )
 {
@@ -161,7 +165,8 @@ template < typename T, int NDIMS >
 inline Point< T,NDIMS > Ray< T,NDIMS >::at( const T& t ) const
 {
   PointType p;
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
     p[i] = m_origin[i] + t*m_direction[i];
   }
   return ( p );

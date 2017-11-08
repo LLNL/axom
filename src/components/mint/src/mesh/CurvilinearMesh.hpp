@@ -22,10 +22,12 @@
 #include "mint/MeshCoordinates.hpp"
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-class CurvilinearMesh:public StructuredMesh
+class CurvilinearMesh : public StructuredMesh
 {
 public:
 
@@ -60,7 +62,7 @@ public:
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    */
-  virtual void getNode( int nodeIdx, double* coordinates ) const;
+  virtual void getNode( int nodeIdx, double * coordinates ) const;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -69,7 +71,7 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
    */
-  virtual void getNode( int i, int j, double* coordinates ) const;
+  virtual void getNode( int i, int j, double * coordinates ) const;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -79,7 +81,7 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
    */
-  virtual void getNode( int i, int j, int k, double* coordinates ) const;
+  virtual void getNode( int i, int j, int k, double * coordinates ) const;
 
   /*!
    * \brief Returns the coordinate of the given node.
@@ -179,7 +181,7 @@ public:
    * \pre idim >= 0 && idim < this->getDimension().
    * \post ptr != AXOM_NULLPTR.
    */
-  const double* getMeshCoordinateArray( int idim ) const;
+  const double * getMeshCoordinateArray( int idim ) const;
 
 private:
 
@@ -189,7 +191,7 @@ private:
    */
   CurvilinearMesh();
 
-  MeshCoordinates* m_coordinates;
+  MeshCoordinates * m_coordinates;
 
   CurvilinearMesh(const CurvilinearMesh&); // Not implemented
   CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented
@@ -202,10 +204,12 @@ private:
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-inline const double* CurvilinearMesh::getMeshCoordinateArray( int idim ) const
+inline const double * CurvilinearMesh::getMeshCoordinateArray( int idim ) const
 {
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
   return( m_coordinates->getCoordinateArray( idim ) );
@@ -251,20 +255,21 @@ inline void CurvilinearMesh::setNode( int nodeIdx, double x )
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
+inline void CurvilinearMesh::getNode(int nodeIdx, double * coordinates) const
 {
   SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
-  for ( int i=0; i < this->getDimension(); ++i ) {
-    const double* coords = m_coordinates->getCoordinateArray( i );
+  for ( int i=0 ; i < this->getDimension() ; ++i )
+  {
+    const double * coords = m_coordinates->getCoordinateArray( i );
     coordinates[ i ] = coords[ nodeIdx ];
   }
 
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
+inline void CurvilinearMesh::getNode( int i, int j, double * coordinates ) const
 {
   SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==2 );
@@ -275,7 +280,7 @@ inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
 
 //------------------------------------------------------------------------------
 inline
-void CurvilinearMesh::getNode(int i, int j, int k, double* coordinates) const
+void CurvilinearMesh::getNode(int i, int j, int k, double * coordinates) const
 {
   SLIC_ASSERT(  coordinates !=  AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==3 );
@@ -290,7 +295,7 @@ inline double CurvilinearMesh::getNodeCoordinate( int nodeIdx, int idim ) const
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
   SLIC_ASSERT(  idim >= 0 && idim < this->getDimension() );
 
-  const double* coord = m_coordinates->getCoordinateArray( idim );
+  const double * coord = m_coordinates->getCoordinateArray( idim );
   return( coord[nodeIdx] );
 }
 

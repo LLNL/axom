@@ -26,11 +26,14 @@
 #define SLAM_PRODUCT_SET_H_
 
 
-namespace axom {
-namespace slam {
+namespace axom
+{
+namespace slam
+{
 
 
-    class ProductSet {};
+class ProductSet
+{};
 
 
 } // end namespace slam

@@ -26,8 +26,10 @@
   #include <cstddef>            // brings in NULL
 #endif
 
-namespace axom {
-namespace common {
+namespace axom
+{
+namespace common
+{
 
 #ifdef AXOM_USE_CXX11
 #define AXOM_NULLPTR nullptr
@@ -36,20 +38,20 @@ namespace common {
 #endif
 
 
-  typedef detail::int8_t int8;      /** Eight bit signed integer type */
-  typedef detail::uint8_t uint8;    /** Eight bit unsigned integer type */
+typedef detail::int8_t int8;        /** Eight bit signed integer type */
+typedef detail::uint8_t uint8;      /** Eight bit unsigned integer type */
 
-  typedef detail::int16_t int16;    /** Sixteen bit signed integer type */
-  typedef detail::uint16_t uint16;  /** Sixteen bit unsigned integer type */
+typedef detail::int16_t int16;      /** Sixteen bit signed integer type */
+typedef detail::uint16_t uint16;    /** Sixteen bit unsigned integer type */
 
-  typedef detail::int32_t int32;    /** Thirty-two bit signed integer type */
-  typedef detail::uint32_t uint32;  /** Thirty-two bit unsigned integer type */
+typedef detail::int32_t int32;      /** Thirty-two bit signed integer type */
+typedef detail::uint32_t uint32;    /** Thirty-two bit unsigned integer type */
 
-  // Note: KW -- We assume that AXOM_NO_INT64_T will be defined
-  // on systems/compilers that do not support 64 bit integer types
+// Note: KW -- We assume that AXOM_NO_INT64_T will be defined
+// on systems/compilers that do not support 64 bit integer types
   #ifndef AXOM_NO_INT64_T
-  typedef detail::int64_t int64;      /** Sixty-four bit signed integer type */
-  typedef detail::uint64_t uint64;    /** Sixty-four bit unsigned integer type */
+typedef detail::int64_t int64;        /** Sixty-four bit signed integer type */
+typedef detail::uint64_t uint64;      /** Sixty-four bit unsigned integer type */
   #endif
 
 } // end namespace common

@@ -45,84 +45,85 @@
 #include "slam/Map.hpp"
 
 
-namespace {
+namespace
+{
 
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-  using slam::RangeSet;
-  using slam::Relation;
+using slam::RangeSet;
+using slam::Relation;
 
-  typedef RangeSet::ElementType     ElementType;
-  typedef RangeSet::PositionType    PositionType;
-  typedef PositionType              SetPosition;
-  typedef std::vector<SetPosition>  IndexVec;
+typedef RangeSet::ElementType ElementType;
+typedef RangeSet::PositionType PositionType;
+typedef PositionType SetPosition;
+typedef std::vector<SetPosition>  IndexVec;
 
-  const PositionType FROMSET_SIZE = 10;
-  const PositionType TOSET_SIZE = 8;
+const PositionType FROMSET_SIZE = 10;
+const PositionType TOSET_SIZE = 8;
 
-  typedef policies::STLVectorIndirection<PositionType, PositionType>  
-    STLIndirection;
-  typedef policies::ArrayIndirection<PositionType, PositionType>      
-    ArrayIndirection;
+typedef policies::STLVectorIndirection<PositionType, PositionType>
+  STLIndirection;
+typedef policies::ArrayIndirection<PositionType, PositionType>
+  ArrayIndirection;
 
-  typedef policies::VariableCardinality<PositionType, STLIndirection> 
-    VariableCardinality;
+typedef policies::VariableCardinality<PositionType, STLIndirection>
+  VariableCardinality;
 
-  typedef slam::StaticRelation<VariableCardinality, STLIndirection,
+typedef slam::StaticRelation<VariableCardinality, STLIndirection,
                              slam::RangeSet,slam::RangeSet>
-    StaticVariableRelationType;
+  StaticVariableRelationType;
 
 
-  // Use a slam::ModularInt type for more interesting test data
-  typedef policies::CompileTimeSize<PositionType, TOSET_SIZE >  CTSize;
-  typedef slam::ModularInt< CTSize >                            FixedModularInt;
+// Use a slam::ModularInt type for more interesting test data
+typedef policies::CompileTimeSize<PositionType, TOSET_SIZE >  CTSize;
+typedef slam::ModularInt< CTSize >                            FixedModularInt;
 
 
-  PositionType elementCardinality(PositionType fromPos)
+PositionType elementCardinality(PositionType fromPos)
+{
+  return fromPos;
+}
+
+PositionType relationData(PositionType fromPos, PositionType toPos)
+{
+  return FixedModularInt(fromPos + toPos);
+}
+
+
+template<typename StrType, typename VecType>
+void printVector(StrType const& msg, VecType const& vec)
+{
+  std::stringstream sstr;
+
+  sstr << "\n** " << msg << "\n\t";
+  sstr << "Array of size " << vec.size() << ": ";
+  std::copy(vec.begin(), vec.end(),
+            std::ostream_iterator<PositionType>(sstr, " "));
+
+  SLIC_INFO( sstr.str() );
+}
+
+
+template<typename VecType>
+void generateIncrementingRelations(VecType * begins, VecType * offsets)
+{
+  VecType& beginsVec = *begins;
+  VecType& offsetsVec = *offsets;
+
+  PositionType curIdx = PositionType();
+
+  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
   {
-    return fromPos;
-  }
-
-  PositionType relationData(PositionType fromPos, PositionType toPos)
-  {
-    return FixedModularInt(fromPos + toPos);
-  }
-
-
-  template<typename StrType, typename VecType>
-  void printVector(StrType const& msg, VecType const& vec)
-  {
-    std::stringstream sstr;
-
-    sstr << "\n** " << msg << "\n\t";
-    sstr << "Array of size " << vec.size() << ": ";
-    std::copy(vec.begin(), vec.end(), 
-        std::ostream_iterator<PositionType>(sstr, " "));
-
-    SLIC_INFO( sstr.str() );
-  }
-
-
-  template<typename VecType>
-  void generateIncrementingRelations(VecType* begins, VecType* offsets)
-  {
-    VecType& beginsVec = *begins;
-    VecType& offsetsVec = *offsets;
-
-    PositionType curIdx = PositionType();
-
-    for(PositionType i = 0; i < FROMSET_SIZE; ++i)
+    beginsVec.push_back( curIdx );
+    for(PositionType j = 0 ; j < elementCardinality(i) ; ++j)
     {
-      beginsVec.push_back( curIdx );
-      for(PositionType j = 0; j < elementCardinality(i); ++j)
-      {
-        offsetsVec.push_back( relationData(i,j) );
-        ++curIdx;
-      }
+      offsetsVec.push_back( relationData(i,j) );
+      ++curIdx;
     }
-    beginsVec.push_back ( curIdx );
   }
+  beginsVec.push_back ( curIdx );
+}
 
 }
 
@@ -144,24 +145,25 @@ TEST(slam_set_relation_map,access_pattern)
   EXPECT_TRUE(incrementingRel.isValid(true));
 
   SLIC_INFO("-- Looking at relation's stored values...");
-  for(SetPosition fromPos = SetPosition(); fromPos < fromSet.size(); ++fromPos)
+  for(SetPosition fromPos = SetPosition() ; fromPos < fromSet.size() ;
+      ++fromPos)
   {
     SLIC_INFO(
-        "--Inspecting element "
-        << fromSet[fromPos]
-        << " in position " << fromPos << " of first set.");
+      "--Inspecting element "
+      << fromSet[fromPos]
+      << " in position " << fromPos << " of first set.");
 
-    for(SetPosition idx = 0; idx< incrementingRel.size( fromPos ); ++idx)
+    for(SetPosition idx = 0 ; idx< incrementingRel.size( fromPos ) ; ++idx)
     {
       SetPosition posInToSet_actual = incrementingRel[fromPos][idx];
       SetPosition posInToSet_expected = relationData(fromPos,idx);
       EXPECT_EQ( posInToSet_expected, posInToSet_actual);
 
       SLIC_INFO(
-          "-- \t pos: "
-          << idx
-          << " ToSet position: " << incrementingRel[fromPos][idx]
-          << " ToSet element " << toSet[ incrementingRel[fromPos][idx] ] );
+        "-- \t pos: "
+        << idx
+        << " ToSet position: " << incrementingRel[fromPos][idx]
+        << " ToSet element " << toSet[ incrementingRel[fromPos][idx] ] );
       ;
     }
   }

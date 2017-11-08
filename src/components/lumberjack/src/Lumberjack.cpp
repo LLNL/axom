@@ -237,7 +237,7 @@ const char * Lumberjack::packMessages()
 
   // Create and calculate size of message count
   std::string messageCountString =
-          axom::utilities::string::intToString(messageCount) + memberDelimiter;
+    axom::utilities::string::intToString(messageCount) + memberDelimiter;
   totalSize += messageCountString.size();
 
   const char * packedMessagesString = new char[totalSize];
@@ -320,8 +320,8 @@ void Lumberjack::combineMessages()
       for (int combinerIndex=0 ; combinerIndex<combinersSize ; ++combinerIndex)
       {
         if (m_combiners[combinerIndex]->
-              shouldMessagesBeCombined(*finalMessages[finalIndex],
-                                       *m_messages[allIndex]))
+            shouldMessagesBeCombined(*finalMessages[finalIndex],
+                                     *m_messages[allIndex]))
         {
           m_combiners[combinerIndex]->combine(*finalMessages[finalIndex],
                                               *m_messages[allIndex],

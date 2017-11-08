@@ -27,8 +27,10 @@
 // C/C++ includes
 #include <cassert> // for assert()
 
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
 /*!
  * \brief Solves a linear system of the form \f$ Ax=b \f$.
@@ -45,7 +47,7 @@ namespace numerics {
  * \note The input matrix is destroyed (modified) in the process.
  */
 template < typename T >
-int linear_solve( Matrix< T >& A, const T* b, T* x );
+int linear_solve( Matrix< T >& A, const T * b, T * x );
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -53,36 +55,44 @@ int linear_solve( Matrix< T >& A, const T* b, T* x );
 //------------------------------------------------------------------------------
 // Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
 template < typename T >
-int linear_solve( Matrix< T >& A, const T* b, T* x )
+int linear_solve( Matrix< T >& A, const T * b, T * x )
 {
   assert( "pre: input matrix must be square" && A.isSquare() );
   assert( "pre: solution vector is null" && (x != AXOM_NULLPTR) );
   assert( "pre: right-hand side vector is null" && (b != AXOM_NULLPTR) );
 
-  if ( !A.isSquare() ) {
+  if ( !A.isSquare() )
+  {
     return LU_NONSQUARE_MATRIX;
   }
 
   int N = A.getNumColumns();
 
-  if ( N==1 ) {
+  if ( N==1 )
+  {
 
-   if ( utilities::isNearlyEqual( A(0,0), 0.0 ) ) {
-     return -1;
-   }
+    if ( utilities::isNearlyEqual( A(0,0), 0.0 ) )
+    {
+      return -1;
+    }
 
-   x[ 0 ] = b[ 0 ] / A(0,0);
+    x[ 0 ] = b[ 0 ] / A(0,0);
 
-  } else if ( N==2 ) {
+  }
+  else if ( N==2 )
+  {
 
     // trivial solve
     T det = numerics::determinant( A );
 
-    if ( utilities::isNearlyEqual( det, 0.0 ) ) {
+    if ( utilities::isNearlyEqual( det, 0.0 ) )
+    {
       return -1;
     }
 
@@ -90,18 +100,22 @@ int linear_solve( Matrix< T >& A, const T* b, T* x )
     x[ 0 ]   = ( A( 1,1 )*b[0] - A( 0,1 )*b[1] ) * invdet;
     x[ 1 ]   = ( -A( 1,0)*b[0] + A( 0,0 )*b[1] ) * invdet;
 
-  } else {
+  }
+  else
+  {
 
     // non-trivial system, use LU
-    int *pivots = new int[ N ];
+    int * pivots = new int[ N ];
 
     int rc = lu_decompose( A, pivots );
-    if ( rc == LU_SUCCESS ) {
+    if ( rc == LU_SUCCESS )
+    {
       rc = lu_solve( A, pivots, b, x );
     }
 
     delete [] pivots;
-    if ( rc != LU_SUCCESS ) {
+    if ( rc != LU_SUCCESS )
+    {
       return -1;
     }
 

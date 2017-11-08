@@ -34,8 +34,10 @@
 #include <cassert> // for assert()
 #include <cmath>
 
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
 /*!
  * \brief Computes the dot product of the arrays u and v.
@@ -52,8 +54,8 @@ namespace numerics {
  * \pre u has at least dim entries
  * \pre v has at least dim entries
  */
-  template < typename T >
-  T dot_product(T * u, T * v, int dim);
+template < typename T >
+T dot_product(T * u, T * v, int dim);
 
 /*!
  * \brief Makes u orthogonal to v.
@@ -69,8 +71,8 @@ namespace numerics {
  * \pre v != AXOM_NULLPTR
  * \pre T is a floating point type
  */
-  template < typename T >
-  void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
+template < typename T >
+void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
 
 /*!
  * \brief Performs Gram-Schmidt orthonormalization in-place on a 2D array
@@ -90,8 +92,8 @@ namespace numerics {
  * \pre basis != AXOM_NULLPTR
  * \pre T is a floating point type
  */
-  template < typename T >
-  bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
+template < typename T >
+bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
 
 /*!
  * \brief Normalizes the passed in array.
@@ -109,8 +111,8 @@ namespace numerics {
  * \pre v != AXOM_NULLPTR
  * \pre T is a floating point type
  */
-  template < typename T >
-  bool normalize(T * v, int dim, double eps = 1e-16);
+template < typename T >
+bool normalize(T * v, int dim, double eps = 1e-16);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -119,104 +121,106 @@ namespace numerics {
 //------------------------------------------------------------------------------
 // Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
-  template < typename T >
-  T dot_product(T * u, T * v, int dim)
+template < typename T >
+T dot_product(T * u, T * v, int dim)
+{
+  assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
+  assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
+  assert("pre: dim >= 1" && (dim >= 1));
+
+  T res = u[0]*v[0];
+  for (int i = 1 ; i < dim ; ++i)
+    res += u[i]*v[i];
+
+  return res;
+}
+
+template < typename T >
+void make_orthogonal(T * u, T * v, int dim, double tol)
+{
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                         "pre: T is a floating point type");
+  assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
+  assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
+  assert("pre: dim >= 1" && (dim >= 1));
+
+  double norm = static_cast< double >(dot_product(v, v, dim));
+
+  if (norm < tol)
+    return;
+
+  T tnorm = static_cast< T >(norm);
+
+  T dot = dot_product(u, v, dim);
+
+  for (int l = 0 ; l < dim ; ++l)
+    u[l] -= ((dot*v[l])/tnorm);
+}
+
+template < typename T >
+bool orthonormalize(T * basis, int size, int dim, double eps)
+{
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                         "pre: T is a floating point type");
+  assert("pre: basis pointer is null" && (basis != AXOM_NULLPTR));
+  assert("pre: dim >= 1" && (dim >= 1));
+  assert("pre: size >= 1" && (size >= 1));
+  assert("pre: size <= dim" && (size <= dim));
+
+  for (int i = 0 ; i < size ; ++i)
   {
-    assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
-    assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
-    assert("pre: dim >= 1" && (dim >= 1));
+    T * curr = &basis[i*dim];
 
-    T res = u[0]*v[0];
-    for (int i = 1 ; i < dim ; ++i)
-      res += u[i]*v[i];
-
-    return res;
-  }
-
-  template < typename T >
-  void make_orthogonal(T * u, T * v, int dim, double tol)
-  {
-    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
-                       "pre: T is a floating point type");
-    assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
-    assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
-    assert("pre: dim >= 1" && (dim >= 1));
-
-    double norm = static_cast< double >(dot_product(v, v, dim));
-
-    if (norm < tol)
-      return;
-
-    T tnorm = static_cast< T >(norm);
-
-    T dot = dot_product(u, v, dim);
-
-    for (int l = 0 ; l < dim ; ++l)
-      u[l] -= ((dot*v[l])/tnorm);
-  }
-
-  template < typename T >
-  bool orthonormalize(T * basis, int size, int dim, double eps)
-  {
-    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
-                     "pre: T is a floating point type");
-    assert("pre: basis pointer is null" && (basis != AXOM_NULLPTR));
-    assert("pre: dim >= 1" && (dim >= 1));
-    assert("pre: size >= 1" && (size >= 1));
-    assert("pre: size <= dim" && (size <= dim));
-
-    for (int i = 0 ; i < size ; ++i)
+    // make curr orthogonal to previous ones
+    for (int j = 0 ; j < i ; ++j)
     {
-      T * curr = &basis[i*dim];
+      T * other = &basis[j*dim];
 
-      // make curr orthogonal to previous ones
-      for (int j = 0 ; j < i ; ++j)
-      {
-        T * other = &basis[j*dim];
-
-        make_orthogonal(curr, other, dim);
-      }
-
-      bool res = normalize(curr, dim, eps);
-
-      if (!res)
-      {
-        return false;
-      }
+      make_orthogonal(curr, other, dim);
     }
 
-    // success
-    return true;
-  }
+    bool res = normalize(curr, dim, eps);
 
-  template < typename T >
-  bool normalize(T * v, int dim, double eps)
-  {
-    AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
-                   "pre: T is a floating point type");
-    assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
-    assert("pre: dim >= 1" && (dim >= 1));
-
-    const double norm = static_cast< double >( dot_product(v, v, dim) );
-
-    if (utilities::isNearlyEqual< double >(norm, 0., eps))
+    if (!res)
     {
       return false;
     }
-
-
-    const T tnorm = static_cast< T >(std::sqrt(norm));
-    for (int l = 0 ; l < dim ; ++l)
-    {
-      v[l] /= tnorm;
-    }
-
-    // success
-    return true;
   }
+
+  // success
+  return true;
+}
+
+template < typename T >
+bool normalize(T * v, int dim, double eps)
+{
+  AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
+                         "pre: T is a floating point type");
+  assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
+  assert("pre: dim >= 1" && (dim >= 1));
+
+  const double norm = static_cast< double >( dot_product(v, v, dim) );
+
+  if (utilities::isNearlyEqual< double >(norm, 0., eps))
+  {
+    return false;
+  }
+
+
+  const T tnorm = static_cast< T >(std::sqrt(norm));
+  for (int l = 0 ; l < dim ; ++l)
+  {
+    v[l] /= tnorm;
+  }
+
+  // success
+  return true;
+}
 
 } /* end namespace numerics */
 } /* end namespace axom */

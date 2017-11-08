@@ -24,10 +24,12 @@
 // C/C++ includes
 #include <cstddef>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-Mesh::Mesh():
+Mesh::Mesh() :
   m_ndims(2),
   m_type(MINT_UNDEFINED_MESH),
   m_block_idx(0),
@@ -38,7 +40,7 @@ Mesh::Mesh():
 {}
 
 //------------------------------------------------------------------------------
-Mesh::Mesh( int ndims, int type, int blockId, int partId ):
+Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
   m_ndims( ndims ),
   m_type( type ),
   m_block_idx( blockId ),

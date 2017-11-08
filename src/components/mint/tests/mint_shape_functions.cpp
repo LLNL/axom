@@ -28,7 +28,8 @@ using mint::Lagrange;
 //------------------------------------------------------------------------------
 //  INTERNAL HELPER METHODS
 //------------------------------------------------------------------------------
-namespace {
+namespace
+{
 
 /*!
  * \brief Tests basic attributes of the shape function
@@ -43,8 +44,8 @@ void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
-  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
-                          << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
+                         << mint::cell::name[ CellType ] );
 
   const int ctype = sf.cellType();
   EXPECT_TRUE(  (ctype >= 0) && (ctype < MINT_NUM_CELL_TYPES) );
@@ -62,18 +63,20 @@ void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
   const double LO = sf.min()-TOL;
   const double HI = sf.max()+TOL;
 
-  double* xi = new double[ ndims ];
+  double * xi = new double[ ndims ];
   sf.center( xi );
-  for ( int i=0; i < ndims; ++i ) {
+  for ( int i=0 ; i < ndims ; ++i )
+  {
     EXPECT_TRUE(  xi[ i ] > LO );
     EXPECT_TRUE(  xi[ i ] < HI );
   }
   delete []  xi;
 
   const int N = ndofs*ndims;
-  double* coords = new double[ N ];
+  double * coords = new double[ N ];
   sf.coords( coords );
-  for ( int i=0; i < N; ++i ) {
+  for ( int i=0 ; i < N ; ++i )
+  {
     EXPECT_TRUE(  coords[ i ] > LO );
     EXPECT_TRUE(  coords[ i ] < HI );
   }
@@ -91,23 +94,25 @@ void kronecker_delta( )
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
-  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
-                          << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
+                         << mint::cell::name[ CellType ] );
 
   int ndims = sf.dimension();
   int ndofs = sf.numDofs();
 
   const int N    = ndofs*ndims;
-  double* phi    = new double[ ndofs ];
-  double* coords = new double[ N ];
+  double * phi    = new double[ ndofs ];
+  double * coords = new double[ N ];
   sf.coords( coords );
 
-  for ( int i=0; i < ndofs; ++i ) {
+  for ( int i=0 ; i < ndofs ; ++i )
+  {
 
-    double* nc = &coords[ i*ndims ];
+    double * nc = &coords[ i*ndims ];
     sf.evaluate( nc, phi );
 
-    for ( int j=0; j < ndofs; ++j ) {
+    for ( int j=0 ; j < ndofs ; ++j )
+    {
       double expected = ( i==j ) ? 1.0 : 0.0;
       EXPECT_DOUBLE_EQ( expected, phi[j] );
     }
@@ -128,26 +133,28 @@ void partition_of_unity()
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
-  SLIC_INFO( "checking "  << mint::basis_name[ BasisType ] << " / "
-                          << mint::cell::name[ CellType ] );
+  SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
+                         << mint::cell::name[ CellType ] );
 
   int ndims      = sf.dimension();
   int ndofs      = sf.numDofs();
   const int N    = ndofs*ndims;
-  double* coords = new double[ N ];
-  double* phi    = new double [ ndofs ];
-  double* center = new double[ ndims ];
+  double * coords = new double[ N ];
+  double * phi    = new double [ ndofs ];
+  double * center = new double[ ndims ];
 
   sf.coords( coords );
   sf.center( center );
 
-  for ( int i=0; i < ndofs; ++i ) {
+  for ( int i=0 ; i < ndofs ; ++i )
+  {
 
-    double* nc = &coords[ i*ndims ];
+    double * nc = &coords[ i*ndims ];
     sf.evaluate( nc, phi );
 
     double sum=0.0;
-    for ( int j=0; j < ndofs; ++j ) {
+    for ( int j=0 ; j < ndofs ; ++j )
+    {
       sum += phi[ j ];
     }  // END
 
@@ -159,24 +166,28 @@ void partition_of_unity()
   // test center
   sf.evaluate( center, phi );
   double sum=0.0;
-  for ( int i=0; i < ndofs; ++i ) {
+  for ( int i=0 ; i < ndofs ; ++i )
+  {
     sum += phi[ i ];
   }
   EXPECT_DOUBLE_EQ( 1.0, sum );
 
   // test other interior nodes
-  double* nc = new double[ ndims ];
-  for ( int i=0; i < ndofs; ++i ) {
+  double * nc = new double[ ndims ];
+  for ( int i=0 ; i < ndofs ; ++i )
+  {
 
-    double* xi = &coords[i*ndims];
-    for ( int j=0; j < ndims; ++j ) {
+    double * xi = &coords[i*ndims];
+    for ( int j=0 ; j < ndims ; ++j )
+    {
       nc[ j ] = ( xi[ j ] + center[ j ] )*0.5;
     }
 
     sf.evaluate( nc, phi );
 
     double sum=0.0;
-    for ( int j=0; j < ndofs; ++j ) {
+    for ( int j=0 ; j < ndofs ; ++j )
+    {
       sum += phi[ j ];
     }
     EXPECT_DOUBLE_EQ( 1.0, sum );

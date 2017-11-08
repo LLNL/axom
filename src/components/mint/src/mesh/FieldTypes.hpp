@@ -18,10 +18,13 @@
 #ifndef FIELDTYPES_HPP_
 #define FIELDTYPES_HPP_
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-enum FieldTypes {
+enum FieldTypes
+{
   UNDEFINED_FIELD_TYPE =-1,
 
   DOUBLE_FIELD_TYPE,

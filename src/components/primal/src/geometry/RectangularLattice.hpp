@@ -28,8 +28,10 @@
 #include <cmath>     // for std::floor
 #include <iostream>  // for ostream
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class RectangularLattice
@@ -100,7 +102,8 @@ public:
   {
     // Note: m_invSpacing is for efficiency.  It trades divisions for
     // multiplications, and handles dealing with 0-sized spacings
-    for (int i=0; i< NDIMS; ++i) {
+    for (int i=0 ; i< NDIMS ; ++i)
+    {
       m_invSpacing[i] =
         axom::utilities::isNearlyEqual(spacing[i], SpaceCoordType(0))
         ? SpaceCoordType(0)
@@ -120,7 +123,8 @@ public:
    * \pre When spacing_data is not NULL, it must have at least NDIMS entries
    * \note Spacing will be set to vector or ones if pointer is NULL
    */
-  RectangularLattice(SpaceCoordType* origin_data, SpaceCoordType* spacing_data)
+  RectangularLattice(SpaceCoordType * origin_data,
+                     SpaceCoordType * spacing_data)
   {
     m_origin = (origin_data != AXOM_NULLPTR)
                ? SpacePoint(origin_data)
@@ -132,7 +136,8 @@ public:
 
     // Note: m_invSpacing is for efficiency.  It trades divisions for
     // multiplications, and handles dealing with 0-sized spacings
-    for (int i=0; i< NDIMS; ++i) {
+    for (int i=0 ; i< NDIMS ; ++i)
+    {
       m_invSpacing[i] =
         axom::utilities::isNearlyEqual(m_spacing[i], SpaceCoordType(0))
         ? SpaceCoordType(0)
@@ -151,7 +156,8 @@ public:
   {
     GridCell cell;
 
-    for (int i=0; i< NDIMS; ++i) {
+    for (int i=0 ; i< NDIMS ; ++i)
+    {
       // Note: Always round down to negative infinity
       cell[i] = static_cast< CellCoordType >(
         std::floor( (pt[i] - m_origin[i]) * m_invSpacing[i] ) );
@@ -164,7 +170,8 @@ public:
   SpacePoint spacePoint(const GridCell& cell) const
   {
     SpacePoint pt;
-    for (int i=0; i< NDIMS; ++i) {
+    for (int i=0 ; i< NDIMS ; ++i)
+    {
       pt[i] = m_origin[i] + (m_spacing[i] * cell[i]);
     }
 
@@ -186,8 +193,8 @@ public:
   /*! Simple formatted print of a rectangular lattice */
   std::ostream& print(std::ostream& os) const
   {
-    os  <<"{ origin:"<<m_origin
-        <<"; spacing:"<< m_spacing <<" }";
+    os <<"{ origin:"<<m_origin
+       <<"; spacing:"<< m_spacing <<" }";
     return os;
   }
 
@@ -222,8 +229,10 @@ rectangular_lattice_from_bounding_box(
   SpaceVector spacing;
 
   // Use the resolution and the box range to compute the spacing
-  for (int i=0; i< NDIMS; ++i) {
-    if (gridRes[i] != SpaceCoordType(0)) {
+  for (int i=0 ; i< NDIMS ; ++i)
+  {
+    if (gridRes[i] != SpaceCoordType(0))
+    {
       spacing[i] = (bbox.getMax()[i] - bbox.getMin()[i]) / gridRes[i];
     }
   }
@@ -238,7 +247,7 @@ rectangular_lattice_from_bounding_box(
 /*! Equality operator on two RectangularLattices */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
 bool operator==(
-  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs ,
+  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs,
   const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
 {
   return lhs.origin() == rhs.origin() && lhs.spacing() == rhs.spacing();
@@ -247,7 +256,7 @@ bool operator==(
 /*! Inequality operator on two RectangularLattices */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
 bool operator!=(
-  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs ,
+  const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs,
   const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
 {
   return !(lhs == rhs);

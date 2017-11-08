@@ -25,10 +25,12 @@
 
 #include <cstddef> // for AXOM_NULLPTR
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-class ParticleMesh:public Mesh
+class ParticleMesh : public Mesh
 {
 
 public:
@@ -92,7 +94,9 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( int cellIdx, int* cell ) const { cell[0]=cellIdx; };
+  virtual void getMeshCell( int cellIdx, int * cell ) const {
+    cell[0]=cellIdx;
+  };
 
   /*!
    * \brief Returns the cell type of the cell associated with the given Id.
@@ -109,7 +113,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshNode( int nodeIdx, double* coordinates ) const
+  virtual void getMeshNode( int nodeIdx, double * coordinates ) const
   { this->getParticleCoordinates( nodeIdx, coordinates ); };
 
   /*!
@@ -137,7 +141,7 @@ public:
    * \return coords pointer to the coorindates array.
    * \pre idim >= 0 && idim < this->getDimension()
    */
-  double* getParticlesCoordinatesArray( int idim ) const;
+  double * getParticlesCoordinatesArray( int idim ) const;
 
   /*!
    * \brief Inserts a particle in to the particle mesh.
@@ -179,7 +183,7 @@ private:
    */
   ParticleMesh();
 
-  MeshCoordinates* m_particle_coordinates;
+  MeshCoordinates * m_particle_coordinates;
 
   DISABLE_COPY_AND_ASSIGNMENT(ParticleMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(ParticleMesh);
@@ -191,10 +195,12 @@ private:
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
+inline double * ParticleMesh::getParticlesCoordinatesArray( int idim ) const
 {
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
   return m_particle_coordinates->getCoordinateArray( idim );
@@ -227,8 +233,9 @@ inline void ParticleMesh::getParticleCoordinates( int partIdx,
 {
   SLIC_ASSERT( partIdx >= 0 && partIdx < this->getNumberOfParticles() );
 
-  for ( int i=0; i < this->getDimension(); ++i ) {
-    double* px = this->getParticlesCoordinatesArray( i );
+  for ( int i=0 ; i < this->getDimension() ; ++i )
+  {
+    double * px = this->getParticlesCoordinatesArray( i );
     part_coords[ i ] = px[ partIdx ];
   }
 

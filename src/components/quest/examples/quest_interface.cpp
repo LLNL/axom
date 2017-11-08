@@ -71,141 +71,142 @@ T scaleAndOffset( T rangeMin, T rangeMax, T val)
 
 void outputMeshStats()
 {
-    // Obtain and log the mesh bounding box
-    double bbMin[3], bbMax[3];
-    quest::mesh_min_bounds(bbMin);
-    quest::mesh_max_bounds(bbMax);
-    SLIC_INFO(
-        "Mesh bounding box: "
-        << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
-        << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}" );
+  // Obtain and log the mesh bounding box
+  double bbMin[3], bbMax[3];
+  quest::mesh_min_bounds(bbMin);
+  quest::mesh_max_bounds(bbMax);
+  SLIC_INFO(
+    "Mesh bounding box: "
+    << "{ lower: (" << bbMin[0] <<"," << bbMin[1] <<","<< bbMin[2] << ")"
+    << "; upper: (" << bbMax[0] <<"," << bbMax[1] <<","<< bbMax[2] << ")}" );
 
-    // Obtain and log the mesh center of mass
-    double cm[3];
-    quest::mesh_center_of_mass(cm);
-    SLIC_INFO(
-        "Mesh center of mass: "
-         << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"    );
+  // Obtain and log the mesh center of mass
+  double cm[3];
+  quest::mesh_center_of_mass(cm);
+  SLIC_INFO(
+    "Mesh center of mass: "
+    << "(" << cm[0] <<"," << cm[1] <<","<< cm[2] << ")"    );
 }
 
 void runQuestDistance(const std::string& fileName, const CoordsVec& points)
 {
-    const bool useDistance = true;
+  const bool useDistance = true;
 
   #ifdef AXOM_USE_MPI
-    quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
+  quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
   #else
-    quest::initialize( fileName, useDistance, 3, 25, 20 );
+  quest::initialize( fileName, useDistance, 3, 25, 20 );
   #endif
 
-    outputMeshStats();
+  outputMeshStats();
 
-    CoordsVec coords[3];
+  CoordsVec coords[3];
+  {
+    int nOrigPts = points.size()/3;
+
+    double bbMin[3], bbMax[3], cMass[3];
+    quest::mesh_min_bounds(bbMin);
+    quest::mesh_max_bounds(bbMax);
+    quest::mesh_center_of_mass(cMass);
+
+    // Reserve space and add the mesh BB center and center of mass
+    for(int i=0 ; i< 3 ; ++i)
     {
-        int nOrigPts = points.size()/3;
-
-        double bbMin[3], bbMax[3], cMass[3];
-        quest::mesh_min_bounds(bbMin);
-        quest::mesh_max_bounds(bbMax);
-        quest::mesh_center_of_mass(cMass);
-
-        // Reserve space and add the mesh BB center and center of mass
-        for(int i=0; i< 3; ++i)
-        {
-            coords[i].reserve(nOrigPts+2);
-            coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
-            coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
-        }
-
-        // Scale and add the random points from input parameter
-        for(int j=0; j< nOrigPts; ++j)
-        {
-            for(int i=0; i< 3; ++i)
-            {
-                coords[i].push_back( 
-                    scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
-            }
-        }
+      coords[i].reserve(nOrigPts+2);
+      coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
+      coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
     }
 
-
-    int nPoints = coords[0].size();
-    for(int i=0; i< nPoints; ++i)
+    // Scale and add the random points from input parameter
+    for(int j=0 ; j< nOrigPts ; ++j)
     {
-        // scale points within bounding box of mesh
-        const double x = coords[0][i];
-        const double y = coords[1][i];
-        const double z = coords[2][i];
-
-        const double phi = quest::distance(x,y,z);
-        const int ins = quest::inside( x,y,z );
-
-        SLIC_INFO(
-            "Point (" << x << ", " << y << ", " << z << ") "
-             << "is " << (ins? "inside" : "outside") << " surface."
-             <<" Distance is " << phi << ".");
+      for(int i=0 ; i< 3 ; ++i)
+      {
+        coords[i].push_back(
+          scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+      }
     }
+  }
 
-    quest::finalize();
+
+  int nPoints = coords[0].size();
+  for(int i=0 ; i< nPoints ; ++i)
+  {
+    // scale points within bounding box of mesh
+    const double x = coords[0][i];
+    const double y = coords[1][i];
+    const double z = coords[2][i];
+
+    const double phi = quest::distance(x,y,z);
+    const int ins = quest::inside( x,y,z );
+
+    SLIC_INFO(
+      "Point (" << x << ", " << y << ", " << z << ") "
+                << "is " << (ins ? "inside" : "outside") << " surface."
+                <<" Distance is " << phi << ".");
+  }
+
+  quest::finalize();
 }
 
 void runQuestContainment(const std::string& fileName, const CoordsVec& points)
 {
-    const bool useDistance = false;
-    const int unusedVar = -1;
+  const bool useDistance = false;
+  const int unusedVar = -1;
 
   #ifdef AXOM_USE_MPI
-    quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, unusedVar, unusedVar);
+  quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, unusedVar,
+                     unusedVar);
   #else
-    quest::initialize( fileName, useDistance, 3, unusedVar, unusedVar );
+  quest::initialize( fileName, useDistance, 3, unusedVar, unusedVar );
   #endif
 
-    outputMeshStats();
+  outputMeshStats();
 
-    CoordsVec coords[3];
+  CoordsVec coords[3];
+  {
+    int nOrigPts = points.size()/3;
+
+    double bbMin[3], bbMax[3], cMass[3];
+    quest::mesh_min_bounds(bbMin);
+    quest::mesh_max_bounds(bbMax);
+    quest::mesh_center_of_mass(cMass);
+
+    // Reserve space and add the mesh BB center and center of mass
+    for(int i=0 ; i< 3 ; ++i)
     {
-        int nOrigPts = points.size()/3;
-
-        double bbMin[3], bbMax[3], cMass[3];
-        quest::mesh_min_bounds(bbMin);
-        quest::mesh_max_bounds(bbMax);
-        quest::mesh_center_of_mass(cMass);
-
-        // Reserve space and add the mesh BB center and center of mass
-        for(int i=0; i< 3; ++i)
-        {
-            coords[i].reserve(nOrigPts+2);
-            coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
-            coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
-        }
-
-        // Scale and add the random points from input parameter
-        for(int j=0; j< nOrigPts; ++j)
-        {
-            for(int i=0; i< 3; ++i)
-            {
-                coords[i].push_back( 
-                    scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
-            }
-        }
+      coords[i].reserve(nOrigPts+2);
+      coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
+      coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
     }
 
-
-    int nPoints = coords[0].size();
-    for(int i=0; i< nPoints; ++i)
+    // Scale and add the random points from input parameter
+    for(int j=0 ; j< nOrigPts ; ++j)
     {
-        // scale points within bounding box of mesh
-        const double x = coords[0][i];
-        const double y = coords[1][i];
-        const double z = coords[2][i];
-        const int ins = quest::inside( x,y,z);
-
-        SLIC_INFO(
-            "Point (" << x << ", " << y << ", " << z << ") "
-            << "is " << (ins? "inside" : "outside") << " surface." );
+      for(int i=0 ; i< 3 ; ++i)
+      {
+        coords[i].push_back(
+          scaleAndOffset(bbMin[i], bbMax[i], points[j*3 + i]));
+      }
     }
+  }
 
-    quest::finalize();
+
+  int nPoints = coords[0].size();
+  for(int i=0 ; i< nPoints ; ++i)
+  {
+    // scale points within bounding box of mesh
+    const double x = coords[0][i];
+    const double y = coords[1][i];
+    const double z = coords[2][i];
+    const int ins = quest::inside( x,y,z);
+
+    SLIC_INFO(
+      "Point (" << x << ", " << y << ", " << z << ") "
+                << "is " << (ins ? "inside" : "outside") << " surface." );
+  }
+
+  quest::finalize();
 }
 
 
@@ -222,7 +223,7 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
  *
  * \endverbatim
  */
-int main( int argc, char**argv )
+int main( int argc, char * * argv )
 {
 #ifdef AXOM_USE_MPI
   // Initialize MPI
@@ -233,20 +234,21 @@ int main( int argc, char**argv )
   axom::slic::initialize();
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
-  axom::slic::LogStream* logStream;
+  axom::slic::LogStream * logStream;
 
 #ifdef AXOM_USE_MPI
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef AXOM_USE_LUMBERJACK
-    const int RLIMIT = 8;
-    logStream = 
-        new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
+  const int RLIMIT = 8;
+  logStream =
+    new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
   #else
-    logStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
+  logStream =
+    new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
   #endif
 #else
-    std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
-    logStream = new axom::slic::GenericOutputStream(&std::cout, fmt);
+  std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
+  logStream = new axom::slic::GenericOutputStream(&std::cout, fmt);
 #endif // AXOM_USE_MPI
 
   axom::slic::addStreamToAllMsgLevels( logStream );
@@ -254,12 +256,12 @@ int main( int argc, char**argv )
   if(argc != 2)
   {
   #ifdef AXOM_USE_MPI
-      SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface_ex <stl_file>");
+    SLIC_WARNING("Usage: [mpirun -np N] ./quest_interface_ex <stl_file>");
   #else
-      SLIC_WARNING("Usage: ./quest_interface_ex <stl_file>");
+    SLIC_WARNING("Usage: ./quest_interface_ex <stl_file>");
   #endif
-      axom::slic::finalize();
-      axom::utilities::processAbort();
+    axom::slic::finalize();
+    axom::utilities::processAbort();
   }
 
   // Generate the query points
@@ -271,11 +273,11 @@ int main( int argc, char**argv )
   const double ub = 1.;
   CoordsVec ptVec;
   ptVec.reserve(3*npoints);
-  for ( int ipnt=0; ipnt < npoints; ++ipnt )
+  for ( int ipnt=0 ; ipnt < npoints ; ++ipnt )
   {
-      ptVec.push_back( getRandomDouble(lb,ub) );
-      ptVec.push_back( getRandomDouble(lb,ub) );
-      ptVec.push_back( getRandomDouble(lb,ub) );
+    ptVec.push_back( getRandomDouble(lb,ub) );
+    ptVec.push_back( getRandomDouble(lb,ub) );
+    ptVec.push_back( getRandomDouble(lb,ub) );
   }
 
   SLIC_INFO("**Running distance queries using quest interface...");
@@ -295,4 +297,3 @@ int main( int argc, char**argv )
 
   return 0;
 }
-

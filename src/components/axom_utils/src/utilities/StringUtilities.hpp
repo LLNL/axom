@@ -20,22 +20,25 @@
 
 #include <string>
 
-namespace axom {
-namespace utilities {
-namespace string {
+namespace axom
+{
+namespace utilities
+{
+namespace string
+{
 
 /*!
-* \brief Returns the converted integer as a string.
-*
-* \param [in] intValue Integer to be converted to a string.
-*/
+ * \brief Returns the converted integer as a string.
+ *
+ * \param [in] intValue Integer to be converted to a string.
+ */
 std::string intToString(int intValue);
 
 /*!
-* \brief Returns the converted string as a integer.
-*
-* \param [in] stringValue String to be converted to a integer.
-*/
+ * \brief Returns the converted string as a integer.
+ *
+ * \param [in] stringValue String to be converted to a integer.
+ */
 int stringToInt(const std::string& stringValue);
 
 

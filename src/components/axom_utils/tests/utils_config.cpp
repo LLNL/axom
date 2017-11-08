@@ -116,7 +116,8 @@ TEST(axom_utils_config,config_libraries)
 #endif
 
   std::stringstream sstr;
-  std::copy( libs.begin(), libs.end(), std::ostream_iterator<std::string>(sstr, "; "));
+  std::copy( libs.begin(), libs.end(),
+             std::ostream_iterator<std::string>(sstr, "; "));
   std::cout << "\t{ " << sstr.str() << "}" << std::endl;
 
   EXPECT_TRUE(true);
@@ -169,7 +170,8 @@ TEST(axom_utils_config,config_components)
 
 
   std::stringstream sstr;
-  std:: copy( comps.begin(), comps.end(), std::ostream_iterator<std::string>(sstr, "; "));
+  std:: copy( comps.begin(), comps.end(),
+              std::ostream_iterator<std::string>(sstr, "; "));
   std::cout << "\t{ " << sstr.str() << "}" << std::endl;
 
   EXPECT_TRUE(true);
@@ -177,72 +179,72 @@ TEST(axom_utils_config,config_components)
 
 TEST(axom_utils_config,config_openmp)
 {
-    // This test checks that the per-target OpenMP guards
-    // in our configuration file 'axom/config.hpp' are working properly
+  // This test checks that the per-target OpenMP guards
+  // in our configuration file 'axom/config.hpp' are working properly
 
 #ifdef AXOM_USE_OPENMP
-    std::cout << "OpenMP is available in this configuration." << std::endl;
+  std::cout << "OpenMP is available in this configuration." << std::endl;
 
     #pragma omp parallel
-    {
-      int thId = omp_get_thread_num();
-      int thNum = omp_get_num_threads();
-      int thMax = omp_get_max_threads();
+  {
+    int thId = omp_get_thread_num();
+    int thNum = omp_get_num_threads();
+    int thMax = omp_get_max_threads();
 
       #pragma omp critical
-      std::cout <<"\tMy thread id is: " << thId
+    std::cout <<"\tMy thread id is: " << thId
               <<"\tNum threads is: " << thNum
               <<"\tMax threads is: " << thMax
               << std::endl;
-    }
+  }
 
 #else
-    std::cout << "OpenMP not available in this configuration." << std::endl;
+  std::cout << "OpenMP not available in this configuration." << std::endl;
 #endif
 
 
-    // Tests a simple reduction over integers
-    // Note: Non-openmp configurations are compiled with a flag
-    //       to ignore usage of unknown openmp pragmas
-    const int N = 100;
-    int sum=0;
+  // Tests a simple reduction over integers
+  // Note: Non-openmp configurations are compiled with a flag
+  //       to ignore usage of unknown openmp pragmas
+  const int N = 100;
+  int sum=0;
     #pragma omp parallel for reduction(+:sum)
-    for(int i=1; i<=N; ++i)
-    {
-        sum += i;
-    }
-    EXPECT_EQ( N * (N+1) / 2, sum) << "Bad reduction on first " << N << " integers";
-    std::cout << "Sum of first " << N << " numbers is: " << sum << std::endl;
+  for(int i=1 ; i<=N ; ++i)
+  {
+    sum += i;
+  }
+  EXPECT_EQ( N * (N+1) / 2,
+             sum) << "Bad reduction on first " << N << " integers";
+  std::cout << "Sum of first " << N << " numbers is: " << sum << std::endl;
 
 }
 
 #ifdef AXOM_USE_BOOST
 TEST(axom_utils_config,boost_version)
 {
-    std::cout << "Using boost version "
-          << BOOST_VERSION / 100000     << "."  // major version
-          << BOOST_VERSION / 100 % 1000 << "."  // minor version
-          << BOOST_VERSION % 100                // patch level
-          << std::endl;
+  std::cout << "Using boost version "
+            << BOOST_VERSION / 100000     << "."// major version
+            << BOOST_VERSION / 100 % 1000 << "." // minor version
+            << BOOST_VERSION % 100              // patch level
+            << std::endl;
 }
 #endif // AXOM_USE_BOOST
 
 #ifdef AXOM_USE_MFEM
 TEST(axom_utils_config,mfem_configuration)
 {
-    // Verify that this copy of mfem is configured without MPI
-    bool hasMPI = false;
+  // Verify that this copy of mfem is configured without MPI
+  bool hasMPI = false;
     #ifdef MFEM_USE_MPI
-       hasMPI = true;
+  hasMPI = true;
     #endif
-    EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
+  EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
 
-    // Verify that this copy of mfem is configured without Sidre
-    bool hasSidre = false;
+  // Verify that this copy of mfem is configured without Sidre
+  bool hasSidre = false;
     #ifdef MFEM_USE_SIDRE
-       hasSidre = true;
+  hasSidre = true;
     #endif
-    EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
+  EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
 }
 #endif // AXOM_USE_MFEM
-

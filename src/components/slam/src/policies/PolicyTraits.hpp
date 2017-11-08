@@ -28,45 +28,48 @@
 #include "slam/SizePolicies.hpp"
 #include "slam/StridePolicies.hpp"
 
-namespace axom {
-namespace slam {
-namespace policies {
+namespace axom
+{
+namespace slam
+{
+namespace policies
+{
 
-  /**
-   * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
-   */
-    template<typename StridePolicyType, typename IntType, int VAL = 1> 
-    struct StrideToSize
-    {
-        typedef CompileTimeSize<IntType, VAL> SizeType;
-    };
+/**
+ * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
+ */
+template<typename StridePolicyType, typename IntType, int VAL = 1>
+struct StrideToSize
+{
+  typedef CompileTimeSize<IntType, VAL> SizeType;
+};
 
-  /**
-   * \brief Specialization of StrideToSize trait for a RuntimeStride
-   */
-  template<typename IntType>
-  struct StrideToSize < RuntimeStride<IntType>, IntType >
-  {
-    typedef RuntimeSize<IntType> SizeType;
-  };
+/**
+ * \brief Specialization of StrideToSize trait for a RuntimeStride
+ */
+template<typename IntType>
+struct StrideToSize < RuntimeStride<IntType>, IntType >
+{
+  typedef RuntimeSize<IntType> SizeType;
+};
 
-  /**
-   * \brief Specialization of StrideToSize trait for a CompileTimeStride
-   */
-  template<typename IntType, int VAL>
-  struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
-  {
-    typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
-  };
+/**
+ * \brief Specialization of StrideToSize trait for a CompileTimeStride
+ */
+template<typename IntType, int VAL>
+struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
+{
+  typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
+};
 
-  /**
-   * \brief Specialization of StrideToSize trait for a StrideOne type
-   */
-  template<typename IntType>
-  struct StrideToSize< StrideOne<IntType>, IntType >
-  {
-    typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
-  };
+/**
+ * \brief Specialization of StrideToSize trait for a StrideOne type
+ */
+template<typename IntType>
+struct StrideToSize< StrideOne<IntType>, IntType >
+{
+  typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
+};
 
 
 } // end namespace policies

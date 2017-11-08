@@ -26,13 +26,16 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
-void shroud_FccCopy(char *a, int la, const char *s)
+void shroud_FccCopy(char * a, int la, const char * s)
 {
-   int ls,nm;
-   ls = strlen(s);
-   nm = ls < la ? ls : la;
-   memcpy(a,s,nm);
-   if(la > nm) { memset(a+nm,' ',la-nm);}
+  int ls,nm;
+  ls = strlen(s);
+  nm = ls < la ? ls : la;
+  memcpy(a,s,nm);
+  if(la > nm)
+  {
+    memset(a+nm,' ',la-nm);
+  }
 }
 
 // equivalent to C_LOC
@@ -48,11 +51,11 @@ void shroud_FccCopy(char *a, int la, const char *s)
 //
 // The result must be an argument because some compilers (Intel)
 // cannot return type(C_PTR)
-void shroud_c_loc(void * addr, void ** out)
+void shroud_c_loc(void * addr, void * * out)
 {
   *out = addr;
 }
-void shroud_c_loc_(void * addr, void ** out)
+void shroud_c_loc_(void * addr, void * * out)
 {
   *out = addr;
 }

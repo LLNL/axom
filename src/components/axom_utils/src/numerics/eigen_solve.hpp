@@ -30,8 +30,10 @@
 #include <cmath> // for sqrt() and rand()
 #include <ctime> // for time(0)
 
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
 /*!
  * \brief Approximates k eigenvectors and eigenvalues of the passed in square
@@ -63,7 +65,8 @@ namespace numerics {
  * \pre System randomizer has been initialized (for example, with srand())
  */
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=125);
+int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas,
+                int numIterations=125);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -72,10 +75,13 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations=125);
 //------------------------------------------------------------------------------
 // Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
-namespace {
+namespace
+{
 
 /*!
  * \brief Returns a uniformly distributed random between 0 and 1.
@@ -90,18 +96,19 @@ T getRandom()
 } /* end anonymous namespace */
 
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
+int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas, int numIterations)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
   assert("pre: input matrix must be square" && A.isSquare());
-  assert("pre: can't have more eigenvectors than rows" && (k <= A.getNumRows()));
+  assert("pre: can't have more eigenvectors than rows" &&
+         (k <= A.getNumRows()));
   assert("pre: eigenvectors pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR));
 
   if (!A.isSquare())
   {
-   return 0;
+    return 0;
   }
 
   if (k <= 0)
@@ -119,12 +126,14 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
 
     T * vec = &u[i*N];
     // 1: generate random vec
-    for (int j = 0; j < N; j++) {
+    for (int j = 0 ; j < N ; j++)
+    {
       vec[j] = getRandom< T >();
     }
 
     // 2: make ortho to previous eigenvecs then normalize
-    for (int j = 0 ; j < i ; j++) {
+    for (int j = 0 ; j < i ; j++)
+    {
       make_orthogonal< T >(vec, u + j*N, N);
     }
 

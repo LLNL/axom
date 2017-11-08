@@ -26,27 +26,29 @@
 
 #include "IndirectionSet.hpp"
 
-namespace axom {
-namespace slam {
+namespace axom
+{
+namespace slam
+{
 
-  const NullSet IndirectionSet::s_nullSet;
+const NullSet IndirectionSet::s_nullSet;
 
-  bool IndirectionSet::isValid(bool verboseOutput) const
+bool IndirectionSet::isValid(bool verboseOutput) const
+{
+  bool bValid = true;
+
+  std::stringstream errStr;
+
+  // Not much to check here since we are essentially wrapping around an array/vector
+
+  if(verboseOutput)
   {
-    bool bValid = true;
-
-    std::stringstream errStr;
-
-    // Not much to check here since we are essentially wrapping around an array/vector
-
-    if(verboseOutput)
-    {
-      if( !bValid)
-        std::cout << " There was a problem: " << errStr.str() << std::endl;
-    }
-
-    return bValid;
+    if( !bValid)
+      std::cout << " There was a problem: " << errStr.str() << std::endl;
   }
+
+  return bValid;
+}
 
 } /* namespace slam */
 } /* namespace axom */

@@ -25,8 +25,10 @@
 
 #include "mint/FEBasis.hpp"      // for FEBasis traits class
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 // Forward Declarations
 class Mesh;
@@ -38,7 +40,8 @@ class Mesh;
  *
  * \see FiniteElement::computeReferenceCoords()
  */
-enum {
+enum
+{
   INVERSE_MAP_FAILED = -1, /*!< INVERSE_MAP_FAILED */
   OUTSIDE_ELEMENT,         /*!< OUTSIDE_ELEMENT    */
   INSIDE_ELEMENT           /*!< INSIDE_ELEMENT     */
@@ -121,7 +124,7 @@ public:
    *
    * \see mint::Mesh
    */
-  FiniteElement( const Mesh* mesh, int cellIdx );
+  FiniteElement( const Mesh * mesh, int cellIdx );
 
   /*!
    * \brief Constructs a FiniteElement instance from a matrix consisting of the
@@ -255,8 +258,8 @@ public:
    */
   /// @{
 
-  double* getPhysicalNodes() { return m_xyz; };
-  const double* getPhysicalNodes( ) const { return m_xyz; };
+  double * getPhysicalNodes() { return m_xyz; };
+  const double * getPhysicalNodes( ) const { return m_xyz; };
 
   /// @}
 
@@ -292,8 +295,8 @@ public:
    */
   /// @{
 
-  double* getReferenceNodes() { return m_reference_coords; };
-  const double* getReferenceNodes() const { return m_reference_coords; };
+  double * getReferenceNodes() { return m_reference_coords; };
+  const double * getReferenceNodes() const { return m_reference_coords; };
 
   /// @}
 
@@ -310,8 +313,8 @@ public:
    */
   /// @{
 
-  double* getReferenceCenter() { return m_reference_center; };
-  const double* getReferenceCenter() const { return m_reference_center; };
+  double * getReferenceCenter() { return m_reference_center; };
+  const double * getReferenceCenter() const { return m_reference_center; };
 
   /// @}
 
@@ -335,8 +338,8 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  int computeReferenceCoords( const double* xp,
-                              double* xr,
+  int computeReferenceCoords( const double * xp,
+                              double * xr,
                               double TOL=1.e-12 );
 
   /*!
@@ -351,7 +354,7 @@ public:
    * \pre xp != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void computePhysicalCoords( const double* xr, double* xp);
+  void computePhysicalCoords( const double * xr, double * xp);
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -363,7 +366,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre this->getBasisType() != MINT_UNDEFINED_BASIS
    */
-  void jacobian( const double* xr, numerics::Matrix< double >& J );
+  void jacobian( const double * xr, numerics::Matrix< double >& J );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -378,7 +381,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre phi != AXOM_NULLPTR
    */
-  void evaluateShapeFunctions( const double* xr, double* phi );
+  void evaluateShapeFunctions( const double * xr, double * phi );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -421,7 +424,7 @@ public:
    * \pre xr != AXOM_NULLPTR
    * \pre phidot != AXOM_NULLPTR
    */
-  void evaluateDerivatives( const double* xr, double* phidot );
+  void evaluateDerivatives( const double * xr, double * phidot );
 
   /// \name Friend Functions
   /// @{
@@ -467,7 +470,7 @@ private:
    * \pre m != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < m->getMeshNumberOfCells()
    */
-  void getCellCoords( const Mesh* m, int cellIdx );
+  void getCellCoords( const Mesh * m, int cellIdx );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
@@ -493,7 +496,7 @@ private:
    *
    * \pre xr != AXOM_NULLPTR
    */
-  bool inReferenceElement( const double* xr, double TOL=1.e-12 );
+  bool inReferenceElement( const double * xr, double TOL=1.e-12 );
 
   /// @}
 
@@ -501,7 +504,7 @@ private:
    * \brief Default Constructor. Does nothing.
    * \note Made private to prevent host-code from calling this.
    */
-  FiniteElement(): m_dim( -1 ),
+  FiniteElement() : m_dim( -1 ),
     m_ctype( -1 ),
     m_shape_func_type( -1 ),
     m_maxNewtonIterations( -1 ),
@@ -530,10 +533,10 @@ private:
   int m_maxNewtonIterations;   /*!< max newton iterations for inverse map */
   int m_numnodes;              /*!< number of nodes of the element */
 
-  double* m_jac;               /*!< stores jacobian at some point */
-  double* m_xyz;               /*!< stores element coordinates */
-  double* m_phi;               /*!< stores shape functions at some point */
-  double* m_phidot;            /*!< stores shape function derivatives */
+  double * m_jac;               /*!< stores jacobian at some point */
+  double * m_xyz;               /*!< stores element coordinates */
+  double * m_phi;               /*!< stores shape functions at some point */
+  double * m_phidot;            /*!< stores shape function derivatives */
 
   bool m_usingExternal;        /*!< indicates whether the element coordinates
                                     are pointing to an external buffer. */
@@ -542,7 +545,7 @@ private:
   /// \name Reference Element Attributes
   /// @{
 
-  typedef void (*ShapeFunctionPtr)(const double* lc, double* phi);
+  typedef void (* ShapeFunctionPtr)(const double * lc, double * phi);
   ShapeFunctionPtr m_shapeFunction;             /*! shape function functor */
   ShapeFunctionPtr m_shapeFunctionDerivatives;  /*! derivatives functor */
 
@@ -551,8 +554,8 @@ private:
   int m_reference_dim;     /*!< dimension of the reference space */
   int m_numdofs;           /*!< number of degrees of freedom */
 
-  double* m_reference_coords; /*!< stores reference coords \f$ \xi_i \f$ */
-  double* m_reference_center; /*!< stores reference center \f$ \xi_c \f$ */
+  double * m_reference_coords; /*!< stores reference coords \f$ \xi_i \f$ */
+  double * m_reference_center; /*!< stores reference center \f$ \xi_c \f$ */
 
   /// @}
 
@@ -566,8 +569,10 @@ private:
 //------------------------------------------------------------------------------
 //    IMPLEMENTATION OF TEMPLATED FRIEND METHODS
 //------------------------------------------------------------------------------
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 template < int BasisType, int CellType >
 void bind_basis( FiniteElement& fe )
@@ -579,7 +584,8 @@ void bind_basis( FiniteElement& fe )
   typedef mint::FEBasis< BasisType, CellType > FEBasisType;
   typedef typename FEBasisType::ShapeFunctionType ShapeType;
 
-  if ( CellType != fe.getCellType() ) {
+  if ( CellType != fe.getCellType() )
+  {
     SLIC_WARNING( "Inconsistent celltype, cannot bind FEBasis!" );
     return;
   }

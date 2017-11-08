@@ -31,13 +31,15 @@
 
 using namespace axom;
 
-namespace {
+namespace
+{
 
 double randomDouble(double beg = 0., double end = 1.)
 {
   double range = end-beg;
 
-  if (range == 0) {
+  if (range == 0)
+  {
     range = 1.;
   }
 
@@ -48,7 +50,8 @@ template < int NDIMS >
 primal::Point< double,NDIMS > randomPt( double beg, double end )
 {
   primal::Point< double,NDIMS > pt;
-  for ( int i=0; i< NDIMS; ++i ) {
+  for ( int i=0 ; i< NDIMS ; ++i )
+  {
     pt[i] = randomDouble(beg,end);
   }
 
@@ -77,8 +80,10 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
 
   bool allmatch = true;
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(a, i), roll(b, j),
                                     includeBoundary) == testtrue);
@@ -88,8 +93,10 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   const primal::Triangle< double, DIM > ap(a[0], a[2], a[1]);
   const primal::Triangle< double, DIM > bp(b[0], b[2], b[1]);
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(ap, i), roll(bp, j),
                                     includeBoundary) == testtrue);
@@ -98,26 +105,32 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
 
   // Now swap a for b
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(b, i), roll(a, j),
                                     includeBoundary) == testtrue);
     }
   }
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(bp, i), roll(ap, j),
                                     includeBoundary) == testtrue);
     }
   }
 
-  if (allmatch) {
+  if (allmatch)
+  {
     SUCCEED();
   }
-  else {
+  else
+  {
     ADD_FAILURE() << (testtrue ?
                       "Triangles should intersect but did not" :
                       "Triangles should not intersect but did");
@@ -864,16 +877,19 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
   // How many tests are we actually performing here?
   int rantests = 0;
   int skiptests = 0;
-  for (int i=0; i<5000; i++) {
+  for (int i=0 ; i<5000 ; i++)
+  {
     Triangle3 randomTriangle, intersectingTriangle;
 
     if (makeTwoRandomIntersecting3DTriangles(randomTriangle,
-                                             intersectingTriangle)) {
+                                             intersectingTriangle))
+    {
       permuteCornersTest(randomTriangle, intersectingTriangle, "random", true,
                          true);
       rantests += 1;
     }
-    else {
+    else
+    {
       skiptests += 1;
     }
   }
@@ -928,7 +944,7 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
             << "\n\t -- intersects? "
             << (primal::intersect(tri2, box2) ? "yes" : "no")
             //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ? "yes":"no")
-  );
+            );
   //EXPECT_TRUE( primal::intersect(tri, box1));
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
@@ -1037,7 +1053,8 @@ primal::Point< T, DIM > triangleAt(const primal::Triangle< T, DIM > & tri,
   primal::NumericArray< T, 3 > weights = bary.array() / denom;
 
   primal::NumericArray< T, 3 > res = weights[0] * tri[0].array() +
-    weights[1] * tri[1].array() + weights[2] * tri[2].array();
+                                     weights[1] * tri[1].array() + weights[2] *
+                                     tri[2].array();
 
   return primal::Point< T, DIM >(res);
 }
@@ -1067,8 +1084,8 @@ void ensureTriPointMatchesRayPoint(const primal::Triangle< T, DIM > & tri,
 template < int DIM >
 void testRayIntersection(const primal::Triangle< double, DIM > & tri,
                          const primal::Ray< double, DIM > & ray,
-                        const std::string & whattest,
-                        const bool testtrue)
+                         const std::string & whattest,
+                         const bool testtrue)
 {
   SCOPED_TRACE(whattest);
 
@@ -1077,14 +1094,17 @@ void testRayIntersection(const primal::Triangle< double, DIM > & tri,
   PointType tip;
   double t = 0.;
 
-  if (testtrue) {
+  if (testtrue)
+  {
     EXPECT_TRUE(intersect(tri, ray, t, tip));
     PointType tripoint = triangleAt(tri, tip);
     PointType raypoint = ray.at(t);
-    EXPECT_TRUE(testPointsClose(tripoint, raypoint)) 
-        << "Tripoint is " << tripoint <<
-       " and raypoint is " << raypoint;
-  } else {
+    EXPECT_TRUE(testPointsClose(tripoint, raypoint))
+      << "Tripoint is " << tripoint <<
+      " and raypoint is " << raypoint;
+  }
+  else
+  {
     EXPECT_FALSE( intersect(tri, ray, t, tip))
       <<"Expected no intersection; Found one at point "
       << ray.at(t);
@@ -1108,16 +1128,17 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
 
   SegmentType seg1(p1, p2);
   SegmentType seg2(p2, p1);
-  if (testtrue) {
+  if (testtrue)
+  {
     // Find the intersection of segment from p1 to p2
     double t1 = 0;
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
     PointType tripoint1 = triangleAt(tri, tip1);
     PointType segpoint1 = segmentAt(seg1, t1);
-    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) 
-       << "Tripoint is " << tripoint1 << 
-       " and segpoint is " << segpoint1;
+    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1))
+      << "Tripoint is " << tripoint1 <<
+      " and segpoint is " << segpoint1;
 
     // Find the intersection of segment from p1 to p2
     double t2 = 0;
@@ -1127,7 +1148,8 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     PointType segpoint2 = segmentAt(seg2, t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
   }
-  else{
+  else
+  {
     EXPECT_FALSE( intersect(tri, seg1, t, tip))
       <<"Expected no intersection; Found one at point "
       << segmentAt(seg1, t);
@@ -1290,7 +1312,8 @@ TEST(primal_intersect, triangle_ray_intersection)
   testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0),
                                 PointType::make_point(-1, 0.5, 0)));
   testRayIntersection(tri2, testRay,
-                      "coplanar intersection, reported as miss by design", false);
+                      "coplanar intersection, reported as miss by design",
+                      false);
 
   // Coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
@@ -1388,7 +1411,8 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
   QPoint pt1;  // origin
   QVector u1[DIM];  // make standard axes
   QVector u2[DIM];  // axes rotated by 90 degrees
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0 ; i < DIM ; i++)
+  {
     u1[i] = QVector();
     u2[i] = QVector();
     u1[i][i] = 1.;
@@ -1443,7 +1467,8 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
   QVector u1[DIM];  // make standard axes
   QVector u2[DIM];  // first two axes rotated by 90 degrees
   QVector u3[DIM];  // all axes rotated
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0 ; i < DIM ; i++)
+  {
     u1[i] = QVector();
     u2[i] = QVector();
     u3[i] = QVector();

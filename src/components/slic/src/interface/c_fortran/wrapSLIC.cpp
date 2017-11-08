@@ -20,8 +20,10 @@
 #include "shroudrt.hpp"
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -95,10 +97,12 @@ void SLIC_get_active_logger_name_bufferify(char * name, int Nname)
 {
 // splicer begin function.get_active_logger_name_bufferify
   std::string SH_rv = getActiveLoggerName();
-  if (SH_rv.empty()) {
+  if (SH_rv.empty())
+  {
     std::memset(name, ' ', Nname);
   }
-  else {
+  else
+  {
     shroud_FccCopy(name, Nname, SH_rv.c_str());
   }
   return;

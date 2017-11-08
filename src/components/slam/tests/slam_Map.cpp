@@ -34,12 +34,12 @@
 using axom::slic::UnitTestLogger;
 
 
-typedef axom::slam::RangeSet    SetType;
+typedef axom::slam::RangeSet SetType;
 typedef axom::slam::Map<int>    IntMap;
 typedef axom::slam::Map<double> RealMap;
 
-typedef SetType::PositionType   PositionType;
-typedef SetType::ElementType    ElementType;
+typedef SetType::PositionType PositionType;
+typedef SetType::ElementType ElementType;
 
 static PositionType const MAX_SET_SIZE = 10;
 
@@ -61,20 +61,20 @@ bool constructAndTestMap()
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO(
-    "\nCreating " 
+    "\nCreating "
     << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
   axom::slam::Map<T> m(&s);
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO( "\nSetting the elements.");
   double multFac = 1.0001;
-  for(PositionType idx = 0; idx < m.size(); ++idx)
+  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
   {
     m[idx] = static_cast<T>(idx * multFac);
   }
 
   SLIC_INFO("\nChecking the elements.");
-  for(PositionType idx = 0; idx < m.size(); ++idx)
+  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
   {
     EXPECT_EQ(m[idx], static_cast<T>(idx * multFac) );
   }
@@ -102,20 +102,20 @@ TEST(slam_map,out_of_bounds)
   IntMap m(&s, defaultElt);
 
   SLIC_INFO("Testing Map element access -- in bounds");
-  for(PositionType idx = 0; idx < m.size(); ++idx)
+  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
     EXPECT_EQ(defaultElt, m[idx]);
 
   // Test out of bounds
   SLIC_INFO("Testing Map element access "
-     << "-- out of bounds access; Expecting the test to fail");
+            << "-- out of bounds access; Expecting the test to fail");
   #ifdef AXOM_DEBUG
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED(  m[-1],      "") 
-        << " Accessed element -1 of Map -- out of bounds";
-  EXPECT_DEATH_IF_SUPPORTED(  m[m.size()],"") 
-        << " Accessed element " << m.size() << " of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED(  m[-1],      "")
+    << " Accessed element -1 of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED(  m[m.size()],"")
+    << " Accessed element " << m.size() << " of Map -- out of bounds";
 
   #else
   SLIC_INFO("Skipped assertion failure check in release mode.");

@@ -35,8 +35,10 @@
 #include <vector>
 #include <stdio.h>
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class UniformGrid
@@ -186,7 +188,8 @@ public:
    * clear(INVALID_BIN_INDEX) is a no-op; isBinEmpty(INVALID_BIN_INDEX) returns
    * true.
    */
-  enum {
+  enum
+  {
     INVALID_BIN_INDEX = -1
   };
 
@@ -242,8 +245,10 @@ private:
 //------------------------------------------------------------------------------
 // UniformGrid implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
@@ -258,7 +263,8 @@ UniformGrid< T, NDIMS >::UniformGrid()
 
   m_resolution[0] = DEFAULT_RES;
   m_strides[0] = 1;
-  for (int i=1; i< NDIMS; ++i) {
+  for (int i=1 ; i< NDIMS ; ++i)
+  {
     m_resolution[i] = DEFAULT_RES;
     m_strides[i] = m_strides[i-1] * m_resolution[i-1];
   }
@@ -284,7 +290,8 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
   // set up the grid resolution and (row-major) strides
   m_resolution[0] = res[0];
   m_strides[0] = 1;
-  for (int i=1; i< NDIMS; ++i) {
+  for (int i=1 ; i< NDIMS ; ++i)
+  {
     m_resolution[i] = res[i];
     m_strides[i] = m_strides[i-1] * m_resolution[i-1];
   }
@@ -312,7 +319,8 @@ template < typename T, int NDIMS >
 int UniformGrid< T, NDIMS >::getBinIndex(const PointType & pt) const
 {
   // Index is only valid when the point is within the bounding box
-  if (!m_boundingBox.contains(pt) ) {
+  if (!m_boundingBox.contains(pt) )
+  {
     return INVALID_BIN_INDEX;
   }
 
@@ -321,7 +329,8 @@ int UniformGrid< T, NDIMS >::getBinIndex(const PointType & pt) const
 
   // compute the linear index (row-major) of the cell
   int res = cell[0];
-  for (int i=1; i< NDIMS; ++i) {
+  for (int i=1 ; i< NDIMS ; ++i)
+  {
     res += m_strides[i] * cell[i];
   }
 
@@ -343,7 +352,8 @@ int UniformGrid< T, NDIMS >::getNumBins() const
 template < typename T, int NDIMS >
 bool UniformGrid< T, NDIMS >::isBinEmpty(int index) const
 {
-  if (!isValidIndex(index)) {
+  if (!isValidIndex(index))
+  {
     return true;
   }
 
@@ -373,7 +383,8 @@ UniformGrid< T, NDIMS >::getBinsForBbox( const BoxType& BB) const
 {
   std::vector< int > retval;
 
-  if ( !m_boundingBox.intersectsWith(BB) ) {
+  if ( !m_boundingBox.intersectsWith(BB) )
+  {
     return retval;
   }
 
@@ -385,11 +396,14 @@ UniformGrid< T, NDIMS >::getBinsForBbox( const BoxType& BB) const
   const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
   const int kStride = (NDIMS == 2) ? 1 : m_strides[2];
 
-  for (int k=kLower; k <= kUpper; ++k) {
+  for (int k=kLower ; k <= kUpper ; ++k)
+  {
     const int kOffset = k * kStride;
-    for (int j=lowerCell[1]; j <= upperCell[1]; ++j) {
+    for (int j=lowerCell[1] ; j <= upperCell[1] ; ++j)
+    {
       const int jOffset = j * m_strides[1] + kOffset;
-      for (int i = lowerCell[0]; i <= upperCell[0]; ++i) {
+      for (int i = lowerCell[0] ; i <= upperCell[0] ; ++i)
+      {
         retval.push_back( i + jOffset );
       }
     }
@@ -402,7 +416,8 @@ UniformGrid< T, NDIMS >::getBinsForBbox( const BoxType& BB) const
 template < typename T, int NDIMS >
 void UniformGrid< T, NDIMS >::clear(int index)
 {
-  if (isValidIndex(index)) {
+  if (isValidIndex(index))
+  {
     m_bins[index].ObjectArray.clear();
   }
 }
@@ -413,7 +428,8 @@ void UniformGrid< T, NDIMS >::addObj(const T& obj, int index)
 {
   SLIC_CHECK(isValidIndex(index));
 
-  if (isValidIndex(index)) {
+  if (isValidIndex(index))
+  {
     m_bins[index].ObjectArray.push_back(obj);
   }
 }
@@ -428,7 +444,8 @@ void UniformGrid< T, NDIMS >::insert(const BoxType& BB,
   const std::vector< int > bidxs = getBinsForBbox(BB);
 
   const int numBins = bidxs.size();
-  for (int i = 0; i < numBins; ++i) {
+  for (int i = 0 ; i < numBins ; ++i)
+  {
     addObj(obj, bidxs[i]);
   }
 }
@@ -441,7 +458,8 @@ UniformGrid< T, NDIMS >::getClampedGridCell(const PointType& pt) const
   GridCell cell = m_lattice.gridCell(pt);
 
   // clamp the grid coordinates to lie in a cell of the grid
-  for (int i=0; i<NDIMS; ++i) {
+  for (int i=0 ; i<NDIMS ; ++i)
+  {
     cell[i] = axom::utilities::clampVal(cell[i], 0, m_resolution[i]-1);
   }
 

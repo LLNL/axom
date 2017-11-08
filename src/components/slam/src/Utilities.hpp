@@ -24,48 +24,52 @@
 
 #include <string>
 
-namespace axom {
-namespace slam {
+namespace axom
+{
+namespace slam
+{
 
-  typedef int MeshIndexType;
-  typedef int MeshSizeType;
+typedef int MeshIndexType;
+typedef int MeshSizeType;
 
-  class NotImplementedException {};
+class NotImplementedException
+{};
 
-namespace util {
+namespace util
+{
 
 
-  /** \brief A helper class to print the name of a few types */
-  template<typename T> 
-  struct TypeToString 
-  { 
-     static std::string to_string(){return "<unspecialized>"; }
-  };
+/** \brief A helper class to print the name of a few types */
+template<typename T>
+struct TypeToString
+{
+  static std::string to_string(){return "<unspecialized>"; }
+};
 
-  /** \brief A helper class to print the name of integers as 'int' */
-  template<> 
-  struct TypeToString<int>
-  { 
-    static std::string       to_string(){return "int"; }
-  };
+/** \brief A helper class to print the name of integers as 'int' */
+template<>
+struct TypeToString<int>
+{
+  static std::string       to_string(){return "int"; }
+};
 
 /** \brief A helper class to print the name of doubles as 'double' */
-  template<> 
-  struct TypeToString<double>
-  { 
-     static std::string    to_string(){return "double"; }
-  };
+template<>
+struct TypeToString<double>
+{
+  static std::string    to_string(){return "double"; }
+};
 
 
-  /**
-   * \brief Simple utility function to search through ancestor directories to find a file
-   * \param [in] fileName The path to the original file.
-   * \param [in] numAncestors The maximum number of ancestor directories to try
-   * \return A string representing a valid path to the file when this can be found,
-   *         else, will return the original fileName.
-   */
-  std::string 
-  findFileInAncestorDirs(const std::string& fileName, int numAncestors = 4);
+/**
+ * \brief Simple utility function to search through ancestor directories to find a file
+ * \param [in] fileName The path to the original file.
+ * \param [in] numAncestors The maximum number of ancestor directories to try
+ * \return A string representing a valid path to the file when this can be found,
+ *         else, will return the original fileName.
+ */
+std::string
+findFileInAncestorDirs(const std::string& fileName, int numAncestors = 4);
 
 } // end namespace util
 } // end namespace slam

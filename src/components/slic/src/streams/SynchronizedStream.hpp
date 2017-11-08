@@ -34,8 +34,10 @@
 // MPI
 #include <mpi.h> // For MPI
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class SynchronizedStream
@@ -52,11 +54,11 @@ namespace slic {
  *  std::cerr, etc. It is suggested that applications do not use this class
  *  with an std::ofstream object.
  */
-class SynchronizedStream:public LogStream
+class SynchronizedStream : public LogStream
 {
 public:
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm );
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm,
+  SynchronizedStream( std::ostream * stream, MPI_Comm comm );
+  SynchronizedStream( std::ostream * stream, MPI_Comm comm,
                       const std::string& format);
 
   virtual ~SynchronizedStream();
@@ -97,8 +99,8 @@ private:
   /// @{
 
   MPI_Comm m_comm;
-  MessageCache* m_cache;
-  std::ostream* m_stream;
+  MessageCache * m_cache;
+  std::ostream * m_stream;
   /// @}
 
   /*!
@@ -106,9 +108,9 @@ private:
    *  using it. Instead the constructor that passes the underlying MPI comm
    *  should be used.
    */
-  SynchronizedStream(): m_comm(MPI_COMM_NULL),
-    m_cache( static_cast< MessageCache* >(AXOM_NULLPTR) ),
-    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
+  SynchronizedStream() : m_comm(MPI_COMM_NULL),
+    m_cache( static_cast< MessageCache * >(AXOM_NULLPTR) ),
+    m_stream( static_cast< std::ostream * >(AXOM_NULLPTR) )
   { };
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);

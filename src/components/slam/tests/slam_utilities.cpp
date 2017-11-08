@@ -43,24 +43,25 @@
 #endif
 
 
-namespace {
+namespace
+{
 
-  // Use a file that we know is available in the git repo (as of Jan 2016).
-  // It is a data file from slam's Unstructured mesh example
-  // TODO: This path should be modified once
-  //       we move the data files into their own repository
+// Use a file that we know is available in the git repo (as of Jan 2016).
+// It is a data file from slam's Unstructured mesh example
+// TODO: This path should be modified once
+//       we move the data files into their own repository
 
-  const std::string presentFile = "ball_1.vtk";
-  const std::string presentDir = "src/components/slam/data";
-  const std::string presentDirWithSlash = presentDir + "/";
+const std::string presentFile = "ball_1.vtk";
+const std::string presentDir = "src/components/slam/data";
+const std::string presentDirWithSlash = presentDir + "/";
 
-  const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
+const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 }
 
 TEST(slam_utilities,findingAncestorPaths)
 {
-  SLIC_INFO("Testing function that recursively finds" 
-    << " a valid path in cwd ancestors.");
+  SLIC_INFO("Testing function that recursively finds"
+            << " a valid path in cwd ancestors.");
 
   using namespace axom::slam::util;
   using namespace axom::utilities::filesystem;
@@ -99,16 +100,16 @@ TEST(slam_utilities,findingAncestorPaths)
 
   std::string path4 = joinPath(presentDir, missingFile);
 
-  SLIC_INFO("** About to look for a nonexistent file. " 
-    << " Ignore the log warning. ***");
+  SLIC_INFO("** About to look for a nonexistent file. "
+            << " Ignore the log warning. ***");
   std::string ps4 = findFileInAncestorDirs(path4);
   EXPECT_EQ( path4, ps4);
 
   std::ifstream fileStreamP4( ps4.c_str() );
   EXPECT_FALSE( fileStreamP4.is_open());
   fileStreamP4.close();
-  SLIC_INFO("No valid path for file '" 
-    << path4 << "'. Function returned " << ps4 );
+  SLIC_INFO("No valid path for file '"
+            << path4 << "'. Function returned " << ps4 );
 
 }
 
@@ -125,8 +126,8 @@ int main(int argc, char * argv[])
   UnitTestLogger logger;  // create & initialize test logger,
 
   // Change the directory to one that we know will contain the desired file
-  SLIC_ERROR_IF(argc !=2, 
-    "slam_utilities requires a parameter for the working directory");
+  SLIC_ERROR_IF(argc !=2,
+                "slam_utilities requires a parameter for the working directory");
   int err = ChangeCurrentDir( argv[1] );
   SLIC_ERROR_IF( err != 0, "chdir failed");
 

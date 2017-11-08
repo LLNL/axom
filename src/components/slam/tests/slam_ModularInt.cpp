@@ -31,7 +31,8 @@
 
 TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > ModularIntType;
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> >
+    ModularIntType;
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
@@ -40,22 +41,22 @@ TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(0,0),"") 
-        << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(1,0),"") 
-        << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(),   "") 
-        << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(1),  "") 
-        << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(0,0),"")
+    << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(1,0),"")
+    << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(),   "")
+    << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntType(1),  "")
+    << " SIZE of Modular int not allowed to be zero";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 
   SLIC_INFO("Checking modular int with value set to "
-        <<" modulus equals (i.e. is equivalent to) 0 (runtime)");
+            <<" modulus equals (i.e. is equivalent to) 0 (runtime)");
   volatile int sz = 5;
-  for(int i = 1; i< sz; ++i)
+  for(int i = 1 ; i< sz ; ++i)
   {
     ModularIntType modIntFull(i,i);
     EXPECT_EQ( modIntFull, 0);
@@ -71,24 +72,24 @@ TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
   SLIC_INFO("Checking that modular int with modulus "
-    <<" zero fails.\nNote: Expecting a SLIC Failure: ");
+            <<" zero fails.\nNote: Expecting a SLIC Failure: ");
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(0,0),"") 
-        << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(1,0),"") 
-        << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(),   "") 
-        << " SIZE of Modular int not allowed to be zero";
-  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(1),  "") 
-        << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(0,0),"")
+    << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(1,0),"")
+    << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(),   "")
+    << " SIZE of Modular int not allowed to be zero";
+  EXPECT_DEATH_IF_SUPPORTED(  ModularIntZero(1),  "")
+    << " SIZE of Modular int not allowed to be zero";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
 
   SLIC_INFO("Checking modular int with value set to modulus"
-    <<" equals (i.e. is equivalent to) 0 for (compile time)");
+            <<" equals (i.e. is equivalent to) 0 for (compile time)");
   ModularInt<policies::CompileTimeSize<int, 1> > m1(1);
   EXPECT_EQ(  m1, 0);
 
@@ -107,14 +108,14 @@ TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 TEST(slam_modInt,runtime_modular_int)
 {
   SLIC_INFO("Checking modular int addition and subtraction"
-        <<" when supplying the max value at runtime");
+            <<" when supplying the max value at runtime");
 
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > 
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> >
     ModularIntType;
 
   volatile int sz = 937;
 
-  for(int i = 0; i< sz; ++i)
+  for(int i = 0 ; i< sz ; ++i)
   {
     ModularIntType modInt(i,sz);
     EXPECT_EQ(  modInt, i);
@@ -126,7 +127,7 @@ TEST(slam_modInt,runtime_modular_int)
   ModularIntType modIntUp(0,sz);
   ModularIntType modIntDn(0,sz);
   const int loopEnd = 3 * modIntUp.modulus();
-  for(int i = 0; i< loopEnd; ++i)
+  for(int i = 0 ; i< loopEnd ; ++i)
   {
     EXPECT_EQ(  modIntUp, modIntUp + sz);
     EXPECT_EQ(  modIntUp, modIntUp + 2 * sz);
@@ -143,7 +144,7 @@ TEST(slam_modInt,runtime_modular_int)
 
 TEST(slam_modInt,runtime_modular_int_mult)
 {
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> > 
+  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> >
     ModularIntType;
 
   volatile int sz = 10;
@@ -175,11 +176,12 @@ TEST(slam_modInt,runtime_modular_int_mult)
 TEST(slam_modInt,compiletime_modular_int)
 {
   SLIC_INFO("Checking modular int addition and subtraction"
-    << " when supplying the max value at compile time");
+            << " when supplying the max value at compile time");
 
   const int SZ = 937;
 
-  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSize<int, SZ> > 
+  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSize<int,
+                                                                       SZ> >
     ModularIntType;
 
   int sz = SZ;
@@ -188,7 +190,7 @@ TEST(slam_modInt,compiletime_modular_int)
   EXPECT_EQ( modIntZero, 0);
 
 
-  for(int i = 0; i< sz; ++i)
+  for(int i = 0 ; i< sz ; ++i)
   {
     ModularIntType modInt(i,sz);
     EXPECT_EQ(  modInt, i);
@@ -200,7 +202,7 @@ TEST(slam_modInt,compiletime_modular_int)
   ModularIntType modIntUp(0,sz);
   ModularIntType modIntDn(0,sz);
   const int loopEnd = 3 * modIntUp.modulus();
-  for(int i = 0; i< loopEnd; ++i)
+  for(int i = 0 ; i< loopEnd ; ++i)
   {
     EXPECT_EQ(  modIntUp, modIntUp + sz);
     EXPECT_EQ(  modIntUp, modIntUp + 2 * sz);

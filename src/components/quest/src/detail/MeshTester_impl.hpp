@@ -33,9 +33,12 @@
 #include <map>
 #include <set>
 
-namespace axom {
-namespace quest {
-namespace detail {
+namespace axom
+{
+namespace quest
+{
+namespace detail
+{
 
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 typedef primal::Triangle<double, 3> Triangle3;
@@ -46,14 +49,14 @@ typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
-inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
+inline SpatialBoundingBox compute_bounds(mint::Mesh * mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   SpatialBoundingBox meshBB;
   Point3 pt;
 
-  for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
+  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
   {
     mesh->getMeshNode( i, pt.data() );
     meshBB.addPoint( pt );
@@ -76,7 +79,7 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
+Triangle3 getMeshTriangle(int i, mint::Mesh * surface_mesh)
 {
   SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
   primal::Point<int, 3> triCell;
@@ -96,10 +99,10 @@ Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
  * \see findTriMeshIntersections
  */
 void  findTriMeshIntersections_impl(
-    TriangleMesh * surface_mesh,
-    std::vector<std::pair<int, int> > & intersections,
-    std::vector<int> & degenerateIndices,
-    int spatialIndexResolution)
+  TriangleMesh * surface_mesh,
+  std::vector<std::pair<int, int> > & intersections,
+  std::vector<int> & degenerateIndices,
+  int spatialIndexResolution)
 {
   Triangle3 t1 = Triangle3();
   Triangle3 t2 = Triangle3();
@@ -114,23 +117,28 @@ void  findTriMeshIntersections_impl(
 
   // find the specified resolution.  If we're passed a number less than one,
   // use the cube root of the number of triangles.
-  if (spatialIndexResolution < 1) {
+  if (spatialIndexResolution < 1)
+  {
     spatialIndexResolution = (int)(1 + std::pow(ncells, 1/3.));
   }
   int resolutions[3]=
-    {spatialIndexResolution, spatialIndexResolution, spatialIndexResolution};
+  {spatialIndexResolution, spatialIndexResolution, spatialIndexResolution};
 
   SLIC_INFO("Building UniformGrid index...");
   UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
   std::vector<int> nondegenerateIndices;
   nondegenerateIndices.reserve(ncells);
 
-  for (int i=0; i < ncells; i++) {
+  for (int i=0 ; i < ncells ; i++)
+  {
     t1=getMeshTriangle(i, surface_mesh);
 
-    if (t1.degenerate()) {
+    if (t1.degenerate())
+    {
       degenerateIndices.push_back(i);
-    } else {
+    }
+    else
+    {
       nondegenerateIndices.push_back(i);
 
       SpatialBoundingBox triBB = compute_bounds(t1);
@@ -144,10 +152,11 @@ void  findTriMeshIntersections_impl(
   // that also shares a UniformGrid bin.
   SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
 
-  std::vector<int>::iterator 
+  std::vector<int>::iterator
     idx = nondegenerateIndices.begin(),
     ndgend = nondegenerateIndices.end();
-  for (; idx != ndgend; ++idx) {
+  for ( ; idx != ndgend ; ++idx)
+  {
     // Retrieve the triangle at *idx and construct a bounding box around it
     t1 = getMeshTriangle(*idx, surface_mesh);
     SpatialBoundingBox triBB2 = compute_bounds(t1);
@@ -157,25 +166,30 @@ void  findTriMeshIntersections_impl(
     std::vector<int> neighborTriangles;
     const std::vector<int> binsToCheck = ugrid.getBinsForBbox(triBB2);
     size_t checkcount = binsToCheck.size();
-    for (size_t curbin = 0; curbin < checkcount; ++curbin) {
+    for (size_t curbin = 0 ; curbin < checkcount ; ++curbin)
+    {
       std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
       std::vector<int>::iterator ntlit = ntlist.begin(), ntlend = ntlist.end();
-      for (; ntlit != ntlend; ++ntlit) {
-        if (*ntlit > *idx) {
+      for ( ; ntlit != ntlend ; ++ntlit)
+      {
+        if (*ntlit > *idx)
+        {
           neighborTriangles.push_back(*ntlit);
         }
       }
     }
 
     std::sort(neighborTriangles.begin(), neighborTriangles.end());
-    std::vector<int>::iterator nend = 
+    std::vector<int>::iterator nend =
       std::unique(neighborTriangles.begin(), neighborTriangles.end());
     std::vector<int>::iterator nit = neighborTriangles.begin();
 
     // test any remaining neighbor tris for intersection
-    while (nit != nend) {
+    while (nit != nend)
+    {
       t2 = getMeshTriangle(*nit, surface_mesh);
-      if (primal::intersect(t1, t2)) {
+      if (primal::intersect(t1, t2))
+      {
         intersections.push_back(std::make_pair(*idx, *nit));
       }
       ++nit;

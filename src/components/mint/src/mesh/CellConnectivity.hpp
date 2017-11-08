@@ -29,8 +29,10 @@
 #include <cstring> // for memcpy()
 #include <vector>  // for STL vector
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 template < typename index_type, int cell_type >
 class CellConnectivity
@@ -40,7 +42,7 @@ public:
   /*!
    * \brief Default constructor.
    */
-  CellConnectivity(): m_stride( cell::num_nodes[ cell_type ] )
+  CellConnectivity() : m_stride( cell::num_nodes[ cell_type ] )
   {
     m_connectivity.reserve( 100*m_stride );
   };
@@ -94,7 +96,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const index_type* operator[]( int cellIdx )
+  const index_type * operator[]( int cellIdx )
   {
     SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
     return &m_connectivity[ cellIdx*m_stride ];
@@ -106,13 +108,14 @@ public:
    * \param [in] type the cell type.
    * \note type is only used for mixed cell connectivity.
    */
-  void insertCell( const index_type* cell,
+  void insertCell( const index_type * cell,
                    int AXOM_NOT_USED(type),
                    int AXOM_NOT_USED(nnodes) )
   {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 
-    for ( int i=0; i < m_stride; ++i ) {
+    for ( int i=0 ; i < m_stride ; ++i )
+    {
       m_connectivity.push_back( cell[ i ] );
     }
 
@@ -125,13 +128,13 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( int cellIdx, const index_type* cell )
+  void setCell( int cellIdx, const index_type * cell )
   {
     SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
     SLIC_ASSERT(  cell != AXOM_NULLPTR );
 
-    index_type* to         = &m_connectivity[ cellIdx*m_stride ];
-    const index_type* from = cell;
+    index_type * to         = &m_connectivity[ cellIdx*m_stride ];
+    const index_type * from = cell;
     memcpy( to, from, m_stride*sizeof( index_type )  );
   }
 
@@ -155,7 +158,7 @@ public:
   /*!
    * \brief Default constructor.
    */
-  CellConnectivity(): m_num_cells(0)
+  CellConnectivity() : m_num_cells(0)
   {
     m_offset.reserve( 101 );
     m_cell_type.reserve( 100 );
@@ -223,7 +226,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const index_type* operator[]( int cellIdx )
+  const index_type * operator[]( int cellIdx )
   {
     SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
     return &m_connectivity[ m_offset[cellIdx] ];
@@ -237,7 +240,7 @@ public:
    * \note type is only used for mixed cell connectivity.
    * \pre cell != AXOM_NULLPTR .
    */
-  void insertCell( const index_type* cell, int type, int nnodes )
+  void insertCell( const index_type * cell, int type, int nnodes )
   {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 
@@ -245,7 +248,8 @@ public:
     int last_cell_id = this->getNumberOfCells() - 1;
     int new_cell_id  = last_cell_id + 1;
 
-    if ( this->empty() ) {
+    if ( this->empty() )
+    {
       m_offset.push_back( 0 );
     }
 
@@ -254,7 +258,8 @@ public:
     m_offset.push_back( offset + nnodes );
 
     // STEP 3: update the cell connectivity
-    for ( int i=0; i < nnodes; ++i ) {
+    for ( int i=0 ; i < nnodes ; ++i )
+    {
       m_connectivity.push_back( cell[ i ] );
     } // END for all nodes
 
@@ -270,7 +275,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( int cellIdx, const index_type* cell )
+  void setCell( int cellIdx, const index_type * cell )
   {
     SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
     SLIC_ASSERT(  cell != AXOM_NULLPTR );
@@ -280,8 +285,8 @@ public:
 
     // STEP 1: get to/from pointers
     const int offset       = m_offset[ cellIdx ];
-    index_type* to         = &m_connectivity[ offset ];
-    const index_type* from = cell;
+    index_type * to         = &m_connectivity[ offset ];
+    const index_type * from = cell;
 
     // STEP 2: bytecopy the connectivity information
     memcpy( to, from, nnodes*sizeof(index_type) );

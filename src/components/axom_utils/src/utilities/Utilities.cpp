@@ -32,26 +32,28 @@
 #include <mpi.h>
 #endif
 
-namespace axom {
-namespace utilities {
+namespace axom
+{
+namespace utilities
+{
 
-  void processAbort()
-  {
+void processAbort()
+{
 #ifndef AXOM_USE_MPI
-    exit( EXIT_FAILURE );
+  exit( EXIT_FAILURE );
 #else
-    int mpi = 0;
-    MPI_Initialized( &mpi );
-    if ( mpi )
-    {
-      MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
-    }
-    else
-    {
-      exit( EXIT_FAILURE );
-    }
-#endif
+  int mpi = 0;
+  MPI_Initialized( &mpi );
+  if ( mpi )
+  {
+    MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
   }
+  else
+  {
+    exit( EXIT_FAILURE );
+  }
+#endif
+}
 
 }   // end namespace utilities
 }   // end namespace axom

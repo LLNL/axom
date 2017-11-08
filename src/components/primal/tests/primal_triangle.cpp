@@ -135,9 +135,9 @@ TEST( primal_triangle, triangle_barycentric)
                        QPoint::make_point(-0.4, 1.2, 0.2)));
 
   // Now run the actual tests
-  for (TestVec::const_iterator it= testData.begin(); 
-        it != testData.end();
-        ++it) 
+  for (TestVec::const_iterator it= testData.begin() ;
+       it != testData.end() ;
+       ++it)
   {
     const QPoint& query = it->first;
     const QPoint& expBary = it->second;
@@ -196,14 +196,16 @@ TEST( primal_triangle, triangle_2D_point_containment)
   failures.push_back(QPoint::make_point(1.00001, 1.000001));
 
   // Actually run the tests
-  for (TestVec::const_iterator it = successes.begin(); 
-       it != successes.end();
-       ++it) {
+  for (TestVec::const_iterator it = successes.begin() ;
+       it != successes.end() ;
+       ++it)
+  {
     EXPECT_TRUE(tri.checkInTriangle(*it, EPS));
   }
-  for (TestVec::const_iterator it = failures.begin(); 
-       it != failures.end();
-       ++it) {
+  for (TestVec::const_iterator it = failures.begin() ;
+       it != failures.end() ;
+       ++it)
+  {
     EXPECT_FALSE(tri.checkInTriangle(*it, EPS));
   }
 }
@@ -254,14 +256,16 @@ TEST( primal_triangle, triangle_3D_point_containment)
   failures.push_back(QPoint::make_point(1.00001, 1.000001, 0));
 
   // Actually run the tests
-  for (TestVec::const_iterator it = successes.begin(); 
-       it != successes.end();
-       ++it) {
+  for (TestVec::const_iterator it = successes.begin() ;
+       it != successes.end() ;
+       ++it)
+  {
     EXPECT_TRUE(tri.checkInTriangle(*it, EPS));
   }
-  for (TestVec::const_iterator it = failures.begin(); 
-       it != failures.end();
-       ++it) {
+  for (TestVec::const_iterator it = failures.begin() ;
+       it != failures.end() ;
+       ++it)
+  {
     EXPECT_FALSE(tri.checkInTriangle(*it, EPS));
   }
 }

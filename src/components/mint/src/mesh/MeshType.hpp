@@ -21,7 +21,8 @@
 /*!
  * \brief Defines the basic mesh types supported by mint.
  */
-enum  {
+enum
+{
   MINT_UNDEFINED_MESH = -1,             //!< UNDEFINED_MESH
 
   MINT_UNSTRUCTURED_SEGMENT_MESH,       //!< UNSTRUCTURED_SEGMENT_MESH
@@ -40,10 +41,13 @@ enum  {
   MINT_NUM_MESH_TYPES                   //!< NUM_MESH_TYPES
 };
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-namespace mesh_properties {
+namespace mesh_properties
+{
 
 /*!
  * \brief Defines corresponding mesh type for each cell type.

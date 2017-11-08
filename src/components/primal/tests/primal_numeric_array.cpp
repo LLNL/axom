@@ -33,21 +33,24 @@ TEST( primal_numeric_array, constructors)
 
   QArray arr1;
   EXPECT_EQ( QArray::size(), DIM );
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(arr1[i], CoordType() );
   }
 
   CoordType val = 5.;
   QArray arr2(val);
   EXPECT_EQ(QArray::size(), DIM );
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(arr2[i], val );
   }
 
   CoordType val3 = 5.;
   int halfPt = DIM /2;
   QArray arr3(val3, halfPt);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     CoordType expVal=  i < halfPt ? val3 : CoordType();
     EXPECT_EQ(arr3[i], expVal );
   }
@@ -55,12 +58,14 @@ TEST( primal_numeric_array, constructors)
   // Compare array initialized from arbitrary array
   CoordType valsArr[DIM] = {12.,23., 34., 45., 56.432};
   QArray arrArr(valsArr);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(arrArr[i], valsArr[i] );
   }
 
   QArray arrHalfVec(valsArr, halfPt);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     CoordType expVal=  i < halfPt ? valsArr[i] : CoordType();
     EXPECT_EQ(arrHalfVec[i], expVal );
   }
@@ -78,14 +83,16 @@ TEST( primal_numeric_array, num_array_to_array)
   CoordType valsArr[DIM] = {12.,23., 34., 45., 56.432};
   QArray arrArr(valsArr);
 
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(arrArr[i], valsArr[i] );
   }
 
   // Copy data into new array
   CoordType arrCopy[DIM];
   arrArr.to_array(arrCopy);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(arrCopy[i], valsArr[i] );
     EXPECT_EQ(arrCopy[i], arrArr.data()[i] );
   }

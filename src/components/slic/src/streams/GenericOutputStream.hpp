@@ -31,8 +31,10 @@
 // C/C++ includes
 #include <iostream> // for ostream
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class GenericOutputStream
@@ -43,7 +45,7 @@ namespace slic {
  *
  * \see LogStream Logger
  */
-class GenericOutputStream:public LogStream
+class GenericOutputStream : public LogStream
 {
 public:
 
@@ -52,7 +54,7 @@ public:
    * \param [in] os pointer to a user-supplied ostream instance.
    * \pre os != NULL
    */
-  GenericOutputStream( std::ostream* os );
+  GenericOutputStream( std::ostream * os );
 
   /*!
    * \brief Constructs a GenericOutputStream instance with the given stream and
@@ -61,7 +63,7 @@ public:
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
    */
-  GenericOutputStream( std::ostream* os, const std::string& format );
+  GenericOutputStream( std::ostream * os, const std::string& format );
 
   /*!
    * \brief Destructor.
@@ -77,13 +79,14 @@ public:
                        bool filter_duplicates );
 private:
 
-  std::ostream* m_stream;
+  std::ostream * m_stream;
 
   /*!
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
    */
-  GenericOutputStream(): m_stream( static_cast< std::ostream* >( AXOM_NULLPTR ) )
+  GenericOutputStream() : m_stream(
+      static_cast< std::ostream * >( AXOM_NULLPTR ) )
   {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);

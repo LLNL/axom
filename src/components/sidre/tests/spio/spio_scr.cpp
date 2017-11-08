@@ -120,9 +120,10 @@ TEST(spio_scr, spio_scr_writeread)
   int * i1_orig = view_i1_orig->getData();
   int * i1_restored = view_i1_restored->getData();
 
-  for (int i = 0; i < num_elems; ++i) {
+  for (int i = 0 ; i < num_elems ; ++i)
+  {
     EXPECT_EQ(i1_orig[i], i1_restored[i]);
-  } 
+  }
 
   delete ds;
   delete ds2;
@@ -149,5 +150,3 @@ int main(int argc, char * argv[])
 
   return result;
 }
-
-

@@ -37,7 +37,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, char * * argv )
 {
   // STEP 0: initialize MPI & logging environment
   MPI_Init( &argc, &argv );
@@ -58,14 +58,16 @@ int main( int argc, char** argv )
 
 
   // STEP 3: loop N times and generate a random logging event
-  for ( int i=0; i < N; ++i ) {
+  for ( int i=0 ; i < N ; ++i )
+  {
 
     slic::logMessage(
-        getRandomEvent(0,slic::message::Num_Levels),
-        "a random message", __FILE__,  __LINE__  );
+      getRandomEvent(0,slic::message::Num_Levels),
+      "a random message", __FILE__,  __LINE__  );
 
     // Flush every 5 cycles
-    if ( (i % 5)==0 ) {
+    if ( (i % 5)==0 )
+    {
 
       slic::flushStreams();
 

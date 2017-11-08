@@ -63,11 +63,11 @@ TEST(axom_utils_fileUtilities,pathExists)
 {
   using namespace axom::utilities::filesystem;
 
-  std::cout<<"Testing pathExists on file that we know is present (the cwd)."<< std::endl;
+  std::cout<<"Testing pathExists on file that we know is present (the cwd)."<<
+  std::endl;
   const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 
   std::string cwd = axom::utilities::filesystem::getCWD();
   EXPECT_TRUE( pathExists(cwd) );
   EXPECT_FALSE( pathExists( joinPath(cwd,missingFile) ) );
 }
-
