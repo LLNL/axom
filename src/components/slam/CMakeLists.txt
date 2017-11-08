@@ -58,7 +58,8 @@ endif()
 ################################
 # Add code checks
 ################################
-axom_add_code_checks(BASE_NAME slam)
+axom_add_code_checks(BASE_NAME slam
+                     EXCLUDES slam/examples/lulesh2.0.3)
 
 ################################
 # Create CMake importable

@@ -13,24 +13,52 @@
 #-------------------------------------------------------------------------------
 
 ##------------------------------------------------------------------------------
-## axom_add_code_checks( BASE_NAME             <Base name used for created targets>)
+## axom_add_code_checks( BASE_NAME     <Base name used for created targets>
+##                       EXCLUDES      [path1 [path2 ...]])
 ##
 ## Adds code checks to all source files under this directory.
+##
+## BASE_NAME is used in the creation of all the underlying targets. For example:
+## <BASE_NAME>_uncrustify_check.
+##
+## EXCLUDES is used to exclude any files from the code checks. It is done with
+## a simple CMake reg exp MATCHES check.
 ##
 ##------------------------------------------------------------------------------
 macro(axom_add_code_checks)
 
     set(options)
     set(singleValueArgs BASE_NAME )
-    set(multiValueArgs )
+    set(multiValueArgs EXCLUDES )
 
     # Parse the arguments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    file(GLOB_RECURSE _sources
+    set(_all_sources)
+    file(GLOB_RECURSE _all_sources
          "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
          "*.F" "*.f" "*.f90" "*.F90")
+
+    # Check for excludes
+    if (NOT DEFINED arg_EXCLUDES)
+        set(_sources ${_all_sources})
+    else()
+        set(_sources)
+        foreach(_source ${_all_sources})
+            set(_to_be_excluded FALSE)
+            foreach(_exclude ${arg_EXCLUDES})
+                if (${_source} MATCHES ${_exclude})
+                    set(_to_be_excluded TRUE)
+                    break()
+                endif()
+            endforeach()
+
+            if (NOT ${_to_be_excluded})
+                list(APPEND _sources ${_source})
+            endif()
+        endforeach()
+    endif()
 
     blt_add_code_checks(BASE_NAME ${arg_BASE_NAME}
                         SOURCES   ${_sources}
