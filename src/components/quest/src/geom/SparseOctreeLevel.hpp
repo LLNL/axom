@@ -272,8 +272,8 @@ namespace quest {
         {
             SLIC_ASSERT_MSG(
                 this->inBounds(pt), 
-                "Problem while inserting children of point " << pt
-                << " into octree level " << this->m_level
+                "Problem while inserting children of point " 
+                << pt << " into octree level " << this->m_level
                 << ". Point was out of bounds -- "
                 << "each coordinate must be between 0 and " 
                 << this->maxCoord() << ".");

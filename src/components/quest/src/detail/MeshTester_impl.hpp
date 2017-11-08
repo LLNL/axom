@@ -117,7 +117,8 @@ void  findTriMeshIntersections_impl(
   if (spatialIndexResolution < 1) {
     spatialIndexResolution = (int)(1 + std::pow(ncells, 1/3.));
   }
-  int resolutions[3]={spatialIndexResolution, spatialIndexResolution, spatialIndexResolution};
+  int resolutions[3]=
+    {spatialIndexResolution, spatialIndexResolution, spatialIndexResolution};
 
   SLIC_INFO("Building UniformGrid index...");
   UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);

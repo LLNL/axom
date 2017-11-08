@@ -176,8 +176,8 @@ public:
 
       enum  {
           /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
-          NUM_CHILDREN = 1 << DIM
-          , /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in dimension DIM ) */
+          NUM_CHILDREN = 1 << DIM,
+          /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in dimension DIM ) */
           NUM_FACE_NEIGHBORS = 2 * DIM
       };
   private:
@@ -926,8 +926,10 @@ public:
           return BlockIndex::invalid_index();
       }
 
-      SLIC_ASSERT_MSG(false, "OctreeBase::coveringLeafBlock -- Should never get past the switch statement.  "
-                      <<" Perhaps a new case was added to the TreeBlock enum");
+      SLIC_ASSERT_MSG(
+        false, 
+        "OctreeBase::coveringLeafBlock -- Should never get past the switch statement.  "
+        <<" Perhaps a new case was added to the TreeBlock enum");
       return BlockIndex::invalid_index();
   }
 
@@ -951,27 +953,32 @@ protected:
       else if( lev <= MAX_DENSE_LEV )
       {
           SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+          bStat = 
+            static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
       }
       else if( lev <= MAX_SPARSE16_LEV)
       {
           SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+          bStat = 
+            static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
       }
       else if( lev <= MAX_SPARSE32_LEV )
       {
           SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+          bStat = 
+            static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
       }
       else if( lev <= MAX_SPARSE64_LEV  )
       {
           SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+          bStat =
+            static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
       }
       else
       {
           SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
+          bStat = 
+            static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
       }
       return bStat;
   }

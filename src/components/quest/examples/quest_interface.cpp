@@ -239,7 +239,8 @@ int main( int argc, char**argv )
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
   #ifdef AXOM_USE_LUMBERJACK
     const int RLIMIT = 8;
-    logStream = new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
+    logStream = 
+        new axom::slic::LumberjackStream(&std::cout,MPI_COMM_WORLD, RLIMIT, fmt);
   #else
     logStream = new axom::slic::SynchronizedStream(&std::cout,MPI_COMM_WORLD, fmt);
   #endif

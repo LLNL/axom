@@ -115,11 +115,11 @@ namespace detail {
         // A block is a leaf block when its m_idx is not INTERNAL_BLOCK
         // Leaf blocks can be uncolored or colored (without additional data)
         //      or m_idx be the index of the data associated with a gray block
-        enum { LEAF_BLOCK_UNCOLORED = -1
-             , LEAF_BLOCK_WHITE     = -2
-             , LEAF_BLOCK_BLACK     = -3
-             , INTERNAL_BLOCK       = -4
-             , NON_BLOCK            = -5
+        enum { LEAF_BLOCK_UNCOLORED = -1,
+              LEAF_BLOCK_WHITE      = -2,
+              LEAF_BLOCK_BLACK      = -3,
+              INTERNAL_BLOCK        = -4,
+              NON_BLOCK             = -5
         };
 
     public:
@@ -642,7 +642,10 @@ private:
             }
         }
 
-        /** Returns the spatial position of the vertex with index idx of the wrapped surface mesh */
+        /** 
+         * \brief Returns the spatial position of the vertex
+         *  with index idx of the wrapped surface mesh 
+         */
         const SpacePt& vertexPosition(VertexIndex idx) const
         {
             return m_vertexPositions[idx];
@@ -650,7 +653,9 @@ private:
 
 
         /**
-         * Returns the indices of the boundary vertices of the element of the wrapped surface mesh with the given index
+         * \brief Returns the indices of the boundary vertices of the element 
+         * of the wrapped surface mesh with the given index
+         * 
          * \param idx The index of an element within the surface mesh
          */
         TriVertIndices triangleVertexIndices(TriangleIndex idx) const
@@ -683,9 +688,9 @@ private:
         SpaceTriangle trianglePositions(TriangleIndex idx) const
         {
             TriVertIndices verts = triangleVertexIndices(idx);
-            return SpaceTriangle( vertexPosition(verts[0])
-                                , vertexPosition(verts[1])
-                                , vertexPosition(verts[2]));
+            return SpaceTriangle( vertexPosition(verts[0]),
+                                  vertexPosition(verts[1]),
+                                  vertexPosition(verts[2]));
         }
 
         /**
@@ -693,7 +698,9 @@ private:
          */
         bool incidentInVertex(const TriVertIndices& triVerts, VertexIndex vIdx) const
         {
-            return (triVerts[0] == vIdx) || (triVerts[1] == vIdx) || (triVerts[2] == vIdx);
+            return (triVerts[0] == vIdx) 
+                || (triVerts[1] == vIdx) 
+                || (triVerts[2] == vIdx);
         }
 
 
@@ -2888,7 +2895,8 @@ public:
                             m_octree.m_meshWrapper.incidentInVertex(tvRel, vIdx),
                             "All triangles in a gray block must be incident on a common vertex,"
                               << " but triangles " << tIdx << " with vertices " << tvRel
-                              << " in block " << block << " is not incident in vertex " << vIdx );
+                              << " in block " << block 
+                              << " is not incident in vertex " << vIdx );
 
                         // Check that this triangle intersects the bounding box of the block
                         GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
@@ -2898,7 +2906,8 @@ public:
                             "Triangle " << tIdx << " was indexed in block " << block
                               << " but it does not intersect the block."
                               << "\n\tBlock bounding box: " << blockBB
-                              << "\n\tTriangle positions: " << m_octree.m_meshWrapper.trianglePositions(tIdx)
+                              << "\n\tTriangle positions: " 
+                              << m_octree.m_meshWrapper.trianglePositions(tIdx)
                               << "\n\tTriangle vertex indices: " << tvRel
                               << "\n\tLeaf vertex is: " << vIdx
                               << "\n\tLeaf triangles: " << triSet
@@ -2927,7 +2936,8 @@ public:
                 // Leaf does not yet have a color... try to find its color from same-level face neighbors
                 for(int i=0; i< block.numFaceNeighbors(); ++i)
                 {
-                    BlockIndex neighborBlk = m_octree.coveringLeafBlock( block.faceNeighbor(i) );
+                    BlockIndex neighborBlk = 
+                        m_octree.coveringLeafBlock( block.faceNeighbor(i) );
                     if(neighborBlk != BlockIndex::invalid_index() )
                     {
                         const InOutBlockData& neighborData = m_octree[neighborBlk];
@@ -3127,7 +3137,8 @@ public:
     {
         if(m_levelBlocks[lev] > 0)
         {
-            int percentWithVert = integerPercentage(m_levelLeavesWithVert[lev], m_levelLeaves[lev]);
+            int percentWithVert = 
+                integerPercentage(m_levelLeavesWithVert[lev], m_levelLeaves[lev]);
 
             sstr << "\t Level " << lev
                  << " has " << m_levelBlocks[lev] << " blocks -- "
@@ -3142,8 +3153,9 @@ public:
                      << "," << m_levelGrayBlockCount[lev]
                      << " and " << m_levelTriangleRefCount[lev] << " triangle references.";
             }
-            //sstr <<"Hash load factor: " << this->m_leavesLevelMap[ lev ].load_factor()
-            //                                      << " -- max lf: " << this->m_leavesLevelMap[ lev ].max_load_factor();
+            //sstr <<"Hash load factor: " 
+            //     << this->m_leavesLevelMap[ lev ].load_factor()
+            //     << " -- max lf: " << this->m_leavesLevelMap[ lev ].max_load_factor();
             sstr << "\n";
 
         }

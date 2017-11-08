@@ -112,7 +112,10 @@ namespace quest {
             /** Accessor for data associated with the iterator's block */
             BlockDataType* data() { return &m_octreeLevel->m_data[m_currentIdx][m_offset]; }
             /** Const accessor for data associated with the iterator's block */
-            const BlockDataType* data() const { return &m_octreeLevel->m_data[m_currentIdx][m_offset]; }
+            const BlockDataType* data() const 
+            { 
+                return &m_octreeLevel->m_data[m_currentIdx][m_offset]; 
+            }
 
             /** \brief Predicate to determine if two block iterators are the same */
             bool equal(const BaseBlockItType* other)
@@ -121,7 +124,7 @@ namespace quest {
 
                 return (pother != AXOM_NULLPTR)
                      && (m_currentIdx == pother->m_currentIdx)   // iterators are the same
-                     && (m_offset == pother->m_offset);               // brood indices are the same
+                     && (m_offset == pother->m_offset);          // brood indices are the same
             }
         private:
             OctreeLevelType* m_octreeLevel;
@@ -216,8 +219,8 @@ namespace quest {
         {
             SLIC_ASSERT_MSG(
                this->inBounds(pt),
-               "Problem while inserting children of point " << pt
-               << " into octree level " << this->m_level
+               "Problem while inserting children of point " 
+               << pt << " into octree level " << this->m_level
                << ". Point was out of bounds -- "
                << "each coordinate must be between 0 and " 
                << this->maxCoord() << ".");

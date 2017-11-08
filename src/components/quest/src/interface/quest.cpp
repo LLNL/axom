@@ -54,7 +54,9 @@ namespace quest {
     namespace slic = axom::slic;
 
     typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-    enum QueryMode { QUERY_MODE_NONE, QUERY_MODE_CONTAINMENT, QUERY_MODE_SIGNED_DISTANCE };
+    enum QueryMode { QUERY_MODE_NONE, 
+                     QUERY_MODE_CONTAINMENT,
+                     QUERY_MODE_SIGNED_DISTANCE };
 
     /**
      * \struct

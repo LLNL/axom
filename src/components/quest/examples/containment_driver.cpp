@@ -173,8 +173,8 @@ void testIntersectionOnRegularGrid()
                     debugMesh->insertNode( bMin[0], bMax[1], bMax[2]);
 
                     int data[8];
-                    for(int i=0; i< 8; ++i)
-                        data[i] = vStart + i;
+                    for(int x=0; x< 8; ++x)
+                        data[x] = vStart + x;
 
                     debugMesh->insertCell( data, MINT_HEX, 8);
                 }

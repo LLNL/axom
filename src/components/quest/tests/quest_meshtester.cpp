@@ -68,10 +68,12 @@ void reportVectorMismatch(const std::vector<T> & standard,
                       standard.begin(), standard.end(),
                       std::inserter(unexpected, unexpected.begin()));
 
-  EXPECT_TRUE(missing.size() == 0) << "Missing " << missing.size() <<
-    " " << label << ":" << std::endl << vecToString(missing);
-  EXPECT_TRUE(unexpected.size() == 0) << "Unexpectedly, " << unexpected.size() <<
-    " extra " << label << ":" << std::endl << vecToString(unexpected);
+  EXPECT_TRUE(missing.size() == 0) 
+    << "Missing " << missing.size() 
+    << " " << label << ":" << std::endl << vecToString(missing);
+  EXPECT_TRUE(unexpected.size() == 0) 
+    << "Unexpectedly, " << unexpected.size() 
+    << " extra " << label << ":" << std::endl << vecToString(unexpected);
 }
 
 void runIntersectTest(const std::string &tname,

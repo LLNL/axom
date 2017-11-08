@@ -72,7 +72,8 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
         EXPECT_TRUE( bb.contains(leafBB));
 
         SLIC_INFO(
-            "Query pt: " << queryPt
+            "Query pt: " 
+             << queryPt
              <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
              <<" contained in bounding box " << leafBB
              <<"\n\t of leaf " << leafBlock

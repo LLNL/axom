@@ -99,10 +99,13 @@ typedef axom::primal::Point<int, DIM> GridPt;
 struct CommandLineArguments
 {
    CommandLineArguments()
-     : meshName(""), baselineRoot("")
-     , meshBoundingBox(), queryResolution(DEFAULT_RESOLUTION)
-     , queryMesh(AXOM_NULLPTR)
-     , testDistance(true), testContainment(true)
+     : meshName(""), 
+       baselineRoot(""),
+       meshBoundingBox(), 
+       queryResolution(DEFAULT_RESOLUTION),
+       queryMesh(AXOM_NULLPTR),
+       testDistance(true), 
+       testContainment(true)
      {}
 
    ~CommandLineArguments()

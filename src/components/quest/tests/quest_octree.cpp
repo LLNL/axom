@@ -210,7 +210,8 @@ TEST( quest_octree, octree_coveringLeafBlocks)
               BlockIndex coveringBlk = octree.coveringLeafBlock(neighborBlk);
 
               SLIC_INFO(
-                "\tFace neighbor " << i << " is " << neighborBlk
+                "\tFace neighbor " 
+                << i << " is " << neighborBlk
                 << " -- Covering block is " << coveringBlk
                 << (coveringBlk == BlockIndex::invalid_index() 
                         ? " -- invalid_index" : "")  );

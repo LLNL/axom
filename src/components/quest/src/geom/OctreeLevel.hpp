@@ -327,6 +327,7 @@ namespace quest {
        *  a begin iterator (true) or an end iterator (false)
        */
       virtual BlockIteratorHelper* getIteratorHelper(bool) = 0;
+
       /**
        * \brief Virtual factory function to create a const iterator helper
        *
