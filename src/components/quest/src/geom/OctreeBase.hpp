@@ -741,31 +741,31 @@ public:
     else if( lev <= MAX_DENSE_LEV )
     {
       SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-      ret = (static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+      ret = static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
     }
     else if( lev <= MAX_SPARSE16_LEV)
     {
       SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
       ret =
-        (static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+        static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
     }
     else if( lev <= MAX_SPARSE32_LEV )
     {
       SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
       ret =
-        (static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+        static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
     }
     else if( lev <= MAX_SPARSE64_LEV  )
     {
       SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
       ret =
-        (static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+        static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
     }
     else
     {
       SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
       ret =
-        (static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
+        static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
     }
     return ret;
   }
@@ -832,9 +832,9 @@ public:
    */
   BlockDataType& operator[](const BlockIndex& block)
   {
-    SLIC_ASSERT_MSG(hasBlock(
-                      block),
-                    "Block " << block << " was not a block in the tree.");
+    SLIC_ASSERT_MSG(
+      hasBlock(block),
+      "Block " << block << " was not a block in the tree.");
 
     const int& lev = block.level();
     const GridPt& pt = block.pt();
@@ -874,9 +874,9 @@ public:
    */
   const BlockDataType& operator[](const BlockIndex& block) const
   {
-    SLIC_ASSERT_MSG(hasBlock(
-                      block),
-                    "Block " << block << " was not a block in the tree.");
+    SLIC_ASSERT_MSG(
+      hasBlock(block),
+      "Block " << block << " was not a block in the tree.");
 
     const int& lev = block.level();
     const GridPt& pt = block.pt();

@@ -79,7 +79,7 @@ typedef policies::
 typedef policies::
   ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
 
-typedef std::vector<PositionType>                                   IndexVec;
+typedef std::vector<PositionType>                   IndexVec;
 
 
 typedef slam::StaticRelation<ConstantCardinalityCT, STLIndirection,
@@ -440,16 +440,15 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 
   // -- Construction using set and relation builder objects
   typedef StaticConstantRelation_RT_STL::RelationBuilder RelationBuilder;
-  StaticConstantRelation_RT_STL builderRel =  RelationBuilder()
-                                             .fromSet( &fromSet)
-                                             .toSet( &toSet)
-                                             .begins(
-    RelationBuilder::BeginsSetBuilder()
-    .stride(ELEM_STRIDE))
-                                             .indices(
-    RelationBuilder::IndicesSetBuilder()
-    .size(relIndices.size())
-    .data(&relIndices) )
+  StaticConstantRelation_RT_STL builderRel =
+    RelationBuilder()
+    .fromSet( &fromSet)
+    .toSet( &toSet)
+    .begins( RelationBuilder::BeginsSetBuilder()
+             .stride(ELEM_STRIDE))
+    .indices(RelationBuilder::IndicesSetBuilder()
+             .size(relIndices.size())
+             .data(&relIndices) )
   ;
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -503,17 +502,15 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 
   // -- Construction using set and relation builder objects
   typedef StaticConstantRelation_RT_Array::RelationBuilder RelationBuilder;
-  StaticConstantRelation_RT_Array builderRel =  RelationBuilder()
-                                               .fromSet( &fromSet)
-                                               .toSet( &toSet)
-                                               .begins(
-    RelationBuilder::BeginsSetBuilder()
-    .stride(ELEM_STRIDE))
-                                               .indices(
-    RelationBuilder::IndicesSetBuilder()
-    .size(
-      relIndices.size())
-    .data(data));
+  StaticConstantRelation_RT_Array builderRel =
+    RelationBuilder()
+    .fromSet( &fromSet)
+    .toSet( &toSet)
+    .begins(RelationBuilder::BeginsSetBuilder()
+            .stride(ELEM_STRIDE))
+    .indices(RelationBuilder::IndicesSetBuilder()
+             .size(relIndices.size())
+             .data(data));
   EXPECT_TRUE(builderRel.isValid(true));
 
   // Test traversal of the relation data
@@ -574,17 +571,17 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 
   // -- Construction using set and relation builder objects
   typedef StaticConstantRelation_CT_Array::RelationBuilder RelationBuilder;
-  StaticConstantRelation_CT_Array builderRel =  RelationBuilder()
-                                               .fromSet( &fromSet)
-                                               .toSet( &toSet)
-                                               .begins(
-    RelationBuilder::BeginsSetBuilder()
-    .stride(ELEM_STRIDE))
-                                               .indices(
-    RelationBuilder::IndicesSetBuilder()
-    .size(
-      relIndices.size())
-    .data(data) )
+  StaticConstantRelation_CT_Array builderRel =
+    RelationBuilder()
+    .fromSet( &fromSet)
+    .toSet( &toSet)
+    .begins(
+      RelationBuilder::BeginsSetBuilder()
+      .stride(ELEM_STRIDE))
+    .indices(
+      RelationBuilder::IndicesSetBuilder()
+      .size(relIndices.size())
+      .data(data) )
   ;
   EXPECT_TRUE(builderRel.isValid(true));
 
@@ -598,17 +595,15 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 
   // Similarly here, it is ok to omit the striding in the setup
   // due to the compile time striding policy
-  StaticConstantRelation_CT_Array builderRel_implicitStride =  RelationBuilder()
-                                                              .fromSet( &fromSet)
-                                                              .toSet( &toSet)
-//      .begins( RelationBuilder::BeginsSetBuilder()
+  StaticConstantRelation_CT_Array builderRel_implicitStride =
+    RelationBuilder()
+    .fromSet( &fromSet)
+    .toSet( &toSet)
+//  .begins( RelationBuilder::BeginsSetBuilder()
 //          .stride(ELEM_STRIDE))
-                                                              .indices(
-    RelationBuilder::IndicesSetBuilder()
-    .size(
-      relIndices.size())
-    .data(
-      data) );
+    .indices(RelationBuilder::IndicesSetBuilder()
+             .size(relIndices.size())
+             .data(data) );
   EXPECT_TRUE(builderRel_implicitStride.isValid(true));
 
 

@@ -126,6 +126,7 @@ private:
     // This choice can be made into a Policy class
     // (e.g. ModulusPolicy?) if we see a significant difference between
     //  the branching and branchless implementations
+
         #if MODINT_BRANCHLESS
     // This solution avoids branching (at the expense of a second mod operation),
     // but appears to be slower on some platforms (chaos)

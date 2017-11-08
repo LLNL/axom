@@ -118,10 +118,10 @@ typedef DataType * DataArray;
     };
  */
 
-enum ArrSizes { S0 = 1 << 3         // small
-                ,S1 = 1 << 16       // larger than  32K L1 cache
-                ,S2 = 1 << 19       // Larger than 256K L2 cache
-                ,S3 = 1 << 25       // Larger than  25M L3 cache
+enum ArrSizes { S0 = 1 << 3,      // small
+                S1 = 1 << 16,     // larger than  32K L1 cache
+                S2 = 1 << 19,     // Larger than 256K L2 cache
+                S3 = 1 << 25      // Larger than  25M L3 cache
 };
 
 void CustomArgs(benchmark::internal::Benchmark * b) {

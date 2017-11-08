@@ -714,10 +714,9 @@ bool compareToBaselineResults(axom::sidre::Group * grp,
     {
       passed = false;
       SLIC_INFO(
-        "** Containment test failed.  There were " << diffCount
-                                                   << " differences. Showing first "
-                                                   << std::min(diffCount,
-                    MAX_RESULTS) << out.str() );
+        "** Containment test failed.  There were "
+        << diffCount << " differences. Showing first "
+        << std::min(diffCount, MAX_RESULTS) << out.str() );
     }
 
   }
@@ -764,10 +763,9 @@ bool compareToBaselineResults(axom::sidre::Group * grp,
     {
       passed = false;
       SLIC_INFO(
-        "** Distance test failed.  There were " << diffCount
-                                                << " differences. Showing first "
-                                                << std::min(diffCount,
-                    MAX_RESULTS) << out.str() );
+        "** Distance test failed.  There were "
+        << diffCount << " differences. Showing first "
+        << std::min(diffCount, MAX_RESULTS) << out.str() );
     }
 
   }
@@ -815,8 +813,8 @@ void saveBaseline(axom::sidre::Group * grp, CommandLineArguments& clargs)
     int * oct_containment = umesh->getNodeFieldData()->getField(
       "octree_containment" )->getIntPtr();
     view =
-      grp->createView("octree_containment", axom::sidre::INT_ID,
-                      nnodes)->allocate();
+      grp->createView("octree_containment", axom::sidre::INT_ID, nnodes)
+      ->allocate();
     int * contData = view->getArray();
     std::copy(oct_containment, oct_containment + nnodes, contData);
   }
@@ -825,17 +823,16 @@ void saveBaseline(axom::sidre::Group * grp, CommandLineArguments& clargs)
   {
     int * bvh_containment = umesh->getNodeFieldData()->getField(
       "bvh_containment" )->getIntPtr();
-    view =
-      grp->createView("bvh_containment", axom::sidre::INT_ID,
-                      nnodes)->allocate();
+    view = grp->createView("bvh_containment", axom::sidre::INT_ID,nnodes)
+           ->allocate();
     int * contData = view->getArray();
     std::copy(bvh_containment, bvh_containment+nnodes, contData);
 
     double * bvh_distance=
       umesh->getNodeFieldData()->getField( "bvh_distance" )->getDoublePtr();
     view =
-      grp->createView("bvh_distance", axom::sidre::DOUBLE_ID,
-                      nnodes)->allocate();
+      grp->createView("bvh_distance", axom::sidre::DOUBLE_ID,nnodes)
+      ->allocate();
     double * distData = view->getArray();
     std::copy(bvh_distance, bvh_distance+nnodes, distData);
   }
@@ -848,8 +845,8 @@ void saveBaseline(axom::sidre::Group * grp, CommandLineArguments& clargs)
                        : fmt::format("{}_{}_{}", res[0], res[1], res[2]);
 
 
-  std::string outfile = fmt::format("{}_{}_{}", meshNameNoExt, resStr,
-                                    "baseline");
+  std::string outfile =
+    fmt::format("{}_{}_{}", meshNameNoExt, resStr, "baseline");
   std::string protocol = "sidre_hdf5";
   axom::sidre::IOManager writer(MPI_COMM_WORLD);
   writer.write(grp,1, outfile, protocol);

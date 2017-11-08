@@ -180,8 +180,8 @@ TEST(slam_modInt,compiletime_modular_int)
 
   const int SZ = 937;
 
-  typedef axom::slam::ModularInt<axom::slam::policies::CompileTimeSize<int,
-                                                                       SZ> >
+  typedef
+    axom::slam::ModularInt<axom::slam::policies::CompileTimeSize<int,SZ> >
     ModularIntType;
 
   int sz = SZ;

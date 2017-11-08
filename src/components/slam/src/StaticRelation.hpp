@@ -143,9 +143,9 @@ public:
 
     RelationBuilder& begins(BeginsSetBuilder& beginsBuilder)
     {
-      SLIC_ASSERT_MSG( !EmptySetTraits<FromSetType>::isEmpty(
-                         m_fromSet),
-                       "Must set the 'fromSet' pointer before setting the begins set");
+      SLIC_ASSERT_MSG(
+        !EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
+        "Must set the 'fromSet' pointer before setting the begins set");
 
       m_cardPolicy = CardinalityPolicy( m_fromSet->size(), beginsBuilder);
       return *this;

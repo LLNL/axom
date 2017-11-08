@@ -407,7 +407,7 @@ public:
       //(static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs))
       //&&
       (lhs.m_vertIndex == rhs.m_vertIndex)
-      && (lhs.m_tris.size() == rhs.m_tris.size())               // Note: We are not checking the contents
+      && (lhs.m_tris.size() == rhs.m_tris.size())     // Note: We are not checking the contents
       // && (lhs.m_tris == rhs.m_tris)                //       of the triangle array, only the size
       && lhs.m_isLeaf == rhs.m_isLeaf
     ;
@@ -1196,8 +1196,7 @@ private:
     {
       TriangleIndex tIdx = triSet[i];
       TriVertIndices tv = m_meshWrapper.triangleVertexIndices(tIdx);
-      if( m_meshWrapper.incidentInVertex(tv,
-                                         vIdx1) &&
+      if( m_meshWrapper.incidentInVertex(tv, vIdx1) &&
           m_meshWrapper.incidentInVertex(tv, vIdx2) )
       {
         vec += m_meshWrapper.trianglePositions( tIdx ).normal();
@@ -1307,7 +1306,8 @@ void InOutOctree<DIM>::generateIndex ()
   SLIC_INFO("\t--Inserting triangles took " << timer.elapsed() << " seconds.");
 
 
-  // STEP 3 -- Color the blocks of the octree -- Black (in), White(out), Gray(Intersects surface)
+  // STEP 3 -- Color the blocks of the octree
+  // -- Black (in), White(out), Gray(Intersects surface)
   timer.start();
   colorOctreeLeaves();
 
@@ -1354,7 +1354,7 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
     "\t -- inserting pt " << pt << " with index " << idx
                           << ". Looking at block " << block
                           << " w/ blockBB " << this->blockBoundingBox(block)
-                          << " indexing leaf vertex " << blkData.dataIndex()  );
+                          << " indexing leaf vertex " << blkData.dataIndex());
 
   if(!blkData.hasData() )
   {
@@ -1455,17 +1455,18 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         currentLevelData[ blkData.dataIndex() ];
 
       bool isInternal = !dynamicLeafData.isLeaf();
-      bool isLeafThatMustRefine = !isInternal
-                                  && !allTrianglesIncidentInCommonVertex(blk,
-                                                                         dynamicLeafData);
+      bool isLeafThatMustRefine =
+        !isInternal
+        && !allTrianglesIncidentInCommonVertex(blk, dynamicLeafData);
 
       QUEST_OCTREE_DEBUG_LOG_IF(
         DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
-        "Attempting to insert triangles from block" << blk << "."
-                                                    << "\n\tDynamic data: " << dynamicLeafData
-                                                    << "\n\tBlock data: " << blkData
-                                                    << "\n\tAbout to finalize? "
-                                                    << (!isInternal &&
+        "Attempting to insert triangles from block"
+        << blk << "."
+        << "\n\tDynamic data: " << dynamicLeafData
+        << "\n\tBlock data: " << blkData
+        << "\n\tAbout to finalize? "
+        << (!isInternal &&
             !isLeafThatMustRefine  ? " yes" : "no" ) );
 
 
@@ -1612,11 +1613,11 @@ void InOutOctree<DIM>::insertMeshTriangles ()
                 DEBUG_BLOCK_1 == childBlk[j]
                 || DEBUG_BLOCK_2 == childBlk[j],
                 //&& tIdx == DEBUG_TRI_IDX
-                "Added triangle " << tIdx
-                                  <<" @ " << spaceTri << " with verts "
-                                  << m_meshWrapper.triangleVertexIndices(tIdx)
-                                  << "\n\tinto block " << childBlk[j]
-                                  << "\n\twith data " << *(childDataPtr[j])
+                "Added triangle "
+                << tIdx <<" @ " << spaceTri << " with verts "
+                << m_meshWrapper.triangleVertexIndices(tIdx)
+                << "\n\tinto block " << childBlk[j]
+                << "\n\twith data " << *(childDataPtr[j])
                 );
             }
           }
@@ -1708,20 +1709,19 @@ void InOutOctree<DIM>::colorOctreeLeaves()
 
       SLIC_ASSERT_MSG(
         static_cast<int>(uncoloredBlocks.size()) < prevCount,
-        "Problem coloring leaf blocks at level " << lev
-                                                 << ". There are  " << uncoloredBlocks.size()
-                                                 << " blocks that are still not colored."
-                                                 << " First problem block is: "
-                                                 << BlockIndex( uncoloredBlocks[
-                         0], lev) );
+        "Problem coloring leaf blocks at level "
+        << lev << ". There are  " << uncoloredBlocks.size()
+        << " blocks that are still not colored."
+        << " First problem block is: "
+        << BlockIndex( uncoloredBlocks[0], lev) );
     }
 
     if(!levelLeafMap.empty() )
     {
       checkAllLeavesColoredAtLevel(lev);
       SLIC_DEBUG(
-        "\tColoring level "<< lev
-                           << " took " << levelTimer.elapsed() << " seconds.");
+        "\tColoring level "
+        << lev << " took " << levelTimer.elapsed() << " seconds.");
     }
   }
 }
@@ -1753,19 +1753,15 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
           || DEBUG_BLOCK_2 == neighborBlk
           || DEBUG_BLOCK_1 == leafBlk
           || DEBUG_BLOCK_2 == leafBlk,
-          "Spreading color to block " << leafBlk
-                                      << " with data " <<  leafData << " and bounding box "
-                                      << this->blockBoundingBox(
-            leafBlk) << " -- midpoint "
-                                      << this->blockBoundingBox(
-            leafBlk).getCentroid()
+          "Spreading color to block "
+          << leafBlk << " with data " <<  leafData << " and bounding box "
+          << this->blockBoundingBox( leafBlk) << " -- midpoint "
+          << this->blockBoundingBox(    leafBlk).getCentroid()
           //
-                                      << "\n\t\t from " << neighborBlk
-                                      << " with data " << neighborData << " and bounding box "
-                                      << this->blockBoundingBox(
-            neighborBlk) << " -- midpoint "
-                                      << this->blockBoundingBox(
-            neighborBlk).getCentroid() );
+          << "\n\t\t from " << neighborBlk
+          << " with data " << neighborData << " and bounding box "
+          << this->blockBoundingBox( neighborBlk) << " -- midpoint "
+          << this->blockBoundingBox( neighborBlk).getCentroid() );
 
         switch(neighborData.color())
         {
@@ -1818,19 +1814,15 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
             || DEBUG_BLOCK_2 == neighborBlk
             || DEBUG_BLOCK_1 == leafBlk
             || DEBUG_BLOCK_2 == leafBlk,
-            "Spreading color from block " << leafBlk
-                                          << " with data " <<  leafData << " and bounding box "
-                                          << this->blockBoundingBox(
-              leafBlk) << " -- midpoint "
-                                          << this->blockBoundingBox(
-              leafBlk).getCentroid()
+            "Spreading color from block "
+            << leafBlk<< " with data " <<  leafData << " and bounding box "
+            << this->blockBoundingBox( leafBlk) << " -- midpoint "
+            << this->blockBoundingBox(leafBlk).getCentroid()
             //
-                                          << "\n\t\t to " << neighborBlk << " with data "
-                                          << neighborData << " and bounding box "
-                                          << this->blockBoundingBox(
-              neighborBlk)  << " -- midpoint "
-                                          << this->blockBoundingBox(
-              neighborBlk).getCentroid() );
+            << "\n\t\t to " << neighborBlk << " with data "
+            << neighborData << " and bounding box "
+            << this->blockBoundingBox(neighborBlk)  << " -- midpoint "
+            << this->blockBoundingBox(neighborBlk).getCentroid() );
 
           switch(leafData.color())
           {
@@ -2166,7 +2158,6 @@ void InOutOctree<DIM>::printOctreeStats() const
        this->hasBlock(DEBUG_BLOCK_1) )
     {
       meshDumper.dumpLocalOctreeMeshesForBlock("debug_", DEBUG_BLOCK_1);
-
     }
 
     if(DEBUG_BLOCK_2 != BlockIndex::invalid_index() &&
@@ -2819,6 +2810,7 @@ public:
   {
     SLIC_DEBUG(
       "--Checking that all leaves have a color -- black, white and gray");
+
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
       checkAllLeavesColoredAtLevel(lev);

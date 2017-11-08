@@ -495,8 +495,8 @@ int main( int argc, char * * argv )
     = octree.boundingBox();
 
   // Bounding box for a problematic region on the plane_simp.stl model
-  // = GeometricBoundingBox(  SpacePt::make_point(68.326,740.706,187.349)
-  //                     , SpacePt::make_point(68.5329,740.923,187.407));
+  // = GeometricBoundingBox(  SpacePt::make_point(68.326,740.706,187.349),
+  //                          SpacePt::make_point(68.5329,740.923,187.407));
 
   // We can scale the query region here
   //  queryBB.scale(1.1);

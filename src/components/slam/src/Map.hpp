@@ -206,7 +206,6 @@ bool Map<DataType>::isValid(bool verboseOutput) const
                << " have different sizes"
                << " , underlying set has size " << m_set->size()
                << " , data has size " << m_data.size();
-        ;
       }
 
       bValid = false;
