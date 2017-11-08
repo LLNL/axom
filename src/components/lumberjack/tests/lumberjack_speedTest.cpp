@@ -38,11 +38,11 @@ int main(int argc, char * * argv)
   bool commandLineError = false;
   if (argc != 4)
   {
-    std::cout <<
-    "Error: Wrong amount of command line arguments given. Usage:" <<
-    std::endl <<
-      "   " << argv[0] <<
-    " <b|r depending on binary or root communicator> <num messages before push once> <file to be read>"
+    std::cout << "Error: Wrong amount of command line arguments given. "
+              << "Usage:" << std::endl
+              << "   " << argv[0]
+              << " <b|r depending on binary or root communicator>"
+              << " <num messages before push once> <file to be read>"
               << std::endl;
     return 1;
   }
@@ -156,8 +156,8 @@ int main(int argc, char * * argv)
   // Output elapsed time
   if (commRank == 0)
   {
-    std::cout << "Elapsed time: " << ((double)(end - begin)*1000)/
-    CLOCKS_PER_SEC << std::endl;
+    std::cout << "Elapsed time: "
+              << ((double)(end - begin)*1000)/ CLOCKS_PER_SEC << std::endl;
   }
 
   // Finalize MPI

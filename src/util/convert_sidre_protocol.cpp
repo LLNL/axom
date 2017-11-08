@@ -541,9 +541,9 @@ int main(int argc, char * argv[])
   }
 
   // Write out datastore to the output file in the specified protocol
-  SLIC_INFO("Writing out datastore in " << args.m_protocol
-                                        << " protocol to file(s) with base name " <<
-  args.m_outputName);
+  SLIC_INFO("Writing out datastore in "
+            << args.m_protocol << " protocol to file(s) with base name "
+            << args.m_outputName);
   manager.write(ds.getRoot(), num_files, args.m_outputName, args.m_protocol);
 
 

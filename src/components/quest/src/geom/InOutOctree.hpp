@@ -1313,8 +1313,8 @@ void InOutOctree<DIM>::generateIndex ()
 
   timer.stop();
   m_generationState = INOUTOCTREE_LEAVES_COLORED;
-  SLIC_INFO("\t--Coloring octree leaves took " << timer.elapsed() <<
-      " seconds.");
+  SLIC_INFO("\t--Coloring octree leaves took "
+            << timer.elapsed() << " seconds.");
 
   // -- Print some stats about the octree
   #ifdef DUMP_OCTREE_INFO
@@ -1330,8 +1330,8 @@ void InOutOctree<DIM>::generateIndex ()
   timer.start();
   m_meshWrapper.regenerateSurfaceMesh();
   timer.stop();
-  SLIC_INFO("\t--Regenerating the mesh took " << timer.elapsed() <<
-      " seconds.");
+  SLIC_INFO("\t--Regenerating the mesh took "
+            << timer.elapsed() << " seconds.");
 
   SLIC_INFO("  Finished generating the InOutOctree.");
 }
@@ -1582,17 +1582,13 @@ void InOutOctree<DIM>::insertMeshTriangles ()
               DEBUG_BLOCK_1 == childBlk[j]
               || DEBUG_BLOCK_2 == childBlk[j],
               //&& tIdx == DEBUG_TRI_IDX
-              "Attempting to insert triangle " << tIdx
-                                               <<" @ " << spaceTri << " w/ BB " << tBB
-                                               << "\n\t into block" <<
-                childBlk[j]
-                                               << " w/ BB " << childBB[j]
-                                               << " and data " <<
-                *childDataPtr[j]
-                                               << "\n\tShould add? "
-                                               << (shouldAddTriangle  ? " yes" :
-                  "no" )
-              );
+              "Attempting to insert triangle "
+              << tIdx <<" @ " << spaceTri << " w/ BB " << tBB
+              << "\n\t into block" << childBlk[j]
+              << " w/ BB " << childBB[j]
+              << " and data " << *childDataPtr[j]
+              << "\n\tShould add? "
+              << (shouldAddTriangle  ? " yes" :      "no" ) );
 
             if(shouldAddTriangle)
             {
@@ -1653,9 +1649,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
     if(!levelLeafMap.empty() )
       SLIC_DEBUG(
-        "\tInserting triangles into level " << lev
-                                            <<" took " << levelTimer.elapsed() <<
-          " seconds.");
+        "\tInserting triangles into level "
+        << lev <<" took " << levelTimer.elapsed() << " seconds.");
   }
 }
 
@@ -1865,9 +1860,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
             neighborData.isColored()
             && (DEBUG_BLOCK_1 == neighborBlk
                 || DEBUG_BLOCK_2 == neighborBlk),
-            "Neighbor block was colored -- " << neighborBlk
-                                             << " now has data " <<
-              neighborData);
+            "Neighbor block was colored -- "
+            << neighborBlk << " now has data " << neighborData);
         }
       }
     }
@@ -2782,10 +2776,9 @@ private:
       static int counter = 0;
       SLIC_INFO("// Block index " << block);
       SLIC_INFO(
-        "BoundingBoxType box"<< ++counter
-                             <<"(PointType::make_point" << blockBB.getMin() << ","
-                             << "PointType::make_point" << blockBB.getMax()<<
-            ");" );
+        "BoundingBoxType box"
+        << ++counter <<"(PointType::make_point" << blockBB.getMin() << ","
+        << "PointType::make_point" << blockBB.getMax()<<  ");" );
     }
   }
 
@@ -2843,11 +2836,9 @@ public:
 
       SLIC_ASSERT_MSG(
         it->isColored(),
-        "Error after coloring level " << level
-                                      << " leaf block " <<
-            BlockIndex(it.pt(), level)
-                                      << " was not colored."
-        );
+        "Error after coloring level "
+        << level << " leaf block "
+        << BlockIndex(it.pt(), level) << " was not colored." );
     }
   }
 
@@ -3223,12 +3214,12 @@ public:
 
         if(m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
         {
-          sstr << " Leaves with colors -- B,W,G ==> " <<
-                m_levelBlackBlockCount[lev]
+          sstr << " Leaves with colors -- B,W,G ==> "
+               << m_levelBlackBlockCount[lev]
                << "," << m_levelWhiteBlockCount[lev]
                << "," << m_levelGrayBlockCount[lev]
-               << " and " << m_levelTriangleRefCount[lev] <<
-                " triangle references.";
+               << " and " << m_levelTriangleRefCount[lev]
+               << " triangle references.";
         }
         //sstr <<"Hash load factor: "
         //     << this->m_leavesLevelMap[ lev ].load_factor()
@@ -3261,7 +3252,7 @@ public:
       sstr <<" \n\t There were " << m_totals.triangleRefCount
            << " triangle references " <<" (avg. "
            << ( m_totals.triangleRefCount / meshNumTriangles ) <<
-            " refs per triangle).";
+        " refs per triangle).";
     }
 
     return sstr.str();
@@ -3288,7 +3279,7 @@ public:
 
     std::stringstream triCountStr;
     triCountStr<<
-          "\tTriangle index count (lg-arithmic bins for number of references per triangle):";
+      "\tTriangle index count (lg-arithmic bins for number of references per triangle):";
     for(LogHistogram::const_iterator it = triCountHist.begin()
         ; it != triCountHist.end()
         ; ++it)

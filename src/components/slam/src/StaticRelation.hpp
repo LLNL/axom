@@ -308,9 +308,9 @@ bool StaticRelation<RelationCardinalityPolicy,RelationIndicesIndirectionPolicy,
     {
       errSstr << "\n\t Static relations require both the fromSet"
               << " and toSet to be non-null"
-              << "\n\t -- fromSet was " << (isFromSetNull ? "" : " not ") <<
-          "null"
-              << "\n\t -- toSet was " << (isToSetNull ? "" : " not ") << "null";
+              << "\n\t -- fromSet was " << (isFromSetNull ? "" : " not ")
+              << "null" << "\n\t -- toSet was "
+              << (isToSetNull ? "" : " not ") << "null";
     }
 
     setsAreValid = false;

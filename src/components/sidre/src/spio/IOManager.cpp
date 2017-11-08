@@ -334,8 +334,8 @@ void IOManager::readWithSCR(
   else
   {
     SLIC_WARNING(
-      "Root file: " << root_file <<
-        " not found by SCR. Attempting to read without SCR.");
+      "Root file: "
+      << root_file << " not found by SCR. Attempting to read without SCR.");
 
     read(datagroup, root_file, preserve_contents, false);
   }

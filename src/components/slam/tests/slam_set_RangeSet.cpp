@@ -178,8 +178,8 @@ TEST(slam_range_set,iterate)
   SLIC_INFO( "Iterating through range set of size "
              << s.size()
              << "\n\twith lower element " << lowerIndex << " (included in set)"
-             << "\n\twith upper element " << upperIndex <<
-  " (not included in set)");
+             << "\n\twith upper element " << upperIndex
+             << " (not included in set)");
   const SetPosition expectedSize = upperIndex - lowerIndex;
   EXPECT_EQ(expectedSize, s.size() );
 

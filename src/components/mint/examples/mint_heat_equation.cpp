@@ -326,8 +326,8 @@ private:
     cur_path << path << "_" << cur_dump << ".vtk";
     if ( write_vtk( m_mesh, cur_path.str() ) != 0 )
     {
-      SLIC_WARNING( "Unable to write to file: " << cur_path.str() <<
-          std::endl );
+      SLIC_WARNING( "Unable to write to file: "
+                    << cur_path.str() << std::endl );
     }
   }
 

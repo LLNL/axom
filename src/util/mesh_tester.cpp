@@ -71,20 +71,21 @@ struct Input
 
   void showhelp()
   {
-    std::cout << "Argument usage:" << std::endl <<
+    std::cout
+      << "Argument usage:" << std::endl <<
       "  --help           Show this help message." << std::endl <<
-      "  --resolution N   Resolution of uniform grid.  Default N = 10.  " <<
-    std::endl <<
+      "  --resolution N   Resolution of uniform grid.  Default N = 10.  "
+      << std::endl <<
       "       Set to 1 to run the naive algorithm, without the spatial index."
-              << std::endl <<
+      << std::endl <<
       "       Set to less than 1 to use the spatial index with a resolution of the"
-              << std::endl <<
-      "         cube root of the number of triangles." << std::endl <<
-      "  --infile fname   The STL input file (must be specified)." <<
-    std::endl <<
+      << std::endl <<
+      "         cube root of the number of triangles."
+      << std::endl <<
+      "  --infile fname   The STL input file (must be specified)."
+      << std::endl      <<
       "  --outfile fname  The text output file (defaults to meshTestResults.txt)."
-              << std::endl <<
-      std::endl;
+      << std::endl << std::endl;
   };
 };
 

@@ -157,9 +157,8 @@ private:
   {
     SLIC_ASSERT_MSG(
       setIndex >= 0 && setIndex < m_set->size(),
-      "Attempted to access element " << setIndex
-                                     << " but map's set has size "  <<
-        m_set->size() );
+      "Attempted to access element "
+      << setIndex << " but map's set has size "  << m_set->size() );
   }
 
 private:

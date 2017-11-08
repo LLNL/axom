@@ -100,7 +100,7 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
                   << " -- value of element " << std::distance(
             m_toSetIndicesVec.begin(), it) << " was " << *it
                   << ". Max possible value should be " << m_toSet->size() <<
-              ".";
+            ".";
         }
 
         bValid = false;
@@ -116,7 +116,7 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
     if(bValid)
     {
       sstr << "(static,constant) Relation with stride " << stride() <<
-          " was valid." << std::endl;
+        " was valid." << std::endl;
     }
     else
     {
@@ -132,7 +132,7 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
       sstr << "\n** toSet has size " << m_toSet->size() << ": ";
 
     sstr << "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<
-        ": ";
+      ": ";
     std::copy(m_toSetIndicesVec.begin(),
               m_toSetIndicesVec.end(),
               std::ostream_iterator<SetPosition>(sstr, " "));
