@@ -9,239 +9,274 @@
  */
 
 #include "mint/Vector.hpp"
-#include "mint/DataTypes.hpp"
-#include "axom_utils/Utilities.hpp"     // for utilities::max
-#include "gtest/gtest.h"                // for TEST and EXPECT_* macros
-#include "slic/slic.hpp"                // for slic macros
-#include "slic/UnitTestLogger.hpp"      // for UnitTestLogger
+#include "mint/DataTypes.hpp"           /* for localIndex */
+#include "axom_utils/Utilities.hpp"     /* for utilities::max */
+#include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
+#include "slic/slic.hpp"                /* for slic macros */
+#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
-
-#include <cmath>                        // for std::ceil
+#include <cmath>                        /* for std::ceil */
 
 
 namespace axom {
 namespace mint {
 
+namespace internal {
 
-/*!
- * \brief Creates a 1D ParticleMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
+template < typename T >
+localIndex calc_new_capacity( Vector< T > & v, localIndex increase )
+{ 
+  localIndex newSize = v.getSize() + increase;
+  if ( newSize > v.getCapacity() ) {
+    double n_tuples = newSize * v.getResizeRatio() / v.getNumComponents();
+    return std::ceil( n_tuples ) * v.getNumComponents();
+  }
+
+  return v.getCapacity();
+}
+
+
+
+template < typename T >
+void check_storage( localIndex capacity )
+{
+  Vector< T > v( capacity );
+
+  EXPECT_TRUE( v.empty() );
+  EXPECT_EQ( v.getSize(), 0 );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getResizeRatio(), 2.0 );
+  EXPECT_EQ( v.getNumComponents(), 1 );
+
+  const T * data_address = v.getData();
+
+  for ( localIndex i = 0; i < capacity / 2; ++i ) {
+    v.add( i );
+  }
+
+  EXPECT_TRUE( !v.empty() );
+  EXPECT_EQ( v.getSize(), capacity / 2 );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getData(), data_address );
+
+  for ( localIndex i =  capacity / 2; i < capacity; ++i ) {
+    v.add( i );
+  }
+
+  EXPECT_TRUE( !v.empty() );
+  EXPECT_EQ( v.getSize(), capacity );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getData(), data_address );
+
+  for ( localIndex i = 0; i < capacity; ++i ) {
+    EXPECT_EQ( v[ i ], i );
+  }
+
+  for ( localIndex i = 0; i < capacity; ++i ) {
+    v[ i ] = capacity - i;
+  }
+
+  for ( localIndex i = 0; i < capacity; ++i ) {
+    EXPECT_EQ( v[ i ], capacity - i );
+  }
+}
+
+
+template < typename T >
+void check_resize( int num_components, double resize_ratio )
+{
+  localIndex capacity = 0;
+  localIndex size = 0;
+  Vector< T > v( capacity, num_components, resize_ratio );
+
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumComponents(), num_components );
+  EXPECT_EQ( v.getResizeRatio(), resize_ratio );
+
+  capacity = calc_new_capacity( v, 1 );
+  v.add( 0 );
+  size += 1;
+  
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v[0], 0 );
+
+  const localIndex n_vals = 1000 * num_components;
+  T values[ n_vals ];
+  for ( localIndex i = 0; i < n_vals; ++i ) {
+    values[ i ] = i + 1; 
+  }
+
+  capacity = calc_new_capacity( v, n_vals );
+  v.add( values, n_vals );
+  size += n_vals;
+
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  for ( localIndex i = 0; i < size; ++i ) {
+    EXPECT_EQ( v[ i ], i );
+  }
+
+  capacity = calc_new_capacity( v, 1 );
+  v.add( n_vals + 1 );
+  size += 1;
+
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v[ size - 1 ], n_vals + 1 );
+
+  T * data_address = v.getData();
+  size = 500 * num_components;
+  v.setSize(size);
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getData(), data_address );
+  for ( localIndex i = 0; i < size; ++i ) {
+    EXPECT_EQ( v[ i ], i );
+  }
+
+  capacity = 250 * num_components;
+  size = capacity;
+  v.setCapacity( capacity );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  for ( localIndex i = 0; i < size; ++i ) {
+    EXPECT_EQ( v[ i ], i );
+  }
+
+  size += n_vals;
+  capacity = std::ceil( size / num_components ) * num_components;
+  v.setSize( size );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getCapacity(), capacity );
+
+  v.set( values, n_vals, size - n_vals );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getCapacity(), capacity );
+
+  for ( localIndex i = 0 ; i < size - n_vals; ++i ) {
+    EXPECT_EQ( v[ i ], i );
+  }
+
+  for ( localIndex i = size - n_vals; i < size; ++i ) {
+    EXPECT_EQ( v[ i ], values[i - size + n_vals] );
+  }
+
+  capacity = 1000 * num_components;
+  size = capacity;
+  v.setCapacity( capacity );
+  v.setSize( size );
+  data_address = v.getData();
+
+  for ( localIndex i = 0; i < size; ++i ) {
+    data_address[ i ] = i * i;
+  }
+
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getData(), data_address );
+
+  for ( localIndex i = 0; i < size; ++i ) {
+    EXPECT_EQ( v[ i ], i * i );
+  }
+}
+
+template < typename T >
+void check_insert( double resize_ratio )
+{
+  localIndex capacity = 0;
+  localIndex size = 0;
+  Vector< T > v( capacity, resize_ratio );
+
+  localIndex num_vals = 1000;
+
+  for ( localIndex i = 0; i < num_vals; ++i ) {
+    capacity = calc_new_capacity( v, 1 );
+    v.insert( 2 * i, size );
+    size++;
+  }
+
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getSize(), num_vals );
+
+  for ( localIndex i = 0; i < num_vals; ++i ) {
+    EXPECT_EQ( v[ i ], 2 * i );
+  }
+
+  for ( localIndex i = 0; i < num_vals; ++i ) {
+    capacity = calc_new_capacity( v, 1 );
+    v.insert( 2 * i + 1, 2 * i + 1 );
+    size++;
+  }
+
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getSize(), 2 * num_vals );
+
+  for ( localIndex i = 0; i < 2 * num_vals; ++i ) {
+    EXPECT_EQ( v[ i ], i );
+  }
+
+  T values[ num_vals ];
+  for ( localIndex i = 0; i < num_vals; ++i ) {
+    values[ i ] = i * ( i - 4 ) + 5;
+  }
+
+  capacity = calc_new_capacity( v, num_vals );
+  size += num_vals;
+  v.insert( values, num_vals, 0 );
+
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getSize(), 3 * num_vals );
+
+  for ( localIndex i = 0; i < num_vals; ++i ) {
+    EXPECT_EQ( v[ i ], values[ i ] );
+  }
+
+  for ( localIndex i = num_vals; i < 3 * num_vals; ++i ) {
+    EXPECT_EQ( v[ i ], i - num_vals );
+  }
+}
+
+}   /* end namespace internal */
+
+
 TEST( mint_vector, checkStorage ) {
-  const localIndex capacity = 1000;
-
-  Vector< int > vi( capacity );
-  Vector< double > vd( capacity );
-
-  EXPECT_TRUE( vi.empty() );
-  EXPECT_TRUE( vd.empty() );
-
-  EXPECT_EQ( vi.getSize(), 0 );
-  EXPECT_EQ( vd.getSize(), 0 );
-
-  EXPECT_EQ( vi.getCapacity(), capacity );
-  EXPECT_EQ( vd.getCapacity(), capacity );
-
-  EXPECT_EQ( vi.getResizeRatio(), 2.0 );
-  EXPECT_EQ( vd.getResizeRatio(), 2.0 ); 
-
-  EXPECT_EQ( vi.getNumComponents(), 1 );
-  EXPECT_EQ( vd.getNumComponents(), 1 ); 
-
-  for ( localIndex i = 0; i < capacity; ++i ) {
-    vi.add( i );
-    vd.add( i );
-  }
-
-  EXPECT_TRUE( !vi.empty() );
-  EXPECT_TRUE( !vd.empty() );
-
-  EXPECT_EQ( vi.getSize(), capacity );
-  EXPECT_EQ( vd.getSize(), capacity );
-
-  EXPECT_EQ( vi.getCapacity(), capacity );
-  EXPECT_EQ( vd.getCapacity(), capacity );
-
-
-  for ( localIndex i = 0; i < capacity; ++i ) {
-    EXPECT_EQ( vi[ i ], i );
-    EXPECT_EQ( vd[ i ], i );
-  }
-
-  for ( localIndex i = 0; i < capacity; ++i ) {
-    vi[ i ] = capacity - i;
-    vd[ i ] = capacity - i;
-  }
-
-  for ( localIndex i = 0; i < capacity; ++i ) {
-    EXPECT_EQ( vi[ i ], capacity - i );
-    EXPECT_EQ( vd[ i ], capacity - i );
+  localIndex capacity = 2;
+  for ( int i = 1; i < 17; ++i ) {
+    internal::check_storage< int > ( capacity );
+    internal::check_storage< long int >( capacity );
+    internal::check_storage< float >( capacity );
+    internal::check_storage< double >( capacity );
+    capacity *= 2;
   }
 }
 
 TEST( mint_vector, checkResize ) {
-  localIndex capacity = 0;
-  localIndex size = 0;
-  int num_components = 1;
-  double resize_ratio = 2.0;
-  Vector< double > v( capacity, num_components, resize_ratio );
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getNumComponents(), num_components );
-  EXPECT_EQ( v.getResizeRatio(), resize_ratio );
-
-  v.add( 0.0 );
-  size += 1;
-  capacity = resize_ratio * size;
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v[0], 0.0 );
-
-  const localIndex numValues = 1000;
-  double values[ numValues ];
-  for ( localIndex i = 0; i < numValues; ++i ) {
-    values[ i ] = i + 1; 
-  }
-
-  v.add( values, numValues );
-  size += numValues;
-  capacity = resize_ratio * size;
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  for ( localIndex i = 0; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  v.add( numValues + 1 );
-  size += 1;
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v[ size - 1 ], numValues + 1 );
-
-  size = 500;
-  v.setSize(500);
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-  for ( localIndex i = 0; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  capacity = 250;
-  size = capacity;
-  v.setCapacity( capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  for ( localIndex i = 0; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  size += numValues;
-  capacity = size;
-  v.setSize( size );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-
-  v.set( values, numValues, size - numValues );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-
-  for ( localIndex i = 0 ; i < 250; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  for ( localIndex i = 250; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i - 250 + 1 );
+  for ( int num_components = 1; num_components < 5; ++num_components ) {
+    for ( double resize_ratio = 1.0; resize_ratio < 3; resize_ratio += 0.3 ) {
+      internal::check_resize< int > ( num_components, resize_ratio );
+      internal::check_resize< long int >( num_components, resize_ratio );
+      internal::check_resize< float >( num_components, resize_ratio );
+      internal::check_resize< double >( num_components, resize_ratio );
+    }
   }
 }
 
-/* Do the chunk stuff. */
-TEST( mint_vector, checkResizeMultiComponent ) {
-  localIndex capacity = 0;
-  localIndex size = 0;
-  int num_components = 7;
-  double resize_ratio = 2.0;
-  Vector< double > v( capacity, num_components, resize_ratio );
 
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getNumComponents(), num_components );
-  EXPECT_EQ( v.getResizeRatio(), resize_ratio );
-
-  v.add( 0.0 );
-  size += 1;
-  capacity = std::ceil( double( size ) / num_components ) * num_components;
-
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v[0], 0.0 );
-
-  const localIndex numValues = 1000;
-  double values[ numValues ];
-  for ( localIndex i = 0; i < numValues; ++i ) {
-    values[ i ] = i + 1; 
-  }
-
-  v.add( values, numValues );
-  size += numValues;
-  capacity = std::ceil( double( size * resize_ratio ) / num_components );
-  capacity *= num_components;
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  for ( localIndex i = 0; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  v.add( numValues + 1 );
-  size += 1;
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v[ size - 1 ], numValues + 1 );
-
-  size = 500;
-  v.setSize(500);
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-  for ( localIndex i = 0; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  capacity = 250;
-  v.setCapacity( capacity );
-  capacity = std::ceil( double( capacity ) / num_components ) * num_components;
-  size = capacity;
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  for ( localIndex i = 0; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  size += numValues;
-  capacity = std::ceil( double( size ) / num_components ) * num_components;
-  v.setSize( size );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-
-  v.set( values, numValues, size - numValues );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-
-  for ( localIndex i = 0 ; i < size - numValues; ++i ) {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  for ( localIndex i = size - numValues; i < size; ++i ) {
-    EXPECT_EQ( v[ i ], i + numValues - size + 1 );
+TEST( mint_vector, checkInsert ) {
+  for ( double resize_ratio = 1.0; resize_ratio < 3; resize_ratio += 0.3 ) {
+    internal::check_insert< int > ( resize_ratio );
+    internal::check_insert< long int >( resize_ratio );
+    internal::check_insert< float >( resize_ratio );
+    internal::check_insert< double >( resize_ratio );
   }
 }
 
-/* test reserve */
-/* test insert */
+/* test copy / move */
 
 
 //------------------------------------------------------------------------------

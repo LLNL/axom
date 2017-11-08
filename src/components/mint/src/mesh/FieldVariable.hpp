@@ -56,13 +56,13 @@ public:
   FieldVariable( const std::string& name, localIndex size, localIndex capacity,
                  int num_components, double resize_ratio):
     Field( name ),
-    m_data( capacity, num_components, resize_ratio )
+    m_data( capacity * num_components, num_components, resize_ratio )
   {
     SLIC_ASSERT( size >= 0 );
     SLIC_ASSERT( capacity >= 0 );
     SLIC_ASSERT( num_components >= 0 );
 
-    m_data.setSize( size );
+    m_data.setSize( size * num_components );
     this->m_type = field_of< FieldType >::type;
   }
 
@@ -75,7 +75,7 @@ public:
 
 
   virtual localIndex getNumTuples() const
-  { return m_data.getSize(); }
+  { return m_data.getNumTuples(); }
 
 
   virtual int getNumComponents() const
@@ -89,40 +89,44 @@ public:
   virtual double getResizeRatio() const
   { return m_data.getResizeRatio(); }
 
-  // /*!
-  //  * \brief Returns a double pointer to the field data.
-  //  * \return ptr pointer to the field data of type double.
-  //  * \post ptr==AXOM_NULLPTR iff the data is not of type double.
-  //  */
-  // virtual double* getDoublePtr();
+  /*!
+   * \brief Returns a double pointer to the field data.
+   * \return ptr pointer to the field data of type double.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
+   */
+  virtual double* getDoublePtr()
+  { return AXOM_NULLPTR; }
 
-  // /*!
-  //  * \brief Returns a constant double pointer to the field data.
-  //  * \return ptr constant pointer to the field data of type double.
-  //  * \post ptr==AXOM_NULLPTR iff the data is not of type double.
-  //  */
-  // virtual const double* getDoublePtr() const;
+  /*!
+   * \brief Returns a constant double pointer to the field data.
+   * \return ptr constant pointer to the field data of type double.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
+   */
+  virtual const double* getDoublePtr() const
+  { return AXOM_NULLPTR; }
 
-  // /*!
-  //  * \brief Returns an integer pointer to the field data.
-  //  * \return ptr pointer to the field data of type int.
-  //  * \post ptr==AXOM_NULLPTR iff the data is not of type int.
-  //  */
-  // virtual int* getIntPtr();
+  /*!
+   * \brief Returns an integer pointer to the field data.
+   * \return ptr pointer to the field data of type int.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type int.
+   */
+  virtual int* getIntPtr()
+  { return AXOM_NULLPTR; }
 
-  // /*!
-  //  * \brief Returns a constant integer pointer to the field data.
-  //  * \return ptr constant pointer to the field data of type int.
-  //  * \post ptr==AXOM_NULLPTR iff the data is not of type int.
-  //  */
-  // virtual const int* getIntPtr() const;
+  /*!
+   * \brief Returns a constant integer pointer to the field data.
+   * \return ptr constant pointer to the field data of type int.
+   * \post ptr==AXOM_NULLPTR iff the data is not of type int.
+   */
+  virtual const int* getIntPtr() const
+  { return AXOM_NULLPTR; }
 
   virtual void setNumTuples( localIndex size )
-  { m_data.setSize( size ); }
+  { m_data.setSize( size * getNumTuples() ); }
   
 
   virtual void setTuplesCapacity( localIndex capacity )
-  { m_data.setCapacity( capacity ); }
+  { m_data.setCapacity( capacity * getNumTuples() ); }
   
 
   virtual void setResizeRatio( double ratio )
@@ -143,46 +147,27 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
 };
 
-
 //------------------------------------------------------------------------------
 //                  FIELD VARIABLE IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-// //------------------------------------------------------------------------------
-// template < typename FieldType, typename IndexType >
-// double* FieldVariable< FieldType, IndexType >::getDoublePtr()
-// { return AXOM_NULLPTR; }
+//------------------------------------------------------------------------------
+template <>
+double* FieldVariable< double >::getDoublePtr();
 
-// //------------------------------------------------------------------------------
-// template < typename IndexType >
-// double* FieldVariable< double, IndexType >::getDoublePtr()
-// { return m_data.getData(); }
+//------------------------------------------------------------------------------
+template <>
+const double* FieldVariable< double >::getDoublePtr() const;
 
-// //------------------------------------------------------------------------------
-// template < typename FieldType, typename IndexType >
-// const double* FieldVariable< FieldType, IndexType >::getDoublePtr() const
-// {
-//   return const_cast< const int* >(
-//     const_cast< FieldVariable* >( this )->getIntPtr() );
-// }
+//------------------------------------------------------------------------------
+template <>
+int* FieldVariable< int >::getIntPtr();
 
-// //------------------------------------------------------------------------------
-// template < typename FieldType, typename IndexType >
-// int* FieldVariable< FieldType, IndexType >::getIntPtr()
-// { return AXOM_NULLPTR; }
+//------------------------------------------------------------------------------
+template <>
+const int* FieldVariable< int >::getIntPtr() const;
 
-// //------------------------------------------------------------------------------
-// template < typename IndexType >
-// int* FieldVariable< int, IndexType >::getIntPtr()
-// { return m_data.getData(); }
 
-// //------------------------------------------------------------------------------
-// template < typename FieldType, typename IndexType >
-// const int* FieldVariable< FieldType, Indextype >::getIntPtr() const
-// {
-//   return const_cast< const int* >(
-//     const_cast< FieldVariable* >( this )->getIntPtr() );
-// }
 
 } /* namespace mint */
 } /* namespace axom */

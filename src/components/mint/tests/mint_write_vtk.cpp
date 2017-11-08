@@ -254,9 +254,9 @@ void create_multidim_data( Mesh * mesh )
     int_ptr[4 * idx + 3] = static_cast<int>(v4);
   }
 
-  double_ptr = mesh->addNodeField< double >( "cell_multidim_double", 4 )
+  double_ptr = mesh->addCellField< double >( "cell_multidim_double", 4 )
                                                                ->getDoublePtr();
-  int_ptr = mesh->addNodeField< int >( "cell_multidim_int", 4 )->getIntPtr();
+  int_ptr = mesh->addCellField< int >( "cell_multidim_int", 4 )->getIntPtr();
 
   for ( localIndex idx = 0; idx < mesh_num_cells; ++idx ) {
     double_ptr[ 4 * idx  + 0] = idx;
@@ -1203,7 +1203,7 @@ TEST( mint_write_vtk, UnstructuredMesh1D )
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  std::remove( path.c_str() );
+  // std::remove( path.c_str() );
 #endif
 }
 

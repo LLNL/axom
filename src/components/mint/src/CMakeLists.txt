@@ -66,6 +66,7 @@ set( mint_sources
     ## Mesh data-model
     mesh/CurvilinearMesh.cpp
     mesh/Extent.cpp
+    mesh/FieldVariable.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
     mesh/ParticleMesh.cpp

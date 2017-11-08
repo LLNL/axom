@@ -42,16 +42,11 @@ public:
    */
   Vector( localIndex capacity, double ratio=2.0 ):
     m_size(0),
-    m_capacity( capacity ),
     m_resize_ratio( ratio ),
     m_components(1),
     m_data( AXOM_NULLPTR )
   {
-    SLIC_ERROR_IF( m_capacity < 0, "Capacity cannot be negative." );
-    if ( m_capacity > 0 ) {
-      m_data = AXOM_ALLOC( m_capacity * m_components, T );
-      SLIC_ERROR_IF( m_data == AXOM_NULLPTR, "Vector allocation failed." );
-    } 
+    setCapacity( capacity );
   }
 
   /*!
@@ -66,16 +61,11 @@ public:
    */
   Vector( localIndex capacity, int num_components, double ratio=2.0 ):
     m_size(0),
-    m_capacity( capacity ),
     m_resize_ratio( ratio ),
     m_components( num_components ),
     m_data( AXOM_NULLPTR )
   {
-    SLIC_ERROR_IF( m_capacity < 0, "Capacity cannot be negative." );
-    if ( m_capacity > 0 ) {
-      m_data = AXOM_ALLOC( m_capacity * m_components, T );
-      SLIC_ERROR_IF( m_data == AXOM_NULLPTR, "Vector allocation failed." );
-    } 
+    setCapacity( capacity );
   }
 
   /*!
@@ -84,11 +74,11 @@ public:
    */
   Vector( const Vector & rhs ):
     m_size(rhs.m_size),
-    m_capacity(rhs.m_capacity),
     m_resize_ratio(rhs.m_resize_ratio),
     m_components(rhs.m_components)
   {
-    localIndex byte_size = m_capacity * m_components * sizeof(T); 
+    setCapacity( rhs.m_capacity );
+    localIndex byte_size = m_size * sizeof(T); 
     std::memcpy(m_data, rhs.m_data, byte_size);
   }
 
@@ -98,11 +88,12 @@ public:
    */
   Vector( const Vector && rhs ):
     m_size(rhs.m_size),
-    m_capacity(rhs.m_capacity),
     m_resize_ratio(rhs.m_resize_ratio),
     m_components(rhs.m_components),
     m_data(rhs.m_data)
   {
+    setCapacity( rhs.m_capacity );
+
     if (&rhs != this) {
       rhs.m_data = AXOM_NULLPTR;    
     }
@@ -113,10 +104,8 @@ public:
    */
   ~Vector() 
   {
-    if ( m_data != AXOM_NULLPTR ) {
-      AXOM_FREE( m_data );
-      m_data = AXOM_NULLPTR;
-    }
+    utilities::free( m_data );
+    m_data = AXOM_NULLPTR;
   }
 
   /*!
@@ -126,10 +115,10 @@ public:
   Vector< T > & operator=( const Vector & rhs )
   { 
     m_size = rhs.m_size;
-    m_capacity = rhs.m_capacity;
+    setCapacity( rhs.m_capacity );
     m_resize_ratio = rhs.m_resize_ratio;
     m_components = rhs.m_components;
-    localIndex byte_size = m_capacity * m_components * sizeof(T); 
+    localIndex byte_size = m_size * sizeof(T); 
     std::memcpy(m_data, rhs.m_data, byte_size);
     return *this;
   }
@@ -141,7 +130,7 @@ public:
   Vector< T > & operator=( const Vector && rhs )
   { 
     m_size = rhs.m_size;
-    m_capacity = rhs.m_capacity;
+    setCapacity( rhs.m_capacity );
     m_resize_ratio = rhs.m_resize_ratio;
     m_components = rhs.m_components;
     m_data = rhs.m_data;
@@ -175,10 +164,9 @@ public:
   inline void add( const T& value ) 
   {
     SLIC_ASSERT( m_size <= m_capacity );
-    SLIC_ASSERT( m_components == 1 );
 
     if ( m_size + 1 > m_capacity ) {
-      dynamicResize( m_size + 1 );
+      dynamicRealloc( m_size + 1 );
     }
 
     m_data[ m_size++ ] = value;
@@ -195,11 +183,10 @@ public:
     SLIC_ASSERT( m_size <= m_capacity );
 
     if ( m_size + n > m_capacity ) {
-      dynamicResize( m_size + n );
+      dynamicRealloc( m_size + n );
     }
     
-    std::memcpy( m_data + m_size * m_components, values, 
-                 n * m_components * sizeof(T) );
+    std::memcpy( m_data + m_size, values, n * sizeof(T) );
     m_size += n;
   }
 
@@ -212,9 +199,9 @@ public:
    */
   inline void set( const T* values, localIndex n, localIndex pos ) const 
   {
-    SLIC_ASSERT( pos + n <= m_size );
-    std::memcpy( m_data + pos * m_components, values, 
-                 n * m_components * sizeof(T) );
+    SLIC_ASSERT( m_size <= m_capacity );
+    SLIC_ASSERT( pos >= 0 && pos + n <= m_size );
+    std::memcpy( m_data + pos, values, n * sizeof(T) );
   }
 
   /*!
@@ -226,15 +213,20 @@ public:
   inline T* reserveForInsert( localIndex n, localIndex pos ) 
   {
     SLIC_ASSERT( m_size <= m_capacity );
+    SLIC_ASSERT( pos <= m_size );
 
     if ( m_size + n > m_capacity ) {
-      dynamicResize( m_size + n );
+      dynamicRealloc( m_size + n );
     }
 
-    std::memcpy( m_data + (pos + n) * m_components, m_data + pos * m_components, 
-                 (m_size - pos) * m_components * sizeof(T) );
+    const T* const insert_pos = m_data + pos;
+    T* cur_pos = m_data + m_size - 1;
+    for (; cur_pos >= insert_pos; --cur_pos ) {
+      *(cur_pos + n) = *cur_pos;
+    }
+
     m_size += n;
-    return m_data + pos * m_components;
+    return m_data + pos;
   }
 
   /*!
@@ -249,8 +241,21 @@ public:
     SLIC_ASSERT( m_size <= m_capacity );
 
     reserveForInsert( n, pos );
-    std::memcpy( m_data + pos, values, n * m_components * sizeof(T) );
-    m_size += n;
+    std::memcpy( m_data + pos, values, n * sizeof(T) );
+  }
+
+  /*!
+   * \brief Insert a value into the array at the given position.
+   * \param [in] value the value to insert.
+   * \param [in] pos the position at which to insert.
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  inline void insert( const T& value, localIndex pos )
+  {
+    SLIC_ASSERT( m_size <= m_capacity );
+
+    reserveForInsert( 1, pos );
+    m_data[ pos ] = value;
   }
 
   /*!
@@ -277,7 +282,8 @@ public:
   {
     SLIC_ASSERT( capacity >= 0 );
 
-    m_data = AXOM_REALLOC( m_data, m_capacity * m_components, T );
+    m_capacity = std::ceil( 1.0 * capacity / m_components ) * m_components;
+    m_data = utilities::realloc( m_data, m_capacity );
     SLIC_ERROR_IF( m_data == AXOM_NULLPTR && capacity > 0, 
                    "Vector reallocation failed." );
 
@@ -330,6 +336,17 @@ public:
   */
   inline int getNumComponents() const
   { return m_components; }
+
+  /*!
+  * \brief Get the number of tuples. 
+  * \return the number of tuples.
+  */
+  inline localIndex getNumTuples() const
+  {
+    SLIC_WARNING_IF( m_size % m_components != 0, "Size of Vector is not a " <<
+                     "multiple of the number of components.");
+    return m_size / m_components;
+  }
   
 
 private:
@@ -339,13 +356,22 @@ private:
   * \param [in] newSize the size of the data array which exceeds the current
   *  capacity.
   */
-  inline void dynamicResize( localIndex newSize ) 
+  inline void dynamicRealloc( localIndex newSize ) 
   {
     SLIC_ERROR_IF( m_resize_ratio < 1.0, "Resize ratio of " << m_resize_ratio <<
                                          " doesn't support dynamic resizing");
-    m_capacity = std::ceil( newSize * m_resize_ratio );
+    m_capacity = std::ceil( newSize * m_resize_ratio / m_components ) * m_components;
 
-    m_data = AXOM_REALLOC( m_data, m_capacity * m_components, T );
+    m_data = utilities::realloc( m_data, m_capacity );
+
+#ifdef USE_SIDRE
+  if ( m_view != AXOM_NULLPTR ) {
+    m_data = m_view->reallocate()->getPointer();
+  } else {
+    m_data = utilities::realloc( m_data, m_capacity );
+  }
+#endif    
+
     SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0, 
                    "Vector reallocation failed." );
   }
@@ -355,6 +381,10 @@ private:
   double m_resize_ratio;
   int m_components;
   T* m_data;
+
+#ifdef USE_SIDRE
+  sidre::View * m_view
+#endif
 };
 
 } /* namespace mint */

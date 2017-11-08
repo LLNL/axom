@@ -401,10 +401,10 @@ inline localIndex StructuredMesh::getNumberOfFaces() const
 
   localIndex size[3];
   getExtentSize( size );
-  localIndex numFaces = size[0] * (size[1] - 1) * (size[2] - 1);
-  numFaces += (size[0] - 1) * size[1] * (size[2] - 1);
-  numFaces += (size[0] - 1) * (size[1] - 1) * size[2];
-  return numFaces;
+  localIndex num_faces = size[0] * (size[1] - 1) * (size[2] - 1);
+  num_faces += (size[0] - 1) * size[1] * (size[2] - 1);
+  num_faces += (size[0] - 1) * (size[1] - 1) * size[2];
+  return num_faces;
 }
 
 //------------------------------------------------------------------------------
@@ -417,10 +417,10 @@ inline localIndex StructuredMesh::getNumberOfEdges() const
     return size[0];
   }
 
-  localIndex numSides = size[0] * size[1] * (size[2] - 1);
-  numSides += size[0] * (size[1] - 1) * size[2];
-  numSides += (size[0] - 1) * size[1] * size[2];
-  return numSides;
+  localIndex num_edges = size[0] * size[1] * (size[2] - 1);
+  num_edges += size[0] * (size[1] - 1) * size[2];
+  num_edges += (size[0] - 1) * size[1] * size[2];
+  return num_edges;
 }
 
 //------------------------------------------------------------------------------
