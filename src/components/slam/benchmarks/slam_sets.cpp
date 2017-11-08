@@ -117,7 +117,7 @@ namespace {
     };
  */
 
-  enum ArrSizes { S0 = 1 << 3        // small
+  enum ArrSizes { S0 = 1 << 3       // small
                   ,S1 = 1 << 16     // larger than  32K L1 cache
                   ,S2 = 1 << 19     // Larger than 256K L2 cache
                   ,S3 = 1 << 25     // Larger than  25M L3 cache
@@ -159,7 +159,8 @@ BENCHMARK_TEMPLATE( positionSet_compileTimeSize,  S2);
 BENCHMARK_TEMPLATE( positionSet_compileTimeSize,  S3);
 
 template<int SZ>
-void positionSet_runtimeTimeSize_template(benchmark::State& state) {
+void positionSet_runtimeTimeSize_template(benchmark::State& state) 
+{
   typedef axom::slam::OrderedSet<> SetType;
   SetType set(SZ);
 
@@ -195,7 +196,8 @@ void positionSet_runtimeTimeSize_function(benchmark::State& state) {
 BENCHMARK(positionSet_runtimeTimeSize_function)->Apply(CustomArgs);
 
 
-void positionSet_runtimeTimeSize_function_sizeOutside(benchmark::State& state) {
+void positionSet_runtimeTimeSize_function_sizeOutside(benchmark::State& state) 
+{
   typedef axom::slam::OrderedSet<> SetType;
   SetType set(state.range_x());
 
@@ -213,7 +215,9 @@ void positionSet_runtimeTimeSize_function_sizeOutside(benchmark::State& state) {
 BENCHMARK(positionSet_runtimeTimeSize_function_sizeOutside)->Apply(CustomArgs);
 
 
-void positionSet_runtimeTimeSize_function_volatileSizeOutside(benchmark::State& state) {
+void positionSet_runtimeTimeSize_function_volatileSizeOutside(
+    benchmark::State& state) 
+{
   typedef axom::slam::OrderedSet<> SetType;
   SetType set(state.range_x());
 
@@ -228,7 +232,8 @@ void positionSet_runtimeTimeSize_function_volatileSizeOutside(benchmark::State& 
   }
   state.SetItemsProcessed(state.iterations() * set.size());
 }
-BENCHMARK(positionSet_runtimeTimeSize_function_volatileSizeOutside)->Apply(CustomArgs);
+BENCHMARK(positionSet_runtimeTimeSize_function_volatileSizeOutside)
+    ->Apply(CustomArgs);
 
 
 void positionSet_runtimeTimeSize_iter(benchmark::State& state) {

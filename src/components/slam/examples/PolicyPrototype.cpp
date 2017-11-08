@@ -89,12 +89,13 @@ namespace slamTemplateEx {
   };
 
 
-  template< typename IndexType            = int
-  , typename TranslationPolicy    = NoTranslation
-  , typename IndirectionPolicy    = NoIndirection
-  , typename StridePolicy         = NoStride
-  >
-  struct OrderedSet : public Set, TranslationPolicy, IndirectionPolicy, StridePolicy
+  template< 
+    typename IndexType            = int,
+    typename TranslationPolicy    = NoTranslation,
+    typename IndirectionPolicy    = NoIndirection,
+    typename StridePolicy         = NoStride >
+  struct OrderedSet : 
+    public Set, TranslationPolicy, IndirectionPolicy, StridePolicy
   {
     typedef TranslationPolicy MyTranslationPolicy;
 
@@ -102,12 +103,18 @@ namespace slamTemplateEx {
     OrderedSet(int sz) : TranslationPolicy(0,sz) {}
     OrderedSet(int lo, int hi) : TranslationPolicy(lo,hi) {}
 
-    inline int  at(int pos) const { return indirection( pos * stride() + offset() ); }
+    inline int  at(int pos) const 
+    { 
+        return indirection( pos * stride() + offset() ); 
+    }
 
     inline int  size()   const { return TranslationPolicy::size(); }
     inline int  offset() const { return TranslationPolicy::offset(); }
     inline int  stride() const { return StridePolicy::stride(); }
-    inline int  indirection(int pos) const { return IndirectionPolicy::indirection( pos); }
+    inline int  indirection(int pos) const 
+    { 
+        return IndirectionPolicy::indirection( pos); 
+    }
   };
 
 

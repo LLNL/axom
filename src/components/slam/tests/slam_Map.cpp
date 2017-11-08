@@ -60,7 +60,9 @@ bool constructAndTestMap()
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
+  SLIC_INFO(
+    "\nCreating " 
+    << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
   axom::slam::Map<T> m(&s);
   EXPECT_TRUE(m.isValid());
 
@@ -104,13 +106,16 @@ TEST(slam_map,out_of_bounds)
     EXPECT_EQ(defaultElt, m[idx]);
 
   // Test out of bounds
-  SLIC_INFO("Testing Map element access -- out of bounds access; Expecting the test to fail");
+  SLIC_INFO("Testing Map element access "
+     << "-- out of bounds access; Expecting the test to fail");
   #ifdef AXOM_DEBUG
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED(  m[-1],      "") << " Accessed element -1 of Map -- out of bounds";
-  EXPECT_DEATH_IF_SUPPORTED(  m[m.size()],"") << " Accessed element " << m.size() << " of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED(  m[-1],      "") 
+        << " Accessed element -1 of Map -- out of bounds";
+  EXPECT_DEATH_IF_SUPPORTED(  m[m.size()],"") 
+        << " Accessed element " << m.size() << " of Map -- out of bounds";
 
   #else
   SLIC_INFO("Skipped assertion failure check in release mode.");

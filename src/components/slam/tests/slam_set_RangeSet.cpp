@@ -43,8 +43,10 @@ namespace {
   typedef SetType::ElementType  SetElement;
 
   static const SetPosition MAX_SET_SIZE = 20;
-  static const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SET_SIZE);
-  static const SetElement upperIndex = static_cast<SetElement>( .7 * MAX_SET_SIZE);
+  static const SetElement lowerIndex = 
+    static_cast<SetElement>( .3 * MAX_SET_SIZE);
+  static const SetElement upperIndex = 
+    static_cast<SetElement>( .7 * MAX_SET_SIZE);
   static const SetElement range = upperIndex - lowerIndex;
 }
 
@@ -205,7 +207,8 @@ TEST(slam_range_set,iterate)
       SetPosition position = std::distance(s.begin(), it);
       SetElement expected = position + lowerIndex;
       EXPECT_EQ( expected, *it )
-        << "Iterator dereference should be equal to its translated position in the windowed range set";
+        << "Iterator dereference should be equal "
+        << "to its translated position in the windowed range set";
       sstr << *it << "\t";
     }
     SLIC_INFO(sstr.str());
@@ -217,9 +220,11 @@ TEST(slam_range_set,out_of_range)
 {
   SetType s(lowerIndex, upperIndex);
 
-  SLIC_INFO("Using random access on invalid address -- Note: We are testing for the expected failures.");
+  SLIC_INFO("Using random access on invalid address " 
+        << "-- Note: We are testing for the expected failures.");
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, 
+  // so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -257,15 +262,18 @@ TEST(slam_generic_range_set,virtual_parent_set)
   EXPECT_TRUE(nonChildSet.isValid(true));
 
 
-  SLIC_INFO("Checking that the child is a subset, but not the parent or the non-child windowed set.");
+  SLIC_INFO("Checking that the child is a subset, " 
+        << " but not the parent or the non-child windowed set.");
   EXPECT_FALSE(parentSet.isSubset());
   EXPECT_TRUE(childSet.isSubset());
   EXPECT_FALSE(nonChildSet.isSubset());
 
-  SLIC_INFO("Checking that the child set's parent is equal to the parent set (according to the equality operator==).");
+  SLIC_INFO("Checking that the child set's parent is equal to "  
+        << " the parent set (according to the equality operator==).");
   EXPECT_EQ(parentSet, *childSet.parentSet());
 
-  // Since the parent is using the virtual subsetting policy, it does not have an operator[]
+  // Since the parent is using the virtual subsetting policy, 
+  // it does not have an operator[]
   for(SetPosition pos = 0; pos > childSet.parentSet()->size(); ++pos)
   {
     EXPECT_EQ(parentSet[pos], childSet.parentSet()->at(pos));
@@ -305,12 +313,14 @@ TEST(slam_generic_range_set,concrete_parent_set)
   EXPECT_TRUE(nonChildSet.isValid(true));
 
 
-  SLIC_INFO("Checking that the child is a subset, but not the parent or the non-child windowed set.");
+  SLIC_INFO("Checking that the child is a subset, " 
+        << "but not the parent or the non-child windowed set.");
   EXPECT_FALSE(parentSet.isSubset());
   EXPECT_TRUE(childSet.isSubset());
   EXPECT_FALSE(nonChildSet.isSubset());
 
-  SLIC_INFO("Checking that the child set's parent is equal to the parent set (according to the equality operator==).");
+  SLIC_INFO("Checking that the child set's parent is equal to " 
+        << "the parent set (according to the equality operator==).");
   EXPECT_EQ(parentSet, *childSet.parentSet());
 
 

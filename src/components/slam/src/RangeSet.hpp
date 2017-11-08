@@ -39,9 +39,12 @@ namespace slam {
   {
 
     typedef OrderedSet<> OrderedSetType;
-    static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_SIZE = 
+        OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_OFFSET = 
+        OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_STRIDE = 
+        OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
   public:
     typedef OrderedSetType::PositionType  PositionType;
@@ -53,16 +56,19 @@ namespace slam {
     PositionSet(PositionType size = DEFAULT_SIZE)
         : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-    PositionSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
+    PositionSet(const OrderedSetType::SetBuilder & builder) 
+        : OrderedSetType(builder) {}
   };
 
 
 /**
  * \class GenericRangeSet
  * \brief Models a set whose elements belong to a contiguous range \f$ \in [lowerIndex,upperIndex) \f$
- * \details The ElementType here needs to be computable as offsets (of PositionType) from the lowerIndex
- *          Examples include: signed and unsigned integral types
- *          This version of a range set still allows you to have different policies on striding, indirection and subsetting
+ *
+ * \details The ElementType here needs to be computable as offsets (of PositionType) 
+ * from the lowerIndex. Examples include: signed and unsigned integral types
+ * This version of a range set still allows you to have different policies 
+ * on striding, indirection and subsetting
  */
   template<
     typename StridingPolicy,
@@ -85,9 +91,12 @@ namespace slam {
           IndirectionPolicy,
           SubsettingPolicy                                     > OrderedSetType;
 
-    static const typename OrderedSetType::PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-    static const typename OrderedSetType::PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-    static const typename OrderedSetType::PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+    static const typename OrderedSetType::PositionType DEFAULT_SIZE = 
+        OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const typename OrderedSetType::PositionType DEFAULT_OFFSET = 
+        OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const typename OrderedSetType::PositionType DEFAULT_STRIDE = 
+        OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
   public:
     typedef typename OrderedSetType::PositionType PositionType;
@@ -98,7 +107,8 @@ namespace slam {
     GenericRangeSet(PositionType size = DEFAULT_SIZE)
         : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-    GenericRangeSet(const typename OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
+    GenericRangeSet(const typename OrderedSetType::SetBuilder & builder) 
+        : OrderedSetType(builder) {}
 
     GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
         : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
@@ -125,9 +135,12 @@ namespace slam {
     typedef OrderedSetType::IndexType     IndexType;
     typedef OrderedSetType::ElementType   ElementType;
   private:
-    static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_SIZE = 
+        OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_OFFSET = 
+        OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_STRIDE = 
+        OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
 
   public:

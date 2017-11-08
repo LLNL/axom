@@ -25,6 +25,7 @@ namespace axom {
 namespace slam {
 
 namespace policies {
+
   const NullSet NoSubset::s_nullSet;
   NullSet VirtualParentSubset::s_nullSet;
 

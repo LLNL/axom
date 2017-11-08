@@ -38,8 +38,11 @@ namespace slam {
 
   /**
    * \class
-   * This class is a wrapper around an int and encapsulates modular arithmetic with a given modulus.
-   * It can be useful when we are iterating circularly through the elements in a relation (e.g. consecutive edges around a polygon)
+   * This class is a wrapper around an int and encapsulates 
+   * modular arithmetic with a given modulus.
+   * 
+   * It can be useful when we are iterating circularly through the elements 
+   * in a relation (e.g. consecutive edges around a polygon).
    * The class invariant is that 0 <= val < modulus(), where val is the wrapped integer.
    * The modulus is controlled by a SizePolicy which allows it to be given at compile time or at runtime.
    */
@@ -47,7 +50,8 @@ namespace slam {
   class ModularInt : private SizePolicy
   {
   public:
-    ModularInt(int val = 0, int modulusVal = SizePolicy::DEFAULT_VALUE) : SizePolicy(modulusVal), m_val(val)
+    ModularInt(int val = 0, int modulusVal = SizePolicy::DEFAULT_VALUE) 
+        : SizePolicy(modulusVal), m_val(val)
     {
       SLIC_ASSERT( modulus() != 0);
       normalize();
@@ -56,9 +60,11 @@ namespace slam {
     ModularInt(const ModularInt& zn) : SizePolicy( zn ), m_val( zn.m_val)
     {
       SLIC_ASSERT( modulus() != 0);
-
-      //normalize();      // For efficiency, we are assuming that argument zn is consistent (and avoiding normalization).
-      verifyValue();            // This assumption is tested in debug builds...
+      
+      // For efficiency, we are assuming that argument zn is consistent 
+      // (and avoiding normalization). This assumption is tested in debug builds...
+      //normalize();      
+      verifyValue();            
     }
 
 
@@ -67,13 +73,36 @@ namespace slam {
      */
     operator int() const { return m_val; }
 
-    int                       modulus() const { return SizePolicy::size(); }
+    int                       modulus() const 
+    { 
+        return SizePolicy::size(); 
+    }
 
-    ModularInt&       operator++()          { add(1); return *this; }
-    const ModularInt operator ++(int)       { ModularInt tmp(m_val, modulus()); add(1); return tmp; }
+    ModularInt&       operator++()          
+    { 
+        add(1); 
+        return *this; 
+    }
 
-    ModularInt&       operator--()          { subtract(1); return *this; }
-    const ModularInt operator --(int)       { ModularInt tmp(m_val, modulus()); subtract(1); return tmp; }
+    const ModularInt operator ++(int)       
+    { 
+        ModularInt tmp(m_val, modulus()); 
+        add(1); 
+        return tmp; 
+    }
+
+    ModularInt&       operator--()          
+    { 
+        subtract(1); 
+        return *this; 
+    }
+
+    const ModularInt operator --(int)       
+    { 
+        ModularInt tmp(m_val, modulus()); 
+        subtract(1); 
+        return tmp; 
+    }
 
     ModularInt&       operator+=(int val)   { add(val); return *this; }
     ModularInt&       operator-=(int val)   { subtract(val); return *this; }
@@ -92,19 +121,23 @@ namespace slam {
       const int sz = modulus();
 
       // We want this to be fast, so we tried a few variations.
-      // This choice can be made into a Policy class (e.g. ModulusPolicy?) if we see
-      // a significant difference between the branching and branchless implementations
+      // This choice can be made into a Policy class 
+      // (e.g. ModulusPolicy?) if we see a significant difference between
+      //  the branching and branchless implementations
         #if MODINT_BRANCHLESS
-      // This solution avoids branching (at the expense of a second mod operation), but appears to be slower on chaos
+      // This solution avoids branching (at the expense of a second mod operation), 
+      // but appears to be slower on some platforms (chaos)
       m_val = (sz + (m_val % sz)) % sz;
 
         #elif 1 || MODINT_STRAIGHTFORWARD
-      // Straightforward solution -- possibly adds sz to ensure that m_val is non-negative -- which involves a branch
+      // Straightforward solution -- possibly adds sz to ensure 
+     // that m_val is non-negative -- which involves a branch
       m_val %= sz;
       if(m_val < 0)
         m_val += sz;
         #else // MODINT_MODLESS
-              // this version assumes that we are usually only adding small offsets to avoid the div
+              // this version assumes that we are usually only adding 
+              // small offsets to avoid the div
 //            if(m_val >= 0)
       while(m_val >= sz) m_val -= sz;
 //            else
@@ -117,9 +150,9 @@ namespace slam {
 
     void verifyValue()
     {
-      SLIC_ASSERT_MSG( m_val >= 0 && m_val < modulus()
-          , "ModularInt: Value must be between 0 and "  << modulus()
-                                                        << " but value was " << m_val << ".");
+      SLIC_ASSERT_MSG( m_val >= 0 && m_val < modulus(),
+          "ModularInt: Value must be between 0 and "  
+          << modulus() << " but value was " << m_val << ".");
     }
 
   private:

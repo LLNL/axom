@@ -103,31 +103,44 @@ namespace slamShocktube {
   public:
 
     /// types for Element and Face sets
-    typedef axom::slam::PositionSet                                                             ElemSet;
-    typedef axom::slam::PositionSet                                                             FaceSet;
+    typedef axom::slam::PositionSet                           ElemSet;
+    typedef axom::slam::PositionSet                           FaceSet;
 
-    typedef axom::slam::PositionSet::IndexType                                                  IndexType;
-    typedef axom::slam::PositionSet::PositionType                                               PositionType;
-    typedef axom::slam::PositionSet::ElementType                                                ElementType;
+    typedef axom::slam::PositionSet::IndexType                IndexType;
+    typedef axom::slam::PositionSet::PositionType             PositionType;
+    typedef axom::slam::PositionSet::ElementType              ElementType;
 
     /// types for Tube and {In,Out}Flow subsets
-    typedef axom::slam::policies::StrideOne<PositionType>                                       StrideOnePolicy;
-    typedef axom::slam::policies::NoIndirection<PositionType,ElementType>                       NoIndirectionPolicy;
-    typedef axom::slam::policies::ConcreteParentSubset<ElemSet>                                 TubeSubsetPolicy;
-    typedef axom::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
-    typedef axom::slam::RangeSet                                                                RangeSet;
+    typedef axom::slam::policies::
+        StrideOne<PositionType>                               StrideOnePolicy;
+    typedef axom::slam::policies::
+        NoIndirection<PositionType,ElementType>               NoIndirectionPolicy;
+    typedef axom::slam::policies::
+        ConcreteParentSubset<ElemSet>                         TubeSubsetPolicy;
+    typedef axom::slam::GenericRangeSet<
+         StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>      ElemSubset;
+    typedef axom::slam::RangeSet                              RangeSet;
 
     /// types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef axom::slam::policies::CompileTimeStride<PositionType, FACES_PER_ELEM>               EFStride;
-    typedef axom::slam::policies::CompileTimeStride<PositionType, ELEMS_PER_FACE>               FEStride;
-    typedef axom::slam::policies::ConstantCardinality<PositionType, EFStride>                   EFCard;
-    typedef axom::slam::policies::ConstantCardinality<PositionType, FEStride>                   FECard;
-    typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
-    typedef STLIndirection::VectorType                                                          IndexVec;
+    typedef axom::slam::policies::
+        CompileTimeStride<PositionType, FACES_PER_ELEM>       EFStride;
+    typedef axom::slam::policies::
+        CompileTimeStride<PositionType, ELEMS_PER_FACE>       FEStride;
+    typedef axom::slam::policies::
+        ConstantCardinality<PositionType, EFStride>           EFCard;
+    typedef axom::slam::policies::
+        ConstantCardinality<PositionType, FEStride>           FECard;
+    typedef axom::slam::policies::
+        STLVectorIndirection<PositionType, PositionType>      STLIndirection;
+    typedef STLIndirection::VectorType                        IndexVec;
 
-    typedef axom::slam::StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>             TubeElemToFaceRelation;
-    typedef axom::slam::StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>                FaceToElemRelation;
+    typedef axom::slam::
+        StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>  
+        TubeElemToFaceRelation;
+    typedef axom::slam::
+        StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>                
+        FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
@@ -280,30 +293,37 @@ namespace slamShocktube {
     typedef ShockTubeMesh::IndexVec IndexVec;
 
     /// Setup the FaceToElem relation
-    IndexVec& feRelVec = intsRegistry.addBuffer("feRel", ShockTubeMesh::FACES_PER_ELEM * mesh->faces.size());
+    IndexVec& feRelVec = intsRegistry
+        .addBuffer("feRel", ShockTubeMesh::FACES_PER_ELEM * mesh->faces.size());
     IndexVec::iterator relIt = feRelVec.begin();
-    for(ShockTubeMesh::IndexType idx = 0; idx < static_cast<ShockTubeMesh::IndexType>(mesh->faces.size()); ++idx)
+    for(ShockTubeMesh::IndexType idx = 0; 
+        idx < static_cast<ShockTubeMesh::IndexType>(mesh->faces.size()); ++idx)
     {
       *relIt++ = mesh->faces[idx];
       *relIt++ = mesh->faces[idx] + 1;
     }
 
-    mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
+    mesh->relationFaceElem = ShockTubeMesh::
+        FaceToElemRelation(&mesh->faces, &mesh->elems);
     mesh->relationFaceElem.bindIndices(feRelVec.size(), &feRelVec);
     SLIC_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
-    /// Setup the TubeElementToFace relation: A relation from the tubes subset of the elements to their incident faces
+    /// Setup the TubeElementToFace relation: 
+    /// A relation from the tubes subset of the elements to their incident faces
     ShockTubeMesh::PositionType numTubeElems = mesh->tubeElems.size();
-    IndexVec& efRelVec = intsRegistry.addBuffer("efRel", ShockTubeMesh::ELEMS_PER_FACE * numTubeElems);
+    IndexVec& efRelVec = intsRegistry
+        .addBuffer("efRel", ShockTubeMesh::ELEMS_PER_FACE * numTubeElems);
     relIt = efRelVec.begin();
-    for(ShockTubeMesh::IndexType idx = 0; idx < static_cast<ShockTubeMesh::IndexType>(numTubeElems); ++idx)
+    for(ShockTubeMesh::IndexType idx = 0; 
+        idx < static_cast<ShockTubeMesh::IndexType>(numTubeElems); ++idx)
     {
       *relIt++ = mesh->tubeElems[idx] - 1;
       *relIt++ = mesh->tubeElems[idx];
     }
 
-    mesh->relationTubeFace = ShockTubeMesh::TubeElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
+    mesh->relationTubeFace = 
+        ShockTubeMesh::TubeElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
     mesh->relationTubeFace.bindIndices(efRelVec.size(), &efRelVec);
     SLIC_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
@@ -405,7 +425,8 @@ namespace slamShocktube {
     const RealField & energy   = realsRegistry.getField("energy");
 
     // Update face data using element data using the face->elem relation
-    ShockTubeMesh::PositionType numFaceElems = static_cast<ShockTubeMesh::PositionType>(mesh.faces.size() );
+    ShockTubeMesh::PositionType numFaceElems = 
+        static_cast<ShockTubeMesh::PositionType>(mesh.faces.size() );
     for (ShockTubeMesh::PositionType fIdx = 0; fIdx < numFaceElems; ++fIdx)
     {
       // each face has an upwind and downwind element.
@@ -416,7 +437,8 @@ namespace slamShocktube {
       double massf      = 0.5 * (mass[upWind]     + mass[downWind] );
       double momentumf  = 0.5 * (momentum[upWind] + momentum[downWind] );
       double energyf    = 0.5 * (energy[upWind]   + energy[downWind] );
-      double pressuref  = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
+      double pressuref  = (gammaa - 1.0) * 
+                          (energyf - 0.5 * momentumf * momentumf / massf);
       double c = sqrt(gammaa * pressuref / massf);
       double v = momentumf / massf;
 
@@ -445,7 +467,8 @@ namespace slamShocktube {
       massf     = mass[contributor];
       momentumf = momentum[contributor];
       energyf   = energy[contributor];
-      pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
+      pressuref = (gammaa - 1.0) * 
+                  (energyf - 0.5 * momentumf * momentumf / massf);
       ev        = 0.5 * (v + c);
       cLocal    = sqrt(gammaa * pressuref / massf);
 
@@ -457,7 +480,8 @@ namespace slamShocktube {
       massf     = mass[contributor];
       momentumf = momentum[contributor];
       energyf   = energy[contributor];
-      pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
+      pressuref = (gammaa - 1.0) * 
+                  (energyf - 0.5 * momentumf * momentumf / massf);
       ev        = 0.5 * (v - c);
       cLocal    = sqrt(gammaa * pressuref / massf);
 
@@ -507,7 +531,9 @@ namespace slamShocktube {
       mass[elemIdx]     -= gammaaInverse * (F0[downWind] - F0[upWind]) * dt / dx;
       momentum[elemIdx] -= gammaaInverse * (F1[downWind] - F1[upWind]) * dt / dx;
       energy[elemIdx]   -= gammaaInverse * (F2[downWind] - F2[upWind]) * dt / dx;
-      pressure[elemIdx]  = (gammaa - 1.0) * (energy[elemIdx] - 0.5 * momentum[elemIdx] * momentum[elemIdx] / mass[elemIdx]);
+      pressure[elemIdx]  = (gammaa - 1.0) 
+                            * (energy[elemIdx] - 0.5 * momentum[elemIdx] 
+                            * momentum[elemIdx] / mass[elemIdx]);
     }
 
     // update the time
@@ -526,8 +552,13 @@ namespace slamShocktube {
 
     typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
     ShockTubeMesh::ElemSubset begSet, endSet;
-    begSet = ElemSubsetBuilder().parent(&mesh.elems).size(maxDumpPerSide);
-    endSet = ElemSubsetBuilder().parent(&mesh.elems).size(maxDumpPerSide).offset(mesh.elems.size() - maxDumpPerSide);
+    begSet = ElemSubsetBuilder()
+            .parent(&mesh.elems)
+            .size(maxDumpPerSide);
+    endSet = ElemSubsetBuilder()
+            .parent(&mesh.elems)
+            .size(maxDumpPerSide)
+            .offset(mesh.elems.size() - maxDumpPerSide);
 
     SLIC_ASSERT(  begSet.isValid(verboseOutput));
     SLIC_ASSERT(  endSet.isValid(verboseOutput));

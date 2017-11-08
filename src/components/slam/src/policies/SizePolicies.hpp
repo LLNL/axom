@@ -66,7 +66,12 @@ namespace policies {
     inline IntType& operator()() { return size(); }
 
     inline bool             empty() const { return m_sz == IntType(); }
-    inline bool             isValid(bool) const { return m_sz >= IntType(); } // We do not (currently) allow negatively sized sets
+    inline bool             isValid(bool) const 
+    { 
+        // We do not (currently) allow negatively sized sets
+        return m_sz >= IntType(); 
+    } 
+
   private:
     IntType m_sz;
   };
@@ -82,9 +87,11 @@ namespace policies {
     CompileTimeSize(IntType val = DEFAULT_VALUE)
     {
       AXOM_DEBUG_VAR(val);
-      SLIC_ASSERT_MSG( val == INT_VAL,
-          "slam::CompileTimeSize -- tried to initialize a compile time size policy with value ("
-          << val << " ) that differs from the template parameter of " << INT_VAL << ".");
+      SLIC_ASSERT_MSG( 
+          val == INT_VAL,
+          "slam::CompileTimeSize -- tried to initialize a compile time size "
+          << "policy with value (" << val << " ) that differs from the "
+          << "template parameter of " << INT_VAL << ".");
     }
 
     inline IntType          size() const { return INT_VAL; }
@@ -92,7 +99,11 @@ namespace policies {
     inline IntType operator ()() const { return size(); }
 
     inline bool             empty() const { return INT_VAL == IntType(); }
-    inline bool             isValid(bool) const { return INT_VAL >= IntType(); } // We do not (currently) allow negatively sized sets
+    inline bool             isValid(bool) const 
+    { 
+        // We do not (currently) allow negatively sized sets
+        return INT_VAL >= IntType(); 
+    } 
   };
 
   /**
@@ -106,9 +117,10 @@ namespace policies {
     ZeroSize(IntType val = DEFAULT_VALUE)
     {
       AXOM_DEBUG_VAR(val);
-      SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
-          "slam::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
-          << val << " ) but should always be zero.");
+      SLIC_ASSERT_MSG( 
+          val == DEFAULT_VALUE,
+          "slam::ZeroSize policy-- tried to initialize a NoSize set with "
+          <<"value with value ("<< val << " ) but should always be zero.");
     }
 
     inline IntType          size() const { return DEFAULT_VALUE; }

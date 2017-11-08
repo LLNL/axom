@@ -75,7 +75,8 @@ namespace slam {
           policies::StrideOne<SetPosition>,
           IndicesIndirectionPolicy >                  IndicesSet;
 
-    typedef typename IndicesIndirectionPolicy::IndirectionBufferType  IndirectionBufferType;
+    typedef typename 
+        IndicesIndirectionPolicy::IndirectionBufferType  IndirectionBufferType;
 
 #ifdef AXOM_USE_BOOST
     typedef typename RelationSet::iterator                            RelationIterator;
@@ -95,7 +96,8 @@ namespace slam {
 
 
     StaticRelation(FromSetType* fromSet, ToSetType* toSet)
-        : CardinalityPolicy( EmptySetTraits<FromSetType>::isEmpty(fromSet) ? 0 : fromSet->size() ),
+        : CardinalityPolicy( EmptySetTraits<FromSetType>::
+            isEmpty(fromSet) ? 0 : fromSet->size() ),
           m_fromSet(fromSet),
           m_toSet(toSet)
     {}
@@ -111,7 +113,8 @@ namespace slam {
     {
       friend class StaticRelation;
 
-      typedef typename StaticRelation::CardinalityPolicy::BeginsSet::SetBuilder BeginsSetBuilder;
+      typedef typename StaticRelation::CardinalityPolicy::BeginsSet::
+        SetBuilder BeginsSetBuilder;
       typedef typename StaticRelation::IndicesSet::SetBuilder                   IndicesSetBuilder;
 
       RelationBuilder()
@@ -122,7 +125,8 @@ namespace slam {
       RelationBuilder& fromSet(FromSetType* pFromSet)
       {
         m_fromSet = pFromSet;
-        if(m_cardPolicy.totalSize() == 0 && !EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
+        if(m_cardPolicy.totalSize() == 0 
+            && !EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
         {
           m_cardPolicy = CardinalityPolicy( m_fromSet->size() );
         }
@@ -297,7 +301,8 @@ namespace slam {
     {
       if(verboseOutput)
       {
-        errSstr << "\n\t Static relations require both the fromSet and toSet to be non-null"
+        errSstr << "\n\t Static relations require both the fromSet"
+                << " and toSet to be non-null"
                 << "\n\t -- fromSet was " << (isFromSetNull ? "" : " not ") << "null"
                 << "\n\t -- toSet was " << (isToSetNull ? "" : " not ") << "null";
       }
@@ -349,7 +354,8 @@ namespace slam {
               errSstr << "\n\t* Begin offset for index " << pos
                       << " was out of range."
                       << "\n\t-- value: " << this->offset(pos)
-                      << " needs to be within range [0," << m_relationIndices.size() << "]"
+                      << " needs to be within range [0," 
+                      << m_relationIndices.size() << "]"
               ;
             }
             relationdataIsValid = false;

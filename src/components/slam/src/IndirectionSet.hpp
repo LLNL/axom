@@ -38,16 +38,19 @@ namespace slam {
  *
  * \brief Concrete class (all template parameters fixed) for an array-based indirection set
  */
-  class ArrayIndirectionSet : public OrderedSet< policies::RuntimeSize<Set::PositionType>,
-                              policies::ZeroOffset<Set::PositionType>,
-                              policies::StrideOne<Set::PositionType>,
-                              policies::ArrayIndirection<Set::PositionType, Set::ElementType> >
-  {
-  private:
-    typedef OrderedSet< policies::RuntimeSize<Set::PositionType>,
+  class ArrayIndirectionSet : public OrderedSet< 
+        policies::RuntimeSize<Set::PositionType>,
         policies::ZeroOffset<Set::PositionType>,
         policies::StrideOne<Set::PositionType>,
-        policies::ArrayIndirection<Set::PositionType, Set::ElementType> > OrderedSetType;
+        policies::ArrayIndirection<Set::PositionType, Set::ElementType> >
+  {
+  private:
+    typedef OrderedSet< 
+        policies::RuntimeSize<Set::PositionType>,
+        policies::ZeroOffset<Set::PositionType>,
+        policies::StrideOne<Set::PositionType>,
+        policies::ArrayIndirection<Set::PositionType, Set::ElementType> 
+    > OrderedSetType;
 
   public:
     typedef OrderedSetType::PositionType  PositionType;
@@ -57,34 +60,43 @@ namespace slam {
     typedef OrderedSetType::SetBuilder    ArraySetBuilder;
 
   private:
-    static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_SIZE = 
+        OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_OFFSET = 
+        OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_STRIDE = 
+        OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
   public:
     ArrayIndirectionSet (PositionType size = DEFAULT_SIZE)
         : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
-    ArrayIndirectionSet( const ArraySetBuilder& builder) : OrderedSetType(builder){}
+
+    ArrayIndirectionSet( const ArraySetBuilder& builder) 
+        : OrderedSetType(builder){}
+
     ~ArrayIndirectionSet () {}
   };
 
   /**
    * \class
    *
-   * \brief Concrete class (all template parameters fixed) for an STL vector-based indirection set
+   * \brief Concrete class (all template parameters fixed) 
+   * for an STL vector-based indirection set
    */
-  class VectorIndirectionSet : public OrderedSet< policies::RuntimeSize<Set::PositionType>,
-                               policies::ZeroOffset<Set::PositionType>,
-                               policies::StrideOne<Set::PositionType>,
-                               policies::STLVectorIndirection<Set::PositionType, Set::ElementType> >
+  class VectorIndirectionSet : public OrderedSet< 
+        policies::RuntimeSize<Set::PositionType>,
+        policies::ZeroOffset<Set::PositionType>,
+        policies::StrideOne<Set::PositionType>,
+        policies::STLVectorIndirection<Set::PositionType, Set::ElementType> >
                                // add parent subset ?
   {
   private:
-    typedef OrderedSet< policies::RuntimeSize<Set::PositionType>,
+    typedef OrderedSet< 
+        policies::RuntimeSize<Set::PositionType>,
         policies::ZeroOffset<Set::PositionType>,
         policies::StrideOne<Set::PositionType>,
         policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
->OrderedSetType;
+    > OrderedSetType;
 
     typedef OrderedSet::IndirectionPolicyType IndirectionPolicyType;
 
@@ -97,14 +109,18 @@ namespace slam {
     typedef OrderedSetType::SetBuilder        VectorSetBuilder;
 
   private:
-    static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-    static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_SIZE = 
+        OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_OFFSET = 
+        OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_STRIDE = 
+        OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
   public:
     VectorIndirectionSet (PositionType size = DEFAULT_SIZE)
         : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
-    VectorIndirectionSet( const VectorSetBuilder& builder) : OrderedSetType(builder){}
+    VectorIndirectionSet( const VectorSetBuilder& builder) 
+        : OrderedSetType(builder){}
 
     ~VectorIndirectionSet () {}
   };

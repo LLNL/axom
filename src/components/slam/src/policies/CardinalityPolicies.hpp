@@ -98,20 +98,31 @@ namespace policies {
       m_begins = builder;
     }
 
-    const ElementType size(ElementType AXOM_NOT_USED(fromPos) ) const { return m_begins.stride(); }
-    const ElementType offset(ElementType fromPos) const { return m_begins[fromPos]; }
+    const ElementType size(ElementType AXOM_NOT_USED(fromPos) ) const 
+    { 
+       return m_begins.stride(); 
+    }
 
-    void              bindBeginOffsets(ElementType fromSetSize, ElementType stride)
+    const ElementType offset(ElementType fromPos) const 
+    { 
+        return m_begins[fromPos]; 
+    }
+
+    void bindBeginOffsets(ElementType fromSetSize, ElementType stride)
     {
       m_begins = typename BeginsSet::SetBuilder()
           .size(fromSetSize)
           .stride(stride);
     }
 
-    ElementType totalSize() const { return m_begins.stride() * m_begins.size(); }
+    ElementType totalSize() const 
+    { 
+        return m_begins.stride() * m_begins.size(); 
+    }
 
     template<typename FromSetType>
-    bool        isValid(const FromSetType* fromSet, bool AXOM_NOT_USED(vertboseOutput) = false) const
+    bool isValid(const FromSetType* fromSet, 
+                 bool AXOM_NOT_USED(vertboseOutput) = false) const
     {
       return m_begins.size() == fromSet->size();
     }

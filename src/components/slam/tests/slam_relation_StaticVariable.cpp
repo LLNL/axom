@@ -19,7 +19,8 @@
 /**
  * \file slam_relation_StaticVariable.cpp
  *
- * \brief Unit tests for Slam's StaticRelation class configured with variable per-element cardinality
+ * \brief Unit tests for Slam's StaticRelation class
+ *  configured with variable per-element cardinality
  */
 
 
@@ -58,10 +59,13 @@ namespace policies = axom::slam::policies;
   const PositionType FROMSET_SIZE = 7;
   const PositionType TOSET_SIZE = 8;
 
-  typedef policies::STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-  typedef policies::ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+  typedef policies::
+    STLVectorIndirection<PositionType, PositionType>  STLIndirection;
+  typedef policies::
+    ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
 
-  typedef policies::VariableCardinality<PositionType, STLIndirection> VariableCardinality;
+  typedef policies::
+    VariableCardinality<PositionType, STLIndirection> VariableCardinality;
 
   typedef slam::StaticRelation<VariableCardinality, STLIndirection,
       slam::RangeSet, slam::RangeSet>                                 StaticVariableRelationType;
@@ -89,7 +93,8 @@ namespace policies = axom::slam::policies;
 
     sstr << "\n** " << msg << "\n\t";
     sstr << "Array of size " << vec.size() << ": ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<PositionType>(sstr, " "));
+    std::copy(vec.begin(), vec.end(), 
+        std::ostream_iterator<PositionType>(sstr, " "));
 
     SLIC_INFO( sstr.str() );
   }
@@ -120,7 +125,8 @@ namespace policies = axom::slam::policies;
   /**
    * \brief Traverses the relation's entities using the double subscript access API
    *
-   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   * \note Assumes that the relation data has been set 
+   * using the generateIncrementingRelations() function
    */
   template<typename RelationType>
   void traverseRelation_doubleSubscript(RelationType& rel)
@@ -143,10 +149,11 @@ namespace policies = axom::slam::policies;
   /**
    * \brief Traverses relation using separated subscript operators
    *
-   * The first subscript operator gets the set of entities in the ToSet that are mapped to the
-   * given element of the relation's FromSet
+   * The first subscript operator gets the set of entities in the ToSet
+   * that are mapped to the given element of the relation's FromSet
    *
-   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   * \note Assumes that the relation data has been set using 
+   * the generateIncrementingRelations() function
    */
   template<typename RelationType>
   void traverseRelation_delayedSubscript(RelationType& rel)
@@ -170,7 +177,8 @@ namespace policies = axom::slam::policies;
    * \brief Traverses relation using the iterator API (begin()/end() )
    *
    * \note The iterator API depends on boost
-   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   * \note Assumes that the relation data has been set 
+   * using the generateIncrementingRelations() function
    */
   template<typename RelationType>
   void iterateRelation_begin_end(RelationType& rel)
@@ -182,7 +190,8 @@ namespace policies = axom::slam::policies;
     typedef typename RelationType::RelationIterator RelIter;
 
     SLIC_INFO("Traversing relation data using iterator begin()/end() functions");
-    for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end(); sIt != sItEnd; ++sIt)
+    for(FromSetIter sIt = rel.fromSet()->begin(), 
+        sItEnd = rel.fromSet()->end(); sIt != sItEnd; ++sIt)
     {
       PositionType actualSize = rel.size( *sIt);
 
@@ -207,7 +216,8 @@ namespace policies = axom::slam::policies;
    * \brief Traverses relation using the iterator range API
    *
    * \note The iterator API depends on boost
-   * \note Assumes that the relation data has been set using the generateIncrementingRelations() function
+   * \note Assumes that the relation data has been set 
+   * using the generateIncrementingRelations() function
    */
   template<typename RelationType>
   void iterateRelation_range(RelationType& rel)
@@ -227,7 +237,8 @@ namespace policies = axom::slam::policies;
       PositionType fromSetEltNum = std::distance(itPair.first, sIt);
 
       RelIterPair toSetItPair = rel.range(*sIt);
-      for(RelIter relIt = toSetItPair.first; relIt != toSetItPair.second; ++relIt)
+      for(RelIter relIt = toSetItPair.first; 
+        relIt != toSetItPair.second; ++relIt)
       {
         PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
         ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
@@ -309,7 +320,8 @@ TEST(slam_static_variable_relation,construct_builder)
   generateIncrementingRelations(&offsets, &relIndices);
 
   typedef StaticVariableRelationType::RelationBuilder RelationBuilder;
-  StaticVariableRelationType relation =  RelationBuilder()
+  StaticVariableRelationType relation =  
+    RelationBuilder()
       .fromSet( &fromSet)
       .toSet( &toSet)
       .begins( RelationBuilder::BeginsSetBuilder()

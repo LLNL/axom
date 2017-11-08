@@ -79,7 +79,7 @@ namespace slam {
   class Set
   {
   public:
-    typedef MeshIndexType IndexType;                         // Index into a set
+    typedef MeshIndexType IndexType;                        // Index into a set
     typedef MeshSizeType  PositionType;                     // Position in which we are indexing
     typedef MeshIndexType ElementType;
 
@@ -127,7 +127,9 @@ namespace slam {
 #if 0
     /**
      * \brief Returns true if the set contains the given element.
-     * Alternatively, we can return the position in the set containing the element, with some value for not containing the element
+     * 
+     * Alternatively, we can return the position in the set containing the element, 
+     * with some value for not containing the element
      */
     virtual bool          contains(const SetElement & elt) const = 0;
 
@@ -147,7 +149,8 @@ namespace slam {
 
 /**
  * \brief General equality operator for two sets.
- * \details Two sets are considered equal if they have the same number of elements, and their ordered indices agree.
+ * \details Two sets are considered equal if they have the same number of elements, 
+ * and their ordered indices agree.
  */
   inline bool operator==(Set const& set1, Set const& set2)
   {
@@ -170,7 +173,10 @@ namespace slam {
 /**
  * \brief Set inequality operator
  */
-  inline bool operator!=(Set const& set1, Set const& set2){ return !(set1 == set2); }
+  inline bool operator!=(Set const& set1, Set const& set2)
+  { 
+    return !(set1 == set2); 
+  }
 
 
 } // end namespace slam

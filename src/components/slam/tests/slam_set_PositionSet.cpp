@@ -193,7 +193,8 @@ TEST(slam_set_positionset,iterate)
 
 TEST(slam_set_positionset,out_of_bounds_at)
 {
-  SLIC_INFO("Testing out of bounds access using at() -- code is expected to assert and die.");
+  SLIC_INFO("Testing out of bounds access using at() "
+        <<"-- code is expected to assert and die.");
   SetType s(MAX_SET_SIZE);
 
 #ifdef AXOM_DEBUG
@@ -211,12 +212,14 @@ TEST(slam_set_positionset,out_of_bounds_at)
 
 TEST(slam_set_positionset,out_of_bounds_bracket)
 {
-  SLIC_INFO("Testing out of bounds access using operator[] -- code is expected to assert and die.");
+  SLIC_INFO("Testing out of bounds access using operator[] " 
+    << "-- code is expected to assert and die.");
 
   SetType s(MAX_SET_SIZE);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, 
+  // so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
@@ -229,8 +232,8 @@ TEST(slam_set_positionset,out_of_bounds_bracket)
 
 TEST(slam_set_positionset,awkward_resize)
 {
-  SLIC_INFO("This test shows that we can modify the underlying size of a PositionSet through"
-      << "its RuntimeSizePolicy parent class");
+  SLIC_INFO("This test shows that we can modify the underlying size of a " 
+      << " PositionSet through its RuntimeSizePolicy parent class");
 
   SetType s1;
   EXPECT_TRUE(s1.isValid());

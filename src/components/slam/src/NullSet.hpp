@@ -44,20 +44,35 @@ namespace slam {
   public:
     NullSet() {}
 
-    inline PositionType         size() const { return PositionType(); }
+    inline PositionType size() const 
+    { 
+        return PositionType(); 
+    }
 
-    inline ElementType          at(PositionType pos) const { verifyPosition(pos); return PositionType(); }
-    inline ElementType operator [](PositionType pos) const { return at(pos); }
+    inline ElementType at(PositionType pos) const 
+    { 
+        verifyPosition(pos); 
+        return PositionType(); 
+    }
 
-    inline bool                 isSubset() const { return false; }
-    const Set*                  parentSet() const { return this; }
+    inline ElementType operator [](PositionType pos) const 
+    { 
+        return at(pos); 
+    }
 
-    bool                        isValid(bool AXOM_NOT_USED(verboseOutput) = false) const { return true; }
+    inline bool isSubset() const { return false; }
+    const Set* parentSet() const { return this; }
 
-    bool                        empty() const { return true; }
+    bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const
+    { 
+        return true; 
+    }
+
+    bool empty() const { return true; }
 
     // TODO: Do we need to add iterator stubs here to satisfy some interface?
-    //       The result will be invalid, but it may be useful to get the code to compile, or avoid special logic in the code...
+    //       The result will be invalid, but it may be useful to get the code
+    //       to compile, or avoid special logic in the code...
     // iterator begin();
     // iterator end();
     // iterator_pair range();
@@ -65,8 +80,10 @@ namespace slam {
   private:
     void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
     {
-      SLIC_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
-          << "\n\tAttempted to access item at index " << pos << ".");
+      SLIC_ASSERT_MSG(
+        false,
+        "Subscripting on NullSet is never valid."
+        << "\n\tAttempted to access item at index " << pos << ".");
     }
   };
 
@@ -76,12 +93,18 @@ namespace slam {
  * \brief NullSets are always equal
  * \note Two sets of different types are (currently) considered to be unequal
  */
-  inline bool operator==(NullSet const&, NullSet const&) { SLIC_WARNING("operator==(NullSet,NullSet)"); return true; }
+  inline bool operator==(NullSet const&, NullSet const&) 
+  { 
+    SLIC_WARNING("operator==(NullSet,NullSet)"); return true; 
+  }
 /**
  * \brief NullSets are always equal
  * \note Two sets of different types are (currently) considered to be unequal
  */
-  inline bool operator!=(NullSet const&, NullSet const&) { SLIC_WARNING("operator!=(NullSet,NullSet)"); return false; }
+  inline bool operator!=(NullSet const&, NullSet const&) 
+  { 
+     SLIC_WARNING("operator!=(NullSet,NullSet)"); return false; 
+  }
 #endif
 
 

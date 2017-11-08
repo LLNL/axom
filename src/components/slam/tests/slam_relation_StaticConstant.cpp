@@ -19,7 +19,8 @@
 /**
  * \file slam_relation_StaticConstant.cpp
  *
- * \brief Unit tests for Slam's StaticRelation class configured with constant per-element cardinality
+ * \brief Unit tests for Slam's StaticRelation class 
+ * configured with constant per-element cardinality
  *
  * Exercises several different variants of the class.
  * Namely:
@@ -62,14 +63,20 @@ namespace policies = axom::slam::policies;
   const PositionType TOSET_SIZE = 6;
   const PositionType ELEM_STRIDE = 5;
 
-  typedef policies::CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
-  typedef policies::RuntimeStride<PositionType>                       RTStride;
+  typedef policies::
+        CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
+  typedef policies::
+        RuntimeStride<PositionType>                       RTStride;
 
-  typedef policies::ConstantCardinality<PositionType, CTStride>       ConstantCardinalityCT;
-  typedef policies::ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
+  typedef policies::
+        ConstantCardinality<PositionType, CTStride>       ConstantCardinalityCT;
+  typedef policies::
+        ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
 
-  typedef policies::STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-  typedef policies::ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+  typedef policies::
+        STLVectorIndirection<PositionType, PositionType>  STLIndirection;
+  typedef policies::
+        ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
 
   typedef std::vector<PositionType>                                   IndexVec;
 
@@ -88,7 +95,8 @@ namespace policies = axom::slam::policies;
     std::stringstream sstr;
 
     sstr << "Array of size " << vec.size() << ": ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<ElementType>(sstr, " "));
+    std::copy(vec.begin(), vec.end(), 
+        std::ostream_iterator<ElementType>(sstr, " "));
 
     SLIC_INFO(msg << ": " << sstr.str());
   }
@@ -194,7 +202,8 @@ namespace policies = axom::slam::policies;
     typedef typename RelationType::RelationIterator RelIter;
 
     SLIC_INFO("Traversing relation data using iterator begin()/end() functions");
-    for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end(); sIt != sItEnd; ++sIt)
+    for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end(); 
+        sIt != sItEnd; ++sIt)
     {
       PositionType actualSize = rel.size( *sIt);
 
@@ -240,7 +249,8 @@ namespace policies = axom::slam::policies;
       PositionType fromSetEltNum = std::distance(itPair.first, sIt);
 
       RelIterPair toSetItPair = rel.range(*sIt);
-      for(RelIter relIt = toSetItPair.first; relIt != toSetItPair.second; ++relIt)
+      for(RelIter relIt = toSetItPair.first; 
+            relIt != toSetItPair.second; ++relIt)
       {
         PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
         ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
@@ -313,7 +323,8 @@ TEST(slam_relation_static_constant,construct_builder)
   IndexVec offsets;
   generateIncrementingRelations(ELEM_STRIDE, &offsets);
 
-  StaticConstantRelationType relation =  RelationBuilder()
+  StaticConstantRelationType relation =  
+     RelationBuilder()
       .fromSet( &fromSet)
       .toSet( &toSet)
       .begins( RelationBuilder::BeginsSetBuilder()
@@ -337,14 +348,16 @@ TEST(slam_relation_static_constant,construct_builder)
 
 TEST(slam_relation_static_constant,out_of_bounds_empty)
 {
-  SLIC_INFO("Testing access on empty relation -- code is expected to assert and die.");
+  SLIC_INFO("Testing access on empty relation "
+        <<"-- code is expected to assert and die.");
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
   StaticConstantRelationType emptyRel(&fromSet, &toSet);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, 
+  // so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( emptyRel[FROMSET_SIZE], "");
@@ -356,7 +369,8 @@ TEST(slam_relation_static_constant,out_of_bounds_empty)
 
 TEST(slam_relation_static_constant,out_of_bounds_initialized)
 {
-  SLIC_INFO("Testing out of bounds access on initialized relation.  Code is expected to assert and die.");
+  SLIC_INFO("Testing out of bounds access on initialized relation.  "
+    << "Code is expected to assert and die.");
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
@@ -365,11 +379,12 @@ TEST(slam_relation_static_constant,out_of_bounds_initialized)
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
-  incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the relation indices set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE); // init the begins set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);   // init the relation indices set
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, 
+  // so this test will only fail in debug mode
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( incrementingRel[FROMSET_SIZE], "");
@@ -385,8 +400,10 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 {
   SLIC_INFO("Tests for Static Relation with runtime stride and STL Indirection");
 
-  typedef slam::StaticRelation<ConstantCardinalityRT, STLIndirection,
-      slam::RangeSet, slam::RangeSet>              StaticConstantRelation_RT_STL;
+  typedef slam::StaticRelation<
+      ConstantCardinalityRT, STLIndirection,
+      slam::RangeSet, slam::RangeSet >              
+    StaticConstantRelation_RT_STL;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
@@ -440,10 +457,13 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 
 TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 {
-  SLIC_INFO("Tests for Static Relation with runtime stride and array Indirection");
+  SLIC_INFO("Tests for Static Relation "
+     <<" with runtime stride and array Indirection");
 
-  typedef slam::StaticRelation<ConstantCardinalityRT, ArrayIndirection,
-      slam::RangeSet, slam::RangeSet>              StaticConstantRelation_RT_Array;
+  typedef slam::StaticRelation<
+        ConstantCardinalityRT, ArrayIndirection,
+        slam::RangeSet, slam::RangeSet>              
+    StaticConstantRelation_RT_Array;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);
@@ -498,10 +518,13 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 
 TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 {
-  SLIC_INFO("Tests for Static Relation with runtime stride and array Indirection");
+  SLIC_INFO("Tests for Static Relation with "
+        << " runtime stride and array Indirection");
 
-  typedef slam::StaticRelation<ConstantCardinalityCT, ArrayIndirection,
-      slam::RangeSet, slam::RangeSet>              StaticConstantRelation_CT_Array;
+  typedef slam::StaticRelation<
+        ConstantCardinalityCT, ArrayIndirection,
+        slam::RangeSet, slam::RangeSet>              
+    StaticConstantRelation_CT_Array;
 
   slam::RangeSet fromSet(FROMSET_SIZE);
   slam::RangeSet toSet(TOSET_SIZE);

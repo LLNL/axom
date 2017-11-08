@@ -25,7 +25,8 @@ namespace slam {
 namespace util {
 
 
-  std::string findFileInAncestorDirs(const std::string& fileName, int numAncestors)
+  std::string 
+  findFileInAncestorDirs(const std::string& fileName, int numAncestors)
   {
     using namespace axom::utilities::filesystem;
 
@@ -48,9 +49,10 @@ namespace util {
 
     if(!fileFound)
     {
-      SLIC_WARNING( "Could not find file: '"  << fileName
-                                              << "' (also tried several ancestor directories')"
-                                              << "\nThe current working directory is: '" << getCWD() << "'");
+      SLIC_WARNING( 
+        "Could not find file: '"  
+        << fileName << "' (also tried several ancestor directories')"
+        << "\nThe current working directory is: '" << getCWD() << "'");
 
       ancestorFileName = fileName;
     }

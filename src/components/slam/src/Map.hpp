@@ -42,8 +42,9 @@ namespace slam    {
   class NullSet;
 
 
-  // This class is missing some simplifying copy constructors -- or at least ways of interacting with the data store
-  // We should probably support shallow copies with a copy on write pattern when possible...
+  // This class is missing some simplifying copy constructors 
+  // -- or at least ways of interacting with the data store
+  // We should probably support copy on write shallow copies when possible...
 
 
   template<typename DataType>
@@ -135,7 +136,9 @@ namespace slam    {
     /**
      * \name DirectDataAccess
      * \brief Accessor functions to get the underlying map data
-     * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+
+     * \note We will have to figure out a good way to limit 
+     * this access to situations where it makes sense.
      */
 
     /// \{
@@ -150,10 +153,10 @@ namespace slam    {
   private:
     inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIndex))       const
     {
-      SLIC_ASSERT_MSG( setIndex >= 0 && setIndex < m_set->size(),
-          "Attempted to access element "  << setIndex
-                                          << " but map's set has size "
-                                          <<   m_set->size() );
+      SLIC_ASSERT_MSG( 
+          setIndex >= 0 && setIndex < m_set->size(),
+          "Attempted to access element " << setIndex
+          << " but map's set has size "  <<   m_set->size() );
     }
 
   private:
@@ -183,7 +186,8 @@ namespace slam    {
       {
         if(verboseOutput)
         {
-          errStr  << "\n\t* the underlying set was never provided, but its associated data is not empty"
+          errStr  << "\n\t* the underlying set was never provided,"
+                  << " but its associated data is not empty"
                   << " , data has size " << m_data.size();
         }
 
@@ -196,7 +200,8 @@ namespace slam    {
       {
         if(verboseOutput)
         {
-          errStr  << "\n\t* the underlying set and its associated mapped data have different sizes"
+          errStr  << "\n\t* the underlying set and its associated mapped data"
+                  << " have different sizes"
                   << " , underlying set has size " << m_set->size()
                   << " , data has size " << m_data.size();
           ;

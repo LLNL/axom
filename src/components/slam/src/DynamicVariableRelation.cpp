@@ -44,9 +44,10 @@ namespace slam {
       {
         if(verboseOutput)
         {
-          sstr  << "\n\t* relations vector was not empty "
-                << " -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
-                << " , toSet was " << (*m_toSet == s_nullSet ? "" : " not ") << "null";
+          sstr  << "\n\t* relations vector was not empty "<< " -- fromSet was " 
+                << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
+                << " , toSet was " << (*m_toSet == s_nullSet ? "" : " not ") 
+                << "null";
         }
 
         bValid = false;
@@ -57,7 +58,8 @@ namespace slam {
       if(verboseOutput)
         sstr << "\n\t* Neither set was null";
 
-      // Check that the the relations vector has the right size (should be same as fromSet's size() )
+      // Check that the the relations vector has the right size 
+      // (should be same as fromSet's size() )
       if( static_cast<SetPosition>(m_relationsVec.size()) != m_fromSet->size() )
       {
         if(verboseOutput)
@@ -71,19 +73,21 @@ namespace slam {
         bValid = false;
       }
 
-      // Check that all elements of the relations vector point to valid set elements in the toSet
+      // Check that all elements of the relations vector point to
+      // valid  set elements in the toSet
       for(SetPosition fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
       {
         SetPosition idx = fromIdx;
-        for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx); rIt < rEnd; ++rIt)
+        for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx); 
+            rIt < rEnd; ++rIt)
         {
           if( *rIt >= m_toSet->size() )
           {
             if(verboseOutput)
             {
               sstr  << "\n\t* relation for element " << m_fromSet->at(fromIdx)
-                    << " of fromSet had an out-of-range element."
-                    << " -- value of element " << std::distance( begin(idx), rIt) << " was " << *rIt
+                    << " of fromSet had an out-of-range element.-- value " 
+                    << std::distance( begin(idx), rIt) << " was " << *rIt
                     << ". Max possible value should be " << m_toSet->size() << ".";
             }
             bValid = false;
@@ -124,11 +128,14 @@ namespace slam {
         for(SetPosition fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
         {
           SetPosition idx = fromIdx;
-          std::cout << "\n\t" << m_fromSet->at(fromIdx) <<  " (" << size(idx)  << "):\t";
-          std::copy(begin(idx), end(idx), std::ostream_iterator<SetPosition>(std::cout, " "));
+          std::cout << "\n\t" << m_fromSet->at(fromIdx) 
+                    <<  " (" << size(idx)  << "):\t";
+          std::copy(begin(idx), end(idx), 
+                    std::ostream_iterator<SetPosition>(std::cout, " "));
           overallCount += size(idx);
         }
-        std::cout << "\n\n\tOverall size of relation" << overallCount << std::endl;
+        std::cout << "\n\n\tOverall size of relation" 
+                  << overallCount << std::endl;
       }
     }
 

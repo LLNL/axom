@@ -61,13 +61,17 @@ namespace policies = axom::slam::policies;
   const PositionType FROMSET_SIZE = 10;
   const PositionType TOSET_SIZE = 8;
 
-  typedef policies::STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-  typedef policies::ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+  typedef policies::STLVectorIndirection<PositionType, PositionType>  
+    STLIndirection;
+  typedef policies::ArrayIndirection<PositionType, PositionType>      
+    ArrayIndirection;
 
-  typedef policies::VariableCardinality<PositionType, STLIndirection> VariableCardinality;
+  typedef policies::VariableCardinality<PositionType, STLIndirection> 
+    VariableCardinality;
 
   typedef slam::StaticRelation<VariableCardinality, STLIndirection,
-      slam::RangeSet, slam::RangeSet>                                 StaticVariableRelationType;
+                             slam::RangeSet,slam::RangeSet>
+    StaticVariableRelationType;
 
 
   // Use a slam::ModularInt type for more interesting test data
@@ -93,7 +97,8 @@ namespace policies = axom::slam::policies;
 
     sstr << "\n** " << msg << "\n\t";
     sstr << "Array of size " << vec.size() << ": ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<PositionType>(sstr, " "));
+    std::copy(vec.begin(), vec.end(), 
+        std::ostream_iterator<PositionType>(sstr, " "));
 
     SLIC_INFO( sstr.str() );
   }
@@ -134,13 +139,15 @@ TEST(slam_set_relation_map,access_pattern)
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 
-  // Note: Nothing requires the relations elements to be unique -- the relation can still be valid with duplicates
+  // Note: Nothing requires the relations elements to be unique
+  //  -- the relation can still be valid with duplicates
   EXPECT_TRUE(incrementingRel.isValid(true));
 
   SLIC_INFO("-- Looking at relation's stored values...");
   for(SetPosition fromPos = SetPosition(); fromPos < fromSet.size(); ++fromPos)
   {
-    SLIC_INFO("--Inspecting element "
+    SLIC_INFO(
+        "--Inspecting element "
         << fromSet[fromPos]
         << " in position " << fromPos << " of first set.");
 
@@ -150,7 +157,8 @@ TEST(slam_set_relation_map,access_pattern)
       SetPosition posInToSet_expected = relationData(fromPos,idx);
       EXPECT_EQ( posInToSet_expected, posInToSet_actual);
 
-      SLIC_INFO("-- \t pos: "
+      SLIC_INFO(
+          "-- \t pos: "
           << idx
           << " ToSet position: " << incrementingRel[fromPos][idx]
           << " ToSet element " << toSet[ incrementingRel[fromPos][idx] ] );

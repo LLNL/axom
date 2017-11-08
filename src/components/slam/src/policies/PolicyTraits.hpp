@@ -35,7 +35,8 @@ namespace policies {
   /**
    * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
    */
-    template<typename StridePolicyType, typename IntType, int VAL = 1> struct StrideToSize
+    template<typename StridePolicyType, typename IntType, int VAL = 1> 
+    struct StrideToSize
     {
         typedef CompileTimeSize<IntType, VAL> SizeType;
     };

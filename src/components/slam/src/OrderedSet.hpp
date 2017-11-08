@@ -19,7 +19,8 @@
  * \file OrderedSet.hpp
  *
  * \brief Basic API for an ordered set of entities in a simulation
- * \note We are actually storing (ordered) multisets, since elements can be repeated an arbitrary number of times (e.g. for indirection sets)
+ * \note We are actually storing (ordered) multisets, since elements can be repeated 
+ * an arbitrary number of times (e.g. for indirection sets)
  *
  */
 
@@ -58,7 +59,8 @@ namespace slam {
 /**
  * \class OrderedSet
  *
- * \brief Models a set whose elements can be defined as strided offsets of the position, possibly with a level of indirection.
+ * \brief Models a set whose elements can be defined as strided offsets 
+ * of the position, possibly with a level of indirection.
  *
  * In an OrderedSet, the element at position pos can be defined as:
  *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
@@ -148,11 +150,35 @@ namespace slam {
       typedef typename IndirectionPolicyType::IndirectionBufferType DataType;
       typedef typename SubsettingPolicyType::ParentSetType          ParentSetType;
 
-      SetBuilder& size(PositionType sz)          { m_size    = SizePolicyType(sz); return *this; }
-      SetBuilder& offset(PositionType off)       { m_offset  = OffsetPolicyType(off); return *this; }
-      SetBuilder& stride(PositionType str)       { m_stride  = StridePolicyType(str); return *this; }
-      SetBuilder& data(DataType* bufPtr)         { m_data   = IndirectionPolicyType(bufPtr); return *this; }
-      SetBuilder& parent(ParentSetType* parSet)  { m_parent = SubsettingPolicyType(parSet); return *this; }
+      SetBuilder& size(PositionType sz)          
+      { 
+         m_size    = SizePolicyType(sz); 
+        return *this; 
+      }
+
+      SetBuilder& offset(PositionType off)       
+      { 
+        m_offset  = OffsetPolicyType(off); 
+        return *this; 
+      }
+
+      SetBuilder& stride(PositionType str)       
+      { 
+        m_stride  = StridePolicyType(str); 
+        return *this; 
+      }
+
+      SetBuilder& data(DataType* bufPtr)         
+      { 
+        m_data   = IndirectionPolicyType(bufPtr); 
+        return *this; 
+      }
+
+      SetBuilder& parent(ParentSetType* parSet)  
+      { 
+        m_parent = SubsettingPolicyType(parSet); 
+        return *this; 
+      }
 
       /** Alternate means of setting the offset and size from a contiguous range of values */
       SetBuilder& range(PositionType lower, PositionType upper)
@@ -181,11 +207,12 @@ namespace slam {
      * Uses the set's policies for efficient iteration
      */
     template<typename OrderedSet>
-    class OrderedSetIterator : public boost::iterator_facade< OrderedSetIterator<OrderedSet>,
-                               typename OrderedSet::ElementType,
-                               std::random_access_iterator_tag,
-                               typename OrderedSet::ElementType,
-                               typename OrderedSet::PositionType >
+    class OrderedSetIterator : public boost::iterator_facade<
+         OrderedSetIterator<OrderedSet>,
+         typename OrderedSet::ElementType,
+         std::random_access_iterator_tag,
+         typename OrderedSet::ElementType,
+         typename OrderedSet::PositionType >
     {
     public:
       typedef OrderedSetIterator<OrderedSet>              iter;
@@ -204,27 +231,45 @@ namespace slam {
       const ElementType & dereference()    const {
         // Note: Since we return a reference to the pointed-to value, we need different functions
         //       for OrderedSets with indirection buffers than with those that have no indirection
-        typedef policies::NoIndirection<PositionType,ElementType> NoIndirectionType;
-        return indirection( HasIndirection< ! boost::is_same<IndirectionType, NoIndirectionType>::value >(), 0);
+        typedef policies::
+            NoIndirection<PositionType,ElementType> NoIndirectionType;
+        return indirection( HasIndirection< 
+            ! boost::is_same<IndirectionType, NoIndirectionType>::value >(), 0);
       }
 
 
-      bool                      equal(const iter& other) const { return (m_pos == other.m_pos); }
-      void                      increment() { advance(1); }
-      void                      decrement() { advance(-1); }
-      void                      advance(PositionType n) { m_pos += n * stride(); }
-      const PositionType        distance_to(const iter& other) const { return (other.m_pos - m_pos) / stride(); }
+      bool equal(const iter& other) const 
+      { 
+        return (m_pos == other.m_pos); 
+      }
+
+      void increment() { advance(1); }
+      void decrement() { advance(-1); }
+      void advance(PositionType n) { m_pos += n * stride(); }
+      const PositionType distance_to(const iter& other) const 
+      { 
+        return (other.m_pos - m_pos) / stride(); 
+      }
 
     private:
-      inline const PositionType stride() const { return m_orderedSet.StrideType::stride(); }
+      inline const PositionType stride() const 
+      { 
+        return m_orderedSet.StrideType::stride(); 
+      }
 
       template<bool> class HasIndirection {};
 
       template<typename T>
-      inline const ElementType& indirection(HasIndirection<true>, T) const { return m_orderedSet.IndirectionType::indirection(m_pos); }
+      inline const ElementType& indirection(HasIndirection<true>, T) const 
+      { 
+        return m_orderedSet.IndirectionType::indirection(m_pos); 
+      }
 
       template<typename T>
-      inline const ElementType& indirection(HasIndirection<false>, T) const { return m_pos; }
+      inline const ElementType& indirection(HasIndirection<false>, T) const 
+      { 
+        return m_pos; 
+      }
 
     private:
       friend class boost::iterator_core_access;
@@ -235,8 +280,16 @@ namespace slam {
 
   public:   // Functions related to iteration
 
-    const_iterator      begin() const { return const_iterator( OffsetPolicyType::offset(), *this); }
-    const_iterator      end()   const { return const_iterator( SizePolicyType::size() * StridePolicyType::stride() + OffsetPolicyType::offset()); }
+    const_iterator      begin() const 
+    { 
+        return const_iterator( OffsetPolicyType::offset(), *this); 
+    }
+
+    const_iterator      end()   const 
+    { 
+        return const_iterator( SizePolicyType::size() * StridePolicyType::stride() 
+            + OffsetPolicyType::offset()); 
+    }
     const_iterator_pair range() const { return std::make_pair(begin(), end()); }
 #endif // AXOM_USE_BOOST
 
@@ -244,21 +297,26 @@ namespace slam {
     /**
      * \brief Given a position in the Set, return a position in the larger index space
      */
-    inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos) const
+    inline typename IndirectionPolicy::IndirectionResult 
+    operator[](PositionType pos) const
     {
       verifyPositionImpl(pos);
-      return IndirectionPolicy::indirection( pos * StridePolicyType::stride() + OffsetPolicyType::offset() );
+      return IndirectionPolicy::indirection( pos * StridePolicyType::stride() 
+        + OffsetPolicyType::offset() );
     }
 
-    inline ElementType  at(PositionType pos)         const { return operator[](pos); }
+    inline ElementType  at(PositionType pos)         const 
+    { 
+        return operator[](pos);
+    }
 
 
     inline PositionType size()  const { return SizePolicyType::size(); }
     inline bool         empty() const { return SizePolicyType::empty(); }
 
-    bool                isValid(bool verboseOutput = false) const;
+    bool isValid(bool verboseOutput = false) const;
 
-    bool                isSubset() const { return SubsettingPolicy::isSubset(); }
+    bool isSubset() const { return SubsettingPolicy::isSubset(); }
 
     /**
      * \brief checks whether the given position (index) is valid.
@@ -279,8 +337,9 @@ namespace slam {
     }
     inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos))       const
     {
-      SLIC_ASSERT_MSG( isValidIndex(pos)
-          , "SLAM::OrderedSet -- requested out-of-range element at position "
+      SLIC_ASSERT_MSG( 
+          isValidIndex(pos),
+          "SLAM::OrderedSet -- requested out-of-range element at position "
           << pos << ", but set only has " << size() << " elements." );
     }
 
@@ -299,7 +358,8 @@ namespace slam {
     bool bValid =  SizePolicyType::isValid(verboseOutput)
         && OffsetPolicyType::isValid(verboseOutput)
         && StridePolicyType::isValid(verboseOutput)
-        && IndirectionPolicyType::isValid(size(), OffsetPolicy::offset(), StridePolicy::stride(), verboseOutput)
+        && IndirectionPolicyType::isValid(
+            size(), OffsetPolicy::offset(), StridePolicy::stride(), verboseOutput)
 #ifdef AXOM_USE_BOOST
         && SubsettingPolicyType::isValid(begin(), end(), verboseOutput)
 #endif

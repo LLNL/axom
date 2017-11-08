@@ -46,10 +46,12 @@ namespace slam    {
 
     typedef std::vector<SetPosition>                                      RelationVec;
     typedef RelationVec::iterator                                         RelationVecIterator;
-    typedef std::pair<RelationVecIterator,RelationVecIterator>            RelationVecIteratorPair;
+    typedef std::pair<RelationVecIterator,RelationVecIterator>
+                RelationVecIteratorPair;
 
     typedef RelationVec::const_iterator                                   RelationVecConstIterator;
-    typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
+    typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>
+                  RelationVecConstIteratorPair;
 
     typedef std::vector< RelationVec>                                     RelationsContainer;
     typedef RelationsContainer::const_iterator                            RelationsContainerCIt;
@@ -112,35 +114,57 @@ namespace slam    {
      * \name DirectDataAccess
      * \brief Accessor functions to get the underlying relation data for each element
 
-     * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+     * \note We will have to figure out a good way 
+     * to limit this access to situations where it makes sense.
      */
 
     /// \{
 
     /**
-     * \brief Access the set of positions in the 'toSet' associated with the given position in 'fromSet'
-     * \param fromSetPos The position within the 'fromSet' whose relation data (in the 'toSet') we are requesting
+     * \brief Access the set of positions in the 'toSet' 
+     * associated with the given position in 'fromSet'
+     * 
+     * \param fromSetPos The position within the 'fromSet' 
+     * whose relation data (in the 'toSet') we are requesting
      */
-    RelationVec &       data(SetPosition fromSetPos)       { verifyPosition(fromSetPos); return m_relationsVec[fromSetPos]; }
+    RelationVec &       data(SetPosition fromSetPos)       
+    { 
+        verifyPosition(fromSetPos); 
+        return m_relationsVec[fromSetPos]; 
+    }
 
     /**
-     * \brief Access the set of positions in the 'toSet' associated with the given position in 'fromSet'
-     * \param fromSetPos The position within the 'fromSet' whose relation data (in the 'toSet') we are requesting
+     * \brief Access the set of positions in the 'toSet' 
+     * associated with the given position in 'fromSet'
+     * 
+     * \param fromSetPos The position within the 'fromSet' 
+     * whose relation data (in the 'toSet') we are requesting
      */
-    const RelationVec & data(SetPosition fromSetPos) const { verifyPosition(fromSetPos); return m_relationsVec[fromSetPos]; }
+    const RelationVec & data(SetPosition fromSetPos) const 
+    { 
+        verifyPosition(fromSetPos); 
+        return m_relationsVec[fromSetPos]; 
+    }
 
     /// \}
 
   private:
-    inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))        const
+    inline void 
+    verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))        const
     {
       SLIC_ASSERT_MSG(
         fromSetIndex >= 0 && fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ),
         "Index " << fromSetIndex << " out of range [0," << m_fromSet->size() << ")");
     }
 
-    inline RelationVec &      fromSetRelationsVec(SetPosition fromSetIndex)         { return m_relationsVec[fromSetIndex]; }
-    inline RelationVec const& fromSetRelationsVec(SetPosition fromSetIndex)   const { return m_relationsVec[fromSetIndex]; }
+    inline RelationVec &      fromSetRelationsVec(SetPosition fromSetIndex)
+    { 
+        return m_relationsVec[fromSetIndex]; 
+    }
+    inline RelationVec const& fromSetRelationsVec(SetPosition fromSetIndex) const
+    { 
+        return m_relationsVec[fromSetIndex]; 
+    }
 
 
 

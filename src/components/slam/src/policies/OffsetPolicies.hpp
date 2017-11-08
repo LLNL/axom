@@ -80,9 +80,11 @@ namespace policies {
 
     CompileTimeOffset(IntType val = DEFAULT_VALUE) {
       AXOM_DEBUG_VAR(val);
-      SLIC_ASSERT_MSG( val == INT_VAL,
-          "slam::CompileTimeOffset -- tried to initialize a compile time offset with value ("
-          << val << " ) that differs from the template parameter of " << INT_VAL << ".");
+      SLIC_ASSERT_MSG( 
+          val == INT_VAL,
+          "slam::CompileTimeOffset -- tried to initialize a compile time "
+          << "offset with value (" << val << " ) that differs from "
+          << "the template parameter of " << INT_VAL << ".");
     }
 
     inline IntType          offset() const { return INT_VAL; }
@@ -103,9 +105,10 @@ namespace policies {
     ZeroOffset(IntType val = DEFAULT_VALUE)
     {
       AXOM_DEBUG_VAR(val);
-      SLIC_ASSERT_MSG( val == DEFAULT_VALUE,
-          "slam::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
-          << val << ", but should always be 0");
+      SLIC_ASSERT_MSG( 
+          val == DEFAULT_VALUE,
+          "slam::ZeroOffset policy -- tried to initialize a NoOffset policy"
+          << " with (" << val << ", but should always be 0");
     }
 
     inline IntType          offset() const { return DEFAULT_VALUE; }

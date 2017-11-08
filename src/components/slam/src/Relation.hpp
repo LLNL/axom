@@ -42,7 +42,10 @@ namespace slam    {
     static EmptySetType emptySet() { return AXOM_NULLPTR; }
 
     template<typename ASetType>
-    static bool         isEmpty(ASetType* set) { return set == AXOM_NULLPTR || set->empty(); }
+    static bool         isEmpty(ASetType* set) 
+    { 
+        return set == AXOM_NULLPTR || set->empty(); 
+    }
   };
 
   template<>
@@ -54,7 +57,10 @@ namespace slam    {
 
       return &s_nullSet;
     }
-    static bool isEmpty(Set* set) { return *set == *emptySet() || set->empty(); }
+    static bool isEmpty(Set* set) 
+    { 
+        return *set == *emptySet() || set->empty(); 
+    }
 
   };
 
@@ -88,7 +94,8 @@ namespace slam    {
     virtual bool                          isValid(bool verboseOutput = false) const = 0;
 
 #if 0
-    // Go through the relation's data and ensure that no entity from the ToSet is mapped to more than once by an element of the FromSet.
+    // Go through the relation's data and ensure that no entity from the ToSet
+    // is mapped to more than once by an element of the FromSet.
     // This operation will compact the relation
     // We can optionally sort the entities as well...
     // Not yet implemented
@@ -103,7 +110,8 @@ namespace slam    {
     // This function differs for each concrete relation type..
     void bindRelationData(..args..) = 0;
 
-    // Accessors to the underlying relation data -- differs depending on the implementation (e.g. structured vs. unstructured
+    // Accessors to the underlying relation data 
+    // -- differs depending on the implementation (e.g. structured vs. unstructured
     ArrType* relationData() = 0;
 #endif
 

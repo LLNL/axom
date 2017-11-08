@@ -56,14 +56,12 @@ namespace {
         SLIC_ASSERT(otherIdx >= idx && otherIdx < sz);
         std::swap(indices[idx], indices[otherIdx]);
       }
-
     }
 
     for(IndexType i = 0; i< sz; ++i)
     {
       SLIC_ASSERT(indices[i] >= 0 && indices[i] < sz);
     }
-
 
     return indices;
   }
@@ -105,7 +103,6 @@ namespace {
 
       ind = AXOM_NULLPTR;
       data = AXOM_NULLPTR;
-
     }
 
     void TearDown() {
@@ -250,7 +247,8 @@ BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence) (benchmark::State & stat
 BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence)->Apply(CustomArgs);
 
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -269,9 +267,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) (benchmark::State &
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -290,9 +290,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided) (benchmark:
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_offset) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_offset) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -311,9 +313,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_offset) (benchmark::
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_offset)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_offset)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided_offset) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided_offset) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -332,9 +336,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided_offset) (ben
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided_offset)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided_offset)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -352,11 +358,12 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) (benchmark::State 
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted)
+    ->Apply(CustomArgs);
 
 
-
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -375,9 +382,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided) (benchmark
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_offset) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_offset) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -396,9 +405,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_offset) (benchmark:
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_offset)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_offset)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided_offset) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided_offset) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -417,7 +428,8 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided_offset) (be
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided_offset)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided_offset)
+    ->Apply(CustomArgs);
 
 
 /// --------------------  Benchmarks for array indexing ---------------------
@@ -476,7 +488,8 @@ BENCHMARK_DEFINE_F(SetFixture, offset_sequence_field)(benchmark::State & state)
 }
 BENCHMARK_REGISTER_F(SetFixture, offset_sequence_field)->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence_field) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence_field) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -493,10 +506,12 @@ BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence_field) (benchmark::State 
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence_field)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence_field)
+    ->Apply(CustomArgs);
 
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_field) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_field) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -526,9 +541,11 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_field) (benchmark::S
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_field)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_field)
+    ->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_field) (benchmark::State & state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_field) 
+    (benchmark::State & state)
 {
   const int sz = state.range_x();
 
@@ -558,7 +575,8 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_field) (benchmark::
   state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_field)->Apply(CustomArgs);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_field)
+    ->Apply(CustomArgs);
 
 /// ----------------------------------------------------------------------------
 

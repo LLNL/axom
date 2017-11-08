@@ -78,7 +78,8 @@ TEST(slam_set_indirectionset,construct)
   SetType s(MAX_SET_SIZE);
   EXPECT_FALSE(s.empty());
   EXPECT_EQ(MAX_SET_SIZE, s.size() );
-  EXPECT_FALSE(s.isValid()) << "IndirectionSet not valid until we set the indirection buffer";
+  EXPECT_FALSE(s.isValid()) 
+        << "IndirectionSet not valid until we set the indirection buffer";
 
   s.data() = allocIncrementingArray(MAX_SET_SIZE);
 
@@ -239,7 +240,8 @@ TEST(slam_set_indirectionset,equality)
 
 TEST(slam_set_indirectionset,out_of_bounds)
 {
-  SLIC_INFO("Testing out of bounds access on initialized set-- code is expected to assert and die.");
+  SLIC_INFO("Testing out of bounds access on initialized set"
+        <<"-- code is expected to assert and die.");
 
   SetType s(SetType::SetBuilder()
       .size(MAX_SET_SIZE)

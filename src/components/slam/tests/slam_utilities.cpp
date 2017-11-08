@@ -59,7 +59,8 @@ namespace {
 
 TEST(slam_utilities,findingAncestorPaths)
 {
-  SLIC_INFO("Testing function that recursively finds a valid path in cwd ancestors.");
+  SLIC_INFO("Testing function that recursively finds" 
+    << " a valid path in cwd ancestors.");
 
   using namespace axom::slam::util;
   using namespace axom::utilities::filesystem;
@@ -98,14 +99,16 @@ TEST(slam_utilities,findingAncestorPaths)
 
   std::string path4 = joinPath(presentDir, missingFile);
 
-  SLIC_INFO("** About to look for a nonexistent file. Ignore the log warning. ***");
+  SLIC_INFO("** About to look for a nonexistent file. " 
+    << " Ignore the log warning. ***");
   std::string ps4 = findFileInAncestorDirs(path4);
   EXPECT_EQ( path4, ps4);
 
   std::ifstream fileStreamP4( ps4.c_str() );
   EXPECT_FALSE( fileStreamP4.is_open());
   fileStreamP4.close();
-  SLIC_INFO("No valid path for file '" << path4 << "'. Function returned " << ps4 );
+  SLIC_INFO("No valid path for file '" 
+    << path4 << "'. Function returned " << ps4 );
 
 }
 
@@ -122,7 +125,8 @@ int main(int argc, char * argv[])
   UnitTestLogger logger;  // create & initialize test logger,
 
   // Change the directory to one that we know will contain the desired file
-  SLIC_ERROR_IF(argc !=2, "slam_utilities requires a parameter for the working directory");
+  SLIC_ERROR_IF(argc !=2, 
+    "slam_utilities requires a parameter for the working directory");
   int err = ChangeCurrentDir( argv[1] );
   SLIC_ERROR_IF( err != 0, "chdir failed");
 
