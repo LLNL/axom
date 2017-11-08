@@ -156,18 +156,14 @@ private:
     const PointType& C = m_points[2];
 
     if (NDIMS < 3) {
-
       return 0.;
-
     }
     else {
-
       return numerics::determinant< double > ( A[0], A[1], A[2], 1.,
                                                B[0], B[1], B[2], 1.,
                                                C[0], C[1], C[2], 1.,
                                                p[0], p[1], p[2], 1.  );
     }
-
   }
 
 public:
@@ -197,20 +193,16 @@ public:
     int c1 = 1;
 
     if (x>=y && x>= z) {
-
       // compute in yz plane
       c0 = 1;
       c1 = 2;
       ood=1.0/u[0];
-
     }
     else if (y>=x && y>=z) {
-
       // compute in xz plane
       c0 = 0;
       c1 = 2;
       ood=-1.0/u[1];
-
     }
 
     // References to triangle vertices for convenience

@@ -73,21 +73,15 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
   int orient = -1;
 
   if ( axom::utilities::isNearlyEqual( det, 0.0, 1.0e-9 ) ) {
-
     orient = ON_BOUNDARY;
-
   }
   else if ( det < 0.0f ) {
-
     // outside
     orient = ON_POSITIVE_SIDE;
-
   }
   else {
-
     // inside
     orient = ON_NEGATIVE_SIDE;
-
   }
 
   return orient;
@@ -123,22 +117,16 @@ int orientation( const Point< T,2 >& p, const Segment< T,2 >& seg )
   int orient = -1;
 
   if ( axom::utilities::isNearlyEqual( det, 0.0 ) ) {
-
     // collinear
     orient = ON_BOUNDARY;
-
   }
   else if ( det < 0.0f ) {
-
     // outside, clockwise, to the right
     orient = ON_POSITIVE_SIDE;
-
   }
   else {
-
     // inside, counter-clockwise, to the left
     orient = ON_NEGATIVE_SIDE;
-
   }
 
   return orient;

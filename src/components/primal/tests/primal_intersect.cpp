@@ -1081,8 +1081,9 @@ void testRayIntersection(const primal::Triangle< double, DIM > & tri,
     EXPECT_TRUE(intersect(tri, ray, t, tip));
     PointType tripoint = triangleAt(tri, tip);
     PointType raypoint = ray.at(t);
-    EXPECT_TRUE(testPointsClose(tripoint, raypoint)) << "Tripoint is " << tripoint <<
-      " and raypoint is " << raypoint;
+    EXPECT_TRUE(testPointsClose(tripoint, raypoint)) 
+        << "Tripoint is " << tripoint <<
+       " and raypoint is " << raypoint;
   } else {
     EXPECT_FALSE( intersect(tri, ray, t, tip))
       <<"Expected no intersection; Found one at point "
@@ -1114,8 +1115,9 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
     PointType tripoint1 = triangleAt(tri, tip1);
     PointType segpoint1 = segmentAt(seg1, t1);
-    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
-      " and segpoint is " << segpoint1;
+    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) 
+       << "Tripoint is " << tripoint1 << 
+       " and segpoint is " << segpoint1;
 
     // Find the intersection of segment from p1 to p2
     double t2 = 0;

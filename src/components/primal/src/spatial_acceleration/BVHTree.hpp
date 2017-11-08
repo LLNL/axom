@@ -522,7 +522,6 @@ void BVHTree< T, NDIMS >::insert( const BoxType& box, const T& data )
 
   // STEP 2: create the tree if empty
   if ( this->empty() ) {
-
     ++m_numLevels;
 
     m_tree.resize( 1 );
@@ -531,7 +530,6 @@ void BVHTree< T, NDIMS >::insert( const BoxType& box, const T& data )
     m_tree[ 0 ].Refined = false;
     m_tree[ 0 ].Void    = false;
     m_tree[ 0 ].ObjectArray.reserve( m_objects.size() );
-
   } // END if
 
   // STEP 3: Update bounds of the root bounding box to encapsulate the
@@ -560,11 +558,9 @@ void BVHTree< T,NDIMS >::resizeToLevel( int level )
 
     // initialize the buckets at the new level
     for ( int i=begin; i < new_size; ++i) {
-
       m_tree[ i ].Level   = level;
       m_tree[ i ].Void    = true;
       m_tree[ i ].Refined = false;
-
     }   // END for
 
     ++m_numLevels;
@@ -597,7 +593,6 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
 
   // STEP 2: loop over objects and place on right or left bucket.
   for ( int i=0; i < numObjects; ++i ) {
-
     // STEP A: get index in to the object list
     const int objIdx = m_tree[ parent ].ObjectArray[ i ];
     SLIC_ASSERT( ( objIdx >= 0 ) &&
@@ -612,19 +607,13 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
 
     int bucketIdx = -1;
     if ( rightBox.contains( centroid ) ) {
-
       bucketIdx = rChild;
-
     }
     else if ( leftBox.contains( centroid ) ) {
-
       bucketIdx = lChild;
-
     }
     else {
-
       SLIC_ERROR( "Failed to place object in bucket!" );
-
     }
 
     SLIC_ASSERT( (bucketIdx >= 0) &&
@@ -633,7 +622,6 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
     m_tree[ bucketIdx ].Box.addBox( objBox );
     m_tree[ bucketIdx ].ObjectArray.push_back( objIdx );
     m_objects[ objIdx ].BucketIdx = bucketIdx;
-
   } // END for all objects
 
   // STEP 3: unmark children as void
@@ -726,14 +714,12 @@ void BVHTree< T,NDIMS >::build( int threshold )
 
   // STEP 2: Iteratively subdivide until threshold criteria is satisfied
   while ( !workqueue.empty() ) {
-
     // STEP A: pop next bucket from the queue
     int bucketIdx = workqueue.front();
     workqueue.pop();
 
     // STEP B: check if we should refine this bucket
     if ( this->shouldRefine( bucketIdx, threshold ) ) {
-
       // STEP C: refine bucket
       this->refine( bucketIdx );
       SLIC_ASSERT( m_tree[ bucketIdx ].Refined );
@@ -749,7 +735,6 @@ void BVHTree< T,NDIMS >::build( int threshold )
       if ( this->shouldRefine( rightIdx,threshold ) ) {
         workqueue.push( rightIdx );
       }
-
     }   // END if > threshold
 
 //      oss.clear();
@@ -792,9 +777,7 @@ inline double BVHTree< T,NDIMS >::getMinSqDistanceToBucket(
   double dist = std::numeric_limits< double >::max();
 
   if ( !m_tree[ bucketIdx ].Void ) {
-
     dist = squared_distance( pt, m_tree[ bucketIdx ].Box );
-
   }
 
   return ( dist );
@@ -811,18 +794,14 @@ inline double BVHTree< T,NDIMS >::getMaxSqDistanceToBucket(
   double dist = std::numeric_limits< double >::min();
 
   if ( !m_tree[ bucketIdx ].Void ) {
-
     std::vector< PointType > pnts;
     BoxType::getPoints( m_tree[ bucketIdx ].Box, pnts );
     SLIC_ASSERT( pnts.size()==4 || pnts.size()==8 );
 
     const int npoints = pnts.size();
     for ( int i=0; i < npoints; ++i ) {
-
       dist = std::max( dist, squared_distance( pt, pnts[ i ] ) );
-
     }   // END for all points
-
   }
 
   return dist;
@@ -838,17 +817,13 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
   // STEP 0: if empty, or just a single level return immediately
   if ( this->empty() ) {
-
     /* short-circuit */
     return;
-
   }
   else if ( m_numLevels == 1 ) {
-
     /* short-circuit */
     candidate_buckets.push_back( 0 );
     return;
-
   }
 
   const double TOL = 1.0e-9;
@@ -872,7 +847,6 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
   // first set of candidate leaf buckets is attained. This also, computes
   // the estLowerBound and estUpperBound
   for ( int level=1; level < m_numLevels; ++level ) {
-
     const int nbuckets = buckets_to_check.size();
     if ( nbuckets==0 ) {
       /* short-circuit */
@@ -892,7 +866,6 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
         lowerDistBound = d2b;
         closest_bucket = bucketIdx;
       }
-
     }   // END for all buckets
 
     SLIC_ASSERT( closest_bucket >= 0 &&

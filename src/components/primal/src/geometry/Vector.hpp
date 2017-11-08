@@ -402,15 +402,11 @@ inline Vector< T, NDIMS > Vector< T, NDIMS >::unitVector() const
 
   const double len_sq = squared_norm();
   if ( len_sq >= EPS ) {
-
     v /= ( std::sqrt(len_sq) );
-
   }
   else {
-
     // Create a vector whose first coordinate is 1 and all others are 0
     v = Vector( static_cast< T >( 1. ), 1 );
-
   }
 
   return v;
