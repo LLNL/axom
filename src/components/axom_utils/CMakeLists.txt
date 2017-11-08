@@ -35,7 +35,7 @@ endif()
 ################################
 # Add code checks
 ################################
-axom_add_code_checks(BASE_NAME axom_utils)
+axom_add_code_checks(PREFIX axom_utils)
 
 ################################
 # Create CMake importable

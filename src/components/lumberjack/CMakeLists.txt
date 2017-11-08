@@ -42,7 +42,7 @@ endif()
 ################################
 # Add code checks
 ################################
-axom_add_code_checks(BASE_NAME lumberjack)
+axom_add_code_checks(PREFIX lumberjack)
 
 ################################
 # Create CMake importable

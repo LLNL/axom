@@ -42,7 +42,7 @@ endif()
 ################################
 # Add code checks
 ################################
-axom_add_code_checks(BASE_NAME mint)
+axom_add_code_checks(PREFIX mint)
 
 ################################
 # Create CMake importable

@@ -13,13 +13,13 @@
 #-------------------------------------------------------------------------------
 
 ##------------------------------------------------------------------------------
-## axom_add_code_checks( BASE_NAME     <Base name used for created targets>
-##                       EXCLUDES      [path1 [path2 ...]])
+## axom_add_code_checks( PREFIX     <Prefix used for created targets>
+##                       EXCLUDES   [path1 [path2 ...]])
 ##
 ## Adds code checks to all source files under this directory.
 ##
-## BASE_NAME is used in the creation of all the underlying targets. For example:
-## <BASE_NAME>_uncrustify_check.
+## PREFIX is used in the creation of all the underlying targets. For example:
+## <PREFIX>_uncrustify_check.
 ##
 ## EXCLUDES is used to exclude any files from the code checks. It is done with
 ## a simple CMake reg exp MATCHES check.
@@ -28,7 +28,7 @@
 macro(axom_add_code_checks)
 
     set(options)
-    set(singleValueArgs BASE_NAME )
+    set(singleValueArgs PREFIX )
     set(multiValueArgs EXCLUDES )
 
     # Parse the arguments to the macro
@@ -60,7 +60,7 @@ macro(axom_add_code_checks)
         endforeach()
     endif()
 
-    blt_add_code_checks(BASE_NAME ${arg_BASE_NAME}
+    blt_add_code_checks(PREFIX    ${arg_PREFIX}
                         SOURCES   ${_sources}
                         UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
 

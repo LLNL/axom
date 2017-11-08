@@ -42,7 +42,7 @@ endif()
 ################################
 # Add code checks
 ################################
-axom_add_code_checks(BASE_NAME primal)
+axom_add_code_checks(PREFIX primal)
 
 ################################
 # Create CMake importable
