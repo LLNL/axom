@@ -31,8 +31,10 @@
 #include <vector>
 #include <ostream> // for std::ostream
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T, int NDIMS >
@@ -112,7 +114,8 @@ public:
 
     NumArrayType sum;
 
-    for (int i=0; i< numVertices(); ++i) {
+    for (int i=0 ; i< numVertices() ; ++i)
+    {
       sum += m_vertices[i].array();
     }
     sum /= numVertices();
@@ -131,10 +134,12 @@ public:
     const int sz = numVertices();
 
     os <<"{" << sz <<"-gon:";
-    for (int i=0; i< sz-1; ++i) {
+    for (int i=0 ; i< sz-1 ; ++i)
+    {
       os << m_vertices[i] << ",";
     }
-    if (sz >= 2) {
+    if (sz >= 2)
+    {
       os<<m_vertices[sz-1];
     }
     os<< "}";

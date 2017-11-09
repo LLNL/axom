@@ -132,7 +132,7 @@ if(SPARSEHASH_FOUND)
 endif()
 
 install(TARGETS              sidre
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               sidre-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/sidre
         )
@@ -141,53 +141,4 @@ install(FILES       ${sidre_headers}
         )
 if(ENABLE_FORTRAN)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
-endif()
-
-# Only needed if building the Fortran interface
-# XXX this can be used to automatically generate the files
-#if (ENABLE_FORTRAN)
-#    add_dependencies(copy_headers_sidre sidre_generate)
-#endif()
-
-if(FALSE)  # The Python module is not create yet.
-#if(ENABLE_PYTHON_API)
-    set(sidre_python_sources
-        interface/python/pyDataStoretype.cpp
-        interface/python/pyGrouptype.cpp
-        interface/python/pyBuffertype.cpp
-        interface/python/pyViewtype.cpp
-        interface/python/pySidremodule.cpp
-        interface/python/pySidrehelper.cpp
-    )
-    set(sidre_python_headers
-        interface/python/pySidremodule.hpp
-    )
-
-    blt_add_library(
-        NAME sidre
-        PYTHON_MODULE
-        SOURCES
-            ${sidre_sources}
-            ${sidre_python_sources}
-        HEADERS
-            ${sidre_headers}
-            ${sidre_python_headers}
-        DEPENDS_ON
-            common
-            conduit
-            conduit_io
-            hdf5
-            slic
-    )
-    install(TARGETS              sidre
-            EXPORT               ${PROJECT_NAME}-targets
-            DESTINATION          lib
-            INCLUDES DESTINATION include/sidre
-            )
-    install(FILES       ${sidre_headers}
-            DESTINATION include/sidre
-            )
-
-#http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
-# object library to avoid compile files twice
 endif()

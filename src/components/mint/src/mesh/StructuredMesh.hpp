@@ -29,10 +29,12 @@
 // C/C++ includes
 #include <cstddef> // for AXOM_NULLPTR
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-class StructuredMesh:public Mesh
+class StructuredMesh : public Mesh
 {
 public:
 
@@ -80,7 +82,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( int cellIdx, int* cell ) const
+  virtual void getMeshCell( int cellIdx, int * cell ) const
   { this->getCell( cellIdx, cell ); };
 
   /*!
@@ -99,7 +101,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshNode( int nodeIdx, double* coordinates ) const
+  virtual void getMeshNode( int nodeIdx, double * coordinates ) const
   { this->getNode( nodeIdx, coordinates ); };
 
   /*!
@@ -124,7 +126,8 @@ public:
    */
   inline void getExtentSize( int ndims[ 3 ] ) const
   {
-    for ( int i=0; i < 3; ++i ) {
+    for ( int i=0 ; i < 3 ; ++i )
+    {
       ndims[ i ] = m_extent->size( i );
     } // END for
 
@@ -220,7 +223,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
    * \pre the user-supplied cell buffer must be of getNumberOfCellNodes() size.
    */
-  inline void getCell( int cellIdx, int* cell ) const;
+  inline void getCell( int cellIdx, int * cell ) const;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j)
@@ -229,7 +232,7 @@ public:
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 2.
    */
-  inline void getCell( int i, int j, int* cell ) const;
+  inline void getCell( int i, int j, int * cell ) const;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j,k)
@@ -239,7 +242,7 @@ public:
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 3.
    */
-  inline void getCell( int i, int j, int k, int* cell) const;
+  inline void getCell( int i, int j, int k, int * cell) const;
 
   /// \name GetNode() methods -- implemented in concrete instances.
   /// @{
@@ -251,7 +254,7 @@ public:
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    */
-  virtual void getNode( int nodeIdx, double* coordinates ) const = 0;
+  virtual void getNode( int nodeIdx, double * coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -260,7 +263,7 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
    */
-  virtual void getNode( int i, int j, double* coordinates ) const = 0;
+  virtual void getNode( int i, int j, double * coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -270,7 +273,7 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
    */
-  virtual void getNode( int i, int j, int k, double* coordinates ) const = 0;
+  virtual void getNode( int i, int j, int k, double * coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinate of the given node.
@@ -334,7 +337,7 @@ protected:
   StructuredMesh( int meshType, int ndims, const int ext[6], int blockId,
                   int partId );
 
-  Extent< int >* m_extent; /*!< grid extent */
+  Extent< int > * m_extent; /*!< grid extent */
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh );
@@ -347,28 +350,32 @@ private:
 //------------------------------------------------------------------------------
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-inline void StructuredMesh::getCell(int cellIdx, int* cell) const
+inline void StructuredMesh::getCell(int cellIdx, int * cell) const
 {
   SLIC_ASSERT(  cell != AXOM_NULLPTR );
   SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
 
-  const int* offsets_table = m_extent->getCellOffSets();
+  const int * offsets_table = m_extent->getCellOffSets();
   const int num_cell_nodes = this->getNumberOfCellNodes();
 
   // STEP 0: calculate logical indices of the cell's first corner node.
   int jp_minus_1 = m_extent->jp()-1;
   int ii=0, jj=0, kk=0;
 
-  if  ( this->getDimension() == 1 ) {
+  if  ( this->getDimension() == 1 )
+  {
 
     SLIC_ASSERT( num_cell_nodes==2 );
     ii = cellIdx;
 
   }
-  else if ( this->getDimension() == 2 ) {
+  else if ( this->getDimension() == 2 )
+  {
 
     SLIC_ASSERT( num_cell_nodes==4 );
 
@@ -376,7 +383,8 @@ inline void StructuredMesh::getCell(int cellIdx, int* cell) const
     jj = cellIdx / jp_minus_1;
 
   }
-  else {
+  else
+  {
 
     SLIC_ASSERT(  this->getDimension()==3 );
     SLIC_ASSERT(  num_cell_nodes==8 );
@@ -392,7 +400,8 @@ inline void StructuredMesh::getCell(int cellIdx, int* cell) const
   const int n0  = ii + jj*m_extent->jp() + kk*m_extent->kp();
 
   // STEP 2: Last, use the offsets table to get the all the cell nodes.
-  for ( int i=0; i < num_cell_nodes; ++i ) {
+  for ( int i=0 ; i < num_cell_nodes ; ++i )
+  {
 
     cell[ i ] = n0 + offsets_table[ i ];
 
@@ -401,7 +410,7 @@ inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 }
 
 //------------------------------------------------------------------------------
-inline void StructuredMesh::getCell(int i, int j, int* cell) const
+inline void StructuredMesh::getCell(int i, int j, int * cell) const
 {
   SLIC_ASSERT(  this->getDimension()==2 );
   SLIC_ASSERT(  cell != AXOM_NULLPTR );
@@ -409,11 +418,12 @@ inline void StructuredMesh::getCell(int i, int j, int* cell) const
   const int num_cell_nodes = this->getNumberOfCellNodes();
   SLIC_ASSERT(  num_cell_nodes == 4 );
 
-  const int* offsets_table = m_extent->getCellOffSets();
+  const int * offsets_table = m_extent->getCellOffSets();
 
   const int n0 = m_extent->getLinearIndex(i,j);
 
-  for ( int d=0; d < num_cell_nodes; ++d ) {
+  for ( int d=0 ; d < num_cell_nodes ; ++d )
+  {
 
     cell[ d ] = n0 + offsets_table[ d ];
 
@@ -422,7 +432,7 @@ inline void StructuredMesh::getCell(int i, int j, int* cell) const
 }
 
 //------------------------------------------------------------------------------
-inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
+inline void StructuredMesh::getCell(int i, int j, int k, int * cell) const
 {
   SLIC_ASSERT(  this->getDimension()==3 );
   SLIC_ASSERT(  cell != AXOM_NULLPTR );
@@ -430,11 +440,12 @@ inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
   const int num_cell_nodes = this->getNumberOfCellNodes();
   SLIC_ASSERT(  num_cell_nodes == 8 );
 
-  const int* offsets_table = m_extent->getCellOffSets();
+  const int * offsets_table = m_extent->getCellOffSets();
 
   const int n0 = m_extent->getLinearIndex(i,j,k);
 
-  for ( int d=0; d < num_cell_nodes; ++d ) {
+  for ( int d=0 ; d < num_cell_nodes ; ++d )
+  {
 
     cell[ d ] = n0 + offsets_table[ d ];
 

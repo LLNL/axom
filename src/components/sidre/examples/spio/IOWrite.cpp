@@ -45,15 +45,18 @@ int main(int argc, char * argv[])
   axom::slic::UnitTestLogger logger;
 
   SLIC_ERROR_IF(argc != 3,
-      "Missing command line arguments. \n\t"
-      << "Usage: spio_IOWrite <num_files> <base_file_name>");
+                "Missing command line arguments. \n\t"
+                << "Usage: spio_IOWrite <num_files> <base_file_name>");
 
   size_t num_files = 0;
   std::string file_base;
-  if (argc == 3) {
+  if (argc == 3)
+  {
     num_files = static_cast<size_t>(atoi(argv[1]));
     file_base = argv[2];
-  } else {
+  }
+  else
+  {
     return 0;
   }
 
@@ -72,7 +75,8 @@ int main(int argc, char * argv[])
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
-  if (my_rank == 0) {
+  if (my_rank == 0)
+  {
     std::string dir;
     filesystem::getDirName(dir, file_base);
     filesystem::makeDirsForPath(dir);
@@ -83,7 +87,8 @@ int main(int argc, char * argv[])
   writer.write(root, num_files, file_base, "sidre_hdf5");
 
   MPI_Barrier(MPI_COMM_WORLD);
-  if (my_rank == 0) {
+  if (my_rank == 0)
+  {
     Group * extra = root->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
     Group * child = extra->createGroup("child");

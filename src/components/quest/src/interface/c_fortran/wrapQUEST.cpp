@@ -18,8 +18,10 @@
 #include <string>
 #include "quest/quest.hpp"
 
-namespace axom {
-namespace quest {
+namespace axom
+{
+namespace quest
+{
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -29,69 +31,77 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void QUEST_initialize(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels)
+void QUEST_initialize(MPI_Fint comm, const char * fileName,
+                      bool requiresDistance, int ndims, int maxElements,
+                      int maxLevels)
 {
 // splicer begin function.initialize
-    const std::string SH_fileName(fileName);
-    initialize(MPI_Comm_f2c(comm), SH_fileName, requiresDistance, ndims, maxElements, maxLevels);
-    return;
+  const std::string SH_fileName(fileName);
+  initialize(MPI_Comm_f2c(
+               comm), SH_fileName, requiresDistance, ndims, maxElements,
+             maxLevels);
+  return;
 // splicer end function.initialize
 }
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName, int LfileName, bool requiresDistance, int ndims, int maxElements, int maxLevels)
+void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName,
+                                int LfileName, bool requiresDistance, int ndims,
+                                int maxElements, int maxLevels)
 {
 // splicer begin function.initialize_bufferify
-    const std::string SH_fileName(fileName, LfileName);
-    initialize(MPI_Comm_f2c(comm), SH_fileName, requiresDistance, ndims, maxElements, maxLevels);
-    return;
+  const std::string SH_fileName(fileName, LfileName);
+  initialize(MPI_Comm_f2c(
+               comm), SH_fileName, requiresDistance, ndims, maxElements,
+             maxLevels);
+  return;
 // splicer end function.initialize_bufferify
 }
 
 void QUEST_finalize()
 {
 // splicer begin function.finalize
-    finalize();
-    return;
+  finalize();
+  return;
 // splicer end function.finalize
 }
 
 double QUEST_distance(double x, double y, double z)
 {
 // splicer begin function.distance
-    double SH_rv = distance(x, y, z);
-    return SH_rv;
+  double SH_rv = distance(x, y, z);
+  return SH_rv;
 // splicer end function.distance
 }
 
 int QUEST_inside(double x, double y, double z)
 {
 // splicer begin function.inside
-    int SH_rv = inside(x, y, z);
-    return SH_rv;
+  int SH_rv = inside(x, y, z);
+  return SH_rv;
 // splicer end function.inside
 }
 
 void QUEST_mesh_min_bounds(double * coords)
 {
 // splicer begin function.mesh_min_bounds
-    mesh_min_bounds(coords);
-    return;
+  mesh_min_bounds(coords);
+  return;
 // splicer end function.mesh_min_bounds
 }
 
 void QUEST_mesh_max_bounds(double * coords)
 {
 // splicer begin function.mesh_max_bounds
-    mesh_max_bounds(coords);
-    return;
+  mesh_max_bounds(coords);
+  return;
 // splicer end function.mesh_max_bounds
 }
 
 void QUEST_mesh_center_of_mass(double * coords)
 {
 // splicer begin function.mesh_center_of_mass
-    mesh_center_of_mass(coords);
-    return;
+  mesh_center_of_mass(coords);
+  return;
 // splicer end function.mesh_center_of_mass
 }
 

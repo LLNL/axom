@@ -27,15 +27,18 @@
  *
  * \see FEBasis
  */
-enum FEBasisTypes {
+enum FEBasisTypes
+{
   MINT_UNDEFINED_BASIS=-1, /*!< Undefined basis type */
   MINT_LAGRANGE_BASIS,     /*!< Lagrange basis type */
 
   MINT_NUM_BASIS_TYPES           /*!< MINT_NUM_BASIS */
 };
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 /*!
  * \brief Array of strings corresponding to each Finite Element Basis.

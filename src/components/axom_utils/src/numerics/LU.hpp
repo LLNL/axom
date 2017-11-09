@@ -26,10 +26,13 @@
 // C/C++ includes
 #include <cstring> // for memcpy()
 
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
-enum ReturnCodes {
+enum ReturnCodes
+{
   LU_SUCCESS,
   LU_SINGULAR_MATRIX,
   LU_NONSQUARE_MATRIX,
@@ -65,7 +68,7 @@ enum ReturnCodes {
  * \pre A.isSquare()==true
  */
 template < typename T >
-int lu_decompose( Matrix< T >& A, int* pivots );
+int lu_decompose( Matrix< T >& A, int * pivots );
 
 /*!
  * \brief Solve the system \f$ Ax=b \f$ by back-substitution, where, A is an LU
@@ -83,7 +86,7 @@ int lu_decompose( Matrix< T >& A, int* pivots );
  * \pre x != AXOM_NULLPTR
  */
 template < typename T >
-int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x );
+int lu_solve( const Matrix< T >& A, const int * pivots, const T * b, T * x );
 
 /// @}
 
@@ -93,16 +96,19 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x );
 //------------------------------------------------------------------------------
 // implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
 template < typename T >
-int lu_decompose( Matrix< T >& LU, int* pivots )
+int lu_decompose( Matrix< T >& LU, int * pivots )
 {
   // Sanity Checks
   assert( "pre: pivots buffer is NULL" && (pivots != AXOM_NULLPTR) );
 
-  if ( !LU.isSquare() ) {
+  if ( !LU.isSquare() )
+  {
     return LU_NONSQUARE_MATRIX;
   }
 
@@ -110,42 +116,50 @@ int lu_decompose( Matrix< T >& LU, int* pivots )
 
   typedef typename Matrix< T >::IndexType IndexType;
 
-  for ( IndexType i=0; i < size; ++i ) {
+  for ( IndexType i=0 ; i < size ; ++i )
+  {
 
-     // descend down the ith column and find pivot
-     T max_element = utilities::abs( LU(i,i) ); // stores max element
-     pivots[ i ]   = i;                // row of max element
-     for ( IndexType j=i+1; j < size; ++j ) {
+    // descend down the ith column and find pivot
+    T max_element = utilities::abs( LU(i,i) );  // stores max element
+    pivots[ i ]   = i;                 // row of max element
+    for ( IndexType j=i+1 ; j < size ; ++j )
+    {
 
-        T abs_value = utilities::abs( LU(j,i) );
-        if ( max_element < abs_value ) {
-          max_element = abs_value;
-          pivots[ i ] = j;
-        }
+      T abs_value = utilities::abs( LU(j,i) );
+      if ( max_element < abs_value )
+      {
+        max_element = abs_value;
+        pivots[ i ] = j;
+      }
 
-     } // END for all rows
+    }  // END for all rows
 
-     // swap rows to place the max element on the diagonal LU(i,i)
-     if ( pivots[ i ] != i ) {
-       LU.swapRows( i, pivots[ i ] );
-     }
+    // swap rows to place the max element on the diagonal LU(i,i)
+    if ( pivots[ i ] != i )
+    {
+      LU.swapRows( i, pivots[ i ] );
+    }
 
-    if ( utilities::isNearlyEqual( LU(i,i), static_cast< T >( 0 ) ) ) {
+    if ( utilities::isNearlyEqual( LU(i,i), static_cast< T >( 0 ) ) )
+    {
       return LU_SINGULAR_MATRIX;
     } // END if
 
     // scale upper triangular entries by the diagonal
     const T scale_factor = static_cast< T >( 1 ) / LU( i,i );
 
-    for ( IndexType j=i+1; j < size; ++j ) {
-       LU( i,j ) *= scale_factor;
+    for ( IndexType j=i+1 ; j < size ; ++j )
+    {
+      LU( i,j ) *= scale_factor;
     }
 
     // update sub-matrix by subtracting the upper triangular part
-    for ( IndexType irow=i+1; irow < size; ++irow ) {
-       for ( IndexType jcol=i+1; jcol < size; ++jcol ) {
-          LU( irow,jcol ) -= LU( irow,i ) * LU( i,jcol );
-       } // END for all columns
+    for ( IndexType irow=i+1 ; irow < size ; ++irow )
+    {
+      for ( IndexType jcol=i+1 ; jcol < size ; ++jcol )
+      {
+        LU( irow,jcol ) -= LU( irow,i ) * LU( i,jcol );
+      }  // END for all columns
     } // END for all rows
 
   } // END for all columns
@@ -155,45 +169,51 @@ int lu_decompose( Matrix< T >& LU, int* pivots )
 
 //------------------------------------------------------------------------------
 template < typename T >
-int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
+int lu_solve( const Matrix< T >& A, const int * pivots, const T * b, T * x )
 {
   // Sanity checks
   assert( "pre: pivots buffer is NULL!" && (pivots != AXOM_NULLPTR) );
   assert( "pre: rhs vector is NULL!" && (b != AXOM_NULLPTR) );
   assert( "pre: solution vector is NULL!" && (x != AXOM_NULLPTR) );
 
-  if ( !A.isSquare() ) {
+  if ( !A.isSquare() )
+  {
     return LU_NONSQUARE_MATRIX;
   }
 
   const int size = A.getNumRows();
-  T* rhs = new T[ size ];
+  T * rhs = new T[ size ];
   memcpy( rhs, b, size*sizeof( T ) );
 
   typedef typename Matrix< T >::IndexType IndexType;
 
   // forward-solve L part (top-to-bottom)
-  for ( IndexType i=0; i < size; ++i ) {
+  for ( IndexType i=0 ; i < size ; ++i )
+  {
 
-     // account for row-interchanges
-     if ( pivots[ i ] != i ) {
-       utilities::swap( rhs[i], rhs[ pivots[i] ] );
-     }
+    // account for row-interchanges
+    if ( pivots[ i ] != i )
+    {
+      utilities::swap( rhs[i], rhs[ pivots[i] ] );
+    }
 
-     x[ i ] = rhs[ i ];
+    x[ i ] = rhs[ i ];
 
-     for ( IndexType j=0; j < i; ++j ) {
-        x[ i ] -= A(i,j) * x[ j ];
-     }
+    for ( IndexType j=0 ; j < i ; ++j )
+    {
+      x[ i ] -= A(i,j) * x[ j ];
+    }
 
-     x[ i ] /= A( i,i );
+    x[ i ] /= A( i,i );
   } // END for
 
   // back-substitute U part (bottom-to-top)
-  for ( IndexType i=size-1; i >= 0; --i ) {
-     for ( IndexType j=i+1; j < size; ++j ) {
-        x[ i ] -= A(i,j) * x[ j ];
-     } // END for j
+  for ( IndexType i=size-1 ; i >= 0 ; --i )
+  {
+    for ( IndexType j=i+1 ; j < size ; ++j )
+    {
+      x[ i ] -= A(i,j) * x[ j ];
+    }  // END for j
   } // END for i
 
   delete [] rhs;

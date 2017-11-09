@@ -251,10 +251,10 @@ Python helper script
 ^^^^^^^^^^^^^^^^^^^^^
 
 The easiest way to configure the code for compilation is to use the 
-``config-build.py`` python script in the 'scripts' directory; 
+``config-build.py`` python script in the base directory; 
 e.g.,::
 
-   $ ./scripts/config-build.py -hc {host-config file name}
+   $ ./config-build.py -hc {host-config file name}
 
 This script requires that you pass it a *host-config* file. The script runs 
 CMake and passes it the host-config. See :ref:`hostconfig-label` 
@@ -283,14 +283,14 @@ conventions, we support three build types: 'Release', 'RelWithDebInfo', and
 'Debug'. To see the script options, run the script without any arguments; 
 i.e.,::
 
-   $ ./scripts/config-build.py 
+   $ ./config-build.py 
 
 You can also pass extra CMake configuration variables through the script; e.g.,::
   
-   $ ./scripts/config-build.py -hc {host-config file name} \
-                               -DBLT_CXX_STD=c++98 -DENABLE_FORTRAN=OFF
+   $ ./config-build.py -hc {host-config file name} \
+                       -DENABLE_PYTHON=ON -DENABLE_FORTRAN=OFF
 
-This will set the C++ compiler mode to C++98 and disable fortran for the generated configuration. 
+This will enable python and disable fortran for the generated configuration. 
 
 
 Run CMake directly

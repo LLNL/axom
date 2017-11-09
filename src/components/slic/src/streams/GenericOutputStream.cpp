@@ -19,16 +19,18 @@
 
 #include "axom/Macros.hpp"
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
-GenericOutputStream::GenericOutputStream( std::ostream* os ):
+GenericOutputStream::GenericOutputStream( std::ostream * os ) :
   m_stream( os )
 {}
 
 //------------------------------------------------------------------------------
-GenericOutputStream::GenericOutputStream(std::ostream* os,
-                                         const std::string& format):
+GenericOutputStream::GenericOutputStream(std::ostream * os,
+                                         const std::string& format) :
   m_stream( os )
 {
   this->setFormatString( format );
@@ -46,7 +48,8 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   int line,
                                   bool AXOM_NOT_USED(filtered_duplicates) )
 {
-  if ( m_stream == AXOM_NULLPTR ) {
+  if ( m_stream == AXOM_NULLPTR )
+  {
     std::cerr << "ERROR: NULL stream!\n";
     return;
   }

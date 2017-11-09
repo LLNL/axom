@@ -23,8 +23,10 @@
 // C/C++ includes
 #include <cstring> // for memcpy()
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 template < typename IndexType >
 class Extent
@@ -37,7 +39,7 @@ public:
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
    */
-  Extent( int ndims, const IndexType* ext );
+  Extent( int ndims, const IndexType * ext );
 
   /*!
    * \brief Returns the dimension of this extent.
@@ -107,7 +109,7 @@ public:
    *
    * \note The indent for the cell offsets table
    */
-  const IndexType* getCellOffSets() const
+  const IndexType * getCellOffSets() const
   { return &m_cell_offsets[0]; };
 
   /*!
@@ -212,12 +214,14 @@ private:
 //------------------------------------------------------------------------------
 //  Extent Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent():
+Extent< IndexType >::Extent() :
   m_ndims( -1 ),
   m_jp(0),
   m_kp(0)
@@ -228,7 +232,7 @@ Extent< IndexType >::Extent():
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent( int ndims, const IndexType* ext ):
+Extent< IndexType >::Extent( int ndims, const IndexType * ext ) :
   m_ndims( ndims )
 {
   SLIC_ASSERT( ndims >= 1 && ndims <= 3 );
@@ -243,11 +247,13 @@ Extent< IndexType >::Extent( int ndims, const IndexType* ext ):
   m_jp = 0;
   m_kp = 0;
 
-  if ( ndims > 1 ) {
+  if ( ndims > 1 )
+  {
     m_jp = this->size( 0 );
   }
 
-  if ( ndims > 2 ) {
+  if ( ndims > 2 )
+  {
     m_kp = m_jp * this->size( 1 );
 
   }
@@ -277,7 +283,8 @@ inline
 IndexType Extent< IndexType >::getNumNodes() const
 {
   IndexType n = 1;
-  for ( int idim=0; idim < m_ndims; ++idim ) {
+  for ( int idim=0 ; idim < m_ndims ; ++idim )
+  {
     IndexType size = static_cast< IndexType >( this->size( idim ) );
     n *= (size > 0) ? size : 1;
   }
@@ -290,7 +297,8 @@ inline
 IndexType Extent< IndexType >::getNumCells() const
 {
   IndexType n = 1;
-  for ( int idim=0; idim < m_ndims; ++idim ) {
+  for ( int idim=0 ; idim < m_ndims ; ++idim )
+  {
     IndexType size = static_cast< IndexType >( this->size( idim )-1 );
     n *= ( size > 0) ? size : 1;
   }

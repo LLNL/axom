@@ -54,7 +54,7 @@ blt_add_library( NAME
                      axom_utils mpi
                  )
 install(TARGETS              lumberjack
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               lumberjack-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/lumberjack
         )

@@ -26,7 +26,8 @@
  * \enum CellType
  * \brief Defines the basic cell types supported by mint.
  */
-enum {
+enum
+{
   MINT_UNDEFINED_CELL = -1, //!< UNDEFINED
 
   MINT_VERTEX,         ///< VERTEX
@@ -48,10 +49,13 @@ enum {
 
 #define MINT_MAX_NUM_NODES 27
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-namespace cell {
+namespace cell
+{
 
 static const int vtk_types[] = {
   1,    // VERTEX          -> VTK_VERTEX

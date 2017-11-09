@@ -33,9 +33,10 @@
 #include "quest_test_utilities.hpp"
 
 
-namespace {
-    const int NUM_PT_TESTS = 50000;
-    const int DIM = 3;
+namespace
+{
+const int NUM_PT_TESTS = 50000;
+const int DIM = 3;
 }
 
 typedef axom::quest::InOutOctree<DIM> Octree3D;
@@ -62,19 +63,20 @@ typedef Octree3D::BlockIndex BlockIndex;
 
 
 
-void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bbox)
+void queryOctahedronMesh(axom::mint::Mesh *& mesh,
+                         const GeometricBoundingBox& bbox)
 {
-    const double bbMin = bbox.getMin()[0];
-    const double bbMax = bbox.getMax()[0];
+  const double bbMin = bbox.getMin()[0];
+  const double bbMax = bbox.getMax()[0];
 
-    Octree3D octree(bbox, mesh);
-    octree.generateIndex();
+  Octree3D octree(bbox, mesh);
+  octree.generateIndex();
 
-    // Query the mesh containment
-    axom::utilities::Timer timer(true);
-    for(int i=0; i < NUM_PT_TESTS; ++i)
-    {
-        SpacePt pt;
+  // Query the mesh containment
+  axom::utilities::Timer timer(true);
+  for(int i=0 ; i < NUM_PT_TESTS ; ++i)
+  {
+    SpacePt pt;
 
 //        switch(i)  // test a few special points and a lot of random points
 //        {
@@ -110,62 +112,68 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh, const GeometricBoundingBox& bb
 //            pt = SpacePt(2* bbMax);
 //            break;
 //        default:                // random points in bounding box
-            pt = axom::quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
+    pt = axom::quest::utilities::randomSpacePt<DIM>(bbMin, bbMax);
 //            break;
 //        }
 
-        double absCoordSum = std::abs(pt[0]) + std::abs(pt[1]) + std::abs(pt[2]);
+    double absCoordSum = std::abs(pt[0]) + std::abs(pt[1]) + std::abs(pt[2]);
 
-        // For the time being, we allow the within() test to fail when the
-        // query point is sufficiently close to the surface
-        bool expectInside = absCoordSum < 1.;
-        EXPECT_TRUE( octree.within(pt) == expectInside
-                || axom::utilities::isNearlyEqual(absCoordSum, 1.) )
-            << "Point " << pt << " was not "
-            << (expectInside? "inside" : "outside")
-            << " surface of octahedron as expected."
-            << " Sum of absolute values of coords was: " << absCoordSum
-            << " and point is inside when this is less than 1.";
+    // For the time being, we allow the within() test to fail when the
+    // query point is sufficiently close to the surface
+    bool expectInside = absCoordSum < 1.;
+    EXPECT_TRUE( octree.within(pt) == expectInside
+                 || axom::utilities::isNearlyEqual(absCoordSum, 1.) )
+      << "Point " << pt << " was not "
+      << (expectInside ? "inside" : "outside")
+      << " surface of octahedron as expected."
+      << " Sum of absolute values of coords was: " << absCoordSum
+      << " and point is inside when this is less than 1.";
 
-    }
-    timer.stop();
+  }
+  timer.stop();
 
-    SLIC_INFO("-- querying octahedron with " << NUM_PT_TESTS
-              << " points took " << timer.elapsed() << " seconds.");
-    SLIC_INFO("***");
+  SLIC_INFO("-- querying octahedron with "
+            << NUM_PT_TESTS
+            << " points took " << timer.elapsed() << " seconds.");
+  SLIC_INFO("***");
 }
 
 
 
 TEST( quest_inout_octree, octahedron_mesh)
 {
-    SLIC_INFO("*** This test creates a simple mesh of an octahedron and tests point containment.\n");
+  SLIC_INFO("*** This test creates a simple mesh of an octahedron "
+            << " and tests point containment.\n");
 
-    // Generate the InOutOctree
-    axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
-    // axom::mint::write_vtk(mesh, "octahedron.vtk");
+  // Generate the InOutOctree
+  axom::mint::Mesh * mesh = axom::quest::utilities::make_octahedron_mesh();
+  // axom::mint::write_vtk(mesh, "octahedron.vtk");
 
-    ///
-    SpacePt ptNeg1(-1.);
-    SpacePt ptPos1( 1.);
-    GeometricBoundingBox bbox1(ptNeg1, ptPos1);
-    SLIC_INFO("Testing InOutOctree on octahedron mesh with bounding box " << bbox1);
-    queryOctahedronMesh(mesh, bbox1);
+  ///
+  SpacePt ptNeg1(-1.);
+  SpacePt ptPos1( 1.);
+  GeometricBoundingBox bbox1(ptNeg1, ptPos1);
+  SLIC_INFO(
+    "Testing InOutOctree on octahedron mesh with bounding box " << bbox1);
+  queryOctahedronMesh(mesh, bbox1);
 
-    ///
-    SpacePt ptNeg2(-2.);
-    SpacePt ptPos2( 2.);
-    GeometricBoundingBox bbox2(ptNeg2, ptPos2);
-    SLIC_INFO("Testing InOutOctree on octahedron mesh with bounding box " << bbox2);
-    queryOctahedronMesh(mesh, bbox2);
+  ///
+  SpacePt ptNeg2(-2.);
+  SpacePt ptPos2( 2.);
+  GeometricBoundingBox bbox2(ptNeg2, ptPos2);
+  SLIC_INFO(
+    "Testing InOutOctree on octahedron mesh with bounding box " << bbox2);
+  queryOctahedronMesh(mesh, bbox2);
 
-    bbox2.shift( SpaceVector(0.01));
-    SLIC_INFO("Testing InOutOctree on octahedron mesh with shifted bounding box " << bbox2);
-    queryOctahedronMesh(mesh, bbox2);
+  bbox2.shift( SpaceVector(0.01));
+  SLIC_INFO(
+    "Testing InOutOctree on octahedron mesh with shifted bounding box "
+    << bbox2);
+  queryOctahedronMesh(mesh, bbox2);
 
 
-    delete mesh;
-    mesh = AXOM_NULLPTR;
+  delete mesh;
+  mesh = AXOM_NULLPTR;
 }
 
 
@@ -190,4 +198,3 @@ int main(int argc, char * argv[])
   int result = RUN_ALL_TESTS();
   return result;
 }
-

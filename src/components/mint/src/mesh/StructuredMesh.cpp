@@ -19,10 +19,12 @@
 #include "mint/MeshType.hpp"
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-StructuredMesh::StructuredMesh():
+StructuredMesh::StructuredMesh() :
   Mesh(-1,MINT_UNDEFINED_MESH,-1,-1),
   m_extent( AXOM_NULLPTR )
 {
@@ -31,14 +33,14 @@ StructuredMesh::StructuredMesh():
 }
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ]):
+StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ]) :
   Mesh( ndims, meshType, 0, 0 ),
   m_extent( new Extent< int >( ndims, ext ) )
 {}
 
 //------------------------------------------------------------------------------
 StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ],
-                                int blockId, int partId):
+                                int blockId, int partId) :
   Mesh( ndims, meshType, blockId, partId ),
   m_extent( new Extent< int >( ndims, ext ) )
 

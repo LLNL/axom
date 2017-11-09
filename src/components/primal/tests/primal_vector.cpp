@@ -31,21 +31,24 @@ TEST( primal_vector, vector_constructors)
 
   QVec vec1;
   EXPECT_EQ(vec1.dimension(), DIM );
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(vec1[i], CoordType() );
   }
 
   CoordType val = 5.;
   QVec vec2(val);
   EXPECT_EQ(vec2.dimension(), DIM );
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(vec2[i], val );
   }
 
   CoordType val3 = 5.;
   int halfPt = DIM /2;
   QVec vec3(val3, halfPt);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     CoordType expVal=  i < halfPt ? val3 : CoordType();
     EXPECT_EQ(vec3[i], expVal );
   }
@@ -53,12 +56,14 @@ TEST( primal_vector, vector_constructors)
   // Compare vector initialized from arbitrary
   CoordType valsArr[DIM] = {12.,23., 34., 45., 56.432};
   QVec arrVec(valsArr);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(arrVec[i], valsArr[i] );
   }
 
   QVec arrHalfVec(valsArr, halfPt);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     CoordType expVal=  i < halfPt ? valsArr[i] : CoordType();
     EXPECT_EQ(arrHalfVec[i], expVal );
   }
@@ -66,7 +71,8 @@ TEST( primal_vector, vector_constructors)
   // Construct from numeric array
   QArray arr(valsArr);
   QVec vFromNA(arr);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(vFromNA[i], valsArr[i] );
   }
 
@@ -86,18 +92,21 @@ TEST( primal_vector, vector_from_points_constructor)
   QPoint b( bVal );
 
   QVec vec1(a,b);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(vec1[i], bVal - aVal );
   }
 
   QVec vec2(b,a);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(vec2[i], aVal - bVal );
   }
 
   QVec vec3(b);
   QVec vec4(QPoint::zero(), b);
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     EXPECT_EQ(vec3[i],  bVal );
     EXPECT_EQ(vec4[i],  bVal );
   }

@@ -91,7 +91,7 @@ TEST(spio_serial, write_read_write)
   ds->getRoot()->createViewScalar("grp/i",2);
   ds->getRoot()->createViewScalar("grp/f",3.0);
   IOManager writer_a(MPI_COMM_WORLD);
-  writer_a.write(ds->getRoot(), num_files, filename, PROTOCOL); 
+  writer_a.write(ds->getRoot(), num_files, filename, PROTOCOL);
 
   // Create another DataStore to read into.
   DataStore ds_r;

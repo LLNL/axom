@@ -45,77 +45,82 @@ using axom::primal::NumericArray;
 using axom::primal::Point;
 using axom::primal::Vector;
 
-namespace axom {  
-namespace quest {
+namespace axom
+{
+namespace quest
+{
+
+/**
+ * \brief Minimal implementation of a BlockDataType for an OctreeBase.
+ *
+ * BlockData is default constructible and provides the following functions:
+ *    isLeaf(), setInternal(), setNonBlock() and isBlock().
+ * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
+ * This has the nice properties that
+ *    (a) all internal LeafData have an id with a negative number,
+ *    (b) all BlockDatas -- representing leaf and internal blocks
+ *        can live in the same index space.
+ */
+class BlockData
+{
+  static const int NON_BLOCK = ~0;
+public:
+  BlockData()
+  {
+    static int idGenerator = 1;
+    m_id = idGenerator++;
+  }
+
+  BlockData(const BlockData& other) : m_id(other.m_id) {}
+  BlockData& operator=(const BlockData& other) {
+    m_id = other.m_id;
+    return *this;
+  }
 
   /**
-   * \brief Minimal implementation of a BlockDataType for an OctreeBase.
-   *
-   * BlockData is default constructible and provides the following functions:
-   *    isLeaf(), setInternal(), setNonBlock() and isBlock().
-   * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
-   * This has the nice properties that
-   *    (a) all internal LeafData have an id with a negative number,
-   *    (b) all BlockDatas -- representing leaf and internal blocks
-   *        can live in the same index space.
+   * \brief Predicate to determine if this BlockData represents a leaf block in the tree
    */
-  class BlockData
+  bool isLeaf() const { return m_id >= 0; }
+
+  /**
+   * \brief Sets the data associated with this block
+   */
+  void setData(int blockID) { m_id = blockID; }
+
+  /**
+   * Marks the block as not in the octree
+   */
+  void setNonBlock() { m_id = NON_BLOCK; }
+
+  /**
+   * Predicate to check if the associated block is in the octree
+   */
+  bool isBlock() const { return m_id != NON_BLOCK; }
+
+  /**
+   * Returns the normalized form of the id for this BlockData instance
+   * \note The normalized form is a non-negative integer.
+   */
+  int getID() const { return isLeaf() ? m_id : ~m_id; }
+
+  const int& dataIndex() const { return m_id; }
+
+  /**
+   * \brief Sets the block type to internal
+   */
+  void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
+
+  /**
+   * Equality operator for comparing two BlockData instances
+   */
+  friend bool operator==(const BlockData& lhs, const BlockData& rhs )
   {
-      static const int NON_BLOCK = ~0;
-  public:
-      BlockData()
-      {
-          static int idGenerator = 1;
-          m_id = idGenerator++;
-      }
+    return lhs.m_id == rhs.m_id;
+  }
 
-      BlockData(const BlockData& other): m_id(other.m_id) {}
-      BlockData& operator=(const BlockData& other) { m_id = other.m_id; return *this;}
-
-      /**
-       * \brief Predicate to determine if this BlockData represents a leaf block in the tree
-       */
-      bool isLeaf() const { return m_id >= 0; }
-
-      /**
-       * \brief Sets the data associated with this block
-       */
-      void setData(int blockID) { m_id = blockID; }
-
-      /**
-       * Marks the block as not in the octree
-       */
-      void setNonBlock() { m_id = NON_BLOCK; }
-
-      /**
-       * Predicate to check if the associated block is in the octree
-       */
-      bool isBlock() const { return m_id != NON_BLOCK; }
-
-      /**
-       * Returns the normalized form of the id for this BlockData instance
-       * \note The normalized form is a non-negative integer.
-       */
-      int getID() const { return isLeaf()? m_id : ~m_id; }
-
-      const int& dataIndex() const { return m_id; }
-
-      /**
-       * \brief Sets the block type to internal
-       */
-      void setInternal() { if(isLeaf()) { m_id = ~m_id; } }
-
-      /**
-       * Equality operator for comparing two BlockData instances
-       */
-      friend bool operator==(const BlockData& lhs, const BlockData& rhs )
-      {
-          return lhs.m_id == rhs.m_id;
-      }
-
-  protected:
-      int m_id;
-  };
+protected:
+  int m_id;
+};
 
 
 
@@ -148,15 +153,17 @@ public:
   typedef Point<CoordType,DIM> GridPt;
   typedef Vector<CoordType,DIM> GridVec;
 
-  typedef axom::slam::policies::CompileTimeSize<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
+  typedef axom::slam::policies::
+    CompileTimeSize<CoordType,std::numeric_limits<CoordType>::digits>
+    MAX_LEVEL_SIZE;
   typedef axom::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
   typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
-  typedef typename OctreeLevelType::BlockIter       LevelMapIterator;
-  typedef typename OctreeLevelType::ConstBlockIter  LevelMapCIterator;
+  typedef typename OctreeLevelType::BlockIter LevelMapIterator;
+  typedef typename OctreeLevelType::ConstBlockIter LevelMapCIterator;
 
 
-  typedef axom::slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
+  typedef axom::slam::Map<OctreeLevelType *> LeafIndicesLevelMap;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -169,252 +176,259 @@ public:
    * An octree block at level \f$ \ell \f$ has \f$ 2^{DIM} \f$ <em>children</em> at level \f$ \ell + 1 \f$
    * covering its domain.
    */
-  class BlockIndex {
-  public:
+  class BlockIndex
+  {
+public:
 
-      enum  {
-          /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
-          NUM_CHILDREN = 1 << DIM
-          , /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in dimension DIM ) */
-          NUM_FACE_NEIGHBORS = 2 * DIM
-      };
-  private:
-      typedef axom::slam::policies::CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
-      typedef axom::slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
+    enum
+    {
+      /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
+      NUM_CHILDREN = 1 << DIM,
+      /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in dimension DIM ) */
+      NUM_FACE_NEIGHBORS = 2 * DIM
+    };
+private:
+    typedef axom::slam::policies::
+      CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
+    typedef axom::slam::policies::
+      CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
 
-  public:
-      typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;
-      typedef axom::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE> FaceNeighborIndexSet;
+public:
+    typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE>
+      ChildIndexSet;
+    typedef axom::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>
+      FaceNeighborIndexSet;
 
-  public:
-      /**
-       * \brief Default constructor
-       */
-      BlockIndex() : m_pt( GridPt() ), m_lev(0) {}
+public:
+    /**
+     * \brief Default constructor
+     */
+    BlockIndex() : m_pt( GridPt() ), m_lev(0) {}
 
-      /**
-       * \brief Constructor from a point and a level
-       */
-      BlockIndex(const GridPt& pt, int level) : m_pt(pt), m_lev(level) {}
+    /**
+     * \brief Constructor from a point and a level
+     */
+    BlockIndex(const GridPt& pt, int level) : m_pt(pt), m_lev(level) {}
 
-      /**
-       * \brief Accessor for the BlockIndex instance's point
-       *
-       * \returns const reference to the instance's point
-       */
-      const GridPt& pt() const  { return m_pt; }
+    /**
+     * \brief Accessor for the BlockIndex instance's point
+     *
+     * \returns const reference to the instance's point
+     */
+    const GridPt& pt() const { return m_pt; }
 
-      /**
-       * \brief Accessor for the BlockIndex instance's point
-       *
-       * \returns reference to the instance's point
-       */
-      GridPt& pt()        { return m_pt; }
+    /**
+     * \brief Accessor for the BlockIndex instance's point
+     *
+     * \returns reference to the instance's point
+     */
+    GridPt& pt()        { return m_pt; }
 
-      /**
-       * \brief Accessor for the BlockIndex instance's level
-       *
-       * \returns const reference to the instance's level
-       */
-      const int& level() const  { return m_lev; }
+    /**
+     * \brief Accessor for the BlockIndex instance's level
+     *
+     * \returns const reference to the instance's level
+     */
+    const int& level() const { return m_lev; }
 
-      /**
-       * \brief Accessor for the BlockIndex instance's level
-       *
-       * \returns reference to the instance's level
-       */
-      int& level()        { return m_lev; }
+    /**
+     * \brief Accessor for the BlockIndex instance's level
+     *
+     * \returns reference to the instance's level
+     */
+    int& level()        { return m_lev; }
 
-      /**
-       * \brief The level of the block index's parent
-       */
-       int   parentLevel() const { return m_lev -1; }
+    /**
+     * \brief The level of the block index's parent
+     */
+    int   parentLevel() const { return m_lev -1; }
 
-      /**
-       * \brief The level of the block index's child
-       */
-      int   childLevel()  const { return m_lev +1; }
+    /**
+     * \brief The level of the block index's child
+     */
+    int   childLevel()  const { return m_lev +1; }
 
 
-      /**
-       * \brief Returns the grid point of the block's parent
-       */
-      GridPt parentPt() const
+    /**
+     * \brief Returns the grid point of the block's parent
+     */
+    GridPt parentPt() const
+    {
+      return GridPt( m_pt.array() /2);
+    }
+
+    /**
+     * \brief Returns the grid point of the block's child at index childIndex
+     *
+     * \param [in] childIndex The index of the child whose grid point we are finding
+     * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
+     */
+    GridPt childPt(int childIndex) const
+    {
+      SLIC_ASSERT( ChildIndexSet().isValidIndex(childIndex) );
+
+      GridPt cPoint;
+
+      // Child is at next level of resolution (multiply by two)
+      // and offset according to whether corresponding bit
+      // in child index is set or not
+      for(int dim =0 ; dim< DIM ; ++dim)
       {
-          return GridPt( m_pt.array() /2);
+        cPoint[dim] = (m_pt[dim] << 1)
+                      + (childIndex & (1 << dim) ? 1 : 0);
       }
 
-        /**
-         * \brief Returns the grid point of the block's child at index childIndex
-         *
-         * \param [in] childIndex The index of the child whose grid point we are finding
-         * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
-         */
-        GridPt childPt(int childIndex) const
-        {
-            SLIC_ASSERT( ChildIndexSet().isValidIndex(childIndex) );
+      return cPoint;
+    }
 
-            GridPt cPoint;
+    /**
+     * \brief Returns a grid point at the specified offset
+     * from the current block index's point
+     */
+    GridPt neighborPt(const GridPt& offset) const
+    {
+      GridPt nPoint(m_pt);
+      for(int i=0 ; i< DIM ; ++i)
+        nPoint[i] += offset[i];
 
-            // Child is at next level of resolution (multiply by two)
-            // and offset according to whether corresponding bit
-            // in child index is set or not
-            for(int dim =0; dim< DIM; ++dim)
-            {
-                cPoint[dim] = (m_pt[dim] << 1)
-                          + (childIndex & (1 << dim) ? 1 : 0);
-            }
-
-            return cPoint;
-        }
-
-        /**
-         * \brief Returns a grid point at the specified offset from the current block index's point
-         */
-        GridPt neighborPt(const GridPt& offset) const
-        {
-            GridPt nPoint(m_pt);
-            for(int i=0; i< DIM; ++i)
-                nPoint[i] += offset[i];
-
-            return nPoint;
-        }
+      return nPoint;
+    }
 
 
-        /**
-         * \brief Returns the parent BlockIndex of this block
-         *
-         * \note Returns an invalid BlockIndex if we attempt to find
-         *       the parent of the root block
-         */
-        BlockIndex parent() const
-        {
-            return BlockIndex(parentPt(), parentLevel());
-        }
+    /**
+     * \brief Returns the parent BlockIndex of this block
+     *
+     * \note Returns an invalid BlockIndex if we attempt to find
+     *       the parent of the root block
+     */
+    BlockIndex parent() const
+    {
+      return BlockIndex(parentPt(), parentLevel());
+    }
 
-        /**
-         * \brief Returns the child BlockIndex of this block
-         *
-         * \param [in] childIndex The index of the child whose grid point we are finding
-         * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
-         */
-        BlockIndex child(int childIndex) const
-        {
-            return BlockIndex( childPt(childIndex), childLevel());
-        }
-
-
-        /**
-         * \brief Returns the face neighbor grid point of this block
-         *
-         * \pre 0 <= neighborIndex < 2 * DIM
-         * \note The face neighbors indices cycle through the dimensions, two per dimension,
-         *   e.g. Neighbor 0 is at offset (-1, 0,0,...,0), neighbor 1 is at offset (1,0,0,..,0)
-         *   and neighbor 2 is at offset (0,-1, 0, 0, ..., 0) etc...
-         */
-        BlockIndex faceNeighbor(int neighborIndex) const
-        {
-            SLIC_ASSERT( FaceNeighborIndexSet().isValidIndex(neighborIndex) );
-
-            GridPt offset;
-            offset[ neighborIndex / 2 ] = (neighborIndex %2 == 0) ? -1 : 1;
-
-            return BlockIndex( neighborPt( offset), m_lev);
-        }
-
-        bool operator==(const BlockIndex& other) const {
-            return (m_lev == other.m_lev) && (m_pt == other.m_pt);
-        }
-
-        bool operator!=(const BlockIndex& other) const {
-            return !(*this==other);
-        }
-
-        bool operator<(const BlockIndex& other) const {
-            if(m_lev < other.m_lev)
-                return true;
-            if(m_lev > other.m_lev)
-                return false;
-
-            for(int i=0; i<DIM; ++i)
-            {
-                if(m_pt[i] < other.m_pt[i])
-                    return true;
-                if(m_pt[i] > other.m_pt[i])
-                    return false;
-            }
-
-            return false;
-        }
+    /**
+     * \brief Returns the child BlockIndex of this block
+     *
+     * \param [in] childIndex The index of the child whose grid point we are finding
+     * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
+     */
+    BlockIndex child(int childIndex) const
+    {
+      return BlockIndex( childPt(childIndex), childLevel());
+    }
 
 
-        /**
-         * \brief Checks the validity of the index.
-         *
-         * A block index is valid when its level is \f$ \ge 0 \f$
-         * and  it is inBounds
-         * \returns true if the block index is valid, else false
-         * \see inBounds()
-         */
-        bool isValid() const
-        {
-            return (m_lev >= 0) && inBounds();
-        }
+    /**
+     * \brief Returns the face neighbor grid point of this block
+     *
+     * \pre 0 <= neighborIndex < 2 * DIM
+     * \note The face neighbors indices cycle through the dimensions, two per dimension,
+     *   e.g. Neighbor 0 is at offset (-1, 0,0,...,0), neighbor 1 is at offset (1,0,0,..,0)
+     *   and neighbor 2 is at offset (0,-1, 0, 0, ..., 0) etc...
+     */
+    BlockIndex faceNeighbor(int neighborIndex) const
+    {
+      SLIC_ASSERT( FaceNeighborIndexSet().isValidIndex(neighborIndex) );
 
-        /**
-        * \brief Checks the if the block is in bounds for the level.
-        *
-        * A block index is in bounds when each coordinate p[i]
-        * of its grid point is \f$ 0 \le p[i] < 2^{level()} \f$.
-        *
-        * \returns true if the block index is inBounds, else false
-        */
-        bool inBounds() const
-        {
-            const CoordType maxVal = (1<<m_lev)-1;
-            for(int i = 0; i < DIM; ++i)
-                if( (m_pt[i] < 0) || (m_pt[i] > maxVal) )
-                    return false;
-            return true;
-        }
+      GridPt offset;
+      offset[ neighborIndex / 2 ] = (neighborIndex %2 == 0) ? -1 : 1;
 
-        /**
-         * \brief Predicate to determine if the block instance is a descendant of ancestor block
-         *
-         * \param ancestor The potential ancestor of the block
-         * \note A block is an ancestor of another block if neither block is an invalid_index()
-         *      and the block's are equivalent after 0 or more calls to BlockIndex::parent()
-         *  \return True, if the block instance is a descendant of the ancestor block
-         */
-        bool isDescendantOf(const BlockIndex & ancestor) const
-        {
-            const int ancestorLevel = ancestor.level();
-            const int levelDiff = m_lev - ancestorLevel;
-            if(levelDiff < 0 || m_lev < 0 || ancestorLevel < 0)
-                return false;
+      return BlockIndex( neighborPt( offset), m_lev);
+    }
 
-            BlockIndex blk(*this);
-            for(int i=0; i< levelDiff; ++i)
-                blk = blk.parent();
+    bool operator==(const BlockIndex& other) const {
+      return (m_lev == other.m_lev) && (m_pt == other.m_pt);
+    }
 
-            SLIC_ASSERT(blk.level() == ancestorLevel);
-            return blk.pt() == ancestor.pt();
-        }
+    bool operator!=(const BlockIndex& other) const {
+      return !(*this==other);
+    }
+
+    bool operator<(const BlockIndex& other) const {
+      if(m_lev < other.m_lev)
+        return true;
+      if(m_lev > other.m_lev)
+        return false;
+
+      for(int i=0 ; i<DIM ; ++i)
+      {
+        if(m_pt[i] < other.m_pt[i])
+          return true;
+        if(m_pt[i] > other.m_pt[i])
+          return false;
+      }
+
+      return false;
+    }
 
 
-        std::ostream& print(std::ostream& os) const
-        {
-            os << "{grid pt: " << m_pt
-                <<"; level: " << m_lev <<"}";
+    /**
+     * \brief Checks the validity of the index.
+     *
+     * A block index is valid when its level is \f$ \ge 0 \f$
+     * and  it is inBounds
+     * \returns true if the block index is valid, else false
+     * \see inBounds()
+     */
+    bool isValid() const
+    {
+      return (m_lev >= 0) && inBounds();
+    }
 
-            return os;
-        }
+    /**
+     * \brief Checks the if the block is in bounds for the level.
+     *
+     * A block index is in bounds when each coordinate p[i]
+     * of its grid point is \f$ 0 \le p[i] < 2^{level()} \f$.
+     *
+     * \returns true if the block index is inBounds, else false
+     */
+    bool inBounds() const
+    {
+      const CoordType maxVal = (1<<m_lev)-1;
+      for(int i = 0 ; i < DIM ; ++i)
+        if( (m_pt[i] < 0) || (m_pt[i] > maxVal) )
+          return false;
+      return true;
+    }
 
-        friend std::ostream& operator<<(std::ostream& os, const BlockIndex& block)
-        {
-            block.print(os);
-            return os;
-        }
+    /**
+     * \brief Predicate to determine if the block instance is a descendant of ancestor block
+     *
+     * \param ancestor The potential ancestor of the block
+     * \note A block is an ancestor of another block if neither block is an invalid_index()
+     *      and the block's are equivalent after 0 or more calls to BlockIndex::parent()
+     *  \return True, if the block instance is a descendant of the ancestor block
+     */
+    bool isDescendantOf(const BlockIndex & ancestor) const
+    {
+      const int ancestorLevel = ancestor.level();
+      const int levelDiff = m_lev - ancestorLevel;
+      if(levelDiff < 0 || m_lev < 0 || ancestorLevel < 0)
+        return false;
+
+      BlockIndex blk(*this);
+      for(int i=0 ; i< levelDiff ; ++i)
+        blk = blk.parent();
+
+      SLIC_ASSERT(blk.level() == ancestorLevel);
+      return blk.pt() == ancestor.pt();
+    }
+
+
+    std::ostream& print(std::ostream& os) const
+    {
+      os << "{grid pt: " << m_pt
+         <<"; level: " << m_lev <<"}";
+
+      return os;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const BlockIndex& block)
+    {
+      block.print(os);
+      return os;
+    }
 
 
     /**
@@ -423,44 +437,51 @@ public:
      * \return A new BlockIndex instance blk
      * \post  blk.isValid() will return false
      */
-      static BlockIndex invalid_index() { return BlockIndex( GridPt(), -1); }
+    static BlockIndex invalid_index() { return BlockIndex( GridPt(), -1); }
 
-      /**
-       * \brief The number of children that an octree block can have
-       */
-      static int numChildren() { return ChildIndexSet().size(); }
+    /**
+     * \brief The number of children that an octree block can have
+     */
+    static int numChildren() { return ChildIndexSet().size(); }
 
-      /**
-       * \brief The number of face neighbors that an octree block can have (ignoring boundaries)
-       */
-      static int numFaceNeighbors() { return FaceNeighborIndexSet().size(); }
+    /**
+     * \brief The number of face neighbors that an octree block
+     *  can have (ignoring boundaries)
+     */
+    static int numFaceNeighbors() { return FaceNeighborIndexSet().size(); }
 
-  private:
-      GridPt m_pt;
-      int    m_lev;
+private:
+    GridPt m_pt;
+    int m_lev;
   };
 
 
 private:
 
-  enum {
-       MAX_DENSE_LEV    = 4
-      ,MAX_SPARSE16_LEV = 16 / DIM
-      ,MAX_SPARSE32_LEV = 32 / DIM
-      ,MAX_SPARSE64_LEV = 64 / DIM
+  enum
+  {
+    MAX_DENSE_LEV    = 4
+    ,MAX_SPARSE16_LEV = 16 / DIM
+    ,MAX_SPARSE32_LEV = 32 / DIM
+    ,MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16> DenseOctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint16> Sparse16OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint32> Sparse32OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint64> Sparse64OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>                     SparsePtOctLevType;
+  typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16>
+    DenseOctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint16>
+    Sparse16OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint32>
+    Sparse32OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint64>
+    Sparse64OctLevType;
+  typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>
+    SparsePtOctLevType;
 
-  typedef DenseOctLevType*      DenseOctLevPtr;
-  typedef Sparse16OctLevType*   Sparse16OctLevPtr;
-  typedef Sparse32OctLevType*   Sparse32OctLevPtr;
-  typedef Sparse64OctLevType*   Sparse64OctLevPtr;
-  typedef SparsePtOctLevType*   SparsePtOctLevPtr;
+  typedef DenseOctLevType * DenseOctLevPtr;
+  typedef Sparse16OctLevType * Sparse16OctLevPtr;
+  typedef Sparse32OctLevType * Sparse32OctLevPtr;
+  typedef Sparse64OctLevType * Sparse64OctLevPtr;
+  typedef SparsePtOctLevType * SparsePtOctLevPtr;
 
   /**
    * \brief Simple utility to check if a pointer of type BasePtrType
@@ -470,7 +491,7 @@ private:
   template<typename DerivedPtrType, typename BasePtrType>
   bool checkCast(BasePtrType base) const
   {
-      return dynamic_cast<DerivedPtrType>(base) != AXOM_NULLPTR;
+    return dynamic_cast<DerivedPtrType>(base) != AXOM_NULLPTR;
   }
 
 
@@ -481,29 +502,30 @@ public:
   OctreeBase()
     : m_leavesLevelMap(&m_levels)
   {
-      for(int i=0; i< maxLeafLevel(); ++i)
-      {
-          namespace common = axom::common;
+    for(int i=0 ; i< maxLeafLevel() ; ++i)
+    {
+      namespace common = axom::common;
 
-          // Use DenseOctreeLevel on first few levels to reduce allocations and fragmentation
-          // Use Morton-based SparseOctreeLevel (key is smallest possible integer) on next few levels.
-          // Use point bases SparseOctreeLevel (key is Point<int, DIM>, hashed using a MortonIndex)
-          //    when MortonIndex requires more than 64
-          if( i <= MAX_DENSE_LEV )
-              m_leavesLevelMap[i] = new DenseOctLevType(i);
-          else if( i <= MAX_SPARSE16_LEV )
-              m_leavesLevelMap[i] = new Sparse16OctLevType(i);
-          else if( i <= MAX_SPARSE32_LEV )
-              m_leavesLevelMap[i] = new Sparse32OctLevType(i);
-          else if( i <= MAX_SPARSE64_LEV  )
-              m_leavesLevelMap[i] = new Sparse64OctLevType(i);
-          else
-              m_leavesLevelMap[i] = new SparsePtOctLevType(i);
-      }
+      // Use DenseOctreeLevel on first few levels to reduce allocations
+      // and fragmentation Use Morton-based SparseOctreeLevel
+      // (key is smallest possible integer) on next few levels.
+      // Use point bases SparseOctreeLevel (key is Point<int, DIM>,
+      // hashed using a MortonIndex)  when MortonIndex requires more than 64
+      if( i <= MAX_DENSE_LEV )
+        m_leavesLevelMap[i] = new DenseOctLevType(i);
+      else if( i <= MAX_SPARSE16_LEV )
+        m_leavesLevelMap[i] = new Sparse16OctLevType(i);
+      else if( i <= MAX_SPARSE32_LEV )
+        m_leavesLevelMap[i] = new Sparse32OctLevType(i);
+      else if( i <= MAX_SPARSE64_LEV  )
+        m_leavesLevelMap[i] = new Sparse64OctLevType(i);
+      else
+        m_leavesLevelMap[i] = new SparsePtOctLevType(i);
+    }
 
-      // Add the root block to the octree
-      BlockIndex rootBlock = root();
-      (*m_leavesLevelMap[rootBlock.level()]).addAllChildren(rootBlock.pt());
+    // Add the root block to the octree
+    BlockIndex rootBlock = root();
+    (*m_leavesLevelMap[rootBlock.level()]).addAllChildren(rootBlock.pt());
   }
 
   /**
@@ -511,11 +533,11 @@ public:
    */
   ~OctreeBase()
   {
-      for(int i=0; i< maxLeafLevel(); ++i)
-      {
-          delete m_leavesLevelMap[i];
-          m_leavesLevelMap[i] = AXOM_NULLPTR;
-      }
+    for(int i=0 ; i< maxLeafLevel() ; ++i)
+    {
+      delete m_leavesLevelMap[i];
+      m_leavesLevelMap[i] = AXOM_NULLPTR;
+    }
   }
 
   /**
@@ -532,7 +554,8 @@ public:
   //@{
 
   /**
-   * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
+   * \brief Utility function to find the number of (possible)
+   * grid cells at a given level or resolution
    *
    * \param [in] level The level or resolution.
    * \pre \f$ 0 \le lev
@@ -550,7 +573,7 @@ public:
    */
   static CoordType maxCoordAtLevel(int level)
   {
-      return (1<< level)-1;
+    return (1<< level)-1;
   }
 
   /**
@@ -580,7 +603,7 @@ public:
    */
   BlockIndex parent(const GridPt & pt, int level) const
   {
-      return BlockIndex(pt, level).parent();
+    return BlockIndex(pt, level).parent();
   }
 
   /**
@@ -591,7 +614,7 @@ public:
    */
   BlockIndex parent(const BlockIndex& block) const
   {
-      return block.parent();
+    return block.parent();
   }
 
 
@@ -606,7 +629,7 @@ public:
    */
   BlockIndex child(const GridPt & pt, int level, int childIndex) const
   {
-      return BlockIndex(pt,level).child(childIndex);
+    return BlockIndex(pt,level).child(childIndex);
   }
 
   /**
@@ -619,7 +642,7 @@ public:
    */
   BlockIndex child(const BlockIndex& block, int childIndex) const
   {
-      return block.child(childIndex);
+    return block.child(childIndex);
   }
 
   // @}
@@ -629,7 +652,7 @@ public:
    */
   OctreeLevelType& getOctreeLevel(int lev)
   {
-      return *m_leavesLevelMap[lev];
+    return *m_leavesLevelMap[lev];
   }
 
   /**
@@ -637,7 +660,7 @@ public:
    */
   const OctreeLevelType& getOctreeLevel(int lev) const
   {
-      return *m_leavesLevelMap[lev];
+    return *m_leavesLevelMap[lev];
   }
 
 public:
@@ -649,7 +672,7 @@ public:
    */
   bool isLevelValid(int lev) const
   {
-      return lev >=0 && lev <= maxLeafLevel();
+    return lev >=0 && lev <= maxLeafLevel();
   }
 
   /**
@@ -661,7 +684,7 @@ public:
    */
   bool isLeaf(const GridPt& pt, int lev) const
   {
-      return isLevelValid(lev) && getOctreeLevel(lev).isLeaf(pt);
+    return isLevelValid(lev) && getOctreeLevel(lev).isLeaf(pt);
   }
 
   /**
@@ -672,7 +695,7 @@ public:
    */
   bool isLeaf(const BlockIndex& block) const
   {
-      return isLevelValid(block.level())
+    return isLevelValid(block.level())
            && getOctreeLevel(block.level()).isLeaf(block.pt());
   }
 
@@ -686,7 +709,7 @@ public:
    */
   bool isInternal(const GridPt& pt, int lev) const
   {
-      return isLevelValid(lev) && getOctreeLevel(lev).isInternal(pt);
+    return isLevelValid(lev) && getOctreeLevel(lev).isInternal(pt);
   }
 
   /**
@@ -697,7 +720,7 @@ public:
    */
   bool isInternal(const BlockIndex& block) const
   {
-      return isLevelValid(block.level())
+    return isLevelValid(block.level())
            && getOctreeLevel(block.level()).isInternal(block.pt());
   }
 
@@ -710,37 +733,41 @@ public:
    */
   bool hasBlock(const GridPt& pt, int lev) const
   {
-      bool ret = false;
-      if(!isLevelValid(lev))
-      {
-          // No-op
-      }
-      else if( lev <= MAX_DENSE_LEV )
-      {
-          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-          ret = (static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
-      }
-      else if( lev <= MAX_SPARSE16_LEV)
-      {
-          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
-          ret = (static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
-      }
-      else if( lev <= MAX_SPARSE32_LEV )
-      {
-          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
-          ret = (static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
-      }
-      else if( lev <= MAX_SPARSE64_LEV  )
-      {
-          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
-          ret = (static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
-      }
-      else
-      {
-          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
-          ret = (static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))->hasBlock(pt);
-      }
-      return ret;
+    bool ret = false;
+    if(!isLevelValid(lev))
+    {
+      // No-op
+    }
+    else if( lev <= MAX_DENSE_LEV )
+    {
+      SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+      ret = static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
+    }
+    else if( lev <= MAX_SPARSE16_LEV)
+    {
+      SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+      ret =
+        static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
+    }
+    else if( lev <= MAX_SPARSE32_LEV )
+    {
+      SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+      ret =
+        static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
+    }
+    else if( lev <= MAX_SPARSE64_LEV  )
+    {
+      SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+      ret =
+        static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
+    }
+    else
+    {
+      SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+      ret =
+        static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev])->hasBlock(pt);
+    }
+    return ret;
   }
 
 
@@ -752,7 +779,7 @@ public:
    */
   bool hasBlock(const BlockIndex& block) const
   {
-      return this->hasBlock(block.pt(), block.level());
+    return this->hasBlock(block.pt(), block.level());
   }
 
   /**
@@ -763,7 +790,7 @@ public:
    */
   bool inBounds(const GridPt& pt, int lev) const
   {
-      return isLevelValid(lev) && BlockIndex(pt,lev).inBounds();
+    return isLevelValid(lev) && BlockIndex(pt,lev).inBounds();
   }
 
 
@@ -775,7 +802,7 @@ public:
    */
   bool inBounds(const BlockIndex& block) const
   {
-      return isLevelValid(block.level()) && block.inBounds();
+    return isLevelValid(block.level()) && block.inBounds();
   }
 
   /**
@@ -805,36 +832,38 @@ public:
    */
   BlockDataType& operator[](const BlockIndex& block)
   {
-      SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
+    SLIC_ASSERT_MSG(
+      hasBlock(block),
+      "Block " << block << " was not a block in the tree.");
 
-      const int& lev = block.level();
-      const GridPt& pt = block.pt();
+    const int& lev = block.level();
+    const GridPt& pt = block.pt();
 
-      if( lev <= MAX_DENSE_LEV )
-      {
-          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else if( lev <= MAX_SPARSE16_LEV)
-      {
-          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else if( lev <= MAX_SPARSE32_LEV )
-      {
-          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else if( lev <= MAX_SPARSE64_LEV  )
-      {
-          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else
-      {
-          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
+    if( lev <= MAX_DENSE_LEV )
+    {
+      SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else if( lev <= MAX_SPARSE16_LEV)
+    {
+      SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else if( lev <= MAX_SPARSE32_LEV )
+    {
+      SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else if( lev <= MAX_SPARSE64_LEV  )
+    {
+      SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else
+    {
+      SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
   }
 
   /**
@@ -845,36 +874,38 @@ public:
    */
   const BlockDataType& operator[](const BlockIndex& block) const
   {
-      SLIC_ASSERT_MSG(hasBlock(block), "Block " << block << " was not a block in the tree.");
+    SLIC_ASSERT_MSG(
+      hasBlock(block),
+      "Block " << block << " was not a block in the tree.");
 
-      const int& lev = block.level();
-      const GridPt& pt = block.pt();
+    const int& lev = block.level();
+    const GridPt& pt = block.pt();
 
-      if( lev <= MAX_DENSE_LEV )
-      {
-          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else if( lev <= MAX_SPARSE16_LEV)
-      {
-          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else if( lev <= MAX_SPARSE32_LEV )
-      {
-          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else if( lev <= MAX_SPARSE64_LEV  )
-      {
-          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
-      else
-      {
-          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
-          return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
-      }
+    if( lev <= MAX_DENSE_LEV )
+    {
+      SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else if( lev <= MAX_SPARSE16_LEV)
+    {
+      SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else if( lev <= MAX_SPARSE32_LEV )
+    {
+      SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else if( lev <= MAX_SPARSE64_LEV  )
+    {
+      SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
+    else
+    {
+      SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+      return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+    }
   }
 
   /**
@@ -888,32 +919,35 @@ public:
    *    BlockIndex::invalid_index otherwise (e.g. blk is an internal block of the tree
    *    or is out of bounds)
    */
-  BlockIndex coveringLeafBlock(const BlockIndex& blk, bool checkInBounds = true) const
+  BlockIndex coveringLeafBlock(const BlockIndex& blk,
+                               bool checkInBounds = true) const
   {
-      // Check that point is in bounds
-      if(checkInBounds && !this->inBounds(blk))
-          return BlockIndex::invalid_index();
-
-      switch( blockStatus(blk) )
-      {
-      case BlockNotInTree:  // Find its nearest ancestor in the tree (it will be a leaf)
-        {
-          BlockIndex ancBlk = blk.parent();
-          while( ! this-> hasBlock(ancBlk))
-              ancBlk = ancBlk.parent();
-
-          SLIC_ASSERT( this->isLeaf(ancBlk));
-          return ancBlk;
-        }
-      case LeafBlock:       // Already a leaf -- nothing to do
-          return blk;
-      case InternalBlock:   // An internal block -- no tree leaf can contain it
-          return BlockIndex::invalid_index();
-      }
-
-      SLIC_ASSERT_MSG(false, "OctreeBase::coveringLeafBlock -- Should never get past the switch statement.  "
-                      <<" Perhaps a new case was added to the TreeBlock enum");
+    // Check that point is in bounds
+    if(checkInBounds && !this->inBounds(blk))
       return BlockIndex::invalid_index();
+
+    switch( blockStatus(blk) )
+    {
+    case BlockNotInTree:    // Find its nearest ancestor in the tree (it will be a leaf)
+    {
+      BlockIndex ancBlk = blk.parent();
+      while( !this->hasBlock(ancBlk))
+        ancBlk = ancBlk.parent();
+
+      SLIC_ASSERT( this->isLeaf(ancBlk));
+      return ancBlk;
+    }
+    case LeafBlock:         // Already a leaf -- nothing to do
+      return blk;
+    case InternalBlock:     // An internal block -- no tree leaf can contain it
+      return BlockIndex::invalid_index();
+    }
+
+    SLIC_ASSERT_MSG(
+      false,
+      "OctreeBase::coveringLeafBlock -- Should never get past the switch statement.  "
+      <<" Perhaps a new case was added to the TreeBlock enum");
+    return BlockIndex::invalid_index();
   }
 
 protected:
@@ -928,37 +962,42 @@ protected:
    */
   TreeBlockStatus blockStatus(const GridPt & pt, int lev) const
   {
-      TreeBlockStatus bStat = BlockNotInTree;
-      if(!isLevelValid(lev))
-      {
-          // No-op
-      }
-      else if( lev <= MAX_DENSE_LEV )
-      {
-          SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
-      }
-      else if( lev <= MAX_SPARSE16_LEV)
-      {
-          SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
-      }
-      else if( lev <= MAX_SPARSE32_LEV )
-      {
-          SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
-      }
-      else if( lev <= MAX_SPARSE64_LEV  )
-      {
-          SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
-      }
-      else
-      {
-          SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
-          bStat = (static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))->blockStatus(pt);
-      }
-      return bStat;
+    TreeBlockStatus bStat = BlockNotInTree;
+    if(!isLevelValid(lev))
+    {
+      // No-op
+    }
+    else if( lev <= MAX_DENSE_LEV )
+    {
+      SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
+      bStat =
+        static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
+    }
+    else if( lev <= MAX_SPARSE16_LEV)
+    {
+      SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
+      bStat =
+        static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
+    }
+    else if( lev <= MAX_SPARSE32_LEV )
+    {
+      SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
+      bStat =
+        static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
+    }
+    else if( lev <= MAX_SPARSE64_LEV  )
+    {
+      SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
+      bStat =
+        static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
+    }
+    else
+    {
+      SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
+      bStat =
+        static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev])->blockStatus(pt);
+    }
+    return bStat;
   }
 
   /**
@@ -970,7 +1009,7 @@ protected:
    */
   TreeBlockStatus blockStatus(const BlockIndex& blk) const
   {
-      return this->blockStatus(blk.pt(), blk.level());
+    return this->blockStatus(blk.pt(), blk.level());
   }
 
 
@@ -979,12 +1018,12 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(OctreeBase);
 
 protected:
-  OctreeLevels            m_levels;
-  LeafIndicesLevelMap     m_leavesLevelMap;
+  OctreeLevels m_levels;
+  LeafIndicesLevelMap m_leavesLevelMap;
 };
 
 
-} // end namespace quest 
-} // end namespace axom 
+} // end namespace quest
+} // end namespace axom
 
 #endif  // OCTREE_BASE_HXX_

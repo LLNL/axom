@@ -81,7 +81,7 @@ public:
    *
    * \return  0 if sucessful, -1 if not.
    */
-  int pass(); 
+  int pass();
 
   /*!
    * \brief Size of local rank's group.
@@ -90,7 +90,8 @@ public:
    */
   int groupSize() const
   {
-    return m_my_rank < m_first_regular_group_rank ? m_group_size + 1 : m_group_size; 
+    return m_my_rank <
+           m_first_regular_group_rank ? m_group_size + 1 : m_group_size;
   }
 
   /*!
@@ -98,7 +99,7 @@ public:
    */
   bool isFirstInGroup() const
   {
-     return (m_rank_within_group == 0); 
+    return (m_rank_within_group == 0);
   }
 
   /*!
@@ -106,7 +107,7 @@ public:
    */
   bool isLastInGroup() const
   {
-     return (m_rank_after_me == s_invalid_rank_id); 
+    return (m_rank_after_me == s_invalid_rank_id);
   }
 
   /*!
@@ -114,7 +115,7 @@ public:
    */
   int getNumFiles() const
   {
-     return m_num_files;
+    return m_num_files;
   }
 
 private:

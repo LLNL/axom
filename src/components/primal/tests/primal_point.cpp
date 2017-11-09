@@ -47,7 +47,8 @@ TEST( primal_point, point_singleVal_constructor)
   SLIC_INFO("\nprimal: testing constructor that sets all values to a singleVal."
             << "Default second parameter of constructor is DIM." );
   QPoint pt1( singleVal );
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt1[dim], singleVal );
   }
 
@@ -55,7 +56,8 @@ TEST( primal_point, point_singleVal_constructor)
   SLIC_INFO("\nprimal: testing constructor that sets all values to a singleVal."
             << "Using explicit second parameter set to DIM." );
   QPoint pt2( singleVal, DIM );
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt2[dim], singleVal );
   }
 
@@ -63,7 +65,8 @@ TEST( primal_point, point_singleVal_constructor)
   SLIC_INFO("\nprimal: testing constructor that sets all values to a singleVal."
             << "Using explicit second parameter set higher than DIM." );
   QPoint pt3( singleVal, DIM *2 );
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt3[dim], singleVal );
   }
 
@@ -74,11 +77,13 @@ TEST( primal_point, point_singleVal_constructor)
 
   int numVals = DIM / 2;
   QPoint pt4( singleVal, numVals);
-  for (int dim=0; dim<numVals; ++dim) {
+  for (int dim=0 ; dim<numVals ; ++dim)
+  {
     EXPECT_EQ(pt4[dim], singleVal );
   }
 
-  for (int dim=numVals+1; dim<DIM; ++dim) {
+  for (int dim=numVals+1 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt4[dim], CoordType() );
   }
 
@@ -93,7 +98,8 @@ TEST( primal_point, point_array_constructor)
 
   // Set elt i of input array to i
   CoordType arr[DIM];
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     arr[dim] = dim;
   }
 
@@ -102,7 +108,8 @@ TEST( primal_point, point_array_constructor)
             << "Default second parameter of constructor is DIM." );
   QPoint pt1( arr );
 
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt1[dim], arr[dim]);
   }
 
@@ -111,7 +118,8 @@ TEST( primal_point, point_array_constructor)
             << "Using explicit second parameter set to DIM." );
   QPoint pt2( arr, DIM );
 
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt2[dim], arr[dim]);
   }
 
@@ -120,7 +128,8 @@ TEST( primal_point, point_array_constructor)
             << "Using explicit second parameter set higher than DIM." );
   QPoint pt3( arr, DIM *2 );
 
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt3[dim], arr[dim]);
   }
 
@@ -132,11 +141,13 @@ TEST( primal_point, point_array_constructor)
   int numVals = DIM / 2;
   QPoint pt4( arr, numVals);
 
-  for (int dim=0; dim<numVals; ++dim) {
+  for (int dim=0 ; dim<numVals ; ++dim)
+  {
     EXPECT_EQ(pt4[dim], arr[dim]);
   }
 
-  for (int dim=numVals+1; dim<DIM; ++dim) {
+  for (int dim=numVals+1 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt4[dim], CoordType() );
   }
 
@@ -152,7 +163,8 @@ TEST( primal_point, point_numericArray_constructor)
 
   // Set elt i of input array to i
   CoordType arr[DIM];
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     arr[dim] = dim;
   }
 
@@ -162,7 +174,8 @@ TEST( primal_point, point_numericArray_constructor)
   QArray arr1( arr );
   QPoint pt(arr);
 
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(pt[dim], arr[dim]);
   }
 }
@@ -176,7 +189,8 @@ TEST( primal_point, point_copy_and_assignment)
 
   // Set elt i of input array to i
   CoordType arr[DIM];
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     arr[dim] = dim;
   }
   QPoint ptOrig( arr );
@@ -186,7 +200,8 @@ TEST( primal_point, point_copy_and_assignment)
   QPoint ptCopy1( ptOrig );
   QPoint ptCopy2 = ptOrig;
 
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(ptOrig[dim],  ptCopy1[dim]);
     EXPECT_EQ(ptOrig[dim],  ptCopy2[dim]);
   }
@@ -195,7 +210,8 @@ TEST( primal_point, point_copy_and_assignment)
   SLIC_INFO("\nprimal: testing assignment operator");
   QPoint ptAssign(5);
   ptAssign = ptOrig;
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(ptOrig[dim], ptAssign[dim]);
   }
 }
@@ -209,7 +225,8 @@ TEST( primal_point, point_equality)
 
   // Set elt i of input array to i
   CoordType arr[DIM];
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     arr[dim] = dim;
   }
   QPoint ptOrig( arr );
@@ -243,7 +260,8 @@ TEST( primal_point, point_to_array)
 
   // Set elt i of input array to i
   CoordType arr[DIM];
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     arr[dim] = dim;
   }
   QPoint pt(arr);
@@ -251,7 +269,8 @@ TEST( primal_point, point_to_array)
   CoordType outputArr[DIM];
   pt.to_array(outputArr);
 
-  for (int dim=0; dim<DIM; ++dim) {
+  for (int dim=0 ; dim<DIM ; ++dim)
+  {
     EXPECT_EQ(arr[dim], outputArr[dim] );
   }
 

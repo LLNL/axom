@@ -38,7 +38,8 @@ TEST( primal_compute_bounding_box, compute_oriented_box_test)
 
   QPoint pt1;  // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0 ; i < DIM ; i++)
+  {
     u[i] = QVector();
     u[i][i] = 1.;
   }
@@ -49,7 +50,8 @@ TEST( primal_compute_bounding_box, compute_oriented_box_test)
 
   std::vector< QPoint > v = obbox1.vertices();
   QPoint verts[8];
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0 ; i < 8 ; i++)
+  {
     verts[i] = v[i];
   }
 
@@ -155,4 +157,3 @@ int main(int argc, char * argv[])
   int result = RUN_ALL_TESTS();
   return result;
 }
-

@@ -46,6 +46,11 @@ add_custom_target( copy_axom_includes ALL
 
 include_directories( ${build_axom_includes} )
 
+################################
+# Add code checks
+################################
+axom_add_code_checks(PREFIX axom_includes)
+
 ## add rules for the make install target
 install( FILES ${axom_headers} DESTINATION ${install_axom_includes} )
 install( FILES ${build_axom_includes}/config.hpp DESTINATION ${install_axom_includes} )

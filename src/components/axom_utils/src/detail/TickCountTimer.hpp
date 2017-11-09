@@ -18,7 +18,7 @@
 /*!
  *******************************************************************************
  * \file TickCountTimer.hpp
- * 
+ *
  * \brief A Windows-based timer implementation for axom's Timer class
  *
  * \note TickCountTimer is an internal helper class, not meant for external use.
@@ -28,7 +28,7 @@
 
 #ifndef TICK_COUNT_TIMER_HPP_
 #define TICK_COUNT_TIMER_HPP_
- 
+
 #ifndef WIN32
   #error TickTimer is a Windows timer
 #endif
@@ -37,75 +37,78 @@
 
 #define NOMINMAX
 #include <Windows.h>
- 
-namespace axom {
-namespace utilities {
-namespace detail {
 
-  /**
-   * \class
-   * \brief A simple timer utility based on the Windows GetTickCount64 function
-  * \note This is a simple class without any checks to ensure proper usage of the timer.
-  *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
-  *       Specifically, we do not check that start() was called before stop(),
-  *       or if stop() was called before attempting to find the elapsed time.
-  */
-  class TickCountTimer
+namespace axom
+{
+namespace utilities
+{
+namespace detail
+{
+
+/**
+ * \class
+ * \brief A simple timer utility based on the Windows GetTickCount64 function
+ * \note This is a simple class without any checks to ensure proper usage of the timer.
+ *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
+ *       Specifically, we do not check that start() was called before stop(),
+ *       or if stop() was called before attempting to find the elapsed time.
+ */
+class TickCountTimer
+{
+private:
+  typedef ULONGLONG TimeStruct;
+  typedef long int TimeDiff;
+
+  enum { TIMER_ONE      = 1,
+         TIMER_THOUSAND = 1000,
+         TIMER_MILLION  = 1000000 };
+
+public:
+  TickCountTimer() { reset(); }
+
+  /** \brief Sets the start time of the timer */
+  void start() {m_startTime = GetTickCount64(); }
+
+  /** \brief Sets the stop time of the timer */
+  void stop() {m_stopTime = GetTickCount64(); }
+
+  /**  \brief Resets the timer */
+  void reset()
   {
-  private:
-     typedef ULONGLONG                         TimeStruct;
-     typedef long int                            TimeDiff;
- 
-     enum { TIMER_ONE      = 1, 
-            TIMER_THOUSAND = 1000, 
-            TIMER_MILLION  = 1000000 };
+    m_startTime=0;
+    m_stopTime=0;
+  }
 
-  public:
-    TickCountTimer() { reset(); }
- 
-    /** \brief Sets the start time of the timer */
-    void start() {m_startTime = GetTickCount64();}
+  /** \brief Returns the number of seconds between start() and stop() */
+  double elapsedTimeInSec() const
+  {
+    return clockDiff() / static_cast<double>(TIMER_MILLION);
+  }
 
-    /** \brief Sets the stop time of the timer */
-    void stop() {m_stopTime = GetTickCount64();}
- 
-    /**  \brief Resets the timer */
-    void reset()
-    {
-      m_startTime=0 ;
-      m_stopTime=0 ;
-    }
-  
-    /** \brief Returns the number of seconds between start() and stop() */
-    double elapsedTimeInSec() const
-    {
-        return clockDiff() / static_cast<double>(TIMER_MILLION);
-    }
+  /** \brief Returns the number of milliseconds between start() and stop() */
+  double elapsedTimeInMilliSec() const
+  {
+    return clockDiff() / static_cast<double>(TIMER_THOUSAND);
+  }
 
-    /** \brief Returns the number of milliseconds between start() and stop() */
-    double elapsedTimeInMilliSec() const
-    {
-        return clockDiff() / static_cast<double>(TIMER_THOUSAND);
-    }
+  /** \brief Returns the number of microseconds between start() and stop() */
+  double elapsedTimeInMicroSec() const
+  {
+    return clockDiff() / static_cast<double>(TIMER_ONE);
+  }
 
-    /** \brief Returns the number of microseconds between start() and stop() */
-    double elapsedTimeInMicroSec() const
-    {
-        return clockDiff() / static_cast<double>(TIMER_ONE);
-    }
+private:
+  /** \brief Computes the time difference between start() and stop() */
+  TimeDiff clockDiff() const
+  {
+    const TimeDiff sDiff = static_cast<TimeDiff>(m_stopTime - m_startTime);
+    return sDiff * TIMER_THOUSAND;
+  }
 
-   private:
-      /** \brief Computes the time difference between start() and stop() */
-     TimeDiff clockDiff() const
-     {
-        const TimeDiff sDiff = static_cast<TimeDiff>(m_stopTime - m_startTime);
-        return sDiff * TIMER_THOUSAND ;
-     }
-
-   private:
-    TimeStruct m_startTime;
-    TimeStruct m_stopTime;
-  };
+private:
+  TimeStruct m_startTime;
+  TimeStruct m_stopTime;
+};
 
 
 } /* namespace detail */

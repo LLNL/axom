@@ -25,8 +25,10 @@
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T,int NDIMS >
@@ -140,7 +142,7 @@ public:
    * is set to the smallest possible point.  This way adding any point resets
    * the bounds to a valid range.
    */
-  BoundingBox(): m_min( PointType( ValueRange< T >::highest() ) ),
+  BoundingBox() : m_min( PointType( ValueRange< T >::highest() ) ),
     m_max( PointType( ValueRange< T >::lowest() ) ) { }
 
   /*!
@@ -155,7 +157,7 @@ public:
    * \pre pt must point to at least n valid point
    * \note If n <= 0, defaults to default constructor values
    */
-  BoundingBox(PointType *pts, int n);
+  BoundingBox(PointType * pts, int n);
 
   /*!
    * \brief Constructor. Creates a bounding box with a given min and max point
@@ -424,8 +426,10 @@ private:
 //------------------------------------------------------------------------------
 //  BoundingBox implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
@@ -433,7 +437,8 @@ BoundingBox< T,NDIMS >&
 BoundingBox< T,NDIMS >::operator=(const BoundingBox& rhs )
 {
 
-  if ( this != &rhs ) {
+  if ( this != &rhs )
+  {
     m_min = rhs.m_min;
     m_max = rhs.m_max;
   }
@@ -447,10 +452,12 @@ template < typename OtherT >
 bool BoundingBox< T,
                   NDIMS >::contains( const Point< OtherT,NDIMS >& otherPt) const
 {
-  for ( int dim=0; dim < NDIMS; ++dim) {
+  for ( int dim=0 ; dim < NDIMS ; ++dim)
+  {
 
     if ( otherPt[ dim ] < m_min[ dim ] ||
-         otherPt[ dim ] > m_max[ dim ] ) {
+         otherPt[ dim ] > m_max[ dim ] )
+    {
       return false;
     }
 
@@ -461,9 +468,10 @@ bool BoundingBox< T,
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-BoundingBox< T, NDIMS >::BoundingBox(PointType *pts, int n)
+BoundingBox< T, NDIMS >::BoundingBox(PointType * pts, int n)
 {
-  if (n <= 0) {
+  if (n <= 0)
+  {
     clear();
   }
   // sanity check:
@@ -471,7 +479,8 @@ BoundingBox< T, NDIMS >::BoundingBox(PointType *pts, int n)
 
   this->m_min = this->m_max = pts[0];
 
-  for (int i = 1; i < n; i++) {
+  for (int i = 1 ; i < n ; i++)
+  {
     this->addPoint(pts[i]);
   }
 }
@@ -492,10 +501,12 @@ bool BoundingBox< T,NDIMS >::intersectsWith(
   const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
   // AABBs cannot intersect if they are separated along any dimension
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
 
     if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
-         (m_min[ i ] > otherBB.m_max[ i ]) ) {
+         (m_min[ i ] > otherBB.m_max[ i ]) )
+    {
 
       return false;
 
@@ -510,8 +521,10 @@ bool BoundingBox< T,NDIMS >::intersectsWith(
 template < typename T,int NDIMS >
 bool BoundingBox< T,NDIMS >::isValid() const
 {
-  for ( int dim=0; dim < NDIMS; ++dim) {
-    if ( m_min[ dim ] > m_max[ dim ] ) {
+  for ( int dim=0 ; dim < NDIMS ; ++dim)
+  {
+    if ( m_min[ dim ] > m_max[ dim ] )
+    {
       return false;
     }
   }
@@ -525,15 +538,18 @@ template < typename OtherT >
 void BoundingBox< T, NDIMS >::addPoint(
   const Point< OtherT,NDIMS >& pt)
 {
-  for ( int dim=0; dim < NDIMS; ++dim ) {
+  for ( int dim=0 ; dim < NDIMS ; ++dim )
+  {
 
     T coord = static_cast< T >( pt[ dim ] );
 
-    if ( coord < m_min[dim] ) {
+    if ( coord < m_min[dim] )
+    {
       m_min[dim] = coord;
     }
 
-    if ( coord > m_max[dim] ) {
+    if ( coord > m_max[dim] )
+    {
       m_max[dim] = coord;
     }
 
@@ -559,10 +575,12 @@ int BoundingBox< T,NDIMS >::getLongestDimension() const
 
   int maxDim = 0;
   T max = std::numeric_limits< T >::min();
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
 
     T dx = m_max[ i ] - m_min[ i ];
-    if ( dx > max ) {
+    if ( dx > max )
+    {
       max    = dx;
       maxDim = i;
     }
@@ -576,7 +594,8 @@ int BoundingBox< T,NDIMS >::getLongestDimension() const
 template < typename T,int NDIMS >
 BoundingBox< T, NDIMS >& BoundingBox< T, NDIMS >::expand(T expansionAmount)
 {
-  for ( int dim=0; dim < NDIMS; ++dim ) {
+  for ( int dim=0 ; dim < NDIMS ; ++dim )
+  {
     m_min[dim] -= expansionAmount;
     m_max[dim] += expansionAmount;
   }
@@ -614,8 +633,10 @@ BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::shift(const VectorType& disp)
 template < typename T,int NDIMS >
 void BoundingBox< T,NDIMS >::checkAndFixBounds()
 {
-  for (int dim=0; dim < NDIMS; ++dim ) {
-    if ( m_min[dim] > m_max[dim] ) {
+  for (int dim=0 ; dim < NDIMS ; ++dim )
+  {
+    if ( m_min[dim] > m_max[dim] )
+    {
       std::swap( m_min[dim], m_max[dim] );
     }
   }
@@ -644,12 +665,14 @@ BoundingBox< T, NDIMS >& BoundingBox< T,NDIMS >::intersect(
   const BoundingBox& otherBox)
 {
 
-  for (int i=0; i< NDIMS; ++i) {
+  for (int i=0 ; i< NDIMS ; ++i)
+  {
     m_min[i] = std::max( m_min[i], otherBox.m_min[i]);
     m_max[i] = std::min( m_max[i], otherBox.m_max[i]);
   }
 
-  if (!isValid() ) {
+  if (!isValid() )
+  {
     clear();
   }
 
@@ -664,7 +687,8 @@ void BoundingBox< T,NDIMS >::bisect( BoxType& right,
 {
   SLIC_ASSERT( this->isValid() );
 
-  if ( dim < 0 ) {
+  if ( dim < 0 )
+  {
     dim = this->getLongestDimension();
   }
   SLIC_ASSERT( dim >=0 && dim < NDIMS );

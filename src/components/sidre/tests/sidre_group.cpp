@@ -809,13 +809,15 @@ TEST(sidre_group,groups_move_copy)
 
   EXPECT_EQ(gb0->getNumViews(), 1);
   EXPECT_TRUE(gb0->hasChildView("f0"));
-  if (gb0->hasChildView("f0")) {
+  if (gb0->hasChildView("f0"))
+  {
     EXPECT_EQ((double)gb0->getView("f0")->getScalar(), f0value);
   }
 
   EXPECT_EQ(bschild->getNumViews(), 1);
   EXPECT_TRUE(bschild->hasChildView("val"));
-  if (gb0->hasChildView("val")) {
+  if (gb0->hasChildView("val"))
+  {
     EXPECT_EQ((double)gb0->getView("val")->getScalar(), val);
   }
 
@@ -855,7 +857,8 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_EQ(gb0->getGroup("childOfB"), bschild);
   EXPECT_EQ(gb0->getNumViews(), 1);
   EXPECT_TRUE(gb0->hasChildView("f0"));
-  if (gb0->hasChildView("f0")) {
+  if (gb0->hasChildView("f0"))
+  {
     EXPECT_EQ((double)gb0->getView("f0")->getScalar(), f0value);
   }
 

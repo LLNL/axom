@@ -32,7 +32,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, char * * argv )
 {
   static_cast<void>(argc);
   static_cast<void>(argv);
@@ -42,23 +42,24 @@ int main( int argc, char** argv )
   slic::disableAbortOnError();
 
   std::string format =  std::string( "***********************************\n" )+
-                        std::string( "* <TIMESTAMP>\n\n" ) +
-                        std::string( "* LEVEL=<LEVEL>\n" ) +
-                        std::string( "* MESSAGE=<MESSAGE>\n" ) +
-                        std::string( "* FILE=<FILE>\n" ) +
-                        std::string( "* LINE=<LINE>\n" ) +
-                        std::string( "***********************************\n" );
+                       std::string( "* <TIMESTAMP>\n\n" ) +
+                       std::string( "* LEVEL=<LEVEL>\n" ) +
+                       std::string( "* MESSAGE=<MESSAGE>\n" ) +
+                       std::string( "* FILE=<FILE>\n" ) +
+                       std::string( "* LINE=<LINE>\n" ) +
+                       std::string( "***********************************\n" );
 
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::addStreamToAllMsgLevels(
-      new slic::GenericOutputStream( &std::cout, format ) );
+    new slic::GenericOutputStream( &std::cout, format ) );
 
 
   // STEP 1: loop N times and generate a random logging event
-  for ( int i=0; i < N; ++i ) {
+  for ( int i=0 ; i < N ; ++i )
+  {
 
     slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
-            "a random message", __FILE__,  __LINE__  );
+                      "a random message", __FILE__,  __LINE__  );
 
   }
 
@@ -67,5 +68,3 @@ int main( int argc, char** argv )
 
   return 0;
 }
-
-

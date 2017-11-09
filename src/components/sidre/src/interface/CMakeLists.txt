@@ -37,7 +37,3 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py fortran > 
             ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
-
-uncrustify_shroud(
-    YAML_INPUT_FILE      ${YAML_INPUT_FILE}
-)

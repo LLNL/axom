@@ -34,8 +34,10 @@
 
 #include "primal/intersect_impl.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \brief Tests if 3D Triangles t1 and t2 intersect.

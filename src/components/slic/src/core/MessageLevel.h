@@ -25,10 +25,13 @@
 
 #include <string>
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
-namespace message {
+namespace message
+{
 
 /*!
  * \enum MessageType
@@ -40,7 +43,8 @@ namespace message {
  *
  * \see Logger
  */
-enum Level {
+enum Level
+{
   Error,     //!< ERROR log an error that *may* be recoverable.
   Warning,   //!< WARNING log a warning.
   Info,      //!< INFO log information that is useful for users & developers.
@@ -68,7 +72,8 @@ static const std::string MessageLevelName[ Num_Levels ] = {
  */
 static inline std::string getLevelAsString( Level l )
 {
-  if ( l < 0 || l >= Num_Levels ) {
+  if ( l < 0 || l >= Num_Levels )
+  {
 
     return ( "UNKNOWN-LEVEL" );
 
@@ -79,14 +84,16 @@ static inline std::string getLevelAsString( Level l )
 
 } /* namespace message */
 
-namespace inherit {
+namespace inherit
+{
 
 /*!
  * \enum flags
  *
  * \brief Holds the bit flags associated with each level.
  */
-enum flags {
+enum flags
+{
   nothing =  0,    //!< nothing, no bit is set.
   error   =  1<<0, //!< error,   zeroth bit is set.
   warning =  1<<1, //!< warning, 1st bit is set.

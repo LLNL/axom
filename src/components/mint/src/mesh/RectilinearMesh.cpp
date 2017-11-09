@@ -19,16 +19,18 @@
 
 #include "axom/Types.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-RectilinearMesh::RectilinearMesh():
+RectilinearMesh::RectilinearMesh() :
   StructuredMesh(MINT_UNDEFINED_MESH,-1,AXOM_NULLPTR),
   m_coordinates( AXOM_NULLPTR )
 {}
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ):
+RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ) :
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
   int ext_size[3];
@@ -38,7 +40,7 @@ RectilinearMesh::RectilinearMesh( int dimension, int ext[6] ):
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( int dimension, int ext[6],
-                                  int blockId, int partId ):
+                                  int blockId, int partId ) :
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId,
                   partId )
 {

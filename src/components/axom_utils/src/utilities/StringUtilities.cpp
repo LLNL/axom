@@ -23,32 +23,35 @@
 #include <sstream>
 #endif
 
-namespace axom {
-namespace utilities {
-namespace string {
+namespace axom
+{
+namespace utilities
+{
+namespace string
+{
 
 std::string intToString(int intValue)
 {
-    std::string stringValue = "";
+  std::string stringValue = "";
 #ifdef AXOM_USE_CXX11
-    stringValue += std::to_string(intValue);
+  stringValue += std::to_string(intValue);
 #else
-    std::ostringstream ss;
-    ss << intValue;
-    stringValue += ss.str();
+  std::ostringstream ss;
+  ss << intValue;
+  stringValue += ss.str();
 #endif
-    return stringValue;
+  return stringValue;
 }
 
 int stringToInt(const std::string& stringValue)
 {
-    int intValue = 0;
+  int intValue = 0;
 #ifdef AXOM_USE_CXX11
-    intValue = stoi(stringValue);
+  intValue = stoi(stringValue);
 #else
-    std::istringstream(stringValue) >> intValue;
+  std::istringstream(stringValue) >> intValue;
 #endif
-    return intValue;
+  return intValue;
 }
 
 } // end namespace string

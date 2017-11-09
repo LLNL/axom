@@ -13,8 +13,6 @@
 #
 ##############################################################################
 
-project(sidre)
-
 ################################
 # Check necessary dependencies
 ################################
@@ -58,9 +56,6 @@ if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-
-blt_add_code_check_targets(uncrustify.cfg)
-
 ################################
 # Add docs
 ################################
@@ -69,7 +64,13 @@ if (ENABLE_DOCS)
 endif()
 
 ################################
+# Add code checks
+################################
+axom_add_code_checks(PREFIX   sidre
+                     EXCLUDES sidre/examples/lulesh2)
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+install(EXPORT sidre-targets DESTINATION lib/cmake)

@@ -22,7 +22,8 @@ TEST( mint_extent, basic )
 
   int numNodes = 1;
   int numCells = 1;
-  for ( int i=0; i < 3; ++i ) {
+  for ( int i=0 ; i < 3 ; ++i )
+  {
     EXPECT_EQ(  extent.min( i ),  0  );
     EXPECT_EQ(  extent.max( i ),  5  );
     EXPECT_EQ(  extent.size( i ), 6 );
@@ -42,9 +43,12 @@ TEST( mint_extent, basic )
   const int kmax = extent.max(2);
 
   int count = 0;
-  for ( int k=kmin; k <= kmax; ++k ) {
-    for ( int j=jmin; j <= jmax; ++j ) {
-      for ( int i=imin; i <= imax; ++i ) {
+  for ( int k=kmin ; k <= kmax ; ++k )
+  {
+    for ( int j=jmin ; j <= jmax ; ++j )
+    {
+      for ( int i=imin ; i <= imax ; ++i )
+      {
 
         const int idx = extent.getLinearIndex( i,j,k );
         EXPECT_EQ( count, idx );

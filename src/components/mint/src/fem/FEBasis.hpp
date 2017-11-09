@@ -38,8 +38,10 @@
     typedef mint::ShapeFunction< mint::Lagrange< C > > ShapeFunctionType; \
   }
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 /*!
  * \brief FEBasis is a traits class that binds a Finite Element basis type,

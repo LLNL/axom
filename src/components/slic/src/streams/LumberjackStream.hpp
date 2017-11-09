@@ -1,4 +1,4 @@
- /*
+/*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  *
@@ -35,8 +35,10 @@
 #include <mpi.h> // For MPI
 
 // Forward declarations
-namespace axom {
-namespace lumberjack {
+namespace axom
+{
+namespace lumberjack
+{
 
 class Lumberjack;
 class Communicator;
@@ -44,8 +46,10 @@ class Communicator;
 }
 }
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class LumberjackStream
@@ -62,16 +66,16 @@ namespace slic {
  *  std::cerr, etc. It is suggested that applications do not use this class
  *  with an std::ofstream object.
  */
-class LumberjackStream:public LogStream
+class LumberjackStream : public LogStream
 {
 public:
-  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
-  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
+  LumberjackStream( std::ostream * stream, MPI_Comm comm, int ranksLimit );
+  LumberjackStream( std::ostream * stream, MPI_Comm comm, int ranksLimit,
                     const std::string& format );
-  LumberjackStream( std::ostream* stream,
-                    axom::lumberjack::Lumberjack* lj );
-  LumberjackStream( std::ostream* stream,
-                    axom::lumberjack::Lumberjack* lj,
+  LumberjackStream( std::ostream * stream,
+                    axom::lumberjack::Lumberjack * lj );
+  LumberjackStream( std::ostream * stream,
+                    axom::lumberjack::Lumberjack * lj,
                     const std::string& format );
 
   virtual ~LumberjackStream();
@@ -125,10 +129,10 @@ private:
   /// \name Private Members
   /// @{
 
-  axom::lumberjack::Lumberjack* m_lj;
-  axom::lumberjack::Communicator* m_ljComm;
+  axom::lumberjack::Lumberjack * m_lj;
+  axom::lumberjack::Communicator * m_ljComm;
   bool m_isLJOwnedBySLIC;
-  std::ostream* m_stream;
+  std::ostream * m_stream;
   /// @}
 
   /*!
@@ -137,9 +141,9 @@ private:
    * instance
    *  should be used.
    */
-  LumberjackStream(): m_lj( static_cast< axom::lumberjack::Lumberjack* >(
-                              AXOM_NULLPTR) ),
-    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
+  LumberjackStream() : m_lj( static_cast< axom::lumberjack::Lumberjack * >(
+                               AXOM_NULLPTR) ),
+    m_stream( static_cast< std::ostream * >(AXOM_NULLPTR) )
   { };
 
   DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);

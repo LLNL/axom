@@ -32,8 +32,10 @@
 #include <utility>
 #include <vector>
 
-namespace axom {
-namespace quest {
+namespace axom
+{
+namespace quest
+{
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh.
@@ -57,10 +59,10 @@ namespace quest {
  * based on the cube root of the number of cells in the mesh.
  */
 void findTriMeshIntersections(
-    mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
-    std::vector<std::pair<int, int> > & intersections,
-		std::vector<int> & degenerateIndices,
-		int spatialIndexResolution = 0)
+  mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
+  std::vector<std::pair<int, int> > & intersections,
+  std::vector<int> & degenerateIndices,
+  int spatialIndexResolution = 0)
 {
   detail::findTriMeshIntersections_impl(surface_mesh,
                                         intersections,

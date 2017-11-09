@@ -39,7 +39,8 @@ typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 std::string vecToString(const std::vector<int> & v)
 {
   std::stringstream retval;
-  for (unsigned int i = 0; i < v.size(); ++i) {
+  for (unsigned int i = 0 ; i < v.size() ; ++i)
+  {
     retval << v[i] << "  ";
   }
   return retval.str();
@@ -48,7 +49,8 @@ std::string vecToString(const std::vector<int> & v)
 std::string vecToString(const std::vector< std::pair<int, int> > & v)
 {
   std::stringstream retval;
-  for (unsigned int i = 0; i < v.size(); ++i) {
+  for (unsigned int i = 0 ; i < v.size() ; ++i)
+  {
     retval << "(" << v[i].first << " " << v[i].second << ")  ";
   }
   return retval.str();
@@ -68,16 +70,18 @@ void reportVectorMismatch(const std::vector<T> & standard,
                       standard.begin(), standard.end(),
                       std::inserter(unexpected, unexpected.begin()));
 
-  EXPECT_TRUE(missing.size() == 0) << "Missing " << missing.size() <<
-    " " << label << ":" << std::endl << vecToString(missing);
-  EXPECT_TRUE(unexpected.size() == 0) << "Unexpectedly, " << unexpected.size() <<
-    " extra " << label << ":" << std::endl << vecToString(unexpected);
+  EXPECT_TRUE(missing.size() == 0)
+    << "Missing " << missing.size()
+    << " " << label << ":" << std::endl << vecToString(missing);
+  EXPECT_TRUE(unexpected.size() == 0)
+    << "Unexpectedly, " << unexpected.size()
+    << " extra " << label << ":" << std::endl << vecToString(unexpected);
 }
 
 void runIntersectTest(const std::string &tname,
                       TriangleMesh * surface_mesh,
-		      const std::vector< std::pair<int, int> > & expisect,
-		      const std::vector< int > & expdegen)
+                      const std::vector< std::pair<int, int> > & expisect,
+                      const std::vector< int > & expdegen)
 {
   SCOPED_TRACE(tname);
 
@@ -86,7 +90,8 @@ void runIntersectTest(const std::string &tname,
   std::vector< int > degenerate;
   std::vector< std::pair<int, int> > collisions;
   // Later, perhaps capture the return value as a status and report it.
-  (void) axom::quest::findTriMeshIntersections(surface_mesh, collisions, degenerate);
+  (void) axom::quest::findTriMeshIntersections(surface_mesh, collisions,
+                                               degenerate);
 
   // report discrepancies
   std::sort(collisions.begin(), collisions.end());
@@ -96,11 +101,15 @@ void runIntersectTest(const std::string &tname,
   reportVectorMismatch(expdegen, degenerate, "degenerate triangles");
 }
 
-void splitStringToIntPairs(std::string & pairs, std::vector< std::pair<int, int> > & dat)
+void splitStringToIntPairs(
+  std::string & pairs,
+  std::vector< std::pair<int, int> > & dat)
 {
-  if (!pairs.empty()) {
+  if (!pairs.empty())
+  {
     std::istringstream iss(pairs);
-    while (iss.good()) {
+    while (iss.good())
+    {
       std::pair<int, int> p;
       iss >> p.first >> p.second;
       dat.push_back(p);
@@ -110,9 +119,11 @@ void splitStringToIntPairs(std::string & pairs, std::vector< std::pair<int, int>
 
 void splitStringToInts(std::string & ints, std::vector< int > & dat)
 {
-  if (!ints.empty()) {
+  if (!ints.empty())
+  {
     std::istringstream iss(ints);
-    while (iss.good()) {
+    while (iss.good())
+    {
       int i;
       iss >> i;
       dat.push_back(i);
@@ -149,13 +160,12 @@ std::string readIntersectTest(std::string & test,
 
   return retval;
 }
-                              
 
 std::vector<std::string> findIntersectTests()
 {
   std::vector<std::string> tests;
 
-  std::string catalogue = 
+  std::string catalogue =
     axom::utilities::filesystem::
     joinPath(AXOM_SRC_DIR, "components/quest/data/meshtester/catalogue.txt");
 
@@ -165,7 +175,8 @@ std::vector<std::string> findIntersectTests()
   // open file, and put each of its lines into return value tests.
   std::ifstream catfile(catalogue.c_str());
   std::string line;
-  while (std::getline(catfile, line)) {
+  while (std::getline(catfile, line))
+  {
     tests.push_back(axom::utilities::filesystem::joinPath(testdir, line));
   }
   return tests;
@@ -213,7 +224,8 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 
   {
     testname = "cracked tetrahedron";
-    testdescription = "Tetrahedron with a crack but no self-intersections or degenerate triangles";
+    testdescription =
+      "Tetrahedron with a crack but no self-intersections or degenerate triangles";
 
     // Construct and fill the mesh.
     surface_mesh = new TriangleMesh(3);
@@ -242,7 +254,8 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 
   {
     testname = "caved-in tetrahedron";
-    testdescription = "Tetrahedron with one side intersecting two others, no degenerate triangles";
+    testdescription =
+      "Tetrahedron with one side intersecting two others, no degenerate triangles";
 
     // Construct and fill the mesh.
     surface_mesh = new TriangleMesh(3);
@@ -273,7 +286,8 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 
   {
     testname = "caved-in tet with added degenerate tris";
-    testdescription = "Tetrahedron with one side intersecting two others, some degenerate triangles";
+    testdescription =
+      "Tetrahedron with one side intersecting two others, some degenerate triangles";
 
     // Construct and fill the mesh.
     surface_mesh = new TriangleMesh(3);
@@ -312,18 +326,23 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
 {
   std::vector<std::string> tests = findIntersectTests();
 
-  if (tests.size() < 1) {
+  if (tests.size() < 1)
+  {
     SLIC_INFO("*** No surface mesh self intersection tests found.");
 
     SUCCEED();
   }
 
   std::vector<std::string>::iterator it = tests.begin();
-  for ( ; it != tests.end(); ++it) {
+  for ( ; it != tests.end() ; ++it)
+  {
     std::string & test = *it;
-    if (! axom::utilities::filesystem::pathExists(test)) {
+    if (!axom::utilities::filesystem::pathExists(test))
+    {
       SLIC_INFO("Test file does not exist; skipping: " << test);
-    } else {
+    }
+    else
+    {
       std::vector< std::pair<int, int> > expisect;
       std::vector< int > expdegen;
       std::string tfname;
@@ -335,7 +354,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
       reader.read();
 
       // Get surface mesh
-      TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+      TriangleMesh * surface_mesh = new TriangleMesh( 3 );
       reader.getMesh( surface_mesh );
 
       runIntersectTest(tname, surface_mesh, expisect, expdegen);
@@ -359,4 +378,3 @@ int main(int argc, char * argv[])
   int result = RUN_ALL_TESTS();
   return result;
 }
-

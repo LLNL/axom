@@ -29,8 +29,10 @@
 #include <cmath>   // for acos()
 #include <ostream> // for std::ostream
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T, int NDIMS >
@@ -56,7 +58,8 @@ public:
   typedef Point< T,NDIMS >  PointType;
   typedef Vector< T,NDIMS > VectorType;
 
-  enum {
+  enum
+  {
     NUM_TRI_VERTS = 3
   };
 
@@ -155,19 +158,17 @@ private:
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
-    if (NDIMS < 3) {
-
+    if (NDIMS < 3)
+    {
       return 0.;
-
     }
-    else {
-
+    else
+    {
       return numerics::determinant< double > ( A[0], A[1], A[2], 1.,
                                                B[0], B[1], B[2], 1.,
                                                C[0], C[1], C[2], 1.,
                                                p[0], p[1], p[2], 1.  );
     }
-
   }
 
 public:
@@ -196,21 +197,19 @@ public:
     int c0 = 0;
     int c1 = 1;
 
-    if (x>=y && x>= z) {
-
+    if (x>=y && x>= z)
+    {
       // compute in yz plane
       c0 = 1;
       c1 = 2;
       ood=1.0/u[0];
-
     }
-    else if (y>=x && y>=z) {
-
+    else if (y>=x && y>=z)
+    {
       // compute in xz plane
       c0 = 0;
       c1 = 2;
       ood=-1.0/u[1];
-
     }
 
     // References to triangle vertices for convenience
@@ -245,7 +244,8 @@ public:
    */
   bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
   {
-    if (!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps)) {
+    if (!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps))
+    {
       return false;
     }
 
@@ -269,10 +269,10 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-    os  <<"{"
-        << m_points[0] <<" "
-        << m_points[1] <<" "
-        << m_points[2] <<"}";
+    os <<"{"
+       << m_points[0] <<" "
+       << m_points[1] <<" "
+       << m_points[2] <<"}";
 
     return os;
   }
@@ -288,8 +288,10 @@ private:
 //------------------------------------------------------------------------------
 //  Triangle implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,

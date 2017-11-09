@@ -215,7 +215,7 @@ public:
 
   /*!
    * \brief gets the number of files in the dataset from the specified root file
-   */ 
+   */
   int getNumFilesFromRoot(const std::string& root_file);
 
 private:
@@ -238,7 +238,8 @@ private:
 
   std::string getProtocol(const std::string& root_name);
 
-  void readSidreHDF5(sidre::Group * group, const std::string& root_file, bool preserve_contents = false);
+  void readSidreHDF5(sidre::Group * group, const std::string& root_file,
+                     bool preserve_contents = false);
 
 #ifdef AXOM_USE_SCR
   void readWithSCR(sidre::Group * group,

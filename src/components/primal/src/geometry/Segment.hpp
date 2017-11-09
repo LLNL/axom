@@ -21,8 +21,10 @@
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class
@@ -92,11 +94,13 @@ private:
 //------------------------------------------------------------------------------
 //  Segment Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 template < typename T, int NDIMS >
-Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B):
+Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
   m_source( A ),
   m_target( B )
 {}

@@ -50,7 +50,7 @@ namespace sidre
  */
 IOManager::IOManager(MPI_Comm comm,
                      bool use_scr)
-: m_comm_size(1),
+  : m_comm_size(1),
   m_my_rank(0),
   m_baton(AXOM_NULLPTR),
   m_mpi_comm(comm),
@@ -59,8 +59,10 @@ IOManager::IOManager(MPI_Comm comm,
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
 #ifndef AXOM_USE_SCR
-  if (m_use_scr) {
-    SLIC_WARNING("IOManager constructor called with use_scr = true, but Axom was not compiled with SCR. IOManager will operate without SCR.");
+  if (m_use_scr)
+  {
+    SLIC_WARNING(
+      "IOManager constructor called with use_scr = true, but Axom was not compiled with SCR. IOManager will operate without SCR.");
   }
   m_use_scr = false;
 #endif
@@ -76,7 +78,8 @@ IOManager::IOManager(MPI_Comm comm,
  */
 IOManager::~IOManager()
 {
-  if (m_baton) {
+  if (m_baton)
+  {
     delete m_baton;
   }
 }
@@ -89,47 +92,58 @@ IOManager::~IOManager()
  *
  *************************************************************************
  */
-void IOManager::write(sidre::Group * datagroup, int num_files, const std::string& file_string, const std::string& protocol)
+void IOManager::write(sidre::Group * datagroup, int num_files,
+                      const std::string& file_string,
+                      const std::string& protocol)
 {
-  if (m_baton) {
-    if (m_baton->getNumFiles() != num_files) {
+  if (m_baton)
+  {
+    if (m_baton->getNumFiles() != num_files)
+    {
       delete m_baton;
       m_baton = AXOM_NULLPTR;
     }
   }
 
-  if (!m_baton) {
+  if (!m_baton)
+  {
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
   std::string root_string = file_string;
 #ifdef AXOM_USE_SCR
-  if (m_use_scr) { 
+  if (m_use_scr)
+  {
     SCR_Start_checkpoint();
   }
 #endif
-  if (m_my_rank == 0) {
+  if (m_my_rank == 0)
+  {
     createRootFile(root_string, num_files, protocol);
   }
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = root_string + ".root";
-  if (m_use_scr) {
+  if (m_use_scr)
+  {
     int buf_size = 0;
-    if (m_my_rank == 0) {
+    if (m_my_rank == 0)
+    {
       buf_size = m_scr_checkpoint_dir.size() + 1;
     }
 
     MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
 
     char scr_dir_buf[buf_size];
-    if (m_my_rank == 0) {
+    if (m_my_rank == 0)
+    {
       strcpy(scr_dir_buf, m_scr_checkpoint_dir.c_str());
     }
 
     MPI_Bcast(scr_dir_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
 
-    if (m_my_rank != 0) {
+    if (m_my_rank != 0)
+    {
       m_scr_checkpoint_dir = std::string(scr_dir_buf);
     }
 
@@ -138,7 +152,8 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
 
   MPI_Barrier(m_mpi_comm);
 
-  if (protocol == "sidre_hdf5") {
+  if (protocol == "sidre_hdf5")
+  {
     std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
@@ -146,17 +161,21 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
     std::string hdf5_name = getHDF5FileName(file_pattern, root_name, group_id);
 
     hid_t h5_file_id, h5_group_id;
-    if (m_baton->isFirstInGroup()) {
+    if (m_baton->isFirstInGroup())
+    {
       std::string dir_name;
       utilities::filesystem::getDirName(dir_name, hdf5_name);
-      if (!dir_name.empty()) {
+      if (!dir_name.empty())
+      {
         utilities::filesystem::makeDirsForPath(dir_name);
       }
       h5_file_id = H5Fcreate(hdf5_name.c_str(),
                              H5F_ACC_TRUNC,
                              H5P_DEFAULT,
                              H5P_DEFAULT);
-    } else {
+    }
+    else
+    {
       h5_file_id = H5Fopen(hdf5_name.c_str(),
                            H5F_ACC_RDWR,
                            H5P_DEFAULT);
@@ -183,7 +202,9 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
     status = H5Fclose(h5_file_id);
     SLIC_ASSERT(status >= 0);
 
-  } else {
+  }
+  else
+  {
     int group_id = m_baton->wait();
     std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
 
@@ -193,7 +214,8 @@ void IOManager::write(sidre::Group * datagroup, int num_files, const std::string
   (void)m_baton->pass();
 
 #ifdef AXOM_USE_SCR
-  if (m_use_scr) {
+  if (m_use_scr)
+  {
     MPI_Barrier(m_mpi_comm);
     int valid = 1;
     SCR_Complete_checkpoint(valid);
@@ -214,17 +236,23 @@ void IOManager::read(
   const std::string& protocol,
   bool preserve_contents)
 {
-  if (protocol == "sidre_hdf5") {
+  if (protocol == "sidre_hdf5")
+  {
     readSidreHDF5(datagroup, root_file, preserve_contents);
-  } else {
-    if (m_baton) {
-      if (m_baton->getNumFiles() != 1) {
+  }
+  else
+  {
+    if (m_baton)
+    {
+      if (m_baton->getNumFiles() != 1)
+      {
         delete m_baton;
         m_baton = AXOM_NULLPTR;
       }
     }
 
-    if (!m_baton) {
+    if (!m_baton)
+    {
       m_baton = new IOBaton(m_mpi_comm, 1);
     }
 
@@ -252,22 +280,30 @@ void IOManager::read(sidre::Group * datagroup,
                      bool read_with_scr)
 {
 
-  if (!read_with_scr) {
+  if (!read_with_scr)
+  {
     std::string protocol = getProtocol(root_file);
     read(datagroup, root_file, protocol, preserve_contents);
-  } else {
+  }
+  else
+  {
 #ifdef AXOM_USE_SCR
 
-    if (m_use_scr) {
+    if (m_use_scr)
+    {
       readWithSCR(datagroup, root_file, preserve_contents);
-    } else {
-      SLIC_WARNING("IOManager::read() requested to read files using SCR, but IOManager was constructed to not use SCR. SCR will not be used");
+    }
+    else
+    {
+      SLIC_WARNING(
+        "IOManager::read() requested to read files using SCR, but IOManager was constructed to not use SCR. SCR will not be used");
       read(datagroup, root_file, preserve_contents, false);
     }
 
 #else
 
-    SLIC_WARNING("IOManager::read() requested to read files using SCR, but Axom was not compiled with SCR. SCR will not be used");
+    SLIC_WARNING(
+      "IOManager::read() requested to read files using SCR, but Axom was not compiled with SCR. SCR will not be used");
     read(datagroup, root_file, preserve_contents, false);
 
 #endif
@@ -283,18 +319,23 @@ void IOManager::read(sidre::Group * datagroup,
  */
 #ifdef AXOM_USE_SCR
 void IOManager::readWithSCR(
-   sidre::Group * datagroup,
-   const std::string& root_file,
-   bool preserve_contents)
+  sidre::Group * datagroup,
+  const std::string& root_file,
+  bool preserve_contents)
 {
-  SLIC_ASSERT(m_use_scr); 
+  SLIC_ASSERT(m_use_scr);
   char file[SCR_MAX_FILENAME];
-  if (SCR_Route_file(root_file.c_str(), file) == SCR_SUCCESS) {
+  if (SCR_Route_file(root_file.c_str(), file) == SCR_SUCCESS)
+  {
     std::string scr_root(file);
-    std::string protocol = getProtocol(scr_root);  
+    std::string protocol = getProtocol(scr_root);
     read(datagroup, scr_root, protocol, preserve_contents);
-  } else {
-    SLIC_WARNING("Root file: " << root_file << " not found by SCR. Attempting to read without SCR.");
+  }
+  else
+  {
+    SLIC_WARNING(
+      "Root file: "
+      << root_file << " not found by SCR. Attempting to read without SCR.");
 
     read(datagroup, root_file, preserve_contents, false);
   }
@@ -315,14 +356,17 @@ void IOManager::readSidreHDF5(sidre::Group * datagroup,
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
 
-  if (m_baton) {
-    if (m_baton->getNumFiles() != num_files) {
+  if (m_baton)
+  {
+    if (m_baton->getNumFiles() != num_files)
+    {
       delete m_baton;
       m_baton = AXOM_NULLPTR;
     }
   }
 
-  if (!m_baton) {
+  if (!m_baton)
+  {
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
@@ -356,19 +400,23 @@ void IOManager::readSidreHDF5(sidre::Group * datagroup,
 }
 
 
-void IOManager::loadExternalData(sidre::Group * datagroup, const std::string& root_file)
+void IOManager::loadExternalData(sidre::Group * datagroup,
+                                 const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
 
-  if (m_baton) {
-    if (m_baton->getNumFiles() != num_files) {
+  if (m_baton)
+  {
+    if (m_baton->getNumFiles() != num_files)
+    {
       delete m_baton;
       m_baton = AXOM_NULLPTR;
     }
   }
 
-  if (!m_baton) {
+  if (!m_baton)
+  {
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
@@ -418,15 +466,20 @@ void IOManager::createRootFile(const std::string& file_base,
   std::string conduit_protocol;
   std::string local_file_base;
 
-  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {
+  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
+  {
 
     n["number_of_files"] = num_files;
-    if (protocol == "sidre_hdf5") {
+    if (protocol == "sidre_hdf5")
+    {
       std::string next;
       std::string slash = "/";
       conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
-      n["file_pattern"] = local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
-    } else {
+      n["file_pattern"] = local_file_base + slash + local_file_base + "_" +
+                          "%07d.hdf5";
+    }
+    else
+    {
       n["file_pattern"] = file_base + "_" + "%07d.conduit_hdf5";
     }
     n["number_of_trees"] = m_comm_size;
@@ -437,7 +490,9 @@ void IOManager::createRootFile(const std::string& file_base,
 
     root_file_name = file_base + ".root";
     conduit_protocol = "hdf5";
-  } else {
+  }
+  else
+  {
 
     n["number_of_files"] = num_files;
     n["file_pattern"] = file_base + "_" + "%07d." + protocol;
@@ -448,35 +503,46 @@ void IOManager::createRootFile(const std::string& file_base,
     n["protocol/version"] = "0.0";
 
     root_file_name = file_base + ".json.root";
-    if (protocol == "sidre_conduit_json") {
+    if (protocol == "sidre_conduit_json")
+    {
       conduit_protocol = "conduit_json";
-    } else if (protocol == "sidre_json" || protocol == "conduit_bin") {
+    }
+    else if (protocol == "sidre_json" || protocol == "conduit_bin")
+    {
       conduit_protocol = "json";
-    } else {
+    }
+    else
+    {
       conduit_protocol = protocol;
     }
   }
 
 #ifdef AXOM_USE_SCR
-  if (m_use_scr) {
-    if (protocol == "sidre_hdf5") {
-      n["file_pattern"] = local_file_base + "_" + "%07d.hdf5"; 
+  if (m_use_scr)
+  {
+    if (protocol == "sidre_hdf5")
+    {
+      n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
     }
 
     std::string root_name = root_file_name;
     char checkpoint_file[256];
     sprintf(checkpoint_file, "%s", root_name.c_str());
     char scr_file[SCR_MAX_FILENAME];
-    if (SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS) {
+    if (SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS)
+    {
       root_file_name = scr_file;
-    } else {
-      SLIC_WARNING("Attempt to create SCR route for file: " << root_name <<
-                   " failed. Writing root file without SCR."); 
     }
- 
-    std::string dir_name; 
+    else
+    {
+      SLIC_WARNING("Attempt to create SCR route for file: " << root_name <<
+                   " failed. Writing root file without SCR.");
+    }
+
+    std::string dir_name;
     utilities::filesystem::getDirName(dir_name, root_file_name);
-    if (!dir_name.empty()) {
+    if (!dir_name.empty())
+    {
       utilities::filesystem::makeDirsForPath(dir_name);
     }
     m_scr_checkpoint_dir = dir_name;
@@ -500,7 +566,8 @@ std::string IOManager::getHDF5FilePattern(
 {
   std::string file_pattern;
   int buf_size = 0;
-  if (m_my_rank == 0) {
+  if (m_my_rank == 0)
+  {
     conduit::Node n;
     conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
 
@@ -512,13 +579,15 @@ std::string IOManager::getHDF5FilePattern(
   MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
 
   char name_buf[buf_size];
-  if (m_my_rank == 0) {
+  if (m_my_rank == 0)
+  {
     strcpy(name_buf, file_pattern.c_str());
   }
 
   MPI_Bcast(name_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
 
-  if (m_my_rank != 0) {
+  if (m_my_rank != 0)
+  {
     file_pattern = std::string(name_buf);
   }
 
@@ -554,7 +623,8 @@ std::string IOManager::getProtocol(
 
   std::string protocol;
   int buf_size = 0;
-  if (m_my_rank == 0) {
+  if (m_my_rank == 0)
+  {
     conduit::Node n;
     conduit::relay::io::load(root_name, extension, n);
 
@@ -566,13 +636,15 @@ std::string IOManager::getProtocol(
   MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
 
   char protocol_buf[buf_size];
-  if (m_my_rank == 0) {
+  if (m_my_rank == 0)
+  {
     strcpy(protocol_buf, protocol.c_str());
   }
 
   MPI_Bcast(protocol_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
 
-  if (m_my_rank != 0) {
+  if (m_my_rank != 0)
+  {
     protocol = std::string(protocol_buf);
   }
 
@@ -604,7 +676,8 @@ std::string IOManager::getHDF5FileName(
   std::string slash = "/";
   conduit::utils::rsplit_string(root_name, slash, curr, root_dir);
 
-  if (!root_dir.empty()) {
+  if (!root_dir.empty())
+  {
     hdf5_name = root_dir + slash + hdf5_name;
   }
 
@@ -619,15 +692,21 @@ std::string IOManager::getRankGroupFileName(
 {
 
   std::string file_name = "file";
-  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5") {
+  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
+  {
     std::string file_pattern = getHDF5FilePattern(root_name );
-    file_name = getHDF5FileName(file_pattern, root_name , rankgroup_id);
-  } else {
+    file_name = getHDF5FileName(file_pattern, root_name, rankgroup_id);
+  }
+  else
+  {
     conduit::Node n;
     std::string relay_protocol = protocol;
-    if (protocol == "sidre_json" || protocol == "conduit_bin") {
+    if (protocol == "sidre_json" || protocol == "conduit_bin")
+    {
       relay_protocol = "json";
-    } else if (protocol == "sidre_conduit_json") {
+    }
+    else if (protocol == "sidre_conduit_json")
+    {
       relay_protocol = "conduit_json";
     }
     conduit::relay::io::load(root_name, relay_protocol, n);
@@ -650,7 +729,8 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
    * Read num_files from rootfile on rank 0.
    */
   int read_num_files = 0;
-  if (m_my_rank == 0) {
+  if (m_my_rank == 0)
+  {
     conduit::Node n;
     conduit::relay::io::load(root_file + ":number_of_files","hdf5",n);
     read_num_files = n.to_int();

@@ -37,15 +37,18 @@
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 
-namespace {
-  typedef axom::slam::RangeSet  SetType;
-  typedef SetType::PositionType SetPosition;
-  typedef SetType::ElementType  SetElement;
+namespace
+{
+typedef axom::slam::RangeSet SetType;
+typedef SetType::PositionType SetPosition;
+typedef SetType::ElementType SetElement;
 
-  static const SetPosition MAX_SET_SIZE = 20;
-  static const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SET_SIZE);
-  static const SetElement upperIndex = static_cast<SetElement>( .7 * MAX_SET_SIZE);
-  static const SetElement range = upperIndex - lowerIndex;
+static const SetPosition MAX_SET_SIZE = 20;
+static const SetElement lowerIndex =
+  static_cast<SetElement>( .3 * MAX_SET_SIZE);
+static const SetElement upperIndex =
+  static_cast<SetElement>( .7 * MAX_SET_SIZE);
+static const SetElement range = upperIndex - lowerIndex;
 }
 
 
@@ -102,14 +105,14 @@ TEST(slam_range_set,set_builder)
 
   // Empty set, with and without offset
   SetType s0( SetBuilder()
-      .size(0) );
+              .size(0) );
   EXPECT_TRUE(s0.isValid() );
   EXPECT_TRUE(s0.empty() );
   EXPECT_EQ(  0,  s0.size() );
   EXPECT_EQ(  0,  s0.offset() );
 
   SetType s0_b( SetBuilder()
-      .offset(10) );
+                .offset(10) );
   EXPECT_TRUE(s0_b.isValid() );
   EXPECT_TRUE(s0_b.empty() );
   EXPECT_EQ(  0,  s0_b.size() );
@@ -118,7 +121,7 @@ TEST(slam_range_set,set_builder)
 
   // Construct using only a size
   SetType s1( SetBuilder()
-      .size(range));
+              .size(range));
   EXPECT_TRUE(s1.isValid() );
   EXPECT_EQ(  range,  s1.size() );
   EXPECT_EQ(  0,      s1.offset() );
@@ -126,7 +129,7 @@ TEST(slam_range_set,set_builder)
 
   // Construct a sized range starting at 0
   SetType s1_b(SetBuilder()
-      .range(0, range) );
+               .range(0, range) );
   EXPECT_TRUE(s1_b.isValid() );
   EXPECT_EQ(  range,  s1_b.size() );
   EXPECT_EQ(  0,      s1_b.offset() );
@@ -136,14 +139,14 @@ TEST(slam_range_set,set_builder)
 
   // Construct using a lower and upper bound
   SetType s2(SetBuilder()
-      .range(lowerIndex, upperIndex));
+             .range(lowerIndex, upperIndex));
   EXPECT_TRUE(s2.isValid(true));
   EXPECT_EQ(  range,      s2.size() );
   EXPECT_EQ(  lowerIndex, s2.offset() );
 
   SetType s2_b(SetBuilder()
-      .size(range)
-      .offset(lowerIndex));
+               .size(range)
+               .offset(lowerIndex));
   EXPECT_TRUE(s2_b.isValid(true));
   EXPECT_EQ(  range,      s2_b.size() );
   EXPECT_EQ(  lowerIndex, s2_b.offset() );
@@ -158,8 +161,8 @@ TEST(slam_range_set,set_builder)
   EXPECT_EQ(  -upperIndex,  s3.offset() );
 
   SetType s3_b(SetBuilder()
-      .size(range)
-      .offset(-upperIndex));
+               .size(range)
+               .offset(-upperIndex));
   EXPECT_TRUE(s3_b.isValid(true));
   EXPECT_EQ(  range,        s3_b.size() );
   EXPECT_EQ(  -upperIndex,  s3_b.offset() );
@@ -173,16 +176,17 @@ TEST(slam_range_set,iterate)
   SetType s(lowerIndex, upperIndex);
 
   SLIC_INFO( "Iterating through range set of size "
-      << s.size()
-      << "\n\twith lower element " << lowerIndex << " (included in set)"
-      << "\n\twith upper element " << upperIndex << " (not included in set)");
+             << s.size()
+             << "\n\twith lower element " << lowerIndex << " (included in set)"
+             << "\n\twith upper element " << upperIndex
+             << " (not included in set)");
   const SetPosition expectedSize = upperIndex - lowerIndex;
   EXPECT_EQ(expectedSize, s.size() );
 
   SLIC_INFO("Testing random access -- operator[] and at() function");
   {
     std::stringstream sstr;
-    for(SetPosition pos = SetPosition(); pos < s.size(); ++pos)
+    for(SetPosition pos = SetPosition() ; pos < s.size() ; ++pos)
     {
       SetElement expected = pos + lowerIndex;
       EXPECT_EQ(  expected, s[pos] );
@@ -200,12 +204,13 @@ TEST(slam_range_set,iterate)
     std::stringstream sstr;
 
     typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end(); it != itEnd; ++it)
+    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
     {
       SetPosition position = std::distance(s.begin(), it);
       SetElement expected = position + lowerIndex;
       EXPECT_EQ( expected, *it )
-        << "Iterator dereference should be equal to its translated position in the windowed range set";
+        << "Iterator dereference should be equal "
+        << "to its translated position in the windowed range set";
       sstr << *it << "\t";
     }
     SLIC_INFO(sstr.str());
@@ -217,9 +222,11 @@ TEST(slam_range_set,out_of_range)
 {
   SetType s(lowerIndex, upperIndex);
 
-  SLIC_INFO("Using random access on invalid address -- Note: We are testing for the expected failures.");
+  SLIC_INFO("Using random access on invalid address "
+            << "-- Note: We are testing for the expected failures.");
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode,
+  // so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -237,36 +244,39 @@ TEST(slam_generic_range_set,virtual_parent_set)
   namespace policies = axom::slam::policies;
 
   typedef axom::slam::GenericRangeSet<
-        policies::StrideOne<SetPosition>,
-        policies::NoIndirection<SetPosition,SetElement>,
-        policies::VirtualParentSubset>        GenericRangeSet;
+      policies::StrideOne<SetPosition>,
+      policies::NoIndirection<SetPosition,SetElement>,
+      policies::VirtualParentSubset>        GenericRangeSet;
 
   typedef GenericRangeSet::SetBuilder SetBuilder;
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
   GenericRangeSet parentSet(SetBuilder().size(MAX_SET_SIZE));
   GenericRangeSet childSet( SetBuilder()
-      .range(lowerIndex, upperIndex)
-      .parent(&parentSet));
+                            .range(lowerIndex, upperIndex)
+                            .parent(&parentSet));
 
   SetType nonChildSet( SetType::SetBuilder()
-      .range(lowerIndex, upperIndex));
+                       .range(lowerIndex, upperIndex));
 
   EXPECT_TRUE(parentSet.isValid(true));
   EXPECT_TRUE(childSet.isValid(true));
   EXPECT_TRUE(nonChildSet.isValid(true));
 
 
-  SLIC_INFO("Checking that the child is a subset, but not the parent or the non-child windowed set.");
+  SLIC_INFO("Checking that the child is a subset, "
+            << " but not the parent or the non-child windowed set.");
   EXPECT_FALSE(parentSet.isSubset());
   EXPECT_TRUE(childSet.isSubset());
   EXPECT_FALSE(nonChildSet.isSubset());
 
-  SLIC_INFO("Checking that the child set's parent is equal to the parent set (according to the equality operator==).");
+  SLIC_INFO("Checking that the child set's parent is equal to "
+            << " the parent set (according to the equality operator==).");
   EXPECT_EQ(parentSet, *childSet.parentSet());
 
-  // Since the parent is using the virtual subsetting policy, it does not have an operator[]
-  for(SetPosition pos = 0; pos > childSet.parentSet()->size(); ++pos)
+  // Since the parent is using the virtual subsetting policy,
+  // it does not have an operator[]
+  for(SetPosition pos = 0 ; pos > childSet.parentSet()->size() ; ++pos)
   {
     EXPECT_EQ(parentSet[pos], childSet.parentSet()->at(pos));
   }
@@ -285,38 +295,40 @@ TEST(slam_generic_range_set,concrete_parent_set)
   typedef SetType ParentType;
 
   typedef axom::slam::GenericRangeSet<
-        policies::StrideOne<SetPosition>,
-        policies::NoIndirection<SetPosition,SetElement>,
-        policies::ConcreteParentSubset<ParentType> >        GenericRangeSet;
+      policies::StrideOne<SetPosition>,
+      policies::NoIndirection<SetPosition,SetElement>,
+      policies::ConcreteParentSubset<ParentType> >        GenericRangeSet;
 
   typedef GenericRangeSet::SetBuilder SetBuilder;
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
   ParentType parentSet(ParentType::SetBuilder().size(MAX_SET_SIZE));
   GenericRangeSet childSet( SetBuilder()
-      .range(lowerIndex, upperIndex)
-      .parent(&parentSet));
+                            .range(lowerIndex, upperIndex)
+                            .parent(&parentSet));
 
   SetType nonChildSet( SetType::SetBuilder()
-      .range(lowerIndex, upperIndex));
+                       .range(lowerIndex, upperIndex));
 
   EXPECT_TRUE(parentSet.isValid(true));
   EXPECT_TRUE(childSet.isValid(true));
   EXPECT_TRUE(nonChildSet.isValid(true));
 
 
-  SLIC_INFO("Checking that the child is a subset, but not the parent or the non-child windowed set.");
+  SLIC_INFO("Checking that the child is a subset, "
+            << "but not the parent or the non-child windowed set.");
   EXPECT_FALSE(parentSet.isSubset());
   EXPECT_TRUE(childSet.isSubset());
   EXPECT_FALSE(nonChildSet.isSubset());
 
-  SLIC_INFO("Checking that the child set's parent is equal to the parent set (according to the equality operator==).");
+  SLIC_INFO("Checking that the child set's parent is equal to "
+            << "the parent set (according to the equality operator==).");
   EXPECT_EQ(parentSet, *childSet.parentSet());
 
 
   // Since the parent is a concrete OrderedSet, it should have an operator[]
   const ParentType& childParSet = *(childSet.parentSet());
-  for(SetPosition pos = 0; pos > childParSet.size(); ++pos)
+  for(SetPosition pos = 0 ; pos > childParSet.size() ; ++pos)
   {
     EXPECT_EQ(childParSet.at(pos),  childParSet[pos]);
     EXPECT_EQ(parentSet[pos],       childParSet[pos]);
