@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -30,7 +37,8 @@ using axom::slic::UnitTestLogger;
 
 using axom::primal::Point;
 
-namespace {
+namespace
+{
 
 static const int MAX_ITER = 10000;
 
@@ -40,7 +48,8 @@ CoordType randomInt(CoordType beg, CoordType end)
 {
   CoordType range = end-beg;
 
-  if (range == 0) {
+  if (range == 0)
+  {
     range = std::numeric_limits< CoordType >::max();
   }
 
@@ -51,7 +60,8 @@ template < typename CoordType, int DIM >
 Point< CoordType, DIM > randomPoint(CoordType beg, CoordType end)
 {
   Point< CoordType,DIM > pt;
-  for (int i=0; i< DIM; ++i) {
+  for (int i=0 ; i< DIM ; ++i)
+  {
     pt[i] = randomInt(beg,end);
   }
 
@@ -70,11 +80,13 @@ TEST( primal_morton, test_max_set_bit)
   EXPECT_EQ( morton2.maxSetBit( 0), 0);
 
   int maxBit = std::numeric_limits< CoordType >::digits;
-  for (int i=0; i<= maxBit; ++i) {
+  for (int i=0 ; i<= maxBit ; ++i)
+  {
     int val = 1 << i;
     EXPECT_EQ( morton2.maxSetBit( val), i);
 
-    for (int j=0; j< MAX_ITER; ++j) {
+    for (int j=0 ; j< MAX_ITER ; ++j)
+    {
       int randVal = randomInt< int >(0, val);
       EXPECT_EQ( morton2.maxSetBit( val + randVal), i);
     }
@@ -146,7 +158,8 @@ void testMortonizer()
   int maxIter = std::min( 1<<(maxBits-1), MAX_ITER);
 
   SLIC_DEBUG("Testing " << maxIter << " random points");
-  for (int i=0; i< maxIter; ++i) {
+  for (int i=0 ; i< maxIter ; ++i)
+  {
     GridPoint origPt = randomPoint< CoordType, DIM >(0, 1 << maxBits);
     SLIC_DEBUG( "\tOriginal point: " << origPt);
 
@@ -249,38 +262,38 @@ TEST( primal_morton, test_point_hasher)
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
-    typedef int CoordType;
-    PointHash<CoordType> ptHash;
-    Point<CoordType,1> p1(2);
-    std::size_t exp = 0x2;      // 0b10
-    EXPECT_EQ( ptHash(p1), exp );
+  typedef int CoordType;
+  PointHash<CoordType> ptHash;
+  Point<CoordType,1> p1(2);
+  std::size_t exp = 0x2;        // 0b10
+  EXPECT_EQ( ptHash(p1), exp );
 
-    Point<CoordType,2> p2(2);
-    exp = 0xC;                  // 0b1100
-    EXPECT_EQ( ptHash(p2), exp);
-    p2[0] = 0x38;               // 0b 0011 1000
-    p2[1] = 0x0C;               // 0b 0000 1100
-    exp = 0x5E0;                // 0b 0101 1110 0000
-    EXPECT_EQ( ptHash(p2), exp);
+  Point<CoordType,2> p2(2);
+  exp = 0xC;                    // 0b1100
+  EXPECT_EQ( ptHash(p2), exp);
+  p2[0] = 0x38;                 // 0b 0011 1000
+  p2[1] = 0x0C;                 // 0b 0000 1100
+  exp = 0x5E0;                  // 0b 0101 1110 0000
+  EXPECT_EQ( ptHash(p2), exp);
 
-    Point<CoordType,3> p3(2);
-    exp = 0x38;                 // 0b 0011 1000
-    EXPECT_EQ( ptHash(p3), exp);
-    p3[0] = 0x1F;               // 0b 0001 1111
-    p3[1] = 0X04;               // 0b 0000 0100
-    p3[2] = 0x10;               // 0b 0001 0000
-    exp = 051311;               // in octal (read bits bottom up, left to right)
-    EXPECT_EQ( ptHash(p3), exp);
+  Point<CoordType,3> p3(2);
+  exp = 0x38;                   // 0b 0011 1000
+  EXPECT_EQ( ptHash(p3), exp);
+  p3[0] = 0x1F;                 // 0b 0001 1111
+  p3[1] = 0X04;                 // 0b 0000 0100
+  p3[2] = 0x10;                 // 0b 0001 0000
+  exp = 051311;                 // in octal (read bits bottom up, left to right)
+  EXPECT_EQ( ptHash(p3), exp);
 
-    Point<CoordType,4> p4(2);
-    exp = 0XF0;                 // 0b 1111 0000
-    EXPECT_EQ( ptHash(p4), exp);
-    p4[0] = 0x3F;               // 0b 0011 1111
-    p4[1] = 0x08;               // 0b 0000 1000
-    p4[2] = 0x10;               // 0b 0001 0000
-    p4[3] = 0x20;               // 0b 0010 0000
-    exp = 0x953111;             // in hex (read bits bottom up, left to right)
-    EXPECT_EQ( ptHash(p4), exp);
+  Point<CoordType,4> p4(2);
+  exp = 0XF0;                   // 0b 1111 0000
+  EXPECT_EQ( ptHash(p4), exp);
+  p4[0] = 0x3F;                 // 0b 0011 1111
+  p4[1] = 0x08;                 // 0b 0000 1000
+  p4[2] = 0x10;                 // 0b 0001 0000
+  p4[3] = 0x20;                 // 0b 0010 0000
+  exp = 0x953111;               // in hex (read bits bottom up, left to right)
+  EXPECT_EQ( ptHash(p4), exp);
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 

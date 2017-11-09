@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef NUMERIC_ARRAY_HPP_
@@ -22,8 +29,10 @@
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T, int SIZE >
@@ -188,7 +197,8 @@ template < typename T,int SIZE >
 class NumericArray
 {
 public:
-  enum {
+  enum
+  {
     NBYTES = SIZE*sizeof(T)
   };
 
@@ -211,7 +221,7 @@ public:
    * \param [in] sz number of coordinates. Defaults to SIZE.
    * \note If sz is greater than SIZE, we only take the first SIZE values.
    */
-  NumericArray(const T* vals, int sz = SIZE);
+  NumericArray(const T * vals, int sz = SIZE);
 
   /*!
    * \brief Copy constructor.
@@ -249,8 +259,8 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const;
-  T* data();
+  const T * data() const;
+  T * data();
 
   /*!
    *
@@ -259,7 +269,7 @@ public:
    * \pre The user needs to make sure that the provided array has been allocated
    * and has sufficient space for SIZE coordinates.
    */
-  void to_array(T* arr) const;
+  void to_array(T * arr) const;
 
   /*!
    * \brief Simple formatted print of a numeric array instance
@@ -386,8 +396,10 @@ protected:
 //  NumericArray implementation
 //------------------------------------------------------------------------------
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T, int SIZE >
@@ -401,14 +413,15 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
   std::fill( m_components, m_components+nvals, val );
 
   // Fill any remaining coordinates with zero
-  if ( nvals < SIZE ) {
+  if ( nvals < SIZE )
+  {
     std::fill( m_components+nvals, m_components+SIZE, T() );
   }
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
+NumericArray< T, SIZE >::NumericArray(const T * vals, int sz)
 {
   SLIC_ASSERT( SIZE >= 1 );
 
@@ -418,7 +431,8 @@ NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
   std::copy( vals, vals+nvals, m_components);
 
   // Fill any remaining coordinates with zero
-  if ( nvals < SIZE) {
+  if ( nvals < SIZE)
+  {
     std::fill( m_components+nvals, m_components+SIZE, T());
   }
 
@@ -430,7 +444,8 @@ inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator=( const NumericArray< T,SIZE >& rhs )
 {
 
-  if ( this == &rhs ) {
+  if ( this == &rhs )
+  {
     return *this;
   }
 
@@ -457,21 +472,21 @@ inline const T& NumericArray< T,SIZE >::operator[](int i) const
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-inline const T* NumericArray< T,SIZE >::data() const
+inline const T * NumericArray< T,SIZE >::data() const
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-inline T* NumericArray< T,SIZE >::data()
+inline T * NumericArray< T,SIZE >::data()
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-void NumericArray< T,SIZE >::to_array(T* arr) const
+void NumericArray< T,SIZE >::to_array(T * arr) const
 {
   SLIC_ASSERT( arr != AXOM_NULLPTR);
   memcpy( arr, m_components, NBYTES );
@@ -482,13 +497,14 @@ template < typename T,int SIZE >
 std::ostream& NumericArray< T, SIZE >::print(std::ostream& os) const
 {
   os <<"[ ";
-  for (int dim=0; dim < SIZE -1; ++dim) {
-    os  << static_cast< typename NonChar< T >::type >( m_components[dim] )
-        << " ";
+  for (int dim=0 ; dim < SIZE -1 ; ++dim)
+  {
+    os << static_cast< typename NonChar< T >::type >( m_components[dim] )
+       << " ";
   }
 
-  os  << static_cast< typename NonChar< T >::type >(m_components[SIZE-1])
-      << "]";
+  os << static_cast< typename NonChar< T >::type >(m_components[SIZE-1])
+     << "]";
 
   return os;
 }
@@ -501,7 +517,8 @@ template < typename T,int SIZE >
 inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator*=( double scalar )
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] = static_cast<T>(m_components[ i ] * scalar);
   }
 
@@ -522,7 +539,8 @@ template < typename T, int SIZE >
 inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator*=(const NumericArray< T,SIZE >& v)
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] *=  v[ i ];
   }
 
@@ -534,7 +552,8 @@ template < typename T,int SIZE >
 inline NumericArray<  T,SIZE >&
 NumericArray< T,SIZE >::operator/=( const NumericArray< T,SIZE >& v )
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     SLIC_ASSERT( v[ i ] != 0.);
     m_components[ i ] /=  v[ i ];
   }
@@ -547,7 +566,8 @@ template < typename T,int SIZE >
 inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator+=(const NumericArray< T,SIZE >& v)
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] +=  v[ i ];
   }
 
@@ -559,7 +579,8 @@ template < typename T, int SIZE >
 inline NumericArray< T, SIZE >&
 NumericArray< T,SIZE >::operator-=(const NumericArray< T,SIZE >& v)
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] -= v[ i ];
   }
 
@@ -573,7 +594,8 @@ NumericArray< T,SIZE >::clamp( const T& lowerVal, const T& upperVal )
 {
   SLIC_ASSERT( lowerVal <= upperVal);
 
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] =
       axom::utilities::clampVal(m_components[ i ],lowerVal, upperVal);
   }
@@ -586,7 +608,8 @@ template < typename T,int SIZE >
 inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::clampLower( const T& lowerVal)
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] = std::max( m_components[ i ], lowerVal);
   }
 
@@ -598,7 +621,8 @@ template < typename T,int SIZE >
 inline NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::clampUpper( const T& upperVal)
 {
-  for ( int i=0; i < SIZE; ++i ) {
+  for ( int i=0 ; i < SIZE ; ++i )
+  {
     m_components[ i ] = std::min( m_components[ i ], upperVal);
   }
 
@@ -610,11 +634,13 @@ template < typename T,int SIZE >
 inline T NumericArray< T,SIZE >::max() const
 {
   T result = this->m_components[0];
-  for ( int i=1; i < SIZE; ++i ) {
+  for ( int i=1 ; i < SIZE ; ++i )
+  {
 
     T tmp = m_components[i];
 
-    if ( tmp > result) {
+    if ( tmp > result)
+    {
       result = tmp;
     }
 
@@ -628,10 +654,12 @@ template < typename T,int SIZE >
 inline T NumericArray< T,SIZE >::min() const
 {
   T result = this->m_components[0];
-  for ( int i=1; i < SIZE; ++i ) {
+  for ( int i=1 ; i < SIZE ; ++i )
+  {
     T tmp = this->m_components[i];
 
-    if ( tmp < result) {
+    if ( tmp < result)
+    {
       result = tmp;
     }
 
@@ -645,8 +673,10 @@ template < typename T,int SIZE >
 inline int NumericArray< T,SIZE >::argMax() const
 {
   int idx = 0;
-  for ( int i=1; i < SIZE; ++i ) {
-    if ( m_components[i] > m_components[idx]) {
+  for ( int i=1 ; i < SIZE ; ++i )
+  {
+    if ( m_components[i] > m_components[idx])
+    {
       idx = i;
     }
   }
@@ -659,8 +689,10 @@ template < typename T,int SIZE >
 inline int NumericArray< T,SIZE >::argMin() const
 {
   int idx = 0;
-  for ( int i=1; i < SIZE; ++i ) {
-    if ( m_components[i] < m_components[idx] ) {
+  for ( int i=1 ; i < SIZE ; ++i )
+  {
+    if ( m_components[i] < m_components[idx] )
+    {
       idx = i;
     }
   }
@@ -676,8 +708,10 @@ template < typename T,int SIZE >
 bool operator==( const NumericArray< T,SIZE >& lhs,
                  const NumericArray< T,SIZE >& rhs)
 {
-  for ( int dim=0; dim < SIZE; ++dim ) {
-    if ( lhs[dim] != rhs[dim] ) {
+  for ( int dim=0 ; dim < SIZE ; ++dim )
+  {
+    if ( lhs[dim] != rhs[dim] )
+    {
       return false;
     }
   }
@@ -786,7 +820,8 @@ inline NumericArray< T,SIZE > abs(const NumericArray< T,SIZE >& arr)
 {
   NumericArray< T, SIZE > result(arr);
 
-  for (int i=0; i<SIZE; ++i) {
+  for (int i=0 ; i<SIZE ; ++i)
+  {
     result[i] = axom::utilities::abs(result[i]);
   }
 

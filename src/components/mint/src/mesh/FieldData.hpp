@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef FIELDDATA_HPP_
@@ -18,8 +25,10 @@
 #include <string>
 #include <vector>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 // Forward Declarations
 class Field;
@@ -53,7 +62,7 @@ public:
    * \note When a field is added ownership is transfered to the corresponding
    *  FieldData instance.
    */
-  void addField( Field* f );
+  void addField( Field * f );
 
   /*!
    * \brief Returns the number of fields of this FieldData instance.
@@ -69,7 +78,7 @@ public:
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  Field* getField( int i );
+  Field * getField( int i );
 
   /*!
    * \brief Returns the ith field of this FieldData instance as a constant pointer.
@@ -78,7 +87,7 @@ public:
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  const Field* getField( int i ) const;
+  const Field * getField( int i ) const;
 
   /*!
    * \brief Returns the field with the given name.
@@ -87,7 +96,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  Field* getField( const std::string& name );
+  Field * getField( const std::string& name );
 
   /*!
    * \brief Returns the field with the given name as a constant pointer.
@@ -96,7 +105,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  const Field* getField( const std::string& name ) const;
+  const Field * getField( const std::string& name ) const;
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
@@ -114,7 +123,7 @@ private:
 
   // TODO: Revise this. We also need the ability to remove fields (?)
   std::vector< std::string > m_fields;
-  std::map< std::string, Field* > m_container;
+  std::map< std::string, Field * > m_container;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldData);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldData);

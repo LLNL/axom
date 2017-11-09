@@ -1,17 +1,24 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
  ******************************************************************************
  * \file Timer.hpp
- * 
+ *
  * \brief Defines a simple Timer class to measure execution time.
  *
  * \note The actual underlying timers are platform dependent and are defined
@@ -33,29 +40,32 @@
   #endif
 #endif
 
-namespace {
+namespace
+{
 #ifdef AXOM_USE_CXX11
-  typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
+typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
 #else
   #ifdef WIN32
-    typedef axom::utilities::detail::TickCountTimer HighPrecisionTimer;
+typedef axom::utilities::detail::TickCountTimer HighPrecisionTimer;
   #else
-    typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
+typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
   #endif
 #endif
 }
 
 
 
-namespace axom {
-namespace utilities {
+namespace axom
+{
+namespace utilities
+{
 
 /*!
  * \brief A simple Timer class to measure execution time.
  *
  * \note The actual timing functionality is implemented using a HighPrecisionTimer
- *  instance.  These are located in the detail namespace 
- *  using the chrono library in C++11, GetTickCount64() on Windows 
+ *  instance.  These are located in the detail namespace
+ *  using the chrono library in C++11, GetTickCount64() on Windows
  *  and glibc's gettimeofday() otherwise.
  *
  *  \note We might want to extend the functionality of the timer class
@@ -98,10 +108,10 @@ public:
    * \param startRunning Indicates whether to start the timer
    *        during construction (default is false)
    */
-  Timer(bool startRunning = false): m_running(startRunning)
+  Timer(bool startRunning = false) : m_running(startRunning)
   {
-      if(m_running)
-          m_hpTimer.start();
+    if(m_running)
+      m_hpTimer.start();
   }
 
   /*!
@@ -118,7 +128,7 @@ public:
    * \brief Returns the elapsed time in seconds.
    * \return t the elapsed time in seconds.
    */
-  double elapsed() { return elapsedTimeInSec();};
+  double elapsed() { return elapsedTimeInSec(); };
 
   /*!
    * \brief Returns the elapsed time in seconds.
@@ -126,9 +136,9 @@ public:
    */
   double elapsedTimeInSec()
   {
-      if(m_running)
-          m_hpTimer.stop();
-      return m_hpTimer.elapsedTimeInSec();
+    if(m_running)
+      m_hpTimer.stop();
+    return m_hpTimer.elapsedTimeInSec();
   }
 
   /*!
@@ -137,9 +147,9 @@ public:
    */
   double elapsedTimeInMilliSec()
   {
-      if(m_running)
-          m_hpTimer.stop();
-      return m_hpTimer.elapsedTimeInMilliSec();
+    if(m_running)
+      m_hpTimer.stop();
+    return m_hpTimer.elapsedTimeInMilliSec();
   }
 
   /*!
@@ -148,9 +158,9 @@ public:
    */
   double elapsedTimeInMicroSec()
   {
-      if(m_running)
-          m_hpTimer.stop();
-      return m_hpTimer.elapsedTimeInMicroSec();
+    if(m_running)
+      m_hpTimer.stop();
+    return m_hpTimer.elapsedTimeInMicroSec();
   }
 
   /*!
@@ -160,8 +170,8 @@ public:
   void reset() { m_running = false; m_hpTimer.reset(); }
 
 private:
-    HighPrecisionTimer  m_hpTimer;
-    bool                m_running;
+  HighPrecisionTimer m_hpTimer;
+  bool m_running;
 };
 
 } // namespace utilities

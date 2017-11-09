@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef CELLTYPE_HPP_
@@ -19,7 +26,8 @@
  * \enum CellType
  * \brief Defines the basic cell types supported by mint.
  */
-enum {
+enum
+{
   MINT_UNDEFINED_CELL = -1, //!< UNDEFINED
 
   MINT_VERTEX,         ///< VERTEX
@@ -41,10 +49,13 @@ enum {
 
 #define MINT_MAX_NUM_NODES 27
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-namespace cell {
+namespace cell
+{
 
 static const int vtk_types[] = {
   1,    // VERTEX          -> VTK_VERTEX

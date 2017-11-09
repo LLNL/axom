@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef POINT_HXX_
@@ -19,8 +26,10 @@
 #include <cstring> // For memcpy()
 #include <ostream> // For print() and operator <<
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T,int NDIMS >
@@ -62,7 +71,8 @@ template < typename T, int NDIMS >
 class Point
 {
 public:
-  enum {
+  enum
+  {
     DIMENSION = NDIMS,
     NBYTES    = NDIMS * sizeof(T)
   };
@@ -79,13 +89,13 @@ public:
    * The rest will be set to zero.  Defaults is NDIMS.
    * If sz is greater than NDIMS, we set all coordinates to val
    */
-  explicit Point(T val = T(), int sz = NDIMS): m_components(val,sz) { }
+  explicit Point(T val = T(), int sz = NDIMS) : m_components(val,sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
-  Point(const NumericArray< T,NDIMS >& arr): m_components(arr) { }
+  Point(const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a point from the first sz values of the input array.
@@ -93,13 +103,13 @@ public:
    * \param [in] sz num values to copy from the vals array. Defaults to NDIMS.
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
-  Point(const T* vals, int sz = NDIMS): m_components(vals,sz) { }
+  Point(const T * vals, int sz = NDIMS) : m_components(vals,sz) { }
 
   /*!
    * \brief Copy constructor.
    * \param [in] other The point to copy
    */
-  Point( const Point& other): m_components( other.m_components) { }
+  Point( const Point& other) : m_components( other.m_components) { }
 
   /*!
    * \brief Destructor.
@@ -140,8 +150,8 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data()             { return m_components.data(); }
+  const T * data() const { return m_components.data(); }
+  T * data()             { return m_components.data(); }
 
   ///@}
 
@@ -157,7 +167,7 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
-  void to_array(T* arr) const { m_components.to_array(arr); }
+  void to_array(T * arr) const { m_components.to_array(arr); }
 
   /*!
    * \brief Equality comparison operator for points
@@ -196,11 +206,24 @@ public:
   static Point midpoint( const Point& A, const Point& B );
 
   /*!
-   * \brief Linearly interpolates two points.
+   * \brief Performs linear interpolation/extrapolation between two points.
+   *
+   * Given points A, B and a weight \f$ \alpha \f$, this method computes
+   * point \f$ P\f$ defined by \f$ P = (1-\alpha) \cdot A + \alpha \cdot B\f$
+   *
    * \param [in] A user-supplied point
    * \param [in] B user-supplied point
-   * \param [in] alpha weight with which to interpolate
-   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B.
+   * \param [in] alpha user-supplied scalar weight \f$ \alpha\f$
+   *
+   * \return P the computed point.
+   *
+   * \note \f$ \forall\alpha \in [0,1] \f$ this method linearly interpolates
+   *  between the two points A, B.
+   * \note \f$ \forall\alpha \not\in [0,1] \f$ the method extrapolates.
+   *
+   * \post \f$ P==A\f$ when \f$ \alpha=0.0\f$
+   * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
+   * \post The return point, P, and the user-supplied points A, B are collinear.
    */
   static Point lerp( const Point& A, const Point& B, double alpha);
 
@@ -237,8 +260,10 @@ typedef Point< double,3 > Point3D;
 //------------------------------------------------------------------------------
 //  Point implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
@@ -258,7 +283,8 @@ inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
 {
   Point< T,NDIMS > mid_point;
 
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
 
     mid_point[ i ] = static_cast<T>(0.5*( A[i]+B[i] ) );
   }
@@ -273,7 +299,13 @@ inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
   const Point< T,NDIMS >& B,
   double alpha)
 {
-  return PointType((1.-alpha)*A.array() + alpha*B.array());
+  PointType res;
+  const double beta = 1.-alpha;
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
+    res[ i ] = beta*A[ i ] + alpha*B[ i ];
+  }
+  return res;
 }
 
 //------------------------------------------------------------------------------
@@ -281,11 +313,12 @@ template < typename T, int NDIMS >
 std::ostream& Point< T, NDIMS >::print(std::ostream& os) const
 {
   os <<"(";
-  for (int dim=0; dim < NDIMS -1; ++dim) {
+  for (int dim=0 ; dim < NDIMS -1 ; ++dim)
+  {
     os << static_cast< typename NonChar< T >::type >(m_components[dim]) << ",";
   }
-  os  << static_cast< typename NonChar< T >::type >(m_components[NDIMS-1])
-      << ")";
+  os << static_cast< typename NonChar< T >::type >(m_components[NDIMS-1])
+     << ")";
 
   return os;
 }

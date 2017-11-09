@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 
@@ -21,41 +28,48 @@
 #include "slam/SizePolicies.hpp"
 #include "slam/StridePolicies.hpp"
 
-namespace axom {
-namespace slam {
-namespace policies {
+namespace axom
+{
+namespace slam
+{
+namespace policies
+{
 
-  /**
-   * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
-   */
-  template<typename StridePolicyType, typename IntType, int VAL = 1> struct StrideToSize;
+/**
+ * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
+ */
+template<typename StridePolicyType, typename IntType, int VAL = 1>
+struct StrideToSize
+{
+  typedef CompileTimeSize<IntType, VAL> SizeType;
+};
 
-  /**
-   * \brief Specialization of StrideToSize trait for a RuntimeStride
-   */
-  template<typename IntType>
-  struct StrideToSize < RuntimeStride<IntType>, IntType >
-  {
-    typedef RuntimeSize<IntType> SizeType;
-  };
+/**
+ * \brief Specialization of StrideToSize trait for a RuntimeStride
+ */
+template<typename IntType>
+struct StrideToSize < RuntimeStride<IntType>, IntType >
+{
+  typedef RuntimeSize<IntType> SizeType;
+};
 
-  /**
-   * \brief Specialization of StrideToSize trait for a CompileTimeStride
-   */
-  template<typename IntType, int VAL>
-  struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
-  {
-    typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
-  };
+/**
+ * \brief Specialization of StrideToSize trait for a CompileTimeStride
+ */
+template<typename IntType, int VAL>
+struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
+{
+  typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
+};
 
-  /**
-   * \brief Specialization of StrideToSize trait for a StrideOne type
-   */
-  template<typename IntType>
-  struct StrideToSize< StrideOne<IntType>, IntType >
-  {
-    typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
-  };
+/**
+ * \brief Specialization of StrideToSize trait for a StrideOne type
+ */
+template<typename IntType>
+struct StrideToSize< StrideOne<IntType>, IntType >
+{
+  typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
+};
 
 
 } // end namespace policies

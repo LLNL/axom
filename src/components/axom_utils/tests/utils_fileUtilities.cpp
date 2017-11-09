@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 #include "gtest/gtest.h"
 #include <fstream>
@@ -57,11 +63,12 @@ TEST(axom_utils_fileUtilities,pathExists)
 {
   using namespace axom::utilities::filesystem;
 
-  std::cout<<"Testing pathExists on file that we know is present (the cwd)."<< std::endl;
+  std::cout<<"Testing pathExists on file "
+           << "that we know is present (the cwd)."<< std::endl;
+
   const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
 
   std::string cwd = axom::utilities::filesystem::getCWD();
   EXPECT_TRUE( pathExists(cwd) );
   EXPECT_FALSE( pathExists( joinPath(cwd,missingFile) ) );
 }
-

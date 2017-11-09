@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 ## mint headers
 set( mint_headers
@@ -81,7 +85,7 @@ blt_add_library(
     DEPENDS_ON axom_utils slic
    )
 install(TARGETS              mint
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               mint-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/mint
         )

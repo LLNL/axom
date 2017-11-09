@@ -1,22 +1,27 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
 # Produced at the Lawrence Livermore National Laboratory.
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 ## Axom version information that go into the generated axom/config.hpp
 ## NOTE: if we are building from a Git repo these values will be autodetected,
 ##       otherwise, the hard-coded values will go in to the config.
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 2)
-set(AXOM_VERSION_PATCH 6)
-set(AXOM_VERSION_FULL "v${AXOM_VERSION_MAJOR}.")
-string(APPEND AXOM_VERSION_FULL "${AXOM_VERSION_MINOR}.")
-string(APPEND AXOM_VERSION_FULL "${AXOM_VERSION_PATCH}" )
+set(AXOM_VERSION_PATCH 7)
+string(CONCAT AXOM_VERSION_FULL 
+    "v${AXOM_VERSION_MAJOR}"
+    ".${AXOM_VERSION_MINOR}"
+    ".${AXOM_VERSION_PATCH}" )
 
 ##------------------------------------------------------------------------------
 ## extract_version_components( <tag>, <prefix> )

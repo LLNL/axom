@@ -1,21 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
- */
-
-/*!
- ******************************************************************************
+ * This file is part of Axom.
  *
- * \file Group.cpp
+ * For details about use and distribution, please read axom/LICENSE.
  *
- * \brief   Implementation file for Group class.
- *
- ******************************************************************************
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 // Associated header file
@@ -959,7 +956,7 @@ Group * Group::moveGroup(Group * group)
     SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getName() <<
-                   "' already has a child Group named'" << group->getName() <<
+                   "' already has a child Group named '" << group->getName() <<
                    "' so Group move operation cannot happen");
 
     return AXOM_NULLPTR;
@@ -987,7 +984,7 @@ Group * Group::copyGroup(Group * group)
     SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getName() <<
-                   "' already has a child Group named'" << group->getName() <<
+                   "' already has a child Group named '" << group->getName() <<
                    "' so Group copy operation cannot happen");
 
     return AXOM_NULLPTR;

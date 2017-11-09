@@ -23,24 +23,27 @@
 
 
 
-namespace axom {
-namespace common {
-namespace detail {
+namespace axom
+{
+namespace common
+{
+namespace detail
+{
 
 
 #ifdef AXOM_USE_CXX11
-  typedef std::int8_t int8_t;
-  typedef std::uint8_t uint8_t;
+typedef std::int8_t int8_t;
+typedef std::uint8_t uint8_t;
 
-  typedef std::int16_t int16_t;
-  typedef std::uint16_t uint16_t;
+typedef std::int16_t int16_t;
+typedef std::uint16_t uint16_t;
 
-  typedef std::int32_t int32_t;
-  typedef std::uint32_t uint32_t;
+typedef std::int32_t int32_t;
+typedef std::uint32_t uint32_t;
 
   #ifndef  AXOM_NO_INT64_T
-  typedef std::int64_t int64_t;
-  typedef std::uint64_t uint64_t;
+typedef std::int64_t int64_t;
+typedef std::uint64_t uint64_t;
   #endif
 
 #else
@@ -92,48 +95,48 @@ namespace detail {
 
 
 /* 7.18.1.1  Exact-width integer types */
-  typedef signed char int8_t;
-  typedef unsigned char uint8_t;
+typedef signed char int8_t;
+typedef unsigned char uint8_t;
 
-  typedef short int16_t;
-  typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned short uint16_t;
 
-  typedef int int32_t;
-  typedef unsigned uint32_t;
+typedef int int32_t;
+typedef unsigned uint32_t;
 
-  typedef __AXOM_COMMON_STDINT_LONGLONG int64_t;
-  typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint64_t;
+typedef __AXOM_COMMON_STDINT_LONGLONG int64_t;
+typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint64_t;
 
 
 /* 7.18.1.2  Minimum-width integer types */
-  typedef signed char int_least8_t;
-  typedef unsigned char uint_least8_t;
+typedef signed char int_least8_t;
+typedef unsigned char uint_least8_t;
 
-  typedef short int_least16_t;
-  typedef unsigned short uint_least16_t;
+typedef short int_least16_t;
+typedef unsigned short uint_least16_t;
 
-  typedef int int_least32_t;
-  typedef unsigned uint_least32_t;
+typedef int int_least32_t;
+typedef unsigned uint_least32_t;
 
-  typedef __AXOM_COMMON_STDINT_LONGLONG int_least64_t;
-  typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint_least64_t;
+typedef __AXOM_COMMON_STDINT_LONGLONG int_least64_t;
+typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint_least64_t;
 
 
 /*  7.18.1.3  Fastest minimum-width integer types
  *  Not actually guaranteed to be fastest for all purposes
  *  Here we use the exact-width types for 8 and 16-bit ints.
  */
-  typedef char int_fast8_t;
-  typedef unsigned char uint_fast8_t;
+typedef char int_fast8_t;
+typedef unsigned char uint_fast8_t;
 
-  typedef short int_fast16_t;
-  typedef unsigned short uint_fast16_t;
+typedef short int_fast16_t;
+typedef unsigned short uint_fast16_t;
 
-  typedef int int_fast32_t;
-  typedef unsigned int uint_fast32_t;
+typedef int int_fast32_t;
+typedef unsigned int uint_fast32_t;
 
-  typedef __AXOM_COMMON_STDINT_LONGLONG int_fast64_t;
-  typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint_fast64_t;
+typedef __AXOM_COMMON_STDINT_LONGLONG int_fast64_t;
+typedef unsigned __AXOM_COMMON_STDINT_LONGLONG uint_fast64_t;
 
 
   #undef __AXOM_COMMON_STDINT_LONGLONG

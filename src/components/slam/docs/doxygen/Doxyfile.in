@@ -3,6 +3,7 @@ PROJECT_BRIEF = "SLAM: Set-theoretic Lightweight API for Meshes. Reusable compon
 INPUT = @PROJECT_SOURCE_DIR@/src @PROJECT_SOURCE_DIR@/src/policies @PROJECT_SOURCE_DIR@/examples @PROJECT_SOURCE_DIR@/examples/lulesh2.0.3 @PROJECT_SOURCE_DIR@/examples/tinyHydro @PROJECT_SOURCE_DIR@/README.md
 GENERATE_XML = YES
 USE_MATHJAX = YES
+MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
 FILE_PATTERNS += *.md *.markdown *.cpp *.hpp
 TAB_SIZE               = 2
 INLINE_INHERITED_MEMB  = YES

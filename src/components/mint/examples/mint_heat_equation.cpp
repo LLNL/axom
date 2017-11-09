@@ -1,13 +1,21 @@
 /*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+#include "axom/Types.hpp"                     // for uint32
 #include "axom_utils/FileUtilities.hpp"       // for getDirName, makeDirsForPath
 #include "axom_utils/Utilities.hpp"           // for abs, processAbort
 #include "mint/FieldData.hpp"                 // for FieldData
@@ -21,8 +29,10 @@
 #include <sstream>                            // for std::stringstream
 #include <string>                             // for std::string
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 class Gaussian2D
 {
@@ -65,7 +75,8 @@ public:
   void setCovar( const double covar[3] )
   {
     double det = covar[0] * covar[1] - covar[2] * covar[2];
-    if ( covar[0] <= 0 || covar[1] <= 0 || det == 0 ) {
+    if ( covar[0] <= 0 || covar[1] <= 0 || det == 0 )
+    {
       SLIC_ERROR( "Invalid covariance: (" << covar[0] << ", " << covar[1] <<
                   ", " << covar[2] << ") must be positive definite." );
     }
@@ -120,7 +131,7 @@ public:
                                           = \alpha \nabla^2 U \f$.
    */
   HeatEquationSolver( double h, const double lower_bound[2],
-                      const double upper_bound[2] ):
+                      const double upper_bound[2] ) :
     m_mesh( create_mesh( h, lower_bound, upper_bound) ),
     m_h(h)
   {}
@@ -157,12 +168,14 @@ public:
     m_mesh->getOrigin( origin );
     int size[3];
     m_mesh->getExtentSize( size );
-    double* t = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    double * t = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
 
     int idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
-    for ( int j = 0; j < size[1]; ++j ) {
-      for ( int i = 0; i < size[0]; ++i ) {
+    for ( int j = 0 ; j < size[1] ; ++j )
+    {
+      for ( int i = 0 ; i < size[0] ; ++i )
+      {
         t[ idx++ ] = pulse.evaluate( node_pos );
         node_pos[0] += m_h;
       }
@@ -182,35 +195,43 @@ public:
   void solve( double alpha, double dt, double t_max, int period,
               const std::string& path )
   {
+    typedef axom::common::uint32 uint32;
+
     const int num_nodes = m_mesh->getMeshNumberOfNodes();
-    double* new_temp = new double[num_nodes];
-    double* prev_temp = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    double * new_temp = new double[num_nodes];
+    double * prev_temp =
+      m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
 
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */
     copy_boundary( prev_temp, new_temp );
 
-    uint cur_dump = 0;
+    uint32 cur_dump = 0;
     double cur_time = 0.0;
-    const uint num_cycles = std::ceil( t_max / dt );
-    for (uint cycle = 0; cycle < num_cycles; ++cycle ) {
-      if ( cycle == num_cycles - 1 ) {
+    const uint32 num_cycles = std::ceil( t_max / dt );
+    for (uint32 cycle = 0 ; cycle < num_cycles ; ++cycle )
+    {
+      if ( cycle == num_cycles - 1 )
+      {
         SLIC_INFO( "Cycle: " << cycle << " Time: " << cur_time << "\n" );
 
       }
-      else {
+      else
+      {
         SLIC_INFO( "Cycle: " << cycle << " Time: " << cur_time << "\r" );
       }
       slic::flushStreams();
 
-      if ( cycle % period == 0 ) {
+      if ( cycle % period == 0 )
+      {
         write_dump( path, cur_dump++ );
       }
 
       step( alpha, dt, prev_temp, new_temp );
       std::memcpy( prev_temp, new_temp, num_nodes * sizeof(double) );
 
-      if ( cur_time + dt > t_max ) {
+      if ( cur_time + dt > t_max )
+      {
         dt = t_max - cur_time;
       }
       cur_time += dt;
@@ -227,7 +248,7 @@ private:
    * \param [in] prev_temp the data to copy.
    * \param [in] new_temp the buffer to copy into.
    */
-  void copy_boundary( const double* prev_temp, double* new_temp )
+  void copy_boundary( const double * prev_temp, double * new_temp )
   {
     int size[3];
     m_mesh->getExtentSize( size );
@@ -241,7 +262,8 @@ private:
     std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
-    for ( int idx = size[0]; idx < offset; idx += size[0] ) {
+    for ( int idx = size[0] ; idx < offset ; idx += size[0] )
+    {
       new_temp[ idx ] = prev_temp[ idx ];
       new_temp[ idx + size[0] - 1 ] = prev_temp[ idx + size[0] - 1 ];
     }
@@ -259,8 +281,8 @@ private:
       T_{i, j}^n + \frac{\alpha \Delta t}{h^2}  \left( T_{i - 1, j}^n +
       T_{i + 1, j}^n + T_{i, j - 1}^n + T_{i, j + 1}^n \right) \f$.
    */
-  void step( double alpha, double dt, const double* prev_temp,
-             double* new_temp )
+  void step( double alpha, double dt, const double * prev_temp,
+             double * new_temp )
   {
     int size[3];
     m_mesh->getExtentSize( size );
@@ -272,9 +294,11 @@ private:
     const int jp = size[0];
     const int Nj = size[1] - 1;
     const int Ni = size[0] - 1;
-    for ( int j = 1; j < Nj; ++j ) {
+    for ( int j = 1 ; j < Nj ; ++j )
+    {
       const int j_offset = j * jp;
-      for ( int i = 1; i < Ni; ++i ) {
+      for ( int i = 1 ; i < Ni ; ++i )
+      {
 
         const int idx = i + j_offset;
         const int north = idx + jp;
@@ -298,10 +322,12 @@ private:
    */
   void write_dump( const std::string& path, int cur_dump )
   {
-    std::stringstream cur_path; 
+    std::stringstream cur_path;
     cur_path << path << "_" << cur_dump << ".vtk";
-    if ( write_vtk( m_mesh, cur_path.str() ) != 0 ) {
-      SLIC_WARNING( "Unable to write to file: " << cur_path << std::endl );
+    if ( write_vtk( m_mesh, cur_path.str() ) != 0 )
+    {
+      SLIC_WARNING( "Unable to write to file: "
+                    << cur_path.str() << std::endl );
     }
   }
 
@@ -312,11 +338,12 @@ private:
    * \param [in] upper_bound the upper right corner of the bounding box.
    * \return a pointer to the new uniform mesh.
    */
-  static UniformMesh* create_mesh( const double h, const double lower_bound[2],
-                                   const double upper_bound[2] )
+  static UniformMesh * create_mesh( const double h, const double lower_bound[2],
+                                    const double upper_bound[2] )
   {
     int ext[4];
-    for ( int i = 0; i < 2; ++i ) {
+    for ( int i = 0 ; i < 2 ; ++i )
+    {
       double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
       ext[ 2 * i ] = 0;
       ext[ 2 * i + 1 ] = std::ceil( len / h );
@@ -325,14 +352,14 @@ private:
     UniformMesh * mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
     const int num_nodes = mesh->getMeshNumberOfNodes();
 
-    FieldVariable< double >* t =
+    FieldVariable< double > * t =
       new FieldVariable< double >("temperature", num_nodes);
     mesh->getNodeFieldData()->addField(t);
 
     return mesh;
   }
 
-  UniformMesh* m_mesh;
+  UniformMesh * m_mesh;
   double m_h;
 };
 
@@ -390,28 +417,33 @@ typedef struct
  * \param [in] argc the number of arguments.
  * \param [in] argv the array of arguments.
  */
-void parse_arguments( Arguments& args, int argc, const char** argv )
+void parse_arguments( Arguments& args, int argc, const char * * argv )
 {
-  for ( int i = 1; i < argc; ++i ) {
+  for ( int i = 1 ; i < argc ; ++i )
+  {
     if ( std::strcmp( argv[ i ], "-h" ) == 0 ||
-         std::strcmp( argv[ i ], "-help" ) == 0 ) {
+         std::strcmp( argv[ i ], "-help" ) == 0 )
+    {
       SLIC_INFO( help_string );
       axom::utilities::processAbort();
     }
     else if ( std::strcmp( argv[ i ], "-p") == 0 ||
-              std::strcmp( argv[ i ], "-path") == 0 ) {
+              std::strcmp( argv[ i ], "-path") == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.path = argv[ i + 1];
       i++;
     }
     else if ( std::strcmp( argv[ i ], "-s" ) == 0 ||
-              std::strcmp( argv[ i ], "-spacing" ) == 0 ) {
+              std::strcmp( argv[ i ], "-spacing" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.h = atof( argv[ i + 1 ] );
       i++;
     }
     else if ( std::strcmp( argv[ i ], "-b" ) == 0 ||
-              std::strcmp( argv[ i ], "-bounds" ) == 0 ) {
+              std::strcmp( argv[ i ], "-bounds" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 4, "Not enough arguments." );
       args.lower_bound[0] = atof( argv[ i + 1 ] );
       args.lower_bound[1] = atof( argv[ i + 2 ] );
@@ -420,61 +452,71 @@ void parse_arguments( Arguments& args, int argc, const char** argv )
       i += 4;
     }
     else if ( std::strcmp( argv[ i ], "-a" ) == 0 ||
-              std::strcmp( argv[ i ], "-amplitude" ) == 0 ) {
+              std::strcmp( argv[ i ], "-amplitude" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.amplitude = atof( argv[ i + 1 ] );
       i++;
     }
     else if ( std::strcmp( argv[ i ], "-m" ) == 0 ||
-              std::strcmp( argv[ i ], "-mean" ) == 0 ) {
+              std::strcmp( argv[ i ], "-mean" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 2, "Not enough arguments." );
       args.mean[0] = atof( argv[ i + 1 ] );
       args.mean[1] = atof( argv[ i + 2 ] );
       i += 2;
     }
     else if ( std::strcmp( argv[ i ], "-c" ) == 0 ||
-              std::strcmp( argv[ i ], "-covariance" ) == 0 ) {
+              std::strcmp( argv[ i ], "-covariance" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 3, "Not enough arguments." );
       args.covar[0] = atof( argv[ i + 1 ] );
       args.covar[1] = atof( argv[ i + 2 ] );
       args.covar[2] = atof( argv[ i + 3 ] );
       i += 3;
     }
-    else if ( std::strcmp( argv[ i ], "-alpha" ) == 0 ) {
+    else if ( std::strcmp( argv[ i ], "-alpha" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.alpha = atof( argv[ i + 1 ] );
       i++;
     }
-    else if ( std::strcmp( argv[ i ], "-dt" ) == 0 ) {
+    else if ( std::strcmp( argv[ i ], "-dt" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.dt = atof( argv[ i + 1 ] );
       i++;
     }
-    else if ( std::strcmp( argv[ i ], "-t" ) == 0 ) {
+    else if ( std::strcmp( argv[ i ], "-t" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.t_max = atof( argv[ i + 1 ] );
       i++;
     }
     else if ( std::strcmp( argv[ i ], "-d" ) == 0 ||
-              std::strcmp( argv[ i ], "-dumpPeriod" ) == 0 ) {
+              std::strcmp( argv[ i ], "-dumpPeriod" ) == 0 )
+    {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
       args.period = atof( argv[ i + 1 ] );
       i++;
     }
-    else {
+    else
+    {
       SLIC_ERROR( "Unrecognized argument." );
     }
   }
 
   /* Validate arguments. */
   if ( args.lower_bound[0] >= args.upper_bound[0] ||
-       args.lower_bound[1] >= args.upper_bound[1] ) {
+       args.lower_bound[1] >= args.upper_bound[1] )
+  {
     SLIC_ERROR( "Invalid bounding box: (" << args.lower_bound[0] << ", " <<
                 args.lower_bound[1] << ") x (" << args.upper_bound[0] << ", " <<
                 args.upper_bound[1] << ")" );
   }
   if ( args.covar[0] <= 0 || args.covar[1] <= 0 ||
-       args.covar[2] * args.covar[2] >= args.covar[0] * args.covar[1] ) {
+       args.covar[2] * args.covar[2] >= args.covar[0] * args.covar[1] )
+  {
     SLIC_ERROR( "Invalid covariance: (" << args.covar[0] << ", " <<
                 args.covar[1] << ", " << args.covar[2] <<
                 ") must be positive definite." );
@@ -487,12 +529,14 @@ void parse_arguments( Arguments& args, int argc, const char** argv )
 
   std::string dir;
   axom::utilities::filesystem::getDirName( dir, args.path );
-  if ( axom::utilities::filesystem::makeDirsForPath(dir) != 0 ) {
+  if ( axom::utilities::filesystem::makeDirsForPath(dir) != 0 )
+  {
     SLIC_ERROR( "Could not make directories for Dump path: " << args.path );
   }
 
   double dt_max = args.h * args.h / ( 4 * args.alpha );
-  if ( args.dt >= dt_max ) {
+  if ( args.dt >= dt_max )
+  {
     SLIC_WARNING( "The chosen time step " << args.dt << " is larger than " <<
                   dt_max << " this will lead to numerical instability.\n" );
   }
@@ -526,9 +570,9 @@ void init()
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
 
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE>";
-  axom::slic::GenericOutputStream* defaultStream =
+  axom::slic::GenericOutputStream * defaultStream =
     new axom::slic::GenericOutputStream( &std::cout );
-  axom::slic::GenericOutputStream* compactStream =
+  axom::slic::GenericOutputStream * compactStream =
     new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
   axom::slic::addStreamToMsgLevel(  defaultStream,
                                     axom::slic::message::Error );
@@ -547,7 +591,7 @@ void finalize()
   axom::slic::finalize();
 }
 
-int main( int argc, const char** argv )
+int main( int argc, const char * * argv )
 {
   init();
 

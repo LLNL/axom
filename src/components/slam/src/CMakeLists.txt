@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 ######################################
 # Specify all headers and source files
 ######################################
@@ -72,7 +86,7 @@ blt_add_library(
     DEPENDS_ON  ${slam_depends_on}
     )
 install(TARGETS              slam
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               slam-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/slam
         )

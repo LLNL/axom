@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -24,8 +31,10 @@
 // C/C++ includes
 #include <iostream> // for ostream
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class GenericOutputStream
@@ -36,7 +45,7 @@ namespace slic {
  *
  * \see LogStream Logger
  */
-class GenericOutputStream:public LogStream
+class GenericOutputStream : public LogStream
 {
 public:
 
@@ -45,7 +54,7 @@ public:
    * \param [in] os pointer to a user-supplied ostream instance.
    * \pre os != NULL
    */
-  GenericOutputStream( std::ostream* os );
+  GenericOutputStream( std::ostream * os );
 
   /*!
    * \brief Constructs a GenericOutputStream instance with the given stream and
@@ -54,7 +63,7 @@ public:
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
    */
-  GenericOutputStream( std::ostream* os, const std::string& format );
+  GenericOutputStream( std::ostream * os, const std::string& format );
 
   /*!
    * \brief Destructor.
@@ -70,13 +79,14 @@ public:
                        bool filter_duplicates );
 private:
 
-  std::ostream* m_stream;
+  std::ostream * m_stream;
 
   /*!
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
    */
-  GenericOutputStream(): m_stream( static_cast< std::ostream* >( AXOM_NULLPTR ) )
+  GenericOutputStream() : m_stream(
+      static_cast< std::ostream * >( AXOM_NULLPTR ) )
   {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);

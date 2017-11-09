@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 if(ENABLE_PYTHON_API)
     set(ENABLE_SHARED_LIBS TRUE)
 endif(ENABLE_PYTHON_API)
@@ -12,8 +26,8 @@ axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 # reduction capabilities for parallel (MPI) executables.It is not meant for
 # serial (non-mpi) executables.
 if(ENABLE_MPI)
-  axom_add_component( COMPONENT_NAME lumberjack
-                     DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
+    axom_add_component( COMPONENT_NAME lumberjack
+                        DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
 endif()
 
 axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
@@ -23,11 +37,7 @@ axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
 if ( BOOST_FOUND )
-  axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-endif()
-
-if(ENABLE_MPI)
-  axom_add_component(COMPONENT_NAME spio DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+    axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 endif()
 
 
@@ -37,8 +47,8 @@ endif()
 ## (e.g. that slic has a target named 'slic')
 set(axom_components axom_utils lumberjack slic primal slam sidre mint quest spio)
 foreach(comp ${axom_components})
-   string(TOUPPER ${comp} COMP)
-   if(ENABLE_${COMP})
-       add_dependencies(${comp} copy_axom_includes)
-   endif()
+    string(TOUPPER ${comp} COMP)
+    if(ENABLE_${COMP})
+        add_dependencies(${comp} copy_axom_includes)
+    endif()
 endforeach()

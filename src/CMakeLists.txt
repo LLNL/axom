@@ -1,4 +1,23 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 cmake_minimum_required(VERSION 3.1)
+if("${CMAKE_VERSION}" VERSION_GREATER 3.3)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
+message(STATUS "Using cmake version ${CMAKE_VERSION}")
 
 ################################
 # axom project
@@ -21,7 +40,7 @@ if (DEFINED BLT_SOURCE_DIR)
 else()
     # Use internal BLT if no BLT_SOURCE_DIR is given
 
-    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/blt" CACHE PATH "")
+    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
             "The BLT submodule is not present. "

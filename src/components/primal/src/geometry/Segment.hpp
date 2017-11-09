@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef SEGMENT_HPP_
@@ -14,8 +21,10 @@
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class
@@ -85,11 +94,13 @@ private:
 //------------------------------------------------------------------------------
 //  Segment Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 template < typename T, int NDIMS >
-Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B):
+Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
   m_source( A ),
   m_target( B )
 {}

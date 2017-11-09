@@ -1,13 +1,17 @@
 // wrapSLIC.cpp
 // This is generated code, do not edit
 //
-// Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-// Produced at the Lawrence Livermore National Laboratory.
+// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-741217
 //
 // All rights reserved.
 //
-// This source code cannot be distributed without permission and
-// further review from Lawrence Livermore National Laboratory.
+// This file is part of Axom.
+//
+// For details about use and distribution, please read axom/LICENSE.
 //
 // wrapSLIC.cpp
 #include "wrapSLIC.h"
@@ -16,8 +20,10 @@
 #include "shroudrt.hpp"
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -91,10 +97,12 @@ void SLIC_get_active_logger_name_bufferify(char * name, int Nname)
 {
 // splicer begin function.get_active_logger_name_bufferify
   std::string SH_rv = getActiveLoggerName();
-  if (SH_rv.empty()) {
+  if (SH_rv.empty())
+  {
     std::memset(name, ' ', Nname);
   }
-  else {
+  else
+  {
     shroud_FccCopy(name, Nname, SH_rv.c_str());
   }
   return;

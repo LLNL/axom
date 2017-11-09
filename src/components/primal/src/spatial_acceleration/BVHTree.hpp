@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef BVHTREE_HPP_
@@ -27,8 +34,10 @@
 #include <sstream> // std::ostringstream
 #include <vector>  // for std::vector
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class BVHTree
@@ -175,7 +184,7 @@ public:
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
    * \post arryPtr != AXOM_NULLPTR
    */
-  const int* getBucketObjectArray( int bucketIdx ) const;
+  const int * getBucketObjectArray( int bucketIdx ) const;
 
   /*!
    * \brief Returns a const reference to the bounding box of the given object.
@@ -226,7 +235,7 @@ public:
    * \note Primarily used for debugging.
    */
   void writeVtkFile( const std::string& fileName,
-                     const int* bins,
+                     const int * bins,
                      int nbins ) const;
 
 private:
@@ -458,11 +467,13 @@ private:
 //------------------------------------------------------------------------------
 //           BVHTree Public API Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 template < typename T, int NDIMS >
-BVHTree< T,NDIMS >::BVHTree( int maxNumLevels ):
+BVHTree< T,NDIMS >::BVHTree( int maxNumLevels ) :
   m_numLevels( 0 ),
   m_maxNumLevels( maxNumLevels )
 
@@ -476,7 +487,7 @@ BVHTree< T,NDIMS >::BVHTree( int maxNumLevels ):
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-BVHTree< T,NDIMS >::BVHTree( int estNumObjects, int maxNumLevels ):
+BVHTree< T,NDIMS >::BVHTree( int estNumObjects, int maxNumLevels ) :
   m_numLevels( 0 ),
   m_maxNumLevels( maxNumLevels )
 
@@ -514,8 +525,8 @@ void BVHTree< T, NDIMS >::insert( const BoxType& box, const T& data )
   const int idx = static_cast< int >( m_objects.size() )-1;
 
   // STEP 2: create the tree if empty
-  if ( this->empty() ) {
-
+  if ( this->empty() )
+  {
     ++m_numLevels;
 
     m_tree.resize( 1 );
@@ -524,7 +535,6 @@ void BVHTree< T, NDIMS >::insert( const BoxType& box, const T& data )
     m_tree[ 0 ].Refined = false;
     m_tree[ 0 ].Void    = false;
     m_tree[ 0 ].ObjectArray.reserve( m_objects.size() );
-
   } // END if
 
   // STEP 3: Update bounds of the root bounding box to encapsulate the
@@ -539,25 +549,26 @@ void BVHTree< T, NDIMS >::insert( const BoxType& box, const T& data )
 template < typename T, int NDIMS >
 void BVHTree< T,NDIMS >::resizeToLevel( int level )
 {
-  if ( level < m_numLevels ) {
+  if ( level < m_numLevels )
+  {
     /* short-circuit */
     return;
   }
 
   const int begin = BVHTree::level_begin( level );
   const int end   = BVHTree::level_end( level );
-  if ( end >= static_cast< int >( m_tree.size() ) ) {
+  if ( end >= static_cast< int >( m_tree.size() ) )
+  {
 
     const int new_size = end+1;
     m_tree.resize( new_size );
 
     // initialize the buckets at the new level
-    for ( int i=begin; i < new_size; ++i) {
-
+    for ( int i=begin ; i < new_size ; ++i)
+    {
       m_tree[ i ].Level   = level;
       m_tree[ i ].Void    = true;
       m_tree[ i ].Refined = false;
-
     }   // END for
 
     ++m_numLevels;
@@ -589,8 +600,8 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
   m_tree[ lChild  ].ObjectArray.reserve( estChildSize );
 
   // STEP 2: loop over objects and place on right or left bucket.
-  for ( int i=0; i < numObjects; ++i ) {
-
+  for ( int i=0 ; i < numObjects ; ++i )
+  {
     // STEP A: get index in to the object list
     const int objIdx = m_tree[ parent ].ObjectArray[ i ];
     SLIC_ASSERT( ( objIdx >= 0 ) &&
@@ -604,20 +615,17 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
     const BVHTree::PointType centroid = objBox.getCentroid();
 
     int bucketIdx = -1;
-    if ( rightBox.contains( centroid ) ) {
-
+    if ( rightBox.contains( centroid ) )
+    {
       bucketIdx = rChild;
-
     }
-    else if ( leftBox.contains( centroid ) ) {
-
+    else if ( leftBox.contains( centroid ) )
+    {
       bucketIdx = lChild;
-
     }
-    else {
-
+    else
+    {
       SLIC_ERROR( "Failed to place object in bucket!" );
-
     }
 
     SLIC_ASSERT( (bucketIdx >= 0) &&
@@ -626,15 +634,16 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
     m_tree[ bucketIdx ].Box.addBox( objBox );
     m_tree[ bucketIdx ].ObjectArray.push_back( objIdx );
     m_objects[ objIdx ].BucketIdx = bucketIdx;
-
   } // END for all objects
 
   // STEP 3: unmark children as void
-  if ( m_tree[ rChild ].ObjectArray.size() > 0 ) {
+  if ( m_tree[ rChild ].ObjectArray.size() > 0 )
+  {
     m_tree[ rChild ].Void = false;
   }
 
-  if ( m_tree[ lChild ].ObjectArray.size() > 0 ) {
+  if ( m_tree[ lChild ].ObjectArray.size() > 0 )
+  {
     m_tree [ lChild ].Void = false;
   }
   m_tree[ parent ].ObjectArray.clear();
@@ -688,7 +697,8 @@ bool BVHTree< T,NDIMS >::shouldRefine( int idx, int threshold )
   const int numObjects = m_tree[ idx ].ObjectArray.size();
   const int level      = m_tree[ idx ].Level;
 
-  if ( (numObjects > threshold) && (level < m_maxNumLevels-1) ) {
+  if ( (numObjects > threshold) && (level < m_maxNumLevels-1) )
+  {
     return true;
   }
 
@@ -702,7 +712,8 @@ void BVHTree< T,NDIMS >::build( int threshold )
   SLIC_ASSERT( threshold >= 1 );
 
   // STEP 0: check if the tree is empty
-  if ( this->empty() ) {
+  if ( this->empty() )
+  {
     /* short-circuit, tree is empty */
     return;
   }
@@ -718,15 +729,15 @@ void BVHTree< T,NDIMS >::build( int threshold )
 //  ++count;
 
   // STEP 2: Iteratively subdivide until threshold criteria is satisfied
-  while ( !workqueue.empty() ) {
-
+  while ( !workqueue.empty() )
+  {
     // STEP A: pop next bucket from the queue
     int bucketIdx = workqueue.front();
     workqueue.pop();
 
     // STEP B: check if we should refine this bucket
-    if ( this->shouldRefine( bucketIdx, threshold ) ) {
-
+    if ( this->shouldRefine( bucketIdx, threshold ) )
+    {
       // STEP C: refine bucket
       this->refine( bucketIdx );
       SLIC_ASSERT( m_tree[ bucketIdx ].Refined );
@@ -735,14 +746,15 @@ void BVHTree< T,NDIMS >::build( int threshold )
       int leftIdx  = BVHTree::left_child( bucketIdx );
       int rightIdx = BVHTree::right_child( bucketIdx );
 
-      if ( this->shouldRefine( leftIdx,threshold) ) {
+      if ( this->shouldRefine( leftIdx,threshold) )
+      {
         workqueue.push( leftIdx );
       }
 
-      if ( this->shouldRefine( rightIdx,threshold ) ) {
+      if ( this->shouldRefine( rightIdx,threshold ) )
+      {
         workqueue.push( rightIdx );
       }
-
     }   // END if > threshold
 
 //      oss.clear();
@@ -767,7 +779,8 @@ void BVHTree< T,NDIMS >::clear()
 template < typename T, int NDIMS >
 bool BVHTree< T,NDIMS >::contains( const PointType& pt ) const
 {
-  if ( this->empty() ) {
+  if ( this->empty() )
+  {
     return false;
   }
 
@@ -784,10 +797,9 @@ inline double BVHTree< T,NDIMS >::getMinSqDistanceToBucket(
 
   double dist = std::numeric_limits< double >::max();
 
-  if ( !m_tree[ bucketIdx ].Void ) {
-
+  if ( !m_tree[ bucketIdx ].Void )
+  {
     dist = squared_distance( pt, m_tree[ bucketIdx ].Box );
-
   }
 
   return ( dist );
@@ -803,19 +815,17 @@ inline double BVHTree< T,NDIMS >::getMaxSqDistanceToBucket(
 
   double dist = std::numeric_limits< double >::min();
 
-  if ( !m_tree[ bucketIdx ].Void ) {
-
+  if ( !m_tree[ bucketIdx ].Void )
+  {
     std::vector< PointType > pnts;
     BoxType::getPoints( m_tree[ bucketIdx ].Box, pnts );
     SLIC_ASSERT( pnts.size()==4 || pnts.size()==8 );
 
     const int npoints = pnts.size();
-    for ( int i=0; i < npoints; ++i ) {
-
+    for ( int i=0 ; i < npoints ; ++i )
+    {
       dist = std::max( dist, squared_distance( pt, pnts[ i ] ) );
-
     }   // END for all points
-
   }
 
   return dist;
@@ -830,18 +840,16 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
   SLIC_ASSERT( candidate_buckets.size()==0 );
 
   // STEP 0: if empty, or just a single level return immediately
-  if ( this->empty() ) {
-
+  if ( this->empty() )
+  {
     /* short-circuit */
     return;
-
   }
-  else if ( m_numLevels == 1 ) {
-
+  else if ( m_numLevels == 1 )
+  {
     /* short-circuit */
     candidate_buckets.push_back( 0 );
     return;
-
   }
 
   const double TOL = 1.0e-9;
@@ -864,10 +872,11 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
   // buckets that are too far away from the query point, pt, until a
   // first set of candidate leaf buckets is attained. This also, computes
   // the estLowerBound and estUpperBound
-  for ( int level=1; level < m_numLevels; ++level ) {
-
+  for ( int level=1 ; level < m_numLevels ; ++level )
+  {
     const int nbuckets = buckets_to_check.size();
-    if ( nbuckets==0 ) {
+    if ( nbuckets==0 )
+    {
       /* short-circuit */
       break;
     }
@@ -875,17 +884,18 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
     // STEP 3.A: find closest bucket, and lowerDistBound
     int closest_bucket    = -1;
     double lowerDistBound = std::numeric_limits< double >::max();
-    for ( int j=0; j < nbuckets; ++j ) {
+    for ( int j=0 ; j < nbuckets ; ++j )
+    {
 
       const int bucketIdx = buckets_to_check[ j ];
       SLIC_ASSERT( m_tree[ bucketIdx ].Level == level );
 
       const double d2b = this->getMinSqDistanceToBucket( bucketIdx, pt );
-      if ( d2b < lowerDistBound ) {
+      if ( d2b < lowerDistBound )
+      {
         lowerDistBound = d2b;
         closest_bucket = bucketIdx;
       }
-
     }   // END for all buckets
 
     SLIC_ASSERT( closest_bucket >= 0 &&
@@ -896,20 +906,24 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
       this->getMaxSqDistanceToBucket( closest_bucket,pt );
 
     // STEP 3.C: find candidate buckets & prune buckets that are too far
-    for ( int j=0; j < nbuckets; ++j ) {
+    for ( int j=0 ; j < nbuckets ; ++j )
+    {
 
       const int bucketIdx = buckets_to_check[ j ];
       bool keep           = false;
 
-      if ( bucketIdx == closest_bucket ) {
+      if ( bucketIdx == closest_bucket )
+      {
 
         keep = true;
 
       }
-      else {
+      else
+      {
 
         const double d2b = this->getMinSqDistanceToBucket( bucketIdx, pt );
-        if ( d2b <= (upperDistBound+TOL) ) {
+        if ( d2b <= (upperDistBound+TOL) )
+        {
 
           keep = true;
 
@@ -917,18 +931,21 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
       }    // END else
 
-      if ( keep && m_tree[ bucketIdx ].Refined ) {
+      if ( keep && m_tree[ bucketIdx ].Refined )
+      {
 
         buckets_to_check.push_back(  BVHTree::left_child( bucketIdx ) );
         buckets_to_check.push_back(  BVHTree::right_child( bucketIdx ) );
 
       }    // END if
-      else if ( keep && !m_tree[ bucketIdx ].Void ) {
+      else if ( keep && !m_tree[ bucketIdx ].Void )
+      {
 
         first_set_candidates.push_back( bucketIdx );
 
         double minDist = this->getMinSqDistanceToBucket( bucketIdx,pt );
-        if ( minDist < estLowerBound ) {
+        if ( minDist < estLowerBound )
+        {
           globalClosestBucketIdx = bucketIdx;
           estLowerBound = minDist;
           estUpperBound = this->getMaxSqDistanceToBucket( bucketIdx, pt );
@@ -954,13 +971,16 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
   candidate_buckets.reserve( numCandidates );
   candidate_buckets.push_back( globalClosestBucketIdx );
 
-  for ( int i=0; i < numCandidates; ++i ) {
+  for ( int i=0 ; i < numCandidates ; ++i )
+  {
 
     const int bucketIdx = first_set_candidates[ i ];
-    if ( bucketIdx != globalClosestBucketIdx ) {
+    if ( bucketIdx != globalClosestBucketIdx )
+    {
 
       double minDist = this->getMinSqDistanceToBucket( bucketIdx, pt );
-      if ( minDist <= (estUpperBound+TOL) ) {
+      if ( minDist <= (estUpperBound+TOL) )
+      {
 
         candidate_buckets.push_back( bucketIdx );
 
@@ -992,7 +1012,7 @@ int BVHTree< T,NDIMS >::getBucketNumObjects( int bucketIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-const int* BVHTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
+const int * BVHTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 &&
                bucketIdx < static_cast< int >(m_tree.size()) );
@@ -1028,7 +1048,7 @@ int BVHTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
 template < typename T, int NDIMS >
 void BVHTree< T,NDIMS >::writeVtkFile(
   const std::string& fileName,
-  const int* bins,
+  const int * bins,
   int nbins ) const
 {
   // STEP 0: Write VTK header
@@ -1043,14 +1063,16 @@ void BVHTree< T,NDIMS >::writeVtkFile(
   std::ostringstream cells;
 
   int id=0;
-  for ( int ibin=0; ibin < nbins; ++ibin ) {
+  for ( int ibin=0 ; ibin < nbins ; ++ibin )
+  {
 
     const int bucketIdx = bins[ ibin ];
     const int nnodes = BVHTree::write_box(coordinates,m_tree[ bucketIdx ].Box);
     coordinates << std::endl;
 
     cells << nnodes << " ";
-    for ( int i=0; i < nnodes; ++i,++id ) {
+    for ( int i=0 ; i < nnodes ; ++i,++id )
+    {
       cells << id << " ";
     }
     cells << std::endl;
@@ -1066,7 +1088,8 @@ void BVHTree< T,NDIMS >::writeVtkFile(
 
   ofs << "CELL_TYPES " << nbins << std::endl;
   int cellType = (NDIMS==2) ? 9 : 12;
-  for ( int i=0; i < nbins; ++i ) {
+  for ( int i=0 ; i < nbins ; ++i )
+  {
     ofs << cellType << std::endl;
   } // END for all cells
   ofs << std::endl;
@@ -1097,16 +1120,19 @@ void BVHTree< T,NDIMS >::writeVtkFile(
   int id       = 0;
   int numCells = 0;
 
-  for ( int i=0; i < m_numLevels; ++i ) {
+  for ( int i=0 ; i < m_numLevels ; ++i )
+  {
 
     int start = BVHTree::level_begin( i );
     int end   = BVHTree::level_end( i );
     SLIC_ASSERT(  start >= 0 && start < static_cast< int >( m_tree.size() ) );
     SLIC_ASSERT(  end   >= 0 && end   < static_cast< int >( m_tree.size() ) );
 
-    for ( int j=start; j <= end; ++j ) {
+    for ( int j=start ; j <= end ; ++j )
+    {
 
-      if ( m_tree[ j ].Void ) {
+      if ( m_tree[ j ].Void )
+      {
         continue;
       }
 
@@ -1114,7 +1140,8 @@ void BVHTree< T,NDIMS >::writeVtkFile(
       coordinates << std::endl;
 
       cells << nnodes << " ";
-      for ( int k=0; k < nnodes; ++k ) {
+      for ( int k=0 ; k < nnodes ; ++k )
+      {
 
         cells << id << " ";
         ++id;
@@ -1140,7 +1167,8 @@ void BVHTree< T,NDIMS >::writeVtkFile(
 
   ofs << "CELL_TYPES " << numCells << std::endl;
   int cellType = (NDIMS==2) ? 9 : 12;
-  for ( int i=0; i < numCells; ++i ) {
+  for ( int i=0 ; i < numCells ; ++i )
+  {
 
     ofs << cellType << std::endl;
 

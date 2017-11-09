@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -33,7 +40,8 @@ TEST( primal_bucket_tree, insert_object )
   EXPECT_EQ(  2,  bucketTree.getMaxNumLevels() );
   EXPECT_EQ(  0,  bucketTree.getNumberOfObjects() );
 
-  for ( int i=0; i < 5; ++i ) {
+  for ( int i=0 ; i < 5 ; ++i )
+  {
 
     bucketTree.insert( bb, i );
 
@@ -49,12 +57,13 @@ TEST( primal_bucket_tree, insert_object )
   const int N     = bucketTree.getBucketNumObjects( 0 );
   EXPECT_EQ( 5, N );
 
-  const int* objs = bucketTree.getBucketObjectArray( 0 );
+  const int * objs = bucketTree.getBucketObjectArray( 0 );
   ASSERT_TRUE( objs != AXOM_NULLPTR );
 
   const BoxType& bucketBox = bucketTree.getBucketBox( 0 );
   BoxType expected_bb( PointType::zero(), PointType::ones() );
-  for ( int i=0; i < 5; ++i ) {
+  for ( int i=0 ; i < 5 ; ++i )
+  {
 
     const int objIdx = objs[ i ];
 

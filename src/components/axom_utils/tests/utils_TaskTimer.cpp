@@ -1,15 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
- */
-
-/*!
- * \file utils_TaskTimer.cpp
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -31,7 +34,7 @@ TEST(axom_utils_Timer, timer_check )
 {
   axom::utilities::Timer t;
 
-  std::cout << "Checking that a newly constructed timer indicates 0 time elapsed" << std::endl;
+  std::cout <<"Checking that new timer indicates 0 time elapsed" << std::endl;
   EXPECT_EQ(0., t.elapsed());
 
   t.start();
@@ -46,7 +49,7 @@ TEST(axom_utils_Timer, timer_check )
   EXPECT_EQ( t.elapsed(), t.elapsedTimeInSec() );
 
 
-  std::cout <<  "Testing that reset() indicates zero elapsed time." << std::endl;
+  std::cout <<"Testing that reset() indicates 0 elapsed time." << std::endl;
   t.reset();
   ASSERT_DOUBLE_EQ( 0., t.elapsed());
 }
@@ -66,4 +69,3 @@ TEST(axom_utils_Timer, timer_check_duration )
   EXPECT_GE( e, 1.0 );
   EXPECT_LT( e, 2.0 );
 }
-

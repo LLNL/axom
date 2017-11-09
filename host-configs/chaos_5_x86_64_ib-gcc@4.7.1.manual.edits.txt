@@ -1,3 +1,17 @@
+##
+## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
+
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
@@ -19,11 +33,6 @@ set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
-
-##############################################################################
-# SHROUD - manually added for now. Use a public build add to TPL later
-##############################################################################
-set(SHROUD_EXECUTABLE "/usr/apps/shroud/bin/shroud" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

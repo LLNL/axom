@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 #include "gtest/gtest.h"
 #include <limits>
@@ -96,7 +102,7 @@ TEST(axom_utils_types,check_types_64)
   EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
 #else
   std::cout<<" Skipping 64-bit tests --"
-           <<" 64-bit integer typedefs not defined in this configuration." 
+           <<" 64-bit integer typedefs not defined in this configuration."
            << std::endl;
 
   EXPECT_TRUE(true);

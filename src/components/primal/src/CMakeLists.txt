@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 set( primal_headers
 
@@ -40,16 +44,15 @@ set( primal_headers
      spatial_acceleration/UniformGrid.hpp
    )
 
-# For now header only libraries cannot have dependencies until blt_setup_target is fixed
-#   to toggle to INTERFACE only for them
-#     DEPENDS_ON            slic
 blt_add_library(
     NAME                  primal
     HEADERS               ${primal_headers}
     HEADERS_OUTPUT_SUBDIR primal
     )
+target_link_libraries(primal INTERFACE slic)
+
 install(TARGETS              primal
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               primal-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/primal
         )

@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 #
 # Specify all headers
@@ -57,7 +61,7 @@ else()
 
 endif()
 install(TARGETS              axom_utils
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               axom_utils-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/axom_utils
         )

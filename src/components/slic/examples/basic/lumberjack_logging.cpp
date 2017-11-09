@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
- */
-
-/*!
- * \file parallel_logging_example.cc
+ * This file is part of Axom.
  *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 // C/C++ includes
@@ -41,7 +43,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, char * * argv )
 {
   // Initialize MPI
   MPI_Init( &argc, &argv );
@@ -60,13 +62,15 @@ int main( int argc, char** argv )
   // Set SLIC logging level and Lumberjack Logging stream
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::disableAbortOnError();
-  slic::LumberjackStream* ljStream =
-        new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT, format );
+  slic::LumberjackStream * ljStream =
+    new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT,
+                                format );
   slic::addStreamToAllMsgLevels( ljStream );
 
   // Queue messages
   int cycleCount = 0;
-  for (int i = 0; i < N; ++i){
+  for (int i = 0 ; i < N ; ++i)
+  {
     std::ostringstream oss;
     oss << "message " << i << "/" << N-1;
 
@@ -77,7 +81,8 @@ int main( int argc, char** argv )
                       );
 
     ++cycleCount;
-    if (cycleCount > CYCLELIMIT) {
+    if (cycleCount > CYCLELIMIT)
+    {
       // Incrementally push messages through the log stream
       slic::pushStreams();
       cycleCount = 0;

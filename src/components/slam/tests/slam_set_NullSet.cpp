@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 /*
  * \file slam_set_NullSet.cpp
@@ -42,19 +48,23 @@ TEST(slam_set_nullset,construct)
 
 TEST(slam_set_nullset,subscript_fails)
 {
-  SLIC_INFO("Testing subscript access on NullSet -- code is expected to assert and die.");
+  SLIC_INFO("Testing subscript access on NullSet"
+            <<" -- code is expected to assert and die.");
 
   typedef axom::slam::Set::PositionType SetPosition;
   axom::slam::NullSet n;
 
-  EXPECT_EQ(n.size(), SetPosition()) << "size of null set is defined to be zero";
+  EXPECT_EQ(n.size(), SetPosition())
+    << "size of null set is defined to be zero";
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode,
+  // so this test will only fail in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  EXPECT_DEATH_IF_SUPPORTED(n[0],"") << "subscript operator on null set asserts";
+  EXPECT_DEATH_IF_SUPPORTED(n[0],"")
+    << "subscript operator on null set asserts";
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif

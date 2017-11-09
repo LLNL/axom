@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
 # Produced at the Lawrence Livermore National Laboratory.
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 ################################
 # Setup build options and their default values
@@ -79,37 +83,41 @@ set(custom_compiler_flags_list) # Tracks custom compiler flags for logging
 
 # Flag for disabling warnings about omp pragmas in the code
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_OMP_PRAGMA_WARNINGS
-                  DEFAULT "-Wno-unknown-pragmas"
-                  XL      "-qignprag=omp"
-                  INTEL   "-diag-disable 3180"
-                  MSVC    "/wd4068"
+                  DEFAULT      "-Wno-unknown-pragmas"
+                  XL           "-qignprag=omp"
+                  INTEL        "-diag-disable 3180"
+                  MSVC         "/wd4068"
+                  MSVC_INTEL   "/Qdiag-disable:3180"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 
 # Flag for disabling warnings about unused parameters.
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS
-                  DEFAULT "-Wno-unused-parameter"
-                  XL      "-qinfo=nopar"
-                  MSVC    "/wd4100"
+                  DEFAULT     "-Wno-unused-parameter"
+                  XL          "-qinfo=nopar"
+                  MSVC        "/wd4100"
+                  MSVC_INTEL  "/Qdiag-disable:869"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 
 # Flag for disabling warnings about unused variables
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS
-                  DEFAULT "-Wno-unused-variable"
-                  XL      "-qinfo=nouse"
-                  MSVC    "/wd4101"
+                  DEFAULT     "-Wno-unused-variable"
+                  XL          "-qinfo=nouse"
+                  MSVC        "/wd4101"
+                  MSVC_INTEL  "/Qdiag-disable:177"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS)
 
 # Flag for disabling warnings about variables that may be uninitialized.
 # Useful when we are using compiler generated interface code (e.g. in shroud)
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNINITIALIZED_WARNINGS
-                  DEFAULT "-Wno-uninitialized"
-                  XL      "-qsuppress=1540-1102"
-                  MSVC    "/wd4700"
+                  DEFAULT     "-Wno-uninitialized"
+                  XL          "-qsuppress=1540-1102"
+                  MSVC        "/wd4700"
+                  MSVC_INTEL  "/Qdiag-disable:592"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNINITIALIZED_WARNINGS)
 
@@ -148,15 +156,17 @@ list(APPEND custom_compiler_flags_list AXOM_ALLOW_MULTIPLE_DEFINITIONS)
 # Flag for allowing constant conditionals e.g. if(sizeof(T) > sizeof(int)) {...}
 # There appears to be a bug in how some versions of Visual Studio treat this
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_CONSTANT_CONDITIONALS
-                  DEFAULT " "
-                  MSVC    "/wd4127"
+                  DEFAULT     " "
+                  MSVC        "/wd4127"
+                  MSVC_INTEL  "/Qdiag-disable:4127"
                   )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_CONSTANT_CONDITIONALS)
 
 # Flag for allowing truncation of constant values.
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
-                  DEFAULT " "
-                  MSVC    "/wd4309"
+                  DEFAULT     " "
+                  MSVC        "/wd4309"
+                  MSVC_INTEL  "/Qdiag-disable:4309"
                   )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 

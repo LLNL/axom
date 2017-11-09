@@ -19,7 +19,7 @@ OPTIONS="-ecc -hc $HC -bt $BT -bp $BP -ip $IP $COMP_OPT $BUILD_OPT"
 echo "Configuring..."
 echo "-----------------------------------------------------------------------"
 echo "Options: $OPTIONS"
-./scripts/config-build.py $OPTIONS
+./config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1

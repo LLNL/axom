@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -23,8 +30,10 @@
 #include "primal/Triangle.hpp"
 #include "primal/OrientedBoundingBox.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \brief Computes the closest point from a point, P, to a given triangle.
@@ -64,7 +73,7 @@ namespace primal {
 template < typename T, int NDIMS >
 inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
                                        const Triangle< T,NDIMS >& tri,
-                                       int* loc=AXOM_NULLPTR )
+                                       int * loc=AXOM_NULLPTR )
 {
 // convenience macros to access triangle vertices
 #define A(t) t[0]
@@ -77,10 +86,12 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   Vector< T, NDIMS > ap( A(tri),P );
   T d1 = Vector< T,NDIMS >::dot_product( ab, ap );
   T d2 = Vector< T,NDIMS >::dot_product( ac, ap );
-  if ( d1 <= 0.0f && d2 <= 0.0f ) {
+  if ( d1 <= 0.0f && d2 <= 0.0f )
+  {
 
     // A is the closest point
-    if ( loc != AXOM_NULLPTR) {
+    if ( loc != AXOM_NULLPTR)
+    {
       *loc = 0;
     }
 
@@ -93,10 +104,12 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   Vector< T,NDIMS > bp( B(tri), P );
   T d3 = Vector< T,NDIMS >::dot_product( ab, bp );
   T d4 = Vector< T,NDIMS >::dot_product( ac, bp );
-  if ( d3 >= 0.0f && d4 <= d3 ) {
+  if ( d3 >= 0.0f && d4 <= d3 )
+  {
 
     // B is the closest point
-    if ( loc != AXOM_NULLPTR) {
+    if ( loc != AXOM_NULLPTR)
+    {
       *loc = 1;
     }
 
@@ -107,7 +120,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of AB
   T vc = d1*d4 - d3*d2;
-  if ( vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f ) {
+  if ( vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f )
+  {
 
     T v = d1 / ( d1-d3 );
     Vector< T,NDIMS > v_ab = ab*v;
@@ -116,7 +130,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = A(tri)[1] + v_ab[1];
     double z = (NDIMS==3) ? A(tri)[2] + v_ab[2] : 0.0;
 
-    if ( loc != AXOM_NULLPTR ) {
+    if ( loc != AXOM_NULLPTR )
+    {
       *loc = -1;
     }
 
@@ -128,10 +143,12 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   Vector< T,NDIMS > cp( C(tri), P );
   T d5 = Vector< T,NDIMS >::dot_product(ab,cp);
   T d6 = Vector< T,NDIMS >::dot_product(ac,cp);
-  if ( d6 >= 0.0f && d5 <= d6 ) {
+  if ( d6 >= 0.0f && d5 <= d6 )
+  {
 
     // C is the closest point
-    if ( loc != AXOM_NULLPTR ) {
+    if ( loc != AXOM_NULLPTR )
+    {
       *loc = 2;
     }
 
@@ -141,7 +158,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of AC
   T vb = d5*d2 - d1*d6;
-  if ( vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f ) {
+  if ( vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f )
+  {
 
     T w = d2 / (d2-d6);
     Vector< T, NDIMS > w_ac = ac*w;
@@ -150,7 +168,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = A(tri)[1] + w_ac[1];
     double z = (NDIMS==3) ? A(tri)[2] + w_ac[2] : 0.0;
 
-    if ( loc != AXOM_NULLPTR) {
+    if ( loc != AXOM_NULLPTR)
+    {
       *loc = -3;
     }
 
@@ -160,7 +179,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of BC
   T va = d3*d6 - d5*d4;
-  if ( va <= 0.0f && (d4-d3) >= 0.0f && (d5-d6) >= 0.0f ) {
+  if ( va <= 0.0f && (d4-d3) >= 0.0f && (d5-d6) >= 0.0f )
+  {
 
     T w = (d4-d3)/( (d4-d3)+(d5-d6) );
     Vector< T,NDIMS > bc( B(tri), C(tri) );
@@ -170,7 +190,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
     double y = B(tri)[1] + w_bc[1];
     double z = (NDIMS==3) ? B(tri)[2] + w_bc[2] : 0.0;
 
-    if ( loc != AXOM_NULLPTR ) {
+    if ( loc != AXOM_NULLPTR )
+    {
       *loc = -2;
     }
 
@@ -188,7 +209,8 @@ inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
   double y = A(tri)[1] + N[1];
   double z = (NDIMS==3) ? A(tri)[2] + N[2] : 0.0;
 
-  if ( loc != AXOM_NULLPTR ) {
+  if ( loc != AXOM_NULLPTR )
+  {
     *loc = Triangle< T,NDIMS >::NUM_TRI_VERTS;
   }
 
@@ -212,21 +234,25 @@ inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
                                                                   NDIMS >& obb)
 {
   Vector< T, NDIMS > e = obb.getExtents();
-  const Vector< T, NDIMS > *u = obb.getAxes();
+  const Vector< T, NDIMS > * u = obb.getAxes();
 
   Vector< T, NDIMS > pt_l = obb.toLocal(pt);
   Vector< T, NDIMS > res(obb.getCentroid());
 
-  for (int i = 0; i < NDIMS; i++) {
+  for (int i = 0 ; i < NDIMS ; i++)
+  {
     // since the local coordinates are individually constrained, we can simply
     // choose the "best" local coordinate in each axis direction
-    if (pt_l[i] <= e[i] && pt_l[i] >= -e[i]) {
+    if (pt_l[i] <= e[i] && pt_l[i] >= -e[i])
+    {
       res += pt_l[i]*u[i];
     }
-    else if (pt_l[i] > e[i]) {
+    else if (pt_l[i] > e[i])
+    {
       res += e[i]*u[i];
     }
-    else {
+    else
+    {
       res -= e[i]*u[i];
     }
   }

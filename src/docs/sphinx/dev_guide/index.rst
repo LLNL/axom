@@ -1,20 +1,16 @@
 .. ##
-.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory.
 .. ##
+.. ## LLNL-CODE-741217
+.. ##
 .. ## All rights reserved.
 .. ##
-.. ## This file cannot be distributed without permission and
-.. ## further review from Lawrence Livermore National Laboratory.
+.. ## This file is part of Axom.
 .. ##
-
-.. ##  '#' with overline for parts
-.. ##  '*' with overline for chapters
-.. ##  '=' for sections
-.. ##  '-' for subsections
-.. ##  '^' for subsubsections
-.. ##  '"' for paragraphs
+.. ## For details about use and distribution, please read axom/LICENSE.
+.. ##
 
 #####################
 Axom Developer Guide

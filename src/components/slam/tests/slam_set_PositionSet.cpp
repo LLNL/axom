@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 /*
  * \file slam_set_positionset.cpp
@@ -30,8 +36,8 @@
 
 
 typedef axom::slam::PositionSet SetType;
-typedef SetType::PositionType   SetPosition;
-typedef SetType::ElementType    SetElement;
+typedef SetType::PositionType SetPosition;
+typedef SetType::ElementType SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
@@ -85,7 +91,7 @@ TEST(slam_set_positionset,construct_set_builder)
   typedef SetType::SetBuilder SetBuilder;
 
   SetBuilder builder = SetBuilder()
-      .size( MAX_SET_SIZE );
+                       .size( MAX_SET_SIZE );
 
   SetType s(builder);
   EXPECT_TRUE( s.isValid());
@@ -95,9 +101,9 @@ TEST(slam_set_positionset,construct_set_builder)
   const int ZERO_OFFSET = 0;
   const int DEFAULT_STRIDE = 1;
   SetBuilder ok_builder = SetBuilder()
-      .size(MAX_SET_SIZE)
-      .offset(ZERO_OFFSET)
-      .stride(DEFAULT_STRIDE);
+                          .size(MAX_SET_SIZE)
+                          .offset(ZERO_OFFSET)
+                          .stride(DEFAULT_STRIDE);
   SetType s2(ok_builder);
   EXPECT_TRUE( s2.isValid() );
   EXPECT_EQ(  MAX_SET_SIZE, s2.size());
@@ -114,8 +120,8 @@ TEST(slam_set_positionset,construct_set_builder)
 
   const int NON_ZERO_OFFSET = 3;
   EXPECT_DEATH_IF_SUPPORTED( SetType(SetBuilder()
-      .size(MAX_SET_SIZE)
-      .offset(NON_ZERO_OFFSET)), "" );
+                                     .size(MAX_SET_SIZE)
+                                     .offset(NON_ZERO_OFFSET)), "" );
 #endif
 }
 
@@ -124,7 +130,7 @@ TEST(slam_set_positionset,construct_runtime)
 {
   SLIC_INFO("Testing that PositionSets can be constructed with runtime sizes");
 
-  for(int i = 10; i < 15; ++i)
+  for(int i = 10 ; i < 15 ; ++i)
   {
     // mark as volatile to ensure compiler doesn't see this at compile time
     volatile int v = i;
@@ -146,7 +152,7 @@ TEST(slam_set_positionset,iterate)
   SLIC_INFO("Using random access -- operator[]");
   {
     std::stringstream sstr;
-    for(SetPosition pos = SetPosition(); pos < s.size(); ++pos)
+    for(SetPosition pos = SetPosition() ; pos < s.size() ; ++pos)
     {
       SetElement elt = static_cast<SetElement>(pos);
       EXPECT_EQ(elt,s[pos]);
@@ -158,7 +164,7 @@ TEST(slam_set_positionset,iterate)
   SLIC_INFO("Using checked random access -- at()");
   {
     std::stringstream sstr;
-    for(SetPosition pos = SetPosition(); pos < s.size(); ++pos)
+    for(SetPosition pos = SetPosition() ; pos < s.size() ; ++pos)
     {
       SetElement elt = static_cast<SetElement>(pos);
       EXPECT_EQ(elt,s.at(pos));
@@ -173,7 +179,7 @@ TEST(slam_set_positionset,iterate)
   {
     std::stringstream sstr;
     typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end(); it != itEnd; ++it)
+    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
     {
       EXPECT_EQ( std::distance(s.begin(), it), *it );
       sstr << *it << "\t";
@@ -187,7 +193,8 @@ TEST(slam_set_positionset,iterate)
 
 TEST(slam_set_positionset,out_of_bounds_at)
 {
-  SLIC_INFO("Testing out of bounds access using at() -- code is expected to assert and die.");
+  SLIC_INFO("Testing out of bounds access using at() "
+            <<"-- code is expected to assert and die.");
   SetType s(MAX_SET_SIZE);
 
 #ifdef AXOM_DEBUG
@@ -205,12 +212,14 @@ TEST(slam_set_positionset,out_of_bounds_at)
 
 TEST(slam_set_positionset,out_of_bounds_bracket)
 {
-  SLIC_INFO("Testing out of bounds access using operator[] -- code is expected to assert and die.");
+  SLIC_INFO("Testing out of bounds access using operator[] "
+            << "-- code is expected to assert and die.");
 
   SetType s(MAX_SET_SIZE);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode,
+  // so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
@@ -223,8 +232,8 @@ TEST(slam_set_positionset,out_of_bounds_bracket)
 
 TEST(slam_set_positionset,awkward_resize)
 {
-  SLIC_INFO("This test shows that we can modify the underlying size of a PositionSet through"
-      << "its RuntimeSizePolicy parent class");
+  SLIC_INFO("This test shows that we can modify the underlying size of a "
+            << " PositionSet through its RuntimeSizePolicy parent class");
 
   SetType s1;
   EXPECT_TRUE(s1.isValid());

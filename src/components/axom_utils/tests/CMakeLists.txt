@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 #
 # Specify list of tests
 #
@@ -7,6 +21,7 @@ set(gtest_utils_tests
    utils_endianness.cpp
    utils_fileUtilities.cpp
    utils_types.cpp
+   utils_utilities.cpp
 
    numerics_determinants.cpp
    numerics_linear_solve.cpp

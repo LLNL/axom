@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include <limits>
@@ -128,7 +135,8 @@ void checkBinCounts(axom::primal::UniformGrid< T, NDIMS > & v,
                     std::map< int, int > & bincounts)
 {
   int bcount = v.getNumBins();
-  for (int i = 0; i < bcount; ++i) {
+  for (int i = 0 ; i < bcount ; ++i)
+  {
     bool binAgrees =
       (bincounts.count(i) < 1 && v.isBinEmpty(i)) ||
       (bincounts[i] == ((int)v.getBinContents(i).size()));
@@ -142,7 +150,8 @@ void checkBinCounts(axom::primal::UniformGrid< T, NDIMS > & v,
 void incr(std::map< int, int > & m, int idx)
 {
   int dat = 0;
-  if (m.count(idx) > 0) {
+  if (m.count(idx) > 0)
+  {
     dat = m[idx];
   }
   m[idx] = dat + 1;
@@ -154,7 +163,8 @@ void zero(std::map< int, int > & m, int idx)
   m.erase(idx);
 }
 
-TEST(primal_uniform_grid, add_stuff_3D){
+TEST(primal_uniform_grid, add_stuff_3D)
+{
   const int DIM = 3;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
@@ -197,8 +207,10 @@ TEST(primal_uniform_grid, add_stuff_3D){
   QPoint pt5 = QPoint::make_point(3.1, 9.0, 2.8);
   QBBox bbox3(pt4, pt5);
   valid.insert(bbox3, 4);
-  for (int k = 0; k < 3; ++k) {
-    for (int i = 2; i < 4; ++i) {
+  for (int k = 0 ; k < 3 ; ++k)
+  {
+    for (int i = 2 ; i < 4 ; ++i)
+    {
       incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, 5.5, k + 0.5)));
     }
   }
@@ -222,7 +234,8 @@ TEST(primal_uniform_grid, add_stuff_3D){
   QPoint pt9 = QPoint::make_point(7, 6.2, 6.1);
   QBBox bbox5(pt8, pt9);
   valid.insert(bbox5, 8);
-  for (int i = 0; i < valid.getNumBins(); ++i) {
+  for (int i = 0 ; i < valid.getNumBins() ; ++i)
+  {
     incr(check, i);
   }
   {
@@ -231,7 +244,8 @@ TEST(primal_uniform_grid, add_stuff_3D){
   }
 }
 
-TEST(primal_uniform_grid, delete_stuff_3D){
+TEST(primal_uniform_grid, delete_stuff_3D)
+{
   const int DIM = 3;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
@@ -266,9 +280,12 @@ TEST(primal_uniform_grid, delete_stuff_3D){
   QPoint pt3 = QPoint::make_point(1.9, 2.3, 7.1);
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
-  for (int k = 0; k < 6; ++k) {
-    for (int j = 0; j < 3; ++j) {
-      for (int i = 0; i < 2; ++i) {
+  for (int k = 0 ; k < 6 ; ++k)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
+      for (int i = 0 ; i < 2 ; ++i)
+      {
         incr(check,
              valid.getBinIndex(QPoint::make_point(i + 0.5, j + 0.5, k + 0.5)));
       }
@@ -298,7 +315,8 @@ TEST(primal_uniform_grid, delete_stuff_3D){
   }
 }
 
-TEST(primal_uniform_grid, add_stuff_2D){
+TEST(primal_uniform_grid, add_stuff_2D)
+{
   const int DIM = 2;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
@@ -341,7 +359,8 @@ TEST(primal_uniform_grid, add_stuff_2D){
   QPoint pt5 = QPoint::make_point(3.1, 9.0);
   QBBox bbox3(pt4, pt5);
   valid.insert(bbox3, 4);
-  for (int i = 2; i < 4; ++i) {
+  for (int i = 2 ; i < 4 ; ++i)
+  {
     incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, 5.5)));
   }
   {
@@ -364,7 +383,8 @@ TEST(primal_uniform_grid, add_stuff_2D){
   QPoint pt9 = QPoint::make_point(7, 6.2);
   QBBox bbox5(pt8, pt9);
   valid.insert(bbox5, 8);
-  for (int i = 0; i < valid.getNumBins(); ++i) {
+  for (int i = 0 ; i < valid.getNumBins() ; ++i)
+  {
     incr(check, i);
   }
   {
@@ -373,7 +393,8 @@ TEST(primal_uniform_grid, add_stuff_2D){
   }
 }
 
-TEST(primal_uniform_grid, delete_stuff_2D){
+TEST(primal_uniform_grid, delete_stuff_2D)
+{
   const int DIM = 2;
   typedef double CoordType;
   typedef axom::primal::Point< CoordType, DIM > QPoint;
@@ -408,8 +429,10 @@ TEST(primal_uniform_grid, delete_stuff_2D){
   QPoint pt3 = QPoint::make_point(1.9, 2.3);
   QBBox bbox2(pt2, pt3);
   valid.insert(bbox2, 2);
-  for (int j = 0; j < 3; ++j) {
-    for (int i = 0; i < 2; ++i) {
+  for (int j = 0 ; j < 3 ; ++j)
+  {
+    for (int i = 0 ; i < 2 ; ++i)
+    {
       incr(check, valid.getBinIndex(QPoint::make_point(i + 0.5, j + 0.5)));
     }
   }

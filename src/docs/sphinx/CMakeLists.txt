@@ -1,22 +1,20 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 ################################
 # documentation targets
 ################################
-
-set(SPHINX_HTML_THEME "
-try:
-    import sphinx_rtd_theme
-except:
-    html_theme = 'classic'
-    html_theme_options = {
-        'codebgcolor': 'lightgrey',
-        'stickysidebar': 'true'
-    }
-    html_theme_path = []
-else:
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_options = {}
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-")
 
 add_subdirectory(web_main)
 add_subdirectory(coding_guide)

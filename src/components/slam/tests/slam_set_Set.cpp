@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 
@@ -22,7 +29,7 @@ static int const NUM_ELEMS = 5;
 
 TEST(slam_set_virtualbase,construct)
 {
-  axom::slam::Set* s = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set * s = new axom::slam::RangeSet(NUM_ELEMS);
 
   // Tests function: isValid()
   EXPECT_TRUE( s->isValid() );
@@ -35,7 +42,7 @@ TEST(slam_set_virtualbase,construct)
 
   // Tests function: at()
   typedef axom::slam::Set::IndexType IndexType;
-  for(IndexType idx = 0; idx < s->size(); ++idx)
+  for(IndexType idx = 0 ; idx < s->size() ; ++idx)
   {
     EXPECT_EQ(idx, s->at(idx));
   }
@@ -46,9 +53,9 @@ TEST(slam_set_virtualbase,construct)
 
 TEST(slam_set_virtualbase,equality)
 {
-  axom::slam::Set* s1 = new axom::slam::RangeSet(NUM_ELEMS);
-  axom::slam::Set* s2 = new axom::slam::RangeSet(NUM_ELEMS);
-  axom::slam::Set* s3 = new axom::slam::RangeSet(2 * NUM_ELEMS);
+  axom::slam::Set * s1 = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set * s2 = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set * s3 = new axom::slam::RangeSet(2 * NUM_ELEMS);
 
   // Tests function: isValid()
   EXPECT_TRUE(  s1->isValid() );
