@@ -33,7 +33,7 @@ namespace mint
 CurvilinearMesh::CurvilinearMesh( int ndims, const globalIndex ext[6] ):
   StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
   m_coordinates( ndims, m_extent.getNumNodes(), 0.0 )
-{}
+{ m_coordinates.setSize( m_extent.getNumNodes() ); }
 
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, const globalIndex ext[6], 
@@ -41,7 +41,8 @@ CurvilinearMesh::CurvilinearMesh( int ndims, const globalIndex ext[6],
   StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId,
                   partId),
   m_coordinates( ndims, m_extent.getNumNodes(), 0.0  )
-{}
+{ m_coordinates.setSize( m_extent.getNumNodes() ); }
+
 
 } /* namespace mint */
 } /* namespace axom */

@@ -46,7 +46,8 @@ public:
    */
   CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ): 
     m_stride( cell::num_nodes[ cell_type ] ),
-    m_connectivity( capacity, cell::num_nodes[ cell_type ], resize_ratio )
+    m_connectivity( capacity * cell::num_nodes[ cell_type ], 
+                    cell::num_nodes[ cell_type ], resize_ratio )
   {};
 
   /*!

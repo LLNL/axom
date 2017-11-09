@@ -279,6 +279,9 @@ TEST( mint_vector, checkInsert ) {
 /* test copy / move */
 
 
+} /* end namespace mint */
+} /* end namespace axom */
+
 //------------------------------------------------------------------------------
 using axom::slic::UnitTestLogger;
 
@@ -291,5 +294,4 @@ int main( int argc, char * argv[] )
   return result;
 }
 
-} /* end namespace mint */
-} /* end namespace axom */
+

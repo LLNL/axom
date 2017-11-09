@@ -1485,6 +1485,9 @@ TEST( mint_write_vtk, ParticleMesh1D )
 #endif
 }
 
+} /* end namespace mint */
+} /* end namespace axom */
+
 //------------------------------------------------------------------------------
 using axom::slic::UnitTestLogger;
 
@@ -1496,6 +1499,3 @@ int main( int argc, char * argv[] )
   result = RUN_ALL_TESTS();
   return result;
 }
-
-} /* end namespace mint */
-} /* end namespace axom */
