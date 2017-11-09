@@ -43,6 +43,12 @@ CurvilinearMesh::CurvilinearMesh( int ndims, const globalIndex ext[6],
   m_coordinates( ndims, m_extent.getNumNodes(), 0.0  )
 { m_coordinates.setSize( m_extent.getNumNodes() ); }
 
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh():
+  StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR, -1, -1 ),
+  m_coordinates( 0, 0, 0 )
+{}
+
 
 } /* namespace mint */
 } /* namespace axom */

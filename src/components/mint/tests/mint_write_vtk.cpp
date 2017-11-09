@@ -722,7 +722,6 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
       EXPECT_EQ( temp, cell_nodes[ i ] );
     }
   }
-  delete[] cell_nodes;
 
   /* Write out the mesh cell types. */
   file >> type >> extracted_cells;

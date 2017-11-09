@@ -117,8 +117,7 @@ void write_cells( const Mesh * mesh, std::ofstream& file )
     }
     file << std::endl;
   }
-  delete[] cell_nodes;
-
+  
   /* Write out the mesh cell types. */
   file << "CELL_TYPES " << num_cells << std::endl;
   for ( localIndex cellIdx = 0; cellIdx < num_cells; ++cellIdx ) {

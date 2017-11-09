@@ -87,8 +87,10 @@ UniformMesh::UniformMesh( int dimension, const globalIndex ext[6],
   StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext, blockId,
                   partitionId )
 {
-  std::fill( m_origin, m_origin + 3, 0.0 );
-  std::fill( m_h,      m_h + 3,      1.0 );
+  const int MAX_DIM = 3;
+
+  std::fill( m_origin, m_origin + MAX_DIM, 0.0 );
+  std::fill( m_h,      m_h + MAX_DIM,      1.0 );
 
   double h[ MAX_DIM ];
   for ( int dim = 0 ; dim < dimension ; ++dim )

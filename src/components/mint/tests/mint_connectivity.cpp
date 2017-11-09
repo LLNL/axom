@@ -441,6 +441,17 @@ void test_mixed_element_type( localIndex capacity, double resize_ratio )
   EXPECT_EQ( connec.getSize(), size );
   EXPECT_EQ( connec.getResizeRatio(), resize_ratio );
   EXPECT_EQ( connec.getNumberOfCells(), num_cells );
+
+  delete[] vertex_connectivity;
+  delete[] segment_connectivity;
+  delete[] triangle_connectivity;
+  delete[] quad_connectivity;
+  delete[] tet_connectivity;
+  delete[] hex_connectivity;
+  delete[] prism_connectivity;
+  delete[] pyramid_connectivity;
+  delete[] quad9_connectivity;
+  delete[] hex27_connectivity;
 }
 
 }   /* end namespace internal */

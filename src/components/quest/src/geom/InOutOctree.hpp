@@ -570,9 +570,10 @@ private:
   class MeshWrapper
   {
 public:
-    typedef int VertexIndex;
-    typedef int TriangleIndex;
+    typedef axom::mint::localIndex VertexIndex;
+    typedef axom::mint::localIndex TriangleIndex;
     typedef axom::mint::Mesh SurfaceMesh;
+    
 
     /** \brief A vertex index to indicate that there is no associated vertex */
     static const VertexIndex NO_VERTEX = -1;

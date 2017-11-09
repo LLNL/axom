@@ -195,7 +195,6 @@ private:
   MeshCoordinates m_coordinates;
  
   CurvilinearMesh();
-  {}
   
   CurvilinearMesh(const CurvilinearMesh&); // Not implemented
   CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented

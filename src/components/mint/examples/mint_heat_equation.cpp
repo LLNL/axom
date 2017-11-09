@@ -201,10 +201,10 @@ public:
        during the time step. */
     copy_boundary( prev_temp, new_temp );
 
-    uint32 cur_dump = 0;
+    int cur_dump = 0;
     double cur_time = 0.0;
-    const uint32 num_cycles = std::ceil( t_max / dt );
-    for (uint32 cycle = 0 ; cycle < num_cycles ; ++cycle )
+    const int num_cycles = std::ceil( t_max / dt );
+    for (int cycle = 0 ; cycle < num_cycles ; ++cycle )
     {
       if ( cycle == num_cycles - 1 )
       {

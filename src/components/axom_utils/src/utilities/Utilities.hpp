@@ -43,62 +43,49 @@
 namespace axom {
 namespace utilities {
 
-  /*!
-   * \brief Allocates a chunk of memory of type T.
-   * \param [in] n the number of elements to allocate.
-   * \tparam T the type of pointer returned.
-   * \return A pointer to the new allocation or a null pointer if allocation
-   *  failed.
-   */
-  template < typename T > 
-  inline T* alloc( std::size_t n )
-  { return static_cast< T* >( std::malloc( n * sizeof( T ) ) ); }
+/*!
+ * \brief Allocates a chunk of memory of type T.
+ * \param [in] n the number of elements to allocate.
+ * \tparam T the type of pointer returned.
+ * \return A pointer to the new allocation or a null pointer if allocation
+ *  failed.
+ */
+template < typename T > 
+inline T* alloc( std::size_t n )
+{ return static_cast< T* >( std::malloc( n * sizeof( T ) ) ); }
 
-  /*!
-   * \brief Reallocates the chunk of memory pointed to by pointer.
-   * \param [in] pointer pointer to memory previously allocated with 
-   *  alloc or realloc, or a null pointer.
-   * \param [in] n the number of elements to allocate.
-   * \tparam T the type pointer points to.
-   * \return A pointer to the new allocation or a null pointer if allocation
-   *  failed.
-   */
-  template < typename T > 
-  inline T* realloc( T* pointer, std::size_t n )
-  { 
-    if ( n == 0 ) {
-      std::free( pointer );
-      return AXOM_NULLPTR;
-    }
-
-    return static_cast< T* >( std::realloc( pointer,  n * sizeof( T ) ) );
+/*!
+ * \brief Reallocates the chunk of memory pointed to by pointer.
+ * \param [in] pointer pointer to memory previously allocated with 
+ *  alloc or realloc, or a null pointer.
+ * \param [in] n the number of elements to allocate.
+ * \tparam T the type pointer points to.
+ * \return A pointer to the new allocation or a null pointer if allocation
+ *  failed.
+ */
+template < typename T > 
+inline T* realloc( T* pointer, std::size_t n )
+{ 
+  if ( n == 0 ) {
+    std::free( pointer );
+    return AXOM_NULLPTR;
   }
 
-  /*!
-   * \brief Frees the chunk of memory pointed to by pointer.
-   * \param [in] pointer pointer to memory previously allocated with 
-   *  alloc or realloc or a null pointer.
-   */
-  inline void free( void* pointer )
-  { std::free( pointer ); }
+  return static_cast< T* >( std::realloc( pointer,  n * sizeof( T ) ) );
+}
 
+/*!
+ * \brief Frees the chunk of memory pointed to by pointer.
+ * \param [in] pointer pointer to memory previously allocated with 
+ *  alloc or realloc or a null pointer.
+ */
+inline void free( void* pointer )
+{ std::free( pointer ); }
 
-
-  /*!
-   * \brief Gracefully aborts the application
-   */
-  void processAbort();
-
-  /*!
-   * \brief Returns the absolute value of x.
-   * \param [in] x value whose absolute value is computed.
-   * \return abs(x) the absolute value of x.
-   */
-  template < typename T >
-  inline T abs( const T& x ) 
-  {
-   return ( x < 0 )? -x : x; 
-  }
+/*!
+ * \brief Gracefully aborts the application
+ */
+void processAbort();
 
 /*!
  * \brief Returns the absolute value of x.
