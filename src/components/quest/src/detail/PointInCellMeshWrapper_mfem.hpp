@@ -51,8 +51,10 @@
 #endif
 
 
-namespace axom {
-namespace quest {
+namespace axom
+{
+namespace quest
+{
 
 
 /*! Tag for mfem-based specialization of the PointInCell query */
@@ -84,7 +86,8 @@ PointInCellTraits<quest_point_in_cell_mfem_tag>::NO_CELL = -1;
 
 
 
-namespace detail {
+namespace detail
+{
 
 // Pre-declare classes to specialize for the mfem mesh_tag
 
@@ -106,17 +109,17 @@ public:
   typedef int IndexType;
   typedef PointInCellMeshWrapper< quest_point_in_cell_mfem_tag > MeshWrapper;
 
-  PointInCellMeshWrapper(mfem::Mesh* mesh) : m_mesh(mesh)
+  PointInCellMeshWrapper(mfem::Mesh * mesh) : m_mesh(mesh)
   {
     // Some sanity checks
     SLIC_ASSERT( m_mesh != AXOM_NULLPTR);
 
-    m_isHighOrder = (m_mesh->GetNodalFESpace() != AXOM_NULLPTR)
-        && (m_mesh->GetNE() > 0);
+    m_isHighOrder =
+      (m_mesh->GetNodalFESpace() != AXOM_NULLPTR) && (m_mesh->GetNE() > 0);
   }
 
   /*! Predicate to check if the given basis is positive (i.e. Bernstein) */
-  static bool isPositiveBasis(const mfem::FiniteElementCollection* fec)
+  static bool isPositiveBasis(const mfem::FiniteElementCollection * fec)
   {
     // HACK: Check against several common expected FE types
 
@@ -125,19 +128,21 @@ public:
       return false;
     }
 
-    if(const mfem::H1_FECollection* h1Fec = dynamic_cast<const mfem::H1_FECollection*>(fec))
+    if(const mfem::H1_FECollection * h1Fec =
+         dynamic_cast<const mfem::H1_FECollection *>(fec))
     {
       return h1Fec->GetBasisType() == mfem::BasisType::Positive;
     }
 
-    if(const mfem::L2_FECollection* l2Fec = dynamic_cast<const mfem::L2_FECollection*>(fec))
+    if(const mfem::L2_FECollection * l2Fec =
+         dynamic_cast<const mfem::L2_FECollection *>(fec))
     {
       return l2Fec->GetBasisType() == mfem::BasisType::Positive;
     }
 
-    if( dynamic_cast<const mfem::NURBSFECollection*>(fec)       ||
-        dynamic_cast<const mfem::LinearFECollection*>(fec)      ||
-        dynamic_cast<const mfem::QuadraticPosFECollection*>(fec) )
+    if( dynamic_cast<const mfem::NURBSFECollection *>(fec)       ||
+        dynamic_cast<const mfem::LinearFECollection *>(fec)      ||
+        dynamic_cast<const mfem::QuadraticPosFECollection *>(fec) )
     {
       return true;
     }
@@ -154,33 +159,34 @@ public:
    * \note   It is the user's responsibility to deallocate this pointer.
    * \pre    \a fec is not already positive
    */
-  static mfem::FiniteElementCollection* getCorrespondingPositiveFEC(
-      const mfem::FiniteElementCollection* fec,
-      int order,
-      int dim,
-      int mapType)
+  static mfem::FiniteElementCollection * getCorrespondingPositiveFEC(
+    const mfem::FiniteElementCollection * fec,
+    int order,
+    int dim,
+    int mapType)
   {
-    SLIC_CHECK_MSG( !isPositiveBasis(fec),
-        "This function is only meant to be called on non-positive finite element collection"
-        );
+    SLIC_CHECK_MSG( !isPositiveBasis( fec),
+                    "This function is only meant to be called "
+                    "on non-positive finite element collection" );
 
     // Attempt to find the corresponding positive H1 fec
-    if(dynamic_cast<const mfem::H1_FECollection*>(fec))
+    if(dynamic_cast<const mfem::H1_FECollection *>(fec))
     {
       return new mfem::H1_FECollection(order, dim, mfem::BasisType::Positive);
     }
 
     // Attempt to find the corresponding positive L2 fec
-    if(dynamic_cast<const mfem::L2_FECollection*>(fec))
+    if(dynamic_cast<const mfem::L2_FECollection *>(fec))
     {
       // should we throw a not supported error here?
-      return new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive, mapType);
+      return new mfem::L2_FECollection(order, dim, mfem::BasisType::Positive,
+                                       mapType);
     }
 
     // Attempt to find the corresponding quadratic or cubic fec
     // Note: Linear FECollections are positive
-    if(dynamic_cast<const mfem::QuadraticFECollection*>(fec) ||
-       dynamic_cast<const mfem::CubicFECollection*>(fec) )
+    if(dynamic_cast<const mfem::QuadraticFECollection *>(fec) ||
+       dynamic_cast<const mfem::CubicFECollection *>(fec) )
     {
       SLIC_ASSERT( order == 2 || order == 3);
       return new mfem::H1_FECollection(order, dim, mfem::BasisType::Positive);
@@ -198,7 +204,7 @@ public:
   int meshDimension() const { return m_mesh->Dimension(); }
 
   /*! Get a pointer to the mesh */
-  mfem::Mesh* getMesh() const { return m_mesh; }
+  mfem::Mesh * getMesh() const { return m_mesh; }
 
   /*!
    * Computes the bounding boxes of all mesh elements
@@ -211,9 +217,10 @@ public:
    * \pre \a bboxScaleFactor >= 1.
    */
   template<int NDIMS>
-  void computeBoundingBoxes(double bboxScaleFactor,
-      std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
-      axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
+  void computeBoundingBoxes(
+    double bboxScaleFactor,
+    std::vector< axom::primal::BoundingBox<double,NDIMS> >& eltBBoxes,
+    axom::primal::BoundingBox<double,NDIMS>& meshBBox) const
   {
     SLIC_ASSERT( static_cast<int>(eltBBoxes.size()) >= numElements() );
 
@@ -240,7 +247,9 @@ public:
    *
    * \sa PointInCell::reconstructPoint()
    */
-  void reconstructPoint(IndexType eltIdx, const double* isopar, double* pt) const
+  void reconstructPoint(IndexType eltIdx,
+                        const double * isopar,
+                        double * pt) const
   {
     const int dim = meshDimension();
 
@@ -262,14 +271,16 @@ public:
    *
    * \sa PointInCell::locatePointInCell()
    */
-  bool locatePointInCell(IndexType eltIdx, const double* pt, double* isopar) const
+  bool locatePointInCell(IndexType eltIdx,
+                         const double * pt,
+                         double * isopar) const
   {
     const int dim = meshDimension();
     const int refineOrder = 1;      // TODO: Make this a class variable
 
     mfem::IsoparametricTransformation tr;
     m_mesh->GetElementTransformation(eltIdx, &tr);
-    mfem::Vector ptSpace(const_cast<double*>(pt), dim);
+    mfem::Vector ptSpace(const_cast<double *>(pt), dim);
 
     // TransformBack returns zero if the element is properly mapped
     mfem::IntegrationPoint ipRef;
@@ -296,9 +307,10 @@ private:
    * \sa computeBoundingBoxes()
    */
   template<int NDIMS>
-  void computeHighOrderBoundingBoxes(double bboxScaleFactor,
-      std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
-      axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
+  void computeHighOrderBoundingBoxes(
+    double bboxScaleFactor,
+    std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
+    axom::primal::BoundingBox<double,NDIMS>& meshBBox)  const
   {
     typedef axom::primal::Point<double, NDIMS> SpacePoint;
     typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
@@ -308,12 +320,12 @@ private:
     SLIC_ASSERT(bboxScaleFactor >= 1.);
 
     /// Generate (or access existing) positive (Bernstein) nodal grid function
-    const mfem::FiniteElementSpace* nodalFESpace = m_mesh->GetNodalFESpace();
+    const mfem::FiniteElementSpace * nodalFESpace = m_mesh->GetNodalFESpace();
 
-    mfem::GridFunction* positiveNodes = AXOM_NULLPTR;
+    mfem::GridFunction * positiveNodes = AXOM_NULLPTR;
     bool mustDeleteNodes = false;
 
-    const mfem::FiniteElementCollection* nodalFEColl = nodalFESpace->FEColl();
+    const mfem::FiniteElementCollection * nodalFEColl = nodalFESpace->FEColl();
 
     // Check if grid function is positive, if not create positive grid function
     if( MeshWrapper::isPositiveBasis( nodalFEColl ) )
@@ -326,23 +338,26 @@ private:
       int order = nodalFESpace->GetOrder(0);
       int dim = meshDimension();
       int GeomType = m_mesh->GetElementBaseGeometry(0);
-      int mapType = (nodalFEColl != AXOM_NULLPTR)
-          ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
-          : static_cast<int>(mfem::FiniteElement::VALUE);
+      int mapType =
+        (nodalFEColl != AXOM_NULLPTR)
+        ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
+        : static_cast<int>(mfem::FiniteElement::VALUE);
 
-      mfem::FiniteElementCollection* posFEColl =
-          MeshWrapper::getCorrespondingPositiveFEC(nodalFEColl, order, dim, mapType);
+      mfem::FiniteElementCollection * posFEColl =
+        MeshWrapper::getCorrespondingPositiveFEC(nodalFEColl, order, dim,
+                                                 mapType);
 
-      SLIC_ASSERT_MSG(posFEColl != AXOM_NULLPTR,
-          "Problem generating a positive finite element collection "
-          << "corresponding to the mesh's '"<< nodalFEColl->Name()
-          << "' finite element collection.");
+      SLIC_ASSERT_MSG(
+        posFEColl != AXOM_NULLPTR,
+        "Problem generating a positive finite element collection "
+        << "corresponding to the mesh's '"<< nodalFEColl->Name()
+        << "' finite element collection.");
 
       if(posFEColl != AXOM_NULLPTR)
       {
         // Create a positive (Bernstein) grid function for the nodes
-        mfem::FiniteElementSpace* posFESpace =
-            new mfem::FiniteElementSpace(m_mesh, posFEColl, NDIMS);
+        mfem::FiniteElementSpace * posFESpace =
+          new mfem::FiniteElementSpace(m_mesh, posFEColl, NDIMS);
         positiveNodes = new mfem::GridFunction(posFESpace);
 
         // m_bernsteinNodes takes ownership of posFEColl's memory
@@ -355,18 +370,20 @@ private:
     }
 
     // Output some information
-    SLIC_INFO("Mesh nodes fec -- " << nodalFEColl->Name()
-        << " with ordering " << nodalFESpace->GetOrdering()
-        << "\n\t -- Positive nodes are fec -- "
-        << positiveNodes->FESpace()->FEColl()->Name()
-        << " with ordering " << positiveNodes->FESpace()->GetOrdering() );
+    SLIC_INFO(
+      "Mesh nodes fec -- "
+      << nodalFEColl->Name()
+      << " with ordering " << nodalFESpace->GetOrdering()
+      << "\n\t -- Positive nodes are fec -- "
+      << positiveNodes->FESpace()->FEColl()->Name()
+      << " with ordering " << positiveNodes->FESpace()->GetOrdering() );
 
 
     /// For each element, compute bounding box, and overall mesh bbox
     mfem::Array<int> dofIndices;
-    mfem::FiniteElementSpace* fes = positiveNodes->FESpace();
+    mfem::FiniteElementSpace * fes = positiveNodes->FESpace();
     const int numMeshElements = numElements();
-    for(int elem=0; elem < numMeshElements; ++elem)
+    for(int elem=0 ; elem < numMeshElements ; ++elem)
     {
       SpatialBoundingBox& bbox = eltBBoxes[elem];
 
@@ -374,12 +391,12 @@ private:
       // Note: positivity of Bernstein bases ensures that convex
       //       hull of element nodes contain entire element
       fes->GetElementDofs(elem, dofIndices);
-      for(int i = 0; i< dofIndices.Size(); ++i)
+      for(int i = 0 ; i< dofIndices.Size() ; ++i)
       {
         int nIdx = dofIndices[i];
 
         SpacePoint pt;
-        for(int j=0; j< NDIMS; ++j)
+        for(int j=0 ; j< NDIMS ; ++j)
           pt[j] = (*positiveNodes)(fes->DofToVDof(nIdx,j));
 
         bbox.addPoint( pt );
@@ -410,9 +427,10 @@ private:
    * \sa computeBoundingBoxes()
    */
   template<int NDIMS>
-  void computeLowOrderBoundingBoxes(double bboxScaleFactor,
-      std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
-      axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
+  void computeLowOrderBoundingBoxes(
+    double bboxScaleFactor,
+    std::vector< axom::primal::BoundingBox<double, NDIMS> >& eltBBoxes,
+    axom::primal::BoundingBox<double,NDIMS>& meshBBox)  const
   {
     typedef axom::primal::Point<double, NDIMS> SpacePoint;
     typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
@@ -422,13 +440,13 @@ private:
 
     /// For each element, compute bounding box, and overall mesh bbox
     const int numMeshElements = numElements();
-    for(int elem=0; elem < numMeshElements; ++elem)
+    for(int elem=0 ; elem < numMeshElements ; ++elem)
     {
       SpatialBoundingBox& bbox = eltBBoxes[elem];
 
-      mfem::Element* elt = m_mesh->GetElement(elem);
-      int* eltVerts = elt->GetVertices();
-      for(int i = 0; i< elt->GetNVertices(); ++i)
+      mfem::Element * elt = m_mesh->GetElement(elem);
+      int * eltVerts = elt->GetVertices();
+      for(int i = 0 ; i< elt->GetNVertices() ; ++i)
       {
         int vIdx = eltVerts[i];
         bbox.addPoint( SpacePoint( m_mesh->GetVertex( vIdx ) ) );
@@ -442,7 +460,7 @@ private:
   }
 
 private:
-  mfem::Mesh* m_mesh;
+  mfem::Mesh * m_mesh;
   bool m_isHighOrder;
 };
 

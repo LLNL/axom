@@ -22,15 +22,18 @@
 #include "primal/BoundingBox.hpp"
 
 
-namespace axom {
-namespace quest {
+namespace axom
+{
+namespace quest
+{
 
 // Predeclare mesh traits class
 template <typename mesh_tag>
 struct PointInCellTraits;
 
 
-namespace detail {
+namespace detail
+{
 
 // Predeclare mesh wrapper class
 template <typename mesh_tag>
@@ -76,7 +79,9 @@ public:
    *
    * \sa constructors in PointInCell class for more details about parameters
    */
-  PointFinder(const MeshWrapperType* meshWrapper, const int* res, double bboxScaleFactor)
+  PointFinder(const MeshWrapperType * meshWrapper,
+              const int * res,
+              double bboxScaleFactor)
     : m_meshWrapper(meshWrapper)
   {
     SLIC_ASSERT( m_meshWrapper != AXOM_NULLPTR);
@@ -88,7 +93,8 @@ public:
 
     SpatialBoundingBox meshBBox;
     m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
-    m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor, m_cellBBoxes, meshBBox);
+    m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor,
+                                                        m_cellBBoxes, meshBBox);
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
     if(res != AXOM_NULLPTR)
@@ -103,7 +109,7 @@ public:
     }
 
     // add mesh elements to grid
-    for(int i=0; i< numCells; ++i)
+    for(int i=0 ; i< numCells ; ++i)
     {
       m_grid.insert( m_cellBBoxes[i], i);
     }
@@ -114,7 +120,7 @@ public:
    *
    * \sa PointInCell::locatePoint() for more details about parameters
    */
-  IndexType locatePoint(const double* pos, double* isoparametric) const
+  IndexType locatePoint(const double * pos, double * isoparametric) const
   {
     typedef typename GridType::BitsetType BitsetType;
 
@@ -128,15 +134,16 @@ public:
     BitsetType candidates = m_grid.getCandidates(pt);
 
     bool foundContainingCell = false;
-    for(std::size_t cellIdx = candidates.find_first();
-        !foundContainingCell && cellIdx != BitsetType::npos;
+    for(std::size_t cellIdx = candidates.find_first() ;
+        !foundContainingCell && cellIdx != BitsetType::npos ;
         cellIdx = candidates.find_next( cellIdx) )
     {
       // First check that pt is in bounding box of element
       if( cellBoundingBox(cellIdx).contains(pt) )
       {
         // if isopar is in the proper range
-        if( m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data() ) )
+        if( m_meshWrapper->locatePointInCell(cellIdx, pt.data(),
+                                             isopar.data() ) )
         {
           // then we have found the cellID
           foundContainingCell = true;
@@ -162,8 +169,8 @@ public:
 
 
 private:
-  GridType    m_grid;
-  const MeshWrapperType* m_meshWrapper;
+  GridType m_grid;
+  const MeshWrapperType * m_meshWrapper;
   std::vector<SpatialBoundingBox> m_cellBBoxes;
 };
 

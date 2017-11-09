@@ -27,8 +27,10 @@
 #include "quest/PointFinder.hpp"
 
 
-namespace axom {
-namespace quest {
+namespace axom
+{
+namespace quest
+{
 
 /*!
  * \class PointInCellTraits
@@ -46,7 +48,8 @@ template<typename mesh_tag>
 struct PointInCellTraits;
 
 
-namespace detail {
+namespace detail
+{
 
 
 /*!
@@ -134,8 +137,12 @@ public:
    * \pre If resolution is not NULL, it must have space for at least
    * meshDimension() entries.
    */
-  PointInCell(MeshType* mesh, int* resolution = AXOM_NULLPTR, double bboxTolerance = 1e-8)
-    : m_meshWrapper(mesh), m_pointFinder2D(AXOM_NULLPTR), m_pointFinder3D(AXOM_NULLPTR)
+  PointInCell(MeshType * mesh,
+              int * resolution = AXOM_NULLPTR,
+              double bboxTolerance = 1e-8)
+    : m_meshWrapper(mesh),
+    m_pointFinder2D(AXOM_NULLPTR),
+    m_pointFinder3D(AXOM_NULLPTR)
   {
     SLIC_ASSERT(mesh != AXOM_NULLPTR);
 
@@ -146,10 +153,12 @@ public:
     switch(m_meshWrapper.meshDimension())
     {
     case 2:
-      m_pointFinder2D = new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor);
+      m_pointFinder2D =
+        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor);
       break;
     case 3:
-      m_pointFinder3D = new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor);
+      m_pointFinder3D =
+        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor);
       break;
     default:
       SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
@@ -191,7 +200,8 @@ public:
    * \pre \a pos is a non-null array with at least \a meshDimension() coordinates
    * \pre When not NULL, \a isopar has space for at least \a meshDimension() coordinates
    */
-  IndexType locatePoint(const double* pos, double* isopar = AXOM_NULLPTR) const
+  IndexType locatePoint(const double * pos,
+                        double * isopar = AXOM_NULLPTR) const
   {
     SLIC_ASSERT(pos != AXOM_NULLPTR);
 
@@ -225,10 +235,12 @@ public:
    *  \pre \a pos is not NULL and has \a meshDimension() entries
    *  \pre \a isopar is not NULL and has space for \a meshDimension() entries
    */
-  bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar) const
+  bool locatePointInCell(IndexType cellIdx,
+                         const double * pos,
+                         double * isopar) const
   {
     // Early return if point is not within cell's bounding box
-    if(! withinBoundingBox(cellIdx, pos) )
+    if(!withinBoundingBox(cellIdx, pos) )
     {
       return false;
     }
@@ -245,7 +257,9 @@ public:
    * \param [in[ isopar The isoparametric coordinates at which to evaluate
    * \param [out] pos The computed coordinates of the evaluated point
    */
-  void reconstructPoint(IndexType cellIdx, const double* isopar, double* pos) const
+  void reconstructPoint(IndexType cellIdx,
+                        const double * isopar,
+                        double * pos) const
   {
     m_meshWrapper.reconstructPoint(cellIdx, isopar, pos);
   }
@@ -262,7 +276,7 @@ private:
    *
    * \return True if the point is contained in the cell's bounding box
    */
-  bool withinBoundingBox(IndexType cellIdx, const double* pos) const
+  bool withinBoundingBox(IndexType cellIdx, const double * pos) const
   {
     typedef axom::primal::Point<double, 2> Point2D;
     typedef axom::primal::Point<double, 3> Point3D;
@@ -281,8 +295,8 @@ private:
 private:
   MeshWrapperType m_meshWrapper;
 
-  PointFinder2D* m_pointFinder2D;
-  PointFinder3D* m_pointFinder3D;
+  PointFinder2D * m_pointFinder2D;
+  PointFinder3D * m_pointFinder3D;
 };
 
 
