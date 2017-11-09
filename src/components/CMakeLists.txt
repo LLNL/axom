@@ -1,4 +1,4 @@
-###############################################################################
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
@@ -10,8 +10,7 @@
 # This file is part of Axom.
 #
 # For details about use and distribution, please read axom/LICENSE.
-#
-##############################################################################
+#------------------------------------------------------------------------------
 
 if(ENABLE_PYTHON_API)
     set(ENABLE_SHARED_LIBS TRUE)

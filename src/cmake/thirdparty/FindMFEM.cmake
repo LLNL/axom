@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
@@ -10,17 +10,17 @@
 # This file is part of Axom.
 #
 # For details about use and distribution, please read axom/LICENSE.
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Setup MFEM
 #
 # This file defines:
 #  MFEM_FOUND        - If mfem was found
 #  MFEM_INCLUDE_DIRS - The mfem include directories
 #  MFEM_LIBRARY      - The mfem library
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 if (NOT MFEM_DIR)
   message(FATAL_ERROR "Cannot find MFEM. MFEM_DIR is not defined. ")
