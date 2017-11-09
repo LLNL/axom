@@ -199,13 +199,15 @@ TEST( primal_triangle, triangle_bary_to_world)
     const QPoint& query = it->first;
     const QPoint& expWorld = it->second;
     QPoint wcoords = tri.at(query);
+    QPoint bary = tri.barycentricCoords(wcoords);
 
     SLIC_DEBUG(fmt::format(
                  "Computed world coordinates for triangle {} at barycentric {} are {}",
                  tri, query, wcoords));
-    EXPECT_NEAR(wcoords[0],  expWorld[0], EPS );
-    EXPECT_NEAR(wcoords[1],  expWorld[1], EPS );
-    EXPECT_NEAR(wcoords[2],  expWorld[2], EPS );
+    for (int i = 0; i < 3; ++i) {
+      EXPECT_NEAR(wcoords[i], expWorld[i], EPS);
+      EXPECT_NEAR(bary[i], query[i], EPS);
+    }
   }
 
 }
