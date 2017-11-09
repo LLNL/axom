@@ -167,12 +167,14 @@ public:
     m_mesh->getOrigin( origin );
     localIndex size[3];
     m_mesh->getExtentSize( size );
-    double* t = m_mesh->getNodeFieldData().getField(0)->getDoublePtr();
+    double * t = m_mesh->getNodeFieldData().getField(0)->getDoublePtr();
 
     localIndex idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
-    for ( localIndex j = 0; j < size[1]; ++j ) {
-      for ( localIndex i = 0; i < size[0]; ++i ) {
+    for ( localIndex j = 0 ; j < size[1] ; ++j )
+    {
+      for ( localIndex i = 0 ; i < size[0] ; ++i )
+      {
         t[ idx++ ] = pulse.evaluate( node_pos );
         node_pos[0] += m_h;
       }
@@ -193,9 +195,9 @@ public:
               const std::string& path )
   {
     const localIndex num_nodes = m_mesh->getMeshNumberOfNodes();
-    double* new_temp = new double[num_nodes];
-    double* prev_temp = m_mesh->getNodeFieldData().getField( "temperature" )
-                        ->getDoublePtr();
+    double * new_temp = new double[num_nodes];
+    double * prev_temp = m_mesh->getNodeFieldData().getField( "temperature" )
+                         ->getDoublePtr();
 
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */
@@ -257,7 +259,8 @@ private:
     std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
-    for ( localIndex idx = size[0]; idx < offset; idx += size[0] ) {
+    for ( localIndex idx = size[0] ; idx < offset ; idx += size[0] )
+    {
       new_temp[ idx ] = prev_temp[ idx ];
       new_temp[ idx + size[0] - 1 ] = prev_temp[ idx + size[0] - 1 ];
     }
@@ -288,9 +291,11 @@ private:
     const localIndex jp = size[0];
     const localIndex Nj = size[1] - 1;
     const localIndex Ni = size[0] - 1;
-    for ( localIndex j = 1; j < Nj; ++j ) {
+    for ( localIndex j = 1 ; j < Nj ; ++j )
+    {
       const localIndex j_offset = j * jp;
-      for ( localIndex i = 1; i < Ni; ++i ) {
+      for ( localIndex i = 1 ; i < Ni ; ++i )
+      {
 
         const localIndex idx = i + j_offset;
         const localIndex north = idx + jp;
@@ -299,7 +304,7 @@ private:
         const localIndex west = idx - 1;
         const double neighbors_contrib = prev_temp[ north ] +
                                          prev_temp[ east ] +
-                                         prev_temp[ south ] + 
+                                         prev_temp[ south ] +
                                          prev_temp[ west ];
 
         new_temp[ idx ] = neighbors_scale * neighbors_contrib;
@@ -335,7 +340,8 @@ private:
                                     const double upper_bound[2] )
   {
     globalIndex ext[4];
-    for ( int i = 0; i < 2; ++i ) {
+    for ( int i = 0 ; i < 2 ; ++i )
+    {
       double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
       ext[ 2 * i ] = 0;
       ext[ 2 * i + 1 ] = std::ceil( len / h );

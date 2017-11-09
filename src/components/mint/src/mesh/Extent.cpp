@@ -3,12 +3,14 @@
 
 #include <cstring>                /* for memcpy() */
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 
 //------------------------------------------------------------------------------
-Extent::Extent( int ndims, const globalIndex* ext ):
+Extent::Extent( int ndims, const globalIndex * ext ) :
   m_ndims( ndims )
 {
   SLIC_ASSERT( ndims >= 1 && ndims <= 3 );
@@ -22,11 +24,13 @@ Extent::Extent( int ndims, const globalIndex* ext ):
   // compute strides
   m_jp = 0;
   m_kp = 0;
-  if ( ndims > 1 ) {
+  if ( ndims > 1 )
+  {
     m_jp = size( 0 );
   }
 
-  if ( ndims > 2 ) {
+  if ( ndims > 2 )
+  {
     m_kp = m_jp * size( 1 );
   }
 
@@ -34,7 +38,7 @@ Extent::Extent( int ndims, const globalIndex* ext ):
 }
 
 //------------------------------------------------------------------------------
-Extent::Extent():
+Extent::Extent() :
   m_ndims(0),
   m_jp(0),
   m_kp(0)

@@ -46,21 +46,21 @@ public:
    * \return ndims the dimension of this mesh instance.
    * \post ndims >= 1 && ndims <= 3
    */
-  inline int getDimension() const 
+  inline int getDimension() const
   { return m_ndims; }
 
   /*!
    * \brief Returns the ID of this mesh instance.
    * \return Id the ID of the mesh.
    */
-  inline int getBlockId() const 
+  inline int getBlockId() const
   { return m_block_idx; }
 
   /*!
    * \brief Returns the partition ID of this mesh instance.
    * \return partitionId the partition ID of the mesh.
    */
-  inline int getPartitionId() const 
+  inline int getPartitionId() const
   { return m_part_idx; }
 
   /*!
@@ -68,7 +68,7 @@ public:
    * \return meshType the mesh type
    * \see MeshType
    */
-  inline int getMeshType() const 
+  inline int getMeshType() const
   { return m_type; }
 
   /*!
@@ -106,7 +106,7 @@ public:
    * \return fd pointer to the FieldData instance for cell-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline const FieldData& getCellFieldData() const 
+  inline const FieldData& getCellFieldData() const
   { return m_cell_data; }
 
   /*!
@@ -122,7 +122,7 @@ public:
    * \return fd pointer to the FieldData instance for face-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline const FieldData& getFaceFieldData() const 
+  inline const FieldData& getFaceFieldData() const
   { return m_face_data; }
 
   /*!
@@ -130,7 +130,7 @@ public:
    * \return fd pointer to the FieldData instance for edge-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline FieldData& getEdgeFieldData() 
+  inline FieldData& getEdgeFieldData()
   { return m_edge_data; }
 
   /*!
@@ -138,7 +138,7 @@ public:
    * \return fd pointer to the FieldData instance for edge-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline const FieldData& getEdgeFieldData() const 
+  inline const FieldData& getEdgeFieldData() const
   { return m_edge_data; }
 
   /*!
@@ -146,7 +146,7 @@ public:
    * \return fd pointer to the FieldData instance for node-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline FieldData& getNodeFieldData() 
+  inline FieldData& getNodeFieldData()
   { return m_node_data; }
 
   /*!
@@ -154,7 +154,7 @@ public:
    * \return fd pointer to the FieldData instance for node-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline const FieldData& getNodeFieldData() const 
+  inline const FieldData& getNodeFieldData() const
   { return m_node_data; }
 
   /*!
@@ -165,12 +165,13 @@ public:
    * \return true iff the field was successfully added.
    */
   template < typename FieldType >
-  Field* addCellField( const std::string& name, int num_components=1 )
+  Field * addCellField( const std::string& name, int num_components=1 )
   {
     int size = getMeshNumberOfCells();
     int capacity = getMeshCellCapacity();
     double resize_ratio = getMeshCellResizeRatio();
-    return m_cell_data.addField< FieldType >( name, size, capacity, num_components,
+    return m_cell_data.addField< FieldType >( name, size, capacity,
+                                              num_components,
                                               resize_ratio );
   }
 
@@ -182,14 +183,15 @@ public:
    * \return true iff the field was successfully added.
    */
   template < typename FieldType >
-  Field* addFaceField( const std::string& name, int num_components=1 )
+  Field * addFaceField( const std::string& name, int num_components=1 )
   {
     int size = getMeshNumberOfFaces();
     int capacity = getMeshCellCapacity();
     double resize_ratio = getMeshCellResizeRatio();
-    return m_face_data.addField< FieldType >( name, size, capacity, num_components, 
+    return m_face_data.addField< FieldType >( name, size, capacity,
+                                              num_components,
                                               resize_ratio );
-  } 
+  }
 
   /*!
    * \brief Add a edge centered field to the mesh.
@@ -199,14 +201,15 @@ public:
    * \return true iff the field was successfully added.
    */
   template < typename FieldType >
-  Field* addEdgeField( const std::string& name, int num_components=1 )
+  Field * addEdgeField( const std::string& name, int num_components=1 )
   {
     int size = getMeshNumberOfEdges();
     int capacity = getMeshCellCapacity();
     double resize_ratio = getMeshCellResizeRatio();
-    return m_edge_data.addField< FieldType >( name, size, capacity, num_components, 
+    return m_edge_data.addField< FieldType >( name, size, capacity,
+                                              num_components,
                                               resize_ratio );
-  }  
+  }
 
   /*!
    * \brief Add a node centered field to the mesh.
@@ -216,13 +219,14 @@ public:
    * \return true iff the field was successfully added.
    */
   template < typename FieldType >
-  Field* addNodeField( const std::string& name, int num_components=1 )
+  Field * addNodeField( const std::string& name, int num_components=1 )
   {
     int size = getMeshNumberOfNodes();
     int capacity = getMeshNodeCapacity();
     double resize_ratio = getMeshNodeResizeRatio();
-    return m_node_data.addField< FieldType >( name, size, capacity, num_components, 
-                                             resize_ratio );
+    return m_node_data.addField< FieldType >( name, size, capacity,
+                                              num_components,
+                                              resize_ratio );
   }
 
   /// \name Virtual API
@@ -281,7 +285,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( localIndex cellIdx, localIndex* cell ) const = 0;
+  virtual void getMeshCell( localIndex cellIdx, localIndex * cell ) const = 0;
 
   /*!
    * \brief Returns the cell type of the cell associated with the given Id.
@@ -298,7 +302,8 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshNode( localIndex nodeIdx, double* coordinates ) const = 0;
+  virtual void getMeshNode( localIndex nodeIdx,
+                            double * coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinate of a mesh node.
@@ -329,7 +334,7 @@ protected:
   inline void setNodeDataSize( localIndex size )
   { m_node_data.setSize( size ); }
 
-  
+
   inline void setCellDataCapacity( localIndex capacity )
   { m_cell_data.setCapacity( capacity ); }
 

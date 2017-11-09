@@ -18,16 +18,20 @@
 #include <cmath>                        /* for std::ceil */
 
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-namespace internal {
+namespace internal
+{
 
 template < typename T >
 localIndex calc_new_capacity( Vector< T > & v, localIndex increase )
-{ 
+{
   localIndex newSize = v.getSize() + increase;
-  if ( newSize > v.getCapacity() ) {
+  if ( newSize > v.getCapacity() )
+  {
     double n_tuples = newSize * v.getResizeRatio() / v.getNumComponents();
     return std::ceil( n_tuples ) * v.getNumComponents();
   }
@@ -50,7 +54,8 @@ void check_storage( localIndex capacity )
 
   const T * data_address = v.getData();
 
-  for ( localIndex i = 0; i < capacity / 2; ++i ) {
+  for ( localIndex i = 0 ; i < capacity / 2 ; ++i )
+  {
     v.add( i );
   }
 
@@ -59,7 +64,8 @@ void check_storage( localIndex capacity )
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
 
-  for ( localIndex i =  capacity / 2; i < capacity; ++i ) {
+  for ( localIndex i =  capacity / 2 ; i < capacity ; ++i )
+  {
     v.add( i );
   }
 
@@ -68,15 +74,18 @@ void check_storage( localIndex capacity )
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
 
-  for ( localIndex i = 0; i < capacity; ++i ) {
+  for ( localIndex i = 0 ; i < capacity ; ++i )
+  {
     EXPECT_EQ( v[ i ], i );
   }
 
-  for ( localIndex i = 0; i < capacity; ++i ) {
+  for ( localIndex i = 0 ; i < capacity ; ++i )
+  {
     v[ i ] = capacity - i;
   }
 
-  for ( localIndex i = 0; i < capacity; ++i ) {
+  for ( localIndex i = 0 ; i < capacity ; ++i )
+  {
     EXPECT_EQ( v[ i ], capacity - i );
   }
 }
@@ -97,15 +106,16 @@ void check_resize( int num_components, double resize_ratio )
   capacity = calc_new_capacity( v, 1 );
   v.add( 0 );
   size += 1;
-  
+
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getSize(), size );
   EXPECT_EQ( v[0], 0 );
 
   const localIndex n_vals = 1000 * num_components;
   T values[ n_vals ];
-  for ( localIndex i = 0; i < n_vals; ++i ) {
-    values[ i ] = i + 1; 
+  for ( localIndex i = 0 ; i < n_vals ; ++i )
+  {
+    values[ i ] = i + 1;
   }
 
   capacity = calc_new_capacity( v, n_vals );
@@ -114,7 +124,8 @@ void check_resize( int num_components, double resize_ratio )
 
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getSize(), size );
-  for ( localIndex i = 0; i < size; ++i ) {
+  for ( localIndex i = 0 ; i < size ; ++i )
+  {
     EXPECT_EQ( v[ i ], i );
   }
 
@@ -132,7 +143,8 @@ void check_resize( int num_components, double resize_ratio )
   EXPECT_EQ( v.getSize(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
-  for ( localIndex i = 0; i < size; ++i ) {
+  for ( localIndex i = 0 ; i < size ; ++i )
+  {
     EXPECT_EQ( v[ i ], i );
   }
 
@@ -141,7 +153,8 @@ void check_resize( int num_components, double resize_ratio )
   v.setCapacity( capacity );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getSize(), size );
-  for ( localIndex i = 0; i < size; ++i ) {
+  for ( localIndex i = 0 ; i < size ; ++i )
+  {
     EXPECT_EQ( v[ i ], i );
   }
 
@@ -155,11 +168,13 @@ void check_resize( int num_components, double resize_ratio )
   EXPECT_EQ( v.getSize(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
 
-  for ( localIndex i = 0 ; i < size - n_vals; ++i ) {
+  for ( localIndex i = 0 ; i < size - n_vals ; ++i )
+  {
     EXPECT_EQ( v[ i ], i );
   }
 
-  for ( localIndex i = size - n_vals; i < size; ++i ) {
+  for ( localIndex i = size - n_vals ; i < size ; ++i )
+  {
     EXPECT_EQ( v[ i ], values[i - size + n_vals] );
   }
 
@@ -169,7 +184,8 @@ void check_resize( int num_components, double resize_ratio )
   v.setSize( size );
   data_address = v.getData();
 
-  for ( localIndex i = 0; i < size; ++i ) {
+  for ( localIndex i = 0 ; i < size ; ++i )
+  {
     data_address[ i ] = i * i;
   }
 
@@ -177,7 +193,8 @@ void check_resize( int num_components, double resize_ratio )
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
 
-  for ( localIndex i = 0; i < size; ++i ) {
+  for ( localIndex i = 0 ; i < size ; ++i )
+  {
     EXPECT_EQ( v[ i ], i * i );
   }
 }
@@ -191,7 +208,8 @@ void check_insert( double resize_ratio )
 
   localIndex num_vals = 1000;
 
-  for ( localIndex i = 0; i < num_vals; ++i ) {
+  for ( localIndex i = 0 ; i < num_vals ; ++i )
+  {
     capacity = calc_new_capacity( v, 1 );
     v.insert( 2 * i, size );
     size++;
@@ -201,11 +219,13 @@ void check_insert( double resize_ratio )
   EXPECT_EQ( v.getSize(), size );
   EXPECT_EQ( v.getSize(), num_vals );
 
-  for ( localIndex i = 0; i < num_vals; ++i ) {
+  for ( localIndex i = 0 ; i < num_vals ; ++i )
+  {
     EXPECT_EQ( v[ i ], 2 * i );
   }
 
-  for ( localIndex i = 0; i < num_vals; ++i ) {
+  for ( localIndex i = 0 ; i < num_vals ; ++i )
+  {
     capacity = calc_new_capacity( v, 1 );
     v.insert( 2 * i + 1, 2 * i + 1 );
     size++;
@@ -215,12 +235,14 @@ void check_insert( double resize_ratio )
   EXPECT_EQ( v.getSize(), size );
   EXPECT_EQ( v.getSize(), 2 * num_vals );
 
-  for ( localIndex i = 0; i < 2 * num_vals; ++i ) {
+  for ( localIndex i = 0 ; i < 2 * num_vals ; ++i )
+  {
     EXPECT_EQ( v[ i ], i );
   }
 
   T values[ num_vals ];
-  for ( localIndex i = 0; i < num_vals; ++i ) {
+  for ( localIndex i = 0 ; i < num_vals ; ++i )
+  {
     values[ i ] = i * ( i - 4 ) + 5;
   }
 
@@ -232,11 +254,13 @@ void check_insert( double resize_ratio )
   EXPECT_EQ( v.getSize(), size );
   EXPECT_EQ( v.getSize(), 3 * num_vals );
 
-  for ( localIndex i = 0; i < num_vals; ++i ) {
+  for ( localIndex i = 0 ; i < num_vals ; ++i )
+  {
     EXPECT_EQ( v[ i ], values[ i ] );
   }
 
-  for ( localIndex i = num_vals; i < 3 * num_vals; ++i ) {
+  for ( localIndex i = num_vals ; i < 3 * num_vals ; ++i )
+  {
     EXPECT_EQ( v[ i ], i - num_vals );
   }
 }
@@ -244,9 +268,11 @@ void check_insert( double resize_ratio )
 }   /* end namespace internal */
 
 
-TEST( mint_vector, checkStorage ) {
+TEST( mint_vector, checkStorage )
+{
   localIndex capacity = 2;
-  for ( int i = 1; i < 17; ++i ) {
+  for ( int i = 1 ; i < 17 ; ++i )
+  {
     internal::check_storage< int > ( capacity );
     internal::check_storage< long int >( capacity );
     internal::check_storage< float >( capacity );
@@ -255,9 +281,12 @@ TEST( mint_vector, checkStorage ) {
   }
 }
 
-TEST( mint_vector, checkResize ) {
-  for ( int num_components = 1; num_components < 5; ++num_components ) {
-    for ( double resize_ratio = 1.0; resize_ratio < 3; resize_ratio += 0.3 ) {
+TEST( mint_vector, checkResize )
+{
+  for ( int num_components = 1 ; num_components < 5 ; ++num_components )
+  {
+    for ( double resize_ratio = 1.0 ; resize_ratio < 3 ; resize_ratio += 0.3 )
+    {
       internal::check_resize< int > ( num_components, resize_ratio );
       internal::check_resize< long int >( num_components, resize_ratio );
       internal::check_resize< float >( num_components, resize_ratio );
@@ -267,8 +296,10 @@ TEST( mint_vector, checkResize ) {
 }
 
 
-TEST( mint_vector, checkInsert ) {
-  for ( double resize_ratio = 1.0; resize_ratio < 3; resize_ratio += 0.3 ) {
+TEST( mint_vector, checkInsert )
+{
+  for ( double resize_ratio = 1.0 ; resize_ratio < 3 ; resize_ratio += 0.3 )
+  {
     internal::check_insert< int > ( resize_ratio );
     internal::check_insert< long int >( resize_ratio );
     internal::check_insert< float >( resize_ratio );
@@ -293,5 +324,3 @@ int main( int argc, char * argv[] )
   result = RUN_ALL_TESTS();
   return result;
 }
-
-

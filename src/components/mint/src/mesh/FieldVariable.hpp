@@ -54,7 +54,7 @@ public:
    * \param [in] num_components the number of components per tuple.
    */
   FieldVariable( const std::string& name, localIndex size, localIndex capacity,
-                 int num_components, double resize_ratio):
+                 int num_components, double resize_ratio) :
     Field( name ),
     m_data( capacity * num_components, num_components, resize_ratio )
   {
@@ -94,7 +94,7 @@ public:
    * \return ptr pointer to the field data of type double.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double* getDoublePtr()
+  virtual double * getDoublePtr()
   { return AXOM_NULLPTR; }
 
   /*!
@@ -102,7 +102,7 @@ public:
    * \return ptr constant pointer to the field data of type double.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double* getDoublePtr() const
+  virtual const double * getDoublePtr() const
   { return AXOM_NULLPTR; }
 
   /*!
@@ -110,7 +110,7 @@ public:
    * \return ptr pointer to the field data of type int.
    * \post ptr==AXOM_NULLPTR iff the data is not of type int.
    */
-  virtual int* getIntPtr()
+  virtual int * getIntPtr()
   { return AXOM_NULLPTR; }
 
   /*!
@@ -118,16 +118,16 @@ public:
    * \return ptr constant pointer to the field data of type int.
    * \post ptr==AXOM_NULLPTR iff the data is not of type int.
    */
-  virtual const int* getIntPtr() const
+  virtual const int * getIntPtr() const
   { return AXOM_NULLPTR; }
 
   virtual void setNumTuples( localIndex size )
   { m_data.setSize( size * getNumTuples() ); }
-  
+
 
   virtual void setTuplesCapacity( localIndex capacity )
   { m_data.setCapacity( capacity * getNumTuples() ); }
-  
+
 
   virtual void setResizeRatio( double ratio )
   { m_data.setResizeRatio( ratio ); }
@@ -138,7 +138,7 @@ private:
    * \brief FieldVariable constructor. Does nothing. Made private to prevent
    *  its use in application code.
    */
-  FieldVariable() 
+  FieldVariable()
   {}
 
   Vector< FieldType > m_data;
@@ -153,19 +153,19 @@ private:
 
 //------------------------------------------------------------------------------
 template <>
-double* FieldVariable< double >::getDoublePtr();
+double * FieldVariable< double >::getDoublePtr();
 
 //------------------------------------------------------------------------------
 template <>
-const double* FieldVariable< double >::getDoublePtr() const;
+const double * FieldVariable< double >::getDoublePtr() const;
 
 //------------------------------------------------------------------------------
 template <>
-int* FieldVariable< int >::getIntPtr();
+int * FieldVariable< int >::getIntPtr();
 
 //------------------------------------------------------------------------------
 template <>
-const int* FieldVariable< int >::getIntPtr() const;
+const int * FieldVariable< int >::getIntPtr() const;
 
 
 

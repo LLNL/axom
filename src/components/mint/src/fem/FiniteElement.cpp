@@ -369,7 +369,7 @@ void FiniteElement::tearDown()
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::getCellCoords( const Mesh* m, localIndex cellIdx )
+void FiniteElement::getCellCoords( const Mesh * m, localIndex cellIdx )
 {
   SLIC_ASSERT(  m != AXOM_NULLPTR );
   SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );

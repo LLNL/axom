@@ -182,7 +182,7 @@ private:
    * \pre clocs != AXOM_NULLPTR
    */
   double computeSign( const PointType& pt,
-                      const cpt_data* cpt,
+                      const cpt_data * cpt,
                       std::vector< axom::mint::localIndex >& my_elements ) const;
 
   /*!
@@ -273,16 +273,18 @@ SignedDistance< NDIMS >::SignedDistance(
   // compute bounding box of surface mesh
   // NOTE: this should be changed to an oriented bounding box in the future.
   PointType pt;
-  for ( axom::mint::localIndex inode=0; inode < nnodes; ++inode ) {
-     m_surfaceMesh->getMeshNode( inode, pt.data() );
-     m_boxDomain.addPoint( pt );
+  for ( axom::mint::localIndex inode=0 ; inode < nnodes ; ++inode )
+  {
+    m_surfaceMesh->getMeshNode( inode, pt.data() );
+    m_boxDomain.addPoint( pt );
   }
 
   // Initialize BucketTree with the surface elements.
   m_bvhTree  = new BVHTreeType( ncells, maxLevels );
 
-  for ( axom::mint::localIndex icell=0; icell < ncells; ++icell ) {
-      m_bvhTree->insert( this->getCellBoundingBox( icell ), icell );
+  for ( axom::mint::localIndex icell=0 ; icell < ncells ; ++icell )
+  {
+    m_bvhTree->insert( this->getCellBoundingBox( icell ), icell );
   } // END for all cells
 
   // Build bounding volume hierarchy
@@ -314,11 +316,11 @@ inline double SignedDistance< NDIMS >::computeDistance(
 //------------------------------------------------------------------------------
 template < int NDIMS >
 inline double SignedDistance< NDIMS >::computeDistance(
-            const PointType& pt,
-            std::vector< int >& buckets,
-            std::vector< axom::mint::localIndex >& AXOM_DEBUG_PARAM(elementIds),
-            std::vector< axom::mint::localIndex >& my_elements,
-            PointType& closest_pt ) const
+  const PointType& pt,
+  std::vector< int >& buckets,
+  std::vector< axom::mint::localIndex >& AXOM_DEBUG_PARAM(elementIds),
+  std::vector< axom::mint::localIndex >& my_elements,
+  PointType& closest_pt ) const
 {
   SLIC_ASSERT( m_surfaceMesh != AXOM_NULLPTR );
   SLIC_ASSERT( m_bvhTree != AXOM_NULLPTR );
@@ -352,9 +354,9 @@ inline double SignedDistance< NDIMS >::computeDistance(
 //------------------------------------------------------------------------------
 template < int NDIMS >
 double SignedDistance< NDIMS >::computeSign(
-   const PointType& pt,
-   const cpt_data* cpt,
-   std::vector< axom::mint::localIndex >& AXOM_DEBUG_PARAM(my_elements) ) const
+  const PointType& pt,
+  const cpt_data * cpt,
+  std::vector< axom::mint::localIndex >& AXOM_DEBUG_PARAM(my_elements) ) const
 {
   // Sanity checks
   SLIC_ASSERT( cpt != AXOM_NULLPTR );
@@ -614,7 +616,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::localIndex icell )
   const int nnodes = axom::mint::cell::num_nodes[ cellType ];
 
   // Get the cell node IDs that make up the cell
-  axom::mint::localIndex* cellIds = new axom::mint::localIndex[ nnodes ];
+  axom::mint::localIndex * cellIds = new axom::mint::localIndex[ nnodes ];
   m_surfaceMesh->getMeshCell( icell, cellIds );
 
   // compute the cell's bounding box

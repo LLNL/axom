@@ -119,12 +119,12 @@ axom::mint::Mesh * make_octahedron_mesh()
   // The six vertices of the octahedron
   const int NUM_VERTS = 6;
   SpacePt verts[NUM_VERTS]
-                =  { SpacePt::make_point( 1., 0., 0.)
-                   , SpacePt::make_point(-1., 0., 0.)
-                   , SpacePt::make_point( 0,  1., 0.)
-                   , SpacePt::make_point( 0, -1., 0.)
-                   , SpacePt::make_point( 0,  0,  1.)
-                   , SpacePt::make_point( 0,  0, -1.)  };
+    =  { SpacePt::make_point( 1., 0., 0.)
+         , SpacePt::make_point(-1., 0., 0.)
+         , SpacePt::make_point( 0,  1., 0.)
+         , SpacePt::make_point( 0, -1., 0.)
+         , SpacePt::make_point( 0,  0,  1.)
+         , SpacePt::make_point( 0,  0, -1.)  };
 
   // The eight triangles of the octahedron
   // Explicit representation of triangle-vertex incidence relation
@@ -132,57 +132,60 @@ axom::mint::Mesh * make_octahedron_mesh()
   const int NUM_TRIS = 8;
   const int VERTS_PER_TRI = 3;
   VertexIndex tvRelation[NUM_TRIS*VERTS_PER_TRI]
-                = { POS_Z, POS_X, POS_Y
-                  , POS_Z, POS_Y, NEG_X
-                  , POS_Z, NEG_X, NEG_Y
-                  , POS_Z, NEG_Y, POS_X
-                  , NEG_Z, POS_Y, POS_X
-                  , NEG_Z, NEG_X, POS_Y
-                  , NEG_Z, NEG_Y, NEG_X
-                  , NEG_Z, POS_X, NEG_Y };
+    = { POS_Z, POS_X, POS_Y
+        , POS_Z, POS_Y, NEG_X
+        , POS_Z, NEG_X, NEG_Y
+        , POS_Z, NEG_Y, POS_X
+        , NEG_Z, POS_Y, POS_X
+        , NEG_Z, NEG_X, POS_Y
+        , NEG_Z, NEG_Y, NEG_X
+        , NEG_Z, POS_X, NEG_Y };
 
-    // Note (KW 3/2016) -- We are not currently using this
-    // Explicit representation of edge-vertex incidence relation
-    // Note: we don't care about the orientation here
-    //const int NUM_EDGES = 12;
-    //const int VERTS_PER_EDGE = 3;
-    //VertexIndex evRelation[NUM_EDGES*VERTS_PER_EDGE]
-    //              = { POS_Z, POS_X  // Four edges incident in +Z
-    //                , POS_Z, POS_Y
-    //                , POS_Z, NEG_X
-    //                , POS_Z, NEG_Y
-    //                , NEG_Z, POS_X  // Four edges incident in -Z
-    //                , NEG_Z, POS_Y
-    //                , NEG_Z, NEG_X
-    //                , NEG_Z, NEG_Y
-    //                , POS_Y, POS_X  // Four edges not incident in Z
-    //                , NEG_Y, POS_Y
-    //                , POS_Y, NEG_X
-    //                , NEG_Y, NEG_Y };
+  // Note (KW 3/2016) -- We are not currently using this
+  // Explicit representation of edge-vertex incidence relation
+  // Note: we don't care about the orientation here
+  //const int NUM_EDGES = 12;
+  //const int VERTS_PER_EDGE = 3;
+  //VertexIndex evRelation[NUM_EDGES*VERTS_PER_EDGE]
+  //              = { POS_Z, POS_X  // Four edges incident in +Z
+  //                , POS_Z, POS_Y
+  //                , POS_Z, NEG_X
+  //                , POS_Z, NEG_Y
+  //                , NEG_Z, POS_X  // Four edges incident in -Z
+  //                , NEG_Z, POS_Y
+  //                , NEG_Z, NEG_X
+  //                , NEG_Z, NEG_Y
+  //                , POS_Y, POS_X  // Four edges not incident in Z
+  //                , NEG_Y, POS_Y
+  //                , POS_Y, NEG_X
+  //                , NEG_Y, NEG_Y };
 
   // First, confirm that all triangles have normals that point away from the origin
-  for(int i =0; i < NUM_TRIS; ++i)
+  for(int i =0 ; i < NUM_TRIS ; ++i)
   {
-      int baseIndex = i*VERTS_PER_TRI;
-      SpaceTriangle tri( verts[ tvRelation[ baseIndex + 0]]
+    int baseIndex = i*VERTS_PER_TRI;
+    SpaceTriangle tri( verts[ tvRelation[ baseIndex + 0]]
                        , verts[ tvRelation[ baseIndex + 1]]
                        , verts[ tvRelation[ baseIndex + 2]] );
 
-      SLIC_ASSERT( axom::primal::ON_NEGATIVE_SIDE == axom::primal::orientation( SpacePt(), tri) );
+    SLIC_ASSERT( axom::primal::ON_NEGATIVE_SIDE ==
+                 axom::primal::orientation( SpacePt(), tri) );
   }
 
   // Now create an unstructured triangle mesh from the two arrays
   typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-  TriangleMesh* triMesh = new TriangleMesh(3);
+  TriangleMesh * triMesh = new TriangleMesh(3);
 
   // insert verts
-  for(int i=0; i< NUM_VERTS; ++i) {
-      triMesh->addNode(verts[i][0], verts[i][1], verts[i][2]);
+  for(int i=0 ; i< NUM_VERTS ; ++i)
+  {
+    triMesh->addNode(verts[i][0], verts[i][1], verts[i][2]);
   }
 
   // insert triangles
-  for(int i=0; i< NUM_TRIS; ++i) {
-      triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE);
+  for(int i=0 ; i< NUM_TRIS ; ++i)
+  {
+    triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE);
   }
 
   SLIC_ASSERT( NUM_VERTS == triMesh->getMeshNumberOfNodes() );

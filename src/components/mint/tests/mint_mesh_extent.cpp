@@ -30,7 +30,8 @@ TEST( mint_extent, basic )
 
   localIndex numNodes = 1;
   localIndex numCells = 1;
-  for ( int i=0; i < 3; ++i ) {
+  for ( int i=0 ; i < 3 ; ++i )
+  {
     EXPECT_EQ( extent.min( i ),  0  );
     EXPECT_EQ( extent.max( i ),  5  );
     EXPECT_EQ( extent.size( i ), 6 );
@@ -50,9 +51,12 @@ TEST( mint_extent, basic )
   const globalIndex kmax = extent.max(2);
 
   localIndex count = 0;
-  for ( globalIndex k=kmin; k <= kmax; ++k ) {
-    for ( globalIndex j=jmin; j <= jmax; ++j ) {
-      for ( globalIndex i=imin; i <= imax; ++i ) {
+  for ( globalIndex k=kmin ; k <= kmax ; ++k )
+  {
+    for ( globalIndex j=jmin ; j <= jmax ; ++j )
+    {
+      for ( globalIndex i=imin ; i <= imax ; ++i )
+      {
 
         const localIndex idx = extent.getLinearIndex( i,j,k );
         EXPECT_EQ( count, idx );

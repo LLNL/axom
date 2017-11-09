@@ -146,7 +146,7 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  mint::localIndex* cell = new mint::localIndex[ ndofs ];
+  mint::localIndex * cell = new mint::localIndex[ ndofs ];
 
   double * center = new double[ ndims ];
   ShapeFunctionType::center( center );
@@ -154,39 +154,43 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
   double * nodes  = new double[ ndofs*ndims ];
   ShapeFunctionType::coords( nodes );
 
-  MeshType* m = new MeshType( ndims, ndofs );
+  MeshType * m = new MeshType( ndims, ndofs );
 
   double centroid[]  = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
 
-  for ( int i=0; i < ndofs; ++i ) {
-     cell[ i ]    = i;
-     double* node = &nodes[ i*ndims ];
+  for ( int i=0 ; i < ndofs ; ++i )
+  {
+    cell[ i ]    = i;
+    double * node = &nodes[ i*ndims ];
 
-     // scale & rotate cell from the reference space to get a  test cell
-     const double dx   = node[ 0 ] - center[ 0 ];
-     const double dy   = node[ 1 ] - center[ 1 ];
+    // scale & rotate cell from the reference space to get a  test cell
+    const double dx   = node[ 0 ] - center[ 0 ];
+    const double dy   = node[ 1 ] - center[ 1 ];
 
-     node[ 0 ] = SCALE * ( (dx*COST - dy*SINT) + center[ 0 ] );
-     node[ 1 ] = SCALE * ( (dx*SINT + dy*COST) + center[ 1 ] );
-     if ( ndims==3 ) {
-       node[ 2 ] *= SCALE;
-     }
+    node[ 0 ] = SCALE * ( (dx*COST - dy*SINT) + center[ 0 ] );
+    node[ 1 ] = SCALE * ( (dx*SINT + dy*COST) + center[ 1 ] );
+    if ( ndims==3 )
+    {
+      node[ 2 ] *= SCALE;
+    }
 
-     if ( CellType==MINT_PYRAMID && i < 4 ) {
-        centroid[ 0 ] += node[ 0 ];
-        centroid[ 1 ] += node[ 1 ];
-        centroid[ 2 ] += node[ 2 ];
-     }
+    if ( CellType==MINT_PYRAMID && i < 4 )
+    {
+      centroid[ 0 ] += node[ 0 ];
+      centroid[ 1 ] += node[ 1 ];
+      centroid[ 2 ] += node[ 2 ];
+    }
 
-     if ( CellType==MINT_PYRAMID && i==4 ) {
-       // generate right pyramid, ensure the apex is prependicular to the
-       // base of the pyramid to facilitate testing.
-       node[ 0 ] = 0.25*centroid[ 0 ];
-       node[ 1 ] = 0.25*centroid[ 1 ];
-       node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
-     }
+    if ( CellType==MINT_PYRAMID && i==4 )
+    {
+      // generate right pyramid, ensure the apex is prependicular to the
+      // base of the pyramid to facilitate testing.
+      node[ 0 ] = 0.25*centroid[ 0 ];
+      node[ 1 ] = 0.25*centroid[ 1 ];
+      node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
+    }
 
-     m->addNode( node );
+    m->addNode( node );
   }
 
   m->addCell( cell, CellType );
@@ -843,8 +847,8 @@ void check_interp( double TOL=1.e-9 )
                          << mint::cell::name[ CellType ] );
 
   // STEP 0: construct a mesh with a single element
-  mint::UnstructuredMesh< CellType >* m = AXOM_NULLPTR;
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::UnstructuredMesh< CellType > * m = AXOM_NULLPTR;
+  mint::FiniteElement * fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE( m != AXOM_NULLPTR );
@@ -859,9 +863,9 @@ void check_interp( double TOL=1.e-9 )
   // STEP 1: setup a nodal field to interpolate
   // Note: I don't know why we need to cast as m as a Mesh to add a field
   // it works just fine other places. -BC
-  mint::Mesh* mesh = m;       
-  mint::Field* F = mesh->addNodeField< double >( "foo", 1 );
-  double* f = F->getDoublePtr();
+  mint::Mesh * mesh = m;
+  mint::Field * F = mesh->addNodeField< double >( "foo", 1 );
+  double * f = F->getDoublePtr();
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 

@@ -31,7 +31,7 @@ namespace mint
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension, const double origin[3],
                           const double h[3],
-                          const globalIndex ext[6] ):
+                          const globalIndex ext[6] ) :
   StructuredMesh( MINT_STRUCTURED_UNIFORM_MESH, dimension, ext )
 {
   std::fill( m_origin, m_origin + 3, 0.0 );
@@ -53,7 +53,8 @@ UniformMesh::UniformMesh( int dimension, const globalIndex ext[6],
 
   double h[ dimension ];
   double dim_length;
-  for ( int dim = 0; dim < dimension; ++dim ) {
+  for ( int dim = 0 ; dim < dimension ; ++dim )
+  {
     dim_length = utilities::abs( lower_bound[ dim ] - upper_bound[ dim ] );
     h[ dim ] = dim_length / ( m_extent.size( dim ) - 1.0 );
   }

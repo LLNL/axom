@@ -30,7 +30,7 @@
 #include "axom/Types.hpp"
 #include "axom/Macros.hpp"
 
-#include <algorithm>  
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>                    // for std::malloc, std::realloc, st::free
 
@@ -40,8 +40,10 @@
 #endif
 
 
-namespace axom {
-namespace utilities {
+namespace axom
+{
+namespace utilities
+{
 
 /*!
  * \brief Allocates a chunk of memory of type T.
@@ -50,37 +52,42 @@ namespace utilities {
  * \return A pointer to the new allocation or a null pointer if allocation
  *  failed.
  */
-template < typename T > 
-inline T* alloc( std::size_t n )
-{ return static_cast< T* >( std::malloc( n * sizeof( T ) ) ); }
+template < typename T >
+inline T * alloc( std::size_t n )
+{
+  return static_cast< T * >( std::malloc( n * sizeof( T ) ) );
+}
 
 /*!
  * \brief Reallocates the chunk of memory pointed to by pointer.
- * \param [in] pointer pointer to memory previously allocated with 
+ * \param [in] pointer pointer to memory previously allocated with
  *  alloc or realloc, or a null pointer.
  * \param [in] n the number of elements to allocate.
  * \tparam T the type pointer points to.
  * \return A pointer to the new allocation or a null pointer if allocation
  *  failed.
  */
-template < typename T > 
-inline T* realloc( T* pointer, std::size_t n )
-{ 
-  if ( n == 0 ) {
+template < typename T >
+inline T * realloc( T * pointer, std::size_t n )
+{
+  if ( n == 0 )
+  {
     std::free( pointer );
     return AXOM_NULLPTR;
   }
 
-  return static_cast< T* >( std::realloc( pointer,  n * sizeof( T ) ) );
+  return static_cast< T * >( std::realloc( pointer,  n * sizeof( T ) ) );
 }
 
 /*!
  * \brief Frees the chunk of memory pointed to by pointer.
- * \param [in] pointer pointer to memory previously allocated with 
+ * \param [in] pointer pointer to memory previously allocated with
  *  alloc or realloc or a null pointer.
  */
-inline void free( void* pointer )
-{ std::free( pointer ); }
+inline void free( void * pointer )
+{
+  std::free( pointer );
+}
 
 /*!
  * \brief Gracefully aborts the application

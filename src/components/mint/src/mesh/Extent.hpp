@@ -39,14 +39,14 @@ public:
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
    */
-  Extent( int ndims, const globalIndex* ext );
+  Extent( int ndims, const globalIndex * ext );
 
   /*!
    * \brief Returns the dimension of this extent.
    * \return ndims the number of dimensions.
    * \pre ndims >= 1 && ndims <= 3.
    */
-  inline int getDimension() const 
+  inline int getDimension() const
   { return m_ndims; }
 
   /*!
@@ -56,7 +56,7 @@ public:
    * \pre dim >= 0 && dim < getDimension();
    * \pre getDimension() >= 1.
    */
-  inline globalIndex min( int dim ) const 
+  inline globalIndex min( int dim ) const
   { return m_extent[ dim*2 ]; }
 
   /*!
@@ -66,7 +66,7 @@ public:
    * \pre dim >= 0 && dim < getDimension();
    * \pre getDimension() >= 1
    */
-  inline globalIndex max( int dim ) const 
+  inline globalIndex max( int dim ) const
   { return m_extent[ dim*2+1 ]; }
 
   /*!
@@ -82,7 +82,7 @@ public:
    * \return jp stride to the second dimension.
    * \post jp >= 0.
    */
-  inline localIndex jp() const 
+  inline localIndex jp() const
   { return m_jp; };
 
   /*!
@@ -90,7 +90,7 @@ public:
    * \return kp stride to the third dimension.
    * \post kp >= 0.
    */
-  inline localIndex kp() const 
+  inline localIndex kp() const
   { return m_kp; };
   /*!
    * \brief Returns the number of nodes covered by this extent instance.
@@ -112,7 +112,7 @@ public:
    *
    * \note The indent for the cell offsets table
    */
-  inline const localIndex* getCellOffSets() const
+  inline const localIndex * getCellOffSets() const
   { return &m_cell_offsets[0]; };
 
   /*!
@@ -127,7 +127,7 @@ public:
    * \pre k >= 0 && k < size( 2 )
    * \note i,j,k are local grid indices.
    */
-  inline localIndex getLinearIndex( localIndex i, localIndex j, 
+  inline localIndex getLinearIndex( localIndex i, localIndex j,
                                     localIndex k ) const;
 
   /*!
@@ -155,7 +155,7 @@ public:
    * \pre k >= 0 && k < size( 2 )-1
    * \note i,j,k are local grid cell indices.
    */
-  inline localIndex getCellLinearIndex( localIndex i, localIndex j, 
+  inline localIndex getCellLinearIndex( localIndex i, localIndex j,
                                         localIndex k ) const;
 
   /*!
@@ -178,7 +178,7 @@ public:
    * \param [out] j the corresponding grid index along the second dimension.
    * \pre getDimension() == 2.
    */
-  inline void getGridIndex( localIndex linearIdx, localIndex& i, 
+  inline void getGridIndex( localIndex linearIdx, localIndex& i,
                             localIndex& j ) const;
 
   /*!
@@ -237,7 +237,8 @@ inline void Extent::buildCellOffsets()
 inline localIndex Extent::getNumNodes() const
 {
   localIndex n = 1;
-  for ( int dim = 0; dim < m_ndims; ++dim ) {
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+  {
     localIndex n_dim = static_cast< localIndex >( size( dim ) );
     n *= (n_dim > 0) ? n_dim : 1;
   }
@@ -248,7 +249,8 @@ inline localIndex Extent::getNumNodes() const
 inline localIndex Extent::getNumCells() const
 {
   localIndex n = 1;
-  for ( int dim = 0; dim < m_ndims; ++dim ) {
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+  {
     localIndex n_dim = static_cast< localIndex >( size( dim ) - 1 );
     n *= ( n_dim > 0) ? n_dim : 1;
   }
@@ -256,7 +258,7 @@ inline localIndex Extent::getNumCells() const
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getLinearIndex( localIndex i, localIndex j, 
+inline localIndex Extent::getLinearIndex( localIndex i, localIndex j,
                                           localIndex k ) const
 {
   localIndex index = i + j * m_jp + k * m_kp;
@@ -299,7 +301,7 @@ inline void Extent::getGridIndex( localIndex linearIdx, localIndex& i,
 }
 
 //------------------------------------------------------------------------------
-inline void Extent::getGridIndex( localIndex linearIdx, localIndex& i, 
+inline void Extent::getGridIndex( localIndex linearIdx, localIndex& i,
                                   localIndex& j, localIndex& k) const
 {
   k = (m_kp > 0) ? (linearIdx / m_kp) : 0;

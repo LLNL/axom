@@ -20,8 +20,10 @@
 
 #include <string>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 enum FieldTypes
 {

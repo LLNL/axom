@@ -407,13 +407,8 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
   // STEP 1: Setup node-centered signed distance field on uniform mesh
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
-
-  PD->addField( new axom::mint::FieldVariable<double>("n2_phi",nnodes) );
-  double* phi = PD->getField( "n2_phi" )->getDoublePtr();
+  double* phi = umesh->addNodeField< double >("n2_phi", 1)->getDoublePtr();
   SLIC_ASSERT( phi != AXOM_NULLPTR );
-
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
   SLIC_INFO("Calculating distance field...");
@@ -435,7 +430,6 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
     const axom::mint::localIndex ncells = surface_mesh->getMeshNumberOfCells();
     for (axom::mint::localIndex j=0; j < ncells; ++j ) 
     {
-
       // find minimum distance from query point to triangle
       axom::mint::localIndex closest_cell[ 3 ];
       surface_mesh->getMeshCell( j, closest_cell );
@@ -454,9 +448,7 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
         sign = negSide ? -1 : 1;
         unsignedMinDistSQ = sqDist;
-
       }     // END if
-
     }   // END for all cells on the surface mesh
 
     phi[i] = sign * std::sqrt( unsignedMinDistSQ );
@@ -535,7 +527,6 @@ BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::localIndex cellIdx,
 
   return bb;
 }
-
 
 //------------------------------------------------------------------------------
 BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)

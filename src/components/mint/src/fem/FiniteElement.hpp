@@ -471,7 +471,7 @@ private:
    * \pre m != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < m->getMeshNumberOfCells()
    */
-  void getCellCoords( const Mesh* m, localIndex cellIdx );
+  void getCellCoords( const Mesh * m, localIndex cellIdx );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,

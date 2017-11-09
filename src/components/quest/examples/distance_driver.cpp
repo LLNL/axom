@@ -169,8 +169,10 @@ void write_point( const Point< double, 3 >& pt,
 }
 
 //------------------------------------------------------------------------------
-void write_triangles( axom::mint::Mesh* mesh, const axom::mint::localIndex* cells,
-                      axom::mint::localIndex ncells, const std::string& fileName )
+void write_triangles( axom::mint::Mesh * mesh,
+                      const axom::mint::localIndex * cells,
+                      axom::mint::localIndex ncells,
+                      const std::string& fileName )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -185,23 +187,24 @@ void write_triangles( axom::mint::Mesh* mesh, const axom::mint::localIndex* cell
   int icount = 0;
   axom::mint::localIndex new_cell[3];
 
-  for ( axom::mint::localIndex i=0; i < ncells; ++i ) {
+  for ( axom::mint::localIndex i=0 ; i < ncells ; ++i )
+  {
 
-   const axom::mint::localIndex cellIdx = cells[ i ];
-   mesh->getMeshCell( cellIdx, cellIds );
+    const axom::mint::localIndex cellIdx = cells[ i ];
+    mesh->getMeshCell( cellIdx, cellIds );
 
     mesh->getMeshNode( cellIds[0], n1.data() );
     mesh->getMeshNode( cellIds[1], n2.data() );
     mesh->getMeshNode( cellIds[2], n3.data() );
 
-   subset->addNode( n1[0], n1[1], n1[2] );
-   new_cell[0] = icount; ++icount;
-   subset->addNode( n2[0], n2[1], n2[2] );
-   new_cell[1] = icount; ++icount;
-   subset->addNode( n3[0], n3[1], n3[2] );
-   new_cell[2] = icount; ++icount;
+    subset->addNode( n1[0], n1[1], n1[2] );
+    new_cell[0] = icount; ++icount;
+    subset->addNode( n2[0], n2[1], n2[2] );
+    new_cell[1] = icount; ++icount;
+    subset->addNode( n3[0], n3[1], n3[2] );
+    new_cell[2] = icount; ++icount;
 
-   subset->addCell( new_cell, MINT_TRIANGLE );
+    subset->addCell( new_cell, MINT_TRIANGLE );
   }
 
   axom::mint::write_vtk( subset, fileName );
@@ -258,7 +261,7 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  int* bidx = surface_mesh->addCellField< int >( "BucketID", 1 )->getIntPtr();
+  int * bidx = surface_mesh->addCellField< int >( "BucketID", 1 )->getIntPtr();
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -275,9 +278,9 @@ void distance_field( axom::mint::Mesh * surface_mesh,
 
   const axom::mint::localIndex nnodes = umesh->getNumberOfNodes();
 
-  double* phi = umesh->addNodeField< double >("phi", 1)->getDoublePtr();
-  int* nbuckets = umesh->addNodeField< int >("nbuckets", 1)->getIntPtr();
-  int* ntriangles = umesh->addNodeField< int >("ntriangles", 1)->getIntPtr();
+  double * phi = umesh->addNodeField< double >("phi", 1)->getDoublePtr();
+  int * nbuckets = umesh->addNodeField< int >("nbuckets", 1)->getIntPtr();
+  int * ntriangles = umesh->addNodeField< int >("ntriangles", 1)->getIntPtr();
 
   SLIC_ASSERT( phi != AXOM_NULLPTR );
   SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
@@ -286,7 +289,8 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   utilities::Timer timer2;
   timer2.start();
 
-  for ( axom::mint::localIndex inode=0; inode < nnodes; ++inode ) {
+  for ( axom::mint::localIndex inode=0 ; inode < nnodes ; ++inode )
+  {
 
     Point< double,3 > pt;
     umesh->getMeshNode( inode, pt.data() );

@@ -25,14 +25,14 @@ namespace mint
 {
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, localIndex particleCapacity ):
+ParticleMesh::ParticleMesh( int dimension, localIndex particleCapacity ) :
   Mesh( dimension, MINT_PARTICLE_MESH, 0, 0 ),
   m_particle_coordinates( dimension, particleCapacity )
 {}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, localIndex particleCapacity, 
-							int blockId, int partId ):
+ParticleMesh::ParticleMesh( int dimension, localIndex particleCapacity,
+                            int blockId, int partId ) :
   Mesh( dimension, MINT_PARTICLE_MESH, blockId, partId ),
   m_particle_coordinates( dimension, particleCapacity )
 {}

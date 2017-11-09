@@ -90,7 +90,7 @@ const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
+GeometricBoundingBox compute_bounds( mint::Mesh * mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -127,7 +127,7 @@ void testIntersectionOnRegularGrid()
   TriangleType unitTri( ptX, ptY, ptZ );
 
   typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
-  DebugMesh* debugMesh = new DebugMesh(3);
+  DebugMesh * debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
   debugMesh->addNode( ptX[0], ptX[1], ptX[2]);
@@ -153,38 +153,53 @@ void testIntersectionOnRegularGrid()
       for(int k=0 ; k< 1<<lev ; ++k)
       {
         SpaceOctree::BlockIndex block(
-        axom::primal::Point<int,3>::make_point(i,j,k), lev );
+          axom::primal::Point<int,3>::make_point(i,j,k), lev );
         SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
         if( axom::primal::intersect( unitTri, blockBB))
         {
-          for(int k=0; k< 1<<lev; ++k)
+          for(int k=0 ; k< 1<<lev ; ++k)
           {
-            SpaceOctree::BlockIndex block( axom::primal::Point<int,3>::make_point(i,j,k), lev );
-            SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
+            SpaceOctree::BlockIndex block( axom::primal::Point<int,3>::make_point(
+                                             i,j,
+                                             k), lev );
+            SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(
+              block);
 
             if( axom::primal::intersect( unitTri, blockBB))
             {
-              SpaceOctree::BlockIndex block( primal::Point<int,3>::make_point(i,j,k), lev );
-              SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
+              SpaceOctree::BlockIndex block( primal::Point<int,3>::make_point(i,
+                                                                              j,
+                                                                              k),
+                                             lev );
+              SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(
+                block);
 
               if( primal::intersect( unitTri, blockBB))
               {
                 // Add to debug mesh
                 mint::localIndex vStart = debugMesh->getMeshNumberOfNodes();
 
-                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMin()[0],
+                                    blockBB.getMin()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMax()[0],
+                                    blockBB.getMin()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMax()[0],
+                                    blockBB.getMax()[1], blockBB.getMin()[2]);
+                debugMesh->addNode( blockBB.getMin()[0],
+                                    blockBB.getMax()[1], blockBB.getMin()[2]);
 
-                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-                debugMesh->addNode( blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-                debugMesh->addNode( blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMin()[0],
+                                    blockBB.getMin()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMax()[0],
+                                    blockBB.getMin()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMax()[0],
+                                    blockBB.getMax()[1], blockBB.getMax()[2]);
+                debugMesh->addNode( blockBB.getMin()[0],
+                                    blockBB.getMax()[1], blockBB.getMax()[2]);
 
                 mint::localIndex data[8];
-                for(int i=0; i< 8; ++i) 
+                for(int i=0 ; i< 8 ; ++i)
                 {
                   data[i] = vStart + i;
                 }
@@ -220,15 +235,15 @@ void testContainmentOnRegularGrid(
   ext[0] = ext[2] = ext[4] = 0;
   ext[1] = ext[3] = ext[5] = gridRes;
 
-  mint::UniformMesh* umesh =
-          new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
+  mint::UniformMesh * umesh =
+    new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
   const int nnodes = umesh->getMeshNumberOfNodes();
-  int* containment = umesh->addNodeField< int >("containment", 1)->getIntPtr();
+  int * containment = umesh->addNodeField< int >("containment", 1)->getIntPtr();
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
   utilities::Timer timer(true);
-  for ( int inode=0; inode < nnodes; ++inode )
+  for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     primal::Point< double,3 > pt;
     umesh->getMeshNode( inode, pt.data() );
@@ -242,9 +257,9 @@ void testContainmentOnRegularGrid(
                 gridRes, timer.elapsed(), nnodes / timer.elapsed()));
 
   #ifdef DUMP_VTK_MESH
-    std::stringstream sstr;
-    sstr << "gridContainment_" << gridRes << ".vtk";
-    mint::write_vtk( umesh, sstr.str());
+  std::stringstream sstr;
+  sstr << "gridContainment_" << gridRes << ".vtk";
+  mint::write_vtk( umesh, sstr.str());
   #endif
 
   delete umesh;
@@ -254,7 +269,8 @@ void testContainmentOnRegularGrid(
 /**
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
-TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, mint::localIndex cellIndex)
+TriVertIndices getTriangleVertIndices(mint::Mesh * mesh,
+                                      mint::localIndex cellIndex)
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
@@ -268,7 +284,8 @@ TriVertIndices getTriangleVertIndices(mint::Mesh* mesh, mint::localIndex cellInd
  * \brief Extracts the positions of a traingle's vertices from the mesh
  * \return The triangle vertex positions in a SpaceTriangle instance
  */
-SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndices )
+SpaceTriangle getMeshTriangle(mint::Mesh * mesh,
+                              const TriVertIndices& vertIndices )
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
 
@@ -285,14 +302,14 @@ SpaceTriangle getMeshTriangle(mint::Mesh* mesh, const TriVertIndices& vertIndice
  * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
  * on a logarithmic scale and logs the results
  */
-void print_surface_stats( mint::Mesh* mesh)
+void print_surface_stats( mint::Mesh * mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   SpacePt pt;
 
-   typedef primal::BoundingBox<double,1> MinMaxRange;
-   typedef MinMaxRange::PointType LengthType;
+  typedef primal::BoundingBox<double,1> MinMaxRange;
+  typedef MinMaxRange::PointType LengthType;
 
   MinMaxRange meshEdgeLenRange;
   MinMaxRange meshTriAreaRange;
@@ -482,8 +499,8 @@ int main( int argc, char * * argv )
 
 
   // STEP 3: create surface mesh
-  mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  mint::Mesh * surface_mesh = new TriangleMesh( 3 );
+  reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
             << surface_mesh->getMeshNumberOfNodes() << " nodes and "

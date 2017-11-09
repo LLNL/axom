@@ -72,7 +72,7 @@ public:
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  inline Field* getField( int i );
+  inline Field * getField( int i );
 
   /*!
    * \brief Returns the ith field of this FieldData instance as a constant pointer.
@@ -81,7 +81,7 @@ public:
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  inline const Field* getField( int i ) const;
+  inline const Field * getField( int i ) const;
 
   /*!
    * \brief Returns the field with the given name.
@@ -90,7 +90,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  inline Field* getField( const std::string& name );
+  inline Field * getField( const std::string& name );
 
   /*!
    * \brief Returns the field with the given name as a constant pointer.
@@ -99,7 +99,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  inline const Field* getField( const std::string& name ) const;
+  inline const Field * getField( const std::string& name ) const;
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
@@ -115,9 +115,9 @@ public:
   { return( m_container.empty() ); }
 
   template < typename FieldType >
-  inline Field* addField( const std::string& name, localIndex size, 
-                   localIndex capacity, int num_components, 
-                   double resize_ratio );
+  inline Field * addField( const std::string& name, localIndex size,
+                           localIndex capacity, int num_components,
+                           double resize_ratio );
 
 
   inline void setSize( localIndex size );
@@ -133,7 +133,7 @@ private:
   // TODO: Revise this. We also need the ability to remove fields (?)
   // Sidre has an class MapCollection where the vector holds the objects and
   // the map holds the indices. We should look into using it here. It supports
-  // removal. 
+  // removal.
   std::vector< std::string > m_fields;
   std::map< std::string, Field * > m_container;
 
@@ -151,7 +151,8 @@ inline bool FieldData::hasField( const std::string& name ) const
 {
   bool status = false;
 
-  if ( m_container.find( name ) != m_container.end() ) {
+  if ( m_container.find( name ) != m_container.end() )
+  {
     status = true;
   }
 
@@ -166,11 +167,12 @@ inline int FieldData::getNumberOfFields() const
 }
 
 //------------------------------------------------------------------------------
-inline Field* FieldData::getField( int i )
+inline Field * FieldData::getField( int i )
 {
   SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
 
-  if ( i < 0 || i >= this->getNumberOfFields() ) {
+  if ( i < 0 || i >= this->getNumberOfFields() )
+  {
     return AXOM_NULLPTR;
   }
 
@@ -178,11 +180,12 @@ inline Field* FieldData::getField( int i )
 }
 
 //------------------------------------------------------------------------------
-inline const Field* FieldData::getField( int i ) const
+inline const Field * FieldData::getField( int i ) const
 {
   SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
 
-  if ( i < 0 || i >= this->getNumberOfFields() ) {
+  if ( i < 0 || i >= this->getNumberOfFields() )
+  {
     return AXOM_NULLPTR;
   }
 
@@ -190,14 +193,14 @@ inline const Field* FieldData::getField( int i ) const
 }
 
 //------------------------------------------------------------------------------
-inline Field* FieldData::getField( const std::string& name )
+inline Field * FieldData::getField( const std::string& name )
 {
   SLIC_ASSERT( this->hasField( name ) );
   return m_container.at( name );
 }
 
-//------------------------------------------------------------------------------ 
-const Field* FieldData::getField( const std::string& name ) const
+//------------------------------------------------------------------------------
+const Field * FieldData::getField( const std::string& name ) const
 {
   SLIC_ASSERT( this->hasField( name ) );
   return m_container.at( name );
@@ -206,8 +209,9 @@ const Field* FieldData::getField( const std::string& name ) const
 //------------------------------------------------------------------------------
 inline void FieldData::clear()
 {
-  typename std::map< std::string, Field* >::iterator it;
-  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+  typename std::map< std::string, Field * >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
     delete it->second;
     it->second = AXOM_NULLPTR;
   }
@@ -216,22 +220,24 @@ inline void FieldData::clear()
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
-inline Field* FieldData::addField( const std::string& name, localIndex size, 
-                                   localIndex capacity, int num_components, 
-                                   double resize_ratio )
+inline Field * FieldData::addField( const std::string& name, localIndex size,
+                                    localIndex capacity, int num_components,
+                                    double resize_ratio )
 {
-  if ( hasField( name ) ) {
-    Field* f = getField( name );
-    if ( f->getType() != field_of< FieldType >::type ) {
+  if ( hasField( name ) )
+  {
+    Field * f = getField( name );
+    if ( f->getType() != field_of< FieldType >::type )
+    {
       SLIC_WARNING( "Field with name " << name << " already exists but it " <<
                     "has a different type." );
     }
 
     return f;
   }
-  
-  Field* f = new FieldVariable< FieldType >( name, size, capacity, 
-                                             num_components, resize_ratio );
+
+  Field * f = new FieldVariable< FieldType >( name, size, capacity,
+                                              num_components, resize_ratio );
   m_fields.push_back( f->getName() );
   m_container[ f->getName() ] = f;
 
@@ -241,9 +247,10 @@ inline Field* FieldData::addField( const std::string& name, localIndex size,
 
 //------------------------------------------------------------------------------
 inline void FieldData::setSize( localIndex size )
-{ 
-  typename std::map< std::string, Field* >::iterator it;
-  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+{
+  typename std::map< std::string, Field * >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
     it->second->setNumTuples( size );
   }
 }
@@ -251,17 +258,19 @@ inline void FieldData::setSize( localIndex size )
 //------------------------------------------------------------------------------
 inline void FieldData::setCapacity( localIndex capacity )
 {
-  typename std::map< std::string, Field* >::iterator it;
-  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+  typename std::map< std::string, Field * >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
     it->second->setTuplesCapacity( capacity );
   }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::setResizeRatio( double ratio )
-{ 
-  typename std::map< std::string, Field* >::iterator it;
-  for ( it = m_container.begin(); it != m_container.end(); ++it ) {
+{
+  typename std::map< std::string, Field * >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
     it->second->setResizeRatio( ratio );
   }
 }

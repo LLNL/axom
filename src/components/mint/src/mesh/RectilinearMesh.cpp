@@ -21,22 +21,26 @@
 
 #include "axom/Types.hpp"             /* For AXOM_NULLPTR */
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ):
+RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ) :
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0; dim < m_ndims; ++dim ) {
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+  {
     m_coordinates[ dim ].setSize( ext_size[ dim ] );
     m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
 
-  for (int dim = m_ndims; dim < 3; ++dim ) {
+  for (int dim = m_ndims ; dim < 3 ; ++dim )
+  {
     m_coordinates[ dim ].setCapacity( 0 );
     m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
@@ -44,25 +48,27 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ):
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6],
-                                  int blockId, int partId ):
+                                  int blockId, int partId ) :
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId,
-                  partId ) 
+                  partId )
 {
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0; dim < m_ndims; ++dim ) {
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+  {
     m_coordinates[ dim ].setSize( ext_size[ dim ] );
     m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
 
-  for (int dim = m_ndims; dim < 3; ++dim ) {
+  for (int dim = m_ndims ; dim < 3 ; ++dim )
+  {
     m_coordinates[ dim ].setCapacity( 0 );
     m_coordinates[ dim ].setResizeRatio( 0.0 );
   }
 }
 
-RectilinearMesh::RectilinearMesh():
+RectilinearMesh::RectilinearMesh() :
   StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR )
 {}
 

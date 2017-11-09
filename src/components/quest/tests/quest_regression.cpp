@@ -469,10 +469,11 @@ void runContainmentQueries(CommandLineArguments& clargs)
 
   // Add a scalar field for the containment queries
   SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
-  axom::mint::UniformMesh* umesh = clargs.queryMesh;
+  axom::mint::UniformMesh * umesh = clargs.queryMesh;
   const axom::mint::localIndex nnodes = umesh->getNumberOfNodes();
-  
-  int* containment = umesh->addNodeField< int >("octree_containment", 1)->getIntPtr();
+
+  int * containment =
+    umesh->addNodeField< int >("octree_containment", 1)->getIntPtr();
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
   double * coords = new double[3*nnodes];
@@ -557,11 +558,13 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
   // Add a scalar field for the containment queries
   SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
-  axom::mint::UniformMesh* umesh = clargs.queryMesh;
+  axom::mint::UniformMesh * umesh = clargs.queryMesh;
   const int nnodes = umesh->getNumberOfNodes();
 
-  int* containment = umesh->addNodeField< int >("bvh_containment", 1)->getIntPtr();
-  double* distance = umesh->addNodeField< double >("bvh_distance", 1)->getDoublePtr();
+  int * containment =
+    umesh->addNodeField< int >("bvh_containment", 1)->getIntPtr();
+  double * distance =
+    umesh->addNodeField< double >("bvh_distance", 1)->getDoublePtr();
   SLIC_ASSERT( containment != AXOM_NULLPTR );
   SLIC_ASSERT( distance != AXOM_NULLPTR );
 
@@ -700,9 +703,9 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
     int diffCount = 0;
     fmt::MemoryWriter out;
 
-    int* exp_containment = umesh->getNodeFieldData().
-                                  getField( "octree_containment" )->getIntPtr();
-    int* base_containment = grp->getView("octree_containment")->getArray();
+    int * exp_containment = umesh->getNodeFieldData().
+                            getField( "octree_containment" )->getIntPtr();
+    int * base_containment = grp->getView("octree_containment")->getArray();
 
     for ( int inode=0 ; inode < nnodes ; ++inode )
     {

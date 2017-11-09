@@ -49,14 +49,14 @@ public:
    * \post t < NUMBER_OF_FIELD_TYPES
    * \see FieldTypes
    */
-  int getType() const 
+  int getType() const
   { return m_type; }
 
   /*!
    * \brief Returns the name of the field.
    * \return name the name of the field.
    */
-  std::string getName() const 
+  std::string getName() const
   { return m_name; }
 
   /*!
@@ -81,10 +81,10 @@ public:
 
 
   virtual void setNumTuples( localIndex size ) = 0;
-  
+
 
   virtual void setTuplesCapacity( localIndex capacity ) = 0;
-  
+
 
   virtual void setResizeRatio( double ratio ) = 0;
 
@@ -94,7 +94,7 @@ public:
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double* getDoublePtr()
+  virtual double * getDoublePtr()
   { return AXOM_NULLPTR; }
 
   /*!
@@ -102,7 +102,7 @@ public:
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double* getDoublePtr() const
+  virtual const double * getDoublePtr() const
   { return AXOM_NULLPTR; }
 
   /*!
@@ -110,7 +110,7 @@ public:
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual int* getIntPtr()
+  virtual int * getIntPtr()
   { return AXOM_NULLPTR; }
 
   /*!
@@ -118,12 +118,12 @@ public:
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual const int* getIntPtr() const
+  virtual const int * getIntPtr() const
   { return AXOM_NULLPTR; }
 
 protected:
 
-  Field( const std::string& name ):
+  Field( const std::string& name ) :
     m_name( name ),
     m_type( UNDEFINED_FIELD_TYPE )
   {}

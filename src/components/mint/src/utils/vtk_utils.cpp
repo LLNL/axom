@@ -61,7 +61,8 @@ void write_points( const Mesh * mesh, std::ofstream& file )
   const int mesh_dim = mesh->getDimension();
 
   file << "POINTS " << num_nodes << " double\n";
-  for ( localIndex nodeIdx = 0; nodeIdx < num_nodes; ++nodeIdx ) {
+  for ( localIndex nodeIdx = 0 ; nodeIdx < num_nodes ; ++nodeIdx )
+  {
     file << mesh->getMeshNodeCoordinate( nodeIdx, 0 );
     for ( int dim = 1 ; dim < mesh_dim ; ++dim )
     {
@@ -96,7 +97,8 @@ void write_cells( const Mesh * mesh, std::ofstream& file )
   if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
   {
     total_size = num_cells;
-    for ( localIndex cellIdx = 0; cellIdx < num_cells; ++cellIdx ) {
+    for ( localIndex cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+    {
       const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
       max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
       total_size += num_cell_nodes;
@@ -106,7 +108,8 @@ void write_cells( const Mesh * mesh, std::ofstream& file )
 
   /* Write out the mesh cell connectivity. */
   localIndex cell_nodes[ max_cell_nodes ];
-  for ( localIndex cellIdx = 0; cellIdx < num_cells; ++cellIdx ) {
+  for ( localIndex cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+  {
     const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
     mesh->getMeshCell( cellIdx, cell_nodes );
 
@@ -117,10 +120,11 @@ void write_cells( const Mesh * mesh, std::ofstream& file )
     }
     file << std::endl;
   }
-  
+
   /* Write out the mesh cell types. */
   file << "CELL_TYPES " << num_cells << std::endl;
-  for ( localIndex cellIdx = 0; cellIdx < num_cells; ++cellIdx ) {
+  for ( localIndex cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+  {
     int cell_type = mesh->getMeshCellType( cellIdx );
     file << cell::vtk_types[ cell_type ] << std::endl;
   }
@@ -166,7 +170,8 @@ void write_rectilinear_mesh( const RectilinearMesh * mesh, std::ofstream& file )
     file << coord_names[ dim ] << ext[ dim ] << " double\n";
     const double * coords = mesh->getCoordinateArray( dim );
     file << coords[0];
-    for (globalIndex i = 1; i < ext[ dim ]; ++i ) {
+    for (globalIndex i = 1 ; i < ext[ dim ] ; ++i )
+    {
       file << " " << coords[i];
     }
     file << std::endl;
@@ -224,7 +229,8 @@ void write_scalar_data( const Field * field, std::ofstream& file )
     const double * data_ptr = field->getDoublePtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
-    for ( localIndex i = 0; i < num_values; ++i ) {
+    for ( localIndex i = 0 ; i < num_values ; ++i )
+    {
       file << data_ptr[ i ] << std::endl;
     }
   }
@@ -236,7 +242,8 @@ void write_scalar_data( const Field * field, std::ofstream& file )
     const int * data_ptr = field->getIntPtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
-    for ( localIndex i = 0; i < num_values; ++i ) {
+    for ( localIndex i = 0 ; i < num_values ; ++i )
+    {
       file << data_ptr[ i ] << std::endl;
     }
   }
@@ -265,7 +272,8 @@ void write_vector_data( const Field * field, std::ofstream& file )
     const double * data_ptr = field->getDoublePtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
-    for ( localIndex i = 0; i < num_values; ++i ) {
+    for ( localIndex i = 0 ; i < num_values ; ++i )
+    {
       file << data_ptr[ num_components * i + 0 ] << " ";
       file << data_ptr[ num_components * i + 1 ] << " ";
       if ( num_components == 2 )
@@ -285,7 +293,8 @@ void write_vector_data( const Field * field, std::ofstream& file )
     const int * data_ptr = field->getIntPtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
-    for ( localIndex i = 0; i < num_values; ++i ) {
+    for ( localIndex i = 0 ; i < num_values ; ++i )
+    {
       file << data_ptr[ num_components * i + 0 ] << " ";
       file << data_ptr[ num_components * i + 1 ] << " ";
       if ( num_components == 2 )
@@ -328,7 +337,8 @@ void write_multidim_data( const Field * field, std::ofstream& file )
       const double * data_ptr = field->getDoublePtr();
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
-      for ( localIndex i = 0; i < num_values; ++i ) {
+      for ( localIndex i = 0 ; i < num_values ; ++i )
+      {
         file << data_ptr[ num_components * i + cur_comp ] << std::endl;
       }
     }
@@ -345,7 +355,8 @@ void write_multidim_data( const Field * field, std::ofstream& file )
       const int * data_ptr = field->getIntPtr();
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
-      for ( localIndex i = 0; i < num_values; ++i ) {
+      for ( localIndex i = 0 ; i < num_values ; ++i )
+      {
         file << data_ptr[ num_components * i + cur_comp ] << std::endl;
       }
     }
@@ -362,8 +373,9 @@ void write_multidim_data( const Field * field, std::ofstream& file )
 void write_data( const FieldData& field_data, localIndex num_values,
                  std::ofstream& file )
 {
-  for ( int i = 0; i < field_data.getNumberOfFields(); ++i ) {
-    const Field* field = field_data.getField( i );
+  for ( int i = 0 ; i < field_data.getNumberOfFields() ; ++i )
+  {
+    const Field * field = field_data.getField( i );
     SLIC_ASSERT( field != AXOM_NULLPTR );
     const int num_components = field->getNumComponents();
     SLIC_ASSERT( field->getNumTuples() == num_values );
@@ -469,7 +481,8 @@ int write_vtk( const Mesh * mesh, const std::string& file_path )
   /* Write out the node data if any. */
   const localIndex num_nodes = mesh->getMeshNumberOfNodes();
   const FieldData& node_data = mesh->getNodeFieldData();
-  if ( node_data.getNumberOfFields() > 0 ) {
+  if ( node_data.getNumberOfFields() > 0 )
+  {
     file << "POINT_DATA " << num_nodes << std::endl;
     internal::write_data( node_data, num_nodes, file );
   }
@@ -477,7 +490,8 @@ int write_vtk( const Mesh * mesh, const std::string& file_path )
   /* Write out the cell data if any. */
   const localIndex num_cells = mesh->getMeshNumberOfCells();
   const FieldData& cell_data = mesh->getCellFieldData();
-  if ( cell_data.getNumberOfFields() > 0 ) {
+  if ( cell_data.getNumberOfFields() > 0 )
+  {
     file << "CELL_DATA " << num_cells << std::endl;
     internal::write_data( cell_data, num_cells, file );
   }

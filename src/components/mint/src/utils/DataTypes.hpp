@@ -13,8 +13,10 @@
 
 #include <cstdint>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 using localIndex = std::int32_t;
 using globalIndex = std::int64_t;

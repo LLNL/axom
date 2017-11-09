@@ -915,8 +915,8 @@ public:
       // Add triangles to the mesh (i.e. boundary vertices)
       for(int i=0; i< m_elementSet.size(); ++i)
       {
-        const TriangleIndex* tv = &triangleVertexIndices(i)[0];
-        triMesh->addCell(tv, MINT_TRIANGLE, NUM_TRI_VERTS);
+        const TriangleIndex * tv = &triangleVertexIndices(i)[0];
+        triMesh->addCell(tv, MINT_TRIANGLE);
       }
 
       m_surfaceMesh = triMesh;
@@ -2762,7 +2762,7 @@ private:
 
   int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
   {
-    int* fld = mesh->addCellField< int >( name, 1 )->getIntPtr();
+    int * fld = mesh->addCellField< int >( name, 1 )->getIntPtr();
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
@@ -2771,7 +2771,7 @@ private:
   double* addRealField(DebugMesh* mesh, const std::string& name,
                        int size) const
   {
-    double* fld = mesh->addCellField< double >( name, 1 )->getDoublePtr();
+    double * fld = mesh->addCellField< double >( name, 1 )->getDoublePtr();
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
@@ -2814,15 +2814,23 @@ private:
 
     axom::mint::localIndex vStart = mesh->getMeshNumberOfNodes();
 
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMin()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
+                  blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1],
+                  blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1],
+                  blockBB.getMin()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1],
+                  blockBB.getMin()[2]);
 
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1], blockBB.getMax()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1], blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
+                  blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1],
+                  blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1],
+                  blockBB.getMax()[2]);
+    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1],
+                  blockBB.getMax()[2]);
 
     axom::mint::localIndex data[8];
     for(int i=0; i< 8; ++i)
