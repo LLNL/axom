@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef MESH_HXX_
@@ -14,8 +21,10 @@
 #include "axom/Macros.hpp"
 #include "mint/MeshType.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 // Forward Declarations
 class FieldData;
@@ -82,21 +91,21 @@ public:
    * \return fd pointer to the FieldData instance for node-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline FieldData* getNodeFieldData() const { return m_node_data; };
+  inline FieldData * getNodeFieldData() const { return m_node_data; };
 
   /*!
    * \brief Returns the FieldData instance associated with cell-centered fields.
    * \return fd pointer to the FieldData instance for cell-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline FieldData* getCellFieldData() const { return m_cell_data; };
+  inline FieldData * getCellFieldData() const { return m_cell_data; };
 
   /*!
    * \brief Returns the FieldData instance associated with face-centered fields.
    * \return fd pointer to the FieldData instance for face-centered fields.
    * \post fd != AXOM_NULLPTR
    */
-  inline FieldData* getFaceFieldData() const { return m_face_data; };
+  inline FieldData * getFaceFieldData() const { return m_face_data; };
 
   /// \name Virtual API
   /// @{
@@ -136,7 +145,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( int cellIdx, int* cell ) const = 0;
+  virtual void getMeshCell( int cellIdx, int * cell ) const = 0;
 
   /*!
    * \brief Returns the cell type of the cell associated with the given Id.
@@ -153,7 +162,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshNode( int nodeIdx, double* coordinates ) const = 0;
+  virtual void getMeshNode( int nodeIdx, double * coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinate of a mesh node.
@@ -188,9 +197,9 @@ protected:
   int m_block_idx;      /*!< the Block ID of the mesh */
   int m_part_idx;       /*!< the partition ID of the mesh */
 
-  FieldData* m_node_data; /*!< FieldData instance for node-centered fields. */
-  FieldData* m_cell_data; /*!< FieldData instance for cell-centered fields. */
-  FieldData* m_face_data; /*!< FieldData instance for face-centered fields. */
+  FieldData * m_node_data; /*!< FieldData instance for node-centered fields. */
+  FieldData * m_cell_data; /*!< FieldData instance for cell-centered fields. */
+  FieldData * m_face_data; /*!< FieldData instance for face-centered fields. */
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(Mesh);

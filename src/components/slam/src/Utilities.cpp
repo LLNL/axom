@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "slam/Utilities.hpp"
@@ -13,43 +20,48 @@
 #include "axom_utils/FileUtilities.hpp"
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace slam {
-namespace util {
+namespace axom
+{
+namespace slam
+{
+namespace util
+{
 
 
-  std::string findFileInAncestorDirs(const std::string& fileName, int numAncestors)
+std::string
+findFileInAncestorDirs(const std::string& fileName, int numAncestors)
+{
+  using namespace axom::utilities::filesystem;
+
+  bool fileFound = pathExists( fileName);
+  std::string ancestorFileName = fileName;
+
+  std::string ancestorPath = "..";
+
+  // File not found -- try to find path by walking up tree
+  for(int i = 0 ; !fileFound && i< numAncestors ; ++i)
   {
-    using namespace axom::utilities::filesystem;
+    ancestorFileName = joinPath(ancestorPath, fileName);
+    fileFound = pathExists( ancestorFileName );
 
-    bool fileFound = pathExists( fileName);
-    std::string ancestorFileName = fileName;
-
-    std::string ancestorPath = "..";
-
-    // File not found -- try to find path by walking up tree
-    for(int i = 0; !fileFound && i< numAncestors; ++i)
+    if( !fileFound )
     {
-      ancestorFileName = joinPath(ancestorPath, fileName);
-      fileFound = pathExists( ancestorFileName );
-
-      if( !fileFound )
-      {
-        ancestorPath = "../" + ancestorPath;
-      }
+      ancestorPath = "../" + ancestorPath;
     }
-
-    if(!fileFound)
-    {
-      SLIC_WARNING( "Could not find file: '"  << fileName
-                                              << "' (also tried several ancestor directories')"
-                                              << "\nThe current working directory is: '" << getCWD() << "'");
-
-      ancestorFileName = fileName;
-    }
-
-    return ancestorFileName;
   }
+
+  if(!fileFound)
+  {
+    SLIC_WARNING(
+      "Could not find file: '"
+      << fileName << "' (also tried several ancestor directories')"
+      << "\nThe current working directory is: '" << getCWD() << "'");
+
+    ancestorFileName = fileName;
+  }
+
+  return ancestorFileName;
+}
 
 
 

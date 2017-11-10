@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef MESHCOORDINATES_HXX_
@@ -20,8 +27,10 @@
 #define Y_COORDINATE 1
 #define Z_COORDINATE 2
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 /*!
  * \class MeshCoordinates
@@ -138,7 +147,7 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  double* getCoordinateArray( int dim );
+  double * getCoordinateArray( int dim );
 
   /*!
    * \brief Number of coordinates along the given dimension.

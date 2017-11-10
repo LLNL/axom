@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef MESHTYPE_HPP_
@@ -14,7 +21,8 @@
 /*!
  * \brief Defines the basic mesh types supported by mint.
  */
-enum  {
+enum
+{
   MINT_UNDEFINED_MESH = -1,             //!< UNDEFINED_MESH
 
   MINT_UNSTRUCTURED_SEGMENT_MESH,       //!< UNSTRUCTURED_SEGMENT_MESH
@@ -33,10 +41,13 @@ enum  {
   MINT_NUM_MESH_TYPES                   //!< NUM_MESH_TYPES
 };
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-namespace mesh_properties {
+namespace mesh_properties
+{
 
 /*!
  * \brief Defines corresponding mesh type for each cell type.

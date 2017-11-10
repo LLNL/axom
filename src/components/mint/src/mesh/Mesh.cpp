@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "mint/Mesh.hpp"
@@ -17,10 +24,12 @@
 // C/C++ includes
 #include <cstddef>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-Mesh::Mesh():
+Mesh::Mesh() :
   m_ndims(2),
   m_type(MINT_UNDEFINED_MESH),
   m_block_idx(0),
@@ -31,7 +40,7 @@ Mesh::Mesh():
 {}
 
 //------------------------------------------------------------------------------
-Mesh::Mesh( int ndims, int type, int blockId, int partId ):
+Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
   m_ndims( ndims ),
   m_type( type ),
   m_block_idx( blockId ),

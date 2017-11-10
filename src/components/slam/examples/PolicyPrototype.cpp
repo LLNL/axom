@@ -1,135 +1,149 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 //#include<string>
 //#include<iostream>
 #include <cstdlib>
 
-namespace slamTemplateEx {
+namespace slamTemplateEx
+{
 
-  struct Set
-  {
+struct Set
+{
 //    std::string foo() { return "Base foo."; }
-  };
+};
 
 
 ///  Offsetting policies
 
-  struct NoTranslation
-  {
-    NoTranslation(int sz) : m_sz(sz) {}
-    NoTranslation(int /*ignore*/, int sz) : m_sz(sz) {}
-    inline int  offset() const { return 0; }
-    inline int  size() const { return m_sz; }
+struct NoTranslation
+{
+  NoTranslation(int sz) : m_sz(sz) {}
+  NoTranslation(int /*ignore*/, int sz) : m_sz(sz) {}
+  inline int  offset() const { return 0; }
+  inline int  size() const { return m_sz; }
 
-    void        setSize(int sz) { m_sz = sz; }
-  private:
-    int m_sz;
-  };
+  void        setSize(int sz) { m_sz = sz; }
+private:
+  int m_sz;
+};
 
-  struct HasTranslation
-  {
-    HasTranslation(int lo, int hi) : m_lo(lo), m_hi(hi) {}
+struct HasTranslation
+{
+  HasTranslation(int lo, int hi) : m_lo(lo), m_hi(hi) {}
 
-    inline int  offset() const { return m_lo; }
-    inline int  size() const { return m_hi - m_lo; }
-  private:
-    int m_lo,m_hi;
-  };
+  inline int  offset() const { return m_lo; }
+  inline int  size() const { return m_hi - m_lo; }
+private:
+  int m_lo,m_hi;
+};
 
 
 //// Indirection policies
 
-  struct NoIndirection
-  {
-    inline int indirection(int pos) const { return pos; }
-  };
+struct NoIndirection
+{
+  inline int indirection(int pos) const { return pos; }
+};
 
-  struct HasIndirection
-  {
-    inline int  indirection(int pos) const { return m_data[pos]; }
-    int*&       data() { return m_data; }
-  private:
-    int* m_data;
-  };
+struct HasIndirection
+{
+  inline int  indirection(int pos) const { return m_data[pos]; }
+  int *&       data() { return m_data; }
+private:
+  int * m_data;
+};
 
 /// Striding policies
 
-  struct NoStride
+struct NoStride
+{
+  inline int stride() const { return 1; }
+};
+
+template<int STRIDE>
+struct FixedStride
+{
+  inline int stride() const { return STRIDE; }
+};
+
+struct RuntimeStride
+{
+  RuntimeStride(int stride) : m_stride(stride) {}
+  inline int stride() const { return m_stride; }
+private:
+  int m_stride;
+};
+
+
+template<
+  typename IndexType            = int,
+  typename TranslationPolicy    = NoTranslation,
+  typename IndirectionPolicy    = NoIndirection,
+  typename StridePolicy         = NoStride >
+struct OrderedSet :
+  public Set, TranslationPolicy, IndirectionPolicy, StridePolicy
+{
+  typedef TranslationPolicy MyTranslationPolicy;
+
+
+  OrderedSet(int sz) : TranslationPolicy(0,sz) {}
+  OrderedSet(int lo, int hi) : TranslationPolicy(lo,hi) {}
+
+  inline int  at(int pos) const
   {
-    inline int stride() const { return 1; }
-  };
+    return indirection( pos * stride() + offset() );
+  }
 
-  template<int STRIDE>
-  struct FixedStride
+  inline int  size()   const { return TranslationPolicy::size(); }
+  inline int  offset() const { return TranslationPolicy::offset(); }
+  inline int  stride() const { return StridePolicy::stride(); }
+  inline int  indirection(int pos) const
   {
-    inline int stride() const { return STRIDE; }
-  };
-
-  struct RuntimeStride
-  {
-    RuntimeStride(int stride) : m_stride(stride) {}
-    inline int stride() const { return m_stride; }
-  private:
-    int m_stride;
-  };
-
-
-  template< typename IndexType            = int
-  , typename TranslationPolicy    = NoTranslation
-  , typename IndirectionPolicy    = NoIndirection
-  , typename StridePolicy         = NoStride
-  >
-  struct OrderedSet : public Set, TranslationPolicy, IndirectionPolicy, StridePolicy
-  {
-    typedef TranslationPolicy MyTranslationPolicy;
-
-
-    OrderedSet(int sz) : TranslationPolicy(0,sz) {}
-    OrderedSet(int lo, int hi) : TranslationPolicy(lo,hi) {}
-
-    inline int  at(int pos) const { return indirection( pos * stride() + offset() ); }
-
-    inline int  size()   const { return TranslationPolicy::size(); }
-    inline int  offset() const { return TranslationPolicy::offset(); }
-    inline int  stride() const { return StridePolicy::stride(); }
-    inline int  indirection(int pos) const { return IndirectionPolicy::indirection( pos); }
-  };
+    return IndirectionPolicy::indirection( pos);
+  }
+};
 
 
 ////  Define concrete Set types as combinations of the above
 
-  struct PositionSet : OrderedSet<int>
-  {
-    typedef OrderedSet<int>                 ParentType;
-    typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
+struct PositionSet : OrderedSet<int>
+{
+  typedef OrderedSet<int>                 ParentType;
+  typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
 
-    PositionSet(int n) : ParentType(n) {}
-  };
+  PositionSet(int n) : ParentType(n) {}
+};
 
-  struct RangeSet : OrderedSet<int, HasTranslation>
-  {
-    typedef OrderedSet<int, HasTranslation> ParentType;
-    typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
+struct RangeSet : OrderedSet<int, HasTranslation>
+{
+  typedef OrderedSet<int, HasTranslation> ParentType;
+  typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
 
-    RangeSet(int lo, int hi) : ParentType(lo,hi) {}
-  };
+  RangeSet(int lo, int hi) : ParentType(lo,hi) {}
+};
 
-  struct IndirectionSet : OrderedSet<int, NoTranslation, HasIndirection>
-  {
-    typedef OrderedSet<int, NoTranslation, HasIndirection>  ParentType;
-    typedef ParentType::MyTranslationPolicy                 MyTranslationPolicy;
+struct IndirectionSet : OrderedSet<int, NoTranslation, HasIndirection>
+{
+  typedef OrderedSet<int, NoTranslation, HasIndirection>  ParentType;
+  typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
 
-    IndirectionSet(int n) : ParentType(n) {}
-  };
+  IndirectionSet(int n) : ParentType(n) {}
+};
 
 } // end namespace slamTemplateEx
 
@@ -162,22 +176,22 @@ inline ResType sumSet(const SetType& set)
 {
   ResType sum = 0;
 
-  for(int i = 0; i< set.size(); ++i)
+  for(int i = 0 ; i< set.size() ; ++i)
     sum += set.at(i);
 
   return sum;
 }
 
 template<typename SetType>
-inline void copySet(const SetType& set, int* buf)
+inline void copySet(const SetType& set, int * buf)
 {
-  for(int i = 0; i< set.size(); ++i)
+  for(int i = 0 ; i< set.size() ; ++i)
     *buf++ = set.at(i);
 }
 
 
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
   // Process command line arguments
   // first argument is the size of the set
@@ -192,8 +206,8 @@ int main(int argc, char* argv[])
   }
 
   // allocate and initialize the indirection array elements
-  int* pVal = new int[ numElts ];
-  for(int i = 0; i< numElts; ++i)
+  int * pVal = new int[ numElts ];
+  for(int i = 0 ; i< numElts ; ++i)
     pVal[i] = i * i;
   if(numElts > 0)
     pVal[numElts - 1] = 12345;
@@ -212,7 +226,7 @@ int main(int argc, char* argv[])
 
 
   // Test 2 -- copy all three sets into a buffer
-  int* buf = new int[3 * numElts];
+  int * buf = new int[3 * numElts];
   copySet(pSet, buf + numElts * 0);
   copySet(rSet, buf + numElts * 1);
   copySet(iSet, buf + numElts * 2);

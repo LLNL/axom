@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 #ifndef COMMON_FILE_UTILITIES_H_
 #define COMMON_FILE_UTILITIES_H_
@@ -15,15 +21,18 @@
 #include <string>
 #include <sys/stat.h>
 
-namespace axom {
-namespace utilities {
-namespace filesystem {
+namespace axom
+{
+namespace utilities
+{
+namespace filesystem
+{
 
 /*!
  * \brief Helper function to print out the current working directory within the file system
  * \return path of cwd if found, else, returns "./"
  */
-  std::string getCWD();
+std::string getCWD();
 
 
 /*!
@@ -31,7 +40,7 @@ namespace filesystem {
  * \param [in] fileName string name of a file (possibly including relative or absolute path)
  * \return true if file system contains a file named fileName, false otherwise
  */
-  bool pathExists(const std::string& fileName);
+bool pathExists(const std::string& fileName);
 
 /*!
  * \brief Joins a file directory fileDir and a file name fileName with the given separator char
@@ -46,9 +55,9 @@ namespace filesystem {
  * \note Example2:  joinPath("abc/", "def") -> "abc/def"
  * \note Example3:  joinPath("abc/", "def/ghi") -> "abc/def/ghi"
  */
-  std::string joinPath(const std::string& fileDir,
-                       const std::string& fileName,
-                       const std::string& separator = "/");
+std::string joinPath(const std::string& fileDir,
+                     const std::string& fileName,
+                     const std::string& separator = "/");
 
 
 /*!
@@ -60,7 +69,7 @@ namespace filesystem {
  * a directory in the path already exists, nothing is done.  If a directory
  * doesn't exist, it is created.
  */
-  int makeDirsForPath(const std::string& path);
+int makeDirsForPath(const std::string& path);
 
 /*!
  * \brief Get directory name from a path that contains a file name
@@ -76,9 +85,9 @@ namespace filesystem {
  * For example, if the path string is "abc/def/ghi/file.txt", the output dir
  * string will be "abc/def/ghi".
  */
-  void getDirName(
-    std::string& dir,
-    const std::string& path);
+void getDirName(
+  std::string& dir,
+  const std::string& path);
 
 } // end namespace filesystem
 } // end namespace utilities

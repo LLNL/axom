@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -28,8 +35,8 @@ using axom::slic::UnitTestLogger;
 TEST(slic_fmt, basic_use)
 {
   SLIC_INFO( "Formatting with C++ streams and with "
-              << fmt::format("the '{}' string formatting library", "fmt")
-              << " can be used together in slic macros." );
+             << fmt::format("the '{}' string formatting library", "fmt")
+             << " can be used together in slic macros." );
 
   // Style similar to Python format
   SLIC_INFO( fmt::format("{1} {0}", "world", "Hello") );

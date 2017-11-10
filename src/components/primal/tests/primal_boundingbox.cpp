@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include <limits>
@@ -137,13 +144,15 @@ TEST( primal_boundingBox, bb_ctor_from_many_points)
 
   QPoint ptArr[10];
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0 ; i < 10 ; i++)
+  {
     ptArr[i] = QPoint(i);
   }
 
   QBBox bbox3(&ptArr[0], 10);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0 ; i < 10 ; i++)
+  {
     EXPECT_TRUE(bbox3.contains(ptArr[i]));
   }
 }
@@ -542,7 +551,7 @@ TEST( primal_boundingBox, highest_lowest_values)
   // Note: The bounds are intentionally in the reverse order -- this is how we ensure
   // that adding a point to an empty bounding box always updates the bounds properly
 
-  typedef primal::BoundingBox< double , DIM > BBoxD;
+  typedef primal::BoundingBox< double, DIM > BBoxD;
   EXPECT_TRUE(BBoxD().getMin()[0] > 0 );
   EXPECT_TRUE(BBoxD().getMax()[0] < 0 );
 

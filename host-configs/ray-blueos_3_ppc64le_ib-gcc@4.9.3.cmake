@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_04_01/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3/cmake-3.8.2-riweqtbjy2bwczmiefsbg5hkbkuu3smu/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2017_10_31_17_11_05/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3/cmake-3.8.2-riweqtbjy2bwczmiefsbg5hkbkuu3smu/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -25,10 +25,12 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_07_19_16_04_01/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2017_10_31_17_11_05/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-nj464kx3de5a7cnt3rzn57lltdku4x57" CACHE PATH "")
+
+# scr not built by uberenv
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-e2buo6kiinkn7dgynbsxpafjrplxr7xt" CACHE PATH "")
@@ -46,6 +48,8 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-myxxuxc6xtfpl33e2ubcxr56co54uecn
 # doxygen not built by uberenv
 
 # sphinx not built by uberenv
+
+# shroud not built by uberenv
 
 # uncrustify not built by uberenv
 

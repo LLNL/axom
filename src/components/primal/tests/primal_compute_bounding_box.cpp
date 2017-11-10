@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include <limits>
@@ -31,7 +38,8 @@ TEST( primal_compute_bounding_box, compute_oriented_box_test)
 
   QPoint pt1;  // origin
   QVector u[DIM];  // make standard axes
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0 ; i < DIM ; i++)
+  {
     u[i] = QVector();
     u[i][i] = 1.;
   }
@@ -42,7 +50,8 @@ TEST( primal_compute_bounding_box, compute_oriented_box_test)
 
   std::vector< QPoint > v = obbox1.vertices();
   QPoint verts[8];
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0 ; i < 8 ; i++)
+  {
     verts[i] = v[i];
   }
 
@@ -148,4 +157,3 @@ int main(int argc, char * argv[])
   int result = RUN_ALL_TESTS();
   return result;
 }
-

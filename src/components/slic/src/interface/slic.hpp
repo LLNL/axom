@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -348,8 +355,10 @@
 
 #endif
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 struct debug
 {
@@ -459,14 +468,14 @@ bool isAbortOnWarningsEnabled();
  * \param [in] level the level to log.
  * \pre ls != AXOM_NULLPTR
  */
-void addStreamToMsgLevel( LogStream* ls, message::Level level);
+void addStreamToMsgLevel( LogStream * ls, message::Level level);
 
 /*!
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
  * \pre ls != AXOM_NULLPTR.
  */
-void addStreamToAllMsgLevels( LogStream* ls );
+void addStreamToAllMsgLevels( LogStream * ls );
 
 /*!
  * \brief Logs the given message to all registered streams.
@@ -572,21 +581,22 @@ void finalize();
 std::string stacktrace( );
 
 
-namespace detail {
-  /*!
-   ****************************************************************************
-   * Variable of a type that evaluates as false.
-   *
-   * \note Workaround for warnings about constant expressions in slic macros.
-   ****************************************************************************
-   */
-  struct FalseType
-  {
-    FalseType() {}
-    inline operator bool() const { return false; }
-  };
+namespace detail
+{
+/*!
+ ****************************************************************************
+ * Variable of a type that evaluates as false.
+ *
+ * \note Workaround for warnings about constant expressions in slic macros.
+ ****************************************************************************
+ */
+struct FalseType
+{
+  FalseType() {}
+  inline operator bool() const { return false; }
+};
 
-  static const FalseType false_value;
+static const FalseType false_value;
 
 } /* namespace detail */
 

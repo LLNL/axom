@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
- */
-
-/*!
- * \file driver.cpp
+ * This file is part of Axom.
  *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 // C/C++ includes
@@ -56,14 +58,14 @@ void driver_init()
 
   // setup main hsp output
   hsp.open( "hsp.log" );
-  slic::LogStream* ls = new slic::GenericOutputStream( &hsp, hsp_format );
+  slic::LogStream * ls = new slic::GenericOutputStream( &hsp, hsp_format );
   slic::addStreamToAllMsgLevels( ls );
 
   std::string console_format =
     std::string( "[<LEVEL>]: <MESSAGE>\n" );
 
   // setup console output
-  slic::LogStream* console =
+  slic::LogStream * console =
     new slic::GenericOutputStream( &std::cout, console_format );
   slic::addStreamToMsgLevel(  console,  slic::message::Error );
   slic::addStreamToMsgLevel(  console,  slic::message::Warning );
@@ -78,7 +80,7 @@ void driver_finalize()
 }
 
 //-----------------------------------------------------------------------------
-int main( int argc, char **argv )
+int main( int argc, char * * argv )
 {
   /* silence compiler warnings */
   static_cast< void >(argc);
@@ -91,7 +93,8 @@ int main( int argc, char **argv )
   std::ostringstream oss;
   oss.clear();
 
-  for ( int t=0; t < N; ++t ) {
+  for ( int t=0 ; t < N ; ++t )
+  {
 
     // STEP 0: Execute hydro
     slic::logMessage( slic::message::Info, "== Executing physicsA == \n" );

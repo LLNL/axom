@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef AXOM_NUMERICS_DETERMINANTS_HPP_
@@ -15,8 +22,10 @@
 #include "axom_utils/Matrix.hpp" // for Matrix
 
 
-namespace axom {
-namespace numerics {
+namespace axom
+{
+namespace numerics
+{
 
 /// \name Matrix Operators
 /// @{
@@ -117,56 +126,69 @@ inline real determinant( const Matrix< real >& A )
 {
   real det = 0.0;
 
-  if ( !A.isSquare( ) || A.empty() ) {
+  if ( !A.isSquare( ) || A.empty() )
+  {
     /* short-circuit */
     return det;
   }
 
   const int N = A.getNumColumns();
-  if ( N==1 ) {
+  if ( N==1 )
+  {
 
     det = A(0,0);
 
-  } else if ( N==2 ) {
+  }
+  else if ( N==2 )
+  {
 
     det = determinant( A(0,0), A(0,1),
                        A(1,0), A(1,1) );
 
-  } else if ( N==3 ) {
+  }
+  else if ( N==3 )
+  {
 
     det = determinant( A(0,0), A(0,1), A(0,2),
                        A(1,0), A(1,1), A(1,2),
                        A(2,0), A(2,1), A(2,2)   );
 
-  } else if ( N==4 ) {
+  }
+  else if ( N==4 )
+  {
 
     det = determinant( A(0,0), A(0,1), A(0,2), A(0,3),
                        A(1,0), A(1,1), A(1,2), A(1,3),
                        A(2,0), A(2,1), A(2,2), A(2,3),
                        A(3,0), A(3,1), A(3,2), A(3,3)  );
 
-  } else {
+  }
+  else
+  {
 
-     Matrix< real > lu = A;
-     int* pivots = new int[ N ];
+    Matrix< real > lu = A;
+    int * pivots = new int[ N ];
 
-     int rc = lu_decompose( lu, pivots );
-     if ( rc == LU_SUCCESS ) {
+    int rc = lu_decompose( lu, pivots );
+    if ( rc == LU_SUCCESS )
+    {
 
-       // count number of row interchanges
-       int row_interchanges = 0;
-       for ( int i=0; i < N; ++i ) {
-          row_interchanges += ( pivots[i] != i )? 1 : 0;
-       } // END for all rows
+      // count number of row interchanges
+      int row_interchanges = 0;
+      for ( int i=0 ; i < N ; ++i )
+      {
+        row_interchanges += ( pivots[i] != i ) ? 1 : 0;
+      }  // END for all rows
 
-       det = ( (row_interchanges & 1)==0 )? 1.0 : -1.0;
-       for ( int i=0; i < N; ++i ) {
-          det *= lu(i,i);
-       }
+      det = ( (row_interchanges & 1)==0 ) ? 1.0 : -1.0;
+      for ( int i=0 ; i < N ; ++i )
+      {
+        det *= lu(i,i);
+      }
 
-     }
+    }
 
-     delete [] pivots;
+    delete [] pivots;
   }
 
   return ( det );

@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef FIELD_HPP_
@@ -17,8 +24,10 @@
 // C/C++ includes
 #include <string>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 class Field
 {
@@ -63,28 +72,28 @@ public:
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double* getDoublePtr();
+  virtual double * getDoublePtr();
 
   /*!
    * \brief Returns a constant double pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double* getDoublePtr() const;
+  virtual const double * getDoublePtr() const;
 
   /*!
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual int* getIntPtr();
+  virtual int * getIntPtr();
 
   /*!
    * \brief Returns a constant int pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual const int* getIntPtr() const;
+  virtual const int * getIntPtr() const;
 
 protected:
 

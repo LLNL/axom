@@ -1,13 +1,17 @@
 // wrapQUEST.h
 // This is generated code, do not edit
 //
-// Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-// Produced at the Lawrence Livermore National Laboratory.
+// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-741217
 //
 // All rights reserved.
 //
-// This source code cannot be distributed without permission and
-// further review from Lawrence Livermore National Laboratory.
+// This file is part of Axom.
+//
+// For details about use and distribution, please read axom/LICENSE.
 //
 /**
  * \file wrapQUEST.h
@@ -32,9 +36,13 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-void QUEST_initialize(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
+void QUEST_initialize(MPI_Fint comm, const char * fileName,
+                      bool requiresDistance, int ndims, int maxElements,
+                      int maxLevels);
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName, int LfileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
+void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName,
+                                int LfileName, bool requiresDistance, int ndims,
+                                int maxElements, int maxLevels);
 
 void QUEST_finalize();
 

@@ -1,12 +1,15 @@
 .. ##
-.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory.
 .. ##
+.. ## LLNL-CODE-741217
+.. ##
 .. ## All rights reserved.
 .. ##
-.. ## This file cannot be distributed without permission and
-.. ## further review from Lawrence Livermore National Laboratory.
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
 .. _bitbucket-label:
@@ -61,7 +64,7 @@ a directory that you will work in. This is done by typing::
 The '--recursive' argument above is needed to pull in all Git *submodules*
 that we use in the project. In particular, you will need the BLT build system, 
 which is a Git sub-module in Axom, in your local copy of the repo. In case you 
-forget pass the '--recursive' argument to the 'git clone' command, you can
+forget to pass the '--recursive' argument to the 'git clone' command, you can
 type the following commands after cloning::
 
   $ cd axom

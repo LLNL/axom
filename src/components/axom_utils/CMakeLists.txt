@@ -1,18 +1,16 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
-
-################################
-# Axom Utils
-################################
-project(axom_utils)
-
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 ################################
 # Add the axom_utils sources
@@ -26,9 +24,6 @@ if (ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-
-blt_add_code_check_targets(uncrustify.cfg)
-
 ################################
 # Add docs
 ################################
@@ -37,10 +32,15 @@ if (ENABLE_DOCS)
 endif()
 
 ################################
+# Add code checks
+################################
+axom_add_code_checks(PREFIX axom_utils)
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+install(EXPORT axom_utils-targets DESTINATION lib/cmake)
 
 ################################
 # Compiler checks

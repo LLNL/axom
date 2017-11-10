@@ -1,12 +1,16 @@
-###############################################################################
+#------------------------------------------------------------------------------
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and
-# further review from Lawrence Livermore National Laboratory.
-###############################################################################
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 ## list of axom headers
 set( axom_headers
@@ -40,6 +44,11 @@ add_custom_target( copy_axom_includes ALL
 
 
 include_directories( ${build_axom_includes} )
+
+################################
+# Add code checks
+################################
+axom_add_code_checks(PREFIX axom_includes)
 
 ## add rules for the make install target
 install( FILES ${axom_headers} DESTINATION ${install_axom_includes} )

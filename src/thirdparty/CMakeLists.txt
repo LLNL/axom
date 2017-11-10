@@ -1,7 +1,20 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 #
-# Our third-party builtin libs are all currently header only,
-# so here we are adding tests that make sure they link and can 
-# be used
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
+#
+# Axom third-party builtin libs are all currently header only.
+# We have tests here that make sure they link and can be used.
 #
 
 ############################################################

@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
- */
-
-/*!
- * \file slic.cpp
+ * This file is part of Axom.
  *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "slic/slic.hpp"
@@ -28,8 +30,10 @@
 #endif
 
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 //------------------------------------------------------------------------------
 // Initialize static variables for controlling runtime behavior of asserts and
@@ -51,7 +55,8 @@ bool isInitialized()
 //------------------------------------------------------------------------------
 void createLogger( const std::string& name, char imask )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -62,7 +67,8 @@ void createLogger( const std::string& name, char imask )
 //------------------------------------------------------------------------------
 bool activateLogger( const std::string& name )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return false;
@@ -73,7 +79,8 @@ bool activateLogger( const std::string& name )
 //------------------------------------------------------------------------------
 std::string getActiveLoggerName()
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return "";
@@ -84,7 +91,8 @@ std::string getActiveLoggerName()
 //------------------------------------------------------------------------------
 void setLoggingMsgLevel( message::Level level )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -95,7 +103,8 @@ void setLoggingMsgLevel( message::Level level )
 //------------------------------------------------------------------------------
 void setAbortOnError( bool status )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -105,15 +114,20 @@ void setAbortOnError( bool status )
 }
 
 //------------------------------------------------------------------------------
-void enableAbortOnError() { setAbortOnError( true ); }
+void enableAbortOnError() {
+  setAbortOnError( true );
+}
 
 //------------------------------------------------------------------------------
-void disableAbortOnError() { setAbortOnError( false ); }
+void disableAbortOnError() {
+  setAbortOnError( false );
+}
 
 //------------------------------------------------------------------------------
 bool isAbortOnErrorsEnabled()
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return false;
@@ -125,7 +139,8 @@ bool isAbortOnErrorsEnabled()
 //------------------------------------------------------------------------------
 void setAbortOnWarning( bool status )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -135,15 +150,20 @@ void setAbortOnWarning( bool status )
 }
 
 //------------------------------------------------------------------------------
-void enableAbortOnWarning() { setAbortOnWarning(true); }
+void enableAbortOnWarning() {
+  setAbortOnWarning(true);
+}
 
 //------------------------------------------------------------------------------
-void disableAbortOnWarning() { setAbortOnWarning(false); }
+void disableAbortOnWarning() {
+  setAbortOnWarning(false);
+}
 
 //------------------------------------------------------------------------------
 bool isAbortOnWarningsEnabled()
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return false;
@@ -153,9 +173,10 @@ bool isAbortOnWarningsEnabled()
 }
 
 //------------------------------------------------------------------------------
-void addStreamToMsgLevel( LogStream* ls, message::Level level )
+void addStreamToMsgLevel( LogStream * ls, message::Level level )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -164,7 +185,7 @@ void addStreamToMsgLevel( LogStream* ls, message::Level level )
 }
 
 //------------------------------------------------------------------------------
-void addStreamToAllMsgLevels( LogStream* ls )
+void addStreamToAllMsgLevels( LogStream * ls )
 {
   Logger::getActiveLogger()->addStreamToAllMsgLevels( ls );
 }
@@ -173,7 +194,8 @@ void addStreamToAllMsgLevels( LogStream* ls )
 void logMessage( message::Level level, const std::string& message,
                  bool filter_duplicates )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     return;
   }
   Logger::getActiveLogger()->logMessage( level, message, filter_duplicates );
@@ -185,7 +207,8 @@ void logMessage( message::Level level,
                  const std::string& tag,
                  bool filter_duplicates )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     return;
   }
   Logger::getActiveLogger()->logMessage( level, message, tag,
@@ -199,7 +222,8 @@ void logMessage( message::Level level,
                  int line,
                  bool filter_duplicates )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     return;
   }
   Logger::getActiveLogger()->logMessage( level, message, fileName, line,
@@ -214,7 +238,8 @@ void logMessage( message::Level level,
                  int line,
                  bool filter_duplicates )
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     return;
   }
   Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line,
@@ -243,7 +268,8 @@ void logWarningMessage( const std::string& message,
 //------------------------------------------------------------------------------
 void flushStreams()
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -254,7 +280,8 @@ void flushStreams()
 //------------------------------------------------------------------------------
 void pushStreams()
 {
-  if ( !isInitialized() ) {
+  if ( !isInitialized() )
+  {
     std::cerr << "[ERROR]: slic::initialize() must be called first "
               << "before making any other calls to SLIC.";
     return;
@@ -270,49 +297,53 @@ void finalize()
 
 //------------------------------------------------------------------------------
 #ifdef WIN32
- std::string stacktrace( )
- {
-   void* stack[10];
-   std::ostringstream oss;
+std::string stacktrace( )
+{
+  void * stack[10];
+  std::ostringstream oss;
 
-   unsigned short frames;
-   SYMBOL_INFO  * symbol;
-   HANDLE         process;
+  unsigned short frames;
+  SYMBOL_INFO * symbol;
+  HANDLE process;
 
-   process = GetCurrentProcess();
+  process = GetCurrentProcess();
 
-   SymInitialize( process, NULL, TRUE );
+  SymInitialize( process, NULL, TRUE );
 
-   frames               = CaptureStackBackTrace( 0, 10, stack, NULL );
-   symbol               = ( SYMBOL_INFO * )calloc( sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
-   symbol->MaxNameLen   = 255;
-   symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+  frames               = CaptureStackBackTrace( 0, 10, stack, NULL );
+  symbol               = ( SYMBOL_INFO * )calloc(
+    sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
+  symbol->MaxNameLen   = 255;
+  symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
 
-   oss << "\n** StackTrace of " << frames << " frames **\n";
-   for(int i = 0; i < frames; i++ )  {
-     char outString[512] ;
-     SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
+  oss << "\n** StackTrace of " << frames << " frames **\n";
+  for(int i = 0 ; i < frames ; i++ )
+  {
+    char outString[512];
+    SymFromAddr( process, ( DWORD64 )( stack[ i ] ), 0, symbol );
 
-     sprintf_s(outString, "%i: %s - 0x%0X", frames - i - 1, symbol->Name, symbol->Address );
-     oss << outString << std::endl ;
+    sprintf_s(outString, "%i: %s - 0x%0X", frames - i - 1, symbol->Name,
+              symbol->Address );
+    oss << outString << std::endl;
   }
 
-   free( symbol );
-   oss << "=====\n\n";
+  free( symbol );
+  oss << "=====\n\n";
 
-   return ( oss.str() );
- }
+  return ( oss.str() );
+}
 
 #else
 std::string stacktrace( )
 {
-  void* array[10];
+  void * array[10];
   const int size = backtrace( array, 10 );
-  char** strings = backtrace_symbols( array, size );
+  char * * strings = backtrace_symbols( array, size );
 
   std::ostringstream oss;
   oss << "\n** StackTrace of " << size << " frames **\n";
-  for ( int i=0; i < size; ++i ) {
+  for ( int i=0 ; i < size ; ++i )
+  {
     oss << strings[ i ] << std::endl;
   }
   oss << "=====\n\n";

@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "axom_utils/StringUtilities.hpp"
@@ -16,32 +23,35 @@
 #include <sstream>
 #endif
 
-namespace axom {
-namespace utilities {
-namespace string {
+namespace axom
+{
+namespace utilities
+{
+namespace string
+{
 
 std::string intToString(int intValue)
 {
-    std::string stringValue = "";
+  std::string stringValue = "";
 #ifdef AXOM_USE_CXX11
-    stringValue += std::to_string(intValue);
+  stringValue += std::to_string(intValue);
 #else
-    std::ostringstream ss;
-    ss << intValue;
-    stringValue += ss.str();
+  std::ostringstream ss;
+  ss << intValue;
+  stringValue += ss.str();
 #endif
-    return stringValue;
+  return stringValue;
 }
 
 int stringToInt(const std::string& stringValue)
 {
-    int intValue = 0;
+  int intValue = 0;
 #ifdef AXOM_USE_CXX11
-    intValue = stoi(stringValue);
+  intValue = stoi(stringValue);
 #else
-    std::istringstream(stringValue) >> intValue;
+  std::istringstream(stringValue) >> intValue;
 #endif
-    return intValue;
+  return intValue;
 }
 
 } // end namespace string

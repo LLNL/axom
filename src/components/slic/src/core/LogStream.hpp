@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -31,8 +38,10 @@
 // C/C++ includes
 #include <string> // For STL string
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class LogStream
@@ -105,7 +114,7 @@ public:
                        const std::string& fileName,
                        int line,
                        bool filter_duplicates
-  ) = 0;
+                       ) = 0;
 
   /*!
    * \brief Flushes the log stream. It's a NO-OP by default.

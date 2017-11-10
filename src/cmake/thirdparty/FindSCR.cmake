@@ -1,10 +1,26 @@
-###############################################################################
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 #
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
 # Setup SCR
+#
 # This file defines:
 #  SCR_FOUND - If SCR was found
 #  SCR_INCLUDE_DIRS - The SCR include directories
 #  SCR_LIBRARY - The SCR library
+#------------------------------------------------------------------------------
 
 # first Check for SCR_DIR
 

@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -25,8 +32,10 @@
 #include "slic.hpp"
 #include "GenericOutputStream.hpp"
 
-namespace axom {
-namespace slic {
+namespace axom
+{
+namespace slic
+{
 
 /*!
  * \class UnitTestLogger
@@ -80,9 +89,9 @@ public:
     // Simple formatting for debug and info messages
     std::string diFormatStr = "[<LEVEL>] <MESSAGE> \n";
 
-    GenericOutputStream* wefStream
+    GenericOutputStream * wefStream
       = new GenericOutputStream(&std::cout, wefFormatStr);
-    GenericOutputStream* diStream
+    GenericOutputStream * diStream
       = new GenericOutputStream(&std::cout, diFormatStr);
 
     addStreamToMsgLevel(wefStream,  message::Error);

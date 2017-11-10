@@ -1,11 +1,18 @@
 /*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef MINT_SRC_UTILS_VTK_UTILS_HPP
@@ -13,8 +20,10 @@
 
 #include <string> // for std::string
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 class Mesh;
 
@@ -27,7 +36,7 @@ class Mesh;
  * \pre mesh != AXOM_NULLPTR
  * \note Thise method is primarily intended for debugging.
  */
-int write_vtk( const Mesh* mesh, const std::string& file_path );
+int write_vtk( const Mesh * mesh, const std::string& file_path );
 
 } /* namespace mint */
 } /* namespace axom */

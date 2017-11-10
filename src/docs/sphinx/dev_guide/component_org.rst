@@ -1,12 +1,15 @@
 .. ##
-.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory.
 .. ##
+.. ## LLNL-CODE-741217
+.. ##
 .. ## All rights reserved.
 .. ##
-.. ## This file cannot be distributed without permission and
-.. ## further review from Lawrence Livermore National Laboratory.
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
 .. _componentorg-label:
@@ -64,7 +67,6 @@ a few files:
 
 * **CMakeLists.txt** contains CMake information for the component in the Axom build system.
 * **README.md** is the markdown overview file for the component. Its contents appear in the Axom Bitbucket project when you navigate through the source tree.
-* **uncrustify.cfg** is the component-specific uncrustify configuration file for formatting the component source code. This is optional, see note below.
     
 The **docs** directory contains the component documentation. Subdirectories in 
 the docs directory are named for each type of documentation. The directories 
@@ -153,10 +155,6 @@ Top-level component directory
 The top-level component directory contains a `CMakeLists.txt`, e.g., 
 `axom/src/components/sidre/CmakeLists.txt`, which contains the following items:
 
-  #. Project definition; e.g.,::
-
-       project(sidre)
-
   #. Checks for necessary dependencies with useful error or warning messages; 
      e.g.,::
 
@@ -176,21 +174,18 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
 
   #. CMake exports of component targets; e.g.,::
 
-       install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+       install(EXPORT <component name>-targets DESTINATION lib/cmake)
 
-  #. Code formatting target if component-specific uncrustify configuration file
-     is provided; e.g.,::
+  #. Code formatting and static analysis targets; e.g.,::
 
-       blt_add_code_check_targets(uncrustify.cfg) 
+       axom_add_code_checks(BASE_NAME <component name>)
 
-.. note:: Each Axom component can either provide its own *uncrustify* 
-          configuration file (e.g., `uncrustify.cfg`) or use the common 
-          configuration file defined for the project. The file is used to 
-          define source code formatting options that are applied when the 
-          *uncrustify* tool is run on the code. If a project-specific 
-          configuration file is provided, it should be located in the 
-          top-level component directory and a target should be added to the 
-          `CMakeLists.txt` file in that directory as described above.
+
+
+.. note:: Each Axom component should use the common uncrustify
+          configuration file defined for the project at src/uncrustify.cfg. 
+          The file is used to define source code formatting options that are
+          applied when the *uncrustify* tool is run on the code.
 
 
 Component src directory
