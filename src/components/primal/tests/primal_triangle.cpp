@@ -147,8 +147,8 @@ TEST( primal_triangle, triangle_physical_to_bary)
                  "Computed barycentric coordinates for triangle {} and point {} are {}",
                  tri, query, bary));
     for (int i = 0; i < 3; ++i) {
-      EXPECT_NEAR(bary[i], query[i], EPS);
-      EXPECT_NEAR(phys[i], expWorld[i], EPS);
+      EXPECT_NEAR(bary[i], expBary[i], EPS);
+      EXPECT_NEAR(phys[i], query[i], EPS);
     }
   }
 

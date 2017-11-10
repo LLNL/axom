@@ -1073,7 +1073,7 @@ void testRayIntersection(const primal::Triangle< double, DIM > & tri,
   if (testtrue)
   {
     EXPECT_TRUE(intersect(tri, ray, t, tip));
-    PointType tripoint = tri.at(tip);
+    PointType tripoint = tri.baryToPhysical(tip);
     PointType raypoint = ray.at(t);
     EXPECT_TRUE(testPointsClose(tripoint, raypoint))
       << "Tripoint is " << tripoint <<
@@ -1110,7 +1110,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t1 = 0;
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
-    PointType tripoint1 = tri.at(tip1);
+    PointType tripoint1 = tri.baryToPhysical(tip1);
     PointType segpoint1 = seg1.at(t1);
     EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
       " and segpoint is " << segpoint1;
@@ -1119,7 +1119,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t2 = 0;
     PointType tip2;
     EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
-    PointType tripoint2 = tri.at(tip2);
+    PointType tripoint2 = tri.baryToPhysical(tip2);
     PointType segpoint2 = seg2.at(t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
   }
@@ -1335,7 +1335,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
-  PointType triIntersectionPoint = t2.at(intBary);
+  PointType triIntersectionPoint = t2.baryToPhysical(intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
@@ -1367,7 +1367,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
   PointType intersectionPoint = s.at(intersectionParam);
-  PointType triIntersectionPoint = t.at(intBary);
+  PointType triIntersectionPoint = t.baryToPhysical(intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
