@@ -86,7 +86,7 @@ TEST( primal_triangle, triangle_area_3D)
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_triangle, triangle_world_to_bary)
+TEST( primal_triangle, triangle_physical_to_bary)
 {
   static const int DIM = 3;
   static const double EPS = 1e-12;
@@ -135,26 +135,27 @@ TEST( primal_triangle, triangle_world_to_bary)
                        QPoint::make_point(-0.4, 1.2, 0.2)));
 
   // Now run the actual tests
-  for (TestVec::const_iterator it= testData.begin() ;
-       it != testData.end() ;
+  for (TestVec::const_iterator it= testData.begin();  it != testData.end();
        ++it)
   {
     const QPoint& query = it->first;
     const QPoint& expBary = it->second;
-    QPoint bary = tri.barycentricCoords(query);
+    QPoint bary = tri.physToBarycentric(query);
+    QPoint phys = tri.baryToPhysical(bary);
 
     SLIC_DEBUG(fmt::format(
                  "Computed barycentric coordinates for triangle {} and point {} are {}",
                  tri, query, bary));
-    EXPECT_NEAR(bary[0],  expBary[0], EPS );
-    EXPECT_NEAR(bary[1],  expBary[1], EPS );
-    EXPECT_NEAR(bary[2],  expBary[2], EPS );
+    for (int i = 0; i < 3; ++i) {
+      EXPECT_NEAR(bary[i], query[i], EPS);
+      EXPECT_NEAR(phys[i], expWorld[i], EPS);
+    }
   }
 
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_triangle, triangle_bary_to_world)
+TEST( primal_triangle, triangle_bary_to_physical)
 {
   static const int DIM = 3;
   static const double EPS = 1e-12;
@@ -207,14 +208,14 @@ TEST( primal_triangle, triangle_bary_to_world)
        ++it) {
     const QPoint& query = it->first;
     const QPoint& expWorld = it->second;
-    QPoint wcoords = tri.at(query);
-    QPoint bary = tri.barycentricCoords(wcoords);
+    QPoint phys = tri.baryToPhysical(query);
+    QPoint bary = tri.physToBarycentric(phys);
 
     SLIC_DEBUG(fmt::format(
-                 "Computed world coordinates for triangle {} at barycentric {} are {}",
-                 tri, query, wcoords));
+                 "Computed physical coordinates for triangle {} at barycentric {} are {}",
+                 tri, query, phys));
     for (int i = 0; i < 3; ++i) {
-      EXPECT_NEAR(wcoords[i], expWorld[i], EPS);
+      EXPECT_NEAR(phys[i], expWorld[i], EPS);
       EXPECT_NEAR(bary[i], query[i], EPS);
     }
   }

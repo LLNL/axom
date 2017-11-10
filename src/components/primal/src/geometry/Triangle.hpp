@@ -180,7 +180,7 @@ public:
    * \post The barycentric coordinates sum to 1.
    * Adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point< double, 3 > barycentricCoords(const PointType& p) const
+  Point< double, 3 > physToBarycentric(const PointType& p) const
   {
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
@@ -228,17 +228,11 @@ public:
   }
 
   /*!
-   * \brief Returns the world coordinates of a barycentric point
+   * \brief Returns the physical coordinates of a barycentric point
    * \param [in] bary Barycentric coordinates relative to this triangle
-   *
-   * This method returns the sum of this triangle's vertices, weighted by the
-   * input argument bary.  By default, the components of bary must sum to 1.
-   * If doNormalize is set to true, the components of bary are divided by
-   * their sum, forcing them to sum to 1.  This is a convenience when working
-   * with the unnormalized barycentric point returned by
-   * intersect(Triangle, Ray) or intersect(Triangle, Segment).
+   * \return Physical point represented by bary
    */
-  PointType at(const Point<double, 3> & bary) const
+  PointType baryToPhysical(const Point<double, 3> & bary) const
   {
     SLIC_CHECK_MSG( axom::utilities::isNearlyEqual(1., bary[0]+bary[1]+bary[2]),
                     "Barycentric coordinates must sum to (near) one." );
