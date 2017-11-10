@@ -1398,13 +1398,13 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   if ( tri.checkInTriangle(S.source() ) )
   {
     t = 0;
-    p = tri.barycentricCoords(S.source());
+    p = tri.physToBarycentric(S.source());
     return true;
   }
   if ( tri.checkInTriangle(S.target()))
   {
     t = 1;
-    p = tri.barycentricCoords(S.target());
+    p = tri.physToBarycentric(S.target());
     return true;
   }
 
