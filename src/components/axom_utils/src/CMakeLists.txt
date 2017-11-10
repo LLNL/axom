@@ -51,12 +51,14 @@ if (ENABLE_MPI)
                      HEADERS              "${axom_utils_headers}"
                      HEADERS_OUTPUT_SUBDIR axom_utils
                      DEPENDS_ON            mpi
+                     FOLDER                axom/axom_utils
                      )
 else()
     blt_add_library( NAME                  axom_utils
                      SOURCES              "${axom_utils_sources}"
                      HEADERS              "${axom_utils_headers}"
                      HEADERS_OUTPUT_SUBDIR axom_utils
+                     FOLDER                axom/axom_utils
                      )
 
 endif()

@@ -52,6 +52,7 @@ if( ENABLE_SLAM AND ENABLE_SPIO )
         SOURCES    ${datastore_converter_sources}
         OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON ${datastore_converter_depends}
+        FOLDER     axom/examples
         )
     install(TARGETS              convert_sidre_protocol
             DESTINATION          bin
@@ -76,6 +77,7 @@ if(ENABLE_QUEST)
         SOURCES     ${mesh_tester_sources}
         OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${mesh_tester_depends}
+        FOLDER      axom/examples
         )
     install(TARGETS              mesh_tester
             DESTINATION          bin

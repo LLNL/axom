@@ -51,6 +51,8 @@ blt_add_library( NAME
                      lumberjack
                  DEPENDS_ON
                      axom_utils mpi
+                 FOLDER
+                     axom/lumberjack
                  )
 install(TARGETS              lumberjack
         EXPORT               lumberjack-targets

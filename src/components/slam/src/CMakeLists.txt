@@ -84,6 +84,7 @@ blt_add_library(
     HEADERS     ${slam_headers}
     HEADERS_OUTPUT_SUBDIR slam
     DEPENDS_ON  ${slam_depends_on}
+    FOLDER      axom/slam
     )
 install(TARGETS              slam
         EXPORT               slam-targets

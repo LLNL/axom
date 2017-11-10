@@ -15,4 +15,6 @@
 blt_add_executable(NAME lumberjack_basic_ex
                    SOURCES basicExample.cpp
                    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack )
+                   DEPENDS_ON lumberjack 
+                   FOLDER axom/lumberjack/examples )
+

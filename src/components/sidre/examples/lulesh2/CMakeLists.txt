@@ -34,6 +34,7 @@ blt_add_executable(
     SOURCES ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON axom_utils sidre conduit conduit_relay hdf5 slic
+    FOLDER axom/sidre/examples
     )
 
 if(ENABLE_MPI)

@@ -44,6 +44,7 @@ if (ENABLE_MPI)
                            SOURCES ${test}
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                            DEPENDS_ON ${spio_test_depends} gtest
+                           FOLDER axom/sidre/tests
                            )
 
        blt_add_test( NAME ${test_name} 
@@ -59,6 +60,7 @@ if (ENABLE_MPI)
                            SOURCES ${test}
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                            DEPENDS_ON ${spio_test_depends} gtest
+                           FOLDER axom/sidre/tests
                            )
 
        blt_add_test( NAME ${test_name} 
@@ -75,6 +77,7 @@ if(ENABLE_FORTRAN)
                          SOURCES F_spio_basicWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
+                         FOLDER axom/sidre/tests
                          )
       blt_add_test(NAME F_spio_basicWriteRead
                    COMMAND spio_basicWriteRead_F_test
@@ -85,6 +88,7 @@ if(ENABLE_FORTRAN)
                          SOURCES F_spio_parallelWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
+                         FOLDER axom/sidre/tests
                          )
       blt_add_test(NAME F_spio_parallelWriteRead
                    COMMAND spio_parallelWriteRead_F_test
@@ -95,6 +99,7 @@ if(ENABLE_FORTRAN)
                          SOURCES F_spio_irregularWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
+                         FOLDER axom/sidre/tests
                          )
       blt_add_test(NAME F_spio_irregularWriteRead
                    COMMAND spio_irregularWriteRead_F_test
@@ -105,6 +110,7 @@ if(ENABLE_FORTRAN)
                          SOURCES F_spio_externalWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
+                         FOLDER axom/sidre/tests
                          )
       blt_add_test(NAME F_spio_externalWriteRead
                    COMMAND spio_externalWriteRead_F_test
@@ -115,6 +121,7 @@ if(ENABLE_FORTRAN)
                          SOURCES F_spio_preserveWriteRead.f
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends} fruit
+                         FOLDER axom/sidre/tests
                          )
       blt_add_test(NAME F_spio_preserveWriteRead
                    COMMAND spio_preserveWriteRead_F_test

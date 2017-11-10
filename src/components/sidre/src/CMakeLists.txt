@@ -121,7 +121,9 @@ blt_add_library( NAME
                      sidre
                  DEPENDS_ON
                      ${sidre_depends}
-                 )
+                 FOLDER 
+                     axom/sidre
+                )
 
 if(SPARSEHASH_FOUND)
     blt_add_target_definitions(TO                 sidre

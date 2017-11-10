@@ -48,6 +48,7 @@ blt_add_library(
     SOURCES     ${tinyHydro_lib_sources}
                 ${tinyHydro_lib_headers}
     DEPENDS_ON  ${slam_tiny_hydro_lib_depends_on}
+    FOLDER      axom/slam/examples
    )
 
 
@@ -64,6 +65,7 @@ if(ENABLE_GTEST)
         SOURCES     tests/slam_tinyHydro_unitTests.cpp
         OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} gtest
+        FOLDER      axom/slam/examples
         )
     blt_add_test(
         NAME        slam_tinyHydro_unitTests
@@ -79,6 +81,7 @@ blt_add_executable(
     SOURCES     tests/slam_tinyHydro_sod1DTwoPart.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on}
+    FOLDER      axom/slam/examples
 )
 blt_add_test(
     NAME        slam_tinyHydro_sod
@@ -95,4 +98,5 @@ blt_add_executable(
     SOURCES     tests/slam_tinyHydro_sedovTwoPart.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on}
+    FOLDER      axom/slam/examples
 )

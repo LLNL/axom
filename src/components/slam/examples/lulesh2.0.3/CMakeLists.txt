@@ -54,6 +54,7 @@ blt_add_executable(
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tests_depends_on}
+    FOLDER      axom/slam/examples
     )
 
 if(ENABLE_MPI)

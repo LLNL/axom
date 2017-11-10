@@ -51,11 +51,13 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
     {
       if (j == i)
       {
-        EXPECT_NEAR(u[i*N + j]*u[i*N + j], 1., EPS);
+        EXPECT_NEAR(u[i*N + j]*u[i*N + j], 1., EPS)
+          << "At entry j == i == " << j;
       }
       else
       {
-        EXPECT_NEAR(u[i*N + j], 0, EPS);
+        EXPECT_NEAR(u[i*N + j], 0, EPS)
+          << "At entry j = " << j << ",  i = " << i;
       }
     }
   }
@@ -204,7 +206,7 @@ int main(int argc, char * argv[])
 #ifdef EIGEN_SOLVE_TESTER_SHOULD_SEED
   std::srand( std::time(0) );
 #else
-  std::srand( 105 );
+  std::srand( 42 );
 #endif
 
   int result = RUN_ALL_TESTS();

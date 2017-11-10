@@ -83,7 +83,9 @@ blt_add_library(
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
     DEPENDS_ON axom_utils slic
+    FOLDER axom/mint
    )
+
 install(TARGETS              mint
         EXPORT               mint-targets
         DESTINATION          lib

@@ -76,6 +76,8 @@ blt_add_library( NAME
 
                  DEPENDS_ON
                      ${spio_depends}
+                 FOLDER
+                     axom/sidre
                 )
 install(TARGETS              spio
         EXPORT               ${PROJECT_NAME}-targets
