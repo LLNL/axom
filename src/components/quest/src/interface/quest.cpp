@@ -577,6 +577,19 @@ void inside( const double * xyz, int * in, int npoints )
 }
 
 //------------------------------------------------------------------------------
+void all_nearest_neighbors(double * x, double * y, double * z, int * region,
+                           int n, double limit, double * neighbor)
+{
+  // 1. Build an index, inserting each point individually
+  // 2. For each bin A, for each point a in A,
+  // 3. For each other bin B, for each point b in B,
+  // 4. Compare distances to find the closest distance d = |ab|
+  // 5. Exclude a from loop at 2 if we start increasing d, or if D = |AB| > limit.
+  // 6. Choose each successive bin B to form shells around A.
+}
+
+
+//------------------------------------------------------------------------------
 void finalize()
 {
   accelerator3D.finalize();

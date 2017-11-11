@@ -120,6 +120,20 @@ void mesh_max_bounds(double * coords);
  */
 void mesh_center_of_mass(double * coords);
 
+/*!
+ * \brief Find the closest point (in another region) to each given point
+ * \param [in] x X-coordinates of input points
+ * \param [in] y Y-coordinates of input points
+ * \param [in] z Z-coordinates of input points
+ * \param [in] region Region of each point
+ * \param [in] n Number of points
+ * \param [in] limit Max distance for all-nearest-neighbors query
+ * \param [out] neighbor Index of nearest neighbor not in the same class
+ * \pre x, y, z, and region have n entries
+ * \pre neighbor is allocated with room for n entries
+ */
+void all_nearest_neighbors(double * x, double * y, double * z, int * region,
+                           int n, double limit, double * neighbor) ;
 
 
 /*!
