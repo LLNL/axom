@@ -229,11 +229,11 @@ View * View::reallocate(const DataType& dtype)
     SLIC_CHECK_MSG( !dtype.is_empty(),
                     "Unable to re-allocate with empty data type.");
     SLIC_CHECK_MSG( isAllocateValid(),
-                    "View " << this->getName() << "'s state " <<
+                    "View " << getPathName() << "'s state " <<
                     getStateStringName(m_state) <<
                     " does not allow data re-allocation");
     SLIC_CHECK_MSG( type == view_type,
-                    "View " << this->getName() <<
+                    "View " << getPathName() <<
                     " attempting to re-allocate with different type.");
     return this;
   }
@@ -1293,22 +1293,22 @@ bool View::rename(const std::string& new_name)
 
     if (new_name.empty())
     {
-      SLIC_WARNING("Cannot rename View " << m_name << " to an empty " <<
+      SLIC_WARNING("Cannot rename View " << getPathName() << " to an empty " <<
                    "string.");
       do_rename = false;
     }
     else if (new_name.find(parent->getPathDelimiter()) != std::string::npos)
     {
-      SLIC_WARNING("Cannot rename View "<< m_name << " to path name " <<
+      SLIC_WARNING("Cannot rename View "<< getPathName() << " to path name " <<
                    new_name << ". Only strings without path delimiters can " <<
                    "be passed into the rename method.");
       do_rename = false;
     }
     else if (parent->hasGroup(new_name) || parent->hasView(new_name))
     {
-      SLIC_WARNING("Parent group " << parent->getName() <<
+      SLIC_WARNING("Parent group " << parent->getPathName() <<
                    " already has a child object named " << new_name <<
-                   ". View " << m_name << " will not be renamed.");
+                   ". View " << getPathName() << " will not be renamed.");
       do_rename = false;
     }
     else

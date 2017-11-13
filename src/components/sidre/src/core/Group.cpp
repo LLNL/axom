@@ -2472,13 +2472,13 @@ bool Group::rename(const std::string& new_name)
 
     if (new_name.empty())
     {
-      SLIC_WARNING("Cannot rename Group " << getPathName << " to an empty " <<
+      SLIC_WARNING("Cannot rename Group " << getPathName() << " to an empty " <<
                    "string.");
       do_rename = false;
     }
     else if (new_name.find(s_path_delimiter) != std::string::npos)
     {
-      SLIC_WARNING("Cannot rename Group "<< getPathName << " to path name " <<
+      SLIC_WARNING("Cannot rename Group "<< getPathName() << " to path name " <<
                    new_name << ". Only strings without path delimiters can " <<
                    "be passed into the rename method.");
       do_rename = false;

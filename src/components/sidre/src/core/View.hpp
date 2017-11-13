@@ -636,7 +636,7 @@ public:
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
       SLIC_CHECK_MSG(arg_id == m_node.dtype().id(),
                      "You are setting a scalar value in view "
-                     << m_name
+                     << getPathName()
                      << " which has changed the underlying data type."
                      << "Old type = " << m_node.dtype().name()
                      << ", new type ="
@@ -659,7 +659,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
                      "Unable to set scalar value on view "
-                     << m_name << " with state: "
+                     << getPathName() << " with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -681,7 +681,7 @@ public:
     {
       SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
                      "You are setting a scalar value in view "
-                     << m_name
+                     << getPathName()
                      << " which has changed the underlying data type."
                      << "Old type = " << m_node.dtype().name()
                      << ", new type ="
@@ -704,7 +704,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
                      "Unable to set scalar value on view "
-                     << m_name << " with state: "
+                     << getPathName() << " with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -736,7 +736,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
                      "Unable to set string value on view "
-                     << m_name << " with state: "
+                     << getPathName() << " with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
