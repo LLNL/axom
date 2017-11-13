@@ -133,7 +133,7 @@ void mesh_center_of_mass(double * coords);
  * \pre neighbor is allocated with room for n entries
  */
 void all_nearest_neighbors(double * x, double * y, double * z, int * region,
-                           int n, double limit, double * neighbor) ;
+                           int n, double limit, int * neighbor) ;
 
 
 /*!
