@@ -1,11 +1,18 @@
 /*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -18,7 +25,8 @@
 #include "slic/UnitTestLogger.hpp"
 
 // Define some helpful typedefs for 1D rectangular lattices
-namespace lattice_1D {
+namespace lattice_1D
+{
 
 const int DIM = 1;
 
@@ -32,7 +40,8 @@ typedef axom::primal::NumericArray< int,DIM > IntArray;
 }
 
 // Define some helpful typedefs for 2D rectangular lattices
-namespace lattice_2D {
+namespace lattice_2D
+{
 
 const int DIM = 2;
 
@@ -46,7 +55,8 @@ typedef axom::primal::NumericArray< int,DIM > IntArray;
 }
 
 // Define some helpful typedefs for 3D rectangular lattices
-namespace lattice_3D {
+namespace lattice_3D
+{
 
 const int DIM = 3;
 
@@ -218,9 +228,9 @@ TEST( primal_rectangle_lattice, operators)
     EXPECT_NE(lattice4, lattice1);
 
     SLIC_INFO( "Lattices "
-                << (lattice1 == lattice4 ? "are" : "are not") << " equal."
-                << "\n\t First lattice: " << lattice1
-                << "\n\t Second lattice: " << lattice4 );
+               << (lattice1 == lattice4 ? "are" : "are not") << " equal."
+               << "\n\t First lattice: " << lattice1
+               << "\n\t Second lattice: " << lattice4 );
   }
 
   //2D
@@ -257,9 +267,9 @@ TEST( primal_rectangle_lattice, operators)
     EXPECT_NE(lattice4, lattice1);
 
     SLIC_INFO( "Lattices "
-                << (lattice1 != lattice4 ? "are not" : "are") << " equal."
-                << "\n\t First lattice: " << lattice1
-                << "\n\t Second lattice: " << lattice4 );
+               << (lattice1 != lattice4 ? "are not" : "are") << " equal."
+               << "\n\t First lattice: " << lattice1
+               << "\n\t Second lattice: " << lattice4 );
   }
 
   //3D
@@ -296,9 +306,9 @@ TEST( primal_rectangle_lattice, operators)
     EXPECT_NE(lattice4, lattice1);
 
     SLIC_INFO( "Lattices "
-                << (lattice1 == lattice4 ? "are" : "are not") << " equal."
-                << "\n\t First lattice: " << lattice1
-                << "\n\t Second lattice: " << lattice4 );
+               << (lattice1 == lattice4 ? "are" : "are not") << " equal."
+               << "\n\t First lattice: " << lattice1
+               << "\n\t Second lattice: " << lattice4 );
   }
 }
 
@@ -377,7 +387,8 @@ TEST( primal_rectangle_lattice, convert_point_cell_1D)
   EXPECT_EQ(spacing, lattice.spacing());
 
   // Test that we can map points to cells and cells to points
-  for (int i=-10; i<=10; ++i) {
+  for (int i=-10 ; i<=10 ; ++i)
+  {
     // Point near the lower bounds of a cell
     // Note: We have to add an epsilon to guarantee we find the right cell
     SpacePt lowerPoint(SPACING * i + EPS);
@@ -530,13 +541,13 @@ TEST( primal_rectangle_lattice, zero_spacing_2D)
     GridCell cell = lattice.gridCell(pt);
     EXPECT_EQ(GridCell::make_point(-2,0), cell); // cell[1] == 0
 
-    SLIC_INFO("For lattice "  << lattice
-                              << "\n\t Bounding box of cell " << testCell
-                              << " is " << lattice.cellBounds(testCell) );
+    SLIC_INFO("For lattice " << lattice
+                             << "\n\t Bounding box of cell " << testCell
+                             << " is " << lattice.cellBounds(testCell) );
 
-    SLIC_INFO("For lattice "  << lattice
-                              << "\n\t Bounding box of cell " << cell
-                              << " is " << lattice.cellBounds(cell) );
+    SLIC_INFO("For lattice " << lattice
+                             << "\n\t Bounding box of cell " << cell
+                             << " is " << lattice.cellBounds(cell) );
   }
 
 }
@@ -559,7 +570,8 @@ TEST( primal_rectangle_lattice, cell_bounding_box_3D)
 
     BBox cellBBox = lattice.cellBounds( GridCell::zero() );
 
-    for (int i=0; i < DIM; ++i) {
+    for (int i=0 ; i < DIM ; ++i)
+    {
       EXPECT_DOUBLE_EQ(expCellBBox.getMin()[i], cellBBox.getMin()[i]);
       EXPECT_DOUBLE_EQ(expCellBBox.getMax()[i], cellBBox.getMax()[i]);
     }
@@ -575,7 +587,8 @@ TEST( primal_rectangle_lattice, cell_bounding_box_3D)
 
     BBox cellBBox = lattice.cellBounds( cell );
 
-    for (int i=0; i < DIM; ++i) {
+    for (int i=0 ; i < DIM ; ++i)
+    {
       EXPECT_DOUBLE_EQ(expCellBBox.getMin()[i], cellBBox.getMin()[i]);
       EXPECT_DOUBLE_EQ(expCellBBox.getMax()[i], cellBBox.getMax()[i]);
     }

@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -79,7 +86,7 @@ TEST( primal_triangle, triangle_area_3D)
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_triangle, triangle_barycentric)
+TEST( primal_triangle, triangle_physical_to_bary)
 {
   static const int DIM = 3;
   static const double EPS = 1e-12;
@@ -128,18 +135,89 @@ TEST( primal_triangle, triangle_barycentric)
                        QPoint::make_point(-0.4, 1.2, 0.2)));
 
   // Now run the actual tests
-  for (TestVec::const_iterator it= testData.begin(); it != testData.end();
-       ++it) {
+  for (TestVec::const_iterator it= testData.begin();  it != testData.end();
+       ++it)
+  {
     const QPoint& query = it->first;
     const QPoint& expBary = it->second;
-    QPoint bary = tri.barycentricCoords(query);
+    QPoint bary = tri.physToBarycentric(query);
+    QPoint phys = tri.baryToPhysical(bary);
 
     SLIC_DEBUG(fmt::format(
                  "Computed barycentric coordinates for triangle {} and point {} are {}",
                  tri, query, bary));
-    EXPECT_NEAR(bary[0],  expBary[0], EPS );
-    EXPECT_NEAR(bary[1],  expBary[1], EPS );
-    EXPECT_NEAR(bary[2],  expBary[2], EPS );
+    for (int i = 0; i < 3; ++i) {
+      EXPECT_NEAR(bary[i], expBary[i], EPS);
+      EXPECT_NEAR(phys[i], query[i], EPS);
+    }
+  }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_triangle, triangle_bary_to_physical)
+{
+  static const int DIM = 3;
+  static const double EPS = 1e-12;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > QPoint;
+  typedef primal::Triangle< CoordType, DIM > QTri;
+
+  QPoint pt[3] = {
+    QPoint::make_point( 1,0,0),
+    QPoint::make_point( 0,1,0),
+    QPoint::make_point( 0,0,1),
+  };
+
+  QTri tri(pt[0],pt[1],pt[2]);
+
+  typedef std::vector< std::pair< QPoint,QPoint > > TestVec;
+  TestVec testData;
+
+  // Test the three vertices
+  testData.push_back(  std::make_pair( QPoint::make_point(1.,0.,0.), pt[0]));
+  testData.push_back(  std::make_pair( QPoint::make_point(0.,1.,0.), pt[1]));
+  testData.push_back(  std::make_pair( QPoint::make_point(0.,0.,1.), pt[2]));
+
+  // Test the three edge midpoints
+  testData.push_back(  std::make_pair(
+                         QPoint::make_point(0.5,0.5,0.),
+                         QPoint( 0.5 * (pt[0].array() + pt[1].array()))));
+  testData.push_back( std::make_pair(
+                        QPoint::make_point(0.5,0.,0.5),
+                        QPoint( 0.5 * (pt[0].array() + pt[2].array()))));
+  testData.push_back( std::make_pair(
+                        QPoint::make_point(0.,0.5,0.5),
+                        QPoint( 0.5 * (pt[1].array() + pt[2].array()))));
+
+  // Test the triangle midpoint
+  testData.push_back( std::make_pair(
+                        QPoint::make_point(1./3.,1./3.,1./3.),
+                        QPoint( 1./3. *
+                                (pt[0].array() + pt[1].array() +
+                                 pt[2].array()))));
+
+  // Test a point outside the triangle
+  testData.push_back(std::make_pair(
+                       QPoint::make_point(-0.4, 1.2, 0.2),
+                       QPoint(-0.4*pt[0].array() + 1.2*pt[1].array() + 0.2*
+                              pt[2].array())));
+
+  // Now run the actual tests
+  for (TestVec::const_iterator it= testData.begin(); it != testData.end();
+       ++it) {
+    const QPoint& query = it->first;
+    const QPoint& expWorld = it->second;
+    QPoint phys = tri.baryToPhysical(query);
+    QPoint bary = tri.physToBarycentric(phys);
+
+    SLIC_DEBUG(fmt::format(
+                 "Computed physical coordinates for triangle {} at barycentric {} are {}",
+                 tri, query, phys));
+    for (int i = 0; i < 3; ++i) {
+      EXPECT_NEAR(phys[i], expWorld[i], EPS);
+      EXPECT_NEAR(bary[i], query[i], EPS);
+    }
   }
 
 }
@@ -187,12 +265,16 @@ TEST( primal_triangle, triangle_2D_point_containment)
   failures.push_back(QPoint::make_point(1.00001, 1.000001));
 
   // Actually run the tests
-  for (TestVec::const_iterator it = successes.begin(); it != successes.end();
-       ++it) {
+  for (TestVec::const_iterator it = successes.begin() ;
+       it != successes.end() ;
+       ++it)
+  {
     EXPECT_TRUE(tri.checkInTriangle(*it, EPS));
   }
-  for (TestVec::const_iterator it = failures.begin(); it != failures.end();
-       ++it) {
+  for (TestVec::const_iterator it = failures.begin() ;
+       it != failures.end() ;
+       ++it)
+  {
     EXPECT_FALSE(tri.checkInTriangle(*it, EPS));
   }
 }
@@ -243,12 +325,16 @@ TEST( primal_triangle, triangle_3D_point_containment)
   failures.push_back(QPoint::make_point(1.00001, 1.000001, 0));
 
   // Actually run the tests
-  for (TestVec::const_iterator it = successes.begin(); it != successes.end();
-       ++it) {
+  for (TestVec::const_iterator it = successes.begin() ;
+       it != successes.end() ;
+       ++it)
+  {
     EXPECT_TRUE(tri.checkInTriangle(*it, EPS));
   }
-  for (TestVec::const_iterator it = failures.begin(); it != failures.end();
-       ++it) {
+  for (TestVec::const_iterator it = failures.begin() ;
+       it != failures.end() ;
+       ++it)
+  {
     EXPECT_FALSE(tri.checkInTriangle(*it, EPS));
   }
 }

@@ -1,11 +1,18 @@
 /*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -25,8 +32,10 @@
 #include <utility>
 #include <vector>
 
-namespace axom {
-namespace quest {
+namespace axom
+{
+namespace quest
+{
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh.
@@ -50,10 +59,10 @@ namespace quest {
  * based on the cube root of the number of cells in the mesh.
  */
 void findTriMeshIntersections(
-    mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
-    std::vector<std::pair<int, int> > & intersections,
-		std::vector<int> & degenerateIndices,
-		int spatialIndexResolution = 0)
+  mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
+  std::vector<std::pair<int, int> > & intersections,
+  std::vector<int> & degenerateIndices,
+  int spatialIndexResolution = 0)
 {
   detail::findTriMeshIntersections_impl(surface_mesh,
                                         intersections,

@@ -1,4 +1,19 @@
 #!/bin/bash
+
+##
+## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
+
 #MSUB -l nodes=1
 #MSUB -q psmall
 #MSUB -l walltime=8:00:00

@@ -1,11 +1,18 @@
 /*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -32,7 +39,8 @@
 
 #include <limits>           // for numeric_limits
 
-namespace {
+namespace
+{
 /*!
  * \brief A helper type trait class for the Mortonizer class
  *
@@ -63,8 +71,10 @@ template < >
 struct NumReps< axom::common::uint8 >  { enum {value = 2}; };
 }
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class
@@ -102,7 +112,8 @@ protected:
    */
   static MortonIndexType expandBits(MortonIndexType x)
   {
-    for (int i=Derived::EXPAND_MAX_ITER; i >= 0; --i) {
+    for (int i=Derived::EXPAND_MAX_ITER ; i >= 0 ; --i)
+    {
       x = (x | (x << Derived::S[i])) & Derived::B[i];
     }
 
@@ -120,7 +131,8 @@ protected:
    */
   static MortonIndexType contractBits(MortonIndexType x)
   {
-    for (int i=0; i < Derived::CONTRACT_MAX_ITER; ++i) {
+    for (int i=0 ; i < Derived::CONTRACT_MAX_ITER ; ++i)
+    {
       x = (x | (x >> Derived::S[i])) & Derived::B[i+1];
     }
 
@@ -132,8 +144,10 @@ public:
   static int maxSetBit(CoordType x)
   {
     CoordType res = 0;
-    for (int i= Derived::CONTRACT_MAX_ITER; i >= 0; --i) {
-      if (x & MaxBit_B[i]) {
+    for (int i= Derived::CONTRACT_MAX_ITER ; i >= 0 ; --i)
+    {
+      if (x & MaxBit_B[i])
+      {
         x >>= MaxBit_S[i];
         res |= MaxBit_S[i];
       }
@@ -172,8 +186,8 @@ struct Mortonizer;
  */
 template < typename CoordType, typename MortonIndexType >
 struct Mortonizer< CoordType,MortonIndexType, 2 >
-  :public MortonBase< CoordType,MortonIndexType,
-                      Mortonizer< CoordType, MortonIndexType, 2 > >
+  : public MortonBase< CoordType,MortonIndexType,
+                       Mortonizer< CoordType, MortonIndexType, 2 > >
 {
   typedef Mortonizer< CoordType, MortonIndexType, 2 > self;
   typedef MortonBase< CoordType, MortonIndexType, self > Base;
@@ -182,7 +196,8 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
   static const MortonIndexType B[];
   static const int S[];
 
-  enum {
+  enum
+  {
     /*! The dimension of the Mortonizer */
     NDIM = 2,
 
@@ -295,8 +310,8 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
  */
 template < typename CoordType, typename MortonIndexType >
 struct Mortonizer< CoordType,MortonIndexType, 3 >
-  :public MortonBase< CoordType,MortonIndexType,
-                      Mortonizer< CoordType, MortonIndexType, 3 > >
+  : public MortonBase< CoordType,MortonIndexType,
+                       Mortonizer< CoordType, MortonIndexType, 3 > >
 {
   typedef Mortonizer< CoordType, MortonIndexType, 3 > self;
   typedef MortonBase< CoordType, MortonIndexType, self > Base;
@@ -304,7 +319,8 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
   static const MortonIndexType B[];
   static const int S[];
 
-  enum {
+  enum
+  {
     /*! The dimension of the Mortonizer */
     NDIM = 3,
 

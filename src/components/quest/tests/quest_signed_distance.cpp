@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "slic/slic.hpp"
@@ -50,7 +57,7 @@ namespace detail
  * \param [in] mesh pointer to the mesh instance.
  * \pre mesh != AXOM_NULLPTR
  */
-void getMesh( TriangleMesh* mesh )
+void getMesh( TriangleMesh * mesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -65,7 +72,7 @@ void getMesh( TriangleMesh* mesh )
 
   double x[3];
   double n[3];
-  int    c[3];
+  int c[3];
 
   // North pole point
   x[0] = SPHERE_CENTER[0];
@@ -84,25 +91,27 @@ void getMesh( TriangleMesh* mesh )
                         ( static_cast<double>(THETA_RES-1) );
 
   // Generate points
-  for ( int i=0; i < THETA_RES; ++i ) {
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
 
-     const double theta = theta_start + i*dtheta;
+    const double theta = theta_start + i*dtheta;
 
-     for ( int j=0; j < PHI_RES-2; ++j ) {
+    for ( int j=0 ; j < PHI_RES-2 ; ++j )
+    {
 
-        const double phi = phi_start + j*dphi;
-        const double radius = RADIUS * sin( phi );
+      const double phi = phi_start + j*dphi;
+      const double radius = RADIUS * sin( phi );
 
-        n[0] = radius * cos( theta );
-        n[1] = radius * sin( theta );
-        n[2] = RADIUS * cos( phi );
-        x[0] = n[0] + SPHERE_CENTER[0];
-        x[1] = n[1] + SPHERE_CENTER[1];
-        x[2] = n[2] + SPHERE_CENTER[2];
+      n[0] = radius * cos( theta );
+      n[1] = radius * sin( theta );
+      n[2] = RADIUS * cos( phi );
+      x[0] = n[0] + SPHERE_CENTER[0];
+      x[1] = n[1] + SPHERE_CENTER[1];
+      x[2] = n[2] + SPHERE_CENTER[2];
 
-        mesh->insertNode( x[0], x[1], x[2] );
+      mesh->insertNode( x[0], x[1], x[2] );
 
-     } // END for all j
+    }  // END for all j
 
   } // END for all i
 
@@ -110,37 +119,41 @@ void getMesh( TriangleMesh* mesh )
   int stride = phiResolution * THETA_RES;
 
   // Generate mesh connectivity around north pole
-  for ( int i=0; i < THETA_RES; ++i ) {
-     c[2] = phiResolution*i + /* number of poles */ 2;
-     c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
-     c[0] = 0;
-     mesh->insertCell( c, MINT_TRIANGLE, 3 );
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
+    c[2] = phiResolution*i + /* number of poles */ 2;
+    c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
+    c[0] = 0;
+    mesh->insertCell( c, MINT_TRIANGLE, 3 );
   } // END for
 
   // Generate mesh connectivity around south pole
   int offset = PHI_RES - 1;
-  for ( int i=0; i < THETA_RES; ++i ) {
-     c[2] = phiResolution*i + offset;
-     c[1] = ( phiResolution*(i+1) % stride ) + offset;
-     c[0] = 1;
-     mesh->insertCell( c, MINT_TRIANGLE, 3 );
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
+    c[2] = phiResolution*i + offset;
+    c[1] = ( phiResolution*(i+1) % stride ) + offset;
+    c[0] = 1;
+    mesh->insertCell( c, MINT_TRIANGLE, 3 );
   }
 
   // Generate mesh connectivity in between poles
-  for ( int i=0; i < THETA_RES; ++i ) {
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
 
-     for ( int j=0; j < PHI_RES-3; ++j ) {
+    for ( int j=0 ; j < PHI_RES-3 ; ++j )
+    {
 
-        c[ 0 ] = phiResolution*i + j + 2;
-        c[ 1 ] = c[0] + 1;
-        c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
+      c[ 0 ] = phiResolution*i + j + 2;
+      c[ 1 ] = c[0] + 1;
+      c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
 
-        mesh->insertCell( c, MINT_TRIANGLE, 3 );
+      mesh->insertCell( c, MINT_TRIANGLE, 3 );
 
-        c[ 1 ] = c[ 2 ];
-        c[ 2 ] = c[ 1 ] - 1;
-        mesh->insertCell( c, MINT_TRIANGLE, 3 );
-     } // END for all j
+      c[ 1 ] = c[ 2 ];
+      c[ 2 ] = c[ 1 ] - 1;
+      mesh->insertCell( c, MINT_TRIANGLE, 3 );
+    }  // END for all j
 
   } // END for all i
 
@@ -151,7 +164,7 @@ void getMesh( TriangleMesh* mesh )
  * \param [in] mesh pointer to the mesh instance.
  * \return bb bounding box of the mesh
  */
-BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
+BoundingBox< double,3 > getBounds( const axom::mint::Mesh * mesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -159,9 +172,10 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
   Point< double,3 > pt;
 
   const int nnodes = mesh->getMeshNumberOfNodes();
-  for ( int inode=0; inode < nnodes; ++inode ) {
-     mesh->getMeshNode( inode, pt.data() );
-     bb.addPoint( pt );
+  for ( int inode=0 ; inode < nnodes ; ++inode )
+  {
+    mesh->getMeshNode( inode, pt.data() );
+    bb.addPoint( pt );
   }
 
   return( bb );
@@ -172,7 +186,7 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
  * \param [in] mesh pointer to the input mesh.
  * \param [in] umesh pointer to the uniform mesh;
  */
-void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
+void getUniformMesh( const TriangleMesh * mesh, UniformMesh *& umesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh == AXOM_NULLPTR );
@@ -207,11 +221,11 @@ TEST( quest_signed_distance, sphere_test )
   const double TOL             = 1.e-3;
 
   SLIC_INFO( "Constructing sphere mesh..." );
-  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  TriangleMesh * surface_mesh = new TriangleMesh( 3 );
   detail::getMesh( surface_mesh );
 
   SLIC_INFO( "Generating uniform mesh..." );
-  UniformMesh* umesh = AXOM_NULLPTR;
+  UniformMesh * umesh = AXOM_NULLPTR;
   detail::getUniformMesh( surface_mesh, umesh );
 
   const int nnodes = umesh->getNumberOfNodes();
@@ -225,26 +239,28 @@ TEST( quest_signed_distance, sphere_test )
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >::min( );
 
-  for ( int inode=0; inode < nnodes; ++inode ) {
+  for ( int inode=0 ; inode < nnodes ; ++inode )
+  {
 
-     Point< double,3 > pt;
-     umesh->getNode( inode, pt.data() );
+    Point< double,3 > pt;
+    umesh->getNode( inode, pt.data() );
 
-     double computed = signed_distance.computeDistance( pt );
-     double exact    = analytic_sphere.getSignedDistance( pt.data() );
+    double computed = signed_distance.computeDistance( pt );
+    double exact    = analytic_sphere.getSignedDistance( pt.data() );
 
-     // compute error
-     double dx    = computed - exact;
+    // compute error
+    double dx    = computed - exact;
 
-     double absdx = std::fabs( dx );
-     EXPECT_NEAR( exact, computed, 1.e-2 );
+    double absdx = std::fabs( dx );
+    EXPECT_NEAR( exact, computed, 1.e-2 );
 
-     l1norm += absdx;
-     l2norm += dx*dx;
+    l1norm += absdx;
+    l2norm += dx*dx;
 
-     if ( absdx > linf ) {
-       linf = absdx;
-     }
+    if ( absdx > linf )
+    {
+      linf = absdx;
+    }
 
   } // END for all nodes
 

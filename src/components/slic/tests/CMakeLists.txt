@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 #
 # Specify list of tests
 #
@@ -20,7 +34,8 @@ foreach(test ${gtest_slic_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON slic gtest )
+                        DEPENDS_ON slic gtest 
+                        FOLDER      axom/slic/tests )
     blt_add_test( NAME ${test_name} 
                   COMMAND ${test_name}_test )
 endforeach()
@@ -28,7 +43,8 @@ endforeach()
 blt_add_executable( NAME slic_fmt_test
                     SOURCES slic_fmt.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON slic gtest fmt )
+                    DEPENDS_ON slic gtest fmt 
+                    FOLDER      axom/slic/tests )
 blt_add_test( NAME slic_fmt 
               COMMAND slic_fmt_test )
 
@@ -43,7 +59,7 @@ if (ENABLE_BENCHMARKS)
             SOURCES ${test}
             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
             DEPENDS_ON slic gbenchmark
-            )
+            FOLDER      axom/slic/benchmarks )
 
         blt_add_benchmark( 
             NAME ${test_name} 

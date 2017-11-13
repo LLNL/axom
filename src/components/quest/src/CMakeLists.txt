@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 set( quest_headers
 
@@ -91,9 +95,10 @@ blt_add_library(
     HEADERS     ${quest_headers}
     HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
+    FOLDER      axom/quest
     )
 install(TARGETS              quest
-        EXPORT               ${PROJECT_NAME}-targets
+        EXPORT               quest-targets
         DESTINATION          lib
         INCLUDES DESTINATION include/quest
         )

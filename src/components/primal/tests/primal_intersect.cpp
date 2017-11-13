@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -24,13 +31,15 @@
 
 using namespace axom;
 
-namespace {
+namespace
+{
 
 double randomDouble(double beg = 0., double end = 1.)
 {
   double range = end-beg;
 
-  if (range == 0) {
+  if (range == 0)
+  {
     range = 1.;
   }
 
@@ -41,7 +50,8 @@ template < int NDIMS >
 primal::Point< double,NDIMS > randomPt( double beg, double end )
 {
   primal::Point< double,NDIMS > pt;
-  for ( int i=0; i< NDIMS; ++i ) {
+  for ( int i=0 ; i< NDIMS ; ++i )
+  {
     pt[i] = randomDouble(beg,end);
   }
 
@@ -70,8 +80,10 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
 
   bool allmatch = true;
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(a, i), roll(b, j),
                                     includeBoundary) == testtrue);
@@ -81,8 +93,10 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   const primal::Triangle< double, DIM > ap(a[0], a[2], a[1]);
   const primal::Triangle< double, DIM > bp(b[0], b[2], b[1]);
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(ap, i), roll(bp, j),
                                     includeBoundary) == testtrue);
@@ -91,26 +105,32 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
 
   // Now swap a for b
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(b, i), roll(a, j),
                                     includeBoundary) == testtrue);
     }
   }
 
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
+    for (int j = 0 ; j < 3 ; ++j)
+    {
       allmatch = allmatch &&
                  (primal::intersect(roll(bp, i), roll(ap, j),
                                     includeBoundary) == testtrue);
     }
   }
 
-  if (allmatch) {
+  if (allmatch)
+  {
     SUCCEED();
   }
-  else {
+  else
+  {
     ADD_FAILURE() << (testtrue ?
                       "Triangles should intersect but did not" :
                       "Triangles should not intersect but did");
@@ -857,16 +877,19 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
   // How many tests are we actually performing here?
   int rantests = 0;
   int skiptests = 0;
-  for (int i=0; i<5000; i++) {
+  for (int i=0 ; i<5000 ; i++)
+  {
     Triangle3 randomTriangle, intersectingTriangle;
 
     if (makeTwoRandomIntersecting3DTriangles(randomTriangle,
-                                             intersectingTriangle)) {
+                                             intersectingTriangle))
+    {
       permuteCornersTest(randomTriangle, intersectingTriangle, "random", true,
                          true);
       rantests += 1;
     }
-    else {
+    else
+    {
       skiptests += 1;
     }
   }
@@ -921,7 +944,7 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
             << "\n\t -- intersects? "
             << (primal::intersect(tri2, box2) ? "yes" : "no")
             //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ? "yes":"no")
-  );
+            );
   //EXPECT_TRUE( primal::intersect(tri, box1));
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
@@ -1012,37 +1035,14 @@ bool testPointsClose(const primal::Point< T, DIM > & lhp,
   return v.norm() < EPS;
 }
 
-// segmentAt() and triangleAt() are temporary.  Ticket ATK-1122 involves moving them
-// into Segment and Triangle class, respectively.
-template < typename T, int DIM >
-primal::Point< T, DIM > segmentAt(const primal::Segment< T, DIM > & seg,
-                                  double t)
-{
-  return primal::Point< T, DIM>::lerp(seg.source(), seg.target(), t);
-}
-
-template < typename T, int DIM >
-primal::Point< T, DIM > triangleAt(const primal::Triangle< T, DIM > & tri,
-                                   const primal::Point< T, 3 > & bary)
-{
-  T denom = bary[0] + bary[1] + bary[2];
-  // if (std::abs(denom) < 1e-3)  This is a problem.
-  primal::NumericArray< T, 3 > weights = bary.array() / denom;
-
-  primal::NumericArray< T, 3 > res = weights[0] * tri[0].array() +
-    weights[1] * tri[1].array() + weights[2] * tri[2].array();
-
-  return primal::Point< T, DIM >(res);
-}
-
 template < typename T, int DIM >
 void ensureTriPointMatchesSegPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Point< T, 3 > & bary,
                                    const primal::Segment< T, DIM > & seg,
                                    double t)
 {
-  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
-  primal::Point< T, DIM > segpoint = segmentAt(seg, t);
+  primal::Point< T, DIM > tripoint = tri.at(bary);
+  primal::Point< T, DIM > segpoint = seg.at(t);
   EXPECT_TRUE(testPointsClose(tripoint, segpoint));
 }
 
@@ -1052,7 +1052,7 @@ void ensureTriPointMatchesRayPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Ray< T, DIM > & ray,
                                    double t)
 {
-  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
+  primal::Point< T, DIM > tripoint = tri.at(bary);
   primal::Point< T, DIM > raypoint = ray.at(t);
   EXPECT_TRUE(testPointsClose(tripoint, raypoint));
 }
@@ -1060,8 +1060,8 @@ void ensureTriPointMatchesRayPoint(const primal::Triangle< T, DIM > & tri,
 template < int DIM >
 void testRayIntersection(const primal::Triangle< double, DIM > & tri,
                          const primal::Ray< double, DIM > & ray,
-                        const std::string & whattest,
-                        const bool testtrue)
+                         const std::string & whattest,
+                         const bool testtrue)
 {
   SCOPED_TRACE(whattest);
 
@@ -1070,13 +1070,17 @@ void testRayIntersection(const primal::Triangle< double, DIM > & tri,
   PointType tip;
   double t = 0.;
 
-  if (testtrue) {
+  if (testtrue)
+  {
     EXPECT_TRUE(intersect(tri, ray, t, tip));
-    PointType tripoint = triangleAt(tri, tip);
+    PointType tripoint = tri.baryToPhysical(tip);
     PointType raypoint = ray.at(t);
-    EXPECT_TRUE(testPointsClose(tripoint, raypoint)) << "Tripoint is " << tripoint <<
+    EXPECT_TRUE(testPointsClose(tripoint, raypoint))
+      << "Tripoint is " << tripoint <<
       " and raypoint is " << raypoint;
-  } else {
+  }
+  else
+  {
     EXPECT_FALSE( intersect(tri, ray, t, tip))
       <<"Expected no intersection; Found one at point "
       << ray.at(t);
@@ -1100,13 +1104,14 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
 
   SegmentType seg1(p1, p2);
   SegmentType seg2(p2, p1);
-  if (testtrue) {
+  if (testtrue)
+  {
     // Find the intersection of segment from p1 to p2
     double t1 = 0;
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
-    PointType tripoint1 = triangleAt(tri, tip1);
-    PointType segpoint1 = segmentAt(seg1, t1);
+    PointType tripoint1 = tri.baryToPhysical(tip1);
+    PointType segpoint1 = seg1.at(t1);
     EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
       " and segpoint is " << segpoint1;
 
@@ -1114,18 +1119,19 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t2 = 0;
     PointType tip2;
     EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
-    PointType tripoint2 = triangleAt(tri, tip2);
-    PointType segpoint2 = segmentAt(seg2, t2);
+    PointType tripoint2 = tri.baryToPhysical(tip2);
+    PointType segpoint2 = seg2.at(t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
   }
-  else{
+  else
+  {
     EXPECT_FALSE( intersect(tri, seg1, t, tip))
       <<"Expected no intersection; Found one at point "
-      << segmentAt(seg1, t);
+      << seg1.at(t);
 
     EXPECT_FALSE( intersect(tri, seg2, t, tip))
       <<"Expected no intersection; Found one at point "
-      << segmentAt(seg2, t);
+      << seg2.at(t);
   }
 }
 
@@ -1281,7 +1287,8 @@ TEST(primal_intersect, triangle_ray_intersection)
   testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0),
                                 PointType::make_point(-1, 0.5, 0)));
   testRayIntersection(tri2, testRay,
-                      "coplanar intersection, reported as miss by design", false);
+                      "coplanar intersection, reported as miss by design",
+                      false);
 
   // Coplanar, interior ray origin (reported as miss by function)
   testRay = RayType(SegmentType(ptM,
@@ -1328,7 +1335,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
-  PointType triIntersectionPoint = triangleAt(t2, intBary);
+  PointType triIntersectionPoint = t2.baryToPhysical(intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
@@ -1359,8 +1366,8 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   // (see above).
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
-  PointType intersectionPoint = segmentAt(s, intersectionParam);
-  PointType triIntersectionPoint = triangleAt(t, intBary);
+  PointType intersectionPoint = s.at(intersectionParam);
+  PointType triIntersectionPoint = t.baryToPhysical(intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
@@ -1379,7 +1386,8 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
   QPoint pt1;  // origin
   QVector u1[DIM];  // make standard axes
   QVector u2[DIM];  // axes rotated by 90 degrees
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0 ; i < DIM ; i++)
+  {
     u1[i] = QVector();
     u2[i] = QVector();
     u1[i][i] = 1.;
@@ -1434,7 +1442,8 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
   QVector u1[DIM];  // make standard axes
   QVector u2[DIM];  // first two axes rotated by 90 degrees
   QVector u3[DIM];  // all axes rotated
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0 ; i < DIM ; i++)
+  {
     u1[i] = QVector();
     u2[i] = QVector();
     u3[i] = QVector();

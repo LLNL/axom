@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 ####################################
 # Original version of lulesh 2.0
 # with a few light edits
@@ -39,12 +53,14 @@ if ( lulesh_depends_on )
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${lulesh_depends_on}
+        FOLDER      axom/slam/examples
         )
 else()
     blt_add_executable(
         NAME        slam_lulesh_orig_ex
         SOURCES     ${lulesh_sources} ${lulesh_headers}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        FOLDER      axom/slam/examples
         )
 endif()
 

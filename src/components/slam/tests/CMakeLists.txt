@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 #
 # Specify list of tests
 #
@@ -43,17 +57,19 @@ foreach(test ${gtest_slam_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${slam_tests_depends_on} )
+                        DEPENDS_ON ${slam_tests_depends_on} 
+                        FOLDER axom/slam/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()
 
 # The slam utilities test requires a directory
 blt_add_executable(
-    NAME    slam_utilities_test
-    SOURCES slam_utilities.cpp
+    NAME       slam_utilities_test
+    SOURCES    slam_utilities.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
     DEPENDS_ON ${slam_tests_depends_on}
+    FOLDER     axom/slam/tests
     )
 blt_add_test(
     NAME    slam_utilities

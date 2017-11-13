@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 ################
 # C++ Benchmarks
 ################
@@ -12,15 +26,16 @@ if (ENABLE_BENCHMARKS)
         set(test_name "${test_name}_benchmark")
         
         blt_add_executable(
-            NAME ${test_name}
-            SOURCES ${test}
-            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON slic slam gbenchmark boost
+            NAME        ${test_name}
+            SOURCES     ${test}
+            OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON  slic slam gbenchmark boost
+            FOLDER      axom/slam/benchmarks
             )
 
         blt_add_benchmark( 
-            NAME ${test_name} 
-            COMMAND ${test_name}
+            NAME        ${test_name} 
+            COMMAND     ${test_name}
             )
     endforeach()
 endif()

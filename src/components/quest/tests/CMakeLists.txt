@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 set(quest_tests
     quest_inout_octree.cpp
@@ -38,6 +42,7 @@ foreach(test ${quest_tests})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
+		FOLDER axom/quest/tests
     )
     blt_add_test(
         NAME ${test_name}
@@ -53,7 +58,6 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         ${quest_tests_depends}
         conduit
         sidre
-        spio
         hdf5)
 
     if (SCR_FOUND)
@@ -67,6 +71,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_regression_depends}
+		FOLDER axom/quest/tests
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 

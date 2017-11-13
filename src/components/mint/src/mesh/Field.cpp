@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "Field.hpp"
@@ -15,10 +22,12 @@
 
 #include <cstddef>
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
-Field::Field():
+Field::Field() :
   m_name(""),
   m_num_tuples(0),
   m_num_components(0),
@@ -29,7 +38,7 @@ Field::Field():
 //------------------------------------------------------------------------------
 Field::Field( const std::string& name,
               int size,
-              int num_components ):
+              int num_components ) :
   m_name( name ),
   m_num_tuples( size ),
   m_num_components( num_components ),
@@ -41,25 +50,25 @@ Field::~Field()
 {}
 
 //------------------------------------------------------------------------------
-double* Field::getDoublePtr()
+double * Field::getDoublePtr()
 {
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-const double* Field::getDoublePtr() const
+const double * Field::getDoublePtr() const
 {
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-int* Field::getIntPtr()
+int * Field::getIntPtr()
 {
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-const int* Field::getIntPtr() const
+const int * Field::getIntPtr() const
 {
   return AXOM_NULLPTR;
 }

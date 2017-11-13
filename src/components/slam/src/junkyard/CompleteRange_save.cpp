@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 
 /*
  * OrderedSet.cpp
@@ -21,17 +27,19 @@
 #include <iostream>
 #include "RangeSet.hpp"
 
-namespace axom {
-namespace slam {
+namespace axom
+{
+namespace slam
+{
 
 
 const NullSet RangeSet::s_nullSet;
 
 bool RangeSet::isValid(bool verboseOutput) const
 {
-    bool bValid = true;
+  bool bValid = true;
 
-    std::stringstream errStr;
+  std::stringstream errStr;
 
 //    if( m_size < 0 )
 //    {
@@ -45,29 +53,28 @@ bool RangeSet::isValid(bool verboseOutput) const
 //    }
 
 
-    if(verboseOutput)
+  if(verboseOutput)
+  {
+    std::stringstream sstr;
+
+    sstr<<"\n*** Detailed results of isValid on the OrderedSet.\n";
+    if(bValid)
     {
-        std::stringstream sstr;
-
-        sstr<<"\n*** Detailed results of isValid on the OrderedSet.\n";
-        if(bValid)
-        {
-            sstr<<"Set was valid."<< std::endl;
-        }
-        else
-        {
-            sstr<<"Set was NOT valid.\n"
-                     << errStr.str()
-                     << std::endl;
-        }
-
-        sstr<<"\n** size is " << m_size ;
-        std::cout<< sstr.str() << std::endl;
+      sstr<<"Set was valid."<< std::endl;
+    }
+    else
+    {
+      sstr<<"Set was NOT valid.\n"
+          << errStr.str()
+          << std::endl;
     }
 
-    return bValid;
+    sstr<<"\n** size is " << m_size;
+    std::cout<< sstr.str() << std::endl;
+  }
+
+  return bValid;
 }
 
 } /* namespace slam */
 } /* namespace axom */
-

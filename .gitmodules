@@ -1,3 +1,3 @@
 [submodule "src/blt"]
-	path = src/blt
+	path = src/cmake/blt
 	url = https://github.com/LLNL/blt.git

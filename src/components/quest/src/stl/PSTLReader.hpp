@@ -1,3 +1,19 @@
+/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
 
 #ifndef PSTLREADER_HPP_
 #define PSTLREADER_HPP_
@@ -7,8 +23,9 @@
 
 #include "mpi.h"
 
-namespace axom {  
-namespace quest 
+namespace axom
+{
+namespace quest
 {
 
 class PSTLReader : public STLReader
@@ -39,7 +56,7 @@ private:
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent its use in application code.
    */
-  PSTLReader(): m_comm(MPI_COMM_NULL), m_my_rank(0) { };
+  PSTLReader() : m_comm(MPI_COMM_NULL), m_my_rank(0) { };
 
   MPI_Comm m_comm; /*!< MPI communicator */
   int m_my_rank;   /*!< MPI rank ID      */
@@ -48,7 +65,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT( PSTLReader );
 };
 
-} // end namespace quest 
-} // end namespace axom 
+} // end namespace quest
+} // end namespace axom
 
 #endif /* PSTLREADER_HPP_ */

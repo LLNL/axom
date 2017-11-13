@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef TRIANGLE_HPP_
@@ -22,8 +29,10 @@
 #include <cmath>   // for acos()
 #include <ostream> // for std::ostream
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T, int NDIMS >
@@ -49,7 +58,8 @@ public:
   typedef Point< T,NDIMS >  PointType;
   typedef Vector< T,NDIMS > VectorType;
 
-  enum {
+  enum
+  {
     NUM_TRI_VERTS = 3
   };
 
@@ -148,19 +158,17 @@ private:
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
-    if (NDIMS < 3) {
-
+    if (NDIMS < 3)
+    {
       return 0.;
-
     }
-    else {
-
+    else
+    {
       return numerics::determinant< double > ( A[0], A[1], A[2], 1.,
                                                B[0], B[1], B[2], 1.,
                                                C[0], C[1], C[2], 1.,
                                                p[0], p[1], p[2], 1.  );
     }
-
   }
 
 public:
@@ -172,38 +180,36 @@ public:
    * \post The barycentric coordinates sum to 1.
    * Adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point< T,3 > barycentricCoords(const PointType& p) const
+  Point< double, 3 > physToBarycentric(const PointType& p) const
   {
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
-    Point< T,3 > bary;
+    Point< double, 3 > bary;
 
-    Vector< T,3 > u =
+    Vector< double, 3 > u =
       VectorType::cross_product( VectorType(m_points[0],m_points[1]),
                                  VectorType(m_points[0],m_points[2]) );
-    const T x= std::abs(u[0]);
-    const T y= std::abs(u[1]);
-    const T z= std::abs(u[2]);
+    const double x = std::abs(u[0]);
+    const double y = std::abs(u[1]);
+    const double z = std::abs(u[2]);
 
-    T ood = 1.0 / u[2];      // compute in xy plane by default
+    double ood = 1.0 / u[2];      // compute in xy plane by default
     int c0 = 0;
     int c1 = 1;
 
-    if (x>=y && x>= z) {
-
+    if (x>=y && x>= z)
+    {
       // compute in yz plane
       c0 = 1;
       c1 = 2;
       ood=1.0/u[0];
-
     }
-    else if (y>=x && y>=z) {
-
+    else if (y>=x && y>=z)
+    {
       // compute in xz plane
       c0 = 0;
       c1 = 2;
       ood=-1.0/u[1];
-
     }
 
     // References to triangle vertices for convenience
@@ -219,6 +225,26 @@ public:
     bary[2] = 1. - bary[0] - bary[1];
 
     return bary;
+  }
+
+  /*!
+   * \brief Returns the physical coordinates of a barycentric point
+   * \param [in] bary Barycentric coordinates relative to this triangle
+   * \return Physical point represented by bary
+   */
+  PointType baryToPhysical(const Point<double, 3> & bary) const
+  {
+    SLIC_CHECK_MSG( axom::utilities::isNearlyEqual(1., bary[0]+bary[1]+bary[2]),
+                    "Barycentric coordinates must sum to (near) one." );
+
+    PointType res;
+    for (int i = 0; i < NDIMS; ++i) {
+      res[i] = bary[0] * m_points[0][i] +
+               bary[1] * m_points[1][i] +
+               bary[2] * m_points[2][i];
+    }
+
+    return res;
   }
 
   /*!
@@ -238,11 +264,12 @@ public:
    */
   bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
   {
-    if (!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps)) {
+    if (!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps))
+    {
       return false;
     }
 
-    Point< T,3 > bC= barycentricCoords(p);
+    Point< T,3 > bC= physToBarycentric(p);
     return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
             (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }
@@ -262,10 +289,10 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-    os  <<"{"
-        << m_points[0] <<" "
-        << m_points[1] <<" "
-        << m_points[2] <<"}";
+    os <<"{"
+       << m_points[0] <<" "
+       << m_points[1] <<" "
+       << m_points[2] <<"}";
 
     return os;
   }
@@ -281,8 +308,10 @@ private:
 //------------------------------------------------------------------------------
 //  Triangle implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,

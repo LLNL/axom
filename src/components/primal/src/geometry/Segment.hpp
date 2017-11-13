@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef SEGMENT_HPP_
@@ -14,8 +21,10 @@
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class
@@ -60,6 +69,19 @@ public:
   const PointType& target() const { return m_target; };
 
   /*!
+   * \brief Returns a point \f$ (1 - t)A + tB \f$
+   * \param [in] t user-supplied parameter for blending A and B
+   * \post Return point P will always be collinear with the segment's
+   *       start point A and end point B.
+   * \post If \f$ t = 0, \f$ the return point \f$ P = A. \f$
+   * \post If \f$ t = 1, \f$ the return point \f$ P = B. \f$
+   */
+  PointType at( const T& t) const
+  {
+    return PointType::lerp(m_source, m_target, t);
+  }
+
+  /*!
    * \brief Returns the length of the segment
    */
   double length() const
@@ -85,11 +107,13 @@ private:
 //------------------------------------------------------------------------------
 //  Segment Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 template < typename T, int NDIMS >
-Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B):
+Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
   m_source( A ),
   m_target( B )
 {}

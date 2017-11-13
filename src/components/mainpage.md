@@ -5,7 +5,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 
 # Axom components
 
-* @subpage axomutiltop provides shared utility functionality to all components
+* @subpage axom_utilstop provides shared utility functionality to all components
 * @subpage lumberjacktop provides logging aggregation and filtering capability
 * @subpage slictop provides logging levels and targets
 * @subpage slamtop provides an API to construct and process meshes

@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef MINT_LAGRANGE_SHAPEFUNCTION_HPP_
@@ -22,8 +29,10 @@
 // Slic includes
 #include "slic/slic.hpp"
 
-namespace axom {
-namespace mint {
+namespace axom
+{
+namespace mint
+{
 
 /*!
  * \brief Defines the Lagrange family of Finite Elements
@@ -34,7 +43,7 @@ namespace mint {
  *  level.This class is specialized according to cell type.
  */
 template < int CellType >
-class Lagrange:public ShapeFunction< Lagrange< CellType > >
+class Lagrange : public ShapeFunction< Lagrange< CellType > >
 {
 
 public:
@@ -142,7 +151,7 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void getCenter( double* AXOM_NOT_USED(center) )
+  static void getCenter( double * AXOM_NOT_USED(center) )
   {
     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
@@ -157,7 +166,7 @@ public:
    * \note The coordinates are arranged in column-major flat array layout.
    * \note This method is implemented in specialized instances.
    */
-  static void getCoords( double* AXOM_NOT_USED(coords) )
+  static void getCoords( double * AXOM_NOT_USED(coords) )
   {
     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
@@ -175,8 +184,8 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void computeShape( const double* AXOM_NOT_USED(nc),
-                            double* AXOM_NOT_USED(phi) )
+  static void computeShape( const double * AXOM_NOT_USED(nc),
+                            double * AXOM_NOT_USED(phi) )
   {
     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
@@ -194,8 +203,8 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void computeDerivatives( const double* AXOM_NOT_USED(nc),
-                                  double* AXOM_NOT_USED(phidot) )
+  static void computeDerivatives( const double * AXOM_NOT_USED(nc),
+                                  double * AXOM_NOT_USED(phidot) )
   {
     AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
@@ -208,13 +217,15 @@ private:
    */
   static void checkCellType( )
   {
-    if ( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) ) {
+    if ( (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) )
+    {
 
       SLIC_ERROR( "Lagrange ShapeFunctions does not support " <<
                   cell::name[ CellType ] );
 
     }
-    else {
+    else
+    {
 
       SLIC_ERROR( "Invalid CellType: " << CellType );
 

@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 #
 # Specify list of tests
@@ -27,7 +31,8 @@ foreach(test ${gtest_lumberjack_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON lumberjack gtest )
+                        DEPENDS_ON lumberjack gtest 
+                        FOLDER axom/lumberjack/tests )
     blt_add_test( NAME ${test_name} 
                   COMMAND ${test_name}_test )
 endforeach()
@@ -35,7 +40,9 @@ endforeach()
 blt_add_executable(NAME lumberjack_speed_test
                    SOURCES lumberjack_speedTest.cpp
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON lumberjack )
+                   DEPENDS_ON lumberjack
+                   FOLDER axom/lumberjack/tests )
+
 blt_add_test( NAME lumberjack_speedTest_binary
               COMMAND lumberjack_speed_test b 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
               NUM_MPI_TASKS 4)

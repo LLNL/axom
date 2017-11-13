@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef HYPERSPHERE_HPP_
@@ -22,8 +29,10 @@
 // C/C++ includes
 #include <cstddef>
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \class HyperSphere
@@ -53,7 +62,7 @@ public:
    * \param [in] center user-supplied center.
    * \param [in] radius user-supplied radius. Default is 1.0.
    */
-  HyperSphere( T* center, T radius=1.0 );
+  HyperSphere( T * center, T radius=1.0 );
 
   /*!
    * \brief Copy constructor.
@@ -83,8 +92,8 @@ public:
    * \return c pointer to array that holds the center of the HyperSphere.
    * \note The length of the array is NDIMS.
    */
-  T* center() { return m_center; };
-  const T* center() const { return m_center; };
+  T * center() { return m_center; };
+  const T * center() const { return m_center; };
 
   /*!
    * \brief Computes signed distance of a point to the HyperSphere boundary.
@@ -93,7 +102,7 @@ public:
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    */
-  T getSignedDistance( T* q);
+  T getSignedDistance( T * q);
 
   /*!
    * \brief Computes orientation of a point with respect to the HyperSphere.
@@ -102,7 +111,7 @@ public:
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    */
-  int getOrientation( T* q );
+  int getOrientation( T * q );
 
 private:
   T m_center[ NDIMS ];
@@ -122,19 +131,21 @@ typedef HyperSphere< double,2 > Circle;
 //------------------------------------------------------------------------------
 // HyperSphere Implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T radius ): m_radius(radius)
+HyperSphere< T,NDIMS >::HyperSphere( T radius ) : m_radius(radius)
 {
   std::fill( m_center, m_center+NDIMS, 0.0 );
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ): m_radius(radius)
+HyperSphere< T,NDIMS >::HyperSphere( T * center, T radius ) : m_radius(radius)
 {
   SLIC_ASSERT( center != AXOM_NULLPTR );
   memcpy( m_center, center, NDIMS*sizeof(T) );
@@ -149,7 +160,8 @@ template < typename T, int NDIMS >
 inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
   const HyperSphere< T,NDIMS >& rhs)
 {
-  if ( this == &rhs ) {
+  if ( this == &rhs )
+  {
     return *this;
   }
 
@@ -160,12 +172,13 @@ inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
+T HyperSphere< T,NDIMS >::getSignedDistance( T * q )
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
   T d = 0.0;
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
     const T dx = q[ i ]-m_center[ i ];
     d += (dx*dx);
   }
@@ -175,7 +188,7 @@ T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int HyperSphere< T,NDIMS >::getOrientation( T* q )
+int HyperSphere< T,NDIMS >::getOrientation( T * q )
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
@@ -184,18 +197,21 @@ int HyperSphere< T,NDIMS >::getOrientation( T* q )
 
   int orient = -1;
 
-  if ( axom::utilities::isNearlyEqual( signed_distance, 0.0, TOL) ) {
+  if ( axom::utilities::isNearlyEqual( signed_distance, 0.0, TOL) )
+  {
 
     orient = ON_BOUNDARY;
 
   }
-  else if ( signed_distance < 0.0f ) {
+  else if ( signed_distance < 0.0f )
+  {
 
     // inside
     orient = ON_NEGATIVE_SIDE;
 
   }
-  else {
+  else
+  {
 
     // outside
     orient = ON_POSITIVE_SIDE;

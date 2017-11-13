@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -24,8 +31,10 @@
 #include "primal/Vector.hpp"
 #include "primal/OrientedBoundingBox.hpp"
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 /*!
  * \brief Creates a bounding box which contains the collection of passed in
@@ -40,7 +49,7 @@ namespace primal {
  */
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS > compute_oriented_bounding_box(
-  const Point< T, NDIMS > *pts, int n)
+  const Point< T, NDIMS > * pts, int n)
 {
   return OrientedBoundingBox< T, NDIMS >(pts, n);
 }
@@ -62,10 +71,12 @@ OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS
 
   // TODO: See if this initial check can be improved so it's not so costly in
   // cases where it doesn't end up helping
-  if (l.contains(r)) {
+  if (l.contains(r))
+  {
     return l;
   }
-  if (r.contains(l)) {
+  if (r.contains(l))
+  {
     return r;
   }
 
@@ -76,7 +87,8 @@ OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS
 
   Point< T, NDIMS > pts[2*size];
 
-  for (int i = 0; i < size; i++) {
+  for (int i = 0 ; i < size ; i++)
+  {
     pts[i] = lv[i];
     pts[i + size] = rv[i];
   }

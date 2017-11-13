@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef VECTOR_HPP_
@@ -21,8 +28,10 @@
 // C/C++ includes
 #include <cmath> // for sqrt()
 
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 // Forward declare the templated classes and operator functions
 template < typename T,int NDIMS >
@@ -125,13 +134,13 @@ public:
    * \param [in] sz The number of coordinates to set to val.
    * The rest will be set to zero.  Defaults is NDIMS.
    */
-  explicit Vector( T val = T(), int sz = NDIMS): m_components(val, sz) { }
+  explicit Vector( T val = T(), int sz = NDIMS) : m_components(val, sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
-  Vector( const NumericArray< T,NDIMS >& arr): m_components(arr) { }
+  Vector( const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a vector from the first sz values of the input array.
@@ -140,20 +149,20 @@ public:
    * to NDIMS.
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
-  Vector(const T* vals, int sz = NDIMS): m_components(vals, sz) {}
+  Vector(const T * vals, int sz = NDIMS) : m_components(vals, sz) {}
 
   /*!
    * \brief Constructor to create vector from a Point
    * \param [in] pt The point containing the vector's coordinates.
    * \note Equivalent to Vector( Point::zero(), pt)
    */
-  Vector(const Point< T,NDIMS > & pt): m_components( pt.array() ) {}
+  Vector(const Point< T,NDIMS > & pt) : m_components( pt.array() ) {}
 
   /*!
    * \brief Copy constructor
    * \param [in] other The vector to copy
    */
-  Vector(const Vector< T,NDIMS > & other): m_components( other.array() ) {}
+  Vector(const Vector< T,NDIMS > & other) : m_components( other.array() ) {}
 
   /*!
    * \brief Constructs a vector from point A to point B.
@@ -162,7 +171,7 @@ public:
    * \pre A.dimension() == B.dimension()
    * \pre A.dimension() == ndims
    */
-  Vector( const Point< T,NDIMS >& A, const Point< T,NDIMS >& B ):
+  Vector( const Point< T,NDIMS >& A, const Point< T,NDIMS >& B ) :
     m_components(B.array() - A.array()) {}
 
   /*!
@@ -195,8 +204,8 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data()             { return m_components.data(); }
+  const T * data() const { return m_components.data(); }
+  T * data()             { return m_components.data(); }
 
   /*!
    * \brief Equality comparison operator for vectors.
@@ -334,8 +343,10 @@ typedef Vector< double, 3 > Vector3D;
 //------------------------------------------------------------------------------
 //  Vector implementation
 //------------------------------------------------------------------------------
-namespace axom {
-namespace primal {
+namespace axom
+{
+namespace primal
+{
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
@@ -394,16 +405,14 @@ inline Vector< T, NDIMS > Vector< T, NDIMS >::unitVector() const
   Vector v( *this);
 
   const double len_sq = squared_norm();
-  if ( len_sq >= EPS ) {
-
+  if ( len_sq >= EPS )
+  {
     v /= ( std::sqrt(len_sq) );
-
   }
-  else {
-
+  else
+  {
     // Create a vector whose first coordinate is 1 and all others are 0
     v = Vector( static_cast< T >( 1. ), 1 );
-
   }
 
   return v;
@@ -413,7 +422,8 @@ inline Vector< T, NDIMS > Vector< T, NDIMS >::unitVector() const
 template < typename T,int NDIMS >
 inline void Vector< T, NDIMS >::negate()
 {
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
     m_components[ i ] = -m_components[ i ];
   }
 }
@@ -430,12 +440,13 @@ template < typename T,int NDIMS >
 std::ostream& Vector< T, NDIMS >::print(std::ostream& os) const
 {
   os <<"<";
-  for ( int dim=0; dim < NDIMS -1; ++dim ) {
-    os  << static_cast< typename NonChar< T >::type >( m_components[dim] )
-        << ",";
+  for ( int dim=0 ; dim < NDIMS -1 ; ++dim )
+  {
+    os << static_cast< typename NonChar< T >::type >( m_components[dim] )
+       << ",";
   }
-  os  << static_cast< typename NonChar< T >::type >( m_components[NDIMS-1] )
-      << ">";
+  os << static_cast< typename NonChar< T >::type >( m_components[NDIMS-1] )
+     << ">";
 
   return os;
 }
@@ -448,7 +459,8 @@ inline T Vector< T,NDIMS >::dot_product( const Vector< T,NDIMS >& u,
   SLIC_ASSERT( u.dimension() == v.dimension() );
   double dotprod = 0.0;
 
-  for ( int i=0; i < NDIMS; ++i ) {
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
     dotprod += u[ i ]*v[ i ];
   } // END for all NDIMS
 

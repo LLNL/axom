@@ -1,12 +1,15 @@
 .. ##
-.. ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory.
 .. ##
+.. ## LLNL-CODE-741217
+.. ##
 .. ## All rights reserved.
 .. ##
-.. ## This file cannot be distributed without permission and
-.. ## further review from Lawrence Livermore National Laboratory.
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
 ======================================================
@@ -248,10 +251,10 @@ Python helper script
 ^^^^^^^^^^^^^^^^^^^^^
 
 The easiest way to configure the code for compilation is to use the 
-``config-build.py`` python script in the 'scripts' directory; 
+``config-build.py`` python script in the base directory; 
 e.g.,::
 
-   $ ./scripts/config-build.py -hc {host-config file name}
+   $ ./config-build.py -hc {host-config file name}
 
 This script requires that you pass it a *host-config* file. The script runs 
 CMake and passes it the host-config. See :ref:`hostconfig-label` 
@@ -280,14 +283,14 @@ conventions, we support three build types: 'Release', 'RelWithDebInfo', and
 'Debug'. To see the script options, run the script without any arguments; 
 i.e.,::
 
-   $ ./scripts/config-build.py 
+   $ ./config-build.py 
 
 You can also pass extra CMake configuration variables through the script; e.g.,::
   
-   $ ./scripts/config-build.py -hc {host-config file name} \
-                               -DBLT_CXX_STD=c++98 -DENABLE_FORTRAN=OFF
+   $ ./config-build.py -hc {host-config file name} \
+                       -DENABLE_PYTHON=ON -DENABLE_FORTRAN=OFF
 
-This will set the C++ compiler mode to C++98 and disable fortran for the generated configuration. 
+This will enable python and disable fortran for the generated configuration. 
 
 
 Run CMake directly
@@ -328,7 +331,7 @@ CMake options
 
 .. note :: Summarize (in table) CMake options that users may want to provide
            Check what's there now for correctness. Move options for developers
-           into separate table her (for convenience) or to Dev Guide?
+           into separate table here (for convenience) or to Dev Guide?
 
 +-----------------------------------+-------------------------------+--------+
 |OPTION                             |   Description                 | Default|
@@ -340,8 +343,6 @@ CMake options
 |                                   |in all build targets           |        |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_BENCHMARKS                  |Enable google benchmark        |  OFF   |
-+-----------------------------------+-------------------------------+--------+
-|ENABLE_CFORTRAN_API                |Enable C to Fortran interface  |  ON    |
 +-----------------------------------+-------------------------------+--------+
 |ENABLE_CODECOV                     |Enable code coverage via gcov  |  ON    |
 +-----------------------------------+-------------------------------+--------+

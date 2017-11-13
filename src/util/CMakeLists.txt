@@ -1,8 +1,21 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
-################################################################################
+#------------------------------------------------------------------------------
 # This directory contains source code for utility executables that utilize
-# the toolkit or that support the toolkit
-################################################################################
+# Axom or that support Axom
+#------------------------------------------------------------------------------
 
 
 ##################################################
@@ -39,6 +52,7 @@ if( ENABLE_SLAM AND ENABLE_SPIO )
         SOURCES    ${datastore_converter_sources}
         OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON ${datastore_converter_depends}
+        FOLDER     axom/examples
         )
     install(TARGETS              convert_sidre_protocol
             DESTINATION          bin
@@ -63,8 +77,14 @@ if(ENABLE_QUEST)
         SOURCES     ${mesh_tester_sources}
         OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${mesh_tester_depends}
+        FOLDER      axom/examples
         )
     install(TARGETS              mesh_tester
             DESTINATION          bin
             )
 endif()
+
+################################
+# Add code checks
+################################
+axom_add_code_checks(PREFIX util)

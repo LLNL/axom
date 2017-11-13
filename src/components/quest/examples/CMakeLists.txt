@@ -1,12 +1,16 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and further
-# review from Lawrence Livermore National Laboratory.
-#-------------------------------------------------------------------------------
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
 
 set(quest_example_depends
         axom_utils
@@ -29,6 +33,7 @@ blt_add_executable(
     SOURCES     distance_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
     )
 
 blt_add_executable(
@@ -36,6 +41,7 @@ blt_add_executable(
     SOURCES     sphere_distance.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
     )
 
 blt_add_executable(
@@ -43,6 +49,7 @@ blt_add_executable(
     SOURCES     containment_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} fmt
+    FOLDER      axom/quest/examples
     )
 
 ## Quest interface examples
@@ -57,6 +64,7 @@ blt_add_executable(
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+    FOLDER      axom/quest/examples
     )
 
 # Add a test for the quest interface.  Set up for MPI, when available
@@ -82,6 +90,7 @@ if (ENABLE_MPI AND ENABLE_FORTRAN)
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+        FOLDER      axom/quest/examples
         )
 
     set_target_properties(quest_interface_F_ex

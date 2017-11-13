@@ -11,7 +11,7 @@ if [ "$DOC" = false ]; then
    OPTIONS+=" -DENABLE_DOCS=OFF";
 fi
 echo "Options: $OPTIONS"
-./scripts/config-build.py $OPTIONS
+./config-build.py $OPTIONS
 if [ $? -ne 0 ]; then
     echo "Error: config-build.py failed"
     exit 1

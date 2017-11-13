@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -18,7 +25,8 @@
 
 #include <limits>
 
-namespace Primal3D {
+namespace Primal3D
+{
 typedef axom::primal::Point< double, 3 > PointType;
 typedef axom::primal::Vector< double, 3 > VectorType;
 typedef axom::primal::BoundingBox< double, 3 > BoundingBoxType;
@@ -178,7 +186,8 @@ TEST( primal_clip, boundingBoxOptimization )
     PointType::make_point(    0, -VAL1, -VAL2),
   };
 
-  for (int i=0; i<16; i+=2) {
+  for (int i=0 ; i<16 ; i+=2)
+  {
     TriangleType tri(midpoint, points[i], points[i+1]);
     PolygonType poly = axom::primal::clip(tri, bbox);
     SLIC_INFO(poly);
@@ -214,12 +223,10 @@ TEST( primal_clip, experimentalData)
             poly.centroid() );
 
   // Check that the polygon vertices are on the triangle
-  for (int i=0; i< poly.numVertices(); ++i) {
-    PointType bary = tri.barycentricCoords(poly[i]);
-
-    PointType reconstructed = bary[0]*tri[0].array()
-                              + bary[1]*tri[1].array()
-                              + bary[2]*tri[2].array();
+  for (int i=0 ; i< poly.numVertices() ; ++i)
+  {
+    PointType bary = tri.physToBarycentric(poly[i]);
+    PointType reconstructed = tri.baryToPhysical(bary);
 
     SLIC_INFO("Testing clipped polygon point "
               << poly[i]
@@ -230,7 +237,8 @@ TEST( primal_clip, experimentalData)
     double barySum = bary[0]+bary[1]+bary[2];
     EXPECT_NEAR(1., barySum, EPS);
 
-    for (int dim=0; dim < 3; ++dim) {
+    for (int dim=0 ; dim < 3 ; ++dim)
+    {
       EXPECT_GE(bary[dim], -EPS);
       EXPECT_NEAR(poly[i][dim], reconstructed[dim], EPS);
     }
@@ -241,10 +249,8 @@ TEST( primal_clip, experimentalData)
   // Check that the polygon centroid is on the triangle
   {
     PointType centroid = poly.centroid();
-    PointType bary = tri.barycentricCoords( centroid );
-    PointType reconstructed = bary[0]*tri[0].array()
-                              + bary[1]*tri[1].array()
-                              + bary[2]*tri[2].array();
+    PointType bary = tri.physToBarycentric( centroid );
+    PointType reconstructed = tri.baryToPhysical(bary);
 
     SLIC_INFO("Testing clipped polygon centroid "
               << centroid
@@ -255,7 +261,8 @@ TEST( primal_clip, experimentalData)
     double barySum = bary[0]+bary[1]+bary[2];
     EXPECT_NEAR(1., barySum, EPS);
 
-    for (int dim=0; dim < 3; ++dim) {
+    for (int dim=0 ; dim < 3 ; ++dim)
+    {
       EXPECT_GE(bary[dim], -EPS);
       EXPECT_NEAR(centroid[dim], reconstructed[dim], EPS);
     }

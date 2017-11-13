@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -22,7 +29,8 @@ using axom::slic::UnitTestLogger;
  * They also exercise the SLIC UnitTestLogger.
  */
 
-namespace {
+namespace
+{
 
 /*!
  * A simple struct with an assert in the constructor
@@ -53,7 +61,7 @@ struct AssertDtor
  *  Note: gtest EXPECT_DEATH_IF_SUPPORTED has a return, so it cannot be
  *  used in a constructor.
  */
-class SetFixtureC:public ::testing::Test
+class SetFixtureC : public ::testing::Test
 {
 public:
   SetFixtureC()
@@ -66,13 +74,15 @@ public:
 /*!
  *  A simple testing fixture with an assert in the SetUp function.
  */
-class SetFixtureS:public ::testing::Test
+class SetFixtureS : public ::testing::Test
 {
 public:
   void SetUp()
   {
   #ifdef AXOM_DEBUG
-    EXPECT_DEATH_IF_SUPPORTED( SLIC_ASSERT_MSG(false,"Testing assert in fixture setup"), "");
+    EXPECT_DEATH_IF_SUPPORTED( SLIC_ASSERT_MSG(false,
+                                               "Testing assert in fixture setup"),
+                               "");
   #else
     SLIC_WARNING("Testing warning in fixture setup");
   #endif
@@ -82,14 +92,15 @@ public:
 /*!
  *  A simple testing fixture with an assert in the TearDown function.
  */
-class SetFixtureT:public ::testing::Test
+class SetFixtureT : public ::testing::Test
 {
 public:
   void TearDown()
   {
   #ifdef AXOM_DEBUG
     EXPECT_DEATH_IF_SUPPORTED( SLIC_ASSERT_MSG(false,
-                                  "Testing assert in fixture teardown"), "");
+                                               "Testing assert in fixture teardown"),
+                               "");
   #else
     SLIC_WARNING("Testing warning in fixture teardown");
   #endif
@@ -102,13 +113,13 @@ public:
  *  in a destructor.
  *
  */
-class SetFixtureD:public::testing::Test
+class SetFixtureD : public::testing::Test
 {
 public:
   ~SetFixtureD()
   {
     SLIC_WARNING(
-   "Testing warning in fixture .dtor -- this warning message should be logged");
+      "Testing warning in fixture .dtor -- this warning message should be logged");
   }
 };
 
@@ -121,16 +132,16 @@ TEST(slic_usage,in_test)
   SLIC_ASSERT_MSG(true, "Testing SLIC assert (true) in test body");
 #ifdef AXOM_DEBUG
   EXPECT_DEATH_IF_SUPPORTED(
-        SLIC_ASSERT_MSG(false,
-            "Testing SLIC assert(false) in test body"),
-            "" )
-         << "SLIC assert (false) from a test";
+    SLIC_ASSERT_MSG(false,
+                    "Testing SLIC assert(false) in test body"),
+    "" )
+    << "SLIC assert (false) from a test";
 #else
   EXPECT_DEATH_IF_SUPPORTED(
-        SLIC_ERROR_IF(true,
-            "Testing SLIC error in test body for release mode"),
-            "" )
-        << "SLIC_ERROR_IF(false) from a test";
+    SLIC_ERROR_IF(true,
+                  "Testing SLIC error in test body for release mode"),
+    "" )
+    << "SLIC_ERROR_IF(false) from a test";
 
 #endif
 }
@@ -138,7 +149,8 @@ TEST(slic_usage,in_test)
 TEST(slic_usage,in_ctor)
 {
 #ifdef AXOM_DEBUG
-  EXPECT_DEATH_IF_SUPPORTED( AssertCtor(), "" ) << " SLIC assert from class .ctor ";
+  EXPECT_DEATH_IF_SUPPORTED( AssertCtor(),
+                             "" ) << " SLIC assert from class .ctor ";
 #else
   AssertCtor();
 #endif
@@ -148,7 +160,8 @@ TEST(slic_usage,in_method)
 {
   AssertMethod am;
 #ifdef AXOM_DEBUG
-  EXPECT_DEATH_IF_SUPPORTED( am.foo(), "" ) << " SLIC assert from class method ";
+  EXPECT_DEATH_IF_SUPPORTED( am.foo(),
+                             "" ) << " SLIC assert from class method ";
 #else
   am.foo();
 #endif
@@ -157,7 +170,8 @@ TEST(slic_usage,in_method)
 TEST(slic_usage,in_dtor)
 {
 #ifdef AXOM_DEBUG
-  EXPECT_DEATH_IF_SUPPORTED( AssertDtor(), "" ) << " SLIC assert from class .ctor ";
+  EXPECT_DEATH_IF_SUPPORTED( AssertDtor(),
+                             "" ) << " SLIC assert from class .ctor ";
 #else
   AssertDtor();
 #endif

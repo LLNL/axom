@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -759,7 +766,6 @@ TEST(sidre_group,view_copy_move)
 }
 
 //------------------------------------------------------------------------------
-
 TEST(sidre_group,groups_move_copy)
 {
   DataStore * ds = new DataStore();
@@ -769,13 +775,17 @@ TEST(sidre_group,groups_move_copy)
   Group * gb = flds->createGroup("b");
   Group * gc = flds->createGroup("c");
 
-  ga->createViewAndAllocate("i0", DataType::c_int());
-  gb->createViewAndAllocate("f0", DataType::c_float());
-  gc->createViewAndAllocate("d0", DataType::c_double());
+  const double f0value = 100.0;
+  const double val = 101.0;
 
-  ga->getView("i0")->setScalar(1);
-  gb->getView("f0")->setScalar(100.0);
-  gc->getView("d0")->setScalar(3000.0);
+  Group * bschild = gb->createGroup("childOfB");
+
+  ga->createView("i0")->setScalar(1);
+  gb->createView("f0")->setScalar(f0value);
+  gc->createView("d0")->setScalar(3000.0);
+  bschild->createView("val")->setScalar(val);
+
+  int buffercount = ds->getNumBuffers();
 
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
@@ -787,17 +797,70 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_EQ(flds, gb->getParent());
   Group * gsub = flds->createGroup("sub");
   Group * gb0 = gsub->moveGroup(gb);
+
+  // gb0 is an alias to gb
   EXPECT_EQ(gb, gb0);
   EXPECT_EQ(0, gb->getIndex());
   EXPECT_EQ(gsub, gb->getParent());
+  EXPECT_EQ(gb0->getNumGroups(), 1);
+  EXPECT_EQ(gb0->getGroup("childOfB"), bschild);
+  EXPECT_EQ(bschild->getNumGroups(), 0);
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
 
-  // flds->print();
+  EXPECT_EQ(gb0->getNumViews(), 1);
+  EXPECT_TRUE(gb0->hasChildView("f0"));
+  if (gb0->hasChildView("f0"))
+  {
+    EXPECT_EQ((double)gb0->getView("f0")->getScalar(), f0value);
+  }
 
+  EXPECT_EQ(bschild->getNumViews(), 1);
+  EXPECT_TRUE(bschild->hasChildView("val"));
+  if (gb0->hasChildView("val"))
+  {
+    EXPECT_EQ((double)gb0->getView("val")->getScalar(), val);
+  }
+
+  EXPECT_EQ(flds->getNumGroups(), 3);
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("sub"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
   EXPECT_EQ(flds->getGroup("sub")->getGroup("b"),gb);
+
+  // verify that we can copy a group into an empty group
+  Group * containCopy = ds->getRoot()->createGroup("containCopy");
+  Group * theCopy = containCopy->copyGroup(flds);
+  EXPECT_TRUE(theCopy->isEquivalentTo(flds));
+  EXPECT_EQ(containCopy->getNumGroups(), 1);
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
+
+  // verify that we can copy a group, when there is no name clash
+  Group * anotherCopy = ds->getRoot()->createGroup("anotherCopy");
+  anotherCopy->createGroup("futureSiblingGroup");
+  Group * theOtherCopy = anotherCopy->copyGroup(flds);
+  EXPECT_EQ(anotherCopy->getNumGroups(), 2);
+  EXPECT_TRUE(theOtherCopy->isEquivalentTo(flds));
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
+
+  // verify that we cannot copy a group when there is a name clash
+  Group * otherB = containCopy->createGroup("b");
+  otherB->createView("f1")->setScalar(42.0);
+  otherB->createGroup("Q");
+  Group * triedCopy = gsub->copyGroup(otherB);
+  EXPECT_EQ(triedCopy, static_cast<void *>(AXOM_NULLPTR));
+  EXPECT_EQ(gsub->getNumGroups(), 1);
+  EXPECT_TRUE(gsub->hasChildGroup("b"));
+  EXPECT_EQ(buffercount, ds->getNumBuffers());
+
+  EXPECT_EQ(gb0->getNumGroups(), 1);
+  EXPECT_EQ(gb0->getGroup("childOfB"), bschild);
+  EXPECT_EQ(gb0->getNumViews(), 1);
+  EXPECT_TRUE(gb0->hasChildView("f0"));
+  if (gb0->hasChildView("f0"))
+  {
+    EXPECT_EQ((double)gb0->getView("f0")->getScalar(), f0value);
+  }
 
   delete ds;
 }

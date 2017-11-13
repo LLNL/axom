@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 #
 # Specify list of tests
 #
@@ -47,6 +61,7 @@ foreach(test ${gtest_sidre_tests})
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                        FOLDER axom/sidre/tests
                         )
 
     blt_add_test( NAME ${test_name} 
@@ -64,6 +79,7 @@ if (ENABLE_FORTRAN)
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                            FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}_test
@@ -81,6 +97,7 @@ if (ENABLE_FORTRAN)
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON sidre conduit conduit_relay hdf5 slic fruit
+                            FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 
                       COMMAND ${test_name}_test
@@ -88,3 +105,6 @@ if (ENABLE_FORTRAN)
     endforeach()
 endif()
 
+if (ENABLE_MPI)
+    add_subdirectory(spio)
+endif()

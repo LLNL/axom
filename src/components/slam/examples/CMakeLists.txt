@@ -1,3 +1,17 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
 ###############
 # Slam examples
 ###############
@@ -31,6 +45,7 @@ foreach(example_source ${example_sources})
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+        FOLDER      axom/slam/examples
         )
 
     blt_add_test(
@@ -58,6 +73,7 @@ if(BOOST_FOUND)
         SOURCES     UnstructMeshField.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+        FOLDER      axom/slam/examples
         )
 
     blt_add_test(
