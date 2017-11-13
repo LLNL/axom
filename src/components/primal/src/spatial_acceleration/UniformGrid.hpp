@@ -93,11 +93,14 @@ public:
    *     UniformGrid({0., 0.}, {2., 4.}, {2, 4});
    * defines an index extending from 0 up to 2 divided into two bins in the
    * x-dimension and from 0 up to 4 divided into four bins in the y dimension.
-   * The points in the set {(2., y), (x, 4.)} are not included in the
-   * UniformGrid.
    */
   UniformGrid(const double * lower_bound, const double * upper_bound,
               const int * res);
+
+  /*!
+   * \brief Constructor specifying bounding box and number of bins.
+   */
+  UniformGrid(const BoxType & bbox, const int * res);
 
   /*! \brief Destructor: present for symmetry with constructor */
   ~UniformGrid();
@@ -306,6 +309,34 @@ UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
     m_boundingBox, NumericArray< T,NDIMS >(m_resolution));
 
   // scale the bounding box by a small epsilon to account for boundaries
+  const double EPS = 1e-12;
+  m_boundingBox.scale(1. + EPS);
+}
+
+template < typename T, int NDIMS >
+UniformGrid< T, NDIMS >::UniformGrid(const BoxType & bbox, const int * res)
+  : m_boundingBox(bbox)
+{
+  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
+
+  // set up the grid resolution and (row-major) strides
+  m_resolution[0] = res[0];
+  m_strides[0] = 1;
+  for (int i=1 ; i< NDIMS ; ++i)
+  {
+    m_resolution[i] = res[i];
+    m_strides[i] = m_strides[i-1] * m_resolution[i-1];
+  }
+
+  // initialize space for the bins
+  const int numBins = m_strides[NDIMS-1] * m_resolution[NDIMS-1];
+  m_bins.resize(numBins);
+
+  // set up the bounding box and lattice for point conversions
+  m_lattice = rectangular_lattice_from_bounding_box(
+    m_boundingBox, NumericArray< T,NDIMS >(m_resolution));
+
+  // scale the bounding box by a little to account for boundaries
   const double EPS = 1e-12;
   m_boundingBox.scale(1. + EPS);
 }
