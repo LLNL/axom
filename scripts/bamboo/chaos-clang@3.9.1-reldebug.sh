@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMPILER="clang@3.5.0"
+COMPILER="clang@3.9.1"
 
 if [[ $HOSTNAME == rz* ]]; then
     HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"

@@ -24,7 +24,7 @@ TOOLKIT_WEB_ROOT="/usr/global/web-pages/lc/www/axom"
 DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
-for COMPILER in "clang@3.5.0" "gcc@4.7.1" "gcc@4.9.3" "intel@15.0.187" "intel@16.0.109"
+for COMPILER in "clang@3.9.1" "clang@4.0.1" "gcc@4.9.3" "intel@15.0.223" "intel@16.0.258" "intel@17.0.174"
 do
    if [[ $HOSTNAME == rz* ]]; then
        HOST_CONFIGURATION="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"

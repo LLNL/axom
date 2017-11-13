@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-COMPILER="intel@15.0.187"
+COMPILER="intel@15.0.223"
 
 if [[ $HOSTNAME == rz* ]]; then
     HC="host-configs/rzmerl-chaos_5_x86_64_ib-${COMPILER}.cmake"
