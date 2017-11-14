@@ -28,15 +28,15 @@ using axom::sidre::IOManager;
 
 TEST(spio_serial, basic_writeread)
 {
-  DataStore * ds1 = new DataStore();
+  DataStore* ds1 = new DataStore();
 
-  Group * root1 = ds1->getRoot();
+  Group* root1 = ds1->getRoot();
 
-  Group * flds1 = root1->createGroup("fields");
-  Group * flds2 = root1->createGroup("fields2");
+  Group* flds1 = root1->createGroup("fields");
+  Group* flds2 = root1->createGroup("fields2");
 
-  Group * ga = flds1->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds1->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101);
   gb->createViewScalar<int>("i1", 404);
 
@@ -45,7 +45,7 @@ TEST(spio_serial, basic_writeread)
 
   writer.write(root1, num_files, "out_spio_basic_write_read", "sidre_hdf5");
 
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   IOManager reader(MPI_COMM_WORLD);
 
@@ -87,7 +87,7 @@ TEST(spio_serial, write_read_write)
   std::string filename = sstr.str();
 
   // Initialize a datastore and dump to disk
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   ds->getRoot()->createViewScalar("grp/i",2);
   ds->getRoot()->createViewScalar("grp/f",3.0);
   IOManager writer_a(MPI_COMM_WORLD);
@@ -104,7 +104,8 @@ TEST(spio_serial, write_read_write)
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file
   //      major: File accessibility
   //      minor: Unable to open file
-  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which is already open
+  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which
+  // is already open
   //      major: File accessibility
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
@@ -118,7 +119,7 @@ TEST(spio_serial, write_read_write)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

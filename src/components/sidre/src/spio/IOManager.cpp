@@ -92,7 +92,7 @@ IOManager::~IOManager()
  *
  *************************************************************************
  */
-void IOManager::write(sidre::Group * datagroup, int num_files,
+void IOManager::write(sidre::Group* datagroup, int num_files,
                       const std::string& file_string,
                       const std::string& protocol)
 {
@@ -231,7 +231,7 @@ void IOManager::write(sidre::Group * datagroup, int num_files,
  *************************************************************************
  */
 void IOManager::read(
-  sidre::Group * datagroup,
+  sidre::Group* datagroup,
   const std::string& root_file,
   const std::string& protocol,
   bool preserve_contents)
@@ -274,7 +274,7 @@ void IOManager::read(
  *
  *************************************************************************
  */
-void IOManager::read(sidre::Group * datagroup,
+void IOManager::read(sidre::Group* datagroup,
                      const std::string& root_file,
                      bool preserve_contents,
                      bool read_with_scr)
@@ -319,7 +319,7 @@ void IOManager::read(sidre::Group * datagroup,
  */
 #ifdef AXOM_USE_SCR
 void IOManager::readWithSCR(
-  sidre::Group * datagroup,
+  sidre::Group* datagroup,
   const std::string& root_file,
   bool preserve_contents)
 {
@@ -349,7 +349,7 @@ void IOManager::readWithSCR(
  *
  *************************************************************************
  */
-void IOManager::readSidreHDF5(sidre::Group * datagroup,
+void IOManager::readSidreHDF5(sidre::Group* datagroup,
                               const std::string& root_file,
                               bool preserve_contents)
 {
@@ -400,7 +400,7 @@ void IOManager::readSidreHDF5(sidre::Group * datagroup,
 }
 
 
-void IOManager::loadExternalData(sidre::Group * datagroup,
+void IOManager::loadExternalData(sidre::Group* datagroup,
                                  const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
@@ -755,7 +755,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
  *************************************************************************
  */
 
-void IOManager::writeGroupToRootFile(sidre::Group * group,
+void IOManager::writeGroupToRootFile(sidre::Group* group,
                                      const std::string& file_name)
 {
 
@@ -798,7 +798,7 @@ void IOManager::writeGroupToRootFile(sidre::Group * group,
  *************************************************************************
  */
 
-void IOManager::writeGroupToRootFileAtPath(sidre::Group * group,
+void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
                                            const std::string& file_name,
                                            const std::string& group_path)
 {
@@ -847,7 +847,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group * group,
  *************************************************************************
  */
 
-void IOManager::writeViewToRootFileAtPath(sidre::View * view,
+void IOManager::writeViewToRootFileAtPath(sidre::View* view,
                                           const std::string& file_name,
                                           const std::string& group_path)
 {

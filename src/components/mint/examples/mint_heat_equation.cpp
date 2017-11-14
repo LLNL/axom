@@ -38,7 +38,8 @@ class Gaussian2D
 {
 public:
   /*!
-   * \brief Creates a 2D Guassian with the given amplitude, mean, and covariance.
+   * \brief Creates a 2D Guassian with the given amplitude, mean, and
+   *covariance.
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
    * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
@@ -159,7 +160,8 @@ public:
   }
 
   /*!
-   * \brief Apply a two dimensional gaussian to the mesh as an initial condition.
+   * \brief Apply a two dimensional gaussian to the mesh as an initial
+   *condition.
    * \param [in] pulse the pulse to apply.
    */
   void initialize( const Gaussian2D& pulse )
@@ -168,7 +170,7 @@ public:
     m_mesh->getOrigin( origin );
     int size[3];
     m_mesh->getExtentSize( size );
-    double * t = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    double* t = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
 
     int idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
@@ -198,8 +200,8 @@ public:
     typedef axom::common::uint32 uint32;
 
     const int num_nodes = m_mesh->getMeshNumberOfNodes();
-    double * new_temp = new double[num_nodes];
-    double * prev_temp =
+    double* new_temp = new double[num_nodes];
+    double* prev_temp =
       m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
 
     /* Copy the boundary conditions into new_temp since they won't be copied
@@ -248,7 +250,7 @@ private:
    * \param [in] prev_temp the data to copy.
    * \param [in] new_temp the buffer to copy into.
    */
-  void copy_boundary( const double * prev_temp, double * new_temp )
+  void copy_boundary( const double* prev_temp, double* new_temp )
   {
     int size[3];
     m_mesh->getExtentSize( size );
@@ -281,8 +283,8 @@ private:
       T_{i, j}^n + \frac{\alpha \Delta t}{h^2}  \left( T_{i - 1, j}^n +
       T_{i + 1, j}^n + T_{i, j - 1}^n + T_{i, j + 1}^n \right) \f$.
    */
-  void step( double alpha, double dt, const double * prev_temp,
-             double * new_temp )
+  void step( double alpha, double dt, const double* prev_temp,
+             double* new_temp )
   {
     int size[3];
     m_mesh->getExtentSize( size );
@@ -338,8 +340,8 @@ private:
    * \param [in] upper_bound the upper right corner of the bounding box.
    * \return a pointer to the new uniform mesh.
    */
-  static UniformMesh * create_mesh( const double h, const double lower_bound[2],
-                                    const double upper_bound[2] )
+  static UniformMesh* create_mesh( const double h, const double lower_bound[2],
+                                   const double upper_bound[2] )
   {
     int ext[4];
     for ( int i = 0 ; i < 2 ; ++i )
@@ -349,17 +351,17 @@ private:
       ext[ 2 * i + 1 ] = std::ceil( len / h );
     }
 
-    UniformMesh * mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
+    UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
     const int num_nodes = mesh->getMeshNumberOfNodes();
 
-    FieldVariable< double > * t =
+    FieldVariable< double >* t =
       new FieldVariable< double >("temperature", num_nodes);
     mesh->getNodeFieldData()->addField(t);
 
     return mesh;
   }
 
-  UniformMesh * m_mesh;
+  UniformMesh* m_mesh;
   double m_h;
 };
 
@@ -417,7 +419,7 @@ typedef struct
  * \param [in] argc the number of arguments.
  * \param [in] argv the array of arguments.
  */
-void parse_arguments( Arguments& args, int argc, const char * * argv )
+void parse_arguments( Arguments& args, int argc, const char** argv )
 {
   for ( int i = 1 ; i < argc ; ++i )
   {
@@ -570,9 +572,9 @@ void init()
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug );
 
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE>";
-  axom::slic::GenericOutputStream * defaultStream =
+  axom::slic::GenericOutputStream* defaultStream =
     new axom::slic::GenericOutputStream( &std::cout );
-  axom::slic::GenericOutputStream * compactStream =
+  axom::slic::GenericOutputStream* compactStream =
     new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
   axom::slic::addStreamToMsgLevel(  defaultStream,
                                     axom::slic::message::Error );
@@ -591,7 +593,7 @@ void finalize()
   axom::slic::finalize();
 }
 
-int main( int argc, const char * * argv )
+int main( int argc, const char** argv )
 {
   init();
 

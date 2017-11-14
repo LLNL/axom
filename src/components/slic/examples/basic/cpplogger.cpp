@@ -32,7 +32,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   static_cast<void>(argc);
   static_cast<void>(argv);
@@ -61,12 +61,12 @@ int main( int argc, char * * argv )
     std::string( "* LINE=<LINE>\n" ) +
     std::string( "***********************************\n" );
 
-  slic::LogStream * hspLogStream =
+  slic::LogStream* hspLogStream =
     new slic::GenericOutputStream(&hspStream, hsp_format);
 
   // setup log stream for ALL messages, including FATAL, ERROR and WARNING
   std::string console_format = std::string("[<LEVEL>]: <MESSAGE>\n");
-  slic::LogStream * console =
+  slic::LogStream* console =
     new slic::GenericOutputStream( &std::cerr, console_format );
 
   //----------------------------------------------------------------------------

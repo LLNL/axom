@@ -126,7 +126,8 @@ TEST(axom_utils_config,config_libraries)
 
 TEST(axom_utils_config,config_components)
 {
-  // This test checks which toolkit components are available in the configuration
+  // This test checks which toolkit components are available in the
+  // configuration
 
   std::cout << "Available components: " << std::endl;
 

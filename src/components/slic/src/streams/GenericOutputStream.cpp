@@ -24,12 +24,12 @@ namespace axom
 namespace slic
 {
 
-GenericOutputStream::GenericOutputStream( std::ostream * os ) :
+GenericOutputStream::GenericOutputStream( std::ostream* os ) :
   m_stream( os )
 {}
 
 //------------------------------------------------------------------------------
-GenericOutputStream::GenericOutputStream(std::ostream * os,
+GenericOutputStream::GenericOutputStream(std::ostream* os,
                                          const std::string& format) :
   m_stream( os )
 {

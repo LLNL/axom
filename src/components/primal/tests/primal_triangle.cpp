@@ -135,8 +135,7 @@ TEST( primal_triangle, triangle_physical_to_bary)
                        QPoint::make_point(-0.4, 1.2, 0.2)));
 
   // Now run the actual tests
-  for (TestVec::const_iterator it= testData.begin() ;
-       it != testData.end() ;
+  for (TestVec::const_iterator it= testData.begin() ; it != testData.end() ;
        ++it)
   {
     const QPoint& query = it->first;
@@ -351,7 +350,7 @@ TEST( primal_triangle, triangle_3D_point_containment)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

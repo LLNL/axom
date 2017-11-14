@@ -67,7 +67,7 @@ struct Input
     errorCode(SUCCESS)
   { };
 
-  Input(int argc, char * * argv);
+  Input(int argc, char** argv);
 
   void showhelp()
   {
@@ -92,14 +92,14 @@ struct Input
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
-  mint::Mesh * surface_mesh,
+  mint::Mesh* surface_mesh,
   std::vector<int> & degenerate);
 bool canOpenFile(const std::string & fname);
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
                      const std::string & outfile);
 
-Input::Input(int argc, char * * argv) :
+Input::Input(int argc, char** argv) :
   stlInput(""),
   textOutput("meshTestResults.txt"),
   resolution(0),
@@ -171,7 +171,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
 }
 
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
-  mint::Mesh * surface_mesh,
+  mint::Mesh* surface_mesh,
   std::vector<int> & degenerate)
 {
   // For each triangle, check for intersection against
@@ -257,7 +257,7 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
  * Currently, the mesh tester works only with Triangle meshes.
  */
 
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   int retval = EXIT_SUCCESS;
 
@@ -267,9 +267,9 @@ int main( int argc, char * * argv )
 
   // Customize logging levels and formatting
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream * defaultStream =
+  slic::GenericOutputStream* defaultStream =
     new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream * compactStream =
+  slic::GenericOutputStream* compactStream =
     new slic::GenericOutputStream(&std::cout, slicFormatStr);
   slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
   slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
@@ -302,13 +302,13 @@ int main( int argc, char * * argv )
 
   // Read file
   SLIC_INFO("Reading file: " <<  params.stlInput << "...\n");
-  quest::STLReader * reader = new quest::STLReader();
+  quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( params.stlInput );
   reader->read();
   SLIC_INFO("done\n");
 
   // Get surface mesh
-  TriangleMesh * surface_mesh = new TriangleMesh( 3 );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
   reader->getMesh( surface_mesh );
 
   // Delete the reader

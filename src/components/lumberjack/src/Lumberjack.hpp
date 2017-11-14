@@ -64,17 +64,20 @@ public:
    * This performs any setup work the Lumberjack needs before doing any work.
    * It is required that this is called before using the Lumberjack.
    *
-   * \param [in] communicator The Lumberjack Communicator that will send/recieve messages
-   * \param [in] ranksLimit Limit on how many ranks are individually tracker per Message.
+   * \param [in] communicator The Lumberjack Communicator that will send/recieve
+   *messages
+   * \param [in] ranksLimit Limit on how many ranks are individually tracker per
+   *Message.
    *****************************************************************************
    */
-  void initialize(Communicator * communicator, int ranksLimit);
+  void initialize(Communicator* communicator, int ranksLimit);
 
   /*!
    *****************************************************************************
    * \brief Called to finalize the Lumberjack.
    *
-   * This performs any cleanup work the Lumberjack needs to do before going away.
+   * This performs any cleanup work the Lumberjack needs to do before going
+   *away.
    * It is required that this is the last function called by the Lumberjack.
    *****************************************************************************
    */
@@ -84,16 +87,20 @@ public:
    *****************************************************************************
    * \brief Adds a Combiner to the Lumberjack.
    *
-   * The Lumberjack can have multiple Combiner classes.  This is helpful when you have different
-   * combining criteria for different Message classes. If you try to add the same Combiner
-   * more than once, the second Combiner will not be added.  This is determined solely
-   * on Combiner::id. Combiner classes that are added first have precedence.  The Lumberjack
+   * The Lumberjack can have multiple Combiner classes.  This is helpful when
+   *you have different
+   * combining criteria for different Message classes. If you try to add the
+   *same Combiner
+   * more than once, the second Combiner will not be added.  This is determined
+   *solely
+   * on Combiner::id. Combiner classes that are added first have precedence.
+   * The Lumberjack
    * will call delete on the Combiner when finalize is called.
    *
    * \param [in] combiner The Combiner that will be added.
    *****************************************************************************
    */
-  void addCombiner(Combiner * combiner);
+  void addCombiner(Combiner* combiner);
 
   /*!
    *****************************************************************************
@@ -102,7 +109,8 @@ public:
    * This removes and calls delete on a Combiner held by the Lumberjack. If no
    * Combiner::id matches the given identifier than nothing is removed.
    *
-   * \param [in] combinerIdentifier The Combiner identifier that will be removed.
+   * \param [in] combinerIdentifier The Combiner identifier that will be
+   *removed.
    *****************************************************************************
    */
   void removeCombiner(const std::string& combinerIdentifier);
@@ -111,7 +119,8 @@ public:
    *****************************************************************************
    * \brief Clears all Combiner classes from the Lumberjack.
    *
-   * This removes and calls delete on all Combiner classes held by the Lumberjack.
+   * This removes and calls delete on all Combiner classes held by the
+   *Lumberjack.
    *****************************************************************************
    */
   void clearCombiners();
@@ -120,11 +129,14 @@ public:
    *****************************************************************************
    * \brief Sets the rank limit.
    *
-   * This is the limit on how many ranks generated a given message are individually tracked
-   * per Message.  After the limit has been reached, only the Message::rankCount is
+   * This is the limit on how many ranks generated a given message are
+   *individually tracked
+   * per Message.  After the limit has been reached, only the Message::rankCount
+   *is
    * incremented.
    *
-   * \param [in] value Limit on how many ranks are individually tracked per Message.
+   * \param [in] value Limit on how many ranks are individually tracked per
+   *Message.
    *****************************************************************************
    */
   void ranksLimit(int value);
@@ -133,8 +145,10 @@ public:
    *****************************************************************************
    * \brief Returns the limit on tracked ranks.
    *
-   * This is the limit on how many ranks generated a given message are individually tracked
-   * per Message.  After the limit has been reached, only the Message::rankCount is
+   * This is the limit on how many ranks generated a given message are
+   *individually tracked
+   * per Message.  After the limit has been reached, only the Message::rankCount
+   *is
    * incremented.
    *
    * \return The limit on tracked ranks
@@ -146,29 +160,34 @@ public:
    *****************************************************************************
    * \brief Clears all Message classes from the Lumberjack.
    *
-   * This removes and calls delete on all Messages classes held by the Lumberjack.
+   * This removes and calls delete on all Messages classes held by the
+   *Lumberjack.
    *****************************************************************************
    */
   void clearMessages();
 
   /*!
    *****************************************************************************
-   * \brief Returns a const reference vector with all currently held Message classes.
+   * \brief Returns a const reference vector with all currently held Message
+   *classes.
    *
-   * This returns a const reference to the vector that holds the Message classes held by
+   * This returns a const reference to the vector that holds the Message classes
+   *held by
    * this node. You should check isOutputNode() to indicate if you should
    * output messages depending on your communication scheme.
    *****************************************************************************
    */
-  const std::vector<Message *>& getMessages() const;
+  const std::vector<Message*>& getMessages() const;
 
   /*!
    *****************************************************************************
    * \brief Queues a message to be sent and combined
    *
    * This creates a Message and queues it to be sent through the Communicator
-   * to the root node.  This message may be combined with others depending on the
-   * given criteria by the already defined Combiner classes. Depending on the behavior
+   * to the root node.  This message may be combined with others depending on
+   *the
+   * given criteria by the already defined Combiner classes. Depending on the
+   *behavior
    * of the Communicator, the message will not be outputted immediately.
    *
    * \param [in] text Text of the Message.
@@ -181,8 +200,10 @@ public:
    * \brief Queues a message to be sent and combined
    *
    * This creates a Message and queues it to be sent through the Communicator
-   * to the root node.  This message may be combined with others depending on the
-   * given criteria by the already defined Combiner classes. Depending on the behavior
+   * to the root node.  This message may be combined with others depending on
+   *the
+   * given criteria by the already defined Combiner classes. Depending on the
+   *behavior
    * of the Communicator, the message will not be outputted immediately.
    *
    * \param [in] text Text of the Message
@@ -197,21 +218,27 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief This pushes all messages once up the Communicator class's tree structure.
+   * \brief This pushes all messages once up the Communicator class's tree
+   *structure.
    *
-   * All of the children push their Message classes to their parent node. This is
+   * All of the children push their Message classes to their parent node. This
+   *is
    * is helpful if you want to spread the work load of Lumberjack over a large
-   * set of work. Before and after Message classes are pushed, they are combined.
+   * set of work. Before and after Message classes are pushed, they are
+   *combined.
    *****************************************************************************
    */
   void pushMessagesOnce();
 
   /*!
    *****************************************************************************
-   * \brief This pushes all messages fully up the Communicator class's tree structure.
+   * \brief This pushes all messages fully up the Communicator class's tree
+   *structure.
    *
-   * All messages are continually pushed until all messages are pushed to the root node.
-   * After Message classes are pushed once they are combined before being pushed again.
+   * All messages are continually pushed until all messages are pushed to the
+   *root node.
+   * After Message classes are pushed once they are combined before being pushed
+   *again.
    *****************************************************************************
    */
   void pushMessagesFully();
@@ -228,41 +255,46 @@ public:
 private:
   /*!
    *****************************************************************************
-   * \brief This packages all currently held Message classes into one const char buffer.
+   * \brief This packages all currently held Message classes into one const char
+   *buffer.
    *
    * The messages are packed into the following format:
-   *  \<message count>*\<largest message size>*\<packed message size>*\<packed message>\<packed message size>...
+   *  \<message count>*\<largest message size>*\<packed message size>*\<packed
+   *message>\<packed message size>...
    * This function does not delete messages.
    *
    * \return Packed version of all currently held messages
    *****************************************************************************
    */
-  const char * packMessages();
+  const char* packMessages();
 
   /*!
    *****************************************************************************
-   * \brief This unpackages the given const char buffer and creates Messages classes out of them.
+   * \brief This unpackages the given const char buffer and creates Messages
+   *classes out of them.
    *
    * The messages are packed into the following format:
-   *  \<message count>*\<largest message size>*\<packed message size>*\<packed message>\<packed message size>...
+   *  \<message count>*\<largest message size>*\<packed message size>*\<packed
+   *message>\<packed message size>...
    * After creating the Message classes it adds them into Lumberjack.
    *
    * \param [in] packedMessages Packed messages to be unpacked
    *****************************************************************************
    */
-  void unpackMessages(const char * packedMessages);
+  void unpackMessages(const char* packedMessages);
 
   /*!
    *****************************************************************************
-   * \brief All Message classes are combined by the currently held Combiner classes.
+   * \brief All Message classes are combined by the currently held Combiner
+   *classes.
    *****************************************************************************
    */
   void combineMessages();
 
-  Communicator * m_communicator;
+  Communicator* m_communicator;
   int m_ranksLimit;
-  std::vector<Combiner *> m_combiners;
-  std::vector<Message *> m_messages;
+  std::vector<Combiner*> m_combiners;
+  std::vector<Message*> m_messages;
 };
 
 } // end namespace lumberjack

@@ -49,7 +49,7 @@ typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
-inline SpatialBoundingBox compute_bounds(mint::Mesh * mesh)
+inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -79,7 +79,7 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-Triangle3 getMeshTriangle(int i, mint::Mesh * surface_mesh)
+Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
   SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
   primal::Point<int, 3> triCell;
@@ -99,7 +99,7 @@ Triangle3 getMeshTriangle(int i, mint::Mesh * surface_mesh)
  * \see findTriMeshIntersections
  */
 void  findTriMeshIntersections_impl(
-  TriangleMesh * surface_mesh,
+  TriangleMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution)

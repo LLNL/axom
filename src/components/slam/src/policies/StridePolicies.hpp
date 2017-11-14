@@ -20,12 +20,14 @@
  *
  * \brief Stride policies for SLAM
  *
- * Stride policies are meant to represent the fixed distance between consecutive elements of an OrderedSet
+ * Stride policies are meant to represent the fixed distance between consecutive
+ *elements of an OrderedSet
  * A valid stride policy must support the following interface:
  *   * [required]
  *     * DEFAULT_VALUE is a public static const IntType
  *     * stride() : IntType  -- returns the stride
- *     * isValid() : bool -- indicates whether the Stride policy of the set is valid
+ *     * isValid() : bool -- indicates whether the Stride policy of the set is
+ *valid
  *   * [optional]
  *     * operator(): IntType -- alternate accessor for the stride value
  *

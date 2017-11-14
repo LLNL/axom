@@ -20,23 +20,31 @@
  *
  * \brief Cardinality policies for Slam
  *
- * Cardinality policies are meant to represent the cardinality of a relation with respect to an element of a an OrderedSet
- * i.e. the number of elements of a FromSet to which each element of a ToSet maps.
+ * Cardinality policies are meant to represent the cardinality of a relation
+ *with respect to an element of a an OrderedSet
+ * i.e. the number of elements of a FromSet to which each element of a ToSet
+ *maps.
  * This file implements two concrete cardinality policies:
- * * ConstantCardinality, in which every member of the FromSet maps to a fixed number of entries in the ToSet
- * * VariableCardinality, in which members of the FromSet map to an arbitrary number of entries in the ToSet
+ * * ConstantCardinality, in which every member of the FromSet maps to a fixed
+ *number of entries in the ToSet
+ * * VariableCardinality, in which members of the FromSet map to an arbitrary
+ *number of entries in the ToSet
  *
  * A valid cardinality policy must support the following interface:
  *     * RelationalOperatorSizeType
- *          -- A public type that indicates the SizePolicy for the each entry in the Cardinality relation
+ *          -- A public type that indicates the SizePolicy for the each entry in
+ *the Cardinality relation
  *             \see SizePolicies.hpp
  *     * size(ElementType idx) : const ElementType
- *          -- returns the cardinality of the relation for element with index idx of the FromSet
+ *          -- returns the cardinality of the relation for element with index
+ *idx of the FromSet
  *     * offset(ElementType idx) : const ElementType
- *          -- returns the offset to the first element of the ToSet for element with index idx of the FromSet
+ *          -- returns the offset to the first element of the ToSet for element
+ *with index idx of the FromSet
  *     * totalSize(): int
  *          -- returns the total number of elements in this relation.
- *             That is, the sum of size(idx) for each element (with index idx) of the from set.
+ *             That is, the sum of size(idx) for each element (with index idx)
+ *of the from set.
  *     * isValid(): bool
  *          -- indicates whether the CardinalityPolicy instance is valid
  *
@@ -54,7 +62,8 @@
 #include "slam/IndirectionPolicies.hpp"
 #include "slam/PolicyTraits.hpp"
 
-#include "slam/OrderedSet.hpp"  // Note: Not a circular dependency since CardinalityPolicies are for relations
+#include "slam/OrderedSet.hpp"  // Note: Not a circular dependency since
+                                // CardinalityPolicies are for relations
 
 namespace axom
 {
@@ -80,7 +89,8 @@ struct ConstantCardinality
       BeginsOffsetPolicy,
       BeginsStridePolicy >                      BeginsSet;
 
-  // The cardinality of each relational operator is determined by the StridePolicy of the relation
+  // The cardinality of each relational operator is determined by the
+  // StridePolicy of the relation
   typedef typename StrideToSize<
       BeginsStridePolicy,
       ElementType,
@@ -125,7 +135,7 @@ struct ConstantCardinality
   }
 
   template<typename FromSetType>
-  bool isValid(const FromSetType * fromSet,
+  bool isValid(const FromSetType* fromSet,
                bool AXOM_NOT_USED(vertboseOutput) = false) const
   {
     return m_begins.size() == fromSet->size();
@@ -154,7 +164,8 @@ struct VariableCardinality
       IndirectionPolicy>                BeginsSet;
 
 
-  // The cardinality of each relational operator is determined by the StridePolicy of the relation
+  // The cardinality of each relational operator is determined by the
+  // StridePolicy of the relation
   typedef BeginsSizePolicy RelationalOperatorSizeType;
 
   typedef typename IndirectionPolicy::IndirectionBufferType
@@ -169,7 +180,7 @@ struct VariableCardinality
     m_begins = builder;
   }
 
-  void bindBeginOffsets(ElementType fromSetSize, IndirectionBufferType * data)
+  void bindBeginOffsets(ElementType fromSetSize, IndirectionBufferType* data)
   {
     m_begins = typename BeginsSet::SetBuilder()
                .size(fromSetSize + 1)
@@ -194,7 +205,7 @@ struct VariableCardinality
   }
 
   template<typename FromSetType>
-  bool isValid(const FromSetType * fromSet, bool verboseOutput = false) const
+  bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
   {
     return m_begins.size() == (fromSet->size() + 1)
            && static_cast<IndirectionPolicy>(m_begins).isValid(

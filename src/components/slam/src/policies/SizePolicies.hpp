@@ -20,13 +20,15 @@
  *
  * \brief Size policies for SLAM
  *
- * Size policies are meant to represent the size of a SLAM entity (e.g. the size of a set).
+ * Size policies are meant to represent the size of a SLAM entity (e.g. the size
+ *of a set).
  * A valid size policy must support the following interface:
  *   * [required]
  *     * DEFAULT_VALUE is a public static constant of type IntType
  *     * size() : IntType  -- returns the underlying integer size
  *     * empty() : bool -- returns whether the size is zero
- *     * isValid() : bool -- indicates whether the Size policy of the set is valid
+ *     * isValid() : bool -- indicates whether the Size policy of the set is
+ *valid
  *   * [optional]
  *     * operator(): IntType -- alternate accessor for the size value
  */
@@ -52,7 +54,8 @@ namespace policies
 /// \{
 
 /**
- * \brief A policy class for the size of a set whose value can be set at runtime.
+ * \brief A policy class for the size of a set whose value can be set at
+ *runtime.
  */
 template<typename IntType>
 struct RuntimeSize

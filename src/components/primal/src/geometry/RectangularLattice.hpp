@@ -45,7 +45,8 @@ namespace primal
  *
  * A rectangular lattice maps every point in space (a SpacePoint) to a unique
  * rectangular cell with integral coordinates (a GridCell). Each lattice cell is
- * identified with the integer grid point at its lowest corner in each dimension.
+ * identified with the integer grid point at its lowest corner in each
+ *dimension.
  * RectangularLattice also maps GridCell coordinates back to spatial coordinates
  * or to the bounding box of the GridCell.
  *
@@ -123,8 +124,8 @@ public:
    * \pre When spacing_data is not NULL, it must have at least NDIMS entries
    * \note Spacing will be set to vector or ones if pointer is NULL
    */
-  RectangularLattice(SpaceCoordType * origin_data,
-                     SpaceCoordType * spacing_data)
+  RectangularLattice(SpaceCoordType* origin_data,
+                     SpaceCoordType* spacing_data)
   {
     m_origin = (origin_data != AXOM_NULLPTR)
                ? SpacePoint(origin_data)

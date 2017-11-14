@@ -89,9 +89,9 @@ public:
     // Simple formatting for debug and info messages
     std::string diFormatStr = "[<LEVEL>] <MESSAGE> \n";
 
-    GenericOutputStream * wefStream
+    GenericOutputStream* wefStream
       = new GenericOutputStream(&std::cout, wefFormatStr);
-    GenericOutputStream * diStream
+    GenericOutputStream* diStream
       = new GenericOutputStream(&std::cout, diFormatStr);
 
     addStreamToMsgLevel(wefStream,  message::Error);

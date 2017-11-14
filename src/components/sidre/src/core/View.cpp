@@ -76,7 +76,7 @@ std::string View::getPathName() const
  *
  *************************************************************************
  */
-View * View::allocate()
+View* View::allocate()
 {
   if ( isAllocateValid() )
   {
@@ -104,7 +104,7 @@ View * View::allocate()
  *
  *************************************************************************
  */
-View * View::allocate( TypeID type, SidreLength num_elems)
+View* View::allocate( TypeID type, SidreLength num_elems)
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -126,7 +126,7 @@ View * View::allocate( TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-View * View::allocate(const DataType& dtype)
+View* View::allocate(const DataType& dtype)
 {
   if ( dtype.is_empty() )
   {
@@ -151,7 +151,7 @@ View * View::allocate(const DataType& dtype)
  *
  *************************************************************************
  */
-View * View::reallocate(SidreLength num_elems)
+View* View::reallocate(SidreLength num_elems)
 {
   TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
 
@@ -187,7 +187,7 @@ View * View::reallocate(SidreLength num_elems)
  *
  *************************************************************************
  */
-View * View::deallocate()
+View* View::deallocate()
 {
   if ( !isAllocateValid() )
   {
@@ -213,7 +213,7 @@ View * View::deallocate()
  *
  *************************************************************************
  */
-View * View::reallocate(const DataType& dtype)
+View* View::reallocate(const DataType& dtype)
 {
   // If we don't have an allocated buffer, we can just call allocate.
   if ( !isAllocated() )
@@ -253,11 +253,11 @@ View * View::reallocate(const DataType& dtype)
  *
  *************************************************************************
  */
-View * View::attachBuffer(Buffer * buff)
+View* View::attachBuffer(Buffer* buff)
 {
   if ( m_state == BUFFER && buff == AXOM_NULLPTR)
   {
-    Buffer * old_buffer = detachBuffer();
+    Buffer* old_buffer = detachBuffer();
     if (old_buffer->getNumViews() == 0)
     {
       getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
@@ -287,9 +287,9 @@ View * View::attachBuffer(Buffer * buff)
  *
  *************************************************************************
  */
-Buffer * View::detachBuffer()
+Buffer* View::detachBuffer()
 {
-  Buffer * buff = AXOM_NULLPTR;
+  Buffer* buff = AXOM_NULLPTR;
 
   if ( m_state == BUFFER)
   {
@@ -307,7 +307,7 @@ Buffer * View::detachBuffer()
  *
  *************************************************************************
  */
-View * View::apply()
+View* View::apply()
 {
   if ( !isApplyValid() )
   {
@@ -317,7 +317,7 @@ View * View::apply()
     return this;
   }
 
-  void * data_pointer = AXOM_NULLPTR;
+  void* data_pointer = AXOM_NULLPTR;
 
   if ( hasBuffer() )
   {
@@ -342,9 +342,9 @@ View * View::apply()
  *
  *************************************************************************
  */
-View * View::apply(SidreLength num_elems,
-                   SidreLength offset,
-                   SidreLength stride)
+View* View::apply(SidreLength num_elems,
+                  SidreLength offset,
+                  SidreLength stride)
 {
   if ( num_elems < 0 )
   {
@@ -378,9 +378,9 @@ View * View::apply(SidreLength num_elems,
  *
  *************************************************************************
  */
-View * View::apply(TypeID type, SidreLength num_elems,
-                   SidreLength offset,
-                   SidreLength stride)
+View* View::apply(TypeID type, SidreLength num_elems,
+                  SidreLength offset,
+                  SidreLength stride)
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -411,7 +411,7 @@ View * View::apply(TypeID type, SidreLength num_elems,
  *
  *************************************************************************
  */
-View * View::apply(TypeID type, int ndims, SidreLength * shape)
+View* View::apply(TypeID type, int ndims, SidreLength* shape)
 {
   if ( type == NO_TYPE_ID || ndims < 1 || shape == AXOM_NULLPTR )
   {
@@ -435,7 +435,7 @@ View * View::apply(TypeID type, int ndims, SidreLength * shape)
  *
  *************************************************************************
  */
-View * View::apply(const DataType &dtype)
+View* View::apply(const DataType &dtype)
 {
   if ( dtype.is_empty() )
   {
@@ -457,9 +457,9 @@ View * View::apply(const DataType &dtype)
  *
  *************************************************************************
  */
-void * View::getVoidPtr() const
+void* View::getVoidPtr() const
 {
-  void * rv = AXOM_NULLPTR;
+  void* rv = AXOM_NULLPTR;
 
   switch (m_state)
   {
@@ -468,7 +468,7 @@ void * View::getVoidPtr() const
   case EXTERNAL:
     if (isApplied())
     {
-      rv = const_cast<void *>(m_node.data_ptr());
+      rv = const_cast<void*>(m_node.data_ptr());
     }
     else
     {
@@ -478,7 +478,7 @@ void * View::getVoidPtr() const
   case BUFFER:
     if (isApplied())
     {
-      rv = const_cast<void *>(m_node.data_ptr());
+      rv = const_cast<void*>(m_node.data_ptr());
     }
     else
     {
@@ -487,7 +487,7 @@ void * View::getVoidPtr() const
     break;
   case STRING:
   case SCALAR:
-    rv = const_cast<void *>(m_node.data_ptr());
+    rv = const_cast<void*>(m_node.data_ptr());
     break;
   default:
     SLIC_ASSERT_MSG(false, "Unexpected value for m_state");
@@ -503,7 +503,7 @@ void * View::getVoidPtr() const
  *
  *************************************************************************
  */
-View * View::setExternalDataPtr(void * external_ptr)
+View* View::setExternalDataPtr(void* external_ptr)
 {
   if ( m_state == EMPTY || m_state == EXTERNAL )
   {
@@ -576,7 +576,7 @@ bool View::isAllocated()
  *
  *************************************************************************
  */
-int View::getShape(int ndims, SidreLength * shape) const
+int View::getShape(int ndims, SidreLength* shape) const
 {
   if (static_cast<unsigned>(ndims) < m_shape.size())
   {
@@ -604,7 +604,8 @@ int View::getShape(int ndims, SidreLength * shape) const
 /*
  *************************************************************************
  *
- * Return offset from description in terms of number of elements (0 if not described)
+ * Return offset from description in terms of number of elements (0 if not
+ *described)
  *
  *************************************************************************
  */
@@ -637,7 +638,8 @@ SidreLength View::getOffset() const
 /*
  *************************************************************************
  *
- * Return stride from description in terms of number of elements (1 if not described)
+ * Return stride from description in terms of number of elements (1 if not
+ *described)
  *
  *************************************************************************
  */
@@ -674,7 +676,7 @@ SidreLength View::getStride() const
  *
  *************************************************************************
  */
-bool View::isEquivalentTo(const View * other) const
+bool View::isEquivalentTo(const View* other) const
 {
   //add isAllocated() if it can be declared const
   return (getName() == other->getName()) && (getTypeID() == other->getTypeID())
@@ -735,7 +737,8 @@ void View::copyToConduitNode(Node &n) const
  */
 void View::createNativeLayout(Node &n) const
 {
-  // see ATK-726 - Handle undescribed and unallocated views in Sidre's createNativeLayout()
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's
+  // createNativeLayout()
   // TODO: Need to handle cases where the view is not described
   // TODO: Need to handle cases where the view is not allocated
   // TODO: Need to handle cases where the view is not applied
@@ -743,7 +746,7 @@ void View::createNativeLayout(Node &n) const
   // Note: We are using conduit's pointer rather than the View pointer
   //    since the conduit pointer handles offsetting
   // Note: const_cast the pointer to satisfy conduit's interface
-  void * data_ptr = const_cast<void *>(m_node.data_ptr());
+  void* data_ptr = const_cast<void*>(m_node.data_ptr());
   n.set_external( m_node.schema(), data_ptr);
 }
 
@@ -808,7 +811,7 @@ void View::describe(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-void View::describe(TypeID type, int ndims, SidreLength * shape)
+void View::describe(TypeID type, int ndims, SidreLength* shape)
 {
   SidreLength num_elems = 0;
   if (ndims > 0)
@@ -860,7 +863,7 @@ void View::describeShape()
  *
  *************************************************************************
  */
-void View::describeShape(int ndims, SidreLength * shape)
+void View::describeShape(int ndims, SidreLength* shape)
 {
   m_shape.clear();
   for (int i=0 ; i < ndims ; i++)
@@ -876,7 +879,7 @@ void View::describeShape(int ndims, SidreLength * shape)
  *
  *************************************************************************
  */
-void View::copyView( View * copy ) const
+void View::copyView( View* copy ) const
 {
   SLIC_ASSERT( copy->m_state == EMPTY && !copy->isDescribed());
 
@@ -1001,9 +1004,9 @@ bool View::isApplyValid() const
  *
  *************************************************************************
  */
-char const * View::getStateStringName(State state)
+char const* View::getStateStringName(State state)
 {
-  char const * ret_string = NULL;
+  char const* ret_string = NULL;
 
   switch ( state )
   {
@@ -1153,8 +1156,8 @@ void View::importFrom(conduit::Node& data_holder,
                      "Buffer id map is old-new id entry for buffer " <<
                      old_buffer_id );
 
-    Buffer * buffer = m_owning_group->getDataStore()->
-                      getBuffer( buffer_id_map.at(old_buffer_id) );
+    Buffer* buffer = m_owning_group->getDataStore()->
+                     getBuffer( buffer_id_map.at(old_buffer_id) );
 
     importDescription(data_holder);
     attachBuffer( buffer );
@@ -1212,7 +1215,7 @@ void View::importDescription(conduit::Node& data_holder)
     if (data_holder.has_path("shape"))
     {
       Node & n = data_holder["shape"];
-      SidreLength * shape = n.as_long_ptr();
+      SidreLength* shape = n.as_long_ptr();
       int ndims = n.dtype().number_of_elements();
       describeShape(ndims, shape);
     }
@@ -1241,7 +1244,7 @@ void View::exportAttribute(conduit::Node& data_holder) const
 
   while ( indexIsValid(aidx) )
   {
-    const Attribute * attr = getAttribute(aidx);
+    const Attribute* attr = getAttribute(aidx);
 
     node[attr->getName()] = getAttributeNodeRef(attr);
 
@@ -1266,7 +1269,7 @@ void View::importAttribute(conduit::Node& data_holder)
       Node& n_attr = attrs_itr.next();
       std::string attr_name = attrs_itr.name();
 
-      Attribute * attr = getAttribute(attr_name);
+      Attribute* attr = getAttribute(attr_name);
       if (attr != AXOM_NULLPTR)
       {
         m_attr_values.setNode(attr, n_attr);
@@ -1288,7 +1291,7 @@ bool View::rename(const std::string& new_name)
   if (new_name != m_name)
   {
 
-    Group * parent = getOwningGroup();
+    Group* parent = getOwningGroup();
     SLIC_CHECK(parent != AXOM_NULLPTR);
 
     if (new_name.empty())
@@ -1314,12 +1317,12 @@ bool View::rename(const std::string& new_name)
     else
     {
 
-      View * detached_view = parent->detachView(m_name);
+      View* detached_view = parent->detachView(m_name);
       SLIC_CHECK(detached_view == this);
 
       m_name = new_name;
 
-      View * attached_view = parent->attachView(detached_view);
+      View* attached_view = parent->attachView(detached_view);
       AXOM_DEBUG_VAR(attached_view);
       SLIC_CHECK(attached_view == this);
     }
@@ -1335,9 +1338,9 @@ bool View::rename(const std::string& new_name)
  *
  *************************************************************************
  */
-Attribute * View::getAttribute(IndexType idx)
+Attribute* View::getAttribute(IndexType idx)
 {
-  Attribute * attr =
+  Attribute* attr =
     getOwningGroup()->getDataStore()->getAttribute(idx);
   return attr;
 }
@@ -1349,9 +1352,9 @@ Attribute * View::getAttribute(IndexType idx)
  *
  *************************************************************************
  */
-const Attribute * View::getAttribute(IndexType idx) const
+const Attribute* View::getAttribute(IndexType idx) const
 {
-  const Attribute * attr =
+  const Attribute* attr =
     getOwningGroup()->getDataStore()->getAttribute(idx);
   return attr;
 }
@@ -1363,9 +1366,9 @@ const Attribute * View::getAttribute(IndexType idx) const
  *
  *************************************************************************
  */
-Attribute * View::getAttribute(const std::string & name)
+Attribute* View::getAttribute(const std::string & name)
 {
-  Attribute * attr =
+  Attribute* attr =
     getOwningGroup()->getDataStore()->getAttribute(name);
   return attr;
 }
@@ -1377,9 +1380,9 @@ Attribute * View::getAttribute(const std::string & name)
  *
  *************************************************************************
  */
-const Attribute * View::getAttribute(const std::string & name) const
+const Attribute* View::getAttribute(const std::string & name) const
 {
-  const Attribute * attr =
+  const Attribute* attr =
     getOwningGroup()->getDataStore()->getAttribute(name);
   return attr;
 }
@@ -1393,7 +1396,7 @@ const Attribute * View::getAttribute(const std::string & name) const
  */
 bool View::setAttributeString( IndexType idx, const std::string & value )
 {
-  const Attribute * attr = getAttribute(idx);
+  const Attribute* attr = getAttribute(idx);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1413,7 +1416,7 @@ bool View::setAttributeString( IndexType idx, const std::string & value )
 bool View::setAttributeString( const std::string & name,
                                const std::string & value )
 {
-  const Attribute * attr = getAttribute(name);
+  const Attribute* attr = getAttribute(name);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1430,7 +1433,7 @@ bool View::setAttributeString( const std::string & name,
  *
  *************************************************************************
  */
-bool View::setAttributeString( const Attribute * attr,
+bool View::setAttributeString( const Attribute* attr,
                                const std::string & value )
 {
   if (attr == AXOM_NULLPTR)
@@ -1452,9 +1455,9 @@ bool View::setAttributeString( const Attribute * attr,
  *
  *************************************************************************
  */
-const char * View::getAttributeString( IndexType idx ) const
+const char* View::getAttributeString( IndexType idx ) const
 {
-  const Attribute * attr = getAttribute(idx);
+  const Attribute* attr = getAttribute(idx);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1473,9 +1476,9 @@ const char * View::getAttributeString( IndexType idx ) const
  *
  *************************************************************************
  */
-const char * View::getAttributeString( const std::string & name ) const
+const char* View::getAttributeString( const std::string & name ) const
 {
-  const Attribute * attr = getAttribute(name);
+  const Attribute* attr = getAttribute(name);
 
   if (attr == AXOM_NULLPTR)
   {
@@ -1494,7 +1497,7 @@ const char * View::getAttributeString( const std::string & name ) const
  *
  *************************************************************************
  */
-const char * View::getAttributeString( const Attribute * attr ) const
+const char* View::getAttributeString( const Attribute* attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {

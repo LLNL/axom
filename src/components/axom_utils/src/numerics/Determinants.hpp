@@ -167,7 +167,7 @@ inline real determinant( const Matrix< real >& A )
   {
 
     Matrix< real > lu = A;
-    int * pivots = new int[ N ];
+    int* pivots = new int[ N ];
 
     int rc = lu_decompose( lu, pivots );
     if ( rc == LU_SUCCESS )

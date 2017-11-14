@@ -200,7 +200,7 @@ public:
    * This allows root->getParent()->getParent() to always work similar
    * to how the filesystem's `cd /;cd ../..` works.
    */
-  Group * getParent()
+  Group* getParent()
   {
     return m_parent;
   }
@@ -211,7 +211,7 @@ public:
    * Note that if this method is called on the root Group in a
    * DataStore, AXOM_NULLPTR is returned.
    */
-  const Group * getParent() const
+  const Group* getParent() const
   {
     return m_parent;
   }
@@ -230,7 +230,7 @@ public:
    * \brief Return pointer to non-const DataStore object that owns this
    * object.
    */
-  DataStore * getDataStore()
+  DataStore* getDataStore()
   {
     return m_datastore;
   }
@@ -239,7 +239,7 @@ public:
    * \brief Return pointer to const DataStore object that owns this
    * object.
    */
-  const DataStore * getDataStore() const
+  const DataStore* getDataStore() const
   {
     return m_datastore;
   }
@@ -303,7 +303,7 @@ public:
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  View * getView( const std::string& path );
+  View* getView( const std::string& path );
 
   /*!
    * \brief Return pointer to const View with given name or path.
@@ -312,21 +312,21 @@ public:
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  const View * getView( const std::string& path ) const;
+  const View* getView( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const View with given index.
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  View * getView( IndexType idx );
+  View* getView( IndexType idx );
 
   /*!
    * \brief Return pointer to const View with given index.
    *
    * If no such View exists, AXOM_NULLPTR is returned.
    */
-  const View * getView( IndexType idx ) const;
+  const View* getView( IndexType idx ) const;
 
   /*!
    * \brief Return first valid View index in Group object
@@ -368,7 +368,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  View * createView( const std::string& path );
+  View* createView( const std::string& path );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -379,9 +379,9 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  View * createView( const std::string& path,
-                     TypeID type,
-                     SidreLength num_elems );
+  View* createView( const std::string& path,
+                    TypeID type,
+                    SidreLength num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -392,10 +392,10 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  View * createView( const std::string& path,
-                     TypeID type,
-                     int ndims,
-                     SidreLength * shape );
+  View* createView( const std::string& path,
+                    TypeID type,
+                    int ndims,
+                    SidreLength* shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -403,8 +403,8 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    */
-  View * createView( const std::string& path,
-                     const DataType& dtype);
+  View* createView( const std::string& path,
+                    const DataType& dtype);
 
 //@}
 
@@ -440,8 +440,8 @@ public:
    *
    * \sa View::attachBuffer
    */
-  View * createView( const std::string& path,
-                     Buffer * buff );
+  View* createView( const std::string& path,
+                    Buffer* buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -459,10 +459,10 @@ public:
    *
    * \sa View::attachBuffer
    */
-  View * createView( const std::string& path,
-                     TypeID type,
-                     SidreLength num_elems,
-                     Buffer * buff );
+  View* createView( const std::string& path,
+                    TypeID type,
+                    SidreLength num_elems,
+                    Buffer* buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -480,11 +480,11 @@ public:
    *
    * \sa View::attachBuffer
    */
-  View * createView( const std::string& path,
-                     TypeID type,
-                     int ndims,
-                     SidreLength * shape,
-                     Buffer * buff );
+  View* createView( const std::string& path,
+                    TypeID type,
+                    int ndims,
+                    SidreLength* shape,
+                    Buffer* buff );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -498,9 +498,9 @@ public:
    *
    * \sa View::attachBuffer
    */
-  View * createView( const std::string& path,
-                     const DataType& dtype,
-                     Buffer * buff );
+  View* createView( const std::string& path,
+                    const DataType& dtype,
+                    Buffer* buff );
 
 //@}
 
@@ -533,8 +533,8 @@ public:
    *
    * \sa View::setExternalDataPtr
    */
-  View * createView( const std::string& path,
-                     void * external_ptr );
+  View* createView( const std::string& path,
+                    void* external_ptr );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -553,10 +553,10 @@ public:
    *
    * \sa View::setExternalDataPtr
    */
-  View * createView( const std::string& path,
-                     TypeID type,
-                     SidreLength num_elems,
-                     void * external_ptr );
+  View* createView( const std::string& path,
+                    TypeID type,
+                    SidreLength num_elems,
+                    void* external_ptr );
 
 
   /*!
@@ -577,11 +577,11 @@ public:
    *
    * \sa View::setExternalDataPtr
    */
-  View * createView( const std::string& path,
-                     TypeID type,
-                     int ndims,
-                     SidreLength * shape,
-                     void * external_ptr );
+  View* createView( const std::string& path,
+                    TypeID type,
+                    int ndims,
+                    SidreLength* shape,
+                    void* external_ptr );
   /*!
    * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned
@@ -595,9 +595,9 @@ public:
    *
    * \sa View::attachBuffer
    */
-  View * createView( const std::string& path,
-                     const DataType& dtype,
-                     void * external_ptr );
+  View* createView( const std::string& path,
+                    const DataType& dtype,
+                    void* external_ptr );
 
 //@}
 
@@ -626,9 +626,9 @@ public:
    *
    * \sa View::allocate
    */
-  View * createViewAndAllocate( const std::string& path,
-                                TypeID type,
-                                SidreLength num_elems );
+  View* createViewAndAllocate( const std::string& path,
+                               TypeID type,
+                               SidreLength num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -645,10 +645,10 @@ public:
    *
    * \sa View::allocate
    */
-  View * createViewAndAllocate( const std::string& path,
-                                TypeID type,
-                                int ndims,
-                                SidreLength * shape );
+  View* createViewAndAllocate( const std::string& path,
+                               TypeID type,
+                               int ndims,
+                               SidreLength* shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -664,8 +664,8 @@ public:
    *
    * \sa View::allocate
    */
-  View * createViewAndAllocate( const std::string& path,
-                                const DataType& dtype);
+  View* createViewAndAllocate( const std::string& path,
+                               const DataType& dtype);
 
   /*!
    * \brief Create View object with given name or path in this Group
@@ -680,9 +680,9 @@ public:
    * \sa View::setScalar
    */
   template<typename ScalarType>
-  View * createViewScalar( const std::string& path, ScalarType value)
+  View* createViewScalar( const std::string& path, ScalarType value)
   {
-    View * view = createView(path);
+    View* view = createView(path);
     if (view != AXOM_NULLPTR)
     {
       view->setScalar(value);
@@ -703,8 +703,8 @@ public:
    *
    * \sa View::setString
    */
-  View * createViewString( const std::string& path,
-                           const std::string& value);
+  View* createViewString( const std::string& path,
+                          const std::string& value);
 
 //@}
 
@@ -733,7 +733,8 @@ public:
   void destroyViews();
 
   /*!
-   * \brief Destroy View with given name or path owned by this Group and deallocate
+   * \brief Destroy View with given name or path owned by this Group and
+   *deallocate
    * its data if it's the only View associated with that data.
    */
   void destroyViewAndData(const std::string& path);
@@ -766,7 +767,7 @@ public:
    * \return pointer to given argument View object or AXOM_NULLPTR if View
    * is not moved into this Group.
    */
-  View * moveView(View * view);
+  View* moveView(View* view);
 
   /*!
    * \brief Create a copy of given View object and add it to this Group.
@@ -781,7 +782,7 @@ public:
    * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
-  View * copyView(View * view);
+  View* copyView(View* view);
 
 //@}
 
@@ -834,7 +835,7 @@ public:
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  Group * getGroup( const std::string& path );
+  Group* getGroup( const std::string& path );
 
   /*!
    * \brief Return pointer to const child Group with given name or path.
@@ -843,21 +844,21 @@ public:
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  Group const * getGroup( const std::string& path ) const;
+  Group const* getGroup( const std::string& path ) const;
 
   /*!
    * \brief Return pointer to non-const immediate child Group with given index.
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  Group * getGroup( IndexType idx );
+  Group* getGroup( IndexType idx );
 
   /*!
    * \brief Return pointer to const immediate child Group with given index.
    *
    * If no such Group exists, AXOM_NULLPTR is returned.
    */
-  const Group * getGroup( IndexType idx ) const;
+  const Group* getGroup( IndexType idx ) const;
 
   /*!
    * \brief Return first valid child Group index (i.e., smallest
@@ -892,7 +893,7 @@ public:
    * \return pointer to created Group object or AXOM_NULLPTR if new
    * Group is not created.
    */
-  Group * createGroup( const std::string& path );
+  Group* createGroup( const std::string& path );
 
   /*!
    * \brief Destroy child Group in this Group with given name or path.
@@ -932,7 +933,7 @@ public:
    * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
-  Group * moveGroup(Group * group);
+  Group* moveGroup(Group* group);
 
   /*!
    * \brief Create a copy of Group hierarchy rooted at given Group and make it
@@ -951,7 +952,7 @@ public:
    * \return pointer to given argument Group object or AXOM_NULLPTR if Group
    * is not moved into this Group.
    */
-  Group * copyGroup(Group * group);
+  Group* copyGroup(Group* group);
 
 //@}
 
@@ -996,23 +997,27 @@ public:
   /*!
    * \brief Copy data Group native layout to given Conduit node.
    *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node
+   *data
    * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   * in the file (independent of file format) and can be accessed as a Conduit
+   *tree.
    *
    * \return True if the Group or any of its children were added to the Node,
    * false otherwise.
    *
    */
   bool createNativeLayout(Node& n,
-                          const Attribute * attr = AXOM_NULLPTR) const;
+                          const Attribute* attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Copy data Group native layout to given Conduit node.
    *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node
+   *data
    * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   * in the file (independent of file format) and can be accessed as a Conduit
+   *tree.
    *
    * Only the Views which have external data are added to the node.
    *
@@ -1020,7 +1025,7 @@ public:
    * View, false otherwise.
    */
   bool createExternalLayout(Node& n,
-                            const Attribute * attr = AXOM_NULLPTR) const;
+                            const Attribute* attr = AXOM_NULLPTR) const;
 
 
   /*!
@@ -1032,7 +1037,7 @@ public:
    *
    * \sa View::isEquivalentTo
    */
-  bool isEquivalentTo(const Group * other) const;
+  bool isEquivalentTo(const Group* other) const;
 
 
   /*!
@@ -1076,7 +1081,7 @@ public:
    */
   void save( const std::string& path,
              const std::string& protocol = "sidre_hdf5",
-             const Attribute * attr = AXOM_NULLPTR) const;
+             const Attribute* attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Save the Group to an hdf5 handle.
@@ -1090,7 +1095,7 @@ public:
    */
   void save( const hid_t& h5_id,
              const std::string& protocol = "sidre_hdf5",
-             const Attribute * attr = AXOM_NULLPTR) const;
+             const Attribute* attr = AXOM_NULLPTR) const;
 
   /*!
    * \brief Load the Group from a file.
@@ -1168,7 +1173,7 @@ private:
    *  attachGroup must be called on a newly created Group to insert it
    *  into the hierarchy. The root group is an exception to this rule.
    */
-  Group(const std::string& name, DataStore * datastore);
+  Group(const std::string& name, DataStore* datastore);
 
   /*!
    * \brief Destructor destroys all Views and child Groups.
@@ -1184,12 +1189,12 @@ private:
   /*!
    * \brief Attach View object to this Group.
    */
-  View * attachView(View * view);
+  View* attachView(View* view);
 
   /*!
    * \brief Detach View object from this Group.
    */
-  View * detachView(const View * view)
+  View* detachView(const View* view)
   {
     return detachView(view->getName());
   }
@@ -1197,12 +1202,12 @@ private:
   /*!
    * \brief Detach View with given name from this Group.
    */
-  View * detachView(const std::string& name);
+  View* detachView(const std::string& name);
 
   /*!
    * \brief Detach View with given index from this Group.
    */
-  View * detachView(IndexType idx);
+  View* detachView(IndexType idx);
 
 //@}
 
@@ -1213,17 +1218,17 @@ private:
   /*!
    * \brief Attach Group object to this Group.
    */
-  Group * attachGroup(Group * view);
+  Group* attachGroup(Group* view);
 
   /*!
    * \brief Detach Child Group with given name from this Group.
    */
-  Group * detachGroup(const std::string& name);
+  Group* detachGroup(const std::string& name);
 
   /*!
    * \brief Detach Child Group with given index from this Group.
    */
-  Group * detachGroup(IndexType idx);
+  Group* detachGroup(IndexType idx);
 
 //@}
 
@@ -1240,7 +1245,7 @@ private:
    *
    * IMPORTANT: this method assumes View is owned by this Group.
    */
-  void destroyViewAndData( View * view );
+  void destroyViewAndData( View* view );
 
 //@}
 
@@ -1257,7 +1262,7 @@ private:
    * \return True if the group or any of its children have saved Views,
    * false otherwise.
    */
-  bool exportTo(conduit::Node& result, const Attribute * attr) const;
+  bool exportTo(conduit::Node& result, const Attribute* attr) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1269,7 +1274,7 @@ private:
    * false otherwise.
    */
   bool exportTo(conduit::Node& data_holder,
-                const Attribute * attr,
+                const Attribute* attr,
                 std::set<IndexType>& buffer_indices) const;
 
   /*!
@@ -1318,7 +1323,7 @@ private:
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
    */
-  Group * walkPath(std::string& path, bool create_groups_in_path );
+  Group* walkPath(std::string& path, bool create_groups_in_path );
 
   /*!
    * \brief Const private method that returns the Group that is the
@@ -1329,7 +1334,7 @@ private:
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
    */
-  const Group * walkPath(std::string& path ) const;
+  const Group* walkPath(std::string& path ) const;
 
   /*!
    * \brief Private method to rename this Group if possible, give warning if
@@ -1348,10 +1353,10 @@ private:
   IndexType m_index;
 
   /// Parent Group of this Group object.
-  Group * m_parent;
+  Group* m_parent;
 
   /// This Group object lives in the tree of this DataStore object.
-  DataStore * m_datastore;
+  DataStore* m_datastore;
 
   /// Character used to denote a path string passed to get/create calls.
   static const char s_path_delimiter;
@@ -1364,10 +1369,10 @@ private:
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
-  ViewCollection * m_view_coll;
+  ViewCollection* m_view_coll;
 
   /// Collection of child Groups
-  GroupCollection * m_group_coll;
+  GroupCollection* m_group_coll;
 
 };
 

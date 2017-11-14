@@ -61,12 +61,12 @@ public:
   static const NullSet s_nullSet;
 
 public:
-  Map(const Set * theSet = &s_nullSet) : m_set(theSet)
+  Map(const Set* theSet = &s_nullSet) : m_set(theSet)
   {
     m_data.resize( m_set->size());
   }
 
-  Map(const Set * theSet, DataType defaultValue) : m_set(theSet)
+  Map(const Set* theSet, DataType defaultValue) : m_set(theSet)
   {
     m_data.resize( m_set->size(), defaultValue );
   }
@@ -96,7 +96,7 @@ public:
   }
 
 
-  Set const * set() const { return m_set; }
+  Set const* set() const { return m_set; }
 
 
   SetPosition size() const { return m_set->size(); }
@@ -147,7 +147,8 @@ public:
 
   //* Placeholder for function that returns the (pointer to) underlying data **/
   OrderedMap &        data()        { return m_data; }
-  //* Placeholder for function that returns the (const pointer to) underlying data **/
+  //* Placeholder for function that returns the (const pointer to) underlying
+  // data **/
   const OrderedMap &  data() const { return m_data; }
 
   /// \}
@@ -162,7 +163,7 @@ private:
   }
 
 private:
-  const Set * m_set;
+  const Set* m_set;
   OrderedMap m_data;
 };
 
@@ -170,7 +171,8 @@ private:
 
 /**
  * \brief Definition of static instance of nullSet for all maps
- * \note Should this be a singleton or a global object?  Should the scope be public?
+ * \note Should this be a singleton or a global object?  Should the scope be
+ *public?
  */
 template<typename DataType>
 NullSet const Map<DataType>::s_nullSet;

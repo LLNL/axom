@@ -20,7 +20,8 @@
  * \brief Classes and functions to convert between points on an integer grid and
  *        their unidimensional MortonIndex.
  *
- * Also has some utility functions for 'mortonizing' and 'demortonizing' points and
+ * Also has some utility functions for 'mortonizing' and 'demortonizing' points
+ *and
  * a PointHash functor class that can be used as a std::hash for unordered_maps
  */
 
@@ -86,7 +87,8 @@ namespace primal
 template < typename CoordType, typename MortonIndexType, typename Derived >
 struct MortonBase
 {
-  // static assert to ensure that this class is only instantiated on integral types
+  // static assert to ensure that this class is only instantiated on integral
+  // types
 #ifdef AXOM_USE_CXX11
   static_assert( std::is_integral< CoordType >::value,
                  "Coordtype must be integral for Morton indexing" );
@@ -213,9 +215,12 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
     /*!
      * The maximum number of unique bits from each coordinate of type CoordType
      *  that can be represented in a MortonIndex.
-     *  \note If we are use Mortonizer as a (one-way) hash function, it is ok to use
-     *        more bits. But, if we would like to be able to reverse the MortonIndex,
-     *        then we cannot safely use more than MAX_UNIQUE_BITS per coordinate.
+     *  \note If we are use Mortonizer as a (one-way) hash function, it is ok to
+     *use
+     *        more bits. But, if we would like to be able to reverse the
+     *MortonIndex,
+     *        then we cannot safely use more than MAX_UNIQUE_BITS per
+     *coordinate.
      */
     MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
 

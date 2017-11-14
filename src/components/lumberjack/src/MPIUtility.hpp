@@ -43,7 +43,7 @@ namespace lumberjack
  * \param [in] comm The MPI Communicator.
  *****************************************************************************
  */
-const char * mpiBlockingRecieveMessages(MPI_Comm comm);
+const char* mpiBlockingRecieveMessages(MPI_Comm comm);
 
 /*!
  *****************************************************************************
@@ -53,11 +53,12 @@ const char * mpiBlockingRecieveMessages(MPI_Comm comm);
  *
  * \param [in] comm The MPI Communicator.
  * \param [in] destinationRank Where the Message classes is being sent.
- * \param [in,out] packedMessagesToBeSent All of the Message classes to be sent packed together.
+ * \param [in,out] packedMessagesToBeSent All of the Message classes to be sent
+ *packed together.
  *****************************************************************************
  */
 void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
-                                const char * packedMessagesToBeSent);
+                                const char* packedMessagesToBeSent);
 } // end namespace lumberjack
 } // end namespace axom
 

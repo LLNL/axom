@@ -19,7 +19,8 @@
  *******************************************************************************
  * \file TextEqualityCombiner.hpp
  *
- * \brief This file contains the class implementation of the TextEqualityCombiner.
+ * \brief This file contains the class implementation of the
+ *TextEqualityCombiner.
  *******************************************************************************
  */
 
@@ -42,8 +43,10 @@ namespace lumberjack
  *
  * \brief Combines Message classes if their Message::text are equal.
  *
- *  This class instance is automatically added to Lumberjack's Lumberjack for you. If you want it
- *  removed call Lumberjack::removeCombiner with the string "TextEqualityCombiner" as it's
+ *  This class instance is automatically added to Lumberjack's Lumberjack for
+ *you. If you want it
+ *  removed call Lumberjack::removeCombiner with the string
+ *"TextEqualityCombiner" as it's
  *  parameter.
  *
  * \see Combiner Lumberjack
@@ -56,7 +59,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the unique string identifier for this combiner. Used by Lumberjack
+   * \brief Returns the unique string identifier for this combiner. Used by
+   *Lumberjack
    *  to differentiate between other combiners.
    *****************************************************************************
    */
@@ -67,7 +71,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Function used by Lumberjack to indicate whether two messages should be
+   * \brief Function used by Lumberjack to indicate whether two messages should
+   *be
    * combined.
    *
    * They are not actually combined by this function. Message classes are
@@ -91,12 +96,14 @@ public:
    *****************************************************************************
    * \brief Combines the combinee into the combined Message.
    *
-   * The only thing truly combined in this Combiner is the ranks from combinee to
+   * The only thing truly combined in this Combiner is the ranks from combinee
+   *to
    * combined, since text is already equal.
    *
    * \param [in,out] combined the Message that will be modified.
    * \param [in] combinee the Message that is combined into the other.
-   * \param [in] ranksLimit The limit on how many individual ranks are tracked in
+   * \param [in] ranksLimit The limit on how many individual ranks are tracked
+   *in
    * the combined Message. Message::rankCount is always incremented.
    *****************************************************************************
    */

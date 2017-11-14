@@ -51,7 +51,8 @@ typedef detail::uint32_t uint32;    /** Thirty-two bit unsigned integer type */
 // on systems/compilers that do not support 64 bit integer types
   #ifndef AXOM_NO_INT64_T
 typedef detail::int64_t int64;        /** Sixty-four bit signed integer type */
-typedef detail::uint64_t uint64;      /** Sixty-four bit unsigned integer type */
+typedef detail::uint64_t uint64;      /** Sixty-four bit unsigned integer type
+                                         */
   #endif
 
 } // end namespace common

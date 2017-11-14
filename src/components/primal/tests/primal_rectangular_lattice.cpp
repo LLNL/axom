@@ -597,7 +597,7 @@ TEST( primal_rectangle_lattice, cell_bounding_box_3D)
 
 //----------------------------------------------------------------------
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

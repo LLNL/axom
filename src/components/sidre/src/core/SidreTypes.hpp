@@ -110,7 +110,8 @@ enum DataTypeId
 };
 
 /*!
- * \brief The detail namespace contains code that is either used internally by the sidre implementation or is under evaluation.
+ * \brief The detail namespace contains code that is either used internally by
+ *the sidre implementation or is under evaluation.
  */
 namespace detail
 {
@@ -131,7 +132,8 @@ typedef conduit_float32 sidre_float32;
 typedef conduit_float64 sidre_float64;
 
 /*!
- * \brief Type traits to assist in converting compiler types to the appropriate data type ids.
+ * \brief Type traits to assist in converting compiler types to the appropriate
+ *data type ids.
  */
 template<typename T> struct SidreTT {};
 template<> struct SidreTT<sidre_int8>

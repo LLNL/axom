@@ -62,10 +62,12 @@ struct TypeToString<double>
 
 
 /**
- * \brief Simple utility function to search through ancestor directories to find a file
+ * \brief Simple utility function to search through ancestor directories to find
+ *a file
  * \param [in] fileName The path to the original file.
  * \param [in] numAncestors The maximum number of ancestor directories to try
- * \return A string representing a valid path to the file when this can be found,
+ * \return A string representing a valid path to the file when this can be
+ *found,
  *         else, will return the original fileName.
  */
 std::string

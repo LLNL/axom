@@ -95,8 +95,8 @@ int BinaryTreeCommunicator::numPushesToFlush()
   return m_treeHeight-1;
 }
 
-void BinaryTreeCommunicator::push(const char * packedMessagesToBeSent,
-                                  std::vector<const char *>& receivedPackedMessages)
+void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
+                                  std::vector<const char*>& receivedPackedMessages)
 {
   MPI_Barrier(m_mpiComm);
   if (m_mpiCommRank != 0)
@@ -105,7 +105,7 @@ void BinaryTreeCommunicator::push(const char * packedMessagesToBeSent,
   }
 
   int childrenDoneCount = 0;
-  const char * currPackedMessages;
+  const char* currPackedMessages;
   while(childrenDoneCount < m_childCount)
   {
     currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);

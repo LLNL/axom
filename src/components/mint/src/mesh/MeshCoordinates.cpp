@@ -137,7 +137,7 @@ double MeshCoordinates::getCoordinate( int pntIdx, int dim )
 }
 
 //------------------------------------------------------------------------------
-double * MeshCoordinates::getCoordinateArray(int dim)
+double* MeshCoordinates::getCoordinateArray(int dim)
 {
   SLIC_ASSERT( dim < m_ndims );
   return &(m_coordinates[ dim ][ 0 ]);

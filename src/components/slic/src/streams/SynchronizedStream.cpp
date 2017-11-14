@@ -32,7 +32,7 @@ struct SynchronizedStream::MessageCache
 
   std::vector< std::string > messages;
 
-  void printMessages( std::ostream * stream )
+  void printMessages( std::ostream* stream )
   {
     if ( stream == AXOM_NULLPTR )
     {
@@ -59,14 +59,14 @@ struct SynchronizedStream::MessageCache
 };
 
 //------------------------------------------------------------------------------
-SynchronizedStream::SynchronizedStream(std::ostream * stream, MPI_Comm comm) :
+SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm) :
   m_comm( comm ),
   m_cache( new MessageCache() ),
   m_stream( stream )
 {}
 
 //------------------------------------------------------------------------------
-SynchronizedStream::SynchronizedStream( std::ostream * stream,
+SynchronizedStream::SynchronizedStream( std::ostream* stream,
                                         MPI_Comm comm,
                                         const std::string& format ) :
   m_comm( comm ),
@@ -80,7 +80,7 @@ SynchronizedStream::SynchronizedStream( std::ostream * stream,
 SynchronizedStream::~SynchronizedStream()
 {
   delete m_cache;
-  m_cache = static_cast< MessageCache * >( AXOM_NULLPTR );
+  m_cache = static_cast< MessageCache* >( AXOM_NULLPTR );
 }
 
 //------------------------------------------------------------------------------

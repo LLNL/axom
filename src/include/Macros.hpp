@@ -66,9 +66,12 @@
  * \code
  *
  *  double myVar = ...
- *  AXOM_DEBUG_VAR(myVar);       // code will emit the following warning in release builds
- *                              // if extra warnings are enabled and macro is not called
- *                              // warning: unused variable 'myVar' [-Wunused-variable]
+ *  AXOM_DEBUG_VAR(myVar);       // code will emit the following warning in
+ *release builds
+ *                              // if extra warnings are enabled and macro is
+ *not called
+ *                              // warning: unused variable 'myVar'
+ *[-Wunused-variable]
  *  SLIC_ASSERT(myVar > 0)
  *
  * \endcode
