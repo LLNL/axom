@@ -132,7 +132,7 @@ View * View::allocate(const DataType& dtype)
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
                     "Unable to allocate View " << getPathName() <<
-        " with empty data type.");
+                    " with empty data type.");
     return this;
   }
 
@@ -227,16 +227,17 @@ View * View::reallocate(const DataType& dtype)
 
   if (dtype.is_empty() || !isAllocateValid() || type != view_type)
   {
-    SLIC_CHECK_MSG( !dtype.is_empty(),
-                    "Unable to re-allocate View " << getPathName() <<
-        " with empty data type.");
-    SLIC_CHECK_MSG( isAllocateValid(),
-                    "View " << getPathName() << "'s state " <<
-                    getStateStringName(m_state) <<
-                    " does not allow data re-allocation");
-    SLIC_CHECK_MSG( type == view_type,
-                    "View " << getPathName() <<
-                    " attempting to re-allocate with different type.");
+    SLIC_CHECK_MSG(
+      !dtype.is_empty(),
+      "Unable to re-allocate View "
+      << getPathName() << " with empty data type.");
+    SLIC_CHECK_MSG(
+      isAllocateValid(), "View "
+      << getPathName() << "'s state " << getStateStringName(m_state) <<
+      " does not allow data re-allocation");
+    SLIC_CHECK_MSG(
+      type == view_type, "View "
+      << getPathName() << " attempting to re-allocate with different type.");
     return this;
   }
 
@@ -313,10 +314,12 @@ View * View::apply()
 {
   if ( !isApplyValid() )
   {
-    SLIC_CHECK_MSG( isApplyValid(),
-                    "View " << getPathName() << "'s state, '" <<
-        getStateStringName(m_state) <<
-                    "', does not allow apply operation");
+    SLIC_CHECK_MSG(
+      isApplyValid(),
+      "View "
+      << getPathName() << "'s state, '"
+      << getStateStringName(m_state) <<
+      "', does not allow apply operation");
     return this;
   }
 
@@ -444,7 +447,7 @@ View * View::apply(const DataType &dtype)
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
                     "View " << getPathName() <<
-        " unable to apply description, data type is empty.");
+                    " unable to apply description, data type is empty.");
     return this;
   }
 
@@ -497,7 +500,7 @@ void * View::getVoidPtr() const
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 
   return rv;
@@ -533,9 +536,11 @@ View * View::setExternalDataPtr(void * external_ptr)
   }
   else
   {
-    SLIC_CHECK_MSG( m_state == EMPTY || m_state == EXTERNAL,
-                    "Calling setExternalDataPtr on View " << getPathName() << " with " <<
-                    getStateStringName(m_state) << " data is not allowed.");
+    SLIC_CHECK_MSG(
+      m_state == EMPTY || m_state == EXTERNAL,
+      "Calling setExternalDataPtr on View "
+      << getPathName() << " with " <<
+      getStateStringName(m_state) << " data is not allowed.");
   }
 
   return this;
@@ -572,7 +577,7 @@ bool View::isAllocated()
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 
   return rv;
@@ -628,13 +633,15 @@ SidreLength View::getOffset() const
     const int bytes_per_elem = getBytesPerElement();
     if(bytes_per_elem != 0)
     {
-      SLIC_ERROR_IF(offset % bytes_per_elem != 0,
-                    "Unsupported operation on View " << getPathName() << ".  Sidre assumes that offsets are"
-                                                     << " given as integral number of elements into the array."
-                                                     << " In this case, the offset was " << offset
-                                                     << " bytes and each element is " << bytes_per_elem
-                                                     << " bytes. If you have a need for non-integral offsets,"
-                                                     << " please contact the Sidre team");
+      SLIC_ERROR_IF(
+        offset % bytes_per_elem != 0,
+        "Unsupported operation on View "
+        << getPathName() << ".  Sidre assumes that offsets are"
+        << " given as integral number of elements into the array."
+        << " In this case, the offset was " << offset
+        << " bytes and each element is " << bytes_per_elem
+        << " bytes. If you have a need for non-integral offsets,"
+        << " please contact the Sidre team");
 
       offset /= bytes_per_elem;
     }
@@ -661,13 +668,15 @@ SidreLength View::getStride() const
     const int bytes_per_elem = getBytesPerElement();
     if(bytes_per_elem != 0)
     {
-      SLIC_ERROR_IF(stride % bytes_per_elem != 0,
-                    "Unsupported operation on View " << getPathName() << ".  Sidre assumes that strides are"
-                                                     << " given as integral number of elements into the array."
-                                                     << " In this case, the stride was " << stride << " bytes"
-                                                     << " and each element is " << bytes_per_elem << " bytes."
-                                                     << " If you have a need for non-integral strides,"
-                                                     << " please contact the Sidre team");
+      SLIC_ERROR_IF(
+        stride % bytes_per_elem != 0,
+        "Unsupported operation on View "
+        << getPathName() << ".  Sidre assumes that strides are"
+        << " given as integral number of elements into the array."
+        << " In this case, the stride was " << stride << " bytes"
+        << " and each element is " << bytes_per_elem << " bytes."
+        << " If you have a need for non-integral strides,"
+        << " please contact the Sidre team");
 
       stride /= bytes_per_elem;
     }
@@ -914,7 +923,7 @@ void View::copyView( View * copy ) const
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 }
 
@@ -940,10 +949,11 @@ bool View::isAllocateValid() const
   case STRING:
   case SCALAR:
   case EXTERNAL:
-    SLIC_CHECK_MSG( false,
-                    "Allocate is not valid for " <<
-                    getStateStringName(
-                      m_state) << "of View " << getPathName() << ".");
+    SLIC_CHECK_MSG(
+      false,
+      "Allocate is not valid for "
+      << getStateStringName(m_state) << " of View "
+      << getPathName() << ".");
     break;
   case BUFFER:
     rv = isDescribed() && m_data_buffer->getNumViews() == 1;
@@ -951,7 +961,7 @@ bool View::isAllocateValid() const
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 
   return rv;
@@ -974,9 +984,11 @@ bool View::isApplyValid() const
 
   if ( !isDescribed() )
   {
-    SLIC_CHECK_MSG(false,
-                   "Apply is not valid, no description in View " << getPathName() <<
-        " to apply");
+    SLIC_CHECK_MSG(
+      false,
+      "Apply is not valid, no description in View "
+      << getPathName() <<
+      " to apply");
     return rv;
   }
 
@@ -985,9 +997,11 @@ bool View::isApplyValid() const
   case EMPTY:
   case STRING:
   case SCALAR:
-    SLIC_CHECK_MSG( false,
-                    "Apply is not valid for View " << getPathName() << " with state " <<
-                    getStateStringName(m_state) << " with scalar data type.");
+    SLIC_CHECK_MSG(
+      false,
+      "Apply is not valid for View "
+      << getPathName() << " with state " <<
+      getStateStringName(m_state) << " with scalar data type.");
     break;
   case EXTERNAL:
     SLIC_ASSERT ( m_external_ptr != AXOM_NULLPTR );
@@ -998,16 +1012,16 @@ bool View::isApplyValid() const
          getTotalBytes() <= m_data_buffer->getTotalBytes();;
     SLIC_CHECK_MSG( 0 <= getTotalBytes(),
                     "View " << getPathName() <<
-        " apply is not valid on data with zero length." );
+                    " apply is not valid on data with zero length." );
     SLIC_CHECK_MSG(
       getTotalBytes() <= m_data_buffer->getTotalBytes(),
       "Apply is not valid, View " << getPathName() <<
-        "'s datatype length exceeds bytes in buffer.");
+      "'s datatype length exceeds bytes in buffer.");
     break;
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 
   return rv;
@@ -1139,7 +1153,7 @@ void View::exportTo(conduit::Node& data_holder,
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 }
 
@@ -1197,7 +1211,7 @@ void View::importFrom(conduit::Node& data_holder,
   default:
     SLIC_ASSERT_MSG(false,
                     "View " << getPathName() <<
-        " unexpected value for m_state");
+                    " unexpected value for m_state");
   }
 }
 
@@ -1460,7 +1474,7 @@ bool View::setAttributeString( const Attribute * attr,
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
                    "View " << getPathName() <<
-        " setAttributeString: called without an Attribute");
+                   " setAttributeString: called without an Attribute");
     return false;
   }
 
@@ -1524,7 +1538,7 @@ const char * View::getAttributeString( const Attribute * attr ) const
   {
     SLIC_CHECK_MSG(attr != AXOM_NULLPTR,
                    "View " << getPathName() <<
-        " getAttributeString: called without an Attribute");
+                   " getAttributeString: called without an Attribute");
     return AXOM_NULLPTR;
   }
 
