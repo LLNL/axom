@@ -82,7 +82,7 @@ public:
 
   /*!
    * \brief Returns the ith field of this FieldData instance as a constant
-   *pointer.
+   * pointer.
    * \param [in] i the index of the field in query.
    * \return f constant pointer to the field in query.
    * \pre i >= 0 && i < this->getNumberOfFields()

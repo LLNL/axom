@@ -39,7 +39,8 @@ class Gaussian2D
 public:
   /*!
    * \brief Creates a 2D Guassian with the given amplitude, mean, and
-   *covariance.
+   *  covariance.
+   *
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
    * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
@@ -128,8 +129,8 @@ public:
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
-   * \note the equation we are solving is \f$ \frac{\partial U}{\partial t}
-                                          = \alpha \nabla^2 U \f$.
+   * \note the equation we are solving is
+   *  \f$ \frac{\partial U}{\partial t} = \alpha \nabla^2 U \f$.
    */
   HeatEquationSolver( double h, const double lower_bound[2],
                       const double upper_bound[2] ) :
@@ -147,6 +148,7 @@ public:
 
   /*!
    * \brief Set the uniform mesh upon which to solve.
+   *
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
@@ -161,7 +163,8 @@ public:
 
   /*!
    * \brief Apply a two dimensional gaussian to the mesh as an initial
-   *condition.
+   *  condition.
+   *
    * \param [in] pulse the pulse to apply.
    */
   void initialize( const Gaussian2D& pulse )
@@ -369,30 +372,30 @@ private:
 } /* end namespace axom */
 
 const std::string help_string =
-  "\nUsage: ./mint_heat_equation_ex [options]\n"                                 \
-  "-h, -help\n"                                                                  \
-  "\tPrint out this message then exit.\n"                                        \
-  "-p -path PATH\n"                                                              \
-  "\tThe base bath of the dump files. The files will be written to\n"            \
-  "path_#.vtk where # is the dump number.\n"                                     \
-  "-s, -spacing FLOAT\n"                                                         \
-  "\tSet the mesh spacing, must be greater than 0.\n."                           \
-  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                      \
-  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n"   \
-  "\tand y1 < y2.\n"                                                             \
-  "-a FLOAT, -amplitude FLOAT\n"                                                 \
-  "\tSet the amplitude of the gaussian pulse.\n"                                 \
-  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                          \
-  "\tSet the mean of the gaussian pulse. Format is x y.\n"                       \
-  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                        \
-  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"        \
-  "-alpha FLOAT\n"                                                               \
-  "\tThe conductivity.\n"                                                        \
-  "-dt FLOAT\n"                                                                  \
-  "\tThe time step, must be greater than zero.\n"                                \
-  "-t FLOAT\n"                                                                   \
-  "\tThe time to run the simulation, must be greater than zero.\n"               \
-  "-d INT, -dumpPeriod INT\n"                                                    \
+  "\nUsage: ./mint_heat_equation_ex [options]\n"                               \
+  "-h, -help\n"                                                                \
+  "\tPrint out this message then exit.\n"                                      \
+  "-p -path PATH\n"                                                            \
+  "\tThe base bath of the dump files. The files will be written to\n"          \
+  "path_#.vtk where # is the dump number.\n"                                   \
+  "-s, -spacing FLOAT\n"                                                       \
+  "\tSet the mesh spacing, must be greater than 0.\n."                         \
+  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                    \
+  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n" \
+  "\tand y1 < y2.\n"                                                           \
+  "-a FLOAT, -amplitude FLOAT\n"                                               \
+  "\tSet the amplitude of the gaussian pulse.\n"                               \
+  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                        \
+  "\tSet the mean of the gaussian pulse. Format is x y.\n"                     \
+  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                      \
+  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"      \
+  "-alpha FLOAT\n"                                                             \
+  "\tThe conductivity.\n"                                                      \
+  "-dt FLOAT\n"                                                                \
+  "\tThe time step, must be greater than zero.\n"                              \
+  "-t FLOAT\n"                                                                 \
+  "\tThe time to run the simulation, must be greater than zero.\n"             \
+  "-d INT, -dumpPeriod INT\n"                                                  \
   "\tThe number of cycles to wait between writing a dump file.\n";
 
 /*!

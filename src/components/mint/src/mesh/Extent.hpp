@@ -141,7 +141,7 @@ public:
 
   /*!
    * \brief Converts the given grid cell indices to a one-dimensional linear
-   *index.
+   *  index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
    * \param [in] k the grid cell index along the third dimension.
@@ -156,7 +156,7 @@ public:
 
   /*!
    * \brief Converts the given grid cell indices to a one-dimensional linear
-   *index.
+   *  index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
    * \return linearIdx the linear index over the cells.
