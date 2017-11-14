@@ -129,7 +129,7 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
     BoxType qbox(qmin, qmax);
     const std::vector<int> qbins = ugrid.getBinsForBbox(qbox);
     for (size_t binidx = 0; binidx < qbins.size(); ++binidx) {
-      const std::vector<int> bs = ugrid.getBinContents(binidx);
+      const std::vector<int> bs = ugrid.getBinContents(qbins[binidx]);
       for (size_t bj = 0; bj < bs.size(); ++bj) {
         // 4. Compare distances to find the closest distance d = |ab|
         int j = bs[bj];
