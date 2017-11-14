@@ -27,11 +27,12 @@ from llnl_lc_uberenv_install_tools import *
 
 def main():
     builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
-    specs = ["%clang@3.5.0",
-             "%gcc@4.7.1",
+    specs = ["%clang@3.9.1",
+             "%clang@4.0.1",
              "%gcc@4.9.3",
-             "%intel@15.0.187",
-             "%intel@16.0.109"]
+             "%intel@15.0.223",
+             "%intel@16.0.258",
+             "%intel@17.0.174"]
     return full_build_and_test_of_tpls(builds_dir,specs)
 
 if __name__ == "__main__":
