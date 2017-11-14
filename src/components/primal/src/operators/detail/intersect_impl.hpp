@@ -1199,7 +1199,7 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
 
 /**
  * \brief Helper function to find disjoint projections for the AABB-triangle
- *test
+ * test
  * \param d0 The first value defining the test interval
  * \param d1 The second value defining the test interval
  * \param d2 The third value defining the test interval

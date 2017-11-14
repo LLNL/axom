@@ -149,7 +149,7 @@ public:
    * \brief Finds a subset of candidate buckets for the given point query.
    * \param [in] pt the point in query.
    * \param [out] candidate_buckets list of bucket IDs for the given point
-   *query.
+   * query.
    * \pre this->empty()==false.
    * \pre candidate_buckets.size()==0
    */
@@ -197,7 +197,7 @@ public:
 
   /*!
    * \brief Returns const reference to the data associated with the given
-   *object.
+   * object.
    * \param objIdx the ID of the object in query.
    * \return data the data associated with the object.
    * \note The return data is the data supplied when the object was inserted.

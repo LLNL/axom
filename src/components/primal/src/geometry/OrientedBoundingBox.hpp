@@ -50,7 +50,7 @@ class OrientedBoundingBox;
  * \brief Equality comparison operator for oriented bounding boxes.
  *
  * Two oriented bounding boxes are equal when they have the same bounds and
- *axes.
+ * axes.
  */
 template < typename T,int NDIMS >
 bool operator==( const OrientedBoundingBox< T, NDIMS > &lhs,
@@ -328,8 +328,8 @@ private:
    * \brief Recursively enumerates the vertices of this box, storing them in l.
    */
   static void vertex_enum(std::vector< Point< T, NDIMS > > &l, int i,
-                          const Vector< T, NDIMS > u[NDIMS], const Vector< T,
-                                                                           NDIMS > &e,
+                          const Vector< T, NDIMS > u[NDIMS],
+                          const Vector< T,NDIMS > &e,
                           Vector< T, NDIMS > curr)
   {
     if (i == NDIMS)    // base case

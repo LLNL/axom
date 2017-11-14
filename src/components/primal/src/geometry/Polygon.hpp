@@ -70,10 +70,9 @@ public:
 
   /*!
    * \brief Constructor for an empty polygon that reserves space for
-   *    the given number of vertices
+   *  the given number of vertices
    *
-   * \param [in] numExpectedVerts The number of vertices for which to reserve
-   *space
+   * \param [in] numExpectedVerts number of vertices for which to reserve space
    * \pre numExpectedVerts is not negative
    *
    */
@@ -105,9 +104,10 @@ public:
 
   /*!
    * \brief Computes the centroid as the average of the polygon's vertex
-   *positions
+   *  positions
    *
    * \return The centroid of the polygon's vertices
+   *
    * \pre  polygon.isValid() is true
    */
   PointType centroid() const

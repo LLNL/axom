@@ -299,7 +299,7 @@ public:
    * \param [in] scalar the scalar value with which to multiply.
    * Each element of the numeric array is multiplied by scalar
    * \return A reference to the NumericArray instance after scalar
-   *multiplication.
+   * multiplication.
    */
   NumericArray< T,SIZE >& operator*=(double scalar);
 
@@ -317,7 +317,7 @@ public:
    * \param [in] arr the array to multiply (component-wise).
    * Multiplies the numeric array arr with this instance (component-wise).
    * \return A reference to the NumericArray instance after cwise
-   *multiplication.
+   * multiplication.
    */
   NumericArray< T,SIZE >& operator*=( const NumericArray< T,SIZE >& arr );
 
@@ -332,7 +332,8 @@ public:
 
   /*!
    * \brief Ensures that the highest value of the coordinates is at most
-   *upperVal.
+   *  upperVal.
+   *
    * \param [in] upperVal The highest possible value
    * \post forall i, arr[i] <= upperVal
    * \return A reference to the NumericArray instance after clamping upper
@@ -341,20 +342,26 @@ public:
 
   /*!
    * \brief Ensures that the lowest value of the coordinates is at least
-   *lowerVal.
+   *  lowerVal.
+   *
    * \param [in] lowerVal The lowest possible value
+   *
    * \post forall i, arr[i] >= lowerVal
+   *
    * \return A reference to the NumericArray instance after clamping lower
    */
   NumericArray< T,SIZE >& clampLower( const T& lowerVal);
 
   /*!
    * \brief Ensures that each coordinate's value is in range
-   *[lowerVal,upperVal].
+   *  [lowerVal,upperVal].
+   *
    * \param [in] lowerVal The lowest possible value
    * \param [in] upperVal The highest possible value
+   *
    * \pre lowerVal <= upperVal
    * \post forall i, lowerVal <= arr[i] <= upperVal
+   *
    * \return A reference to the NumericArray instance after clamping
    */
   NumericArray< T,SIZE >& clamp( const T& lowerVal, const T& upperVal);

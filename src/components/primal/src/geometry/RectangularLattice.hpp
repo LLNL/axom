@@ -46,7 +46,8 @@ namespace primal
  * A rectangular lattice maps every point in space (a SpacePoint) to a unique
  * rectangular cell with integral coordinates (a GridCell). Each lattice cell is
  * identified with the integer grid point at its lowest corner in each
- *dimension.
+ * dimension.
+ *
  * RectangularLattice also maps GridCell coordinates back to spatial coordinates
  * or to the bounding box of the GridCell.
  *
