@@ -60,10 +60,10 @@ enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };
 
-/**
+/*!
  * \struct
  * \brief A simple struct to encapsulate knowledge about which
-   acceleration structure we are using -- the SignedDistance or the InOutOctree
+ *  acceleration structure we are using -- the SignedDistance or the InOutOctree
  */
 template<int DIM>
 struct QuestAccelerator
@@ -82,7 +82,7 @@ struct QuestAccelerator
     m_shouldFinalizeSlic(false)
   {}
 
-  /**
+  /*!
    * \brief Sets the internal mesh pointer and computes some surface
    *  properties (bounding box and center of mass)
    */
@@ -110,7 +110,7 @@ struct QuestAccelerator
     SLIC_ASSERT( m_meshBoundingBox.isValid() );
   }
 
-  /**
+  /*!
    * \brief Initializes the containment tree mode
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
@@ -126,7 +126,7 @@ struct QuestAccelerator
     m_queryMode = QUERY_MODE_CONTAINMENT;
   }
 
-  /**
+  /*!
    * \brief Initializes the signed distance mode
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
@@ -143,7 +143,7 @@ struct QuestAccelerator
     m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
   }
 
-  /**
+  /*!
    * \brief Deallocates all memory and sets the state to uninitialized
    */
   void finalize()
@@ -173,15 +173,15 @@ struct QuestAccelerator
   }
 
 
-  /**
+  /*!
    * \brief Performs the distance query with the 3D point (x, y, z)
    * \param x The x-coordinate of the point
    * \param y The y-coordinate of the point
    * \param z The z-coordinate of the point
    * \return The signed distance from the point to the closest point on the
-   *surface
+   * surface
    * \note Positive distances are outside the surface, negative distances are
-   *inside.
+   * inside.
    */
   double distance(double x, double y, double z)
   {
@@ -194,7 +194,7 @@ struct QuestAccelerator
     return m_region->computeDistance( pt );
   }
 
-  /**
+  /*!
    * \brief Performs the containment query with the 3D point (x, y, z)
    * \param x The x-coordinate of the point
    * \param y The y-coordinate of the point
@@ -237,7 +237,7 @@ struct QuestAccelerator
     return( sign );
   }
 
-  /**
+  /*!
    * \brief Returns a const reference to the bounding box of the mesh
    */
   const GeometricBoundingBox& meshBoundingBox() const
@@ -245,7 +245,7 @@ struct QuestAccelerator
     return m_meshBoundingBox;
   }
 
-  /**
+  /*!
    * \brief Returns a const reference to the center of mass of the mesh
    */
   const SpacePt& meshCenterOfMass() const
@@ -254,9 +254,9 @@ struct QuestAccelerator
   }
 
       #ifdef AXOM_DEBUG
-  /**
+  /*!
    * \brief Utility function to determine if we are in a mode that supports
-   *distance queries
+   * distance queries
    */
   bool supportsDistanceQuery()
   {
@@ -279,9 +279,9 @@ struct QuestAccelerator
     return isValid;
   }
 
-  /**
+  /*!
    * \brief Utility function to determine if we are in a mode that supports
-   *containment queries
+   * containment queries
    */
   bool supportsContainmentQuery()
   {
@@ -305,9 +305,9 @@ struct QuestAccelerator
     return isValid;
   }
 
-  /**
+  /*!
    * \brief Utility function to determine if an acceleration structure has been
-   *initialized
+   * initialized
    */
   bool isInitialized()
   {
@@ -316,7 +316,7 @@ struct QuestAccelerator
   }
   #endif
 
-  /**
+  /*!
    * \brief Sets up the formatted Slic logger for quest
    */
 #ifdef AXOM_USE_MPI
@@ -360,7 +360,7 @@ struct QuestAccelerator
     }
   }
 
-  /**
+  /*!
    * \brief Deactivates the quest logger
    *
    * If there was a previous logger, it is restored.
@@ -405,12 +405,11 @@ private:
   bool m_shouldFinalizeSlic;
 };
 
-/**
+/*!
  * \brief A static instance of the acceleration structure in 3D
  * \note In this initial release, we assume a single static accelerator.
- *       Eventually, we will expand on this to support multiple structures in 2D
- *and 3D.
- *       We will probably use Sidre to hold pointers to these structures.
+ *  Eventually, we will expand on this to support multiple structures in 2D
+ *  and 3D. We will probably use Sidre to hold pointers to these structures.
  */
 static QuestAccelerator<3> accelerator3D;
 }

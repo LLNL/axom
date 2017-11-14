@@ -117,7 +117,7 @@ template<int DIM> class InOutOctreeMeshDumper;
  *
  * Storage requirement is one integer per block, which can implicitly determine
  * the color of a block, and for gray block, the index of the associated
- *triangles
+ * triangles
  */
 class InOutBlockData
 {
@@ -178,7 +178,7 @@ public:         // API for a BlockData
    * \brief Predicate to determine if the associated block is in the tree
    *
    * \return True, if the block is in the tree (internal or leaf), False
-   *otherwise
+   * otherwise
    */
   bool isBlock() const { return m_idx != NON_BLOCK; }
 
@@ -195,7 +195,7 @@ public:         // Other functions
 
   /**
    * Predicate to determine if the associated block has data (i.e. it is a gray
-   *block)
+   * block)
    * \return True, if the block has data, False otherwise
    * */
   bool hasData() const { return m_idx >= 0; }
@@ -211,7 +211,7 @@ public:         // Other functions
 
   /**
    * \brief Sets the block as gray, and provides the index of its associated
-   *data
+   * data
    *
    * \param idx The index of the data associated with the gray leaf block
    * \pre The block must be a leaf block
@@ -366,7 +366,7 @@ public:
    * \brief Constructor for an InOutLeafData
    *
    * \param vInd The index of a vertex (optional; default is to not set a
-   *vertex)
+   * vertex)
    */
   DynamicGrayBlockData(VertexIndex vInd, bool isLeaf)
     : m_vertIndex(vInd), m_isLeaf(isLeaf) {}
@@ -520,10 +520,10 @@ std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
 /**
  * \class
  * \brief Handles generation of a point containment spatial index over a surface
- *mesh
+ * mesh
  *
  * The point containment queries determines whether a given arbitrary point in
- *space
+ * space
  * lies inside or outside of the surface
  */
 template<int DIM>
@@ -557,14 +557,14 @@ private:
    * \brief A utility class that wraps the access to the mesh data
    *
    * This class helps separate the specifics of accessing the underlying mesh
-   *for on InOutOctree.
+   * for on InOutOctree.
    * It is customized for unstructured Triangle meshes, but we will later want
-   *to apply
+   * to apply
    * the InOutOctree to other mesh types, e.g. Segments and Nurbs in 2D,
-   *Bilinear quads and NURBS in 3D.
+   * Bilinear quads and NURBS in 3D.
    *
    * We can later specialize this class for triangle meshes and implement other
-   *customized mesh wrappers.
+   * customized mesh wrappers.
    */
   class MeshWrapper
   {
@@ -651,7 +651,7 @@ public:
 
     /**
      * \brief Helper function to retrieve the position of the vertex from the
-     *mesh
+     * mesh
      * \param idx The index of the vertex within the surface mesh
      */
     SpacePt getMeshVertexPosition(VertexIndex idx) const
@@ -708,7 +708,7 @@ public:
 
     /**
      * \brief Utility function to retrieve the positions of the triangle's
-     *vertices
+     * vertices
      *
      * \return A triangle instance whose vertices are positioned in space
      */
@@ -722,7 +722,7 @@ public:
 
     /**
      * \brief Checks whether the indexed triangle contains a reference to the
-     *given vertex
+     * given vertex
      */
     bool incidentInVertex(const TriVertIndices& triVerts,
                           VertexIndex vIdx) const
@@ -735,7 +735,7 @@ public:
 
     /**
      * \brief Finds the index of a vertex in triangle t1 that is not in triangle
-     *t0
+     * t0
      *
      * \param t0 The index of the first triangle
      * \param t1 The index of the second triangle
@@ -827,11 +827,11 @@ public:
 
     /**
      * \brief Reindexes the mesh vertices and triangle indices using the given
-     *map
+     * map
      *
      * \param numVertices The number of vertices in the new mesh
      * \param vertexIndexMap A mapping from the old vertex indices to the new
-     *ones
+     * ones
      * \note This step clears out the original mesh,
      * which can be reconstructed using the regenerateSurfaceMesh() function
      */
@@ -989,11 +989,11 @@ public:
 public:
   /**
    * \brief Construct an InOutOctree to handle containment queries on a surface
-   *mesh
+   * mesh
    *
    * \param [in] bb The spatial extent covered by the octree
    * \note We slightly scale the bounding box so all mesh elements are
-   *guaranteed
+   * guaranteed
    *       to be enclosed by the octree
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
@@ -1019,10 +1019,10 @@ public:
    * \brief The point containment query.
    *
    * \param pt The point that we want to check for containment within the
-   *surface
+   * surface
    * \return True if the point is within (or on) the surface, false otherwise
    * \note Points outside the octree's bounding box are considered outside the
-   *surface
+   * surface
    */
   bool within(const SpacePt& pt) const;
 
@@ -1039,7 +1039,7 @@ private:
 
   /**
    * \brief Insert all triangles of the mesh into the octree, generating a PM
-   *octree
+   * octree
    */
   void insertMeshTriangles();
 
@@ -1048,7 +1048,7 @@ private:
    * \brief Set a color for each leaf block of the octree.
    *
    * Black blocks are entirely within the surface, white blocks are entirely
-   *outside the surface
+   * outside the surface
    * and Gray blocks intersect the surface.
    */
   void colorOctreeLeaves();
@@ -1058,9 +1058,9 @@ private:
    * Use octree index over mesh vertices to convert the 'triangle soup'
    * from the stl file into an indexed triangle mesh representation.
    * In particular, all vertices in the mesh that are nearly coincident will be
-   *merged,
+   * merged,
    * and degenerate triangles (where the three vertices do not have unique
-   *indices)
+   * indices)
    * will be removed.
    */
   void updateSurfaceMeshVertices();
@@ -1073,10 +1073,10 @@ private:
    * \param leafBlock [in] The current octree block
    * \param leafData [inout] The data associated with this block
    * \note A side effect of this function is that we set the leafData's vertex
-   *to the common
+   * to the common
    * vertex if one is found
    * \return True, if all triangles indexed by this leaf share a common vertex,
-   *false otherwise.
+   * false otherwise.
    */
   bool allTrianglesIncidentInCommonVertex(const BlockIndex& leafBlock,
                                           DynamicGrayBlockData& leafData) const;
@@ -1096,7 +1096,7 @@ private:
    * \brief Predicate to determine if the vertex is indexed by the blk
    *
    * \pre This function assumes the vertices have been inserted and the mesh has
-   *been reordered
+   * been reordered
    * \param vIdx The index of the vertex to check
    * \param blk The block that we are checking against
    * \return true if vIdx is indexed by blk, false otherwise
@@ -1111,14 +1111,14 @@ private:
 
   /**
    * \brief Predicate to determine if any of the elements vertices are indexed
-   *by the given BlockIndex
+   * by the given BlockIndex
    *
    * \pre This function assumes the vertices have been inserted and the mesh has
-   *been reordered
+   * been reordered
    * \param tIdx The index of the triangle to check
    * \param blk The block that we are checking against
    * \return true if one of the triangle's vertices are indexed by blk, false
-   *otherwise
+   * otherwise
    */
   bool blockIndexesElementVertex(TriangleIndex tIdx,
                                  const BlockIndex& blk) const
@@ -1142,14 +1142,14 @@ private:
    * \param leafBlk The block of the gray leaf
    * \param data The data associated with the leaf block
    * \return True, if the point is inside the local surface associated with this
-   *block, false otherwise
+   * block, false otherwise
    */
   bool withinGrayBlock( const SpacePt & queryPt, const BlockIndex& leafBlk,
                         const InOutBlockData&  data) const;
 
   /**
    * \brief Returns the index of the mesh vertex associated with the given leaf
-   *block
+   * block
    *
    * \pre leafBlk is a leaf block of the octree
    * \param leafBlk The BlockIndex of a leaf block in the octree
@@ -1161,7 +1161,7 @@ private:
 
   /**
    * \brief Returns the set of mesh triangle indices associated with the given
-   *leaf block
+   * leaf block
    *
    * \pre leafBlk is a leaf block of the octree
    * \param leafBlk The BlockIndex of a leaf block in the octree
@@ -1189,7 +1189,7 @@ private:
 
   /**
    * \brief Utility function to dump any Inside blocks whose neighbors are
-   *outside (and vice-versa)
+   * outside (and vice-versa)
    *
    * \note There should not be any such blocks in a valid InOutOctree
    */
@@ -1205,7 +1205,7 @@ private:
 
   /**
    * \brief Utility function to compute the angle-weighted pseudonormal for a
-   *vertex in the mesh
+   * vertex in the mesh
    *
    * \note Not optimized
    * \note The returned normal is not normalized.
@@ -2359,9 +2359,9 @@ public:
 
   /**
    *  Generates a hexahedral VTK mesh with all neighboring blocks where one is
-   *inside and the other is outside
+   * inside and the other is outside
    *  \note By construction, there should be no such pairs in a valid
-   *InOutOctree mesh.
+   * InOutOctree mesh.
    */
   void dumpDifferentColoredNeighborsMeshVTK(const std::string name) const
   {
@@ -3076,7 +3076,7 @@ public:
               switch(neighborData.color())
               {
               case InOutBlockData::Black:                       // intentional
-                                                                // fallthrough
+              // fallthrough
               case InOutBlockData::White:
                 SLIC_CHECK_MSG(
                   data.color() == neighborData.color(),
@@ -3087,7 +3087,7 @@ public:
                   <<". Neighboring leaves that are not gray must have the same color." );
                 break;
               case InOutBlockData::Gray:                        // intentional
-                                                                // fallthrough
+              // fallthrough
               case InOutBlockData::Undetermined:
                 break;
               }

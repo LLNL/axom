@@ -136,14 +136,14 @@ public:
    * \param [in] pt The query point in space
    * \param [in] startingLevel (Optional) starting level for the query
    * \pre pt must be in the bounding box of the octree (i.e.
-   *boundingBox.contains(pt) == true )
+   * boundingBox.contains(pt) == true )
    * \note The collection of leaves covers the bounding box, and the interiors
-   *of the leaves do not
+   * of the leaves do not
    * intersect, so every point in the bounding box should be located in a unique
-   *leaf block.
+   * leaf block.
    * \note We are assuming a half-open interval on the bounding boxes.
    * \return The block index (i.e. grid point and level) of the leaf block
-   *containing the query point
+   * containing the query point
    */
   BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = -1) const
   {
@@ -186,13 +186,13 @@ public:
 
   /**
    * \brief Utility function to find the quantized grid cell at level lev for
-   *query point pt
+   * query point pt
    *
    * \param [in] pt The point at which we are querying.
    * \param [in] lev The level or resolution.
    * \pre \f$ 0 \le lev < octree.maxLeafLevel() \f$
-   * \post Each coordinate of the returned gridPt is in range \f$ [0, 2^{lev})
-   *\f$
+   * \post Each coordinate of the returned gridPt is in range
+   *  \f$ [0, 2^{lev}) \f$
    * \return The grid point of the block covering this point at this level
    * \todo KW: Should this function be protected? Is it generally useful?
    */

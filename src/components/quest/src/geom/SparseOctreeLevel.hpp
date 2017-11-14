@@ -45,10 +45,10 @@ namespace quest
 
 /**
  * \brief Traits class to manage types for different point representations in a
- *SparseOctreeLevel
+ * SparseOctreeLevel
  *
  * The general case is meant for Representations types that are unsigned
- *integers
+ * integers
  * and uses a Morton-based index as the hashmap key.
  */
 template<typename CoordType, int DIM, typename BroodDataType,
@@ -88,11 +88,11 @@ struct BroodRepresentationTraits
 
 /**
  * \brief Traits class to manage types for different point representations in a
- *SparseOctreeLevel
+ * SparseOctreeLevel
  *
  * This is a specialization meant for point representation
  * that use an integer grid point.  The underlying hashmap uses a Morton-based
- *hash function.
+ * hash function.
  */
 template<typename CoordType, int DIM, typename BroodDataType>
 struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
@@ -261,7 +261,7 @@ public:
 
   /**
    * \brief Factory function to return a ConstSparseBlockIterHelper for this
-   *level
+   * level
    *
    * \param begin A boolean to determine if this is to be
    * a begin (true) or end (false) iterator

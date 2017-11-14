@@ -38,9 +38,9 @@ using axom::primal::Triangle;
  *
  * This file contains several utility functions for testing the quest component,
  * e.g. generating random doubles and Points, creating a simple mesh of an
- *octahedron...
+ * octahedron...
  * We may later decide to move some of these into the actual component if they
- *are deemed useful.
+ * are deemed useful.
  */
 
 namespace axom
@@ -53,10 +53,12 @@ namespace utilities
 
 /**
  * \brief Simple utility function to generate a random double in the range of
- *beg to end
+ *  beg to end
  * \param beg The lower value of the range (default 0.)
  * \param end The upper value of the range (default 1.)
+ *
  * \pre If the range is zero, we set it to 1
+ *
  * \return A double in the range [beg,end]
  */
 double randomDouble(double beg = 0., double end = 1.)
@@ -71,7 +73,7 @@ double randomDouble(double beg = 0., double end = 1.)
 
 /**
  * \brief Simple utility to generate a Point whose entries
- * are random values in the range [beg, end]
+ *  are random values in the range [beg, end]
  */
 template<int DIM>
 Point<double,DIM> randomSpacePt(double beg, double end)

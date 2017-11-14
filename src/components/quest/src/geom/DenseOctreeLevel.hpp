@@ -37,13 +37,11 @@ namespace quest
  *  that allocates space for all possible blocks at the given level.
  *
  *  It uses a Brood-based organization of the data, where the data for all
- *octree
- *  siblings are stored contiguously, and uses a Morton-based order on the
- *Broods
- *  in the level.  Associated with each block is a BlockDataType
+ *  octree siblings are stored contiguously, and uses a Morton-based order on
+ *  the Broods in the level.  Associated with each block is a BlockDataType
  *  For efficiency, the data is associated with an entire brood, a collection of
  *  siblings that are created simultaneously. In dimension DIM, there are 2^DIM
- *siblings in a brood.
+ *  siblings in a brood.
  *
  *  \see OctreeLevel
  *  \see Brood
@@ -70,10 +68,10 @@ public:
 
   /**
    * \brief Concrete instance of the BlockIteratorHelper class defined in the
-   *OctreeLevel base class.
+   * OctreeLevel base class.
    *
    * \note ParenType must be either BlockIteratorHelper or
-   *ConstBlockIteratorHelper,
+   * ConstBlockIteratorHelper,
    *       both are defined in the OctreeLevel base class
    */
   template<typename OctreeLevelType, typename ParentType>

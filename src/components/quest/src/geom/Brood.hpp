@@ -35,14 +35,15 @@ namespace quest
 /**
  * \class
  * \brief Helper class to handle subindexing of block data within octree
- *siblings
+ *  siblings
  *
  * \note A brood is a collection of siblings that are generated simultaneously.
  * \note This class converts a grid point at the given level into a brood index
- *of the point.
- *       The base brood is the MortonIndex of the grid point's octree parent
- *       and its offset index is obtained by interleaving the least significant
- *bit of its coordinates.
+ *  of the point.
+ *
+ * The base brood is the MortonIndex of the grid point's octree parent
+ * and its offset index is obtained by interleaving the least significant
+ * bit of its coordinates.
  */
 template<typename GridPt, typename MortonIndexType>
 struct Brood
@@ -77,7 +78,7 @@ struct Brood
   const int& offset() const { return m_offset; }
 
   /** \brief Reconstruct a grid point from a brood's Morton index and an offset
-     */
+   */
   static GridPt reconstructGridPt(MortonIndexType morton, int offset)
   {
     return MortonizerType::demortonize( (morton << DIM) + offset);
@@ -96,12 +97,10 @@ private:
  *
  * \note A brood is a collection of siblings that are generated simultaneously.
  * \note This class converts a grid point at the given level into a brood index
- *of the point.
- *       The base brood point has the coordinates of the grid point's octree
- *parent
- *       and its offset index is obtained by interleaving the least significant
- *bit of its coordinates
- *       in each dimension.
+ *  of the point.The base brood point has the coordinates of the grid point's
+ *  octree parent and its offset index is obtained by interleaving the least
+ *  significant bit of its coordinates in each dimension.
+ *
  *  \see Brood
  */
 template<typename GridPt>

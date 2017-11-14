@@ -78,7 +78,7 @@ public:
 
 
 private:
-  /**
+  /*!
    * \brief A predicate to check if the file is in ascii format
    *
    * We can test the size of the STL file to determine if it is in
@@ -91,13 +91,13 @@ private:
    */
   bool isAsciiFormat() const;
 
-  /**
+  /*!
    * \brief Reads an ascii-encoded STL file into memory
    * \note The filename should be set with STLReader::setFileName()
    */
   void readAsciiSTL();
 
-  /**
+  /*!
    * \brief Reads a binary-encoded STL file into memory
    * \note The filename should be set with STLReader::setFileName()
    */

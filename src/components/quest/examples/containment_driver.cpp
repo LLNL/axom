@@ -272,8 +272,7 @@ SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh,
  * \brief Computes some statistics about the surface mesh.
  *
  * Specifically, computes histograms (and ranges) of the edge lengths and
- *triangle areas
- * on a logarithmic scale and logs the results
+ * triangle areas son a logarithmic scale and logs the results
  */
 void print_surface_stats( axom::mint::Mesh* mesh)
 {
@@ -404,7 +403,7 @@ void print_surface_stats( axom::mint::Mesh* mesh)
 
 /**
  * \brief Finds the octree leaf containing the given query point, and optionally
- *refines the leaf
+ *  refines the leaf
  */
 void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
                     bool shouldRefine = true)

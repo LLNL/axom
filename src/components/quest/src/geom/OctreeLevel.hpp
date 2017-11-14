@@ -21,12 +21,11 @@
  *
  * An OctreeLevel associates data with the integer points on a sparse grid.
  * OctreeLevel is an abstract base class.
+ *
  * This file also defines two concrete instantiations:
- * * GridPointOctreeLevel uses a GridPoint as a hash table key for its octree
- *blocks
- * * MortonOctreeLevel uses a Morton index (of the given bit width) as a hash
- *key
- *   for its octree blocks.
+ * GridPointOctreeLevel uses a GridPoint as a hash table key for its octree
+ * blocks  MortonOctreeLevel uses a Morton index (of the given bit width) as a
+ * hash key for its octree blocks.
  */
 
 #ifndef OCTREE_LEVEL__HXX_
@@ -55,7 +54,7 @@ namespace quest
 
 /**
  * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel
- *instance
+ * instance
  */
 enum TreeBlockStatus
 {
@@ -67,16 +66,16 @@ enum TreeBlockStatus
 /**
  * \class
  * \brief An abstract base class to represent a sparse level of blocks within an
- *octree.
+ * octree.
  *
  * Each block is associated with an integer grid point whose coordinates
  * have values between 0 and 2^L (where L = this->level() is the encoded level).
  * The OctreeLevel associates data of (templated) type BlockDataType with each
- *such block.
+ * such block.
  * \note For efficiency, the data is stored within a brood (collection of
- *siblings that are created simultaneously).
+ * siblings that are created simultaneously).
  * \note BlockDataType must define a predicate function with the signature: bool
- *isLeaf() const;
+ * isLeaf() const;
  */
 template<int DIM, typename BlockDataType>
 class OctreeLevel
@@ -105,7 +104,7 @@ protected:
 
   /**
    * \brief A virtual base class to help with iteration of an OctreeLevel's
-   *blocks
+   * blocks
    */
   class BlockIteratorHelper
   {
@@ -117,7 +116,7 @@ public:
     virtual void increment() = 0;
 
     /** \brief Predicate to determine if two BlockIteratorHelpers are equivalent
-       */
+     */
     virtual bool equal(const BlockIteratorHelper* other) = 0;
 
     /** Accessor for the point associated with the current octree block */
@@ -132,7 +131,7 @@ public:
 
   /**
    * \brief A virtual base class to help with constant iteration of an
-   *OctreeLevel's blocks
+   * OctreeLevel's blocks
    */
   class ConstBlockIteratorHelper
   {
@@ -144,7 +143,7 @@ public:
     virtual void increment() = 0;
 
     /** \brief Predicate to determine if two BlockIteratorHelpers are equivalent
-       */
+     */
     virtual bool equal(const ConstBlockIteratorHelper* other) = 0;
 
     /** Accessor for the point associated with the current octree block */
@@ -268,7 +267,7 @@ private:
     OctreeLevel* m_octLevel;               /** Pointer to the iterator's
                                               container class */
     IterHelper* m_iterHelper;              /** Instance of iterator helper class
-                                              */
+                                            */
   };
 
 
@@ -325,7 +324,7 @@ public:
   virtual void addAllChildren(const GridPt& pt) = 0;
 
   /** \brief Virtual const accessor for the data associated with grid point pt
-     */
+   */
   virtual const BlockDataType& operator[](const GridPt& pt) const = 0;
 
   /** \brief Virtual accessor for the data associated with grid point pt */
@@ -368,7 +367,7 @@ public:
   virtual int numInternalBlocks() const =0;
 
   /** \brief Virtual function to compute the number of leaf blocks in the level
-     */
+   */
   virtual int numLeafBlocks() const =0;
 
 
