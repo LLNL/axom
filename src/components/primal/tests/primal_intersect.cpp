@@ -741,9 +741,9 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l,
   Point3 vertex1 = randomPt< 3 >(0.,1.);
 
   //Step 4:
-  // we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so
-  // that we now have a triangle whose base is not necessarily on the plane formed 
-  // by ABC
+  // we scale the segments formed by both vertex 1 and P and by vertex 1 and Q
+  // so that we now have a triangle whose base is not necessarily on the plane
+  // formed by ABC
   Vector3 vertex2Direction = Vector3(Q, vertex1);
   Vector3 vertex3Direction = Vector3(P, vertex1);
 
@@ -872,7 +872,8 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
               // tests don't differ on a case to case basis
 
   //Randomly generate a bunch of intersecting triangles (whose intersections
-  // form segments) and test them How many tests are we actually performing here?
+  // form segments) and test them How many tests are we actually performing
+  // here?
   int rantests = 0;
   int skiptests = 0;
   for (int i=0 ; i<5000 ; i++)
