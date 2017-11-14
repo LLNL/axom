@@ -110,10 +110,8 @@ public:
 
   /*!
    * \brief Pushes all messages once to their parent node according to
-   *Lumberjack's
-   *  Communication scheme. This does not guarantee all messages have reached
-   *the
-   *  output node. This does not write out to the given stream.
+   *  Lumberjack's Communication scheme. This does not guarantee all messages
+   * have reached the output node. This does not write out to the given stream.
    */
   virtual void push();
 

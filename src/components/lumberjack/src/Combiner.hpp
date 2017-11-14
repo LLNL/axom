@@ -20,7 +20,7 @@
  * \file Combiner.hpp
  *
  * \brief This file contains the abstract base class defining the interface of
- *all Combiners.
+ *  all Combiners.
  *******************************************************************************
  */
 
@@ -41,8 +41,7 @@ namespace lumberjack
  * \brief Abstract base class defining the interface of all Combiner classes.
  *
  *  Concrete instances need to inherit from this class and implement these
- *functions.
- *  You will need to add your Combiner using Lumberjack::addCombiner
+ *  functions. You will need to add your Combiner using Lumberjack::addCombiner
  *
  * \see MessageEqualityCombiner Lumberjack
  *******************************************************************************
@@ -60,8 +59,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Returns the unique string identifier for this combiner. Used by
-   *Lumberjack
-   *  to differentiate between other combiners.
+   *  Lumberjack to differentiate between other combiners.
    *****************************************************************************
    */
   virtual const std::string id() = 0;
@@ -69,8 +67,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Function used by Lumberjack to indicate whether two Message classes
-   *should be
-   * combined.  They are not actually combined by this function.
+   * should be combined.  They are not actually combined by this function.
    *
    * \param [in] leftMessage The left Message to be compared.
    * \param [in] rightMessage The right Message to be compared.
@@ -85,9 +82,8 @@ public:
    *
    * \param [in,out] combined the Message that will be modified.
    * \param [in] combinee the Message that is combined into the other.
-   * \param [in] ranksLimit The limit on how many individual ranks are tracked
-   *in
-   * the combined Message. Message::rankCount is always incremented.
+   * \param [in] ranksLimit limit on how many individual ranks are tracked
+   *  in combined Messages. Message::rankCount is always incremented.
    *****************************************************************************
    */
   virtual void combine(Message& combined,

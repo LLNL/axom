@@ -38,7 +38,7 @@ namespace lumberjack
 /*!
  *****************************************************************************
  * \brief Recieves any Message sent to this rank. Returns null if terminating
- * message is sent.
+ *  message is sent.
  *
  * \param [in] comm The MPI Communicator.
  *****************************************************************************
@@ -54,7 +54,7 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm);
  * \param [in] comm The MPI Communicator.
  * \param [in] destinationRank Where the Message classes is being sent.
  * \param [in,out] packedMessagesToBeSent All of the Message classes to be sent
- *packed together.
+ *  packed together.
  *****************************************************************************
  */
 void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,

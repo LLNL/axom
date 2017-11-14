@@ -62,7 +62,7 @@ public:
    *
    * \param [in] comm The MPI Communicator
    * \param [in] ranksLimit Limit on how many ranks are individually tracked per
-   *Message.
+   *  Message.
    *****************************************************************************
    */
   void initialize(MPI_Comm comm, int ranksLimit);
@@ -72,8 +72,8 @@ public:
    * \brief Called to finalize the Communicator.
    *
    * This performs any cleanup work the Communicator needs to do before going
-   *away.
-   * It is required that this is the last function called by the Communicator.
+   * away. It is required that this is the last function called by the
+   * Communicator.
    *****************************************************************************
    */
   void finalize();
@@ -90,13 +90,10 @@ public:
    * \brief Sets the rank limit.
    *
    * This is the limit on how many ranks generated a given message are
-   *individually tracked
-   * per Message.  After the limit has been reached, only the Message::rankCount
-   *is
-   * incremented.
+   * individually tracked per Message.  After the limit has been reached, only
+   * the Message::rankCount is incremented.
    *
-   * \param [in] value Limit on how many ranks are individually tracked per
-   *Message.
+   * \param [in] value limits how many ranks are tracked per Message.
    *****************************************************************************
    */
   void ranksLimit(int value);
@@ -106,10 +103,8 @@ public:
    * \brief Returns the rank limit.
    *
    * This is the limit on how many ranks generated a given message are
-   *individually tracked
-   * per Message.  After the limit has been reached, only the Message::rankCount
-   *is
-   * incremented.
+   * individually tracked per Message.  After the limit has been reached, only
+   * the Message::rankCount is incremented.
    *****************************************************************************
    */
   int ranksLimit();
@@ -117,10 +112,8 @@ public:
   /*!
    *****************************************************************************
    * \brief Function used by the Lumberjack class to indicate how many
-   *individual pushes
-   *  fully flush all currently held Message classes to the root node. The
-   *Communicator
-   *  class's tree structure dictates this.
+   *  individual pushes fully flush all currently held Message classes to the
+   *  root node. The Communicator class's tree structure dictates this.
    *****************************************************************************
    */
   int numPushesToFlush();
@@ -128,20 +121,19 @@ public:
   /*!
    *****************************************************************************
    * \brief All children push their Message classes pushed to their parent and
-   *then combined.
+   *  then combined.
+   *
+   * \param [in] packedMessagesToBeSent All of this rank's Message classes
+   *  packed into a single buffer.
+   * \param [in,out] receivedPackedMessages Recieved packed message buffers from
+   *  this nodes children.
    *
    * This is helpful when you want to spread your Lumberjack work over a set of
    * your work. Instead of doing all of Lumberjack's work at one point in your
-   *program.
-   * This does not guarantee your Message will be ready to output.  After this
-   *call
-   * only Message classes at the root node will be returned from
-   *Lumberjack::getMessages.
+   * program. This does not guarantee your Message will be ready to output.
+   * After this call only Message classes at the root node will be returned from
+   * Lumberjack::getMessages.
    *
-   * \param [in] packedMessagesToBeSent All of this rank's Message classes
-   *packed into a single buffer.
-   * \param [in,out] receivedPackedMessages Recieved packed message buffers from
-   *this nodes children.
    *****************************************************************************
    */
   void push(const char* packedMessagesToBeSent,
@@ -150,13 +142,13 @@ public:
   /*!
    *****************************************************************************
    * \brief Function used by the Lumberjack to indicate whether this node should
-   *be
-   * outputting messages. Only the root node outputs messages.
+   *  be outputting messages. Only the root node outputs messages.
    *
    * \return Boolean indicates whether you should output messages
    *****************************************************************************
    */
   bool isOutputNode();
+
 private:
   MPI_Comm m_mpiComm;
   int m_mpiCommRank;

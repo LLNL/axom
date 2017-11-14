@@ -43,8 +43,7 @@ namespace lumberjack
  * \class RootCommunicator
  *
  * \brief A Communicator that all MPI nodes communicate with the root node. This
- *class
- * does NOT scale and is provided for demonstration purposes only.
+ *  class does NOT scale and is provided for demonstration purposes only.
  *
  *  You will need to add your Communicator using Lumberjack::initialize.
  *
@@ -63,7 +62,7 @@ public:
    *
    * \param [in] comm The MPI Communicator
    * \param [in] ranksLimit Limit on how many ranks are individually tracked per
-   *Message.
+   *  Message.
    *****************************************************************************
    */
   void initialize(MPI_Comm comm, int ranksLimit);
@@ -73,8 +72,8 @@ public:
    * \brief Called to finalize the Communicator.
    *
    * This performs any cleanup work the Communicator needs to do before going
-   *away.
-   * It is required that this is the last function called by the Communicator.
+   * away.It is required that this is the last function called by the
+   * Communicator.
    *****************************************************************************
    */
   void finalize();
@@ -91,13 +90,10 @@ public:
    * \brief Sets the rank limit.
    *
    * This is the limit on how many ranks generated a given message are
-   *individually tracked
-   * per Message.  After the limit has been reached, only the Message::rankCount
-   *is
-   * incremented.
+   * individually tracked per Message.  After the limit has been reached, only
+   * the Message::rankCount is incremented.
    *
-   * \param [in] value Limit on how many ranks are individually tracked per
-   *Message.
+   * \param [in] value Limits how many ranks are tracked per Message.
    *****************************************************************************
    */
   void ranksLimit(int value);
@@ -107,10 +103,8 @@ public:
    * \brief Returns the rank limit.
    *
    * This is the limit on how many ranks generated a given message are
-   *individually tracked
-   * per Message.  After the limit has been reached, only the Message::rankCount
-   *is
-   * incremented.
+   * individually tracked per Message.  After the limit has been reached, only
+   * the Message::rankCount is incremented.
    *****************************************************************************
    */
   int ranksLimit();
@@ -118,10 +112,8 @@ public:
   /*!
    *****************************************************************************
    * \brief Function used by the Lumberjack class to indicate how many
-   *individual pushes
-   *  fully flush all currently held Message classes to the root node. The
-   *Communicator
-   *  class's tree structure dictates this.
+   * individual pushes fully flush all currently held Message classes to the
+   * root node. The Communicator class's tree structure dictates this.
    *****************************************************************************
    */
   int numPushesToFlush();
@@ -134,9 +126,9 @@ public:
    * RootCommunicator::pushMessagesFully for this Communicator.
    *
    * \param [in] packedMessagesToBeSent All of this rank's Message classes
-   *packed into a single buffer.
+   *  packed into a single buffer.
    * \param [in,out] receivedPackedMessages Recieved packed message buffers from
-   *this nodes children.
+   *  this nodes children.
    *****************************************************************************
    */
   void push(const char* packedMessagesToBeSent,
@@ -145,8 +137,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Function used by the Lumberjack to indicate whether this node should
-   *be
-   * outputting messages. Only the root node outputs messages.
+   *  be outputting messages. Only the root node outputs messages.
    *****************************************************************************
    */
   bool isOutputNode();
