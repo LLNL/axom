@@ -24,13 +24,14 @@
  * \author K. Weiss (modified to use axom's Slam component)
  *
  * \details  Developing example to use and demo features of Slam on shock tube
- *example over structured 1D mesh.
- *           Tests:
- *           * Sets and subsets.
- *           * Relations over regular grid (should be implicit; currently
- *implemented as explicit static constant relations)
- *           * Fields/maps over the data -- and access to a local datastore
- *(using Slam::FieldRegistry, can easily convert to Sidre).
+ *  example over structured 1D mesh.
+ *
+ *  Tests:
+ *      * Sets and subsets.
+ *      * Relations over regular grid (should be implicit; currently
+ *        implemented as explicit static constant relations)
+ *      * Fields/maps over the data -- and access to a local datastore
+ *        (using Slam::FieldRegistry, can easily convert to Sidre).
  *
  * \verbatim
  *         | m  |            |    mv    |
@@ -91,21 +92,21 @@ const bool verboseOutput = false;
  * \brief Simple representation of the mesh for this 1D example
  *
  * \details Mesh contains a set of elements and a set of faces between elements.
- *         It also contains three subsets: a single inflow; a single outflow
- *element; all internal 'tube' elements. (added 5/2015)
- *         The mesh contains the relations from faces to elements and from tube
- *elements to faces.
+ *  It also contains three subsets: a single inflow; a single outflow
+ *  element; all internal 'tube' elements. (added 5/2015)
+ *  The mesh contains the relations from faces to elements and from tube
+ *  elements to faces.
  *
  * \note (5/2015) We are currently missing an implicit constant grid relation.
  *
  * \note For current implementation with explicit static (constant) relations.
  * \note We are missing a nice way to set the relation elements.
- *       It should not have to be done explicitly in each user code --
- *especially in common use cases
- *       Idea: We could have a relationInverter function that takes a relation
- *from sets A to B
- *             and generates a relation from set B to set A with all the arrows
- *reversed.
+ *  It should not have to be done explicitly in each user code --especially
+    in common use cases
+ *
+ * Idea: We could have a relationInverter function that takes a relation
+ *       from sets A to B and generates a relation from set B to set A with all
+         the arrows reversed.
  */
 class ShockTubeMesh
 {

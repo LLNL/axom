@@ -23,13 +23,13 @@
  * Subsetting policies encompass the type and availability of a set's parent
  * A valid subset policy must support the following interface:
  *   * [required]
- *     * isSubset(): bool -- returns whether the set is a subset of another set
- *     * parentSet() : ParentSetType -- returns a pointer to the parent set.
- *                                      AXOM_NULLPTR when isSubset() is false
- *     * isValid() : bool -- indicates whether the Subsetting policy of the set
- *is valid
+ *   * isSubset(): bool -- returns whether the set is a subset of another set
+ *   * parentSet() : ParentSetType -- returns a pointer to the parent set.
+ *                                     AXOM_NULLPTR when isSubset() is false
+ *   * isValid() : bool -- indicates whether the Subsetting policy of the set
+ *     is valid
  *   * [optional]
- *     * operator(): IntType -- alternate accessor for indirection
+ *   * operator(): IntType -- alternate accessor for indirection
  */
 
 #ifndef SLAM_POLICIES_SUBSET_H_

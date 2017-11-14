@@ -51,7 +51,7 @@ namespace slam
  *  <li> Subzonal elements: sides, corners, finite element degrees of freedom
  *  <li> Boundary elements: external surfaces and springs
  *  <li> Elements of a space partition: e.g. Domains in a block structured mesh,
- *leaf nodes of an octree/kd-tree
+ *       leaf nodes of an octree/kd-tree
  *  <li> AMR bricks / tiles
  *  <li> Thread ids, MPI ranks, warps, thread groups, etc...
  *  <li> particles
@@ -68,7 +68,7 @@ namespace slam
  *
  * Note: Elements of a set do not necessarily need explicit indices.
  * E.g. if we have a contiguous range of elements (or slices of contiguous
- *ranges),
+ * ranges),
  * they can be implicitly encoded.
  *
  * Thus, we can have
@@ -76,7 +76,7 @@ namespace slam
  *  <li> Implicit indexes -- all we need here is a size operator
  *  <li> Sliced indices -- here we need the dimension and the striding
  *  <li> Explicit indices -- for a subset, we need the indices with respect to
- *some other indexing scheme
+ *       some other indexing scheme
  * </ol>
  *
  * The interface is for constant access to the elements.
@@ -100,9 +100,9 @@ public:
    * \param The index of the desired element
    * \return The value of the element at the given position
    * \pre The position must be less than the number of elements in the set (
-   *size() )
+   * size() )
    * \note Concrete realizations of Set also support subscript operator --
-   *operator[].
+   * operator[].
    * \note How are we planning to handle indexes that are out or range
    *(accidentally)?
    *       Are we planning to handle indexes that are intentionally out of range
@@ -130,7 +130,7 @@ public:
 
   /**
    * \brief Checks if there are any elements in the set -- equivalent to:
-   *set.size() == 0
+   * set.size() == 0
    */
   virtual bool          empty() const = 0;
 
@@ -139,7 +139,7 @@ public:
    * \brief Returns true if the set contains the given element.
    *
    * Alternatively, we can return the position in the set containing the
-   *element,
+   * element,
    * with some value for not containing the element
    */
   virtual bool          contains(const SetElement & elt) const = 0;
@@ -152,7 +152,7 @@ public:
 private:
   /**
    * \brief Utility function to verify that the given SetPosition is in a valid
-   *range.
+   * range.
    */
   virtual void verifyPosition(PositionType) const = 0;
 };
@@ -162,7 +162,7 @@ private:
 /**
  * \brief General equality operator for two sets.
  * \details Two sets are considered equal if they have the same number of
- *elements,
+ * elements,
  * and their ordered indices agree.
  */
 inline bool operator==(Set const& set1, Set const& set2)

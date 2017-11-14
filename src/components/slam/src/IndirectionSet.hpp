@@ -39,7 +39,7 @@ namespace slam
  * \class
  *
  * \brief Concrete class (all template parameters fixed) for an array-based
- *indirection set
+ * indirection set
  */
 class ArrayIndirectionSet : public OrderedSet<
     policies::RuntimeSize<Set::PositionType>,

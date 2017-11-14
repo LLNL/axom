@@ -37,10 +37,10 @@ namespace slam
 
 /**
  * \brief Very simple container for fields of a given type DataType with minimal
- *error checking.
- * \note
- *         We are using concrete instances for int and double in the code below.
- *         This should eventually be replaced with the sidre datastore.
+ *  error checking.
+ *
+ * \note We are using concrete instances for int and double in the code below.
+ *       This should eventually be replaced with the sidre datastore.
  */
 template<typename TheDataType>
 class FieldRegistry

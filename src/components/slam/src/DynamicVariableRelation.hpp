@@ -19,7 +19,7 @@
  * \file DynamicVariableRelation.hpp
  *
  * \brief API for a topological relation between two sets in which entities from
- *the first set
+ * the first set
  *        can be related to an arbitrary number of entities from the second set
  *        This relation is dynamic, so it cannot
  *
@@ -119,7 +119,7 @@ public:
   /**
    * \name DirectDataAccess
    * \brief Accessor functions to get the underlying relation data for each
-   *element
+   *  element
 
    * \note We will have to figure out a good way
    * to limit this access to situations where it makes sense.

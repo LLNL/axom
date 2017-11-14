@@ -19,8 +19,7 @@
  * \file slam_set_positionset.cpp
  *
  * This file tests PositionSets within Slam.  These are OrderedSets with a
- *runtime size,
- * but no offsets, stride or indirection.
+ * runtime size, but no offsets, stride or indirection.
  */
 
 #include <iterator>

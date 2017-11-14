@@ -46,9 +46,9 @@ namespace slam
  * It can be useful when we are iterating circularly through the elements
  * in a relation (e.g. consecutive edges around a polygon).
  * The class invariant is that 0 <= val < modulus(), where val is the wrapped
- *integer.
+ * integer.
  * The modulus is controlled by a SizePolicy which allows it to be given at
- *compile time or at runtime.
+ * compile time or at runtime.
  */
 template< typename SizePolicy          = policies::RuntimeSize<int> >
 class ModularInt : private SizePolicy

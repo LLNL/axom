@@ -172,7 +172,7 @@ private:
 /**
  * \brief Definition of static instance of nullSet for all maps
  * \note Should this be a singleton or a global object?  Should the scope be
- *public?
+ * public?
  */
 template<typename DataType>
 NullSet const Map<DataType>::s_nullSet;

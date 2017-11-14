@@ -35,8 +35,8 @@ namespace slam
 
 /**
  * \class PositionSet
- * \brief Models a set whose elements belong to a contiguous range \f$ \in
- *[0,size) \f$
+ * \brief Models a set whose elements belong to a contiguous range
+ *  \f$ \in [0,size) \f$
  */
 class PositionSet : public OrderedSet<>
 {
@@ -66,14 +66,13 @@ public:
 
 /**
  * \class GenericRangeSet
- * \brief Models a set whose elements belong to a contiguous range \f$ \in
- *[lowerIndex,upperIndex) \f$
+ * \brief Models a set whose elements belong to a contiguous range
+ *  \f$ \in [lowerIndex,upperIndex) \f$
  *
- * \details The ElementType here needs to be computable as offsets (of
- *PositionType)
- * from the lowerIndex. Examples include: signed and unsigned integral types
- * This version of a range set still allows you to have different policies
- * on striding, indirection and subsetting
+ * \details The ElementType here needs to be computable as offsets
+ *  (of PositionType) from the lowerIndex. Examples include: signed and unsigned
+ *  integral types This version of a range set still allows you to have
+ * different policies on striding, indirection and subsetting
  */
 template<
   typename StridingPolicy,
@@ -122,11 +121,13 @@ public:
 
 /**
  * \class RangeSet
- * \brief Models a set whose elements belong to a contiguous range \f$ \in
- *[lowerIndex,upperIndex) \f$
+ *
+ * \brief Models a set whose elements belong to a contiguous range
+ *  \f$ \in [lowerIndex,upperIndex) \f$
+ *
  * \details The ElementType here needs to be computable as offsets (of
- *PositionType) from the lowerIndex
- *          Examples include: signed and unsigned integral types
+ *  PositionType) from the lowerIndex Examples include: signed and unsigned
+ *  integral types
  */
 class RangeSet : public OrderedSet<
     policies::RuntimeSize<Set::PositionType>,

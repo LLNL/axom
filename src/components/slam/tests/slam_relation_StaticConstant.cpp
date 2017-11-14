@@ -111,7 +111,7 @@ PositionType elementCardinality(PositionType AXOM_NOT_USED(fromPos) )
 
 /**
  * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using
- *slam::ModularInt
+ *  slam::ModularInt
  */
 PositionType relationData(PositionType fromPos, PositionType toPos)
 {
@@ -141,12 +141,11 @@ void generateIncrementingRelations(PositionType stride, VecType* offsets)
 
 /**
  * \brief Traverses the relation's entities using the double subscript access
- *API
+ *  API
  *
  * \note Expects cardinality and relation data for each element to match the
- *results
- *       of the elementCardinality() and relationData() functions above,
- *respectively.
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void traverseRelation_doubleSubscript(RelationType& rel)
@@ -169,13 +168,11 @@ void traverseRelation_doubleSubscript(RelationType& rel)
  * \brief Traverses relation using separated subscript operators
  *
  * The first subscript operator gets the set of entities in the ToSet that are
- *mapped to the
- * given element of the relation's FromSet
+ * mapped to the given element of the relation's FromSet
  *
  * \note Expects cardinality and relation data for each element to match the
- *results
- *       of the elementCardinality() and relationData() functions above,
- *respectively.
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void traverseRelation_delayedSubscript(RelationType& rel)
@@ -200,9 +197,8 @@ void traverseRelation_delayedSubscript(RelationType& rel)
  *
  * \note The iterator API depends on boost
  * \note Expects cardinality and relation data for each element to match the
- *results
- *       of the elementCardinality() and relationData() functions above,
- *respectively.
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
@@ -241,9 +237,8 @@ void iterateRelation_begin_end(RelationType& rel)
  *
  * \note The iterator API depends on boost
  * \note Expects cardinality and relation data for each element to match the
- *results
- *       of the elementCardinality() and relationData() functions above,
- *respectively.
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void iterateRelation_range(RelationType& rel)

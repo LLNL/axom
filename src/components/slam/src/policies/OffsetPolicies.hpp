@@ -21,14 +21,14 @@
  * \brief Offset policies for SLAM
  *
  * Offset policies are meant to represent the offset to the first element of
- *SLAM ordered set.
+ * SLAM ordered set.
+ *
  * A valid offset policy must support the following interface:
  *   * [required]
  *     * DEFAULT_VALUE is a public static constant of type IntType
  *     * offset() : IntType  -- returns the offset
  *     * isValid() : bool -- indicates whether the Offset policy of the set is
- *valid
- *   * [optional]
+ *       valid  [optional]
  *     * operator(): IntType -- alternate accessor for the offset value
  */
 
@@ -54,7 +54,7 @@ namespace policies
 
 /**
  * \brief A policy class for the offset in a set.  The offset can be set at
- *runtime.
+ * runtime.
  */
 template<typename IntType>
 struct RuntimeOffset

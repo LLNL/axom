@@ -19,10 +19,10 @@
  * \file
  *
  * \brief Simple example that uses Slam for generating and processing a simple
- *3D mesh.
+ *  3D mesh.
  *
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone
- *relation and does simple mesh processing.
+ *  relation and does simple mesh processing.
  *
  * \author T. Brunner (original)
  * \author K. Weiss (modified to use axom's Slam component)

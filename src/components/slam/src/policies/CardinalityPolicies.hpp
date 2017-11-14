@@ -21,32 +21,31 @@
  * \brief Cardinality policies for Slam
  *
  * Cardinality policies are meant to represent the cardinality of a relation
- *with respect to an element of a an OrderedSet
- * i.e. the number of elements of a FromSet to which each element of a ToSet
- *maps.
+ * with respect to an element of a an OrderedSet, i.e., the number of elements
+ * of a FromSet to which each element of a ToSet maps.
+ *
  * This file implements two concrete cardinality policies:
  * * ConstantCardinality, in which every member of the FromSet maps to a fixed
- *number of entries in the ToSet
+ *   number of entries in the ToSet
  * * VariableCardinality, in which members of the FromSet map to an arbitrary
- *number of entries in the ToSet
+ *   number of entries in the ToSet
  *
  * A valid cardinality policy must support the following interface:
- *     * RelationalOperatorSizeType
- *          -- A public type that indicates the SizePolicy for the each entry in
- *the Cardinality relation
- *             \see SizePolicies.hpp
- *     * size(ElementType idx) : const ElementType
- *          -- returns the cardinality of the relation for element with index
- *idx of the FromSet
- *     * offset(ElementType idx) : const ElementType
- *          -- returns the offset to the first element of the ToSet for element
- *with index idx of the FromSet
- *     * totalSize(): int
- *          -- returns the total number of elements in this relation.
- *             That is, the sum of size(idx) for each element (with index idx)
- *of the from set.
- *     * isValid(): bool
- *          -- indicates whether the CardinalityPolicy instance is valid
+ *  * RelationalOperatorSizeType
+ *    -- A public type that indicates the SizePolicy for the each entry in
+ *        the Cardinality relation \see SizePolicies.hpp
+ *  * size(ElementType idx) : const ElementType
+ *    -- returns the cardinality of the relation for element with index
+ *        idx of the FromSet
+ *  * offset(ElementType idx) : const ElementType
+ *     -- returns the offset to the first element of the ToSet for element
+ *        with index idx of the FromSet
+ *  * totalSize(): int
+ *     -- returns the total number of elements in this relation.
+ *        That is, the sum of size(idx) for each element (with index idx)
+ *        of the from set.
+ *  * isValid(): bool
+ *     -- indicates whether the CardinalityPolicy instance is valid
  *
  */
 

@@ -21,25 +21,24 @@
  * \brief Indirection policies for SLAM
  *
  * Indirection policies encompass the underlying storage for indirection buffers
- *for a SLAM set, relation or map.
- *
- * A valid indirection policy must support the following interface:
+ * for a SLAM set, relation or map. A valid indirection policy must support the
+ * following interface:
  *   * [required]
- *     * typedef IndirectionResult -- the type of the result of an indirection
- *(const/nonconst and ref/nonref)
- *     * indirection() : IntType  -- returns the value of the element after
- *indirection
- *     * hasIndirection(): bool -- returns whether there is an indirection
- *buffer
- *     * isValid() : bool -- indicates whether the Indirection policy of the set
- *is valid
+ *   * typedef IndirectionResult -- the type of the result of an indirection
+ *      (const/nonconst and ref/nonref)
+ *   * indirection() : IntType  -- returns the value of the element after
+ *     indirection
+ *   * hasIndirection(): bool -- returns whether there is an indirection
+ *     buffer
+ *   * isValid() : bool -- indicates whether the Indirection policy of the set
+ *      is valid
  *   * [optional]
  *     * operator(): IntType -- alternate accessor for indirection
  *     * data() : ElementType* -- allows direct access to the underlying buffer
- *(when this exists)
+ *       (when this exists)
  *
  * \note Slam's Sets, Relations and Maps are not responsible for
- *allocating/deallocating their own memory
+ *  allocating/deallocating their own memory
  */
 
 #ifndef SLAM_POLICIES_INDIRECTION_H_
@@ -246,8 +245,8 @@ struct STLVectorIndirection
       if(verboseOutput)
       {
         SLIC_DEBUG(
-          "Vector-based indirection set with non-zero size (size="<< size
-                                                                  << ") requires a valid data buffer, but buffer pointer was null.");
+          "Vector-based indirection set with non-zero size (size="<< size <<
+          ") requires a valid data buffer, but buffer pointer was null.");
       }
 
       bValid = false;

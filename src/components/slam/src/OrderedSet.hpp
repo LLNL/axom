@@ -20,8 +20,7 @@
  *
  * \brief Basic API for an ordered set of entities in a simulation
  * \note We are actually storing (ordered) multisets, since elements can be
- *repeated
- * an arbitrary number of times (e.g. for indirection sets)
+ *  repeated an arbitrary number of times (e.g. for indirection sets)
  *
  */
 
@@ -147,7 +146,7 @@ public:
    * \brief Helper class for constructing an ordered set.
    *
    *  Uses named parameter idiom to enable function chaining and for better code
-   *self-documentation
+   *  self-documentation
    * */
   struct SetBuilder
   {
@@ -306,7 +305,7 @@ public:     // Functions related to iteration
 public:
   /**
    * \brief Given a position in the Set, return a position in the larger index
-   *space
+   *  space
    */
   inline typename IndirectionPolicy::IndirectionResult
   operator[](PositionType pos) const

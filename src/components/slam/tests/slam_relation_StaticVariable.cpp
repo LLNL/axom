@@ -127,7 +127,7 @@ void generateIncrementingRelations(VecType* begins, VecType* indices)
 
 /**
  * \brief Traverses the relation's entities using the double subscript access
- *API
+ *  API
  *
  * \note Assumes that the relation data has been set
  * using the generateIncrementingRelations() function
