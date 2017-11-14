@@ -19,8 +19,7 @@
  * a --protocol option (the default is 'json')
  * and  a --strip option to truncate the array data to at most N elements.
  * The strip option also prepends each array with its original size and a filler
- *entry
- * of 0 for integer arrays or nan for floating point arrays.
+ * entry of 0 for integer arrays or nan for floating point arrays.
  * E.g. if the array had 6 entries [1.01. 2.02, 3.03, 4.04, 5.05, 6.06]
  * and the user passed in --strip 3, the array would be converted to
  * [6, nan, 1.01, 2.02, 3.03].
@@ -247,12 +246,11 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
 
 /**
  * \brief Helper function to allocate storage for the external data of the input
- *datastore
+ * datastore
  *
  * Iterates recursively through the views and groups of the provided group to
- *find
- * the external data views and allocates the required storage within the extPtrs
- *vector
+ * find the external data views and allocates the required storage within the
+ * extPtrs vector
  *
  * \param grp  The group to traverse
  * \param extPtrs [out] A vector to hold pointers to the allocated data
@@ -394,13 +392,13 @@ void modifyFinalValues(View* view, int origSize)
 
 /**
  * \brief Recursively traverse views and groups in grp and truncate views to
- *have at most maxSize+2 elements.
+ * have at most maxSize+2 elements.
  *
  * Within the truncated arrays, the first element will be the size of the
- *original array and the second will
+ * original array and the second will
  * be 0 for integers and nan for floating points.
  * This will be followed by (at most) the first maxSize elements of the original
- *array
+ * array
  */
 void truncateBulkData(Group* grp, int maxSize)
 {
