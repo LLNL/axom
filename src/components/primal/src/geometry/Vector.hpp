@@ -149,7 +149,7 @@ public:
    * to NDIMS.
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
-  Vector(const T * vals, int sz = NDIMS) : m_components(vals, sz) {}
+  Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) {}
 
   /*!
    * \brief Constructor to create vector from a Point
@@ -204,8 +204,8 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T * data() const { return m_components.data(); }
-  T * data()             { return m_components.data(); }
+  const T* data() const { return m_components.data(); }
+  T* data()             { return m_components.data(); }
 
   /*!
    * \brief Equality comparison operator for vectors.

@@ -52,7 +52,8 @@ std::string getCWD()
 
   if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
   {
-    //Note: Cannot use logging in COMMON component -- topic of JIRA issue ATK-463
+    //Note: Cannot use logging in COMMON component -- topic of JIRA issue
+    // ATK-463
     //SLIC_WARNING("Common::Could not find cwd");
 
     return std::string("./");

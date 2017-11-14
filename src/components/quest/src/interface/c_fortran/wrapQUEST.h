@@ -36,11 +36,11 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-void QUEST_initialize(MPI_Fint comm, const char * fileName,
+void QUEST_initialize(MPI_Fint comm, const char* fileName,
                       bool requiresDistance, int ndims, int maxElements,
                       int maxLevels);
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName,
+void QUEST_initialize_bufferify(MPI_Fint comm, const char* fileName,
                                 int LfileName, bool requiresDistance, int ndims,
                                 int maxElements, int maxLevels);
 
@@ -50,11 +50,11 @@ double QUEST_distance(double x, double y, double z);
 
 int QUEST_inside(double x, double y, double z);
 
-void QUEST_mesh_min_bounds(double * coords);
+void QUEST_mesh_min_bounds(double* coords);
 
-void QUEST_mesh_max_bounds(double * coords);
+void QUEST_mesh_max_bounds(double* coords);
 
-void QUEST_mesh_center_of_mass(double * coords);
+void QUEST_mesh_center_of_mass(double* coords);
 
 #ifdef __cplusplus
 }

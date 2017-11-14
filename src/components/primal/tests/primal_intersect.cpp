@@ -734,17 +734,16 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l,
 
   Q= Point3::make_point(Q_x,Q_y,Q_z);
 
-  /*PQ is so random segment on the triangle.  We create a vertex called vertex1 and
-     use
-     it to create the triangle formed by P', Q' and vertex1. */
+  /*PQ is so random segment on the triangle.  We create a vertex called vertex1
+     and use it to create the triangle formed by P', Q' and vertex1. */
 
   //Step 3: choose some vertex away from the triangle
   Point3 vertex1 = randomPt< 3 >(0.,1.);
 
   //Step 4:
-  //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that
-  // we now
-  //have a triangle whose base is not necessarily on the plane formed by ABC
+  // we scale the segments formed by both vertex 1 and P and by vertex 1 and Q
+  // so that we now have a triangle whose base is not necessarily on the plane
+  // formed by ABC
   Vector3 vertex2Direction = Vector3(Q, vertex1);
   Vector3 vertex3Direction = Vector3(P, vertex1);
 
@@ -869,12 +868,12 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
   //future work: test triangle triangle with a bunch of random test cases
 
-  srand(1);   //we want same random number sequence everytime to make sure our tests
-              // don't differ on a case to case basis
+  srand(1);   // we want same random number sequence everytime to make sure our
+              // tests don't differ on a case to case basis
 
-  //Randomly generate a bunch of intersecting triangles (whose intersections form
-  // segments) and test them
-  // How many tests are we actually performing here?
+  //Randomly generate a bunch of intersecting triangles (whose intersections
+  // form segments) and test them How many tests are we actually performing
+  // here?
   int rantests = 0;
   int skiptests = 0;
   for (int i=0 ; i<5000 ; i++)
@@ -943,7 +942,8 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
             << " against triangle " << tri2
             << "\n\t -- intersects? "
             << (primal::intersect(tri2, box2) ? "yes" : "no")
-            //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ? "yes":"no")
+            //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ?
+            // "yes":"no")
             );
   //EXPECT_TRUE( primal::intersect(tri, box1));
 
@@ -1331,7 +1331,8 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
                    PointType::make_point( 2,0,2));
   EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionParam, intBary));
 
-  // Here, intersectionParam is the distance along the ray, with the source being 0.
+  // Here, intersectionParam is the distance along the ray, with the source
+  // being 0.
   // This is different from a segment's intersection parameter (see below).
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
@@ -1362,8 +1363,10 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   double intersectionParam = 0.;
   EXPECT_TRUE( axom::primal::intersect(t, s, intersectionParam, intBary));
 
-  // Here, intersectionParam is the distance along the segment, with the source being 0
-  // and the target being 1.  This is different from a ray's intersection parameter
+  // Here, intersectionParam is the distance along the segment, with the source
+  // being 0
+  // and the target being 1.  This is different from a ray's intersection
+  // parameter
   // (see above).
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
@@ -1536,7 +1539,7 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

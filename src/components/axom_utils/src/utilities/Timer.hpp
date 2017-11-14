@@ -63,8 +63,8 @@ namespace utilities
 /*!
  * \brief A simple Timer class to measure execution time.
  *
- * \note The actual timing functionality is implemented using a HighPrecisionTimer
- *  instance.  These are located in the detail namespace
+ * \note The actual timing functionality is implemented using a
+ *  HighPrecisionTimer instance.  These are located in the detail namespace
  *  using the chrono library in C++11, GetTickCount64() on Windows
  *  and glibc's gettimeofday() otherwise.
  *

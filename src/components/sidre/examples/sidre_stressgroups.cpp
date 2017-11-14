@@ -33,10 +33,10 @@ using axom::sidre::DataStore;
  * Purpose   :
  *************************************************************************/
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
   size_t num_groups = 0;
   if (argc > 1)

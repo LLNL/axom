@@ -53,8 +53,8 @@ void init()
     std::string( "\t LINE:<LINE>\n" );
 
   physicsA_log.open( "physicsA.log" );
-  slic::LogStream * ls = new slic::GenericOutputStream(&physicsA_log,
-                                                       physicsA_format);
+  slic::LogStream* ls = new slic::GenericOutputStream(&physicsA_log,
+                                                      physicsA_format);
 
   slic::createLogger( "physicsA", slic::inherit::errors_and_warnings );
   slic::activateLogger( "physicsA" );

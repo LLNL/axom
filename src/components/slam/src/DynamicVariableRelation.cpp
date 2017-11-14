@@ -26,7 +26,7 @@ namespace axom
 namespace slam
 {
 
-DynamicVariableRelation::DynamicVariableRelation (Set * fromSet, Set * toSet)
+DynamicVariableRelation::DynamicVariableRelation (Set* fromSet, Set* toSet)
   : m_fromSet(fromSet), m_toSet(toSet)
 {
   m_relationsVec.resize( m_fromSet->size() );

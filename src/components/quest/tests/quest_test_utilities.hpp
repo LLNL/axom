@@ -37,8 +37,10 @@ using axom::primal::Triangle;
  * \file
  *
  * This file contains several utility functions for testing the quest component,
- * e.g. generating random doubles and Points, creating a simple mesh of an octahedron...
- * We may later decide to move some of these into the actual component if they are deemed useful.
+ * e.g. generating random doubles and Points, creating a simple mesh of an
+ * octahedron...
+ * We may later decide to move some of these into the actual component if they
+ * are deemed useful.
  */
 
 namespace axom
@@ -50,10 +52,13 @@ namespace utilities
 
 
 /**
- * \brief Simple utility function to generate a random double in the range of beg to end
+ * \brief Simple utility function to generate a random double in the range of
+ *  beg to end
  * \param beg The lower value of the range (default 0.)
  * \param end The upper value of the range (default 1.)
+ *
  * \pre If the range is zero, we set it to 1
+ *
  * \return A double in the range [beg,end]
  */
 double randomDouble(double beg = 0., double end = 1.)
@@ -68,7 +73,7 @@ double randomDouble(double beg = 0., double end = 1.)
 
 /**
  * \brief Simple utility to generate a Point whose entries
- * are random values in the range [beg, end]
+ *  are random values in the range [beg, end]
  */
 template<int DIM>
 Point<double,DIM> randomSpacePt(double beg, double end)
@@ -107,7 +112,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
  * Vertices of the octahedron are at +-i, +-j and +-k.
  * \note The caller must delete the mesh
  */
-axom::mint::Mesh * make_octahedron_mesh()
+axom::mint::Mesh* make_octahedron_mesh()
 {
   typedef int VertexIndex;
   typedef Point<double, 3> SpacePt;
@@ -159,7 +164,8 @@ axom::mint::Mesh * make_octahedron_mesh()
   //                  POS_Y, NEG_X,
   //                  NEG_Y, NEG_Y };
 
-  // First, confirm that all triangles have normals that point away from the origin
+  // First, confirm that all triangles have normals that point away from the
+  // origin
   for(int i =0 ; i < NUM_TRIS ; ++i)
   {
     int baseIndex = i*VERTS_PER_TRI;
@@ -173,7 +179,7 @@ axom::mint::Mesh * make_octahedron_mesh()
 
   // Now create an unstructured triangle mesh from the two arrays
   typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-  TriangleMesh * triMesh = new TriangleMesh(3);
+  TriangleMesh* triMesh = new TriangleMesh(3);
 
   // insert verts
   for(int i=0 ; i< NUM_VERTS ; ++i)
