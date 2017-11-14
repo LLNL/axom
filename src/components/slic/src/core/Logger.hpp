@@ -306,7 +306,7 @@ private:
 
   /*!
    * \brief Custom constructor. Constructs a Logger instance with the given
-   *name.
+   *  name.
    * \param [in] name the name associated with the logger.
    */
   Logger(const std::string& name);
