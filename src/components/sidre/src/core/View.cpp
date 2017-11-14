@@ -605,7 +605,7 @@ int View::getShape(int ndims, SidreLength* shape) const
  *************************************************************************
  *
  * Return offset from description in terms of number of elements (0 if not
- *described)
+ * described)
  *
  *************************************************************************
  */
@@ -639,7 +639,7 @@ SidreLength View::getOffset() const
  *************************************************************************
  *
  * Return stride from description in terms of number of elements (1 if not
- *described)
+ * described)
  *
  *************************************************************************
  */

@@ -168,7 +168,7 @@ public:
 
   /*!
    * \brief Return true if Buffer has been (re)allocated with length >= 0, else
-   *false.
+   *  false.
    */
   bool isAllocated() const
   {

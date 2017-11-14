@@ -734,7 +734,7 @@ public:
 
   /*!
    * \brief Destroy View with given name or path owned by this Group and
-   *deallocate
+   * deallocate
    * its data if it's the only View associated with that data.
    */
   void destroyViewAndData(const std::string& path);
@@ -998,10 +998,10 @@ public:
    * \brief Copy data Group native layout to given Conduit node.
    *
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node
-   *data
+   * data
    * externally to the Sidre View data so that it can be filled in from the data
    * in the file (independent of file format) and can be accessed as a Conduit
-   *tree.
+   * tree.
    *
    * \return True if the Group or any of its children were added to the Node,
    * false otherwise.
@@ -1014,15 +1014,14 @@ public:
    * \brief Copy data Group native layout to given Conduit node.
    *
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node
-   *data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit
-   *tree.
+   * data externally to the Sidre View data so that it can be filled in from the
+   * data in the file (independent of file format) and can be accessed as a
+   * Conduit tree.
    *
    * Only the Views which have external data are added to the node.
    *
    * \return True if the Group or any of its children have an external
-   * View, false otherwise.
+   *  View, false otherwise.
    */
   bool createExternalLayout(Node& n,
                             const Attribute* attr = AXOM_NULLPTR) const;

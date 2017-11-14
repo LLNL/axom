@@ -20,7 +20,7 @@
  *  \file SiderDataTypeIds.h
  *
  *  \brief Contains defines used to establish type ids for numeric types in
- *Sidre component.
+ *   Sidre component.
  *
  */
 

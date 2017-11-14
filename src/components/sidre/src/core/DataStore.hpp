@@ -242,7 +242,7 @@ public:
 
   /*!
    * \brief Return true if DataStore has created attribute with index; else
-   *false.
+   * false.
    */
   bool hasAttribute( IndexType idx ) const;
 
@@ -325,9 +325,9 @@ public:
 
   /*!
    * \brief Return next valid Attribute index in DataStore object after given
-   *index
+   * index
    *        (i.e., smallest index over all Attribute indices larger than given
-   *one).
+   * one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.

@@ -310,39 +310,37 @@ public:
 
   /*!
    * \brief Return the offset in number of elements for the data described by
-   *this View object.
+   *  this View object.
    *
    * \warning The code currently assumes that offsets into a view are given in
-   *terms of whole elements.
-   *       And it is an assertion error if this is not the case.
-   *       If you have a different use case, please talk to the Sidre team
+   *  terms of whole elements. And it is an assertion error if this is not the
+   *  case. If you have a different use case, please talk to the Sidre team
    *
    * \note View::getData() and View::getArray() already account for the offset,
    *        and return a pointer to the first element in the array:
    *        View::getVoidPtr() does not account for the offset.
    *
    * IMPORTANT: This function is based on the view description, it does not
-   *imply that the data is allocated
+   * imply that the data is allocated
    *
    * \return The offset, in terms of the number of elements, from the described
-   *array to the first element.
+   *  array to the first element.
    */
   SidreLength getOffset() const;
 
   /*!
    * \brief Return the stride in number of elements for the data described by
-   *this View object.
+   *  this View object.
    *
    * \warning The code currently assumes that strides into a view are given in
-   *terms of whole elements.
-   *       And it is an assertion error if this is not the case.
-   *       If you have a different use case, please talk to the Sidre team
+   *  terms of whole elements. And it is an assertion error if this is not the
+   *  case. If you have a different use case, please talk to the Sidre team
    *
    * IMPORTANT: This function is based on the view description, it does not
-   *imply that the data is allocated
+   * imply that the data is allocated
    *
    * \return The stride, in terms of the number of elements, between elements in
-   *the described array.
+   *  the described array.
    */
   SidreLength getStride() const;
 
@@ -392,8 +390,8 @@ public:
 
   /*!
    * \brief Returns boolean telling whether two Views have equivalent
-   * internal description, in terms of name, datatype, and current state of the
-   * object.  Values of the data are not checked.
+   *  internal description, in terms of name, datatype, and current state of the
+   *  object. Values of the data are not checked.
    */
   bool isEquivalentTo(const View* other) const;
 
@@ -863,10 +861,9 @@ public:
    *  If view does not contain allocated data, an empty Node::Value will be
    *  returned.
    *
-   *  \note The return value already accounts for the View's offset (when
-   *present),
-   *        so, if the View is an array, getData()[0] already points to the
-   *first element
+   *  \note The return value already accounts for the View's offset
+   *   (when present), so, if the View is an array, getData()[0] already points
+   *   to thefirst element
    */
   Node::Value getData()
   {
@@ -883,8 +880,7 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getData() that can be used when
-   *you are calling getData(),
-   *        but not assigning the return type.
+   *  you are calling getData(), but not assigning the return type.
    *
    * \sa getData()
    */
@@ -899,14 +895,12 @@ public:
    * \brief Returns a void pointer to the view's data
    *
    * \note This function returns the base pointer that was used to set up the
-   *view.
-   *       It does not account for any offsets or strides in the View's
-   *description.
+   *  view. It does not account for any offsets or strides in the View's
+   *  description.
    *
    * To access the first data element, you will need to cast to the appropriate
-   *type
-   * and add the offset.  E.g. if the underlying data is an array of integers
-   * you can access the first element as follows:
+   * type and add the offset.  E.g. if the underlying data is an array of
+   * integers you can access the first element as follows:
    * \verbatim
    *    void* vptr = view->getVoidPtr();
    *    int*  iptr = static_cast<int*>(vptr) + view->getOffset();
@@ -943,10 +937,9 @@ public:
    * \brief Copy data view native layout to given Conduit node.
    *
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node
-   *data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit
-   *tree.
+   * data externally to the Sidre View data so that it can be filled in from the
+   * data in the file (independent of file format) and can be accessed as a
+   * Conduit tree.
    */
   void createNativeLayout(Node& n) const;
 
@@ -1162,8 +1155,8 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getAttributeScalar()
-   *        that can be used when you are calling
-   *        getAttributeScalar(), but not assigning the return type.
+   *  that can be used when you are calling getAttributeScalar(), but not
+   *  assigning the return type.
    *
    * \sa getAttributeScalar()
    */
@@ -1178,8 +1171,8 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getAttributeScalar()
-   *        that can be used when you are calling
-   *        getAttributeScalar(), but not assigning the return type.
+   *  that can be used when you are calling getAttributeScalar(), but not
+   *  assigning the return type.
    *
    * \sa getAttributeScalar()
    */
@@ -1194,8 +1187,8 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getAttributeScalar()
-   *        that can be used when you are calling
-   *        getAttributeScalar(), but not assigning the return type.
+   *  that can be used when you are calling getAttributeScalar(), but not
+   *  assigning the return type.
    *
    * \sa getAttributeScalar()
    */
@@ -1378,7 +1371,7 @@ private:
 
   /*!
    * \brief Set the shape to be a one dimension with the described number of
-   *elements.
+   * elements.
    */
   void describeShape();
 
