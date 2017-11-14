@@ -64,7 +64,8 @@ void all_nearest_neighbors_bruteforce(double * x, double * y, double * z,
   }
 
   for (int i = 0; i < n; ++i) {
-    for (int j = i + 1; j < n; ++j) {
+    // The j-loop has to go from 0, not i+1, because "closest" is not symmetrical.
+    for (int j = 0; j < n; ++j) {
       if (region[i] != region[j]) {
         double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
         if (sqdist < bestsqdist[i] && sqdist < sqlimit) {
@@ -74,6 +75,8 @@ void all_nearest_neighbors_bruteforce(double * x, double * y, double * z,
       }
     }
   }
+
+  delete [] bestsqdist;
 }
 
 //------------------------------------------------------------------------------
@@ -91,6 +94,7 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
   typedef BoxType::VectorType VectorType;
 
   double * bestsqdist = new double[n];
+  double sqlimit = limit * limit;
 
   PointType pmin, pmax;
   for (int i = 0; i < n; ++i) {
@@ -131,7 +135,7 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
         int j = bs[bj];
         if (region[i] != region[j]) {
           double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
-          if (sqdist < bestsqdist[i]) {
+          if (sqdist < bestsqdist[i] && sqdist < sqlimit) {
             bestsqdist[i] = sqdist;
             neighbor[i] = j;
           }
@@ -139,6 +143,8 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
       }
     }
   }
+
+  delete [] bestsqdist;
 }
 
 
