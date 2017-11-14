@@ -1112,8 +1112,9 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
     PointType tripoint1 = tri.baryToPhysical(tip1);
     PointType segpoint1 = seg1.at(t1);
-    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
-      " and segpoint is " << segpoint1;
+    EXPECT_TRUE(testPointsClose(tripoint1,segpoint1))
+      << "Tripoint is " << tripoint1
+      << " and segpoint is " << segpoint1;
 
     // Find the intersection of segment from p1 to p2
     double t2 = 0;
