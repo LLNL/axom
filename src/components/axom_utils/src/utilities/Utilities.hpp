@@ -166,8 +166,9 @@ T swapEndian(T val)
 {
   const int NBYTES = sizeof(T);
 
-  AXOM_STATIC_ASSERT_MSG( NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
-                          "swapEndian only valid for types of size 2, 4 or 8 bytes.");
+  AXOM_STATIC_ASSERT_MSG(
+    NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
+    "swapEndian only valid for types of size 2, 4 or 8 bytes.");
 
   #ifdef AXOM_USE_CXX11
   AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
@@ -197,7 +198,7 @@ T swapEndian(T val)
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] thresh The threshold of the fuzzy comparison.  Default is 1.0e-8.
  * \return True if the absolute value of the difference is less than thresh and
- *false otherwise.
+ *  false otherwise.
  */
 template<typename RealType>
 bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
@@ -210,12 +211,12 @@ bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] relThresh The relative threshold of the fuzzy comparison.
- * Default is 1.0e-6.
+ *  Default is 1.0e-6.
  * \param [in] absThresh The absolute threshold of the fuzzy comparison.
- * Default is 1.0e-8.
+ *  Default is 1.0e-8.
  * \return True if the absolute value of the difference is less than the sum of
- *absThresh
- *  and the relative difference (relThresh times the absolute max of a and b).
+ *  absThresh and the relative difference (relThresh times the absolute max of
+ *  a and b).
  */
 template<typename RealType>
 bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,

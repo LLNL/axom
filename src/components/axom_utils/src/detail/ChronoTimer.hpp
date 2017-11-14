@@ -46,12 +46,12 @@ namespace detail
  * \class
  *
  * \brief A simple timer utility based on the C++11 chrono library
+ *
  * \note This is a simple class without any checks to ensure proper usage of the
- *timer.
- *       It is meant to be used as a base class for the Timer class in
- *axom_utils/Timer.hpp
- *       Specifically, we do not check that start() was called before stop(),
- *       or if stop() was called before attempting to find the elapsed time.
+ *  timer. It is meant to be used as a base class for the Timer class in
+ *  axom_utils/Timer.hpp. Specifically, we do not check that start() was called
+ *  before stop(), or if stop() was called before attempting to find the elapsed
+ *  time.
  */
 class ChronoTimer
 {
