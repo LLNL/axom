@@ -50,11 +50,12 @@ namespace quest
 /*!
  * \class ImplicitGrid
  *
- * \brief An implicit grid is an occupancy-based spatial index over an indexed set
- * of objects in space.
+ * \brief An implicit grid is an occupancy-based spatial index over an indexed
+ * set of objects in space.
  *
  * An ImplicitGrid divides a given rectilinear slab of space (defined by an
- * axis aligned bounding box) into uniformly sized cells of a specified resolution.
+ * axis aligned bounding box) into uniformly sized cells
+ * of a specified resolution.
  * The GridCells of the ImplicitGrid index a subset of the items from an indexed
  * set whose cardinality is specified during the ImplicitGrid's initialization.
  * Users can insert items from the indexed set into an ImplicitGrid by providing
@@ -64,7 +65,8 @@ namespace quest
  * for each cell in the underlying multidimensional grid,
  * the ImplicitGrid encodes a single array of bins per dimension, each of which
  * has a bitset over the index space.  Thus, the storage overhead of an
- * ImplicitGrid is fixed at initialization time to \f$ numElts * sum_i ( res[i] ) \f$ bits.
+ * ImplicitGrid is fixed at initialization time to
+ * \f$ numElts * sum_i ( res[i]) \f$ bits.
  * Queries are implemented in terms of unions and intersections of bitsets.
  *
  * One might prefer an ImplicitGrid over a UniformGrid when one expects
@@ -106,14 +108,15 @@ public:
    * a grid resolution a number of elements.
    *
    * \param [in] boundingBox Bounding box of domain to index
-   * \param [in] gridRes Pointer to the resolution for lattice covering bounding box
+   * \param [in] gridRes Pointer to resolution for lattice covering bounding box
    * \param [in] numElts The number of elements to be indexed
    *
    * \pre \a gridRes is either NULL or has \a NDIMS coordinates
-   * \sa initialize() for details on setting grid resolution when \a gridRes is NULL
+   * \sa initialize() for details on setting grid resolution
+   * when \a gridRes is NULL
    */
   ImplicitGrid(const SpatialBoundingBox& boundingBox,
-               const GridCell * gridRes,
+               const GridCell* gridRes,
                int numElts)
     : m_bb(boundingBox), m_initialized(false)
   {
@@ -130,11 +133,12 @@ public:
    *
    * \pre \a bbMin and \a bbMax are not NULL and have \a NDIMS coordinates
    * \pre \a gridRes is either NULL or has \a NDIMS coordinates
-   * \sa initialize() for details on setting grid resolution when \a gridRes is NULL
+   * \sa initialize() for details on setting grid resolution
+   * when \a gridRes is NULL
    */
-  ImplicitGrid(const double * bbMin,
-               const double * bbMax,
-               const int * gridRes,
+  ImplicitGrid(const double* bbMin,
+               const double* bbMax,
+               const int* gridRes,
                int numElts)
     : m_initialized(false)
   {
@@ -143,7 +147,7 @@ public:
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
-    const GridCell * pRes =
+    const GridCell* pRes =
       (gridRes != AXOM_NULLPTR) ? &m_gridRes : AXOM_NULLPTR;
 
     initialize(
@@ -165,13 +169,13 @@ public:
    * \param [in] numElts The number of elements to be indexed
    * \pre The ImplicitGrid has not already been initialized
    *
-   * \note When \a gridRes is NULL, we use a heuristic to set the grid resolution
-   * to the N^th root of \a numElts. We also ensure that the resolution along
-   * any dimension is at least one.
+   * \note When \a gridRes is NULL, we use a heuristic to set the grid
+   * resolution to the N^th root of \a numElts. We also ensure that
+   * the resolution along any dimension is at least one.
    *
    */
   void initialize(const SpatialBoundingBox& boundingBox,
-                  const GridCell * gridRes,
+                  const GridCell* gridRes,
                   int numElts)
   {
     SLIC_ASSERT( !m_initialized);
@@ -208,7 +212,8 @@ public:
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
     }
 
-    // Set the expansion factor for each element to a small fraction of the grid's bounding boxes diameter
+    // Set the expansion factor for each element to a small fraction of the
+    // grid's bounding boxes diameter
     // TODO: Add a constructor that allows users to set the expansion factor
     const double EPS = 1e-8;
     m_expansionFactor = m_bb.range().norm() * EPS;
@@ -229,14 +234,16 @@ public:
    * \param [in] bbox The bounding box of the element
    * \param [in] idx  The index of the element
    *
-   * \note \a bbox is intentionally passed by value since insert() modifies its bounds
+   * \note \a bbox is intentionally passed by value since insert()
+   * modifies its bounds
    */
   void insert(SpatialBoundingBox bbox, IndexType idx)
   {
     SLIC_ASSERT(m_initialized);
 
     // Note: We slightly inflate the bbox of the objects.
-    //       This effectively ensures that objects on grid boundaries are added all nearby grid cells.
+    //       This effectively ensures that objects on grid boundaries are added
+    //       in all nearby grid cells.
 
     bbox.expand(m_expansionFactor);
 
@@ -263,7 +270,8 @@ public:
    * Finds the candidate elements in the vicinity of query point pt
    *
    * \param [in] pt The query point
-   * \return A bitset \a bSet whose bits correspond to the elements of the IndexSet.
+   * \return A bitset \a bSet whose bits correspond to
+   * the elements of the IndexSet.
    * The bits of \a bSet are set if their corresponding element bounding boxes
    * overlap the grid cell containing \a pt.
    */
@@ -358,19 +366,30 @@ private:
 
 private:
 
-  SpatialBoundingBox m_bb;      //!< The bounding box of the ImplicitGrid
-  LatticeType m_lattice;        //!< A lattice to help in converting from points in space to GridCells
-  double m_expansionFactor;     //!< The amount by which to expand bounding boxes
-  GridCell m_gridRes;           //!< Resolution of the ImplicitGrid
+  //! The bounding box of the ImplicitGrid
+  SpatialBoundingBox m_bb;
 
-  ElementSet m_elementSet;      //!< The index set of the elements
-  BinSet m_bins[NDIMS];         //!< A set of bins, per dimension
-  BinBitMap m_binData[NDIMS];   //!< The data associated with each bin
+  //! A lattice to help in converting from points in space to GridCells
+  LatticeType m_lattice;
 
-  bool m_initialized;           //!< Tracks whether the ImplicitGrid has been initialized
+  //! The amount by which to expand bounding boxes
+  double m_expansionFactor;
 
+  //! Resolution of the ImplicitGrid
+  GridCell m_gridRes;
+
+  //! The index set of the elements
+  ElementSet m_elementSet;
+
+  //! A set of bins, per dimension
+  BinSet m_bins[NDIMS];
+
+  //! The data associated with each bin
+  BinBitMap m_binData[NDIMS];
+
+  //! Tracks whether the ImplicitGrid has been initialized
+  bool m_initialized;
 };
-
 
 
 } // end namespace quest

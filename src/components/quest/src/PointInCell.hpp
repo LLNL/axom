@@ -41,8 +41,9 @@ namespace quest
  * An implementation of \a PointInCellTraits on \a mesh_tag must define:
  * \arg A \a MeshType (e.g. mfem::Mesh or axom::mint::Mesh)
  * \arg An \a IndexType (e.g. a signed or unsigned integral type)
- * \arg An \a IndexType variable named \a NO_CELL (e.g. with value -1 for signed ints),
- * indicating an invalid cell index in the mesh
+ * \arg An \a IndexType variable named \a NO_CELL
+ *     (e.g. with value -1 for signed ints), indicating an invalid cell
+ *     index in the mesh
  */
 template<typename mesh_tag>
 struct PointInCellTraits;
@@ -82,8 +83,8 @@ class PointInCellMeshWrapper;
  *
  * \brief A class to accelerate Point-In-Cell queries on a computational mesh.
  *
- * A point in cell query over a computational mesh determines if a given point is
- * contained in one of its cells.  If so, it returns the index of the cell
+ * A point in cell query over a computational mesh determines if a given point
+ * is contained in one of its cells.  If so, it returns the index of the cell
  * containing the point as well as the isoparametric coordinates of the point
  * within the cell.
  *
@@ -126,8 +127,8 @@ public:
    * the bounding boxes. Default: 1e-8
    *
    * \note The bboxTolerance should be a small positive number.  It helps avoid
-   * numerical issues in the bounding box containment queries by slightly expanding
-   * the cell bounding boxes.
+   * numerical issues in the bounding box containment queries by slightly
+   * expanding the cell bounding boxes.
    *
    * \note If the resolution is not provided, a heuristic based on the number
    * of cells in the mesh is used to set the resolution.
@@ -137,8 +138,8 @@ public:
    * \pre If resolution is not NULL, it must have space for at least
    * meshDimension() entries.
    */
-  PointInCell(MeshType * mesh,
-              int * resolution = AXOM_NULLPTR,
+  PointInCell(MeshType* mesh,
+              int* resolution = AXOM_NULLPTR,
               double bboxTolerance = 1e-8)
     : m_meshWrapper(mesh),
     m_pointFinder2D(AXOM_NULLPTR),
@@ -197,11 +198,11 @@ public:
    * Otherwise, the result will be between 0 and N, where N is the number
    * of cells in the mesh.
    *
-   * \pre \a pos is a non-null array with at least \a meshDimension() coordinates
-   * \pre When not NULL, \a isopar has space for at least \a meshDimension() coordinates
+   * \pre \a pos is a non-null array with at least \a meshDimension() coords
+   * \pre When not NULL, \a isopar has space for \a meshDimension() coords
    */
-  IndexType locatePoint(const double * pos,
-                        double * isopar = AXOM_NULLPTR) const
+  IndexType locatePoint(const double* pos,
+                        double* isopar = AXOM_NULLPTR) const
   {
     SLIC_ASSERT(pos != AXOM_NULLPTR);
 
@@ -236,8 +237,8 @@ public:
    *  \pre \a isopar is not NULL and has space for \a meshDimension() entries
    */
   bool locatePointInCell(IndexType cellIdx,
-                         const double * pos,
-                         double * isopar) const
+                         const double* pos,
+                         double* isopar) const
   {
     // Early return if point is not within cell's bounding box
     if(!withinBoundingBox(cellIdx, pos) )
@@ -258,8 +259,8 @@ public:
    * \param [out] pos The computed coordinates of the evaluated point
    */
   void reconstructPoint(IndexType cellIdx,
-                        const double * isopar,
-                        double * pos) const
+                        const double* isopar,
+                        double* pos) const
   {
     m_meshWrapper.reconstructPoint(cellIdx, isopar, pos);
   }
@@ -276,7 +277,7 @@ private:
    *
    * \return True if the point is contained in the cell's bounding box
    */
-  bool withinBoundingBox(IndexType cellIdx, const double * pos) const
+  bool withinBoundingBox(IndexType cellIdx, const double* pos) const
   {
     typedef axom::primal::Point<double, 2> Point2D;
     typedef axom::primal::Point<double, 3> Point3D;
@@ -295,8 +296,8 @@ private:
 private:
   MeshWrapperType m_meshWrapper;
 
-  PointFinder2D * m_pointFinder2D;
-  PointFinder3D * m_pointFinder3D;
+  PointFinder2D* m_pointFinder2D;
+  PointFinder3D* m_pointFinder3D;
 };
 
 

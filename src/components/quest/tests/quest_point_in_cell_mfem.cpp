@@ -152,15 +152,15 @@ public:
    * Jitter all degrees of freedom (dofs) of the mesh's nodal grid function
    * Implementation borrowed from mfem's mesh-explorer mini-app
    */
-  void jitterNodalValues(mfem::Mesh * mesh, double dx)
+  void jitterNodalValues(mfem::Mesh* mesh, double dx)
   {
-    mfem::GridFunction * nodes = mesh->GetNodes();
+    mfem::GridFunction* nodes = mesh->GetNodes();
     if(nodes == AXOM_NULLPTR)
     {
       return;
     }
 
-    mfem::FiniteElementSpace * fespace = nodes->FESpace();
+    mfem::FiniteElementSpace* fespace = nodes->FESpace();
     mfem::GridFunction rdm(fespace);
     rdm.Randomize( SRAND_SEED );
     rdm -= 0.5; // shift to random values in [-0.5,0.5]
@@ -361,7 +361,8 @@ public:
                 constructTimer.elapsed() ) );
 
 
-    // Test that a fixed set of isoparametric coords on each cell maps to the correct place.
+    // Test that a fixed set of isoparametric coords on each cell
+    // maps to the correct place.
     std::vector<SpacePt> pts = generateIsoParTestPoints( ::TEST_GRID_RES);
     axom::utilities::Timer queryTimer2(true);
     SpacePt foundIsoPar;
@@ -406,7 +407,7 @@ public:
             eltId, spacePt, isoparCenter, foundIsoPar);
         }
 
-        // If we found the same cell, check that found isoparametric coordinates agree with original
+        // If we found the same cell, check that isoparametric coords agree
         if(eltId == foundCellId)
         {
           for(int i=0 ; i< DIM ; ++i)
@@ -419,7 +420,7 @@ public:
           }
         }
 
-        // Convert point back to space, and check that it matches our original point
+        // Convert point back to space and check that it matches original point
         if(foundCellId != MeshTraits::NO_CELL)
         {
           SpacePt transformedPt;
@@ -446,14 +447,14 @@ public:
 
   }
 
-  mfem::Mesh * getMesh() { return m_mesh; }
+  mfem::Mesh* getMesh() { return m_mesh; }
 
   const std::string& getMeshDescriptor() const { return m_meshDescriptorStr; }
 
 protected:
   std::string m_meshDescriptorStr;
 
-  mfem::Mesh * m_mesh;
+  mfem::Mesh* m_mesh;
 };
 
 /*!
@@ -546,7 +547,7 @@ public:
    * Sets up a test mesh of the desired type with the specified parameters
    *
    * \param meshType Enum of type MeshType
-   * \param numRefine The number of times to uniformly refine the mesh, default: 0
+   * \param numRefine Number of times to uniformly refine the mesh, default: 0
    * \param vertVal Parameter value for the mesh, default: 0.5
    * \param jitterFactor Factor by which to jitter the nodes, default: 0
    */
@@ -559,7 +560,7 @@ public:
 
     std::string feCollName;
 
-    std::stringstream meshDescSstr; // used to compose the mesh descriptor string
+    std::stringstream meshDescSstr; // composes the mesh descriptor string
 
     switch(meshType)
     {
@@ -754,7 +755,7 @@ public:
    * Sets up a test mesh of the desired type with the specified parameters
    *
    * \param meshType Enum of type MeshType
-   * \param numRefine The number of times to uniformly refine the mesh, default: 0
+   * \param numRefine Number of times to uniformly refine the mesh, default: 0
    * \param vertVal Parameter value for the mesh, default: 0.5
    * \param jitterFactor Factor by which to jitter the nodes, default: 0
    */
@@ -767,7 +768,7 @@ public:
 
     std::string feCollName;
 
-    std::stringstream meshDescSstr; // used to compose the mesh descriptor string
+    std::stringstream meshDescSstr; // Vomposes mesh descriptor string
 
     switch(meshType)
     {
@@ -870,13 +871,13 @@ enum Metric
 };
 
 /*!
- * Simple model for when we expect a query point to be found within a cell of the mesh.
+ * Simple model for when query point is expected to be in a cell of the mesh
  *
- * The mesh is assumed to be a sphere under one of the L_p metrics (L_1, L_2 or L_inf).
- * In all cases, we assume that there is a narrow band around the sphere's radius
- * where we cannot be sure if we expect the point to be in the mesh.  Otherwise,
- * we use the point's norm to determine if we expect the point to be found within
- * the mesh.
+ * The mesh is assumed to be a sphere under one of the L_p metrics
+ * (L_1, L_2 or L_inf). In all cases, we assume that there is a narrow band
+ * around the sphere's radius where we cannot be sure if we expect the point
+ * to be in the mesh.  Otherwise, we use the point's norm to determine if we
+ * expect the point to be found within the mesh.
  */
 template<int DIM, Metric METRIC>
 class ExpectedValue
@@ -894,9 +895,7 @@ public:
   {
     const double ptNorm = norm(pt);
 
-    // Note: multFac is relatively large since Q2 cells only approximate a sphere
-    // TODO: Try to reduce this factor based on theoretical bounds;
-    //   In the meantime, .05 seems sufficient, and captures around 90% of query points
+    // small multiplication factor since Q2 cells only approximate a sphere
     const double multFac = 0.05;
 
     return !axom::utilities::isNearlyEqual(ptNorm, m_radius, multFac*m_radius);
@@ -953,9 +952,9 @@ TEST_F( PointInCell2DTest, pic_flat_single_quad )
 
   // Add a bilinear gridfunction
   mfem::Mesh& mesh = *this->getMesh();
-  mfem::FiniteElementCollection * fec =
+  mfem::FiniteElementCollection* fec =
     mfem::FiniteElementCollection::New("Linear");
-  mfem::FiniteElementSpace * fes =
+  mfem::FiniteElementSpace* fes =
     new mfem::FiniteElementSpace(&mesh, fec, 1);
 
   mfem::GridFunction gf(fes);
@@ -1224,7 +1223,7 @@ TEST_F( PointInCell2DTest, pic_curved_quad_c_shaped )
     << " transformations back into space)" );
 
 
-  /// Test that a fixed set of isoparametric coords on each cell maps to the correct place.
+  /// Test that fixed set of isoparametric coords on each cell map correctly
   std::vector<SpacePt> pts = this->generateIsoParTestPoints(10);
   axom::utilities::Timer queryTimer2(true);
   SpacePt foundIsoPar1, foundIsoPar2;
@@ -1316,9 +1315,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     SLIC_INFO("Mesh has " << numCells << " cells.");
 
     std::string name = "query_status";
-    axom::mint::FieldData * CD = cmesh.getCellFieldData();
+    axom::mint::FieldData* CD = cmesh.getCellFieldData();
     CD->addField( new axom::mint::FieldVariable< int >(name, numCells ) );
-    int * fld = CD->getField( name )->getIntPtr();
+    int* fld = CD->getField( name )->getIntPtr();
 
     for(int i=0 ; i < res ; ++i)
     {
@@ -1387,7 +1386,7 @@ TEST(quest_point_in_cell, printIsoparams)
   //for(int order=0; order < 5; ++order)
   const int order = 2;
   {
-    const mfem::IntegrationRule * ir =
+    const mfem::IntegrationRule* ir =
       &(mfem::RefinedIntRules.Get(geom, order ) );
 
     const int npts = ir->GetNPoints();
@@ -1523,7 +1522,7 @@ TEST_F( PointInCell3DTest, pic_curved_refined_hex_jittered )
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

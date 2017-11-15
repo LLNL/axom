@@ -446,7 +446,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
 
 //----------------------------------------------------------------------
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

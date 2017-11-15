@@ -79,8 +79,8 @@ public:
    *
    * \sa constructors in PointInCell class for more details about parameters
    */
-  PointFinder(const MeshWrapperType * meshWrapper,
-              const int * res,
+  PointFinder(const MeshWrapperType* meshWrapper,
+              const int* res,
               double bboxScaleFactor)
     : m_meshWrapper(meshWrapper)
   {
@@ -120,7 +120,7 @@ public:
    *
    * \sa PointInCell::locatePoint() for more details about parameters
    */
-  IndexType locatePoint(const double * pos, double * isoparametric) const
+  IndexType locatePoint(const double* pos, double* isoparametric) const
   {
     typedef typename GridType::BitsetType BitsetType;
 
@@ -170,7 +170,7 @@ public:
 
 private:
   GridType m_grid;
-  const MeshWrapperType * m_meshWrapper;
+  const MeshWrapperType* m_meshWrapper;
   std::vector<SpatialBoundingBox> m_cellBBoxes;
 };
 
