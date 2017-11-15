@@ -121,7 +121,7 @@ View* Group::getView( const std::string& path )
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
-                  "Group " << getName() <<
+                  "Group " << getPathName() <<
                   " has no View with name '" << intpath << "'");
 
   return group->m_view_coll->getItem(intpath);
@@ -147,7 +147,7 @@ const View* Group::getView( const std::string& path ) const
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
-                  "Group " << getName() <<
+                  "Group " << getPathName() <<
                   " has no View with name '" << intpath << "'");
 
   return group->m_view_coll->getItem(intpath);
@@ -187,11 +187,11 @@ View* Group::createView( const std::string& path )
     SLIC_CHECK( !intpath.empty() );
     SLIC_CHECK_MSG( !group->hasChildView(intpath),
                     "Cannot create View with name '" << intpath <<
-                    "' in Group '" << getName() <<
+                    "' in Group '" << getPathName() <<
                     " since it already has a View with that name" );
     SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
                     "Cannot create View with name '" << intpath <<
-                    "' in Group '" << getName() <<
+                    "' in Group '" << getPathName() <<
                     " since it already has a Group with that name" );
     return AXOM_NULLPTR;
   }
@@ -220,10 +220,10 @@ View* Group::createView( const std::string& path,
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
                    "Cannot create View with name '" << path <<
-                   "' in Group '" << getName() << " without a valid type" );
+                   "' in Group '" << getPathName() << " without a valid type" );
     SLIC_CHECK_MSG(num_elems >= 0,
                    "Cannot create View with name '" << path <<
-                   "' in Group '" << getName() << " with # elems < 0" );
+                   "' in Group '" << getPathName() << " with # elems < 0" );
     return AXOM_NULLPTR;
   }
 
@@ -252,13 +252,13 @@ View* Group::createView( const std::string& path,
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
                    "Cannot create View with name '" << path <<
-                   "' in Group '" << getName() << " without a valid type" );
+                   "' in Group '" << getPathName() << " without a valid type" );
     SLIC_CHECK_MSG(ndims >= 0,
                    "Cannot create View with name '" << path <<
-                   "' in Group '" << getName() << " with ndims < 0" );
+                   "' in Group '" << getPathName() << " with ndims < 0" );
     SLIC_CHECK_MSG(shape != AXOM_NULLPTR,
                    "Cannot create View with name '" << path <<
-                   "' in Group '" << getName() << " with null shape ptr" );
+                   "' in Group '" << getPathName() << " with null shape ptr" );
     return AXOM_NULLPTR;
   }
 
@@ -701,7 +701,7 @@ View* Group::moveView(View* view)
   else if (hasChildView(view->getName()))
   {
     SLIC_CHECK_MSG(!hasChildView(view->getName()),
-                   "Group '" << getName() <<
+                   "Group '" << getPathName() <<
                    "' already has a View named'" << view->getName() <<
                    "' so View move operation cannot happen");
     return AXOM_NULLPTR;
@@ -728,7 +728,7 @@ View* Group::copyView(View* view)
   {
     SLIC_CHECK( view != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildView(view->getName()),
-                   "Group '" << getName() <<
+                   "Group '" << getPathName() <<
                    "' already has a View named'" << view->getName() <<
                    "' so View copy operation cannot happen");
 
@@ -798,7 +798,7 @@ Group* Group::getGroup( const std::string& path )
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
-                  "Group " << getName() <<
+                  "Group " << getPathName() <<
                   " has no descendant Group with name '" << path << "'");
 
   return group->m_group_coll->getItem(intpath);
@@ -824,7 +824,7 @@ const Group* Group::getGroup( const std::string& path ) const
   }
 
   SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
-                  "Group " << getName() <<
+                  "Group " << getPathName() <<
                   " has no descendant Group with name '" << path << "'");
 
   return group->m_group_coll->getItem(intpath);
@@ -864,11 +864,11 @@ Group* Group::createGroup( const std::string& path )
     SLIC_CHECK( !intpath.empty() );
     SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
                     "Cannot create Group with name '" << path <<
-                    " in Group '" << getName() <<
+                    " in Group '" << getPathName() <<
                     " since it already has a Group with that name" );
     SLIC_CHECK_MSG( !group->hasChildView(intpath),
                     "Cannot create Group with name '" << path <<
-                    " in Group '" << getName() <<
+                    " in Group '" << getPathName() <<
                     " since it already has a View with that name" );
 
     return AXOM_NULLPTR;
@@ -955,7 +955,7 @@ Group* Group::moveGroup(Group* group)
   {
     SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
-                   "Group '" << getName() <<
+                   "Group '" << getPathName() <<
                    "' already has a child Group named '" << group->getName() <<
                    "' so Group move operation cannot happen");
 
@@ -983,7 +983,7 @@ Group* Group::copyGroup(Group* group)
   {
     SLIC_CHECK( group != AXOM_NULLPTR );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
-                   "Group '" << getName() <<
+                   "Group '" << getPathName() <<
                    "' already has a child Group named '" << group->getName() <<
                    "' so Group copy operation cannot happen");
 
@@ -1034,7 +1034,7 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
 
     // Check that the view's name is not also a child group name
     SLIC_CHECK_MSG( !hasChildGroup(view->getName())
-                    , view->getName() << " is the name of a groups and a view");
+                    , view->getName() << " is the name of a group and a view");
 
     if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
     {
@@ -1087,7 +1087,7 @@ bool Group::createExternalLayout(Node& n,
 
     // Check that the view's name is not also a child group name
     SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
-                    view->getName() << " is the name of a groups and a view");
+                    view->getName() << " is the name of a group and a view");
 
     if (attr == AXOM_NULLPTR || view->hasAttributeValue(attr))
     {
@@ -1517,7 +1517,7 @@ void Group::renameOrWarn(const std::string& new_name)
   {
     if (new_name.empty())
     {
-      SLIC_WARNING("Attempted to rename group " << m_name <<
+      SLIC_WARNING("Attempted to rename group " << getPathName() <<
                    " with an empty string. The name will not be changed.");
 
     }
@@ -1534,13 +1534,13 @@ void Group::renameOrWarn(const std::string& new_name)
         if (parent->hasGroup(new_name))
         {
           SLIC_WARNING("Parent already has a child group named " << new_name <<
-                       ". The name of group " << m_name <<
+                       ". The name of group " << getPathName() <<
                        " will not be changed.");
         }
         else if (parent->hasView(new_name))
         {
           SLIC_WARNING("Parent already has a child view named " << new_name <<
-                       ". The name of group " << m_name <<
+                       ". The name of group " << getPathName() <<
                        " will not be changed.");
         }
         else
@@ -2077,7 +2077,8 @@ void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
   }
   else
   {
-    SLIC_ERROR( "Group cannot import non-object Conduit Node");
+    SLIC_ERROR( "Group " << getPathName() <<
+                " cannot import non-object Conduit Node");
   }
 
 }
@@ -2237,7 +2238,7 @@ bool Group::hasView( IndexType idx ) const
 IndexType Group::getViewIndex(const std::string& name) const
 {
   SLIC_CHECK_MSG(hasChildView(name),
-                 "Group " << this->getName() <<
+                 "Group " << getPathName() <<
                  " has no View with name '" << name << "'");
 
   return m_view_coll->getItemIndex(name);
@@ -2255,7 +2256,7 @@ IndexType Group::getViewIndex(const std::string& name) const
 const std::string& Group::getViewName(IndexType idx) const
 {
   SLIC_CHECK_MSG(hasView(idx),
-                 "Group " << this->getName() <<
+                 "Group " << getPathName() <<
                  " has no View with index " << idx);
 
   return m_view_coll->getItemName(idx);
@@ -2273,7 +2274,7 @@ const std::string& Group::getViewName(IndexType idx) const
 View* Group::getView( IndexType idx )
 {
   SLIC_CHECK_MSG( hasView(idx),
-                  "Group " << this->getName()
+                  "Group " << getPathName()
                            << " has no View with index " << idx);
 
   return m_view_coll->getItem(idx);
@@ -2291,7 +2292,7 @@ View* Group::getView( IndexType idx )
 const View* Group::getView( IndexType idx ) const
 {
   SLIC_CHECK_MSG( hasView(idx),
-                  "Group " << this->getName()
+                  "Group " << getPathName()
                            << " has no View with index " << idx);
 
   return m_view_coll->getItem(idx);
@@ -2365,7 +2366,7 @@ bool Group::hasGroup( IndexType idx ) const
 IndexType Group::getGroupIndex(const std::string& name) const
 {
   SLIC_CHECK_MSG(hasChildGroup(name),
-                 "Group " << this->getName() <<
+                 "Group " << getPathName() <<
                  " has no child Group with name '" << name << "'");
 
   return m_group_coll->getItemIndex(name);
@@ -2383,7 +2384,7 @@ IndexType Group::getGroupIndex(const std::string& name) const
 const std::string& Group::getGroupName(IndexType idx) const
 {
   SLIC_CHECK_MSG(hasGroup(idx),
-                 "Group " << this->getName() <<
+                 "Group " << getPathName() <<
                  " has no child Group with index " << idx);
 
   return m_group_coll->getItemName(idx);
@@ -2401,7 +2402,7 @@ const std::string& Group::getGroupName(IndexType idx) const
 Group* Group::getGroup( IndexType idx )
 {
   SLIC_CHECK_MSG(hasGroup(idx),
-                 "Group " << this->getName() <<
+                 "Group " << getPathName() <<
                  " has no child Group with index " << idx);
 
   return m_group_coll->getItem(idx);
@@ -2419,7 +2420,7 @@ Group* Group::getGroup( IndexType idx )
 const Group* Group::getGroup( IndexType idx ) const
 {
   SLIC_CHECK_MSG(hasGroup(idx),
-                 "Group " << this->getName() <<
+                 "Group " << getPathName() <<
                  " has no child Group with index " << idx);
 
   return m_group_coll->getItem(idx);
@@ -2472,13 +2473,13 @@ bool Group::rename(const std::string& new_name)
 
     if (new_name.empty())
     {
-      SLIC_WARNING("Cannot rename Group " << m_name << " to an empty " <<
+      SLIC_WARNING("Cannot rename Group " << getPathName() << " to an empty " <<
                    "string.");
       do_rename = false;
     }
     else if (new_name.find(s_path_delimiter) != std::string::npos)
     {
-      SLIC_WARNING("Cannot rename Group "<< m_name << " to path name " <<
+      SLIC_WARNING("Cannot rename Group "<< getPathName() << " to path name " <<
                    new_name << ". Only strings without path delimiters can " <<
                    "be passed into the rename method.");
       do_rename = false;
@@ -2496,9 +2497,9 @@ bool Group::rename(const std::string& new_name)
 
         if (parent->hasGroup(new_name) || parent->hasView(new_name))
         {
-          SLIC_WARNING("Parent group " << parent->getName() <<
+          SLIC_WARNING("Parent group " << parent->getPathName() <<
                        " already has a child group named " << new_name <<
-                       ". Group " << m_name << " will not be renamed.");
+                       ". Group " << getPathName() << " will not be renamed.");
           do_rename = false;
         }
         else
