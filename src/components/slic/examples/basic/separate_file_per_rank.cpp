@@ -37,7 +37,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   // STEP 0: initialize MPI & logging environment
   MPI_Init( &argc, &argv );

@@ -11,7 +11,8 @@
 
 /**
  * \file
- * \brief This file typedefs the fixed-width types that we want to expose in COMMON
+ * \brief This file typedefs the fixed-width types that we want to expose in
+ * COMMON
  *
  * These types are defined in the C++11 standard (actually in C99),
  * When C++11 is not available, we attempt to define the types ourselves
@@ -79,8 +80,10 @@ typedef std::uint64_t uint64_t;
  *          to be 64-bit aware.
  *
  * KW for axom project:
- *      - Only took parts of file that we needed for fixed-bitwidth types in the toolkit
- *      - Appended 'AXOM_COMMON_' to macros to avoid possible collisions with stdint
+ *      - Only took parts of file that we needed for fixed-bitwidth types in the
+ *        toolkit
+ *      - Appended 'AXOM_COMMON_' to macros to avoid possible collisions with
+ *        stdint
  */
 
 

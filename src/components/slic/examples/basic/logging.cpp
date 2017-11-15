@@ -32,7 +32,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   static_cast<void>(argc);
   static_cast<void>(argv);

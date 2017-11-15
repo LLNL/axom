@@ -185,8 +185,9 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray,
 {
   bool retval = detail::intersect_tri_ray(tri, ray, t, p);
   double normalizer = p[0] + p[1] + p[2];
-  SLIC_CHECK_MSG( std::abs(normalizer) > 1e-6,
-     "Barycentric coordinates sum to less than 1e-6 prior to normalization." );
+  SLIC_CHECK_MSG(
+    std::abs(normalizer) > 1e-6,
+    "Barycentric coordinates sum to less than 1e-6 prior to normalization." );
   p.array() *= 1. / normalizer;
   return retval;
 }
@@ -209,7 +210,8 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
  * \brief Determines if a 3D triangle intersects a 3D segment.
  * \param [in] tri A 3D triangle
  * \param [in] seg A 3D line segment
- * \param [out] t Intersection point of tri and seg, w.r.t. seg's parametrization
+ * \param [out] t Intersection point of tri and seg, w.r.t. seg's
+ *  parametrization
  * \return true iff tri intersects with seg, otherwise, false.
  */
 template < typename T >
@@ -223,7 +225,8 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
  * \brief Determines if a 3D triangle intersects a 3D segment.
  * \param [in] tri A 3D triangle
  * \param [in] seg A 3D line segment
- * \param [out] t Intersection point of tri and seg, w.r.t. seg's parametrization
+ * \param [out] t Intersection point of tri and seg, w.r.t. seg's
+ *  parametrization
  * \param [out] p Intersection point of tri and R, in barycentric coordinates
  *   relative to tri.
  * \note If there is an intersection, the intersection point pt is:
@@ -236,8 +239,9 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg,
 {
   bool retval = detail::intersect_tri_segment(tri, seg, t, p);
   double normalizer = p[0] + p[1] + p[2];
-  SLIC_CHECK_MSG( std::abs(normalizer) > 1e-6,
-     "Barycentric coordinates sum to less than 1e-6 prior to normalization." );
+  SLIC_CHECK_MSG(
+    std::abs(normalizer) > 1e-6,
+    "Barycentric coordinates sum to less than 1e-6 prior to normalization." );
   double scale = 1.0 / normalizer;
   p = Point< double, 3 >(scale * p.array());
   return retval;

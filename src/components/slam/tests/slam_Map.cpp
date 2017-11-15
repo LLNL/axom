@@ -125,7 +125,7 @@ TEST(slam_map,out_of_bounds)
 
 //----------------------------------------------------------------------
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

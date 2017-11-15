@@ -49,7 +49,7 @@ namespace primal
  */
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS > compute_oriented_bounding_box(
-  const Point< T, NDIMS > * pts, int n)
+  const Point< T, NDIMS >* pts, int n)
 {
   return OrientedBoundingBox< T, NDIMS >(pts, n);
 }
