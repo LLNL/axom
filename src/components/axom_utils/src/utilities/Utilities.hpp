@@ -166,8 +166,9 @@ T swapEndian(T val)
 {
   const int NBYTES = sizeof(T);
 
-  AXOM_STATIC_ASSERT_MSG( NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
-                          "swapEndian only valid for types of size 2, 4 or 8 bytes.");
+  AXOM_STATIC_ASSERT_MSG(
+    NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
+    "swapEndian only valid for types of size 2, 4 or 8 bytes.");
 
   #ifdef AXOM_USE_CXX11
   AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
@@ -180,7 +181,7 @@ T swapEndian(T val)
     T val;
   } swp;
 
-  axom::common::uint8 * src = reinterpret_cast<axom::common::uint8 *>(&val);
+  axom::common::uint8* src = reinterpret_cast<axom::common::uint8*>(&val);
 
   // Reverse the bytes
   for(int i=0 ; i < NBYTES ; ++i)
@@ -196,7 +197,8 @@ T swapEndian(T val)
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] thresh The threshold of the fuzzy comparison.  Default is 1.0e-8.
- * \return True if the absolute value of the difference is less than thresh and false otherwise.
+ * \return True if the absolute value of the difference is less than thresh and
+ *  false otherwise.
  */
 template<typename RealType>
 bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
@@ -208,10 +210,13 @@ bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
  * \brief Fuzzy comparison of two real valued quantities.
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
- * \param [in] relThresh The relative threshold of the fuzzy comparison.  Default is 1.0e-6.
- * \param [in] absThresh The absolute threshold of the fuzzy comparison.  Default is 1.0e-8.
- * \return True if the absolute value of the difference is less than the sum of absThresh
- *  and the relative difference (relThresh times the absolute max of a and b).
+ * \param [in] relThresh The relative threshold of the fuzzy comparison.
+ *  Default is 1.0e-6.
+ * \param [in] absThresh The absolute threshold of the fuzzy comparison.
+ *  Default is 1.0e-8.
+ * \return True if the absolute value of the difference is less than the sum of
+ *  absThresh and the relative difference (relThresh times the absolute max of
+ *  a and b).
  */
 template<typename RealType>
 bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
@@ -220,7 +225,8 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
   RealType maxFabs = max(abs(a), abs(b) );
   return abs(a-b) <= ( maxFabs * relThresh + absThresh);
 
-  // Equation from Real-Time Collsion Detection book -- http://realtimecollisiondetection.net/pubs/Tolerances/
+  // Equation from Real-Time Collsion Detection book --
+  // http://realtimecollisiondetection.net/pubs/Tolerances/
   // Note: If we use this, we must update the doxygen
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
 }

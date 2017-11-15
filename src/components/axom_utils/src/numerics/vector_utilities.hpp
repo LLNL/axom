@@ -55,7 +55,7 @@ namespace numerics
  * \pre v has at least dim entries
  */
 template < typename T >
-T dot_product(T * u, T * v, int dim);
+T dot_product(T* u, T* v, int dim);
 
 /*!
  * \brief Makes u orthogonal to v.
@@ -72,7 +72,7 @@ T dot_product(T * u, T * v, int dim);
  * \pre T is a floating point type
  */
 template < typename T >
-void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
+void make_orthogonal(T* u, T* v, int dim, double tol=1E-16);
 
 /*!
  * \brief Performs Gram-Schmidt orthonormalization in-place on a 2D array
@@ -93,7 +93,7 @@ void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
  * \pre T is a floating point type
  */
 template < typename T >
-bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
+bool orthonormalize(T* basis, int size, int dim, double eps = 1E-16);
 
 /*!
  * \brief Normalizes the passed in array.
@@ -112,7 +112,7 @@ bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
  * \pre T is a floating point type
  */
 template < typename T >
-bool normalize(T * v, int dim, double eps = 1e-16);
+bool normalize(T* v, int dim, double eps = 1e-16);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -127,7 +127,7 @@ namespace numerics
 {
 
 template < typename T >
-T dot_product(T * u, T * v, int dim)
+T dot_product(T* u, T* v, int dim)
 {
   assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
@@ -141,7 +141,7 @@ T dot_product(T * u, T * v, int dim)
 }
 
 template < typename T >
-void make_orthogonal(T * u, T * v, int dim, double tol)
+void make_orthogonal(T* u, T* v, int dim, double tol)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -163,7 +163,7 @@ void make_orthogonal(T * u, T * v, int dim, double tol)
 }
 
 template < typename T >
-bool orthonormalize(T * basis, int size, int dim, double eps)
+bool orthonormalize(T* basis, int size, int dim, double eps)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -174,12 +174,12 @@ bool orthonormalize(T * basis, int size, int dim, double eps)
 
   for (int i = 0 ; i < size ; ++i)
   {
-    T * curr = &basis[i*dim];
+    T* curr = &basis[i*dim];
 
     // make curr orthogonal to previous ones
     for (int j = 0 ; j < i ; ++j)
     {
-      T * other = &basis[j*dim];
+      T* other = &basis[j*dim];
 
       make_orthogonal(curr, other, dim);
     }
@@ -197,7 +197,7 @@ bool orthonormalize(T * basis, int size, int dim, double eps)
 }
 
 template < typename T >
-bool normalize(T * v, int dim, double eps)
+bool normalize(T* v, int dim, double eps)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");

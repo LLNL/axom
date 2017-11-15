@@ -75,7 +75,7 @@ double distance(double x, double y, double z=0.0);
  * \pre dist != AXOM_NULLPTR
  * \pre npoints >= 0
  */
-void distance( const double * xyz, double * dist, int npoints);
+void distance( const double* xyz, double* dist, int npoints);
 
 /*!
  * \brief Checks if the given point is inside or outside.
@@ -94,7 +94,7 @@ int inside(double x, double y, double z=0.0);
  * \pre xyz != AXOM_NULLPTR
  * \pre  in != AXOM_NULLPTR
  */
-void inside( const double * xyz, int * in, int npoints);
+void inside( const double* xyz, int* in, int npoints);
 
 
 
@@ -103,14 +103,14 @@ void inside( const double * xyz, int * in, int npoints);
  * \param [out] coords user-supplied array to store the coordinates
  * \pre coords must be preallocated with room for at least three doubles.
  */
-void mesh_min_bounds(double * coords);
+void mesh_min_bounds(double* coords);
 
 /*!
  * \brief Gets coordinates of the maximum corner of the mesh's bounding box
  * \param [out] coords user-supplied array to store the coordinates
  * \pre coords must be preallocated with room for at least three doubles.
  */
-void mesh_max_bounds(double * coords);
+void mesh_max_bounds(double* coords);
 
 /*!
  * \brief Gets coordinates of the mesh's center of mass
@@ -118,7 +118,7 @@ void mesh_max_bounds(double * coords);
  * \pre coords must be preallocated with room for at least three doubles.
  * \note The center of mass is computed as the average vertex position
  */
-void mesh_center_of_mass(double * coords);
+void mesh_center_of_mass(double* coords);
 
 
 

@@ -59,7 +59,7 @@ namespace quest
  * based on the cube root of the number of cells in the mesh.
  */
 void findTriMeshIntersections(
-  mint::UnstructuredMesh< MINT_TRIANGLE > * surface_mesh,
+  mint::UnstructuredMesh< MINT_TRIANGLE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution = 0)

@@ -103,7 +103,7 @@ public:
    * \param [in] sz num values to copy from the vals array. Defaults to NDIMS.
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
-  Point(const T * vals, int sz = NDIMS) : m_components(vals,sz) { }
+  Point(const T* vals, int sz = NDIMS) : m_components(vals,sz) { }
 
   /*!
    * \brief Copy constructor.
@@ -150,8 +150,8 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T * data() const { return m_components.data(); }
-  T * data()             { return m_components.data(); }
+  const T* data() const { return m_components.data(); }
+  T* data()             { return m_components.data(); }
 
   ///@}
 
@@ -167,7 +167,7 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
-  void to_array(T * arr) const { m_components.to_array(arr); }
+  void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!
    * \brief Equality comparison operator for points

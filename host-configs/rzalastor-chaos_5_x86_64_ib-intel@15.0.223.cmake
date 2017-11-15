@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-aa73gjd3lrfity3yvt7wjbaxes5qlora" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-ptupdxpaof5r7wwkbjfqcdionzyeqhj7" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-iqr52nz5tempmqtc6khtc6xuwy5ccqtq" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-64q6i7tvzthligr75o7fuyy2spkmphth" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-puia3m3rglbiel47yayv7ohbw7ptk2nv" CACHE PATH "")
