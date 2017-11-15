@@ -143,7 +143,7 @@ public:
     }
     if(outputMeshVTK)
     {
-      std::ofstream mfem_stream(filename + ".vtk");
+      std::ofstream mfem_stream( std::string(filename + ".vtk").c_str() );
       m_mesh->PrintVTK(mfem_stream);
     }
   }
@@ -620,7 +620,7 @@ public:
 
     // Create the MFEM mesh
     m_mesh = new mfem::Mesh(sstr);
-    EXPECT_NE(AXOM_NULLPTR, m_mesh);
+    EXPECT_TRUE(m_mesh !=  AXOM_NULLPTR);
 
     // Refine (and possibly jitter) the mesh several times
     for(int i=0 ; i< numRefine ; ++i)
@@ -640,11 +640,11 @@ public:
     // Sanity checks on whether mesh is low or high order
     if(meshType == FLAT_MESH)
     {
-      EXPECT_EQ(AXOM_NULLPTR, m_mesh->GetNodes());
+      EXPECT_TRUE(m_mesh->GetNodes() == AXOM_NULLPTR);
     }
     else
     {
-      EXPECT_NE(AXOM_NULLPTR, m_mesh->GetNodes());
+      EXPECT_TRUE(m_mesh->GetNodes() != AXOM_NULLPTR);
       EXPECT_EQ(feCollName, m_mesh->GetNodalFESpace()->FEColl()->Name());
     }
 
@@ -822,7 +822,7 @@ public:
 
     // Create the MFEM mesh instance
     m_mesh = new mfem::Mesh(sstr);
-    EXPECT_NE(AXOM_NULLPTR, m_mesh);
+    EXPECT_TRUE(m_mesh != AXOM_NULLPTR);
 
     // Refine (and possibly jitter) the mesh several times
     for(int i=0 ; i< numRefine ; ++i)
@@ -842,11 +842,11 @@ public:
     // Sanity checks on whether mesh is low or high order
     if(meshType == FLAT_MESH)
     {
-      EXPECT_EQ(AXOM_NULLPTR, m_mesh->GetNodes());
+      EXPECT_TRUE(m_mesh->GetNodes() == AXOM_NULLPTR);
     }
     else
     {
-      EXPECT_NE(AXOM_NULLPTR, m_mesh->GetNodes());
+      EXPECT_TRUE(m_mesh->GetNodes() != AXOM_NULLPTR);
       EXPECT_EQ(feCollName, m_mesh->GetNodalFESpace()->FEColl()->Name());
     }
 
