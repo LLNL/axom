@@ -26,7 +26,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 ##############################################################################
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME             "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-4.0.1" CACHE PATH "")
+set(MPI_HOME             "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-4.0.1" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpiclang" CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpiclang++" CACHE PATH "")
 
