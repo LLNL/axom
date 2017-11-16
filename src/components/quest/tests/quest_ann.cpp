@@ -21,6 +21,11 @@
 
 #include "slic/slic.hpp"
 
+#include <fstream>
+#include <sstream>
+
+char * fname;
+
 template < typename T >
 void verify_array(T* standard, T* expt, int n)
 {
@@ -165,6 +170,74 @@ TEST(quest_ann, cplx_13region_query)
   }
 }
 
+void readPointsFile(char * fname,
+                    std::vector<double> &x, std::vector<double> &y,
+                    std::vector<double> &z, std::vector<int> &region)
+{
+  std::ifstream infile(fname);
+  std::string theline;
+  double xi, yi, zi;
+  int regioni;
+
+  if (infile.good()) {
+    std::getline(infile, theline);
+    do {
+      if (theline.size() > 0) {
+        std::stringstream line(theline);
+        line >> xi >> yi >> zi >> regioni;
+        x.push_back(xi);
+        y.push_back(yi);
+        z.push_back(zi);
+        region.push_back(regioni);
+      }
+      std::getline(infile, theline);
+    } while (!infile.eof() && infile.good());
+  }
+}
+
+TEST(quest_ann, file_query)
+{
+  if (fname != nullptr) {
+    SLIC_INFO("About to read file " << fname);
+
+    std::vector<double> x, y, z;
+    std::vector<int> region;
+    int *bfneighbor;
+    int *idxneighbor;
+
+    readPointsFile(fname, x, y, z, region);
+
+    int n = region.size();
+
+    SLIC_INFO("n is " << n);
+
+    if (n > 0 && n == x.size() && n == y.size() && n == z.size()) {
+      double limit = 2.1;
+      bfneighbor = new int[n];
+      idxneighbor = new int[n];
+
+      for (int i = 0; i < n; ++i) {
+        bfneighbor[i] = -1;
+        idxneighbor[i] = -1;
+      }
+
+      {
+        SCOPED_TRACE("Read file, comparing brute force with indexed, limit 2.1");
+        axom::quest::all_nearest_neighbors_bruteforce(&x[0], &y[0], &z[0],
+                                                      &region[0], n, limit,
+                                                      bfneighbor);
+        axom::quest::all_nearest_neighbors_index1(&x[0], &y[0], &z[0],
+                                                  &region[0], n, limit,
+                                                  idxneighbor);
+        verify_array(bfneighbor, idxneighbor, n);
+      }
+
+      delete [] bfneighbor;
+      delete [] idxneighbor;
+    }
+  }
+}
+
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -174,8 +247,13 @@ using axom::slic::UnitTestLogger;
 int main(int argc, char * argv[])
 {
   int result = 0;
+  fname = nullptr;
 
   ::testing::InitGoogleTest(&argc, argv);
+
+  if (argc > 1) {
+    fname = argv[1];
+  }
 
   UnitTestLogger logger;  // create & initialize test logger,
 
