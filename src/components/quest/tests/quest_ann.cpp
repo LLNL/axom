@@ -25,6 +25,7 @@
 #include <sstream>
 
 char * fname;
+char * outfname;
 
 template < typename T >
 void verify_array(T* standard, T* expt, int n)
@@ -195,6 +196,16 @@ void readPointsFile(char * fname,
   }
 }
 
+void writeNeigborsFile(char * fname, int * neighbors, int n)
+{
+  std::ofstream outfile(fname);
+  if (outfile.good()) {
+    for (int i = 0; i < n; ++i) {
+      outfile << neighbors[i] << std::endl;
+    }
+  }
+}
+
 TEST(quest_ann, file_query)
 {
   if (fname != nullptr) {
@@ -232,6 +243,10 @@ TEST(quest_ann, file_query)
         verify_array(bfneighbor, idxneighbor, n);
       }
 
+      if (outfname != nullptr) {
+        writeNeigborsFile(outfname, idxneighbor, n);
+      }
+
       delete [] bfneighbor;
       delete [] idxneighbor;
     }
@@ -248,11 +263,15 @@ int main(int argc, char * argv[])
 {
   int result = 0;
   fname = nullptr;
+  outfname = nullptr;
 
   ::testing::InitGoogleTest(&argc, argv);
 
   if (argc > 1) {
     fname = argv[1];
+    if (argc > 2) {
+      outfname = argv[2];
+    }
   }
 
   UnitTestLogger logger;  // create & initialize test logger,
