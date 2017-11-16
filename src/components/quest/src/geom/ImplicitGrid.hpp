@@ -66,7 +66,7 @@ namespace quest
  * the ImplicitGrid encodes a single array of bins per dimension, each of which
  * has a bitset over the index space.  Thus, the storage overhead of an
  * ImplicitGrid is fixed at initialization time to
- * \f$ numElts * sum_i ( res[i]) \f$ bits.
+ *   \f$ numElts * sum_i { res[i] } \f$ bits.
  * Queries are implemented in terms of unions and intersections of bitsets.
  *
  * One might prefer an ImplicitGrid over a UniformGrid when one expects

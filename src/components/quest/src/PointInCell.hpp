@@ -88,10 +88,10 @@ class PointInCellMeshWrapper;
  * containing the point as well as the isoparametric coordinates of the point
  * within the cell.
  *
- * \tparam mesh_tag A tag type for the the underlying computational mesh
- * There must also be corresponding template specializations of
- * \a PointInCellMeshWrapper<mesh_tag> and \a PointInCellTraits<mesh_tag> for
- * provided mesh_tag \a axom::quest::detail namespace
+ * \tparam mesh_tag A tag type (e.g. an empty struct) for the underlying
+ * computational mesh. There must also be corresponding template specializations
+ * of \a PointInCellMeshWrapper<mesh_tag> and \a PointInCellTraits<mesh_tag> for
+ * the provided mesh_tag in the \a axom::quest::detail namespace
  *
  * \note This class was designed to support point in cell queries against
  * 2D or 3D computational meshes. The queries to the mesh are wrapped in a
@@ -102,7 +102,8 @@ class PointInCellMeshWrapper;
  * axom::quest namespace.
  *
  * \sa PointInCellMeshWrapper_mfem.hpp for a specialized implementation
- * for [mfem](http://mfem.org) meshes of arbitrary order.
+ * for [mfem](http://mfem.org) meshes of arbitrary order.  It uses
+ * the mesh_tag \a quest_point_in_cell_mfem_tag
  */
 template<typename mesh_tag>
 class PointInCell
