@@ -5,11 +5,14 @@
 #include "mint/DataTypes.hpp"
 #include "axom_utils/Utilities.hpp"
 
+#ifdef MINT_USE_SIDRE
+#include "sidre/sidre.hpp"
+#endif
 
 #include <cstring>                      // for std::memcpy
 #include <cmath>                        // for std::ceil
 
-namespace axom
+namespace axom 
 {
 namespace mint
 {
@@ -28,6 +31,9 @@ public:
    * \brief Default constructor.
    */
   Vector() :
+#ifdef MINT_USE_SIDRE
+    m_view( AXOM_NULLPTR ),
+#endif
     m_size(0),
     m_capacity(0),
     m_resize_ratio(2.0),
@@ -43,13 +49,15 @@ public:
    *  size exceeds the capacity.
    */
   Vector( localIndex capacity, double ratio=2.0 ) :
+#ifdef MINT_USE_SIDRE
+    m_view( AXOM_NULLPTR ),
+#endif
     m_size(0),
+    m_capacity(0),
     m_resize_ratio( ratio ),
     m_components(1),
     m_data( AXOM_NULLPTR )
-  {
-    setCapacity( capacity );
-  }
+  { setCapacity( capacity ); }
 
   /*!
    * \brief Custom constructor, creates a vector with the given capacity,
@@ -62,87 +70,50 @@ public:
    *  size exceeds the capacity.
    */
   Vector( localIndex capacity, int num_components, double ratio=2.0 ) :
+#ifdef MINT_USE_SIDRE
+    m_view( AXOM_NULLPTR ),
+#endif
     m_size(0),
+    m_capacity(0),
     m_resize_ratio( ratio ),
     m_components( num_components ),
     m_data( AXOM_NULLPTR )
-  {
-    setCapacity( capacity );
-  }
+  { setCapacity( capacity ); }
 
+#ifdef MINT_USE_SIDRE
   /*!
-   * \breif Copy constructor.
-   * \param [in] rhs the Vector to copy.
+   * \brief Custom constructor, creates a vector from the given Sidre View.
+   *  If the View already has data associated with it then it's size and
+   *  dimensions are used. Otherwise the size and num_components are used
+   *  to allocate data.
+   * \param [in] view the Sidre View to associate with this Vector.
+   * \param [in] size the length of the vector if view is empty.
+   * \param [in] num_components the number of components per value if view is
+   *  empty. When allocation is done the resulting capacity is a 
+   *  multiples of the number of components.
    */
-  Vector( const Vector & rhs ) :
-    m_size(rhs.m_size),
-    m_resize_ratio(rhs.m_resize_ratio),
-    m_components(rhs.m_components)
-  {
-    setCapacity( rhs.m_capacity );
-    localIndex byte_size = m_size * sizeof(T);
-    std::memcpy(m_data, rhs.m_data, byte_size);
-  }
-
-  /*!
-   * \breif Move constructor.
-   * \param [in] rhs the Vector to move.
-   */
-  Vector( const Vector && rhs ) :
-    m_size(rhs.m_size),
-    m_resize_ratio(rhs.m_resize_ratio),
-    m_components(rhs.m_components),
-    m_data(rhs.m_data)
-  {
-    setCapacity( rhs.m_capacity );
-
-    if (&rhs != this)
-    {
-      rhs.m_data = AXOM_NULLPTR;
+  Vector( sidre::View * view, localIndex size=0, int num_components=1 ) :
+    m_view( view ),
+    m_size( size ),
+    m_capacity( size ),
+    m_resize_ratio( 1.0 ),
+    m_components( num_components ),
+    m_data( AXOM_NULLPTR )
+  { 
+    
+    if ( m_view->isEmpty() ) {
+      sidre::TypeID sidre_type = sidre::SidreTT< T >::id;
+      sidre::SidreLength shape[2];
+      shape[0] = size / num_components;
+      shape[1] = num_components;
+    }
+    else {
+      SLIC_ERROR_IF( view->getTypeID() != sidre_type< T >::type,
+                     "sidre::View and mint::Vector have conflicting types." );
     }
   }
+#endif
 
-  /*!
-   * \brief Custom destructor, free's the data buffer.
-   */
-  ~Vector()
-  {
-    utilities::free( m_data );
-    m_data = AXOM_NULLPTR;
-  }
-
-  /*!
-   * \breif Copy assignment operator.
-   * \param [in] rhs the Vector to copy.
-   */
-  Vector< T > & operator=( const Vector & rhs )
-  {
-    m_size = rhs.m_size;
-    setCapacity( rhs.m_capacity );
-    m_resize_ratio = rhs.m_resize_ratio;
-    m_components = rhs.m_components;
-    localIndex byte_size = m_size * sizeof(T);
-    std::memcpy(m_data, rhs.m_data, byte_size);
-    return *this;
-  }
-
-  /*!
-   * \breif Move assignment operator.
-   * \param [in] rhs the Vector to move.
-   */
-  Vector< T > & operator=( const Vector && rhs )
-  {
-    m_size = rhs.m_size;
-    setCapacity( rhs.m_capacity );
-    m_resize_ratio = rhs.m_resize_ratio;
-    m_components = rhs.m_components;
-    m_data = rhs.m_data;
-
-    if (&rhs != this)
-    {
-      rhs.m_data = AXOM_NULLPTR;
-    }
-  }
 
   /*!
    * \brief Accessor, returns a reference to the value at position pos.
@@ -375,30 +346,23 @@ private:
 
     m_data = utilities::realloc( m_data, m_capacity );
 
-#ifdef USE_SIDRE
-    if ( m_view != AXOM_NULLPTR )
-    {
-      m_data = m_view->reallocate()->getPointer();
-    }
-    else
-    {
-      m_data = utilities::realloc( m_data, m_capacity );
-    }
-#endif
-
     SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                    "Vector reallocation failed." );
   }
 
+#ifdef MINT_USE_SIDRE
+  sidre::View * m_view
+  localIndex & m_size;
+  double & m_resize_ratio;
+#else
   localIndex m_size;
-  localIndex m_capacity;
   double m_resize_ratio;
+#endif
+
+  localIndex m_capacity;
   int m_components;
   T * m_data;
 
-#ifdef USE_SIDRE
-  sidre::View * m_view
-#endif
 };
 
 } /* namespace mint */
