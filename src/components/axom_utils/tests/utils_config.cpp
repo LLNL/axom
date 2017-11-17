@@ -165,10 +165,6 @@ TEST(axom_utils_config,config_components)
   comps.push_back("slic");
 #endif
 
-#ifdef AXOM_USE_SPIO
-  comps.push_back("spio");
-#endif
-
 
   std::stringstream sstr;
   std:: copy( comps.begin(), comps.end(),
