@@ -66,7 +66,6 @@ set( quest_depends_on
      mint
      slam
      primal
-     fmt
      )
 
 if (BOOST_FOUND)
