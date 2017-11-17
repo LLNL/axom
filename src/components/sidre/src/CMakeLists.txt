@@ -104,7 +104,11 @@ set(sidre_depends
     slic)
 
 if(ENABLE_MPI)
-   list(APPEND sidre_depends mpi)
+    list(APPEND sidre_depends fmt mpi)
+
+    if(SCR_FOUND)
+        list(APPEND sidre_depends scr)
+    endif()
 endif()
 
 #
