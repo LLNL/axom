@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_13_32_21/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1/cmake-3.8.2-ogx3v5xe7tjiworftog2b65rue7fj5tu/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_16_09_27_34/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1/cmake-3.8.2-ogx3v5xe7tjiworftog2b65rue7fj5tu/bin/cmake
 
 #######
 # using clang@4.0.1 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_13_32_21/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_16_09_27_34/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-f354ty3s3eovs5voooegrffh3yg5zde5" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-f354ty3s3eovs5voooegrffh3yg5zde5" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3xjcjdkzkulzgnfyghbnenfewqq4wtoc" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-piqgvjclj43sv47flhhn4hgebtyh4gvw" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-5ilanyoky7ep7egpzp5cttp5n3t3mehe" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-alcsuy6edvcugusksrr2jhsnp5vyqk66" CACHE PATH "")
@@ -99,7 +99,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 ##############################################################################
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME             "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-4.0.1" CACHE PATH "")
+set(MPI_HOME             "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-4.0.1" CACHE PATH "")
 set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpiclang" CACHE PATH "")
 set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpiclang++" CACHE PATH "")
 
