@@ -29,7 +29,7 @@
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
 
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
