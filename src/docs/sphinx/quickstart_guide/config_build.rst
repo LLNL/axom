@@ -110,6 +110,7 @@ Package Dependencies:
   HDF5               Sidre
   Conduit            Sidre
   Sparse Hash        Sidre (optional)
+  SCR                Sidre (optional)
   Boost              Slam, Quest
 ================== ==================================== 
 
