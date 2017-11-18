@@ -53,7 +53,7 @@
 #include "sidre/Buffer.hpp"
 #include "sidre/View.hpp"
 
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OffsetPolicies.hpp"
@@ -68,7 +68,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::View;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 
 
 typedef axom::sidre::IndexType IndexType;
@@ -122,7 +122,7 @@ struct CommandLineArguments
   static void usage()
   {
     fmt::MemoryWriter out;
-    out << "Usage ./spio_convert_format <options>";
+    out << "Usage ./convert_sidre_protocol <options>";
     out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
     out.write("\n\t{:<30}{}", "--input <file>",
               "(required) Filename of input datastore");

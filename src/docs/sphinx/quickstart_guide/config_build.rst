@@ -107,9 +107,10 @@ Package Dependencies:
 ================== ==================================== 
   Library            Dependent Components
 ================== ==================================== 
-  HDF5               Sidre, Spio
-  Conduit            Sidre, Spio
+  HDF5               Sidre
+  Conduit            Sidre
   Sparse Hash        Sidre (optional)
+  SCR                Sidre (optional)
   Boost              Slam, Quest
 ================== ==================================== 
 
