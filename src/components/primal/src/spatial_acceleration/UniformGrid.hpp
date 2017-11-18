@@ -96,8 +96,8 @@ public:
    * The points in the set {(2., y), (x, 4.)} are not included in the
    * UniformGrid.
    */
-  UniformGrid(const double * lower_bound, const double * upper_bound,
-              const int * res);
+  UniformGrid(const double* lower_bound, const double* upper_bound,
+              const int* res);
 
   /*! \brief Destructor: present for symmetry with constructor */
   ~UniformGrid();
@@ -278,9 +278,9 @@ UniformGrid< T, NDIMS >::UniformGrid()
 }
 
 template < typename T, int NDIMS >
-UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
-                                     const double * upper_bound,
-                                     const int * res)
+UniformGrid< T, NDIMS >::UniformGrid(const double* lower_bound,
+                                     const double* upper_bound,
+                                     const int* res)
 {
   SLIC_ASSERT(lower_bound != AXOM_NULLPTR);
   SLIC_ASSERT(upper_bound != AXOM_NULLPTR);

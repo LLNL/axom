@@ -91,6 +91,9 @@ blt_add_library( NAME
 
                  DEPENDS_ON
                     "${slic_depends_on}"
+
+                 FOLDER
+                     axom/slic
               )
 install(TARGETS              slic
         EXPORT               slic-targets

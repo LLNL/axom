@@ -734,17 +734,16 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l,
 
   Q= Point3::make_point(Q_x,Q_y,Q_z);
 
-  /*PQ is so random segment on the triangle.  We create a vertex called vertex1 and
-     use
-     it to create the triangle formed by P', Q' and vertex1. */
+  /*PQ is so random segment on the triangle.  We create a vertex called vertex1
+     and use it to create the triangle formed by P', Q' and vertex1. */
 
   //Step 3: choose some vertex away from the triangle
   Point3 vertex1 = randomPt< 3 >(0.,1.);
 
   //Step 4:
-  //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that
-  // we now
-  //have a triangle whose base is not necessarily on the plane formed by ABC
+  // we scale the segments formed by both vertex 1 and P and by vertex 1 and Q
+  // so that we now have a triangle whose base is not necessarily on the plane
+  // formed by ABC
   Vector3 vertex2Direction = Vector3(Q, vertex1);
   Vector3 vertex3Direction = Vector3(P, vertex1);
 
@@ -869,12 +868,12 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
   //future work: test triangle triangle with a bunch of random test cases
 
-  srand(1);   //we want same random number sequence everytime to make sure our tests
-              // don't differ on a case to case basis
+  srand(1);   // we want same random number sequence everytime to make sure our
+              // tests don't differ on a case to case basis
 
-  //Randomly generate a bunch of intersecting triangles (whose intersections form
-  // segments) and test them
-  // How many tests are we actually performing here?
+  //Randomly generate a bunch of intersecting triangles (whose intersections
+  // form segments) and test them How many tests are we actually performing
+  // here?
   int rantests = 0;
   int skiptests = 0;
   for (int i=0 ; i<5000 ; i++)
@@ -943,7 +942,8 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
             << " against triangle " << tri2
             << "\n\t -- intersects? "
             << (primal::intersect(tri2, box2) ? "yes" : "no")
-            //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ? "yes":"no")
+            //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ?
+            // "yes":"no")
             );
   //EXPECT_TRUE( primal::intersect(tri, box1));
 
@@ -1035,38 +1035,14 @@ bool testPointsClose(const primal::Point< T, DIM > & lhp,
   return v.norm() < EPS;
 }
 
-// segmentAt() and triangleAt() are temporary.  Ticket ATK-1122 involves moving them
-// into Segment and Triangle class, respectively.
-template < typename T, int DIM >
-primal::Point< T, DIM > segmentAt(const primal::Segment< T, DIM > & seg,
-                                  double t)
-{
-  return primal::Point< T, DIM>::lerp(seg.source(), seg.target(), t);
-}
-
-template < typename T, int DIM >
-primal::Point< T, DIM > triangleAt(const primal::Triangle< T, DIM > & tri,
-                                   const primal::Point< T, 3 > & bary)
-{
-  T denom = bary[0] + bary[1] + bary[2];
-  // if (std::abs(denom) < 1e-3)  This is a problem.
-  primal::NumericArray< T, 3 > weights = bary.array() / denom;
-
-  primal::NumericArray< T, 3 > res = weights[0] * tri[0].array() +
-                                     weights[1] * tri[1].array() + weights[2] *
-                                     tri[2].array();
-
-  return primal::Point< T, DIM >(res);
-}
-
 template < typename T, int DIM >
 void ensureTriPointMatchesSegPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Point< T, 3 > & bary,
                                    const primal::Segment< T, DIM > & seg,
                                    double t)
 {
-  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
-  primal::Point< T, DIM > segpoint = segmentAt(seg, t);
+  primal::Point< T, DIM > tripoint = tri.at(bary);
+  primal::Point< T, DIM > segpoint = seg.at(t);
   EXPECT_TRUE(testPointsClose(tripoint, segpoint));
 }
 
@@ -1076,7 +1052,7 @@ void ensureTriPointMatchesRayPoint(const primal::Triangle< T, DIM > & tri,
                                    const primal::Ray< T, DIM > & ray,
                                    double t)
 {
-  primal::Point< T, DIM > tripoint = triangleAt(tri, bary);
+  primal::Point< T, DIM > tripoint = tri.at(bary);
   primal::Point< T, DIM > raypoint = ray.at(t);
   EXPECT_TRUE(testPointsClose(tripoint, raypoint));
 }
@@ -1097,7 +1073,7 @@ void testRayIntersection(const primal::Triangle< double, DIM > & tri,
   if (testtrue)
   {
     EXPECT_TRUE(intersect(tri, ray, t, tip));
-    PointType tripoint = triangleAt(tri, tip);
+    PointType tripoint = tri.baryToPhysical(tip);
     PointType raypoint = ray.at(t);
     EXPECT_TRUE(testPointsClose(tripoint, raypoint))
       << "Tripoint is " << tripoint <<
@@ -1134,29 +1110,29 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     double t1 = 0;
     PointType tip1;
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
-    PointType tripoint1 = triangleAt(tri, tip1);
-    PointType segpoint1 = segmentAt(seg1, t1);
-    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1))
-      << "Tripoint is " << tripoint1 <<
-      " and segpoint is " << segpoint1;
+    PointType tripoint1 = tri.baryToPhysical(tip1);
+    PointType segpoint1 = seg1.at(t1);
+    EXPECT_TRUE(testPointsClose(tripoint1,segpoint1))
+      << "Tripoint is " << tripoint1
+      << " and segpoint is " << segpoint1;
 
     // Find the intersection of segment from p1 to p2
     double t2 = 0;
     PointType tip2;
     EXPECT_TRUE(intersect(tri, seg2, t2, tip2));
-    PointType tripoint2 = triangleAt(tri, tip2);
-    PointType segpoint2 = segmentAt(seg2, t2);
+    PointType tripoint2 = tri.baryToPhysical(tip2);
+    PointType segpoint2 = seg2.at(t2);
     EXPECT_TRUE(testPointsClose(tripoint2, segpoint2));
   }
   else
   {
     EXPECT_FALSE( intersect(tri, seg1, t, tip))
       <<"Expected no intersection; Found one at point "
-      << segmentAt(seg1, t);
+      << seg1.at(t);
 
     EXPECT_FALSE( intersect(tri, seg2, t, tip))
       <<"Expected no intersection; Found one at point "
-      << segmentAt(seg2, t);
+      << seg2.at(t);
   }
 }
 
@@ -1355,12 +1331,13 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
                    PointType::make_point( 2,0,2));
   EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionParam, intBary));
 
-  // Here, intersectionParam is the distance along the ray, with the source being 0.
+  // Here, intersectionParam is the distance along the ray, with the source
+  // being 0.
   // This is different from a segment's intersection parameter (see below).
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
   PointType intersectionPoint = r.at(intersectionParam);
-  PointType triIntersectionPoint = triangleAt(t2, intBary);
+  PointType triIntersectionPoint = t2.baryToPhysical(intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
@@ -1386,13 +1363,15 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   double intersectionParam = 0.;
   EXPECT_TRUE( axom::primal::intersect(t, s, intersectionParam, intBary));
 
-  // Here, intersectionParam is the distance along the segment, with the source being 0
-  // and the target being 1.  This is different from a ray's intersection parameter
+  // Here, intersectionParam is the distance along the segment, with the source
+  // being 0
+  // and the target being 1.  This is different from a ray's intersection
+  // parameter
   // (see above).
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
-  PointType intersectionPoint = segmentAt(s, intersectionParam);
-  PointType triIntersectionPoint = triangleAt(t, intBary);
+  PointType intersectionPoint = s.at(intersectionParam);
+  PointType triIntersectionPoint = t.baryToPhysical(intBary);
   SLIC_INFO("Intersection (unscaled barycentric) is " << intBary);
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
@@ -1560,7 +1539,7 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

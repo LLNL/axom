@@ -225,11 +225,8 @@ TEST( primal_clip, experimentalData)
   // Check that the polygon vertices are on the triangle
   for (int i=0 ; i< poly.numVertices() ; ++i)
   {
-    PointType bary = tri.barycentricCoords(poly[i]);
-
-    PointType reconstructed = bary[0]*tri[0].array()
-                              + bary[1]*tri[1].array()
-                              + bary[2]*tri[2].array();
+    PointType bary = tri.physToBarycentric(poly[i]);
+    PointType reconstructed = tri.baryToPhysical(bary);
 
     SLIC_INFO("Testing clipped polygon point "
               << poly[i]
@@ -252,10 +249,8 @@ TEST( primal_clip, experimentalData)
   // Check that the polygon centroid is on the triangle
   {
     PointType centroid = poly.centroid();
-    PointType bary = tri.barycentricCoords( centroid );
-    PointType reconstructed = bary[0]*tri[0].array()
-                              + bary[1]*tri[1].array()
-                              + bary[2]*tri[2].array();
+    PointType bary = tri.physToBarycentric( centroid );
+    PointType reconstructed = tri.baryToPhysical(bary);
 
     SLIC_INFO("Testing clipped polygon centroid "
               << centroid
@@ -280,7 +275,7 @@ TEST( primal_clip, experimentalData)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

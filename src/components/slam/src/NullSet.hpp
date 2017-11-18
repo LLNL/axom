@@ -63,7 +63,7 @@ public:
   }
 
   inline bool isSubset() const { return false; }
-  const Set * parentSet() const { return this; }
+  const Set* parentSet() const { return this; }
 
   bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const
   {

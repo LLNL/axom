@@ -180,20 +180,20 @@ public:
    * \post The barycentric coordinates sum to 1.
    * Adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point< T,3 > barycentricCoords(const PointType& p) const
+  Point< double, 3 > physToBarycentric(const PointType& p) const
   {
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
-    Point< T,3 > bary;
+    Point< double, 3 > bary;
 
-    Vector< T,3 > u =
+    Vector< double, 3 > u =
       VectorType::cross_product( VectorType(m_points[0],m_points[1]),
                                  VectorType(m_points[0],m_points[2]) );
-    const T x= std::abs(u[0]);
-    const T y= std::abs(u[1]);
-    const T z= std::abs(u[2]);
+    const double x = std::abs(u[0]);
+    const double y = std::abs(u[1]);
+    const double z = std::abs(u[2]);
 
-    T ood = 1.0 / u[2];      // compute in xy plane by default
+    double ood = 1.0 / u[2];      // compute in xy plane by default
     int c0 = 0;
     int c1 = 1;
 
@@ -228,6 +228,27 @@ public:
   }
 
   /*!
+   * \brief Returns the physical coordinates of a barycentric point
+   * \param [in] bary Barycentric coordinates relative to this triangle
+   * \return Physical point represented by bary
+   */
+  PointType baryToPhysical(const Point<double, 3> & bary) const
+  {
+    SLIC_CHECK_MSG( axom::utilities::isNearlyEqual(1., bary[0]+bary[1]+bary[2]),
+                    "Barycentric coordinates must sum to (near) one." );
+
+    PointType res;
+    for (int i = 0 ; i < NDIMS ; ++i)
+    {
+      res[i] = bary[0] * m_points[0][i] +
+               bary[1] * m_points[1][i] +
+               bary[2] * m_points[2][i];
+    }
+
+    return res;
+  }
+
+  /*!
    * \brief Returns whether the triangle is degenerate
    * \return true iff the triangle is degenerate (0 area)
    * \see primal::Point
@@ -249,7 +270,7 @@ public:
       return false;
     }
 
-    Point< T,3 > bC= barycentricCoords(p);
+    Point< T,3 > bC= physToBarycentric(p);
     return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
             (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }

@@ -21,37 +21,39 @@
 ##################################################
 # convert_protocol is a utility that converts
 # a datastore from the sidre_hdf5 protocol
-# to any of the other supported protocols
+# to any of the other supported protocols.
+# It requires slam, sidre and mpi.
 ##################################################
-set(datastore_converter_sources
-    convert_sidre_protocol.cpp
-)
-set(datastore_converter_depends 
-    spio sidre conduit conduit_relay hdf5
-    slic fmt 
-    slam 
+if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI )
+    set(datastore_converter_sources
+        convert_sidre_protocol.cpp
     )
+    set(datastore_converter_depends 
+        sidre conduit conduit_relay hdf5
+        slic fmt 
+        slam 
+        mpi
+        )
 
-if(ENABLE_LUMBERJACK)
-  list(APPEND datastore_converter_depends lumberjack)
-endif()
-
-
-if(BOOST_FOUND)
-  list(APPEND datastore_converter_depends boost)
-endif()
-
-if(SCR_FOUND)
-  list(APPEND datastore_converter_depends scr)
-endif()
+    if(ENABLE_LUMBERJACK)
+      list(APPEND datastore_converter_depends lumberjack)
+    endif()
 
 
-if( ENABLE_SLAM AND ENABLE_SPIO )
+    if(BOOST_FOUND)
+      list(APPEND datastore_converter_depends boost)
+    endif()
+
+    if(SCR_FOUND)
+      list(APPEND datastore_converter_depends scr)
+    endif()
+
     blt_add_executable(
         NAME       convert_sidre_protocol
         SOURCES    ${datastore_converter_sources}
         OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON ${datastore_converter_depends}
+        FOLDER     axom/examples
         )
     install(TARGETS              convert_sidre_protocol
             DESTINATION          bin
@@ -76,6 +78,7 @@ if(ENABLE_QUEST)
         SOURCES     ${mesh_tester_sources}
         OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${mesh_tester_depends}
+        FOLDER      axom/examples
         )
     install(TARGETS              mesh_tester
             DESTINATION          bin

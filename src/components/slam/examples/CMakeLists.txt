@@ -45,6 +45,7 @@ foreach(example_source ${example_sources})
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+        FOLDER      axom/slam/examples
         )
 
     blt_add_test(
@@ -72,6 +73,7 @@ if(BOOST_FOUND)
         SOURCES     UnstructMeshField.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+        FOLDER      axom/slam/examples
         )
 
     blt_add_test(

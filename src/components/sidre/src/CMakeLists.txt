@@ -104,7 +104,11 @@ set(sidre_depends
     slic)
 
 if(ENABLE_MPI)
-   list(APPEND sidre_depends mpi)
+    list(APPEND sidre_depends fmt mpi)
+
+    if(SCR_FOUND)
+        list(APPEND sidre_depends scr)
+    endif()
 endif()
 
 #
@@ -121,7 +125,9 @@ blt_add_library( NAME
                      sidre
                  DEPENDS_ON
                      ${sidre_depends}
-                 )
+                 FOLDER 
+                     axom/sidre
+                )
 
 if(SPARSEHASH_FOUND)
     blt_add_target_definitions(TO                 sidre
@@ -140,4 +146,8 @@ install(FILES       ${sidre_headers}
         )
 if(ENABLE_FORTRAN)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
+    
+    if(ENABLE_MPI)
+        install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)    
+    endif()
 endif()

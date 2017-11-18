@@ -42,6 +42,7 @@ foreach(test ${quest_tests})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
+		FOLDER axom/quest/tests
     )
     blt_add_test(
         NAME ${test_name}
@@ -70,6 +71,7 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_regression_depends}
+		FOLDER axom/quest/tests
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 

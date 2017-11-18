@@ -1127,7 +1127,8 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   // based on Akenine-Moller algorithm (Journal of Graphics Tools)
   //
   // It uses the Separating Axis Theorem to look for disjoint projections
-  // along various axes associated with Faces and Edges of the AABB and triangle.
+  // along various axes associated with Faces and Edges of the AABB and
+  // triangle.
   // There are 9 tests for the cross products of edges
   //           3 tests for the AABB face normals
   //           1 test for the triangle face normal
@@ -1197,7 +1198,8 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
 // ------------------------------------------------------------------------------
 
 /**
- * \brief Helper function to find disjoint projections for the AABB-triangle test
+ * \brief Helper function to find disjoint projections for the AABB-triangle
+ * test
  * \param d0 The first value defining the test interval
  * \param d1 The second value defining the test interval
  * \param d2 The third value defining the test interval
@@ -1362,7 +1364,8 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
   const T Az = shear[2]*A[kz];
   const T Bz = shear[2]*B[kz];
   const T Cz = shear[2]*C[kz];
-  t = (U*Az + V*Bz +W*Cz);  // save the parameter of the intersection w.r.t. ray R
+  t = (U*Az + V*Bz +W*Cz);  // save the parameter of the intersection w.r.t. ray
+                            // R
 
   //make sure hit is in correct direction
   if ( (( t < zero) && !(det < zero)) || ((det < zero) && !(t < zero) ) )
@@ -1394,24 +1397,27 @@ bool intersect_tri_segment(const Triangle< T, 3 >& tri, const Segment< T,3 >& S,
   typedef Vector< T,3 > Vector3;
   Ray< T,3 > r(S.source(), Vector3(S.source(), S.target()));
 
-  //Ray-triangle intersection does not check endpoints, so we explicitly check here
+  //Ray-triangle intersection does not check endpoints, so we explicitly check
+  // here
   if ( tri.checkInTriangle(S.source() ) )
   {
     t = 0;
-    p = tri.barycentricCoords(S.source());
+    p = tri.physToBarycentric(S.source());
     return true;
   }
   if ( tri.checkInTriangle(S.target()))
   {
     t = 1;
-    p = tri.barycentricCoords(S.target());
+    p = tri.physToBarycentric(S.target());
     return true;
   }
 
-  // The triangle only intersects the segment if it intersects the ray defined by one
+  // The triangle only intersects the segment if it intersects the ray defined
+  // by one
   // of its endpoints and the direction defined by its two endpoints.
   // We can parametrize the line as:  r.origin() + t * r.direction()
-  // Values of the parameter t between 0 and the length of the segment correspond
+  // Values of the parameter t between 0 and the length of the segment
+  // correspond
   // to points on the segment.
   // Note: if intersect_tri_ray() is true, t must be greater than zero
   if ( intersect_tri_ray(tri, r, t, p) )
@@ -1466,8 +1472,8 @@ bool intersect_obb2D_obb2D(const OrientedBoundingBox< T, 2 > &b1,
   Vector< T, 2 > e1 = b1.getExtents();
   Vector< T, 2 > e2 = b2.getExtents();
 
-  const Vector< T, 2 > * u1 = b1.getAxes();
-  const Vector< T, 2 > * u2 = b2.getAxes();
+  const Vector< T, 2 >* u1 = b1.getAxes();
+  const Vector< T, 2 >* u2 = b2.getAxes();
 
   Vector< T, 2 > d = c2 - c1;
 
@@ -1511,8 +1517,8 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox< T, 3 > &b1,
   Vector< T, 3 > e1 = b1.getExtents();
   Vector< T, 3 > e2 = b2.getExtents();
 
-  const Vector< T, 3 > * u1 = b1.getAxes();
-  const Vector< T, 3 > * u2 = b2.getAxes();
+  const Vector< T, 3 >* u1 = b1.getAxes();
+  const Vector< T, 3 >* u2 = b2.getAxes();
 
   // compute r and r^T here:
   Vector< T, 3 > r[3];

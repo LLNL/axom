@@ -54,6 +54,11 @@ class Mfem(Package):
     #            since I could not get the redirect to work with axom's spack mirror.  
     #            Specifically, spack was not appending the '.tgz' extension. 
     #            This appears to be fixed in more recent versions of spack.
+    version('3.3.2', 
+            '01a762a5d0a2bc59ce4e2f59009045a4',
+            url='http://mfem.github.io/releases/mfem-3.3.2.tgz')
+            #url='https://goo.gl/Kd7Jk8', extension='.tar.gz',preferred=True)
+
     version('3.3',
             'b17bd452593aada93dc0fee748fcfbbf4f04ce3e7d77fdd0341cc9103bcacd0b',
             url='http://mfem.github.io/releases/mfem-3.3.tgz')

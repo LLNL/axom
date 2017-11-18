@@ -25,6 +25,7 @@ foreach( example ${mint_examples} )
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON axom_utils mint slic
+        FOLDER     axom/mint/examples
         )
 
 endforeach()

@@ -29,8 +29,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
   const int N = 10;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -51,11 +51,13 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
     {
       if (j == i)
       {
-        EXPECT_NEAR(u[i*N + j]*u[i*N + j], 1., EPS);
+        EXPECT_NEAR(u[i*N + j]*u[i*N + j], 1., EPS)
+          << "At entry j == i == " << j;
       }
       else
       {
-        EXPECT_NEAR(u[i*N + j], 0, EPS);
+        EXPECT_NEAR(u[i*N + j], 0, EPS)
+          << "At entry j = " << j << ",  i = " << i;
       }
     }
   }
@@ -69,8 +71,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_partial_diagonal )
   const int N = 10;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -128,8 +130,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_two_by_two )
   const int N = 2;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -163,8 +165,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
   const int N = 3;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -197,14 +199,14 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
 #ifdef EIGEN_SOLVE_TESTER_SHOULD_SEED
   std::srand( std::time(0) );
 #else
-  std::srand( 105 );
+  std::srand( 42 );
 #endif
 
   int result = RUN_ALL_TESTS();

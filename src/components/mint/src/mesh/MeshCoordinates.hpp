@@ -147,7 +147,7 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  double * getCoordinateArray( int dim );
+  double* getCoordinateArray( int dim );
 
   /*!
    * \brief Number of coordinates along the given dimension.

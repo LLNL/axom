@@ -95,6 +95,7 @@ blt_add_library(
     HEADERS     ${quest_headers}
     HEADERS_OUTPUT_SUBDIR quest
     DEPENDS_ON  ${quest_depends_on}
+    FOLDER      axom/quest
     )
 install(TARGETS              quest
         EXPORT               quest-targets

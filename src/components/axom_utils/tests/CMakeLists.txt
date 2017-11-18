@@ -46,7 +46,8 @@ foreach(test ${gtest_utils_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_tests_depends} )
+                        DEPENDS_ON ${utils_tests_depends} 
+                        FOLDER axom/axom_utils/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()
@@ -72,7 +73,7 @@ blt_add_executable( NAME utils_config_test
                     SOURCES utils_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_config_test_depends}
-                    )
+                    FOLDER axom/axom_utils/tests )
 
 blt_add_test( NAME utils_config
               COMMAND utils_config_test )
@@ -93,7 +94,8 @@ if(ENABLE_OPENMP)
     blt_add_executable( NAME utils_config_openmp_test
                         SOURCES utils_config.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_config_test_depends} openmp)
+                        DEPENDS_ON ${utils_config_test_depends} openmp
+                        FOLDER axom/axom_utils/tests )
 
     blt_add_test( NAME utils_config_openmp
                   COMMAND utils_config_openmp_test )

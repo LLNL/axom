@@ -60,7 +60,7 @@ TEST(slic_fmt, basic_use)
 
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 
