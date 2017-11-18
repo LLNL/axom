@@ -32,8 +32,10 @@ def main():
              "%clang@4.0.0",
              "%gcc@4.9.3",
              "%gcc@6.1.0",
+             "%gcc@7.1.0",
              "%intel@16.0.4",
-             "%intel@17.0.2"]
+             "%intel@17.0.2",
+             "%intel@18.0.0"]
     return full_build_and_test_of_tpls(builds_dir,specs)
 
 if __name__ == "__main__":

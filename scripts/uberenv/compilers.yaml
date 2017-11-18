@@ -62,6 +62,11 @@ compilers:
             cxx: /usr/tce/packages/gcc/gcc-6.1.0/bin/g++
             f77: /usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran
             fc:  /usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran
+        gcc@7.1.0:
+            cc:  /usr/tce/packages/gcc/gcc-7.1.0/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-7.1.0/bin/g++
+            f77: /usr/tce/packages/gcc/gcc-7.1.0/bin/gfortran
+            fc:  /usr/tce/packages/gcc/gcc-7.1.0/bin/gfortran
         clang@3.9.1:
             cc:  /usr/tce/packages/clang/clang-3.9.1/bin/clang
             cxx: /usr/tce/packages/clang/clang-3.9.1/bin/clang++
@@ -82,6 +87,11 @@ compilers:
             cxx: /usr/tce/packages/intel/intel-17.0.2/bin/icpc
             f77: /usr/tce/packages/intel/intel-17.0.2/bin/ifort
             fc: /usr/tce/packages/intel/intel-17.0.2/bin/ifort
+        intel@18.0.0:
+            cc: /usr/tce/packages/intel/intel-18.0.0/bin/icc
+            cxx: /usr/tce/packages/intel/intel-18.0.0/bin/icpc
+            f77: /usr/tce/packages/intel/intel-18.0.0/bin/ifort
+            fc: /usr/tce/packages/intel/intel-18.0.0/bin/ifort
     blueos_3_ppc64le_ib:
         clang@coral:
             cc:  /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang
