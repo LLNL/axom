@@ -188,14 +188,9 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray,
 
   if(retval)
   {
-    const double EPS = 1e-12;
-    double normalizer = p[0] + p[1] + p[2];
-    SLIC_CHECK_MSG(
-      std::abs(normalizer) > EPS,
-      "Unnormalized barycentric coordinates of intersection between triangle "
-      << tri << " and ray " << ray << " sum to " << normalizer
-      << "This is less than tolerance "<< EPS
-      << " Unnormalized barycentric coordinates: " << p);
+    // Add a small EPS to avoid dividing by zero
+    const double EPS = 1e-80;
+    double normalizer = p[0] + p[1] + p[2] + EPS;
     p.array() *= 1. / normalizer;
   }
 
@@ -252,16 +247,12 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg,
 
   if(retval)
   {
-    const double EPS = 1e-12;
-    double normalizer = p[0] + p[1] + p[2];
-    SLIC_CHECK_MSG(
-      std::abs(normalizer) > EPS,
-      "Unnormalized barycentric coordinates of intersection between triangle "
-      << tri << " and segment " << seg << " sum to " << normalizer
-      << "This is less than tolerance "<< EPS
-      << " Unnormalized barycentric coordinates: " << p);
+    // Add a small EPS to avoid dividing by zero
+    const double EPS = 1e-80;
+    double normalizer = p[0] + p[1] + p[2] + EPS;
     p.array() *= 1. / normalizer;
   }
+
   return retval;
 }
 
