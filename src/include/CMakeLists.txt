@@ -36,7 +36,7 @@ add_custom_target( copy_axom_includes ALL
             ${axom_headers}
 
         WORKING_DIRECTORY
-            ${CMAKE_SOURCE_DIR}/include
+            ${PROJECT_SOURCE_DIR}/include
 
         COMMENT
             "copy axom includes"
