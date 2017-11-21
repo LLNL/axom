@@ -2013,8 +2013,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     SpaceRay ray(queryPt, SpaceVector(queryPt,triPt));
 
     double rayParam = 0;
-    Point< double, 3 > triParam;
-    if( primal::intersect(tri, ray, rayParam, triParam) )
+    if( primal::intersect(tri, ray, rayParam) )
     {
       minRayParam = rayParam;
       tIdx = idx;
@@ -2026,8 +2025,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
       if(localIdx == idx)
         continue;
 
-      if( primal::intersect(m_meshWrapper.trianglePositions(localIdx),
-                            ray, rayParam, triParam) )
+      if( primal::intersect(
+            m_meshWrapper.trianglePositions(localIdx),ray, rayParam) )
       {
         if (rayParam < minRayParam )
         {
