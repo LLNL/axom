@@ -18,18 +18,18 @@
 #
 
 ############################################################
-# Register the fmt header-only library for string formatting 
+# Register the fmt header-only library for string formatting
 ############################################################
 
 set(fmt_headers
     fmt/format.h
-    fmt/ostream.h 
-    fmt/printf.h    
+    fmt/ostream.h
+    fmt/printf.h
     )
 
-# Do not include the following source files in the headers list even 
-# though they are explicitly included by the headers. It will cause CMake 
-# to try to compile them in anything that depends on fmt outside 
+# Do not include the following source files in the headers list even
+# though they are explicitly included by the headers. It will cause CMake
+# to try to compile them in anything that depends on fmt outside
 # of this directory due to CMake's file property scope (directory based)
 
 set(fmt_headers_sources
@@ -65,7 +65,7 @@ install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
 install(EXPORT fmt-targets DESTINATION lib/cmake)
 
 # Manually copy the souce files for the headers to the build directory
-blt_copy_headers_target( 
+blt_copy_headers_target(
         NAME        fmt-headers-sources
         HEADERS     ${fmt_headers_sources}
         DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/fmt)
@@ -81,29 +81,33 @@ mark_as_advanced(FMT_FOUND)
 #   it is a internal header only library
 ############################################################
 
-include(CheckIncludeFileCXX)
+if (ENABLE_SPARSEHASH)
 
-check_include_file_cxx(tr1/functional FOUND_TR1_FUNCTIONAL)
-if(FOUND_TR1_FUNCTIONAL)
+  include(CheckIncludeFileCXX)
+
+  check_include_file_cxx(tr1/functional FOUND_TR1_FUNCTIONAL)
+  if(FOUND_TR1_FUNCTIONAL)
     set(SPARSEHASH_COMPILER_DEFS
            SPARSEHASH_HASHFUN_HEADER=<tr1/functional>
            SPARSEHASH_HASHFUN_NAMESPACE=std::tr1
         CACHE INTERNAL "")
     set(FOUND_FUNCTIONAL TRUE)
-else()
+  else()
     check_include_file_cxx(functional FOUND_STD_FUNCTIONAL)
     if (FOUND_STD_FUNCTIONAL)
-       set(SPARSEHASH_COMPILER_DEFS 
+       set(SPARSEHASH_COMPILER_DEFS
               SPARSEHASH_HASHFUN_HEADER=<functional>
               SPARSEHASH_HASHFUN_NAMESPACE=std
            CACHE INTERNAL "")
-       set(FOUND_FUNCTIONAL TRUE) 
+       set(FOUND_FUNCTIONAL TRUE)
     endif()
-endif()
+  endif()
 
-if(FOUND_FUNCTIONAL)
+  if(FOUND_FUNCTIONAL)
      set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
      mark_as_advanced(SPARSEHASH_FOUND)
+  endif()
+
 endif()
 
 ################################
