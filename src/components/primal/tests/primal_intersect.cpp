@@ -175,7 +175,7 @@ TEST( primal_intersect, ray_segment_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -298,7 +298,7 @@ TEST( primal_intersect, triangle_aabb_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection_fromData )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -360,7 +360,7 @@ TEST( primal_intersect, triangle_aabb_intersection_fromData )
 
 TEST( primal_intersect, triangle_aabb_intersection_fromData2 )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -904,7 +904,7 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -955,7 +955,7 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 
 TEST( primal_intersect, ray_aabb_intersection_general3D )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
   typedef primal::Ray< double,DIM > RayType;
   typedef primal::BoundingBox< double, DIM > BoundingBoxType;
@@ -993,7 +993,7 @@ TEST( primal_intersect, ray_aabb_intersection_general3D )
 
 TEST( primal_intersect, ray_aabb_intersection_tinyDirectionVector3D )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
   typedef primal::Ray< double,DIM > RayType;
   typedef primal::BoundingBox< double, DIM > BoundingBoxType;
@@ -1141,7 +1141,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
 
 TEST(primal_intersect, triangle_segment_intersection)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Segment< double, DIM >  SegmentType;
@@ -1210,7 +1210,7 @@ TEST(primal_intersect, triangle_segment_intersection)
 
 TEST(primal_intersect, triangle_ray_intersection)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Ray< double, DIM > RayType;
@@ -1311,7 +1311,7 @@ TEST(primal_intersect, triangle_ray_intersection)
 
 TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Vector< double,DIM >    VectorType;
   typedef primal::Triangle< double, DIM > TriangleType;
@@ -1350,7 +1350,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 
 TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Vector< double,DIM >    VectorType;
   typedef primal::Triangle< double, DIM > TriangleType;
@@ -1376,7 +1376,7 @@ TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
 
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Segment< double, DIM >      SegmentType;
@@ -1411,7 +1411,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, obb_obb_test_intersection2D)
 {
-  static const int DIM = 2;
+  const int DIM = 2;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Vector< CoordType, DIM > QVector;
@@ -1466,7 +1466,7 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, obb_obb_test_intersection3D)
 {
-  static const int DIM = 3;
+  const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Vector< CoordType, DIM > QVector;
