@@ -188,7 +188,7 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray,
 
   if(retval)
   {
-    const double EPS = 1e-6;
+    const double EPS = 1e-12;
     double normalizer = p[0] + p[1] + p[2];
     SLIC_CHECK_MSG(
       std::abs(normalizer) > EPS,
@@ -252,7 +252,7 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg,
 
   if(retval)
   {
-    const double EPS = 1e-6;
+    const double EPS = 1e-12;
     double normalizer = p[0] + p[1] + p[2];
     SLIC_CHECK_MSG(
       std::abs(normalizer) > EPS,
