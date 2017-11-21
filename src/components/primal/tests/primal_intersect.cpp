@@ -29,6 +29,9 @@
 
 #include "primal/intersect.hpp"
 
+#include <cmath>     // for sqrt
+
+
 using namespace axom;
 
 namespace
@@ -1342,6 +1345,33 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   SLIC_INFO("Intersection param is " << intersectionParam);
   SLIC_INFO("Intersection point is " << intersectionPoint);
   EXPECT_TRUE(testPointsClose(intersectionPoint, triIntersectionPoint));
+}
+
+
+TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
+{
+  static int const DIM = 3;
+  typedef primal::Point< double,DIM >     PointType;
+  typedef primal::Vector< double,DIM >    VectorType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Ray< double, DIM >      RayType;
+
+  // This regression test triggers a division by zero in
+  // a previous implementation of primal::intersect()
+  // when normalizing the barycentric coordinates
+
+  double t = 0.;
+  PointType bary;
+
+  double val = std::sqrt(2)/2;
+  RayType ray(PointType::make_point(-0.1, 1.1, 0.),
+              VectorType::make_vector(0, -val, val));
+
+  TriangleType tri( PointType::make_point(1,0,0),
+                    PointType::make_point(0,1,0),
+                    PointType::make_point(0,0,1));
+
+  EXPECT_FALSE( axom::primal::intersect(tri, ray, t, bary));
 }
 
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
