@@ -73,7 +73,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapGroup.h
         interface/c_fortran/wrapBuffer.h
         interface/c_fortran/wrapView.h
-    )   
+    )
     set(sidre_fortran_sources
         # generated source
         interface/c_fortran/wrapSidre.cpp
@@ -125,7 +125,7 @@ blt_add_library( NAME
                      sidre
                  DEPENDS_ON
                      ${sidre_depends}
-                 FOLDER 
+                 FOLDER
                      axom/sidre
                 )
 
@@ -133,7 +133,7 @@ if(SPARSEHASH_FOUND)
     blt_add_target_definitions(TO                 sidre
                                TARGET_DEFINITIONS ${SPARSEHASH_COMPILER_DEFS})
     target_include_directories(sidre PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/thirdparty/sparsehash>)
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/thirdparty/sparsehash>)
 endif()
 
 install(TARGETS              sidre
@@ -146,8 +146,8 @@ install(FILES       ${sidre_headers}
         )
 if(ENABLE_FORTRAN)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
-    
+
     if(ENABLE_MPI)
-        install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)    
+        install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
     endif()
 endif()
