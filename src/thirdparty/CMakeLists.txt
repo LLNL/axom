@@ -59,7 +59,7 @@ endif()
 install(TARGETS              fmt
         EXPORT               fmt-targets
         INCLUDES DESTINATION include/fmt)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
+install(DIRECTORY   ${PROJECT_SOURCE_DIR}/src/thirdparty/fmt
         DESTINATION include
         )
 install(EXPORT fmt-targets DESTINATION lib/cmake)
