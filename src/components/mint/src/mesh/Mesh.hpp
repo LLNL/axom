@@ -26,6 +26,12 @@
 
 namespace axom
 {
+
+/* Forward declarations */
+#ifdef MINT_USE_SIDRE
+class sidre::Group;
+#endif
+
 namespace mint
 {
 
@@ -35,6 +41,37 @@ class Field;
 class Mesh
 {
 public:
+
+  Mesh() = delete;
+
+  /*!
+   * \brief Constructor.
+   * \param [in] ndims the number of dimensions
+   * \param [in] type the mesh type.
+   * \param [in] blockId the block ID for this mesh instance.
+   * \param [in] partId the partition ID for this mesh instance.
+   */
+  Mesh( int ndims, int type, int blockId, int partId );
+
+#ifdef MINT_USE_SIDRE
+  /*!
+   * \brief Constructor for use with a group that already has data.
+   * \param [in] group the sidre::Group to use.
+   * \pre group != AXOM_NULLPTR.
+   */
+  Mesh( sidre::Group * group );
+
+  /*!
+   * \brief Constructor for use with an empty group.
+   * \param [in] group the sidre::Group to use.
+   * \param [in] ndims the number of dimensions
+   * \param [in] type the mesh type.
+   * \param [in] blockId the block ID for this mesh instance.
+   * \param [in] partId the partition ID for this mesh instance.
+   * \pre group != AXOM_NULLPTR.
+   */
+  Mesh( sidre::Group * group, int ndims, int type, int blockId, int partId );
+#endif
 
   /*!
    * \brief Destructor.
@@ -318,7 +355,6 @@ public:
 
 protected:
 
-
   inline void setCellDataSize( localIndex size )
   { m_cell_data.setSize( size ); }
 
@@ -366,32 +402,40 @@ protected:
   inline void setNodeDataResizeRatio( double ratio )
   { m_node_data.setResizeRatio( ratio ); }
 
-  /*!
-   * \brief Default Constructor.
-   * \note Made protected since this is an abstract class.
-   */
-  Mesh();
+  
+  int m_ndims;          /*! mesh dimension */
+  int m_type;           /*! the type of the mesh */
+  int m_block_idx;      /*! the Block ID of the mesh */
+  int m_part_idx;       /*! the partition ID of the mesh */
 
-  /*!
-   * \brief Custom constructor.
-   * \param [in] ndims the number of dimensions
-   * \param [in] type the mesh type.
-   * \param [in] blockId the block ID for this mesh instance.
-   * \param [in] partId the partition ID for this mesh instance.
-   */
-  Mesh( int ndims, int type, int blockId, int partId );
-
-  int m_ndims;          /*!< mesh dimension */
-  int m_type;           /*!< the type of the mesh */
-  int m_block_idx;      /*!< the Block ID of the mesh */
-  int m_part_idx;       /*!< the partition ID of the mesh */
-
-  FieldData m_cell_data; /*!< FieldData instance for cell-centered fields. */
-  FieldData m_face_data; /*!< FieldData instance for face-centered fields. */
-  FieldData m_edge_data; /*!< FieldData instance for edge-centered fields. */
-  FieldData m_node_data; /*!< FieldData instance for node-centered fields. */
+  FieldData m_cell_data; /*! FieldData instance for cell-centered fields. */
+  FieldData m_face_data; /*! FieldData instance for face-centered fields. */
+  FieldData m_edge_data; /*! FieldData instance for edge-centered fields. */
+  FieldData m_node_data; /*! FieldData instance for node-centered fields. */
 
 private:
+
+#ifdef MINT_USE_SIDRE
+  sidre::Group * const m_group;
+#endif
+
+  localIndex * m_num_cells;       /*! The number of cells in the mesh */
+  localIndex * m_cell_capacity;   /*! The cell storage capacity */
+  double * m_cell_resize_ratio;   /*! The cell resize ratio */
+
+  localIndex * m_num_faces;       /*! The number of faces in the mesh */       
+  localIndex * m_face_capacity;   /*! The face storage capacity */
+  double * m_face_resize_ratio;   /*! The face resize ratio */
+
+  localIndex * m_num_edges;       /*! The number of edges in the mesh */
+  localIndex * m_edge_capacity;   /*! The edge storage capacity */
+  double * m_edge_resize_ratio;   /*! The edge resize ratio */
+
+  localIndex * m_num_nodes;       /*! The number of nodes in the mesh */
+  localIndex * m_node_capacity;   /*! The node storage capacity */
+  double * m_node_resize_ratio;   /*! The node resize ratio */
+
+
   DISABLE_COPY_AND_ASSIGNMENT(Mesh);
   DISABLE_MOVE_AND_ASSIGNMENT(Mesh);
 };
