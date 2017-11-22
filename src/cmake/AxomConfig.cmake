@@ -74,7 +74,7 @@ convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
 if(ENABLE_FORTRAN)
 
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/c_loc_with_assumed_shape.f "
+    file(WRITE ${PROJECT_BINARY_DIR}/c_loc_with_assumed_shape.f "
 ! This is expected to fail with gcc 4.7.1
 ! Error: Assumed-shape array 'arg' at (1) cannot be an argument to the
 !      procedure 'c_loc' because it is not C interoperable
@@ -90,8 +90,8 @@ if(ENABLE_FORTRAN)
     ")
     try_compile(
         USE_C_LOC_WITH_ASSUMED_SHAPE
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}/c_loc_with_assumed_shape.f
+        ${PROJECT_BINARY_DIR}
+        ${PROJECT_BINARY_DIR}/c_loc_with_assumed_shape.f
     )
 
 endif(ENABLE_FORTRAN)
