@@ -33,6 +33,7 @@ set( quest_headers
     # PointInCell headers
     PointInCell.hpp
     detail/PointFinder.hpp
+    detail/PointInCellMeshWrapper_mfem.hpp
     
     ## STL library headers
     stl/STLReader.hpp
@@ -41,11 +42,6 @@ set( quest_headers
     interface/quest.hpp
 
    )
-
-if (MFEM_FOUND)
-   list(APPEND quest_headers detail/PointInCellMeshWrapper_mfem.hpp)
-endif()
-
 
 set( quest_sources
 
