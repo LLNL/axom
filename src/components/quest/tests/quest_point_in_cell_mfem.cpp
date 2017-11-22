@@ -69,8 +69,8 @@ const int NREFINE = 2;
 const int NUM_TEST_PTS = 1000;
 const int TEST_GRID_RES = 5;
 #else
-const int NREFINE = 5;
-const int NUM_TEST_PTS = 100000;
+const int NREFINE = 4;
+const int NUM_TEST_PTS = 10000;
 const int TEST_GRID_RES = 3;
 #endif
 
@@ -1432,7 +1432,7 @@ TEST_F( PointInCell3DTest, pic_flat_single_hex )
 TEST_F( PointInCell3DTest, pic_flat_refined_hex )
 {
   const double vertVal = 0.5;
-  const int numRefine = ::NREFINE;
+  const int numRefine = ::NREFINE -1;
   const int DIM = PointInCell3DTest::DIM;
 
   this->setupTestMesh(FLAT_MESH, numRefine, vertVal);
@@ -1473,7 +1473,7 @@ TEST_F( PointInCell3DTest, pic_curved_single_hex )
 TEST_F( PointInCell3DTest, pic_curved_refined_hex )
 {
   const double vertVal = 0.5;
-  const int numRefine = ::NREFINE;
+  const int numRefine = ::NREFINE -1;
   const int DIM = PointInCell3DTest::DIM;
 
   this->setupTestMesh(QUADRATIC_MESH, numRefine, vertVal);
