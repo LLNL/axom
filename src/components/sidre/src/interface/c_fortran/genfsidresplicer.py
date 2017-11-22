@@ -103,7 +103,7 @@ function group_create_array_view_{typename}{nd}(grp, name, value) result(rv)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
     addr = c_loc(value)
 #else
-    call SHROUD_C_LOC(value{lower_bound}, addr)
+    call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
     if (c_associated(addr)) then
       {extents_asgn}
@@ -158,7 +158,7 @@ subroutine group_set_array_data_ptr_{typename}{nd}(grp, name, value)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value{lower_bound}, addr)
+        call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
         call c_view_set_external_data_ptr_only(view, addr)
 !        call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
@@ -201,7 +201,7 @@ subroutine view_set_array_data_ptr_{typename}{nd}(view, value)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
     addr = c_loc(value)
 #else
-    call SHROUD_C_LOC(value{lower_bound}, addr)
+    call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
     call c_view_set_external_data_ptr_only(view%voidptr, addr)
 !    call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
