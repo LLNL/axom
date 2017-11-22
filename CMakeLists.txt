@@ -45,7 +45,7 @@ else()
         message(FATAL_ERROR
             "The BLT submodule is not present. "
             "Run the following two commands in your git repository: \n"
-            "    git submodule init \n "
+            "    git submodule init\n"
             "    git submodule update" )
     endif()
 endif()
