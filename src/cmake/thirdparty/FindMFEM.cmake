@@ -35,7 +35,9 @@ if(EXISTS "${MFEM_DIR}/MFEMConfig.cmake")
 else()
 
     find_path( MFEM_INCLUDE_DIRS mfem.hpp
-               PATHS ${MFEM_DIR}/include/
+               PATHS 
+                ${MFEM_DIR}/include/
+                ${MFEM_DIR}
                NO_DEFAULT_PATH
                NO_CMAKE_ENVIRONMENT_PATH
                NO_CMAKE_PATH
@@ -44,7 +46,9 @@ else()
                )
 
     find_library( MFEM_LIBRARY NAMES mfem
-                  PATHS ${MFEM_DIR}/lib
+                  PATHS 
+                    ${MFEM_DIR}/lib
+                    ${MFEM_DIR}
                   NO_DEFAULT_PATH
                   NO_CMAKE_ENVIRONMENT_PATH
                   NO_CMAKE_PATH
