@@ -10,3 +10,4 @@ install-*
 *.uncrustify
 *.*~
 *.DS_Store
+tpl_dirs_summary.json
