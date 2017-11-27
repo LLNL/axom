@@ -11,7 +11,7 @@
   Finds axom tpl installs on lc that are not referenced in host configs.
   Saves json summary to the file "tpl_dirs_summary.json"
 
-  The json file contains a dictonary with the folloing entries:
+  The json file contains a dictonary with the following entries:
 
       referenced: contains dirs referenced in host-config files
       found: contains dirs found on the current system
@@ -28,6 +28,7 @@ import glob
 import os
 import json
 import shutil
+import sys
 
 from os.path import join as pjoin
 
@@ -59,7 +60,10 @@ def clone_axom():
     os.mkdir(tmp_dir)
     os.chdir(tmp_dir)
     print "[cloning axom into %s]" % pjoin(tmp_dir,"axom")
-    sexe("git clone ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git",echo=True)
+    res = sexe("git clone ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git",echo=True)
+    if res != 0:
+        print "[ERROR: clone of axom repo failed]"
+        sys.exit(res)
     os.chdir(cwd)
     return tmp_dir
 
@@ -82,7 +86,6 @@ def find_tpl_dirs_in_host_configs_for_all_branches():
     Returns a list of tpl dirs referenced in host configs 
     in all of axom's git branches. 
     """
-    prefixes = lc_tpl_root_dirs()
     res = []
     for branch in list_git_branches():
         print "\n[checking host configs in branch %s]" % branch
