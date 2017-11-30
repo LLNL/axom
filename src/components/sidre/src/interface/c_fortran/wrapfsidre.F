@@ -3398,7 +3398,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
@@ -3429,7 +3429,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3460,7 +3460,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3491,7 +3491,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3522,7 +3522,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3553,7 +3553,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
@@ -3584,7 +3584,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3615,7 +3615,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3646,7 +3646,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3677,7 +3677,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3708,7 +3708,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
@@ -3739,7 +3739,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3770,7 +3770,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3801,7 +3801,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3832,7 +3832,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3863,7 +3863,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         if (c_associated(addr)) then
           extents(1) = 1_SIDRE_LENGTH
@@ -3894,7 +3894,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3925,7 +3925,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3956,7 +3956,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -3987,7 +3987,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         if (c_associated(addr)) then
           extents = shape(value, kind=SIDRE_LENGTH)
@@ -4022,7 +4022,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value, addr)
+            call SIDRE_C_LOC(value, addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -4051,7 +4051,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -4080,7 +4080,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -4109,7 +4109,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -4138,7 +4138,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -4167,7 +4167,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value, addr)
+            call SIDRE_C_LOC(value, addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -4196,7 +4196,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -4225,7 +4225,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -4254,7 +4254,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -4283,7 +4283,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -4312,7 +4312,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value, addr)
+            call SIDRE_C_LOC(value, addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -4341,7 +4341,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -4370,7 +4370,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -4399,7 +4399,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -4428,7 +4428,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -4457,7 +4457,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value, addr)
+            call SIDRE_C_LOC(value, addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -4486,7 +4486,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -4515,7 +4515,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -4544,7 +4544,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -4573,7 +4573,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
             addr = c_loc(value)
 #else
-            call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+            call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
             call c_view_set_external_data_ptr_only(view, addr)
     !        call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -5984,7 +5984,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -6006,7 +6006,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -6028,7 +6028,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -6050,7 +6050,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -6072,7 +6072,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -6094,7 +6094,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -6116,7 +6116,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -6138,7 +6138,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -6160,7 +6160,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -6182,7 +6182,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -6204,7 +6204,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -6226,7 +6226,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -6248,7 +6248,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -6270,7 +6270,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -6292,7 +6292,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
@@ -6314,7 +6314,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value, addr)
+        call SIDRE_C_LOC(value, addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 0, extents)
@@ -6336,7 +6336,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 1, extents)
@@ -6358,7 +6358,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 2, extents)
@@ -6380,7 +6380,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 3, extents)
@@ -6402,7 +6402,7 @@ contains
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
+        call SIDRE_C_LOC(value(lbound(value,1),lbound(value,2),lbound(value,3),lbound(value,4)), addr)
 #endif
         call c_view_set_external_data_ptr_only(view%voidptr, addr)
     !    call c_view_apply_type_shape(rv%voidptr, type, 4, extents)
