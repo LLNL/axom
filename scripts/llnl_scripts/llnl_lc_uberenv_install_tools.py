@@ -23,11 +23,13 @@
 """
 
 import os
+import socket
 import sys
 import subprocess
 import datetime
 import glob
 import json
+import yaml
 
 from os.path import join as pjoin
 
@@ -332,5 +334,50 @@ def full_build_and_test_of_tpls(builds_dir,specs):
     return res
 
 
+def get_host_configs_for_current_machine():
+    host_configs = []
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    repo_dir = os.path.abspath(os.path.join(script_dir, "../../.."))
+    host_configs_dir = pjoin(repo_dir, "host-configs")
+
+    hostname_base = get_machine_name()
+
+    host_configs = glob.glob(pjoin(host_configs_dir, hostname_base + "*.cmake"))
+
+    return host_configs
 
 
+def get_machine_name():
+    return socket.gethostname().rstrip('1234567890')
+
+
+def get_system_type():
+    return os.environ["SYS_TYPE"]
+
+
+def get_specs_for_current_machine():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    specs_yaml_path = os.path.join(script_dir, "specs.yaml")
+
+    with open(specs_yaml_path, 'r') as f:
+        specs_yaml = yaml.load(f)
+
+    sys_type = get_system_type()
+    machine_name = get_machine_name()
+
+    specs = []
+    if machine_name in specs_yaml.keys():
+        specs = specs_yaml[machine_name]
+    else:
+        specs = specs_yaml[sys_type]
+
+    specs = ['%' + spec for spec in specs]
+
+    return specs
+
+def on_rz():
+    machine_name = get_machine_name()
+    if machine_name.startswith("rz"):
+        return True
+    return False

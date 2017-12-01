@@ -1,0 +1,60 @@
+###############################################################################
+# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#
+##############################################################################
+
+###############################################################################
+# 
+# Define specs we support and test on LLNL platforms. SYS_TYPE is used unless
+# a more specific machine name is defined.
+#
+##############################################################################
+
+chaos_5_x86_64_ib:
+    - clang@3.9.1
+    - clang@4.0.1
+    - gcc@4.9.3
+    - intel@15.0.223
+    - intel@16.0.258
+    - intel@17.0.174
+
+toss_3_x86_64_ib:
+    - clang@3.9.1
+    - clang@4.0.0
+    - gcc@4.9.3
+    - gcc@6.1.0
+    - gcc@7.1.0
+    - intel@16.0.4
+    - intel@17.0.2
+    - intel@18.0.0
+
+blueos_3_ppc64le_ib:
+    - clang@coral
+    - gcc@4.9.3
+ray:
+    - clang@coral~devtools~python~lua
+    - gcc@4.9.3~devtools~python~lua
+
+bgqos_0:
+    - clang@4.0.0~cmake~devtools~python~lua
+
+macosx_10.9_x86_64:
+    - clang@3.4svn
+
+darwin-x86_64:
+    - clang@3.4svn
+    - clang@apple-fink
+    - clang@apple-mp
+    - clang@mp3.7
+    - gcc@mp49
+    - gcc@mp5
