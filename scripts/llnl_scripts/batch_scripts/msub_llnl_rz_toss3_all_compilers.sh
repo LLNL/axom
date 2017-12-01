@@ -25,6 +25,6 @@
 #  msub -d `pwd` msub_llnl_rz_toss3_all_compilers.sh
 
 date
-/usr/bin/python llnl_rz_uberenv_install_toss_3_x86_64_ib_all_compilers.py
+../build_tpls.py
 date
 

@@ -15,7 +15,7 @@
 ###############################################################################
 
 """
- file: llnl_lc_uberenv_test_host_configs.py
+ file: test_uberenv_host_configs.py
 
  description: 
   builds and tests axom against a set of host config files created by

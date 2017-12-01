@@ -17,11 +17,11 @@
 ###############################################################################
 
 """
- file: llnl_rz_uberenv_install_toss_3_x86_64_ib_all_compilers.py
+ file: build_tpls.py
 
  description: 
   uses uberenv to install tpls for the set of compilers we want
-  for llnl rz toss 3 platforms.
+  for current machine.
 
 """
 

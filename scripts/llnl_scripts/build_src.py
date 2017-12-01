@@ -17,28 +17,58 @@
 ###############################################################################
 
 """
- file: llnl_rz_uberenv_install_toss_3_x86_64_ib_all_compilers.py
+ file: build_src.py
 
  description: 
-  uses uberenv to install tpls for the set of compilers we want
-  for llnl rz toss 3 platforms.
+  Builds all Axom with the host-configs for the current machine.
 
 """
 
 from llnl_lc_uberenv_install_tools import *
 
+from optparse import OptionParser
+
+
+def parse_args():
+    "Parses args from command line"
+    parser = OptionParser()
+    # where to install
+    parser.add_option("--src",
+                      dest="src",
+                      default="",
+                      help="Source to be built (Defaults to current)")
+
+    ###############
+    # parse args
+    ###############
+    opts, extras = parser.parse_args()
+    # we want a dict b/c the values could 
+    # be passed without using optparse
+    opts = vars(opts)
+    return optss
+
+
 def main():
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    repo_dir = os.path.abspath(os.path.join(script_dir, ".."))
+    opts = parse_args()
+
+    if opts["src"] != "":
+        src_dir = opts["src"]
+        if not os.path.isdir(src_dir):
+            print "[ERROR: %s is not a valid directory]" % src_dir
+            sys.exit(1)
+    else:
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        src_dir = os.path.abspath(os.path.join(script_dir, "../.."))
 
     host_configs = get_host_configs_for_current_machine()
     failed = []
     succeeded = []
     for host_config in host_configs:
-        if build_and_test_host_config(repo_dir, host_config) != 0:
+        if build_and_test_host_config(src_dir, host_config) != 0:
             failed.append(host_config)
         else:
             succeeded.append(host_config)
+        set_axom_group_and_perms(src_dir)
 
     print "\n\n\n"
 

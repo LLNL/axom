@@ -24,6 +24,6 @@
 #  bsub  < bsub_llnl_rz_blueos_all_compilers.sh
 
 date
-python ./llnl_rz_uberenv_install_blueos_3_ppc64le_ib_all_compilers.py
+../build_tpls.py
 date
 

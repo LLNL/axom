@@ -14,16 +14,18 @@
 ## For details about use and distribution, please read axom/LICENSE.
 ##
 
-#BSUB -n 8
-#BSUB -W 240
-#BSUB -G guests
-#BSUB -x 
+#MSUB -l nodes=1
+#MSUB -q pbatch
+#MSUB -l walltime=8:00:00
+#MSUB -A wbronze
+#MSUB -j oe
+#MSUB -o m.out.cz.uberenv.chaos5.all.compilers.%j.%N.txt
 #
 # usage: 
 #  cd {to directory with this script}
-#  bsub  < bsub_llnl_cz_blueos_all_compilers.sh
+#  msub -d `pwd` msub_llnl_cz_chaos5_all_compilers.sh
 
 date
-python ./llnl_cz_uberenv_install_blueos_3_ppc64le_ib_all_compilers.py
+../build_tpls.py
 date
 
