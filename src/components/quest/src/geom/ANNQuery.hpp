@@ -47,19 +47,32 @@ inline double squared_distance(double x1, double y1, double z1,
   return dx*dx + dy*dy + dz*dz;
 }
 
-//------------------------------------------------------------------------------
+
+/*!
+ * \brief Find the closest point (in another region) to each given point
+ * \param [in] x X-coordinates of input points
+ * \param [in] y Y-coordinates of input points
+ * \param [in] z Z-coordinates of input points
+ * \param [in] region Region of each point
+ * \param [in] n Number of points
+ * \param [in] limit Max distance for all-nearest-neighbors query
+ * \param [out] neighbor Index of nearest neighbor not in the same class
+ * \pre x, y, z, and region have n entries
+ * \pre neighbor is allocated with room for n entries
+ *
+ * This method compares each point to each other point, taking O(n^2) time.
+ */
 void all_nearest_neighbors_bruteforce(double * x, double * y, double * z,
                                       int * region, int n, double limit,
-                                      int * neighbor)
+                                      int * neighbor, double *sqdistance)
 {
   // O(n^2) brute force approach.  For each point i, test distance to all other
   // points and report result.
 
-  double * bestsqdist = new double[n];
   double sqlimit = limit * limit;
 
   for (int i = 0; i < n; ++i) {
-    bestsqdist[i] = DBL_MAX;
+    sqdistance[i] = DBL_MAX;
     neighbor[i] = -1;
   }
 
@@ -68,21 +81,36 @@ void all_nearest_neighbors_bruteforce(double * x, double * y, double * z,
     for (int j = 0; j < n; ++j) {
       if (region[i] != region[j]) {
         double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
-        if (sqdist < bestsqdist[i] && sqdist < sqlimit) {
-          bestsqdist[i] = sqdist;
+        if (sqdist < sqdistance[i] && sqdist < sqlimit) {
+          sqdistance[i] = sqdist;
           neighbor[i] = j;
         }
       }
     }
   }
-
-  delete [] bestsqdist;
 }
 
-//------------------------------------------------------------------------------
+/*!
+ * \brief Find the closest point (in another region) to each given point
+ * \param [in] x X-coordinates of input points
+ * \param [in] y Y-coordinates of input points
+ * \param [in] z Z-coordinates of input points
+ * \param [in] region Region of each point
+ * \param [in] n Number of points
+ * \param [in] limit Max distance for all-nearest-neighbors query
+ * \param [out] neighbor Index of nearest neighbor not in the same class
+ * \pre x, y, z, and region have n entries
+ * \pre neighbor is allocated with room for n entries
+ *
+ * This method compares each point p to each other point in the UniformGrid
+ * bins that are at least partly within a Manhattan distance of limit
+ * from p.  This cuts out the far-away points.  We expect this will result
+ * in a substantial time savings over the brute-force algorithm, but the
+ * run time is dependent on the point distribution.
+ */
 void all_nearest_neighbors_index1(double * x, double * y, double * z,
                                   int * region, int n, double limit,
-                                  int * neighbor)
+                                  int * neighbor, double *sqdistance)
 {
   // Indexed approach.  For each point i, test distance to all other
   // points in this and neighboring UniformGrid bins (out to distance limit)
@@ -93,12 +121,11 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
   typedef GridType::PointType PointType;
   typedef BoxType::VectorType VectorType;
 
-  double * bestsqdist = new double[n];
   double sqlimit = limit * limit;
 
   PointType pmin, pmax;
   for (int i = 0; i < n; ++i) {
-    bestsqdist[i] = DBL_MAX;
+    sqdistance[i] = DBL_MAX;
     neighbor[i] = -1;
     pmin[0] = std::min(pmin[0], x[i]);
     pmax[0] = std::max(pmax[0], x[i]);
@@ -135,16 +162,14 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
         int j = bs[bj];
         if (region[i] != region[j]) {
           double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
-          if (sqdist < bestsqdist[i] && sqdist < sqlimit) {
-            bestsqdist[i] = sqdist;
+          if (sqdist < sqdistance[i] && sqdist < sqlimit) {
+            sqdistance[i] = sqdist;
             neighbor[i] = j;
           }
         }
       }
     }
   }
-
-  delete [] bestsqdist;
 }
 
 

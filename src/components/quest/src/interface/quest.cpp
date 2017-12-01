@@ -578,14 +578,6 @@ void inside( const double * xyz, int * in, int npoints )
 }
 
 //------------------------------------------------------------------------------
-void all_nearest_neighbors(double * x, double * y, double * z, int * region,
-                           int n, double limit, int * neighbor)
-{
-  all_nearest_neighbors_bruteforce(x, y, z, region, n, limit, neighbor);
-}
-
-
-//------------------------------------------------------------------------------
 void finalize()
 {
   accelerator3D.finalize();
