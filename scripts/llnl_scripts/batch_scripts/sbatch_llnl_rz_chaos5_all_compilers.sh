@@ -27,6 +27,7 @@
 #  sbatch sbatch_llnl_rz_chaos5_all_compilers.sh
 
 date
-../build_tpls.py
+cd ..
+build_tpls.py
 date
 

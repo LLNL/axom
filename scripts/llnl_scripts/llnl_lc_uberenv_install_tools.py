@@ -118,7 +118,7 @@ def uberenv_create_mirror(prefix,mirror_path):
     """
     Calls uberenv to create a spack mirror.
     """
-    cmd = "python ../uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
+    cmd = "python ../uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
     return sexe(cmd,echo=True)
 
 
@@ -126,7 +126,7 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
-    cmd = "python ../uberenv.py --prefix %s --spec %s " % (prefix,spec)
+    cmd = "python ../uberenv/uberenv.py --prefix %s --spec %s " % (prefix,spec)
     if not mirror is None:
         cmd += "--mirror %s" % mirror
         
@@ -147,7 +147,7 @@ def patch_host_configs(prefix):
     """
     # load manual edits into a dict with keys that we can compare to 
     # generated host config names
-    manual_edits_pattern = os.path.abspath(pjoin("../../../host-configs/*manual.edits.txt"))
+    manual_edits_pattern = os.path.abspath(pjoin("../../host-configs/*manual.edits.txt"))
     manual_edits_files = glob.glob(manual_edits_pattern)
     manual_edits = {}
     for f in manual_edits_files:
@@ -190,7 +190,7 @@ def build_and_test_host_config(test_root,host_config):
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print "[starting configure of %s]" % host_config
     print "[log file: %s]" % cfg_output_file
-    res = sexe("python ../../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+    res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
                output_file = cfg_output_file,
                echo=True)
     
@@ -251,6 +251,10 @@ def build_and_test_host_config(test_root,host_config):
     sexe("ls %s/lib" %     install_dir, echo=True)
     sexe("ls %s/bin" %     install_dir, echo=True)
     print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
+
+    set_axom_group_and_perms(build_dir)
+    set_axom_group_and_perms(install_dir)
+
     return 0
 
 
@@ -334,12 +338,10 @@ def full_build_and_test_of_tpls(builds_dir,specs):
     return res
 
 
-def get_host_configs_for_current_machine():
+def get_host_configs_for_current_machine(src_dir):
     host_configs = []
 
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    repo_dir = os.path.abspath(os.path.join(script_dir, "../../.."))
-    host_configs_dir = pjoin(repo_dir, "host-configs")
+    host_configs_dir = pjoin(src_dir, "host-configs")
 
     hostname_base = get_machine_name()
 
@@ -358,7 +360,7 @@ def get_system_type():
 
 def get_specs_for_current_machine():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    specs_yaml_path = os.path.join(script_dir, "specs.yaml")
+    specs_yaml_path = os.path.join(script_dir, "../uberenv/specs.yaml")
 
     with open(specs_yaml_path, 'r') as f:
         specs_yaml = yaml.load(f)

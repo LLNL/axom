@@ -45,22 +45,29 @@ def parse_args():
     # we want a dict b/c the values could 
     # be passed without using optparse
     opts = vars(opts)
-    return optss
+    return opts
 
 
 def main():
     opts = parse_args()
 
+    if os.environ["UBERENV_PREFIX"] != "":
+        src_dir = os.environ["UBERENV_PREFIX"]
+        if not os.path.isdir(src_dir):
+            print "[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]"
+            print "[    'UBERENV_PREFIX' = %s" % src_dir
+            return 1
     if opts["src"] != "":
         src_dir = opts["src"]
         if not os.path.isdir(src_dir):
-            print "[ERROR: %s is not a valid directory]" % src_dir
-            sys.exit(1)
+            print "[ERROR: Given command line variable '--src' is not a valid directory]"
+            print "[    '--src' = %s" % src_dir
+            return 1
     else:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         src_dir = os.path.abspath(os.path.join(script_dir, "../.."))
 
-    host_configs = get_host_configs_for_current_machine()
+    host_configs = get_host_configs_for_current_machine(src_dir)
     failed = []
     succeeded = []
     for host_config in host_configs:
@@ -68,7 +75,6 @@ def main():
             failed.append(host_config)
         else:
             succeeded.append(host_config)
-        set_axom_group_and_perms(src_dir)
 
     print "\n\n\n"
 

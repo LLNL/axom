@@ -24,6 +24,7 @@
 #  bsub  < bsub_llnl_rz_blueos_all_compilers.sh
 
 date
-../build_tpls.py
+cd ..
+build_tpls.py
 date
 

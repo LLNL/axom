@@ -27,6 +27,7 @@
 # env UBERENV_PREFIX={test path}  msub msub_llnl_test_uberenv_host_configs.sh
 
 date
-../build_tpls.py
+cd ..
+build_src.py
 date
 

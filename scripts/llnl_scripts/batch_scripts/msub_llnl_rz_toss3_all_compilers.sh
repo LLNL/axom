@@ -25,6 +25,7 @@
 #  msub -d `pwd` msub_llnl_rz_toss3_all_compilers.sh
 
 date
-../build_tpls.py
+cd ..
+build_tpls.py
 date
 

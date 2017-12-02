@@ -30,6 +30,7 @@ date
 use python-2.7.3
 use git-2.0.0
 use cmake-3.8.2
-../build_tpls.py
+cd ..
+build_tpls.py
 date
 
