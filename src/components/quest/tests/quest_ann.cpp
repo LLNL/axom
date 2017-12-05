@@ -33,7 +33,7 @@ void verify_array(T* standard, T* expt, int n)
   int mismatches = 0;
 
   for (int i = 0; i < n; ++i) {
-    if (standard[i] != expt[i]) {
+    if (!axom::utilities::isNearlyEqual(standard[i], expt[i])) {
       ++mismatches;
       SLIC_INFO("i " << i << " standard " << standard[i] << " expt " << expt[i]);
     }
@@ -49,7 +49,7 @@ void verify_array(T* standard, T* expt, int n)
 //----------------------------------------------------------------------
 TEST(quest_ann, simple_2D_query)
 {
-  SLIC_INFO("*** This test verifies a simple 2D all-nearest-neighbors query.");
+  SLIC_INFO("*** Simple 2D all-nearest-neighbors query.");
 
   double x[] = {-1.2, -1.0, -0.8, -1.0, 0.8,  1.0, 1.2, 1.0};
   double y[] = { 0.0, -0.2,  0.0,  0.2, 0.0, -0.2, 0.0, 0.2};
@@ -59,23 +59,29 @@ TEST(quest_ann, simple_2D_query)
   double limit = 1.9;
   int neighbor[] = {-1, -1, -1, -1, -1, -1, -1, -1};
   int expneighbor[] = {-1, 4, 4, 4, 2, 2, -1, 2};
+  double dsq[8];
+  double expdsq[] = { DBL_MAX, 3.28, 2.56, 3.28, 2.56, 3.28, DBL_MAX, 3.28 };
 
   {
     SCOPED_TRACE("brute force limit 1.9");
-    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit, neighbor);
+    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
+                                                  neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
+    verify_array(expdsq, dsq, n);
   }
   {
     SCOPED_TRACE("indexed limit 1.9");
-    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit, neighbor);
+    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit,
+                                              neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
+    verify_array(expdsq, dsq, n);
   }
 }
 
 //----------------------------------------------------------------------
 TEST(quest_ann, simple_3D_query)
 {
-  SLIC_INFO("*** This test verifies a simple 3D all-nearest-neighbors query.");
+  SLIC_INFO("*** Simple 3D all-nearest-neighbors query.");
 
   double x[] = {-1.2, -1.0, -0.8, -1.0, 0.8, 1.0, 1.2, 1.0};
   double y[] = { 0.0, -0.2,  0.0, -0.1, 0.0, 0.2, 0.0, 0.1};
@@ -85,16 +91,22 @@ TEST(quest_ann, simple_3D_query)
   double limit = 1.9;
   int neighbor[] = {-1, -1, -1, -1, -1, -1, -1, -1};
   int expneighbor[] = {-1, 4, 4, 4, 2, 2, -1, 2};
+  double dsq[8];
+  double expdsq[] = { DBL_MAX, 3.28, 2.56, 3.29, 2.56, 3.28, DBL_MAX, 3.29 };
 
   {
     SCOPED_TRACE("brute force limit 1.9");
-    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit, neighbor);
+    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
+                                                  neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
+    verify_array(expdsq, dsq, n);
   }
   {
     SCOPED_TRACE("indexed limit 1.9");
-    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit, neighbor);
+    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit,
+                                              neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
+    verify_array(expdsq, dsq, n);
   }
 }
 
@@ -156,6 +168,8 @@ TEST(quest_ann, cplx_13region_query)
   double limit = 1.4;
   int bfneighbor[97];
   int idxneighbor[97];
+  double bfsqdst[97];
+  double idxsqdst[97];
 
   for (int i = 0; i < n; ++i) {
     z[i] = 0.;
@@ -165,9 +179,12 @@ TEST(quest_ann, cplx_13region_query)
 
   {
     SCOPED_TRACE("Comparing brute force with indexed, limit 1.4");
-    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit, bfneighbor);
-    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit, idxneighbor);
+    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
+                                                  bfneighbor, bfsqdst);
+    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit,
+                                              idxneighbor, idxsqdst);
     verify_array(bfneighbor, idxneighbor, n);
+    verify_array(bfsqdst, idxsqdst, n);
   }
 }
 
@@ -215,6 +232,8 @@ TEST(quest_ann, file_query)
     std::vector<int> region;
     int *bfneighbor;
     int *idxneighbor;
+    double *bfsqdst;
+    double *idxsqdst;
 
     readPointsFile(fname, x, y, z, region);
 
@@ -226,6 +245,8 @@ TEST(quest_ann, file_query)
       double limit = 2.1;
       bfneighbor = new int[n];
       idxneighbor = new int[n];
+      bfsqdst = new double[n];
+      idxsqdst = new double[n];
 
       for (int i = 0; i < n; ++i) {
         bfneighbor[i] = -1;
@@ -236,11 +257,12 @@ TEST(quest_ann, file_query)
         SCOPED_TRACE("Read file, comparing brute force with indexed, limit 2.1");
         axom::quest::all_nearest_neighbors_bruteforce(&x[0], &y[0], &z[0],
                                                       &region[0], n, limit,
-                                                      bfneighbor);
+                                                      bfneighbor, bfsqdst);
         axom::quest::all_nearest_neighbors_index1(&x[0], &y[0], &z[0],
                                                   &region[0], n, limit,
-                                                  idxneighbor);
+                                                  idxneighbor, idxsqdst);
         verify_array(bfneighbor, idxneighbor, n);
+        verify_array(bfsqdst, idxsqdst, n);
       }
 
       if (outfname != nullptr) {
@@ -249,6 +271,8 @@ TEST(quest_ann, file_query)
 
       delete [] bfneighbor;
       delete [] idxneighbor;
+      delete [] bfsqdst;
+      delete [] idxsqdst;
     }
   }
 }
