@@ -35,7 +35,7 @@ void verify_array(T* standard, T* expt, int n)
   for (int i = 0; i < n; ++i) {
     if (!axom::utilities::isNearlyEqual(standard[i], expt[i])) {
       ++mismatches;
-      SLIC_INFO("i " << i << " standard " << standard[i] << " expt " << expt[i]);
+      SLIC_INFO("i " << i << " std " << standard[i] << " expt " << expt[i]);
     }
   }
 
@@ -254,7 +254,7 @@ TEST(quest_ann, file_query)
       }
 
       {
-        SCOPED_TRACE("Read file, comparing brute force with indexed, limit 2.1");
+        SCOPED_TRACE("Read file, compare brute force with indexed, limit 2.1");
         axom::quest::all_nearest_neighbors_bruteforce(&x[0], &y[0], &z[0],
                                                       &region[0], n, limit,
                                                       bfneighbor, bfsqdst);
