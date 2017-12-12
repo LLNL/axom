@@ -18,7 +18,8 @@ set( mint_tests
      mint_single_fe.cpp
      mint_write_vtk.cpp
      mint_vector.cpp
-     mint_connectivity.cpp
+# turn off for now
+#     mint_connectivity.cpp
    )
 
 foreach( test ${mint_tests} )

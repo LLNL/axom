@@ -60,7 +60,7 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
   m_node_capacity( AXOM_NULLPTR ),
   m_node_resize_ratio( AXOM_NULLPTR )
 {
-  SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3 );
+  SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "invalid dimension" );
 
   m_num_cells = new localIndex(0);
   m_cell_capacity = new localIndex(0);
@@ -226,37 +226,37 @@ Mesh::Mesh( sidre::Group * group, int ndims, int type, int blockId, int partId )
 
   localIndex zero = 0;
   double zero_f = 0.0;
-  m_num_cells = static_cast< localIndex * >( 
+  m_num_cells = static_cast< localIndex * >(
                                       m_group->createView( "num_cells" )
                                       ->setScalar( zero )->getVoidPtr() );
-  m_cell_capacity = static_cast< localIndex * >( 
+  m_cell_capacity = static_cast< localIndex * >(
                                       m_group->createView( "cell_capacity" )
                                       ->setScalar( zero )->getVoidPtr() );
   m_cell_resize_ratio = static_cast< localIndex * >(
                                       m_group->createView( "cell_resize_ratio")
                                       ->setScalar( zero_f )->getVoidPtr() );
-  m_num_faces = static_cast< localIndex * >( 
+  m_num_faces = static_cast< localIndex * >(
                                       m_group->createView( "num_faces" )
                                       ->setScalar( zero )->getVoidPtr() );
-  m_face_capacity = static_cast< localIndex * >( 
+  m_face_capacity = static_cast< localIndex * >(
                                       m_group->createView( "face_capacity" )
                                       ->setScalar( zero )->getVoidPtr() );
   m_face_resize_ratio = static_cast< localIndex * >(
                                       m_group->createView( "face_resize_ratio")
                                       ->setScalar( zero_f )->getVoidPtr() );
-  m_num_edges = static_cast< localIndex * >( 
+  m_num_edges = static_cast< localIndex * >(
                                       m_group->createView( "num_edges" )
                                       ->setScalar( zero )->getVoidPtr() );
-  m_edge_capacity = static_cast< localIndex * >( 
+  m_edge_capacity = static_cast< localIndex * >(
                                       m_group->createView( "edge_capacity" )
                                       ->setScalar( zero )->getVoidPtr() );
   m_edge_resize_ratio = static_cast< localIndex * >(
                                       m_group->createView( "edge_resize_ratio")
                                       ->setScalar( zero_f )->getVoidPtr() );
-  m_num_nodes = static_cast< localIndex * >( 
+  m_num_nodes = static_cast< localIndex * >(
                                       m_group->createView( "num_nodes" )
                                       ->setScalar( zero )->getVoidPtr() );
-  m_node_capacity = static_cast< localIndex * >( 
+  m_node_capacity = static_cast< localIndex * >(
                                       m_group->createView( "node_capacity" )
                                       ->setScalar( zero )->getVoidPtr() );
   m_node_resize_ratio = static_cast< localIndex * >(
@@ -272,16 +272,16 @@ Mesh::~Mesh()
   if ( m_group != AXOM_NULLPTR )
   {
     m_group = AXOM_NULLPTR;
-    m_num_cells = AXOM_NULLPTR;    
+    m_num_cells = AXOM_NULLPTR;
     m_cell_capacity = AXOM_NULLPTR;
     m_cell_resize_ratio = AXOM_NULLPTR;
-    m_num_faces = AXOM_NULLPTR;    
+    m_num_faces = AXOM_NULLPTR;
     m_face_capacity = AXOM_NULLPTR;
     m_face_resize_ratio = AXOM_NULLPTR;
-    m_num_edges = AXOM_NULLPTR;    
+    m_num_edges = AXOM_NULLPTR;
     m_edge_capacity = AXOM_NULLPTR;
     m_edge_resize_ratio = AXOM_NULLPTR;
-    m_num_nodes = AXOM_NULLPTR;    
+    m_num_nodes = AXOM_NULLPTR;
     m_node_capacity = AXOM_NULLPTR;
     m_node_resize_ratio = AXOM_NULLPTR;
     return;

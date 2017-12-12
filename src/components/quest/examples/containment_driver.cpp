@@ -207,8 +207,8 @@ void testIntersectionOnRegularGrid()
                 debugMesh->addCell(data, MINT_HEX);
               }
 
-              debugMesh->addCell( data, MINT_HEX, 8);
             }
+
           }
         }
       }
@@ -239,7 +239,12 @@ void testContainmentOnRegularGrid(
     new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
   const int nnodes = umesh->getMeshNumberOfNodes();
-  int * containment = umesh->addNodeField< int >("containment", 1)->getIntPtr();
+//  int * containment = umesh->addNodeField< int >("containment", 1)->getIntPtr();
+  umesh->getNodeFieldData().addField(
+         new mint::FieldVariable< int >( "containment", nnodes ) );
+  int* containment =
+         umesh->getNodeFieldData().getField( "containment" )->getIntPtr();
+
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
   utilities::Timer timer(true);

@@ -114,6 +114,17 @@ public:
   inline bool empty() const
   { return( m_container.empty() ); }
 
+  inline void addField( Field* f )
+  {
+     SLIC_ASSERT(  f != AXOM_NULLPTR );
+     SLIC_ASSERT(  this->hasField( f->getName() )==false );
+
+     m_fields.push_back( f->getName() );
+     m_container[ f->getName() ] = f;
+
+    SLIC_ASSERT( m_fields.size() == m_container.size() );
+  }
+
   template < typename FieldType >
   inline Field * addField( const std::string& name, localIndex size,
                            localIndex capacity, int num_components,
@@ -248,31 +259,34 @@ inline Field * FieldData::addField( const std::string& name, localIndex size,
 //------------------------------------------------------------------------------
 inline void FieldData::setSize( localIndex size )
 {
-  typename std::map< std::string, Field * >::iterator it;
-  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-  {
-    it->second->setNumTuples( size );
-  }
+// TODO: ????
+//  typename std::map< std::string, Field * >::iterator it;
+//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+//  {
+//    it->second->setNumTuples( size );
+//  }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::setCapacity( localIndex capacity )
 {
-  typename std::map< std::string, Field * >::iterator it;
-  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-  {
-    it->second->setTuplesCapacity( capacity );
-  }
+//  TODO: ????
+//  typename std::map< std::string, Field * >::iterator it;
+//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+//  {
+//    it->second->setTuplesCapacity( capacity );
+//  }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::setResizeRatio( double ratio )
 {
-  typename std::map< std::string, Field * >::iterator it;
-  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-  {
-    it->second->setResizeRatio( ratio );
-  }
+  // TODO: ????
+//  typename std::map< std::string, Field * >::iterator it;
+//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+//  {
+//    it->second->setResizeRatio( ratio );
+//  }
 }
 
 

@@ -163,7 +163,7 @@ private:
 
   RectilinearMesh();
 
-  Vector< double > m_coordinates[3];
+  Vector< double >* m_coordinates[3];
 
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);
@@ -178,25 +178,25 @@ inline void RectilinearMesh::setCoordinate( int dim, localIndex i,
                                             double coord ) const
 {
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ].getSize() );
+  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->getNumTuples() );
 
-  m_coordinates[ dim ][ i ] = coord;
+  (*m_coordinates[ dim ])[ i ] = coord;
 }
 
 //------------------------------------------------------------------------------
 inline double RectilinearMesh::getCoordinate( int dim, localIndex i ) const
 {
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ].getSize() );
+  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->getNumTuples() );
 
-  return m_coordinates[ dim ][ i ];
+  return (*m_coordinates[ dim ])[ i ];
 }
 
 //------------------------------------------------------------------------------
 inline const double * RectilinearMesh::getCoordinateArray( int dim ) const
 {
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-  return m_coordinates[ dim ].getData();
+  return m_coordinates[ dim ]->getData();
 }
 
 //------------------------------------------------------------------------------
@@ -211,7 +211,7 @@ inline void RectilinearMesh::getNode( localIndex nodeIdx,
 
   for ( int dim = 0 ; dim < this->getDimension() ; ++dim )
   {
-    coordinates[ dim ] = m_coordinates[ dim ][ ijk[ dim ] ];
+    coordinates[ dim ] = (*m_coordinates[ dim ])[ ijk[ dim ] ];
   }
 }
 
@@ -223,8 +223,8 @@ inline void RectilinearMesh::getNode( localIndex i, localIndex j,
   SLIC_ASSERT( this->getDimension() == 2 );
   SLIC_ASSERT( i >= 0 && j >= 0 );
 
-  coordinates[ 0 ] = m_coordinates[ X_COORDINATE ][ i ];
-  coordinates[ 1 ] = m_coordinates[ Y_COORDINATE ][ j ];
+  coordinates[ 0 ] = (*m_coordinates[ X_COORDINATE ])[ i ];
+  coordinates[ 1 ] = (*m_coordinates[ Y_COORDINATE ])[ j ];
 }
 
 //------------------------------------------------------------------------------
@@ -235,9 +235,9 @@ inline void RectilinearMesh::getNode( localIndex i, localIndex j, localIndex k,
   SLIC_ASSERT( this->getDimension() == 3 );
   SLIC_ASSERT( i >= 0 && j >= 0 && k >= 0 );
 
-  coordinates[ 0 ] = m_coordinates[ X_COORDINATE ][ i ];
-  coordinates[ 1 ] = m_coordinates[ Y_COORDINATE ][ j ];
-  coordinates[ 2 ] = m_coordinates[ Z_COORDINATE ][ k ];
+  coordinates[ 0 ] = (*m_coordinates[ X_COORDINATE ])[ i ];
+  coordinates[ 1 ] = (*m_coordinates[ Y_COORDINATE ])[ j ];
+  coordinates[ 2 ] = (*m_coordinates[ Z_COORDINATE ])[ k ];
 }
 
 //------------------------------------------------------------------------------
@@ -249,7 +249,7 @@ inline double RectilinearMesh::getNodeCoordinate( localIndex nodeIdx,
 
   localIndex ijk[3];
   m_extent.getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
-  return m_coordinates[ dim ][ ijk[dim]  ];
+  return (*m_coordinates[ dim ])[ ijk[dim]  ];
 }
 
 //------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ inline double RectilinearMesh::getNodeCoordinate( localIndex i, localIndex j,
   SLIC_ASSERT( dim >= 0 && dim < 2 );
 
   localIndex ijk[2] = { i, j };
-  return m_coordinates[ dim ][ ijk[dim] ];
+  return (*m_coordinates[ dim ])[ ijk[dim] ];
 }
 
 //------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ inline double RectilinearMesh::getNodeCoordinate( localIndex i, localIndex j,
   SLIC_ASSERT( dim >= 0 && dim < 3 );
 
   localIndex ijk[3] = { i, j, k };
-  return m_coordinates[ dim ][ ijk[dim] ];
+  return (*m_coordinates[ dim ])[ ijk[dim] ];
 }
 
 } /* namespace mint */

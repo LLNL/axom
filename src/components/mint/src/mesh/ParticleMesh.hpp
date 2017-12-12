@@ -70,13 +70,13 @@ public:
   { return getNumberOfParticles(); }
 
 
-  virtual localIndex getMeshNodeCapacity() const override
-  { return getCapacity(); }
-
-
-  virtual double getMeshNodeResizeRatio() const override
-  { return getResizeRatio(); }
-
+//  virtual localIndex getMeshNodeCapacity() const override
+//  { return getCapacity(); }
+//
+//
+//  virtual double getMeshNodeResizeRatio() const override
+//  { return getResizeRatio(); }
+//
 
   /*!
    * \brief Returns the total number of cells in the mesh.
@@ -88,20 +88,20 @@ public:
   { return getNumberOfParticles(); }
 
 
-  virtual localIndex getMeshCellCapacity() const override
-  { return getCapacity(); }
-
-
-  virtual double getMeshCellResizeRatio() const override
-  { return getResizeRatio(); }
-
-
-  virtual localIndex getMeshNumberOfFaces() const override
-  { return 0; }
-
-
-  virtual localIndex getMeshNumberOfEdges() const override
-  { return 0; }
+//  virtual localIndex getMeshCellCapacity() const override
+//  { return getCapacity(); }
+//
+//
+//  virtual double getMeshCellResizeRatio() const override
+//  { return getResizeRatio(); }
+//
+//
+//  virtual localIndex getMeshNumberOfFaces() const override
+//  { return 0; }
+//
+//
+//  virtual localIndex getMeshNumberOfEdges() const override
+//  { return 0; }
 
   /*!
    * \brief Returns the number of nodes for the given cell.

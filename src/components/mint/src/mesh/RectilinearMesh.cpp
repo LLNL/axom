@@ -33,17 +33,19 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ) :
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0 ; dim < m_ndims ; ++dim )
-  {
-    m_coordinates[ dim ].setSize( ext_size[ dim ] );
-    m_coordinates[ dim ].setResizeRatio( 0.0 );
-  }
+// TODO: Fix this
+//  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+//  {
+//    m_coordinates[ dim ].setSize( ext_size[ dim ] );
+//    m_coordinates[ dim ].setResizeRatio( 0.0 );
+//  }
+//
+//  for (int dim = m_ndims ; dim < 3 ; ++dim )
+//  {
+//    m_coordinates[ dim ].setCapacity( 0 );
+//    m_coordinates[ dim ].setResizeRatio( 0.0 );
+//  }
 
-  for (int dim = m_ndims ; dim < 3 ; ++dim )
-  {
-    m_coordinates[ dim ].setCapacity( 0 );
-    m_coordinates[ dim ].setResizeRatio( 0.0 );
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -55,19 +57,22 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6],
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0 ; dim < m_ndims ; ++dim )
-  {
-    m_coordinates[ dim ].setSize( ext_size[ dim ] );
-    m_coordinates[ dim ].setResizeRatio( 0.0 );
-  }
+// TODO: Fix this
+//  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+//  {
+//    m_coordinates[ dim ].setSize( ext_size[ dim ] );
+//    m_coordinates[ dim ].setResizeRatio( 0.0 );
+//  }
+//
+//  for (int dim = m_ndims ; dim < 3 ; ++dim )
+//  {
+//    m_coordinates[ dim ].setCapacity( 0 );
+//    m_coordinates[ dim ].setResizeRatio( 0.0 );
+//  }
 
-  for (int dim = m_ndims ; dim < 3 ; ++dim )
-  {
-    m_coordinates[ dim ].setCapacity( 0 );
-    m_coordinates[ dim ].setResizeRatio( 0.0 );
-  }
 }
 
+//------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh() :
   StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR )
 {}

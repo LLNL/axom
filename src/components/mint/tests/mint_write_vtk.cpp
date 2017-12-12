@@ -91,12 +91,13 @@ void create_scalar_data( Mesh * mesh )
   const localIndex mesh_num_nodes = mesh->getMeshNumberOfNodes();
   const localIndex mesh_num_cells = mesh->getMeshNumberOfCells();
 
-  double * double_ptr = mesh->addNodeField< double >( "node_scalars_double", 1 )
-                        ->getDoublePtr();
-  int * int_ptr = mesh->addNodeField< int >( "node_scalars_int", 1 )
-                  ->getIntPtr();
-
-  for ( localIndex idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  Field* node_field_d = new FieldVariable< double >( "node_scalars_double",
+                                                     mesh_num_nodes, 1 );
+  Field* node_field_i = new FieldVariable< int >( "node_scalars_int",
+                                                  mesh_num_nodes, 1 );
+  double* double_ptr = node_field_d->getDoublePtr();
+  int* int_ptr = node_field_i->getIntPtr();
+  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
     double y = 0;
@@ -117,15 +118,22 @@ void create_scalar_data( Mesh * mesh )
     double_ptr[ idx ] = temp;
     int_ptr[ idx ] = static_cast<int>(temp);
   }
+  mesh->getNodeFieldData().addField( node_field_d );
+  mesh->getNodeFieldData().addField( node_field_i );
 
-  double_ptr = mesh->addCellField< double >( "cell_scalars_double", 1 )
-               ->getDoublePtr();
-  int_ptr = mesh->addCellField< int >( "cell_scalars_int", 1 )->getIntPtr();
-  for ( localIndex idx = 0 ; idx < mesh_num_cells ; ++idx )
+  Field* cell_field_d = new FieldVariable< double >( "cell_scalars_double",
+                                                     mesh_num_cells, 1 );
+  Field* cell_field_i = new FieldVariable< int >( "cell_scalars_int",
+                                                  mesh_num_cells, 1 );
+  double_ptr = cell_field_d->getDoublePtr();
+  int_ptr = cell_field_i->getIntPtr();
+  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr[ idx ] = idx;
     int_ptr[ idx ] = idx;
   }
+  mesh->getCellFieldData().addField( cell_field_d );
+  mesh->getCellFieldData().addField( cell_field_i );
 }
 
 /*!
@@ -139,18 +147,19 @@ void create_vector_data( Mesh * mesh )
   const localIndex mesh_num_nodes = mesh->getMeshNumberOfNodes();
   const localIndex mesh_num_cells = mesh->getMeshNumberOfCells();
 
-  double * double_ptr3 =
-    mesh->addNodeField< double >( "node_vectors_3double", 3)
-    ->getDoublePtr();
-  int * int_ptr3 = mesh->addNodeField< int >( "node_vectors_3int", 3)
-                   ->getIntPtr();
-  double * double_ptr2 =
-    mesh->addNodeField< double >( "node_vectors_2double", 2)
-    ->getDoublePtr();
-  int * int_ptr2 = mesh->addNodeField< int >( "node_vectors_2int", 2)
-                   ->getIntPtr();
-
-  for ( localIndex idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  Field* node_field_3d = new FieldVariable< double >( "node_vectors_3double",
+                                                      mesh_num_nodes, 3 );
+  Field* node_field_3i = new FieldVariable< int >( "node_vectors_3int",
+                                                   mesh_num_nodes, 3 );
+  Field* node_field_2d = new FieldVariable< double >( "node_vectors_2double",
+                                                      mesh_num_nodes, 2 );
+  Field* node_field_2i = new FieldVariable< int >( "node_vectors_2int",
+                                                   mesh_num_nodes, 2 );
+  double* double_ptr3 = node_field_3d->getDoublePtr();
+  int* int_ptr3 = node_field_3i->getIntPtr();
+  double* double_ptr2 = node_field_2d->getDoublePtr();
+  int* int_ptr2 = node_field_2i->getIntPtr();
+  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
     double y = 0;
@@ -185,16 +194,24 @@ void create_vector_data( Mesh * mesh )
     int_ptr2[ 2 * idx ] = static_cast<int>(v1);
     int_ptr2[ 2 * idx + 1 ] = static_cast<int>(v2);
   }
+  mesh->getNodeFieldData().addField( node_field_3d );
+  mesh->getNodeFieldData().addField( node_field_3i );
+  mesh->getNodeFieldData().addField( node_field_2d );
+  mesh->getNodeFieldData().addField( node_field_2i );
 
-  double_ptr3 = mesh->addCellField< double >( "cell_vectors_3double", 3)
-                ->getDoublePtr();
-  int_ptr3 = mesh->addCellField< int >( "cell_vectors_3int", 3)->getIntPtr();
-  double_ptr2 = mesh->addCellField< double >( "cell_vectors_2double", 2)
-                ->getDoublePtr();
-  int_ptr2 = mesh->addCellField< int >( "cell_vectors_2int", 2)
-             ->getIntPtr();
-
-  for ( localIndex idx = 0 ; idx < mesh_num_cells ; ++idx )
+  Field* cell_field_3d = new FieldVariable< double >( "cell_vectors_3double",
+                                                      mesh_num_cells, 3 );
+  Field* cell_field_3i = new FieldVariable< int >( "cell_vectors_3int",
+                                                   mesh_num_cells, 3 );
+  Field* cell_field_2d = new FieldVariable< double >( "cell_vectors_2double",
+                                                      mesh_num_cells, 2 );
+  Field* cell_field_2i = new FieldVariable< int >( "cell_vectors_2int",
+                                                   mesh_num_cells, 2 );
+  double_ptr3 = cell_field_3d->getDoublePtr();
+  int_ptr3 = cell_field_3i->getIntPtr();
+  double_ptr2 = cell_field_2d->getDoublePtr();
+  int_ptr2 = cell_field_2i->getIntPtr();
+  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr3[ 3 * idx ] = idx;
     double_ptr3[ 3 * idx + 1 ] = idx + 1;
@@ -210,6 +227,10 @@ void create_vector_data( Mesh * mesh )
     int_ptr2[ 2 * idx ] = idx;
     int_ptr2[ 2 * idx + 1 ] = idx + 1;
   }
+  mesh->getCellFieldData().addField( cell_field_3d );
+  mesh->getCellFieldData().addField( cell_field_3i );
+  mesh->getCellFieldData().addField( cell_field_2d );
+  mesh->getCellFieldData().addField( cell_field_2i );
 }
 
 /*!
@@ -223,13 +244,13 @@ void create_multidim_data( Mesh * mesh )
   const localIndex mesh_num_nodes = mesh->getMeshNumberOfNodes();
   const localIndex mesh_num_cells = mesh->getMeshNumberOfCells();
 
-  double * double_ptr =
-    mesh->addNodeField< double >( "node_multidim_double", 4 )
-    ->getDoublePtr();
-  int * int_ptr = mesh->addNodeField< int >( "node_multidim_int", 4 )
-                  ->getIntPtr();
-
-  for ( localIndex idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  Field* node_field_d = new FieldVariable< double >( "node_multidim_double",
+                                                     mesh_num_nodes, 4);
+  Field* node_field_i = new FieldVariable< int >( "node_multidim_int",
+                                                  mesh_num_nodes, 4);
+  double* double_ptr = node_field_d->getDoublePtr();
+  int* int_ptr = node_field_i->getIntPtr();
+  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
     double y = 0;
@@ -261,12 +282,16 @@ void create_multidim_data( Mesh * mesh )
     int_ptr[4 * idx + 2] = static_cast<int>(v3);
     int_ptr[4 * idx + 3] = static_cast<int>(v4);
   }
+  mesh->getNodeFieldData().addField( node_field_d );
+  mesh->getNodeFieldData().addField( node_field_i );
 
-  double_ptr = mesh->addCellField< double >( "cell_multidim_double", 4 )
-               ->getDoublePtr();
-  int_ptr = mesh->addCellField< int >( "cell_multidim_int", 4 )->getIntPtr();
-
-  for ( localIndex idx = 0 ; idx < mesh_num_cells ; ++idx )
+  Field* cell_field_d = new FieldVariable< double >( "cell_multidim_double",
+                                                     mesh_num_cells, 4 );
+  Field* cell_field_i = new FieldVariable< int >( "cell_multidim_int",
+                                                  mesh_num_cells, 4 );
+  double_ptr = cell_field_d->getDoublePtr();
+  int_ptr = cell_field_i->getIntPtr();
+  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr[ 4 * idx  + 0] = idx;
     double_ptr[ 4 * idx  + 1] = idx + 1;
@@ -278,6 +303,8 @@ void create_multidim_data( Mesh * mesh )
     int_ptr[ 4 * idx  + 2] = idx + 2;
     int_ptr[ 4 * idx  + 3] = idx + 3;
   }
+  mesh->getCellFieldData().addField( cell_field_d );
+  mesh->getCellFieldData().addField( cell_field_i );
 }
 
 /*!
@@ -1118,8 +1145,9 @@ TEST( mint_write_vtk, UnstructuredMesh3D )
   const localIndex ny = 12;
   const localIndex nz = 13;
   const localIndex nNodes = nx * ny * nz;
+  const localIndex nCells = (nx-1) * (ny-1) * (nz-1);
   UnstructuredMesh< MINT_HEX > * u_mesh =
-    new UnstructuredMesh< MINT_HEX >( 3, nNodes );
+    new UnstructuredMesh< MINT_HEX >( 3, nNodes, nCells );
 
   for ( localIndex idx = 0 ; idx < nx ; ++idx )
   {
@@ -1181,8 +1209,9 @@ TEST( mint_write_vtk, UnstructuredMesh2D )
   const localIndex nx = 11;
   const localIndex ny = 12;
   const localIndex nNodes = nx * ny;
+  const localIndex nCells = (nx-1) * (ny-1);
   UnstructuredMesh< MINT_QUAD > * u_mesh =
-    new UnstructuredMesh< MINT_QUAD >( 2, nNodes );
+    new UnstructuredMesh< MINT_QUAD >( 2, nNodes, nCells );
 
   for ( localIndex idx = 0 ; idx < nx ; ++idx )
   {
@@ -1232,7 +1261,7 @@ TEST( mint_write_vtk, UnstructuredMesh1D )
   const std::string path = "unstructuredMesh1D.vtk";
   const localIndex nx = 11;
   UnstructuredMesh< MINT_SEGMENT > * u_mesh =
-    new UnstructuredMesh< MINT_SEGMENT >( 1, nx );
+    new UnstructuredMesh< MINT_SEGMENT >( 1, nx, nx-1 );
 
   for ( localIndex idx = 0 ; idx < nx ; ++idx )
   {
@@ -1275,8 +1304,9 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   const localIndex ny = 2;
   const localIndex nz = 2;
   const localIndex nNodes = nx * ny * nz;
+  const localIndex nCells = (nx-1) * (ny-1) * (nz-1);
   UnstructuredMesh< MINT_MIXED_CELL > * u_mesh =
-    new UnstructuredMesh< MINT_MIXED_CELL >( 3, nNodes );
+    new UnstructuredMesh< MINT_MIXED_CELL >( 3, nNodes, nCells );
 
   /* Create the nodes for the hexahedron. */
   for ( localIndex idx = 0 ; idx < nx ; ++idx )
@@ -1388,8 +1418,9 @@ TEST( mint_write_vtk, UnstructuredMixedMesh2D )
   const localIndex nx = 2;
   const localIndex ny = 2;
   const localIndex nNodes = nx * ny;
+  const localIndex nCells = (nx-1) * (ny-1);
   UnstructuredMesh< MINT_MIXED_CELL > * u_mesh =
-    new UnstructuredMesh< MINT_MIXED_CELL >( 2, nNodes );
+    new UnstructuredMesh< MINT_MIXED_CELL >( 2, nNodes, nCells );
 
   /* Create the nodes for the quad. */
   for ( localIndex idx = 0 ; idx < nx ; ++idx )

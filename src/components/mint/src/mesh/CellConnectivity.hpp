@@ -46,8 +46,7 @@ public:
    */
   CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ) :
     m_stride( cell::num_nodes[ cell_type ] ),
-    m_connectivity( capacity * cell::num_nodes[ cell_type ],
-                    cell::num_nodes[ cell_type ], resize_ratio )
+    m_connectivity( capacity, cell::num_nodes[ cell_type ] )
   {};
 
   /*!
@@ -68,7 +67,7 @@ public:
    * \return status true iff empty, else, false.
    */
   bool empty() const
-  { return m_connectivity.getSize() == 0; }
+  { return m_connectivity.getNumTuples() == 0; }
 
   /*!
    * \brief Returns the total number of cells.
@@ -76,7 +75,7 @@ public:
    * \post ncells >= 0
    */
   localIndex getNumberOfCells() const
-  { return m_connectivity.getSize() / m_stride; }
+  { return m_connectivity.getNumTuples(); }
 
   /*!
    * \brief Returns the number of nodes of the given cell.
@@ -134,31 +133,31 @@ public:
     m_connectivity.set( cell, m_stride, cellIdx * m_stride );
   }
 
-  /*!
-   * \brief Get the maximum number of points that can currently be held.
-   * \return N the capacity of m_coordinates.
-   */
-  localIndex getCapacity() const
-  { return m_connectivity.getCapacity(); }
-
-
-  void setCapacity( localIndex capacity )
-  { m_connectivity.setCapacity( capacity ); }
+//  /*!
+//   * \brief Get the maximum number of points that can currently be held.
+//   * \return N the capacity of m_coordinates.
+//   */
+//  localIndex getCapacity() const
+//  { return m_connectivity.getCapacity(); }
+//
+//
+//  void setCapacity( localIndex capacity )
+//  { m_connectivity.setCapacity( capacity ); }
 
   /*!
    * \brief Returns the number of points in this CellConnectivity instance.
    * \return npoint the number points in this CellConnectivity instance.
    */
-  localIndex getSize() const
-  { return m_connectivity.getSize(); }
-
-
-  double getResizeRatio() const
-  { return m_connectivity.getResizeRatio(); }
-
-
-  void setResizeRatio( double ratio )
-  { m_connectivity.setResizeRatio( ratio ); }
+//  localIndex getSize() const
+//  { return m_connectivity.getSize(); }
+//
+//
+//  double getResizeRatio() const
+//  { return m_connectivity.getResizeRatio(); }
+//
+//
+//  void setResizeRatio( double ratio )
+//  { m_connectivity.setResizeRatio( ratio ); }
 
 private:
 
@@ -301,42 +300,43 @@ public:
 
     /* STEP 1: get to/from pointers. */
     const localIndex offset = m_offset[ cellIdx ];
-    m_connectivity.set( cell, nnodes, offset );
+// TODO: ???
+//    m_connectivity.set( cell, nnodes, offset );
   }
 
-  /*!
-   * \brief Get the maximum number of points that can currently be held.
-   * \return N the capacity of m_coordinates.
-   */
-  localIndex getCapacity() const
-  { return m_connectivity.getCapacity(); }
+//  /*!
+//   * \brief Get the maximum number of points that can currently be held.
+//   * \return N the capacity of m_coordinates.
+//   */
+//  localIndex getCapacity() const
+//  { return m_connectivity.getCapacity(); }
+//
+//
+//  void setCapacity( localIndex capacity )
+//  {
+//    m_offset.setCapacity( capacity + 1 );
+//    m_connectivity.setCapacity( capacity );
+//    m_cell_type.setCapacity( capacity );
+////  }
+//
+//  /*!
+//   * \brief Returns the number of points in this CellConnectivity instance.
+//   * \return npoint the number points in this CellConnectivity instance.
+//   */
+//  localIndex getSize() const
+//  { return m_connectivity.getSize(); }
+//
 
-
-  void setCapacity( localIndex capacity )
-  {
-    m_offset.setCapacity( capacity + 1 );
-    m_connectivity.setCapacity( capacity );
-    m_cell_type.setCapacity( capacity );
-  }
-
-  /*!
-   * \brief Returns the number of points in this CellConnectivity instance.
-   * \return npoint the number points in this CellConnectivity instance.
-   */
-  localIndex getSize() const
-  { return m_connectivity.getSize(); }
-
-
-  double getResizeRatio() const
-  { return m_connectivity.getResizeRatio(); }
-
-
-  void setResizeRatio( double ratio )
-  {
-    m_offset.setResizeRatio( ratio );
-    m_connectivity.setResizeRatio( ratio );
-    m_cell_type.setResizeRatio( ratio );
-  }
+//  double getResizeRatio() const
+//  { return m_connectivity.getResizeRatio(); }
+//
+//
+//  void setResizeRatio( double ratio )
+//  {
+//    m_offset.setResizeRatio( ratio );
+//    m_connectivity.setResizeRatio( ratio );
+//    m_cell_type.setResizeRatio( ratio );
+//  }
 
 private:
   localIndex m_num_cells;

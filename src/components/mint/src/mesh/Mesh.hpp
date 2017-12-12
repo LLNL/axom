@@ -41,9 +41,6 @@ class Field;
 class Mesh
 {
 public:
-
-  Mesh() = delete;
-
   /*!
    * \brief Constructor.
    * \param [in] ndims the number of dimensions
@@ -201,70 +198,70 @@ public:
    * \tparam T the type of field to add.
    * \return true iff the field was successfully added.
    */
-  template < typename FieldType >
-  Field * addCellField( const std::string& name, int num_components=1 )
-  {
-    int size = getMeshNumberOfCells();
-    int capacity = getMeshCellCapacity();
-    double resize_ratio = getMeshCellResizeRatio();
-    return m_cell_data.addField< FieldType >( name, size, capacity,
-                                              num_components,
-                                              resize_ratio );
-  }
-
-  /*!
-   * \brief Add a face centered field to the mesh.
-   * \param name the name of the field.
-   * \param num_components the number of components per value.
-   * \tparam T the type of field to add.
-   * \return true iff the field was successfully added.
-   */
-  template < typename FieldType >
-  Field * addFaceField( const std::string& name, int num_components=1 )
-  {
-    int size = getMeshNumberOfFaces();
-    int capacity = getMeshCellCapacity();
-    double resize_ratio = getMeshCellResizeRatio();
-    return m_face_data.addField< FieldType >( name, size, capacity,
-                                              num_components,
-                                              resize_ratio );
-  }
-
-  /*!
-   * \brief Add a edge centered field to the mesh.
-   * \param name the name of the field.
-   * \param num_components the number of components per value.
-   * \tparam T the type of field to add.
-   * \return true iff the field was successfully added.
-   */
-  template < typename FieldType >
-  Field * addEdgeField( const std::string& name, int num_components=1 )
-  {
-    int size = getMeshNumberOfEdges();
-    int capacity = getMeshCellCapacity();
-    double resize_ratio = getMeshCellResizeRatio();
-    return m_edge_data.addField< FieldType >( name, size, capacity,
-                                              num_components,
-                                              resize_ratio );
-  }
-
-  /*!
-   * \brief Add a node centered field to the mesh.
-   * \param name the name of the field.
-   * \param num_components the number of components per value.
-   * \tparam T the type of field to add.
-   * \return true iff the field was successfully added.
-   */
-  template < typename FieldType >
-  Field * addNodeField( const std::string& name, int num_components=1 )
-  {
-    int size = getMeshNumberOfNodes();
-    int capacity = getMeshNodeCapacity();
-    double resize_ratio = getMeshNodeResizeRatio();
-    return m_node_data.addField< FieldType >( name, size, capacity,
-                                              num_components,
-                                              resize_ratio );
-  }
+//  template < typename FieldType >
+//  Field * addCellField( const std::string& name, int num_components=1 )
+//  {
+//    int size = getMeshNumberOfCells();
+//    int capacity = getMeshCellCapacity();
+//    double resize_ratio = getMeshCellResizeRatio();
+//    return m_cell_data.addField< FieldType >( name, size, capacity,
+//                                              num_components,
+//                                              resize_ratio );
+//  }
+//
+//  /*!
+//   * \brief Add a face centered field to the mesh.
+//   * \param name the name of the field.
+//   * \param num_components the number of components per value.
+//   * \tparam T the type of field to add.
+//   * \return true iff the field was successfully added.
+//   */
+//  template < typename FieldType >
+//  Field * addFaceField( const std::string& name, int num_components=1 )
+//  {
+//    int size = getMeshNumberOfFaces();
+//    int capacity = getMeshCellCapacity();
+//    double resize_ratio = getMeshCellResizeRatio();
+//    return m_face_data.addField< FieldType >( name, size, capacity,
+//                                              num_components,
+//                                              resize_ratio );
+//  }
+//
+//  /*!
+//   * \brief Add a edge centered field to the mesh.
+//   * \param name the name of the field.
+//   * \param num_components the number of components per value.
+//   * \tparam T the type of field to add.
+//   * \return true iff the field was successfully added.
+//   */
+//  template < typename FieldType >
+//  Field * addEdgeField( const std::string& name, int num_components=1 )
+//  {
+//    int size = getMeshNumberOfEdges();
+//    int capacity = getMeshCellCapacity();
+//    double resize_ratio = getMeshCellResizeRatio();
+//    return m_edge_data.addField< FieldType >( name, size, capacity,
+//                                              num_components,
+//                                              resize_ratio );
+//  }
+//
+//  /*!
+//   * \brief Add a node centered field to the mesh.
+//   * \param name the name of the field.
+//   * \param num_components the number of components per value.
+//   * \tparam T the type of field to add.
+//   * \return true iff the field was successfully added.
+//   */
+//  template < typename FieldType >
+//  Field * addNodeField( const std::string& name, int num_components=1 )
+//  {
+//    int size = getMeshNumberOfNodes();
+//    int capacity = getMeshNodeCapacity();
+//    double resize_ratio = getMeshNodeResizeRatio();
+//    return m_node_data.addField< FieldType >( name, size, capacity,
+//                                              num_components,
+//                                              resize_ratio );
+//  }
 
   /// \name Virtual API
   /// @{
@@ -277,11 +274,11 @@ public:
    */
   virtual localIndex getMeshNumberOfNodes() const = 0;
 
-
-  virtual localIndex getMeshNodeCapacity() const = 0;
-
-
-  virtual double getMeshNodeResizeRatio() const = 0;
+//
+//  virtual localIndex getMeshNodeCapacity() const = 0;
+//
+//
+//  virtual double getMeshNodeResizeRatio() const = 0;
 
   /*!
    * \brief Returns the total number of cells in the mesh.
@@ -291,17 +288,17 @@ public:
    */
   virtual localIndex getMeshNumberOfCells() const = 0;
 
-
-  virtual localIndex getMeshCellCapacity() const = 0;
-
-
-  virtual double getMeshCellResizeRatio() const = 0;
-
-
-  virtual localIndex getMeshNumberOfFaces() const = 0;
-
-
-  virtual localIndex getMeshNumberOfEdges() const = 0;
+//
+//  virtual localIndex getMeshCellCapacity() const = 0;
+//
+//
+//  virtual double getMeshCellResizeRatio() const = 0;
+//
+//
+//  virtual localIndex getMeshNumberOfFaces() const = 0;
+//
+//
+//  virtual localIndex getMeshNumberOfEdges() const = 0;
 
   /*!
    * \brief Returns the number of nodes for the given cell.
@@ -402,7 +399,7 @@ protected:
   inline void setNodeDataResizeRatio( double ratio )
   { m_node_data.setResizeRatio( ratio ); }
 
-  
+
   int m_ndims;          /*! mesh dimension */
   int m_type;           /*! the type of the mesh */
   int m_block_idx;      /*! the Block ID of the mesh */
@@ -423,7 +420,7 @@ private:
   localIndex * m_cell_capacity;   /*! The cell storage capacity */
   double * m_cell_resize_ratio;   /*! The cell resize ratio */
 
-  localIndex * m_num_faces;       /*! The number of faces in the mesh */       
+  localIndex * m_num_faces;       /*! The number of faces in the mesh */
   localIndex * m_face_capacity;   /*! The face storage capacity */
   double * m_face_resize_ratio;   /*! The face resize ratio */
 

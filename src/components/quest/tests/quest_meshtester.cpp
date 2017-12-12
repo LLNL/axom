@@ -203,7 +203,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     // mesh has nice de-duplicated nodes or is a tiresome STL-style triangle
     // soup, it should not matter.  We will test the deduplicated triangles.
     // Nice (non-duplicated) vertices
-    surface_mesh = new TriangleMesh(3, 4);
+    surface_mesh = new TriangleMesh(3, 4, 4 );
     surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
     surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
@@ -232,7 +232,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
       "Tetrahedron with a crack but no self-intersections or degenerate triangles";
 
     // Construct and fill the mesh.
-    surface_mesh = new TriangleMesh(3, 5);
+    surface_mesh = new TriangleMesh(3, 5, 4 );
     surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
     surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
@@ -262,7 +262,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
       "Tetrahedron with one side intersecting two others, no degenerate triangles";
 
     // Construct and fill the mesh.
-    surface_mesh = new TriangleMesh(3, 5);
+    surface_mesh = new TriangleMesh(3, 5, 4);
     surface_mesh->addNode(  2.00003,   1.00003,  18.999999);
     surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
@@ -294,7 +294,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
       "Tetrahedron with one side intersecting two others, some degenerate triangles";
 
     // Construct and fill the mesh.
-    surface_mesh = new TriangleMesh(3, 5);
+    surface_mesh = new TriangleMesh(3, 5, 6);
     surface_mesh->addNode(  2.00003,   1.00003,  18.999999);
     surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
     surface_mesh->addNode(  4.880339,-18.213671, -6.666668);

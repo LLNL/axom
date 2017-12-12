@@ -16,7 +16,6 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \class Vector
  * \brief Provides an array with dynamic reallocation and insertion.
@@ -25,12 +24,34 @@ namespace mint
 template< typename T >
 class Vector
 {
+private:
+  static constexpr double DEFAULT_RESIZE_RATIO=2.0;
+
 public:
 
   /*!
    * \brief Default constructor.
    */
   Vector() = delete;
+
+  /*!
+   * \brief Constructs a Vector instance with the give number of tuples.
+   *
+   * \param [in] num_tuples the number of tuples the vector holds.
+   * \param [in] num_components the number of components per tuple.
+   */
+  Vector( localIndex num_tuples, localIndex num_components=1 ) :
+#ifdef MINT_USE_SIDRE
+   m_view( AXOM_NULLPTR ),
+#endif
+   m_data( AXOM_NULLPTR ),
+   m_num_tuples( num_tuples ),
+   m_capacity( DEFAULT_RESIZE_RATIO*num_tuples ),
+   m_num_components( num_components ),
+   m_resize_ratio( DEFAULT_RESIZE_RATIO )
+  {
+
+  }
 
   /*!
    * \brief Constructor for use without sidre.
@@ -41,9 +62,9 @@ public:
    *  size exceeds the capacity. A ratio less than one prohibits resizing.
    */
   Vector( localIndex num_components,
-          const localIndex & capacity,
-          const localIndex & num_tuples,
-          const double & ratio ) :
+          localIndex capacity,
+          localIndex num_tuples,
+          double ratio ) :
 #ifdef MINT_USE_SIDRE
     m_view( AXOM_NULLPTR ),
 #endif
@@ -161,30 +182,25 @@ public:
   }
 #endif
 
-
   /*!
    * \brief Accessor, returns a reference to the value at position pos.
    * \return a reference to the value at position pos.
    */
-  inline T & operator[]( localIndex pos )
-  { return m_data[ pos ]; }
+  inline T & operator[]( localIndex pos ) { return m_data[ pos ]; }
 
   /*!
    * \brief Constant accessor, returns a constant reference to the value at
    *  position pos.
    * \return a reference to the value at position pos.
    */
-  inline const T & operator[]( localIndex pos ) const
-  { return m_data[ pos ]; }
+  inline const T & operator[]( localIndex pos ) const { return m_data[ pos ]; }
 
   /*!
    * \brief Returns true iff the vector stores no elements.
    * \return true iff the vector stores no elements.
    * \note If the vector is empty the capacity can still be greater than zero.
    */
-  inline bool empty() const
-  { return m_num_tuples == 0; }
-
+  inline bool empty() const { return m_num_tuples == 0; }
 
   /*!
    * \brief Append a value to the end of the array.
@@ -308,7 +324,7 @@ public:
    * \brief Return the number of tuples allocated for the data array.
    * \return the amount of space allocated for the data array.
    */
-  inline localIndex getTupleCapacity() const { return m_capacity; }
+  inline localIndex getCapacity() const { return m_capacity; }
 
   /*!
    * \brief Set the number of tuples allocated for the data array.
@@ -384,7 +400,6 @@ private:
     return dims[ dim ];
   }
 
-
   /*!
    * \brief Allocates space within the Vector's sidre::View.
    */
@@ -430,11 +445,12 @@ private:
 #ifdef MINT_USE_SIDRE
   sidre::View * m_view
 #endif
-  T * m_data;
-  const localIndex & m_num_tuples;
-  const localIndex & m_capacity;
-  const localIndex m_num_components;
-  const double & m_resize_ratio;
+
+  T* m_data;
+  localIndex m_num_tuples;
+  localIndex m_capacity;
+  localIndex m_num_components;
+  double m_resize_ratio;
 
 };
 

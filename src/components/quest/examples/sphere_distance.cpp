@@ -338,7 +338,10 @@ void compute_norms( axom::mint::UniformMesh* umesh,
   SLIC_ASSERT( phi_expected != AXOM_NULLPTR );
 
   // STEP 1: add field to store erroraddCell
-  double* error = umesh->addNodeField< double >( "error", 1 )->getDoublePtr();
+//  double * error = umesh->addNodeField< double >( "error", 1 )->getDoublePtr();
+  PD.addField( new mint::FieldVariable< double >( "error", nnodes ) );
+  double* error = PD.getField( "error" )->getDoublePtr( );
+
   SLIC_ASSERT( error != AXOM_NULLPTR );
 
   // STEP 2: loop over nodes and calculate norms
@@ -378,8 +381,10 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   Sphere< double, 3 > sphere( Arguments.sphere_radius );
 
   // STEP 1: Add node field to stored exact distance field.
-  const int nnodes = umesh->getNumberOfNodes();
-  double* phi = umesh->addNodeField< double >( "expected_phi", 1)->getDoublePtr();
+  const int nnodes    = umesh->getNumberOfNodes();
+  mint::FieldData& PD = umesh->getNodeFieldData();
+  PD.addField( new mint::FieldVariable< double >( "expected_phi", nnodes ) );
+  double* phi = PD.getField( "expected_phi" )->getDoublePtr( );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field

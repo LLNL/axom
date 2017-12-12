@@ -154,7 +154,7 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
   double * nodes  = new double[ ndofs*ndims ];
   ShapeFunctionType::coords( nodes );
 
-  MeshType * m = new MeshType( ndims, ndofs );
+  MeshType * m = new MeshType( ndims, ndofs, 1 );
 
   double centroid[]  = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
 
@@ -863,9 +863,12 @@ void check_interp( double TOL=1.e-9 )
   // STEP 1: setup a nodal field to interpolate
   // Note: I don't know why we need to cast as m as a Mesh to add a field
   // it works just fine other places. -BC
-  mint::Mesh * mesh = m;
-  mint::Field * F = mesh->addNodeField< double >( "foo", 1 );
-  double * f = F->getDoublePtr();
+  m->getNodeFieldData().addField(
+       new mint::FieldVariable< double >("foo", nnodes ) );
+  double* f = m->getNodeFieldData().getField( "foo" )->getDoublePtr();
+
+//  mint::Field * F = mesh->addNodeField< double >( "foo", 1 );
+//  double * f = F->getDoublePtr();
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 

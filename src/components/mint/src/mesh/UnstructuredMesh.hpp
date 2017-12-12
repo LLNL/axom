@@ -44,27 +44,31 @@ class UnstructuredMesh : public Mesh
 {
 public:
 
-  /*!
-   * \brief Custom constructor. Creates an unstructured mesh of given dimension.
-   * \param [in] ndims the number of dimension.
-   * \param [in] nodeCapacity size of node buffer to allocate.
-   */
-  explicit UnstructuredMesh( int ndims, localIndex nodeCapacity=100,
-                             localIndex cellNodeCapacity=0,
-                             double nodeResizeRatio=2.0,
-                             double cellResizeRatio=2.0 );
+//  /*!
+//   * \brief Custom constructor. Creates an unstructured mesh of given dimension.
+//   * \param [in] ndims the number of dimension.
+//   * \param [in] nodeCapacity size of node buffer to allocate.
+//   */
+//  UnstructuredMesh( int ndims, localIndex nodeCapacity=100,
+//                             localIndex cellNodeCapacity=0,
+//                             double nodeResizeRatio=2.0,
+//                             double cellResizeRatio=2.0 );
+//
+//  /*!
+//   * \brief Creates an unstructured mesh of given dimension that is identified
+//   *  by the supplied blockId and partitionId pair.
+//   * \param [in] ndims the number of dimension.
+//   * \param [in] blockId the block ID of the mesh.
+//   * \param [in] partId the partition ID of the mesh.
+//   * \param [in] nodeCapacity size of node buffer to allocate.
+//   */
+//  UnstructuredMesh( int ndims, int blockId, int partId,
+//                    localIndex nodeCapacity=100, localIndex cellNodeCapacity=0,
+//                    double nodeResizeRatio=2.0, double cellResizeRatio=2.0 );
 
-  /*!
-   * \brief Creates an unstructured mesh of given dimension that is identified
-   *  by the supplied blockId and partitionId pair.
-   * \param [in] ndims the number of dimension.
-   * \param [in] blockId the block ID of the mesh.
-   * \param [in] partId the partition ID of the mesh.
-   * \param [in] nodeCapacity size of node buffer to allocate.
-   */
-  UnstructuredMesh( int ndims, int blockId, int partId,
-                    localIndex nodeCapacity=100, localIndex cellNodeCapacity=0,
-                    double nodeResizeRatio=2.0, double cellResizeRatio=2.0 );
+  UnstructuredMesh( int ndims );
+
+  UnstructuredMesh( int ndims, localIndex num_nodes, localIndex num_cells );
 
   /*!
    * \brief Destructor.
@@ -85,12 +89,12 @@ public:
   { return getNumberOfNodes(); };
 
 
-  virtual localIndex getMeshNodeCapacity() const override
-  { return getNodeCapacity(); }
-
-
-  virtual double getMeshNodeResizeRatio() const override
-  { return getNodeResizeRatio(); }
+//  virtual localIndex getMeshNodeCapacity() const override
+//  { return getNodeCapacity(); }
+//
+//
+//  virtual double getMeshNodeResizeRatio() const override
+//  { return getNodeResizeRatio(); }
 
   /*!
    * \brief Returns the total number of cells in the mesh.
@@ -102,24 +106,24 @@ public:
   { return getNumberOfCells(); };
 
 
-  virtual localIndex getMeshCellCapacity() const override
-  {
-    double capacity_ratio = getCellNodeCapacity();
-    capacity_ratio /= getNumberOfCells();
-    return std::ceil( capacity_ratio * getNumberOfCells() );
-  }
-
-
-  virtual double getMeshCellResizeRatio() const override
-  { return getCellResizeRatio(); }
-
-
-  virtual localIndex getMeshNumberOfFaces() const override
-  { return 0; }
-
-
-  virtual localIndex getMeshNumberOfEdges() const override
-  { return 0; }
+//  virtual localIndex getMeshCellCapacity() const override
+//  {
+//    double capacity_ratio = getCellNodeCapacity();
+//    capacity_ratio /= getNumberOfCells();
+//    return std::ceil( capacity_ratio * getNumberOfCells() );
+//  }
+//
+//
+//  virtual double getMeshCellResizeRatio() const override
+//  { return getCellResizeRatio(); }
+//
+//
+//  virtual localIndex getMeshNumberOfFaces() const override
+//  { return 0; }
+//
+//
+//  virtual localIndex getMeshNumberOfEdges() const override
+//  { return 0; }
 
 
   /*!
@@ -156,7 +160,7 @@ public:
    * \return cellType the cell type of the cell at the given index.
    */
   virtual int getMeshCellType( localIndex cellIdx ) const override
-  { return m_cell_connectivity.getCellType( cellIdx ); }
+  { return m_cell_connectivity->getCellType( cellIdx ); }
 
   /*!
    * \brief Returns the coordinates of the given node.
@@ -200,34 +204,34 @@ public:
    * \post N >= 0.
    */
   localIndex getNumberOfNodes() const
-  { return m_node_coordinates.getSize(); };
+  { return m_node_coordinates->getSize(); };
 
   /*!
    * \brief Get the number of nodes that can be stored.
    * \return The capacity of the node array.
    */
-  localIndex getNodeCapacity() const
-  { return m_node_coordinates.getCapacity(); };
+//  localIndex getNodeCapacity() const
+//  { return m_node_coordinates.getCapacity(); };
 
-  /*!
-   * \brief Set the number of nodes that can be stored.
-   */
-  void setNodeCapacity( localIndex capacity )
-  {
-    m_node_coordinates.setCapacity( capacity );
-    this->setNodeDataCapacity( capacity );
-  }
-
-
-  double getNodeResizeRatio() const
-  { return m_node_coordinates.getResizeRatio(); }
+//  /*!
+//   * \brief Set the number of nodes that can be stored.
+//   */
+//  void setNodeCapacity( localIndex capacity )
+//  {
+//    m_node_coordinates.setCapacity( capacity );
+//    this->setNodeDataCapacity( capacity );
+//  }
 
 
-  void setNodeResizeRatio( double ratio )
-  {
-    m_node_coordinates.setResizeRatio( ratio );
-    this->setNodeDataResizeRatio( ratio );
-  }
+//  double getNodeResizeRatio() const
+//  { return m_node_coordinates.getResizeRatio(); }
+
+
+//  void setNodeResizeRatio( double ratio )
+//  {
+//    m_node_coordinates.setResizeRatio( ratio );
+//    this->setNodeDataResizeRatio( ratio );
+//  }
 
   /*!
    * \brief Returns the total number cells in the mesh.
@@ -235,7 +239,7 @@ public:
    * \post N >= 0.
    */
   localIndex getNumberOfCells() const
-  { return m_cell_connectivity.getNumberOfCells(); };
+  { return m_cell_connectivity->getNumberOfCells(); };
 
   /*!
    * \brief Returns the number of nodes for the given cell.
@@ -244,35 +248,35 @@ public:
    * \pre nnodes >= 1.
    */
   int getNumberOfCellNodes( localIndex cellIdx ) const
-  { return m_cell_connectivity.getNumberOfNodes( cellIdx ); }
+  { return m_cell_connectivity->getNumberOfNodes( cellIdx ); }
 
-  /*!
-   * \brief Get the number of nodes that can be stored in the cell connectivity.
-   * \return the number of nodes that can be stored in the cell connectivity.
-   */
-  localIndex getCellNodeCapacity() const
-  { return m_cell_connectivity.getCapacity(); }
-
-  /*!
-   * \brief Set the number of nodes that can be stored in the cell connectivity.
-   * \param capacity the number of nodes that can be stored in the cell
-   *  connectivity.
-   */
-  void setCellNodeCapacity( localIndex capacity )
-  { m_cell_connectivity.setCellCapacity( capacity ); }
-
-
-  double getCellResizeRatio() const
-  { return m_cell_connectivity.getResizeRatio(); }
+//  /*!
+//   * \brief Get the number of nodes that can be stored in the cell connectivity.
+//   * \return the number of nodes that can be stored in the cell connectivity.
+//   */
+//  localIndex getCellNodeCapacity() const
+//  { return m_cell_connectivity.getCapacity(); }
+//
+//  /*!
+//   * \brief Set the number of nodes that can be stored in the cell connectivity.
+//   * \param capacity the number of nodes that can be stored in the cell
+//   *  connectivity.
+//   */
+//  void setCellNodeCapacity( localIndex capacity )
+//  { m_cell_connectivity.setCellCapacity( capacity ); }
 
 
-  void setCellResizeRatio( double ratio )
-  {
-    m_cell_connectivity.setResizeRatio( ratio );
-    this->setCellDataResizeRatio( ratio );
-    this->setFaceDataResizeRatio( ratio );
-    this->setEdgeDataResizeRatio( ratio );
-  }
+//  double getCellResizeRatio() const
+//  { return m_cell_connectivity.getResizeRatio(); }
+//
+//
+//  void setCellResizeRatio( double ratio )
+//  {
+//    m_cell_connectivity.setResizeRatio( ratio );
+//    this->setCellDataResizeRatio( ratio );
+//    this->setFaceDataResizeRatio( ratio );
+//    this->setEdgeDataResizeRatio( ratio );
+//  }
 
   /*!
    * \brief Adds a new cell in the mesh
@@ -372,8 +376,8 @@ private:
   UnstructuredMesh()
   {}
 
-  MeshCoordinates m_node_coordinates;
-  CellConnectivity< CellType > m_cell_connectivity;
+  MeshCoordinates* m_node_coordinates;
+  CellConnectivity< CellType >* m_cell_connectivity;
 
   DISABLE_COPY_AND_ASSIGNMENT( UnstructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
@@ -385,34 +389,54 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
+//template < int CellType >
+//UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
+//                                                localIndex nodeCapacity,
+//                                                localIndex cellNodeCapacity,
+//                                                double nodeResizeRatio,
+//                                                double cellResizeRatio ) :
+//  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 )
+//// TODO: ???
+////  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
+////  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
+////                                           cellNodeCapacity ),
+////                       cellResizeRatio )
+//{}
+
+//------------------------------------------------------------------------------
+//template < int CellType >
+//UnstructuredMesh< CellType >::UnstructuredMesh( int ndims, int blockId,
+//                                                int partId,
+//                                                localIndex nodeCapacity,
+//                                                localIndex cellNodeCapacity,
+//                                                double nodeResizeRatio,
+//                                                double cellResizeRatio ) :
+//  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], blockId, partId)
+//// TODO: ???
+////  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
+////  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
+////                                           cellNodeCapacity ),
+////                       cellResizeRatio )
+//{}
+
 template < int CellType >
-UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
-                                                localIndex nodeCapacity,
-                                                localIndex cellNodeCapacity,
-                                                double nodeResizeRatio,
-                                                double cellResizeRatio ) :
+UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :
   Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
-  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
-  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
-                                           cellNodeCapacity ),
-                       cellResizeRatio )
-{}
+  m_node_coordinates( new MeshCoordinates( ndims ) )
+{
+ // TODO: implement this
+}
 
 //------------------------------------------------------------------------------
 template < int CellType >
-UnstructuredMesh< CellType >::UnstructuredMesh( int ndims, int blockId,
-                                                int partId,
-                                                localIndex nodeCapacity,
-                                                localIndex cellNodeCapacity,
-                                                double nodeResizeRatio,
-                                                double cellResizeRatio ) :
-  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], blockId,
-        partId ),
-  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
-  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
-                                           cellNodeCapacity ),
-                       cellResizeRatio )
-{}
+UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
+                                                localIndex num_nodes,
+                                                localIndex num_cells ) :
+  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+  m_node_coordinates( new MeshCoordinates( ndims ) )
+{
+  // TODO: implement this
+}
 
 //------------------------------------------------------------------------------
 template < int CellType >
@@ -424,7 +448,7 @@ void UnstructuredMesh< CellType >::addCell( const localIndex * cell,
   SLIC_ASSERT( cell_type <= MINT_MIXED_CELL );
   SLIC_ASSERT( (CellType == MINT_MIXED_CELL) ? true : CellType == cell_type );
 
-  m_cell_connectivity.addCell( cell, cell_type );
+  m_cell_connectivity->addCell( cell, cell_type );
 
   this->setCellDataSize( getNumberOfCells() );
   // this->setFaceDataSize( WHAT???? )
@@ -433,19 +457,19 @@ void UnstructuredMesh< CellType >::addCell( const localIndex * cell,
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline
-void UnstructuredMesh< CellType >::addNode( double x ) {
+inline void UnstructuredMesh< CellType >::addNode( double x )
+{
   SLIC_ASSERT( this->getDimension() == 1 );
-  m_node_coordinates.addPoint( x );
+  m_node_coordinates->addPoint( x );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline
-void UnstructuredMesh< CellType >::addNode( double x, double y ) {
+inline void UnstructuredMesh< CellType >::addNode( double x, double y )
+{
   SLIC_ASSERT( this->getDimension() == 2 );
-  m_node_coordinates.addPoint( x, y );
+  m_node_coordinates->addPoint( x, y );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
@@ -454,7 +478,7 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::addNode( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3 );
-  m_node_coordinates.addPoint( x, y, z );
+  m_node_coordinates->addPoint( x, y, z );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
@@ -465,16 +489,16 @@ inline void UnstructuredMesh< CellType >::addNode( const double * node ) {
 
   if ( this->getDimension() == 1 )
   {
-    m_node_coordinates.addPoint( node[0] );
+    m_node_coordinates->addPoint( node[0] );
   }
   else if ( this->getDimension() == 2 )
   {
-    m_node_coordinates.addPoint( node[0], node[1] );
+    m_node_coordinates->addPoint( node[0], node[1] );
   }
   else
   {
     SLIC_ASSERT( this->getDimension() == 3 );
-    m_node_coordinates.addPoint( node[0], node[1], node[2] );
+    m_node_coordinates->addPoint( node[0], node[1], node[2] );
   }
 
   this->setNodeDataSize( getNumberOfNodes() );
@@ -486,7 +510,7 @@ inline
 const double * UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
 const {
   SLIC_ASSERT( dim < this->getDimension() );
-  return m_node_coordinates.getCoordinateArray( dim );
+  return m_node_coordinates->getCoordinateArray( dim );
 }
 
 //------------------------------------------------------------------------------
@@ -496,7 +520,7 @@ const localIndex * UnstructuredMesh< CellType >::getCell( localIndex cellIdx )
 const
 {
   SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
-  return m_cell_connectivity[ cellIdx ];
+  return (*m_cell_connectivity)[ cellIdx ];
 }
 
 } /* namespace mint */

@@ -347,8 +347,11 @@ private:
       ext[ 2 * i + 1 ] = std::ceil( len / h );
     }
 
-    UniformMesh * mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
-    mesh->addNodeField< double >("temperature", 1);
+    UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
+    const int num_nodes = mesh->getMeshNumberOfNodes();
+    mesh->getNodeFieldData().addField(
+       new FieldVariable< double >("temperature", num_nodes) );
+
     return mesh;
   }
 

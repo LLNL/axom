@@ -56,11 +56,11 @@ public:
   virtual localIndex getMeshNumberOfNodes() const override
   { return getNumberOfNodes(); }
 
-  virtual localIndex getMeshNodeCapacity() const override
-  { return getNumberOfNodes(); }
-
-  virtual double getMeshNodeResizeRatio() const override
-  { return 0.0; }
+//  virtual localIndex getMeshNodeCapacity() const override
+//  { return getNumberOfNodes(); }
+//
+//  virtual double getMeshNodeResizeRatio() const override
+//  { return 0.0; }
 
   /*!
    * \brief Returns the total number of cells in the mesh.
@@ -71,17 +71,17 @@ public:
   virtual localIndex getMeshNumberOfCells() const override
   { return getNumberOfCells(); }
 
-  virtual localIndex getMeshCellCapacity() const override
-  { return getNumberOfCells(); }
-
-  virtual double getMeshCellResizeRatio() const override
-  { return 0.0; }
-
-  virtual localIndex getMeshNumberOfFaces() const override
-  { return getNumberOfFaces(); }
-
-  virtual localIndex getMeshNumberOfEdges() const override
-  { return getNumberOfEdges(); }
+//  virtual localIndex getMeshCellCapacity() const override
+//  { return getNumberOfCells(); }
+//
+//  virtual double getMeshCellResizeRatio() const override
+//  { return 0.0; }
+//
+//  virtual localIndex getMeshNumberOfFaces() const override
+//  { return getNumberOfFaces(); }
+//
+//  virtual localIndex getMeshNumberOfEdges() const override
+//  { return getNumberOfEdges(); }
 
   /*!
    * \brief Returns the number of nodes for the given cell.
@@ -404,10 +404,11 @@ inline int StructuredMesh::getNumberOfCellNodes() const
 //------------------------------------------------------------------------------
 inline localIndex StructuredMesh::getNumberOfFaces() const
 {
-  if ( this->getDimension() < 3 )
-  {
-    return getMeshNumberOfEdges();
-  }
+// TODO: ???
+//  if ( this->getDimension() < 3 )
+//  {
+//    return getMeshNumberOfEdges();
+//  }
 
   localIndex size[3];
   getExtentSize( size );

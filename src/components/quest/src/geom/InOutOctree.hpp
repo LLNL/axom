@@ -903,7 +903,8 @@ public:
       }
 
       typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-      TriangleMesh* triMesh = new TriangleMesh(3, m_vertexSet.size());
+      TriangleMesh * triMesh =
+          new TriangleMesh(3, m_vertexSet.size(), m_elementSet.size() );
 
       // Add vertices to the mesh (i.e. vertex positions)
       for(int i=0; i< m_vertexSet.size(); ++i)
@@ -2762,7 +2763,10 @@ private:
 
   int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
   {
-    int * fld = mesh->addCellField< int >( name, 1 )->getIntPtr();
+//    int * fld = mesh->addCellField< int >( name, 1 )->getIntPtr();
+    mesh->getNodeFieldData().addField(
+         new mint::FieldVariable< int >( name, mesh->getNumberOfNodes() ) );
+    int* fld = mesh->getNodeFieldData().getField( name )->getIntPtr( );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
@@ -2771,7 +2775,10 @@ private:
   double* addRealField(DebugMesh* mesh, const std::string& name,
                        int size) const
   {
-    double * fld = mesh->addCellField< double >( name, 1 )->getDoublePtr();
+//    double * fld = mesh->addCellField< double >( name, 1 )->getDoublePtr();
+    mesh->getNodeFieldData().addField(
+          new mint::FieldVariable< double >( name, mesh->getNumberOfNodes( )));
+    double* fld = mesh->getNodeFieldData().getField( name )->getDoublePtr( );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;

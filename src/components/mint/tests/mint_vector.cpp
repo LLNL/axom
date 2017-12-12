@@ -26,10 +26,11 @@ namespace mint
 namespace internal
 {
 
+//------------------------------------------------------------------------------
 template < typename T >
 localIndex calc_new_capacity( Vector< T > & v, localIndex increase )
 {
-  localIndex newSize = v.getSize() + increase;
+  localIndex newSize = v.getNumTuples() + increase;
   if ( newSize > v.getCapacity() )
   {
     double n_tuples = newSize * v.getResizeRatio() / v.getNumComponents();
@@ -39,15 +40,14 @@ localIndex calc_new_capacity( Vector< T > & v, localIndex increase )
   return v.getCapacity();
 }
 
-
-
+//------------------------------------------------------------------------------
 template < typename T >
 void check_storage( localIndex capacity )
 {
   Vector< T > v( capacity );
 
   EXPECT_TRUE( v.empty() );
-  EXPECT_EQ( v.getSize(), 0 );
+  EXPECT_EQ( v.getNumTuples(), 0 );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getResizeRatio(), 2.0 );
   EXPECT_EQ( v.getNumComponents(), 1 );
@@ -60,7 +60,7 @@ void check_storage( localIndex capacity )
   }
 
   EXPECT_TRUE( !v.empty() );
-  EXPECT_EQ( v.getSize(), capacity / 2 );
+  EXPECT_EQ( v.getNumTuples(), capacity / 2 );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
 
@@ -70,7 +70,7 @@ void check_storage( localIndex capacity )
   }
 
   EXPECT_TRUE( !v.empty() );
-  EXPECT_EQ( v.getSize(), capacity );
+  EXPECT_EQ( v.getNumTuples(), capacity );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
 
@@ -91,15 +91,16 @@ void check_storage( localIndex capacity )
 }
 
 
+//------------------------------------------------------------------------------
 template < typename T >
 void check_resize( int num_components, double resize_ratio )
 {
   localIndex capacity = 0;
   localIndex size = 0;
-  Vector< T > v( capacity, num_components, resize_ratio );
+  Vector< T > v( capacity, num_components );
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v.getNumComponents(), num_components );
   EXPECT_EQ( v.getResizeRatio(), resize_ratio );
 
@@ -108,7 +109,7 @@ void check_resize( int num_components, double resize_ratio )
   size += 1;
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v[0], 0 );
 
   const localIndex n_vals = 1000 * num_components;
@@ -123,7 +124,7 @@ void check_resize( int num_components, double resize_ratio )
   size += n_vals;
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   for ( localIndex i = 0 ; i < size ; ++i )
   {
     EXPECT_EQ( v[ i ], i );
@@ -134,13 +135,14 @@ void check_resize( int num_components, double resize_ratio )
   size += 1;
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v[ size - 1 ], n_vals + 1 );
 
   T * data_address = v.getData();
   size = 500 * num_components;
-  v.setSize(size);
-  EXPECT_EQ( v.getSize(), size );
+// TODO: ???
+//  v.setSize(size);
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
   for ( localIndex i = 0 ; i < size ; ++i )
@@ -150,9 +152,12 @@ void check_resize( int num_components, double resize_ratio )
 
   capacity = 250 * num_components;
   size = capacity;
-  v.setCapacity( capacity );
+
+// TODO: ???
+//  v.setCapacity( capacity );
+
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   for ( localIndex i = 0 ; i < size ; ++i )
   {
     EXPECT_EQ( v[ i ], i );
@@ -160,12 +165,15 @@ void check_resize( int num_components, double resize_ratio )
 
   size += n_vals;
   capacity = std::ceil( size / num_components ) * num_components;
-  v.setSize( size );
-  EXPECT_EQ( v.getSize(), size );
+
+// TODO: ???
+//  v.setSize( size );
+
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
 
   v.set( values, n_vals, size - n_vals );
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
 
   for ( localIndex i = 0 ; i < size - n_vals ; ++i )
@@ -180,8 +188,9 @@ void check_resize( int num_components, double resize_ratio )
 
   capacity = 1000 * num_components;
   size = capacity;
-  v.setCapacity( capacity );
-  v.setSize( size );
+// TODO: ???
+//  v.setCapacity( capacity );
+//  v.setSize( size );
   data_address = v.getData();
 
   for ( localIndex i = 0 ; i < size ; ++i )
@@ -189,7 +198,7 @@ void check_resize( int num_components, double resize_ratio )
     data_address[ i ] = i * i;
   }
 
-  EXPECT_EQ( v.getSize(), size );
+  EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
 
@@ -199,6 +208,7 @@ void check_resize( int num_components, double resize_ratio )
   }
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
 void check_insert( double resize_ratio )
 {
@@ -216,8 +226,8 @@ void check_insert( double resize_ratio )
   }
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getSize(), num_vals );
+  EXPECT_EQ( v.getNumTuples(), size );
+  EXPECT_EQ( v.getNumTuples(), num_vals );
 
   for ( localIndex i = 0 ; i < num_vals ; ++i )
   {
@@ -232,8 +242,8 @@ void check_insert( double resize_ratio )
   }
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getSize(), 2 * num_vals );
+  EXPECT_EQ( v.getNumTuples(), size );
+  EXPECT_EQ( v.getNumTuples(), 2 * num_vals );
 
   for ( localIndex i = 0 ; i < 2 * num_vals ; ++i )
   {
@@ -251,8 +261,8 @@ void check_insert( double resize_ratio )
   v.insert( values, num_vals, 0 );
 
   EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getSize(), size );
-  EXPECT_EQ( v.getSize(), 3 * num_vals );
+  EXPECT_EQ( v.getNumTuples(), size );
+  EXPECT_EQ( v.getNumTuples(), 3 * num_vals );
 
   for ( localIndex i = 0 ; i < num_vals ; ++i )
   {
@@ -267,7 +277,7 @@ void check_insert( double resize_ratio )
 
 }   /* end namespace internal */
 
-
+//------------------------------------------------------------------------------
 TEST( mint_vector, checkStorage )
 {
   localIndex capacity = 2;
@@ -281,6 +291,7 @@ TEST( mint_vector, checkStorage )
   }
 }
 
+//------------------------------------------------------------------------------
 TEST( mint_vector, checkResize )
 {
   for ( int num_components = 1 ; num_components < 5 ; ++num_components )
@@ -295,7 +306,7 @@ TEST( mint_vector, checkResize )
   }
 }
 
-
+//------------------------------------------------------------------------------
 TEST( mint_vector, checkInsert )
 {
   for ( double resize_ratio = 1.0 ; resize_ratio < 3 ; resize_ratio += 0.3 )
@@ -308,7 +319,6 @@ TEST( mint_vector, checkInsert )
 }
 
 /* test copy / move */
-
 
 } /* end namespace mint */
 } /* end namespace axom */
