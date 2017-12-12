@@ -19,6 +19,7 @@
 #define AXOM_NUMERICS_POLY_SOLVE_HPP_
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
+#include "axom_utils/Utilities.hpp" // for isNearlyEqual()
 
 // C/C++ includes
 #include <cassert> // for assert()
@@ -77,21 +78,60 @@ namespace numerics
 
 int solve_linear( const double* coeff, double* roots, int& numRoots )
 {
-  int status = 0;
+  int status = -1;
+
+  if (utilities::isNearlyEqual(coeff[1], 0.)) {
+    if (utilities::isNearlyEqual(coeff[0], 0.)) {
+      // Infinite solutions: a horizontal line on the X-axis.
+      status = 0;
+      numRoots = -1;
+    } else {
+      // No solutions: a horizontal line not on the X-axis.
+      numRoots = 0;
+    }
+  } else {
+    // One solution, where the line crosses the X-axis.
+    status = 0;
+    numRoots = 1;
+    roots[0] = -coeff[0] / coeff[1];
+  }
 
   return status;
 }
 
 int solve_quadratic( const double* coeff, double* roots, int& numRoots )
 {
-  int status = 0;
+  int status = -1;
+
+  if (utilities::isNearlyEqual(coeff[2], 0.)) {
+    // If this system is nearly linear, solve it as such.
+    return solve_linear(coeff, roots, numRoots);
+  }
+
+  double discriminant = coeff[1]*coeff[1] - 4*coeff[2]*coeff[0];
+
+  if (utilities::isNearlyEqual(discriminant, 0.)) {
+    // One unique real root
+    status = 0;
+    numRoots = 1;
+    roots[0] = roots[1] = -coeff[1] / (2*coeff[2]);
+  } else if (discriminant < 0) {
+    // No unique real roots
+    numRoots = 0;
+  } else {
+    // Two real roots
+    status = 0;
+    numRoots = 2;
+    roots[0] = (-coeff[1] + std::sqrt(discriminant)) / (2*coeff[2]);
+    roots[1] = (-coeff[1] - std::sqrt(discriminant)) / (2*coeff[2]);
+  }
 
   return status;
 }
 
 int solve_cubic( const double* coeff, double* roots, int& numRoots )
 {
-  int status = 0;
+  int status = -1;
 
   return status;
 }
