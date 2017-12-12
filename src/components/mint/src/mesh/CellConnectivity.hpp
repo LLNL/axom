@@ -104,7 +104,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const localIndex * operator[]( localIndex cellIdx ) const {
+  const localIndex* operator[]( localIndex cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     return m_connectivity.getData() + cellIdx * m_stride;
   }
@@ -115,7 +115,7 @@ public:
    * \param [in] type the cell type.
    * \note type is only used for mixed cell connectivity.
    */
-  void addCell( const localIndex * cell, int AXOM_NOT_USED(type) ) {
+  void addCell( const localIndex* cell, int AXOM_NOT_USED(type) ) {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     m_connectivity.add( cell, m_stride );
   }
@@ -127,7 +127,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( localIndex cellIdx, const localIndex * cell ) {
+  void setCell( localIndex cellIdx, const localIndex* cell ) {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     m_connectivity.set( cell, m_stride, cellIdx * m_stride );
@@ -247,7 +247,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const localIndex * operator[]( localIndex cellIdx ) const {
+  const localIndex* operator[]( localIndex cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     return m_connectivity.getData() + m_offset[ cellIdx ];
   };
@@ -260,7 +260,7 @@ public:
    * \note type is only used for mixed cell connectivity.
    * \pre cell != AXOM_NULLPTR .
    */
-  void addCell( const localIndex * cell, int type ) {
+  void addCell( const localIndex* cell, int type ) {
     int num_nodes = cell::num_nodes[ type ];
 
     /* STEP 0: get the last cell index before adding the new cell. */
@@ -291,7 +291,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( localIndex cellIdx, const localIndex * cell ) const {
+  void setCell( localIndex cellIdx, const localIndex* cell ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 

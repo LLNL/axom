@@ -45,7 +45,8 @@ class UnstructuredMesh : public Mesh
 public:
 
 //  /*!
-//   * \brief Custom constructor. Creates an unstructured mesh of given dimension.
+//   * \brief Custom constructor. Creates an unstructured mesh of given
+// dimension.
 //   * \param [in] ndims the number of dimension.
 //   * \param [in] nodeCapacity size of node buffer to allocate.
 //   */
@@ -63,7 +64,8 @@ public:
 //   * \param [in] nodeCapacity size of node buffer to allocate.
 //   */
 //  UnstructuredMesh( int ndims, int blockId, int partId,
-//                    localIndex nodeCapacity=100, localIndex cellNodeCapacity=0,
+//                    localIndex nodeCapacity=100, localIndex
+// cellNodeCapacity=0,
 //                    double nodeResizeRatio=2.0, double cellResizeRatio=2.0 );
 
   UnstructuredMesh( int ndims );
@@ -147,10 +149,10 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshCell( localIndex cellIdx,
-                            localIndex * cell ) const override
+                            localIndex* cell ) const override
   {
     const int numNodes = getNumberOfCellNodes( cellIdx );
-    const localIndex * myCell  = getCell( cellIdx );
+    const localIndex* myCell  = getCell( cellIdx );
     std::memcpy( cell, myCell, numNodes * sizeof(localIndex) );
   }
 
@@ -171,11 +173,11 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshNode( localIndex nodeIdx,
-                            double * coordinates ) const override
+                            double* coordinates ) const override
   {
     for ( int i=0 ; i < getDimension() ; ++i )
     {
-      const double * coord = getMeshCoordinateArray( i );
+      const double* coord = getMeshCoordinateArray( i );
       coordinates[ i ] = coord[ nodeIdx ];
     } // END for all dimensions
   }
@@ -251,14 +253,16 @@ public:
   { return m_cell_connectivity->getNumberOfNodes( cellIdx ); }
 
 //  /*!
-//   * \brief Get the number of nodes that can be stored in the cell connectivity.
+//   * \brief Get the number of nodes that can be stored in the cell
+// connectivity.
 //   * \return the number of nodes that can be stored in the cell connectivity.
 //   */
 //  localIndex getCellNodeCapacity() const
 //  { return m_cell_connectivity.getCapacity(); }
 //
 //  /*!
-//   * \brief Set the number of nodes that can be stored in the cell connectivity.
+//   * \brief Set the number of nodes that can be stored in the cell
+// connectivity.
 //   * \param capacity the number of nodes that can be stored in the cell
 //   *  connectivity.
 //   */
@@ -284,7 +288,7 @@ public:
    * \param [in] cell_type the type of cell to Add.
    * \pre cell != AXOM_NULLPTR.
    */
-  void addCell( const localIndex * cell, int cell_type );
+  void addCell( const localIndex* cell, int cell_type );
 
   /*!
    * \brief Adds a new node in the mesh.
@@ -316,7 +320,7 @@ public:
    * \pre node != AXOM_NULLPTR
    * \pre node must at least be this->getDimension() long
    */
-  void addNode( const double * node );
+  void addNode( const double* node );
 
   /*!
    * \brief Returns pointer to coordinates array for the requested dimension.
@@ -325,7 +329,7 @@ public:
    * \pre dim < this->getDimension()
    * \post ptr != AXOM_NULLPTR.
    */
-  const double * getMeshCoordinateArray( int dim ) const;
+  const double* getMeshCoordinateArray( int dim ) const;
 
   /*!
    * \brief Returns pointer to the connectivity array of the given cell.
@@ -334,7 +338,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const localIndex * getCell( localIndex cellIdx ) const;
+  const localIndex* getCell( localIndex cellIdx ) const;
 
 private:
 
@@ -411,7 +415,8 @@ private:
 //                                                localIndex cellNodeCapacity,
 //                                                double nodeResizeRatio,
 //                                                double cellResizeRatio ) :
-//  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], blockId, partId)
+//  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], blockId,
+// partId)
 //// TODO: ???
 ////  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
 ////  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
@@ -424,7 +429,7 @@ UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :
   Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
   m_node_coordinates( new MeshCoordinates( ndims ) )
 {
- // TODO: implement this
+  // TODO: implement this
 }
 
 //------------------------------------------------------------------------------
@@ -441,7 +446,7 @@ UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-void UnstructuredMesh< CellType >::addCell( const localIndex * cell,
+void UnstructuredMesh< CellType >::addCell( const localIndex* cell,
                                             int cell_type ) {
   SLIC_ASSERT( cell != AXOM_NULLPTR );
   SLIC_ASSERT( cell_type > MINT_UNDEFINED_CELL );
@@ -484,7 +489,7 @@ void UnstructuredMesh< CellType >::addNode( double x, double y, double z ) {
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline void UnstructuredMesh< CellType >::addNode( const double * node ) {
+inline void UnstructuredMesh< CellType >::addNode( const double* node ) {
   SLIC_ASSERT( node != AXOM_NULLPTR );
 
   if ( this->getDimension() == 1 )
@@ -507,7 +512,7 @@ inline void UnstructuredMesh< CellType >::addNode( const double * node ) {
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const double * UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
+const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
 const {
   SLIC_ASSERT( dim < this->getDimension() );
   return m_node_coordinates->getCoordinateArray( dim );
@@ -516,7 +521,7 @@ const {
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const localIndex * UnstructuredMesh< CellType >::getCell( localIndex cellIdx )
+const localIndex* UnstructuredMesh< CellType >::getCell( localIndex cellIdx )
 const
 {
   SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );

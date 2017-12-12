@@ -56,7 +56,7 @@ public:
    * \param [in] group the sidre::Group to use.
    * \pre group != AXOM_NULLPTR.
    */
-  Mesh( sidre::Group * group );
+  Mesh( sidre::Group* group );
 
   /*!
    * \brief Constructor for use with an empty group.
@@ -67,7 +67,7 @@ public:
    * \param [in] partId the partition ID for this mesh instance.
    * \pre group != AXOM_NULLPTR.
    */
-  Mesh( sidre::Group * group, int ndims, int type, int blockId, int partId );
+  Mesh( sidre::Group* group, int ndims, int type, int blockId, int partId );
 #endif
 
   /*!
@@ -319,7 +319,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( localIndex cellIdx, localIndex * cell ) const = 0;
+  virtual void getMeshCell( localIndex cellIdx, localIndex* cell ) const = 0;
 
   /*!
    * \brief Returns the cell type of the cell associated with the given Id.
@@ -337,7 +337,7 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshNode( localIndex nodeIdx,
-                            double * coordinates ) const = 0;
+                            double* coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinate of a mesh node.
@@ -417,20 +417,20 @@ private:
 #endif
 
   localIndex * m_num_cells;       /*! The number of cells in the mesh */
-  localIndex * m_cell_capacity;   /*! The cell storage capacity */
-  double * m_cell_resize_ratio;   /*! The cell resize ratio */
+  localIndex* m_cell_capacity;    /*! The cell storage capacity */
+  double* m_cell_resize_ratio;    /*! The cell resize ratio */
 
-  localIndex * m_num_faces;       /*! The number of faces in the mesh */
-  localIndex * m_face_capacity;   /*! The face storage capacity */
-  double * m_face_resize_ratio;   /*! The face resize ratio */
+  localIndex* m_num_faces;        /*! The number of faces in the mesh */
+  localIndex* m_face_capacity;    /*! The face storage capacity */
+  double* m_face_resize_ratio;    /*! The face resize ratio */
 
-  localIndex * m_num_edges;       /*! The number of edges in the mesh */
-  localIndex * m_edge_capacity;   /*! The edge storage capacity */
-  double * m_edge_resize_ratio;   /*! The edge resize ratio */
+  localIndex* m_num_edges;        /*! The number of edges in the mesh */
+  localIndex* m_edge_capacity;    /*! The edge storage capacity */
+  double* m_edge_resize_ratio;    /*! The edge resize ratio */
 
-  localIndex * m_num_nodes;       /*! The number of nodes in the mesh */
-  localIndex * m_node_capacity;   /*! The node storage capacity */
-  double * m_node_resize_ratio;   /*! The node resize ratio */
+  localIndex* m_num_nodes;        /*! The number of nodes in the mesh */
+  localIndex* m_node_capacity;    /*! The node storage capacity */
+  double* m_node_resize_ratio;    /*! The node resize ratio */
 
 
   DISABLE_COPY_AND_ASSIGNMENT(Mesh);

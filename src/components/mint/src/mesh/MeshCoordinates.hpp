@@ -71,7 +71,7 @@ public:
    * \param [in] group the sidre::Group to use.
    * \pre group != AXOM_NULLPTR.
    */
-  MeshCoordinates( sidre::Group * group, const localIndex & capacity,
+  MeshCoordinates( sidre::Group* group, const localIndex & capacity,
                    const localIndex & size, const double & resize_ratio );
 
   /*!
@@ -83,7 +83,7 @@ public:
    *  it exceeds the capacity. A ratio smaller than 1 prevents dynamic resizing.
    * \pre group != AXOM_NULLPTR.
    */
-  MeshCoordinates( sidre::Group * group, int dimension,
+  MeshCoordinates( sidre::Group* group, int dimension,
                    const localIndex & capacity, const localIndex & size,
                    const double & resize_ratio );
 #endif
@@ -106,7 +106,7 @@ public:
    * \param [in] n the number of points to add.
    * \pre m_ndims == 1.
    */
-  inline void addPoints( double * x, localIndex n );
+  inline void addPoints( double* x, localIndex n );
 
   /*!
    * \brief Adds a new point into this MeshCoordinates instance.
@@ -123,7 +123,7 @@ public:
    * \param [in] n the number of points to add.
    * \pre m_ndims == 2.
    */
-  inline void addPoints( double * x, double * y, localIndex n );
+  inline void addPoints( double* x, double* y, localIndex n );
 
   /*!
    * \brief Adds a new point into this MeshCoordinates instance.
@@ -142,7 +142,7 @@ public:
    * \param [in] n the number of points to add.
    * \pre m_ndims == 3.
    */
-  inline void addPoints( double * x, double * y, double * z, localIndex n );
+  inline void addPoints( double* x, double* y, double* z, localIndex n );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -191,7 +191,7 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  inline double * getCoordinateArray( int dim );
+  inline double* getCoordinateArray( int dim );
 
   /*!
    * \brief Returns a const pointer to the coordinate array.
@@ -200,7 +200,7 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  inline const double * getCoordinateArray( int dim ) const;
+  inline const double* getCoordinateArray( int dim ) const;
 
   /*!
    * \brief Get the maximum number of points that can currently be held.
@@ -256,7 +256,7 @@ inline void MeshCoordinates::addPoint( double x )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::addPoints( double * x, localIndex n )
+inline void MeshCoordinates::addPoints( double* x, localIndex n )
 {
   SLIC_ASSERT( m_ndims == 1 );
   m_coordinates[ X_COORDINATE ]->add( x, n );
@@ -271,7 +271,7 @@ inline void MeshCoordinates::addPoint( double x, double y )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::addPoints( double * x, double * y, localIndex n )
+inline void MeshCoordinates::addPoints( double* x, double* y, localIndex n )
 {
   SLIC_ASSERT( m_ndims == 1 );
   m_coordinates[ X_COORDINATE ]->add( x, n );
@@ -289,7 +289,7 @@ inline void MeshCoordinates::addPoint( double x, double y, double z )
 
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::addPoints( double * x, double * y, double * z,
+inline void MeshCoordinates::addPoints( double* x, double* y, double* z,
                                         localIndex n )
 {
   SLIC_ASSERT( m_ndims == 1 );
@@ -334,14 +334,14 @@ inline double MeshCoordinates::getCoordinate( localIndex pntIdx, int dim )
 }
 
 //------------------------------------------------------------------------------
-inline double * MeshCoordinates::getCoordinateArray( int dim )
+inline double* MeshCoordinates::getCoordinateArray( int dim )
 {
   SLIC_ASSERT( dim < m_ndims );
   return m_coordinates[ dim ]->getData();
 }
 
 //------------------------------------------------------------------------------
-inline const double * MeshCoordinates::getCoordinateArray( int dim ) const
+inline const double* MeshCoordinates::getCoordinateArray( int dim ) const
 {
   SLIC_ASSERT( dim < m_ndims );
   return m_coordinates[ dim ]->getData();

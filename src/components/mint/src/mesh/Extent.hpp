@@ -39,7 +39,7 @@ public:
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
    */
-  Extent( int ndims, const globalIndex * ext );
+  Extent( int ndims, const globalIndex* ext );
 
   /*!
    * \brief Returns the dimension of this extent.
@@ -112,7 +112,7 @@ public:
    *
    * \note The indent for the cell offsets table
    */
-  inline const localIndex * getCellOffSets() const
+  inline const localIndex* getCellOffSets() const
   { return &m_cell_offsets[0]; };
 
   /*!
@@ -144,7 +144,8 @@ public:
   inline localIndex getLinearIndex( localIndex i, localIndex j ) const;
 
   /*!
-   * \brief Converts the given grid cell indices to a one-dimensional linear index.
+   * \brief Converts the given grid cell indices to a one-dimensional linear
+   *index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
    * \param [in] k the grid cell index along the third dimension.
@@ -159,7 +160,8 @@ public:
                                         localIndex k ) const;
 
   /*!
-   * \brief Converts the given grid cell indices to a one-dimensional linear index.
+   * \brief Converts the given grid cell indices to a one-dimensional linear
+   *index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
    * \return linearIdx the linear index over the cells.

@@ -52,7 +52,7 @@ void check_storage( localIndex capacity )
   EXPECT_EQ( v.getResizeRatio(), 2.0 );
   EXPECT_EQ( v.getNumComponents(), 1 );
 
-  const T * data_address = v.getData();
+  const T* data_address = v.getData();
 
   for ( localIndex i = 0 ; i < capacity / 2 ; ++i )
   {
@@ -138,7 +138,7 @@ void check_resize( int num_components, double resize_ratio )
   EXPECT_EQ( v.getNumTuples(), size );
   EXPECT_EQ( v[ size - 1 ], n_vals + 1 );
 
-  T * data_address = v.getData();
+  T* data_address = v.getData();
   size = 500 * num_components;
 // TODO: ???
 //  v.setSize(size);
@@ -326,7 +326,7 @@ TEST( mint_vector, checkInsert )
 //------------------------------------------------------------------------------
 using axom::slic::UnitTestLogger;
 
-int main( int argc, char * argv[] )
+int main( int argc, char* argv[] )
 {
   int result = 0;
   ::testing::InitGoogleTest( &argc, argv );

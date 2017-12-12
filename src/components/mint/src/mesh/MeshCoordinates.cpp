@@ -50,7 +50,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
 
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    Vector< double > * coord_array;
+    Vector< double >* coord_array;
     coord_array = new Vector< double >( 1, capacity, size, resize_ratio);
     m_coordinates[ dim ] = coord_array;
   }
@@ -64,7 +64,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
 
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( sidre::Group * group,
+MeshCoordinates::MeshCoordinates( sidre::Group* group,
                                   const localIndex & capacity,
                                   const localIndex & size,
                                   const double & resize_ratio ) :
@@ -73,23 +73,25 @@ MeshCoordinates::MeshCoordinates( sidre::Group * group,
   SLIC_ERROR_IF( group == AXOM_NULLPTR );
   SLIC_ERROR_IF( !group->hasChildView( "type" ) );
 
-  const sidre::View * type_view = group->getView( "type" );
+  const sidre::View* type_view = group->getView( "type" );
   SLIC_ERROR_IF( !type_view->isString() );
   SLIC_ERROR_IF( std::strcmp( type_view->getString(), "explicit") != 0 );
 
   SLIC_ERROR_IF( !hasChildGroup("values") );
-  sidre::Group * values_group = group->getGroup( "values" );
+  sidre::Group* values_group = group->getGroup( "values" );
   SLIC_ERROR_IF( !values_group->hasChildView( "x" ) );
 
   const char[][] coord_names = { "x", "y", "z" };
-  for ( ; m_ndims < 3; ++m_ndims )
+  for ( ; m_ndims < 3 ; ++m_ndims )
   {
-    const char * coord_name = coord_names[ m_ndims ];
+    const char* coord_name = coord_names[ m_ndims ];
 
     if ( !values_group->hasChildView( coord_name ) )
-    { break; }
+    {
+      break;
+    }
 
-    sidre::View * coord_view = values_group->getView( coord_name );
+    sidre::View* coord_view = values_group->getView( coord_name );
     SLIC_ERROR_IF( coord_view->getNumDimensions() != 2 );
 
     sidre::SidreLength dims[ 2 ];
@@ -97,15 +99,17 @@ MeshCoordinates::MeshCoordinates( sidre::Group * group,
     SLIC_ERROR_IF( dims[1] != 1 );
 
     m_coordinates[ m_ndims ] =
-              new Vector< double >( coord_view, capacity, size, resize_ratio );
+      new Vector< double >( coord_view, capacity, size, resize_ratio );
   }
 
-  for ( int i = m_ndims; i < 3; ++i )
-  { m_coordinates[ i ] = AXOM_NULLPTR; }
+  for ( int i = m_ndims ; i < 3 ; ++i )
+  {
+    m_coordinates[ i ] = AXOM_NULLPTR;
+  }
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( sidre::Group * group, int dimension,
+MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
                                   const localIndex & capacity,
                                   const localIndex & size,
                                   const double & resize_ratio ) :
@@ -117,26 +121,28 @@ MeshCoordinates::MeshCoordinates( sidre::Group * group, int dimension,
   SLIC_ERROR_IF( group->getNumViews != 0 );
 
   group->createView( "type" )->setString( "explicit" );
-  sidre::Group * values_group = group->createGroup( "values" );
+  sidre::Group* values_group = group->createGroup( "values" );
 
   const char[][] coord_names = { "x", "y", "z" };
 
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    sidre::View * coord_view = values_group->createView( coord_view );
+    sidre::View* coord_view = values_group->createView( coord_view );
     m_coordinates[ dim ] =
-          new Vector< double > ( coord_view, 1, capacity, size, resize_ratio );
+      new Vector< double > ( coord_view, 1, capacity, size, resize_ratio );
   }
 
-  for ( int i = m_ndims; i < 3; ++i )
-  { m_coordinates[ i ] = AXOM_NULLPTR; }
+  for ( int i = m_ndims ; i < 3 ; ++i )
+  {
+    m_coordinates[ i ] = AXOM_NULLPTR;
+  }
 }
 #endif
 
 //------------------------------------------------------------------------------
 MeshCoordinates::~MeshCoordinates()
 {
-  for ( int dim = 0; dim < 3; ++dim )
+  for ( int dim = 0 ; dim < 3 ; ++dim )
   {
     if ( m_coordinates[ dim ] != AXOM_NULLPTR )
     {

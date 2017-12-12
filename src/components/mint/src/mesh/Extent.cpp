@@ -10,7 +10,7 @@ namespace mint
 
 
 //------------------------------------------------------------------------------
-Extent::Extent( int ndims, const globalIndex * ext ) :
+Extent::Extent( int ndims, const globalIndex* ext ) :
   m_ndims( ndims )
 {
   SLIC_ASSERT( ndims >= 1 && ndims <= 3 );

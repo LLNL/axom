@@ -95,7 +95,7 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
     EXPECT_EQ( connec.getNumberOfNodes( i ), nodes_per_cell );
     EXPECT_EQ( connec.getCellType( i ), cell_type );
 
-    const localIndex * cell = connec[ i ];
+    const localIndex* cell = connec[ i ];
     for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], values[ i * nodes_per_cell + j ] );
@@ -124,7 +124,7 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
     EXPECT_EQ( connec.getNumberOfNodes( i ), nodes_per_cell );
     EXPECT_EQ( connec.getCellType( i ), cell_type );
 
-    const localIndex * cell = connec[ i ];
+    const localIndex* cell = connec[ i ];
     for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], values[ i * nodes_per_cell + j ] );
@@ -134,11 +134,11 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
 
 
 template < int cell_type >
-localIndex * create_connectivity( localIndex num_cells )
+localIndex* create_connectivity( localIndex num_cells )
 {
   localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
   localIndex num_nodes = nodes_per_cell * num_cells;
-  localIndex * connectivity_array = new localIndex[ num_nodes ];
+  localIndex* connectivity_array = new localIndex[ num_nodes ];
 
   for ( localIndex i = 0 ; i < num_nodes ; ++i )
   {
@@ -153,7 +153,7 @@ localIndex * create_connectivity( localIndex num_cells )
 
 template < int cell_type >
 void check_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
-                         localIndex num_cells, localIndex * connectivity_array,
+                         localIndex num_cells, localIndex* connectivity_array,
                          localIndex offset )
 {
   localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
@@ -163,7 +163,7 @@ void check_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
     EXPECT_EQ( connec.getNumberOfNodes( i + offset), nodes_per_cell );
     EXPECT_EQ( connec.getCellType( i + offset), cell_type );
 
-    const localIndex * cell = connec[ i + offset ];
+    const localIndex* cell = connec[ i + offset ];
     for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], connectivity_array[ i * nodes_per_cell + j ] );
@@ -174,7 +174,7 @@ void check_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
 
 template < int cell_type >
 void add_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
-                       localIndex num_cells, localIndex * connectivity_array )
+                       localIndex num_cells, localIndex* connectivity_array )
 {
   localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
   localIndex prev_size = connec.getSize();
@@ -199,7 +199,7 @@ void add_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
 
 template < int cell_type >
 void update_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
-                          localIndex num_cells, localIndex * connectivity_array,
+                          localIndex num_cells, localIndex* connectivity_array,
                           localIndex offset )
 {
   localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
@@ -247,56 +247,56 @@ void test_mixed_element_type( localIndex capacity, double resize_ratio )
 
   /* Create and add the connectivity arrays for each element type. */
   localIndex num_vertex_cells = 400;
-  localIndex * vertex_connectivity =
+  localIndex* vertex_connectivity =
     create_connectivity< MINT_VERTEX >( num_vertex_cells );
   add_connectivity< MINT_VERTEX >( connec, num_vertex_cells,
                                    vertex_connectivity );
 
   localIndex num_segment_cells = 410;
-  localIndex * segment_connectivity =
+  localIndex* segment_connectivity =
     create_connectivity< MINT_SEGMENT >( num_segment_cells );
   add_connectivity< MINT_SEGMENT >( connec, num_segment_cells,
                                     segment_connectivity );
 
   localIndex num_triangle_cells = 420;
-  localIndex * triangle_connectivity =
+  localIndex* triangle_connectivity =
     create_connectivity< MINT_TRIANGLE >( num_triangle_cells );
   add_connectivity< MINT_TRIANGLE >( connec, num_triangle_cells,
                                      triangle_connectivity );
 
   localIndex num_quad_cells = 430;
-  localIndex * quad_connectivity =
+  localIndex* quad_connectivity =
     create_connectivity< MINT_QUAD >( num_quad_cells );
   add_connectivity< MINT_QUAD >( connec, num_quad_cells, quad_connectivity );
 
   localIndex num_tet_cells = 440;
-  localIndex * tet_connectivity =
+  localIndex* tet_connectivity =
     create_connectivity< MINT_TET >( num_tet_cells );
   add_connectivity< MINT_TET >( connec, num_tet_cells, tet_connectivity );
 
   localIndex num_hex_cells = 450;
-  localIndex * hex_connectivity =
+  localIndex* hex_connectivity =
     create_connectivity< MINT_HEX >( num_hex_cells );
   add_connectivity< MINT_HEX >( connec, num_hex_cells, hex_connectivity );
 
   localIndex num_prism_cells = 460;
-  localIndex * prism_connectivity =
+  localIndex* prism_connectivity =
     create_connectivity< MINT_PRISM >( num_prism_cells );
   add_connectivity< MINT_PRISM >( connec, num_prism_cells, prism_connectivity );
 
   localIndex num_pyramid_cells = 470;
-  localIndex * pyramid_connectivity =
+  localIndex* pyramid_connectivity =
     create_connectivity< MINT_PYRAMID >( num_pyramid_cells );
   add_connectivity< MINT_PYRAMID >( connec, num_pyramid_cells,
                                     pyramid_connectivity );
 
   localIndex num_quad9_cells = 480;
-  localIndex * quad9_connectivity =
+  localIndex* quad9_connectivity =
     create_connectivity< MINT_QUAD9 >( num_quad9_cells );
   add_connectivity< MINT_QUAD9 >( connec, num_quad9_cells, quad9_connectivity );
 
   localIndex num_hex27_cells = 490;
-  localIndex * hex27_connectivity =
+  localIndex* hex27_connectivity =
     create_connectivity< MINT_HEX27 >( num_hex27_cells );
   add_connectivity< MINT_HEX27 >( connec, num_hex27_cells, hex27_connectivity );
 
@@ -527,7 +527,7 @@ TEST( mint_connectivity, MixedElementType )
 //------------------------------------------------------------------------------
 using axom::slic::UnitTestLogger;
 
-int main( int argc, char * argv[] )
+int main( int argc, char* argv[] )
 {
   int result = 0;
   ::testing::InitGoogleTest( &argc, argv );

@@ -125,7 +125,7 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshCell( localIndex cellIdx,
-                            localIndex * cell ) const override
+                            localIndex* cell ) const override
   { cell[0]=cellIdx; };
 
   /*!
@@ -146,7 +146,7 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshNode( localIndex nodeIdx,
-                            double * coordinates ) const override
+                            double* coordinates ) const override
   { getParticleCoordinates( nodeIdx, coordinates ); };
 
   /*!
@@ -175,7 +175,7 @@ public:
    * \return coords pointer to the coorindates array.
    * \pre idim >= 0 && idim < this->getDimension()
    */
-  double * getParticlesCoordinatesArray( int idim );
+  double* getParticlesCoordinatesArray( int idim );
 
   /*!
    * \brief Returns the particle coordinates array for the given dimension.
@@ -183,7 +183,7 @@ public:
    * \return coords pointer to the coorindates array.
    * \pre idim >= 0 && idim < this->getDimension()
    */
-  const double * getParticlesCoordinatesArray( int idim ) const;
+  const double* getParticlesCoordinatesArray( int idim ) const;
 
   /*!
    * \brief Add a particle in to the particle mesh.
@@ -245,14 +245,14 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline double * ParticleMesh::getParticlesCoordinatesArray( int idim )
+inline double* ParticleMesh::getParticlesCoordinatesArray( int idim )
 {
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
   return m_particle_coordinates.getCoordinateArray( idim );
 }
 
 //------------------------------------------------------------------------------
-inline const double * ParticleMesh::getParticlesCoordinatesArray( int idim )
+inline const double* ParticleMesh::getParticlesCoordinatesArray( int idim )
 const
 {
   SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
@@ -285,7 +285,7 @@ inline void ParticleMesh::getParticleCoordinates( localIndex partIdx,
 
   for ( int i=0 ; i < this->getDimension() ; ++i )
   {
-    const double * px = this->getParticlesCoordinatesArray( i );
+    const double* px = this->getParticlesCoordinatesArray( i );
     part_coords[ i ] = px[ partIdx ];
   }
 

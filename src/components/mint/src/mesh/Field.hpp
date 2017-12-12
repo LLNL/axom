@@ -89,28 +89,28 @@ public:
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double * getDoublePtr() { return AXOM_NULLPTR; }
+  virtual double* getDoublePtr() { return AXOM_NULLPTR; }
 
   /*!
    * \brief Returns a constant double pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double * getDoublePtr() const { return AXOM_NULLPTR; }
+  virtual const double* getDoublePtr() const { return AXOM_NULLPTR; }
 
   /*!
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual int * getIntPtr() { return AXOM_NULLPTR; }
+  virtual int* getIntPtr() { return AXOM_NULLPTR; }
 
   /*!
    * \brief Returns a constant int pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual const int * getIntPtr() const { return AXOM_NULLPTR; }
+  virtual const int* getIntPtr() const { return AXOM_NULLPTR; }
 
 protected:
 

@@ -42,16 +42,14 @@ public:
    */
   Vector( localIndex num_tuples, localIndex num_components=1 ) :
 #ifdef MINT_USE_SIDRE
-   m_view( AXOM_NULLPTR ),
+    m_view( AXOM_NULLPTR ),
 #endif
-   m_data( AXOM_NULLPTR ),
-   m_num_tuples( num_tuples ),
-   m_capacity( DEFAULT_RESIZE_RATIO*num_tuples ),
-   m_num_components( num_components ),
-   m_resize_ratio( DEFAULT_RESIZE_RATIO )
-  {
-
-  }
+    m_data( AXOM_NULLPTR ),
+    m_num_tuples( num_tuples ),
+    m_capacity( DEFAULT_RESIZE_RATIO*num_tuples ),
+    m_num_components( num_components ),
+    m_resize_ratio( DEFAULT_RESIZE_RATIO )
+  {}
 
   /*!
    * \brief Constructor for use without sidre.
@@ -101,7 +99,7 @@ public:
    *  size exceeds the capacity. A ratio less than one prohibits resizing.
    * \pre view != AXOM_NULLPTR.
    */
-  Vector( sidre::View * view, const localIndex & capacity,
+  Vector( sidre::View* view, const localIndex & capacity,
           const localIndex & num_tuples, const double & ratio ) :
     m_view( view ),
     m_data( AXOM_NULLPTR )
@@ -132,7 +130,8 @@ public:
     sidre::TypeID view_type = view->getTypeID();
     sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
     SLIC_ERROR_IF( view_type != T_type, "View data type (" << view_type << ")"
-                      << "differs from this vector type (" << T_type << ")." );
+                                                           << "differs from this vector type (" << T_type <<
+        ")." );
 
     m_data = view->getVoidPtr();
   }
@@ -147,7 +146,7 @@ public:
    *  size exceeds the capacity. A ratio less than one prohibits resizing.
    * \pre view != AXOM_NULLPTR.
    */
-  Vector( sidre::View * view, localIndex num_components,
+  Vector( sidre::View* view, localIndex num_components,
           const localIndex & capacity, const localIndex & num_tuples,
           const double & ratio ) :
     m_view( view ),
@@ -211,7 +210,7 @@ public:
   inline void add( const T& value )
   {
     SLIC_ASSERT_MSG( m_num_components != 1,
-                    "Number of components must be 1." );
+                     "Number of components must be 1." );
 
     localIndex new_size = m_num_tuples + 1;
     if ( new_size > m_capacity )
@@ -227,18 +226,19 @@ public:
    * \pre n % m_num_tuples == 0.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void add( const T * values, localIndex n )
+  inline void add( const T* values, localIndex n )
   {
     SLIC_ASSERT_MSG( n % m_num_components != 0, "n (" << n << ") must be a "
-                      << "multiple of the number of components of this vector ("
-                      << m_num_components << ")." );
+                                                      << "multiple of the number of components of this vector ("
+                                                      << m_num_components <<
+        ")." );
 
     localIndex new_size = m_num_tuples + ( n / m_num_components );
     if ( new_size > m_capacity )
     { dynamicRealloc( new_size ); }
 
-    T * cur_end = m_data + m_num_tuples * m_num_components;
-    std::memcpy( m_data , values, n * sizeof(T) );
+    T* cur_end = m_data + m_num_tuples * m_num_components;
+    std::memcpy( m_data, values, n * sizeof(T) );
   }
 
   /*!
@@ -248,7 +248,7 @@ public:
    * \param [in] pos the position at which to begin writing.
    * \pre pos + n <= m_num_tuples.
    */
-  inline void set( const T * values, localIndex n, localIndex pos )
+  inline void set( const T* values, localIndex n, localIndex pos )
   {
     SLIC_ASSERT( pos >= 0 );
     SLIC_ASSERT( pos + n <= m_num_components * m_num_tuples );
@@ -262,12 +262,13 @@ public:
    * \pre n % m_num_tuples == 0.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline T * reserveForInsert( localIndex n, localIndex pos )
+  inline T* reserveForInsert( localIndex n, localIndex pos )
   {
     SLIC_ASSERT( pos <= m_num_tuples * m_num_components );
     SLIC_ASSERT_MSG( n % m_num_components != 0, "n (" << n << ") must be a "
-                      << "multiple of the number of components of this vector ("
-                      << m_num_components << ")." );
+                                                      << "multiple of the number of components of this vector ("
+                                                      << m_num_components <<
+        ")." );
 
     localIndex new_size = m_num_tuples + ( n / m_num_components );
     if ( new_size > m_capacity )
@@ -275,8 +276,8 @@ public:
       dynamicRealloc( new_size );
     }
 
-    const T * const insert_pos = m_data + pos;
-    T * cur_pos = m_data + m_num_tuples - 1;
+    const T* const insert_pos = m_data + pos;
+    T* cur_pos = m_data + m_num_tuples - 1;
     for ( ; cur_pos >= insert_pos ; --cur_pos )
     { *(cur_pos + n) = *cur_pos; }
 
@@ -290,7 +291,7 @@ public:
    * \param [in] pos the position at which to begin the insertion.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void insert( const T * values, localIndex n, localIndex pos )
+  inline void insert( const T* values, localIndex n, localIndex pos )
   {
     reserveForInsert( n, pos );
     std::memcpy( m_data + pos, values, n * sizeof(T) );
@@ -312,13 +313,13 @@ public:
    * \brief Return a pointer to the array of data.
    * \return a pointer to the array of data.
    */
-  inline T * getData() { return m_data; }
+  inline T* getData() { return m_data; }
 
   /*!
    * \brief Return a constant pointer to the array of data.
    * \return a pointer to the array of data.
    */
-  inline const T * getData() const { return m_data; }
+  inline const T* getData() const { return m_data; }
 
   /*!
    * \brief Return the number of tuples allocated for the data array.
@@ -342,7 +343,7 @@ public:
     m_data = utilities::realloc( m_data, m_capacity );
     SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                    "Vector reallocation failed." );
-   }
+  }
 
   /*!
    * \brief Return the number of tuples stored in the data array.
@@ -388,12 +389,12 @@ private:
    * \param [in] dim the dimension (0 or 1) to return the length of.
    * \return The length of dimension dim of view.
    */
-  inline localIndex getViewShape( const sidre::View * view, bool dim ) const
+  inline localIndex getViewShape( const sidre::View* view, bool dim ) const
   {
     SLIC_ERROR_IF( view == AXOM_NULLPTR, "view cannot be a null pointer." );
     SLIC_ERROR_IF( view->isEmpty(), "view cannot be empty." );
     SLIC_ERROR_IF( view->getNumDimensions() != 2,
-                                                 "view must have dimension 2.");
+                   "view must have dimension 2.");
 
     sidre::SidreLength dims[ 2 ];
     view->getShape( 2, dims );
@@ -443,7 +444,7 @@ private:
   }
 
 #ifdef MINT_USE_SIDRE
-  sidre::View * m_view
+  sidre::View* m_view
 #endif
 
   T* m_data;

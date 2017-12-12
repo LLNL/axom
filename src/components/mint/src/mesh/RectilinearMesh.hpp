@@ -85,7 +85,7 @@ public:
    * \param [in] dim the requested dimension.
    * \return coordsPtr pointer to the coordinates array.
    */
-  const double * getCoordinateArray( int dim ) const;
+  const double* getCoordinateArray( int dim ) const;
 
   /// \name GetNode() methods.
   /// @{
@@ -98,7 +98,7 @@ public:
    * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes().
    */
   virtual void getNode( localIndex nodeIdx,
-                        double * coordinates ) const override;
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -108,7 +108,7 @@ public:
    * \pre this->getDimension() == 2
    */
   virtual void getNode( localIndex i, localIndex j,
-                        double * coordinates ) const override;
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j,k)
@@ -119,7 +119,7 @@ public:
    * \pre this->getDimension() == 3
    */
   virtual void getNode( localIndex i, localIndex j, localIndex k,
-                        double * coordinates ) const override;
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinate of the given node.
@@ -193,7 +193,7 @@ inline double RectilinearMesh::getCoordinate( int dim, localIndex i ) const
 }
 
 //------------------------------------------------------------------------------
-inline const double * RectilinearMesh::getCoordinateArray( int dim ) const
+inline const double* RectilinearMesh::getCoordinateArray( int dim ) const
 {
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
   return m_coordinates[ dim ]->getData();
@@ -201,7 +201,7 @@ inline const double * RectilinearMesh::getCoordinateArray( int dim ) const
 
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( localIndex nodeIdx,
-                                      double * coordinates ) const
+                                      double* coordinates ) const
 {
   SLIC_ASSERT( coordinates != AXOM_NULLPTR );
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < getNumberOfNodes() );
@@ -217,7 +217,7 @@ inline void RectilinearMesh::getNode( localIndex nodeIdx,
 
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( localIndex i, localIndex j,
-                                      double * coordinates ) const
+                                      double* coordinates ) const
 {
   SLIC_ASSERT( coordinates != AXOM_NULLPTR );
   SLIC_ASSERT( this->getDimension() == 2 );
@@ -229,7 +229,7 @@ inline void RectilinearMesh::getNode( localIndex i, localIndex j,
 
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( localIndex i, localIndex j, localIndex k,
-                                      double * coordinates ) const
+                                      double* coordinates ) const
 {
   SLIC_ASSERT( coordinates != AXOM_NULLPTR );
   SLIC_ASSERT( this->getDimension() == 3 );

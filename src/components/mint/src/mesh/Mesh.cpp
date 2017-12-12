@@ -81,7 +81,7 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
 
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
-Mesh::Mesh( sidre::Group * group ) :
+Mesh::Mesh( sidre::Group* group ) :
   m_ndims( ndims ),
   m_type( type ),
   m_block_idx( blockId ),
@@ -125,7 +125,7 @@ Mesh::Mesh( sidre::Group * group ) :
   SLIC_ERROR_IF( !m_group->hasChildView( "node_capacity" ) );
   SLIC_ERROR_IF( !m_group->hasChildView( "node_resize_ratio" ) );
 
-  sidre::View * view = m_group->getChildView( "ndims" );
+  sidre::View* view = m_group->getChildView( "ndims" );
   SLIC_ERROR_IF( !view->isScalar() );
   m_ndims = view->getData();
 
@@ -133,65 +133,66 @@ Mesh::Mesh( sidre::Group * group ) :
   SLIC_ERROR_IF( !view->isScalar() );
   m_type = view->getData();
 
-  sidre::View * view = m_group->getChildView( "block_idx" );
+  sidre::View* view = m_group->getChildView( "block_idx" );
   SLIC_ERROR_IF( !view->isScalar() );
   m_block_idx = view->getData();
 
-  sidre::View * view = m_group->getChildView( "part_idx" );
+  sidre::View* view = m_group->getChildView( "part_idx" );
   SLIC_ERROR_IF( !view->isScalar() );
   m_part_idx = view->getData();
 
-  sidre::View * view = m_group->getChildView( "num_cells" );
+  sidre::View* view = m_group->getChildView( "num_cells" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_num_cells = static_cast< localIndex * >( view->getVoidPtr() );
+  m_num_cells = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "cell_capacity" );
+  sidre::View* view = m_group->getChildView( "cell_capacity" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_cell_capacity = static_cast< localIndex * >( view->getVoidPtr() );
+  m_cell_capacity = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "cell_resize_ratio" );
+  sidre::View* view = m_group->getChildView( "cell_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_cell_resize_ratio = static_cast< double * >( view->getVoidPtr() );
+  m_cell_resize_ratio = static_cast< double* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "num_faces" );
+  sidre::View* view = m_group->getChildView( "num_faces" );
   SLIC_ERROR_IF( !view->isScalar() );
-  num_faces = static_cast< localIndex * >( view->getVoidPtr() );
+  num_faces = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "face_capacity" );
+  sidre::View* view = m_group->getChildView( "face_capacity" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_face_capacity = static_cast< localIndex * >( view->getVoidPtr() );
+  m_face_capacity = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "face_resize_ratio" );
+  sidre::View* view = m_group->getChildView( "face_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_face_resize_ratio = static_cast< double * >( view->getVoidPtr() );
+  m_face_resize_ratio = static_cast< double* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "num_edges" );
+  sidre::View* view = m_group->getChildView( "num_edges" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_num_edges = static_cast< localIndex * >( view->getVoidPtr() );
+  m_num_edges = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "edge_capacity" );
+  sidre::View* view = m_group->getChildView( "edge_capacity" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_edge_capacity = static_cast< localIndex * >( view->getVoidPtr() );
+  m_edge_capacity = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "edge_resize_ratio" );
+  sidre::View* view = m_group->getChildView( "edge_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_edge_resize_ratio = static_cast< double * >( view->getVoidPtr() );
+  m_edge_resize_ratio = static_cast< double* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "num_nodes" );
+  sidre::View* view = m_group->getChildView( "num_nodes" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_num_nodes = static_cast< localIndex * >( view->getVoidPtr() );
+  m_num_nodes = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "node_capacity" );
+  sidre::View* view = m_group->getChildView( "node_capacity" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_node_capacity = static_cast< localIndex * >( view->getVoidPtr() );
+  m_node_capacity = static_cast< localIndex* >( view->getVoidPtr() );
 
-  sidre::View * view = m_group->getChildView( "node_resize_ratio" );
+  sidre::View* view = m_group->getChildView( "node_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar() );
-  m_node_resize_ratio = static_cast< double * >( view->getVoidPtr() );
+  m_node_resize_ratio = static_cast< double* >( view->getVoidPtr() );
 }
 
 //------------------------------------------------------------------------------
-Mesh::Mesh( sidre::Group * group, int ndims, int type, int blockId, int partId ) :
+Mesh::Mesh( sidre::Group* group, int ndims, int type, int blockId,
+            int partId ) :
   m_ndims( ndims ),
   m_type( type ),
   m_block_idx( blockId ),
@@ -226,42 +227,42 @@ Mesh::Mesh( sidre::Group * group, int ndims, int type, int blockId, int partId )
 
   localIndex zero = 0;
   double zero_f = 0.0;
-  m_num_cells = static_cast< localIndex * >(
-                                      m_group->createView( "num_cells" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_cell_capacity = static_cast< localIndex * >(
-                                      m_group->createView( "cell_capacity" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_cell_resize_ratio = static_cast< localIndex * >(
-                                      m_group->createView( "cell_resize_ratio")
-                                      ->setScalar( zero_f )->getVoidPtr() );
-  m_num_faces = static_cast< localIndex * >(
-                                      m_group->createView( "num_faces" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_face_capacity = static_cast< localIndex * >(
-                                      m_group->createView( "face_capacity" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_face_resize_ratio = static_cast< localIndex * >(
-                                      m_group->createView( "face_resize_ratio")
-                                      ->setScalar( zero_f )->getVoidPtr() );
-  m_num_edges = static_cast< localIndex * >(
-                                      m_group->createView( "num_edges" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_edge_capacity = static_cast< localIndex * >(
-                                      m_group->createView( "edge_capacity" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_edge_resize_ratio = static_cast< localIndex * >(
-                                      m_group->createView( "edge_resize_ratio")
-                                      ->setScalar( zero_f )->getVoidPtr() );
-  m_num_nodes = static_cast< localIndex * >(
-                                      m_group->createView( "num_nodes" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_node_capacity = static_cast< localIndex * >(
-                                      m_group->createView( "node_capacity" )
-                                      ->setScalar( zero )->getVoidPtr() );
-  m_node_resize_ratio = static_cast< localIndex * >(
-                                      m_group->createView( "node_resize_ratio")
-                                      ->setScalar( zero_f )->getVoidPtr() );
+  m_num_cells = static_cast< localIndex* >(
+    m_group->createView( "num_cells" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_cell_capacity = static_cast< localIndex* >(
+    m_group->createView( "cell_capacity" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_cell_resize_ratio = static_cast< localIndex* >(
+    m_group->createView( "cell_resize_ratio")
+    ->setScalar( zero_f )->getVoidPtr() );
+  m_num_faces = static_cast< localIndex* >(
+    m_group->createView( "num_faces" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_face_capacity = static_cast< localIndex* >(
+    m_group->createView( "face_capacity" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_face_resize_ratio = static_cast< localIndex* >(
+    m_group->createView( "face_resize_ratio")
+    ->setScalar( zero_f )->getVoidPtr() );
+  m_num_edges = static_cast< localIndex* >(
+    m_group->createView( "num_edges" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_edge_capacity = static_cast< localIndex* >(
+    m_group->createView( "edge_capacity" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_edge_resize_ratio = static_cast< localIndex* >(
+    m_group->createView( "edge_resize_ratio")
+    ->setScalar( zero_f )->getVoidPtr() );
+  m_num_nodes = static_cast< localIndex* >(
+    m_group->createView( "num_nodes" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_node_capacity = static_cast< localIndex* >(
+    m_group->createView( "node_capacity" )
+    ->setScalar( zero )->getVoidPtr() );
+  m_node_resize_ratio = static_cast< localIndex* >(
+    m_group->createView( "node_resize_ratio")
+    ->setScalar( zero_f )->getVoidPtr() );
 }
 #endif
 

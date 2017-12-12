@@ -54,7 +54,7 @@ namespace internal
  * \param [in] file the stream to write to.
  * \pre mesh != AXOM_NULLPTR
  */
-void write_points( const Mesh * mesh, std::ofstream& file )
+void write_points( const Mesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   const localIndex num_nodes = mesh->getMeshNumberOfNodes();
@@ -83,7 +83,7 @@ void write_points( const Mesh * mesh, std::ofstream& file )
  * \param [in] file the stream to write to.
  * \pre mesh != AXOM_NULLPTR
  */
-void write_cells( const Mesh * mesh, std::ofstream& file )
+void write_cells( const Mesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   const localIndex num_cells = mesh->getMeshNumberOfCells();
@@ -137,7 +137,7 @@ void write_cells( const Mesh * mesh, std::ofstream& file )
  * \param [in] file the stream to write to.
  * \pre mesh != AXOM_NULLPTR
  */
-void write_dimensions( const StructuredMesh * mesh, std::ofstream& file )
+void write_dimensions( const StructuredMesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -154,7 +154,7 @@ void write_dimensions( const StructuredMesh * mesh, std::ofstream& file )
  * \param [in] file the stream to write to.
  * \pre mesh != AXOM_NULLPTR
  */
-void write_rectilinear_mesh( const RectilinearMesh * mesh, std::ofstream& file )
+void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -168,7 +168,7 @@ void write_rectilinear_mesh( const RectilinearMesh * mesh, std::ofstream& file )
   for ( int dim = 0 ; dim < mesh->getDimension() ; ++dim )
   {
     file << coord_names[ dim ] << ext[ dim ] << " double\n";
-    const double * coords = mesh->getCoordinateArray( dim );
+    const double* coords = mesh->getCoordinateArray( dim );
     file << coords[0];
     for (globalIndex i = 1 ; i < ext[ dim ] ; ++i )
     {
@@ -190,7 +190,7 @@ void write_rectilinear_mesh( const RectilinearMesh * mesh, std::ofstream& file )
  * \param [in] file the stream to write to.
  * \pre mesh != AXOM_NULLPTR
  */
-void write_uniform_mesh( const UniformMesh * mesh, std::ofstream& file )
+void write_uniform_mesh( const UniformMesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -214,7 +214,7 @@ void write_uniform_mesh( const UniformMesh * mesh, std::ofstream& file )
  * \pre field != AXOM_NULLPTR
  * \pre field->getNumComponents() == 1
  */
-void write_scalar_data( const Field * field, std::ofstream& file )
+void write_scalar_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT(  field != AXOM_NULLPTR );
   SLIC_ASSERT(  field->getNumComponents() == 1 );
@@ -226,7 +226,7 @@ void write_scalar_data( const Field * field, std::ofstream& file )
     file << "double\n";
     file << "LOOKUP_TABLE default\n";
 
-    const double * data_ptr = field->getDoublePtr();
+    const double* data_ptr = field->getDoublePtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( localIndex i = 0 ; i < num_values ; ++i )
@@ -239,7 +239,7 @@ void write_scalar_data( const Field * field, std::ofstream& file )
     file << "int\n";
     file << "LOOKUP_TABLE default\n";
 
-    const int * data_ptr = field->getIntPtr();
+    const int* data_ptr = field->getIntPtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( localIndex i = 0 ; i < num_values ; ++i )
@@ -257,7 +257,7 @@ void write_scalar_data( const Field * field, std::ofstream& file )
  * \pre field != AXOM_NULLPTR
  * \pre field->getNumComponents() == 2 || field->getNumComponents() == 3
  */
-void write_vector_data( const Field * field, std::ofstream& file )
+void write_vector_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT(  field != AXOM_NULLPTR );
   const int num_components = field->getNumComponents();
@@ -269,7 +269,7 @@ void write_vector_data( const Field * field, std::ofstream& file )
   {
     file << "double\n";
 
-    const double * data_ptr = field->getDoublePtr();
+    const double* data_ptr = field->getDoublePtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( localIndex i = 0 ; i < num_values ; ++i )
@@ -290,7 +290,7 @@ void write_vector_data( const Field * field, std::ofstream& file )
   {
     file << "int\n";
 
-    const int * data_ptr = field->getIntPtr();
+    const int* data_ptr = field->getIntPtr();
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( localIndex i = 0 ; i < num_values ; ++i )
@@ -317,7 +317,7 @@ void write_vector_data( const Field * field, std::ofstream& file )
  * \pre field != AXOM_NULLPTR
  * \pre field->getNumComponents > 3
  */
-void write_multidim_data( const Field * field, std::ofstream& file )
+void write_multidim_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT( field != AXOM_NULLPTR );
   const int field_type = field->getType();
@@ -334,7 +334,7 @@ void write_multidim_data( const Field * field, std::ofstream& file )
       file << " double\n";
       file << "LOOKUP_TABLE default\n";
 
-      const double * data_ptr = field->getDoublePtr();
+      const double* data_ptr = field->getDoublePtr();
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
       for ( localIndex i = 0 ; i < num_values ; ++i )
@@ -352,7 +352,7 @@ void write_multidim_data( const Field * field, std::ofstream& file )
       file << " int\n";
       file << "LOOKUP_TABLE default\n";
 
-      const int * data_ptr = field->getIntPtr();
+      const int* data_ptr = field->getIntPtr();
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
       for ( localIndex i = 0 ; i < num_values ; ++i )
@@ -375,7 +375,7 @@ void write_data( const FieldData& field_data, localIndex num_values,
 {
   for ( int i = 0 ; i < field_data.getNumberOfFields() ; ++i )
   {
-    const Field * field = field_data.getField( i );
+    const Field* field = field_data.getField( i );
     SLIC_ASSERT( field != AXOM_NULLPTR );
     const int num_components = field->getNumComponents();
     SLIC_ASSERT( field->getNumTuples() == num_values );
@@ -410,7 +410,7 @@ void write_data( const FieldData& field_data, localIndex num_values,
 } /* namespace internal */
 
 //------------------------------------------------------------------------------
-int write_vtk( const Mesh * mesh, const std::string& file_path )
+int write_vtk( const Mesh* mesh, const std::string& file_path )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   int mesh_type = mesh->getMeshType();
@@ -450,23 +450,23 @@ int write_vtk( const Mesh * mesh, const std::string& file_path )
   else if ( mesh_type == MINT_STRUCTURED_CURVILINEAR_MESH )
   {
     file << "DATASET STRUCTURED_GRID\n";
-    const StructuredMesh * struc_mesh =
-      dynamic_cast< const StructuredMesh * >( mesh );
+    const StructuredMesh* struc_mesh =
+      dynamic_cast< const StructuredMesh* >( mesh );
     internal::write_dimensions( struc_mesh, file );
     internal::write_points( struc_mesh, file );
   }
   else if ( mesh_type == MINT_STRUCTURED_RECTILINEAR_MESH )
   {
     file << "DATASET RECTILINEAR_GRID\n";
-    const RectilinearMesh * rect_mesh =
-      dynamic_cast< const RectilinearMesh * >( mesh );
+    const RectilinearMesh* rect_mesh =
+      dynamic_cast< const RectilinearMesh* >( mesh );
     internal::write_rectilinear_mesh( rect_mesh, file );
   }
   else if ( mesh_type == MINT_STRUCTURED_UNIFORM_MESH )
   {
     file << "DATASET STRUCTURED_POINTS\n";
-    const UniformMesh * uniform_mesh =
-      dynamic_cast< const UniformMesh * >( mesh );
+    const UniformMesh* uniform_mesh =
+      dynamic_cast< const UniformMesh* >( mesh );
     internal::write_uniform_mesh( uniform_mesh, file );
   }
   else

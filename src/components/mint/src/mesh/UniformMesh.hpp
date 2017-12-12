@@ -49,7 +49,8 @@ public:
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
-   * \param [in] upper_bound the corner opposite lower_bound of the bounding box.
+   * \param [in] upper_bound the corner opposite lower_bound of the bounding
+   *box.
    */
   UniformMesh( int dimension, const globalIndex ext[6],
                const double lower_bound[3], const double upper_bound[3] );
@@ -72,7 +73,8 @@ public:
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
-   * \param [in] upper_bound the corner opposite lower_bound of the bounding box.
+   * \param [in] upper_bound the corner opposite lower_bound of the bounding
+   *box.
    * \param [in] blockId the block ID of this mesh.
    * \param [in] partitionId the partition ID of this mesh.
    */
@@ -106,7 +108,7 @@ public:
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    */
   virtual void getNode( localIndex nodeIdx,
-                        double * coordinates ) const override;
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -116,7 +118,7 @@ public:
    * \pre this->getDimension() == 2
    */
   virtual void getNode( localIndex i, localIndex j,
-                        double * coordinates ) const override;
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -127,7 +129,7 @@ public:
    * \pre this->getDimension() == 3
    */
   virtual void getNode( localIndex i, localIndex j, localIndex k,
-                        double * coordinates ) const override;
+                        double* coordinates ) const override;
 
   /*!
    * \brief Returns the coordinate of the given node.
@@ -203,7 +205,7 @@ inline void UniformMesh::getSpacing( double h[3] ) const
 
 //------------------------------------------------------------------------------
 inline void UniformMesh::getNode( localIndex nodeIdx,
-                                  double * coordinates) const
+                                  double* coordinates) const
 {
   SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
@@ -219,7 +221,7 @@ inline void UniformMesh::getNode( localIndex nodeIdx,
 
 //------------------------------------------------------------------------------
 inline void UniformMesh::getNode( localIndex i, localIndex j,
-                                  double * coordinates ) const
+                                  double* coordinates ) const
 {
   SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==2 );
@@ -234,7 +236,7 @@ inline void UniformMesh::getNode( localIndex i, localIndex j,
 //------------------------------------------------------------------------------
 inline
 void UniformMesh::getNode( localIndex i, localIndex j, localIndex k,
-                           double * coordinates) const
+                           double* coordinates) const
 {
   SLIC_ASSERT( coordinates !=  AXOM_NULLPTR );
   SLIC_ASSERT( this->getDimension() == 3 );

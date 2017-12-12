@@ -105,7 +105,7 @@ public:
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshCell( localIndex cellIdx,
-                            localIndex * cell ) const override
+                            localIndex* cell ) const override
   { getCell( cellIdx, cell ); };
 
   /*!
@@ -119,13 +119,14 @@ public:
   /*!
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
-   * \param [out] coordinates user-supplied buffer to store the node coordinates.
+   * \param [out] coordinates user-supplied buffer to store the node
+   *coordinates.
    * \pre nodeIdx >= && nodeIdx < getMeshNumberOfNodes()
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
   virtual void getMeshNode( localIndex nodeIdx,
-                            double * coordinates ) const override
+                            double* coordinates ) const override
   { getNode( nodeIdx, coordinates ); };
 
   /*!
@@ -225,7 +226,8 @@ public:
   { return m_extent.getLinearIndex( i, j ); };
 
   /*!
-   * \brief Returns the linear index corresponding to the given logical grid cell
+   * \brief Returns the linear index corresponding to the given logical grid
+   *cell
    * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.
@@ -237,7 +239,8 @@ public:
   { return m_extent.getCellLinearIndex( i, j, k); };
 
   /*!
-   * \brief Returns the linear index corresponding to the given logical grid cell
+   * \brief Returns the linear index corresponding to the given logical grid
+   *cell
    * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.
@@ -254,7 +257,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < getNumberOfCells()
    * \pre the user-supplied cell buffer must be of getNumberOfCellNodes() size.
    */
-  inline void getCell( localIndex cellIdx, localIndex * cell ) const;
+  inline void getCell( localIndex cellIdx, localIndex* cell ) const;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j)
@@ -263,7 +266,7 @@ public:
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre this->getDimension() == 2.
    */
-  inline void getCell( localIndex i, localIndex j, localIndex * cell ) const;
+  inline void getCell( localIndex i, localIndex j, localIndex* cell ) const;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j,k)
@@ -274,7 +277,7 @@ public:
    * \pre this->getDimension() == 3.
    */
   inline void getCell( localIndex i, localIndex j, localIndex k,
-                       localIndex * cell) const;
+                       localIndex* cell) const;
 
   /// \name GetNode() methods -- implemented in concrete instances.
   /// @{
@@ -286,7 +289,7 @@ public:
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes().
    */
-  virtual void getNode( localIndex nodeIdx, double * coordinates ) const = 0;
+  virtual void getNode( localIndex nodeIdx, double* coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -296,7 +299,7 @@ public:
    * \pre this->getDimension() == 2
    */
   virtual void getNode( localIndex i, localIndex j,
-                        double * coordinates ) const = 0;
+                        double* coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -307,7 +310,7 @@ public:
    * \pre this->getDimension() == 3
    */
   virtual void getNode( localIndex i, localIndex j, localIndex k,
-                        double * coordinates ) const = 0;
+                        double* coordinates ) const = 0;
 
   /*!
    * \brief Returns the coordinate of the given node.
@@ -437,12 +440,12 @@ inline localIndex StructuredMesh::getNumberOfEdges() const
 
 //------------------------------------------------------------------------------
 inline void StructuredMesh::getCell( localIndex cellIdx,
-                                     localIndex * cell ) const
+                                     localIndex* cell ) const
 {
   SLIC_ASSERT( cell != AXOM_NULLPTR );
   SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < getNumberOfCells() ) );
 
-  const localIndex * offsets_table = m_extent.getCellOffSets();
+  const localIndex* offsets_table = m_extent.getCellOffSets();
   const localIndex num_cell_nodes = getNumberOfCellNodes();
 
   // STEP 0: calculate logical indices of the cell's first corner node.
@@ -485,12 +488,12 @@ inline void StructuredMesh::getCell( localIndex cellIdx,
 
 //------------------------------------------------------------------------------
 inline void StructuredMesh::getCell( localIndex i, localIndex j,
-                                     localIndex * cell ) const
+                                     localIndex* cell ) const
 {
   SLIC_ASSERT( this->getDimension() == 2 );
   SLIC_ASSERT( cell != AXOM_NULLPTR );
 
-  const localIndex * offsets_table = m_extent.getCellOffSets();
+  const localIndex* offsets_table = m_extent.getCellOffSets();
   const localIndex n0 = m_extent.getLinearIndex(i, j);
 
   for ( localIndex i = 0 ; i < 4 ; ++i )
@@ -502,12 +505,12 @@ inline void StructuredMesh::getCell( localIndex i, localIndex j,
 
 //------------------------------------------------------------------------------
 inline void StructuredMesh::getCell( localIndex i, localIndex j, localIndex k,
-                                     localIndex * cell ) const
+                                     localIndex* cell ) const
 {
   SLIC_ASSERT( this->getDimension() == 3 );
   SLIC_ASSERT( cell != AXOM_NULLPTR );
 
-  const localIndex * offsets_table = m_extent.getCellOffSets();
+  const localIndex* offsets_table = m_extent.getCellOffSets();
   const localIndex n0 = m_extent.getLinearIndex(i, j, k);
 
   for ( localIndex i = 0 ; i < 8 ; ++i )
