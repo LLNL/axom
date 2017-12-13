@@ -27,15 +27,70 @@
 
 from llnl_lc_uberenv_install_tools import *
 
+from optparse import OptionParser
+
+import os
+
+
+def parse_args():
+    "Parses args from command line"
+    parser = OptionParser()
+    # Directory to do all the building
+    parser.add_option("-d", "--directory",
+                      dest="directory",
+                      default="",
+                      help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
+    # Whether to archive results
+    parser.add_option("-a", "--archive",
+                      dest="archive",
+                      default="",
+                      help="Archive build results under given name (Defaults to off)")
+
+    ###############
+    # parse args
+    ###############
+    opts, extras = parser.parse_args()
+    # we want a dict b/c the values could 
+    # be passed without using optparse
+    opts = vars(opts)
+    return opts
+
+
 def main():
-    if on_rz():
-        builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"
+    opts = parse_args()
+
+    # Determine location to do all the building
+    if opts["directory"] != "":
+        builds_dir = opts["directory"]
+        if not os.path.exists(builds_dir):
+            os.makedirs(builds_dir)
     else:
-        builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
+        if on_rz():
+            builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"
+        else:
+            builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
 
     specs = get_specs_for_current_machine()
+    timestamp = get_timestamp()
     
-    return full_build_and_test_of_tpls(builds_dir, specs)
+    if opts["archive"] != "":
+        job_name = opts["archive"]
+    else:
+        job_name = get_username() + "/" + os.path.basename(__file__)
+
+    res = full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp)
+
+    if opts["archive"] != "":
+        # Get information for archiving
+        archive_base_dir = get_archive_base_dir()
+        if opts["archive"] != "":
+            job_name = opts["archive"]
+        else:
+            job_name = get_username() + "/" + os.path.basename(__file__)
+
+        archive_tpl_logs(builds_dir, job_name, timestamp)
+
+    return res
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -32,11 +32,16 @@ from optparse import OptionParser
 def parse_args():
     "Parses args from command line"
     parser = OptionParser()
-    # where to install
-    parser.add_option("--src",
-                      dest="src",
+    # Location of source directory to build
+    parser.add_option("-d", "--directory",
+                      dest="directory",
                       default="",
-                      help="Source to be built (Defaults to current)")
+                      help="Directory of source to be built (Defaults to current)")
+    # Whether to archive results
+    parser.add_option("-a", "--archive",
+                      dest="archive",
+                      default="",
+                      help="Archive build results under given name (Defaults to off)")
 
     ###############
     # parse args
@@ -51,47 +56,36 @@ def parse_args():
 def main():
     opts = parse_args()
 
-    if os.environ["UBERENV_PREFIX"] != "":
+    # Determine source directory to be built
+    if os.environ.get("UBERENV_PREFIX") != None:
         src_dir = os.environ["UBERENV_PREFIX"]
         if not os.path.isdir(src_dir):
             print "[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]"
-            print "[    'UBERENV_PREFIX' = %s" % src_dir
+            print "[    'UBERENV_PREFIX' = %s]" % src_dir
             return 1
-    if opts["src"] != "":
-        src_dir = opts["src"]
+    if opts["directory"] != "":
+        src_dir = opts["directory"]
         if not os.path.isdir(src_dir):
-            print "[ERROR: Given command line variable '--src' is not a valid directory]"
-            print "[    '--src' = %s" % src_dir
+            print "[ERROR: Given command line variable '--directory' is not a valid directory]"
+            print "[    '--directory' = %s]" % src_dir
             return 1
     else:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         src_dir = os.path.abspath(os.path.join(script_dir, "../.."))
 
-    host_configs = get_host_configs_for_current_machine(src_dir)
-    failed = []
-    succeeded = []
-    for host_config in host_configs:
-        if build_and_test_host_config(src_dir, host_config) != 0:
-            failed.append(host_config)
-        else:
-            succeeded.append(host_config)
+    if opts["archive"] != "":
+        job_name = opts["archive"]
+    else:
+        job_name = get_username() + "/" + os.path.basename(__file__)
 
-    print "\n\n\n"
+    timestamp = get_timestamp()
+    res = build_and_test_host_configs(src_dir, job_name, timestamp)
 
-    if len(succeeded) > 0:
-        print "Succeeded:"
-        for host_config in succeeded:
-            print "    " + host_config
+    # Archive logs
+    if opts["archive"] != "":
+        archive_src_logs(src_dir, job_name, timestamp)
 
-    if len(failed) > 0:
-        print "Failed:"
-        for host_config in failed:
-            print "    " + host_config
-        print "\n"
-        return 1
-
-    print "\n"
-    return 0
+    return res
 
 if __name__ == "__main__":
     sys.exit(main())
