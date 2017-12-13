@@ -1,22 +1,31 @@
 /*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "mint/Vector.hpp"
-#include "mint/DataTypes.hpp"           /* for localIndex */
+#include "mint/Array.hpp"
+
 #include "axom_utils/Utilities.hpp"     /* for utilities::max */
-#include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
-#include "slic/slic.hpp"                /* for slic macros */
+#include "mint/DataTypes.hpp"           /* for localIndex */
 #include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
+#include "slic/slic.hpp"                /* for slic macros */
 
+#include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
+
+// C/C++ includes
 #include <cmath>                        /* for std::ceil */
-
 
 namespace axom
 {
@@ -28,7 +37,7 @@ namespace internal
 
 //------------------------------------------------------------------------------
 template < typename T >
-localIndex calc_new_capacity( Vector< T > & v, localIndex increase )
+localIndex calc_new_capacity( Array< T > & v, localIndex increase )
 {
   localIndex newSize = v.getNumTuples() + increase;
   if ( newSize > v.getCapacity() )
@@ -44,7 +53,7 @@ localIndex calc_new_capacity( Vector< T > & v, localIndex increase )
 template < typename T >
 void check_storage( localIndex capacity )
 {
-  Vector< T > v( capacity );
+  Array< T > v( capacity );
 
   EXPECT_TRUE( v.empty() );
   EXPECT_EQ( v.getNumTuples(), 0 );
@@ -97,7 +106,7 @@ void check_resize( int num_components, double resize_ratio )
 {
   localIndex capacity = 0;
   localIndex size = 0;
-  Vector< T > v( capacity, num_components );
+  Array< T > v( capacity, num_components );
 
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getNumTuples(), size );
@@ -214,7 +223,7 @@ void check_insert( double resize_ratio )
 {
   localIndex capacity = 0;
   localIndex size = 0;
-  Vector< T > v( capacity, resize_ratio );
+  Array< T > v( capacity, resize_ratio );
 
   localIndex num_vals = 1000;
 
@@ -278,7 +287,7 @@ void check_insert( double resize_ratio )
 }   /* end namespace internal */
 
 //------------------------------------------------------------------------------
-TEST( mint_vector, checkStorage )
+TEST( mint_array, checkStorage )
 {
   localIndex capacity = 2;
   for ( int i = 1 ; i < 17 ; ++i )
@@ -292,7 +301,7 @@ TEST( mint_vector, checkStorage )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_vector, checkResize )
+TEST( mint_array, checkResize )
 {
   for ( int num_components = 1 ; num_components < 5 ; ++num_components )
   {
@@ -307,7 +316,7 @@ TEST( mint_vector, checkResize )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_vector, checkInsert )
+TEST( mint_array, checkInsert )
 {
   for ( double resize_ratio = 1.0 ; resize_ratio < 3 ; resize_ratio += 0.3 )
   {

@@ -20,7 +20,7 @@
 
 #include "mint/StructuredMesh.hpp"
 #include "mint/MeshCoordinates.hpp"
-#include "mint/Vector.hpp"
+#include "mint/Array.hpp"
 #include "mint/DataTypes.hpp"
 
 #include "axom/Macros.hpp"
@@ -163,7 +163,7 @@ private:
 
   RectilinearMesh();
 
-  Vector< double >* m_coordinates[3];
+  Array< double >* m_coordinates[3];
 
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);

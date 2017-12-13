@@ -18,7 +18,7 @@
 #include "mint/MeshCoordinates.hpp"     /* for MeshCoordinates */
 
 #include "mint/DataTypes.hpp"           /* for localIndex */
-#include "mint/Vector.hpp"              /* for Vector */
+#include "mint/Array.hpp"              /* for Vector */
 #include "slic/slic.hpp"                /* for slic macros */
 
 #ifdef MINT_USE_SIDRE
@@ -50,8 +50,8 @@ MeshCoordinates::MeshCoordinates( int dimension,
 
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    Vector< double >* coord_array;
-    coord_array = new Vector< double >( 1, capacity, size, resize_ratio);
+    Array< double >* coord_array;
+    coord_array = new Array< double >( 1, capacity, size, resize_ratio);
     m_coordinates[ dim ] = coord_array;
   }
 

@@ -19,7 +19,7 @@
 #define MESHCOORDINATES_HXX_
 
 #include "axom/Macros.hpp"
-#include "mint/Vector.hpp"
+#include "mint/Array.hpp"
 #include "mint/DataTypes.hpp"
 
 
@@ -237,7 +237,7 @@ private:
   // TODO: support different memory layouts...
 
   int m_ndims;
-  Vector< double >* m_coordinates[ 3 ];
+  Array< double >* m_coordinates[ 3 ];
 
   DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates);
   DISABLE_MOVE_AND_ASSIGNMENT(MeshCoordinates);

@@ -1,5 +1,5 @@
 #include "FieldVariable.hpp"
-#include "mint/Vector.hpp"
+#include "mint/Array.hpp"
 
 
 namespace axom

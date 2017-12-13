@@ -13,11 +13,11 @@
 #------------------------------------------------------------------------------
 
 set( mint_tests
+     mint_array.cpp
      mint_mesh_extent.cpp
      mint_shape_functions.cpp
      mint_single_fe.cpp
      mint_write_vtk.cpp
-     mint_vector.cpp
 # turn off for now
 #     mint_connectivity.cpp
    )

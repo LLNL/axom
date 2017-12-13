@@ -52,9 +52,9 @@ set( mint_headers
     mesh/UnstructuredMesh.hpp
 
     ## utils
-    utils/vtk_utils.hpp
-    utils/Vector.hpp
+    utils/Array.hpp
     utils/DataTypes.hpp
+    utils/vtk_utils.hpp
    )
 
 ## mint sources

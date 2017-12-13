@@ -23,7 +23,7 @@
 #include "mint/CellType.hpp"
 #include "mint/CellConnectivity.hpp"
 #include "mint/MeshCoordinates.hpp"
-#include "mint/Vector.hpp"
+#include "mint/Array.hpp"
 #include "mint/DataTypes.hpp"
 
 #include "slic/slic.hpp"

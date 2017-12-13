@@ -23,9 +23,9 @@
 // axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
-#include "mint/FieldTypes.hpp"
-#include "mint/Vector.hpp"
+#include "mint/Array.hpp"
 #include "mint/DataTypes.hpp"
+#include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -135,7 +135,7 @@ private:
    */
   FieldVariable() { }
 
-  Vector< FieldType > m_data;
+  Array< FieldType > m_data;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);

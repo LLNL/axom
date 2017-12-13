@@ -23,7 +23,7 @@
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 #include "mint/CellType.hpp"
-#include "mint/Vector.hpp"
+#include "mint/Array.hpp"
 #include "mint/DataTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -162,7 +162,7 @@ public:
 private:
 
   int m_stride;                          /*!< stride */
-  Vector< localIndex > m_connectivity;   /*!< connectivity array */
+  Array< localIndex > m_connectivity;   /*!< connectivity array */
 
   CellConnectivity( const CellConnectivity& );
   CellConnectivity& operator=(const CellConnectivity& );
@@ -340,9 +340,9 @@ public:
 
 private:
   localIndex m_num_cells;
-  Vector< localIndex > m_offset;
-  Vector< localIndex > m_connectivity;
-  Vector< unsigned char > m_cell_type;
+  Array< localIndex > m_offset;
+  Array< localIndex > m_connectivity;
+  Array< unsigned char > m_cell_type;
 
   CellConnectivity( const CellConnectivity& );
   CellConnectivity& operator=( const CellConnectivity& );

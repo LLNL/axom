@@ -33,13 +33,14 @@ namespace axom
 {
 namespace mint
 {
+
 /*!
  * \class Vector
  * \brief Provides an array with dynamic reallocation and insertion.
  * \tparam T the type of the values to hold.
  */
 template< typename T >
-class Vector
+class Array
 {
 private:
   static constexpr double DEFAULT_RESIZE_RATIO=2.0;
@@ -49,7 +50,7 @@ public:
   /*!
    * \brief Default constructor.
    */
-  Vector() = delete;
+  Array() = delete;
 
   /*!
    * \brief Constructs a Vector instance with the give number of tuples.
@@ -57,7 +58,7 @@ public:
    * \param [in] num_tuples the number of tuples the vector holds.
    * \param [in] num_components the number of components per tuple.
    */
-  Vector( localIndex num_tuples, localIndex num_components=1 ) :
+  Array( localIndex num_tuples, localIndex num_components=1 ) :
 #ifdef MINT_USE_SIDRE
     m_view( AXOM_NULLPTR ),
 #endif
@@ -76,7 +77,7 @@ public:
    * \param [in] ratio the ratio by which to resize the vector when the
    *  size exceeds the capacity. A ratio less than one prohibits resizing.
    */
-  Vector( localIndex num_components,
+  Array( localIndex num_components,
           localIndex capacity,
           localIndex num_tuples,
           double ratio ) :
@@ -116,7 +117,7 @@ public:
    *  size exceeds the capacity. A ratio less than one prohibits resizing.
    * \pre view != AXOM_NULLPTR.
    */
-  Vector( sidre::View* view, const localIndex & capacity,
+  Array( sidre::View* view, const localIndex & capacity,
           const localIndex & num_tuples, const double & ratio ) :
     m_view( view ),
     m_data( AXOM_NULLPTR )
@@ -163,7 +164,7 @@ public:
    *  size exceeds the capacity. A ratio less than one prohibits resizing.
    * \pre view != AXOM_NULLPTR.
    */
-  Vector( sidre::View* view, localIndex num_components,
+  Array( sidre::View* view, localIndex num_components,
           const localIndex & capacity, const localIndex & num_tuples,
           const double & ratio ) :
     m_view( view ),
