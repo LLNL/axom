@@ -55,17 +55,10 @@ public:
                  localIndex num_tuples,
                  int num_components=1 ) :
     Field( name ),
-    // TODO: ????
-    m_data( num_tuples * num_components,
-            num_tuples * num_components,
-            num_components,
-            2.0 )
+    m_data( num_tuples, num_components )
   {
     SLIC_ASSERT( num_tuples >= 0 );
     SLIC_ASSERT( num_components >= 0 );
-
-//    TODO: ???
-//    m_data.setSize( size * num_components );
 
     this->m_type = field_of< FieldType >::type;
   }
@@ -79,9 +72,9 @@ public:
 
   virtual int getNumComponents() const { return m_data.getNumComponents(); }
 
-//  virtual localIndex getCapacity() const { return m_data.getCapacity(); }
+  virtual localIndex getCapacity() const { return m_data.getCapacity(); }
 
-//  virtual double getResizeRatio() const { return m_data.getResizeRatio(); }
+  virtual double getResizeRatio() const { return m_data.getResizeRatio(); }
 
   /*!
    * \brief Returns a double pointer to the field data.
@@ -112,20 +105,13 @@ public:
   virtual const int* getIntPtr() const { return AXOM_NULLPTR; }
 
   virtual void setNumTuples( localIndex size )
-  {
-//  TODO: ???
-//    m_data.setSize( size * getNumTuples() );
-  }
+  { m_data.setSize( size * getNumTuples() ); }
 
   virtual void setTuplesCapacity( localIndex capacity )
-  {
-// TODO: ???
-//    m_data.setCapacity( capacity * getNumTuples() );
-  }
+  { m_data.setCapacity( capacity * getNumTuples() ); }
 
-// TODO: ???
-//  virtual void setResizeRatio( double ratio )
-//  { m_data.setResizeRatio( ratio ); }
+  virtual void setResizeRatio( double ratio )
+  { m_data.setResizeRatio( ratio ); }
 
 private:
 

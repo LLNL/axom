@@ -73,15 +73,15 @@ public:
    */
   virtual int getNumComponents() const = 0;
 
-//  virtual localIndex getCapacity() const = 0;
-//
-//  virtual double getResizeRatio() const = 0;
-//
-//  virtual void setNumTuples( localIndex size ) = 0;
-//
-//  virtual void setTuplesCapacity( localIndex capacity ) = 0;
+  virtual localIndex getCapacity() const = 0;
 
-//  virtual void setResizeRatio( double ratio ) = 0;
+  virtual double getResizeRatio() const = 0;
+
+  virtual void setNumTuples( localIndex size ) = 0;
+
+  virtual void setTuplesCapacity( localIndex capacity ) = 0;
+
+  virtual void setResizeRatio( double ratio ) = 0;
 
   //TODO: Need to re-think API here!!!
   /*!

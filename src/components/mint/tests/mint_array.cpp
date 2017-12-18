@@ -31,6 +31,7 @@ namespace axom
 {
 namespace mint
 {
+#if 0
 
 namespace internal
 {
@@ -329,6 +330,7 @@ TEST( mint_array, checkInsert )
 
 /* test copy / move */
 
+#endif
 } /* end namespace mint */
 } /* end namespace axom */
 

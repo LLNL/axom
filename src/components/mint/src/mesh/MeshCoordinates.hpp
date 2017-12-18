@@ -50,7 +50,7 @@ public:
    * \brief TODO:
    * \param dimension
    */
-  MeshCoordinates( int dimension );
+  // MeshCoordinates( int dimension );
 
   /*!
    * \brief Creates a MeshCoordinates instance with the given number of points.
@@ -59,10 +59,8 @@ public:
    * \param [in] resize_ratio the ratio to resize the coordinate array by when
    *  it exceeds the capacity. A ratio smaller than 1 prevents dynamic resizing.
    */
-  MeshCoordinates( int dimension,
-                   const localIndex& capacity,
-                   const localIndex& size,
-                   const double& resize_ratio );
+  MeshCoordinates( int dimension, localIndex capacity, localIndex size,
+                   double resize_ratio );
 
 #ifdef MINT_USE_SIDRE
   /*!
@@ -71,8 +69,8 @@ public:
    * \param [in] group the sidre::Group to use.
    * \pre group != AXOM_NULLPTR.
    */
-  MeshCoordinates( sidre::Group* group, const localIndex & capacity,
-                   const localIndex & size, const double & resize_ratio );
+  MeshCoordinates( const std::string& path, localIndex size, 
+                   double resize_ratio );
 
   /*!
    * \brief Creates a MeshCoordinates instance from an empty sidre::Group.
@@ -83,9 +81,8 @@ public:
    *  it exceeds the capacity. A ratio smaller than 1 prevents dynamic resizing.
    * \pre group != AXOM_NULLPTR.
    */
-  MeshCoordinates( sidre::Group* group, int dimension,
-                   const localIndex & capacity, const localIndex & size,
-                   const double & resize_ratio );
+  MeshCoordinates( const std::string& path, int dimension, localIndex capacity, 
+                   localIndex size, double resize_ratio );
 #endif
 
   /*!
@@ -252,39 +249,39 @@ private:
 inline void MeshCoordinates::addPoint( double x )
 {
   SLIC_ASSERT( m_ndims == 1 );
-  m_coordinates[ X_COORDINATE ]->add( x );
+  m_coordinates[ X_COORDINATE ]->append( x );
 }
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::addPoints( double* x, localIndex n )
 {
   SLIC_ASSERT( m_ndims == 1 );
-  m_coordinates[ X_COORDINATE ]->add( x, n );
+  m_coordinates[ X_COORDINATE ]->append( x, n );
 }
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::addPoint( double x, double y )
 {
   SLIC_ASSERT( m_ndims == 2 );
-  m_coordinates[ X_COORDINATE ]->add( x );
-  m_coordinates[ Y_COORDINATE ]->add( y );
+  m_coordinates[ X_COORDINATE ]->append( x );
+  m_coordinates[ Y_COORDINATE ]->append( y );
 }
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::addPoints( double* x, double* y, localIndex n )
 {
   SLIC_ASSERT( m_ndims == 1 );
-  m_coordinates[ X_COORDINATE ]->add( x, n );
-  m_coordinates[ Y_COORDINATE ]->add( y, n );
+  m_coordinates[ X_COORDINATE ]->append( x, n );
+  m_coordinates[ Y_COORDINATE ]->append( y, n );
 }
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::addPoint( double x, double y, double z )
 {
   SLIC_ASSERT( m_ndims == 3 );
-  m_coordinates[ X_COORDINATE ]->add( x );
-  m_coordinates[ Y_COORDINATE ]->add( y );
-  m_coordinates[ Z_COORDINATE ]->add( z );
+  m_coordinates[ X_COORDINATE ]->append( x );
+  m_coordinates[ Y_COORDINATE ]->append( y );
+  m_coordinates[ Z_COORDINATE ]->append( z );
 }
 
 
@@ -293,9 +290,9 @@ inline void MeshCoordinates::addPoints( double* x, double* y, double* z,
                                         localIndex n )
 {
   SLIC_ASSERT( m_ndims == 1 );
-  m_coordinates[ X_COORDINATE ]->add( x, n );
-  m_coordinates[ Y_COORDINATE ]->add( y, n );
-  m_coordinates[ Z_COORDINATE ]->add( z, n );
+  m_coordinates[ X_COORDINATE ]->append( x, n );
+  m_coordinates[ Y_COORDINATE ]->append( y, n );
+  m_coordinates[ Z_COORDINATE ]->append( z, n );
 }
 
 //------------------------------------------------------------------------------
@@ -303,7 +300,7 @@ inline void MeshCoordinates::setPoint( localIndex pntIdx, double x )
 {
   SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < getSize() ) );
   SLIC_ASSERT( m_ndims == 1 );
-  (*m_coordinates[ X_COORDINATE ])[ pntIdx ] = x;
+  (*m_coordinates[ X_COORDINATE ])( pntIdx ) = x;
 }
 
 //------------------------------------------------------------------------------
@@ -311,8 +308,8 @@ inline void MeshCoordinates::setPoint( localIndex pntIdx, double x, double y )
 {
   SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < getSize() ) );
   SLIC_ASSERT( m_ndims == 2 );
-  (*m_coordinates[ X_COORDINATE ])[ pntIdx ] = x;
-  (*m_coordinates[ Y_COORDINATE ])[ pntIdx ] = y;
+  (*m_coordinates[ X_COORDINATE ])( pntIdx ) = x;
+  (*m_coordinates[ Y_COORDINATE ])( pntIdx ) = y;
 }
 
 //------------------------------------------------------------------------------
@@ -320,9 +317,9 @@ inline void MeshCoordinates::setPoint( localIndex pntIdx, double x, double y,
                                        double z)
 {
   SLIC_ASSERT( m_ndims == 3 );
-  (*m_coordinates[ X_COORDINATE ])[ pntIdx ] = x;
-  (*m_coordinates[ Y_COORDINATE ])[ pntIdx ] = y;
-  (*m_coordinates[ Z_COORDINATE ])[ pntIdx ] = z;
+  (*m_coordinates[ X_COORDINATE ])( pntIdx ) = x;
+  (*m_coordinates[ Y_COORDINATE ])( pntIdx ) = y;
+  (*m_coordinates[ Z_COORDINATE ])( pntIdx ) = z;
 }
 
 //------------------------------------------------------------------------------
@@ -330,7 +327,7 @@ inline double MeshCoordinates::getCoordinate( localIndex pntIdx, int dim )
 {
   SLIC_ASSERT( dim < m_ndims );
   SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < getSize() ) );
-  return (*m_coordinates[ dim ])[ pntIdx ];
+  return (*m_coordinates[ dim ])( pntIdx );
 }
 
 //------------------------------------------------------------------------------
@@ -351,30 +348,21 @@ inline const double* MeshCoordinates::getCoordinateArray( int dim ) const
 inline void MeshCoordinates::setCapacity( localIndex capacity )
 {
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
-  {
-//   TODO: missing function ?
-//    m_coordinates[ dim ]->setCapacity( capacity );
-  }
+  { m_coordinates[ dim ]->setCapacity( capacity ); }
 }
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::setSize( localIndex size )
 {
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
-  {
-//    TODO: missing function ?
-//    m_coordinates[ dim ]->setSize( size );
-  }
+  { m_coordinates[ dim ]->setNumTuples( size ); }
 }
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::setResizeRatio( double ratio )
 {
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
-  {
-//  TODO: missing function ?
-//    m_coordinates[ dim ]->setResizeRatio( ratio );=
-  }
+  { m_coordinates[ dim ]->setResizeRatio( ratio ); }
 }
 
 } /* namespace mint */

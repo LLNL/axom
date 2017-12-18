@@ -67,6 +67,18 @@ sidre::View* get_view( const std::string& path )
 #endif
 }
 
+//------------------------------------------------------------------------------
+sidre::Group* get_group( const std::string& path )
+{
+#ifdef MINT_USE_SIDRE
+  SLIC_ASSERT( s_database != AXOM_NULLPTR );
+  return s_database->getRoot()->getGroup( path );
+#else
+  SLIC_WARNING( "Mint is not compiled with Sidre!" );
+  return AXOM_NULLPTR;
+#endif
+}
+
 } /* namespace database */
 } /* namespace mint */
 } /* namespace axom */

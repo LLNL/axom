@@ -17,8 +17,9 @@
 
 #include "mint/MeshCoordinates.hpp"     /* for MeshCoordinates */
 
+#include "mint/database.hpp"            /* for get_group */
 #include "mint/DataTypes.hpp"           /* for localIndex */
-#include "mint/Array.hpp"              /* for Vector */
+#include "mint/Array.hpp"               /* for Vector */
 #include "slic/slic.hpp"                /* for slic macros */
 
 #ifdef MINT_USE_SIDRE
@@ -33,17 +34,16 @@ namespace mint
 {
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( int dimension )
-{
-  // TODO: implement this
-}
+// MeshCoordinates::MeshCoordinates( int dimension ) :
+//   m_ndims( dimension )
+// {
+//   // TODO: implement this
+// }
 
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( int dimension,
-                                  const localIndex& capacity,
-                                  const localIndex& size,
-                                  const double& resize_ratio ) :
+MeshCoordinates::MeshCoordinates( int dimension, localIndex capacity,
+                                  localIndex size, double resize_ratio ) :
   m_ndims( dimension )
 {
   SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "invalid dimension" );
@@ -51,7 +51,8 @@ MeshCoordinates::MeshCoordinates( int dimension,
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     Array< double >* coord_array;
-    coord_array = new Array< double >( 1, capacity, size, resize_ratio);
+    coord_array = new Array< double >( size, capacity );
+    coord_array->setResizeRatio( resize_ratio );
     m_coordinates[ dim ] = coord_array;
   }
 
@@ -64,12 +65,11 @@ MeshCoordinates::MeshCoordinates( int dimension,
 
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( sidre::Group* group,
-                                  const localIndex & capacity,
-                                  const localIndex & size,
-                                  const double & resize_ratio ) :
+MeshCoordinates::MeshCoordinates( const std::string& path, int dimension, 
+                                  localIndex size, double resize_ratio ) :
   m_ndims(0)
 {
+  sidre::Group * group = database::get_group( path );
   SLIC_ERROR_IF( group == AXOM_NULLPTR );
   SLIC_ERROR_IF( !group->hasChildView( "type" ) );
 
@@ -87,9 +87,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group,
     const char* coord_name = coord_names[ m_ndims ];
 
     if ( !values_group->hasChildView( coord_name ) )
-    {
-      break;
-    }
+    { break; }
 
     sidre::View* coord_view = values_group->getView( coord_name );
     SLIC_ERROR_IF( coord_view->getNumDimensions() != 2 );
@@ -99,20 +97,20 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group,
     SLIC_ERROR_IF( dims[1] != 1 );
 
     m_coordinates[ m_ndims ] =
-      new Vector< double >( coord_view, capacity, size, resize_ratio );
+      new Vector< double >( coord_view->getPath(), size );
+    m_coordinates[ m_ndims ]->setResizeRatio( resize_ratio );
   }
 
+  SLIC_ERROR_IF( m_ndims != dimension );
+
   for ( int i = m_ndims ; i < 3 ; ++i )
-  {
-    m_coordinates[ i ] = AXOM_NULLPTR;
-  }
+  { m_coordinates[ i ] = AXOM_NULLPTR; }
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
-                                  const localIndex & capacity,
-                                  const localIndex & size,
-                                  const double & resize_ratio ) :
+MeshCoordinates::MeshCoordinates( const std::string& path, int dimension, 
+                                  localIndex capacity, localIndex size,
+                                  double resize_ratio ) :
   m_ndims( dimension )
 {
   SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3 );
@@ -129,7 +127,8 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
   {
     sidre::View* coord_view = values_group->createView( coord_view );
     m_coordinates[ dim ] =
-      new Vector< double > ( coord_view, 1, capacity, size, resize_ratio );
+      new Vector< double > ( coord_view->getPath(), capacity, size, 1 );
+    m_coordinates[ dim ]->setResizeRatio( resize_ratio );
   }
 
   for ( int i = m_ndims ; i < 3 ; ++i )

@@ -260,34 +260,25 @@ inline Field* FieldData::addField( const std::string& name, localIndex size,
 //------------------------------------------------------------------------------
 inline void FieldData::setSize( localIndex size )
 {
-// TODO: ????
-//  typename std::map< std::string, Field * >::iterator it;
-//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-//  {
-//    it->second->setNumTuples( size );
-//  }
+ typename std::map< std::string, Field * >::iterator it;
+ for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+ { it->second->setNumTuples( size ); }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::setCapacity( localIndex capacity )
 {
-//  TODO: ????
-//  typename std::map< std::string, Field * >::iterator it;
-//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-//  {
-//    it->second->setTuplesCapacity( capacity );
-//  }
+ typename std::map< std::string, Field * >::iterator it;
+ for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+ { it->second->setTuplesCapacity( capacity ); }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::setResizeRatio( double ratio )
 {
-  // TODO: ????
-//  typename std::map< std::string, Field * >::iterator it;
-//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-//  {
-//    it->second->setResizeRatio( ratio );
-//  }
+ typename std::map< std::string, Field * >::iterator it;
+ for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+ { it->second->setResizeRatio( ratio ); }
 }
 
 
