@@ -28,6 +28,7 @@
 #include <cmath>                        // for std::exp
 #include <cstdio>                       // for std::remove
 #include <fstream>                      // for std::ifstream
+#include <iomanip>                      // for std::setfill, std::setw
 #include <string>                       // for std::string
 #include <sstream>                      // for std::stringstream
 #include <set>                          // for std::set
@@ -440,7 +441,8 @@ void check_multidim_data( Field* const field, std::ifstream& file )
     EXPECT_EQ( type, "SCALARS" );
 
     std::stringstream temp;
-    temp << field->getName() << "[" << comp << "]";
+    temp << field->getName() << "_";
+    temp << std::setfill('0') << std::setw(3) << comp;
     EXPECT_EQ( name, temp.str() );
 
     if ( d_type == "double" )
@@ -507,10 +509,10 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
     }
     else
     {
-      size_t bracket_pos = name.find('[');
-      ASSERT_NE( bracket_pos, std::string::npos) << name;
-      std::string true_name = name.substr( 0, bracket_pos );
-      EXPECT_EQ( name.substr(bracket_pos), "[0]" );
+      size_t underscore_pos = name.size() - 4;
+      ASSERT_NE( underscore_pos, std::string::npos) << name;
+      std::string true_name = name.substr( 0, underscore_pos );
+      EXPECT_EQ( name.substr(underscore_pos), "_000" );
       ASSERT_TRUE( field_data->hasField( true_name ) ) << true_name;
       fields_read.insert( true_name );
 
