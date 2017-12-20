@@ -31,7 +31,10 @@ namespace axom
 {
 
 #ifdef MINT_USE_SIDRE
-class sidre::Group;
+namespace sidre
+{
+  class Group;
+}
 #endif
 
 namespace mint
@@ -50,7 +53,7 @@ public:
    * \brief TODO:
    * \param dimension
    */
-  // MeshCoordinates( int dimension );
+  MeshCoordinates( int dimension );
 
   /*!
    * \brief Creates a MeshCoordinates instance with the given number of points.

@@ -104,11 +104,11 @@ public:
    */
   virtual const int* getIntPtr() const { return AXOM_NULLPTR; }
 
-  virtual void setNumTuples( localIndex size )
-  { m_data.setSize( size * getNumTuples() ); }
+  virtual void setNumTuples( localIndex num_tuples )
+  { m_data.setNumTuples( num_tuples ); }
 
   virtual void setTuplesCapacity( localIndex capacity )
-  { m_data.setCapacity( capacity * getNumTuples() ); }
+  { m_data.setCapacity( capacity ); }
 
   virtual void setResizeRatio( double ratio )
   { m_data.setResizeRatio( ratio ); }

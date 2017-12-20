@@ -29,7 +29,10 @@ namespace axom
 
 /* Forward declarations */
 #ifdef MINT_USE_SIDRE
-class sidre::Group;
+namespace sidre
+{
+  class Group;
+}
 #endif
 
 namespace mint
@@ -413,7 +416,7 @@ protected:
 private:
 
 #ifdef MINT_USE_SIDRE
-  sidre::Group * const m_group;
+  sidre::Group * m_group;
 #endif
 
   localIndex * m_num_cells;       /*! The number of cells in the mesh */

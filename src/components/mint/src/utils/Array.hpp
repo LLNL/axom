@@ -18,8 +18,8 @@
 #ifndef MINT_UTILS_ARRAY_HXX_
 #define MINT_UTILS_ARRAY_HXX_
 
-#ifdef MINT_USE_SIDRE
-#undef MINT_USE_SIDRE
+#ifndef MINT_USE_SIDRE
+#define MINT_USE_SIDRE
 #endif
 
 
@@ -179,7 +179,7 @@ public:
   /*!
    * \brief Append a value to the end of the array.
    * \param [in] value the value to append.
-   * \pre m_tuple_components == 1.
+   * \pre m_num_components == 1.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
   inline void append( const T& value );
@@ -318,13 +318,13 @@ private:
   inline void allocate_view_data();
 
 
-  sidre::View* m_view
+  sidre::View* m_view;
 #endif
 
   T* m_data;
   localIndex m_num_tuples;
   localIndex m_capacity;
-  const localIndex m_num_components;
+  localIndex m_num_components;
   double m_resize_ratio;
   bool m_is_external;
 };
@@ -414,7 +414,7 @@ Array< T >::Array( const std::string & path, localIndex num_tuples ) :
   m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
   m_capacity(0),
-  m_tuple_components(0),
+  m_num_components(0),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false )
 {
@@ -422,7 +422,7 @@ Array< T >::Array( const std::string & path, localIndex num_tuples ) :
   SLIC_ERROR_IF( m_view->isEmpty(), "View is empty." );
 
   m_capacity = getViewShape(0);
-  m_tuple_components = getViewShape(1);
+  m_num_components = getViewShape(1);
 
   SLIC_ERROR_IF( m_num_tuples < 0,
                  "Number of tuples (" << m_num_tuples << ") " <<
@@ -432,12 +432,12 @@ Array< T >::Array( const std::string & path, localIndex num_tuples ) :
                  "cannot be greater than the tuple capacity " <<
                  "(" << m_capacity << ")." );
 
-  sidre::TypeID view_type = view->getTypeID();
+  sidre::TypeID view_type = m_view->getTypeID();
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
   SLIC_ERROR_IF( view_type != T_type, "View data type (" << view_type << ")"
                  << "differs from this Array type (" << T_type << ")." );
 
-  m_data = static_cast< T * >( view->getVoidPtr() );
+  m_data = static_cast< T * >( m_view->getVoidPtr() );
 }
 
 //------------------------------------------------------------------------------
@@ -448,7 +448,7 @@ Array< T >::Array( const std::string & path, localIndex num_tuples,
   m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
   m_capacity( num_tuples * DEFAULT_RESIZE_RATIO ),
-  m_tuple_components( num_components ),
+  m_num_components( num_components ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false )
 {
@@ -458,17 +458,17 @@ Array< T >::Array( const std::string & path, localIndex num_tuples,
   SLIC_ERROR_IF( m_num_tuples < 0,
                  "Number of tuples (" << m_num_tuples << ") " <<
                  "cannot be negative." );
-  SLIC_ERROR_IF( m_tuple_components <= 0,
-                 "Components per tuple (" << m_tuple_components << ") " <<
+  SLIC_ERROR_IF( m_num_components <= 0,
+                 "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
 
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
   sidre::SidreLength dims[ 2 ];
   dims[0] = m_capacity;
-  dims[1] = m_tuple_components;
-  view->describe( T_type, 2, dims );
-  view->allocate();
-  m_data = view->getVoidPtr();
+  dims[1] = m_num_components;
+  m_view->apply( T_type, 2, dims );
+  m_view->allocate();
+  m_data = m_view->getVoidPtr();
 }
 
 //------------------------------------------------------------------------------
@@ -476,10 +476,10 @@ template< typename T >
 Array< T >::Array( const std::string & path, localIndex capacity,
                    localIndex num_tuples, localIndex num_components ) :
   m_view( database::get_view( path ) ),
-  m_data( AXOM_NULLPTR )
+  m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
   m_capacity( capacity ),
-  m_tuple_components( num_components ),
+  m_num_components( num_components ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false )
 {
@@ -489,8 +489,8 @@ Array< T >::Array( const std::string & path, localIndex capacity,
   SLIC_ERROR_IF( m_num_tuples < 0,
                  "Number of tuples (" << m_num_tuples << ") " <<
                  "cannot be negative." );
-  SLIC_ERROR_IF( m_tuple_components <= 0,
-                 "Components per tuple (" << m_tuple_components << ") " <<
+  SLIC_ERROR_IF( m_num_components <= 0,
+                 "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
   SLIC_ERROR_IF( m_num_tuples > m_capacity,
                  "Number of tuples (" << m_num_tuples << ") " <<
@@ -500,10 +500,10 @@ Array< T >::Array( const std::string & path, localIndex capacity,
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
   sidre::SidreLength dims[ 2 ];
   dims[0] = m_capacity;
-  dims[1] = m_tuple_components;
-  view->describe( T_type, 2, dims );
-  view->allocate();
-  m_data = view->getVoidPtr();
+  dims[1] = m_num_components;
+  m_view->apply( T_type, 2, dims );
+  m_view->allocate();
+  m_data = static_cast< T * >( m_view->getVoidPtr() );
 }
 #endif
 
@@ -667,15 +667,14 @@ inline localIndex Array< T >::getViewShape( int dim ) const
 template< typename T >
 inline void Array< T >::allocate_view_data()
 {
-  m_view->reallocate( m_capacity * m_tuple_components );
+  m_view->reallocate( m_capacity * m_num_components );
 
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
   sidre::SidreLength dims[ 2 ];
   dims[0] = m_capacity;
-  dims[1] = m_tuple_components;
-  m_view->describe( T_type, 2, dims );
-  m_view->apply();
-  m_data = m_view->getVoidPtr();
+  dims[1] = m_num_components;
+  m_view->apply(T_type, 2, dims );
+  m_data = static_cast< T * >( m_view->getVoidPtr() );
 
   SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                  "Array reallocation failed." );

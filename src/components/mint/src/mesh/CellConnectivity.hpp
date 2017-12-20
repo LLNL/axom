@@ -46,8 +46,8 @@ public:
    */
   CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ) :
     m_stride( cell::num_nodes[ cell_type ] ),
-    m_connectivity( capacity, cell::num_nodes[ cell_type ] )
-  {};
+    m_connectivity( capacity, 0, cell::num_nodes[ cell_type ] )
+  { m_connectivity.setResizeRatio( resize_ratio ); };
 
   /*!
    * \brief Destructor.
@@ -117,7 +117,7 @@ public:
    */
   void addCell( const localIndex* cell, int AXOM_NOT_USED(type) ) {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
-    m_connectivity.add( cell, m_stride );
+    m_connectivity.append( cell, m_stride );
   }
 
   /*!
@@ -133,31 +133,31 @@ public:
     m_connectivity.set( cell, m_stride, cellIdx * m_stride );
   }
 
-//  /*!
-//   * \brief Get the maximum number of points that can currently be held.
-//   * \return N the capacity of m_coordinates.
-//   */
-//  localIndex getCapacity() const
-//  { return m_connectivity.getCapacity(); }
-//
-//
-//  void setCapacity( localIndex capacity )
-//  { m_connectivity.setCapacity( capacity ); }
+ /*!
+  * \brief Get the maximum number of points that can currently be held.
+  * \return N the capacity of m_coordinates.
+  */
+ localIndex getCapacity() const
+ { return m_connectivity.getCapacity(); }
+
+
+ void setCapacity( localIndex capacity )
+ { m_connectivity.setCapacity( capacity ); }
 
   /*!
    * \brief Returns the number of points in this CellConnectivity instance.
    * \return npoint the number points in this CellConnectivity instance.
    */
-//  localIndex getSize() const
-//  { return m_connectivity.getSize(); }
-//
-//
-//  double getResizeRatio() const
-//  { return m_connectivity.getResizeRatio(); }
-//
-//
-//  void setResizeRatio( double ratio )
-//  { m_connectivity.setResizeRatio( ratio ); }
+ localIndex getTotalNumberOfNodes() const
+ { return m_connectivity.getNumTuples() * m_connectivity.getNumComponents(); }
+
+
+ double getResizeRatio() const
+ { return m_connectivity.getResizeRatio(); }
+
+
+ void setResizeRatio( double ratio )
+ { m_connectivity.setResizeRatio( ratio ); }
 
 private:
 
@@ -182,11 +182,17 @@ public:
    */
   CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ) :
     m_num_cells(0),
-    m_offset( capacity + 1, resize_ratio ),
-    m_connectivity( capacity * cell::num_nodes[ MINT_MIXED_CELL ],
-                    resize_ratio),
-    m_cell_type( capacity, resize_ratio )
-  {};
+    m_offset( capacity + 1, 0, 1 ),
+    m_connectivity( capacity, 0, 1 ),
+    m_cell_type( capacity, 0, 1 )
+  {
+    //
+    // TO DO: Need capacity for cells and nodes.
+    //
+    m_offset.setResizeRatio( resize_ratio );
+    m_connectivity.setResizeRatio( resize_ratio );
+    m_cell_type.setResizeRatio( resize_ratio );
+  };
 
   /*!
    * \brief Destructor.
@@ -225,7 +231,7 @@ public:
    */
   localIndex getNumberOfNodes( localIndex cellIdx ) const {
     SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
-    return m_offset[ cellIdx + 1 ] - m_offset[ cellIdx ];
+    return m_offset( cellIdx + 1 ) - m_offset( cellIdx );
   };
 
   /*!
@@ -237,7 +243,7 @@ public:
    */
   int getCellType( localIndex cellIdx ) const {
     SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
-    return m_cell_type[ cellIdx ];
+    return m_cell_type( cellIdx );
   }
 
   /*!
@@ -249,7 +255,7 @@ public:
    */
   const localIndex* operator[]( localIndex cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
-    return m_connectivity.getData() + m_offset[ cellIdx ];
+    return m_connectivity.getData() + m_offset( cellIdx );
   };
 
   /*!
@@ -268,18 +274,18 @@ public:
 
     if ( this->empty() )
     {
-      m_offset.add( 0 );
+      m_offset.append( 0 );
     }
 
     /* STEP 2: update the offsets array. */
-    const localIndex offset = m_offset[ new_cell_id ];
-    m_offset.add( offset + num_nodes );
+    const localIndex offset = m_offset( new_cell_id );
+    m_offset.append( offset + num_nodes );
 
     /* STEP 3: update the cell connectivity. */
-    m_connectivity.add( cell, num_nodes );
+    m_connectivity.append( cell, num_nodes );
 
     /* STEP 4: update the cell types. */
-    m_cell_type.add( type );
+    m_cell_type.append( type );
 
     m_num_cells++;
   }
@@ -291,7 +297,8 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( localIndex cellIdx, const localIndex* cell ) const {
+  void setCell( localIndex cellIdx, const localIndex* cell )
+  {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 
@@ -299,44 +306,47 @@ public:
     const localIndex nnodes = this->getNumberOfNodes( cellIdx );
 
     /* STEP 1: get to/from pointers. */
-    const localIndex offset = m_offset[ cellIdx ];
-// TODO: ???
-//    m_connectivity.set( cell, nnodes, offset );
+    const localIndex offset = m_offset( cellIdx );
+    
+    m_connectivity.set( cell, nnodes, offset );
   }
 
-//  /*!
-//   * \brief Get the maximum number of points that can currently be held.
-//   * \return N the capacity of m_coordinates.
-//   */
-//  localIndex getCapacity() const
-//  { return m_connectivity.getCapacity(); }
-//
-//
-//  void setCapacity( localIndex capacity )
-//  {
-//    m_offset.setCapacity( capacity + 1 );
-//    m_connectivity.setCapacity( capacity );
-//    m_cell_type.setCapacity( capacity );
-////  }
-//
-//  /*!
-//   * \brief Returns the number of points in this CellConnectivity instance.
-//   * \return npoint the number points in this CellConnectivity instance.
-//   */
-//  localIndex getSize() const
-//  { return m_connectivity.getSize(); }
-//
+  /*!
+   * \brief Get the maximum number of points that can currently be held.
+   * \return N the capacity of m_coordinates.
+   */
+  localIndex getCapacity() const
+  { return m_connectivity.getCapacity(); }
 
-//  double getResizeRatio() const
-//  { return m_connectivity.getResizeRatio(); }
-//
-//
-//  void setResizeRatio( double ratio )
-//  {
-//    m_offset.setResizeRatio( ratio );
-//    m_connectivity.setResizeRatio( ratio );
-//    m_cell_type.setResizeRatio( ratio );
-//  }
+
+  void setCapacity( localIndex capacity )
+  {
+    //
+    // TO DO: Need capacity for cells and nodes.
+    //
+    m_offset.setCapacity( capacity + 1 );
+    m_connectivity.setCapacity( capacity );
+    m_cell_type.setCapacity( capacity );
+  }
+
+ /*!
+  * \brief Returns the number of points in this CellConnectivity instance.
+  * \return npoint the number points in this CellConnectivity instance.
+  */
+  localIndex getSize() const
+  { return m_connectivity.getNumTuples(); }
+
+
+  double getResizeRatio() const
+  { return m_connectivity.getResizeRatio(); }
+
+
+  void setResizeRatio( double ratio )
+  {
+    m_offset.setResizeRatio( ratio );
+    m_connectivity.setResizeRatio( ratio );
+    m_cell_type.setResizeRatio( ratio );
+  }
 
 private:
   localIndex m_num_cells;

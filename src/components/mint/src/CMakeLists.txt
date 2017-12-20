@@ -86,7 +86,7 @@ blt_add_library(
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
-    DEPENDS_ON axom_utils slic
+    DEPENDS_ON axom_utils slic sidre conduit
     FOLDER axom/mint
    )
 

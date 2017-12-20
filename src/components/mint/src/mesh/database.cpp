@@ -36,7 +36,7 @@ namespace sidre
 namespace axom
 {
 
-static sidre::View* s_database = AXOM_NULLPTR;
+static sidre::DataStore* s_database = AXOM_NULLPTR;
 
 namespace mint
 {
