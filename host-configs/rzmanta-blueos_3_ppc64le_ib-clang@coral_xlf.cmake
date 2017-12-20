@@ -3,66 +3,66 @@
 #
 # This is a generated file, edit at own risk.
 ##################################
-# blueos_3_ppc64le_ib-clang@coral
+# blueos_3_ppc64le_ib-clang@coral_xlf
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_18_35/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral/cmake-3.8.2-ze553yn73s3b32uhop7jlgvjfxo4tjuc/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_19_17_32_36/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.8.2-f4bp77lrsuauuncgtivaoox2vfombs32/bin/cmake
 
 #######
-# using clang@coral compiler spec
+# using clang@coral_xlf compiler spec
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang++" CACHE PATH "")
 
 # fortran compiler used by spack
-# no fortran compiler
+set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(ENABLE_FORTRAN OFF CACHE BOOL "")
+set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_18_35/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_19_17_32_36/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-jybmvmtpcohhrq4trij72mbwj6blad4l" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-73nxx5224rq5zpn4kjrkq2hfmuzu4hmt" CACHE PATH "")
 
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-yjoop56c7fektxu4afrq6xtmz27ujtzz" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-ihjqrbtoompxou432vk6ldbkhvnhf23g" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-vrr2ba7mdlbbywemnp33tzgsyqj5ldje" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-okoi6v4qgisp4i7jkdgjgam6kxu4uuh5" CACHE PATH "")
 
 # boost headers from uberenv
-set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-h5ezasjj2b4jbmznzonrpayzubdzb4fl" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-u24x33nrrmv72z4odat465b6zjiqulu5" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-fwd3h3v2ocwqyhduxnmqu3mkuvmxfjgl/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2j4lnnqrepn6p2jci2pqv3qtietk5nh4/bin/python" CACHE PATH "")
 
 # lua from uberenv
-set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-vdvucxaoi4njo67agfmyakeyapcuql53" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-ff6lol2zlfsqiebnrseluf2kgsbr36fo" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-uhbe3icqodtqq7ctfgcyhgvfrkzqyuh3/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-4ohg4xoyg4gwlmbdjaorce7rrhkzdkds/bin/doxygen" CACHE PATH "")
 
 # sphinx from uberenv
-set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-fwd3h3v2ocwqyhduxnmqu3mkuvmxfjgl/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2j4lnnqrepn6p2jci2pqv3qtietk5nh4/bin/sphinx-build" CACHE PATH "")
 
 # shroud from uberenv
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-fwd3h3v2ocwqyhduxnmqu3mkuvmxfjgl/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2j4lnnqrepn6p2jci2pqv3qtietk5nh4/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-lp45v6mhcw6o4kvbm3yer7e4opwbbx22/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-xnpbzzqgafqu22rrdooflush2kdv5yqv/bin/uncrustify" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-fzqkqkibdpcwdmivwurcoa2w3pud4t4w/usr/bin/lcov" CACHE PATH "")
+set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-e4socip3p6sucjy3o77n5jmvzu2mqdfk/usr/bin/lcov" CACHE PATH "")
 
-set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-fzqkqkibdpcwdmivwurcoa2w3pud4t4w/usr/bin/genhtml" CACHE PATH "")
+set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-e4socip3p6sucjy3o77n5jmvzu2mqdfk/usr/bin/genhtml" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
@@ -86,10 +86,18 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-fzqkqkibdpcwdmivwurcoa2w3pud4t4w/usr/bin
 # !---------------------------------------------------------------------------
 ##############################################################################
 # Options added manually to 
-# lc blueos clang@coral  host configs
+# lc blueos clang@coral_xlf host configs
 ##############################################################################
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+# Converts C-style comments to Fortran style in preprocessed files
+set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
+
+# Adds a missing rpath for libraries associated with the fortran compiler
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib" CACHE STRING "")
+
+set(CMAKE_Fortran_FORMAT FREE)
 
 ##############################################################################
 # MPI - manually added for now
@@ -97,27 +105,10 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-clang-coral-2017.05.19" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2017.08.24-clang-coral-2017.10.13/" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
-
-set(MPI_DRIVER_ROOT          "/usr/tcetmp/packages/xlflang/xlflang-2016-11-30/xlf" CACHE PATH "")
-
-set(MPI_LIBS 
-    ${MPI_DRIVER_ROOT}/lib/libxl.a
-    ${MPI_DRIVER_ROOT}/lib/libxlcuf.a
-    ${MPI_DRIVER_ROOT}/lib/libxlcuf_nonshr.a
-    ${MPI_DRIVER_ROOT}/lib/libxlcufdevice.a
-    ${MPI_DRIVER_ROOT}/lib/libxldevice.a
-    ${MPI_DRIVER_ROOT}/lib/libxlmbif.a
-    ${MPI_DRIVER_ROOT}/lib/libxlopt.a)
-
-set(MPI_INCLUDE_PATHS 
-    ${MPI_DRIVER_ROOT}/include)
-
-set(MPI_Fortran_LIBRARIES    "${MPI_LIBS}" CACHE PATH "")
-set(MPI_Fortran_INCLUDE_PATH "${MPI_INCLUDE_PATHS}" CACHE PATH "")
 
 set(MPIEXEC              "mpirun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
@@ -126,4 +117,5 @@ set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
+
 
