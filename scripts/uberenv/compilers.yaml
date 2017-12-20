@@ -94,10 +94,10 @@ compilers:
             fc:  /usr/tce/packages/intel/intel-18.0.0/bin/ifort
     blueos_3_ppc64le_ib:
         clang@coral_xlf:
-            cc:  /usr/tce/packages/xl/xl-beta-2017.11.28/bin/xlc
-            cxx: /usr/tce/packages/xl/xl-beta-2017.11.28/bin/xlc++
-            f77: /usr/tce/packages/xl/xl-beta-2017.11.28/bin/xlf90
-            fc:  /usr/tce/packages/xl/xl-beta-2017.11.28/bin/xlf90
+            cc:  /usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang
+            cxx: /usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang++
+            f77: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf
+            fc:  /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003
         clang@coral_xlflang:
             cc:  /usr/tce/packages/clang/clang-coral-2017.11.27/bin/clang
             cxx: /usr/tce/packages/clang/clang-coral-2017.11.27/bin/clang++
