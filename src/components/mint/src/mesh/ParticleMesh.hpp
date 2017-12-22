@@ -167,7 +167,7 @@ public:
    * \return N the total number of particles.
    */
   localIndex getNumberOfParticles() const
-  { return m_particle_coordinates.getSize(); }
+  { return m_particle_coordinates.size(); }
 
   /*!
    * \brief Returns the particle coordinates array for the given dimension.
@@ -223,8 +223,8 @@ public:
   { return m_particle_coordinates.getCapacity(); }
 
 
-  void setCapacity( localIndex capacity )
-  { return m_particle_coordinates.setCapacity( capacity ); }
+  void reserve( localIndex capacity )
+  { return m_particle_coordinates.reserve( capacity ); }
 
 
   double getResizeRatio() const

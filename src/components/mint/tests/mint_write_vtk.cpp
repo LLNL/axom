@@ -347,7 +347,7 @@ void check_scalar( const Field* field, std::ifstream& file,
                    uint offset = 0 )
 {
   const int num_components = field->getNumComponents();
-  const localIndex num_values = field->getNumTuples();
+  const localIndex num_values = field->size();
 
   std::string buffer;
   file >> buffer;
@@ -387,7 +387,7 @@ void check_scalar( const Field* field, std::ifstream& file,
 void check_vector_data( const Field* field, std::ifstream& file )
 {
   const int num_components = field->getNumComponents();
-  const localIndex num_values = field->getNumTuples();
+  const localIndex num_values = field->size();
 
   if ( field->getType() == DOUBLE_FIELD_TYPE )
   {

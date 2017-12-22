@@ -218,7 +218,7 @@ void write_scalar_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT(  field != AXOM_NULLPTR );
   SLIC_ASSERT(  field->getNumComponents() == 1 );
-  const localIndex num_values = field->getNumTuples();
+  const localIndex num_values = field->size();
 
   file << "SCALARS " << field->getName() << " ";
   if ( field->getType() == DOUBLE_FIELD_TYPE )
@@ -261,7 +261,7 @@ void write_vector_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT(  field != AXOM_NULLPTR );
   const int num_components = field->getNumComponents();
-  const localIndex num_values = field->getNumTuples();
+  const localIndex num_values = field->size();
   SLIC_ASSERT(  num_components == 2 || num_components == 3 );
 
   file << "VECTORS " << field->getName() << " ";
@@ -322,7 +322,7 @@ void write_multidim_data( const Field* field, std::ofstream& file )
   SLIC_ASSERT( field != AXOM_NULLPTR );
   const int field_type = field->getType();
   const int num_components = field->getNumComponents();
-  const localIndex num_values = field->getNumTuples();
+  const localIndex num_values = field->size();
   SLIC_ASSERT( num_components > 3 );
 
   if ( field_type == DOUBLE_FIELD_TYPE )
@@ -378,7 +378,7 @@ void write_data( const FieldData& field_data, localIndex num_values,
     const Field* field = field_data.getField( i );
     SLIC_ASSERT( field != AXOM_NULLPTR );
     const int num_components = field->getNumComponents();
-    SLIC_ASSERT( field->getNumTuples() == num_values );
+    SLIC_ASSERT( field->size() == num_values );
 
     if ( field->getType() != DOUBLE_FIELD_TYPE &&
          field->getType() != INTEGER_FIELD_TYPE )

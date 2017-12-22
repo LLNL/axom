@@ -68,7 +68,7 @@ public:
    */
   virtual ~FieldVariable() { }
 
-  virtual localIndex getNumTuples() const { return m_data.getNumTuples(); }
+  virtual localIndex size() const { return m_data.size(); }
 
   virtual int getNumComponents() const { return m_data.getNumComponents(); }
 
@@ -104,11 +104,11 @@ public:
    */
   virtual const int* getIntPtr() const { return AXOM_NULLPTR; }
 
-  virtual void setNumTuples( localIndex num_tuples )
-  { m_data.setNumTuples( num_tuples ); }
+  virtual void resize( localIndex num_tuples )
+  { m_data.resize( num_tuples ); }
 
-  virtual void setTuplesCapacity( localIndex capacity )
-  { m_data.setCapacity( capacity ); }
+  virtual void reserve( localIndex capacity )
+  { m_data.reserve( capacity ); }
 
   virtual void setResizeRatio( double ratio )
   { m_data.setResizeRatio( ratio ); }

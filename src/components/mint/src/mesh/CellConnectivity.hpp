@@ -67,7 +67,7 @@ public:
    * \return status true iff empty, else, false.
    */
   bool empty() const
-  { return m_connectivity.getNumTuples() == 0; }
+  { return m_connectivity.size() == 0; }
 
   /*!
    * \brief Returns the total number of cells.
@@ -75,7 +75,7 @@ public:
    * \post ncells >= 0
    */
   localIndex getNumberOfCells() const
-  { return m_connectivity.getNumTuples(); }
+  { return m_connectivity.size(); }
 
   /*!
    * \brief Returns the number of nodes of the given cell.
@@ -141,15 +141,15 @@ public:
  { return m_connectivity.getCapacity(); }
 
 
- void setCapacity( localIndex capacity )
- { m_connectivity.setCapacity( capacity ); }
+ void reserve( localIndex capacity )
+ { m_connectivity.reserve( capacity ); }
 
   /*!
    * \brief Returns the number of points in this CellConnectivity instance.
    * \return npoint the number points in this CellConnectivity instance.
    */
  localIndex getTotalNumberOfNodes() const
- { return m_connectivity.getNumTuples() * m_connectivity.getNumComponents(); }
+ { return m_connectivity.size() * m_connectivity.getNumComponents(); }
 
 
  double getResizeRatio() const
@@ -319,14 +319,14 @@ public:
   { return m_connectivity.getCapacity(); }
 
 
-  void setCapacity( localIndex capacity )
+  void reserve( localIndex capacity )
   {
     //
     // TO DO: Need capacity for cells and nodes.
     //
-    m_offset.setCapacity( capacity + 1 );
-    m_connectivity.setCapacity( capacity );
-    m_cell_type.setCapacity( capacity );
+    m_offset.reserve( capacity + 1 );
+    m_connectivity.reserve( capacity );
+    m_cell_type.reserve( capacity );
   }
 
  /*!
@@ -334,7 +334,7 @@ public:
   * \return npoint the number points in this CellConnectivity instance.
   */
   localIndex getSize() const
-  { return m_connectivity.getNumTuples(); }
+  { return m_connectivity.size(); }
 
 
   double getResizeRatio() const

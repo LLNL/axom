@@ -356,35 +356,35 @@ public:
 protected:
 
   inline void setCellDataSize( localIndex size )
-  { m_cell_data.setSize( size ); }
+  { m_cell_data.resize( size ); }
 
 
   inline void setFaceDataSize( localIndex size )
-  { m_face_data.setSize( size ); }
+  { m_face_data.resize( size ); }
 
 
   inline void setEdgeDataSize( localIndex size )
-  { m_edge_data.setSize( size ); }
+  { m_edge_data.resize( size ); }
 
 
   inline void setNodeDataSize( localIndex size )
-  { m_node_data.setSize( size ); }
+  { m_node_data.resize( size ); }
 
 
   inline void setCellDataCapacity( localIndex capacity )
-  { m_cell_data.setCapacity( capacity ); }
+  { m_cell_data.reserve( capacity ); }
 
 
   inline void setFaceDataCapacity( localIndex capacity )
-  { m_face_data.setCapacity( capacity ); }
+  { m_face_data.reserve( capacity ); }
 
 
   inline void setEdgeDataCapacity( localIndex capacity )
-  { m_edge_data.setCapacity( capacity ); }
+  { m_edge_data.reserve( capacity ); }
 
 
   inline void setNodeDataCapacity( localIndex capacity )
-  { m_node_data.setCapacity( capacity ); }
+  { m_node_data.reserve( capacity ); }
 
 
   inline void setCellDataResizeRatio( double ratio )

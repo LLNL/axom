@@ -65,11 +65,10 @@ MeshCoordinates::MeshCoordinates( int dimension, localIndex capacity,
 
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( const std::string& path, localIndex size,
-                                  double resize_ratio ) :
+MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
+                                  localIndex size, double resize_ratio ) :
   m_ndims(0)
 {
-  sidre::Group * group = database::get_group( path );
   SLIC_ERROR_IF( group == AXOM_NULLPTR, "" );
   SLIC_ERROR_IF( !group->hasChildView( "type" ), "" );
 
@@ -97,21 +96,22 @@ MeshCoordinates::MeshCoordinates( const std::string& path, localIndex size,
     SLIC_ERROR_IF( dims[1] != 1, "" );
 
     m_coordinates[ m_ndims ] =
-      new Array< double >( coord_view->getPath(), size );
+      new Array< double >( coord_view, size );
     m_coordinates[ m_ndims ]->setResizeRatio( resize_ratio );
   }
+
+  SLIC_ERROR_IF( m_ndims != dimension, "");
 
   for ( int i = m_ndims ; i < 3 ; ++i )
   { m_coordinates[ i ] = AXOM_NULLPTR; }
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( const std::string& path, int dimension, 
+MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension, 
                                   localIndex capacity, localIndex size,
                                   double resize_ratio ) :
   m_ndims( dimension )
 { 
-  sidre::Group * group = database::get_group( path );
   SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "" );
   SLIC_ERROR_IF( group == AXOM_NULLPTR, "" );
   SLIC_ERROR_IF( group->getNumGroups() != 0, "" );
@@ -127,7 +127,7 @@ MeshCoordinates::MeshCoordinates( const std::string& path, int dimension,
     const char* coord_name = coord_names[ dim ];
     sidre::View* coord_view = values_group->createView( coord_name );
     m_coordinates[ dim ] =
-      new Array< double > ( coord_view->getPath(), capacity, size, 1 );
+      new Array< double > ( coord_view, capacity, size, 1 );
     m_coordinates[ dim ]->setResizeRatio( resize_ratio );
   }
 

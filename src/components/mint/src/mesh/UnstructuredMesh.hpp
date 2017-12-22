@@ -206,7 +206,7 @@ public:
    * \post N >= 0.
    */
   localIndex getNumberOfNodes() const
-  { return m_node_coordinates->getSize(); };
+  { return m_node_coordinates->size(); };
 
   /*!
    * \brief Get the number of nodes that can be stored.

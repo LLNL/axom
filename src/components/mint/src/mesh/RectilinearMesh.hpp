@@ -178,7 +178,7 @@ inline void RectilinearMesh::setCoordinate( int dim, localIndex i,
                                             double coord ) const
 {
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->getNumTuples() );
+  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->size() );
 
   (*m_coordinates[ dim ])( i ) = coord;
 }
@@ -187,7 +187,7 @@ inline void RectilinearMesh::setCoordinate( int dim, localIndex i,
 inline double RectilinearMesh::getCoordinate( int dim, localIndex i ) const
 {
   SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->getNumTuples() );
+  SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->size() );
 
   return (*m_coordinates[ dim ])( i );
 }

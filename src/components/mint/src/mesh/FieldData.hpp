@@ -132,10 +132,10 @@ public:
                           double resize_ratio );
 
 
-  inline void setSize( localIndex size );
+  inline void resize( localIndex size );
 
 
-  inline void setCapacity( localIndex capacity );
+  inline void reserve( localIndex capacity );
 
 
   inline void setResizeRatio( double ratio );
@@ -258,19 +258,19 @@ inline Field* FieldData::addField( const std::string& name, localIndex size,
 }
 
 //------------------------------------------------------------------------------
-inline void FieldData::setSize( localIndex size )
+inline void FieldData::resize( localIndex size )
 {
  typename std::map< std::string, Field * >::iterator it;
  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
- { it->second->setNumTuples( size ); }
+ { it->second->resize( size ); }
 }
 
 //------------------------------------------------------------------------------
-inline void FieldData::setCapacity( localIndex capacity )
+inline void FieldData::reserve( localIndex capacity )
 {
  typename std::map< std::string, Field * >::iterator it;
  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
- { it->second->setTuplesCapacity( capacity ); }
+ { it->second->reserve( capacity ); }
 }
 
 //------------------------------------------------------------------------------

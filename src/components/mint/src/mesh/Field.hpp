@@ -64,7 +64,7 @@ public:
    * \return ntuples the number of tuples in the field.
    * \post ntuples >= 0.
    */
-  virtual localIndex getNumTuples() const = 0;
+  virtual localIndex size() const = 0;
 
   /*!
    * \brief Returns the number of components per tuple.
@@ -77,9 +77,9 @@ public:
 
   virtual double getResizeRatio() const = 0;
 
-  virtual void setNumTuples( localIndex size ) = 0;
+  virtual void resize( localIndex size ) = 0;
 
-  virtual void setTuplesCapacity( localIndex capacity ) = 0;
+  virtual void reserve( localIndex capacity ) = 0;
 
   virtual void setResizeRatio( double ratio ) = 0;
 
