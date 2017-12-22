@@ -33,18 +33,14 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ) :
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-// TODO: Fix this
-//  for ( int dim = 0 ; dim < m_ndims ; ++dim )
-//  {
-//    m_coordinates[ dim ].setSize( ext_size[ dim ] );
-//    m_coordinates[ dim ].setResizeRatio( 0.0 );
-//  }
-//
-//  for (int dim = m_ndims ; dim < 3 ; ++dim )
-//  {
-//    m_coordinates[ dim ].setCapacity( 0 );
-//    m_coordinates[ dim ].setResizeRatio( 0.0 );
-//  }
+ for ( int dim = 0 ; dim < m_ndims ; ++dim ) {
+   m_coordinates[ dim ] = 
+             new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
+   m_coordinates[ dim ]->setResizeRatio( 0.0 );
+ }
+
+ for (int dim = m_ndims ; dim < 3 ; ++dim )
+ { m_coordinates[ dim ] = AXOM_NULLPTR; }
 
 }
 
@@ -57,25 +53,26 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6],
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-// TODO: Fix this
-//  for ( int dim = 0 ; dim < m_ndims ; ++dim )
-//  {
-//    m_coordinates[ dim ].setSize( ext_size[ dim ] );
-//    m_coordinates[ dim ].setResizeRatio( 0.0 );
-//  }
-//
-//  for (int dim = m_ndims ; dim < 3 ; ++dim )
-//  {
-//    m_coordinates[ dim ].setCapacity( 0 );
-//    m_coordinates[ dim ].setResizeRatio( 0.0 );
-//  }
+  for ( int dim = 0 ; dim < m_ndims ; ++dim ) {
+    m_coordinates[ dim ] = 
+                     new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
+    m_coordinates[ dim ]->setResizeRatio( 0.0 );
+  }
 
+  for (int dim = m_ndims ; dim < 3 ; ++dim )
+  { m_coordinates[ dim ] = AXOM_NULLPTR; }
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh() :
-  StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR )
-{}
+RectilinearMesh::~RectilinearMesh()
+{
+  for ( int dim = 0; dim < 3; ++dim ) {
+    if ( m_coordinates[ dim ] != AXOM_NULLPTR ) {
+      delete m_coordinates[ dim ];
+      m_coordinates[ dim ] = AXOM_NULLPTR;
+    }
+  }
+}
 
 } /* namespace mint */
 } /* namespace axom */

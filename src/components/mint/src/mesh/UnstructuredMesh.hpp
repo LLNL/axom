@@ -212,8 +212,8 @@ public:
    * \brief Get the number of nodes that can be stored.
    * \return The capacity of the node array.
    */
-//  localIndex getNodeCapacity() const
-//  { return m_node_coordinates.getCapacity(); };
+ localIndex getNodeCapacity() const
+ { return m_node_coordinates->getCapacity(); };
 
 //  /*!
 //   * \brief Set the number of nodes that can be stored.
@@ -225,15 +225,15 @@ public:
 //  }
 
 
-//  double getNodeResizeRatio() const
-//  { return m_node_coordinates.getResizeRatio(); }
+ double getNodeResizeRatio() const
+ { return m_node_coordinates->getResizeRatio(); }
 
 
-//  void setNodeResizeRatio( double ratio )
-//  {
-//    m_node_coordinates.setResizeRatio( ratio );
-//    this->setNodeDataResizeRatio( ratio );
-//  }
+ void setNodeResizeRatio( double ratio )
+ {
+   m_node_coordinates->setResizeRatio( ratio );
+   this->setNodeDataResizeRatio( ratio );
+ }
 
   /*!
    * \brief Returns the total number cells in the mesh.
@@ -252,35 +252,35 @@ public:
   int getNumberOfCellNodes( localIndex cellIdx ) const
   { return m_cell_connectivity->getNumberOfNodes( cellIdx ); }
 
-//  /*!
-//   * \brief Get the number of nodes that can be stored in the cell
-// connectivity.
-//   * \return the number of nodes that can be stored in the cell connectivity.
-//   */
-//  localIndex getCellNodeCapacity() const
-//  { return m_cell_connectivity.getCapacity(); }
-//
-//  /*!
-//   * \brief Set the number of nodes that can be stored in the cell
-// connectivity.
-//   * \param capacity the number of nodes that can be stored in the cell
-//   *  connectivity.
-//   */
-//  void setCellNodeCapacity( localIndex capacity )
-//  { m_cell_connectivity.setCellCapacity( capacity ); }
+  /*!
+  * \brief Get the number of nodes that can be stored in the cell
+     connectivity.
+  * \return the number of nodes that can be stored in the cell connectivity.
+  */
+  localIndex getCellNodeCapacity() const
+  { return m_cell_connectivity.getCapacity(); }
+
+  /*!
+  * \brief Set the number of nodes that can be stored in the cell
+     connectivity.
+  * \param capacity the number of nodes that can be stored in the cell
+  *  connectivity.
+  */
+  // void setCellNodeCapacity( localIndex capacity )
+  // { m_cell_connectivity.setCellCapacity( capacity ); }
 
 
-//  double getCellResizeRatio() const
-//  { return m_cell_connectivity.getResizeRatio(); }
-//
-//
-//  void setCellResizeRatio( double ratio )
-//  {
-//    m_cell_connectivity.setResizeRatio( ratio );
-//    this->setCellDataResizeRatio( ratio );
-//    this->setFaceDataResizeRatio( ratio );
-//    this->setEdgeDataResizeRatio( ratio );
-//  }
+  double getCellResizeRatio() const
+  { return m_cell_connectivity.getResizeRatio(); }
+
+
+ void setCellResizeRatio( double ratio )
+ {
+   m_cell_connectivity.setResizeRatio( ratio );
+   this->setCellDataResizeRatio( ratio );
+   this->setFaceDataResizeRatio( ratio );
+   this->setEdgeDataResizeRatio( ratio );
+ }
 
   /*!
    * \brief Adds a new cell in the mesh
@@ -408,8 +408,8 @@ private:
 //{}
 
 //------------------------------------------------------------------------------
-//template < int CellType >
-//UnstructuredMesh< CellType >::UnstructuredMesh( int ndims, int blockId,
+// template < int CellType >
+// UnstructuredMesh< CellType >::UnstructuredMesh( int ndims, int blockId,
 //                                                int partId,
 //                                                localIndex nodeCapacity,
 //                                                localIndex cellNodeCapacity,
@@ -417,12 +417,12 @@ private:
 //                                                double cellResizeRatio ) :
 //  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], blockId,
 // partId)
-//// TODO: ???
-////  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
-////  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
-////                                           cellNodeCapacity ),
-////                       cellResizeRatio )
-//{}
+// // TODO: ???
+// //  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
+// //  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
+// //                                           cellNodeCapacity ),
+// //                       cellResizeRatio )
+// {}
 
 template < int CellType >
 UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :

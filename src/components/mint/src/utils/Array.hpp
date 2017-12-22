@@ -545,7 +545,7 @@ Array< T >::~Array()
 }
 
 
-//-----------------------------------------------------------------db-------------
+//------------------------------------------------------------------------------
 template< typename T >
 inline void Array< T >::append( const T& value )
 {
@@ -648,7 +648,7 @@ inline void Array< T >::dynamicRealloc( localIndex new_num_tuples )
   { return allocate_view_data(); }
 #endif
 
-  m_data = utilities::realloc( m_data, m_capacity );
+  m_data = utilities::realloc( m_data, m_capacity * m_num_components );
   SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                  "Array reallocation failed." );
 }
@@ -657,6 +657,8 @@ inline void Array< T >::dynamicRealloc( localIndex new_num_tuples )
 template< typename T >
 inline T* Array< T >::reserveForInsert( localIndex n, localIndex pos )
 {
+  SLIC_ASSERT( n > 0 );
+  SLIC_ASSERT( pos >= 0 );
   SLIC_ASSERT( pos <= m_num_tuples );
 
   localIndex new_size = m_num_tuples + n;
@@ -665,9 +667,11 @@ inline T* Array< T >::reserveForInsert( localIndex n, localIndex pos )
 
   T* const insert_pos = m_data + pos * m_num_components;
   T* cur_pos = m_data + (m_num_tuples * m_num_components) - 1;
-  for ( ; cur_pos >= insert_pos ; --cur_pos )
-  { *(cur_pos + n) = *cur_pos; }
+  for ( ; cur_pos >= insert_pos ; --cur_pos ) { 
+    *(cur_pos + n * m_num_components) = *cur_pos; 
+  }
 
+  m_num_tuples = new_size;
   return insert_pos;
 }
 

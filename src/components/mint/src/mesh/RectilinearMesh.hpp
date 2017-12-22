@@ -39,6 +39,9 @@ class RectilinearMesh : public StructuredMesh
 {
 public:
 
+
+  RectilinearMesh() = delete;
+
   /*!
    * \brief Constructs a rectilinear mesh instance.
    * \param [in] dimension the dimension of the mesh.
@@ -59,8 +62,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  virtual ~RectilinearMesh()
-  {}
+  virtual ~RectilinearMesh();
 
   /*!
    * \brief Sets the coordinate along the given dimension.
@@ -160,8 +162,6 @@ public:
   /// @}
 
 private:
-
-  RectilinearMesh();
 
   Array< double >* m_coordinates[3];
 

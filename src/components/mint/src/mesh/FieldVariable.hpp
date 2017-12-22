@@ -131,22 +131,21 @@ private:
 //                  FIELD VARIABLE IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-//// ????
-////------------------------------------------------------------------------------
-//template <>
-//double * FieldVariable< double >::getDoublePtr();
-//
-////------------------------------------------------------------------------------
-//template <>
-//const double * FieldVariable< double >::getDoublePtr() const;
-//
-////------------------------------------------------------------------------------
-//template <>
-//int * FieldVariable< int >::getIntPtr();
-//
-////------------------------------------------------------------------------------
-//template <>
-//const int * FieldVariable< int >::getIntPtr() const;
+//------------------------------------------------------------------------------
+template <>
+double * FieldVariable< double >::getDoublePtr();
+
+//------------------------------------------------------------------------------
+template <>
+const double * FieldVariable< double >::getDoublePtr() const;
+
+//------------------------------------------------------------------------------
+template <>
+int * FieldVariable< int >::getIntPtr();
+
+//------------------------------------------------------------------------------
+template <>
+const int * FieldVariable< int >::getIntPtr() const;
 
 
 

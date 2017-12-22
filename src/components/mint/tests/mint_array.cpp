@@ -38,7 +38,29 @@ namespace mint
 namespace internal
 {
 
-//------------------------------------------------------------------------------
+/*!
+ * \brief Calculate the new capacity for and Array given an increase in the
+ *  size.
+ * \param [in] v, the Array in question.
+ * \param [in] increase, the ammount the size will increase by
+ * \return the new capacity.
+ */
+template < typename T >
+localIndex calc_new_capacity( Array< T > & v, localIndex increase )
+{
+  localIndex new_num_tuples = v.size() + increase;
+  if ( new_num_tuples > v.getCapacity() )
+  { return new_num_tuples * v.getResizeRatio() + 0.5; }
+
+  return v.getCapacity();
+}
+
+/*!
+ * \brief Check if two Arrays are equivalent. Does not check the resize ratio.
+ * \param [in] lhs, the first Array to compare.
+ * \param [in] rhs, the second Array to compare.
+ * \return the new capacity.
+ */
 template< typename T >
 void check_equality( const Array< T >& lhs, const Array< T >& rhs )
 {
@@ -55,28 +77,10 @@ void check_equality( const Array< T >& lhs, const Array< T >& rhs )
   }
 }
 
-//------------------------------------------------------------------------------
-template< typename T >
-void load_and_check( Array< T >& v )
-{
-#ifdef MINT_USE_SIDRE
-  Array< T > cpy = Array< T >(v.getView(), v.size() );
-  check_equality( v, cpy );
-#endif
-}
-
-//------------------------------------------------------------------------------
-template < typename T >
-localIndex calc_new_capacity( Array< T > & v, localIndex increase )
-{
-  localIndex new_num_tuples = v.size() + increase;
-  if ( new_num_tuples > v.getCapacity() )
-  { return new_num_tuples * v.getResizeRatio() + 0.5; }
-
-  return v.getCapacity();
-}
-
-//------------------------------------------------------------------------------
+/*!
+ * \brief Check that the storage of an Array is working properly.
+ * \param [in] v the Array to check.
+ */
 template < typename T >
 void check_storage( Array< T >& v )
 {
@@ -153,193 +157,272 @@ void check_storage( Array< T >& v )
   EXPECT_EQ( v.getData(), data_ptr );
 }
 
-#if 0
 
-//------------------------------------------------------------------------------
+/*!
+ * \brief Check that the resizing of an Array is working properly.
+ * \param [in] v the Array to check.
+ */
 template < typename T >
-void check_resize( int num_components, double resize_ratio )
+void check_resize( Array< T >& v )
 {
-  localIndex capacity = 0;
-  localIndex size = 0;
-  Array< T > v( capacity, num_components );
+  /* Resize the array up to the capacity */
+  localIndex capacity = v.getCapacity();
+  v.resize( capacity );
+  localIndex size = capacity;
+  localIndex num_components = v.getNumComponents();
 
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v.getNumComponents(), num_components );
-  EXPECT_EQ( v.getResizeRatio(), resize_ratio );
+  EXPECT_EQ( v.size(), v.getCapacity() );
 
-  capacity = calc_new_capacity( v, 1 );
-  v.add( 0 );
-  size += 1;
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v[0], 0 );
-
-  const localIndex n_vals = 1000 * num_components;
-  T values[ n_vals ];
-  for ( localIndex i = 0 ; i < n_vals ; ++i )
-  {
-    values[ i ] = i + 1;
+  /* Set the existing data in v */
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      v( i, j ) = i * j - 5 * i + 7 * j;
+    }
   }
 
-  capacity = calc_new_capacity( v, n_vals );
-  v.add( values, n_vals );
-  size += n_vals;
+  /* Append a new tuple, should resize. */
+  localIndex old_capacity = capacity;
+  capacity = calc_new_capacity( v, 1 );
+  T tuple[ num_components ];
+  for ( localIndex j = 0; j < num_components; ++j ) {
+    tuple[ j ] = size * j - 5 * size + 7 * j;
+  }
+  v.append( tuple, 1 );
+  size++;
 
+  /* Check that it resized properly */
+  EXPECT_GT( capacity, old_capacity );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.size(), size );
-  for ( localIndex i = 0 ; i < size ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
   }
 
-  capacity = calc_new_capacity( v, 1 );
-  v.add( n_vals + 1 );
-  size += 1;
+  /* Append 1000 tuples */
+  const localIndex n_tuples = 1000;
+  T values[ n_tuples * num_components ];
+  for ( localIndex i = 0; i < n_tuples; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      localIndex i_real = i + size;
+      values[ i * num_components + j ] = i_real * j - 5 * i_real + 7 * j;
+    }
+  }
 
+  capacity = calc_new_capacity( v, n_tuples );
+  v.append( values, n_tuples );
+  size += n_tuples;
+
+  /* Check that it resize properly */
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v[ size - 1 ], n_vals + 1 );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
+  }
 
+  /* Reduce the size down to 500 tuples */
   T* data_address = v.getData();
-  size = 500 * num_components;
-// TODO: ???
-//  v.setSize(size);
+  size = 500;
+  v.resize(size);
   EXPECT_EQ( v.size(), size );
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
-  for ( localIndex i = 0 ; i < size ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
   }
 
-  capacity = 250 * num_components;
-  size = capacity;
-
-// TODO: ???
-//  v.setCapacity( capacity );
+  /* Shrink the vector */
+  capacity = size;
+  v.shrink();
 
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.size(), size );
-  for ( localIndex i = 0 ; i < size ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
   }
 
-  size += n_vals;
-  capacity = std::ceil( size / num_components ) * num_components;
+  /* Append a new tuple, should resize. */
+  old_capacity = capacity;
+  capacity = calc_new_capacity( v, 1 );
+  for ( localIndex j = 0; j < num_components; ++j ) {
+    tuple[ j ] = size * j - 5 * size + 7 * j;
+  }
+  v.append( tuple, 1 );
+  size++;
 
-// TODO: ???
-//  v.setSize( size );
-
-  EXPECT_EQ( v.size(), size );
+  /* Check that it resized properly */
+  EXPECT_GT( capacity, old_capacity );
   EXPECT_EQ( v.getCapacity(), capacity );
-
-  v.set( values, n_vals, size - n_vals );
   EXPECT_EQ( v.size(), size );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
+  }
+
+  /* Reset the data */
+  T* data_ptr = v.getData();
+  for ( localIndex i = 0; i < size * num_components; ++i ) {
+    data_ptr[ i ] = i;
+  }
+
+  /* Append a bunch of tuples to fill in up to the capacity. Resize should
+     not occur. */
+  old_capacity = capacity;
+  capacity = calc_new_capacity( v, old_capacity - size + 1 );
+  for ( localIndex i = size; i < old_capacity; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      tuple[ j ] = i * num_components + j;
+    }
+
+    v.append( tuple, 1 );
+    size++;
+    EXPECT_EQ( v.getCapacity(), old_capacity );
+    EXPECT_EQ( v.size(), size );
+    EXPECT_EQ( v.getData(), data_ptr );
+  }
+  
+  EXPECT_EQ( v.size(), old_capacity );
+  
+  /* Append a final tuple that should trigger a resize. */
+  for ( localIndex j = 0; j < num_components; ++j ) {
+    tuple[ j ] = size * num_components + j;
+  }
+
+  v.append( tuple, 1 );
+  size++;
+  EXPECT_GT( capacity, old_capacity );
   EXPECT_EQ( v.getCapacity(), capacity );
-
-  for ( localIndex i = 0 ; i < size - n_vals ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  for ( localIndex i = size - n_vals ; i < size ; ++i )
-  {
-    EXPECT_EQ( v[ i ], values[i - size + n_vals] );
-  }
-
-  capacity = 1000 * num_components;
-  size = capacity;
-// TODO: ???
-//  v.setCapacity( capacity );
-//  v.setSize( size );
-  data_address = v.getData();
-
-  for ( localIndex i = 0 ; i < size ; ++i )
-  {
-    data_address[ i ] = i * i;
-  }
-
   EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.getData(), data_address );
 
-  for ( localIndex i = 0 ; i < size ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i * i );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * num_components + j );
+    }
   }
+
 }
 
-//------------------------------------------------------------------------------
+/*!
+ * \brief Check that the insertion into an Array is working properly.
+ * \param [in] v the Array to check.
+ */
 template < typename T >
-void check_insert( double resize_ratio )
+void check_insert( Array< T >& v )
 {
-  localIndex capacity = 0;
-  localIndex size = 0;
-  Array< T > v( capacity, resize_ratio );
+  /* Resize the array up to the capacity */
+  localIndex capacity = v.getCapacity();
+  v.resize( capacity );
+  localIndex size = capacity;
+  localIndex num_components = v.getNumComponents();
 
-  localIndex num_vals = 1000;
+  EXPECT_EQ( v.size(), v.getCapacity() );
 
-  for ( localIndex i = 0 ; i < num_vals ; ++i )
-  {
+  /* Set the existing data in v */
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      v( i, j ) = i * j - 5 * i + 7 * j;
+    }
+  }
+
+  /* Append a new tuple, should resize. */
+  localIndex old_capacity = capacity;
+  capacity = calc_new_capacity( v, 1 );
+  T tuple[ num_components ];
+  for ( localIndex j = 0; j < num_components; ++j ) {
+    tuple[ j ] = size * j - 5 * size + 7 * j;
+  }
+  v.insert( tuple, 1, v.size() );
+  size++;
+
+  /* Check that it resized properly */
+  EXPECT_GT( capacity, old_capacity );
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
+  }
+
+  /* Append 1000 tuples */
+  const localIndex n_tuples = 1000;
+  T values[ n_tuples * num_components ];
+  for ( localIndex i = 0; i < n_tuples; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      localIndex i_real = i + size;
+      values[ i * num_components + j ] = i_real * j - 5 * i_real + 7 * j;
+    }
+  }
+
+  capacity = calc_new_capacity( v, n_tuples );
+  v.insert( values, n_tuples, size );
+  size += n_tuples;
+
+  /* Check that it resizes properly */
+  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+    }
+  }
+
+  capacity = size;
+  v.shrink();
+  localIndex n_insert_front = 100;
+
+  /* Reset the data */
+  T* data_ptr = v.getData();
+  for ( localIndex i = 0; i < size * num_components; ++i ) {
+    data_ptr[ i ] = i + num_components * n_insert_front;
+  }
+
+  /* Insert into the front of the Array. */
+  for ( localIndex i = n_insert_front - 1; i >= 0; i--) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      tuple[ j ] = i * num_components + j;
+    }
     capacity = calc_new_capacity( v, 1 );
-    v.insert( 2 * i, size );
+    v.insert( tuple, 1, 0 );
     size++;
   }
 
+  /* Check that the insertion worked as expected */
   EXPECT_EQ( v.getCapacity(), capacity );
   EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v.size(), num_vals );
-
-  for ( localIndex i = 0 ; i < num_vals ; ++i )
-  {
-    EXPECT_EQ( v[ i ], 2 * i );
+  for ( localIndex i = 0; i < size; ++i ) {
+    for ( localIndex j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v( i, j ), i * num_components + j );
+    }
   }
 
-  for ( localIndex i = 0 ; i < num_vals ; ++i )
-  {
-    capacity = calc_new_capacity( v, 1 );
-    v.insert( 2 * i + 1, 2 * i + 1 );
-    size++;
-  }
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v.size(), 2 * num_vals );
-
-  for ( localIndex i = 0 ; i < 2 * num_vals ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i );
-  }
-
-  T values[ num_vals ];
-  for ( localIndex i = 0 ; i < num_vals ; ++i )
-  {
-    values[ i ] = i * ( i - 4 ) + 5;
-  }
-
-  capacity = calc_new_capacity( v, num_vals );
-  size += num_vals;
-  v.insert( values, num_vals, 0 );
-
-  EXPECT_EQ( v.getCapacity(), capacity );
-  EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v.size(), 3 * num_vals );
-
-  for ( localIndex i = 0 ; i < num_vals ; ++i )
-  {
-    EXPECT_EQ( v[ i ], values[ i ] );
-  }
-
-  for ( localIndex i = num_vals ; i < 3 * num_vals ; ++i )
-  {
-    EXPECT_EQ( v[ i ], i - num_vals );
-  }
 }
 
+/*!
+ * \brief Make a copy of an Array through sidre and check it for defects.
+ * \param [in] v the Array to copy.
+ */
+template< typename T >
+void load_and_check( Array< T >& v )
+{
+#ifdef MINT_USE_SIDRE
+  Array< T > cpy = Array< T >(v.getView(), v.size() );
+  cpy.setResizeRatio( v.getResizeRatio() );
+
+  check_equality( v, cpy );
+  cpy.resize(0);
+  check_storage( cpy );
+  check_resize( cpy );
 #endif
+}
 
 }   /* end namespace internal */
 
@@ -396,18 +479,63 @@ TEST( mint_array, checkStorage )
   }
 }
 
-#if 0
 //------------------------------------------------------------------------------
 TEST( mint_array, checkResize )
 {
-  for ( int num_components = 1 ; num_components < 5 ; ++num_components )
-  {
-    for ( double resize_ratio = 1.0 ; resize_ratio < 3 ; resize_ratio += 0.3 )
-    {
-      internal::check_resize< int > ( num_components, resize_ratio );
-      internal::check_resize< long int >( num_components, resize_ratio );
-      internal::check_resize< float >( num_components, resize_ratio );
-      internal::check_resize< double >( num_components, resize_ratio );
+  #ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+#endif  
+
+  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
+    localIndex capacity = 2;
+    for ( int i = 1 ; i < 10; ++i ) {
+      for ( int num_components = 1; num_components < 5; num_components++ ) {
+        Array< int > v_int = Array< int >( capacity, 0, num_components );
+        v_int.setResizeRatio( ratio );
+        internal::check_resize( v_int );
+        
+        Array< long > v_long = Array< long >( capacity, 0, num_components );
+        v_long.setResizeRatio( ratio );
+        internal::check_resize( v_long );
+        
+        Array< float > v_float = Array< float >( capacity, 0, num_components );
+        v_float.setResizeRatio( ratio );
+        internal::check_resize( v_float );
+        
+        Array< double > v_double = Array< double >( capacity, 0, num_components );
+        v_double.setResizeRatio( ratio );
+        internal::check_resize( v_double );
+
+#ifdef MINT_USE_SIDRE
+        v_int = Array< int >( root->createView("int"), capacity, 0, 
+                              num_components);
+        v_int.setResizeRatio( ratio );
+        internal::check_resize( v_int );
+        internal::load_and_check( v_int );
+
+        v_long  = Array< long >( root->createView("long"), capacity, 0,
+                                 num_components);
+        v_long.setResizeRatio( ratio );
+        internal::check_resize( v_long );
+        internal::load_and_check( v_long );
+
+        v_float  = Array< float >( root->createView("float"), capacity, 0,
+                                   num_components);
+        v_float.setResizeRatio( ratio );
+        internal::check_resize( v_float );
+        internal::load_and_check( v_float );
+
+        v_double  = Array< double >( root->createView("double"), capacity, 0,
+                                     num_components);
+        v_double.setResizeRatio( ratio );
+        internal::check_resize( v_double );
+        internal::load_and_check( v_double );
+
+        root->destroyViewsAndData();
+#endif
+      }
+      capacity *= 2;
     }
   }
 }
@@ -415,18 +543,64 @@ TEST( mint_array, checkResize )
 //------------------------------------------------------------------------------
 TEST( mint_array, checkInsert )
 {
-  for ( double resize_ratio = 1.0 ; resize_ratio < 3 ; resize_ratio += 0.3 )
-  {
-    internal::check_insert< int > ( resize_ratio );
-    internal::check_insert< long int >( resize_ratio );
-    internal::check_insert< float >( resize_ratio );
-    internal::check_insert< double >( resize_ratio );
+  #ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+#endif  
+
+  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
+    localIndex capacity = 2;
+    for ( int i = 1 ; i < 10; ++i ) {
+      for ( int num_components = 1; num_components < 5; num_components++ ) {
+        Array< int > v_int = Array< int >( capacity, 0, num_components );
+        v_int.setResizeRatio( ratio );
+        internal::check_insert( v_int );
+        
+        Array< long > v_long = Array< long >( capacity, 0, num_components );
+        v_long.setResizeRatio( ratio );
+        internal::check_insert( v_long );
+        
+        Array< float > v_float = Array< float >( capacity, 0, num_components );
+        v_float.setResizeRatio( ratio );
+        internal::check_insert( v_float );
+        
+        Array< double > v_double = Array< double >( capacity, 0, num_components );
+        v_double.setResizeRatio( ratio );
+        internal::check_insert( v_double );
+
+#ifdef MINT_USE_SIDRE
+        v_int = Array< int >( root->createView("int"), capacity, 0, 
+                              num_components);
+        v_int.setResizeRatio( ratio );
+        internal::check_insert( v_int );
+        internal::load_and_check( v_int );
+
+        v_long  = Array< long >( root->createView("long"), capacity, 0,
+                                 num_components);
+        v_long.setResizeRatio( ratio );
+        internal::check_insert( v_long );
+        internal::load_and_check( v_long );
+
+        v_float  = Array< float >( root->createView("float"), capacity, 0,
+                                   num_components);
+        v_float.setResizeRatio( ratio );
+        internal::check_insert( v_float );
+        internal::load_and_check( v_float );
+
+        v_double  = Array< double >( root->createView("double"), capacity, 0,
+                                     num_components);
+        v_double.setResizeRatio( ratio );
+        internal::check_insert( v_double );
+        internal::load_and_check( v_double );
+
+        root->destroyViewsAndData();
+#endif
+      }
+      capacity *= 2;
+    }
   }
 }
 
-/* test copy / move */
-
-#endif
 
 } /* end namespace mint */
 } /* end namespace axom */
