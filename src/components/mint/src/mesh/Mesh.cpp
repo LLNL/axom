@@ -104,22 +104,22 @@ Mesh::Mesh( sidre::Group* group ) :
   m_node_capacity( AXOM_NULLPTR ),
   m_node_resize_ratio( AXOM_NULLPTR )
 {
-  SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3 , "");
-  SLIC_ERROR_IF( m_group == AXOM_NULLPTR , "");
-  SLIC_ERROR_IF( m_group->getNumGroups() == 0 , "");
-  SLIC_ERROR_IF( m_group->getNumViews() == 0 , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "ndims" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "type" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "block_idx" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "part_idx" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "num_cells" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "cell_resize_ratio" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "num_faces" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "face_resize_ratio" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "num_edges" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "edge_resize_ratio" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "num_nodes" ) , "");
-  SLIC_ERROR_IF( !m_group->hasChildView( "node_resize_ratio" ) , "");
+  SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "");
+  SLIC_ERROR_IF( m_group == AXOM_NULLPTR, "");
+  SLIC_ERROR_IF( m_group->getNumGroups() == 0, "");
+  SLIC_ERROR_IF( m_group->getNumViews() == 0, "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "ndims" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "type" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "block_idx" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "part_idx" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "num_cells" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "cell_resize_ratio" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "num_faces" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "face_resize_ratio" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "num_edges" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "edge_resize_ratio" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "num_nodes" ), "");
+  SLIC_ERROR_IF( !m_group->hasChildView( "node_resize_ratio" ), "");
 
   sidre::View* view = m_group->getView( "ndims" );
   SLIC_ERROR_IF( !view->isScalar(), "" );

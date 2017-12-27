@@ -133,19 +133,19 @@ private:
 
 //------------------------------------------------------------------------------
 template <>
-double * FieldVariable< double >::getDoublePtr();
+double* FieldVariable< double >::getDoublePtr();
 
 //------------------------------------------------------------------------------
 template <>
-const double * FieldVariable< double >::getDoublePtr() const;
+const double* FieldVariable< double >::getDoublePtr() const;
 
 //------------------------------------------------------------------------------
 template <>
-int * FieldVariable< int >::getIntPtr();
+int* FieldVariable< int >::getIntPtr();
 
 //------------------------------------------------------------------------------
 template <>
-const int * FieldVariable< int >::getIntPtr() const;
+const int* FieldVariable< int >::getIntPtr() const;
 
 
 

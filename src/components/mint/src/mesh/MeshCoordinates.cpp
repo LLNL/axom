@@ -86,7 +86,9 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
     const char* coord_name = coord_names[ m_ndims ];
 
     if ( !values_group->hasChildView( coord_name ) )
-    { break; }
+    {
+      break;
+    }
 
     sidre::View* coord_view = values_group->getView( coord_name );
     SLIC_ERROR_IF( coord_view->getNumDimensions() != 2, "" );
@@ -103,15 +105,17 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
   SLIC_ERROR_IF( m_ndims != dimension, "");
 
   for ( int i = m_ndims ; i < 3 ; ++i )
-  { m_coordinates[ i ] = AXOM_NULLPTR; }
+  {
+    m_coordinates[ i ] = AXOM_NULLPTR;
+  }
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension, 
+MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
                                   localIndex capacity, localIndex size,
                                   double resize_ratio ) :
   m_ndims( dimension )
-{ 
+{
   SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "" );
   SLIC_ERROR_IF( group == AXOM_NULLPTR, "" );
   SLIC_ERROR_IF( group->getNumGroups() != 0, "" );

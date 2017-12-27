@@ -120,7 +120,7 @@ public:
    * \brief Returns the coordinates of the given node.
    * \param [in] nodeIdx the index of the node in query.
    * \param [out] coordinates user-supplied buffer to store the node
-   *coordinates.
+   * coordinates.
    * \pre nodeIdx >= && nodeIdx < getMeshNumberOfNodes()
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
@@ -227,7 +227,7 @@ public:
 
   /*!
    * \brief Returns the linear index corresponding to the given logical grid
-   *cell
+   * cell
    * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.
@@ -240,7 +240,7 @@ public:
 
   /*!
    * \brief Returns the linear index corresponding to the given logical grid
-   *cell
+   * cell
    * indices.
    * \param [in] i logical cell index of the first dimension.
    * \param [in] j logical cell index of the second dimension.

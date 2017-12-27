@@ -50,7 +50,7 @@ public:
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
    * \param [in] upper_bound the corner opposite lower_bound of the bounding
-   *box.
+   * box.
    */
   UniformMesh( int dimension, const globalIndex ext[6],
                const double lower_bound[3], const double upper_bound[3] );
@@ -74,7 +74,7 @@ public:
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
    * \param [in] upper_bound the corner opposite lower_bound of the bounding
-   *box.
+   * box.
    * \param [in] blockId the block ID of this mesh.
    * \param [in] partitionId the partition ID of this mesh.
    */

@@ -27,8 +27,10 @@ namespace axom
 {
 namespace sidre
 {
-  class DataStore { };
-  class View { };
+class DataStore
+{ };
+class View
+{ };
 } /* namespace sidre */
 } /* namespace axom */
 #endif
@@ -82,5 +84,3 @@ sidre::Group* get_group( const std::string& path )
 } /* namespace database */
 } /* namespace mint */
 } /* namespace axom */
-
-

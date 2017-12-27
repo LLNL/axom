@@ -33,14 +33,17 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ) :
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
- for ( int dim = 0 ; dim < m_ndims ; ++dim ) {
-   m_coordinates[ dim ] = 
-             new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
-   m_coordinates[ dim ]->setResizeRatio( 0.0 );
- }
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+  {
+    m_coordinates[ dim ] =
+      new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
+    m_coordinates[ dim ]->setResizeRatio( 0.0 );
+  }
 
- for (int dim = m_ndims ; dim < 3 ; ++dim )
- { m_coordinates[ dim ] = AXOM_NULLPTR; }
+  for (int dim = m_ndims ; dim < 3 ; ++dim )
+  {
+    m_coordinates[ dim ] = AXOM_NULLPTR;
+  }
 
 }
 
@@ -53,21 +56,26 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6],
   localIndex ext_size[3];
   this->getExtentSize( ext_size );
 
-  for ( int dim = 0 ; dim < m_ndims ; ++dim ) {
-    m_coordinates[ dim ] = 
-                     new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
+  {
+    m_coordinates[ dim ] =
+      new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   }
 
   for (int dim = m_ndims ; dim < 3 ; ++dim )
-  { m_coordinates[ dim ] = AXOM_NULLPTR; }
+  {
+    m_coordinates[ dim ] = AXOM_NULLPTR;
+  }
 }
 
 //------------------------------------------------------------------------------
 RectilinearMesh::~RectilinearMesh()
 {
-  for ( int dim = 0; dim < 3; ++dim ) {
-    if ( m_coordinates[ dim ] != AXOM_NULLPTR ) {
+  for ( int dim = 0 ; dim < 3 ; ++dim )
+  {
+    if ( m_coordinates[ dim ] != AXOM_NULLPTR )
+    {
       delete m_coordinates[ dim ];
       m_coordinates[ dim ] = AXOM_NULLPTR;
     }

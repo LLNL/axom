@@ -133,31 +133,31 @@ public:
     m_connectivity.set( cell, m_stride, cellIdx * m_stride );
   }
 
- /*!
-  * \brief Get the maximum number of points that can currently be held.
-  * \return N the capacity of m_coordinates.
-  */
- localIndex getCapacity() const
- { return m_connectivity.getCapacity(); }
+  /*!
+   * \brief Get the maximum number of points that can currently be held.
+   * \return N the capacity of m_coordinates.
+   */
+  localIndex getCapacity() const
+  { return m_connectivity.getCapacity(); }
 
 
- void reserve( localIndex capacity )
- { m_connectivity.reserve( capacity ); }
+  void reserve( localIndex capacity )
+  { m_connectivity.reserve( capacity ); }
 
   /*!
    * \brief Returns the number of points in this CellConnectivity instance.
    * \return npoint the number points in this CellConnectivity instance.
    */
- localIndex getTotalNumberOfNodes() const
- { return m_connectivity.size() * m_connectivity.getNumComponents(); }
+  localIndex getTotalNumberOfNodes() const
+  { return m_connectivity.size() * m_connectivity.getNumComponents(); }
 
 
- double getResizeRatio() const
- { return m_connectivity.getResizeRatio(); }
+  double getResizeRatio() const
+  { return m_connectivity.getResizeRatio(); }
 
 
- void setResizeRatio( double ratio )
- { m_connectivity.setResizeRatio( ratio ); }
+  void setResizeRatio( double ratio )
+  { m_connectivity.setResizeRatio( ratio ); }
 
 private:
 
@@ -307,7 +307,7 @@ public:
 
     /* STEP 1: get to/from pointers. */
     const localIndex offset = m_offset( cellIdx );
-    
+
     m_connectivity.set( cell, nnodes, offset );
   }
 
@@ -329,10 +329,10 @@ public:
     m_cell_type.reserve( capacity );
   }
 
- /*!
-  * \brief Returns the number of points in this CellConnectivity instance.
-  * \return npoint the number points in this CellConnectivity instance.
-  */
+  /*!
+   * \brief Returns the number of points in this CellConnectivity instance.
+   * \return npoint the number points in this CellConnectivity instance.
+   */
   localIndex getSize() const
   { return m_connectivity.size(); }
 

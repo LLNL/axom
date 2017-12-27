@@ -76,7 +76,7 @@ public:
 
   /*!
    * \brief Returns the ith field of this FieldData instance as a constant
-   *pointer.
+   * pointer.
    * \param [in] i the index of the field in query.
    * \return f constant pointer to the field in query.
    * \pre i >= 0 && i < this->getNumberOfFields()
@@ -260,25 +260,31 @@ inline Field* FieldData::addField( const std::string& name, localIndex size,
 //------------------------------------------------------------------------------
 inline void FieldData::resize( localIndex size )
 {
- typename std::map< std::string, Field * >::iterator it;
- for ( it = m_container.begin() ; it != m_container.end() ; ++it )
- { it->second->resize( size ); }
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
+    it->second->resize( size );
+  }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::reserve( localIndex capacity )
 {
- typename std::map< std::string, Field * >::iterator it;
- for ( it = m_container.begin() ; it != m_container.end() ; ++it )
- { it->second->reserve( capacity ); }
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
+    it->second->reserve( capacity );
+  }
 }
 
 //------------------------------------------------------------------------------
 inline void FieldData::setResizeRatio( double ratio )
 {
- typename std::map< std::string, Field * >::iterator it;
- for ( it = m_container.begin() ; it != m_container.end() ; ++it )
- { it->second->setResizeRatio( ratio ); }
+  typename std::map< std::string, Field* >::iterator it;
+  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+  {
+    it->second->setResizeRatio( ratio );
+  }
 }
 
 

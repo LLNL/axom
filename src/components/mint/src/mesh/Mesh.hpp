@@ -31,7 +31,7 @@ namespace axom
 #ifdef MINT_USE_SIDRE
 namespace sidre
 {
-  class Group;
+class Group;
 }
 #endif
 

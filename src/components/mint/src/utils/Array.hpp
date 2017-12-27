@@ -73,7 +73,7 @@ public:
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
    */
-  Array( localIndex capacity, localIndex num_tuples, 
+  Array( localIndex capacity, localIndex num_tuples,
          localIndex num_components );
 
   /*!
@@ -107,7 +107,7 @@ public:
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
    */
-  Array( sidre::View* view, localIndex num_tuples, 
+  Array( sidre::View* view, localIndex num_tuples,
          localIndex num_components );
 
   /*!
@@ -141,7 +141,7 @@ public:
    * \param [in] component the component to return.
    * \return a reference to the given component of the specified tuple.
    */
-  inline T & operator()( localIndex pos, localIndex component=0 ) 
+  inline T & operator()( localIndex pos, localIndex component=0 )
   { return m_data[ pos * m_num_components + component ]; }
 
   /*!
@@ -241,7 +241,7 @@ public:
   inline void reserve( localIndex capacity )
   { if ( capacity > m_capacity ) setCapacity( capacity ); }
 
-   /*!
+  /*!
    * \brief Shrink the capacity to be equal to the size.
    */
   inline void shrink()
@@ -252,7 +252,7 @@ public:
    * \return true iff the Array stores no elements.
    * \note If the Array is empty the capacity can still be greater than zero.
    */
-  inline bool empty() const 
+  inline bool empty() const
   { return m_num_tuples == 0; }
 
   /*!
@@ -271,21 +271,21 @@ public:
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
    * \return The ration by which the capacity increases upon dynamic resize.
    */
-  inline double getResizeRatio() const 
+  inline double getResizeRatio() const
   { return m_resize_ratio; }
 
   /*!
    * \breif Set the ratio by which the capacity increases upon dynamic resize.
    * \param [in] ratio the new resize ratio.
    */
-  inline void setResizeRatio( double ratio ) 
+  inline void setResizeRatio( double ratio )
   { m_resize_ratio = ratio; }
 
   /*!
    * \brief Get the chunk size of all allocations.
    * \return the chunk size of all allocations.
    */
-  inline localIndex getNumComponents() const 
+  inline localIndex getNumComponents() const
   { return m_num_components; }
 
 
@@ -379,10 +379,10 @@ Array< T >::Array( localIndex num_tuples, localIndex num_components ) :
 
   setCapacity( m_num_tuples * m_resize_ratio );
 }
-  
+
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( localIndex capacity, localIndex num_tuples, 
+Array< T >::Array( localIndex capacity, localIndex num_tuples,
                    localIndex num_components ) :
 #ifdef MINT_USE_SIDRE
   m_view( AXOM_NULLPTR ),
@@ -458,14 +458,15 @@ Array< T >::Array( sidre::View* view, localIndex num_tuples ) :
   sidre::TypeID view_type = m_view->getTypeID();
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
   SLIC_ERROR_IF( view_type != T_type, "View data type (" << view_type << ")"
-                 << "differs from this Array type (" << T_type << ")." );
+                                                         << "differs from this Array type (" << T_type <<
+      ")." );
 
-  m_data = static_cast< T * >( m_view->getVoidPtr() );
+  m_data = static_cast< T* >( m_view->getVoidPtr() );
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( sidre::View* view, localIndex num_tuples, 
+Array< T >::Array( sidre::View* view, localIndex num_tuples,
                    localIndex num_components ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
@@ -526,7 +527,7 @@ Array< T >::Array( sidre::View* view, localIndex capacity,
   dims[1] = m_num_components;
   m_view->allocate( T_type, m_capacity * m_num_components );
   m_view->apply( T_type, 2, dims );
-  m_data = static_cast< T * >( m_view->getVoidPtr() );
+  m_data = static_cast< T* >( m_view->getVoidPtr() );
 }
 #endif
 
@@ -536,10 +537,14 @@ Array< T >::~Array()
 {
 #ifdef MINT_USE_SIDRE
   if ( m_view == AXOM_NULLPTR && m_data != AXOM_NULLPTR )
-  { utilities::free( m_data ); }
+  {
+    utilities::free( m_data );
+  }
 #else
   if ( m_data != AXOM_NULLPTR )
-  { utilities::free( m_data ); }
+  {
+    utilities::free( m_data );
+  }
 #endif
   m_data = AXOM_NULLPTR;
 }
@@ -553,7 +558,9 @@ inline void Array< T >::append( const T& value )
 
   localIndex new_size = m_num_tuples + 1;
   if ( new_size > m_capacity )
-  { dynamicRealloc( new_size ); }
+  {
+    dynamicRealloc( new_size );
+  }
 
   m_data[ m_num_tuples ] = value;
   m_num_tuples = new_size;
@@ -565,7 +572,9 @@ inline void Array< T >::append( const T* tuples, localIndex n )
 {
   localIndex new_size = m_num_tuples + n;
   if ( new_size > m_capacity )
-  { dynamicRealloc( new_size ); }
+  {
+    dynamicRealloc( new_size );
+  }
 
   T* cur_end = m_data + m_num_tuples * m_num_components;
   std::memcpy( cur_end, tuples, n * m_num_components * sizeof(T) );
@@ -609,7 +618,9 @@ inline void Array< T >::resize( localIndex num_tuples )
 
   m_num_tuples = num_tuples;
   if ( m_num_tuples > m_capacity )
-  { setCapacity( m_resize_ratio * m_num_tuples ); }
+  {
+    setCapacity( m_resize_ratio * m_num_tuples );
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -620,13 +631,16 @@ inline void Array< T >::setCapacity( localIndex capacity )
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
 
   m_capacity = capacity;
-  if ( m_capacity < m_num_tuples ) {
+  if ( m_capacity < m_num_tuples )
+  {
     m_num_tuples = m_capacity;
   }
 
 #ifdef MINT_USE_SIDRE
   if ( m_view != AXOM_NULLPTR )
-  { return allocate_view_data(); }
+  {
+    return allocate_view_data();
+  }
 #endif
 
   m_data = utilities::realloc( m_data, m_capacity * m_num_components );
@@ -645,7 +659,9 @@ inline void Array< T >::dynamicRealloc( localIndex new_num_tuples )
 
 #ifdef MINT_USE_SIDRE
   if ( m_view != AXOM_NULLPTR )
-  { return allocate_view_data(); }
+  {
+    return allocate_view_data();
+  }
 #endif
 
   m_data = utilities::realloc( m_data, m_capacity * m_num_components );
@@ -663,12 +679,15 @@ inline T* Array< T >::reserveForInsert( localIndex n, localIndex pos )
 
   localIndex new_size = m_num_tuples + n;
   if ( new_size > m_capacity )
-  { dynamicRealloc( new_size ); }
+  {
+    dynamicRealloc( new_size );
+  }
 
   T* const insert_pos = m_data + pos * m_num_components;
   T* cur_pos = m_data + (m_num_tuples * m_num_components) - 1;
-  for ( ; cur_pos >= insert_pos ; --cur_pos ) { 
-    *(cur_pos + n * m_num_components) = *cur_pos; 
+  for ( ; cur_pos >= insert_pos ; --cur_pos )
+  {
+    *(cur_pos + n * m_num_components) = *cur_pos;
   }
 
   m_num_tuples = new_size;
@@ -701,7 +720,7 @@ inline void Array< T >::allocate_view_data()
   dims[0] = m_capacity;
   dims[1] = m_num_components;
   m_view->apply(T_type, 2, dims );
-  m_data = static_cast< T * >( m_view->getVoidPtr() );
+  m_data = static_cast< T* >( m_view->getVoidPtr() );
 
   SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                  "Array reallocation failed." );

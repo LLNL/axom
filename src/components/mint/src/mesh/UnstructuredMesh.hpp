@@ -212,8 +212,8 @@ public:
    * \brief Get the number of nodes that can be stored.
    * \return The capacity of the node array.
    */
- localIndex getNodeCapacity() const
- { return m_node_coordinates->getCapacity(); };
+  localIndex getNodeCapacity() const
+  { return m_node_coordinates->getCapacity(); };
 
 //  /*!
 //   * \brief Set the number of nodes that can be stored.
@@ -225,15 +225,15 @@ public:
 //  }
 
 
- double getNodeResizeRatio() const
- { return m_node_coordinates->getResizeRatio(); }
+  double getNodeResizeRatio() const
+  { return m_node_coordinates->getResizeRatio(); }
 
 
- void setNodeResizeRatio( double ratio )
- {
-   m_node_coordinates->setResizeRatio( ratio );
-   this->setNodeDataResizeRatio( ratio );
- }
+  void setNodeResizeRatio( double ratio )
+  {
+    m_node_coordinates->setResizeRatio( ratio );
+    this->setNodeDataResizeRatio( ratio );
+  }
 
   /*!
    * \brief Returns the total number cells in the mesh.
@@ -253,19 +253,19 @@ public:
   { return m_cell_connectivity->getNumberOfNodes( cellIdx ); }
 
   /*!
-  * \brief Get the number of nodes that can be stored in the cell
+   * \brief Get the number of nodes that can be stored in the cell
      connectivity.
-  * \return the number of nodes that can be stored in the cell connectivity.
-  */
+   * \return the number of nodes that can be stored in the cell connectivity.
+   */
   localIndex getCellNodeCapacity() const
   { return m_cell_connectivity->getCapacity(); }
 
   /*!
-  * \brief Set the number of nodes that can be stored in the cell
+   * \brief Set the number of nodes that can be stored in the cell
      connectivity.
-  * \param capacity the number of nodes that can be stored in the cell
-  *  connectivity.
-  */
+   * \param capacity the number of nodes that can be stored in the cell
+   *  connectivity.
+   */
   // void setCellNodeCapacity( localIndex capacity )
   // { m_cell_connectivity.setCellCapacity( capacity ); }
 
@@ -274,13 +274,13 @@ public:
   { return m_cell_connectivity->getResizeRatio(); }
 
 
- void setCellResizeRatio( double ratio )
- {
-   m_cell_connectivity->setResizeRatio( ratio );
-   this->setCellDataResizeRatio( ratio );
-   this->setFaceDataResizeRatio( ratio );
-   this->setEdgeDataResizeRatio( ratio );
- }
+  void setCellResizeRatio( double ratio )
+  {
+    m_cell_connectivity->setResizeRatio( ratio );
+    this->setCellDataResizeRatio( ratio );
+    this->setFaceDataResizeRatio( ratio );
+    this->setEdgeDataResizeRatio( ratio );
+  }
 
   /*!
    * \brief Adds a new cell in the mesh

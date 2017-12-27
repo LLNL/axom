@@ -210,7 +210,9 @@ inline void RectilinearMesh::getNode( localIndex nodeIdx,
   m_extent.getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
 
   for ( int dim = 0 ; dim < this->getDimension() ; ++dim )
-  { coordinates[ dim ] = (*m_coordinates[ dim ])( ijk[ dim ] ); }
+  {
+    coordinates[ dim ] = (*m_coordinates[ dim ])( ijk[ dim ] );
+  }
 }
 
 //------------------------------------------------------------------------------

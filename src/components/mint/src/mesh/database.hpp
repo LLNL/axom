@@ -30,9 +30,9 @@ namespace axom
 // Forward Declarations
 namespace sidre
 {
-  class View;
-  class Group;
-  class DataStore;
+class View;
+class Group;
+class DataStore;
 }
 
 namespace mint

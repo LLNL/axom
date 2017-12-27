@@ -38,7 +38,7 @@ class Gaussian2D
 public:
   /*!
    * \brief Creates a 2D Guassian with the given amplitude, mean, and
-   *covariance.
+   * covariance.
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
    * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
@@ -160,7 +160,7 @@ public:
 
   /*!
    * \brief Apply a two dimensional gaussian to the mesh as an initial
-   *condition.
+   * condition.
    * \param [in] pulse the pulse to apply.
    */
   void initialize( const Gaussian2D& pulse )
