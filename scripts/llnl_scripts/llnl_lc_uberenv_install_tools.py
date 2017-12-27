@@ -480,7 +480,15 @@ def full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp):
 def get_host_configs_for_current_machine(src_dir):
     host_configs = []
 
+    # Note: This function is called in two situations:
+    # (1) To test the checked-in host-configs from a source dir 
+    #   In that case, check the 'host-configs' directory
+    # (2) To test the uberenv-generated host-configs
+    #   In that case, host-configs should be in src_dir
+    
     host_configs_dir = pjoin(src_dir, "host-configs")
+    if not os.path.isdir(host_configs_dir):
+        host_configs_dir = src_dir
 
     hostname_base = get_machine_name()
 
