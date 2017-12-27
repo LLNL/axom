@@ -39,7 +39,8 @@ bool IndirectionSet::isValid(bool verboseOutput) const
 
   std::stringstream errStr;
 
-  // Not much to check here since we are essentially wrapping around an array/vector
+  // Not much to check here since we are essentially wrapping around an
+  // array/vector
 
   if(verboseOutput)
   {

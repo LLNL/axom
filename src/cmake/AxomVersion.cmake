@@ -17,7 +17,7 @@
 ##       otherwise, the hard-coded values will go in to the config.
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 2)
-set(AXOM_VERSION_PATCH 7)
+set(AXOM_VERSION_PATCH 8)
 string(CONCAT AXOM_VERSION_FULL 
     "v${AXOM_VERSION_MAJOR}"
     ".${AXOM_VERSION_MINOR}"

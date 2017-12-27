@@ -51,18 +51,18 @@ TEST(spio_parallel, parallel_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
-  int * i1_vals = gb->getView("i1")->getData();
+  int* i1_vals = gb->getView("i1")->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -85,24 +85,24 @@ TEST(spio_parallel, parallel_writeread)
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0)
   {
-    DataStore * dsextra = new DataStore();
-    Group * extra = dsextra->getRoot()->createGroup("extra");
+    DataStore* dsextra = new DataStore();
+    Group* extra = dsextra->getRoot()->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
-    Group * child = extra->createGroup("child");
+    Group* child = extra->createGroup("child");
     child->createViewScalar<int>("ival", 7);
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");
 
     writer.writeGroupToRootFile(extra, root_name);
 
-    Group * path_test = dsextra->getRoot()->createGroup("path_test");
+    Group* path_test = dsextra->getRoot()->createGroup("path_test");
 
     path_test->createViewScalar<int>("path_val", 9);
     path_test->createViewString("word2", "again");
 
     writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
 
-    View * view_test =
+    View* view_test =
       dsextra->getRoot()->createViewString("word3", "new_view");
 
     writer.writeViewToRootFileAtPath(view_test,
@@ -138,7 +138,7 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
@@ -161,17 +161,17 @@ TEST(spio_parallel, parallel_writeread)
 
   EXPECT_EQ(testvalue, testvalue2);
 
-  View * view_i1_orig =
+  View* view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  View * view_i1_restored =
+  View* view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();
   EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
   if (view_i1_restored->getNumElements() == num_elems)
   {
-    int * i1_orig = view_i1_orig->getData();
-    int * i1_restored = view_i1_restored->getData();
+    int* i1_orig = view_i1_orig->getData();
+    int* i1_restored = view_i1_restored->getData();
 
     for (int i = 0 ; i < num_elems ; ++i)
     {
@@ -200,7 +200,7 @@ TEST(spio_parallel, write_read_write)
   std::string filename = sstr.str();
 
   // Initialize a datastore and dump to disk
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   ds->getRoot()->createViewScalar("grp/i",2);
   ds->getRoot()->createViewScalar("grp/f",3.0);
   IOManager writer_a(MPI_COMM_WORLD);
@@ -217,7 +217,8 @@ TEST(spio_parallel, write_read_write)
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file
   //      major: File accessibility
   //      minor: Unable to open file
-  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which is already open
+  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which
+  // is already open
   //      major: File accessibility
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
@@ -253,15 +254,15 @@ TEST(spio_parallel, external_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds1 = new DataStore();
+  DataStore* ds1 = new DataStore();
 
-  Group * root1 = ds1->getRoot();
+  Group* root1 = ds1->getRoot();
 
-  Group * flds = root1->createGroup("fields");
-  Group * flds2 = root1->createGroup("fields2");
+  Group* flds = root1->createGroup("fields");
+  Group* flds2 = root1->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
   gb->createView("external_undescribed")->setExternalDataPtr(orig_vals2);
 
@@ -276,8 +277,8 @@ TEST(spio_parallel, external_writeread)
   /*
    * Create another DataStore than holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
-  Group * root2 = ds2->getRoot();
+  DataStore* ds2 = new DataStore();
+  Group* root2 = ds2->getRoot();
 
   /*
    * Read from the files that were written above.
@@ -293,10 +294,10 @@ TEST(spio_parallel, external_writeread)
     restored_vals2[i] = -1;
   }
 
-  View * view1 = root2->getView("fields/a/external_array");
+  View* view1 = root2->getView("fields/a/external_array");
   view1->setExternalDataPtr(restored_vals1);
 
-  View * view2 = root2->getView("fields2/b/external_undescribed");
+  View* view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
   reader.loadExternalData(root2, "out_spio_external_write_read.root");
@@ -385,9 +386,9 @@ TEST(spio_paralle, irregular_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds1 = new DataStore();
+  DataStore* ds1 = new DataStore();
 
-  Group * root1 = ds1->getRoot();
+  Group* root1 = ds1->getRoot();
 
   int num_fields = my_rank + 2;
 
@@ -395,21 +396,21 @@ TEST(spio_paralle, irregular_writeread)
   {
     std::ostringstream ostream;
     ostream << "fields" << f;
-    Group * flds = root1->createGroup(ostream.str());
+    Group* flds = root1->createGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
     for (int g = 0 ; g < num_subgroups ; ++g)
     {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
-      Group * sg = flds->createGroup(gstream.str());
+      Group* sg = flds->createGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
       if (g % 2)
       {
         sg->createView(vstream.str())->allocate(DataType::c_int(10+my_rank));
-        int * vals = sg->getView(vstream.str())->getData();
+        int* vals = sg->getView(vstream.str())->getData();
 
         for(int i=0 ; i<10+my_rank ; i++)
         {
@@ -436,7 +437,7 @@ TEST(spio_paralle, irregular_writeread)
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
@@ -455,29 +456,29 @@ TEST(spio_paralle, irregular_writeread)
   {
     std::ostringstream ostream;
     ostream << "fields" << f;
-    Group * flds1 = ds1->getRoot()->getGroup(ostream.str());
-    Group * flds2 = ds2->getRoot()->getGroup(ostream.str());
+    Group* flds1 = ds1->getRoot()->getGroup(ostream.str());
+    Group* flds2 = ds2->getRoot()->getGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
     for (int g = 0 ; g < num_subgroups ; ++g)
     {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
-      Group * sg1 = flds1->getGroup(gstream.str());
-      Group * sg2 = flds2->getGroup(gstream.str());
+      Group* sg1 = flds1->getGroup(gstream.str());
+      Group* sg2 = flds2->getGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
       if (g % 2)
       {
 
-        View * view_orig = sg1->getView(vstream.str());
-        View * view_restored = sg2->getView(vstream.str());
+        View* view_orig = sg1->getView(vstream.str());
+        View* view_restored = sg2->getView(vstream.str());
 
         int num_elems = view_orig->getNumElements();
         EXPECT_EQ(view_restored->getNumElements(), num_elems);
-        int * vals_orig = view_orig->getData();
-        int * vals_restored = view_restored->getData();
+        int* vals_orig = view_orig->getData();
+        int* vals_restored = view_restored->getData();
 
         for (int i = 0 ; i < num_elems ; ++i)
         {
@@ -519,18 +520,18 @@ TEST(spio_parallel, preserve_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
-  int * i1_vals = gb->getView("i1")->getData();
+  int* i1_vals = gb->getView("i1")->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -551,10 +552,10 @@ TEST(spio_parallel, preserve_writeread)
    * Extra stuff to exercise preserve_contents option
    */
   MPI_Barrier(MPI_COMM_WORLD);
-  DataStore * dsextra = new DataStore();
-  Group * extra = dsextra->getRoot()->createGroup("extra");
+  DataStore* dsextra = new DataStore();
+  Group* extra = dsextra->getRoot()->createGroup("extra");
   extra->createViewScalar<double>("dval", 1.1);
-  Group * child = extra->createGroup("child");
+  Group* child = extra->createGroup("child");
   child->createViewScalar<int>("ival", 7);
   child->createViewString("word0", "hello");
   child->createViewString("word1", "world");
@@ -567,7 +568,7 @@ TEST(spio_parallel, preserve_writeread)
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
@@ -588,16 +589,16 @@ TEST(spio_parallel, preserve_writeread)
 
   EXPECT_EQ(testvalue, testvalue2);
 
-  View * view_i1_orig =
+  View* view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  View * view_i1_restored =
+  View* view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();
   EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
 
-  int * i1_orig = view_i1_orig->getData();
-  int * i1_restored = view_i1_restored->getData();
+  int* i1_orig = view_i1_orig->getData();
+  int* i1_restored = view_i1_restored->getData();
 
   for (int i = 0 ; i < num_elems ; ++i)
   {
@@ -607,7 +608,7 @@ TEST(spio_parallel, preserve_writeread)
   /*
    * Read in extra file while preserving contents
    */
-  Group * extra_fields = ds2->getRoot()->getGroup("fields");
+  Group* extra_fields = ds2->getRoot()->getGroup("fields");
   reader.read(extra_fields, extra_root, true);
 
   /*
@@ -638,7 +639,7 @@ TEST(spio_parallel, preserve_writeread)
 }
 
 //----------------------------------------------------------------------
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

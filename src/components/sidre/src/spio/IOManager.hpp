@@ -97,7 +97,7 @@ public:
    * \param file_string   base name for output files
    * \param protocol      identifies I/O protocol
    */
-  void write(sidre::Group * group,
+  void write(sidre::Group* group,
              int num_files,
              const std::string& file_string,
              const std::string& protocol);
@@ -119,7 +119,7 @@ public:
    * \param group         Group to add to root file
    * \param file_name     name of existing root file
    */
-  void writeGroupToRootFile(sidre::Group * group,
+  void writeGroupToRootFile(sidre::Group* group,
                             const std::string& file_name);
 
   /*!
@@ -143,7 +143,7 @@ public:
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
-  void writeGroupToRootFileAtPath(sidre::Group * group,
+  void writeGroupToRootFileAtPath(sidre::Group* group,
                                   const std::string& file_name,
                                   const std::string& group_path);
 
@@ -168,7 +168,7 @@ public:
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
-  void writeViewToRootFileAtPath(sidre::View * view,
+  void writeViewToRootFileAtPath(sidre::View* view,
                                  const std::string& file_name,
                                  const std::string& group_path);
 
@@ -180,7 +180,7 @@ public:
    * \param protocol      identifies I/O protocol
    * \param preserve_contents   Preserves group's existing contents if true
    */
-  void read(sidre::Group * group,
+  void read(sidre::Group* group,
             const std::string& file_string,
             const std::string& protocol,
             bool preserve_contents = false);
@@ -194,7 +194,7 @@ public:
    * \param use_scr    Use SCR to find and read the files.  This should be
    *                   set to true only if the files were written with SCR.
    */
-  void read(sidre::Group * group,
+  void read(sidre::Group* group,
             const std::string& root_file,
             bool preserve_contents = false,
             bool use_scr = false);
@@ -210,7 +210,7 @@ public:
    * \param group         Group to fill with external data from input
    * \param root_file     root file containing input data
    */
-  void loadExternalData(sidre::Group * group,
+  void loadExternalData(sidre::Group* group,
                         const std::string& root_file);
 
   /*!
@@ -238,11 +238,11 @@ private:
 
   std::string getProtocol(const std::string& root_name);
 
-  void readSidreHDF5(sidre::Group * group, const std::string& root_file,
+  void readSidreHDF5(sidre::Group* group, const std::string& root_file,
                      bool preserve_contents = false);
 
 #ifdef AXOM_USE_SCR
-  void readWithSCR(sidre::Group * group,
+  void readWithSCR(sidre::Group* group,
                    const std::string& root_file,
                    bool preserve_contents = false);
 #endif
@@ -250,7 +250,7 @@ private:
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
 
-  IOBaton * m_baton;
+  IOBaton* m_baton;
 
   MPI_Comm m_mpi_comm;
 

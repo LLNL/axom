@@ -130,7 +130,8 @@ private:
   int m_my_rank;    // rank of this proc
   int m_num_files; // number of groups (files)
   int m_num_larger_groups;  // some group have one extra
-  int m_group_size; // regular group size (m_comm_size / m_num_files) w/o remainder
+  int m_group_size; // regular group size (m_comm_size / m_num_files) w/o
+                    // remainder
   int m_group_id;
   int m_first_regular_group_rank;
   int m_rank_within_group;

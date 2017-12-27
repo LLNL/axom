@@ -12,5 +12,6 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
+option(ENABLE_SPARSEHASH "Enables Sparsehash." ON)
 option(ENABLE_PYTHON "Enables python use." OFF)
 option(ENABLE_ALL_COMPONENTS "Enables all components by default" ON)

@@ -49,6 +49,10 @@ if (ENABLE_OPENMP)
     list(APPEND slam_tests_depends_on openmp)
 endif()
 
+if (ENABLE_MPI)
+    list(APPEND slam_tests_depends_on mpi)
+endif()
+
 blt_add_executable(
     NAME        slam_lulesh_ex
     SOURCES     ${lulesh_sources} ${lulesh_headers}
