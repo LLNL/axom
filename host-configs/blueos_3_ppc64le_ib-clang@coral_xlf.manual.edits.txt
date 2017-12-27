@@ -27,8 +27,6 @@ set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
 # Adds a missing rpath for libraries associated with the fortran compiler
 set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib" CACHE STRING "")
 
-set(CMAKE_Fortran_FORMAT FREE)
-
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################

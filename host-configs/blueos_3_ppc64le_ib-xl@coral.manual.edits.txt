@@ -24,8 +24,6 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # Convert C-style comments to Fortran and link fortran exes to C++ libraries
 set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so" CACHE STRING "")
 
-set(CMAKE_Fortran_FORMAT FREE)
-
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
