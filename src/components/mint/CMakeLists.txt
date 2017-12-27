@@ -13,6 +13,12 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Add mint options
+################################
+cmake_dependent_option( MINT_USE_SIDRE "Enables Sidre support in Mint" ON
+                       "ENABLE_SIDRE" OFF)
+
+################################
 # Add mint sources
 ################################
 add_subdirectory(src)

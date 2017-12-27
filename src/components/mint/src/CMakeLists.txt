@@ -12,6 +12,10 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
+## generate mint config
+configure_file ( core/config.hpp.in
+                 ${HEADER_INCLUDES_DIRECTORY}/mint/config.hpp )
+
 ## mint headers
 set( mint_headers
 

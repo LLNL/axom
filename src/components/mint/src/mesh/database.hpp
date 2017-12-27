@@ -18,10 +18,6 @@
 #ifndef MINT_DATABASE_HPP_
 #define MINT_DATABASE_HPP_
 
-#ifndef MINT_USE_SIDRE
-#define MINT_USE_SIDRE
-#endif
-
 #include <string> // for C++ string
 
 namespace axom

@@ -140,6 +140,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
     m_coordinates[ i ] = AXOM_NULLPTR;
   }
 }
+
 #endif
 
 //------------------------------------------------------------------------------

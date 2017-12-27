@@ -18,10 +18,11 @@
 #ifndef MESHCOORDINATES_HXX_
 #define MESHCOORDINATES_HXX_
 
-#include "axom/Macros.hpp"
+#include "mint/config.hpp"
 #include "mint/Array.hpp"
 #include "mint/DataTypes.hpp"
 
+#include "axom/Macros.hpp"
 
 #define X_COORDINATE 0
 #define Y_COORDINATE 1

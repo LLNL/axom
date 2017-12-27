@@ -18,13 +18,10 @@
 #ifndef MINT_UTILS_ARRAY_HXX_
 #define MINT_UTILS_ARRAY_HXX_
 
-#ifndef MINT_USE_SIDRE
-#define MINT_USE_SIDRE
-#endif
-
+#include "mint/config.hpp"
+#include "mint/DataTypes.hpp"           // for localIndex
 
 #include "slic/slic.hpp"                // for slic macros
-#include "mint/DataTypes.hpp"           // for localIndex
 #include "axom_utils/Utilities.hpp"     // for allocation
 
 #ifdef MINT_USE_SIDRE
