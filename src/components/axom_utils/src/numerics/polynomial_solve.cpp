@@ -15,11 +15,10 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef AXOM_NUMERICS_POLY_SOLVE_HPP_
-#define AXOM_NUMERICS_POLY_SOLVE_HPP_
-
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "axom_utils/Utilities.hpp" // for isNearlyEqual()
+
+#include "axom_utils/polynomial_solve.hpp"
 
 // C/C++ includes
 #include <cassert> // for assert()
@@ -29,92 +28,17 @@ namespace axom
 namespace numerics
 {
 
-/*!
- * \brief Solves a linear equation of the form \f$ ax + b = 0 \f$.
- *
- * \param [in] coeff Equation coefficients: coeff[i] multiplies \f$ x^i \f$.
- * \param [out] roots The roots of the equation.
- * \param [out] numRoots The number of roots found.
- * \return 0 for success
- *
- * \pre coeff and roots point to arrays of at least 2.
- */
-int solve_linear( const double* coeff, double* roots, int& numRoots );
-
-/*!
- * \brief Solves a quadratic equation of the form \f$ ax^2 + bx + c = 0 \f$,
- * using the quadratic formula.
- *
- * \param [in] coeff Equation coefficients: coeff[i] multiplies \f$ x^i \f$.
- * \param [out] roots The roots of the equation.
- * \param [out] numRoots The number of roots found.
- * \return 0 for success
- *
- * \pre coeff and roots point to arrays of at least 3.
- */
-int solve_quadratic( const double* coeff, double* roots, int& numRoots );
-
-/*!
- * \brief Solves a cubic equation of the form \f$ ax^3 + bx^2 + cx + d = 0 \f$.
- *
- * A closed-form solution for cubic equations was published in Cardano's
- * *Ars Magna* of 1545.  This can be summarized as follows:
- *
- * Start with the cubic equation
- * 
- *   \f[ x^3 + bx^2 + cx + d = 0. \f]
- *
- * Define the following:
- *
- *   \f[ p = b^2 - 3c \f]
- *   \f[ q = -\frac{27}{2}d - b^3 + \frac{9}{2}cb \f]
- *   \f[ t = 2p^{-3/2}q \f]
- *   \f[ y = \frac{3}{\sqrt{p}}(x + \frac{1}{3}b) \f]
- *
- * Then the original cubic equation can be written as \f$ y^3 - 3y = t \f$
- * with a solution \f$ y = \frac{1}{u} + u \f$, with
- *
- *   \f[ u = \sqrt[3]{\frac{t}{2} \pm \sqrt{\frac{t^2}{4} - 1}}. \f]
- *
- * Because the cubic is an odd function, there can be either one, two, or three
- * real roots.  In the case of one real root, the root can either be tripled or
- * single with two complex roots.  In the case of two real roots, one will be
- * doubled.  If the discriminant \f$ d = -27t^2 - 4(-3^3) \f$ is zero, the
- * equation has doubled or tripled roots.  If \f$ d > 0, \f$ there are three
- * distinct real roots, and if \f$ d > 0, \f$ there is one real root.
- *
- * See J. Kopp, Efficient numerical diagonalization of hermitian 3x3 matrices,
- * Int.J.Mod.Phys. C19:523-548, 2008 (https://arxiv.org/abs/physics/0610206)
- * and G. A. Korn and T. M. Korn, "Mathematical Handbook for Scientists and
- * Engineers," QA37 K84 1968 in the library; section 1.8-3 "Cubic Equations",
- * p. 23.
- *
- * \param [in] coeff Equation coefficients: coeff[i] multiplies \f$ x^i \f$.
- * \param [out] roots The roots of the equation.
- * \param [out] numRoots The number of roots found.
- * \return 0 for success
- *
- * \pre coeff and roots point to arrays of at least 4.
- */
-int solve_cubic( const double* coeff,  double* roots, int &numRoots );
-
-} /* end namespace numerics */
-} /* end namespace axom */
-
 //------------------------------------------------------------------------------
-// Implementation
-//------------------------------------------------------------------------------
-namespace axom
-{
-namespace numerics
-{
-
 int solve_linear( const double* coeff, double* roots, int& numRoots )
 {
   int status = -1;
 
-  if (utilities::isNearlyEqual(coeff[1], 0.)) {
-    if (utilities::isNearlyEqual(coeff[0], 0.)) {
+  // solve ax + b = 0
+  double a = coeff[1];
+  double b = coeff[0];
+
+  if (utilities::isNearlyEqual(a, 0.)) {
+    if (utilities::isNearlyEqual(b, 0.)) {
       // Infinite solutions: a horizontal line on the X-axis.
       status = 0;
       numRoots = -1;
@@ -126,28 +50,35 @@ int solve_linear( const double* coeff, double* roots, int& numRoots )
     // One solution, where the line crosses the X-axis.
     status = 0;
     numRoots = 1;
-    roots[0] = -coeff[0] / coeff[1];
+    roots[0] = -b / a;
   }
 
   return status;
 }
 
+//------------------------------------------------------------------------------
 int solve_quadratic( const double* coeff, double* roots, int& numRoots )
 {
   int status = -1;
 
-  if (utilities::isNearlyEqual(coeff[2], 0.)) {
+  // solve ax^2 + bx + c = 0
+  double a = coeff[2];
+  double b = coeff[1];
+  double c = coeff[0];
+
+  if (utilities::isNearlyEqual(a, 0.)) {
     // If this system is nearly linear, solve it as such.
     return solve_linear(coeff, roots, numRoots);
   }
 
-  double discriminant = coeff[1]*coeff[1] - 4*coeff[2]*coeff[0];
+  double discriminant = b*b - 4*a*c;
+  double overtwoa = 1. / (2*a);
 
   if (utilities::isNearlyEqual(discriminant, 0.)) {
     // One unique real root
     status = 0;
     numRoots = 1;
-    roots[0] = roots[1] = -coeff[1] / (2*coeff[2]);
+    roots[0] = roots[1] = -b * overtwoa;
   } else if (discriminant < 0) {
     // No real roots
     numRoots = 0;
@@ -155,8 +86,9 @@ int solve_quadratic( const double* coeff, double* roots, int& numRoots )
     // Two real roots
     status = 0;
     numRoots = 2;
-    roots[0] = (-coeff[1] + std::sqrt(discriminant)) / (2*coeff[2]);
-    roots[1] = (-coeff[1] - std::sqrt(discriminant)) / (2*coeff[2]);
+    double sqrtdisc = std::sqrt(discriminant);
+    roots[0] = (-b + sqrtdisc) * overtwoa;
+    roots[1] = (-b - sqrtdisc) * overtwoa;
   }
 
   return status;
@@ -172,6 +104,7 @@ inline double cuberoot(double x)
   }
 }
 
+//------------------------------------------------------------------------------
 int solve_cubic( const double* coeff, double* roots, int& numRoots )
 {
   int status = -1;
@@ -188,9 +121,11 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
     return solve_quadratic(coeff, roots, numRoots);
   }
 
-  a = a / cubecoeff;
-  b = b / cubecoeff;
-  c = c / cubecoeff;
+  // We normalize by dividing all by the cubic coefficient.
+  double invcubecoeff = 1. / cubecoeff;
+  a *= invcubecoeff;
+  b *= invcubecoeff;
+  c *= invcubecoeff;
 
   // Note that p and q differ by a multiplicative constant from Korn,
   // because they're always used with that multiplication.
@@ -200,7 +135,8 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
   double Q = p*p*p + q*q;           // actual discriminant == -108Q
   // the term chVar occurs because we've changed variables
   // (x = y - a/3) and we need to change back to x.
-  double chVar = -a / 3.;
+  const double onethird = 1. / 3.;
+  double chVar = -a * onethird;
 
   if (utilities::isNearlyEqual(Q, 0.)) {
     // We have three real roots, and at least two are equal.
@@ -249,9 +185,9 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
     double alpha = acos(q / sqrt(-p*p*p));
     double m = 2 * sqrt(-p);
 
-    roots[0] = chVar + m*cos(alpha / 3.);
-    roots[1] = chVar - m*cos((alpha + M_PI) / 3.);
-    roots[2] = chVar - m*cos((alpha - M_PI) / 3.);
+    roots[0] = chVar + m*cos(alpha * onethird);
+    roots[1] = chVar - m*cos((alpha + M_PI) * onethird);
+    roots[2] = chVar - m*cos((alpha - M_PI) * onethird);
   }
 
   return status;
@@ -260,4 +196,3 @@ int solve_cubic( const double* coeff, double* roots, int& numRoots )
 } /* end namespace numerics */
 } /* end namespace axom */
 
-#endif // AXOM_NUMERICS_POLY_SOLVE_HPP_

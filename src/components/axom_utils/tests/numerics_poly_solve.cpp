@@ -39,7 +39,7 @@ int count_mismatches(double *standard, double *test, int n, double thresh)
 }
 
 
-TEST( numerics_poly_solve, poly_solve_linear )
+TEST( numerics_poly_solve, solve_linear )
 {
   double coeff[2];
   double roots[1];
@@ -47,6 +47,8 @@ TEST( numerics_poly_solve, poly_solve_linear )
   int n = 1;
   int rc;
 
+  // In these tests, we are solving ax + b = 0, so
+  // coeff[1] = a, coeff[0] = b.
   {
     SCOPED_TRACE("Line 1 through origin.");
     coeff[0] = 0; coeff[1] = 1;
@@ -105,7 +107,7 @@ TEST( numerics_poly_solve, poly_solve_linear )
   }
 }
 
-TEST( numerics_poly_solve, poly_solve_quadratic )
+TEST( numerics_poly_solve, solve_quadratic )
 {
   double coeff[3];
   double roots[2];
@@ -113,6 +115,8 @@ TEST( numerics_poly_solve, poly_solve_quadratic )
   int n = 2;
   int rc;
 
+  // In these tests, we are solving ax^2 + bx + c = 0, so
+  // coeff[2] = a, coeff[1] = b, coeff[0] = c.
   {
     // y = (x + 2.3)(x + 2.3)
     SCOPED_TRACE("Double root at x = -2.3");
@@ -174,7 +178,7 @@ TEST( numerics_poly_solve, poly_solve_quadratic )
   }
 }
 
-TEST( numerics_poly_solve, poly_solve_cubic )
+TEST( numerics_poly_solve, solve_cubic )
 {
   double coeff[4];
   double roots[3];
@@ -182,6 +186,8 @@ TEST( numerics_poly_solve, poly_solve_cubic )
   int n = 3;
   int rc;
 
+  // In these tests, we are solving ax^3 + bx^2 + cx + d = 0, so
+  // coeff[3] = a, coeff[2] = b, coeff[1] = c, coeff[0] = d.
   {
     // y = (x - 1.2)^3 = 1.0 x^3 - 3.6 x^2 + 4.32 x - 1.728
     SCOPED_TRACE("Triple root at x = 1.2 (NOTE: LOOSE TOLERANCE HERE)");
@@ -219,7 +225,7 @@ TEST( numerics_poly_solve, poly_solve_cubic )
   }
 
   {
-    // y = (x + 0.8)(-x + 1)(x - 8) = -3x^2 + 24.6x^2 - 2.4x - 19.2
+    // y = (x + 0.8)(-x + 1)(x - 8) = -3x^3 + 24.6x^2 - 2.4x - 19.2
     SCOPED_TRACE("Three real roots, at x = -0.8, 1, 8");
     coeff[0] = -19.2; coeff[1] = -2.4; coeff[2] = 24.6; coeff[3] = -3;
     roots[0] = 0; roots[1] = 0; roots[2] = 0;
