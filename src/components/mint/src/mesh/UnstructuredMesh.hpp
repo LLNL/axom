@@ -258,7 +258,7 @@ public:
   * \return the number of nodes that can be stored in the cell connectivity.
   */
   localIndex getCellNodeCapacity() const
-  { return m_cell_connectivity.getCapacity(); }
+  { return m_cell_connectivity->getCapacity(); }
 
   /*!
   * \brief Set the number of nodes that can be stored in the cell
@@ -271,12 +271,12 @@ public:
 
 
   double getCellResizeRatio() const
-  { return m_cell_connectivity.getResizeRatio(); }
+  { return m_cell_connectivity->getResizeRatio(); }
 
 
  void setCellResizeRatio( double ratio )
  {
-   m_cell_connectivity.setResizeRatio( ratio );
+   m_cell_connectivity->setResizeRatio( ratio );
    this->setCellDataResizeRatio( ratio );
    this->setFaceDataResizeRatio( ratio );
    this->setEdgeDataResizeRatio( ratio );
