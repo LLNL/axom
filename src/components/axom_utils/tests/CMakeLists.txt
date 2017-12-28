@@ -26,6 +26,7 @@ set(gtest_utils_tests
    numerics_determinants.cpp
    numerics_linear_solve.cpp
    numerics_eigen_solve.cpp
+   numerics_polynomial_solvers.cpp
    numerics_vector_utilities.cpp
    numerics_lu.cpp
    numerics_matrix.cpp
