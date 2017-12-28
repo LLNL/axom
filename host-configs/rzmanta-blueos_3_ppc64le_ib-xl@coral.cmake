@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_22_16_42_32/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral/cmake-3.8.2-owwvobc6rgp5jk6weaf5xri2yogwhswl/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_27_14_43_42/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral/cmake-3.8.2-owwvobc6rgp5jk6weaf5xri2yogwhswl/bin/cmake
 
 #######
 # using xl@coral compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_22_16_42_32/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_27_14_43_42/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-m2nzqvxxqop7g6m72zus2iz5dyyljgds" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-m2nzqvxxqop7g6m72zus2iz5dyyljgds" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-tqischbpaj4c5ywcgr4hewbrhdag3isz" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-zjx42hgn5ruls445r2zfcrkgdu2camsg" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-jts226skzh4yeew5yls3irfcrmo7sfhl" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-4h6glauavgqancapscaptvyoftswbwz5" CACHE PATH "")
@@ -94,8 +94,6 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # Convert C-style comments to Fortran and link fortran exes to C++ libraries
 set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so" CACHE STRING "")
 
-set(CMAKE_Fortran_FORMAT FREE)
-
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
@@ -113,4 +111,5 @@ set(MPIEXEC_NUMPROC_FLAG     "-np" CACHE PATH "")
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
+
 

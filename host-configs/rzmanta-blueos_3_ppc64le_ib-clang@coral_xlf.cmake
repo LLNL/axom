@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_19_17_32_36/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.8.2-f4bp77lrsuauuncgtivaoox2vfombs32/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_27_14_43_42/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.8.2-f4bp77lrsuauuncgtivaoox2vfombs32/bin/cmake
 
 #######
 # using clang@coral_xlf compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_19_17_32_36/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_12_27_14_43_42/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-73nxx5224rq5zpn4kjrkq2hfmuzu4hmt" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-73nxx5224rq5zpn4kjrkq2hfmuzu4hmt" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-ihjqrbtoompxou432vk6ldbkhvnhf23g" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-okoi6v4qgisp4i7jkdgjgam6kxu4uuh5" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-lmjbjzcrjmwvgpgavjki62z4fa42c4bu" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-u24x33nrrmv72z4odat465b6zjiqulu5" CACHE PATH "")
@@ -96,8 +96,6 @@ set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
 
 # Adds a missing rpath for libraries associated with the fortran compiler
 set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib" CACHE STRING "")
-
-set(CMAKE_Fortran_FORMAT FREE)
 
 ##############################################################################
 # MPI - manually added for now
