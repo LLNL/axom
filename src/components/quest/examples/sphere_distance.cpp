@@ -36,7 +36,7 @@
 #include "quest/STLReader.hpp"
 #include "quest/SignedDistance.hpp"
 
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -186,7 +186,7 @@ void get_uniform_mesh( TriangleMesh* surface_mesh,
   h[1] = ( meshBounds.getMax()[1]-meshBounds.getMin()[1] ) / Arguments.ny;
   h[2] = ( meshBounds.getMax()[2]-meshBounds.getMin()[2] ) / Arguments.nz;
 
-  mint::globalIndex ext[6];
+  mint::int64 ext[6];
   ext[0] = 0;
   ext[1] = Arguments.nx;
   ext[2] = 0;
@@ -412,7 +412,9 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
   // STEP 1: Setup node-centered signed distance field on uniform mesh
   const int nnodes = umesh->getNumberOfNodes();
-  double* phi = umesh->addNodeField< double >("n2_phi", 1)->getDoublePtr();
+  mint::FieldData& PD = umesh->getNodeFieldData();
+  PD.addField( new mint::FieldVariable< double >( "n2_phi", nnodes ) );
+  double* phi = PD.getField( "expected_phi" )->getDoublePtr( );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -432,11 +434,11 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
     double unsignedMinDistSQ = std::numeric_limits< double >::max();
     int sign = 0;
 
-    const axom::mint::localIndex ncells = surface_mesh->getMeshNumberOfCells();
-    for (axom::mint::localIndex j=0; j < ncells; ++j ) 
+    const axom::mint::IndexType ncells = surface_mesh->getMeshNumberOfCells();
+    for (axom::mint::IndexType j=0 ; j < ncells ; ++j )
     {
       // find minimum distance from query point to triangle
-      axom::mint::localIndex closest_cell[ 3 ];
+      axom::mint::IndexType closest_cell[ 3 ];
       surface_mesh->getMeshCell( j, closest_cell );
 
       Point< double,NDIMS > a,b,c;
@@ -473,7 +475,9 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
   const int nnodes = umesh->getNumberOfNodes();
-  double* phi = umesh->addNodeField< double >("phi", 1)->getDoublePtr();
+  mint::FieldData& PD = umesh->getNodeFieldData( );
+  PD.addField( new mint::FieldVariable< double >( "phi", nnodes) );
+  double* phi = PD.getField("phi")->getDoublePtr();
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -494,7 +498,11 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  int* bidx = umesh->addCellField< int >("BucketID", 1)->getIntPtr();
+  const int ncells = umesh->getNumberOfCells();
+  mint::FieldData& CD = umesh->getCellFieldData();
+  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells ) );
+  int* bidx = CD.getField( "BucketID" )->getIntPtr( );
+
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -511,14 +519,14 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 }
 
 //------------------------------------------------------------------------------
-BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::localIndex cellIdx,
-                                                axom::mint::Mesh* surface_mesh )
+BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::IndexType cellIdx,
+                                                mint::Mesh * surface_mesh )
 {
   // Sanity checks
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
   SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
 
-  axom::mint::localIndex cell[3];
+  axom::mint::IndexType cell[3];
   surface_mesh->getMeshCell( cellIdx, cell );
 
   BoundingBox< double,3 > bb;

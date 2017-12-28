@@ -176,7 +176,7 @@ void STLReader::readBinarySTL()
   m_nodes.reserve( m_num_nodes * 3);
 
   // Read the triangles. Cast to doubles and ignore normals and attributes
-  for(axom::mint::localIndex i=0 ; i < m_num_faces ; ++i)
+  for(axom::mint::IndexType i=0 ; i < m_num_faces ; ++i)
   {
     ifs.read( (char*)tri.raw, BINARY_TRI_SIZE);
 
@@ -214,18 +214,18 @@ void STLReader::getMesh(
   /* Sanity checks */
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT(
-    static_cast<axom::mint::localIndex>(m_nodes.size()) == 3* m_num_nodes );
+    static_cast<axom::mint::IndexType>(m_nodes.size()) == 3* m_num_nodes );
 
   // Load the vertices into the mesh
-  for ( axom::mint::localIndex i=0 ; i < m_num_nodes ; ++i )
+  for ( axom::mint::IndexType i=0 ; i < m_num_nodes ; ++i )
   {
     mesh->addNode( m_nodes[i*3], m_nodes[i*3+1], m_nodes[i*3+2] );
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
-  for ( axom::mint::localIndex i=0 ; i < m_num_faces ; ++i )
+  for ( axom::mint::IndexType i=0 ; i < m_num_faces ; ++i )
   {
-    axom::mint::localIndex tv[3] = {3*i, 3*i+1, 3*i+2};
+    axom::mint::IndexType tv[3] = {3*i, 3*i+1, 3*i+2};
     mesh->addCell( tv, MINT_TRIANGLE );
   }
 

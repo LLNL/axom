@@ -24,7 +24,7 @@
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 #include "mint/Array.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/FieldTypes.hpp"
 #include "slic/slic.hpp"
 
@@ -52,7 +52,7 @@ public:
    * \param [in] num_components the number of components per tuple.
    */
   FieldVariable( const std::string& name,
-                 localIndex num_tuples,
+                 IndexType num_tuples,
                  int num_components=1 ) :
     Field( name ),
     m_data( num_tuples, num_components )
@@ -68,11 +68,11 @@ public:
    */
   virtual ~FieldVariable() { }
 
-  virtual localIndex size() const { return m_data.size(); }
+  virtual IndexType size() const { return m_data.size(); }
 
   virtual int getNumComponents() const { return m_data.getNumComponents(); }
 
-  virtual localIndex getCapacity() const { return m_data.getCapacity(); }
+  virtual IndexType getCapacity() const { return m_data.getCapacity(); }
 
   virtual double getResizeRatio() const { return m_data.getResizeRatio(); }
 
@@ -104,10 +104,10 @@ public:
    */
   virtual const int* getIntPtr() const { return AXOM_NULLPTR; }
 
-  virtual void resize( localIndex num_tuples )
+  virtual void resize( IndexType num_tuples )
   { m_data.resize( num_tuples ); }
 
-  virtual void reserve( localIndex capacity )
+  virtual void reserve( IndexType capacity )
   { m_data.reserve( capacity ); }
 
   virtual void setResizeRatio( double ratio )

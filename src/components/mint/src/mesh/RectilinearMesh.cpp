@@ -16,7 +16,7 @@
  */
 
 #include "mint/RectilinearMesh.hpp"
-#include "mint/DataTypes.hpp"         /* For localIndex */
+#include "mint/config.hpp"         /* For IndexType */
 #include "mint/MeshType.hpp"          /* For MINT_STRUCTURED_RECTILINEAR_MESH */
 
 #include "axom/Types.hpp"             /* For AXOM_NULLPTR */
@@ -27,10 +27,10 @@ namespace mint
 {
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ) :
+RectilinearMesh::RectilinearMesh( int dimension, int64 ext[6] ) :
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
-  localIndex ext_size[3];
+  IndexType ext_size[3];
   this->getExtentSize( ext_size );
 
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
@@ -48,12 +48,12 @@ RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6] ) :
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, globalIndex ext[6],
+RectilinearMesh::RectilinearMesh( int dimension, int64 ext[6],
                                   int blockId, int partId ) :
   StructuredMesh( MINT_STRUCTURED_RECTILINEAR_MESH, dimension, ext, blockId,
                   partId )
 {
-  localIndex ext_size[3];
+  IndexType ext_size[3];
   this->getExtentSize( ext_size );
 
   for ( int dim = 0 ; dim < m_ndims ; ++dim )

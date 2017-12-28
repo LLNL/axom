@@ -21,7 +21,7 @@
 #include "axom/Macros.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldVariable.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 
 // C/C++ includes
 #include <map>
@@ -127,15 +127,15 @@ public:
   }
 
   template < typename FieldType >
-  inline Field* addField( const std::string& name, localIndex size,
-                          localIndex capacity, int num_components,
+  inline Field* addField( const std::string& name, IndexType size,
+                          IndexType capacity, int num_components,
                           double resize_ratio );
 
 
-  inline void resize( localIndex size );
+  inline void resize( IndexType size );
 
 
-  inline void reserve( localIndex capacity );
+  inline void reserve( IndexType capacity );
 
 
   inline void setResizeRatio( double ratio );
@@ -232,8 +232,8 @@ inline void FieldData::clear()
 
 //------------------------------------------------------------------------------
 template < typename FieldType >
-inline Field* FieldData::addField( const std::string& name, localIndex size,
-                                   localIndex capacity, int num_components,
+inline Field* FieldData::addField( const std::string& name, IndexType size,
+                                   IndexType capacity, int num_components,
                                    double resize_ratio )
 {
   if ( hasField( name ) )
@@ -258,7 +258,7 @@ inline Field* FieldData::addField( const std::string& name, localIndex size,
 }
 
 //------------------------------------------------------------------------------
-inline void FieldData::resize( localIndex size )
+inline void FieldData::resize( IndexType size )
 {
   typename std::map< std::string, Field* >::iterator it;
   for ( it = m_container.begin() ; it != m_container.end() ; ++it )
@@ -268,7 +268,7 @@ inline void FieldData::resize( localIndex size )
 }
 
 //------------------------------------------------------------------------------
-inline void FieldData::reserve( localIndex capacity )
+inline void FieldData::reserve( IndexType capacity )
 {
   typename std::map< std::string, Field* >::iterator it;
   for ( it = m_container.begin() ; it != m_container.end() ; ++it )

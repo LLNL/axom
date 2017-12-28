@@ -2789,13 +2789,13 @@ private:
   {
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
-    axom::mint::localIndex vStart = mesh->getMeshNumberOfNodes();
+    axom::mint::IndexType vStart = mesh->getMeshNumberOfNodes();
     mesh->addNode( triPos[0][0], triPos[0][1], triPos[0][2]);
     mesh->addNode( triPos[1][0], triPos[1][1], triPos[1][2]);
     mesh->addNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
-    mint::localIndex data[3];
-    for(int i=0; i< 3; ++i) 
+    mint::IndexType data[3];
+    for(int i=0 ; i< 3 ; ++i)
     {
         data[i] = vStart + i;
     }
@@ -2819,7 +2819,7 @@ private:
   {
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
 
-    axom::mint::localIndex vStart = mesh->getMeshNumberOfNodes();
+    axom::mint::IndexType vStart = mesh->getMeshNumberOfNodes();
 
     mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
                   blockBB.getMin()[2]);
@@ -2839,9 +2839,9 @@ private:
     mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1],
                   blockBB.getMax()[2]);
 
-    axom::mint::localIndex data[8];
-    for(int i=0; i< 8; ++i)
-        data[i] = vStart + i;
+    axom::mint::IndexType data[8];
+    for(int i=0 ; i< 8 ; ++i)
+      data[i] = vStart + i;
 
     mesh->addCell(data, MINT_HEX);
 
@@ -2964,8 +2964,9 @@ public:
     SLIC_DEBUG(
       "--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
 
-    const axom::mint::localIndex numTriangles = m_octree.m_meshWrapper.numMeshElements();
-    for(axom::mint::localIndex tIdx=0; tIdx< numTriangles; ++tIdx)
+    const axom::mint::IndexType numTriangles =
+      m_octree.m_meshWrapper.numMeshElements();
+    for(axom::mint::IndexType tIdx=0 ; tIdx< numTriangles ; ++tIdx)
     {
       TriVertIndices tvRel =
         m_octree.m_meshWrapper.triangleVertexIndices( tIdx );

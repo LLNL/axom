@@ -22,7 +22,7 @@
 #include "axom/Macros.hpp" // for DISABLE_COPY_AND_ASSIGNMENT
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "mint/FieldTypes.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 
 // C/C++ includes
 #include <string>
@@ -64,7 +64,7 @@ public:
    * \return ntuples the number of tuples in the field.
    * \post ntuples >= 0.
    */
-  virtual localIndex size() const = 0;
+  virtual IndexType size() const = 0;
 
   /*!
    * \brief Returns the number of components per tuple.
@@ -73,13 +73,13 @@ public:
    */
   virtual int getNumComponents() const = 0;
 
-  virtual localIndex getCapacity() const = 0;
+  virtual IndexType getCapacity() const = 0;
 
   virtual double getResizeRatio() const = 0;
 
-  virtual void resize( localIndex size ) = 0;
+  virtual void resize( IndexType size ) = 0;
 
-  virtual void reserve( localIndex capacity ) = 0;
+  virtual void reserve( IndexType capacity ) = 0;
 
   virtual void setResizeRatio( double ratio ) = 0;
 

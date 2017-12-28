@@ -83,7 +83,7 @@
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
 
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -406,7 +406,7 @@ axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb,
   h[1] /= res[1];
   h[2] /= res[2];
 
-  axom::mint::globalIndex ext[6];
+  axom::mint::int64 ext[6];
   ext[0] = 0; ext[1] = res[0];
   ext[2] = 0; ext[3] = res[1];
   ext[4] = 0; ext[5] = res[2];
@@ -470,7 +470,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   // Add a scalar field for the containment queries
   SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
   axom::mint::UniformMesh * umesh = clargs.queryMesh;
-  const axom::mint::localIndex nnodes = umesh->getNumberOfNodes();
+  const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
 
 //  int * containment =
 //    umesh->addNodeField< int >("octree_containment", 1)->getIntPtr();

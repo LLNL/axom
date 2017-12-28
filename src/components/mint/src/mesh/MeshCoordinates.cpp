@@ -18,7 +18,7 @@
 #include "mint/MeshCoordinates.hpp"     /* for MeshCoordinates */
 
 #include "mint/database.hpp"            /* for get_group */
-#include "mint/DataTypes.hpp"           /* for localIndex */
+#include "mint/config.hpp"           /* for IndexType */
 #include "mint/Array.hpp"               /* for Array */
 #include "slic/slic.hpp"                /* for slic macros */
 
@@ -42,8 +42,8 @@ MeshCoordinates::MeshCoordinates( int dimension ) :
 
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( int dimension, localIndex capacity,
-                                  localIndex size, double resize_ratio ) :
+MeshCoordinates::MeshCoordinates( int dimension, IndexType capacity,
+                                  IndexType size, double resize_ratio ) :
   m_ndims( dimension )
 {
   SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "invalid dimension" );
@@ -66,7 +66,7 @@ MeshCoordinates::MeshCoordinates( int dimension, localIndex capacity,
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
-                                  localIndex size, double resize_ratio ) :
+                                  IndexType size, double resize_ratio ) :
   m_ndims(0)
 {
   SLIC_ERROR_IF( group == AXOM_NULLPTR, "" );
@@ -112,7 +112,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
 
 //------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
-                                  localIndex capacity, localIndex size,
+                                  IndexType capacity, IndexType size,
                                   double resize_ratio ) :
   m_ndims( dimension )
 {

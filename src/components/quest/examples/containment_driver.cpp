@@ -39,7 +39,7 @@
 #include "quest/SpatialOctree.hpp"
 #include "quest/InOutOctree.hpp"
 
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -70,7 +70,7 @@ typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
-typedef primal::Point<mint::localIndex,3> TriVertIndices;
+typedef primal::Point<mint::IndexType,3> TriVertIndices;
 typedef primal::Triangle<double, 3> SpaceTriangle;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
@@ -134,7 +134,7 @@ void testIntersectionOnRegularGrid()
   debugMesh->addNode( ptY[0], ptY[1], ptY[2]);
   debugMesh->addNode( ptZ[0], ptZ[1], ptZ[2]);
 
-  mint::localIndex tArr[3] = {0,1,2};
+  mint::IndexType tArr[3] = {0,1,2};
   debugMesh->addCell(tArr, MINT_TRIANGLE);
 
   PointType bbMin(-0.1);
@@ -178,7 +178,7 @@ void testIntersectionOnRegularGrid()
               if( primal::intersect( unitTri, blockBB))
               {
                 // Add to debug mesh
-                mint::localIndex vStart = debugMesh->getMeshNumberOfNodes();
+                mint::IndexType vStart = debugMesh->getMeshNumberOfNodes();
 
                 debugMesh->addNode( blockBB.getMin()[0],
                                     blockBB.getMin()[1], blockBB.getMin()[2]);
@@ -198,7 +198,7 @@ void testIntersectionOnRegularGrid()
                 debugMesh->addNode( blockBB.getMin()[0],
                                     blockBB.getMax()[1], blockBB.getMax()[2]);
 
-                mint::localIndex data[8];
+                mint::IndexType data[8];
                 for(int i=0 ; i< 8 ; ++i)
                 {
                   data[i] = vStart + i;
@@ -231,7 +231,7 @@ void testContainmentOnRegularGrid(
     h[i] /= gridRes;
   }
 
-  mint::globalIndex ext[6];
+  mint::int64 ext[6];
   ext[0] = ext[2] = ext[4] = 0;
   ext[1] = ext[3] = ext[5] = gridRes;
 
@@ -275,7 +275,7 @@ void testContainmentOnRegularGrid(
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
 TriVertIndices getTriangleVertIndices(mint::Mesh * mesh,
-                                      mint::localIndex cellIndex)
+                                      mint::IndexType cellIndex)
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());

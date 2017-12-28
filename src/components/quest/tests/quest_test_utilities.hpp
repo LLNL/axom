@@ -25,7 +25,7 @@
 #include "primal/Triangle.hpp"
 #include "primal/orientation.hpp"
 
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/Field.hpp"
@@ -110,7 +110,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
  */
 axom::mint::Mesh * make_octahedron_mesh()
 {
-  typedef axom::mint::localIndex VertexIndex;
+  typedef axom::mint::IndexType VertexIndex;
   typedef Point<double, 3> SpacePt;
   typedef Triangle<double, 3> SpaceTriangle;
 

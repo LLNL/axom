@@ -19,7 +19,7 @@
 #define EXTENT_HXX_
 
 #include "slic/slic.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 
 // C/C++ includes
 #include <cstring> // for memcpy()
@@ -39,7 +39,7 @@ public:
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
    */
-  Extent( int ndims, const globalIndex* ext );
+  Extent( int ndims, const int64* ext );
 
   /*!
    * \brief Returns the dimension of this extent.
@@ -56,7 +56,7 @@ public:
    * \pre dim >= 0 && dim < getDimension();
    * \pre getDimension() >= 1.
    */
-  inline globalIndex min( int dim ) const
+  inline int64 min( int dim ) const
   { return m_extent[ dim*2 ]; }
 
   /*!
@@ -66,7 +66,7 @@ public:
    * \pre dim >= 0 && dim < getDimension();
    * \pre getDimension() >= 1
    */
-  inline globalIndex max( int dim ) const
+  inline int64 max( int dim ) const
   { return m_extent[ dim*2+1 ]; }
 
   /*!
@@ -74,7 +74,7 @@ public:
    * \param [in] dim the dimension in query.
    * \return n size of the given dimension.
    */
-  inline localIndex size( int dim ) const
+  inline IndexType size( int dim ) const
   { return max( dim ) - min( dim ) + 1; }
 
   /*!
@@ -82,7 +82,7 @@ public:
    * \return jp stride to the second dimension.
    * \post jp >= 0.
    */
-  inline localIndex jp() const
+  inline IndexType jp() const
   { return m_jp; };
 
   /*!
@@ -90,21 +90,21 @@ public:
    * \return kp stride to the third dimension.
    * \post kp >= 0.
    */
-  inline localIndex kp() const
+  inline IndexType kp() const
   { return m_kp; };
   /*!
    * \brief Returns the number of nodes covered by this extent instance.
    * \return N the total number of nodes in the extent.
    * \pre getDimension() >= 1.
    */
-  inline localIndex getNumNodes() const;
+  inline IndexType getNumNodes() const;
 
   /*!
    * \brief Returns the number cells covered by this extent instance.
    * \return N the total number of cells in the extent.
    * \pre getDimension() >= 1.
    */
-  inline localIndex getNumCells() const;
+  inline IndexType getNumCells() const;
 
   /*!
    * \brief Returns the cell offset lookup table
@@ -112,7 +112,7 @@ public:
    *
    * \note The indent for the cell offsets table
    */
-  inline const localIndex* getCellOffSets() const
+  inline const IndexType* getCellOffSets() const
   { return &m_cell_offsets[0]; };
 
   /*!
@@ -127,8 +127,8 @@ public:
    * \pre k >= 0 && k < size( 2 )
    * \note i,j,k are local grid indices.
    */
-  inline localIndex getLinearIndex( localIndex i, localIndex j,
-                                    localIndex k ) const;
+  inline IndexType getLinearIndex( IndexType i, IndexType j,
+                                    IndexType k ) const;
 
   /*!
    * \brief Converts the given grid indices to a one-dimensional linear index.
@@ -141,7 +141,7 @@ public:
    * \pre k >= 0 && k < size( 2 )
    * \note i,j,k are local grid indices.
    */
-  inline localIndex getLinearIndex( localIndex i, localIndex j ) const;
+  inline IndexType getLinearIndex( IndexType i, IndexType j ) const;
 
   /*!
    * \brief Converts the given grid cell indices to a one-dimensional linear
@@ -156,8 +156,8 @@ public:
    * \pre k >= 0 && k < size( 2 )-1
    * \note i,j,k are local grid cell indices.
    */
-  inline localIndex getCellLinearIndex( localIndex i, localIndex j,
-                                        localIndex k ) const;
+  inline IndexType getCellLinearIndex( IndexType i, IndexType j,
+                                        IndexType k ) const;
 
   /*!
    * \brief Converts the given grid cell indices to a one-dimensional linear
@@ -170,7 +170,7 @@ public:
    * \pre j >= 0 && j < size( 1 )-1
    * \note i,j,k are local grid cell indices.
    */
-  inline localIndex getCellLinearIndex( localIndex i, localIndex j ) const;
+  inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const;
 
   /*!
    * \brief Given a one-dimensional linear index, this method computes the
@@ -180,8 +180,8 @@ public:
    * \param [out] j the corresponding grid index along the second dimension.
    * \pre getDimension() == 2.
    */
-  inline void getGridIndex( localIndex linearIdx, localIndex& i,
-                            localIndex& j ) const;
+  inline void getGridIndex( IndexType linearIdx, IndexType& i,
+                            IndexType& j ) const;
 
   /*!
    * \brief Given a one-dimensional linear index, this method computes the
@@ -192,8 +192,8 @@ public:
    * \param [out] k the corresponding grid index along the third dimension.
    * \pre getDimension() == 3.
    */
-  inline void getGridIndex( localIndex linearIdx,
-                            localIndex& i, localIndex& j, localIndex& k ) const;
+  inline void getGridIndex( IndexType linearIdx,
+                            IndexType& i, IndexType& j, IndexType& k ) const;
 
 private:
 
@@ -204,10 +204,10 @@ private:
   inline void buildCellOffsets();
 
   int m_ndims;                    /* dimension of this extent    */
-  localIndex m_jp;                /* stride to the 2nd dimension */
-  localIndex m_kp;                /* stride to the 3rd dimension */
-  globalIndex m_extent[6];        /* extent of this instance     */
-  localIndex m_cell_offsets[8];   /* cell offsets                */
+  IndexType m_jp;                /* stride to the 2nd dimension */
+  IndexType m_kp;                /* stride to the 3rd dimension */
+  int64 m_extent[6];        /* extent of this instance     */
+  IndexType m_cell_offsets[8];   /* cell offsets                */
 
   /*!
    * \brief Default constructor.
@@ -236,65 +236,65 @@ inline void Extent::buildCellOffsets()
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getNumNodes() const
+inline IndexType Extent::getNumNodes() const
 {
-  localIndex n = 1;
+  IndexType n = 1;
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    localIndex n_dim = static_cast< localIndex >( size( dim ) );
+    IndexType n_dim = static_cast< IndexType >( size( dim ) );
     n *= (n_dim > 0) ? n_dim : 1;
   }
   return n;
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getNumCells() const
+inline IndexType Extent::getNumCells() const
 {
-  localIndex n = 1;
+  IndexType n = 1;
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    localIndex n_dim = static_cast< localIndex >( size( dim ) - 1 );
+    IndexType n_dim = static_cast< IndexType >( size( dim ) - 1 );
     n *= ( n_dim > 0) ? n_dim : 1;
   }
   return n;
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getLinearIndex( localIndex i, localIndex j,
-                                          localIndex k ) const
+inline IndexType Extent::getLinearIndex( IndexType i, IndexType j,
+                                          IndexType k ) const
 {
-  localIndex index = i + j * m_jp + k * m_kp;
+  IndexType index = i + j * m_jp + k * m_kp;
   return index;
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getLinearIndex( localIndex i, localIndex j ) const
+inline IndexType Extent::getLinearIndex( IndexType i, IndexType j ) const
 {
-  localIndex index = i + j * m_jp;
+  IndexType index = i + j * m_jp;
   return index;
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getCellLinearIndex( localIndex i, localIndex j,
-                                              localIndex k) const
+inline IndexType Extent::getCellLinearIndex( IndexType i, IndexType j,
+                                              IndexType k) const
 {
-  localIndex cell_jp = (size(0)-1);
-  localIndex cell_kp = getDimension() == 3 ? cell_jp * (size(1)-1) : 0;
-  localIndex index = i + j * cell_jp  + k * cell_kp;
+  IndexType cell_jp = (size(0)-1);
+  IndexType cell_kp = getDimension() == 3 ? cell_jp * (size(1)-1) : 0;
+  IndexType index = i + j * cell_jp  + k * cell_kp;
   return index;
 }
 
 //------------------------------------------------------------------------------
-inline localIndex Extent::getCellLinearIndex( localIndex i, localIndex j ) const
+inline IndexType Extent::getCellLinearIndex( IndexType i, IndexType j ) const
 {
-  localIndex cell_jp = (size(0)-1);
-  localIndex index = i + j * cell_jp;
+  IndexType cell_jp = (size(0)-1);
+  IndexType index = i + j * cell_jp;
   return index;
 }
 
 //------------------------------------------------------------------------------
-inline void Extent::getGridIndex( localIndex linearIdx, localIndex& i,
-                                  localIndex& j) const
+inline void Extent::getGridIndex( IndexType linearIdx, IndexType& i,
+                                  IndexType& j) const
 {
   SLIC_ASSERT( m_ndims == 2 );
 
@@ -303,8 +303,8 @@ inline void Extent::getGridIndex( localIndex linearIdx, localIndex& i,
 }
 
 //------------------------------------------------------------------------------
-inline void Extent::getGridIndex( localIndex linearIdx, localIndex& i,
-                                  localIndex& j, localIndex& k) const
+inline void Extent::getGridIndex( IndexType linearIdx, IndexType& i,
+                                  IndexType& j, IndexType& k) const
 {
   k = (m_kp > 0) ? (linearIdx / m_kp) : 0;
   j = (m_jp > 0) ? (linearIdx - k*m_kp) / m_jp : 0;

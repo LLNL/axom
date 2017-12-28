@@ -25,7 +25,7 @@
 
 // Mint includes
 #include "mint/CellType.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/FEBasis.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
@@ -146,7 +146,7 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  mint::localIndex* cell = new mint::localIndex[ ndofs ];
+  mint::IndexType* cell = new mint::IndexType[ ndofs ];
 
   double* center = new double[ ndims ];
   ShapeFunctionType::center( center );

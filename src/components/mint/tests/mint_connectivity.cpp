@@ -12,7 +12,7 @@
 
 #include "mint/CellConnectivity.hpp"
 #include "mint/CellType.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
@@ -30,8 +30,8 @@ namespace internal
 
 
 template < int cell_type >
-localIndex calc_new_capacity( CellConnectivity< cell_type > & c,
-                              localIndex increase )
+IndexType calc_new_capacity( CellConnectivity< cell_type > & c,
+                              IndexType increase )
 {
   int tuple_size = 1;
   if ( cell_type != MINT_MIXED_CELL )
@@ -39,7 +39,7 @@ localIndex calc_new_capacity( CellConnectivity< cell_type > & c,
     tuple_size = cell::num_nodes[ cell_type ];
   }
 
-  localIndex newSize = c.getSize() + increase;
+  IndexType newSize = c.getSize() + increase;
   if ( newSize > c.getCapacity() )
   {
     double n_tuples = newSize * c.getResizeRatio() / tuple_size;
@@ -51,12 +51,12 @@ localIndex calc_new_capacity( CellConnectivity< cell_type > & c,
 
 
 template < int cell_type >
-void test_single_element_type( localIndex capacity, double resize_ratio )
+void test_single_element_type( IndexType capacity, double resize_ratio )
 {
   CellConnectivity< cell_type > connec( capacity, resize_ratio );
-  localIndex size = 0;
-  localIndex num_cells = 0;
-  localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
+  IndexType size = 0;
+  IndexType num_cells = 0;
+  IndexType nodes_per_cell = cell::num_nodes[ cell_type ];
   capacity *= nodes_per_cell;
 
   EXPECT_TRUE( connec.empty() );
@@ -68,14 +68,14 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
   EXPECT_EQ( connec.getNumberOfNodes( 0 ), nodes_per_cell );
   EXPECT_EQ( connec.getCellType( 0 ), cell_type );
 
-  localIndex num_values = 1000 * nodes_per_cell;
-  localIndex values[ num_values ];
-  for ( localIndex i = 0 ; i < num_values ; ++i )
+  IndexType num_values = 1000 * nodes_per_cell;
+  IndexType values[ num_values ];
+  for ( IndexType i = 0 ; i < num_values ; ++i )
   {
     values[ i ] = i * ( i * (i - 3) + 5 ) - 77;
   }
 
-  for ( localIndex i = 0 ; i < num_values / nodes_per_cell ; ++i )
+  for ( IndexType i = 0 ; i < num_values / nodes_per_cell ; ++i )
   {
     size += nodes_per_cell;
     num_cells++;
@@ -90,24 +90,24 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
   EXPECT_EQ( connec.getResizeRatio(), resize_ratio );
   EXPECT_EQ( connec.getNumberOfCells(), num_cells );
 
-  for ( localIndex i = 0 ; i < num_cells ; ++i )
+  for ( IndexType i = 0 ; i < num_cells ; ++i )
   {
     EXPECT_EQ( connec.getNumberOfNodes( i ), nodes_per_cell );
     EXPECT_EQ( connec.getCellType( i ), cell_type );
 
-    const localIndex* cell = connec[ i ];
-    for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
+    const IndexType* cell = connec[ i ];
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], values[ i * nodes_per_cell + j ] );
     }
   }
 
-  for ( localIndex i = 0 ; i < num_values ; ++i )
+  for ( IndexType i = 0 ; i < num_values ; ++i )
   {
     values[ i ] = i * ( 10536 - 11 * i );
   }
 
-  for ( localIndex i = 0 ; i < num_cells ; ++i )
+  for ( IndexType i = 0 ; i < num_cells ; ++i )
   {
     connec.setCell( i, values + i * nodes_per_cell );
   }
@@ -119,13 +119,13 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
   EXPECT_EQ( connec.getResizeRatio(), resize_ratio );
   EXPECT_EQ( connec.getNumberOfCells(), num_cells );
 
-  for ( localIndex i = 0 ; i < num_cells ; ++i )
+  for ( IndexType i = 0 ; i < num_cells ; ++i )
   {
     EXPECT_EQ( connec.getNumberOfNodes( i ), nodes_per_cell );
     EXPECT_EQ( connec.getCellType( i ), cell_type );
 
-    const localIndex* cell = connec[ i ];
-    for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
+    const IndexType* cell = connec[ i ];
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], values[ i * nodes_per_cell + j ] );
     }
@@ -134,13 +134,13 @@ void test_single_element_type( localIndex capacity, double resize_ratio )
 
 
 template < int cell_type >
-localIndex* create_connectivity( localIndex num_cells )
+IndexType* create_connectivity( IndexType num_cells )
 {
-  localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
-  localIndex num_nodes = nodes_per_cell * num_cells;
-  localIndex* connectivity_array = new localIndex[ num_nodes ];
+  IndexType nodes_per_cell = cell::num_nodes[ cell_type ];
+  IndexType num_nodes = nodes_per_cell * num_cells;
+  IndexType* connectivity_array = new IndexType[ num_nodes ];
 
-  for ( localIndex i = 0 ; i < num_nodes ; ++i )
+  for ( IndexType i = 0 ; i < num_nodes ; ++i )
   {
     connectivity_array[ i ] = nodes_per_cell + (nodes_per_cell - 7) * i;
     connectivity_array[ i ] += nodes_per_cell * nodes_per_cell * i * i;
@@ -153,18 +153,18 @@ localIndex* create_connectivity( localIndex num_cells )
 
 template < int cell_type >
 void check_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
-                         localIndex num_cells, localIndex* connectivity_array,
-                         localIndex offset )
+                         IndexType num_cells, IndexType* connectivity_array,
+                         IndexType offset )
 {
-  localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
+  IndexType nodes_per_cell = cell::num_nodes[ cell_type ];
 
-  for ( localIndex i = 0 ; i < num_cells ; ++i )
+  for ( IndexType i = 0 ; i < num_cells ; ++i )
   {
     EXPECT_EQ( connec.getNumberOfNodes( i + offset), nodes_per_cell );
     EXPECT_EQ( connec.getCellType( i + offset), cell_type );
 
-    const localIndex* cell = connec[ i + offset ];
-    for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
+    const IndexType* cell = connec[ i + offset ];
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], connectivity_array[ i * nodes_per_cell + j ] );
     }
@@ -174,14 +174,14 @@ void check_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
 
 template < int cell_type >
 void add_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
-                       localIndex num_cells, localIndex* connectivity_array )
+                       IndexType num_cells, IndexType* connectivity_array )
 {
-  localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
-  localIndex prev_size = connec.getSize();
-  localIndex prev_total_cells = connec.getNumberOfCells();
+  IndexType nodes_per_cell = cell::num_nodes[ cell_type ];
+  IndexType prev_size = connec.getSize();
+  IndexType prev_total_cells = connec.getNumberOfCells();
 
-  localIndex capacity;
-  for ( localIndex i = 0 ; i < num_cells ; ++i )
+  IndexType capacity;
+  for ( IndexType i = 0 ; i < num_cells ; ++i )
   {
     capacity = calc_new_capacity( connec, nodes_per_cell );
     connec.addCell( connectivity_array + i * nodes_per_cell, cell_type );
@@ -199,17 +199,17 @@ void add_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
 
 template < int cell_type >
 void update_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
-                          localIndex num_cells, localIndex* connectivity_array,
-                          localIndex offset )
+                          IndexType num_cells, IndexType* connectivity_array,
+                          IndexType offset )
 {
-  localIndex nodes_per_cell = cell::num_nodes[ cell_type ];
-  localIndex prev_size = connec.getSize();
-  localIndex prev_capacity = connec.getCapacity();
-  localIndex prev_total_cells = connec.getNumberOfCells();
+  IndexType nodes_per_cell = cell::num_nodes[ cell_type ];
+  IndexType prev_size = connec.getSize();
+  IndexType prev_capacity = connec.getCapacity();
+  IndexType prev_total_cells = connec.getNumberOfCells();
 
-  for ( localIndex i = 0 ; i < num_cells ; ++i )
+  for ( IndexType i = 0 ; i < num_cells ; ++i )
   {
-    for ( localIndex j = 0 ; j < nodes_per_cell ; ++j )
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       connectivity_array[ i * nodes_per_cell + j ] *= 10.0 / ( i + 3 );
     }
@@ -230,12 +230,12 @@ void update_connectivity( CellConnectivity< MINT_MIXED_CELL > & connec,
 
 
 
-void test_mixed_element_type( localIndex capacity, double resize_ratio )
+void test_mixed_element_type( IndexType capacity, double resize_ratio )
 {
   CellConnectivity< MINT_MIXED_CELL > connec( capacity, resize_ratio );
-  localIndex size = 0;
-  localIndex num_cells = 0;
-  localIndex nodes_per_cell = cell::num_nodes[ MINT_MIXED_CELL ];
+  IndexType size = 0;
+  IndexType num_cells = 0;
+  IndexType nodes_per_cell = cell::num_nodes[ MINT_MIXED_CELL ];
   capacity *= nodes_per_cell;
 
   EXPECT_TRUE( connec.empty() );
@@ -246,62 +246,62 @@ void test_mixed_element_type( localIndex capacity, double resize_ratio )
   EXPECT_EQ( connec.getNumberOfCells(), num_cells );
 
   /* Create and add the connectivity arrays for each element type. */
-  localIndex num_vertex_cells = 400;
-  localIndex* vertex_connectivity =
+  IndexType num_vertex_cells = 400;
+  IndexType* vertex_connectivity =
     create_connectivity< MINT_VERTEX >( num_vertex_cells );
   add_connectivity< MINT_VERTEX >( connec, num_vertex_cells,
                                    vertex_connectivity );
 
-  localIndex num_segment_cells = 410;
-  localIndex* segment_connectivity =
+  IndexType num_segment_cells = 410;
+  IndexType* segment_connectivity =
     create_connectivity< MINT_SEGMENT >( num_segment_cells );
   add_connectivity< MINT_SEGMENT >( connec, num_segment_cells,
                                     segment_connectivity );
 
-  localIndex num_triangle_cells = 420;
-  localIndex* triangle_connectivity =
+  IndexType num_triangle_cells = 420;
+  IndexType* triangle_connectivity =
     create_connectivity< MINT_TRIANGLE >( num_triangle_cells );
   add_connectivity< MINT_TRIANGLE >( connec, num_triangle_cells,
                                      triangle_connectivity );
 
-  localIndex num_quad_cells = 430;
-  localIndex* quad_connectivity =
+  IndexType num_quad_cells = 430;
+  IndexType* quad_connectivity =
     create_connectivity< MINT_QUAD >( num_quad_cells );
   add_connectivity< MINT_QUAD >( connec, num_quad_cells, quad_connectivity );
 
-  localIndex num_tet_cells = 440;
-  localIndex* tet_connectivity =
+  IndexType num_tet_cells = 440;
+  IndexType* tet_connectivity =
     create_connectivity< MINT_TET >( num_tet_cells );
   add_connectivity< MINT_TET >( connec, num_tet_cells, tet_connectivity );
 
-  localIndex num_hex_cells = 450;
-  localIndex* hex_connectivity =
+  IndexType num_hex_cells = 450;
+  IndexType* hex_connectivity =
     create_connectivity< MINT_HEX >( num_hex_cells );
   add_connectivity< MINT_HEX >( connec, num_hex_cells, hex_connectivity );
 
-  localIndex num_prism_cells = 460;
-  localIndex* prism_connectivity =
+  IndexType num_prism_cells = 460;
+  IndexType* prism_connectivity =
     create_connectivity< MINT_PRISM >( num_prism_cells );
   add_connectivity< MINT_PRISM >( connec, num_prism_cells, prism_connectivity );
 
-  localIndex num_pyramid_cells = 470;
-  localIndex* pyramid_connectivity =
+  IndexType num_pyramid_cells = 470;
+  IndexType* pyramid_connectivity =
     create_connectivity< MINT_PYRAMID >( num_pyramid_cells );
   add_connectivity< MINT_PYRAMID >( connec, num_pyramid_cells,
                                     pyramid_connectivity );
 
-  localIndex num_quad9_cells = 480;
-  localIndex* quad9_connectivity =
+  IndexType num_quad9_cells = 480;
+  IndexType* quad9_connectivity =
     create_connectivity< MINT_QUAD9 >( num_quad9_cells );
   add_connectivity< MINT_QUAD9 >( connec, num_quad9_cells, quad9_connectivity );
 
-  localIndex num_hex27_cells = 490;
-  localIndex* hex27_connectivity =
+  IndexType num_hex27_cells = 490;
+  IndexType* hex27_connectivity =
     create_connectivity< MINT_HEX27 >( num_hex27_cells );
   add_connectivity< MINT_HEX27 >( connec, num_hex27_cells, hex27_connectivity );
 
   /* Check that the connectivity of each element type was added correctly */
-  localIndex cell_offset = 0;
+  IndexType cell_offset = 0;
   check_connectivity< MINT_VERTEX >( connec, num_vertex_cells,
                                      vertex_connectivity, cell_offset );
 
@@ -480,7 +480,7 @@ void test_mixed_element_type( localIndex capacity, double resize_ratio )
 
 TEST( mint_connectivity, SingleElementType )
 {
-  for ( localIndex capacity = 0 ; capacity <= 1000 ;
+  for ( IndexType capacity = 0 ; capacity <= 1000 ;
         capacity += 2 * capacity + 1)
   {
     for ( double resize_ratio = 1.0 ; resize_ratio <= 3.0 ;
@@ -508,7 +508,7 @@ TEST( mint_connectivity, SingleElementType )
 
 TEST( mint_connectivity, MixedElementType )
 {
-  for ( localIndex capacity = 0 ; capacity <= 1000 ;
+  for ( IndexType capacity = 0 ; capacity <= 1000 ;
         capacity += 2 * capacity + 1)
   {
     for ( double resize_ratio = 1.0 ; resize_ratio <= 3.0 ;

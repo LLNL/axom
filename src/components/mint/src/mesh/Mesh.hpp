@@ -21,7 +21,7 @@
 #include "axom/Macros.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/MeshType.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 
 
 namespace axom
@@ -275,10 +275,10 @@ public:
    * \post numNodes >= 0
    * \warning This is a virtual method -- do not call inside a loop.
    */
-  virtual localIndex getMeshNumberOfNodes() const = 0;
+  virtual IndexType getMeshNumberOfNodes() const = 0;
 
 //
-//  virtual localIndex getMeshNodeCapacity() const = 0;
+//  virtual IndexType getMeshNodeCapacity() const = 0;
 //
 //
 //  virtual double getMeshNodeResizeRatio() const = 0;
@@ -289,19 +289,19 @@ public:
    * \post numCells >= 0
    * \warning This is a virtual method -- do not call inside a loop.
    */
-  virtual localIndex getMeshNumberOfCells() const = 0;
+  virtual IndexType getMeshNumberOfCells() const = 0;
 
 //
-//  virtual localIndex getMeshCellCapacity() const = 0;
+//  virtual IndexType getMeshCellCapacity() const = 0;
 //
 //
 //  virtual double getMeshCellResizeRatio() const = 0;
 //
 //
-//  virtual localIndex getMeshNumberOfFaces() const = 0;
+//  virtual IndexType getMeshNumberOfFaces() const = 0;
 //
 //
-//  virtual localIndex getMeshNumberOfEdges() const = 0;
+//  virtual IndexType getMeshNumberOfEdges() const = 0;
 
   /*!
    * \brief Returns the number of nodes for the given cell.
@@ -310,7 +310,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual int getMeshNumberOfCellNodes( localIndex cellIdx ) const = 0;
+  virtual int getMeshNumberOfCellNodes( IndexType cellIdx ) const = 0;
 
   /*!
    * \brief Returns the cell connectivity of the given cell.
@@ -322,14 +322,14 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( localIndex cellIdx, localIndex* cell ) const = 0;
+  virtual void getMeshCell( IndexType cellIdx, IndexType* cell ) const = 0;
 
   /*!
    * \brief Returns the cell type of the cell associated with the given Id.
    * \param [in] cellIdx the index of the cell in query.
    * \return cellType the cell type of the cell at the given index.
    */
-  virtual int getMeshCellType( localIndex cellIdx ) const = 0;
+  virtual int getMeshCellType( IndexType cellIdx ) const = 0;
 
   /*!
    * \brief Returns the coordinates of the given node.
@@ -339,7 +339,7 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshNode( localIndex nodeIdx,
+  virtual void getMeshNode( IndexType nodeIdx,
                             double* coordinates ) const = 0;
 
   /*!
@@ -349,41 +349,41 @@ public:
    * \return c the coordinate value of the node at
    * \pre dim >= 0 && dim < m_ndims
    */
-  virtual double getMeshNodeCoordinate( localIndex nodeIdx, int dim ) const = 0;
+  virtual double getMeshNodeCoordinate( IndexType nodeIdx, int dim ) const = 0;
 
   /// @}
 
 protected:
 
-  inline void setCellDataSize( localIndex size )
+  inline void setCellDataSize( IndexType size )
   { m_cell_data.resize( size ); }
 
 
-  inline void setFaceDataSize( localIndex size )
+  inline void setFaceDataSize( IndexType size )
   { m_face_data.resize( size ); }
 
 
-  inline void setEdgeDataSize( localIndex size )
+  inline void setEdgeDataSize( IndexType size )
   { m_edge_data.resize( size ); }
 
 
-  inline void setNodeDataSize( localIndex size )
+  inline void setNodeDataSize( IndexType size )
   { m_node_data.resize( size ); }
 
 
-  inline void setCellDataCapacity( localIndex capacity )
+  inline void setCellDataCapacity( IndexType capacity )
   { m_cell_data.reserve( capacity ); }
 
 
-  inline void setFaceDataCapacity( localIndex capacity )
+  inline void setFaceDataCapacity( IndexType capacity )
   { m_face_data.reserve( capacity ); }
 
 
-  inline void setEdgeDataCapacity( localIndex capacity )
+  inline void setEdgeDataCapacity( IndexType capacity )
   { m_edge_data.reserve( capacity ); }
 
 
-  inline void setNodeDataCapacity( localIndex capacity )
+  inline void setNodeDataCapacity( IndexType capacity )
   { m_node_data.reserve( capacity ); }
 
 
@@ -419,20 +419,20 @@ private:
   sidre::Group * m_group;
 #endif
 
-  localIndex * m_num_cells;       /*! The number of cells in the mesh */
-  localIndex* m_cell_capacity;    /*! The cell storage capacity */
+  IndexType * m_num_cells;       /*! The number of cells in the mesh */
+  IndexType* m_cell_capacity;    /*! The cell storage capacity */
   double* m_cell_resize_ratio;    /*! The cell resize ratio */
 
-  localIndex* m_num_faces;        /*! The number of faces in the mesh */
-  localIndex* m_face_capacity;    /*! The face storage capacity */
+  IndexType* m_num_faces;        /*! The number of faces in the mesh */
+  IndexType* m_face_capacity;    /*! The face storage capacity */
   double* m_face_resize_ratio;    /*! The face resize ratio */
 
-  localIndex* m_num_edges;        /*! The number of edges in the mesh */
-  localIndex* m_edge_capacity;    /*! The edge storage capacity */
+  IndexType* m_num_edges;        /*! The number of edges in the mesh */
+  IndexType* m_edge_capacity;    /*! The edge storage capacity */
   double* m_edge_resize_ratio;    /*! The edge resize ratio */
 
-  localIndex* m_num_nodes;        /*! The number of nodes in the mesh */
-  localIndex* m_node_capacity;    /*! The node storage capacity */
+  IndexType* m_num_nodes;        /*! The number of nodes in the mesh */
+  IndexType* m_node_capacity;    /*! The node storage capacity */
   double* m_node_resize_ratio;    /*! The node resize ratio */
 
 

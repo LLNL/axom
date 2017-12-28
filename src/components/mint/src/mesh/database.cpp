@@ -17,6 +17,7 @@
 #include "mint/database.hpp"
 
 // Axom includes
+#include "mint/config.hpp"
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"  // for SLIC macros
 

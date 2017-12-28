@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "axom/Macros.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
 namespace axom
@@ -107,8 +107,8 @@ private:
 protected:
   std::string m_fileName;
 
-  axom::mint::localIndex m_num_nodes;
-  axom::mint::localIndex m_num_faces;
+  axom::mint::IndexType m_num_nodes;
+  axom::mint::IndexType m_num_faces;
 
   std::vector<double> m_nodes;
 

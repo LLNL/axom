@@ -18,8 +18,7 @@
 #ifndef MINT_UTILS_ARRAY_HXX_
 #define MINT_UTILS_ARRAY_HXX_
 
-#include "mint/config.hpp"
-#include "mint/DataTypes.hpp"           // for localIndex
+#include "mint/config.hpp"           // for IndexType
 
 #include "slic/slic.hpp"                // for slic macros
 #include "axom_utils/Utilities.hpp"     // for allocation
@@ -61,7 +60,7 @@ public:
    * \param [in] num_tuples the number of tuples the Array holds.
    * \param [in] num_components the number of components per tuple.
    */
-  Array( localIndex num_tuples, localIndex num_components );
+  Array( IndexType num_tuples, IndexType num_components );
 
   /*!
    * \brief Constructs a Array instance with the given number of tuples
@@ -70,8 +69,8 @@ public:
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
    */
-  Array( localIndex capacity, localIndex num_tuples,
-         localIndex num_components );
+  Array( IndexType capacity, IndexType num_tuples,
+         IndexType num_components );
 
   /*!
    * \brief Constructs a Array instance with external data and the given number
@@ -80,7 +79,7 @@ public:
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
    */
-  Array( T* data, localIndex num_tuples, localIndex num_components );
+  Array( T* data, IndexType num_tuples, IndexType num_components );
 
 //@}
 
@@ -95,7 +94,7 @@ public:
    * \param [in] view the sidre::View that holds this Array's data.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    */
-  Array( sidre::View* view, localIndex num_tuples );
+  Array( sidre::View* view, IndexType num_tuples );
 
   /*!
    * \brief Constructor for use with an empty sidre::View with the given number
@@ -104,8 +103,8 @@ public:
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
    */
-  Array( sidre::View* view, localIndex num_tuples,
-         localIndex num_components );
+  Array( sidre::View* view, IndexType num_tuples,
+         IndexType num_components );
 
   /*!
    * \brief Constructor for use with an empty sidre::View with the given number
@@ -115,8 +114,8 @@ public:
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
    */
-  Array( sidre::View* view, localIndex capacity, localIndex num_tuples,
-         localIndex num_components );
+  Array( sidre::View* view, IndexType capacity, IndexType num_tuples,
+         IndexType num_components );
 
 #endif
 //@}
@@ -138,7 +137,7 @@ public:
    * \param [in] component the component to return.
    * \return a reference to the given component of the specified tuple.
    */
-  inline T & operator()( localIndex pos, localIndex component=0 )
+  inline T & operator()( IndexType pos, IndexType component=0 )
   { return m_data[ pos * m_num_components + component ]; }
 
   /*!
@@ -148,7 +147,7 @@ public:
    * \param [in] component the component to return.
    * \return a reference to the given component of the specified tuple.
    */
-  inline T & operator()( localIndex pos, localIndex component=0 ) const
+  inline T & operator()( IndexType pos, IndexType component=0 ) const
   { return m_data[ pos * m_num_components + component ]; }
 
   /*!
@@ -187,7 +186,7 @@ public:
    * \note It's assumed that tuples is of length n * m_num_components.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void append( const T* tuples, localIndex n );
+  inline void append( const T* tuples, IndexType n );
 
   /*!
    * \brief Write tuples into existing spots in the array.
@@ -196,7 +195,7 @@ public:
    * \param [in] pos the position at which to begin writing.
    * \pre pos + n <= m_num_tuples.
    */
-  inline void set( const T* tuples, localIndex n, localIndex pos );
+  inline void set( const T* tuples, IndexType n, IndexType pos );
 
   /*!
    * \brief Insert tuples into the array at the given position.
@@ -206,7 +205,7 @@ public:
    * \pre pos < m_num_tuples.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void insert( const T* tuples, localIndex n, localIndex pos );
+  inline void insert( const T* tuples, IndexType n, IndexType pos );
 
   /*!
    * \brief Insert a value into the array at the given position.
@@ -214,7 +213,7 @@ public:
    * \param [in] pos the position at which to insert.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void insert( const T& value, localIndex pos );
+  inline void insert( const T& value, IndexType pos );
 
 //@}
 
@@ -227,7 +226,7 @@ public:
    * \brief Return the number of tuples allocated for the data array.
    * \return the amount of space allocated for the data array.
    */
-  inline localIndex getCapacity() const
+  inline IndexType getCapacity() const
   { return m_capacity; }
 
   /*!
@@ -235,7 +234,7 @@ public:
    *  than the current capacity.
    * \param [in] capacity the new number of tuples to allocate.
    */
-  inline void reserve( localIndex capacity )
+  inline void reserve( IndexType capacity )
   { if ( capacity > m_capacity ) setCapacity( capacity ); }
 
   /*!
@@ -256,13 +255,13 @@ public:
    * \brief Return the number of tuples stored in the data array.
    * \return the number of tuples stored in the data array.
    */
-  inline localIndex size() const { return m_num_tuples; }
+  inline IndexType size() const { return m_num_tuples; }
 
   /*!
    * \brief Update the number of tuples stored in the data array.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void resize( localIndex num_tuples );
+  inline void resize( IndexType num_tuples );
 
   /*!
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
@@ -282,7 +281,7 @@ public:
    * \brief Get the chunk size of all allocations.
    * \return the chunk size of all allocations.
    */
-  inline localIndex getNumComponents() const
+  inline IndexType getNumComponents() const
   { return m_num_components; }
 
 
@@ -304,14 +303,14 @@ private:
    * \brief Set the number of tuples allocated for the data array.
    * \param [in] capacity the new number of tuples to allocate.
    */
-  inline void setCapacity( localIndex capacity );
+  inline void setCapacity( IndexType capacity );
 
   /*!
    * \brief Reallocates the data array when the size exceeds the capacity.
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
    */
-  inline void dynamicRealloc( localIndex new_num_tuples );
+  inline void dynamicRealloc( IndexType new_num_tuples );
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -320,7 +319,7 @@ private:
    * \return a pointer to the beginning of the insertion space.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline T* reserveForInsert( localIndex n, localIndex pos );
+  inline T* reserveForInsert( IndexType n, IndexType pos );
 
 #ifdef MINT_USE_SIDRE
   /*!
@@ -330,7 +329,7 @@ private:
    * \param [in] dim the dimension (0 or 1) to return the length of.
    * \return The length of dimension dim of view.
    */
-  inline localIndex getViewShape( int dim ) const;
+  inline IndexType getViewShape( int dim ) const;
 
   /*!
    * \brief Allocates space within the Array's sidre::View.
@@ -342,9 +341,9 @@ private:
 #endif
 
   T* m_data;
-  localIndex m_num_tuples;
-  localIndex m_capacity;
-  localIndex m_num_components;
+  IndexType m_num_tuples;
+  IndexType m_capacity;
+  IndexType m_num_components;
   double m_resize_ratio;
   bool m_is_external;
 };
@@ -356,7 +355,7 @@ private:
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( localIndex num_tuples, localIndex num_components ) :
+Array< T >::Array( IndexType num_tuples, IndexType num_components ) :
 #ifdef MINT_USE_SIDRE
   m_view( AXOM_NULLPTR ),
 #endif
@@ -379,8 +378,8 @@ Array< T >::Array( localIndex num_tuples, localIndex num_components ) :
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( localIndex capacity, localIndex num_tuples,
-                   localIndex num_components ) :
+Array< T >::Array( IndexType capacity, IndexType num_tuples,
+                   IndexType num_components ) :
 #ifdef MINT_USE_SIDRE
   m_view( AXOM_NULLPTR ),
 #endif
@@ -407,7 +406,7 @@ Array< T >::Array( localIndex capacity, localIndex num_tuples,
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( T* data, localIndex num_tuples, localIndex num_components ) :
+Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components ) :
 #ifdef MINT_USE_SIDRE
   m_view( AXOM_NULLPTR ),
 #endif
@@ -429,7 +428,7 @@ Array< T >::Array( T* data, localIndex num_tuples, localIndex num_components ) :
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( sidre::View* view, localIndex num_tuples ) :
+Array< T >::Array( sidre::View* view, IndexType num_tuples ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
@@ -463,8 +462,8 @@ Array< T >::Array( sidre::View* view, localIndex num_tuples ) :
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( sidre::View* view, localIndex num_tuples,
-                   localIndex num_components ) :
+Array< T >::Array( sidre::View* view, IndexType num_tuples,
+                   IndexType num_components ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
@@ -494,8 +493,8 @@ Array< T >::Array( sidre::View* view, localIndex num_tuples,
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( sidre::View* view, localIndex capacity,
-                   localIndex num_tuples, localIndex num_components ) :
+Array< T >::Array( sidre::View* view, IndexType capacity,
+                   IndexType num_tuples, IndexType num_components ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
@@ -553,7 +552,7 @@ inline void Array< T >::append( const T& value )
 {
   SLIC_ASSERT_MSG( m_num_components == 1, "Number of components must be 1." );
 
-  localIndex new_size = m_num_tuples + 1;
+  IndexType new_size = m_num_tuples + 1;
   if ( new_size > m_capacity )
   {
     dynamicRealloc( new_size );
@@ -565,9 +564,9 @@ inline void Array< T >::append( const T& value )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::append( const T* tuples, localIndex n )
+inline void Array< T >::append( const T* tuples, IndexType n )
 {
-  localIndex new_size = m_num_tuples + n;
+  IndexType new_size = m_num_tuples + n;
   if ( new_size > m_capacity )
   {
     dynamicRealloc( new_size );
@@ -580,18 +579,18 @@ inline void Array< T >::append( const T* tuples, localIndex n )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::set( const T* tuples, localIndex n, localIndex pos )
+inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 {
   SLIC_ASSERT( pos >= 0 );
   SLIC_ASSERT( pos + n <= m_num_tuples );
   T* set_position = m_data + pos * m_num_tuples;
-  localIndex byte_size = n * m_num_tuples * sizeof(T);
+  IndexType byte_size = n * m_num_tuples * sizeof(T);
   std::memcpy( set_position, tuples, byte_size );
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::insert( const T* tuples, localIndex n, localIndex pos )
+inline void Array< T >::insert( const T* tuples, IndexType n, IndexType pos )
 {
   T* insert_pos = reserveForInsert( n, pos );
   std::memcpy( insert_pos, tuples, n * m_num_components * sizeof(T) );
@@ -599,7 +598,7 @@ inline void Array< T >::insert( const T* tuples, localIndex n, localIndex pos )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::insert( const T& value, localIndex pos )
+inline void Array< T >::insert( const T& value, IndexType pos )
 {
   SLIC_ASSERT_MSG( m_num_components != 1, "Number of components must be 1." );
   reserveForInsert( 1, pos );
@@ -608,7 +607,7 @@ inline void Array< T >::insert( const T& value, localIndex pos )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::resize( localIndex num_tuples )
+inline void Array< T >::resize( IndexType num_tuples )
 {
   SLIC_ASSERT( num_tuples >= 0 );
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
@@ -622,7 +621,7 @@ inline void Array< T >::resize( localIndex num_tuples )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::setCapacity( localIndex capacity )
+inline void Array< T >::setCapacity( IndexType capacity )
 {
   SLIC_ASSERT( capacity >= 0 );
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
@@ -647,7 +646,7 @@ inline void Array< T >::setCapacity( localIndex capacity )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::dynamicRealloc( localIndex new_num_tuples )
+inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 {
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
   SLIC_ERROR_IF( m_resize_ratio < 1.0, "Resize ratio of " << m_resize_ratio <<
@@ -668,13 +667,13 @@ inline void Array< T >::dynamicRealloc( localIndex new_num_tuples )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline T* Array< T >::reserveForInsert( localIndex n, localIndex pos )
+inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
 {
   SLIC_ASSERT( n > 0 );
   SLIC_ASSERT( pos >= 0 );
   SLIC_ASSERT( pos <= m_num_tuples );
 
-  localIndex new_size = m_num_tuples + n;
+  IndexType new_size = m_num_tuples + n;
   if ( new_size > m_capacity )
   {
     dynamicRealloc( new_size );
@@ -694,7 +693,7 @@ inline T* Array< T >::reserveForInsert( localIndex n, localIndex pos )
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
 template< typename T >
-inline localIndex Array< T >::getViewShape( int dim ) const
+inline IndexType Array< T >::getViewShape( int dim ) const
 {
   SLIC_ERROR_IF( dim > 1, "Only two dimensional views supported." );
   SLIC_ERROR_IF( m_view->isEmpty(), "view cannot be empty." );

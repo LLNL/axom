@@ -27,7 +27,6 @@
 
 // Mint includes
 #include "mint/CellType.hpp"           // for cell type definitions
-#include "mint/DataTypes.hpp"          // for localIndex
 #include "mint/Lagrange.hpp"           // For Lagrange ShapeFunctions
 #include "mint/Mesh.hpp"               // for mesh data structure
 #include "mint/ShapeFunction.hpp"      // For ShapeFunction definition
@@ -369,13 +368,13 @@ void FiniteElement::tearDown()
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::getCellCoords( const Mesh* m, localIndex cellIdx )
+void FiniteElement::getCellCoords( const Mesh* m, IndexType cellIdx )
 {
   SLIC_ASSERT(  m != AXOM_NULLPTR );
   SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );
 
   // TODO: iron out this code
-  localIndex cell[ MINT_MAX_NUM_NODES ];
+  IndexType cell[ MINT_MAX_NUM_NODES ];
   m->getMeshCell( cellIdx, cell );
 
   for ( int i=0 ; i < m_numnodes ; ++i )

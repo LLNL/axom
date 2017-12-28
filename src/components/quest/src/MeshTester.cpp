@@ -71,8 +71,8 @@ inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
   SpatialBoundingBox meshBB;
   Point3 pt;
 
-  const int numNodes = mesh->getMeshNumberOfNodes();
-  for ( int i=0 ; i < numNodes ; ++i )
+  const mint::IndexType numNodes = mesh->getMeshNumberOfNodes();
+  for ( mint::IndexType i=0 ; i < numNodes ; ++i )
   {
     mesh->getMeshNode( i, pt.data() );
     meshBB.addPoint( pt );
@@ -98,10 +98,10 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
+inline Triangle3 getMeshTriangle(mint::IndexType i, mint::Mesh * surface_mesh)
 {
   SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
-  primal::Point<mint::localIndex, 3> triCell;
+  primal::Point<mint::IndexType, 3> triCell;
   Triangle3 tri;
   surface_mesh->getMeshCell(i, triCell.data());
 

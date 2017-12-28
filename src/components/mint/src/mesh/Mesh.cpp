@@ -62,20 +62,20 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
 {
   SLIC_ERROR_IF( m_ndims < 0 || m_ndims > 3, "invalid dimension" );
 
-  m_num_cells = new localIndex(0);
-  m_cell_capacity = new localIndex(0);
+  m_num_cells = new IndexType(0);
+  m_cell_capacity = new IndexType(0);
   m_cell_resize_ratio = new double(0.0);
 
-  m_num_faces = new localIndex(0);
-  m_face_capacity = new localIndex(0);
+  m_num_faces = new IndexType(0);
+  m_face_capacity = new IndexType(0);
   m_face_resize_ratio = new double(0.0);
 
-  m_num_edges = new localIndex(0);
-  m_edge_capacity = new localIndex(0);
+  m_num_edges = new IndexType(0);
+  m_edge_capacity = new IndexType(0);
   m_edge_resize_ratio = new double(0.0);
 
-  m_num_nodes = new localIndex(0);
-  m_node_capacity = new localIndex(0);
+  m_num_nodes = new IndexType(0);
+  m_node_capacity = new IndexType(0);
   m_node_resize_ratio = new double(0.0);
 }
 
@@ -139,7 +139,7 @@ Mesh::Mesh( sidre::Group* group ) :
 
   view = m_group->getView( "num_cells" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
-  m_num_cells = static_cast< localIndex* >( view->getVoidPtr() );
+  m_num_cells = static_cast< IndexType* >( view->getVoidPtr() );
 
   view = m_group->getView( "cell_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
@@ -147,7 +147,7 @@ Mesh::Mesh( sidre::Group* group ) :
 
   view = m_group->getView( "num_faces" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
-  m_num_faces = static_cast< localIndex* >( view->getVoidPtr() );
+  m_num_faces = static_cast< IndexType* >( view->getVoidPtr() );
 
   view = m_group->getView( "face_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
@@ -155,7 +155,7 @@ Mesh::Mesh( sidre::Group* group ) :
 
   view = m_group->getView( "num_edges" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
-  m_num_edges = static_cast< localIndex* >( view->getVoidPtr() );
+  m_num_edges = static_cast< IndexType* >( view->getVoidPtr() );
 
   view = m_group->getView( "edge_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
@@ -163,7 +163,7 @@ Mesh::Mesh( sidre::Group* group ) :
 
   view = m_group->getView( "num_nodes" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
-  m_num_nodes = static_cast< localIndex* >( view->getVoidPtr() );
+  m_num_nodes = static_cast< IndexType* >( view->getVoidPtr() );
 
   view = m_group->getView( "node_resize_ratio" );
   SLIC_ERROR_IF( !view->isScalar(), "" );
@@ -205,27 +205,27 @@ Mesh::Mesh( sidre::Group* group, int ndims, int type, int blockId,
   m_group->createView( "block_idx" )->setScalar( m_block_idx );
   m_group->createView( "part_idx" )->setScalar( m_part_idx );
 
-  localIndex zero = 0;
+  IndexType zero = 0;
   double zero_f = 0.0;
-  m_num_cells = static_cast< localIndex* >(
+  m_num_cells = static_cast< IndexType* >(
     m_group->createView( "num_cells" )
     ->setScalar( zero )->getVoidPtr() );
   m_cell_resize_ratio = static_cast< double* >(
     m_group->createView( "cell_resize_ratio")
     ->setScalar( zero_f )->getVoidPtr() );
-  m_num_faces = static_cast< localIndex* >(
+  m_num_faces = static_cast< IndexType* >(
     m_group->createView( "num_faces" )
     ->setScalar( zero )->getVoidPtr() );
   m_face_resize_ratio = static_cast< double* >(
     m_group->createView( "face_resize_ratio")
     ->setScalar( zero_f )->getVoidPtr() );
-  m_num_edges = static_cast< localIndex* >(
+  m_num_edges = static_cast< IndexType* >(
     m_group->createView( "num_edges" )
     ->setScalar( zero )->getVoidPtr() );
   m_edge_resize_ratio = static_cast< double* >(
     m_group->createView( "edge_resize_ratio")
     ->setScalar( zero_f )->getVoidPtr() );
-  m_num_nodes = static_cast< localIndex* >(
+  m_num_nodes = static_cast< IndexType* >(
     m_group->createView( "num_nodes" )
     ->setScalar( zero )->getVoidPtr() );
   m_node_resize_ratio = static_cast< double* >(

@@ -20,7 +20,7 @@
 #include "mint/FieldVariable.hpp"         /* for FieldVariable */
 #include "mint/UniformMesh.hpp"           /* for UniformMesh */
 #include "mint/vtk_utils.hpp"             /* for write_vtk */
-#include "mint/DataTypes.hpp"             /* for localIndex, globalIndex */
+#include "mint/config.hpp"             /* for IndexType, int64 */
 #include "slic/GenericOutputStream.hpp"   /* for GenericOutputStream */
 #include "slic/slic.hpp"                  /* for slic macros */
 
@@ -167,15 +167,15 @@ public:
   {
     double origin[3];
     m_mesh->getOrigin( origin );
-    localIndex size[3];
+    IndexType size[3];
     m_mesh->getExtentSize( size );
     double* t = m_mesh->getNodeFieldData().getField(0)->getDoublePtr();
 
-    localIndex idx = 0;
+    IndexType idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
-    for ( localIndex j = 0 ; j < size[1] ; ++j )
+    for ( IndexType j = 0 ; j < size[1] ; ++j )
     {
-      for ( localIndex i = 0 ; i < size[0] ; ++i )
+      for ( IndexType i = 0 ; i < size[0] ; ++i )
       {
         t[ idx++ ] = pulse.evaluate( node_pos );
         node_pos[0] += m_h;
@@ -196,7 +196,7 @@ public:
   void solve( double alpha, double dt, double t_max, int period,
               const std::string& path )
   {
-    const localIndex num_nodes = m_mesh->getMeshNumberOfNodes();
+    const IndexType num_nodes = m_mesh->getMeshNumberOfNodes();
     double* new_temp = new double[num_nodes];
     double* prev_temp = m_mesh->getNodeFieldData().getField( "temperature" )
                         ->getDoublePtr();
@@ -249,19 +249,19 @@ private:
    */
   void copy_boundary( const double* prev_temp, double* new_temp )
   {
-    localIndex size[3];
+    IndexType size[3];
     m_mesh->getExtentSize( size );
 
     /* Copy the -y side, which is contiguous. */
-    const localIndex memcpy_size = size[0] * sizeof(double);
+    const IndexType memcpy_size = size[0] * sizeof(double);
     std:: memcpy( new_temp, prev_temp, memcpy_size );
 
     /* Copy the +y side, which is contiguous. */
-    const localIndex offset = (size[1] - 1) * size[0];
+    const IndexType offset = (size[1] - 1) * size[0];
     std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
-    for ( localIndex idx = size[0] ; idx < offset ; idx += size[0] )
+    for ( IndexType idx = size[0] ; idx < offset ; idx += size[0] )
     {
       new_temp[ idx ] = prev_temp[ idx ];
       new_temp[ idx + size[0] - 1 ] = prev_temp[ idx + size[0] - 1 ];
@@ -283,27 +283,27 @@ private:
   void step( double alpha, double dt, const double* prev_temp,
              double* new_temp )
   {
-    localIndex size[3];
+    IndexType size[3];
     m_mesh->getExtentSize( size );
     const double neighbors_scale = dt * alpha / ( m_h * m_h );
     const double self_scale = 1.0 - (4.0 * neighbors_scale);
 
     /* Since the boundary conditions are fixed we only need to iterate over
        the interior nodes. */
-    const localIndex jp = size[0];
-    const localIndex Nj = size[1] - 1;
-    const localIndex Ni = size[0] - 1;
-    for ( localIndex j = 1 ; j < Nj ; ++j )
+    const IndexType jp = size[0];
+    const IndexType Nj = size[1] - 1;
+    const IndexType Ni = size[0] - 1;
+    for ( IndexType j = 1 ; j < Nj ; ++j )
     {
-      const localIndex j_offset = j * jp;
-      for ( localIndex i = 1 ; i < Ni ; ++i )
+      const IndexType j_offset = j * jp;
+      for ( IndexType i = 1 ; i < Ni ; ++i )
       {
 
-        const localIndex idx = i + j_offset;
-        const localIndex north = idx + jp;
-        const localIndex south = idx - jp;
-        const localIndex east = idx + 1;
-        const localIndex west = idx - 1;
+        const IndexType idx = i + j_offset;
+        const IndexType north = idx + jp;
+        const IndexType south = idx - jp;
+        const IndexType east = idx + 1;
+        const IndexType west = idx - 1;
         const double neighbors_contrib = prev_temp[ north ] +
                                          prev_temp[ east ] +
                                          prev_temp[ south ] +
@@ -341,7 +341,7 @@ private:
   static UniformMesh* create_mesh( const double h, const double lower_bound[2],
                                    const double upper_bound[2] )
   {
-    globalIndex ext[4];
+    int64 ext[4];
     for ( int i = 0 ; i < 2 ; ++i )
     {
       double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );

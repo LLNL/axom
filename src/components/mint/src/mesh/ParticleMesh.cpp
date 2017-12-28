@@ -16,7 +16,7 @@
  */
 
 #include "mint/ParticleMesh.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "axom/Types.hpp"
 
 namespace axom
@@ -25,13 +25,13 @@ namespace mint
 {
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, localIndex particleCapacity ) :
+ParticleMesh::ParticleMesh( int dimension, IndexType particleCapacity ) :
   Mesh( dimension, MINT_PARTICLE_MESH, 0, 0 ),
   m_particle_coordinates( dimension, particleCapacity, particleCapacity, 2.0 )
 {}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, localIndex particleCapacity,
+ParticleMesh::ParticleMesh( int dimension, IndexType particleCapacity,
                             int blockId, int partId ) :
   Mesh( dimension, MINT_PARTICLE_MESH, blockId, partId ),
   m_particle_coordinates( dimension, particleCapacity, particleCapacity, 2.0 )

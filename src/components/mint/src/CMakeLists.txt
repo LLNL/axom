@@ -58,7 +58,6 @@ set( mint_headers
 
     ## utils
     utils/Array.hpp
-    utils/DataTypes.hpp
     utils/vtk_utils.hpp
    )
 

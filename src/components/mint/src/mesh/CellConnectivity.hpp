@@ -24,7 +24,7 @@
 #include "axom/Types.hpp"
 #include "mint/CellType.hpp"
 #include "mint/Array.hpp"
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -44,7 +44,7 @@ public:
   /*!
    * \brief Default constructor.
    */
-  CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ) :
+  CellConnectivity( IndexType capacity=100, double resize_ratio=2.0 ) :
     m_stride( cell::num_nodes[ cell_type ] ),
     m_connectivity( capacity, 0, cell::num_nodes[ cell_type ] )
   { m_connectivity.setResizeRatio( resize_ratio ); };
@@ -74,7 +74,7 @@ public:
    * \return ncells number of cells.
    * \post ncells >= 0
    */
-  localIndex getNumberOfCells() const
+  IndexType getNumberOfCells() const
   { return m_connectivity.size(); }
 
   /*!
@@ -84,7 +84,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post nnodes >= 0
    */
-  localIndex getNumberOfNodes( localIndex AXOM_NOT_USED(cellIdx) ) const
+  IndexType getNumberOfNodes( IndexType AXOM_NOT_USED(cellIdx) ) const
   { return m_stride; };
 
   /*!
@@ -94,7 +94,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    */
-  int getCellType( localIndex AXOM_NOT_USED(cellIdx) ) const
+  int getCellType( IndexType AXOM_NOT_USED(cellIdx) ) const
   { return cell_type; }
 
   /*!
@@ -104,7 +104,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const localIndex* operator[]( localIndex cellIdx ) const {
+  const IndexType* operator[]( IndexType cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     return m_connectivity.getData() + cellIdx * m_stride;
   }
@@ -115,7 +115,7 @@ public:
    * \param [in] type the cell type.
    * \note type is only used for mixed cell connectivity.
    */
-  void addCell( const localIndex* cell, int AXOM_NOT_USED(type) ) {
+  void addCell( const IndexType* cell, int AXOM_NOT_USED(type) ) {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     m_connectivity.append( cell, m_stride );
   }
@@ -127,7 +127,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( localIndex cellIdx, const localIndex* cell ) {
+  void setCell( IndexType cellIdx, const IndexType* cell ) {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     m_connectivity.set( cell, m_stride, cellIdx * m_stride );
@@ -137,18 +137,18 @@ public:
    * \brief Get the maximum number of points that can currently be held.
    * \return N the capacity of m_coordinates.
    */
-  localIndex getCapacity() const
+  IndexType getCapacity() const
   { return m_connectivity.getCapacity(); }
 
 
-  void reserve( localIndex capacity )
+  void reserve( IndexType capacity )
   { m_connectivity.reserve( capacity ); }
 
   /*!
    * \brief Returns the number of points in this CellConnectivity instance.
    * \return npoint the number points in this CellConnectivity instance.
    */
-  localIndex getTotalNumberOfNodes() const
+  IndexType getTotalNumberOfNodes() const
   { return m_connectivity.size() * m_connectivity.getNumComponents(); }
 
 
@@ -162,7 +162,7 @@ public:
 private:
 
   int m_stride;                          /*!< stride */
-  Array< localIndex > m_connectivity;   /*!< connectivity array */
+  Array< IndexType > m_connectivity;   /*!< connectivity array */
 
   CellConnectivity( const CellConnectivity& );
   CellConnectivity& operator=(const CellConnectivity& );
@@ -180,7 +180,7 @@ public:
   /*!
    * \brief Default constructor.
    */
-  CellConnectivity( localIndex capacity=100, double resize_ratio=2.0 ) :
+  CellConnectivity( IndexType capacity=100, double resize_ratio=2.0 ) :
     m_num_cells(0),
     m_offset( capacity + 1, 0, 1 ),
     m_connectivity( capacity, 0, 1 ),
@@ -219,7 +219,7 @@ public:
    * \return ncells number of cells.
    * \post ncells >= 0
    */
-  localIndex getNumberOfCells() const
+  IndexType getNumberOfCells() const
   { return m_num_cells; };
 
   /*!
@@ -229,7 +229,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post nnodes >= 0
    */
-  localIndex getNumberOfNodes( localIndex cellIdx ) const {
+  IndexType getNumberOfNodes( IndexType cellIdx ) const {
     SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
     return m_offset( cellIdx + 1 ) - m_offset( cellIdx );
   };
@@ -241,7 +241,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post ctype >= mint::VERTEX && ctype < mint::NUM_CELL_TYPES.
    */
-  int getCellType( localIndex cellIdx ) const {
+  int getCellType( IndexType cellIdx ) const {
     SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
     return m_cell_type( cellIdx );
   }
@@ -253,7 +253,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const localIndex* operator[]( localIndex cellIdx ) const {
+  const IndexType* operator[]( IndexType cellIdx ) const {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     return m_connectivity.getData() + m_offset( cellIdx );
   };
@@ -266,11 +266,11 @@ public:
    * \note type is only used for mixed cell connectivity.
    * \pre cell != AXOM_NULLPTR .
    */
-  void addCell( const localIndex* cell, int type ) {
+  void addCell( const IndexType* cell, int type ) {
     int num_nodes = cell::num_nodes[ type ];
 
     /* STEP 0: get the last cell index before adding the new cell. */
-    localIndex new_cell_id  = this->getNumberOfCells();
+    IndexType new_cell_id  = this->getNumberOfCells();
 
     if ( this->empty() )
     {
@@ -278,7 +278,7 @@ public:
     }
 
     /* STEP 2: update the offsets array. */
-    const localIndex offset = m_offset( new_cell_id );
+    const IndexType offset = m_offset( new_cell_id );
     m_offset.append( offset + num_nodes );
 
     /* STEP 3: update the cell connectivity. */
@@ -297,16 +297,16 @@ public:
    * \pre cellIdx >= 0 && cellIdx < ncells
    * \pre cell != AXOM_NULLPTR
    */
-  void setCell( localIndex cellIdx, const localIndex* cell )
+  void setCell( IndexType cellIdx, const IndexType* cell )
   {
     SLIC_ASSERT( ( cellIdx >= 0 ) && ( cellIdx < this->getNumberOfCells() ) );
     SLIC_ASSERT( cell != AXOM_NULLPTR );
 
     /* STEP 0: get the number of nodes for the given cell type. */
-    const localIndex nnodes = this->getNumberOfNodes( cellIdx );
+    const IndexType nnodes = this->getNumberOfNodes( cellIdx );
 
     /* STEP 1: get to/from pointers. */
-    const localIndex offset = m_offset( cellIdx );
+    const IndexType offset = m_offset( cellIdx );
 
     m_connectivity.set( cell, nnodes, offset );
   }
@@ -315,11 +315,11 @@ public:
    * \brief Get the maximum number of points that can currently be held.
    * \return N the capacity of m_coordinates.
    */
-  localIndex getCapacity() const
+  IndexType getCapacity() const
   { return m_connectivity.getCapacity(); }
 
 
-  void reserve( localIndex capacity )
+  void reserve( IndexType capacity )
   {
     //
     // TO DO: Need capacity for cells and nodes.
@@ -333,7 +333,7 @@ public:
    * \brief Returns the number of points in this CellConnectivity instance.
    * \return npoint the number points in this CellConnectivity instance.
    */
-  localIndex getSize() const
+  IndexType getSize() const
   { return m_connectivity.size(); }
 
 
@@ -349,9 +349,9 @@ public:
   }
 
 private:
-  localIndex m_num_cells;
-  Array< localIndex > m_offset;
-  Array< localIndex > m_connectivity;
+  IndexType m_num_cells;
+  Array< IndexType > m_offset;
+  Array< IndexType > m_connectivity;
   Array< unsigned char > m_cell_type;
 
   CellConnectivity( const CellConnectivity& );

@@ -20,7 +20,6 @@
 
 #include "mint/config.hpp"
 #include "mint/Array.hpp"
-#include "mint/DataTypes.hpp"
 
 #include "axom/Macros.hpp"
 
@@ -63,7 +62,7 @@ public:
    * \param [in] resize_ratio the ratio to resize the coordinate array by when
    *  it exceeds the capacity. A ratio smaller than 1 prevents dynamic resizing.
    */
-  MeshCoordinates( int dimension, localIndex capacity, localIndex size,
+  MeshCoordinates( int dimension, IndexType capacity, IndexType size,
                    double resize_ratio );
 
 #ifdef MINT_USE_SIDRE
@@ -73,7 +72,7 @@ public:
    * \param [in] group the sidre::Group to use.
    * \pre group != AXOM_NULLPTR.
    */
-  MeshCoordinates( sidre::Group* group, int dimension, localIndex size,
+  MeshCoordinates( sidre::Group* group, int dimension, IndexType size,
                    double resize_ratio );
 
   /*!
@@ -85,8 +84,8 @@ public:
    *  it exceeds the capacity. A ratio smaller than 1 prevents dynamic resizing.
    * \pre group != AXOM_NULLPTR.
    */
-  MeshCoordinates( sidre::Group* group, int dimension, localIndex capacity,
-                   localIndex size, double resize_ratio );
+  MeshCoordinates( sidre::Group* group, int dimension, IndexType capacity,
+                   IndexType size, double resize_ratio );
 #endif
 
   /*!
@@ -107,7 +106,7 @@ public:
    * \param [in] n the number of points to add.
    * \pre m_ndims == 1.
    */
-  inline void addPoints( double* x, localIndex n );
+  inline void addPoints( double* x, IndexType n );
 
   /*!
    * \brief Adds a new point into this MeshCoordinates instance.
@@ -124,7 +123,7 @@ public:
    * \param [in] n the number of points to add.
    * \pre m_ndims == 2.
    */
-  inline void addPoints( double* x, double* y, localIndex n );
+  inline void addPoints( double* x, double* y, IndexType n );
 
   /*!
    * \brief Adds a new point into this MeshCoordinates instance.
@@ -143,7 +142,7 @@ public:
    * \param [in] n the number of points to add.
    * \pre m_ndims == 3.
    */
-  inline void addPoints( double* x, double* y, double* z, localIndex n );
+  inline void addPoints( double* x, double* y, double* z, IndexType n );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -152,7 +151,7 @@ public:
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    * \pre m_ndims == 1.
    */
-  inline void setPoint( localIndex pntIdx, double x );
+  inline void setPoint( IndexType pntIdx, double x );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -162,7 +161,7 @@ public:
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    * \pre m_ndims == 2.
    */
-  inline void setPoint( localIndex pntIdx, double x, double y );
+  inline void setPoint( IndexType pntIdx, double x, double y );
 
   /*!
    * \brief Sets the point at the supplied index to the given coordinates.
@@ -173,7 +172,7 @@ public:
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    * \pre m_ndims == 3.
    */
-  inline void setPoint( localIndex pntIdx, double x, double y, double z );
+  inline void setPoint( IndexType pntIdx, double x, double y, double z );
 
   /*!
    * \brief Returns the coordinate of a point at the given dimension.
@@ -183,7 +182,7 @@ public:
    * \pre dim < m_ndims
    * \pre (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints())
    */
-  inline double getCoordinate( localIndex pntIdx, int dim );
+  inline double getCoordinate( IndexType pntIdx, int dim );
 
   /*!
    * \brief Returns a const pointer to the coordinate array.
@@ -207,25 +206,25 @@ public:
    * \brief Get the maximum number of points that can currently be held.
    * \return N the capacity of m_coordinates.
    */
-  inline localIndex getCapacity() const
+  inline IndexType getCapacity() const
   { return m_coordinates[0]->getCapacity(); }
 
   /*!
    * \brief Change the maximum number of points that can currently be held.
    */
-  inline void reserve( localIndex capacity );
+  inline void reserve( IndexType capacity );
 
   /*!
    * \brief Returns the number of points in this MeshCoordinates instance.
    * \return npoint the number points in this MeshCoordinates instance.
    */
-  inline localIndex size() const
+  inline IndexType size() const
   { return m_coordinates[0]->size(); }
 
   /*!
    * \brief Sets the number of points in this MeshCoordinates instance.
    */
-  inline void resize( localIndex size );
+  inline void resize( IndexType size );
 
 
   inline double getResizeRatio() const
@@ -257,7 +256,7 @@ inline void MeshCoordinates::addPoint( double x )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::addPoints( double* x, localIndex n )
+inline void MeshCoordinates::addPoints( double* x, IndexType n )
 {
   SLIC_ASSERT( m_ndims == 1 );
   m_coordinates[ X_COORDINATE ]->append( x, n );
@@ -272,7 +271,7 @@ inline void MeshCoordinates::addPoint( double x, double y )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::addPoints( double* x, double* y, localIndex n )
+inline void MeshCoordinates::addPoints( double* x, double* y, IndexType n )
 {
   SLIC_ASSERT( m_ndims == 1 );
   m_coordinates[ X_COORDINATE ]->append( x, n );
@@ -291,7 +290,7 @@ inline void MeshCoordinates::addPoint( double x, double y, double z )
 
 //------------------------------------------------------------------------------
 inline void MeshCoordinates::addPoints( double* x, double* y, double* z,
-                                        localIndex n )
+                                        IndexType n )
 {
   SLIC_ASSERT( m_ndims == 1 );
   m_coordinates[ X_COORDINATE ]->append( x, n );
@@ -300,7 +299,7 @@ inline void MeshCoordinates::addPoints( double* x, double* y, double* z,
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::setPoint( localIndex pntIdx, double x )
+inline void MeshCoordinates::setPoint( IndexType pntIdx, double x )
 {
   SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < size() ) );
   SLIC_ASSERT( m_ndims == 1 );
@@ -308,7 +307,7 @@ inline void MeshCoordinates::setPoint( localIndex pntIdx, double x )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::setPoint( localIndex pntIdx, double x, double y )
+inline void MeshCoordinates::setPoint( IndexType pntIdx, double x, double y )
 {
   SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < size() ) );
   SLIC_ASSERT( m_ndims == 2 );
@@ -317,7 +316,7 @@ inline void MeshCoordinates::setPoint( localIndex pntIdx, double x, double y )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::setPoint( localIndex pntIdx, double x, double y,
+inline void MeshCoordinates::setPoint( IndexType pntIdx, double x, double y,
                                        double z)
 {
   SLIC_ASSERT( m_ndims == 3 );
@@ -327,7 +326,7 @@ inline void MeshCoordinates::setPoint( localIndex pntIdx, double x, double y,
 }
 
 //------------------------------------------------------------------------------
-inline double MeshCoordinates::getCoordinate( localIndex pntIdx, int dim )
+inline double MeshCoordinates::getCoordinate( IndexType pntIdx, int dim )
 {
   SLIC_ASSERT( dim < m_ndims );
   SLIC_ASSERT( ( pntIdx >= 0 ) && ( pntIdx < size() ) );
@@ -349,7 +348,7 @@ inline const double* MeshCoordinates::getCoordinateArray( int dim ) const
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::reserve( localIndex capacity )
+inline void MeshCoordinates::reserve( IndexType capacity )
 {
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
@@ -358,7 +357,7 @@ inline void MeshCoordinates::reserve( localIndex capacity )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::resize( localIndex size )
+inline void MeshCoordinates::resize( IndexType size )
 {
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {

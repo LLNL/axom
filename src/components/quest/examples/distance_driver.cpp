@@ -30,7 +30,7 @@
 #include "quest/STLReader.hpp"
 #include "quest/SignedDistance.hpp"
 
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -170,8 +170,8 @@ void write_point( const Point< double, 3 >& pt,
 
 //------------------------------------------------------------------------------
 void write_triangles( axom::mint::Mesh * mesh,
-                      const axom::mint::localIndex * cells,
-                      axom::mint::localIndex ncells,
+                      const axom::mint::IndexType * cells,
+                      axom::mint::IndexType ncells,
                       const std::string& fileName )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
@@ -179,18 +179,18 @@ void write_triangles( axom::mint::Mesh * mesh,
   TriangleMesh * subset = new TriangleMesh(3);
   SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
 
-  axom::mint::localIndex cellIds[3];
+  axom::mint::IndexType cellIds[3];
   Point< double, 3 > n1;
   Point< double, 3 > n2;
   Point< double, 3 > n3;
 
   int icount = 0;
-  axom::mint::localIndex new_cell[3];
+  axom::mint::IndexType new_cell[3];
 
-  for ( axom::mint::localIndex i=0 ; i < ncells ; ++i )
+  for ( axom::mint::IndexType i=0 ; i < ncells ; ++i )
   {
 
-    const axom::mint::localIndex cellIdx = cells[ i ];
+    const axom::mint::IndexType cellIdx = cells[ i ];
     mesh->getMeshCell( cellIdx, cellIds );
 
     mesh->getMeshNode( cellIds[0], n1.data() );
@@ -280,7 +280,7 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   axom::mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
 #endif
 
-  const axom::mint::localIndex nnodes = umesh->getNumberOfNodes();
+  const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
 
   mint::FieldData& PD = umesh->getNodeFieldData();
   PD.addField( new mint::FieldVariable< double >("phi", nnodes) );
@@ -298,15 +298,15 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   utilities::Timer timer2;
   timer2.start();
 
-  for ( axom::mint::localIndex inode=0 ; inode < nnodes ; ++inode )
+  for ( axom::mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
 
     Point< double,3 > pt;
     umesh->getMeshNode( inode, pt.data() );
 
     std::vector< int > buckets;
-    std::vector< axom::mint::localIndex > triangles;
-    std::vector< axom::mint::localIndex > my_triangles;
+    std::vector< axom::mint::IndexType > triangles;
+    std::vector< axom::mint::IndexType > my_triangles;
     triangles.clear();
     buckets.clear();
 
@@ -416,7 +416,7 @@ int main( int argc, char * * argv )
                                << Arguments.nz );
   SLIC_INFO("grid cell size:(" << h[0] << "," << h[1] << "," << h[2] << ")\n" );
 
-  axom::mint::globalIndex node_ext[6];
+  axom::mint::int64 node_ext[6];
   node_ext[0] = 0;
   node_ext[1] = Arguments.nx;
   node_ext[2] = 0;

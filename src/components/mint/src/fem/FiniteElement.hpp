@@ -23,7 +23,7 @@
 
 #include "axom_utils/Matrix.hpp" // for Matrix definition
 
-#include "mint/DataTypes.hpp"
+#include "mint/config.hpp"       // for mint::IndexType
 #include "mint/FEBasis.hpp"      // for FEBasis traits class
 
 namespace axom
@@ -471,7 +471,7 @@ private:
    * \pre m != AXOM_NULLPTR
    * \pre cellIdx >= 0 && cellIdx < m->getMeshNumberOfCells()
    */
-  void getCellCoords( const Mesh* m, localIndex cellIdx );
+  void getCellCoords( const Mesh* m, IndexType cellIdx );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,
