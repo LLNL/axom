@@ -16,7 +16,7 @@
  */
 
 // Axom includes
-#include "axom_utils/polynomial_solve.hpp"
+#include "axom_utils/polynomial_solvers.hpp"
 #include "axom_utils/Utilities.hpp" // for isNearlyEqual()
 
 // Google Test include
