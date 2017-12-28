@@ -17,7 +17,26 @@
 #ifndef MINT_CONFIG_HPP_
 #define MINT_CONFIG_HPP_
 
+#include <cstdint>
+
 #cmakedefine MINT_USE_SIDRE
+#cmakedefine MINT_USE_64BIT_INDEXTYPE
+
+namespace axom
+{
+namespace mint
+{
+
+#ifdef MINT_USE_64BIT_INDEXTYPE
+using IndexType = std::int64_t;
+#else
+using IndexType = std::int32_t;
+#endif
+
+using int64 = std::int64_t;
+
+} /* end namespace mint */
+} /* end namespace axom */
 
 
 
