@@ -16,7 +16,7 @@
  */
 
 // Axom includes
-#include "axom_utils/poly_solve.hpp"
+#include "axom_utils/polynomial_solve.hpp"
 #include "axom_utils/Utilities.hpp" // for isNearlyEqual()
 
 // Google Test include
@@ -39,7 +39,7 @@ int count_mismatches(double *standard, double *test, int n, double thresh)
 }
 
 
-TEST( numerics_poly_solve, solve_linear )
+TEST( numerics_polynomial_solve, solve_linear )
 {
   double coeff[2];
   double roots[1];
@@ -107,7 +107,7 @@ TEST( numerics_poly_solve, solve_linear )
   }
 }
 
-TEST( numerics_poly_solve, solve_quadratic )
+TEST( numerics_polynomial_solve, solve_quadratic )
 {
   double coeff[3];
   double roots[2];
@@ -178,7 +178,7 @@ TEST( numerics_poly_solve, solve_quadratic )
   }
 }
 
-TEST( numerics_poly_solve, solve_cubic )
+TEST( numerics_polynomial_solve, solve_cubic )
 {
   double coeff[4];
   double roots[3];
