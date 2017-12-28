@@ -19,16 +19,22 @@ set( quest_headers
     ## Geometry Headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
+    geom/ImplicitGrid.hpp
     geom/InOutOctree.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
 
-    # Mesh tester
+    # Mesh tester headers
     MeshTester.hpp
     detail/MeshTester_impl.hpp
 
+    # PointInCell headers
+    PointInCell.hpp
+    detail/PointFinder.hpp
+    detail/PointInCellMeshWrapper_mfem.hpp
+    
     ## STL library headers
     stl/STLReader.hpp
 
