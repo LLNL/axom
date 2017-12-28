@@ -83,7 +83,7 @@ int solve_quadratic( const double* coeff, double* roots, int& numRoots );
  * *Ars Magna* of 1545.  This can be summarized as follows:
  *
  * Start with the cubic equation
- * 
+ *
  *   \f[ ax^3 + bx^2 + cx + d = 0. \f]
  *
  * Divide through by a to normalize, then define the following:

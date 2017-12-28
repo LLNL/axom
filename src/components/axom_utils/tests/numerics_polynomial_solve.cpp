@@ -22,15 +22,17 @@
 // Google Test include
 #include "gtest/gtest.h"
 
-int count_mismatches(double *standard, double *test, int n, 
+int count_mismatches(double* standard, double* test, int n,
                      double thresh = 1.0e-8);
 
-int count_mismatches(double *standard, double *test, int n, double thresh)
+int count_mismatches(double* standard, double* test, int n, double thresh)
 {
   int mcount = 0;
 
-  for (int i = 0; i < n; ++i) {
-    if (! axom::utilities::isNearlyEqual(standard[i], test[i], thresh)) {
+  for (int i = 0 ; i < n ; ++i)
+  {
+    if (!axom::utilities::isNearlyEqual(standard[i], test[i], thresh))
+    {
       ++mcount;
     }
   }
@@ -237,10 +239,10 @@ TEST( numerics_polynomial_solve, solve_cubic )
   }
 
   {
-    // y = 4.3(x + 38)(x + 1)(x - 0.001) 
+    // y = 4.3(x + 38)(x + 1)(x - 0.001)
     //   = 4.3x^3 + 167.6957x^2 + 163.2323x - 0.1634
     SCOPED_TRACE("Three real roots, at x = -38, -1, 0.001");
-    coeff[0] = -0.1634; coeff[1] = 163.2323; coeff[2] = 167.6957; 
+    coeff[0] = -0.1634; coeff[1] = 163.2323; coeff[2] = 167.6957;
     coeff[3] = 4.3;
     roots[0] = 0; roots[1] = 0; roots[2] = 0;
     expected[0] = 0.001; expected[1] = -1; expected[2] = -38;
@@ -252,7 +254,7 @@ TEST( numerics_polynomial_solve, solve_cubic )
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
