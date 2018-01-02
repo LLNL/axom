@@ -469,13 +469,12 @@ template< typename T >
 void load_and_check( Array< T >& v )
 {
 #ifdef MINT_USE_SIDRE
-  Array< T > cpy = Array< T >(v.getView(), v.size() );
+  Array< T > cpy( const_cast< sidre::View * >( v.getView() ) , v.size() );
   cpy.setResizeRatio( v.getResizeRatio() );
 
   check_equality( v, cpy );
   cpy.resize(0);
   check_storage( cpy );
-  check_resize( cpy );
 #endif
 }
 

@@ -313,7 +313,7 @@ public:
    * \brief Return a pointer to the sidre::View that this Array wraps.
    * \return a const pointer to a sidre::View.
    */
-  inline sidre::View* getView()
+  inline sidre::View* getView() const
   { return m_view; }
 #endif
 
