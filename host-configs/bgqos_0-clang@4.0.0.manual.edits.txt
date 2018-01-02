@@ -9,6 +9,7 @@ set(ENABLE_DOCS    OFF CACHE BOOL "")
 set(ENABLE_PYTHON  OFF CACHE BOOL "")
 
 set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
+set(HDF5_USE_STATIC_LIBRARIES "ON")
 
 ##############################################################################
 # MPI - manually added for now

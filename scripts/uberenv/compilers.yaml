@@ -122,8 +122,8 @@ compilers:
           clang@4.0.0:
              cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
              cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
-             f77: None
-             fc:  None
+             f77: /usr/local/tools/toolchain-4.8.4/scripts/mpigfortran-4.8.4
+             fc:  /usr/local/tools/toolchain-4.8.4/scripts/mpigfortran-4.8.4
     macosx_10.9_x86_64:
          clang@3.4svn:
              cc:  /usr/bin/clang
