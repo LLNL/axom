@@ -19,6 +19,9 @@ configure_file ( core/config.hpp.in
 ## mint headers
 set( mint_headers
 
+    ## core
+    core/Array.hpp
+
     ## FEM classes
     fem/FEBasis.hpp
     fem/FEBasisTypes.hpp
@@ -57,7 +60,6 @@ set( mint_headers
     mesh/UnstructuredMesh.hpp
 
     ## utils
-    utils/Array.hpp
     utils/vtk_utils.hpp
    )
 
