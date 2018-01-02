@@ -1286,7 +1286,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   // Setup linear mint mesh to approximate our mesh
   const int res = 25;
-  int ext[4] = { 0,res,0,res};
+  axom::mint::int64 ext[4] = { 0,res,0,res};
   axom::mint::CurvilinearMesh cmesh(2, ext);
 
   {
@@ -1316,9 +1316,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     SLIC_INFO("Mesh has " << numCells << " cells.");
 
     std::string name = "query_status";
-    axom::mint::FieldData* CD = cmesh.getCellFieldData();
-    CD->addField( new axom::mint::FieldVariable< int >(name, numCells ) );
-    int* fld = CD->getField( name )->getIntPtr();
+    axom::mint::FieldData& CD = cmesh.getCellFieldData();
+    CD.addField( new axom::mint::FieldVariable< int >(name, numCells ) );
+    int* fld = CD.getField( name )->getIntPtr();
 
     for(int i=0 ; i < res ; ++i)
     {
