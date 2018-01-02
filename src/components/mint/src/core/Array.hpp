@@ -170,7 +170,7 @@ public:
    * \param [in] component the component to return.
    * \return a reference to the given component of the specified tuple.
    */
-  inline T & operator()( IndexType pos, IndexType component=0 ) const
+  inline const T & operator()( IndexType pos, IndexType component=0 ) const
   { return m_data[ pos * m_num_components + component ]; }
 
   /*!
