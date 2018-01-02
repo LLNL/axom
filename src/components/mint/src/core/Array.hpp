@@ -56,30 +56,53 @@ public:
   Array() = delete;
 
   /*!
-   * \brief Constructs a Array instance with the give number of tuples.
+   * \brief Constructs an Array instance with the given number of tuples.
+   *
    * \param [in] num_tuples the number of tuples the Array holds.
    * \param [in] num_components the number of components per tuple.
+   *
+   * \pre num_tuples >= 0
+   * \pre num_components >= 1
+   *
+   * \post getCapacity() == num_tuples * num_components * m_resize_ratio
    */
   Array( IndexType num_tuples, IndexType num_components );
 
   /*!
-   * \brief Constructs a Array instance with the given number of tuples
-   *  and capacity.
+   * \brief Constructs an Array instance with the given number of tuples
+   *  and specified capacity.
+   *
    * \param [in] capacity the number of tuples to allocate space for.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
+   *
+   * \pre num_tuples >= 0
+   * \pre num_components >= 1
+   * \pre capacity >= num_tuples*num_components
+   *
+   * \post size() == num_tuples
+   * \post getCapacity() == capacity
    */
-  Array( IndexType capacity, IndexType num_tuples,
-         IndexType num_components );
+  Array( IndexType capacity, IndexType num_tuples, IndexType num_components );
 
   /*!
-   * \brief Constructs a Array instance with external data and the given number
-   *  of tuples.
+   * \brief Constructs an Array instance with the given number of tuples from
+   *  an external data buffer.
+   *
    * \param [in] data the external data this Array will wrap.
-   * \param [in] num_tuples the number of tuples accounted for in the Array.
+   * \param [in] num_tuples the number of tuples in the Array.
    * \param [in] num_components the number of values per tuple.
+   *
+   * \pre data != AXOM_NULLPTR
+   * \pre num_tuples > 0
+   * \pre num_components >= 1
+   *
+   * \post size() == getCapacity()
+   *
+   * \note This constructor wraps the supplied buffer and does not own the data.
+   *  Consequently, the Array instance cannot be resized.
    */
-  Array( T* data, IndexType num_tuples, IndexType num_components );
+  Array( const T* data, IndexType num_tuples, IndexType num_components );
 
 //@}
 
@@ -373,12 +396,13 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components ) :
                  "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
 
-  setCapacity( m_num_tuples * m_resize_ratio );
+  setCapacity( m_num_tuples * m_num_components * m_resize_ratio );
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( IndexType capacity, IndexType num_tuples,
+Array< T >::Array( IndexType capacity,
+                   IndexType num_tuples,
                    IndexType num_components ) :
 #ifdef MINT_USE_SIDRE
   m_view( AXOM_NULLPTR ),
@@ -396,9 +420,10 @@ Array< T >::Array( IndexType capacity, IndexType num_tuples,
   SLIC_ERROR_IF( m_num_components <= 0,
                  "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
-  SLIC_ERROR_IF( m_num_tuples > capacity,
+  SLIC_ERROR_IF( m_num_tuples*m_num_components > capacity,
                  "Number of tuples (" << m_num_tuples << ") " <<
-                 "cannot be greater than the tuple capacity " <<
+                 "Number of components (" << m_num_components << ") " <<
+                 "cannot be greater than the specified capacity " <<
                  "(" << capacity << ")." );
 
   setCapacity( capacity );
@@ -406,13 +431,15 @@ Array< T >::Array( IndexType capacity, IndexType num_tuples,
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components ) :
+Array< T >::Array( const T* data,
+                   IndexType num_tuples,
+                   IndexType num_components ) :
 #ifdef MINT_USE_SIDRE
   m_view( AXOM_NULLPTR ),
 #endif
   m_data( data ),
   m_num_tuples( num_tuples ),
-  m_capacity( num_tuples ),
+  m_capacity( num_tuples*num_components ),
   m_num_components( num_components ),
   m_resize_ratio( 0.0 ),
   m_is_external( true )
@@ -423,6 +450,7 @@ Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components ) :
   SLIC_ERROR_IF( m_num_components <= 0,
                  "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
+  SLIC_ERROR_IF( m_data==AXOM_NULLPTR, "specified array must not be NULL." );
 }
 
 #ifdef MINT_USE_SIDRE
