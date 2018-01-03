@@ -44,7 +44,7 @@ blueos_3_ppc64le_ib:
     - gcc@4.9.3
 
 bgqos_0:
-    - clang@4.0.0~cmake~devtools~python~lua
+    - clang@4.0.0_gfortran~cmake~devtools~python~lua
 
 macosx_10.9_x86_64:
     - clang@3.4svn
