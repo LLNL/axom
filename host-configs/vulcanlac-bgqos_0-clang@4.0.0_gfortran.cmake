@@ -3,7 +3,7 @@
 #
 # This is a generated file, edit at own risk.
 ##################################
-# bgqos_0-clang@4.0.0
+# bgqos_0-clang@4.0.0_gfortran
 ##################################
 
 # cmake from uberenv

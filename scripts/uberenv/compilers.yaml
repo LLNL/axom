@@ -119,11 +119,11 @@ compilers:
             f77: /usr/tce/packages/pgi/pgi-17.9/bin/pgf90
             fc:  /usr/tce/packages/pgi/pgi-17.9/bin/pgf90
     bgqos_0:
-          clang@4.0.0:
+          clang@4.0.0_gfortran:
              cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
              cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
-             f77: /usr/local/tools/toolchain-4.8.4/scripts/mpigfortran-4.8.4
-             fc:  /usr/local/tools/toolchain-4.8.4/scripts/mpigfortran-4.8.4
+             f77: /usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran
+             fc:  /usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran
     macosx_10.9_x86_64:
          clang@3.4svn:
              cc:  /usr/bin/clang
