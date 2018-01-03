@@ -392,20 +392,26 @@ private:
 //      UnstructuredMesh Implementation
 //------------------------------------------------------------------------------
 
+// ------------------------------------------------------------------------------
+template < int CellType >
+UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :
+  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+  m_node_coordinates( new MeshCoordinates( ndims ) ),
+  m_cell_connectivity( new CellConnectivity< CellType >() )
+{}
+
 //------------------------------------------------------------------------------
-//template < int CellType >
-//UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
+// template < int CellType >
+// UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
 //                                                IndexType nodeCapacity,
 //                                                IndexType cellNodeCapacity,
 //                                                double nodeResizeRatio,
 //                                                double cellResizeRatio ) :
-//  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 )
-//// TODO: ???
-////  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
-////  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
-////                                           cellNodeCapacity ),
-////                       cellResizeRatio )
-//{}
+//  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+//  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
+//  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
+//                                           cellNodeCapacity ), cellResizeRatio )
+// {}
 
 //------------------------------------------------------------------------------
 // template < int CellType >
@@ -417,20 +423,20 @@ private:
 //                                                double cellResizeRatio ) :
 //  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], blockId,
 // partId)
-// // TODO: ???
-// //  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
-// //  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
-// //                                           cellNodeCapacity ),
-// //                       cellResizeRatio )
+// TODO: ???
+//  m_node_coordinates( ndims, nodeCapacity, nodeResizeRatio ),
+//  m_cell_connectivity( approxNumCellNodes( ndims, nodeCapacity,
+//                                           cellNodeCapacity ),
+//                       cellResizeRatio )
 // {}
 
-template < int CellType >
-UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :
-  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
-  m_node_coordinates( new MeshCoordinates( ndims ) )
-{
-  // TODO: implement this
-}
+// template < int CellType >
+// UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :
+//   Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+//   m_node_coordinates( new MeshCoordinates( ndims ) )
+// {
+//   TODO: implement this
+// }
 
 //------------------------------------------------------------------------------
 template < int CellType >
@@ -438,7 +444,8 @@ UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
                                                 IndexType num_nodes,
                                                 IndexType num_cells ) :
   Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
-  m_node_coordinates( new MeshCoordinates( ndims ) )
+  m_node_coordinates( new MeshCoordinates( num_nodes ) ),
+  m_cell_connectivity( new CellConnectivity< CellType >( num_cells ) )
 {
   // TODO: implement this
 }

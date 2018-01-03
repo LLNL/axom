@@ -357,7 +357,7 @@ private:
   /*!
    * \brief Allocates space within the Array's sidre::View.
    */
-  inline void allocate_view_data();
+  inline void reallocViewData();
 
 
   sidre::View* m_view;
@@ -369,6 +369,9 @@ private:
   IndexType m_num_components;
   double m_resize_ratio;
   bool m_is_external;
+
+  DISABLE_COPY_AND_ASSIGNMENT( Array );
+  DISABLE_MOVE_AND_ASSIGNMENT( Array );
 };
 
 
@@ -663,7 +666,7 @@ inline void Array< T >::setCapacity( IndexType capacity )
 #ifdef MINT_USE_SIDRE
   if ( m_view != AXOM_NULLPTR )
   {
-    return allocate_view_data();
+    return reallocViewData();
   }
 #endif
 
@@ -684,7 +687,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 #ifdef MINT_USE_SIDRE
   if ( m_view != AXOM_NULLPTR )
   {
-    return allocate_view_data();
+    return reallocViewData();
   }
 #endif
 
@@ -735,7 +738,7 @@ inline IndexType Array< T >::getViewShape( int dim ) const
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::allocate_view_data()
+inline void Array< T >::reallocViewData()
 {
   m_view->reallocate( m_capacity * m_num_components );
 

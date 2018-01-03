@@ -493,43 +493,40 @@ TEST( mint_array, checkStorage )
 #endif
 
   IndexType capacity = 2;
-  for ( int i = 1 ; i < 10 ; ++i )
-  {
-    for ( int num_components = 1 ; num_components < 5 ; num_components++ )
-    {
-      Array< int > v_int = Array< int >( capacity, 0, num_components );
+  for ( int i = 1 ; i < 10 ; ++i ) {
+    for ( int num_components = 1; num_components < 5 ; num_components++ ) {
+      Array< int > v_int( capacity, 0, num_components );
       internal::check_storage( v_int );
 
-      Array< long > v_long = Array< long >( capacity, 0, num_components );
+      Array< long > v_long( capacity, 0, num_components );
       internal::check_storage( v_long );
 
-      Array< float > v_float = Array< float >( capacity, 0, num_components );
+      Array< float > v_float( capacity, 0, num_components );
       internal::check_storage( v_float );
 
-      Array< double > v_double = Array< double >( capacity, 0, num_components );
+      Array< double > v_double( capacity, 0, num_components );
       internal::check_storage( v_double );
 
 #ifdef MINT_USE_SIDRE
-      v_int = Array< int >( root->createView("int"), capacity, 0,
-                            num_components);
-      internal::check_storage( v_int );
-      internal::load_and_check( v_int );
+      Array< int > v_int_sidre( root->createView("int"), capacity, 0, 
+                          num_components );
+      internal::check_storage( v_int_sidre);
+      internal::load_and_check( v_int_sidre);
 
-      v_long  = Array< long >( root->createView("long"), capacity, 0,
-                               num_components);
-      internal::check_storage( v_long );
-      internal::load_and_check( v_long );
+      Array< long > v_long_sidre( root->createView("long"), capacity,
+                                  0, num_components );
+      internal::check_storage( v_long_sidre );
+      internal::load_and_check( v_long_sidre );
 
-      v_float  = Array< float >( root->createView("float"), capacity, 0,
-                                 num_components);
-      internal::check_storage( v_float );
-      internal::load_and_check( v_float );
+      Array< float > v_float_sidre( root->createView("float"), capacity,
+                                    0, num_components );
+      internal::check_storage( v_float_sidre );
+      internal::load_and_check( v_float_sidre );
 
-      v_double  = Array< double >( root->createView("double"), capacity, 0,
-                                   num_components);
-      internal::check_storage( v_double );
-      internal::load_and_check( v_double );
-
+      Array< double > v_double_sidre( root->createView("double"), capacity,
+                                      0, num_components );
+      internal::check_storage( v_double_sidre );
+      internal::load_and_check( v_double_sidre );
 
       root->destroyViewsAndData();
 #endif
@@ -553,47 +550,46 @@ TEST( mint_array, checkResize )
     {
       for ( int num_components = 1 ; num_components < 5 ; num_components++ )
       {
-        Array< int > v_int = Array< int >( capacity, 0, num_components );
+        Array< int > v_int( capacity, 0, num_components );
         v_int.setResizeRatio( ratio );
         internal::check_resize( v_int );
 
-        Array< long > v_long = Array< long >( capacity, 0, num_components );
+        Array< long > v_long( capacity, 0, num_components );
         v_long.setResizeRatio( ratio );
         internal::check_resize( v_long );
 
-        Array< float > v_float = Array< float >( capacity, 0, num_components );
+        Array< float > v_float( capacity, 0, num_components );
         v_float.setResizeRatio( ratio );
         internal::check_resize( v_float );
 
-        Array< double > v_double =
-          Array< double >( capacity, 0, num_components );
+        Array< double > v_double( capacity, 0, num_components );
         v_double.setResizeRatio( ratio );
         internal::check_resize( v_double );
 
 #ifdef MINT_USE_SIDRE
-        v_int = Array< int >( root->createView("int"), capacity, 0,
-                              num_components);
-        v_int.setResizeRatio( ratio );
-        internal::check_resize( v_int );
-        internal::load_and_check( v_int );
+        Array< int > v_int_sidre( root->createView("int"), capacity,
+                                  0, num_components );
+        v_int_sidre.setResizeRatio( ratio );
+        internal::check_resize( v_int_sidre );
+        internal::load_and_check( v_int_sidre );
 
-        v_long  = Array< long >( root->createView("long"), capacity, 0,
-                                 num_components);
-        v_long.setResizeRatio( ratio );
-        internal::check_resize( v_long );
-        internal::load_and_check( v_long );
+        Array< long > v_long_sidre( root->createView("long"), capacity, 
+                                    0, num_components );
+        v_long_sidre.setResizeRatio( ratio );
+        internal::check_resize( v_long_sidre );
+        internal::load_and_check( v_long_sidre );
 
-        v_float  = Array< float >( root->createView("float"), capacity, 0,
-                                   num_components);
-        v_float.setResizeRatio( ratio );
-        internal::check_resize( v_float );
-        internal::load_and_check( v_float );
+        Array< float > v_float_sidre( root->createView("float"), capacity, 
+                                      0, num_components );
+        v_float_sidre.setResizeRatio( ratio );
+        internal::check_resize( v_float_sidre );
+        internal::load_and_check( v_float_sidre );
 
-        v_double  = Array< double >( root->createView("double"), capacity, 0,
-                                     num_components);
-        v_double.setResizeRatio( ratio );
-        internal::check_resize( v_double );
-        internal::load_and_check( v_double );
+        Array< double > v_double_sidre( root->createView("double"), capacity,
+                                        0, num_components );
+        v_double_sidre.setResizeRatio( ratio );
+        internal::check_resize( v_double_sidre );
+        internal::load_and_check( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif
@@ -611,54 +607,50 @@ TEST( mint_array, checkInsert )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
-  {
+  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 ) {
     IndexType capacity = 2;
-    for ( int i = 1 ; i < 10 ; ++i )
-    {
-      for ( int num_components = 1 ; num_components < 5 ; num_components++ )
-      {
-        Array< int > v_int = Array< int >( capacity, 0, num_components );
+    for ( int i = 1 ; i < 10 ; ++i ) {
+      for ( int num_components = 1; num_components < 5 ; num_components++ ) {
+        Array< int > v_int( capacity, 0, num_components );
         v_int.setResizeRatio( ratio );
         internal::check_insert( v_int );
 
-        Array< long > v_long = Array< long >( capacity, 0, num_components );
+        Array< long > v_long( capacity, 0, num_components );
         v_long.setResizeRatio( ratio );
         internal::check_insert( v_long );
 
-        Array< float > v_float = Array< float >( capacity, 0, num_components );
+        Array< float > v_float( capacity, 0, num_components );
         v_float.setResizeRatio( ratio );
         internal::check_insert( v_float );
 
-        Array< double > v_double =
-          Array< double >( capacity, 0, num_components );
+        Array< double > v_double( capacity, 0, num_components );
         v_double.setResizeRatio( ratio );
         internal::check_insert( v_double );
 
 #ifdef MINT_USE_SIDRE
-        v_int = Array< int >( root->createView("int"), capacity, 0,
-                              num_components);
-        v_int.setResizeRatio( ratio );
-        internal::check_insert( v_int );
-        internal::load_and_check( v_int );
+        Array< int > v_int_sidre( root->createView("int"), capacity, 
+                                  0, num_components );
+        v_int_sidre.setResizeRatio( ratio );
+        internal::check_insert( v_int_sidre );
+        internal::load_and_check( v_int_sidre );
 
-        v_long  = Array< long >( root->createView("long"), capacity, 0,
-                                 num_components);
-        v_long.setResizeRatio( ratio );
-        internal::check_insert( v_long );
-        internal::load_and_check( v_long );
+        Array< long > v_long_sidre( root->createView("long"), capacity, 
+                                    0, num_components );
+        v_long_sidre.setResizeRatio( ratio );
+        internal::check_insert( v_long_sidre );
+        internal::load_and_check( v_long_sidre );
 
-        v_float  = Array< float >( root->createView("float"), capacity, 0,
-                                   num_components);
-        v_float.setResizeRatio( ratio );
-        internal::check_insert( v_float );
-        internal::load_and_check( v_float );
+        Array< float > v_float_sidre( root->createView("float"), capacity, 
+                                      0, num_components );
+        v_float_sidre.setResizeRatio( ratio );
+        internal::check_insert( v_float_sidre );
+        internal::load_and_check( v_float_sidre );
 
-        v_double  = Array< double >( root->createView("double"), capacity, 0,
-                                     num_components);
-        v_double.setResizeRatio( ratio );
-        internal::check_insert( v_double );
-        internal::load_and_check( v_double );
+        Array< double > v_double_sidre( root->createView("double"), capacity, 
+                                        0, num_components );
+        v_double_sidre.setResizeRatio( ratio );
+        internal::check_insert( v_double_sidre );
+        internal::load_and_check( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif

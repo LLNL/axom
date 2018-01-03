@@ -52,6 +52,7 @@
 
 #include "quest/SpatialOctree.hpp"
 
+#include "mint/config.hpp"
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/FieldData.hpp"
@@ -857,10 +858,10 @@ public:
 
       m_tv_data.clear();
       m_tv_data.reserve(NUM_TRI_VERTS * numOrigTris);
-      for(int i=0 ; i< numOrigTris ; ++i)
+      for(mint::IndexType i=0 ; i< numOrigTris ; ++i)
       {
         // Grab relation from mesh
-        int vertIds[NUM_TRI_VERTS];
+        mint::IndexType vertIds[NUM_TRI_VERTS];
         m_surfaceMesh->getMeshCell(i, vertIds);
 
         // Remap the vertex IDs
@@ -942,8 +943,8 @@ public:
 
   typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
 
-  typedef typename MeshWrapper::VertexIndex VertexIndex;
-  typedef typename MeshWrapper::TriangleIndex TriangleIndex;
+  typedef typename mint::IndexType VertexIndex;
+  typedef typename mint::IndexType TriangleIndex;
   typedef axom::slam::FieldRegistry<VertexIndex>  IndexRegistry;
 
   typedef typename MeshWrapper::SpaceTriangle SpaceTriangle;
