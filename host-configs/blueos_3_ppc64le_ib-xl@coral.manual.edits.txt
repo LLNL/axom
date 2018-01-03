@@ -16,10 +16,13 @@
 # !---------------------------------------------------------------------------
 ##############################################################################
 # Options added manually to 
-# lc blueos clang@coral  host configs
+# lc blueos xl@coral host configs
 ##############################################################################
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+# Convert C-style comments to Fortran and link fortran exes to C++ libraries
+set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
@@ -27,32 +30,15 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-clang-coral-2017.05.19" CACHE PATH "")
-set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
-set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
-set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-2017.11.10/" CACHE PATH "")
+set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpixlc"   CACHE PATH "")
+set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpixlf"   CACHE PATH "")
 
-set(MPI_DRIVER_ROOT          "/usr/tcetmp/packages/xlflang/xlflang-2016-11-30/xlf" CACHE PATH "")
-
-set(MPI_LIBS 
-    ${MPI_DRIVER_ROOT}/lib/libxl.a
-    ${MPI_DRIVER_ROOT}/lib/libxlcuf.a
-    ${MPI_DRIVER_ROOT}/lib/libxlcuf_nonshr.a
-    ${MPI_DRIVER_ROOT}/lib/libxlcufdevice.a
-    ${MPI_DRIVER_ROOT}/lib/libxldevice.a
-    ${MPI_DRIVER_ROOT}/lib/libxlmbif.a
-    ${MPI_DRIVER_ROOT}/lib/libxlopt.a)
-
-set(MPI_INCLUDE_PATHS 
-    ${MPI_DRIVER_ROOT}/include)
-
-set(MPI_Fortran_LIBRARIES    "${MPI_LIBS}" CACHE PATH "")
-set(MPI_Fortran_INCLUDE_PATH "${MPI_INCLUDE_PATHS}" CACHE PATH "")
-
-set(MPIEXEC              "mpirun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
+set(MPIEXEC                  "${MPI_HOME}/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG     "-np" CACHE PATH "")
 
 
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
+

@@ -39,11 +39,9 @@ toss_3_x86_64_ib:
     - intel@18.0.0
 
 blueos_3_ppc64le_ib:
-    - clang@coral
+    - clang@coral_xlf
+    - xl@coral
     - gcc@4.9.3
-ray:
-    - clang@coral~devtools~python~lua
-    - gcc@4.9.3~devtools~python~lua
 
 bgqos_0:
     - clang@4.0.0~cmake~devtools~python~lua

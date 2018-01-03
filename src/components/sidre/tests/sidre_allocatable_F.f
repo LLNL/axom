@@ -51,6 +51,9 @@ contains
 
     view = root%create_array_view("iarray", iarray)
 
+    ! Note: This view_print() call prevents a "view is empty" failure on xlf
+    call view_print(view)
+
     call assert_true(view%is_empty(), "view is empty")
 
     type = view%get_type_id()

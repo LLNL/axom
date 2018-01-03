@@ -147,6 +147,8 @@ program spio_irregularWriteRead
 
   call mpi_finalize(mpierr)
 
-  call exit(return_val)
+  if (return_val .ne. 0) then
+     call exit(1)
+  endif
 end program spio_irregularWriteRead
 
