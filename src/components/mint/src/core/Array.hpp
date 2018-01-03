@@ -18,16 +18,18 @@
 #ifndef MINT_UTILS_ARRAY_HXX_
 #define MINT_UTILS_ARRAY_HXX_
 
-#include "mint/config.hpp"           // for IndexType
+#include "axom/Macros.hpp"           // for disable copy/assignment macro
+#include "axom_utils/Utilities.hpp"  // for memory allocation functions
+#include "mint/config.hpp"           // for mint::IndexType definition
 
-#include "slic/slic.hpp"                // for slic macros
-#include "axom_utils/Utilities.hpp"     // for allocation
+#include "slic/slic.hpp"            // for slic logging macros
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"              // for View
+#include "sidre/sidre.hpp"          // for sidre::View definition
 #endif
 
-#include <cstring>                      // for std::memcpy
+// C/C++ includes
+#include <cstring>                  // for std::memcpy
 
 namespace axom
 {
