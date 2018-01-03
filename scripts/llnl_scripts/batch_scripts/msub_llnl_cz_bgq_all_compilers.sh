@@ -24,12 +24,17 @@
 # usage: 
 #  cd {to directory with this script}
 #  msub -d `pwd` msub_llnl_cz_bgq_all_compilers.sh
+#
+# Note: Updates PYTHONPATH to include a local install of pyyaml
+#       which is missing from LC's default python on bg/q
 
 date
 . /usr/local/tools/dotkit/init.sh
 use python-2.7.3
 use git-2.0.0
 use cmake-3.8.2
+export PYTHONPATH=${PYTHONPATH}:/usr/gapps/axom/lib/python2.7/site-packages
+
 cd ..
 build_tpls.py
 date
