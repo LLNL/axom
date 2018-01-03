@@ -574,13 +574,7 @@ Array< T >::Array( sidre::View* view,
                  "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
 
-  sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
-  sidre::SidreLength dims[ 2 ];
-  dims[0] = m_capacity;
-  dims[1] = m_num_components;
-  m_view->allocate( T_type, m_capacity * m_num_components );
-  m_view->apply( T_type, 2, dims );
-  m_data = m_view->getVoidPtr();
+  reallocViewData();
 
   // sanity checks
   SLIC_ASSERT( m_data != AXOM_NULLPTR );
@@ -615,13 +609,7 @@ Array< T >::Array( sidre::View* view,
                  "cannot be greater than the tuple capacity " <<
                  "(" << m_capacity << ")." );
 
-  sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
-  sidre::SidreLength dims[ 2 ];
-  dims[0] = m_capacity;
-  dims[1] = m_num_components;
-  m_view->allocate( T_type, m_capacity * m_num_components );
-  m_view->apply( T_type, 2, dims );
-  m_data = static_cast< T* >( m_view->getVoidPtr() );
+  reallocViewData();
 
   // sanity checks
   SLIC_ASSERT( m_data != AXOM_NULLPTR );
@@ -812,12 +800,20 @@ inline IndexType Array< T >::getViewShape( int dim ) const
 template< typename T >
 inline void Array< T >::reallocViewData()
 {
-  m_view->reallocate( m_capacity * m_num_components );
-
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
   sidre::SidreLength dims[ 2 ];
   dims[0] = m_capacity;
   dims[1] = m_num_components;
+
+  if ( m_view->isEmpty() )
+  {
+    m_view->allocate( T_type, dims[0]*dims[1] );
+  }
+  else
+  {
+     m_view->reallocate( m_capacity * m_num_components );
+  }
+
   m_view->apply(T_type, 2, dims );
   m_data = static_cast< T* >( m_view->getVoidPtr() );
 
