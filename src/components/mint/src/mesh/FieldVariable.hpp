@@ -70,9 +70,9 @@ public:
 
   virtual IndexType size() const { return m_data.size(); }
 
-  virtual int getNumComponents() const { return m_data.getNumComponents(); }
+  virtual int getNumComponents() const { return m_data.numComponents(); }
 
-  virtual IndexType getCapacity() const { return m_data.getCapacity(); }
+  virtual IndexType getCapacity() const { return m_data.capacity(); }
 
   virtual double getResizeRatio() const { return m_data.getResizeRatio(); }
 

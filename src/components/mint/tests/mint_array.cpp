@@ -49,12 +49,12 @@ template < typename T >
 IndexType calc_new_capacity( Array< T > & v, IndexType increase )
 {
   IndexType new_num_tuples = v.size() + increase;
-  if ( new_num_tuples > v.getCapacity() )
+  if ( new_num_tuples > v.capacity() )
   {
     return new_num_tuples * v.getResizeRatio() + 0.5;
   }
 
-  return v.getCapacity();
+  return v.capacity();
 }
 
 /*!
@@ -67,10 +67,10 @@ template< typename T >
 void check_equality( const Array< T >& lhs, const Array< T >& rhs )
 {
   EXPECT_EQ( lhs.size(), rhs.size() );
-  EXPECT_EQ( lhs.getNumComponents(), rhs.getNumComponents() );
-  EXPECT_EQ( lhs.getCapacity(), rhs.getCapacity() );
+  EXPECT_EQ( lhs.numComponents(), rhs.numComponents() );
+  EXPECT_EQ( lhs.capacity(), rhs.capacity() );
 
-  IndexType num_values = lhs.size() * lhs.getNumComponents();
+  IndexType num_values = lhs.size() * lhs.numComponents();
   const T* lhs_data = lhs.getData();
   const T* rhs_data = rhs.getData();
 
@@ -90,8 +90,8 @@ void check_storage( Array< T >& v )
   EXPECT_TRUE( v.empty() );
   EXPECT_EQ( v.size(), 0 );
 
-  IndexType capacity = v.getCapacity();
-  IndexType num_components = v.getNumComponents();
+  IndexType capacity = v.capacity();
+  IndexType num_components = v.numComponents();
   const T* data_ptr = v.getData();
 
   if ( num_components == 1 )
@@ -116,7 +116,7 @@ void check_storage( Array< T >& v )
 
   EXPECT_TRUE( !v.empty() );
   EXPECT_EQ( v.size(), capacity / 2 );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_ptr );
 
   if ( num_components == 1 )
@@ -141,7 +141,7 @@ void check_storage( Array< T >& v )
 
   EXPECT_TRUE( !v.empty() );
   EXPECT_EQ( v.size(), capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_ptr );
 
   for ( IndexType i = 0 ; i < capacity ; ++i )
@@ -172,7 +172,7 @@ void check_storage( Array< T >& v )
 
   EXPECT_TRUE( !v.empty() );
   EXPECT_EQ( v.size(), capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_ptr );
 }
 
@@ -185,12 +185,12 @@ template < typename T >
 void check_resize( Array< T >& v )
 {
   /* Resize the array up to the capacity */
-  IndexType capacity = v.getCapacity();
+  IndexType capacity = v.capacity();
   v.resize( capacity );
   IndexType size = capacity;
-  IndexType num_components = v.getNumComponents();
+  IndexType num_components = v.numComponents();
 
-  EXPECT_EQ( v.size(), v.getCapacity() );
+  EXPECT_EQ( v.size(), v.capacity() );
 
   /* Set the existing data in v */
   for ( IndexType i = 0 ; i < size ; ++i )
@@ -214,7 +214,7 @@ void check_resize( Array< T >& v )
 
   /* Check that it resized properly */
   EXPECT_GT( capacity, old_capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -241,7 +241,7 @@ void check_resize( Array< T >& v )
   size += n_tuples;
 
   /* Check that it resize properly */
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -256,7 +256,7 @@ void check_resize( Array< T >& v )
   size = 500;
   v.resize(size);
   EXPECT_EQ( v.size(), size );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -270,7 +270,7 @@ void check_resize( Array< T >& v )
   capacity = size;
   v.shrink();
 
-//  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -292,7 +292,7 @@ void check_resize( Array< T >& v )
 
   /* Check that it resized properly */
   EXPECT_GT( capacity, old_capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -322,7 +322,7 @@ void check_resize( Array< T >& v )
 
     v.append( tuple, 1 );
     size++;
-    EXPECT_EQ( v.getCapacity(), old_capacity );
+    EXPECT_EQ( v.capacity(), old_capacity );
     EXPECT_EQ( v.size(), size );
     EXPECT_EQ( v.getData(), data_ptr );
   }
@@ -338,7 +338,7 @@ void check_resize( Array< T >& v )
   v.append( tuple, 1 );
   size++;
   EXPECT_GT( capacity, old_capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
 
   for ( IndexType i = 0 ; i < size ; ++i )
@@ -359,12 +359,12 @@ template < typename T >
 void check_insert( Array< T >& v )
 {
   /* Resize the array up to the capacity */
-  IndexType capacity = v.getCapacity();
+  IndexType capacity = v.capacity();
   v.resize( capacity );
   IndexType size = capacity;
-  IndexType num_components = v.getNumComponents();
+  IndexType num_components = v.numComponents();
 
-  EXPECT_EQ( v.size(), v.getCapacity() );
+  EXPECT_EQ( v.size(), v.capacity() );
 
   /* Set the existing data in v */
   for ( IndexType i = 0 ; i < size ; ++i )
@@ -388,7 +388,7 @@ void check_insert( Array< T >& v )
 
   /* Check that it resized properly */
   EXPECT_GT( capacity, old_capacity );
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -415,7 +415,7 @@ void check_insert( Array< T >& v )
   size += n_tuples;
 
   /* Check that it resizes properly */
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -449,7 +449,7 @@ void check_insert( Array< T >& v )
   }
 
   /* Check that the insertion worked as expected */
-  EXPECT_EQ( v.getCapacity(), capacity );
+  EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
   for ( IndexType i = 0 ; i < size ; ++i )
   {
@@ -466,7 +466,7 @@ void check_insert( Array< T >& v )
  * \param [in] v the Array to copy.
  */
 template< typename T >
-void load_and_check( Array< T >& v )
+void check_sidre( Array< T >& v )
 {
 #ifdef MINT_USE_SIDRE
   Array< T > cpy( const_cast< sidre::View * >( v.getView() ) , v.size() );
@@ -475,7 +475,61 @@ void load_and_check( Array< T >& v )
   check_equality( v, cpy );
   cpy.resize(0);
   check_storage( cpy );
+  check_insert( cpy );
 #endif
+}
+
+/*!
+ * \brief Check an external array for defects.
+ * \param [in] v the external array to check.
+ */
+template< typename T >
+void check_external( Array< T >& v )
+{
+  EXPECT_TRUE( v.isExternal() );
+  EXPECT_EQ( v.size(), v.capacity() );
+
+  const IndexType size = v.size();
+  const IndexType num_components = v.numComponents();
+  const IndexType num_values = size * num_components;
+  T * const data_ptr = v.getData();
+
+  for ( IndexType i = 0; i < size; ++i ) {
+    for ( IndexType j = 0; j < num_components; ++j ) {
+      v( i, j ) = i * num_components + j; 
+    }
+  }
+
+  for (IndexType i = 0; i < num_values; ++i ) {
+    EXPECT_EQ( data_ptr[ i ], i );
+  }
+
+  for ( IndexType i = 0; i < size; ++i ) {
+    for ( IndexType j = 0; j < num_components; ++j ) {
+      data_ptr[ i * num_components + j ] = i * j - i - j; 
+    }
+  }
+
+  for ( IndexType i = 0; i < size; ++i ) {
+    for ( IndexType j = 0; j < num_components; ++j ) {
+      EXPECT_EQ( v(i, j), i * j - i - j ); 
+    }
+  }
+
+  EXPECT_EQ( size, v.size() );
+  EXPECT_EQ( data_ptr, v.getData() );
+
+  // T tuple[ num_components ];
+  // EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), 
+  //                            "Cannot change the capacity of external data." );
+  // EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), 
+  //                            "Cannot change the capacity of external data." );
+  // EXPECT_DEATH_IF_SUPPORTED( v.resize( size ), 
+  //                            "Cannot change the capacity of external data." );
+  // EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), 
+  //                            "Cannot change the capacity of external data." );
+  // EXPECT_DEATH_IF_SUPPORTED( v.shrink(), 
+  //                            "Cannot change the capacity of external data." );
 }
 
 }   /* end namespace internal */
@@ -493,40 +547,22 @@ TEST( mint_array, checkStorage )
 #endif
 
   IndexType capacity = 2;
-  for ( int i = 1 ; i < 10 ; ++i ) {
+  for ( int i = 0; i < 10; ++i ) {
     for ( int num_components = 1; num_components < 5 ; num_components++ ) {
       Array< int > v_int( capacity, 0, num_components );
       internal::check_storage( v_int );
-
-      Array< long > v_long( capacity, 0, num_components );
-      internal::check_storage( v_long );
-
-      Array< float > v_float( capacity, 0, num_components );
-      internal::check_storage( v_float );
 
       Array< double > v_double( capacity, 0, num_components );
       internal::check_storage( v_double );
 
 #ifdef MINT_USE_SIDRE
-      Array< int > v_int_sidre( root->createView("int"), capacity, 0,
-                          num_components );
-      internal::check_storage( v_int_sidre);
-      internal::load_and_check( v_int_sidre);
+      Array< int > v_int_sidre( root->createView("int"), capacity, 
+                                0, num_components );
+      internal::check_storage( v_int_sidre );
 
-      Array< long > v_long_sidre( root->createView("long"), capacity,
-                                  0, num_components );
-      internal::check_storage( v_long_sidre );
-      internal::load_and_check( v_long_sidre );
-
-      Array< float > v_float_sidre( root->createView("float"), capacity,
-                                    0, num_components );
-      internal::check_storage( v_float_sidre );
-      internal::load_and_check( v_float_sidre );
-
-      Array< double > v_double_sidre( root->createView("double"), capacity,
+      Array< double > v_double_sidre( root->createView("double"), capacity, 
                                       0, num_components );
       internal::check_storage( v_double_sidre );
-      internal::load_and_check( v_double_sidre );
 
       root->destroyViewsAndData();
 #endif
@@ -538,15 +574,15 @@ TEST( mint_array, checkStorage )
 //------------------------------------------------------------------------------
 TEST( mint_array, checkResize )
 {
-  #ifdef MINT_USE_SIDRE
+#ifdef MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 )
   {
     IndexType capacity = 2;
-    for ( int i = 1 ; i < 10 ; ++i )
+    for ( int i = 0; i < 10; ++i )
     {
       for ( int num_components = 1 ; num_components < 5 ; num_components++ )
       {
@@ -554,42 +590,20 @@ TEST( mint_array, checkResize )
         v_int.setResizeRatio( ratio );
         internal::check_resize( v_int );
 
-        Array< long > v_long( capacity, 0, num_components );
-        v_long.setResizeRatio( ratio );
-        internal::check_resize( v_long );
-
-        Array< float > v_float( capacity, 0, num_components );
-        v_float.setResizeRatio( ratio );
-        internal::check_resize( v_float );
-
         Array< double > v_double( capacity, 0, num_components );
         v_double.setResizeRatio( ratio );
         internal::check_resize( v_double );
 
 #ifdef MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView("int"), capacity,
+        Array< int > v_int_sidre( root->createView("int"), capacity, 
                                   0, num_components );
         v_int_sidre.setResizeRatio( ratio );
-        internal::check_resize( v_int_sidre );
-        internal::load_and_check( v_int_sidre );
+        internal::check_insert( v_int_sidre );
 
-        Array< long > v_long_sidre( root->createView("long"), capacity,
-                                    0, num_components );
-        v_long_sidre.setResizeRatio( ratio );
-        internal::check_resize( v_long_sidre );
-        internal::load_and_check( v_long_sidre );
-
-        Array< float > v_float_sidre( root->createView("float"), capacity,
-                                      0, num_components );
-        v_float_sidre.setResizeRatio( ratio );
-        internal::check_resize( v_float_sidre );
-        internal::load_and_check( v_float_sidre );
-
-        Array< double > v_double_sidre( root->createView("double"), capacity,
+        Array< double > v_double_sidre( root->createView("double"), capacity, 
                                         0, num_components );
         v_double_sidre.setResizeRatio( ratio );
-        internal::check_resize( v_double_sidre );
-        internal::load_and_check( v_double_sidre );
+        internal::check_insert( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif
@@ -602,26 +616,18 @@ TEST( mint_array, checkResize )
 //------------------------------------------------------------------------------
 TEST( mint_array, checkInsert )
 {
-  #ifdef MINT_USE_SIDRE
+#ifdef MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 ) {
+  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
     IndexType capacity = 2;
-    for ( int i = 1 ; i < 10 ; ++i ) {
+    for ( int i = 0; i < 10; ++i ) {
       for ( int num_components = 1; num_components < 5 ; num_components++ ) {
         Array< int > v_int( capacity, 0, num_components );
         v_int.setResizeRatio( ratio );
         internal::check_insert( v_int );
-
-        Array< long > v_long( capacity, 0, num_components );
-        v_long.setResizeRatio( ratio );
-        internal::check_insert( v_long );
-
-        Array< float > v_float( capacity, 0, num_components );
-        v_float.setResizeRatio( ratio );
-        internal::check_insert( v_float );
 
         Array< double > v_double( capacity, 0, num_components );
         v_double.setResizeRatio( ratio );
@@ -632,25 +638,11 @@ TEST( mint_array, checkInsert )
                                   0, num_components );
         v_int_sidre.setResizeRatio( ratio );
         internal::check_insert( v_int_sidre );
-        internal::load_and_check( v_int_sidre );
-
-        Array< long > v_long_sidre( root->createView("long"), capacity,
-                                    0, num_components );
-        v_long_sidre.setResizeRatio( ratio );
-        internal::check_insert( v_long_sidre );
-        internal::load_and_check( v_long_sidre );
-
-        Array< float > v_float_sidre( root->createView("float"), capacity,
-                                      0, num_components );
-        v_float_sidre.setResizeRatio( ratio );
-        internal::check_insert( v_float_sidre );
-        internal::load_and_check( v_float_sidre );
 
         Array< double > v_double_sidre( root->createView("double"), capacity,
                                         0, num_components );
         v_double_sidre.setResizeRatio( ratio );
         internal::check_insert( v_double_sidre );
-        internal::load_and_check( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif
@@ -660,6 +652,63 @@ TEST( mint_array, checkInsert )
   }
 }
 
+//------------------------------------------------------------------------------
+TEST( mint_array, checkSidre )
+{
+#ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
+  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 ) {
+    IndexType capacity = 2;
+    for ( int i = 0; i < 10; ++i ) {
+      for ( int num_components = 1; num_components < 5 ; num_components++ ) {
+        Array< int > v_int( root->createView("int"), capacity, 
+                                  0, num_components );
+        v_int.setResizeRatio( ratio );
+        internal::check_storage( v_int );
+        internal::check_sidre( v_int );
+
+        Array< double > v_double( root->createView("double"), capacity, 
+                                        0, num_components );
+        v_double.setResizeRatio( ratio );
+        internal::check_storage( v_double );
+        internal::check_sidre( v_double );
+
+        root->destroyViewsAndData();
+      }
+      capacity *= 2;
+    }
+  }
+
+#else
+  EXPECT_TRUE( true );
+#endif
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_array, checkExternal )
+{
+  union DataBuffer {
+    int ints[1024];
+    double doubles[1024];
+  };
+
+  DataBuffer buffer;
+
+
+  IndexType capacity = 2;
+  for ( int i = 0; i < 10; ++i ) {
+    for ( int num_components = 1; num_components < 5 ; num_components++ ) {
+      Array< int > v_int( buffer.ints, capacity, num_components );
+      internal::check_external( v_int );
+
+      Array< double > v_double( buffer.doubles, capacity, num_components );
+      internal::check_external( v_double );
+    }
+    capacity *= 2;
+  }
+}
 
 } /* end namespace mint */
 } /* end namespace axom */

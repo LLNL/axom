@@ -104,7 +104,7 @@ public:
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be resized.
    */
-  Array( const T* data, IndexType num_tuples, IndexType num_components );
+  Array( T* data, IndexType num_tuples, IndexType num_components );
 
 /// @}
 
@@ -299,7 +299,8 @@ public:
    * \brief Return the number of tuples allocated for the data array.
    * \return the amount of space allocated for the data array.
    */
-  constexpr IndexType getCapacity() const { return m_capacity; }
+  constexpr IndexType capacity() const
+  { return m_capacity; }
 
   /*!
    * \brief Increase the capacity. Does nothing if the new capacity is less
@@ -311,7 +312,8 @@ public:
   /*!
    * \brief Shrink the capacity to be equal to the size.
    */
-  inline void shrink() { setCapacity(m_num_tuples); }
+  inline void shrink()
+  { setCapacity( m_num_tuples ); }
 
   /*!
    * \brief Returns true iff the Array stores no elements.
@@ -324,7 +326,8 @@ public:
    * \brief Return the number of tuples stored in the data array.
    * \return the number of tuples stored in the data array.
    */
-  constexpr IndexType size() const { return m_num_tuples; }
+  constexpr IndexType size() const
+  { return m_num_tuples; }
 
   /*!
    * \brief Update the number of tuples stored in the data array.
@@ -348,7 +351,12 @@ public:
    * \brief Get the chunk size of all allocations.
    * \return the chunk size of all allocations.
    */
-  constexpr IndexType getNumComponents() const { return m_num_components; }
+  constexpr IndexType numComponents() const
+  { return m_num_components; }
+
+  constexpr bool isExternal() const
+  { return m_is_external; }
+
 
 #ifdef MINT_USE_SIDRE
 
@@ -356,7 +364,9 @@ public:
    * \brief Return a pointer to the sidre::View that this Array wraps.
    * \return a const pointer to a sidre::View.
    */
-  inline sidre::View* getView() const { return m_view; }
+  constexpr const sidre::View* getView() const
+  { return m_view; }
+#endif
 
 #endif
 
@@ -484,7 +494,7 @@ Array< T >::Array( IndexType capacity,
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( const T* data,
+Array< T >::Array( T* data,
                    IndexType num_tuples,
                    IndexType num_components ) :
 #ifdef MINT_USE_SIDRE
@@ -621,13 +631,11 @@ template< typename T >
 Array< T >::~Array()
 {
 #ifdef MINT_USE_SIDRE
-  if ( m_view == AXOM_NULLPTR && m_data != AXOM_NULLPTR )
-  {
+  if ( m_view == AXOM_NULLPTR && m_data != AXOM_NULLPTR && !m_is_external ) {
     utilities::free( m_data );
   }
 #else
-  if ( m_data != AXOM_NULLPTR )
-  {
+  if ( m_data != AXOM_NULLPTR && !m_is_external ) {
     utilities::free( m_data );
   }
 #endif
@@ -642,8 +650,7 @@ inline void Array< T >::append( const T& value )
   SLIC_ASSERT_MSG( m_num_components == 1, "Number of components must be 1." );
 
   IndexType new_size = m_num_tuples + 1;
-  if ( new_size > m_capacity )
-  {
+  if ( new_size > m_capacity ) {
     dynamicRealloc( new_size );
   }
 
@@ -656,8 +663,7 @@ template< typename T >
 inline void Array< T >::append( const T* tuples, IndexType n )
 {
   IndexType new_size = m_num_tuples + n;
-  if ( new_size > m_capacity )
-  {
+  if ( new_size > m_capacity ) {
     dynamicRealloc( new_size );
   }
 
@@ -702,8 +708,7 @@ inline void Array< T >::resize( IndexType num_tuples )
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
 
   m_num_tuples = num_tuples;
-  if ( m_num_tuples > m_capacity )
-  {
+  if ( m_num_tuples > m_capacity ) {
     setCapacity( m_resize_ratio * m_num_tuples );
   }
 }
@@ -722,14 +727,12 @@ inline void Array< T >::setCapacity( IndexType capacity )
   }
 
   m_capacity = capacity;
-  if ( m_capacity < m_num_tuples )
-  {
+  if ( m_capacity < m_num_tuples ) {
     m_num_tuples = m_capacity;
   }
 
 #ifdef MINT_USE_SIDRE
-  if ( m_view != AXOM_NULLPTR )
-  {
+  if ( m_view != AXOM_NULLPTR ) {
     return reallocViewData();
   }
 #endif
@@ -749,8 +752,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
   m_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
 #ifdef MINT_USE_SIDRE
-  if ( m_view != AXOM_NULLPTR )
-  {
+  if ( m_view != AXOM_NULLPTR ) {
     return reallocViewData();
   }
 #endif
@@ -769,15 +771,13 @@ inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
   SLIC_ASSERT( pos <= m_num_tuples );
 
   IndexType new_size = m_num_tuples + n;
-  if ( new_size > m_capacity )
-  {
+  if ( new_size > m_capacity ) {
     dynamicRealloc( new_size );
   }
 
   T* const insert_pos = m_data + pos * m_num_components;
   T* cur_pos = m_data + (m_num_tuples * m_num_components) - 1;
-  for ( ; cur_pos >= insert_pos ; --cur_pos )
-  {
+  for ( ; cur_pos >= insert_pos ; --cur_pos ) {
     *(cur_pos + n * m_num_components) = *cur_pos;
   }
 

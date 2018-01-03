@@ -138,7 +138,7 @@ public:
    * \return N the capacity of m_coordinates.
    */
   IndexType getCapacity() const
-  { return m_connectivity.getCapacity(); }
+  { return m_connectivity.capacity(); }
 
 
   void reserve( IndexType capacity )
@@ -149,7 +149,7 @@ public:
    * \return npoint the number points in this CellConnectivity instance.
    */
   IndexType getTotalNumberOfNodes() const
-  { return m_connectivity.size() * m_connectivity.getNumComponents(); }
+  { return m_connectivity.size() * m_connectivity.numComponents(); }
 
 
   double getResizeRatio() const
@@ -316,7 +316,7 @@ public:
    * \return N the capacity of m_coordinates.
    */
   IndexType getCapacity() const
-  { return m_connectivity.getCapacity(); }
+  { return m_connectivity.capacity(); }
 
 
   void reserve( IndexType capacity )

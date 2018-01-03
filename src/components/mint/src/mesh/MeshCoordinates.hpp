@@ -207,7 +207,7 @@ public:
    * \return N the capacity of m_coordinates.
    */
   inline IndexType getCapacity() const
-  { return m_coordinates[0]->getCapacity(); }
+  { return m_coordinates[0]->capacity(); }
 
   /*!
    * \brief Change the maximum number of points that can currently be held.
