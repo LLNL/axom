@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_UTILS_ARRAY_HXX_
-#define MINT_UTILS_ARRAY_HXX_
+#ifndef MINT_ARRAY_HXX_
+#define MINT_ARRAY_HXX_
 
 #include "axom/Macros.hpp"           // for disable copy/assignment macro
 #include "axom_utils/Utilities.hpp"  // for memory allocation functions
@@ -49,11 +49,11 @@ private:
 
 public:
 
-//@{
-//!  @name Array constructors for use without sidre.
+/// \name Array constructors for use without sidre.
+/// @{
 
   /*!
-   * \brief Default constructor.
+   * \brief Default constructor. Disabled.
    */
   Array() = delete;
 
@@ -106,54 +106,108 @@ public:
    */
   Array( const T* data, IndexType num_tuples, IndexType num_components );
 
-//@}
+/// @}
 
+/// \name Array constructors for use with sidre.
+/// @{
 
-
-//@{
-//!  @name Array constructors for use with sidre.
 #ifdef MINT_USE_SIDRE
 
   /*!
-   * \brief Constructor for use with a sidre::View that already has data.
+   * \brief Creates an Array instance from a sidre::View that already has data.
+   *
    * \param [in] view the sidre::View that holds this Array's data.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
+   *
+   * \note The second argument is optional and is intended to be used when
+   *  the number of tuples in the array is known and not necessarily
+   *  corresponds to the capacity of the array. If not specified, the
+   *  num_tuples of the array will be initialized from the dimensions of the
+   *  view, i.e., the max capacity of the array is equal to the number of
+   *  tuples in the array.
+   *
+   * \note The Sidre view has two dimensions. The first dimension corresponds
+   *  to the max capacity of the array and the second corresponds to the number
+   *  of components per tuple.
+   *
+   * \pre view != AXOM_NULLPTR
+   * \pre view->isEmpty() == false.
+   * \pre view->getNumDimensions() == 2
+   *
+   * \post m_num_components >= 1
    */
-  Array( sidre::View* view, IndexType num_tuples );
+  Array( sidre::View* view, IndexType num_tuples=-1 );
 
   /*!
-   * \brief Constructor for use with an empty sidre::View with the given number
-   *  of tuples and components.
+   * \brief Creates an Array instance of `num_tuples` size, where each
+   *  tuple consists of `num_components` values and populates the associated
+   *  sidre::View.
+   *
    * \param [in] view the sidre::View that will hold this Array's data.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
+   *
+   * \note The view is expected to be empty and will be populated to hold this
+   *  Array's data.
+   *
+   * \note The Sidre view has two dimensions. The first dimension corresponds
+   *  to the max capacity of the array and the second corresponds to the number
+   *  of components per tuple.
+   *
+   * \pre view != AXOM_NULLPTR
+   * \pre view->isEmpty() == true
+   * \pre num_tuples >= 1
+   * \pre num_components >= 1
+   *
+   * \post view->getNumDimensions() == 2
+   * \post view->isEmpty() == false
+   * \post this->getCapacity() >= this->size()
    */
-  Array( sidre::View* view, IndexType num_tuples,
-         IndexType num_components );
+  Array( sidre::View* view, IndexType num_tuples, IndexType num_components );
 
   /*!
-   * \brief Constructor for use with an empty sidre::View with the given number
-   *  of tuples and components and with the given capacity.
+   * \brief Creates an Array instance of `num_tuples` size, where each
+   *  tuple consists of `num_components` values and populates the associated
+   *  sidre::View. In addition, the Array has the given max capacity.
+   *
    * \param [in] view the sidre::View that will hold this Array's data.
-   * \param [in] capacity the number of tuples to allocate space for.
+   * \param [in] capacity the max number of tuples to allocate space for.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
    * \param [in] num_components the number of values per tuple.
+   *
+   * \note The view is expected to be empty and will be populated to hold this
+   *  Array's data.
+   *
+   * \note The Sidre view has two dimensions. The first dimension corresponds
+   *  to the max capacity of the array and the second corresponds to the number
+   *  of components per tuple.
+   *
+   * \pre view != AXOM_NULLPTR
+   * \pre view->isEmpty() == true
+   * \pre num_tuples >= 1
+   * \pre num_components >= 1
+   * \pre capacity >= num_tuples
+   *
+   * \post view->getNumDimensions() == 2
+   * \post view->isEmpty() == false
+   * \post this->getCapacity() >= this->size()
    */
-  Array( sidre::View* view, IndexType capacity, IndexType num_tuples,
+  Array( sidre::View* view,
+         IndexType capacity,
+         IndexType num_tuples,
          IndexType num_components );
 
 #endif
-//@}
 
+/// @}
 
   /*!
    * Destructor. Free's the associated buffer unless it's owned by sidre.
    */
   ~Array();
 
-
-//@{
-//!  @name Array methods to access the data.
+/// \name Array methods to access the data.
+/// @{
 
   /*!
    * \brief Accessor, returns a reference to the given component of the
@@ -179,22 +233,18 @@ public:
    * \brief Return a pointer to the array of data.
    * \return a pointer to the array of data.
    */
-  inline T* getData()
-  { return m_data; }
+  inline T* getData() { return m_data; }
 
   /*!
    * \brief Return a constant pointer to the array of data.
    * \return a constant pointer to the array of data.
    */
-  constexpr const T* getData() const
-  { return m_data; }
+  constexpr const T* getData() const { return m_data; }
 
-//@}
+/// @}
 
-
-
-//@{
-//!  @name Array methods to modify the data.
+/// \name Array methods to modify the data.
+/// @{
 
   /*!
    * \brief Append a value to the end of the array.
@@ -240,19 +290,16 @@ public:
    */
   inline void insert( const T& value, IndexType pos );
 
-//@}
+/// @}
 
-
-//@{
-//!  @name Array methods to query and set attributes
-
+/// \name Array methods to query and set attributes
+/// @{
 
   /*!
    * \brief Return the number of tuples allocated for the data array.
    * \return the amount of space allocated for the data array.
    */
-  constexpr IndexType getCapacity() const
-  { return m_capacity; }
+  constexpr IndexType getCapacity() const { return m_capacity; }
 
   /*!
    * \brief Increase the capacity. Does nothing if the new capacity is less
@@ -265,16 +312,14 @@ public:
   /*!
    * \brief Shrink the capacity to be equal to the size.
    */
-  inline void shrink()
-  { setCapacity(m_num_tuples); }
+  inline void shrink() { setCapacity(m_num_tuples); }
 
   /*!
    * \brief Returns true iff the Array stores no elements.
    * \return true iff the Array stores no elements.
    * \note If the Array is empty the capacity can still be greater than zero.
    */
-  constexpr bool empty() const
-  { return m_num_tuples == 0; }
+  constexpr bool empty() const { return m_num_tuples == 0; }
 
   /*!
    * \brief Return the number of tuples stored in the data array.
@@ -292,35 +337,31 @@ public:
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
    * \return The ration by which the capacity increases upon dynamic resize.
    */
-  constexpr double getResizeRatio() const
-  { return m_resize_ratio; }
+  constexpr double getResizeRatio() const { return m_resize_ratio; }
 
   /*!
    * \brief Set the ratio by which the capacity increases upon dynamic resize.
    * \param [in] ratio the new resize ratio.
    */
-  inline void setResizeRatio( double ratio )
-  { m_resize_ratio = ratio; }
+  inline void setResizeRatio( double ratio ) { m_resize_ratio = ratio; }
 
   /*!
    * \brief Get the chunk size of all allocations.
    * \return the chunk size of all allocations.
    */
-  constexpr IndexType getNumComponents() const
-  { return m_num_components; }
-
+  constexpr IndexType getNumComponents() const { return m_num_components; }
 
 #ifdef MINT_USE_SIDRE
+
   /*!
    * \brief Return a pointer to the sidre::View that this Array wraps.
    * \return a const pointer to a sidre::View.
    */
-  inline sidre::View* getView() const
-  { return m_view; }
+  inline sidre::View* getView() const { return m_view; }
+
 #endif
 
-//@}
-
+/// @}
 
 private:
 
@@ -360,7 +401,6 @@ private:
    * \brief Allocates space within the Array's sidre::View.
    */
   inline void reallocViewData();
-
 
   sidre::View* m_view;
 #endif
@@ -402,6 +442,11 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components ) :
                  "must be greater than zero." );
 
   setCapacity( m_num_tuples * m_num_components * m_resize_ratio );
+
+  // sanity checks
+  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( m_num_tuples >= 1 );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 
 //------------------------------------------------------------------------------
@@ -432,6 +477,10 @@ Array< T >::Array( IndexType capacity,
                  "(" << capacity << ")." );
 
   setCapacity( capacity );
+
+  // sanity checks
+  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 
 //------------------------------------------------------------------------------
@@ -456,29 +505,35 @@ Array< T >::Array( const T* data,
                  "Components per tuple (" << m_num_components << ") " <<
                  "must be greater than zero." );
   SLIC_ERROR_IF( m_data==AXOM_NULLPTR, "specified array must not be NULL." );
+
+  // sanity checks
+  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 
 #ifdef MINT_USE_SIDRE
+
 //------------------------------------------------------------------------------
 template< typename T >
 Array< T >::Array( sidre::View* view, IndexType num_tuples ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
-  m_num_tuples( num_tuples ),
   m_capacity(0),
   m_num_components(0),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false )
 {
   SLIC_ERROR_IF( m_view == AXOM_NULLPTR, "Provided View cannot be null." );
-  SLIC_ERROR_IF( m_view->isEmpty(), "View is empty." );
+  SLIC_ERROR_IF( m_view->isEmpty(), "Provided View cannot be empty." );
 
-  m_capacity = getViewShape(0);
+  m_capacity       = getViewShape(0);
+  m_num_tuples     = ( num_tuples < 0 )? m_capacity : num_tuples;
   m_num_components = getViewShape(1);
 
   SLIC_ERROR_IF( m_num_tuples < 0,
                  "Number of tuples (" << m_num_tuples << ") " <<
                  "cannot be negative." );
+
   SLIC_ERROR_IF( m_num_tuples > m_capacity,
                  "Number of tuples (" << m_num_tuples << ") " <<
                  "cannot be greater than the tuple capacity " <<
@@ -486,16 +541,21 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples ) :
 
   sidre::TypeID view_type = m_view->getTypeID();
   sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
-  SLIC_ERROR_IF( view_type != T_type, "View data type (" << view_type << ")"
-                                                         << "differs from this Array type (" << T_type <<
-      ")." );
+  SLIC_ERROR_IF( view_type != T_type,
+                 "View data type (" << view_type << ")" <<
+                 "differs from this Array type (" << T_type << ")." );
 
   m_data = static_cast< T* >( m_view->getVoidPtr() );
+
+  // sanity checks
+  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( sidre::View* view, IndexType num_tuples,
+Array< T >::Array( sidre::View* view,
+                   IndexType num_tuples,
                    IndexType num_components ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
@@ -507,7 +567,6 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
 {
   SLIC_ERROR_IF( m_view == AXOM_NULLPTR, "Provided View cannot be null." );
   SLIC_ERROR_IF( !m_view->isEmpty(), "View must be empty." );
-
   SLIC_ERROR_IF( m_num_tuples < 0,
                  "Number of tuples (" << m_num_tuples << ") " <<
                  "cannot be negative." );
@@ -522,12 +581,18 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
   m_view->allocate( T_type, m_capacity * m_num_components );
   m_view->apply( T_type, 2, dims );
   m_data = m_view->getVoidPtr();
+
+  // sanity checks
+  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( sidre::View* view, IndexType capacity,
-                   IndexType num_tuples, IndexType num_components ) :
+Array< T >::Array( sidre::View* view,
+                   IndexType capacity,
+                   IndexType num_tuples,
+                   IndexType num_components ) :
   m_view( view ),
   m_data( AXOM_NULLPTR ),
   m_num_tuples( num_tuples ),
@@ -557,6 +622,10 @@ Array< T >::Array( sidre::View* view, IndexType capacity,
   m_view->allocate( T_type, m_capacity * m_num_components );
   m_view->apply( T_type, 2, dims );
   m_data = static_cast< T* >( m_view->getVoidPtr() );
+
+  // sanity checks
+  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 #endif
 
@@ -724,6 +793,7 @@ inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
 }
 
 #ifdef MINT_USE_SIDRE
+
 //------------------------------------------------------------------------------
 template< typename T >
 inline IndexType Array< T >::getViewShape( int dim ) const
@@ -754,8 +824,8 @@ inline void Array< T >::reallocViewData()
   SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                  "Array reallocation failed." );
 }
-#endif
 
+#endif
 
 } /* namespace mint */
 } /* namespace axom */
