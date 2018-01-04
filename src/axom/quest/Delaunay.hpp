@@ -164,21 +164,23 @@ public:
   void writeToVTKFile(const std::string filename)
   {
     m_mesh.compact();
-    const int MINT_MESH_TYPE = DIMENSION == 2 ? MINT_TRIANGLE : MINT_TET;
+    const auto CELL_TYPE =
+      DIMENSION == 2 ? axom::mint::TRIANGLE : axom::mint::TET;
 
-    axom::mint::UnstructuredMesh<MINT_MESH_TYPE> mint_mesh(DIMENSION);
+    axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> mint_mesh(DIMENSION,
+                                                               CELL_TYPE);
 
     for(int i = 0; i < m_mesh.vertex_set.size(); i++)
     {
-      mint_mesh.insertNode(m_mesh.getVertexPoint(i).data());
+      mint_mesh.appendNodes(m_mesh.getVertexPoint(i).data());
     }
 
     for(int i = 0; i < m_mesh.ev_rel.size(); i++)
     {
       const int* ptr = &(m_mesh.ev_rel[i][0]);
-      mint_mesh.insertCell(ptr, MINT_MESH_TYPE, VERT_PER_ELEMENT);
+      mint_mesh.appendCell(ptr, CELL_TYPE);
     }
-    mint_mesh.toVtkFile(filename);
+    mint::write_vtk(&mint_mesh, filename);
   }
 
   /**
@@ -448,7 +450,7 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                  m_mesh.getVertexPoint(verts[1]),
                  m_mesh.getVertexPoint(verts[2]));
 
-  BaryCoordType bary_co = tri.barycentricCoords(query_pt);
+  BaryCoordType bary_co = tri.physToBarycentric(query_pt);
 
   return bary_co;
 }
@@ -465,7 +467,7 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                     m_mesh.getVertexPoint(verts[2]),
                     m_mesh.getVertexPoint(verts[3]));
 
-  BaryCoordType bary_co = tet.barycentricCoords(query_pt);
+  BaryCoordType bary_co = tet.physToBarycentric(query_pt);
 
   return bary_co;
 }
