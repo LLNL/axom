@@ -14,11 +14,11 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
-#include "mint/Array.hpp"
+#include "mint/config.hpp"              /* for mint defintions */
+#include "mint/Array.hpp"               /* for mint::Array */
 
 #include "axom_utils/Utilities.hpp"     /* for utilities::max */
-#include "mint/config.hpp"           /* for IndexType */
+
 #include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
 #include "slic/slic.hpp"                /* for slic macros */
 
@@ -469,7 +469,7 @@ template< typename T >
 void check_sidre( Array< T >& v )
 {
 #ifdef MINT_USE_SIDRE
-  Array< T > cpy( const_cast< sidre::View * >( v.getView() ) , v.size() );
+  Array< T > cpy( const_cast< sidre::View* >( v.getView() ), v.size() );
   cpy.setResizeRatio( v.getResizeRatio() );
 
   check_equality( v, cpy );
@@ -492,27 +492,34 @@ void check_external( Array< T >& v )
   const IndexType size = v.size();
   const IndexType num_components = v.numComponents();
   const IndexType num_values = size * num_components;
-  T * const data_ptr = v.getData();
+  T* const data_ptr = v.getData();
 
-  for ( IndexType i = 0; i < size; ++i ) {
-    for ( IndexType j = 0; j < num_components; ++j ) {
-      v( i, j ) = i * num_components + j; 
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+    for ( IndexType j = 0 ; j < num_components ; ++j )
+    {
+      v( i, j ) = i * num_components + j;
     }
   }
 
-  for (IndexType i = 0; i < num_values; ++i ) {
+  for (IndexType i = 0 ; i < num_values ; ++i )
+  {
     EXPECT_EQ( data_ptr[ i ], i );
   }
 
-  for ( IndexType i = 0; i < size; ++i ) {
-    for ( IndexType j = 0; j < num_components; ++j ) {
-      data_ptr[ i * num_components + j ] = i * j - i - j; 
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+    for ( IndexType j = 0 ; j < num_components ; ++j )
+    {
+      data_ptr[ i * num_components + j ] = i * j - i - j;
     }
   }
 
-  for ( IndexType i = 0; i < size; ++i ) {
-    for ( IndexType j = 0; j < num_components; ++j ) {
-      EXPECT_EQ( v(i, j), i * j - i - j ); 
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+    for ( IndexType j = 0 ; j < num_components ; ++j )
+    {
+      EXPECT_EQ( v(i, j), i * j - i - j );
     }
   }
 
@@ -542,8 +549,10 @@ TEST( mint_array, checkStorage )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( IndexType capacity = 2; capacity < 1024; capacity *= 2 ) {
-    for ( int num_components = 1; num_components <= 4; num_components++ ) {
+  for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+  {
+    for ( int num_components = 1 ; num_components <= 4 ; num_components++ )
+    {
       Array< int > v_int( 0, num_components, capacity );
       internal::check_storage( v_int );
 
@@ -551,11 +560,11 @@ TEST( mint_array, checkStorage )
       internal::check_storage( v_double );
 
 #ifdef MINT_USE_SIDRE
-      Array< int > v_int_sidre( root->createView( "int" ), 0, num_components, 
+      Array< int > v_int_sidre( root->createView( "int" ), 0, num_components,
                                 capacity );
       internal::check_storage( v_int_sidre );
 
-      Array< double > v_double_sidre( root->createView( "double" ), 0, 
+      Array< double > v_double_sidre( root->createView( "double" ), 0,
                                       num_components, capacity );
       internal::check_storage( v_double_sidre );
 
@@ -573,9 +582,12 @@ TEST( mint_array, checkResize )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
-    for ( IndexType capacity = 2; capacity < 1024; capacity *= 2 ) {
-      for ( int num_components = 1 ; num_components <= 4; num_components++ ) {
+  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  {
+    for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+    {
+      for ( int num_components = 1 ; num_components <= 4 ; num_components++ )
+      {
         Array< int > v_int( 0, num_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_resize( v_int );
@@ -585,12 +597,12 @@ TEST( mint_array, checkResize )
         internal::check_resize( v_double );
 
 #ifdef MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView( "int" ), 0, num_components, 
+        Array< int > v_int_sidre( root->createView( "int" ), 0, num_components,
                                   capacity );
         v_int_sidre.setResizeRatio( ratio );
         internal::check_insert( v_int_sidre );
 
-        Array< double > v_double_sidre( root->createView( "double" ), 0, 
+        Array< double > v_double_sidre( root->createView( "double" ), 0,
                                         num_components, capacity );
         v_double_sidre.setResizeRatio( ratio );
         internal::check_insert( v_double_sidre );
@@ -610,9 +622,12 @@ TEST( mint_array, checkInsert )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
-    for ( IndexType capacity = 2; capacity <= 1024; capacity *= 2 ) {
-      for ( int num_components = 1; num_components <= 4; num_components++ ) {
+  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  {
+    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    {
+      for ( int num_components = 1 ; num_components <= 4 ; num_components++ )
+      {
         Array< int > v_int( 0, num_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_insert( v_int );
@@ -627,7 +642,7 @@ TEST( mint_array, checkInsert )
         v_int_sidre.setResizeRatio( ratio );
         internal::check_insert( v_int_sidre );
 
-        Array< double > v_double_sidre( root->createView("double"), 0, 
+        Array< double > v_double_sidre( root->createView("double"), 0,
                                         num_components, capacity );
         v_double_sidre.setResizeRatio( ratio );
         internal::check_insert( v_double_sidre );
@@ -646,10 +661,13 @@ TEST( mint_array, checkSidre )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 ) {
-    for ( IndexType capacity = 2; capacity <= 1024; capacity *= 2 ) {
-      for ( int num_components = 1; num_components <= 4; num_components++ ) {
-        Array< int > v_int( root->createView("int"), 0, num_components, 
+  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  {
+    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    {
+      for ( int num_components = 1 ; num_components <= 4 ; num_components++ )
+      {
+        Array< int > v_int( root->createView("int"), 0, num_components,
                             capacity );
         v_int.setResizeRatio( ratio );
         internal::check_storage( v_int );
@@ -676,14 +694,17 @@ TEST( mint_array_DeathTest, checkExternal )
 {
   const int MAX_SIZE = 1024;
   const int MAX_COMPONENTS = 4;
-  union DataBuffer {
+  union DataBuffer
+  {
     int ints[ MAX_SIZE * MAX_COMPONENTS];
     double doubles[ MAX_SIZE * MAX_COMPONENTS];
   };
 
   DataBuffer buffer;
-  for ( IndexType size = 2; size <= MAX_SIZE; size *= 2 ) {
-    for ( int n_comp = 1; n_comp <= MAX_COMPONENTS; n_comp++ ) {
+  for ( IndexType size = 2 ; size <= MAX_SIZE ; size *= 2 )
+  {
+    for ( int n_comp = 1 ; n_comp <= MAX_COMPONENTS ; n_comp++ )
+    {
       Array< int > v_int( buffer.ints, size, n_comp );
       internal::check_external( v_int );
 
