@@ -279,7 +279,8 @@ public:
    *  than the current capacity.
    * \param [in] capacity the new number of tuples to allocate.
    */
-  inline void reserve( IndexType capacity ) { setCapacity( capacity ); }
+  inline void reserve( IndexType capacity ) 
+  { if ( capacity > m_capacity ) setCapacity( capacity ); }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.
@@ -635,12 +636,6 @@ inline void Array< T >::setCapacity( IndexType capacity )
 {
   SLIC_ASSERT( capacity >= 0 );
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
-
-  if ( capacity < m_capacity )
-  {
-    /* short-circuit */
-    return;
-  }
 
   m_capacity = capacity;
   if ( m_capacity < m_num_tuples ) {
