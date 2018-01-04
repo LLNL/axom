@@ -44,7 +44,6 @@ set( mint_headers
     mesh/CellConnectivity.hpp
     mesh/CellType.hpp
     mesh/CurvilinearMesh.hpp
-    mesh/database.hpp
     mesh/Extent.hpp
     mesh/Field.hpp
     mesh/FieldData.hpp
@@ -71,7 +70,6 @@ set( mint_sources
 
     ## Mesh data-model
     mesh/CurvilinearMesh.cpp
-    mesh/database.cpp
     mesh/Extent.cpp
     mesh/FieldVariable.cpp
     mesh/Mesh.cpp

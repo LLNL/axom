@@ -17,7 +17,6 @@
 
 #include "mint/MeshCoordinates.hpp"     /* for MeshCoordinates */
 
-#include "mint/database.hpp"            /* for get_group */
 #include "mint/config.hpp"           /* for IndexType */
 #include "mint/Array.hpp"               /* for Array */
 #include "slic/slic.hpp"                /* for slic macros */
