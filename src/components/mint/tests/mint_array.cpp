@@ -519,17 +519,13 @@ void check_external( Array< T >& v )
   EXPECT_EQ( size, v.size() );
   EXPECT_EQ( data_ptr, v.getData() );
 
-  // T tuple[ num_components ];
-  // EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), 
-  //                            "Cannot change the capacity of external data." );
-  // EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), 
-  //                            "Cannot change the capacity of external data." );
-  // EXPECT_DEATH_IF_SUPPORTED( v.resize( size ), 
-  //                            "Cannot change the capacity of external data." );
-  // EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), 
-  //                            "Cannot change the capacity of external data." );
-  // EXPECT_DEATH_IF_SUPPORTED( v.shrink(), 
-  //                            "Cannot change the capacity of external data." );
+  /* To Do? Check stderr output agains regular expression. */
+  T tuple[ num_components ];
+  EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), ".*" );
+  EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), ".*" );
+  EXPECT_DEATH_IF_SUPPORTED( v.resize( size ), ".*" );
+  EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), ".*" );
+  EXPECT_DEATH_IF_SUPPORTED( v.shrink(), ".*" );
 }
 
 }   /* end namespace internal */
@@ -546,28 +542,26 @@ TEST( mint_array, checkStorage )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  IndexType capacity = 2;
-  for ( int i = 0; i < 10; ++i ) {
-    for ( int num_components = 1; num_components < 5 ; num_components++ ) {
-      Array< int > v_int( capacity, 0, num_components );
+  for ( IndexType capacity = 2; capacity < 1024; capacity *= 2 ) {
+    for ( int num_components = 1; num_components <= 4; num_components++ ) {
+      Array< int > v_int( 0, num_components, capacity );
       internal::check_storage( v_int );
 
-      Array< double > v_double( capacity, 0, num_components );
+      Array< double > v_double( 0, num_components, capacity );
       internal::check_storage( v_double );
 
 #ifdef MINT_USE_SIDRE
-      Array< int > v_int_sidre( root->createView("int"), capacity, 
-                                0, num_components );
+      Array< int > v_int_sidre( root->createView( "int" ), 0, num_components, 
+                                capacity );
       internal::check_storage( v_int_sidre );
 
-      Array< double > v_double_sidre( root->createView("double"), capacity, 
-                                      0, num_components );
+      Array< double > v_double_sidre( root->createView( "double" ), 0, 
+                                      num_components, capacity );
       internal::check_storage( v_double_sidre );
 
       root->destroyViewsAndData();
 #endif
     }
-    capacity *= 2;
   }
 }
 
@@ -579,36 +573,31 @@ TEST( mint_array, checkResize )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 )
-  {
-    IndexType capacity = 2;
-    for ( int i = 0; i < 10; ++i )
-    {
-      for ( int num_components = 1 ; num_components < 5 ; num_components++ )
-      {
-        Array< int > v_int( capacity, 0, num_components );
+  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
+    for ( IndexType capacity = 2; capacity < 1024; capacity *= 2 ) {
+      for ( int num_components = 1 ; num_components <= 4; num_components++ ) {
+        Array< int > v_int( 0, num_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_resize( v_int );
 
-        Array< double > v_double( capacity, 0, num_components );
+        Array< double > v_double( 0, num_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_resize( v_double );
 
 #ifdef MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView("int"), capacity, 
-                                  0, num_components );
+        Array< int > v_int_sidre( root->createView( "int" ), 0, num_components, 
+                                  capacity );
         v_int_sidre.setResizeRatio( ratio );
         internal::check_insert( v_int_sidre );
 
-        Array< double > v_double_sidre( root->createView("double"), capacity, 
-                                        0, num_components );
+        Array< double > v_double_sidre( root->createView( "double" ), 0, 
+                                        num_components, capacity );
         v_double_sidre.setResizeRatio( ratio );
         internal::check_insert( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif
       }
-      capacity *= 2;
     }
   }
 }
@@ -622,32 +611,30 @@ TEST( mint_array, checkInsert )
 #endif
 
   for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 ) {
-    IndexType capacity = 2;
-    for ( int i = 0; i < 10; ++i ) {
-      for ( int num_components = 1; num_components < 5 ; num_components++ ) {
-        Array< int > v_int( capacity, 0, num_components );
+    for ( IndexType capacity = 2; capacity <= 1024; capacity *= 2 ) {
+      for ( int num_components = 1; num_components <= 4; num_components++ ) {
+        Array< int > v_int( 0, num_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_insert( v_int );
 
-        Array< double > v_double( capacity, 0, num_components );
+        Array< double > v_double( 0, num_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_insert( v_double );
 
 #ifdef MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView("int"), capacity,
-                                  0, num_components );
+        Array< int > v_int_sidre( root->createView("int"), 0, num_components,
+                                  capacity );
         v_int_sidre.setResizeRatio( ratio );
         internal::check_insert( v_int_sidre );
 
-        Array< double > v_double_sidre( root->createView("double"), capacity,
-                                        0, num_components );
+        Array< double > v_double_sidre( root->createView("double"), 0, 
+                                        num_components, capacity );
         v_double_sidre.setResizeRatio( ratio );
         internal::check_insert( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif
       }
-      capacity *= 2;
     }
   }
 }
@@ -660,24 +647,22 @@ TEST( mint_array, checkSidre )
   sidre::Group* root = ds.getRoot();
 
   for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 ) {
-    IndexType capacity = 2;
-    for ( int i = 0; i < 10; ++i ) {
-      for ( int num_components = 1; num_components < 5 ; num_components++ ) {
-        Array< int > v_int( root->createView("int"), capacity, 
-                                  0, num_components );
+    for ( IndexType capacity = 2; capacity <= 1024; capacity *= 2 ) {
+      for ( int num_components = 1; num_components <= 4; num_components++ ) {
+        Array< int > v_int( root->createView("int"), 0, num_components, 
+                            capacity );
         v_int.setResizeRatio( ratio );
         internal::check_storage( v_int );
         internal::check_sidre( v_int );
 
-        Array< double > v_double( root->createView("double"), capacity, 
-                                        0, num_components );
+        Array< double > v_double( root->createView("double"), 0, num_components,
+                                  capacity );
         v_double.setResizeRatio( ratio );
         internal::check_storage( v_double );
         internal::check_sidre( v_double );
 
         root->destroyViewsAndData();
       }
-      capacity *= 2;
     }
   }
 
@@ -687,28 +672,45 @@ TEST( mint_array, checkSidre )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_array, checkExternal )
+TEST( mint_array_DeathTest, checkExternal )
 {
+  const int MAX_SIZE = 1024;
+  const int MAX_COMPONENTS = 4;
   union DataBuffer {
-    int ints[1024];
-    double doubles[1024];
+    int ints[ MAX_SIZE * MAX_COMPONENTS];
+    double doubles[ MAX_SIZE * MAX_COMPONENTS];
   };
 
   DataBuffer buffer;
-
-
-  IndexType capacity = 2;
-  for ( int i = 0; i < 10; ++i ) {
-    for ( int num_components = 1; num_components < 5 ; num_components++ ) {
-      Array< int > v_int( buffer.ints, capacity, num_components );
+  for ( IndexType size = 2; size <= MAX_SIZE; size *= 2 ) {
+    for ( int n_comp = 1; n_comp <= MAX_COMPONENTS; n_comp++ ) {
+      Array< int > v_int( buffer.ints, size, n_comp );
       internal::check_external( v_int );
 
-      Array< double > v_double( buffer.doubles, capacity, num_components );
+      Array< double > v_double( buffer.doubles, size, n_comp );
       internal::check_external( v_double );
     }
-    capacity *= 2;
   }
 }
 
 } /* end namespace mint */
 } /* end namespace axom */
+
+//------------------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
+int main(int argc, char* argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
+}
