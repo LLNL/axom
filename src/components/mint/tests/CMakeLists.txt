@@ -14,6 +14,7 @@
 
 set( mint_tests
      mint_array.cpp
+     mint_mesh_coordinates.cpp
      mint_mesh_extent.cpp
      mint_shape_functions.cpp
      mint_single_fe.cpp

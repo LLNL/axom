@@ -134,7 +134,7 @@ public:
    * \param [in] nodeIdx the index of the node in query.
    * \param [in] x the x--coordinate to set at the given node.
    * \param [in] y the y--coordinate to set at the given node.
-   * \param [in] z the z--coorindate to set at the given node.
+   * \param [in] z the z--coordinate to set at the given node.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
    * \pre this->getDimension() == 3
    */
@@ -221,7 +221,8 @@ inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y,
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
   SLIC_ASSERT( this->getDimension() == 3 );
 
-  m_coordinates.setPoint( nodeIdx, x, y, z );
+  double xx[3] = { x, y, z };
+  m_coordinates.set( nodeIdx, xx );
 }
 
 //------------------------------------------------------------------------------
@@ -240,7 +241,8 @@ inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y )
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
   SLIC_ASSERT(  this->getDimension() == 2 );
 
-  m_coordinates.setPoint( nodeIdx, x, y );
+  double xx[3] = { x, y };
+  m_coordinates.set( nodeIdx, xx );
 }
 
 //------------------------------------------------------------------------------
@@ -259,7 +261,7 @@ inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x )
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
   SLIC_ASSERT( this->getDimension() == 1 );
 
-  m_coordinates.setPoint( nodeIdx, x );
+  m_coordinates.set( nodeIdx, &x );
 }
 
 //------------------------------------------------------------------------------

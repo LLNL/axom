@@ -40,7 +40,7 @@ public:
    * \brief Constructs a ParticleMesh instance.
    * \param [in] dimension the ambient dimension of the particle mesh.
    */
-  explicit ParticleMesh( int dimension, IndexType particleCapacity );
+  ParticleMesh( int dimension, IndexType particleCapacity );
 
   /*!
    * \brief Constructs a ParticleMesh instance.
@@ -167,7 +167,7 @@ public:
    * \return N the total number of particles.
    */
   IndexType getNumberOfParticles() const
-  { return m_particle_coordinates.size(); }
+  { return m_particle_coordinates.numNodes(); }
 
   /*!
    * \brief Returns the particle coordinates array for the given dimension.
@@ -220,7 +220,7 @@ public:
 
 
   IndexType getCapacity() const
-  { return m_particle_coordinates.getCapacity(); }
+  { return m_particle_coordinates.capacity(); }
 
 
   void reserve( IndexType capacity )
@@ -262,19 +262,21 @@ const
 //------------------------------------------------------------------------------
 inline void ParticleMesh::addParticle( double x ) {
   SLIC_ASSERT( this->getDimension() == 1 );
-  m_particle_coordinates.addPoint( x );
+  m_particle_coordinates.append( &x );
 }
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::addParticle( double x, double y ) {
   SLIC_ASSERT( this->getDimension() == 2 );
-  m_particle_coordinates.addPoint( x, y );
+  double xx[2] = { x, y };
+  m_particle_coordinates.append( xx );
 }
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::addParticle( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3);
-  m_particle_coordinates.addPoint( x, y, z );
+  double xx[3] = { x, y, z };
+  m_particle_coordinates.append( xx );
 }
 
 //------------------------------------------------------------------------------

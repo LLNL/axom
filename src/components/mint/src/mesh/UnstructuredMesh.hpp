@@ -205,15 +205,15 @@ public:
    * \return N the total number of nodes in the mesh.
    * \post N >= 0.
    */
-  IndexType getNumberOfNodes() const
-  { return m_node_coordinates->size(); };
+  constexpr IndexType getNumberOfNodes() const
+  { return m_node_coordinates->numNodes(); };
 
   /*!
    * \brief Get the number of nodes that can be stored.
    * \return The capacity of the node array.
    */
-  IndexType getNodeCapacity() const
-  { return m_node_coordinates->getCapacity(); };
+  constexpr IndexType getNodeCapacity() const
+  { return m_node_coordinates->capacity(); };
 
 //  /*!
 //   * \brief Set the number of nodes that can be stored.
@@ -225,7 +225,7 @@ public:
 //  }
 
 
-  double getNodeResizeRatio() const
+  constexpr double getNodeResizeRatio() const
   { return m_node_coordinates->getResizeRatio(); }
 
 
@@ -240,7 +240,7 @@ public:
    * \return N the total number of cells in the mesh.
    * \post N >= 0.
    */
-  IndexType getNumberOfCells() const
+  constexpr IndexType getNumberOfCells() const
   { return m_cell_connectivity->getNumberOfCells(); };
 
   /*!
@@ -249,7 +249,7 @@ public:
    * \return nnodes the number of nodes for the given cell.
    * \pre nnodes >= 1.
    */
-  int getNumberOfCellNodes( IndexType cellIdx ) const
+  constexpr int getNumberOfCellNodes( IndexType cellIdx ) const
   { return m_cell_connectivity->getNumberOfNodes( cellIdx ); }
 
   /*!
@@ -257,7 +257,7 @@ public:
      connectivity.
    * \return the number of nodes that can be stored in the cell connectivity.
    */
-  IndexType getCellNodeCapacity() const
+  constexpr IndexType getCellNodeCapacity() const
   { return m_cell_connectivity->getCapacity(); }
 
   /*!
@@ -270,7 +270,7 @@ public:
   // { m_cell_connectivity.setCellCapacity( capacity ); }
 
 
-  double getCellResizeRatio() const
+  constexpr double getCellResizeRatio() const
   { return m_cell_connectivity->getResizeRatio(); }
 
 
@@ -472,7 +472,7 @@ template < int CellType >
 inline void UnstructuredMesh< CellType >::addNode( double x )
 {
   SLIC_ASSERT( this->getDimension() == 1 );
-  m_node_coordinates->addPoint( x );
+  m_node_coordinates->append( &x );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
@@ -481,7 +481,8 @@ template < int CellType >
 inline void UnstructuredMesh< CellType >::addNode( double x, double y )
 {
   SLIC_ASSERT( this->getDimension() == 2 );
-  m_node_coordinates->addPoint( x, y );
+  double xx[2] = { x, y };
+  m_node_coordinates->append( xx );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
@@ -490,7 +491,8 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::addNode( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3 );
-  m_node_coordinates->addPoint( x, y, z );
+  double xx[3] = {x, y, z};
+  m_node_coordinates->append( xx );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
@@ -499,20 +501,7 @@ template < int CellType >
 inline void UnstructuredMesh< CellType >::addNode( const double* node ) {
   SLIC_ASSERT( node != AXOM_NULLPTR );
 
-  if ( this->getDimension() == 1 )
-  {
-    m_node_coordinates->addPoint( node[0] );
-  }
-  else if ( this->getDimension() == 2 )
-  {
-    m_node_coordinates->addPoint( node[0], node[1] );
-  }
-  else
-  {
-    SLIC_ASSERT( this->getDimension() == 3 );
-    m_node_coordinates->addPoint( node[0], node[1], node[2] );
-  }
-
+  m_node_coordinates->append( node );
   this->setNodeDataSize( getNumberOfNodes() );
 }
 
