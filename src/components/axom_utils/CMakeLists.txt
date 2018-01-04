@@ -49,7 +49,7 @@ install(EXPORT axom_utils-targets DESTINATION lib/cmake)
 if(ENABLE_FORTRAN)
 
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/c_loc_with_assumed_shape.f "
-! This is expected to fail with gcc 4.7.1
+! This is expected to fail with gcc 4.7.1, 4.8
 ! Error: Assumed-shape array 'arg' at (1) cannot be an argument to the
 !      procedure 'c_loc' because it is not C interoperable
 ! https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53945

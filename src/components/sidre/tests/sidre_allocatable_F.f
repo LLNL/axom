@@ -44,15 +44,16 @@ contains
 
     call set_case_name("external_empty_int")
 
+    ! Note: This allocate/deallocate prevents a "view is empty" failure on xlf
+    allocate(iarray(0))
+    deallocate(iarray)
+
     ds = datastore_new()
     root = ds%get_root()
 
     call assert_false(allocated(iarray), "iarray is not allocated")
 
     view = root%create_array_view("iarray", iarray)
-
-    ! Note: This view_print() call prevents a "view is empty" failure on xlf
-    call view_print(view)
 
     call assert_true(view%is_empty(), "view is empty")
 
