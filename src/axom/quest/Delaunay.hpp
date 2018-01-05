@@ -4,6 +4,9 @@
  *
  * \brief Construct delaunay triangulation by inserting points one by one.
  * A bounding box of the points needs to be defined first via initializeBoundary(...)
+ *
+ * A bounding box of the points needs to be defined first via
+ * the initializeBoundary() function
  */
 
 #ifndef QUEST_DELAUNAY_H_
@@ -105,11 +108,12 @@ public:
   }
 
   /**
-   * \brief Adds a new point to the mesh and locally re-triangulates the mesh to ensure that it stays Delaunay.
+   * \brief Adds a new point to the mesh and locally re-triangulates
+   * the mesh to ensure that it stays Delaunay.
    *
-   * This function will traverse the m_mesh to find the element that contains this point,
-   * create the Delaunay cavity, which takes out all the elements that contains the point in its sphere,
-   * and fill in the cavity with a Delaunay ball.
+   * This function will traverse the m_mesh to find the element that contains
+   * this point, create the Delaunay cavity, which takes out all the elements
+   * that contains the point in its sphere, and fill it with a Delaunay ball.
    *
    * \pre The current mesh must already be Delaunay.
    */
@@ -152,13 +156,15 @@ public:
   }
 
   /**
-   * \brief Prints out the set, relation, and map detail of the m_mesh, for debug purpose.
+   * \brief Prints out mesh details, for debugging purpose.
    */
   void printMesh() { m_mesh.print_all(); }
 
   /**
    * \brief Write the m_mesh to a legacy VTK file
-   * \param @filename the name of the file to write to, appending ".vtk" at the end of the filename
+   *
+   * \param filename The name of the file to write to,
+   * \note The suffix ".vtk" will be appended to the provided  filename
    * \details This function uses mint to write the m_mesh to VTK format.
    */
   void writeToVTKFile(const std::string filename)
@@ -184,9 +190,12 @@ public:
   }
 
   /**
-    * \brief Removes the vertices that defines the boundary of the m_mesh, and the elements attached to them.
-    * \details After this function is called, no more points can be added to the m_mesh.
-    */
+   * \brief Removes the vertices that defines the boundary of the mesh,
+   * and the elements attached to them.
+   *
+   * \details After this function is called,
+   * no more points can be added to the m_mesh.
+   */
   void removeBoundary()
   {
     if(m_has_boundary)
@@ -264,8 +273,8 @@ private:
 
   /**
    * \brief recursive function to find cavity elements given a point to be added
-   * \details Check if the point is in the circle/sphere of the element, if so, call
-   * recursively on the neighboring elements.
+   * \details Check if the point is in the circle/sphere of the element, if so,
+   * recursively call the neighboring elements.
    */
   bool findCavityElementsRec(const PointType& query_pt, IndexType element_idx)
   {
@@ -284,17 +293,15 @@ private:
       {
         IndexType nbr_elem = nbr_elements[face_i];
 
+        //The latter case is a checked element that is not a cavity element
         if(!m_mesh.isValidElementEntry(nbr_elem) ||
            (checked_element_set.insert(nbr_elem).second
               ? findCavityElementsRec(query_pt, nbr_elem)
-              : !axom::slam::is_subset(
-                  nbr_elem,
-                  cavity_element_list)  //checked but not a cavity element
-            ))
+              : !axom::slam::is_subset(nbr_elem, cavity_element_list)))
         {
           IndexListType vlist = m_mesh.getElementFace(element_idx, face_i);
 
-          //For tetrahedron, if the element face is odd, the vertex order needs to be reversed.
+          //For tetrahedron, if the element face is odd, reverse vertex order
           if(DIMENSION == 3 && face_i % 2 == 1)
           {
             IndexType tmp = vlist[1];
@@ -316,12 +323,13 @@ private:
   }
 
   /**
-   * \brief Find the list of element indices whose circle/sphere contains the query point.
-   * \details This function start from an element, and search through the neighboring elements,
-   * returning a list of element indices whose circle/sphere defined by its vertices contains the
-   * query point.
-   * \param @query_pt the query point
-   * \param @element_i the element to start the search at
+   * \brief Find the list of element indices whose sphere contains query point
+   *
+   * \details This function start from an element, and search through the
+   * neighboring elements, returning a list of element indices
+   * whose circle/sphere defined by its vertices contains the query point.
+   * \param query_pt the query point
+   * \param element_i the element to start the search at
    */
   void findCavityElements(const PointType& query_pt, IndexType element_i)
   {
@@ -391,7 +399,7 @@ private:
 };  //END class Delaunay
 
 //********************************************************************************
-// Below are specialization functions for 2D and 3D methods in the Delaunay class
+// Below are 2D and 3D specializations for methods in the Delaunay class
 //********************************************************************************
 
 // this is the 2D specialization for generateInitialMesh(...)

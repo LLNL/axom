@@ -4,14 +4,12 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- *******************************************************************************
  * \file delaunay_triangulation.cpp
  * \brief This file contains an example that creates Delaunay triangulation
  * sequentially from a set of random points contained within a rectangle
  * centered at the origin.
  * This example can run in 2D with triangles or in 3D with tetrahedrons.
  * It uses SLAM IA, a topological mesh data structure.
- *******************************************************************************
  */
 
 #include "axom/slic.hpp"
@@ -22,12 +20,8 @@
 
 using namespace axom;
 
-using namespace axom;
-
-double BOUNDING_BOX_DIM[] = {
-  2.0,
-  2.0,
-  2.0};  //This is the length of the bounding rectangle to contain the random points
+//This is the length of the bounding rectangle to contain the random points
+double BOUNDING_BOX_DIM[] = {2.0, 2.0, 2.0};
 
 typedef int IndexType;
 typedef double DataType;
@@ -63,26 +57,20 @@ struct Input
 
   void showhelp()
   {
-    std::cout << "Argument usage:" << std::endl
-              << "  --help(-h)             Show this help message." << std::endl
-              << "  --nrandpt(-n) [N]      The number of random points.  "
-                 "Default is N = 20.  "
-              << std::endl
-              << "  --dim(-d) [D]          The dimension of the mesh. 2 = "
-                 "triangles in 2D, 3 = tetrahedrons in 3D."
-              << std::endl
-              << "  --outfile(-o) [fname]  The VTK output file. Default fname "
-                 "= delaunay_output."
-              << std::endl
-              << "  --outputsteps(-s) [S]  S number of intermediate steps will "
-                 "be written out as VTK files."
-              << std::endl
-              << "                         S must be a strictly positive "
-                 "integer, or obmit to write one file per step."
-              << std::endl
-              << "                         By default no internediate VTK file "
-                 "is written."
-              << std::endl
+    std::cout << "Argument usage: \n"
+                 "  --help(-h)             Show this help message. \n"
+                 "  --nrandpt(-n) [N]      The number of random points.  "
+                 "Default is N = 20.  \n"
+                 "  --dim(-d) [D]          The dimension of the mesh. 2 = "
+                 "triangles in 2D, 3 = tetrahedrons in 3D.\n"
+                 "  --outfile(-o) [fname]  The VTK output file. Default fname "
+                 "= delaunay_output.\n"
+                 "  --outputsteps(-s) [S]  S number of intermediate steps will "
+                 "be written out as VTK files.\n"
+                 "                         S must be a strictly positive "
+                 "integer, or omit to write one file per step.\n"
+                 "                         By default no internediate VTK file "
+                 "is written.\n"
               << std::endl;
   };
 };
@@ -145,19 +133,17 @@ Input::Input(int argc, char** argv)
     }
   }
 
-  // if -s is specified but the number is obmitted, then output one file for each step.
+  // if -s is specified but the number is obmitted, then output one file for
+  // each step.
   if(outputSteps && (numOutputSteps == -1 || numOutputSteps > numRandPoints))
   {
     numOutputSteps = numRandPoints;
   }
 
   SLIC_INFO("Using parameter values: "
-            << std::endl
-            << "  nrandpt = " << numRandPoints << std::endl
-            << "  dimension = " << dimension << std::endl
-            << "  outputSteps = " << (numOutputSteps == -1 ? 0 : numOutputSteps)
-            << std::endl
-            << "  outfile = " << outputVTKFile << std::endl);
+            << "\n nrandpt = " << numRandPoints << "\n dimension = " << dimension
+            << "\n outputSteps = " << (numOutputSteps == -1 ? 0 : numOutputSteps)
+            << "\n outfile = " << outputVTKFile << std::endl);
 }
 
 template <unsigned int dimension>
@@ -174,9 +160,11 @@ int run_delaunay(int numPoints, int numOutputVTKsteps, std::string outputVTKFile
   double bb_min_arr[] = {-BOUNDING_BOX_DIM[0] / 2.0,
                          -BOUNDING_BOX_DIM[1] / 2.0,
                          -BOUNDING_BOX_DIM[2] / 2.0};
+
   double bb_max_arr[] = {BOUNDING_BOX_DIM[0] / 2.0,
                          BOUNDING_BOX_DIM[1] / 2.0,
                          BOUNDING_BOX_DIM[2] / 2.0};
+
   PointType bb_min(bb_min_arr);
   PointType bb_max(bb_max_arr);
   BoundingBox bb(bb_min, bb_max);

@@ -43,16 +43,49 @@ struct BasicTriMeshData
   static int numTriangles() { return 12; }
 };
 
-const double BasicTriMeshData::point_arr[] = {
-  0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0,
-  1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0};
-const int BasicTriMeshData::tri_arr[] = {0, 6, 4, 0, 2, 6, 0, 3, 2, 2, 7, 6,
-                                         2, 3, 7, 4, 6, 7, 4, 7, 5, 0, 4, 5,
-                                         0, 1, 3, 0, 5, 1, 1, 5, 7, 1, 7, 3};
-const int BasicTriMeshData::vert_to_el_num[] = {6, 4, 4, 4, 4, 4, 4, 6};
-const int BasicTriMeshData::el_nbr_rel[] = {
-  1, 5,  7, 2, 3, 0, 8, 4,  1, 4, 5,  1, 2, 11, 3,  0,  3, 6,
-  5, 10, 7, 0, 6, 9, 9, 11, 2, 7, 10, 8, 9, 6,  11, 10, 4, 8};
+// clang-format off
+const double BasicTriMeshData::point_arr [] = {
+  0.0, 0.0, 0.0,
+  0.0, 0.0, 1.0,
+  0.0, 1.0, 0.0,
+  0.0, 1.0, 1.0,
+  1.0, 0.0, 0.0,
+  1.0, 0.0, 1.0,
+  1.0, 1.0, 0.0,
+  1.0, 1.0, 1.0
+};
+const int BasicTriMeshData::tri_arr [] = {
+  0, 6, 4,
+  0, 2, 6,
+  0, 3, 2,
+  2, 7, 6,
+  2, 3, 7,
+  4, 6, 7,
+  4, 7, 5,
+  0, 4, 5,
+  0, 1, 3,
+  0, 5, 1,
+  1, 5, 7,
+  1, 7, 3
+};
+const int BasicTriMeshData::vert_to_el_num [] = {
+  6, 4, 4, 4, 4, 4, 4, 6
+};
+const int BasicTriMeshData::el_nbr_rel [] = {
+  1,5,7,
+  2,3,0,
+  8,4,1,
+  4,5,1,
+  2,11,3,
+  0,3,6,
+  5,10,7,
+  0,6,9,
+  9,11,2,
+  7,10,8,
+  9,6,11,
+  10,4,8
+};
+// clang-format on
 
 struct BasicTetMeshData
 {
@@ -71,15 +104,38 @@ struct BasicTetMeshData
     , elem(tet_arr, tet_arr + 24)
   { }
 };
+
+// clang-format off
 const double BasicTetMeshData::point_arr[] = {
-  -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0,
-  1.0,  -1.0, -1.0, 1.0,  -1.0, 1.0, 1.0,  1.0, -1.0, 1.0,  1.0, 1.0};
-const int BasicTetMeshData::tet_arr[] = {3, 2, 4, 0, 3, 1, 4, 0, 3, 6, 2, 4,
-                                         3, 6, 7, 4, 3, 5, 1, 4, 3, 5, 7, 4};
-const int BasicTetMeshData::vert_to_el_num[] = {2, 2, 2, 6, 6, 2, 2, 2};
-const int BasicTetMeshData::el_nbr_rel[] = {2,  -1, 1, -1, 4,  -1, 0, -1,
-                                            -1, -1, 0, 3,  -1, -1, 5, 2,
-                                            -1, -1, 1, 5,  -1, -1, 3, 4};
+  -1.0, -1.0, -1.0,
+  -1.0, -1.0,  1.0,
+  -1.0,  1.0, -1.0,
+  -1.0,  1.0,  1.0,
+  1.0, -1.0, -1.0,
+  1.0, -1.0,  1.0,
+  1.0,  1.0, -1.0,
+  1.0,  1.0,  1.0
+};
+const int BasicTetMeshData::tet_arr [] = {
+  3,2,4,0,
+  3,1,4,0,
+  3,6,2,4,
+  3,6,7,4,
+  3,5,1,4,
+  3,5,7,4
+};
+const int BasicTetMeshData::vert_to_el_num [] = {
+  2, 2, 2, 6, 6, 2, 2, 2
+};
+const int BasicTetMeshData::el_nbr_rel [] = {
+  2,-1,1,-1,
+  4,-1,0,-1,
+  -1,-1,0,3,
+  -1,-1,5,2,
+  -1,-1,1,5,
+  -1,-1,3,4
+};
+// clang-format on
 
 /* Check if vertex with ID \a vert_id is in boundary of
  * element with ID \a elem_id in mesh \a ia_mesh
