@@ -101,10 +101,10 @@ bool canOpenFile(const std::string & fname);
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
                           int degenerateCount);
-void saveProblemFlagsToMesh(mint::Mesh * surface_mesh,
+void saveProblemFlagsToMesh(mint::Mesh* surface_mesh,
                             const std::vector< std::pair<int, int> > & c,
                             const std::vector<int> & d);
-bool writeAnnotatedMesh(mint::Mesh * surface_mesh,
+bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
                         const std::string & outfile);
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
@@ -154,7 +154,8 @@ Input::Input(int argc, char** argv) :
     return;
   }
 
-  if (vtkOutput.size() < 1) {
+  if (vtkOutput.size() < 1)
+  {
     vtkOutput = stlInput;
     vtkOutput.append(".vtk");
   }
@@ -243,42 +244,59 @@ void announceMeshProblems(int triangleCount,
     std::endl;
 }
 
-void saveProblemFlagsToMesh(mint::Mesh * mesh,
+void saveProblemFlagsToMesh(mint::Mesh* mesh,
                             const std::vector< std::pair<int, int> > & c,
                             const std::vector<int> & d)
 {
   // Create new Field variables to hold degenerate and intersecting info
   const int num_cells = mesh->getMeshNumberOfCells();
 
+<<<<<<< HEAD
   mint::FieldVariable<int> *intersect =
     new mint::FieldVariable<int>("nbr_intersection", num_cells);
   mesh->getCellFieldData()->addField(intersect);
   int * intersectptr = intersect->getIntPtr();
   mint::FieldVariable<int> *dgn =
     new mint::FieldVariable<int>("degenerate_triangles", num_cells);
+=======
+  mint::FieldVariable<int>* intersect =
+    new mint::FieldVariable<int>("intersecting", num_cells);
+  mesh->getCellFieldData()->addField(intersect);
+  int* intersectptr = intersect->getIntPtr();
+  mint::FieldVariable<int>* dgn =
+    new mint::FieldVariable<int>("degenerate", num_cells);
+>>>>>>> 559588cfedbb589f5a8bdad558a7cd17f7baf713
   mesh->getCellFieldData()->addField(dgn);
-  int * dgnptr = dgn->getIntPtr();
+  int* dgnptr = dgn->getIntPtr();
 
+<<<<<<< HEAD
   // Initialize everything to 0
   for (int i = 0; i < num_cells; ++i) {
+=======
+  // Initialize everything to 0 (don't know if this is necessary)
+  for (int i = 0 ; i < num_cells ; ++i)
+  {
+>>>>>>> 559588cfedbb589f5a8bdad558a7cd17f7baf713
     intersectptr[i] = 0;
     dgnptr[i] = 0;
   }
 
   // Fill in intersect flag
-  for (size_t i = 0; i < c.size(); ++i) {
+  for (size_t i = 0 ; i < c.size() ; ++i)
+  {
     std::pair<int, int> theC = c[i];
     intersectptr[theC.first] += 1;
     intersectptr[theC.second] += 1;
   }
 
   // Fill in degenerate flag
-  for (size_t i = 0; i < d.size(); ++i) {
+  for (size_t i = 0 ; i < d.size() ; ++i)
+  {
     dgnptr[d[i]] = 1;
   }
 }
 
-bool writeAnnotatedMesh(mint::Mesh * surface_mesh,
+bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
                         const std::string & outfile)
 {
   return write_vtk(surface_mesh, outfile) == 0;
