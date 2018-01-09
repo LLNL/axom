@@ -3,14 +3,14 @@
 #
 # This is a generated file, edit at own risk.
 ##################################
-# bgqos_0-clang@4.0.0
+# bgqos_0-clang@4.0.0_xlf
 ##################################
 
 # cmake from uberenv
 # cmake executable path: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/cmake
 
 #######
-# using clang@4.0.0 compiler spec
+# using clang@4.0.0_xlf compiler spec
 #######
 
 # c compiler used by spack
@@ -20,26 +20,26 @@ set(CMAKE_C_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284
 set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++" CACHE PATH "")
 
 # fortran compiler used by spack
-# no fortran compiler
+set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(ENABLE_FORTRAN OFF CACHE BOOL "")
+set(CMAKE_Fortran_COMPILER "/opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_57_08/spack/opt/spack/bgqos_0/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_01_03_15_53_38/spack/opt/spack/bgqos_0/clang-4.0.0_xlf" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-y7l7rg3y7j7hxdsom3nwcpwwfq3tu75b" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-4e4odzhtauwbuqgh2rkwp3wnljdqrhri" CACHE PATH "")
 
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-lps3i452m3y4ebespcl7atv4bukml7xq" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-btfagam7ltrokw427usaquy2pufbd5fi" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-qtbnjv44avhlwb7l6zl3taypjzllki4w" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-ln22e3ngntx35dyjs3k2ndzyve5bmv5y" CACHE PATH "")
 
 # boost headers from uberenv
-set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-22q34tajrlunpnme5ezp72t4iwy2qpgz" CACHE PATH "")
+set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-wjsvbs3wcvxfn3v7kaoheeiv3dmdkyyb" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -59,25 +59,49 @@ set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-22q34tajrlunpnme5ezp72t4iwy2qpgz
 # end uberenv host-config
 ##################################
 
+##
+## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
+
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
 # Options added manually to 
-# lc bgq clang@4.0.0 host configs
+# lc bgq clang@4.0.0_xlf host configs
 ##############################################################################
 
 set(ENABLE_DOCS    OFF CACHE BOOL "")
-set(ENABLE_PYTHON  OFF CACHE BOOL "")
 
 set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
+
+# Converts C-style comments to Fortran style in preprocessed files
+set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
+
+# Manually set up HDF5 library dependencies for BGQ to bypass errors from CMake's FindHDF5
+set(HDF5_C_LIBRARY_m "-lm" CACHE STRING "")
+set(HDF5_C_LIBRARY_dl "-ldl" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################
 set(ENABLE_MPI      ON CACHE BOOL "")
-# Note: On BGQ, CMake uses wrong linker flags when using find MPI, This allows us use the wrapper directly via
-#   the CMake's compiler variables.
+
+# Note: On BGQ, CMake uses the wrong linker flags when using FindMPI.
+# Disabling FindMPI allows us to use the wrapper directly via the CMake compiler variables.
 set(ENABLE_FIND_MPI OFF CACHE BOOL "")
+
+# Pass in an explicit path to help find mpif.h
+set(MPI_Fortran_INCLUDE_PATH "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include" CACHE PATH "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
