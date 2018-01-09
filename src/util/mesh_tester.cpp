@@ -106,6 +106,9 @@ void saveProblemFlagsToMesh(mint::Mesh * surface_mesh,
                             const std::vector<int> & d);
 bool writeAnnotatedMesh(mint::Mesh * surface_mesh,
                         const std::string & outfile);
+bool writeCollisions(const std::vector< std::pair<int, int> > & c,
+                     const std::vector<int> & d,
+                     std::string basename);
 
 Input::Input(int argc, char** argv) :
   stlInput(""),
@@ -248,15 +251,15 @@ void saveProblemFlagsToMesh(mint::Mesh * mesh,
   const int num_cells = mesh->getMeshNumberOfCells();
 
   mint::FieldVariable<int> *intersect =
-    new mint::FieldVariable<int>("intersecting", num_cells);
+    new mint::FieldVariable<int>("nbr_intersection", num_cells);
   mesh->getCellFieldData()->addField(intersect);
   int * intersectptr = intersect->getIntPtr();
   mint::FieldVariable<int> *dgn =
-    new mint::FieldVariable<int>("degenerate", num_cells);
+    new mint::FieldVariable<int>("degenerate_triangles", num_cells);
   mesh->getCellFieldData()->addField(dgn);
   int * dgnptr = dgn->getIntPtr();
 
-  // Initialize everything to 0 (don't know if this is necessary)
+  // Initialize everything to 0
   for (int i = 0; i < num_cells; ++i) {
     intersectptr[i] = 0;
     dgnptr[i] = 0;
@@ -265,8 +268,8 @@ void saveProblemFlagsToMesh(mint::Mesh * mesh,
   // Fill in intersect flag
   for (size_t i = 0; i < c.size(); ++i) {
     std::pair<int, int> theC = c[i];
-    intersectptr[theC.first] = i + 1;
-    intersectptr[theC.second] = i + 1;
+    intersectptr[theC.first] += 1;
+    intersectptr[theC.second] += 1;
   }
 
   // Fill in degenerate flag
@@ -279,6 +282,33 @@ bool writeAnnotatedMesh(mint::Mesh * surface_mesh,
                         const std::string & outfile)
 {
   return write_vtk(surface_mesh, outfile) == 0;
+}
+
+bool writeCollisions(const std::vector< std::pair<int, int> > & c,
+                     const std::vector<int> & d,
+                     std::string basename)
+{
+  basename.append(".collisions.txt");
+
+  std::ofstream outf(basename.c_str());
+  if (!outf)
+  {
+    return false;
+  }
+
+  outf << c.size() << " intersecting triangle pairs:" << std::endl;
+  for (size_t i = 0 ; i < c.size() ; ++i)
+  {
+    outf << c[i].first << " " << c[i].second << std::endl;
+  }
+
+  outf << d.size() << " degenerate triangles:" << std::endl;
+  for (size_t i = 0 ; i < d.size() ; ++i)
+  {
+    outf << d[i] << std::endl;
+  }
+
+  return true;
 }
 
 
@@ -378,6 +408,12 @@ int main( int argc, char** argv )
   if (!writeAnnotatedMesh(surface_mesh, params.vtkOutput))
   {
     SLIC_ERROR("Couldn't write results to " << params.vtkOutput);
+  }
+
+  if (!writeCollisions(collisions, degenerate, params.stlInput))
+  {
+    SLIC_ERROR("Couldn't write results to " << params.stlInput << 
+               ".collisions.txt");
   }
 
   return retval;
