@@ -35,7 +35,7 @@ set(HDF5_C_LIBRARY_dl "-ldl" CACHE STRING "")
 ##############################################################################
 set(ENABLE_MPI      ON CACHE BOOL "")
 
-# Note: On BGQ, CMake uses the wrong linker flags when using find MPI,
+# Note: On BGQ, CMake uses the wrong linker flags when using FindMPI.
 # Disabling FindMPI allows us to use the wrapper directly via the CMake compiler variables.
 set(ENABLE_FIND_MPI OFF CACHE BOOL "")
 
