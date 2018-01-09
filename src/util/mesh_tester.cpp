@@ -13,8 +13,10 @@
 // Axom includes
 #include "axom_utils/FileUtilities.hpp"
 
+#include "mint/FieldVariable.hpp"
 #include "mint/Mesh.hpp"
 #include "mint/UniformMesh.hpp"
+#include "mint/vtk_utils.hpp" // for write_vtk
 
 #include "primal/BoundingBox.hpp"
 #include "primal/intersect.hpp"
@@ -57,12 +59,12 @@ enum InputStatus
 struct Input
 {
   std::string stlInput;
-  std::string textOutput;
+  std::string vtkOutput;
   int resolution;
   InputStatus errorCode;
 
   Input() : stlInput(""),
-    textOutput("meshTestResults.txt"),
+    vtkOutput(""),
     resolution(0),
     errorCode(SUCCESS)
   { };
@@ -74,7 +76,7 @@ struct Input
     std::cout
       << "Argument usage:" << std::endl <<
       "  --help           Show this help message." << std::endl <<
-      "  --resolution N   Resolution of uniform grid.  Default N = 10.  "
+      "  --resolution N   Resolution of uniform grid.  Default N = 0."
       << std::endl <<
       "       Set to 1 to run the naive algorithm, without the spatial index."
       << std::endl <<
@@ -84,7 +86,8 @@ struct Input
       << std::endl <<
       "  --infile fname   The STL input file (must be specified)."
       << std::endl      <<
-      "  --outfile fname  The text output file (defaults to meshTestResults.txt)."
+      "  --outfile fname  The VTK output file (defaults to the input file name"
+      << std::endl << "         with .vtk appended)."
       << std::endl << std::endl;
   };
 };
@@ -95,13 +98,18 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
   std::vector<int> & degenerate);
 bool canOpenFile(const std::string & fname);
-bool writeCollisions(const std::vector< std::pair<int, int> > & c,
-                     const std::vector<int> & d,
-                     const std::string & outfile);
+void announceMeshProblems(int triangleCount,
+                          int intersectPairCount,
+                          int degenerateCount);
+void saveProblemFlagsToMesh(mint::Mesh * surface_mesh,
+                            const std::vector< std::pair<int, int> > & c,
+                            const std::vector<int> & d);
+bool writeAnnotatedMesh(mint::Mesh * surface_mesh,
+                        const std::string & outfile);
 
 Input::Input(int argc, char** argv) :
   stlInput(""),
-  textOutput("meshTestResults.txt"),
+  vtkOutput(""),
   resolution(0),
   errorCode(SUCCESS)
 {
@@ -131,7 +139,7 @@ Input::Input(int argc, char** argv) :
       }
       else if (arg == "--outfile")
       {
-        textOutput = argv[++i];
+        vtkOutput = argv[++i];
       }
       ++i;
     }
@@ -143,12 +151,17 @@ Input::Input(int argc, char** argv) :
     return;
   }
 
+  if (vtkOutput.size() < 1) {
+    vtkOutput = stlInput;
+    vtkOutput.append(".vtk");
+  }
+
   SLIC_INFO ("Using parameter values: " << std::endl <<
              "  resolution = " << resolution <<
              (resolution < 1 ? " (use cube root of triangle count)" : "") <<
              std::endl <<
              "  infile = " << stlInput << std::endl <<
-             "  outfile = " << textOutput << std::endl);
+             "  outfile = " << vtkOutput << std::endl);
 }
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
@@ -218,29 +231,54 @@ bool canOpenFile(const std::string & fname)
   return teststream.good();
 }
 
-bool writeCollisions(const std::vector< std::pair<int, int> > & c,
-                     const std::vector<int> & d,
-                     const std::string & outfile)
+void announceMeshProblems(int triangleCount,
+                          int intersectPairCount,
+                          int degenerateCount)
 {
-  std::ofstream outf(outfile.c_str());
-  if (!outf)
-  {
-    return false;
+  std::cout << triangleCount << " triangles, with " << intersectPairCount <<
+    " intersecting tri pairs, " << degenerateCount << " degenerate tris." <<
+    std::endl;
+}
+
+void saveProblemFlagsToMesh(mint::Mesh * mesh,
+                            const std::vector< std::pair<int, int> > & c,
+                            const std::vector<int> & d)
+{
+  // Create new Field variables to hold degenerate and intersecting info
+  const int num_cells = mesh->getMeshNumberOfCells();
+
+  mint::FieldVariable<int> *intersect =
+    new mint::FieldVariable<int>("intersecting", num_cells);
+  mesh->getCellFieldData()->addField(intersect);
+  int * intersectptr = intersect->getIntPtr();
+  mint::FieldVariable<int> *dgn =
+    new mint::FieldVariable<int>("degenerate", num_cells);
+  mesh->getCellFieldData()->addField(dgn);
+  int * dgnptr = dgn->getIntPtr();
+
+  // Initialize everything to 0 (don't know if this is necessary)
+  for (int i = 0; i < num_cells; ++i) {
+    intersectptr[i] = 0;
+    dgnptr[i] = 0;
   }
 
-  outf << c.size() << " intersecting triangle pairs:" << std::endl;
-  for (size_t i = 0 ; i < c.size() ; ++i)
-  {
-    outf << c[i].first << " " << c[i].second << std::endl;
+  // Fill in intersect flag
+  for (size_t i = 0; i < c.size(); ++i) {
+    std::pair<int, int> theC = c[i];
+    intersectptr[theC.first] = i + 1;
+    intersectptr[theC.second] = i + 1;
   }
 
-  outf << d.size() << " degenerate triangles:" << std::endl;
-  for (size_t i = 0 ; i < d.size() ; ++i)
-  {
-    outf << d[i] << std::endl;
+  // Fill in degenerate flag
+  for (size_t i = 0; i < d.size(); ++i) {
+    dgnptr[d[i]] = 1;
   }
+}
 
-  return true;
+bool writeAnnotatedMesh(mint::Mesh * surface_mesh,
+                        const std::string & outfile)
+{
+  return write_vtk(surface_mesh, outfile) == 0;
 }
 
 
@@ -331,9 +369,15 @@ int main( int argc, char** argv )
                                     degenerate,
                                     params.resolution);
   }
-  if (!writeCollisions(collisions, degenerate, params.textOutput))
+
+  announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
+                       collisions.size(), degenerate.size());
+
+  saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
+
+  if (!writeAnnotatedMesh(surface_mesh, params.vtkOutput))
   {
-    SLIC_ERROR("Couldn't write results to " << params.textOutput);
+    SLIC_ERROR("Couldn't write results to " << params.vtkOutput);
   }
 
   return retval;
