@@ -251,32 +251,18 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
   // Create new Field variables to hold degenerate and intersecting info
   const int num_cells = mesh->getMeshNumberOfCells();
 
-<<<<<<< HEAD
-  mint::FieldVariable<int> *intersect =
-    new mint::FieldVariable<int>("nbr_intersection", num_cells);
-  mesh->getCellFieldData()->addField(intersect);
-  int * intersectptr = intersect->getIntPtr();
-  mint::FieldVariable<int> *dgn =
-    new mint::FieldVariable<int>("degenerate_triangles", num_cells);
-=======
   mint::FieldVariable<int>* intersect =
-    new mint::FieldVariable<int>("intersecting", num_cells);
+    new mint::FieldVariable<int>("nbr_intersection", num_cells);
   mesh->getCellFieldData()->addField(intersect);
   int* intersectptr = intersect->getIntPtr();
   mint::FieldVariable<int>* dgn =
-    new mint::FieldVariable<int>("degenerate", num_cells);
->>>>>>> 559588cfedbb589f5a8bdad558a7cd17f7baf713
+    new mint::FieldVariable<int>("degenerate_triangles", num_cells);
   mesh->getCellFieldData()->addField(dgn);
   int* dgnptr = dgn->getIntPtr();
 
-<<<<<<< HEAD
   // Initialize everything to 0
-  for (int i = 0; i < num_cells; ++i) {
-=======
-  // Initialize everything to 0 (don't know if this is necessary)
   for (int i = 0 ; i < num_cells ; ++i)
   {
->>>>>>> 559588cfedbb589f5a8bdad558a7cd17f7baf713
     intersectptr[i] = 0;
     dgnptr[i] = 0;
   }
