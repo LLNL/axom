@@ -421,6 +421,25 @@ void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
+  // Read in the mesh
+  quest::PSTLReader* reader = new quest::PSTLReader( comm );
+  reader->setFileName( fileName );
+  reader->read();
+
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+
+  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  delete reader;
+
+  initialize(comm, surface_mesh, requiresDistance, ndims, maxElements,
+             maxLevels);
+}
+
+void initialize( MPI_Comm comm, mint::Mesh* input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels )
+{
   SLIC_ASSERT( !accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
 
@@ -433,8 +452,29 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 
   accelerator3D.setupQuestLogger(comm);
 
+  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
+
+  // Initialize the appropriate acceleration structure
+  if(requiresDistance)
+  {
+    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
+                                           maxLevels);
+  }
+  else
+  {
+    accelerator3D.initializeContainmentTree(input_mesh);
+  }
+
+  accelerator3D.teardownQuestLogger();
+}
+#else
+//------------------------------------------------------------------------------
+void initialize( const std::string& fileName,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels )
+{
   // Read in the mesh
-  quest::PSTLReader* reader = new quest::PSTLReader( comm );
+  quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( fileName );
   reader->read();
 
@@ -444,22 +484,10 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
 
-  // Initialize the appropriate acceleration structure
-  if(requiresDistance)
-  {
-    accelerator3D.initializeSignedDistance(surface_mesh, maxElements,
-                                           maxLevels);
-  }
-  else
-  {
-    accelerator3D.initializeContainmentTree(surface_mesh);
-  }
-
-  accelerator3D.teardownQuestLogger();
+  initialize(surface_mesh, requiresDistance, ndims, maxElements, maxLevels);
 }
-#else
-//------------------------------------------------------------------------------
-void initialize( const std::string& fileName,
+
+void initialize( mint::Mesh* input_mesh,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
@@ -474,26 +502,15 @@ void initialize( const std::string& fileName,
 
   accelerator3D.setupQuestLogger();
 
-  // Read in the mesh
-  quest::STLReader* reader = new quest::STLReader();
-  reader->setFileName( fileName );
-  reader->read();
-
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
-
-  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
-  delete reader;
-
   // Initialize the appropriate acceleration structure
   if(requiresDistance)
   {
-    accelerator3D.initializeSignedDistance(surface_mesh, maxElements,
+    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
                                            maxLevels );
   }
   else
   {
-    accelerator3D.initializeContainmentTree(surface_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh);
   }
 
   accelerator3D.teardownQuestLogger();

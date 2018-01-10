@@ -22,6 +22,7 @@
 #include <string>
 
 #include "axom/config.hpp"
+#include "mint/Mesh.hpp"
 
 #ifdef AXOM_USE_MPI
 #include "mpi.h"
@@ -49,8 +50,14 @@ namespace quest
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
+void initialize( MPI_Comm comm, mint::Mesh* input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels );
 #else
 void initialize( const std::string& fileName,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels );
+void initialize( mint::Mesh* input_mesh,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
 #endif
