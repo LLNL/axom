@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##
-## Copyright (c) 2017-2018-2018-2018, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
@@ -16,8 +16,8 @@
 
 #=============================================================================
 # Change the copyright date in all files that have the date.
-# Just edit the 'grep' and 'sed' commands below to set what to search for
-# and how to replace it.
+# Just edit the 'sed' command below to change the dates to search for
+# and what to replace them with.
 #=============================================================================
 #
 # These are the commands you can use to replace the copyright date
@@ -40,7 +40,7 @@ for i in `cat files2change`
 do
     echo $i
     cp $i $i.sed.bak
-    sed "s/Copyright (c) 2017-2018/Copyright (c) 2017-2018/" $i.sed.bak > $i
+    sed "s/Copyright (c) 2017-2018/Copyright (c) 2017-2019/" $i.sed.bak > $i
 done
 
 #=============================================================================
