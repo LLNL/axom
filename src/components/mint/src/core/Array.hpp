@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -38,8 +38,64 @@ namespace mint
 
 /*!
  * \class Array
- * \brief Provides an array with dynamic reallocation and insertion.
+ *
+ * \brief Provides a generic multi-component array container.
+ *
+ *  The Array class provides a generic multi-component array container with
+ *  dynamic re-allocation and insertion. Each element in the array is a tuple
+ *  consisting of 1 or more components, which are stored contiguously.
+ *
+ *  Depending on which constructor is used, the Array object can have three
+ *  different underlying storage types:
+ *
+ *  * <b> Native Storage </b> <br />
+ *
+ *     When using native storage, the Array object manages all memory.
+ *     Typically, the Array object will allocate extra space to facilitate
+ *     the insertion of new elements and minimize the number of reallocations.
+ *     At any given instance, the actual capacity of the array (i.e., total
+ *     number of tuples that the Array can hold) can be queried by calling the
+ *     capacity() function. When all extra memory is exhausted, inserting a
+ *     new element triggers a re-allocation. Each time a re-allocation occurs
+ *     extra space is allocated according to the <em> resize_ratio </em>
+ *     parameter, which is set to 2.0 by default. To return all extra memory,
+ *     an application can call shrink().
+ *
+ *     \note Once the Array goes out-of-scope, all memory associated with it
+ *      is de-allocated and returned to the system.
+ *
+ *  * <b> External Storage </b> <br />
+ *
+ *    An Array object may be constructed from an external, user-supplied buffer
+ *    consisting of the given number of tuples and specified number of
+ *    components per tuple. In this case, the Array object does not own the
+ *    memory. Instead, the Array object makes a shallow copy of the pointer.
+ *
+ *    \warning An Array object that points to an external buffer has a fixed
+ *     size and cannot be dynamically resized.
+ *
+ *    \note When the Array object is deleted, it does not de-allocate the
+ *     user-supplied buffer, since it does not manage any memory.
+ *
+ *  * <b> Sidre </b> <br />
+ *
+ *    An Array object may also be constructed from a sidre::View. From the
+ *    application's perspective, other than the fact that a different
+ *    constructor is used, all array operations can be performed transparently.
+ *    The size of the Array can grow as needed, but instead all memory
+ *    management is delegated to Sidre.
+ *
+ *    \note When the Array object is deleted, it does not delete the associated
+ *     data in Sidre, since, Sidre owns the data.
+ *
+ * \warning Reallocations tend to be costly operations in terms of performance.
+ *  Use `reserve()` when the number of nodes is known a priori, or opt to
+ *  use a constructor that takes an actual size and capacity when possible.
+ *
  * \tparam T the type of the values to hold.
+ *
+ * \see sidre::Group
+ * \see sidre::View
  */
 template< typename T >
 class Array
@@ -49,7 +105,7 @@ private:
 
 public:
 
-/// \name Array constructors for use without sidre.
+/// \name Native Storage Array Constructors
 /// @{
 
   /*!
@@ -79,6 +135,11 @@ public:
   Array( IndexType num_tuples, IndexType num_components,
          IndexType capacity=-1 );
 
+/// @}
+
+/// \name External Storage Array Constructors
+/// @{
+
   /*!
    * \brief Constructs an Array instance with the given number of tuples from
    *  an external data buffer.
@@ -102,7 +163,7 @@ public:
 
 /// @}
 
-/// \name Array constructors for use with sidre.
+/// \name Sidre Array constructors
 /// @{
 
 #ifdef MINT_USE_SIDRE
@@ -174,11 +235,12 @@ public:
 /// @}
 
   /*!
-   * Destructor. Free's the associated buffer unless it's owned by sidre.
+   * Destructor. Free's the associated buffer unless the memory is external
+   * or owned by Sidre.
    */
   ~Array();
 
-/// \name Array methods to access the data.
+/// \name Array tuple access operators
 /// @{
 
   /*!
