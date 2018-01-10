@@ -69,7 +69,7 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-fzqkqkibdpcwdmivwurcoa2w3pud4t4w/usr/bin
 ##################################
 
 ##
-## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
