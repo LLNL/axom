@@ -421,6 +421,8 @@ void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
+  SLIC_ASSERT( comm != MPI_COMM_NULL );
+
   // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );
   reader->setFileName( fileName );
@@ -448,7 +450,10 @@ void initialize( MPI_Comm comm, mint::Mesh* input_mesh,
 
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
-                  "Quest currently only supports 3D triangle meshes.");
+                  "Quest currently only supports 3D (not 2D) triangle meshes.");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+                  "Quest currently only supports 3D triangle meshes "
+                  "(not any other kind of cell).");
 
   accelerator3D.setupQuestLogger(comm);
 
@@ -498,9 +503,14 @@ void initialize( mint::Mesh* input_mesh,
 
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
-                  "Quest currently only supports 3D triangle meshes.");
+                  "Quest currently only supports 3D (not 2D) triangle meshes.");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+                  "Quest currently only supports 3D triangle meshes "
+                  "(not any other kind of cell).");
 
   accelerator3D.setupQuestLogger();
+
+  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
 
   // Initialize the appropriate acceleration structure
   if(requiresDistance)
