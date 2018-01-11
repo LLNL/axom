@@ -8,6 +8,10 @@
 
 #include "fmt/format.h"
 
+#ifdef AXOM_USE_MPI
+  #include <mpi.h>
+#endif
+
 // Google test include
 #include "gtest/gtest.h"
 
@@ -56,5 +60,23 @@ TEST( quest_interface, pointer_initialize )
   EXPECT_FALSE(axom::quest::inside(4, 4, -7));
 
   axom::quest::finalize();
+
+}
+
+int main( int argc, char** argv )
+{
+#ifdef AXOM_USE_MPI
+  // Initialize MPI
+  MPI_Init( &argc, &argv );
+#endif
+  ::testing::InitGoogleTest(&argc, argv);
+
+  int result = RUN_ALL_TESTS();
+
+#ifdef AXOM_USE_MPI
+  MPI_Finalize();
+#endif
+
+  return result;
 }
 
