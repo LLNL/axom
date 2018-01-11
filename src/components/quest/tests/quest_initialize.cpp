@@ -45,7 +45,11 @@ TEST( quest_interface, pointer_initialize )
 
   SLIC_INFO(fmt::format("Initializing InOutOctree over triangle mesh ..."));
 
+#ifdef AXOM_USE_MPI
+  axom::quest::initialize(MPI_COMM_WORLD, createTriangleMesh(), false, 3, IGNORE, IGNORE);
+#else
   axom::quest::initialize(createTriangleMesh(), false, 3, IGNORE, IGNORE);
+#endif
 
   EXPECT_TRUE(axom::quest::inside(3, 2, 0));
   EXPECT_TRUE(axom::quest::inside(-1, 2, -1));
