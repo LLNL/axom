@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##
-## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
@@ -16,8 +16,8 @@
 
 #=============================================================================
 # Change the copyright date in all files that have the date.
-# Just edit the 'grep' and 'sed' commands below to set what to search for
-# and how to replace it.
+# Just edit the 'sed' command below to change the dates to search for
+# and what to replace them with.
 #=============================================================================
 #
 # These are the commands you can use to replace the copyright date
@@ -31,20 +31,20 @@
 #=============================================================================
 # First find all the files with old copyright dates
 #=============================================================================
-find . -type f ! -name \*.git\* | grep -v 'cmake/thirdparty' -exec grep -l "Copyright (c) 2017" {} \; > files
+find . -type f ! -name \*.git\* -exec grep -l "This file is part of Axom" {} \; > files2change
 
 #=============================================================================
 # Replace the old copyright dates with new dates
 #=============================================================================
-for i in `cat files`
+for i in `cat files2change`
 do
     echo $i
     cp $i $i.sed.bak
-    sed "s/2017/2017-2018/" $i.sed.bak > $i
+    sed "s/Copyright (c) 2017-2018/Copyright (c) 2017-2019/" $i.sed.bak > $i
 done
 
 #=============================================================================
 # Remove the temporary files
 #=============================================================================
 find . -name \*.sed.bak -exec rm {} \;
-rm files
+rm files2change

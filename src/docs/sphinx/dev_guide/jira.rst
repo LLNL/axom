@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory.
 .. ##
@@ -52,13 +52,6 @@ The Axom sprint cycles align with the quarters of the LLNL fiscal year:
 * Q3: April 1 -- June 30
 * Q4: July 1 -- September 30
 
-A few weeks before the start of one of these cycles, the team begins to 
-discuss and prioritize the contents of our JIRA issue backlog. Those issues 
-we target for the upcoming sprint cycle are moved into a corresponding
-*version*. Here, *version* refers to the JIRA feature that allows a team to
-create a collection of issues and track progress on them. Typically, we create
-a named version, such as "Due 6/30/2017", for each quarterly sprint.
-
 At the end of one sprint cycle and before starting the next one, we 
 decide which issues that were not completed to move to the next cycle. 
 Hopefully, there are not many and typically we will propagate all 
@@ -66,7 +59,8 @@ such unresolved issues to the next sprint cycle. Before we start the next
 cycle, we meet as a team to make sure all issues in the associated version 
 are assigned and that everyone is comfortable with their assignments.
 
-To start a new sprint cycle, we create a new *sprint board* in JIRA and move
+To start a new sprint cycle, we create a new *sprint board* in JIRA 
+(typically named for the sprint end date; e.g., Due 3/31/2018) and move
 all issues in the upcoming version to it. We configure the board so that issues
 are sorted into horizontal "swimlanes" one for each developer. There are 
 three vertical columns on the sprint board that intersect the swimlanes to
@@ -77,6 +71,8 @@ Note that as development occurs during a sprint, work will be reviewed and
 merged from feature branches to the develop branch using pull requests. 
 Reviewing work in smaller increments is much easier than reviewing everything 
 at once. 
+
+Developers must close issues in JIRA when they are complete.
 
 Depending on the need to make changes available to users, we may 
 merge the develop branch into the master branch and tag new release numbers
