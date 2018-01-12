@@ -37,6 +37,7 @@ TEST( quest_interface, pointer_initialize )
   EXPECT_FALSE(axom::quest::inside(4, 4, -7));
 
   axom::quest::finalize();
+  delete input_mesh;
 
 }
 

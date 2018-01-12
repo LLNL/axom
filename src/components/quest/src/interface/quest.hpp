@@ -43,6 +43,8 @@ namespace quest
  * \param [in] ndims the surface's spatial dimension
  * \param [in] maxElements max elements per bucket.
  * \param [in] maxLevel max levels of subdivision.
+ * \param [in] deleteMesh if true, finalize() will delete the mesh;
+ *       if false, the user is responsible for deleting the mesh
  * \note If requiresDistance is true, we will build a structure that supports
  *       signed distance queries in addition to containment queries.
  *       Otherwise, we build a structure that only supports containment queries.
@@ -51,16 +53,16 @@ namespace quest
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
-void initialize( MPI_Comm comm, mint::Mesh* input_mesh,
+void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
                  bool requiresDistance, int ndims, int maxElements,
-                 int maxLevels );
+                 int maxLevels, bool deleteMesh = false );
 #else
 void initialize( const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
-void initialize( mint::Mesh* input_mesh,
+void initialize( mint::Mesh*& input_mesh,
                  bool requiresDistance, int ndims, int maxElements,
-                 int maxLevels );
+                 int maxLevels, bool deleteMesh = false );
 #endif
 
 /*!

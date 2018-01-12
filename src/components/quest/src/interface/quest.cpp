@@ -79,18 +79,20 @@ struct QuestAccelerator
     m_containmentTree(AXOM_NULLPTR),
     m_queryMode(QUERY_MODE_NONE),
     m_originalLoggerName(""),
-    m_shouldFinalizeSlic(false)
+    m_shouldFinalizeSlic(false),
+    m_shouldDeleteMesh(true)
   {}
 
   /*!
    * \brief Sets the internal mesh pointer and computes some surface
    *  properties (bounding box and center of mass)
    */
-  void setMesh( axom::mint::Mesh* surface_mesh)
+  void setMesh( axom::mint::Mesh*& surface_mesh, bool deleteMesh )
   {
     SLIC_ASSERT( surface_mesh != AXOM_NULLPTR);
 
     m_surface_mesh = surface_mesh;
+    m_shouldDeleteMesh = deleteMesh;
 
     // Compute the mesh's bounding box and center of mass
     m_meshBoundingBox.clear();
@@ -115,14 +117,16 @@ struct QuestAccelerator
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
    */
-  void initializeContainmentTree( axom::mint::Mesh* surface_mesh)
+  void initializeContainmentTree( axom::mint::Mesh*& surface_mesh,
+                                  bool deleteMesh )
   {
     SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
-    setMesh(surface_mesh);
+    setMesh(surface_mesh, deleteMesh);
     m_containmentTree =
       new InOutOctree<DIM>( m_meshBoundingBox, m_surface_mesh );
     m_containmentTree->generateIndex();
+    surface_mesh = m_surface_mesh;
     m_queryMode = QUERY_MODE_CONTAINMENT;
   }
 
@@ -131,15 +135,17 @@ struct QuestAccelerator
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
    */
-  void initializeSignedDistance( axom::mint::Mesh* surface_mesh,
+  void initializeSignedDistance( axom::mint::Mesh*& surface_mesh,
                                  int maxElements,
-                                 int maxLevels )
+                                 int maxLevels,
+                                 bool deleteMesh )
   {
     SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
-    setMesh(surface_mesh);
+    setMesh(surface_mesh, deleteMesh);
     m_region =
       new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
+    surface_mesh = m_surface_mesh;
     m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
   }
 
@@ -161,7 +167,7 @@ struct QuestAccelerator
     }
     m_queryMode = QUERY_MODE_NONE;
 
-    if ( m_surface_mesh != AXOM_NULLPTR )
+    if ( m_shouldDeleteMesh && m_surface_mesh != AXOM_NULLPTR )
     {
 
       delete m_surface_mesh;
@@ -403,6 +409,7 @@ private:
 
   std::string m_originalLoggerName;
   bool m_shouldFinalizeSlic;
+  bool m_shouldDeleteMesh;
 };
 
 /*!
@@ -435,12 +442,12 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   delete reader;
 
   initialize(comm, surface_mesh, requiresDistance, ndims, maxElements,
-             maxLevels);
+             maxLevels, true);
 }
 
-void initialize( MPI_Comm comm, mint::Mesh* input_mesh,
+void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
                  bool requiresDistance, int ndims, int maxElements,
-                 int maxLevels )
+                 int maxLevels, bool deleteMesh )
 {
   SLIC_ASSERT( !accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
@@ -463,11 +470,11 @@ void initialize( MPI_Comm comm, mint::Mesh* input_mesh,
   if(requiresDistance)
   {
     accelerator3D.initializeSignedDistance(input_mesh, maxElements,
-                                           maxLevels);
+                                           maxLevels, deleteMesh);
   }
   else
   {
-    accelerator3D.initializeContainmentTree(input_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   }
 
   accelerator3D.teardownQuestLogger();
@@ -489,12 +496,13 @@ void initialize( const std::string& fileName,
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
 
-  initialize(surface_mesh, requiresDistance, ndims, maxElements, maxLevels);
+  initialize(surface_mesh, requiresDistance, ndims, maxElements,
+             maxLevels, true);
 }
 
-void initialize( mint::Mesh* input_mesh,
+void initialize( mint::Mesh*& input_mesh,
                  bool requiresDistance, int ndims, int maxElements,
-                 int maxLevels )
+                 int maxLevels, bool deleteMesh )
 {
   SLIC_ASSERT( !accelerator3D.isInitialized() );
 
@@ -516,11 +524,11 @@ void initialize( mint::Mesh* input_mesh,
   if(requiresDistance)
   {
     accelerator3D.initializeSignedDistance(input_mesh, maxElements,
-                                           maxLevels );
+                                           maxLevels, deleteMesh );
   }
   else
   {
-    accelerator3D.initializeContainmentTree(input_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   }
 
   accelerator3D.teardownQuestLogger();
