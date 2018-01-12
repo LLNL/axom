@@ -29,6 +29,7 @@
 #endif
 
 // C/C++ includes
+#include <algorithm>                    /* for std::fill_n */
 
 namespace axom
 {
@@ -70,14 +71,9 @@ void check_equality( const Array< T >& lhs, const Array< T >& rhs )
   EXPECT_EQ( lhs.numComponents(), rhs.numComponents() );
   EXPECT_EQ( lhs.capacity(), rhs.capacity() );
 
-  IndexType num_values = lhs.size() * lhs.numComponents();
   const T* lhs_data = lhs.getData();
   const T* rhs_data = rhs.getData();
-
-  for ( IndexType i = 0 ; i < num_values ; ++i )
-  {
-    EXPECT_EQ( lhs_data[ i ], rhs_data[ i ] );
-  }
+  EXPECT_EQ( lhs_data, rhs_data );
 }
 
 /*!
@@ -584,7 +580,7 @@ TEST( mint_array, checkResize )
 
   for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
     {
       for ( int num_components = 1 ; num_components <= 4 ; num_components++ )
       {
@@ -690,27 +686,112 @@ TEST( mint_array, checkSidre )
 }
 
 //------------------------------------------------------------------------------
+TEST( mint_array, checkSidrePermanence)
+{
+#ifdef MINT_USE_SIDRE
+  constexpr double MAGIC_NUM = 5683578.8;
+
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
+  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  {
+    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    {
+      for ( int num_components = 1 ; num_components <= 4 ; num_components++ )
+      {
+        const double * array_data_ptr;
+        IndexType num_values;
+        { /* Begin scope */
+          Array< double > v( root->createView("double"), 0, num_components,
+                                    capacity );
+          array_data_ptr = v.getData();
+          num_values = v.size() * v.numComponents();
+          v.setResizeRatio( ratio );
+          internal::check_storage( v );
+
+          /* Set v's data to MAGIC_NUM */
+          for ( IndexType i = 0; i < v.size(); ++i )
+          {
+            for ( IndexType j = 0; j < v.numComponents(); ++j ) 
+            {
+              v( i, j ) = MAGIC_NUM;
+            }
+          }
+        } /* End scope, v has been deallocated. */
+
+        /* Check that the data still exists in sidre */
+        sidre::View * view = root->getView( "double" );
+        const double * view_data_ptr = static_cast< const double * >( 
+                                                           view->getVoidPtr() );
+        EXPECT_EQ( view_data_ptr, array_data_ptr );
+        EXPECT_EQ( view->getNumDimensions(), 2 );
+
+        sidre::SidreLength dims[2];
+        view->getShape( 2, dims );
+        EXPECT_EQ( dims[0], capacity );
+        EXPECT_EQ( dims[1], num_components );
+
+        for ( IndexType i = 0; i < num_values; ++i ) {
+          EXPECT_DOUBLE_EQ( view_data_ptr[ i ], MAGIC_NUM );
+        }
+
+        root->destroyViewsAndData();
+      }
+    }
+  }
+
+#else
+  EXPECT_TRUE( true );
+#endif
+}
+
+//------------------------------------------------------------------------------
 TEST( mint_array_DeathTest, checkExternal )
 {
-  const int MAX_SIZE = 1024;
-  const int MAX_COMPONENTS = 4;
+  constexpr double MAGIC_NUM = 5683578.8;
+  constexpr int MAX_SIZE = 1024;
+  constexpr int MAX_COMPONENTS = 4;
+  constexpr int MAX_VALUES = MAX_SIZE * MAX_COMPONENTS;
   union DataBuffer
   {
     int ints[ MAX_SIZE * MAX_COMPONENTS];
     double doubles[ MAX_SIZE * MAX_COMPONENTS];
   };
 
+
   DataBuffer buffer;
+  std::fill_n( buffer.doubles, MAX_VALUES, MAGIC_NUM );
+
   for ( IndexType size = 2 ; size <= MAX_SIZE ; size *= 2 )
   {
     for ( int n_comp = 1 ; n_comp <= MAX_COMPONENTS ; n_comp++ )
     {
-      Array< int > v_int( buffer.ints, size, n_comp );
-      internal::check_external( v_int );
 
+      Array< int > v_int( buffer.ints, size, n_comp );
+      EXPECT_EQ( v_int.getData(), buffer.ints );
+      internal::check_external( v_int );
+  
       Array< double > v_double( buffer.doubles, size, n_comp );
+      EXPECT_EQ( v_double.getData(), buffer.doubles );
       internal::check_external( v_double );
+
+      /* Set v_doubles's data to MAGIC_NUM */
+      for ( IndexType i = 0; i < v_double.size(); ++i )
+      {
+        for ( IndexType j = 0; j < v_double.numComponents(); ++j ) 
+        {
+          v_double( i, j ) = MAGIC_NUM;
+        }
+      }
     }
+
+    /* Check that the data still exists in the buffer */
+    for ( IndexType i = 0; i < MAX_VALUES; ++i )
+    {
+      EXPECT_DOUBLE_EQ( buffer.doubles[ i ], MAGIC_NUM );
+    }
+
   }
 }
 
