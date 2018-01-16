@@ -100,7 +100,7 @@ namespace mint
 template< typename T >
 class Array
 {
-private:
+public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
 
 public:
