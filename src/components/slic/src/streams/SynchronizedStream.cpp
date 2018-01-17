@@ -132,8 +132,6 @@ void SynchronizedStream::flush()
   const int prevrank = rank-1;
   const int nextrank = rank+1;
 
-  MPI_Request null_request = MPI_REQUEST_NULL;
-
   if ( rank > 0 )
   {
     // wait for signal from previous rank
@@ -147,6 +145,7 @@ void SynchronizedStream::flush()
   // signal next rank
   if( nranks > 1 && nextrank < nranks )
   {
+    MPI_Request null_request = MPI_REQUEST_NULL;
     MPI_Isend(AXOM_NULLPTR,0,MPI_INT,nextrank,0,m_comm,&null_request);
     MPI_Request_free(&null_request);
   }
