@@ -661,9 +661,10 @@ template< typename T >
 inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 {
   SLIC_ASSERT( pos >= 0 );
-  SLIC_ASSERT( pos + n <= m_num_tuples );
-  T* set_position = m_data + pos * m_num_tuples;
-  IndexType byte_size = n * m_num_tuples * sizeof(T);
+  SLIC_ASSERT( pos + n <= m_num_tuples*m_num_components );
+
+  T* set_position = &m_data[ pos*m_num_components ];
+  IndexType byte_size = n * m_num_components * sizeof(T);
   std::memcpy( set_position, tuples, byte_size );
 }
 
