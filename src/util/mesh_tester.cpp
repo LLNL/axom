@@ -268,7 +268,8 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
   }
 
   // Fill in intersect flag
-  for (size_t i = 0 ; i < c.size() ; ++i)
+  size_t csize = c.size();
+  for (size_t i = 0 ; i < csize ; ++i)
   {
     std::pair<int, int> theC = c[i];
     intersectptr[theC.first] += 1;
@@ -276,7 +277,8 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
   }
 
   // Fill in degenerate flag
-  for (size_t i = 0 ; i < d.size() ; ++i)
+  size_t dsize = d.size();
+  for (size_t i = 0 ; i < dsize ; ++i)
   {
     dgnptr[d[i]] = 1;
   }
