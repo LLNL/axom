@@ -31,7 +31,10 @@
 // namespace aliases
 namespace mint      = axom::mint;
 namespace utilities = axom::utilities;
+
+#ifdef MINT_USE_SIDRE
 namespace sidre     = axom::sidre;
+#endif
 
 // constants used in tests
 constexpr mint::IndexType DEFAULT_CAPACITY    = 100;

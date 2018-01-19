@@ -50,7 +50,7 @@ using axom::slic::UnitTestLogger;
 
 #include "fmt/format.h"
 
-#include <sstream>
+#include <fstream>
 #include <vector>
 #include <cmath>    // for pow
 #include <cstdlib>  // for srand
@@ -1290,16 +1290,16 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   axom::mint::CurvilinearMesh cmesh(2, ext);
 
   {
-    axom::primal::Point<int,3> ext_size;
+    axom::primal::Point<axom::mint::IndexType,3> ext_size;
     cmesh.getExtentSize( ext_size.data() );
     SLIC_INFO( "Extents of curvilinear mesh: " << ext_size    );
   }
 
   // Set the positions of the nodes of the diagnostic mesh
   const double denom = res;
-  for(int i=0 ; i <= res ; ++i)
+  for(axom::mint::IndexType i=0 ; i <= res ; ++i)
   {
-    for(int j=0 ; j<= res ; ++j)
+    for(axom::mint::IndexType j=0 ; j<= res ; ++j)
     {
       SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
       SpacePt spacePt;

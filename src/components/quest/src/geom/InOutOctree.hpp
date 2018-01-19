@@ -351,8 +351,8 @@ class DynamicGrayBlockData
 public:
   enum { NO_VERTEX = -1 };
 
-  typedef int VertexIndex;
-  typedef int TriangleIndex;
+  typedef mint::IndexType VertexIndex;
+  typedef mint::IndexType TriangleIndex;
 
   typedef std::vector<TriangleIndex> TriangleList;
 
@@ -365,8 +365,7 @@ public:
   /**
    * \brief Constructor for an InOutLeafData
    *
-   * \param vInd The index of a vertex (optional; default is to not set a
-   * vertex)
+   * \param vInd The index of a vertex (optional; default is to not set a vertex)
    */
   DynamicGrayBlockData(VertexIndex vInd, bool isLeaf)
     : m_vertIndex(vInd), m_isLeaf(isLeaf) {}
@@ -571,10 +570,9 @@ private:
   class MeshWrapper
   {
 public:
-    typedef axom::mint::localIndex VertexIndex;
-    typedef axom::mint::localIndex TriangleIndex;
-    typedef axom::mint::Mesh SurfaceMesh;
-    
+    typedef mint::IndexType VertexIndex;
+    typedef mint::IndexType TriangleIndex;
+    typedef mint::Mesh SurfaceMesh;
 
     /** \brief A vertex index to indicate that there is no associated vertex */
     static const VertexIndex NO_VERTEX = -1;
@@ -903,7 +901,7 @@ public:
         m_surfaceMesh = AXOM_NULLPTR;
       }
 
-      typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+      typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
       TriangleMesh * triMesh =
           new TriangleMesh(3, m_vertexSet.size(), m_elementSet.size() );
 
@@ -2339,7 +2337,7 @@ public:
   typedef axom::slam::Map<int> LeafIntMap;
   typedef axom::slam::Map<GridPt> LeafGridPtMap;
 
-  typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+  typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
 
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
@@ -2790,7 +2788,7 @@ private:
   {
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
-    axom::mint::IndexType vStart = mesh->getMeshNumberOfNodes();
+    mint::IndexType vStart = mesh->getMeshNumberOfNodes();
     mesh->addNode( triPos[0][0], triPos[0][1], triPos[0][2]);
     mesh->addNode( triPos[1][0], triPos[1][1], triPos[1][2]);
     mesh->addNode( triPos[2][0], triPos[2][1], triPos[2][2]);
@@ -2820,7 +2818,7 @@ private:
   {
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
 
-    axom::mint::IndexType vStart = mesh->getMeshNumberOfNodes();
+    mint::IndexType vStart = mesh->getMeshNumberOfNodes();
 
     mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
                   blockBB.getMin()[2]);
@@ -2840,7 +2838,7 @@ private:
     mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1],
                   blockBB.getMax()[2]);
 
-    axom::mint::IndexType data[8];
+    mint::IndexType data[8];
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
@@ -2965,9 +2963,9 @@ public:
     SLIC_DEBUG(
       "--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
 
-    const axom::mint::IndexType numTriangles =
+    const mint::IndexType numTriangles =
       m_octree.m_meshWrapper.numMeshElements();
-    for(axom::mint::IndexType tIdx=0 ; tIdx< numTriangles ; ++tIdx)
+    for(mint::IndexType tIdx=0 ; tIdx< numTriangles ; ++tIdx)
     {
       TriVertIndices tvRel =
         m_octree.m_meshWrapper.triangleVertexIndices( tIdx );

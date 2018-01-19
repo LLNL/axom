@@ -102,6 +102,7 @@ class Array
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
+  static constexpr IndexType USE_DEFAULT = -1;
 
 public:
 
@@ -133,7 +134,7 @@ public:
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   Array( IndexType num_tuples, IndexType num_components,
-         IndexType capacity=-1 );
+         IndexType capacity=USE_DEFAULT );
 
 /// @}
 
@@ -193,7 +194,7 @@ public:
    * \post numComponents() == view->getDimension(1)
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( sidre::View* view, IndexType num_tuples=-1 );
+  Array( sidre::View* view, IndexType num_tuples=USE_DEFAULT );
 
   /*!
    * \brief Creates an Array instance of `num_tuples` size, where each
@@ -228,7 +229,7 @@ public:
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   Array( sidre::View* view, IndexType num_tuples, IndexType num_components,
-         IndexType capacity=-1 );
+         IndexType capacity=USE_DEFAULT );
 
 #endif
 
@@ -279,6 +280,13 @@ public:
 
 /// \name Array methods to modify the data.
 /// @{
+
+  /*!
+   * \brief Set all the values of the array.
+   * \param [in] value the value to set to.
+   */
+  inline void fill( const T& value )
+  { std::fill_n( m_data, m_num_tuples * m_num_components, value ); }
 
   /*!
    * \brief Append a value to the end of the array.
@@ -487,7 +495,7 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
                  "cannot be greater than the specified capacity " <<
                  "(" << capacity << ")." );
 
-  if ( capacity == -1 )
+  if ( capacity == USE_DEFAULT )
   {
     setCapacity( m_num_tuples * m_resize_ratio );
   }
@@ -591,7 +599,7 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
                  "must be greater than zero." );
 
 
-  if ( capacity == -1 )
+  if ( capacity == USE_DEFAULT )
   {
     setCapacity( m_num_tuples * m_resize_ratio );
   }

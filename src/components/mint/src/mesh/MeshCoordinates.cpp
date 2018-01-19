@@ -162,9 +162,6 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
 
   const char* coord_names[3] = { "x", "y", "z" };
 
-  const IndexType max_capacity =
-      ( capacity==USE_DEFAULT_CAPACITY )? numNodes : capacity;
-
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     const char* coord_name = coord_names[ dim ];
@@ -207,16 +204,20 @@ bool MeshCoordinates::consistencyCheck() const
 
   for ( int i = 1; i < m_ndims; ++i )
   {
-    const IndexType actual_size      = m_coordinates[ i ]->size();
-    const IndexType actual_capacity  = m_coordinates[ i ]->capacity();
-    const double actual_resize_ratio = m_coordinates[ i ]->getResizeRatio();
+    const IndexType actual_size       = m_coordinates[ i ]->size();
+    const IndexType actual_components = m_coordinates[ i ]->numComponents();
+    const IndexType actual_capacity   = m_coordinates[ i ]->capacity();
+    const double actual_resize_ratio  = m_coordinates[ i ]->getResizeRatio();
 
-    const bool size_mismatch     = ( actual_size != expected_size );
-    const bool capacity_mismatch = ( actual_capacity != expected_capacity );
-    const bool ratio_mismatch    =
+    const bool size_mismatch      = ( actual_size != expected_size );
+    const bool component_mismatch = ( actual_components != NUM_COMPONENTS );
+    const bool capacity_mismatch  = ( actual_capacity != expected_capacity );
+    const bool ratio_mismatch     =
         !utilities::isNearlyEqual( actual_resize_ratio, expected_resize_ratio );
 
     SLIC_WARNING_IF( size_mismatch, "coordinate array size mismatch!" );
+    SLIC_WARNING_IF( component_mismatch, 
+                                 "coordinate array number of components != 1" );
     SLIC_WARNING_IF( capacity_mismatch, "coordinate array capacity mismatch!" );
     SLIC_WARNING_IF( ratio_mismatch, "coordinate array ratio mismatch!" );
 

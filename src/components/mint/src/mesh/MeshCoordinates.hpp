@@ -116,7 +116,7 @@ static constexpr int Z_COORDINATE = 2;
 class MeshCoordinates
 {
 private:
-  static constexpr int USE_DEFAULT_CAPACITY   = -1;
+  static constexpr IndexType USE_DEFAULT_CAPACITY = Array< double >::USE_DEFAULT;
 
 public:
 

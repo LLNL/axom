@@ -319,7 +319,7 @@ void print_surface_stats( mint::Mesh * mesh)
   MinMaxRange meshEdgeLenRange;
   MinMaxRange meshTriAreaRange;
   const int nCells = mesh->getMeshNumberOfCells();
-  typedef std::set<int> TriIdxSet;
+  typedef std::set<mint::IndexType> TriIdxSet;
   TriIdxSet badTriangles;
 
   // simple binning based on the exponent
@@ -331,7 +331,7 @@ void print_surface_stats( mint::Mesh * mesh)
   LogRangeMap edgeLenRangeMap;      // Tracks range of edge lengths at each scale
   LogRangeMap areaRangeMap;         // Tracks range of triangle areas at each scale
 
-  typedef axom::primal::Point<int,3> TriVertIndices;
+  typedef axom::primal::Point<mint::IndexType,3> TriVertIndices;
   int expBase2;
 
   // Traverse mesh triangles and bin the edge lengths and areas
