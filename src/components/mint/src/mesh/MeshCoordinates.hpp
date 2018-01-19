@@ -153,12 +153,12 @@ public:
    * \param [in] capacity initial max capacity to reserve space for (optional).
    *
    * \pre 1 <= dimension() <= 3
-   * \pre numNodes() <= capacity()
+   * \post numNodes() <= capacity()
    * \post numNodes() == numNodes
-   * \post capacity() == max(DEFAULT_CAPACITY, numNodes()*DEFAULT_RESIZE_RATIO)
+   * \post if capacity == USE_DEFAULT_CAPACITY then
+   *  capacity() == max(DEFAULT_CAPACITY, numNodes()*DEFAULT_RESIZE_RATIO)
    */
-  MeshCoordinates( int dimension,
-                   IndexType numNodes,
+  MeshCoordinates( int dimension, IndexType numNodes,
                    IndexType capacity=USE_DEFAULT_CAPACITY );
 
 /// @}
@@ -190,10 +190,8 @@ public:
    * \post numNodes() == numNodes
    * \post numNodes() <= capacity()
    */
-  MeshCoordinates( double* x,
-                   double* y,
-                   double* z,
-                   IndexType numNodes );
+  MeshCoordinates( IndexType numNodes, double* x, double* y=AXOM_NULLPTR,
+                   double* z=AXOM_NULLPTR );
 /// @}
 
 /// \name Sidre Constructors
@@ -281,7 +279,7 @@ public:
    * \brief Checks if this MeshCoordinates instance is empty.
    * \return status true if numNodes()==0, else, false.
    */
-  inline bool empty() const { return (numNodes()==0); }
+  inline bool empty() const { return (numNodes() == 0); }
 
 /// @}
 
@@ -404,7 +402,7 @@ public:
   /*!
    * \brief Changes the number of nodes to the specified size.
    *
-   * \warning The shrink() operation is invalid when a MeshCoordinates object
+   * \warning The resize() operation is invalid when a MeshCoordinates object
    *  is constructed using external buffers. Since, in this case the object does
    *  not own the associated memory, dynamic resizing is not allowed.
    *
@@ -457,7 +455,7 @@ private:
    * \return status true if the index is valid, false, otherwise.
    */
   inline bool validIndex( IndexType idx ) const
-  { return indexInRange( idx, 0, numNodes()-1 ); }
+  { return indexInRange( idx, 0, numNodes() - 1 ); }
 
   /*!
    * \brief Helper method to initialize the internal array data-structures.
@@ -476,7 +474,7 @@ private:
 /// @}
 
   int m_ndims;
-  Array< double >* m_coordinates[3] = {AXOM_NULLPTR,AXOM_NULLPTR,AXOM_NULLPTR};
+  Array< double >* m_coordinates[3] = {AXOM_NULLPTR, AXOM_NULLPTR, AXOM_NULLPTR};
 
   DISABLE_COPY_AND_ASSIGNMENT( MeshCoordinates );
   DISABLE_MOVE_AND_ASSIGNMENT( MeshCoordinates );
@@ -493,13 +491,13 @@ inline IndexType MeshCoordinates::append( const double* x )
 
   IndexType idx = numNodes();
 
-  for ( int dim=0; dim < m_ndims; ++dim )
+  for ( int dim = 0; dim < m_ndims; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
     m_coordinates[ dim ]->append( x[ dim ] );
   }
 
-  SLIC_ASSERT( idx==numNodes()-1 );
+  SLIC_ASSERT( idx == numNodes() - 1 );
   SLIC_ASSERT( this->validIndex( idx ) ) ;
   SLIC_ASSERT( this->consistencyCheck( ) );
 
@@ -515,7 +513,7 @@ inline void MeshCoordinates::set( IndexType nodeIdx, const double* x )
   for ( int dim=0; dim < m_ndims; ++dim )
   {
     double* data = m_coordinates[ dim ]->getData( );
-    SLIC_ASSERT( m_coordinates[ dim ]->numComponents()==1 );
+    SLIC_ASSERT( m_coordinates[ dim ]->numComponents() == 1 );
     SLIC_ASSERT( data != AXOM_NULLPTR );
 
     data[ nodeIdx ] = x[ dim ];
@@ -578,7 +576,7 @@ inline void MeshCoordinates::shrink( )
   for ( int dim = 0; dim < m_ndims ; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
-    m_coordinates[ dim ]->shrink( );
+    m_coordinates[ dim ]->shrink();
   }
 
   SLIC_ASSERT( consistencyCheck() );

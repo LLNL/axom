@@ -73,6 +73,7 @@ void check_array_values( const double* actual,
   }
 }
 
+#ifdef MINT_USE_SIDRE
 /*!
  * \brief Create a valid sidre datastore to use in tests
  *
@@ -111,8 +112,8 @@ void create_sidre_data( sidre::DataStore& ds, int dimension )
 
     coord_array.set( ptrs[ idim ], SMALL_NUM_NODES, 0 );
   } // END for all dimensions
-
 }
+#endif
 
 /*!
  * \brief Tests that the coordinate arrays are not AXOM_NULLPTR
@@ -308,6 +309,7 @@ TEST( mint_mesh_coordinates, append )
     detail::check_coordinate_arrays( &mc1 );
     detail::check_append( &mc1 );
 
+#ifdef MINT_USE_SIDRE
     // Construct a MeshCoordinates object from sidre
     sidre::DataStore ds;
     detail::create_sidre_data( ds, dim );
@@ -317,6 +319,7 @@ TEST( mint_mesh_coordinates, append )
     mint::MeshCoordinates mc2( coords_group );
     detail::check_coordinate_arrays( &mc2 );
     detail::check_append( &mc2 );
+#endif
   }
 }
 
@@ -336,27 +339,29 @@ TEST( mint_mesh_coordinates, set_and_get )
     mint::MeshCoordinates mc1( dim, SMALL_NUM_NODES );
     detail::check_set_and_get( &mc1 );
 
+#ifdef MINT_USE_SIDRE
     // MeshCoordinates object from sidre store
     sidre::DataStore ds;
     mint::MeshCoordinates mc2(
-        ds.getRoot(), dim, SMALL_NUM_NODES, SMALL_NUM_NODES );
+                          ds.getRoot(), dim, SMALL_NUM_NODES, SMALL_NUM_NODES );
     detail::check_set_and_get( &mc2 );
+#endif
 
     // MeshCoordinates object tied to external buffers
     if ( dim==1 )
     {
-      mint::MeshCoordinates mc3( x,AXOM_NULLPTR,AXOM_NULLPTR,SMALL_NUM_NODES);
+      mint::MeshCoordinates mc3( SMALL_NUM_NODES, x);
       detail::check_set_and_get( &mc3 );
     }
     else if ( dim==2 )
     {
-      mint::MeshCoordinates mc3( x, y, AXOM_NULLPTR, SMALL_NUM_NODES );
+      mint::MeshCoordinates mc3( SMALL_NUM_NODES, x, y );
       detail::check_set_and_get( &mc3 );
     }
     else
     {
       EXPECT_EQ( dim, 3 );
-      mint::MeshCoordinates mc3( x, y, z, SMALL_NUM_NODES );
+      mint::MeshCoordinates mc3( SMALL_NUM_NODES, x, y, z );
       detail::check_set_and_get( &mc3 );
     }
 
@@ -380,6 +385,7 @@ TEST( mint_mesh_coordinates, reserve )
     EXPECT_EQ( mc1.numNodes(), numNodes1);
     EXPECT_EQ( mc1.capacity(), LARGE_NODE_CAPACITY );
 
+#ifdef MINT_USE_SIDRE
     // Construct a MeshCoordinates object from sidre
     sidre::DataStore ds;
     detail::create_sidre_data( ds, dim );
@@ -393,8 +399,8 @@ TEST( mint_mesh_coordinates, reserve )
 
     EXPECT_EQ( mc2.numNodes(), numNodes2 );
     EXPECT_EQ( mc2.capacity(), LARGE_NODE_CAPACITY );
+#endif
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -410,6 +416,7 @@ TEST( mint_mesh_coorindates, resize )
     EXPECT_EQ( mc1.numNodes(), LARGE_NUM_NODES );
     EXPECT_TRUE( mc1.numNodes() <= mc1.capacity() );
 
+#ifdef MINT_USE_SIDRE
     // Construct a MeshCoordinates object from sidre
     sidre::DataStore ds;
     detail::create_sidre_data( ds, dim );
@@ -420,6 +427,7 @@ TEST( mint_mesh_coorindates, resize )
     mc2.resize( LARGE_NUM_NODES );
     EXPECT_EQ( mc2.numNodes(), LARGE_NUM_NODES );
     EXPECT_TRUE( mc2.numNodes() <= mc2.capacity() );
+#endif
   }
 
 }
@@ -440,6 +448,7 @@ TEST( mint_mesh_coordinates, shrink )
 
     EXPECT_EQ( mc1.numNodes(), mc1.capacity() );
 
+#ifdef MINT_USE_SIDRE
     // test shrink() when constructed using sidre
     sidre::DataStore ds;
     detail::create_sidre_data( ds, dim );
@@ -451,18 +460,20 @@ TEST( mint_mesh_coordinates, shrink )
     mc2.shrink();
 
     EXPECT_EQ( mc2.numNodes(), mc2.capacity() );
+#endif
   }
-
 }
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_coordinates, change_resize_ratio )
 {
   constexpr int NDIMS               = 3;
+  constexpr double DEFAULT_RESIZE_RATIO = 
+                                    mint::Array< double >::DEFAULT_RESIZE_RATIO;
   constexpr double NEW_RESIZE_RATIO = 2.5;
 
   mint::MeshCoordinates mc( NDIMS );
-  EXPECT_DOUBLE_EQ( mc.getResizeRatio(), 2.0 );
+  EXPECT_DOUBLE_EQ( mc.getResizeRatio(), DEFAULT_RESIZE_RATIO );
 
   mc.setResizeRatio( NEW_RESIZE_RATIO );
   EXPECT_DOUBLE_EQ( mc.getResizeRatio(), NEW_RESIZE_RATIO );
@@ -486,7 +497,6 @@ TEST( mint_mesh_coordinates, native_constructors )
     detail::check_constructor( dim, LARGE_NUM_NODES );
     detail::check_constructor( dim, LARGE_NUM_NODES, LARGE_NODE_CAPACITY );
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -499,21 +509,24 @@ TEST( mint_mesh_coordinates, external_constructor )
   // Test 1-D
   {
     constexpr int EXPECTED_DIMENSION = 1;
-    mint::MeshCoordinates coords( x,AXOM_NULLPTR,AXOM_NULLPTR,SMALL_NUM_NODES);
+    mint::MeshCoordinates coords( SMALL_NUM_NODES, x );
     detail::check_coordinate_arrays( &coords );
     EXPECT_EQ( coords.dimension(), EXPECTED_DIMENSION );
     EXPECT_EQ( coords.numNodes(), SMALL_NUM_NODES );
     EXPECT_EQ( coords.capacity(), SMALL_NUM_NODES );
     EXPECT_EQ( coords.getCoordinateArray( mint::X_COORDINATE ), x );
   }
-  EXPECT_TRUE( x != AXOM_NULLPTR );
-  EXPECT_TRUE( y != AXOM_NULLPTR );
-  EXPECT_TRUE( z != AXOM_NULLPTR );
+  for ( int i = 0; i < SMALL_NUM_NODES; ++i )
+  {
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+  }
 
   // Test 2-D
   {
     constexpr int EXPECTED_DIMENSION = 2;
-    mint::MeshCoordinates coords( x, y, AXOM_NULLPTR, SMALL_NUM_NODES );
+    mint::MeshCoordinates coords( SMALL_NUM_NODES, x, y );
     detail::check_coordinate_arrays( &coords );
     EXPECT_EQ( coords.dimension(), EXPECTED_DIMENSION );
     EXPECT_EQ( coords.numNodes(), SMALL_NUM_NODES );
@@ -521,14 +534,17 @@ TEST( mint_mesh_coordinates, external_constructor )
     EXPECT_EQ( coords.getCoordinateArray( mint::X_COORDINATE ), x );
     EXPECT_EQ( coords.getCoordinateArray( mint::Y_COORDINATE ), y );
   }
-  EXPECT_TRUE( x != AXOM_NULLPTR );
-  EXPECT_TRUE( y != AXOM_NULLPTR );
-  EXPECT_TRUE( z != AXOM_NULLPTR );
+  for ( int i = 0; i < SMALL_NUM_NODES; ++i )
+  {
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+  }
 
   // Test 3-D
   {
     constexpr int EXPECTED_DIMENSION = 3;
-    mint::MeshCoordinates coords( x, y, z, SMALL_NUM_NODES );
+    mint::MeshCoordinates coords( SMALL_NUM_NODES, x, y, z );
     detail::check_coordinate_arrays( &coords );
     EXPECT_EQ( coords.dimension(), EXPECTED_DIMENSION );
     EXPECT_EQ( coords.numNodes(), SMALL_NUM_NODES );
@@ -537,9 +553,12 @@ TEST( mint_mesh_coordinates, external_constructor )
     EXPECT_EQ( coords.getCoordinateArray( mint::Y_COORDINATE ), y );
     EXPECT_EQ( coords.getCoordinateArray( mint::Z_COORDINATE ), z );
   }
-  EXPECT_TRUE( x != AXOM_NULLPTR );
-  EXPECT_TRUE( y != AXOM_NULLPTR );
-  EXPECT_TRUE( z != AXOM_NULLPTR );
+  for ( int i = 0; i < SMALL_NUM_NODES; ++i )
+  {
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+    EXPECT_DOUBLE_EQ( x[i], i + 1 );
+  }
 
 }
 
@@ -713,7 +732,7 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_operations )
   double y[ SMALL_NUM_NODES ] = { 1.0, 2.0, 3.0, 4.0 };
   double z[ SMALL_NUM_NODES ] = { 1.0, 2.0, 3.0, 4.0 };
 
-  mint::MeshCoordinates coords( x, y, z, N );
+  mint::MeshCoordinates coords( N, x, y, z );
 
   EXPECT_DEATH_IF_SUPPORTED( coords.append( x ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( coords.shrink(), IGNORE_OUTPUT );
@@ -739,24 +758,22 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_construction )
       IGNORE_OUTPUT );
 
   // STEP 2: test invalid construction with null external buffers
-  EXPECT_DEATH_IF_SUPPORTED(
-      mint::MeshCoordinates(AXOM_NULLPTR,AXOM_NULLPTR,AXOM_NULLPTR,10),
-      IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( 
+      mint::MeshCoordinates( 10, AXOM_NULLPTR ), IGNORE_OUTPUT );
 
   // STEP 3: test invalid construction from external buffers with 0 nodes
   double x[ SMALL_NUM_NODES ] = { 1.0, 2.0, 3.0, 4.0 };
   EXPECT_DEATH_IF_SUPPORTED(
-      mint::MeshCoordinates(x,AXOM_NULLPTR,AXOM_NULLPTR,ZERO_NUM_NODES),
-      IGNORE_OUTPUT );
+      mint::MeshCoordinates(ZERO_NUM_NODES, x), IGNORE_OUTPUT );
 
 
 #ifdef MINT_USE_SIDRE
 
   // STEP 4: test construction with a null Sidre group
   EXPECT_DEATH_IF_SUPPORTED(
-      mint::MeshCoordinates(AXOM_NULLPTR), IGNORE_OUTPUT);
+      mint::MeshCoordinates( AXOM_NULLPTR ), IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(
-      mint::MeshCoordinates(AXOM_NULLPTR, 2, 10, 10 ),
+      mint::MeshCoordinates( AXOM_NULLPTR, 2, 10, 10 ),
       IGNORE_OUTPUT );
 
   // STEP 5: test sidre pull-constructor that does not conform to blueprint

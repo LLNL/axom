@@ -650,10 +650,12 @@ TEST( mint_array, checkInsert )
   }
 }
 
+/* Sidre specific tests */
+#ifdef MINT_USE_SIDRE
+
 //------------------------------------------------------------------------------
 TEST( mint_array, checkSidre )
 {
-#ifdef MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -679,16 +681,11 @@ TEST( mint_array, checkSidre )
       }
     }
   }
-
-#else
-  EXPECT_TRUE( true );
-#endif
 }
 
 //------------------------------------------------------------------------------
 TEST( mint_array, checkSidrePermanence)
 {
-#ifdef MINT_USE_SIDRE
   constexpr double MAGIC_NUM = 5683578.8;
 
   sidre::DataStore ds;
@@ -740,11 +737,9 @@ TEST( mint_array, checkSidrePermanence)
       }
     }
   }
-
-#else
-  EXPECT_TRUE( true );
-#endif
 }
+
+#endif
 
 //------------------------------------------------------------------------------
 TEST( mint_array_DeathTest, checkExternal )

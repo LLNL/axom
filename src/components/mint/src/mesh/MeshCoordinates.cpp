@@ -70,10 +70,8 @@ MeshCoordinates::MeshCoordinates( int dimension,
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( double* x,
-                                  double* y,
-                                  double* z,
-                                  IndexType numNodes )
+MeshCoordinates::MeshCoordinates( IndexType numNodes, double* x, double* y,
+                                  double* z )
 {
 
   m_ndims = ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) ;
