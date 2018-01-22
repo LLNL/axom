@@ -316,11 +316,11 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
 
   mint::FieldVariable<int>* intersect =
     new mint::FieldVariable<int>("nbr_intersection", num_cells);
-  mesh->getCellFieldData()->addField(intersect);
+  mesh->getCellFieldData().addField(intersect);
   int* intersectptr = intersect->getIntPtr();
   mint::FieldVariable<int>* dgn =
     new mint::FieldVariable<int>("degenerate_triangles", num_cells);
-  mesh->getCellFieldData()->addField(dgn);
+  mesh->getCellFieldData().addField(dgn);
   int* dgnptr = dgn->getIntPtr();
 
   // Initialize everything to 0
