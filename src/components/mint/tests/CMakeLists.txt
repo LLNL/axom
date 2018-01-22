@@ -13,12 +13,20 @@
 #------------------------------------------------------------------------------
 
 set( mint_tests
-     mint_array.cpp
+
+     ## core tests
+     mint_core_array.cpp
+
+     ## mesh tests
      mint_mesh_coordinates.cpp
      mint_mesh_extent.cpp
-     mint_shape_functions.cpp
-     mint_single_fe.cpp
-     mint_write_vtk.cpp
+
+     ## fem tests
+     mint_fem_shape_functions.cpp
+     mint_fem_single_fe.cpp
+
+     ## util tests
+     mint_util_write_vtk.cpp
 # turn off for now
 #     mint_connectivity.cpp
    )
