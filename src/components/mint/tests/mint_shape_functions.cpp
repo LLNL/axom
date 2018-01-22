@@ -213,7 +213,7 @@ void partition_of_unity()
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( mint_shape_functions, check_reference_element )
+TEST( mint_fem_shape_functions, check_reference_element )
 {
   reference_element< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   reference_element< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -227,7 +227,7 @@ TEST( mint_shape_functions, check_reference_element )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_shape_functions, check_kronecker_delta )
+TEST( mint_fem_shape_functions, check_kronecker_delta )
 {
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   kronecker_delta< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -241,7 +241,7 @@ TEST( mint_shape_functions, check_kronecker_delta )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_shape_functions, check_partition_of_unity )
+TEST( mint_fem_shape_functions, check_partition_of_unity )
 {
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   partition_of_unity< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );

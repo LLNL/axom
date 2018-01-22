@@ -538,14 +538,14 @@ void check_external( Array< T >& v )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( mint_array, checkStorage )
+TEST( mint_core_array, checkStorage )
 {
 #ifdef MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
 
-  constexpr IndexType ZERO = 0; 
+  constexpr IndexType ZERO = 0;
 
   for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
   {
@@ -573,7 +573,7 @@ TEST( mint_array, checkStorage )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_array, checkResize )
+TEST( mint_core_array, checkResize )
 {
 #ifdef MINT_USE_SIDRE
   sidre::DataStore ds;
@@ -615,7 +615,7 @@ TEST( mint_array, checkResize )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_array, checkInsert )
+TEST( mint_core_array, checkInsert )
 {
 #ifdef MINT_USE_SIDRE
   sidre::DataStore ds;
@@ -660,7 +660,7 @@ TEST( mint_array, checkInsert )
 #ifdef MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-TEST( mint_array, checkSidre )
+TEST( mint_core_array, checkSidre )
 {
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
@@ -692,7 +692,7 @@ TEST( mint_array, checkSidre )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_array, checkSidrePermanence)
+TEST( mint_core_array, checkSidrePermanence)
 {
   constexpr double MAGIC_NUM = 5683578.8;
 
@@ -720,7 +720,7 @@ TEST( mint_array, checkSidrePermanence)
           /* Set v's data to MAGIC_NUM */
           for ( IndexType i = 0; i < v.size(); ++i )
           {
-            for ( IndexType j = 0; j < v.numComponents(); ++j ) 
+            for ( IndexType j = 0; j < v.numComponents(); ++j )
             {
               v( i, j ) = MAGIC_NUM;
             }
@@ -729,7 +729,7 @@ TEST( mint_array, checkSidrePermanence)
 
         /* Check that the data still exists in sidre */
         sidre::View * view = root->getView( "double" );
-        const double * view_data_ptr = static_cast< const double * >( 
+        const double * view_data_ptr = static_cast< const double * >(
                                                            view->getVoidPtr() );
         EXPECT_EQ( view_data_ptr, array_data_ptr );
         EXPECT_EQ( view->getNumDimensions(), 2 );
@@ -752,7 +752,7 @@ TEST( mint_array, checkSidrePermanence)
 #endif
 
 //------------------------------------------------------------------------------
-TEST( mint_array_DeathTest, checkExternal )
+TEST( mint_core_array_DeathTest, checkExternal )
 {
   constexpr double MAGIC_NUM = 5683578.8;
   constexpr IndexType MAX_SIZE = 1024;
@@ -776,7 +776,7 @@ TEST( mint_array_DeathTest, checkExternal )
       Array< int > v_int( buffer.ints, size, n_comp );
       EXPECT_EQ( v_int.getData(), buffer.ints );
       internal::check_external( v_int );
-  
+
       Array< double > v_double( buffer.doubles, size, n_comp );
       EXPECT_EQ( v_double.getData(), buffer.doubles );
       internal::check_external( v_double );

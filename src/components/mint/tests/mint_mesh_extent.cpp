@@ -21,7 +21,7 @@
 #include "mint/config.hpp"
 using namespace axom::mint;
 
-TEST( mint_extent, basic )
+TEST( mint_mesh_extent, basic )
 {
   int64 ext[6]={ 0,5,0,5,0,5 };
   Extent extent(3,ext);

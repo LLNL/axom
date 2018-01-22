@@ -936,7 +936,7 @@ TEST( mint_single_fe, check_override_max_newton )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, matrix_constructor_deepcopy )
+TEST( mint_fem_single_fe, matrix_constructor_deepcopy )
 {
   // STEP 0: constants used in the test
   const int NROWS = 2;
@@ -977,7 +977,7 @@ TEST( mint_single_fe, matrix_constructor_deepcopy )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, matrix_constructor_shallowcopy)
+TEST( mint_fem_single_fe, matrix_constructor_shallowcopy)
 {
   // STEP 0: constants used in the test
   const int NROWS = 2;
@@ -1022,7 +1022,7 @@ TEST( mint_single_fe, matrix_constructor_shallowcopy)
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_shape_function )
+TEST( mint_fem_single_fe, check_fe_shape_function )
 {
   check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   check_shape< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -1036,7 +1036,7 @@ TEST( mint_single_fe, check_fe_shape_function )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_jacobian )
+TEST( mint_fem_single_fe, check_fe_jacobian )
 {
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   check_jacobian< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -1050,7 +1050,7 @@ TEST( mint_single_fe, check_fe_jacobian )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_forward_map )
+TEST( mint_fem_single_fe, check_fe_forward_map )
 {
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   check_forward_map< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -1064,7 +1064,7 @@ TEST( mint_single_fe, check_fe_forward_map )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_inverse_map )
+TEST( mint_fem_single_fe, check_fe_inverse_map )
 {
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   check_inverse_map< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -1078,7 +1078,7 @@ TEST( mint_single_fe, check_fe_inverse_map )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_point_in_cell )
+TEST( mint_fem_single_fe, check_fe_point_in_cell )
 {
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
   point_in_cell< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
@@ -1092,7 +1092,7 @@ TEST( mint_single_fe, check_fe_point_in_cell )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_interp )
+TEST( mint_fem_single_fe, check_fe_interp )
 {
   check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD >(     1.e-24 );
   check_interp< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( 1.e-12 );

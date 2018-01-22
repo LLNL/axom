@@ -849,7 +849,7 @@ void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
  * \brief Creates a 3D UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UniformMesh3D )
+TEST( mint_util_write_vtk, UniformMesh3D )
 {
   const std::string path = "uniformMesh3D.vtk";
   const int64 ext[6] = { 0, 10, 0, 10, 0, 10 };
@@ -875,7 +875,7 @@ TEST( mint_write_vtk, UniformMesh3D )
  * \brief Creates a 2D UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UniformMesh2D )
+TEST( mint_util_write_vtk, UniformMesh2D )
 {
   const std::string path = "uniformMesh2D.vtk";
   const int64 ext[4] = { 0, 10, 0, 10 };
@@ -901,7 +901,7 @@ TEST( mint_write_vtk, UniformMesh2D )
  * \brief Creates a 1D UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UniformMesh1D )
+TEST( mint_util_write_vtk, UniformMesh1D )
 {
   const std::string path = "uniformMesh1D.vtk";
   const int64 ext[2] = { 0, 10 };
@@ -927,7 +927,7 @@ TEST( mint_write_vtk, UniformMesh1D )
  * \brief Creates a 3D RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, RectilinearMesh3D )
+TEST( mint_util_write_vtk, RectilinearMesh3D )
 {
   const std::string path = "rectilinearMesh3D.vtk";
   int64 ext[6] = { 0, 10, 0, 11, 0, 12 };
@@ -961,7 +961,7 @@ TEST( mint_write_vtk, RectilinearMesh3D )
  * \brief Creates a 2D RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, RectilinearMesh2D )
+TEST( mint_util_write_vtk, RectilinearMesh2D )
 {
   const std::string path = "rectilinearMesh2D.vtk";
   int64 ext[4] = { 0, 10, 0, 11 };
@@ -995,7 +995,7 @@ TEST( mint_write_vtk, RectilinearMesh2D )
  * \brief Creates a 1D RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, RectilinearMesh1D )
+TEST( mint_util_write_vtk, RectilinearMesh1D )
 {
   const std::string path = "rectilinearMesh1D.vtk";
   int64 ext[2] = { 0, 10 };
@@ -1029,7 +1029,7 @@ TEST( mint_write_vtk, RectilinearMesh1D )
  * \brief Creates a 3D CurvilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, CurvilinearMesh3D )
+TEST( mint_util_write_vtk, CurvilinearMesh3D )
 {
   const std::string path = "curvilinearMesh3D.vtk";
   int64 ext[6] = { 0, 10, 0, 11, 0, 12 };
@@ -1069,7 +1069,7 @@ TEST( mint_write_vtk, CurvilinearMesh3D )
  * \brief Creates a 2D CurvilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, CurvilinearMesh2D )
+TEST( mint_util_write_vtk, CurvilinearMesh2D )
 {
   const std::string path = "curvilinearMesh2D.vtk";
   int64 ext[6] = { 0, 2, 0, 2 };
@@ -1106,7 +1106,7 @@ TEST( mint_write_vtk, CurvilinearMesh2D )
  *  mint::write_vtk and then reads the file back in to check for correctness.
  * \note Mesh, but not mesh data will display in Visit.
  */
-TEST( mint_write_vtk, CurvilinearMesh1D )
+TEST( mint_util_write_vtk, CurvilinearMesh1D )
 {
   const std::string path = "curvilinearMesh1D.vtk";
   int64 ext[6] = { 0, 1 };
@@ -1138,7 +1138,7 @@ TEST( mint_write_vtk, CurvilinearMesh1D )
  * \brief Creates a 3D UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UnstructuredMesh3D )
+TEST( mint_util_write_vtk, UnstructuredMesh3D )
 {
   const std::string path = "unstructuredMesh3D.vtk";
   const IndexType nx = 11;
@@ -1203,7 +1203,7 @@ TEST( mint_write_vtk, UnstructuredMesh3D )
  * \brief Creates a 2D UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UnstructuredMesh2D )
+TEST( mint_util_write_vtk, UnstructuredMesh2D )
 {
   const std::string path = "unstructuredMesh2D.vtk";
   const IndexType nx = 11;
@@ -1256,7 +1256,7 @@ TEST( mint_write_vtk, UnstructuredMesh2D )
  * \brief Creates a 1D UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UnstructuredMesh1D )
+TEST( mint_util_write_vtk, UnstructuredMesh1D )
 {
   const std::string path = "unstructuredMesh1D.vtk";
   const IndexType nx = 11;
@@ -1297,7 +1297,7 @@ TEST( mint_write_vtk, UnstructuredMesh1D )
  *  correctness. The UnstructuredMesh consists of one hexahedron with pyramids
  *  on the faces.
  */
-TEST( mint_write_vtk, UnstructuredMixedMesh3D )
+TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
 {
   const std::string path = "unstructuredMixedMesh3D.vtk";
   const IndexType nx = 2;
@@ -1412,7 +1412,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
  *  correctness. The UnstructuredMesh consists of one quadrilateral with
  *  triangles on the faces.
  */
-TEST( mint_write_vtk, UnstructuredMixedMesh2D )
+TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
 {
   const std::string path = "unstructuredMixedMesh2D.vtk";
   const IndexType nx = 2;
@@ -1490,7 +1490,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh2D )
  * \brief Creates a 3D ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, ParticleMesh3D )
+TEST( mint_util_write_vtk, ParticleMesh3D )
 {
   const std::string path = "particleMesh3D.vtk";
   const IndexType nParticles = 1000;
@@ -1522,7 +1522,7 @@ TEST( mint_write_vtk, ParticleMesh3D )
  * \brief Creates a 2D ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, ParticleMesh2D )
+TEST( mint_util_write_vtk, ParticleMesh2D )
 {
   const std::string path = "particleMesh2D.vtk";
   const IndexType nParticles = 1000;
@@ -1553,7 +1553,7 @@ TEST( mint_write_vtk, ParticleMesh2D )
  * \brief Creates a 1D ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, ParticleMesh1D )
+TEST( mint_util_write_vtk, ParticleMesh1D )
 {
   const std::string path = "particleMesh1D.vtk";
   const IndexType nParticles = 1000;
