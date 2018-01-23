@@ -105,15 +105,10 @@ function group_create_array_view_{typename}{nd}(grp, name, value) result(rv)
 #else
     call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
-    if (c_associated(addr)) then
-      {extents_asgn}
-      rv%voidptr = c_group_create_view_external_bufferify( &
-          grp%voidptr, name, lname, addr)
-      call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
-    else
-      rv%voidptr = c_group_create_view_from_type_bufferify( &
-          grp%voidptr, name, lname, type, 0_C_LONG)
-    endif
+    {extents_asgn}
+    rv%voidptr = c_group_create_view_external_bufferify( &
+        grp%voidptr, name, lname, addr)
+    call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
 end function group_create_array_view_{typename}{nd}""".format(
         extents_decl=extents_decl,
         extents_asgn=extents_asgn, **d)
