@@ -195,6 +195,34 @@ axom::mint::Mesh* make_octahedron_mesh()
   return triMesh;
 }
 
+/**
+ * \brief Utility function to generate the triangle mesh of a tetrahedron
+ * Vertices are close to, but not exactly: (0, 0, 20),
+ * (-18.21, 4.88, -6.66), (4.88, -18.21, -6.66), (13.33, 13.33, -6.66)
+ * \note The caller must delete the mesh
+ */
+axom::mint::Mesh* make_tetrahedron_mesh()
+{
+  typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+
+  TriangleMesh* surface_mesh = new TriangleMesh(3);
+  surface_mesh->insertNode( -0.000003, -0.000003, 19.999999);
+  surface_mesh->insertNode(-18.213671,  4.880339, -6.666668);
+  surface_mesh->insertNode(  4.880339,-18.213671, -6.666668);
+  surface_mesh->insertNode( 13.333334, 13.333334, -6.666663);
+  int cell[3];
+  cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
+  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
+  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
+  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
+  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+
+  return surface_mesh;
+}
+
 } // end namespace utilities
 } // end namespace quest
 } // end namespace axom

@@ -72,6 +72,32 @@ if(MFEM_FOUND)
         )
 endif()
 
+# Test quest::initialize() passing a Mesh * instead of a file name
+set(test_name quest_initialize)
+set(quest_initialize_depends ${quest_tests_depends})
+if (ENABLE_MPI)
+    list(APPEND quest_initialize_depends mpi)
+endif()
+blt_add_executable(
+    NAME ${test_name}_test
+    SOURCES ${test_name}.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON ${quest_initialize_depends}
+    FOLDER axom/quest/tests
+)
+if (ENABLE_MPI)
+    blt_add_test(
+        NAME ${test_name}
+        COMMAND ${test_name}_test
+        NUM_MPI_TASKS 4
+    )
+else()
+    blt_add_test(
+        NAME ${test_name}
+        COMMAND ${test_name}_test
+    )
+endif()
+
 # Regression tests for quest signed distance and InOutOctree point containment queries
 if (ENABLE_MPI AND ENABLE_SIDRE)
 
