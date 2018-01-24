@@ -184,7 +184,8 @@ View* Group::createView( const std::string& path )
   else if ( intpath.empty() || group->hasChildView(intpath) ||
             group->hasChildGroup(intpath) )
   {
-    SLIC_CHECK( !intpath.empty() );
+    SLIC_CHECK_MSG( !intpath.empty(),
+                    "Cannot create a View with an empty path." );
     SLIC_CHECK_MSG( !group->hasChildView(intpath),
                     "Cannot create View with name '" << intpath <<
                     "' in Group '" << getPathName() <<
@@ -688,7 +689,8 @@ View* Group::moveView(View* view)
 {
   if ( view == AXOM_NULLPTR )
   {
-    SLIC_CHECK( view != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( view != AXOM_NULLPTR,
+                    "Null pointer provided, no View to move." );
     return AXOM_NULLPTR;
   }
 
@@ -726,7 +728,8 @@ View* Group::copyView(View* view)
 {
   if ( view == AXOM_NULLPTR || hasChildView(view->getName()) )
   {
-    SLIC_CHECK( view != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( view != AXOM_NULLPTR,
+                    "Null pointer provided, no View to copy" );
     SLIC_CHECK_MSG(!hasChildView(view->getName()),
                    "Group '" << getPathName() <<
                    "' already has a View named'" << view->getName() <<
@@ -861,7 +864,8 @@ Group* Group::createGroup( const std::string& path )
   else if ( intpath.empty() || group->hasChildGroup(intpath) ||
             group->hasChildView(intpath) )
   {
-    SLIC_CHECK( !intpath.empty() );
+    SLIC_CHECK_MSG( !intpath.empty(),
+                "Cannot create a group with an empty path." );
     SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
                     "Cannot create Group with name '" << path <<
                     " in Group '" << getPathName() <<
@@ -953,7 +957,8 @@ Group* Group::moveGroup(Group* group)
 {
   if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()))
   {
-    SLIC_CHECK( group != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
+                    "Null pointer provided, no Group to move." );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getPathName() <<
                    "' already has a child Group named '" << group->getName() <<
@@ -981,7 +986,8 @@ Group* Group::copyGroup(Group* group)
 {
   if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()) )
   {
-    SLIC_CHECK( group != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
+                    "Null pointer provided, no Group to copy." );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getPathName() <<
                    "' already has a child Group named '" << group->getName() <<
@@ -1400,7 +1406,8 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"), 
+                    "Conduit Node does not have sidre data.");
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1411,7 +1418,8 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"conduit_json", n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node does not have sidre data.");
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1422,7 +1430,8 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"json", n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node does not have sidre data.");
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1478,7 +1487,8 @@ void Group::load(const hid_t& h5_id,
   {
     Node n;
     conduit::relay::io::hdf5_read(h5_id,n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                "Conduit Node does not have sidre data.");
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1638,7 +1648,8 @@ View* Group::attachView(View* view)
   }
   else
   {
-    SLIC_ASSERT(view->m_owning_group == AXOM_NULLPTR);
+    SLIC_ASSERT_MSG(view->m_owning_group == AXOM_NULLPTR,
+                "View cannot already be attatched to a Group.");
     view->m_owning_group = this;
     view->m_index = m_view_coll->insertItem(view, view->getName());
     return view;
@@ -2108,7 +2119,8 @@ Group* Group::walkPath( std::string& path,
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
-      SLIC_ASSERT( iter->size() > 0 );
+      SLIC_ASSERT_MSG( iter->size() > 0,
+                       "Cannot have empty name in path, eg a//b." );
 
       if ( group_ptr->hasChildGroup(*iter) )
       {
@@ -2159,7 +2171,8 @@ const Group* Group::walkPath( std::string& path ) const
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
-      SLIC_ASSERT( iter->size() > 0 );
+      SLIC_ASSERT_MSG( iter->size() > 0,
+                   "Cannot have empty name in path, eg a//b." );
 
       if ( group_ptr->hasChildGroup(*iter) )
       {
@@ -2505,13 +2518,19 @@ bool Group::rename(const std::string& new_name)
         else
         {
           Group* detached_group = parent->detachGroup(m_name);
-          SLIC_CHECK(detached_group == this);
+          SLIC_CHECK_MSG(detached_group == this,
+                     "Group detatched from parent " << 
+                     detached_group->getName() << " is not this Group " <<
+                     m_name );
 
           m_name = new_name;
 
           Group* attached_group = parent->attachGroup(detached_group);
           AXOM_DEBUG_VAR(attached_group);
-          SLIC_CHECK(attached_group == this);
+          SLIC_CHECK_MSG(attached_group == this,
+                     "Group attached to parent " << 
+                     attached_group->getName() << " is not this Group " <<
+                     m_name );
         }
       }
       else
