@@ -172,6 +172,124 @@ void check_storage( Array< T >& v )
   EXPECT_EQ( v.getData(), data_ptr );
 }
 
+/*!
+ * \brief Check that the fill method is working properly.
+ * \param [in] v the Array to check.
+ */
+template < typename T >
+void check_fill( Array< T >& v )
+{
+  constexpr T MAGIC_NUM_0 = 55;
+  constexpr T MAGIC_NUM_1 = 6834;
+  const IndexType capacity = v.capacity();
+  const IndexType size = v.size();
+  const IndexType num_components = v.numComponents();
+  const double ratio = v.getResizeRatio();
+  const T* const data_ptr = v.getData();
+
+  v.fill( MAGIC_NUM_0 );
+
+  EXPECT_EQ( capacity, v.capacity() );
+  EXPECT_EQ( size, v.size() );
+  EXPECT_EQ( num_components, v.numComponents() );
+  EXPECT_EQ( ratio, v.getResizeRatio() );
+  EXPECT_EQ( data_ptr, v.getData() );
+  for ( IndexType i = 0; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM_0 );
+    }
+  }
+
+  v.fill( MAGIC_NUM_1 );
+
+  EXPECT_EQ( capacity, v.capacity() );
+  EXPECT_EQ( size, v.size() );
+  EXPECT_EQ( num_components, v.numComponents() );
+  EXPECT_EQ( ratio, v.getResizeRatio() );
+  EXPECT_EQ( data_ptr, v.getData() );
+  for ( IndexType i = 0; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM_1 );
+    }
+  }
+}
+
+/*!
+ * \brief Check that the set method is working properly.
+ * \param [in] v the Array to check.
+ */
+template < typename T >
+void check_set( Array< T >& v )
+{
+  constexpr T ZERO = 0;
+  const IndexType capacity = v.capacity();
+  const IndexType size = v.size();
+  const IndexType num_components = v.numComponents();
+  const double ratio = v.getResizeRatio();
+  const T* const data_ptr = v.getData();
+
+  const IndexType buffer_size = size / 2;
+  T * buffer = new T[ buffer_size * num_components ];
+
+  for ( IndexType i = 0; i < buffer_size * num_components; ++i )
+  {
+    buffer[ i ] = i; 
+  }
+
+  v.fill( ZERO );
+  v.set( buffer, buffer_size, 0 );
+
+  EXPECT_EQ( capacity, v.capacity() );
+  EXPECT_EQ( size, v.size() );
+  EXPECT_EQ( num_components, v.numComponents() );
+  EXPECT_EQ( ratio, v.getResizeRatio() );
+  EXPECT_EQ( data_ptr, v.getData() );
+  for ( IndexType i = 0; i < buffer_size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), i * num_components + j );
+    }
+  }
+  for ( IndexType i = buffer_size; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), ZERO );
+    }
+  }
+
+  for ( IndexType i = 0; i < buffer_size * num_components; ++i )
+  {
+    buffer[ i ] = i + buffer_size * num_components; 
+  }
+
+  v.set( buffer, buffer_size, buffer_size );
+
+  EXPECT_EQ( capacity, v.capacity() );
+  EXPECT_EQ( size, v.size() );
+  EXPECT_EQ( num_components, v.numComponents() );
+  EXPECT_EQ( ratio, v.getResizeRatio() );
+  EXPECT_EQ( data_ptr, v.getData() );
+  for ( IndexType i = 0; i < 2 * buffer_size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), i * num_components + j );
+    }
+  }
+  for ( IndexType i = 2 * buffer_size; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), ZERO );
+    }
+  }
+}
 
 /*!
  * \brief Check that the resizing of an Array is working properly.
@@ -465,7 +583,7 @@ template< typename T >
 void check_sidre( Array< T >& v )
 {
 #ifdef MINT_USE_SIDRE
-  Array< T > cpy( const_cast< sidre::View* >( v.getView() ), v.size() );
+  Array< T > cpy( const_cast< sidre::View* >( v.getView() ) );
   cpy.setResizeRatio( v.getResizeRatio() );
 
   check_equality( v, cpy );
@@ -485,6 +603,7 @@ void check_external( Array< T >& v )
   EXPECT_TRUE( v.isExternal() );
   EXPECT_EQ( v.size(), v.capacity() );
 
+  const char IGNORE_OUTPUT[] = ".*";
   const IndexType size = v.size();
   const IndexType num_components = v.numComponents();
   const IndexType num_values = size * num_components;
@@ -522,13 +641,11 @@ void check_external( Array< T >& v )
   EXPECT_EQ( size, v.size() );
   EXPECT_EQ( data_ptr, v.getData() );
 
-  /* To Do? Check stderr output agains regular expression. */
   T tuple[ num_components ];
-  EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), ".*" );
-  EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), ".*" );
-  EXPECT_DEATH_IF_SUPPORTED( v.resize( size ), ".*" );
-  EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), ".*" );
-  EXPECT_DEATH_IF_SUPPORTED( v.shrink(), ".*" );
+  EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( v.shrink(), IGNORE_OUTPUT );
 }
 
 }   /* end namespace internal */
@@ -565,6 +682,74 @@ TEST( mint_core_array, checkStorage )
       Array< double > v_double_sidre( root->createView( "double" ), ZERO,
                                       n_components, capacity );
       internal::check_storage( v_double_sidre );
+
+      root->destroyViewsAndData();
+#endif
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_core_array, checkFill )
+{
+#ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+#endif
+
+  for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+  {
+    IndexType size = capacity / 2;  
+    for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+    {
+      Array< int > v_int( size, n_components, capacity );
+      internal::check_fill( v_int );
+
+      Array< double > v_double( size, n_components, capacity );
+      internal::check_fill( v_double );
+
+#ifdef MINT_USE_SIDRE
+      Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
+                                capacity );
+      internal::check_fill( v_int_sidre );
+
+      Array< double > v_double_sidre( root->createView( "double" ), size,
+                                      n_components, capacity );
+      internal::check_fill( v_double_sidre );
+
+      root->destroyViewsAndData();
+#endif
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_core_array, checkSet )
+{
+#ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+#endif
+
+  for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+  {
+    IndexType size = capacity / 2;  
+    for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+    {
+      Array< int > v_int( size, n_components, capacity );
+      internal::check_set( v_int );
+
+      Array< double > v_double( size, n_components, capacity );
+      internal::check_set( v_double );
+
+#ifdef MINT_USE_SIDRE
+      Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
+                                capacity );
+      internal::check_set( v_int_sidre );
+
+      Array< double > v_double_sidre( root->createView( "double" ), size,
+                                      n_components, capacity );
+      internal::check_set( v_double_sidre );
 
       root->destroyViewsAndData();
 #endif
@@ -740,7 +925,7 @@ TEST( mint_core_array, checkSidrePermanence)
         EXPECT_EQ( dims[1], n_components );
 
         for ( IndexType i = 0; i < num_values; ++i ) {
-          EXPECT_DOUBLE_EQ( view_data_ptr[ i ], MAGIC_NUM );
+          EXPECT_EQ( view_data_ptr[ i ], MAGIC_NUM );
         }
 
         root->destroyViewsAndData();
@@ -788,7 +973,7 @@ TEST( mint_core_array_DeathTest, checkExternal )
     /* Check that the data still exists in the buffer */
     for ( IndexType i = 0; i < MAX_VALUES; ++i )
     {
-      EXPECT_DOUBLE_EQ( buffer.doubles[ i ], MAGIC_NUM );
+      EXPECT_EQ( buffer.doubles[ i ], MAGIC_NUM );
     }
   }
 }
