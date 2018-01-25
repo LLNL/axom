@@ -205,19 +205,19 @@ axom::mint::Mesh* make_tetrahedron_mesh()
   typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
   TriangleMesh* surface_mesh = new TriangleMesh(3);
-  surface_mesh->insertNode( -0.000003, -0.000003, 19.999999);
-  surface_mesh->insertNode(-18.213671,  4.880339, -6.666668);
-  surface_mesh->insertNode(  4.880339,-18.213671, -6.666668);
-  surface_mesh->insertNode( 13.333334, 13.333334, -6.666663);
+  surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
+  surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
+  surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
+  surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
   int cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  surface_mesh->addCell(cell, MINT_TRIANGLE);
   cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  surface_mesh->addCell(cell, MINT_TRIANGLE);
   cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  surface_mesh->addCell(cell, MINT_TRIANGLE);
   cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-  surface_mesh->insertCell(cell, MINT_TRIANGLE, 3);
+  surface_mesh->addCell(cell, MINT_TRIANGLE);
 
   return surface_mesh;
 }
