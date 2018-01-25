@@ -777,7 +777,7 @@ contains
     integer i, j
     integer, parameter :: nfoo = 10
     integer foo1(nfoo), foo2(nfoo)
-    integer, pointer :: foo3(:) => null()
+!    integer, pointer :: foo3(:) => null()
     integer(C_INT), target :: foo4(nfoo)
     integer int2d1(nfoo,2), int2d2(nfoo,2)
     integer, pointer :: int2d3(:,:)
@@ -802,7 +802,9 @@ contains
     root1 = ds1%get_root()
 
     view1 = root1%create_array_view("external_array", foo1)
-    view2 = root1%create_array_view("empty_array", foo3)
+    ! unable to use create_array_view since foo3 is not associated.
+    view2 = root1%create_view("empty_array")
+    call view2%apply_type_nelems(SIDRE_INT_ID, 0_C_LONG)
     view3 = root1%create_view("external_undescribed")
     call view3%set_external_data_ptr(C_LOC(foo4))
     view4 = root1%create_array_view("int2d", int2d1)
@@ -838,7 +840,7 @@ contains
        call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_array get_type_id")
        call assert_true(view2%get_num_elements() == 0, "empty_array get_num_elements")
 !       call view2%set_array_data_ptr(foo3)
-       call root2%set_array_data_ptr("empty_array", foo3)
+!       call root2%set_array_data_ptr("empty_array", foo3)
 
        view3 = root2%get_view("external_undescribed");
        call assert_true(view3%is_empty(), "external_undescribed is_empty")
