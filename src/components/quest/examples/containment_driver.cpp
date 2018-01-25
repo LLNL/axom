@@ -239,11 +239,10 @@ void testContainmentOnRegularGrid(
     new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
   const int nnodes = umesh->getMeshNumberOfNodes();
-//  int * containment = umesh->addNodeField< int >("containment", 1)->getIntPtr();
-  umesh->getNodeFieldData().addField(
-         new mint::FieldVariable< int >( "containment", nnodes ) );
+  mint::FieldData& ND = umesh->getNodeFieldData( );
+  ND.addField( new mint::FieldVariable< int >( "containment", nnodes, 1 ) );
   int* containment =
-         umesh->getNodeFieldData().getField( "containment" )->getIntPtr();
+      mint::Field::getDataPtr< int >( ND.getField("containment") );
 
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 

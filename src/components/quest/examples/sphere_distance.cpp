@@ -331,16 +331,19 @@ void compute_norms( axom::mint::UniformMesh* umesh,
 
   // STEP 0: grab field pointers
   mint::FieldData& PD = umesh->getNodeFieldData();
-  double* phi_computed  = PD.getField( "phi" )->getDoublePtr();
-  double* phi_expected  = PD.getField( "expected_phi" )->getDoublePtr();
+
+  double * phi_computed  =
+      mint::Field::getDataPtr< double >( PD.getField( "phi" ) );
+
+  double * phi_expected  =
+      mint::Field::getDataPtr< double >( PD.getField( "expected_phi" ) );
 
   SLIC_ASSERT( phi_computed != AXOM_NULLPTR );
   SLIC_ASSERT( phi_expected != AXOM_NULLPTR );
 
   // STEP 1: add field to store erroraddCell
-//  double * error = umesh->addNodeField< double >( "error", 1 )->getDoublePtr();
-  PD.addField( new mint::FieldVariable< double >( "error", nnodes ) );
-  double* error = PD.getField( "error" )->getDoublePtr( );
+  PD.addField( new mint::FieldVariable< double >( "error", nnodes, 1 ) );
+  double* error = mint::Field::getDataPtr< double >( PD.getField( "error" ) );
 
   SLIC_ASSERT( error != AXOM_NULLPTR );
 
@@ -383,8 +386,9 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   // STEP 1: Add node field to stored exact distance field.
   const int nnodes    = umesh->getNumberOfNodes();
   mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField( new mint::FieldVariable< double >( "expected_phi", nnodes ) );
-  double* phi = PD.getField( "expected_phi" )->getDoublePtr( );
+  PD.addField( new mint::FieldVariable< double >( "expected_phi", nnodes, 1 ) );
+  double* phi =
+    mint::Field::getDataPtr< double >( PD.getField( "expected_phi" ) );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -413,8 +417,8 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
   // STEP 1: Setup node-centered signed distance field on uniform mesh
   const int nnodes = umesh->getNumberOfNodes();
   mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField( new mint::FieldVariable< double >( "n2_phi", nnodes ) );
-  double* phi = PD.getField( "expected_phi" )->getDoublePtr( );
+  PD.addField( new mint::FieldVariable< double >( "n2_phi", nnodes, 1 ) );
+  double* phi = mint::Field::getDataPtr< double >( PD.getField( "n2_phi") );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -476,8 +480,8 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 
   const int nnodes = umesh->getNumberOfNodes();
   mint::FieldData& PD = umesh->getNodeFieldData( );
-  PD.addField( new mint::FieldVariable< double >( "phi", nnodes) );
-  double* phi = PD.getField("phi")->getDoublePtr();
+  PD.addField( new mint::FieldVariable< double >( "phi", nnodes, 1 ) );
+  double* phi = mint::Field::getDataPtr< double >( PD.getField("phi") );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -500,8 +504,8 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   // mark bucket IDs on surface mesh
   const int ncells = umesh->getNumberOfCells();
   mint::FieldData& CD = umesh->getCellFieldData();
-  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells ) );
-  int* bidx = CD.getField( "BucketID" )->getIntPtr( );
+  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells, 1 ) );
+  int* bidx = mint::Field::getDataPtr< int >( CD.getField( "BucketID" ) );
 
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 

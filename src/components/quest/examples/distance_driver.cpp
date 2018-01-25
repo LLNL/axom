@@ -261,11 +261,10 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-//  int * bidx = surface_mesh->addCellField< int >( "BucketID", 1 )->getIntPtr();
   mint::FieldData& CD = surface_mesh->getCellFieldData( );
   const int ncells = surface_mesh->getMeshNumberOfCells( );
-  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells ) );
-  int* bidx = CD.getField( "BucketID" )->getIntPtr( );
+  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells, 1 ) );
+  int* bidx = mint::Field::getDataPtr< int >( CD.getField( "BucketID" ) );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -283,13 +282,13 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
 
   mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField( new mint::FieldVariable< double >("phi", nnodes) );
-  PD.addField( new mint::FieldVariable< int >( "nbuckets", nnodes ) );
-  PD.addField( new mint::FieldVariable< int >( "ntriangles", nnodes ) );
+  PD.addField( new mint::FieldVariable< double >("phi", nnodes, 1) );
+  PD.addField( new mint::FieldVariable< int >( "nbuckets", nnodes, 1 ) );
+  PD.addField( new mint::FieldVariable< int >( "ntriangles", nnodes, 1 ) );
 
-  double * phi     = PD.getField("phi")->getDoublePtr();
-  int * nbuckets   = PD.getField("nbuckets")->getIntPtr();
-  int * ntriangles = PD.getField("ntriangles")->getIntPtr();
+  double* phi     = mint::Field::getDataPtr< double >( PD.getField("phi") );
+  int* nbuckets   = mint::Field::getDataPtr< int >( PD.getField("nbuckets") );
+  int* ntriangles = mint::Field::getDataPtr< int >( PD.getField("ntriangles") );
 
   SLIC_ASSERT( phi != AXOM_NULLPTR );
   SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
@@ -298,15 +297,15 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   utilities::Timer timer2;
   timer2.start();
 
-  for ( axom::mint::IndexType inode=0 ; inode < nnodes ; ++inode )
+  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
 
     Point< double,3 > pt;
     umesh->getMeshNode( inode, pt.data() );
 
     std::vector< int > buckets;
-    std::vector< axom::mint::IndexType > triangles;
-    std::vector< axom::mint::IndexType > my_triangles;
+    std::vector< mint::IndexType > triangles;
+    std::vector< mint::IndexType > my_triangles;
     triangles.clear();
     buckets.clear();
 

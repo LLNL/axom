@@ -15,21 +15,21 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef FIELDVARIABLE_HPP_
-#define FIELDVARIABLE_HPP_
+#ifndef MINT_FIELDVARIABLE_HPP_
+#define MINT_FIELDVARIABLE_HPP_
 
-#include "mint/Field.hpp"               // Base class
+#include "mint/Field.hpp"
 
 // axom includes
-#include "axom/Macros.hpp"
-#include "axom/Types.hpp"
-#include "mint/Array.hpp"
+#include "axom/Macros.hpp" // for axom Macros
+#include "axom/Types.hpp"  // for axom types
+
 #include "mint/config.hpp"
-#include "mint/FieldTypes.hpp"
+#include "mint/Array.hpp"
+
 #include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cstddef>  // for NULL
 #include <string>   // for C++ string
 
 namespace axom
@@ -37,117 +37,340 @@ namespace axom
 namespace mint
 {
 
-template < typename FieldType >
+/*!
+ * \class FieldVariable
+ *
+ * \brief Provides the ability to store, access and modify a mesh field.
+ *
+ *  FieldVariable is a concrete implementation of mint::Field. The FieldVariable
+ *  class provides the ability to store, access and modify a field. Most often
+ *  a field is associated with entities on a mesh. For example, temperature
+ *  or velocity at the nodes of a mesh, or, pressure and mass evaluated at cell
+ *  centers.
+ *
+ *  A FieldVariable may be used to represent a scalar quantity, a vector
+ *  quantity or a tensor field. The number of tuples of the field corresponds to
+ *  the number of corresponding mesh entities at which the field is evaluated,
+ *  e.g., the number of nodes in the mesh for a node-centered field. The number
+ *  of components of the FieldVariable may be used to indicate the number of
+ *  components for a vector or tensor field. For example, a 3D velocity field
+ *  may have \f$ 3 \f$ components for the \f$ x \f$, \f$ y \f$, and \f$ z \f$
+ *  velocity components. Similarly, a \f$ 3 \times 3 \f$ tensor field, may be
+ *  stored using \f$ 9 \f$ components that correspond to the tensor
+ *  components.
+ *
+ *  The FieldVariable class provides support for a variety of field types
+ *  through the use of  templates. A list of supported field types is given in
+ *  FieldTypes.hpp
+ *
+ *  A FieldVariable object may be constructed using (a) native storage, (b)
+ *  external storage, or, (c) from Sidre:
+ *
+ *  * <b> Native Storage </b> <br />
+ *
+ *    When using native storage, the FieldVariable object owns all associated
+ *    memory. The storage can dynamically grow as needed, e.g., when doing
+ *    refinement. When the object is deleted, all memory associated with
+ *    the given instance is returned to the system.
+ *
+ *  * <b> External Storage </b> <br />
+ *
+ *    A FieldVariable may also be constructed by pointing it to an external,
+ *    user-supplied buffer. In this case, the FieldVariable does not own the
+ *    memory. Consequently, the FieldVariable cannot be resized, i.e., the
+ *    number of tuples and number of components stays fixed for the life-time
+ *    of the object.
+ *
+ *    \warning All calls to shrink(), resize() and reserve() will fail if a
+ *     FieldVariable object is constructed from an external buffer.
+ *
+ *  * <b> Sidre </b> <br />
+ *
+ *    When Sidre is enabled, a FieldVariable may be constructed from a
+ *    corresponding sidre::View. In this case, Sidre has ownership of
+ *    the data, but, storage can dynamically grow as needed. All memory
+ *    management operations are, therefore, delegated to Sidre.
+ *
+ *    When the FieldVariable object is deleted, the, associated data in the
+ *    Sidre::View remains persistent in Sidre.
+ *
+ * \tparam T the type of field, e.g., double, int, etc.
+ *
+ * \see mint::Field
+ * \see mint::FieldData
+ * \see sidre::View
+ */
+template < typename T >
 class FieldVariable : public Field
 {
 public:
+  static constexpr IndexType USE_DEFAULT_CAPACITY = Array< T >::USE_DEFAULT;
+
+public:
 
   /*!
-   * \brief Creates a FieldVariable instance associated by the given name,
+   * \brief Default constructor. Disabled.
+   */
+  FieldVariable( ) = delete;
+
+/// \name Native Storage Field Variable Constructor
+/// @{
+
+  /*!
+   * \brief Creates a FieldVariable instance with the given name,
    *  size and number of components per tuple.
    *
    * \param [in] name the name of this FieldVariable.
-   * \param [in] size the number of tuples.
-   * \param [in] capacity the number of tuples to allocate.
-   * \param [in] num_components the number of components per tuple.
+   * \param [in] num_tuples the number of tuples.
+   * \param [in] num_components num components per tuple (optional).
+   * \param [in] capacity number of tuples to allocate space for (optional).
+   *
+   * \note num_components is set to 1 if not specified.
+   * \note If capacity is not explicitly specified, an internal default is
+   *  used instead.
+   *
+   * \pre name.empty() == false
+   * \pre num_tuples >= 0
+   * \pre num_components >= 1
    */
   FieldVariable( const std::string& name,
                  IndexType num_tuples,
-                 int num_components=1 ) :
-    Field( name ),
-    m_data( num_tuples, num_components )
-  {
-    SLIC_ASSERT( num_tuples >= 0 );
-    SLIC_ASSERT( num_components >= 0 );
+                 IndexType num_components=1,
+                 IndexType capacity=USE_DEFAULT_CAPACITY );
 
-    this->m_type = field_of< FieldType >::type;
-  }
+/// @}
+
+/// \name External Storage FieldVariable Constructors
+/// @{
+
+  /*!
+   * \brief Creates a FieldVariable that points to a supplied external buffer.
+   *
+   * \param [in] name the name of this FieldVariable.
+   * \param [in] data pointer to the external buffer.
+   * \param [in] num_tuples the number of tuples to allocate.
+   * \param [in] num_components the number of components per tuple (optional).
+   *
+   * \note If num_components is set to 1 if not specified.
+   *
+   * \note The supplied pointer must point to a buffer that is sufficiently
+   *  allocated to hold \f$ num\_tuples \times num\_components \f$ itmes.
+   *
+   * \warning When constructing a FieldVariable instance from an external
+   *  buffer, all calls to shrink(), resize() and reserve() will fail.
+   *
+   * \pre name.empty() == false
+   * \pre num_tuples >= 0
+   * \pre num_components >= 1
+   * \pre data != AXOM_NULLPTR
+   */
+  FieldVariable( const std::string& name,
+                 T* data,
+                 IndexType num_tuples,
+                 IndexType num_components=1 );
+
+/// @}
+
+/// \name Sidre FieldVariable Constructors
+/// @{
+
+#ifdef MINT_USE_SIDRE
+
+  /*!
+   * \brief Creates a FieldVariable instance from a sidre::View that has data.
+   *
+   * \param [in] name the name of this FieldVariable.
+   * \param [in] field_view the sidre::View that holds the field data.
+   *
+   * \pre name.empty() == false
+   * \pre field_view != AXOM_NULLPTR
+   * \pre field_view->isEmpty() == false
+   *
+   * \post this->getNumTuples() >= 0
+   * \post this->getNumComponents() >= 1
+   *
+   * \see sidre::View
+   */
+  FieldVariable( const std::string& name, sidre::View* field_view );
+
+  /*!
+   * \brief Creates a FieldVariable with the given name, number of tuples and
+   *  number of components per tuple, on the supplied sidre::View.
+   *
+   * \param [in] field_view pointer to the sidre::View that will hold the field
+   * \param [in] name the name associated with this field instance.
+   * \param [in] num_tuples the number of tuples of the field.
+   * \param [in] num_components the number of components per tuple (optional).
+   * \param [in] capacity number of tuples to allocate space for (optional).
+   *
+   * \note num_components is set to 1 if not specified.
+   * \note If capacity is not explicitly specified, an internal default is
+   *  used instead.
+   *
+   * \note The supplied view is expected be be empty and will be populated to
+   *  hold the data associated with this FieldVairable.
+   *
+   * \pre field_view != AXOM_NULLPTR
+   * \pre field_view->isEmpty() == true
+   *
+   * \pre num_tuples >= 0
+   * \pre num_components >= 1
+   *
+   * \see sidre::View
+   */
+  FieldVariable( const std::string& name,
+                 sidre::View* field_view,
+                 IndexType num_tuples,
+                 IndexType num_components=1,
+                 IndexType capacity=USE_DEFAULT_CAPACITY );
+#endif
 
   /*!
    * \brief Destructor.
    */
-  virtual ~FieldVariable() { }
+  virtual ~FieldVariable( ) { delete m_field; }
 
-  virtual IndexType size() const { return m_data.size(); }
+/// @}
 
-  virtual int getNumComponents() const { return m_data.numComponents(); }
-
-  virtual IndexType getCapacity() const { return m_data.capacity(); }
-
-  virtual double getResizeRatio() const { return m_data.getResizeRatio(); }
+/// \name Virtual Methods
+/// @{
 
   /*!
-   * \brief Returns a double pointer to the field data.
-   * \return ptr pointer to the field data of type double.
-   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
+   * \brief Returns the number of tuples of this FieldVariable instance.
+   * \return N the number of tuples of this FieldVariable.
+   * \post N >= 0
+   * \see Field::getNumTuples()
    */
-  virtual double* getDoublePtr() { return AXOM_NULLPTR; }
+  virtual IndexType getNumTuples( ) const final
+  { return m_field->size(); }
 
   /*!
-   * \brief Returns a constant double pointer to the field data.
-   * \return ptr constant pointer to the field data of type double.
-   * \post ptr==AXOM_NULLPTR iff the data is not of type double.
+   * \brief Return the number of components per tuple.
+   * \return N the number of components per tuple
+   * \post N >= 1
+   * \see Field::getNumComponents()
    */
-  virtual const double* getDoublePtr() const { return AXOM_NULLPTR; }
+  virtual IndexType getNumComponents( ) const final
+  { return m_field->numComponents(); };
 
   /*!
-   * \brief Returns an integer pointer to the field data.
-   * \return ptr pointer to the field data of type int.
-   * \post ptr==AXOM_NULLPTR iff the data is not of type int.
+   * \brief Returns the total number of tuples this instance can hold.
+   * \return N the capacity of this FieldVariable instance.
+   * \post N >= this->getNumTuples()
+   * \see Field::getCapacity()
    */
-  virtual int* getIntPtr() { return AXOM_NULLPTR; }
+  virtual IndexType getCapacity( ) const final
+  { return m_field->capacity(); };
 
   /*!
-   * \brief Returns a constant integer pointer to the field data.
-   * \return ptr constant pointer to the field data of type int.
-   * \post ptr==AXOM_NULLPTR iff the data is not of type int.
+   * \brief Resizes the Field such that it can store the given number of tuples.
+   * \param [in] newNumTuples the number of tuples of this Field instance.
+   * \note Reallocation is done only if the new size exceeds the capacity.
+   * \see Field::resize()
    */
-  virtual const int* getIntPtr() const { return AXOM_NULLPTR; }
+  virtual void resize( IndexType newNumTuples ) final
+  { m_field->resize( newNumTuples ); }
 
-  virtual void resize( IndexType num_tuples )
-  { m_data.resize( num_tuples ); }
+  /*!
+   * \brief Increase the Field capacity to hold the given number of tuples.
+   * \param [in] newCapacity number of tuples to reserve memory for.
+   * \note if newCapacity < getCapacity() this method returns immediately.
+   * \see Field::reserve()
+   */
+  virtual void reserve( IndexType newCapacity ) final
+  { m_field->reserve( newCapacity ); }
 
-  virtual void reserve( IndexType capacity )
-  { m_data.reserve( capacity ); }
+  /*!
+   * \brief Shrinks the field capacity to be equal to the number of tuples.
+   * \post getCapacity()==getNumTuple()
+   * \see Field::shrink()
+   */
+  virtual void shrink( ) final
+  { m_field->shrink(); }
 
-  virtual void setResizeRatio( double ratio )
-  { m_data.setResizeRatio( ratio ); }
+/// @}
 
+  /*!
+   * \brief Returns pointer to the FieldVariable data.
+   * \return ptr pointer to the data associated with this field variable.
+   * \post ptr != AXOM_NULLPTR
+   */
+  /// @{
+
+  inline T* getFieldVariablePtr( )
+  { return m_field->getData(); }
+
+  inline const T* getFieldVariablePtr( ) const
+  { return m_field->getData(); }
+
+  /// @}
 private:
 
-  /*!
-   * \brief FieldVariable constructor. Does nothing. Made private to prevent
-   *  its use in application code.
-   */
-  FieldVariable() { }
-
-  Array< FieldType > m_data;
+  mint::Array< T >* m_field;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
 };
 
 //------------------------------------------------------------------------------
-//                  FIELD VARIABLE IMPLEMENTATION
+//                FieldVariable IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-template <>
-double* FieldVariable< double >::getDoublePtr();
+template < typename T >
+FieldVariable< T >::FieldVariable( const std::string& name,
+                                   IndexType num_tuples,
+                                   IndexType num_components,
+                                   IndexType capacity ) :
+                                   Field( name, field_traits< T >::type() )
+{
+  m_field = new mint::Array< T >( num_tuples, num_components, capacity );
+  SLIC_ASSERT( m_field != AXOM_NULLPTR );
+  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+}
 
 //------------------------------------------------------------------------------
-template <>
-const double* FieldVariable< double >::getDoublePtr() const;
+template < typename T >
+FieldVariable< T >::FieldVariable( const std::string& name,
+                                   T* data,
+                                   IndexType num_tuples,
+                                   IndexType num_components ) :
+                                   Field( name, field_traits< T >::type() )
+{
+  m_field = new mint::Array< T >( data, num_tuples, num_components );
+  SLIC_ASSERT( m_field != AXOM_NULLPTR );
+  SLIC_ASSERT( m_field->isExternal()==true );
+  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+}
+
+#ifdef MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-template <>
-int* FieldVariable< int >::getIntPtr();
+template < typename T >
+FieldVariable< T >::FieldVariable( const std::string& name,
+                                   sidre::View* field_view ) :
+                                   Field( name, field_traits< T >::type() )
+{
+  m_field = new mint::Array< T >( field_view );
+  SLIC_ASSERT( m_field != AXOM_NULLPTR );
+  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+}
 
 //------------------------------------------------------------------------------
-template <>
-const int* FieldVariable< int >::getIntPtr() const;
+template < typename T >
+FieldVariable< T >::FieldVariable( const std::string& name,
+                                   sidre::View* field_view,
+                                   IndexType num_tuples,
+                                   IndexType num_components,
+                                   IndexType capacity ) :
+                                   Field( name, field_traits< T >::type() )
+{
+  m_field = new mint::Array< T >( field_view, num_tuples,
+                                  num_components, capacity );
+  SLIC_ASSERT( m_field != AXOM_NULLPTR );
+  SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
+}
 
-
+#endif
 
 } /* namespace mint */
 } /* namespace axom */

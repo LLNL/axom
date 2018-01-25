@@ -48,8 +48,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  virtual ~FieldData()
-  { clear(); }
+  ~FieldData() { clear(); }
 
   /*!
    * \brief Checks if the field with the given name exists.
@@ -136,7 +135,6 @@ public:
 
 
   inline void reserve( IndexType capacity );
-
 
   inline void setResizeRatio( double ratio );
 
@@ -239,7 +237,7 @@ inline Field* FieldData::addField( const std::string& name, IndexType size,
   if ( hasField( name ) )
   {
     Field* f = getField( name );
-    if ( f->getType() != field_of< FieldType >::type )
+    if ( f->getType() != field_traits< FieldType >::type )
     {
       SLIC_WARNING( "Field with name " << name << " already exists but it " <<
                     "has a different type." );
@@ -280,11 +278,12 @@ inline void FieldData::reserve( IndexType capacity )
 //------------------------------------------------------------------------------
 inline void FieldData::setResizeRatio( double ratio )
 {
-  typename std::map< std::string, Field* >::iterator it;
-  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
-  {
-    it->second->setResizeRatio( ratio );
-  }
+// TODO: implement this
+//  typename std::map< std::string, Field* >::iterator it;
+//  for ( it = m_container.begin() ; it != m_container.end() ; ++it )
+//  {
+//    it->second->setResizeRatio( ratio );
+//  }
 }
 
 

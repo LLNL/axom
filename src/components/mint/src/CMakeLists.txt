@@ -46,6 +46,7 @@ set( mint_headers
     mesh/CurvilinearMesh.hpp
     mesh/Extent.hpp
     mesh/Field.hpp
+    mesh/FieldAssociation.hpp
     mesh/FieldData.hpp
     mesh/FieldTypes.hpp
     mesh/FieldVariable.hpp
@@ -71,7 +72,6 @@ set( mint_sources
     ## Mesh data-model
     mesh/CurvilinearMesh.cpp
     mesh/Extent.cpp
-    mesh/FieldVariable.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
     mesh/ParticleMesh.cpp

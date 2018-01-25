@@ -20,6 +20,9 @@ set( mint_tests
      ## mesh tests
      mint_mesh_coordinates.cpp
      mint_mesh_extent.cpp
+     mint_mesh_field.cpp
+     mint_mesh_field_types.cpp
+     mint_mesh_field_variable.cpp
 
      ## fem tests
      mint_fem_shape_functions.cpp

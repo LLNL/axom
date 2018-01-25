@@ -1317,8 +1317,8 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
     std::string name = "query_status";
     axom::mint::FieldData& CD = cmesh.getCellFieldData();
-    CD.addField( new axom::mint::FieldVariable< int >(name, numCells ) );
-    int* fld = CD.getField( name )->getIntPtr();
+    CD.addField( new axom::mint::FieldVariable< int >(name, numCells, 1 ) );
+    int* fld = axom::mint::Field::getDataPtr< int >( CD.getField( name ) );
 
     for(int i=0 ; i < res ; ++i)
     {

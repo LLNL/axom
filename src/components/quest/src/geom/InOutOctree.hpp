@@ -57,6 +57,7 @@
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
+#include "mint/Field.hpp"
 #include "mint/vtk_utils.hpp"
 
 
@@ -2762,24 +2763,24 @@ private:
 
   int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
   {
-//    int * fld = mesh->addCellField< int >( name, 1 )->getIntPtr();
-    mesh->getNodeFieldData().addField(
-         new mint::FieldVariable< int >( name, mesh->getNumberOfNodes() ) );
-    int* fld = mesh->getNodeFieldData().getField( name )->getIntPtr( );
-    SLIC_ASSERT( fld != AXOM_NULLPTR );
+    const mint::IndexType nnodes = mesh->getNumberOfNodes();
+    mint::FieldData& ND          = mesh->getNodeFieldData();
+    ND.addField( new mint::FieldVariable< int >( name, nnodes, 1 ) );
 
+    int* fld = mint::Field::getDataPtr< int >( ND.getField( name )  );
+    SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }
 
   double* addRealField(DebugMesh* mesh, const std::string& name,
                        int size) const
   {
-//    double * fld = mesh->addCellField< double >( name, 1 )->getDoublePtr();
-    mesh->getNodeFieldData().addField(
-          new mint::FieldVariable< double >( name, mesh->getNumberOfNodes( )));
-    double* fld = mesh->getNodeFieldData().getField( name )->getDoublePtr( );
-    SLIC_ASSERT( fld != AXOM_NULLPTR );
+    const mint::IndexType nnodes = mesh->getNumberOfNodes();
+    mint::FieldData& ND          = mesh->getNodeFieldData();
+    ND.addField( new mint::FieldVariable< double >( name, nnodes, 1 ) );
 
+    double* fld = mint::Field::getDataPtr< double >( ND.getField( name ) );
+    SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }
 

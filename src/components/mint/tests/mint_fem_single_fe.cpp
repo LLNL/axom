@@ -864,11 +864,9 @@ void check_interp( double TOL=1.e-9 )
   // Note: I don't know why we need to cast as m as a Mesh to add a field
   // it works just fine other places. -BC
   m->getNodeFieldData().addField(
-    new mint::FieldVariable< double >("foo", nnodes ) );
-  double* f = m->getNodeFieldData().getField( "foo" )->getDoublePtr();
-
-//  mint::Field * F = mesh->addNodeField< double >( "foo", 1 );
-//  double * f = F->getDoublePtr();
+      new mint::FieldVariable< double >("foo", nnodes, 1 ) );
+  double* f = mint::Field::getDataPtr< double >(
+                    m->getNodeFieldData().getField( "foo" ) );
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 

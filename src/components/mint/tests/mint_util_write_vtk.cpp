@@ -95,8 +95,8 @@ void create_scalar_data( Mesh* mesh )
                                                      mesh_num_nodes, 1 );
   Field* node_field_i = new FieldVariable< int >( "node_scalars_int",
                                                   mesh_num_nodes, 1 );
-  double* double_ptr = node_field_d->getDoublePtr();
-  int* int_ptr = node_field_i->getIntPtr();
+  double* double_ptr = Field::getDataPtr< double >( node_field_d );
+  int* int_ptr       = Field::getDataPtr< int >( node_field_i );
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
@@ -125,8 +125,8 @@ void create_scalar_data( Mesh* mesh )
                                                      mesh_num_cells, 1 );
   Field* cell_field_i = new FieldVariable< int >( "cell_scalars_int",
                                                   mesh_num_cells, 1 );
-  double_ptr = cell_field_d->getDoublePtr();
-  int_ptr = cell_field_i->getIntPtr();
+  double_ptr = Field::getDataPtr< double >( cell_field_d );
+  int_ptr    = Field::getDataPtr< int >( cell_field_i );
   for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr[ idx ] = idx;
@@ -155,10 +155,12 @@ void create_vector_data( Mesh* mesh )
                                                       mesh_num_nodes, 2 );
   Field* node_field_2i = new FieldVariable< int >( "node_vectors_2int",
                                                    mesh_num_nodes, 2 );
-  double* double_ptr3 = node_field_3d->getDoublePtr();
-  int* int_ptr3 = node_field_3i->getIntPtr();
-  double* double_ptr2 = node_field_2d->getDoublePtr();
-  int* int_ptr2 = node_field_2i->getIntPtr();
+
+  double* double_ptr3 = Field::getDataPtr< double >( node_field_3d );
+  int* int_ptr3       = Field::getDataPtr< int >( node_field_3i );
+  double* double_ptr2 = Field::getDataPtr< double >( node_field_2d );
+  int* int_ptr2       = Field::getDataPtr< int >( node_field_2i );
+
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
@@ -207,10 +209,12 @@ void create_vector_data( Mesh* mesh )
                                                       mesh_num_cells, 2 );
   Field* cell_field_2i = new FieldVariable< int >( "cell_vectors_2int",
                                                    mesh_num_cells, 2 );
-  double_ptr3 = cell_field_3d->getDoublePtr();
-  int_ptr3 = cell_field_3i->getIntPtr();
-  double_ptr2 = cell_field_2d->getDoublePtr();
-  int_ptr2 = cell_field_2i->getIntPtr();
+
+  double_ptr3 = Field::getDataPtr< double >( cell_field_3d );
+  int_ptr3    = Field::getDataPtr< int >( cell_field_3i );
+  double_ptr2 = Field::getDataPtr< double >( cell_field_2d );
+  int_ptr2    = Field::getDataPtr< int >( cell_field_2i );
+
   for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr3[ 3 * idx ] = idx;
@@ -248,8 +252,9 @@ void create_multidim_data( Mesh* mesh )
                                                      mesh_num_nodes, 4);
   Field* node_field_i = new FieldVariable< int >( "node_multidim_int",
                                                   mesh_num_nodes, 4);
-  double* double_ptr = node_field_d->getDoublePtr();
-  int* int_ptr = node_field_i->getIntPtr();
+  double* double_ptr = Field::getDataPtr< double >( node_field_d );
+  int* int_ptr       = Field::getDataPtr< int >( node_field_i );
+
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
@@ -289,8 +294,9 @@ void create_multidim_data( Mesh* mesh )
                                                      mesh_num_cells, 4 );
   Field* cell_field_i = new FieldVariable< int >( "cell_multidim_int",
                                                   mesh_num_cells, 4 );
-  double_ptr = cell_field_d->getDoublePtr();
-  int_ptr = cell_field_i->getIntPtr();
+  double_ptr = Field::getDataPtr< double >( cell_field_d );
+  int_ptr    = Field::getDataPtr< int >( cell_field_i );
+
   for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr[ 4 * idx  + 0] = idx;
@@ -346,8 +352,8 @@ void check_header( std::ifstream& file )
 void check_scalar( const Field* field, std::ifstream& file,
                    uint offset = 0 )
 {
-  const int num_components = field->getNumComponents();
-  const IndexType num_values = field->size();
+  const int num_components   = field->getNumComponents( );
+  const IndexType num_values = field->getNumTuples( );
 
   std::string buffer;
   file >> buffer;
@@ -357,7 +363,7 @@ void check_scalar( const Field* field, std::ifstream& file,
 
   if ( field->getType() == DOUBLE_FIELD_TYPE )
   {
-    const double* field_data = field->getDoublePtr();
+    const double* field_data = Field::getDataPtr< double >( field );
     for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
       double temp;
@@ -365,9 +371,9 @@ void check_scalar( const Field* field, std::ifstream& file,
       EXPECT_DOUBLE_EQ( temp, field_data[ num_components * idx + offset ] );
     }
   }
-  else if ( field->getType() == INTEGER_FIELD_TYPE )
+  else if ( field->getType() == INT32_FIELD_TYPE )
   {
-    const int* field_data = field->getIntPtr();
+    const int* field_data = Field::getDataPtr< int >( field );
     for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
       int temp;
@@ -386,12 +392,12 @@ void check_scalar( const Field* field, std::ifstream& file,
  */
 void check_vector_data( const Field* field, std::ifstream& file )
 {
-  const int num_components = field->getNumComponents();
-  const IndexType num_values = field->size();
+  const int num_components   = field->getNumComponents();
+  const IndexType num_values = field->getNumTuples();
 
   if ( field->getType() == DOUBLE_FIELD_TYPE )
   {
-    const double* field_data = field->getDoublePtr();
+    const double* field_data = Field::getDataPtr< double >( field );
     double temp;
     for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
@@ -408,9 +414,9 @@ void check_vector_data( const Field* field, std::ifstream& file )
       }
     }
   }
-  else if ( field->getType() == INTEGER_FIELD_TYPE )
+  else if ( field->getType() == INT32_FIELD_TYPE )
   {
-    const int* field_data = field->getIntPtr();
+    const int* field_data = Field::getDataPtr< int >( field );
     int temp;
     for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
@@ -458,7 +464,7 @@ void check_multidim_data( const Field* field, std::ifstream& file )
     }
     else if ( d_type == "int" )
     {
-      EXPECT_EQ( field_type, INTEGER_FIELD_TYPE );
+      EXPECT_EQ( field_type, INT32_FIELD_TYPE );
     }
     else
     {
@@ -495,7 +501,7 @@ void check_fieldData( const FieldData& field_data, std::ifstream& file )
       }
       else if ( d_type == "int" )
       {
-        EXPECT_EQ( field->getType(), INTEGER_FIELD_TYPE );
+        EXPECT_EQ( field->getType(), INT32_FIELD_TYPE );
       }
       else
       {
@@ -531,7 +537,7 @@ void check_fieldData( const FieldData& field_data, std::ifstream& file )
       }
       else if ( d_type == "int" )
       {
-        EXPECT_EQ( field->getType(), INTEGER_FIELD_TYPE );
+        EXPECT_EQ( field->getType(), INT32_FIELD_TYPE );
       }
       else
       {

@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MESHTYPE_HPP_
-#define MESHTYPE_HPP_
+#ifndef MINT_MESHTYPE_HPP_
+#define MINT_MESHTYPE_HPP_
 
 /*!
  * \brief Defines the basic mesh types supported by mint.
@@ -117,4 +117,4 @@ static const bool explicit_connectivity[] = {
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* MESHTYPE_HPP_ */
+#endif /* MINT_MESHTYPE_HPP_ */

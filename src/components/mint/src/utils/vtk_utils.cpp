@@ -218,7 +218,7 @@ void write_scalar_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT(  field != AXOM_NULLPTR );
   SLIC_ASSERT(  field->getNumComponents() == 1 );
-  const IndexType num_values = field->size();
+  const IndexType num_values = field->getNumTuples();
 
   file << "SCALARS " << field->getName() << " ";
   if ( field->getType() == DOUBLE_FIELD_TYPE )
@@ -226,7 +226,7 @@ void write_scalar_data( const Field* field, std::ofstream& file )
     file << "double\n";
     file << "LOOKUP_TABLE default\n";
 
-    const double* data_ptr = field->getDoublePtr();
+    const double* data_ptr = Field::getDataPtr< double >( field );
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( IndexType i = 0 ; i < num_values ; ++i )
@@ -234,12 +234,12 @@ void write_scalar_data( const Field* field, std::ofstream& file )
       file << data_ptr[ i ] << std::endl;
     }
   }
-  else if ( field->getType() == INTEGER_FIELD_TYPE )
+  else if ( field->getType() == INT32_FIELD_TYPE )
   {
     file << "int\n";
     file << "LOOKUP_TABLE default\n";
 
-    const int* data_ptr = field->getIntPtr();
+    const int* data_ptr = Field::getDataPtr< int >( field );
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( IndexType i = 0 ; i < num_values ; ++i )
@@ -261,7 +261,7 @@ void write_vector_data( const Field* field, std::ofstream& file )
 {
   SLIC_ASSERT(  field != AXOM_NULLPTR );
   const int num_components = field->getNumComponents();
-  const IndexType num_values = field->size();
+  const IndexType num_values = field->getNumTuples();
   SLIC_ASSERT(  num_components == 2 || num_components == 3 );
 
   file << "VECTORS " << field->getName() << " ";
@@ -269,7 +269,8 @@ void write_vector_data( const Field* field, std::ofstream& file )
   {
     file << "double\n";
 
-    const double* data_ptr = field->getDoublePtr();
+//    const double* data_ptr = field->getDoublePtr();
+    const double* data_ptr = Field::getDataPtr< double >( field );
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( IndexType i = 0 ; i < num_values ; ++i )
@@ -286,11 +287,11 @@ void write_vector_data( const Field* field, std::ofstream& file )
       }
     }
   }
-  else if ( field->getType() == INTEGER_FIELD_TYPE )
+  else if ( field->getType() == INT32_FIELD_TYPE )
   {
     file << "int\n";
 
-    const int* data_ptr = field->getIntPtr();
+    const int* data_ptr = Field::getDataPtr< int >( field );
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
     for ( IndexType i = 0 ; i < num_values ; ++i )
@@ -322,7 +323,7 @@ void write_multidim_data( const Field* field, std::ofstream& file )
   SLIC_ASSERT( field != AXOM_NULLPTR );
   const int field_type = field->getType();
   const int num_components = field->getNumComponents();
-  const IndexType num_values = field->size();
+  const IndexType num_values = field->getNumTuples();
   SLIC_ASSERT( num_components > 3 );
 
   if ( field_type == DOUBLE_FIELD_TYPE )
@@ -334,7 +335,8 @@ void write_multidim_data( const Field* field, std::ofstream& file )
       file << " double\n";
       file << "LOOKUP_TABLE default\n";
 
-      const double* data_ptr = field->getDoublePtr();
+//      const double* data_ptr = field->getDoublePtr();
+      const double* data_ptr = Field::getDataPtr< double >( field );
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
       for ( IndexType i = 0 ; i < num_values ; ++i )
@@ -343,7 +345,7 @@ void write_multidim_data( const Field* field, std::ofstream& file )
       }
     }
   }
-  else if ( field_type == INTEGER_FIELD_TYPE )
+  else if ( field_type == INT32_FIELD_TYPE )
   {
     for ( int cur_comp = 0 ; cur_comp < num_components ; ++cur_comp )
     {
@@ -352,7 +354,7 @@ void write_multidim_data( const Field* field, std::ofstream& file )
       file << " int\n";
       file << "LOOKUP_TABLE default\n";
 
-      const int* data_ptr = field->getIntPtr();
+      const int* data_ptr = Field::getDataPtr< int >( field );
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
       for ( IndexType i = 0 ; i < num_values ; ++i )
@@ -378,15 +380,11 @@ void write_data( const FieldData& field_data, IndexType num_values,
     const Field* field = field_data.getField( i );
     SLIC_ASSERT( field != AXOM_NULLPTR );
     const int num_components = field->getNumComponents();
-    SLIC_ASSERT( field->size() == num_values );
+    SLIC_ASSERT( field->getNumTuples() == num_values );
 
-    if ( field->getType() != DOUBLE_FIELD_TYPE &&
-         field->getType() != INTEGER_FIELD_TYPE )
-    {
-      SLIC_WARNING( "Field " << field->getName() <<
-                    " type not double or integer." );
-      continue;
-    }
+    const bool invalidType = ( field->getType() >= NUMBER_OF_FIELD_TYPES );
+    SLIC_ERROR_IF( invalidType,
+                   "Field [" << field->getName() << "] has invalid type" );
 
     if ( num_components == 1 )
     {
@@ -404,6 +402,7 @@ void write_data( const FieldData& field_data, IndexType num_values,
     {
       SLIC_WARNING( "Field has an improper number of components.");
     }
+
   }
 }
 
