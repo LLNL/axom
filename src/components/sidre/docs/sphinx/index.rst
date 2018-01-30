@@ -48,10 +48,13 @@ capbilities include:
 So far, Sidre development has focused on designing and building flexible and
 powerful concepts to build on. The Sidre API includes four main concepts:
 
-* **Datastore.**  This is main interface. It is small and simple.
+* **Datastore.** The main interface; contains a collection of Buffers and one
+  root Group.
 * **Buffer.**  Describes and holds a chunk of data in memory owned by Sidre.
 * **View.**   Describes a conceptual layout of data in memory.
-* **Group.**  Used to define a hierachical collection of data. A Group can have one parent Group and one or more child Groups. A Group can also have a collection of Views.
+* **Group.** Defines a hierachical collection of data. A Group can have zero or
+  one parent Group and zero or more child Groups. A Group can also have a
+  collection of Views.
 
 These concepts will be described in more detail in later sections.
 

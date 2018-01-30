@@ -18,6 +18,7 @@
 set(example_sources
     sidre_stressgroups.cpp
     sidre_shocktube.cpp
+    sidre_createdatastore.cpp
 )
 
 
