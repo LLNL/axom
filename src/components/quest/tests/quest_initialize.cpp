@@ -24,7 +24,8 @@ TEST( quest_interface, pointer_initialize )
 
   SLIC_INFO(fmt::format("Initializing InOutOctree over triangle mesh ..."));
 
-  axom::mint::Mesh * input_mesh = axom::quest::utilities::make_tetrahedron_mesh();
+  axom::mint::Mesh* input_mesh =
+    axom::quest::utilities::make_tetrahedron_mesh();
 
 #ifdef AXOM_USE_MPI
   axom::quest::initialize(MPI_COMM_WORLD, input_mesh, false, 3, IGNORE, IGNORE);
@@ -57,4 +58,3 @@ int main( int argc, char** argv )
 
   return result;
 }
-
