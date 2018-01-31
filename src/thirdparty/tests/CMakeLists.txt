@@ -12,9 +12,9 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
-#
-# Specify list of tests
-#
+
+# Create cmake targets for running the tests through axom's code checks
+axom_add_code_checks(PREFIX thirdparty_tests)
 
 ########################################
 # Smoke test for hdf5 thirdparty library
