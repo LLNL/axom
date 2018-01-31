@@ -16,6 +16,19 @@
 # Specify list of tests
 #
 
+########################################
+# Smoke test for hdf5 thirdparty library
+########################################
+if( HDF5_FOUND)
+    blt_add_executable(NAME hdf5_smoke_test
+                       SOURCES hdf5_smoke.cpp
+                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                       DEPENDS_ON hdf5 gtest
+                       FOLDER axom/thirdparty/tests )
+    blt_add_test(NAME hdf5_smoke 
+                 COMMAND hdf5_smoke_test)
+endif()
+
 ###########################################
 # Smoke test for conduit thirdparty library
 ###########################################
@@ -38,7 +51,6 @@ if (CONDUIT_FOUND)
                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
-
 
 ########################################
 # Smoke test for mfem thirdparty library
