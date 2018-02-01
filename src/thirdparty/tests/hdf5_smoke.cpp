@@ -35,7 +35,7 @@
 //-----------------------------------------------------------------------------
 TEST(hdf5_smoke, check_axom_define)
 {
-  // This test checks that axom have the correct defines for hdf5
+  // This test checks that axom has the correct defines for hdf5
   // This is brought in through axom's config.hpp
 
 #ifdef AXOM_USE_HDF5
