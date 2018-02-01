@@ -1412,7 +1412,7 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
-    SLIC_ASSERT_MSG(n.has_path("sidre"), 
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
                     "Conduit Node " << n.path() << " does not have sidre " <<
                     "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
@@ -1660,7 +1660,7 @@ View* Group::attachView(View* view)
   {
     SLIC_ASSERT_MSG(view->m_owning_group == AXOM_NULLPTR,
                     "Provided View " << view->getPathName() << " is already " <<
-                    "attatched to Group " << 
+                    "attatched to Group " <<
                     view->m_owning_group->getPathName() << " and can't be " <<
                     "attatched to Group " << getPathName() << "." );
     view->m_owning_group = this;
@@ -2534,18 +2534,18 @@ bool Group::rename(const std::string& new_name)
         {
           Group* detached_group = parent->detachGroup(m_name);
           SLIC_CHECK_MSG(detached_group == this,
-                     "Group detatched from parent " << 
-                     detached_group->getPathName() << " is not this Group " <<
-                     getPathName() << "." );
+                         "Group detatched from parent " <<
+                         detached_group->getPathName() << " is not this Group " <<
+                         getPathName() << "." );
 
           m_name = new_name;
 
           Group* attached_group = parent->attachGroup(detached_group);
           AXOM_DEBUG_VAR(attached_group);
           SLIC_CHECK_MSG(attached_group == this,
-                     "Group attached to parent " << 
-                     attached_group->getPathName() << " is not this Group " <<
-                     getPathName() << "." );
+                         "Group attached to parent " <<
+                         attached_group->getPathName() << " is not this Group " <<
+                         getPathName() << "." );
         }
       }
       else

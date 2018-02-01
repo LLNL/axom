@@ -423,7 +423,7 @@ int main( int argc, char** argv )
 
   if (!writeCollisions(collisions, degenerate, params.stlInput))
   {
-    SLIC_ERROR("Couldn't write results to " << params.stlInput << 
+    SLIC_ERROR("Couldn't write results to " << params.stlInput <<
                ".collisions.txt");
   }
 
