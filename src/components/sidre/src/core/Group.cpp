@@ -19,7 +19,10 @@
 #include "Group.hpp"
 
 #include "conduit_relay.hpp"
-#include "conduit_relay_hdf5.hpp"
+
+#ifdef AXOM_USE_HDF5
+# include "conduit_relay_hdf5.hpp"
+#endif
 
 // Other axom component headers
 
@@ -1356,44 +1359,6 @@ void Group::save(const std::string& path,
   }
 }
 
-/*
- *************************************************************************
- *
- * Save Group (including Views and child Groups) to a hdf5 handle
- *
- *************************************************************************
- */
-void Group::save(const hid_t& h5_id,
-                 const std::string& protocol,
-                 const Attribute* attr) const
-{
-  // supported here:
-  // "sidre_hdf5"
-  // "conduit_hdf5"
-  if(protocol == "sidre_hdf5")
-  {
-    Node n;
-    exportTo(n["sidre"], attr);
-    createExternalLayout(n["sidre/external"], attr);
-    n["sidre_group_name"] = m_name;
-    conduit::relay::io::hdf5_write(n,h5_id);
-  }
-  else if( protocol == "conduit_hdf5")
-  {
-    Node n;
-    createNativeLayout(n, attr);
-    n["sidre_group_name"] = m_name;
-    conduit::relay::io::hdf5_write(n, h5_id);
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol "
-               << protocol
-               << " for save with hdf5 handle.");
-  }
-}
-
-
 /*************************************************************************/
 
 /*
@@ -1480,53 +1445,6 @@ void Group::load(const std::string& path,
 /*
  *************************************************************************
  *
- * Load Group (including Views and child Groups) from an hdf5 handle
- *
- *************************************************************************
- */
-void Group::load(const hid_t& h5_id,
-                 const std::string &protocol,
-                 bool preserve_contents)
-{
-  // supported here:
-  // "sidre_hdf5"
-  // "conduit_hdf5"
-  std::string new_name;
-  if(protocol == "sidre_hdf5")
-  {
-    Node n;
-    conduit::relay::io::hdf5_read(h5_id,n);
-    SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    "Conduit Node " << n.path() << " does not have sidre " <<
-                    "data for Group " << getPathName() << "." );
-    importFrom(n["sidre"], preserve_contents);
-    if (n.has_path("sidre_group_name"))
-    {
-      new_name = n["sidre_group_name"].as_string();
-    }
-  }
-  else if( protocol == "conduit_hdf5")
-  {
-    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
-    Node n;
-    conduit::relay::io::hdf5_read(h5_id, n);
-    importConduitTree(n, preserve_contents);
-    if (n.has_path("sidre_group_name"))
-    {
-      new_name = n["sidre_group_name"].as_string();
-    }
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
-
-  renameOrWarn(new_name);
-}
-
-/*
- *************************************************************************
- *
  * Rename this group unless the new name already is held by the parent.
  *
  *************************************************************************
@@ -1583,9 +1501,105 @@ void Group::loadExternalData(const std::string& path)
 {
   Node n;
   createExternalLayout(n);
+
+#ifdef AXOM_USE_HDF5
   // CYRUS'-NOTE, not sure ":" will work with multiple trees per
   // output file
   conduit::relay::io::hdf5_read( path + ":sidre/external", n);
+#else
+  AXOM_DEBUG_VAR(path); // Gets rid of warning about unused variable
+  SLIC_WARNING("External data not loaded. "
+      << "This function requires HDF5 support. "
+      <<" Please reconfigure with HDF5");
+#endif
+}
+
+
+// Functions that directly use the hdf5 API in their signature
+#ifdef AXOM_USE_HDF5
+
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a hdf5 handle
+ *
+ *************************************************************************
+ */
+void Group::save(const hid_t& h5_id,
+                 const std::string& protocol,
+                 const Attribute* attr) const
+{
+  // supported here:
+  // "sidre_hdf5"
+  // "conduit_hdf5"
+  if(protocol == "sidre_hdf5")
+  {
+    Node n;
+    exportTo(n["sidre"], attr);
+    createExternalLayout(n["sidre/external"], attr);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::hdf5_write(n,h5_id);
+  }
+  else if( protocol == "conduit_hdf5")
+  {
+    Node n;
+    createNativeLayout(n, attr);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::hdf5_write(n, h5_id);
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol "
+               << protocol
+               << " for save with hdf5 handle.");
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Load Group (including Views and child Groups) from an hdf5 handle
+ *
+ *************************************************************************
+ */
+void Group::load(const hid_t& h5_id,
+                 const std::string &protocol,
+                 bool preserve_contents)
+{
+  // supported here:
+  // "sidre_hdf5"
+  // "conduit_hdf5"
+  std::string new_name;
+  if(protocol == "sidre_hdf5")
+  {
+    Node n;
+    conduit::relay::io::hdf5_read(h5_id,n);
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node " << n.path() << " does not have sidre " <<
+                    "data for Group " << getPathName() << "." );
+    importFrom(n["sidre"], preserve_contents);
+    if (n.has_path("sidre_group_name"))
+    {
+      new_name = n["sidre_group_name"].as_string();
+    }
+  }
+  else if( protocol == "conduit_hdf5")
+  {
+    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
+    Node n;
+    conduit::relay::io::hdf5_read(h5_id, n);
+    importConduitTree(n, preserve_contents);
+    if (n.has_path("sidre_group_name"))
+    {
+      new_name = n["sidre_group_name"].as_string();
+    }
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+
+  renameOrWarn(new_name);
 }
 
 /*
@@ -1602,6 +1616,8 @@ void Group::loadExternalData(const hid_t& h5_id)
   createExternalLayout(n);
   conduit::relay::io::hdf5_read(h5_id, "sidre/external", n);
 }
+
+#endif  /* AXOM_USE_HDF5 */
 
 
 ////////////////////////////////////////////////////////////////////////

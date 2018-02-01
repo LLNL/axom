@@ -1007,7 +1007,7 @@ TEST(sidre_group,save_restore_empty_datastore)
   }
 }
 
-
+#ifdef AXOM_USE_HDF5
 //------------------------------------------------------------------------------
 // make sure the hdf5 methods are consistent with the path based methods
 //------------------------------------------------------------------------------
@@ -1058,6 +1058,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
   // close hdf5 handle
   EXPECT_TRUE(H5Fclose(h5_id) >=0);
 }
+#endif  // AXOM_USE_HDF5
 
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_api)

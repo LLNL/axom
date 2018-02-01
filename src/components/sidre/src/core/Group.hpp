@@ -40,7 +40,9 @@
 #include <cstring>
 
 // third party lib headers
-#include "hdf5.h"
+#ifdef AXOM_USE_HDF5
+# include "hdf5.h"
+#endif
 
 // Other axom headers
 #include "slic/slic.hpp"
@@ -1039,8 +1041,8 @@ public:
   bool isEquivalentTo(const Group* other) const;
 
 
+//@{
   /*!
-   *@{
    * @name    Group I/O methods
    *   These methods save and load Group trees to and from files.
    *   This includes the views and buffers used in by groups in the tree.
@@ -1083,6 +1085,30 @@ public:
              const Attribute* attr = AXOM_NULLPTR) const;
 
   /*!
+   * \brief Load the Group from a file.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
+   * \param preserve_contents   Preserve existing contents of group if true
+   */
+  void load(const std::string& path,
+            const std::string& protocol = "sidre_hdf5",
+            bool preserve_contents = false);
+
+  /*!
+   * \brief Load data into the Group's external views from a file.
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.
+   *
+   * \param path      file path
+   */
+  void loadExternalData(const std::string& path);
+
+
+#ifdef AXOM_USE_HDF5
+
+  /*!
    * \brief Save the Group to an hdf5 handle.
    *
    *  If attr is AXOM_NULLPTR, dump all Views.  Otherwise, only dump Views
@@ -1097,17 +1123,6 @@ public:
              const Attribute* attr = AXOM_NULLPTR) const;
 
   /*!
-   * \brief Load the Group from a file.
-   *
-   * \param path      file path
-   * \param protocol  I/O protocol
-   * \param preserve_contents   Preserve existing contents of group if true
-   */
-  void load(const std::string& path,
-            const std::string& protocol = "sidre_hdf5",
-            bool preserve_contents = false);
-
-  /*!
    * \brief Load the Group from an hdf5 handle.
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
@@ -1118,16 +1133,6 @@ public:
              bool preserve_contents = false);
 
   /*!
-   * \brief Load data into the Group's external views from a file.
-   *
-   * No protocol argument is needed, as this only is used with the sidre_hdf5
-   * protocol.
-   *
-   * \param path      file path
-   */
-  void loadExternalData(const std::string& path);
-
-  /*!
    * \brief Load data into the Group's external views from a hdf5 handle.
    *
    * No protocol argument is needed, as this only is used with the sidre_hdf5
@@ -1136,6 +1141,11 @@ public:
    * \param h5_id      hdf5 handle
    */
   void loadExternalData(const hid_t& h5_id);
+
+#endif /* AXOM_USE_HDF5 */
+
+//@}
+
 
   /*!
    * \brief Change the name of this Group.

@@ -32,8 +32,6 @@
 #include <vector>
 #include <stack>
 
-#include "hdf5.h"
-
 // Other axom headers
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
