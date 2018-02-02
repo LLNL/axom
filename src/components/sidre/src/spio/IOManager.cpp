@@ -29,10 +29,17 @@
 
 // Conduit headers
 #include "conduit_relay.hpp"
-#include "conduit_relay_hdf5.hpp"
+
+#ifdef AXOM_USE_HDF5
+# include "conduit_relay_hdf5.hpp"
+#endif
+
+#ifdef AXOM_USE_HDF5
+# include "hdf5.h"
+#endif
 
 #ifdef AXOM_USE_SCR
-#include "scr.h"
+# include "scr.h"
 #endif
 
 namespace axom
@@ -154,6 +161,7 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
 
   if (protocol == "sidre_hdf5")
   {
+#ifdef AXOM_USE_HDF5
     std::string file_pattern = getHDF5FilePattern(root_name);
 
     int group_id = m_baton->wait();
@@ -201,7 +209,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     SLIC_ASSERT(status >= 0);
     status = H5Fclose(h5_file_id);
     SLIC_ASSERT(status >= 0);
-
+#else
+    SLIC_WARNING("'sidre_hdf5' protocol only available "
+                 << "when axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
   }
   else
   {
@@ -238,7 +249,12 @@ void IOManager::read(
 {
   if (protocol == "sidre_hdf5")
   {
+#ifdef AXOM_USE_HDF5
     readSidreHDF5(datagroup, root_file, preserve_contents);
+#else
+    SLIC_WARNING("'sidre_hdf5' protocol only available "
+                 << "when axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
   }
   else
   {
@@ -342,64 +358,6 @@ void IOManager::readWithSCR(
 }
 #endif
 
-/*
- *************************************************************************
- *
- * Read based on HDF5 root file.
- *
- *************************************************************************
- */
-void IOManager::readSidreHDF5(sidre::Group* datagroup,
-                              const std::string& root_file,
-                              bool preserve_contents)
-{
-  int num_files = getNumFilesFromRoot(root_file);
-  SLIC_ASSERT(num_files > 0);
-
-  if (m_baton)
-  {
-    if (m_baton->getNumFiles() != num_files)
-    {
-      delete m_baton;
-      m_baton = AXOM_NULLPTR;
-    }
-  }
-
-  if (!m_baton)
-  {
-    m_baton = new IOBaton(m_mpi_comm, num_files);
-  }
-
-  std::string file_pattern = getHDF5FilePattern(root_file);
-
-  int group_id = m_baton->wait();
-
-  herr_t errv;
-  AXOM_DEBUG_VAR(errv);
-
-  std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
-
-  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
-                             H5F_ACC_RDONLY,
-                             H5P_DEFAULT);
-  SLIC_ASSERT(h5_file_id >= 0);
-
-  std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
-  hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
-  SLIC_ASSERT(h5_group_id >= 0);
-
-  datagroup->load(h5_group_id, "sidre_hdf5", preserve_contents);
-
-  errv = H5Gclose(h5_group_id);
-  SLIC_ASSERT(errv >= 0);
-
-  errv = H5Fclose(h5_file_id);
-  SLIC_ASSERT(errv >= 0);
-
-  (void)m_baton->pass();
-}
-
-
 void IOManager::loadExternalData(sidre::Group* datagroup,
                                  const std::string& root_file)
 {
@@ -420,6 +378,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
     m_baton = new IOBaton(m_mpi_comm, num_files);
   }
 
+#ifdef AXOM_USE_HDF5
   std::string file_pattern = getHDF5FilePattern(root_file);
 
   int group_id = m_baton->wait();
@@ -445,6 +404,11 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   errv = H5Fclose(h5_file_id);
   SLIC_ASSERT(errv >= 0);
+#else
+  SLIC_WARNING("Loading external data only only available "
+               << "when Axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
+
 
   (void)m_baton->pass();
 }
@@ -468,7 +432,7 @@ void IOManager::createRootFile(const std::string& file_base,
 
   if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
   {
-
+#ifdef AXOM_USE_HDF5
     n["number_of_files"] = num_files;
     if (protocol == "sidre_hdf5")
     {
@@ -490,6 +454,10 @@ void IOManager::createRootFile(const std::string& file_base,
 
     root_file_name = file_base + ".root";
     conduit_protocol = "hdf5";
+#else
+    SLIC_WARNING("'"<< protocol <<"' protocol only available "
+                    << "when Axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
   }
   else
   {
@@ -557,46 +525,6 @@ void IOManager::createRootFile(const std::string& file_base,
 /*
  *************************************************************************
  *
- * Get namescheme pattern for a file holding Group data.
- *
- *************************************************************************
- */
-std::string IOManager::getHDF5FilePattern(
-  const std::string& root_name)
-{
-  std::string file_pattern;
-  int buf_size = 0;
-  if (m_my_rank == 0)
-  {
-    conduit::Node n;
-    conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
-
-    file_pattern = n.as_string();
-
-    buf_size = file_pattern.size() + 1;
-  }
-
-  MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
-
-  char name_buf[buf_size];
-  if (m_my_rank == 0)
-  {
-    strcpy(name_buf, file_pattern.c_str());
-  }
-
-  MPI_Bcast(name_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
-
-  if (m_my_rank != 0)
-  {
-    file_pattern = std::string(name_buf);
-  }
-
-  return file_pattern;
-}
-
-/*
- *************************************************************************
- *
  * Get protocol from root file
  *
  *************************************************************************
@@ -652,6 +580,106 @@ std::string IOManager::getProtocol(
 }
 
 
+// Several private functions are only relevant when HDF5 is enabled
+#ifdef AXOM_USE_HDF5
+
+/*
+ *************************************************************************
+ *
+ * Get namescheme pattern for a file holding Group data.
+ *
+ *************************************************************************
+ */
+std::string IOManager::getHDF5FilePattern(
+  const std::string& root_name)
+{
+  std::string file_pattern;
+  int buf_size = 0;
+  if (m_my_rank == 0)
+  {
+    conduit::Node n;
+    conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
+
+    file_pattern = n.as_string();
+
+    buf_size = file_pattern.size() + 1;
+  }
+
+  MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
+
+  char name_buf[buf_size];
+  if (m_my_rank == 0)
+  {
+    strcpy(name_buf, file_pattern.c_str());
+  }
+
+  MPI_Bcast(name_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
+
+  if (m_my_rank != 0)
+  {
+    file_pattern = std::string(name_buf);
+  }
+
+  return file_pattern;
+}
+
+/*
+ *************************************************************************
+ *
+ * Read based on HDF5 root file.
+ *
+ *************************************************************************
+ */
+void IOManager::readSidreHDF5(sidre::Group* datagroup,
+                              const std::string& root_file,
+                              bool preserve_contents)
+{
+  int num_files = getNumFilesFromRoot(root_file);
+  SLIC_ASSERT(num_files > 0);
+
+  if (m_baton)
+  {
+    if (m_baton->getNumFiles() != num_files)
+    {
+      delete m_baton;
+      m_baton = AXOM_NULLPTR;
+    }
+  }
+
+  if (!m_baton)
+  {
+    m_baton = new IOBaton(m_mpi_comm, num_files);
+  }
+
+  std::string file_pattern = getHDF5FilePattern(root_file);
+
+  int group_id = m_baton->wait();
+
+  herr_t errv;
+  AXOM_DEBUG_VAR(errv);
+
+  std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
+
+  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
+                             H5F_ACC_RDONLY,
+                             H5P_DEFAULT);
+  SLIC_ASSERT(h5_file_id >= 0);
+
+  std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+  hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+  SLIC_ASSERT(h5_group_id >= 0);
+
+  datagroup->load(h5_group_id, "sidre_hdf5", preserve_contents);
+
+  errv = H5Gclose(h5_group_id);
+  SLIC_ASSERT(errv >= 0);
+
+  errv = H5Fclose(h5_file_id);
+  SLIC_ASSERT(errv >= 0);
+
+  (void)m_baton->pass();
+}
+#endif /* AXOM_USE_HDF5 */
 
 /*
  *************************************************************************
@@ -660,8 +688,6 @@ std::string IOManager::getProtocol(
  *
  *************************************************************************
  */
-
-
 std::string IOManager::getHDF5FileName(
   const std::string& file_pattern,
   const std::string& root_name,
@@ -684,7 +710,6 @@ std::string IOManager::getHDF5FileName(
   return hdf5_name;
 }
 
-
 std::string IOManager::getRankGroupFileName(
   const std::string& root_name,
   int rankgroup_id,
@@ -694,8 +719,13 @@ std::string IOManager::getRankGroupFileName(
   std::string file_name = "file";
   if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
   {
+#ifdef AXOM_USE_HDF5
     std::string file_pattern = getHDF5FilePattern(root_name );
     file_name = getHDF5FileName(file_pattern, root_name, rankgroup_id);
+#else
+    SLIC_WARNING("'"<< protocol <<"' only available "
+                    << "when Axom is configured with hdf5");
+#endif
   }
   else
   {
@@ -758,7 +788,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
 void IOManager::writeGroupToRootFile(sidre::Group* group,
                                      const std::string& file_name)
 {
-
+#ifdef AXOM_USE_HDF5
   hid_t root_file_id = H5Fopen(file_name.c_str(),
                                H5F_ACC_RDWR,
                                H5P_DEFAULT);
@@ -788,6 +818,11 @@ void IOManager::writeGroupToRootFile(sidre::Group* group,
 
   errv =  H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
+#else
+  SLIC_WARNING("Axom configured without hdf5. "
+               <<"writeGroupToRootFile() only currently implemented "
+               <<"for 'sidre_hdf5' protocol. ");
+#endif /* AXOM_USE_HDF5 */
 }
 
 /*
@@ -802,6 +837,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
                                            const std::string& file_name,
                                            const std::string& group_path)
 {
+#ifdef AXOM_USE_HDF5
   hid_t root_file_id = H5Fopen(file_name.c_str(),
                                H5F_ACC_RDWR,
                                H5P_DEFAULT);
@@ -836,7 +872,11 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
 
   errv =  H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
-
+#else
+  SLIC_WARNING("Axom configured without hdf5. "
+               <<"writeGroupToRootFileAtPath() only currently implemented "
+               <<"for 'sidre_hdf5' protocol. ");
+#endif /* AXOM_USE_HDF5 */
 }
 
 /*
@@ -851,6 +891,7 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
                                           const std::string& file_name,
                                           const std::string& group_path)
 {
+#ifdef AXOM_USE_HDF5
   hid_t root_file_id = H5Fopen(file_name.c_str(),
                                H5F_ACC_RDWR,
                                H5P_DEFAULT);
@@ -874,7 +915,11 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
 
   errv =  H5Fclose(root_file_id);
   SLIC_ASSERT(errv >= 0);
-
+#else
+  SLIC_WARNING("Axom configured without hdf5. "
+               <<"writeViewToRootFileAtPath() only currently implemented "
+               <<"for 'sidre_hdf5' protocol. ");
+#endif /* AXOM_USE_HDF5 */
 }
 
 
