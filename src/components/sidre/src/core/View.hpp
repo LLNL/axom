@@ -955,9 +955,9 @@ public:
    * identical to a name that is already held by the parent for another
    * Group or View object.
    *
-   * /param new_name    The new name for this view.
+   * \param new_name    The new name for this view.
    *
-   * /return            Success or failure of rename.
+   * \return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
 

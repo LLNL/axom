@@ -9,14 +9,14 @@ example where we construct the Sidre Datastore shown in the following figure:
 
 Here, ovals represent Sidre Group objects.  Each Group has a name (string inside
 the oval), zero or one parent Group, and zero or more child Groups (indicated by
-arrows between ovals).  Note that the "root" Group (i.e. "/") is the only Group
+arrows between ovals).  Note that the root Group (i.e. "/") is the only Group
 that has no parent.  Each Group also owns zero or more View objects.  Views are
 shown as rectangles and an arrow points from the owning Group to each View.
 Datastores contain a collection of Buffer objects, shown as segmented
-rectangles.  Array View objects refer to Buffers or to external pointers; these
-references are shown as dashed arrows.
+rectangles.  View references to Buffers or to external pointers are shown as
+dashed arrows.
 
-A Sidre View object has a name (string inside the rectangle) and some data
+A Sidre View object has a name (printed inside the rectangle) and some data
 associated with it.  Here, we show various types of data that can be described
 by a View, including scalars, strings, and arrays (both "external" and managed
 by Sidre Buffer objects).  In the array Views ("x", "y", "z", "temp", "rho",
@@ -61,6 +61,7 @@ traversing Sidre Group and View hierarchies.  This usage is shown in the last
 line of the code example above.  The getView() method call retrieves the View
 named "region" in the Group "ext" that is a child of the "fields" Group.
 Character sequences before the first slash and between two consecutive slashes
-are Group names (describing parent-child relationships) and the sequence
-following the last slash is the name of a View.  Similar path syntax can be used
-to retrieve Groups, create Groups and Views, and so forth.
+are Group names (describing parent-child relationships).  For this method, and
+others dealing with Views, the sequence following the last slash is the name of
+a View.  Similar path syntax can be used to retrieve Groups, create Groups and
+Views, and so forth.
