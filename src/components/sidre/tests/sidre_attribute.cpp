@@ -57,8 +57,14 @@ const double g_size_large = 3.4;
 const Attribute* g_attr_null = AXOM_NULLPTR;
 
 // Test protocols
+#ifdef AXOM_USE_HDF5
 const int g_nprotocols = 3;
 const std::string g_protocols[] = { "sidre_json", "sidre_hdf5", "json" };
+#else
+const int g_nprotocols = 2;
+const std::string g_protocols[] = { "sidre_json", "json" };
+#endif
+
 
 //------------------------------------------------------------------------------
 // Create attribute in a Datastore
@@ -726,9 +732,14 @@ TEST(sidre_attribute,save_attributes)
   delete ds1;
 
   //----------------------------------------
-  // Only restore sidre_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < g_nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(g_protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + g_protocols[i];
 
     DataStore* ds2 = new DataStore();
@@ -849,9 +860,14 @@ TEST(sidre_attribute,save_by_attribute)
   delete ds1;
 
   //----------------------------------------
-  // Only restore sidre_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < g_nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(g_protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + g_protocols[i];
 
     DataStore* ds2 = new DataStore();
