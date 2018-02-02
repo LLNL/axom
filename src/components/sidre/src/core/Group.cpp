@@ -1509,8 +1509,8 @@ void Group::loadExternalData(const std::string& path)
 #else
   AXOM_DEBUG_VAR(path); // Gets rid of warning about unused variable
   SLIC_WARNING("External data not loaded. "
-      << "This function requires HDF5 support. "
-      <<" Please reconfigure with HDF5");
+               << "This function requires hdf55 support. "
+               <<" Please reconfigure with hdf5");
 #endif
 }
 
