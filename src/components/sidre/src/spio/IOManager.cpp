@@ -166,7 +166,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
 
     int group_id = m_baton->wait();
 
-    std::string hdf5_name = getHDF5FileName(file_pattern, root_name, group_id);
+    std::string hdf5_name =
+      getFileNameForRank(file_pattern, root_name, group_id);
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
@@ -386,7 +387,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
   herr_t errv;
   AXOM_DEBUG_VAR(errv);
 
-  std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
+  std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
 
   hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
                              H5F_ACC_RDONLY,
@@ -658,7 +659,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
   herr_t errv;
   AXOM_DEBUG_VAR(errv);
 
-  std::string hdf5_name = getHDF5FileName(file_pattern, root_file, group_id);
+  std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
 
   hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
                              H5F_ACC_RDONLY,
@@ -688,15 +689,15 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
  *
  *************************************************************************
  */
-std::string IOManager::getHDF5FileName(
+std::string IOManager::getFileNameForRank(
   const std::string& file_pattern,
   const std::string& root_name,
   int rankgroup_id)
 {
-  std::string hdf5_name = fmt::sprintf(file_pattern.c_str(), rankgroup_id);
+  std::string file_name = fmt::sprintf(file_pattern.c_str(), rankgroup_id);
 
-  //If the root file was given as a path, find the directory and add it to
-  //hdf5_name.
+  //If the root file was given as a path,
+  //find the directory and add it to file_name
   std::string curr;
   std::string root_dir;
   std::string slash = "/";
@@ -704,10 +705,10 @@ std::string IOManager::getHDF5FileName(
 
   if (!root_dir.empty())
   {
-    hdf5_name = root_dir + slash + hdf5_name;
+    file_name = root_dir + slash + file_name;
   }
 
-  return hdf5_name;
+  return file_name;
 }
 
 std::string IOManager::getRankGroupFileName(
@@ -721,7 +722,7 @@ std::string IOManager::getRankGroupFileName(
   {
 #ifdef AXOM_USE_HDF5
     std::string file_pattern = getHDF5FilePattern(root_name );
-    file_name = getHDF5FileName(file_pattern, root_name, rankgroup_id);
+    file_name = getFileNameForRank(file_pattern, root_name, rankgroup_id);
 #else
     SLIC_WARNING("'"<< protocol <<"' only available "
                     << "when Axom is configured with hdf5");
@@ -741,7 +742,7 @@ std::string IOManager::getRankGroupFileName(
     }
     conduit::relay::io::load(root_name, relay_protocol, n);
     std::string file_pattern = n["file_pattern"].as_string();
-    file_name = getHDF5FileName(file_pattern, root_name, rankgroup_id);
+    file_name = getFileNameForRank(file_pattern, root_name, rankgroup_id);
   }
 
   return file_name;

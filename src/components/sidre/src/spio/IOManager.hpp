@@ -241,9 +241,9 @@ private:
                      bool preserve_contents = false);
 #endif /* AXOM_USE_HDF5 */
 
-  std::string getHDF5FileName(const std::string& file_pattern,
-                              const std::string& root_name,
-                              int rankgroup_id);
+  std::string getFileNameForRank(const std::string& file_pattern,
+                                 const std::string& root_name,
+                                 int rankgroup_id);
 
 #ifdef AXOM_USE_SCR
   void readWithSCR(sidre::Group* group,
