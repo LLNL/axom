@@ -45,7 +45,8 @@
  *  [mpirun -np N] ./quest_regression <options>
  *   --help             utput this message and quit
  *   --mesh <file>      (required) (STL files are currently supported)
- *   --baseline <file>  root file of baseline, a sidre rootfile
+ *   --baseline <file>  root file of baseline, a sidre rootfile.
+ *                      Note: Only supported when Axom configured with hdf5
  *
  *  At least one of the following must be enabled:
  *  --[no-]distance    Indicates whether to test the signed distance
@@ -195,8 +196,15 @@ CommandLineArguments parseArguments(int argc, char** argv)
     std::string arg(argv[i]);
     if(arg == "--baseline")
     {
+#ifdef AXOM_USE_HDF5
       clargs.baselineRoot = std::string(argv[++i]);
       hasBaseline = true;
+#else
+      std::string bline = std::string(argv[++i]);
+      SLIC_INFO("Comparisons to baselines only supported"
+                << " when Axom is configured with hdf5."
+                << " Skipping comparison to baseline file " << bline);
+#endif
     }
     else if(arg == "--mesh")
     {
@@ -443,8 +451,8 @@ void runContainmentQueries(CommandLineArguments& clargs)
   SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
 
   #ifdef AXOM_USE_OPENMP
-    #pragma omp parallel
-    #pragma omp master
+  #pragma omp parallel
+  #pragma omp master
   SLIC_INFO(
     fmt::format("Querying InOutOctree on uniform grid "
                 "of resolution {} using {} threads",
@@ -470,7 +478,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   double* coords = new double[3*nnodes];
   axom::utilities::Timer fillTimer(true);
 
-    #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     umesh->getMeshNode( inode, coords+3*inode );
@@ -537,8 +545,8 @@ void runDistanceQueries(CommandLineArguments& clargs)
   SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
 
   #ifdef AXOM_USE_OPENMP
-    #pragma omp parallel
-    #pragma omp master
+  #pragma omp parallel
+  #pragma omp master
   SLIC_INFO(fmt::format("Querying BVH tree on uniform grid "
                         "of resolution {} using {} threads",
                         clargs.queryResolution, omp_get_num_threads()));
@@ -567,7 +575,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   double* coords = new double[3*nnodes];
   axom::utilities::Timer fillTimer(true);
 
-    #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     umesh->getMeshNode( inode, coords+3*inode );
@@ -891,11 +899,14 @@ int main( int argc, char** argv )
     // parse the command arguments
     CommandLineArguments args = parseArguments(argc, argv);
 
+#ifdef AXOM_USE_HDF5
     // load the baseline file for comparisons and additional test parameters
+    // This is currently only supported when hdf5 is enabled.
     if(args.hasBaseline() )
     {
       loadBaselineData(ds.getRoot(), args);
     }
+#endif
 
     // run the containment queries
     if(args.testContainment)
@@ -928,7 +939,9 @@ int main( int argc, char** argv )
       SLIC_INFO("--");
     }
 
+#ifdef AXOM_USE_HDF5
     // compare current results to baselines or generate new baselines
+    // This is currently only supported when hdf5 is enabled.
     bool baselinePassed = true;
     if(args.hasBaseline())
     {
@@ -944,6 +957,7 @@ int main( int argc, char** argv )
       saveBaseline(ds.getRoot(), args);
     }
     SLIC_INFO("--");
+#endif
   }
 
   // finalize
