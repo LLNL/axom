@@ -15,11 +15,13 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+#include "axom/config.hpp"  // for AXOM_USE_HDF5
+#include "sidre/sidre.hpp"
+
 #include "gtest/gtest.h"
+
 #include <cstring>
 #include <vector>
-
-#include "sidre/sidre.hpp"
 
 using axom::sidre::SidreLength;
 using axom::sidre::TypeID;

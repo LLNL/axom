@@ -15,9 +15,10 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "gtest/gtest.h"
-
+#include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "sidre/sidre.hpp"
+
+#include "gtest/gtest.h"
 
 using axom::sidre::DataStore;
 using axom::sidre::Attribute;
