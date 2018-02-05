@@ -203,6 +203,17 @@ public:
 
 public:
 
+  /**
+   * \brief Finds conduit relay protocol corresponding to a sidre protocol
+   *
+   * \param sidre_protocol String representing the sidre protocol
+   * \return The conduit relay protocol corresponding to \a sidre_protocol
+   * Options are: "hdf5", "json" and "conduit_json"
+   * \see Group::save() for a list of valid sidre protocols
+   */
+  static std::string correspondingRelayProtocol(
+    const std::string& sidre_protocol);
+
   /*!
    * \brief load external data into a group
    *

@@ -17,6 +17,7 @@
 #
 
 set(gtest_spio_serial_tests
+   spio_basic.cpp
    spio_serial.cpp
    )
 
@@ -27,9 +28,12 @@ set(gtest_spio_parallel_tests
 set(spio_test_depends
     sidre
     conduit
-    hdf5
     mpi
     )
+
+if(HDF5_FOUND)
+    list(APPEND spio_test_depends hdf5)
+endif()
 
 if(SCR_FOUND)
      list(APPEND spio_test_depends scr)
