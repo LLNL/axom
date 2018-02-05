@@ -114,7 +114,7 @@ TEST(spio_serial, write_read_write)
   reader.read(ds_r.getRoot(), filename + ROOT_EXT);
 
   // Dump this datastore to disk.
-  // Regression for sidre_hdf5 protocol: 
+  // Regression for sidre_hdf5 protocol:
   // This used to produce the following HDF5 error:
   //  HDF5-DIAG: Error detected in HDF5 (1.8.16) thread 0:
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file

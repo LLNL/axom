@@ -15,6 +15,8 @@
 ! API coverage tests
 ! Each test should be documented with the interface functions being tested
 
+#include "axom/config.hpp"
+
 module sidre_group_test
   use iso_c_binding
   use fruit
