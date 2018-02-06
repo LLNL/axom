@@ -43,20 +43,21 @@
  * \verbatim
  *
  *  [mpirun -np N] ./quest_regression <options>
- *   --help             utput this message and quit
- *   --mesh <file>      (required) (STL files are currently supported)
- *   --baseline <file>  root file of baseline, a sidre rootfile.
- *                      Note: Only supported when Axom configured with hdf5
+ *  --help                        Output this message and quit
+ *  --mesh <file>                 (required) Surface mesh file
+ *                                (STL files are currently supported)
+ *  --baseline <file>             root file of baseline, a sidre rootfile.
+ *                                (Only supported when Axom configured with
+ * hdf5)
  *
  *  At least one of the following must be enabled:
- *  --[no-]distance    Indicates whether to test the signed distance
- *                     (default: on)
- *  --[no-]containment Indicates whether to test the point containment
- *                     (default: on)
- *
- *  The following options are only valid when --baseline is not supplied
- *   --resolution nx ny nz         The resolution of the sample grid
- *   --bounding-box x y z x y z    The bounding box to test (min then max)
+ *  --[no-]distance               Indicates whether to test signed distance
+ *                                (default: on)
+ *  --[no-]containment            Indicates whether to test point containment
+ *                                (default: on)
+ *  The following are only used when baseline is not supplied (or is disabled)
+ *  --resolution nx ny nz         The resolution of the sample grid
+ *  --bounding-box x y z x y z    The bounding box to test (min then max)
  *
  * \endverbatim
  */
@@ -148,9 +149,11 @@ struct CommandLineArguments
     out << "Usage ./quest_regression <options>";
     out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
     out.write("\n\t{:<30}{}", "--mesh <file>",
-              "(required) Surface mesh file (STL files are currently supported)");
+              "(required) Surface mesh file "
+              "(STL files are currently supported)");
     out.write("\n\t{:<30}{}", "--baseline <file>",
-              "root file of baseline, a sidre rootfile");
+              "root file of baseline, a sidre rootfile. "
+              "Note: Only supported when Axom configured with hdf5");
 
     out << "\n  At least one of the following must be enabled:";
     out.write("\n\t{:<30}{}", "--[no-]distance",
@@ -158,8 +161,8 @@ struct CommandLineArguments
     out.write("\n\t{:<30}{}", "--[no-]containment",
               "Indicates whether to test the point containment (default: on)");
 
-    out <<
-      "\n  The following options are only valid when --baseline is not supplied";
+    out << "\n  The following options are only used when "
+        << "--baseline is not supplied (or is disabled)";
     out.write("\n\t{:<30}{}", "--resolution nx ny nz",
               "The resolution of the sample grid");
     out.write("\n\t{:<30}{}", "--bounding-box x y z x y z",
@@ -270,12 +273,12 @@ CommandLineArguments parseArguments(int argc, char** argv)
     SLIC_INFO("Must supply a path to an input surface mesh");
   }
 
-  // Cannot have resolution or bounding box if baseline is present
+  // Check if resolution or bounding box values were provided in addition
+  // to baseline. If so, inform user that these will be overridden by baseline
   if(hasBaseline && (hasResolution || hasBoundingBox))
   {
-    isValid = false;
     SLIC_INFO(
-      "Cannot set resolution or bounding box when baseline mesh is present");
+      "Baseline mesh will override values for resolution and bounding box");
   }
 
   if(!clargs.testContainment && !clargs.testDistance)
