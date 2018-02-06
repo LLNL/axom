@@ -306,13 +306,13 @@ void IOManager::read(
 
     if (!m_baton)
     {
-      m_baton = new IOBaton(m_mpi_comm, 1);
+      m_baton = new IOBaton(m_mpi_comm, m_comm_size);
     }
 
-    m_baton->wait();
+    int group_id = m_baton->wait();
 
     std::string file_name =
-      getRankGroupFileName(root_file, m_my_rank, protocol);
+      getRankGroupFileName(root_file, group_id, protocol);
 
     datagroup->load(file_name, protocol, preserve_contents);
 
