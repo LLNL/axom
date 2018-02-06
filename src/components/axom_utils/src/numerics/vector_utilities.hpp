@@ -27,8 +27,10 @@
 #ifndef AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
 #define AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
 
-#include "axom/Types.hpp" // for AXOM_NULLPTR
-#include "axom_utils/Utilities.hpp"
+#include "axom/Types.hpp"                  // for AXOM_NULLPTR
+
+#include "axom_utils/Determinants.hpp"     // for numerics::determinant()
+#include "axom_utils/Utilities.hpp"        // for isNearlyEqual()
 
 // C/C++ includes
 #include <cassert> // for assert()
@@ -38,6 +40,24 @@ namespace axom
 {
 namespace numerics
 {
+
+/*!
+ * \brief Computes the vector cross-product of two vectors, u and v.
+ *
+ * \param [in] u array pointer to the vector u
+ * \param [in] v array pointer to the vector v
+ * \param [out] w array pointer where to store the cross-product
+ *
+ * \note The u, v, and w are expected to be 3D vectors and are expected to
+ *  be pointing to array of at least size 3.
+ *
+ * \pre u != AXOM_NULLPTR
+ * \pre v != AXOM_NULLPTR
+ * \pre w != AXOM_NULLPTR
+ *
+ */
+template < typename T >
+inline void cross_product( const T* u, const T* v, T* w );
 
 /*!
  * \brief Computes the dot product of the arrays u and v.
@@ -127,6 +147,21 @@ namespace numerics
 {
 
 template < typename T >
+inline void cross_product( const T* u, const T* v, T* w )
+{
+  assert( "pre: u pointer is null" && (u != AXOM_NULLPTR) );
+  assert( "pre: v pointer is null" && (v != AXOM_NULLPTR) );
+  assert( "pre: w pointer is null" && (w != AXOM_NULLPTR) );
+
+  w[ 0 ] = numerics::determinant( u[1], u[2], v[1], v[2] );
+
+  // NOTE: transpose u,v to negate
+  w[ 1 ] = numerics::determinant( v[0], v[2], u[0], u[2] );
+  w[ 2 ] = numerics::determinant( u[0], u[1], v[0], v[1] );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
 T dot_product(T* u, T* v, int dim)
 {
   assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
@@ -140,6 +175,7 @@ T dot_product(T* u, T* v, int dim)
   return res;
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
 void make_orthogonal(T* u, T* v, int dim, double tol)
 {
@@ -162,6 +198,7 @@ void make_orthogonal(T* u, T* v, int dim, double tol)
     u[l] -= ((dot*v[l])/tnorm);
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
 bool orthonormalize(T* basis, int size, int dim, double eps)
 {
@@ -196,6 +233,7 @@ bool orthonormalize(T* basis, int size, int dim, double eps)
   return true;
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
 bool normalize(T* v, int dim, double eps)
 {
