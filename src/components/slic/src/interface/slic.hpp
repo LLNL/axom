@@ -448,7 +448,7 @@ void setAbortOnWarning( bool status );
 void enableAbortOnWarning();
 
 /*!
- * \brief Disables aborts on warnings messages for the curernt active logger.
+ * \brief Disables aborts on warnings messages for the current active logger.
  * \note This is equivalent to calling slic::setAbortOnWarnings( false )
  * \post slic::isAbortOnWarnigsEnabled() == true.
  * \pre slic::isInitialized() == true.
