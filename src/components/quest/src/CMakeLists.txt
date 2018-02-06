@@ -28,7 +28,6 @@ set( quest_headers
 
     # Mesh tester headers
     MeshTester.hpp
-    detail/MeshTester_impl.hpp
 
     # PointInCell headers
     PointInCell.hpp
@@ -47,6 +46,9 @@ set( quest_sources
 
     ## Geometry Sources
     # <nothing yet>
+
+    ## Mesh tester sources
+    MeshTester.cpp
 
     ## STL library sources
     stl/STLReader.cpp

@@ -192,6 +192,20 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
   return false;
 }
 
+inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
+{
+  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
+  primal::Point<int, 3> triCell;
+  Triangle3 tri;
+  surface_mesh->getMeshCell(i, triCell.data());
+
+  surface_mesh->getMeshNode(triCell[0], tri[0].data());
+  surface_mesh->getMeshNode(triCell[1], tri[1].data());
+  surface_mesh->getMeshNode(triCell[2], tri[2].data());
+
+  return tri;
+}
+
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
   std::vector<int> & degenerate)
@@ -210,7 +224,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   // For each triangle in the mesh
   for (int i = 0 ; i< ncells ; i++)
   {
-    t1 = axom::quest::detail::getMeshTriangle(i, surface_mesh);
+    t1 = getMeshTriangle(i, surface_mesh);
 
     // Skip if degenerate
     if (t1.degenerate())
@@ -223,7 +237,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     // triangles that this triangle has not been checked against
     for (int j = i + 1 ; j < ncells ; j++)
     {
-      t2 = axom::quest::detail::getMeshTriangle(j, surface_mesh);
+      t2 = getMeshTriangle(j, surface_mesh);
       if (checkTT(t1, t2))
       {
         retval.push_back(std::make_pair(i, j));

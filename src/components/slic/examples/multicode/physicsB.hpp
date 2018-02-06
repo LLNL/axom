@@ -30,18 +30,18 @@ namespace physicsB
 
 std::ofstream physicsB_log;
 
-int getRandInt( const int start, const int end )
+inline int getRandInt( const int start, const int end )
 {
   return( std::rand() % (end-start) + start );
 }
 
-slic::message::Level getRandomLevel()
+inline slic::message::Level getRandomLevel()
 {
   return( static_cast< slic::message::Level >(
             getRandInt(0,slic::message::Num_Levels)) );
 }
 //------------------------------------------------------------------------------
-void init()
+inline void init()
 {
   std::string current_logger = slic::getActiveLoggerName();
 
@@ -67,7 +67,7 @@ void init()
 }
 
 //------------------------------------------------------------------------------
-void timestep(int step, int n)
+inline void timestep(int step, int n)
 {
   std::string current_logger = slic::getActiveLoggerName();
   slic::activateLogger( "physicsB" );
@@ -90,7 +90,7 @@ void timestep(int step, int n)
 }
 
 //------------------------------------------------------------------------------
-void finalize()
+inline void finalize()
 {
   physicsB_log.close();
 }

@@ -1206,7 +1206,7 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
  * \param r Radius of projection
  * \return True of the intervals are disjoint, false otherwise
  */
-bool intervalsDisjoint(double d0, double d1, double d2, double r)
+inline bool intervalsDisjoint(double d0, double d1, double d2, double r)
 {
   if (d1 < d0)
   {
@@ -1230,7 +1230,7 @@ bool intervalsDisjoint(double d0, double d1, double d2, double r)
 /**
  * \brief Helper function for Triangle/BoundingBox intersection test
  */
-bool crossEdgesDisjoint(double d0, double d1, double r)
+inline bool crossEdgesDisjoint(double d0, double d1, double r)
 {
   return std::max( -std::max(d0,d1), std::min(d0,d1) ) > r;
 }
