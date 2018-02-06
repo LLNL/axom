@@ -702,7 +702,7 @@ contains
        ! Only restore sidre_hdf5 protocol
        if(protocols(i) .ne. "sidre_hdf5") then 
           cycle
-       end if
+       endif
 
        file_path = file_path_base //  protocols(i)
 
@@ -754,7 +754,7 @@ contains
        ! Only restore sidre_hdf5 protocol
        if(protocols(i) .ne. "sidre_hdf5") then 
           cycle
-       end if
+       endif
        
        file_path = file_path_base //  protocols(i)
 
@@ -838,7 +838,7 @@ contains
        ! Only restore sidre_hdf5 protocol
        if(protocols(i) .ne. "sidre_hdf5") then 
           cycle
-       end if
+       endif
 
        file_path = file_path_base //  protocols(i)
 
@@ -933,7 +933,7 @@ contains
        ! Only restore sidre_hdf5 protocol
        if(protocols(i) .ne. "sidre_hdf5") then 
           cycle
-       end if
+       endif
 
        file_path = file_path_base //  protocols(i)
 

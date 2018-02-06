@@ -17,12 +17,13 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"   // for AXOM_USE_HDF5
-#include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
 
-using axom::sidre::Group;
-using axom::sidre::DataStore;
+#include "mpi.h"
+
+#include <map>
+#include <string>
+
 using axom::sidre::IOManager;
 
 using axom::sidre::detail::sidre_int64;

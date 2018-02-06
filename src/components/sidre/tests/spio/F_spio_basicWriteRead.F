@@ -61,14 +61,14 @@ program spio_basic_write_read
   num_files = 1
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_basic_write_read", trim(protocol) )
+  call writer%write(root1, num_files, "F_out_spio_basic_write_read", protocol )
 
   ds2 = datastore_new()
 
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_basic_write_read" // trim(root_ext) )
+  call reader%read(root2, "F_out_spio_basic_write_read" // root_ext )
 
   return_val = 0
   if (.not. root2%is_equivalent_to(root1)) then

@@ -22,11 +22,13 @@
 #include "conduit_relay.hpp"
 
 #ifdef AXOM_USE_HDF5
-# include "conduit_relay_hdf5.hpp"
+#include "conduit_relay_hdf5.hpp"
 #endif
 
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
+
+#include "mpi.h"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;

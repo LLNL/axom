@@ -21,6 +21,8 @@
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
 
+#include "mpi.h"
+
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::IOManager;

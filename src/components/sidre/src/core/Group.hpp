@@ -41,7 +41,7 @@
 
 // third party lib headers
 #ifdef AXOM_USE_HDF5
-# include "hdf5.h"
+#include "hdf5.h"
 #endif
 
 // Other axom headers
@@ -54,9 +54,9 @@
 
 // Define the default protocol for sidre I/O
 #ifdef AXOM_USE_HDF5
-# define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
+#define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
 #else
-# define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
+#define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
 #endif
 
 

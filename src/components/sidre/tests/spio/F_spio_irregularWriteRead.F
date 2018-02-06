@@ -97,7 +97,7 @@ program spio_irregularWriteRead
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_irregular_write_read", trim(protocol) )
+  call writer%write(root1, num_files, "F_out_spio_irregular_write_read", protocol )
 
   ! create another datastore that holds nothing but the root group.
   ds2 = datastore_new()
@@ -106,7 +106,7 @@ program spio_irregularWriteRead
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_irregular_write_read" // trim(root_ext) )
+  call reader%read(root2, "F_out_spio_irregular_write_read" // root_ext )
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0

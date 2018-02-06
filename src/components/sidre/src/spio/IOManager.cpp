@@ -31,15 +31,12 @@
 #include "conduit_relay.hpp"
 
 #ifdef AXOM_USE_HDF5
-# include "conduit_relay_hdf5.hpp"
-#endif
-
-#ifdef AXOM_USE_HDF5
-# include "hdf5.h"
+#include "conduit_relay_hdf5.hpp"
+#include "hdf5.h"
 #endif
 
 #ifdef AXOM_USE_SCR
-# include "scr.h"
+#include "scr.h"
 #endif
 
 namespace axom
