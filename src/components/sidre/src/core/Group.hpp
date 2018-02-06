@@ -56,7 +56,7 @@
 #ifdef AXOM_USE_HDF5
 # define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
 #else
-# define SIDRE_DEFAULT_PROTOCOL "sidre_json"
+# define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
 #endif
 
 
@@ -1057,8 +1057,8 @@ public:
  *
  *   protocols:
  *    sidre_hdf5 (default when Axom is configured with hdf5)
- *    sidre_json (default otherwise)
- *    sidre_conduit_json
+ *    sidre_conduit_json (default otherwise)
+ *    sidre_json
  *
  *    conduit_hdf5
  *    conduit_bin
