@@ -92,9 +92,9 @@ program spio_parallel_write_read
 
   call writer%write(root1, num_files, "F_out_spio_parallel_write_read", trim(protocol) )
 
-  ! Extra stuff to exercise writeGroupToRootFile
+  ! Extra stuff to exercise writeGroupToRootFile for 'sidre_hdf5' protocol
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
-  if (my_rank == 0) then
+  if (my_rank == 0 .and. protocol .eq. "sidre_hdf5") then
      dsextra = datastore_new()
      extra_root = dsextra%get_root()
      extra = extra_root%create_group("extra")
