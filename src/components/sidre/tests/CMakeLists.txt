@@ -90,7 +90,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${sidre_test_depends} gtest gtest
+                            DEPENDS_ON ${sidre_test_depends} gtest
                             FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 
