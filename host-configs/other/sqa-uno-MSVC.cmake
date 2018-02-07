@@ -22,21 +22,29 @@
 #   cmake -G "Visual Studio 15 2017 Win64"               \
 #         -C ..\host-configs\other\sqa-uno-MSVC.cmake    \
 #         <path-to-axom> 
+#
+# Build the code from the command line as follows (/m for parallel build in msbuild):
+#   cmake --build . --config {Release, Debug, RelWithDebInfo} [-- /m:8]
+#
+# Test the code as follows (j for parallel testing):
+#   ctest -j8 -C {Release,Debug,RelWithDebInfo}
+# 
+# Install the come from the command line as follows:
+#   cmake --build . --config Release --target install
+#
 #------------------------------------------------------------------------------
-
-### Setup Axom components
-
-# Disable Sidre until we can successfully link to HDF5 and Conduit on Windows
-set(ENABLE_SIDRE OFF CACHE BOOL "")
-#set(HDF5_DIR    ... CACHE PATH "")
-#set(CONDUIT_DIR ... CACHE PATH "")
-
-
-### Setup some devtool/TPL paths
 
 # Set the HOME variable (%USERPROFILE% in Windows)
 string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 
+### Setup some devtool/TPL paths
+
+# Enable sidre using conduit but not hdf5 (until we resolve configuration problems with hdf5)
+set(ENABLE_SIDRE ON CACHE BOOL "")
+#set(HDF5_DIR    ... CACHE PATH "")
+set(CONDUIT_DIR "${HOME}/Projects/install/conduit-no-hdf5" CACHE PATH "")
+
+# Boost headers
 set(BOOST_DIR "${HOME}/Code/boost" CACHE PATH "")
 
 # Note: Doxygen assumes graphviz 'dot' is in PATH
