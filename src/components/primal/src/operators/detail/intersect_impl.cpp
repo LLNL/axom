@@ -31,7 +31,7 @@ bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
   double dp2, double dq2, double dr2,  Vector3 &normal,
-  const bool includeBoundary)
+  bool includeBoundary)
 {
   /* Step 4: repeat Step 3, except doing it for triangle 2
      instead of triangle 1 */
@@ -116,7 +116,7 @@ bool intersectCoplanar3DTriangles(const Point3& p1,
                                   const Point3& q2,
                                   const Point3& r2,
                                   Vector3 normal,
-                                  const bool includeBoundary)
+                                  bool includeBoundary)
 {
   /* Co-planar triangles are projected onto the axis that maximizes their
      area and the 2d intersection used to check if they intersect.
@@ -171,7 +171,7 @@ bool intersectCoplanar3DTriangles(const Point3& p1,
 // -----------------------------------------------------------------------------
 bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
-                            const bool includeBoundary)
+                            bool includeBoundary)
 {
   if (isLt(twoDcross(t1[0],t1[1],t1[2]),0.0))
   {
@@ -212,7 +212,7 @@ bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& p2,
                                   const Point2& q2,
                                   const Point2& r2,
-                                  const bool includeBoundary)
+                                  bool includeBoundary)
 {
   // Step 2: Orient triangle 2 to be counter clockwise and break the problem
   // into two generic cases (where we test the vertex for intersection or the
@@ -268,12 +268,12 @@ bool intersectPermuted2DTriangles(const Point2& p1,
 }
 
 // -----------------------------------------------------------------------------
-bool checkEdge(const Point2 p1,
-               const Point2 q1,
-               const Point2 r1,
-               const Point2 p2,
-               const Point2 r2,
-               const bool includeBoundary)
+bool checkEdge(const Point2& p1,
+               const Point2& q1,
+               const Point2& r1,
+               const Point2& p2,
+               const Point2& r2,
+               bool includeBoundary)
 {
   if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary))
   {
@@ -317,13 +317,13 @@ bool checkEdge(const Point2 p1,
 }
 
 // -----------------------------------------------------------------------------
-inline bool checkVertex(const Point2 p1,
-                        const Point2 q1,
-                        const Point2 r1,
-                        const Point2 p2,
-                        const Point2 q2,
-                        const Point2 r2,
-                        const bool includeBoundary)
+inline bool checkVertex(const Point2& p1,
+                        const Point2& q1,
+                        const Point2& r1,
+                        const Point2& p2,
+                        const Point2& q2,
+                        const Point2& r2,
+                        bool includeBoundary)
 {
   if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary))
   {

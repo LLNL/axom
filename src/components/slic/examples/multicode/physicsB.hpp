@@ -41,7 +41,7 @@ inline slic::message::Level getRandomLevel()
             getRandInt(0,slic::message::Num_Levels)) );
 }
 //------------------------------------------------------------------------------
-inline void init()
+void init()
 {
   std::string current_logger = slic::getActiveLoggerName();
 
@@ -67,7 +67,7 @@ inline void init()
 }
 
 //------------------------------------------------------------------------------
-inline void timestep(int step, int n)
+void timestep(int step, int n)
 {
   std::string current_logger = slic::getActiveLoggerName();
   slic::activateLogger( "physicsB" );
