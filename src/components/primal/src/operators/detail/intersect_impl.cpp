@@ -427,4 +427,3 @@ bool intervalsDisjoint(double d0, double d1, double d2, double r)
 } /* end namespace detail */
 } /* end namespace primal */
 } /* end namespace axom */
-

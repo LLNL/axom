@@ -490,7 +490,8 @@ private:
 /**
  * Free function to print a DynamicGrayBlockData instance to an output stream
  */
-inline std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
+inline std::ostream& operator<<(std::ostream& os,
+                                const DynamicGrayBlockData& bData)
 {
   os << "DynamicGrayBlockData{";
 
@@ -1286,7 +1287,7 @@ namespace
  * \brief Utility function to print the vertex indices of a cell
  */
 inline std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriVertIndices& tvInd)
+                                const InOutOctree<3>::TriVertIndices& tvInd)
 {
   os<<"[";
   for(int i=0 ; i< tvInd.size() ; ++i)
@@ -1296,7 +1297,7 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 inline std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriangleIndexSet& tSet)
+                                const InOutOctree<3>::TriangleIndexSet& tSet)
 {
   os<<"[";
   for(int i=0 ; i< tSet.size() ; ++i)

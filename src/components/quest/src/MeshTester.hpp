@@ -61,7 +61,7 @@ void findTriMeshIntersections(
   mint::UnstructuredMesh< MINT_TRIANGLE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
-  int spatialIndexResolution = 0) ;
+  int spatialIndexResolution = 0);
 
 } // end namespace quest
 } // end namespace axom

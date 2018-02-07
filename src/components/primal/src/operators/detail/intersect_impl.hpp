@@ -426,7 +426,7 @@ bool intersect_tri2D_tri2D(const primal::Triangle< T, 2 >& t1,
  */
 bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
-                            bool includeBoundary) ;
+                            bool includeBoundary);
 
 /*!
  * This function finds where p1 lies in relation to the vertices of t2
@@ -439,7 +439,7 @@ bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& p2,
                                   const Point2& q2,
                                   const Point2& r2,
-                                  bool includeBoundary) ;
+                                  bool includeBoundary);
 
 /*!
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2p2.
@@ -450,7 +450,7 @@ bool checkEdge(const Point2& p1,
                const Point2& r1,
                const Point2& p2,
                const Point2& r2,
-               bool includeBoundary) ;
+               bool includeBoundary);
 
 /*!
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2.
@@ -462,7 +462,7 @@ inline bool checkVertex(const Point2& p1,
                         const Point2& p2,
                         const Point2& q2,
                         const Point2& r2,
-                        bool includeBoundary) ;
+                        bool includeBoundary);
 
 /*!
  * \brief Compute cross product of two 2D vectors as if they were 3D.
