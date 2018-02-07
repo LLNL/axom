@@ -28,7 +28,8 @@ TEST( quest_interface, pointer_initialize )
     axom::quest::utilities::make_tetrahedron_mesh();
 
 #ifdef AXOM_USE_MPI
-  axom::quest::initialize(MPI_COMM_WORLD, input_mesh, false, 3, IGNORE_PARAM, IGNORE_PARAM);
+  axom::quest::initialize(MPI_COMM_WORLD, input_mesh, false, 3, IGNORE_PARAM,
+                          IGNORE_PARAM);
 #else
   axom::quest::initialize(input_mesh, false, 3, IGNORE_PARAM, IGNORE_PARAM);
 #endif
