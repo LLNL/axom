@@ -105,7 +105,11 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
         ${quest_tests_depends}
         conduit
         sidre
-        hdf5)
+        )
+
+    if (HDF5_FOUND)
+       list(APPEND quest_regression_depends hdf5)
+    endif()
 
     if (SCR_FOUND)
        list(APPEND quest_regression_depends scr)
