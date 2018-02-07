@@ -174,7 +174,7 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
 
     MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
 
-    char scr_dir_buf[buf_size];
+    char* scr_dir_buf = new char[buf_size];
     if (m_my_rank == 0)
     {
       strcpy(scr_dir_buf, m_scr_checkpoint_dir.c_str());
@@ -186,6 +186,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     {
       m_scr_checkpoint_dir = std::string(scr_dir_buf);
     }
+    delete [] scr_dir_buf;
+    scr_dir_buf = AXOM_NULLPTR;
 
     root_name = m_scr_checkpoint_dir + "/" + root_name;
   }
@@ -604,7 +606,7 @@ std::string IOManager::getProtocol(
 
   MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
 
-  char protocol_buf[buf_size];
+  char* protocol_buf = new char[buf_size];
   if (m_my_rank == 0)
   {
     strcpy(protocol_buf, protocol.c_str());
@@ -616,6 +618,8 @@ std::string IOManager::getProtocol(
   {
     protocol = std::string(protocol_buf);
   }
+  delete[] protocol_buf;
+  protocol_buf = AXOM_NULLPTR;
 
   return protocol;
 }
