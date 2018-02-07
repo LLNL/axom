@@ -22,9 +22,9 @@
 # convert_protocol is a utility that converts
 # a datastore from the sidre_hdf5 protocol
 # to any of the other supported protocols.
-# It requires slam, sidre and mpi.
+# It requires slam, sidre, mpi and hdf5.
 ##################################################
-if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI )
+if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
     set(datastore_converter_sources
         convert_sidre_protocol.cpp
     )
