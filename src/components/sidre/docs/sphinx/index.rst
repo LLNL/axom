@@ -52,9 +52,8 @@ powerful concepts to build on. The Sidre API includes four main concepts:
   root Group.
 * **Buffer.**  Describes and holds a chunk of data in memory owned by Sidre.
 * **View.**   Describes a conceptual layout of data in memory.
-* **Group.** Defines a hierachical collection of data. A Group can have zero or
-  one parent Group and zero or more child Groups. A Group can also have a
-  collection of Views.
+* **Group.** Defines a tree structure.  Each Group (except the root) has
+  one parent Group; each Group has a collection of Groups and Views.
 
 These concepts will be described in more detail in later sections.
 

@@ -64,24 +64,24 @@ enough to satisfy the length and data type promised by the View.  A View may
 also refer to an opaque data pointer, recording no information about the data
 type, length, offset, or stride.
 
-View metadata is stored in Attributes.  The DataStore contains the list of
-Attributes available, and a program may set any of these Attributes for each
-View.  The program may also query the value of a View's Attribute, query whether
-the Attribute was explicitly set, or clear the Attribute back to its default
-value.  Attribute values are available for a program to use in its own logic.
-The write operation provided by the Group class can use an Attribute, checking
-whether the Attribute was explicitly set, and further extensions to Sidre that
-use Attributes and their values are planned.
-
-.. Is this brief note about AttrValues needed?
-
-The AttrValues class exists in Sidre as a helper to the View class and provides
-no external functionality.
-
 Attribute
 ---------
 
-As noted above, Attributes provide storage for View metadata.  When each
+Attributes provide storage for View metadata.  When each
 Attribute is constructed in the DataStore, it gets a name and a default value.
 Each View inherits all of its DataStore's Attributes at their default values.
-Thus, any Attribute will always have a value.
+A program may explicitly set any of these Attributes for each
+View.  The program may also query the value of a View's Attribute, query whether
+the Attribute was explicitly set, or clear the Attribute back to its default
+value.  
+
+Attribute values are available for a program to use in its own logic.  If a
+program provides an Attribute pointer to Group::save() (discussed in the next
+section), only Views with that Attribute explicitly set will be saved.  Further
+extensions to Sidre that use Attributes and their values are planned.
+
+.. Is this brief note about AttrValues needed?
+
+The AttrValues class exists in Sidre as a helper to connect Attributes with
+Views and provides no external functionality.
+

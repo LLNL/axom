@@ -102,6 +102,7 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Contents of the DataStore written to files with IOManager.
    */
+  // parallel_io_save_start
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 

@@ -7,8 +7,8 @@ example where we construct the Sidre Datastore shown in the following figure:
 
 .. image:: sidre_datastore_example.png
 
-Here, ovals represent Sidre Group objects.  Each Group has a name (string inside
-the oval), zero or one parent Group, and zero or more child Groups (indicated by
+Here, ovals represent Sidre Group objects.  Each Group has a name, 
+zero or one parent Group, and zero or more child Groups (indicated by
 arrows between ovals).  Note that the root Group (i.e. "/") is the only Group
 that has no parent.  Each Group also owns zero or more View objects.  Views are
 shown as rectangles and an arrow points from the owning Group to each View.
@@ -16,7 +16,7 @@ Datastores contain a collection of Buffer objects, shown as segmented
 rectangles.  View references to Buffers or to external pointers are shown as
 dashed arrows.
 
-A Sidre View object has a name (printed inside the rectangle) and some data
+A Sidre View object has a name and some data
 associated with it.  Here, we show various types of data that can be described
 by a View, including scalars, strings, and arrays (both "external" and managed
 by Sidre Buffer objects).  In the array Views ("x", "y", "z", "temp", "rho",
@@ -31,18 +31,12 @@ used to generate the same result.
    :language: C++
 
 Sidre operations that create Buffers, Groups, and Views return a pointer to the
-object that is created. This allows chaining operations; for example:
+object that is created. This allows chaining operations.  From the previous 
+example:
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: first_example_chain_1
    :end-before: first_example_chain_2
-   :language: C++
-
-or:
-
-.. literalinclude:: ../../examples/sidre_createdatastore.cpp
-   :start-after: first_example_chain_2
-   :end-before: first_example_chain_3
    :language: C++
 
 Many other Sidre operations return a pointer to the object on which the method

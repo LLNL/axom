@@ -52,17 +52,17 @@ DataStore * create_datastore(int * region) {
   // number of elements, offset, and stride into that data.
   // first_example_chain_1
   Buffer* buff = ds->createBuffer(sidre::DOUBLE_ID, 3*nodecount)->allocate();
-  // first_example_chain_2
   nodes->createView("x", buff)->apply(sidre::DOUBLE_ID, nodecount, 0, 3);
-  // first_example_chain_3
+  // first_example_chain_2
   nodes->createView("y", buff)->apply(sidre::DOUBLE_ID, nodecount, 1, 3);
   nodes->createView("z", buff)->apply(sidre::DOUBLE_ID, nodecount, 2, 3);
 
   // Populate "fields" group
   //
   // "temp" is a view into a buffer that is not shared with another View.
-  // In this case, the data Buffer can be allocated directly through the View
-  // object.  Likewise with "rho."  These might contain data associated with
+  // In this case, the data Buffer is allocated directly through the View
+  // object.  Likewise with "rho."  Both Views have the default offset (0)
+  // and stride (1).  These Views could point to data associated with
   // each of the 15 x 15 x 15 hexahedron elements defined by the nodes above.
   fields->createViewAndAllocate("temp", sidre::DOUBLE_ID, eltcount);
   fields->createViewAndAllocate("rho", sidre::DOUBLE_ID, eltcount);
@@ -71,7 +71,8 @@ DataStore * create_datastore(int * region) {
   // to an externally owned integer array.  Although Sidre does not own the
   // data, the data can still be described to Sidre.
   Group* ext = fields->createGroup("ext");
-  // int * region has been passed in as a function argument.
+  // int * region has been passed in as a function argument.  As with "temp"
+  // and "rho", view "region" has default offset and stride.
   ext->createView("region", region)->apply(sidre::INT_ID, eltcount);
   // first_example_create_end
 
@@ -96,9 +97,37 @@ void access_datastore(DataStore * ds) {
   double* temp = fields->getView("temp")->getArray();
   int* region = fields->getView("ext/region")->getArray();
   // first_example_access_end
+
+  // Deal with unused variables
+  AXOM_DEBUG_VAR(cycle);
+  AXOM_DEBUG_VAR(time);
+  AXOM_DEBUG_VAR(name);
+  AXOM_DEBUG_VAR(y);
+  AXOM_DEBUG_VAR(temp);
+  AXOM_DEBUG_VAR(region);
+}
+
+void serial_save_datastore_and_load_copy_lower(DataStore *ds) {
+  // serial_io_save_start
+  // Save the data store to a file, using the default sidre_hdf5 protocol,
+  // saving all Views
+  ds->getRoot()->save("example.hdf5");
+  // Delete the data hierarchy under the root, then load it from the file
+  ds->getRoot()->load("example.hdf5");
+  Group * additional = ds->getRoot()->createGroup("additional");
+  additional->createGroup("yetanother");
+  // Load another copy of the data store into the "additional" group
+  // without first clearing all its contents
+  additional->load("example.hdf5", "sidre_hdf5", true);
+  // serial_io_save_end
 }
 
 int main(int argc, char ** argv) {
+
+  // Deal with unused variables
+  AXOM_DEBUG_VAR(argc);
+  AXOM_DEBUG_VAR(argv);
+
   int region[3375];
 
   DataStore * ds = create_datastore(region);
