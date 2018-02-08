@@ -39,6 +39,39 @@
 #include "scr.h"
 #endif
 
+namespace {
+
+    /*! 
+     *  Utility function to broadcast a string from rank 0 to all other ranks
+     */
+    std::string broadcastString(const std::string& str, MPI_Comm comm, int rank)
+    {
+        // Find the string size and send to all ranks
+        int buf_size = 0;
+        if (rank == 0)
+        {
+            buf_size = str.size() + 1;
+        }
+        MPI_Bcast(&buf_size, 1, MPI_INT, 0, comm);
+
+        // Allocate a buffer, copy and broadcast
+        char* buf = new char[buf_size];
+        if (rank == 0)
+        {
+            strcpy(buf, str.c_str());
+        }
+        MPI_Bcast(buf, buf_size, MPI_CHAR, 0, comm);
+
+        // Create a string, delete the buffer and return
+        std::string res(buf);
+        delete[] buf;
+        buf = AXOM_NULLPTR;
+
+        return res;
+    }
+
+}
+
 namespace axom
 {
 namespace sidre
@@ -308,10 +341,12 @@ void IOManager::read(
       m_baton = new IOBaton(m_mpi_comm, m_comm_size);
     }
 
+    std::string file_pattern = getFilePatternFromRoot(root_file, protocol);
+
     int group_id = m_baton->wait();
 
-    std::string file_name =
-      getRankGroupFileName(root_file, group_id, protocol);
+    std::string file_name = 
+         getFileNameForRank(file_pattern, root_file, group_id);
 
     datagroup->load(file_name, protocol, preserve_contents);
 
@@ -625,6 +660,24 @@ std::string IOManager::getProtocol(
 }
 
 
+
+std::string IOManager::getFilePatternFromRoot(const std::string& root_name,
+                                              const std::string& protocol)
+{
+    std::string file_pattern;
+
+    if (m_my_rank == 0)
+    {
+        conduit::Node n;
+        std::string relay_protocol = correspondingRelayProtocol(protocol);
+        conduit::relay::io::load(root_name, relay_protocol, n);
+        file_pattern = n["file_pattern"].as_string();
+    }
+
+    file_pattern = broadcastString(file_pattern, m_mpi_comm, m_my_rank);
+    return file_pattern;
+}
+
 // Several private functions are only relevant when HDF5 is enabled
 #ifdef AXOM_USE_HDF5
 
@@ -755,34 +808,6 @@ std::string IOManager::getFileNameForRank(
   return file_name;
 }
 
-std::string IOManager::getRankGroupFileName(
-  const std::string& root_name,
-  int rankgroup_id,
-  const std::string& protocol)
-{
-
-  std::string file_name = "file";
-  if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
-  {
-#ifdef AXOM_USE_HDF5
-    std::string file_pattern = getHDF5FilePattern(root_name );
-    file_name = getFileNameForRank(file_pattern, root_name, rankgroup_id);
-#else
-    SLIC_WARNING("'"<< protocol <<"' only available "
-                    << "when Axom is configured with hdf5");
-#endif
-  }
-  else
-  {
-    conduit::Node n;
-    std::string relay_protocol = correspondingRelayProtocol(protocol);
-    conduit::relay::io::load(root_name, relay_protocol, n);
-    std::string file_pattern = n["file_pattern"].as_string();
-    file_name = getFileNameForRank(file_pattern, root_name, rankgroup_id);
-  }
-
-  return file_name;
-}
 /*
  *************************************************************************
  *
