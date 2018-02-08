@@ -17,11 +17,11 @@
 #
 
 set(gtest_spio_serial_tests
-   spio_basic.cpp
    spio_serial.cpp
    )
 
 set(gtest_spio_parallel_tests
+   spio_basic.cpp
    spio_parallel.cpp
    )
 
