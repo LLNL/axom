@@ -298,7 +298,7 @@ private:
  * \param os The output stream to write to
  * \param iob The InOUtBlockData instance that we are writing
  */
-std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
+inline std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
 {
   os << "InOutBlockData{"
      << "isLeaf: " << (iob.isLeaf() ? "yes" : "no");
@@ -490,7 +490,8 @@ private:
 /**
  * Free function to print a DynamicGrayBlockData instance to an output stream
  */
-std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
+inline std::ostream& operator<<(std::ostream& os,
+                                const DynamicGrayBlockData& bData)
 {
   os << "DynamicGrayBlockData{";
 
@@ -1285,8 +1286,8 @@ namespace
 /**
  * \brief Utility function to print the vertex indices of a cell
  */
-std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriVertIndices& tvInd)
+inline std::ostream& operator<<(std::ostream& os,
+                                const InOutOctree<3>::TriVertIndices& tvInd)
 {
   os<<"[";
   for(int i=0 ; i< tvInd.size() ; ++i)
@@ -1295,8 +1296,8 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriangleIndexSet& tSet)
+inline std::ostream& operator<<(std::ostream& os,
+                                const InOutOctree<3>::TriangleIndexSet& tSet)
 {
   os<<"[";
   for(int i=0 ; i< tSet.size() ; ++i)
