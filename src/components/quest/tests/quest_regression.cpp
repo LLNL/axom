@@ -521,7 +521,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
                 maxDepth, maxEltsPerBucket, clargs.meshName));
   axom::utilities::Timer buildTimer(true);
   axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM,
-                          maxDepth, maxEltsPerBucket);
+                          maxEltsPerBucket, maxDepth);
   buildTimer.stop();
 
   SLIC_INFO(fmt::format("Initialization took {} seconds.",
