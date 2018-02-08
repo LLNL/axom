@@ -241,13 +241,13 @@ private:
 
   std::string getProtocol(const std::string& root_name);
 
-  /** 
+  /*!
    * Collective operation to get the file pattern from the root file.
    * The string is read on rank 0 and broadcast to the other ranks.
    * \note Works for all sidre protocols.
    */
-  std::string getFilePatternFromRoot(const std::string& root_name, 
-                             const std::string& protocol);
+  std::string getFilePatternFromRoot(const std::string& root_name,
+                                     const std::string& protocol);
 
 #ifdef AXOM_USE_HDF5
   std::string getHDF5FilePattern(const std::string& root_name);

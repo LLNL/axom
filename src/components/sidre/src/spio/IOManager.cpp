@@ -39,38 +39,39 @@
 #include "scr.h"
 #endif
 
-namespace {
+namespace
+{
 
-    /*! 
-     *  Utility function to broadcast a string from rank 0 to all other ranks
-     */
-    std::string broadcastString(const std::string& str, MPI_Comm comm, int rank)
-    {
-        // Find the string size and send to all ranks
-        int buf_size = 0;
-        if (rank == 0)
-        {
-            buf_size = str.size() + 1;
-        }
-        MPI_Bcast(&buf_size, 1, MPI_INT, 0, comm);
+/*!
+ *  Utility function to broadcast a string from rank 0 to all other ranks
+ */
+std::string broadcastString(const std::string& str, MPI_Comm comm, int rank)
+{
+  // Find the string size and send to all ranks
+  int buf_size = 0;
+  if (rank == 0)
+  {
+    buf_size = str.size() + 1;
+  }
+  MPI_Bcast(&buf_size, 1, MPI_INT, 0, comm);
 
-        // Allocate a buffer, copy and broadcast
-        char* buf = new char[buf_size];
-        if (rank == 0)
-        {
-            strcpy(buf, str.c_str());
-        }
-        MPI_Bcast(buf, buf_size, MPI_CHAR, 0, comm);
+  // Allocate a buffer, copy and broadcast
+  char* buf = new char[buf_size];
+  if (rank == 0)
+  {
+    strcpy(buf, str.c_str());
+  }
+  MPI_Bcast(buf, buf_size, MPI_CHAR, 0, comm);
 
-        // Create a string, delete the buffer and return
-        std::string res(buf);
-        delete[] buf;
-        buf = AXOM_NULLPTR;
+  // Create a string, delete the buffer and return
+  std::string res(buf);
+  delete[] buf;
+  buf = AXOM_NULLPTR;
 
-        return res;
-    }
-
+  return res;
 }
+
+} // end anonymous namespace
 
 namespace axom
 {
@@ -199,29 +200,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   std::string root_name = root_string + ".root";
   if (m_use_scr)
   {
-    int buf_size = 0;
-    if (m_my_rank == 0)
-    {
-      buf_size = m_scr_checkpoint_dir.size() + 1;
-    }
-
-    MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
-
-    char* scr_dir_buf = new char[buf_size];
-    if (m_my_rank == 0)
-    {
-      strcpy(scr_dir_buf, m_scr_checkpoint_dir.c_str());
-    }
-
-    MPI_Bcast(scr_dir_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
-
-    if (m_my_rank != 0)
-    {
-      m_scr_checkpoint_dir = std::string(scr_dir_buf);
-    }
-    delete [] scr_dir_buf;
-    scr_dir_buf = AXOM_NULLPTR;
-
+    m_scr_checkpoint_dir =
+      broadcastString(m_scr_checkpoint_dir, m_mpi_comm, m_my_rank);
     root_name = m_scr_checkpoint_dir + "/" + root_name;
   }
 
@@ -345,8 +325,8 @@ void IOManager::read(
 
     int group_id = m_baton->wait();
 
-    std::string file_name = 
-         getFileNameForRank(file_pattern, root_file, group_id);
+    std::string file_name =
+      getFileNameForRank(file_pattern, root_file, group_id);
 
     datagroup->load(file_name, protocol, preserve_contents);
 
@@ -628,34 +608,14 @@ std::string IOManager::getProtocol(
 #endif
 
   std::string protocol;
-  int buf_size = 0;
   if (m_my_rank == 0)
   {
     conduit::Node n;
     conduit::relay::io::load(root_name, relay_protocol, n);
 
     protocol = n["protocol/name"].as_string();
-
-    buf_size = protocol.size() + 1;
   }
-
-  MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
-
-  char* protocol_buf = new char[buf_size];
-  if (m_my_rank == 0)
-  {
-    strcpy(protocol_buf, protocol.c_str());
-  }
-
-  MPI_Bcast(protocol_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
-
-  if (m_my_rank != 0)
-  {
-    protocol = std::string(protocol_buf);
-  }
-  delete[] protocol_buf;
-  protocol_buf = AXOM_NULLPTR;
-
+  protocol = broadcastString(protocol, m_mpi_comm, m_my_rank);
   return protocol;
 }
 
@@ -664,18 +624,17 @@ std::string IOManager::getProtocol(
 std::string IOManager::getFilePatternFromRoot(const std::string& root_name,
                                               const std::string& protocol)
 {
-    std::string file_pattern;
+  std::string file_pattern;
+  if (m_my_rank == 0)
+  {
+    conduit::Node n;
+    std::string relay_protocol = correspondingRelayProtocol(protocol);
+    conduit::relay::io::load(root_name, relay_protocol, n);
+    file_pattern = n["file_pattern"].as_string();
+  }
 
-    if (m_my_rank == 0)
-    {
-        conduit::Node n;
-        std::string relay_protocol = correspondingRelayProtocol(protocol);
-        conduit::relay::io::load(root_name, relay_protocol, n);
-        file_pattern = n["file_pattern"].as_string();
-    }
-
-    file_pattern = broadcastString(file_pattern, m_mpi_comm, m_my_rank);
-    return file_pattern;
+  file_pattern = broadcastString(file_pattern, m_mpi_comm, m_my_rank);
+  return file_pattern;
 }
 
 // Several private functions are only relevant when HDF5 is enabled
@@ -692,31 +651,14 @@ std::string IOManager::getHDF5FilePattern(
   const std::string& root_name)
 {
   std::string file_pattern;
-  int buf_size = 0;
   if (m_my_rank == 0)
   {
     conduit::Node n;
     conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
 
     file_pattern = n.as_string();
-
-    buf_size = file_pattern.size() + 1;
   }
-
-  MPI_Bcast(&buf_size, 1, MPI_INT, 0, m_mpi_comm);
-
-  char name_buf[buf_size];
-  if (m_my_rank == 0)
-  {
-    strcpy(name_buf, file_pattern.c_str());
-  }
-
-  MPI_Bcast(name_buf, buf_size, MPI_CHAR, 0, m_mpi_comm);
-
-  if (m_my_rank != 0)
-  {
-    file_pattern = std::string(name_buf);
-  }
+  file_pattern = broadcastString(file_pattern, m_mpi_comm, m_my_rank);
 
   return file_pattern;
 }
