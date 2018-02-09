@@ -1322,7 +1322,7 @@ TEST(sidre_group,save_restore_external_data)
 {
   const std::string file_path_base("sidre_save_external_");
 
-  int nfoo = 10;
+  const int nfoo = 10;
   int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
   int int2d1[nfoo*2], int2d2[nfoo*2];
   SidreLength shape[] = { nfoo, 2 };
