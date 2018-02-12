@@ -34,7 +34,7 @@
 
 // C/C++ includes
 #include <cassert> // for assert()
-#include <cmath>
+#include <cmath>   // for sqrt()
 
 namespace axom
 {
@@ -75,7 +75,7 @@ inline void cross_product( const T* u, const T* v, T* w );
  * \pre v has at least dim entries
  */
 template < typename T >
-T dot_product(T* u, T* v, int dim);
+inline T dot_product( const T* u, const T* v, int dim);
 
 /*!
  * \brief Makes u orthogonal to v.
@@ -132,7 +132,7 @@ bool orthonormalize(T* basis, int size, int dim, double eps = 1E-16);
  * \pre T is a floating point type
  */
 template < typename T >
-bool normalize(T* v, int dim, double eps = 1e-16);
+inline bool normalize(T* v, int dim, double eps = 1e-16);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -162,7 +162,7 @@ inline void cross_product( const T* u, const T* v, T* w )
 
 //------------------------------------------------------------------------------
 template < typename T >
-T dot_product(T* u, T* v, int dim)
+inline T dot_product( const T* u, const T* v, int dim)
 {
   assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
@@ -170,7 +170,9 @@ T dot_product(T* u, T* v, int dim)
 
   T res = u[0]*v[0];
   for (int i = 1 ; i < dim ; ++i)
+  {
     res += u[i]*v[i];
+  }
 
   return res;
 }
@@ -235,7 +237,7 @@ bool orthonormalize(T* basis, int size, int dim, double eps)
 
 //------------------------------------------------------------------------------
 template < typename T >
-bool normalize(T* v, int dim, double eps)
+inline bool normalize(T* v, int dim, double eps)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -249,11 +251,10 @@ bool normalize(T* v, int dim, double eps)
     return false;
   }
 
-
-  const T tnorm = static_cast< T >(std::sqrt(norm));
+  const T tnorm = 1.0 / static_cast< T >(std::sqrt(norm));
   for (int l = 0 ; l < dim ; ++l)
   {
-    v[l] /= tnorm;
+    v[l] *= tnorm;
   }
 
   // success
