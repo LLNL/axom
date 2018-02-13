@@ -20,7 +20,7 @@
 #include "axom_utils/vector_utilities.hpp"
 #include "axom_utils/Utilities.hpp"
 
-namespace numerics = axom::numerics;
+namespace numerics  = axom::numerics;
 namespace utilities = axom::utilities;
 
 namespace
@@ -45,6 +45,32 @@ void expect_vector_eq( const double* u, const double* v, int N)
 
 //------------------------------------------------------------------------------
 // UNIT TESTS
+//------------------------------------------------------------------------------
+
+TEST( numerics_vector_utilities, linspace_test )
+{
+  double vc[ 6 ]; // storage for the computed vector
+
+  const double v1[ 6 ] = { -2, -1, 0, 1, 2, 3   };
+  const double v2[ 6 ] = {  3,  2, 1, 0, -1, -2 };
+  const double v3[ 3 ] = { 0.0, 0.5, 1.0 };
+
+  const double x0 = -2.0;
+  const double x1 =  3.0;
+
+  EXPECT_FALSE( numerics::linspace( x0, x1, vc, 0) );
+  EXPECT_FALSE( numerics::linspace( x0, x1, vc, 1) );
+
+  EXPECT_TRUE( numerics::linspace( x0, x1, vc, 6 ) );
+  expect_vector_eq( vc, v1, 6 );
+
+  EXPECT_TRUE( numerics::linspace( x1, x0, vc, 6) );
+  expect_vector_eq( vc, v2, 6 );
+
+  EXPECT_TRUE( numerics::linspace( 0.0, 1.0, vc, 3 ) );
+  expect_vector_eq( vc, v3, 3 );
+}
+
 //------------------------------------------------------------------------------
 TEST( numerics_vector_utilities, cross_product_test )
 {

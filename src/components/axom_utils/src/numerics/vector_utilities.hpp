@@ -42,6 +42,28 @@ namespace numerics
 {
 
 /*!
+ * \brief Generates a vector consisting of a sequence of N uniformly spaced
+ *  values over the interval [x0,x1].
+ *
+ * \param [in] x0 scalar, the start value of the sequence.
+ * \param [in] x1 scalar, the end value of the sequence.
+ * \param [out] v user-supplied buffer where to store the sequence of numbers
+ * \param [in] N the size of the computed vector sequence.
+ *
+ * \return status true if successful, otherwise, false.
+ *
+ * \note The output vector, v, must be able to hold at least N values.
+ * \note if x0 < x1, the sequence of values will be in ascending order.
+ * \note if x0 > x1, the sequence of values will be in descending order.
+ *
+ * \pre v != AXOM_NULLPTR
+ * \pre N > 1
+ *
+ */
+template < typename T >
+inline bool linspace( const T& x0, const T& x1, T* v, int N );
+
+/*!
  * \brief Computes the vector cross-product of two vectors, u and v.
  *
  * \param [in] u array pointer to the vector u
@@ -146,6 +168,31 @@ namespace axom
 namespace numerics
 {
 
+//------------------------------------------------------------------------------
+template < typename T >
+inline bool linspace( const T& x0, const T& x1, T* v, int N )
+{
+  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< T >::value,
+                             "pre: T is a floating point type" );
+  assert( "pre: v pointer is null" && (v != AXOM_NULLPTR) );
+
+  if ( N <= 1 )
+  {
+    /* short-circuit */
+    return false;
+  }
+
+  const T h = (x1-x0) / static_cast< T >( N-1 );
+
+  for ( int i=0; i < N; ++i )
+  {
+    v[ i ] = x0 + i*h;
+  }
+
+  return true;
+}
+
+//------------------------------------------------------------------------------
 template < typename T >
 inline void cross_product( const T* u, const T* v, T* w )
 {
