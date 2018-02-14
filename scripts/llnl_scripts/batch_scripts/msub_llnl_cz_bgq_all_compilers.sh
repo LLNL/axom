@@ -33,6 +33,6 @@ use git-2.0.0
 use cmake-3.8.2
 
 cd ..
-build_tpls.py
+./build_tpls.py
 date
 

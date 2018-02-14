@@ -28,6 +28,6 @@
 
 date
 cd ..
-build_src.py
+./build_src.py
 date
 

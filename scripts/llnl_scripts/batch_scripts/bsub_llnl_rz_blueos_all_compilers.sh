@@ -26,6 +26,6 @@
 
 date
 cd ..
-build_tpls.py
+./build_tpls.py
 date
 
