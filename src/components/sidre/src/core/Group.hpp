@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -40,7 +40,9 @@
 #include <cstring>
 
 // third party lib headers
+#ifdef AXOM_USE_HDF5
 #include "hdf5.h"
+#endif
 
 // Other axom headers
 #include "slic/slic.hpp"
@@ -49,6 +51,13 @@
 // Sidre project headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
+
+// Define the default protocol for sidre I/O
+#ifdef AXOM_USE_HDF5
+#define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
+#else
+#define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
+#endif
 
 
 namespace axom
@@ -68,7 +77,7 @@ template <typename TYPE> class MapCollection;
  *
  * The Group class has the following properties:
  *
- *    - Groups can be organized into a (tree) hierachy by creating
+ *    - Groups can be organized into a (tree) hierarchy by creating
  *      child Groups from the root Group owned by a DataStore object.
  *    - A Group object can only be created by another Group; the
  *      Group ctor is not visible externally. A Group is owned
@@ -943,7 +952,7 @@ public:
    *
    * Note that Group copying is a "shallow" copy; the data associated
    * with Views in a Group are not copied. In particular, the new Group
-   * hierachy and all its Views is associated with the same data as the
+   * hierarchy and all its Views is associated with the same data as the
    * given Group.
    *
    * If given Group pointer is null or Group already has a child Group with
@@ -1039,31 +1048,37 @@ public:
   bool isEquivalentTo(const Group* other) const;
 
 
-  /*!
-   *@{
-   * @name    Group I/O methods
-   *   These methods save and load Group trees to and from files.
-   *   This includes the views and buffers used in by groups in the tree.
-   *   We provide several "protocol" options:
-   *
-   *   protocols:
-   *    sidre_hdf5 (default)
-   *    sidre_conduit_json
-   *    sidre_json
-   *
-   *    conduit_hdf5
-   *    conduit_bin
-   *    conduit_json
-   *    json
-   *
-   *   There are two overloaded versions for each of save, load, and
-   *   loadExternalData.  The first of each takes a file path and is intended
-   *   for use in a serial context and can be called directly using any
-   *   of the supported protocols.  The second takes an hdf5 handle that
-   *   has previously been created by the calling code.  These mainly exist
-   *   to handle parallel I/O calls from the SPIO component.  They can only
-   *   take the sidre_hdf5 or conduit_hdf5 protocols.
-   */
+//@{
+/*!
+ * @name    Group I/O methods
+ *   These methods save and load Group trees to and from files.
+ *   This includes the views and buffers used in by groups in the tree.
+ *   We provide several "protocol" options:
+ *
+ *   protocols:
+ *    sidre_hdf5 (default when Axom is configured with hdf5)
+ *    sidre_conduit_json (default otherwise)
+ *    sidre_json
+ *
+ *    conduit_hdf5
+ *    conduit_bin
+ *    conduit_json
+ *    json
+ *
+ *   \note The sidre_hdf5 and conduit_hdf5 protocols are only available
+ *   when Axom is configured with hdf5.
+ *
+ *   There are two overloaded versions for each of save, load, and
+ *   loadExternalData.  The first of each takes a file path and is intended
+ *   for use in a serial context and can be called directly using any
+ *   of the supported protocols.  The second takes an hdf5 handle that
+ *   has previously been created by the calling code.  These mainly exist
+ *   to handle parallel I/O calls from the SPIO component.  They can only
+ *   take the sidre_hdf5 or conduit_hdf5 protocols.
+ *
+ *   \note The hdf5 overloads are only available when Axom is configured
+ *   with hdf5.
+ */
 
   /*!
    * \brief Save the Group to a file.
@@ -1079,8 +1094,32 @@ public:
    * \param attr      Save Views that have Attribute set.
    */
   void save( const std::string& path,
-             const std::string& protocol = "sidre_hdf5",
+             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
              const Attribute* attr = AXOM_NULLPTR) const;
+
+  /*!
+   * \brief Load the Group from a file.
+   *
+   * \param path      file path
+   * \param protocol  I/O protocol
+   * \param preserve_contents   Preserve existing contents of group if true
+   */
+  void load(const std::string& path,
+            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            bool preserve_contents = false);
+
+  /*!
+   * \brief Load data into the Group's external views from a file.
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.
+   *
+   * \param path      file path
+   */
+  void loadExternalData(const std::string& path);
+
+
+#ifdef AXOM_USE_HDF5
 
   /*!
    * \brief Save the Group to an hdf5 handle.
@@ -1093,19 +1132,8 @@ public:
    * \param attr       Save Views that have Attribute set.
    */
   void save( const hid_t& h5_id,
-             const std::string& protocol = "sidre_hdf5",
+             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
              const Attribute* attr = AXOM_NULLPTR) const;
-
-  /*!
-   * \brief Load the Group from a file.
-   *
-   * \param path      file path
-   * \param protocol  I/O protocol
-   * \param preserve_contents   Preserve existing contents of group if true
-   */
-  void load(const std::string& path,
-            const std::string& protocol = "sidre_hdf5",
-            bool preserve_contents = false);
 
   /*!
    * \brief Load the Group from an hdf5 handle.
@@ -1114,18 +1142,8 @@ public:
    * \param preserve_contents   Preserve existing contents of group if true
    */
   void load( const hid_t& h5_id,
-             const std::string &protocol = "sidre_hdf5",
+             const std::string &protocol = SIDRE_DEFAULT_PROTOCOL,
              bool preserve_contents = false);
-
-  /*!
-   * \brief Load data into the Group's external views from a file.
-   *
-   * No protocol argument is needed, as this only is used with the sidre_hdf5
-   * protocol.
-   *
-   * \param path      file path
-   */
-  void loadExternalData(const std::string& path);
 
   /*!
    * \brief Load data into the Group's external views from a hdf5 handle.
@@ -1136,6 +1154,11 @@ public:
    * \param h5_id      hdf5 handle
    */
   void loadExternalData(const hid_t& h5_id);
+
+#endif /* AXOM_USE_HDF5 */
+
+//@}
+
 
   /*!
    * \brief Change the name of this Group.
@@ -1307,7 +1330,7 @@ private:
 
   /*!
    * \brief Private method that returns the Group that is the next-to-last
-   * entry in a slash-deliminated ("/") path string.
+   * entry in a slash-delimited ("/") path string.
    *
    * The string before the last "/" character, if there is one, is the
    * next-to-last path entry. In this case, the return value is that Group

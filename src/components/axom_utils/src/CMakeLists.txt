@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -28,6 +28,7 @@ set(axom_utils_headers
     numerics/Determinants.hpp
     numerics/linear_solve.hpp
     numerics/eigen_solve.hpp
+    numerics/polynomial_solvers.hpp
     numerics/vector_utilities.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
@@ -40,6 +41,8 @@ set(axom_utils_sources
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
     utilities/Utilities.cpp
+
+    numerics/polynomial_solvers.cpp
     )
 
 #

@@ -2,7 +2,7 @@
 "exec" "python" "-u" "-B" "$0" "$@"
 
 ###############################################################################
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -13,7 +13,6 @@
 # This file is part of Axom.
 #
 # For details about use and distribution, please read axom/LICENSE.
-# 
 ###############################################################################
 
 """

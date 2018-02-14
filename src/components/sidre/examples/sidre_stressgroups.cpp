@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,9 +18,10 @@
 /**************************************************************************
  *************************************************************************/
 
+#include "axom_utils/Timer.hpp"
+
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
-#include "Timer.hxx"
 
 #include <algorithm>
 #include <set>
@@ -68,13 +69,15 @@ int main(int argc, char* argv[])
     name_set.insert(new_string);
   }
 
-  int i = 0;
   std::vector<std::string> names(num_groups);
-  for (std::set<std::string>::const_iterator itr = name_set.begin() ;
-       itr != name_set.end() ; ++itr)
   {
-    names[i] = *itr;
-    ++i;
+    int i = 0;
+    for (std::set<std::string>::const_iterator itr = name_set.begin() ;
+         itr != name_set.end() ; ++itr)
+    {
+      names[i] = *itr;
+      ++i;
+    }
   }
 
 /*
@@ -87,20 +90,17 @@ int main(int argc, char* argv[])
  */
   std::random_shuffle(names.begin(), names.end());
 
-  RAJA::Timer create_timer;
-  create_timer.start();
+  axom::utilities::Timer create_timer(true);
   for (unsigned int i = 0 ; i < num_groups ; ++i)
   {
     root->createGroup(names[i]);
   }
   create_timer.stop();
-  long double create_time = create_timer.elapsed();
-  std::cout << "Create time " << create_time << ".\n";
+  std::cout << "Create time " << create_timer.elapsed() << ".\n";
 
   std::random_shuffle(names.begin(), names.end());
 
-  RAJA::Timer query_timer;
-  query_timer.start();
+  axom::utilities::Timer query_timer(true);
   for (unsigned int i = 0 ; i < num_groups ; ++i)
   {
     if ( !root->hasGroup(names[i]) )
@@ -109,23 +109,19 @@ int main(int argc, char* argv[])
     }
   }
   query_timer.stop();
-  long double query_time = query_timer.elapsed();
-  std::cout << "Query time " << query_time << ".\n";
+  std::cout << "Query time " << query_timer.elapsed() << ".\n";
 
   std::random_shuffle(names.begin(), names.end());
 
-  RAJA::Timer destroy_timer;
-  destroy_timer.start();
+  axom::utilities::Timer destroy_timer(true);
   for (unsigned int i = 0 ; i < num_groups ; ++i)
   {
     root->destroyGroup(names[i]);
   }
   destroy_timer.stop();
-  long double destroy_time = destroy_timer.elapsed();
-  std::cout << "Destroy time " << destroy_time << ".\n";
+  std::cout << "Destroy time " << destroy_timer.elapsed() << ".\n";
 
-  RAJA::Timer mixed_timer;
-  mixed_timer.start();
+  axom::utilities::Timer mixed_timer(true);
   if (num_groups > 100)
   {
     mixed_timer.stop();
@@ -150,9 +146,7 @@ int main(int argc, char* argv[])
     }
     mixed_timer.start();
   }
-  mixed_timer.stop();
-  long double mixed_time = mixed_timer.elapsed();
-  std::cout << "Mixed time " << mixed_time << ".\n";
+  std::cout << "Mixed time " << mixed_timer.elapsed() << ".\n";
 
   delete ds;
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -43,19 +43,21 @@
  * \verbatim
  *
  *  [mpirun -np N] ./quest_regression <options>
- *   --help             utput this message and quit
- *   --mesh <file>      (required) (STL files are currently supported)
- *   --baseline <file>  root file of baseline, a sidre rootfile
+ *  --help                        Output this message and quit
+ *  --mesh <file>                 (required) Surface mesh file
+ *                                (STL files are currently supported)
+ *  --baseline <file>             root file of baseline, a sidre rootfile.
+ *                                (Only supported when Axom configured with
+ * hdf5)
  *
  *  At least one of the following must be enabled:
- *  --[no-]distance    Indicates whether to test the signed distance
- *                     (default: on)
- *  --[no-]containment Indicates whether to test the point containment
- *                     (default: on)
- *
- *  The following options are only valid when --baseline is not supplied
- *   --resolution nx ny nz         The resolution of the sample grid
- *   --bounding-box x y z x y z    The bounding box to test (min then max)
+ *  --[no-]distance               Indicates whether to test signed distance
+ *                                (default: on)
+ *  --[no-]containment            Indicates whether to test point containment
+ *                                (default: on)
+ *  The following are only used when baseline is not supplied (or is disabled)
+ *  --resolution nx ny nz         The resolution of the sample grid
+ *  --bounding-box x y z x y z    The bounding box to test (min then max)
  *
  * \endverbatim
  */
@@ -147,9 +149,11 @@ struct CommandLineArguments
     out << "Usage ./quest_regression <options>";
     out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
     out.write("\n\t{:<30}{}", "--mesh <file>",
-              "(required) Surface mesh file (STL files are currently supported)");
+              "(required) Surface mesh file "
+              "(STL files are currently supported)");
     out.write("\n\t{:<30}{}", "--baseline <file>",
-              "root file of baseline, a sidre rootfile");
+              "root file of baseline, a sidre rootfile. "
+              "Note: Only supported when Axom configured with hdf5");
 
     out << "\n  At least one of the following must be enabled:";
     out.write("\n\t{:<30}{}", "--[no-]distance",
@@ -157,8 +161,8 @@ struct CommandLineArguments
     out.write("\n\t{:<30}{}", "--[no-]containment",
               "Indicates whether to test the point containment (default: on)");
 
-    out <<
-      "\n  The following options are only valid when --baseline is not supplied";
+    out << "\n  The following options are only used when "
+        << "--baseline is not supplied (or is disabled)";
     out.write("\n\t{:<30}{}", "--resolution nx ny nz",
               "The resolution of the sample grid");
     out.write("\n\t{:<30}{}", "--bounding-box x y z x y z",
@@ -195,8 +199,15 @@ CommandLineArguments parseArguments(int argc, char** argv)
     std::string arg(argv[i]);
     if(arg == "--baseline")
     {
+#ifdef AXOM_USE_HDF5
       clargs.baselineRoot = std::string(argv[++i]);
       hasBaseline = true;
+#else
+      std::string bline = std::string(argv[++i]);
+      SLIC_INFO("Comparisons to baselines only supported"
+                << " when Axom is configured with hdf5."
+                << " Skipping comparison to baseline file " << bline);
+#endif
     }
     else if(arg == "--mesh")
     {
@@ -262,12 +273,12 @@ CommandLineArguments parseArguments(int argc, char** argv)
     SLIC_INFO("Must supply a path to an input surface mesh");
   }
 
-  // Cannot have resolution or bounding box if baseline is present
+  // Check if resolution or bounding box values were provided in addition
+  // to baseline. If so, inform user that these will be overridden by baseline
   if(hasBaseline && (hasResolution || hasBoundingBox))
   {
-    isValid = false;
     SLIC_INFO(
-      "Cannot set resolution or bounding box when baseline mesh is present");
+      "Baseline mesh will override values for resolution and bounding box");
   }
 
   if(!clargs.testContainment && !clargs.testDistance)
@@ -408,7 +419,7 @@ axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb,
  */
 void runContainmentQueries(CommandLineArguments& clargs)
 {
-  const int IGNORE = -1;
+  const int IGNORE_PARAM = -1;
   const bool USE_DISTANCE = false;
 
   SLIC_INFO(fmt::format("Initializing InOutOctree over mesh '{}'...",
@@ -416,7 +427,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   axom::utilities::Timer buildTimer(true);
 
   axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM,
-                          IGNORE, IGNORE);
+                          IGNORE_PARAM, IGNORE_PARAM);
 
   buildTimer.stop();
   SLIC_INFO(fmt::format("Initialization took {} seconds.",
@@ -443,8 +454,8 @@ void runContainmentQueries(CommandLineArguments& clargs)
   SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
 
   #ifdef AXOM_USE_OPENMP
-    #pragma omp parallel
-    #pragma omp master
+  #pragma omp parallel
+  #pragma omp master
   SLIC_INFO(
     fmt::format("Querying InOutOctree on uniform grid "
                 "of resolution {} using {} threads",
@@ -470,7 +481,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   double* coords = new double[3*nnodes];
   axom::utilities::Timer fillTimer(true);
 
-    #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     umesh->getMeshNode( inode, coords+3*inode );
@@ -510,7 +521,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
                 maxDepth, maxEltsPerBucket, clargs.meshName));
   axom::utilities::Timer buildTimer(true);
   axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM,
-                          maxDepth, maxEltsPerBucket);
+                          maxEltsPerBucket, maxDepth);
   buildTimer.stop();
 
   SLIC_INFO(fmt::format("Initialization took {} seconds.",
@@ -537,8 +548,8 @@ void runDistanceQueries(CommandLineArguments& clargs)
   SLIC_INFO("Query bounding box is: " << clargs.meshBoundingBox );
 
   #ifdef AXOM_USE_OPENMP
-    #pragma omp parallel
-    #pragma omp master
+  #pragma omp parallel
+  #pragma omp master
   SLIC_INFO(fmt::format("Querying BVH tree on uniform grid "
                         "of resolution {} using {} threads",
                         clargs.queryResolution, omp_get_num_threads()));
@@ -567,7 +578,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   double* coords = new double[3*nnodes];
   axom::utilities::Timer fillTimer(true);
 
-    #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     umesh->getMeshNode( inode, coords+3*inode );
@@ -891,11 +902,14 @@ int main( int argc, char** argv )
     // parse the command arguments
     CommandLineArguments args = parseArguments(argc, argv);
 
+#ifdef AXOM_USE_HDF5
     // load the baseline file for comparisons and additional test parameters
+    // This is currently only supported when hdf5 is enabled.
     if(args.hasBaseline() )
     {
       loadBaselineData(ds.getRoot(), args);
     }
+#endif
 
     // run the containment queries
     if(args.testContainment)
@@ -928,7 +942,9 @@ int main( int argc, char** argv )
       SLIC_INFO("--");
     }
 
+#ifdef AXOM_USE_HDF5
     // compare current results to baselines or generate new baselines
+    // This is currently only supported when hdf5 is enabled.
     bool baselinePassed = true;
     if(args.hasBaseline())
     {
@@ -944,6 +960,7 @@ int main( int argc, char** argv )
       saveBaseline(ds.getRoot(), args);
     }
     SLIC_INFO("--");
+#endif
   }
 
   // finalize

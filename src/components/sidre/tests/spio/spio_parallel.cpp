@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,17 +17,51 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"   // for AXOM_USE_HDF5
+
 #include "conduit_relay.hpp"
+
+#ifdef AXOM_USE_HDF5
 #include "conduit_relay_hdf5.hpp"
+#endif
 
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
+
+#include "mpi.h"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::sidre::View;
 using axom::sidre::IOManager;
+
+using axom::sidre::detail::sidre_int64;
+
+namespace
+{
+#ifdef AXOM_USE_HDF5
+const std::string PROTOCOL = "sidre_hdf5";
+const std::string ROOT_EXT = ".root";
+#else
+// Note: 'sidre_json' does not work for this test
+// since it doesn't preserve bitwidth sizes (e.g. int)
+const std::string PROTOCOL = "sidre_conduit_json";
+const std::string ROOT_EXT = ".conduit_json.root";
+#endif
+
+/** Returns the number of output files for spio  */
+int numOutputFiles(int numRanks)
+{
+#ifdef AXOM_USE_HDF5
+  return std::max( numRanks / 2, 1);
+#else
+  return numRanks;
+#endif
+}
+
+
+}
 
 //------------------------------------------------------------------------------
 
@@ -39,11 +73,7 @@ TEST(spio_parallel, parallel_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -75,15 +105,18 @@ TEST(spio_parallel, parallel_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_parallel_write_read";
 
-  std::string root_name = "out_spio_parallel_write_read.root";
+  writer.write(root, num_files, file_name, PROTOCOL);
+
+  std::string root_name = file_name + ROOT_EXT;
 
   /*
    * Extra stuff to exercise writeGroupToRootFile
+   * Note: This is only valid for the 'sidre_hdf5' protocol
    */
   MPI_Barrier(MPI_COMM_WORLD);
-  if (my_rank == 0)
+  if (my_rank == 0 && PROTOCOL == "sidre_hdf5")
   {
     DataStore* dsextra = new DataStore();
     Group* extra = dsextra->getRoot()->createGroup("extra");
@@ -116,7 +149,7 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Read the root file on rank 1, unless this is a serial run.
    */
-  if (my_rank == 1 || num_ranks == 1)
+  if ( (my_rank == 1 || num_ranks == 1) && PROTOCOL == "sidre_hdf5" )
   {
 
     conduit::Node n;
@@ -184,9 +217,6 @@ TEST(spio_parallel, parallel_writeread)
 
 }
 
-const std::string PROTOCOL = "sidre_hdf5";
-const std::string ROOT_EXT = ".root";
-
 //----------------------------------------------------------------------
 TEST(spio_parallel, write_read_write)
 {
@@ -194,7 +224,8 @@ TEST(spio_parallel, write_read_write)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_files = std::max( num_ranks / 2, 1);
+  const int num_files = numOutputFiles (num_ranks);
+
   std::stringstream sstr;
   sstr << "out_spio_WRW_" << num_ranks;
   std::string filename = sstr.str();
@@ -212,7 +243,8 @@ TEST(spio_parallel, write_read_write)
   reader.read(ds_r.getRoot(), filename + ROOT_EXT);
 
   // Dump this datastore to disk.
-  // Regression: This used to produce the following HDF5 error:
+  // Regression for sidre_hdf5 protocol:
+  // This used to produce the following HDF5 error:
   //  HDF5-DIAG: Error detected in HDF5 (1.8.16) thread 0:
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file
   //      major: File accessibility
@@ -228,17 +260,21 @@ TEST(spio_parallel, write_read_write)
 //------------------------------------------------------------------------------
 TEST(spio_parallel, external_writeread)
 {
+  if( PROTOCOL != "sidre_hdf5")
+  {
+    SUCCEED()
+      << "Loading external data in spio only currently supported "
+      << " for 'sidre_hdf5' protocol";
+    return;
+  }
+
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   const int nvals = 10;
   int orig_vals1[nvals], orig_vals2[nvals];
@@ -272,7 +308,9 @@ TEST(spio_parallel, external_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root1, num_files, "out_spio_external_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_external_write_read";
+
+  writer.write(root1, num_files, file_name, PROTOCOL);
 
   /*
    * Create another DataStore than holds nothing but the root group.
@@ -285,7 +323,7 @@ TEST(spio_parallel, external_writeread)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(root2, "out_spio_external_write_read.root");
+  reader.read(root2, file_name + ROOT_EXT);
 
   int restored_vals1[nvals], restored_vals2[nvals];
   for (int i = 0 ; i < nvals ; ++i)
@@ -362,11 +400,8 @@ TEST(spio_parallel, external_writeread)
 
 }
 
-#include "slic/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 //----------------------------------------------------------------------
-TEST(spio_paralle, irregular_writeread)
+TEST(spio_parallel, irregular_writeread)
 {
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -374,11 +409,7 @@ TEST(spio_paralle, irregular_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -432,7 +463,8 @@ TEST(spio_paralle, irregular_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root1, num_files, "out_spio_irregular_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_irregular_write_read";
+  writer.write(root1, num_files, file_name, PROTOCOL);
 
   /*
    * Create another DataStore that holds nothing but the root group.
@@ -444,7 +476,7 @@ TEST(spio_paralle, irregular_writeread)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_irregular_write_read.root");
+  reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
 
   /*
@@ -508,11 +540,7 @@ TEST(spio_parallel, preserve_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -544,9 +572,10 @@ TEST(spio_parallel, preserve_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_preserve_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_preserve_write_read";
+  writer.write(root, num_files, file_name, PROTOCOL);
 
-  std::string root_name = "out_spio_preserve_write_read.root";
+  std::string root_name = file_name + ROOT_EXT;
 
   /*
    * Extra stuff to exercise preserve_contents option
@@ -560,8 +589,9 @@ TEST(spio_parallel, preserve_writeread)
   child->createViewString("word0", "hello");
   child->createViewString("word1", "world");
 
-  writer.write(extra, num_files, "out_spio_extra", "sidre_hdf5");
-  std::string extra_root = "out_spio_extra.root";
+  const std::string extra_file_name = "out_spio_extra";
+  writer.write(extra, num_files, extra_file_name, PROTOCOL);
+  std::string extra_root = extra_file_name + ROOT_EXT;
 
   MPI_Barrier(MPI_COMM_WORLD);
 
@@ -638,11 +668,13 @@ TEST(spio_parallel, preserve_writeread)
   delete dsextra;
 }
 
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -17,10 +17,6 @@
 ################################
 if(NOT CONDUIT_FOUND)
   message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of a Conduit install.")
-endif()
-
-if(NOT HDF5_FOUND)
-  message(FATAL_ERROR "Sidre requires HDF5. Set HDF5_DIR to location of a HDF5 install.")
 endif()
 
 # Note: sidre depends on boost OR C++11 b/c USE_UNORDERED_MAP is defined in DataGroup.hpp

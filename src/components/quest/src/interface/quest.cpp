@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -79,18 +79,20 @@ struct QuestAccelerator
     m_containmentTree(AXOM_NULLPTR),
     m_queryMode(QUERY_MODE_NONE),
     m_originalLoggerName(""),
-    m_shouldFinalizeSlic(false)
+    m_shouldFinalizeSlic(false),
+    m_shouldDeleteMesh(true)
   {}
 
   /*!
    * \brief Sets the internal mesh pointer and computes some surface
    *  properties (bounding box and center of mass)
    */
-  void setMesh( axom::mint::Mesh* surface_mesh)
+  void setMesh( axom::mint::Mesh*& surface_mesh, bool deleteMesh )
   {
     SLIC_ASSERT( surface_mesh != AXOM_NULLPTR);
 
     m_surface_mesh = surface_mesh;
+    m_shouldDeleteMesh = deleteMesh;
 
     // Compute the mesh's bounding box and center of mass
     m_meshBoundingBox.clear();
@@ -115,14 +117,16 @@ struct QuestAccelerator
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
    */
-  void initializeContainmentTree( axom::mint::Mesh* surface_mesh)
+  void initializeContainmentTree( axom::mint::Mesh*& surface_mesh,
+                                  bool deleteMesh )
   {
     SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
-    setMesh(surface_mesh);
+    setMesh(surface_mesh, deleteMesh);
     m_containmentTree =
       new InOutOctree<DIM>( m_meshBoundingBox, m_surface_mesh );
     m_containmentTree->generateIndex();
+    surface_mesh = m_surface_mesh;
     m_queryMode = QUERY_MODE_CONTAINMENT;
   }
 
@@ -131,15 +135,17 @@ struct QuestAccelerator
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
    */
-  void initializeSignedDistance( axom::mint::Mesh* surface_mesh,
+  void initializeSignedDistance( axom::mint::Mesh*& surface_mesh,
                                  int maxElements,
-                                 int maxLevels )
+                                 int maxLevels,
+                                 bool deleteMesh )
   {
     SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
-    setMesh(surface_mesh);
+    setMesh(surface_mesh, deleteMesh);
     m_region =
       new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
+    surface_mesh = m_surface_mesh;
     m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
   }
 
@@ -161,7 +167,7 @@ struct QuestAccelerator
     }
     m_queryMode = QUERY_MODE_NONE;
 
-    if ( m_surface_mesh != AXOM_NULLPTR )
+    if ( m_shouldDeleteMesh && m_surface_mesh != AXOM_NULLPTR )
     {
 
       delete m_surface_mesh;
@@ -403,6 +409,7 @@ private:
 
   std::string m_originalLoggerName;
   bool m_shouldFinalizeSlic;
+  bool m_shouldDeleteMesh;
 };
 
 /*!
@@ -421,17 +428,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
-  SLIC_ASSERT( !accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
-
-  AXOM_DEBUG_VAR(ndims);
-  SLIC_ASSERT( ndims==2 || ndims==3 );
-
-  // In the future, we will also support 2D, but we currently only support 3D
-  SLIC_ASSERT_MSG(ndims==3,
-                  "Quest currently only supports 3D triangle meshes.");
-
-  accelerator3D.setupQuestLogger(comm);
 
   // Read in the mesh
   quest::PSTLReader* reader = new quest::PSTLReader( comm );
@@ -444,15 +441,40 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
 
+  initialize(comm, surface_mesh, requiresDistance, ndims, maxElements,
+             maxLevels, true);
+}
+
+void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh )
+{
+  SLIC_ASSERT( !accelerator3D.isInitialized() );
+  SLIC_ASSERT( comm != MPI_COMM_NULL );
+
+  AXOM_DEBUG_VAR(ndims);
+  SLIC_ASSERT( ndims==2 || ndims==3 );
+
+  // In the future, we will also support 2D, but we currently only support 3D
+  SLIC_ASSERT_MSG(ndims==3,
+                  "Quest currently only supports 3D (not 2D) triangle meshes.");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+                  "Quest currently only supports 3D triangle meshes "
+                  "(not any other kind of cell).");
+
+  accelerator3D.setupQuestLogger(comm);
+
+  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
+
   // Initialize the appropriate acceleration structure
   if(requiresDistance)
   {
-    accelerator3D.initializeSignedDistance(surface_mesh, maxElements,
-                                           maxLevels);
+    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
+                                           maxLevels, deleteMesh);
   }
   else
   {
-    accelerator3D.initializeContainmentTree(surface_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   }
 
   accelerator3D.teardownQuestLogger();
@@ -463,17 +485,6 @@ void initialize( const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
-  SLIC_ASSERT( !accelerator3D.isInitialized() );
-
-  AXOM_DEBUG_VAR(ndims);
-  SLIC_ASSERT( ndims==2 || ndims==3 );
-
-  // In the future, we will also support 2D, but we currently only support 3D
-  SLIC_ASSERT_MSG(ndims==3,
-                  "Quest currently only supports 3D triangle meshes.");
-
-  accelerator3D.setupQuestLogger();
-
   // Read in the mesh
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( fileName );
@@ -485,15 +496,39 @@ void initialize( const std::string& fileName,
   reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
   delete reader;
 
+  initialize(surface_mesh, requiresDistance, ndims, maxElements,
+             maxLevels, true);
+}
+
+void initialize( mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh )
+{
+  SLIC_ASSERT( !accelerator3D.isInitialized() );
+
+  AXOM_DEBUG_VAR(ndims);
+  SLIC_ASSERT( ndims==2 || ndims==3 );
+
+  // In the future, we will also support 2D, but we currently only support 3D
+  SLIC_ASSERT_MSG(ndims==3,
+                  "Quest currently only supports 3D (not 2D) triangle meshes.");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+                  "Quest currently only supports 3D triangle meshes "
+                  "(not any other kind of cell).");
+
+  accelerator3D.setupQuestLogger();
+
+  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
+
   // Initialize the appropriate acceleration structure
   if(requiresDistance)
   {
-    accelerator3D.initializeSignedDistance(surface_mesh, maxElements,
-                                           maxLevels );
+    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
+                                           maxLevels, deleteMesh );
   }
   else
   {
-    accelerator3D.initializeContainmentTree(surface_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   }
 
   accelerator3D.teardownQuestLogger();

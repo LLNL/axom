@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -42,7 +42,7 @@ blt_add_library(NAME fmt
                 HEADERS_OUTPUT_SUBDIR fmt)
 
 target_include_directories(fmt INTERFACE
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty/fmt>)
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/thirdparty/fmt>)
 
 
 # Setup some variables for fmt in Axom's config.hpp

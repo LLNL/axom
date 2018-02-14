@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -44,12 +44,19 @@ set( primal_headers
      spatial_acceleration/UniformGrid.hpp
    )
 
+set( primal_sources
+
+     operators/detail/intersect_impl.cpp
+   )
+
 blt_add_library(
     NAME                  primal
+    SOURCES               ${primal_sources}
     HEADERS               ${primal_headers}
     HEADERS_OUTPUT_SUBDIR primal
+    FOLDER                axom/primal
+    DEPENDS_ON            slic
     )
-target_link_libraries(primal INTERFACE slic)
 
 install(TARGETS              primal
         EXPORT               primal-targets

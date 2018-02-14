@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 //-----------------------------------------------------------------------------
@@ -21,11 +28,11 @@
 //-----------------------------------------------------------------------------
 TEST(mfem_smoke, basic_use)
 {
-    // Simple usage of a basic mfem type
-    mfem::Element* el = new mfem::Quadrilateral(0,1,2,3);    
-    
-    EXPECT_EQ( mfem::Element::QUADRILATERAL, el->GetType() );
-    EXPECT_EQ( 4, el->GetNVertices() );
-    
-    delete el;
+  // Simple usage of a basic mfem type
+  mfem::Element* el = new mfem::Quadrilateral(0,1,2,3);
+
+  EXPECT_EQ( mfem::Element::QUADRILATERAL, el->GetType() );
+  EXPECT_EQ( 4, el->GetNVertices() );
+
+  delete el;
 }

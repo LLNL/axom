@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -100,8 +100,11 @@ set(sidre_depends
     axom_utils
     conduit
     conduit_relay
-    hdf5
     slic)
+
+if(HDF5_FOUND)
+    list(APPEND sidre_depends hdf5)
+endif()
 
 if(ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)

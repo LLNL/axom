@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -12,9 +12,22 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
-#
-# Specify list of tests
-#
+
+# Create cmake targets for running the tests through axom's code checks
+axom_add_code_checks(PREFIX thirdparty_tests)
+
+########################################
+# Smoke test for hdf5 thirdparty library
+########################################
+if( HDF5_FOUND)
+    blt_add_executable(NAME hdf5_smoke_test
+                       SOURCES hdf5_smoke.cpp
+                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                       DEPENDS_ON hdf5 gtest
+                       FOLDER axom/thirdparty/tests )
+    blt_add_test(NAME hdf5_smoke 
+                 COMMAND hdf5_smoke_test)
+endif()
 
 ###########################################
 # Smoke test for conduit thirdparty library
@@ -38,7 +51,6 @@ if (CONDUIT_FOUND)
                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
-
 
 ########################################
 # Smoke test for mfem thirdparty library

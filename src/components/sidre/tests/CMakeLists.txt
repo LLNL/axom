@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -44,13 +44,25 @@ set(gtest_sidre_C_tests
 
 set(fruit_sidre_tests
    sidre_smoke_F.f
-   sidre_group_F.f
+   sidre_group_F.F
    sidre_buffer_F.f
    sidre_view_F.f
    sidre_external_F.f
    sidre_opaque_F.f
    sidre_allocatable_F.f
 )
+
+
+set(sidre_test_depends 
+    sidre 
+    conduit 
+    conduit_relay 
+    slic 
+    )
+    
+if(HDF5_FOUND)
+    list(APPEND sidre_test_depends hdf5)
+endif()    
 
 #
 # Add gtest C++ based tests
@@ -60,7 +72,7 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                        DEPENDS_ON ${sidre_test_depends} gtest
                         FOLDER axom/sidre/tests
                         )
 
@@ -78,7 +90,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre conduit conduit_relay hdf5 slic gtest
+                            DEPENDS_ON ${sidre_test_depends} gtest
                             FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 
@@ -96,7 +108,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre conduit conduit_relay hdf5 slic fruit
+                            DEPENDS_ON ${sidre_test_depends} fruit
                             FOLDER axom/sidre/tests
                             )
         blt_add_test( NAME ${test_name} 

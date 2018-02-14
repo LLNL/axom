@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -30,12 +30,12 @@ namespace physicsB
 
 std::ofstream physicsB_log;
 
-int getRandInt( const int start, const int end )
+inline int getRandInt( const int start, const int end )
 {
   return( std::rand() % (end-start) + start );
 }
 
-slic::message::Level getRandomLevel()
+inline slic::message::Level getRandomLevel()
 {
   return( static_cast< slic::message::Level >(
             getRandInt(0,slic::message::Num_Levels)) );
@@ -90,7 +90,7 @@ void timestep(int step, int n)
 }
 
 //------------------------------------------------------------------------------
-void finalize()
+inline void finalize()
 {
   physicsB_log.close();
 }

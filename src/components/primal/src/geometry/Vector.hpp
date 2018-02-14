@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -19,7 +19,8 @@
 #define VECTOR_HPP_
 
 // axom_utils includes
-#include "axom_utils/Determinants.hpp" // For numerics::determinant()
+#include "axom_utils/Determinants.hpp"     // for numerics::determinant()
+#include "axom_utils/vector_utilities.hpp" // for dot_product()/cross_product()
 
 // Primal includes
 #include "primal/NumericArray.hpp"
@@ -457,14 +458,7 @@ inline T Vector< T,NDIMS >::dot_product( const Vector< T,NDIMS >& u,
                                          const Vector< T,NDIMS >& v )
 {
   SLIC_ASSERT( u.dimension() == v.dimension() );
-  double dotprod = 0.0;
-
-  for ( int i=0 ; i < NDIMS ; ++i )
-  {
-    dotprod += u[ i ]*v[ i ];
-  } // END for all NDIMS
-
-  return static_cast< T >( dotprod );
+  return static_cast< T >( numerics::dot_product( u.data(), v.data(), NDIMS ) );
 }
 
 //------------------------------------------------------------------------------
@@ -485,13 +479,7 @@ inline Vector< T,3 > Vector< T,NDIMS >::cross_product(
   const Vector< T,3 >& u, const Vector< T,3 >& v )
 {
   Vector< T,3 > c;
-  c[ 0 ] = numerics::determinant( u[1],u[2], v[1],v[2] );
-
-  // NOTE: Transposed u and v to negate
-  c[ 1 ] = numerics::determinant( v[0],v[2], u[0],u[2] );
-
-  c[ 2 ] = numerics::determinant( u[0],u[1], v[0],v[1] );
-
+  numerics::cross_product( u.data(), v.data(), c.data() );
   return( c );
 }
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -132,53 +132,23 @@ void SynchronizedStream::flush()
   const int prevrank = rank-1;
   const int nextrank = rank+1;
 
-  MPI_Request null_request = MPI_REQUEST_NULL;
-
-  if ( rank == 0 )
+  if ( rank > 0 )
   {
-
-    /* rank 0 */
-
-    // print messages at this rank
-    m_cache->printMessages( m_stream );
-
-    if ( nranks > 1 )
-    {
-
-      /* signal next rank */
-      MPI_Isend(AXOM_NULLPTR,0,MPI_INT,1,0,m_comm,&null_request);
-
-    } // END if
-
-  }
-  else if ( rank == nranks-1 )
-  {
-
-    /* last rank */
-
-    // Wait for signal from previous rank
+    // wait for signal from previous rank
     MPI_Recv(AXOM_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,
              MPI_STATUSES_IGNORE);
-
-    // print messages at this rank
-    m_cache->printMessages( m_stream );
-
   }
-  else
+
+  // print messages for this rank
+  m_cache->printMessages( m_stream );
+
+  // signal next rank
+  if( nranks > 1 && nextrank < nranks )
   {
-
-    // Wait for signal from previous rank
-    MPI_Recv(AXOM_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,
-             MPI_STATUSES_IGNORE);
-
-    // print messages at this rank
-    m_cache->printMessages( m_stream );
-
-    // signal next rank
+    MPI_Request null_request = MPI_REQUEST_NULL;
     MPI_Isend(AXOM_NULLPTR,0,MPI_INT,nextrank,0,m_comm,&null_request);
-
-  } // END else
-
+    MPI_Request_free(&null_request);
+  }
 }
 
 } /* namespace slic */

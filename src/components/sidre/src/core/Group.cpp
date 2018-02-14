@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -19,7 +19,10 @@
 #include "Group.hpp"
 
 #include "conduit_relay.hpp"
+
+#ifdef AXOM_USE_HDF5
 #include "conduit_relay_hdf5.hpp"
+#endif
 
 // Other axom component headers
 
@@ -184,7 +187,9 @@ View* Group::createView( const std::string& path )
   else if ( intpath.empty() || group->hasChildView(intpath) ||
             group->hasChildGroup(intpath) )
   {
-    SLIC_CHECK( !intpath.empty() );
+    SLIC_CHECK_MSG( !intpath.empty(),
+                    "Cannot create a View with an empty path in Group " <<
+                    getPathName() << "." );
     SLIC_CHECK_MSG( !group->hasChildView(intpath),
                     "Cannot create View with name '" << intpath <<
                     "' in Group '" << getPathName() <<
@@ -688,7 +693,9 @@ View* Group::moveView(View* view)
 {
   if ( view == AXOM_NULLPTR )
   {
-    SLIC_CHECK( view != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( view != AXOM_NULLPTR,
+                    "Null pointer provided, no View to move to Group " <<
+                    getPathName() << "." );
     return AXOM_NULLPTR;
   }
 
@@ -726,7 +733,9 @@ View* Group::copyView(View* view)
 {
   if ( view == AXOM_NULLPTR || hasChildView(view->getName()) )
   {
-    SLIC_CHECK( view != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( view != AXOM_NULLPTR,
+                    "Null pointer provided, no View to copy to Group " <<
+                    getPathName() << "." );
     SLIC_CHECK_MSG(!hasChildView(view->getName()),
                    "Group '" << getPathName() <<
                    "' already has a View named'" << view->getName() <<
@@ -861,7 +870,9 @@ Group* Group::createGroup( const std::string& path )
   else if ( intpath.empty() || group->hasChildGroup(intpath) ||
             group->hasChildView(intpath) )
   {
-    SLIC_CHECK( !intpath.empty() );
+    SLIC_CHECK_MSG( !intpath.empty(),
+                    "Cannot create a group with an empty path in Group " <<
+                    getPathName() << "." );
     SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
                     "Cannot create Group with name '" << path <<
                     " in Group '" << getPathName() <<
@@ -953,7 +964,9 @@ Group* Group::moveGroup(Group* group)
 {
   if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()))
   {
-    SLIC_CHECK( group != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
+                    "Null pointer provided, no Group to move to Group " <<
+                    getPathName() << "." );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getPathName() <<
                    "' already has a child Group named '" << group->getName() <<
@@ -981,7 +994,9 @@ Group* Group::copyGroup(Group* group)
 {
   if ( group == AXOM_NULLPTR || hasChildGroup(group->getName()) )
   {
-    SLIC_CHECK( group != AXOM_NULLPTR );
+    SLIC_CHECK_MSG( group != AXOM_NULLPTR,
+                    "Null pointer provided, no Group to copy to Group " <<
+                    getPathName() << "." );
     SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
                    "Group '" << getPathName() <<
                    "' already has a child Group named '" << group->getName() <<
@@ -1344,44 +1359,6 @@ void Group::save(const std::string& path,
   }
 }
 
-/*
- *************************************************************************
- *
- * Save Group (including Views and child Groups) to a hdf5 handle
- *
- *************************************************************************
- */
-void Group::save(const hid_t& h5_id,
-                 const std::string& protocol,
-                 const Attribute* attr) const
-{
-  // supported here:
-  // "sidre_hdf5"
-  // "conduit_hdf5"
-  if(protocol == "sidre_hdf5")
-  {
-    Node n;
-    exportTo(n["sidre"], attr);
-    createExternalLayout(n["sidre/external"], attr);
-    n["sidre_group_name"] = m_name;
-    conduit::relay::io::hdf5_write(n,h5_id);
-  }
-  else if( protocol == "conduit_hdf5")
-  {
-    Node n;
-    createNativeLayout(n, attr);
-    n["sidre_group_name"] = m_name;
-    conduit::relay::io::hdf5_write(n, h5_id);
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol "
-               << protocol
-               << " for save with hdf5 handle.");
-  }
-}
-
-
 /*************************************************************************/
 
 /*
@@ -1400,7 +1377,9 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node " << n.path() << " does not have sidre " <<
+                    "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1411,7 +1390,9 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"conduit_json", n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node " << n.path() << " does not have sidre " <<
+                    "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1422,7 +1403,9 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,"json", n);
-    SLIC_ASSERT(n.has_path("sidre"));
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node " << n.path() << " does not have sidre " <<
+                    "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1445,51 +1428,6 @@ void Group::load(const std::string& path,
   {
     Node n;
     conduit::relay::io::load(path,protocol, n);
-    importConduitTree(n, preserve_contents);
-    if (n.has_path("sidre_group_name"))
-    {
-      new_name = n["sidre_group_name"].as_string();
-    }
-  }
-  else
-  {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
-
-  renameOrWarn(new_name);
-}
-
-/*
- *************************************************************************
- *
- * Load Group (including Views and child Groups) from an hdf5 handle
- *
- *************************************************************************
- */
-void Group::load(const hid_t& h5_id,
-                 const std::string &protocol,
-                 bool preserve_contents)
-{
-  // supported here:
-  // "sidre_hdf5"
-  // "conduit_hdf5"
-  std::string new_name;
-  if(protocol == "sidre_hdf5")
-  {
-    Node n;
-    conduit::relay::io::hdf5_read(h5_id,n);
-    SLIC_ASSERT(n.has_path("sidre"));
-    importFrom(n["sidre"], preserve_contents);
-    if (n.has_path("sidre_group_name"))
-    {
-      new_name = n["sidre_group_name"].as_string();
-    }
-  }
-  else if( protocol == "conduit_hdf5")
-  {
-    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
-    Node n;
-    conduit::relay::io::hdf5_read(h5_id, n);
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1563,9 +1501,105 @@ void Group::loadExternalData(const std::string& path)
 {
   Node n;
   createExternalLayout(n);
+
+#ifdef AXOM_USE_HDF5
   // CYRUS'-NOTE, not sure ":" will work with multiple trees per
   // output file
   conduit::relay::io::hdf5_read( path + ":sidre/external", n);
+#else
+  AXOM_DEBUG_VAR(path); // Gets rid of warning about unused variable
+  SLIC_WARNING("External data not loaded. "
+               << "This function requires hdf5 support. "
+               <<" Please reconfigure with hdf5");
+#endif
+}
+
+
+// Functions that directly use the hdf5 API in their signature
+#ifdef AXOM_USE_HDF5
+
+/*
+ *************************************************************************
+ *
+ * Save Group (including Views and child Groups) to a hdf5 handle
+ *
+ *************************************************************************
+ */
+void Group::save(const hid_t& h5_id,
+                 const std::string& protocol,
+                 const Attribute* attr) const
+{
+  // supported here:
+  // "sidre_hdf5"
+  // "conduit_hdf5"
+  if(protocol == "sidre_hdf5")
+  {
+    Node n;
+    exportTo(n["sidre"], attr);
+    createExternalLayout(n["sidre/external"], attr);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::hdf5_write(n,h5_id);
+  }
+  else if( protocol == "conduit_hdf5")
+  {
+    Node n;
+    createNativeLayout(n, attr);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::hdf5_write(n, h5_id);
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol "
+               << protocol
+               << " for save with hdf5 handle.");
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Load Group (including Views and child Groups) from an hdf5 handle
+ *
+ *************************************************************************
+ */
+void Group::load(const hid_t& h5_id,
+                 const std::string &protocol,
+                 bool preserve_contents)
+{
+  // supported here:
+  // "sidre_hdf5"
+  // "conduit_hdf5"
+  std::string new_name;
+  if(protocol == "sidre_hdf5")
+  {
+    Node n;
+    conduit::relay::io::hdf5_read(h5_id,n);
+    SLIC_ASSERT_MSG(n.has_path("sidre"),
+                    "Conduit Node " << n.path() << " does not have sidre " <<
+                    "data for Group " << getPathName() << "." );
+    importFrom(n["sidre"], preserve_contents);
+    if (n.has_path("sidre_group_name"))
+    {
+      new_name = n["sidre_group_name"].as_string();
+    }
+  }
+  else if( protocol == "conduit_hdf5")
+  {
+    SLIC_ERROR("Protocol " << protocol << " not yet supported for file load.");
+    Node n;
+    conduit::relay::io::hdf5_read(h5_id, n);
+    importConduitTree(n, preserve_contents);
+    if (n.has_path("sidre_group_name"))
+    {
+      new_name = n["sidre_group_name"].as_string();
+    }
+  }
+  else
+  {
+    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+  }
+
+  renameOrWarn(new_name);
 }
 
 /*
@@ -1582,6 +1616,8 @@ void Group::loadExternalData(const hid_t& h5_id)
   createExternalLayout(n);
   conduit::relay::io::hdf5_read(h5_id, "sidre/external", n);
 }
+
+#endif  /* AXOM_USE_HDF5 */
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -1638,7 +1674,11 @@ View* Group::attachView(View* view)
   }
   else
   {
-    SLIC_ASSERT(view->m_owning_group == AXOM_NULLPTR);
+    SLIC_ASSERT_MSG(view->m_owning_group == AXOM_NULLPTR,
+                    "Provided View " << view->getPathName() << " is already " <<
+                    "attatched to Group " <<
+                    view->m_owning_group->getPathName() << " and can't be " <<
+                    "attatched to Group " << getPathName() << "." );
     view->m_owning_group = this;
     view->m_index = m_view_coll->insertItem(view, view->getName());
     return view;
@@ -2108,7 +2148,9 @@ Group* Group::walkPath( std::string& path,
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
-      SLIC_ASSERT( iter->size() > 0 );
+      SLIC_ASSERT_MSG( iter->size() > 0,
+                       "Empty name in provided path " << path << " given " <<
+                       "to Group " << getPathName() << "." );
 
       if ( group_ptr->hasChildGroup(*iter) )
       {
@@ -2159,7 +2201,9 @@ const Group* Group::walkPath( std::string& path ) const
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
-      SLIC_ASSERT( iter->size() > 0 );
+      SLIC_ASSERT_MSG( iter->size() > 0,
+                       "Empty name in provided path " << path << " given " <<
+                       "to Group " << getPathName() << "." );
 
       if ( group_ptr->hasChildGroup(*iter) )
       {
@@ -2505,13 +2549,19 @@ bool Group::rename(const std::string& new_name)
         else
         {
           Group* detached_group = parent->detachGroup(m_name);
-          SLIC_CHECK(detached_group == this);
+          SLIC_CHECK_MSG(detached_group == this,
+                         "Group detatched from parent " <<
+                         detached_group->getPathName() << " is not this Group " <<
+                         getPathName() << "." );
 
           m_name = new_name;
 
           Group* attached_group = parent->attachGroup(detached_group);
           AXOM_DEBUG_VAR(attached_group);
-          SLIC_CHECK(attached_group == this);
+          SLIC_CHECK_MSG(attached_group == this,
+                         "Group attached to parent " <<
+                         attached_group->getPathName() << " is not this Group " <<
+                         getPathName() << "." );
         }
       }
       else

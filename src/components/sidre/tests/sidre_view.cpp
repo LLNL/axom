@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -574,7 +574,9 @@ TEST(sidre_view,save_empty_view_non_empty_buffer)
                                                        // array to it
 
   root->save("empty_view_non_empty_buffer.sidre.json", "sidre_json"); // ok
+#ifdef AXOM_USE_HDF5
   root->save("empty_view_non_empty_buffer.sidre.hdf5", "sidre_hdf5"); // ok
+#endif
 }
 
 TEST(sidre_view,save_empty_view)

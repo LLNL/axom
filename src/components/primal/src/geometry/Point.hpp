@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -172,13 +172,13 @@ public:
   /*!
    * \brief Equality comparison operator for points
    */
-  friend bool operator==(const Point& lhs, const Point& rhs)
+  friend inline bool operator==(const Point& lhs, const Point& rhs)
   { return lhs.m_components == rhs.m_components; }
 
   /*!
    * \brief Inequality operator for points
    */
-  friend bool operator!=(const Point& lhs, const Point& rhs)
+  friend inline bool operator!=(const Point& lhs, const Point& rhs)
   { return !(lhs == rhs); }
 
   /*!

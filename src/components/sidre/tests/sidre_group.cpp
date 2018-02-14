@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -15,10 +15,13 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "gtest/gtest.h"
-#include <cstring>
-
+#include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "sidre/sidre.hpp"
+
+#include "gtest/gtest.h"
+
+#include <cstring>
+#include <vector>
 
 using axom::sidre::SidreLength;
 using axom::sidre::TypeID;
@@ -34,9 +37,41 @@ using axom::sidre::DataType;
 using axom::sidre::INT_ID;
 using axom::sidre::FLOAT64_ID;
 
+namespace
+{
 // Test protocols
+#ifdef AXOM_USE_HDF5
 int nprotocols = 3;
 std::string const protocols[] = { "sidre_json", "sidre_hdf5", "json" };
+#else
+int nprotocols = 2;
+std::string const protocols[] = { "sidre_json", "json" };
+#endif
+
+// Function to return a vector of available sidre protocols
+std::vector<std::string> getAvailableSidreProtocols()
+{
+  std::vector<std::string> protocols;
+
+#ifdef AXOM_USE_HDF5
+  protocols.push_back("sidre_hdf5");
+#endif
+  protocols.push_back("sidre_json");
+  protocols.push_back("sidre_conduit_json");
+
+#ifdef AXOM_USE_HDF5
+  protocols.push_back("conduit_hdf5");
+#endif
+  protocols.push_back("conduit_bin");
+  protocols.push_back("conduit_json");
+  protocols.push_back("json");
+
+  return protocols;
+}
+
+
+
+} // end anonymous namespace
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -1007,7 +1042,7 @@ TEST(sidre_group,save_restore_empty_datastore)
   }
 }
 
-
+#ifdef AXOM_USE_HDF5
 //------------------------------------------------------------------------------
 // make sure the hdf5 methods are consistent with the path based methods
 //------------------------------------------------------------------------------
@@ -1058,6 +1093,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
   // close hdf5 handle
   EXPECT_TRUE(H5Fclose(h5_id) >=0);
 }
+#endif  // AXOM_USE_HDF5
 
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_api)
@@ -1097,11 +1133,13 @@ TEST(sidre_group,save_restore_api)
   delete ds3;
 #endif
 
+#ifdef AXOM_USE_HDF5
   DataStore* ds4 = new DataStore();
   Group* root4 = ds4->getRoot();
   root4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
+#endif
 
 #if 0
   DataStore* ds5 = new DataStore();
@@ -1147,10 +1185,14 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     root1->save(file_path, protocols[i]);
   }
 
-
-  // Only restore conduit_hdf
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore* ds2 = new DataStore();
@@ -1241,9 +1283,14 @@ TEST(sidre_group,save_restore_name_change)
   }
 
 
-  // Only restore conduit_hdf
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore* ds2 = new DataStore();
@@ -1275,7 +1322,7 @@ TEST(sidre_group,save_restore_external_data)
 {
   const std::string file_path_base("sidre_save_external_");
 
-  int nfoo = 10;
+  const int nfoo = 10;
   int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
   int int2d1[nfoo*2], int2d2[nfoo*2];
   SidreLength shape[] = { nfoo, 2 };
@@ -1312,9 +1359,14 @@ TEST(sidre_group,save_restore_external_data)
   delete ds1;
 
   // Now load back in.
-  // Only restore conduit protocol_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + protocols[i];
     SidreLength extents[7];
     int rank;
@@ -1524,9 +1576,14 @@ TEST(sidre_group,save_restore_buffer)
   }
 
   // Now load back in.
-  // Only restore conduit protocol_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore* ds2 = new DataStore();
@@ -1573,9 +1630,14 @@ TEST(sidre_group,save_restore_other)
   delete ds1;
 
   // Now load back in.
-  // Only restore conduit protocol_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + protocols[i];
     SidreLength shape2[7];
     int rank;
@@ -1650,9 +1712,14 @@ TEST(sidre_group,save_restore_complex)
     ds1->getRoot()->save(file_path, protocols[i]);
   }
 
-  // Only restore conduit_hdf5 protocol
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + protocols[i];
 
     DataStore* ds2 = new DataStore();
@@ -1779,16 +1846,7 @@ TEST(sidre_group,save_load_all_protocols)
   //
   // test all protocols
   //
-  std::vector<std::string> protocols;
-  protocols.push_back("sidre_hdf5");
-  protocols.push_back("sidre_conduit_json");
-  protocols.push_back("sidre_json");
-
-  protocols.push_back("conduit_hdf5");
-  protocols.push_back("conduit_bin");
-  protocols.push_back("conduit_json");
-  protocols.push_back("json");
-
+  std::vector<std::string> protocols = getAvailableSidreProtocols();
   for (size_t i = 0 ; i < protocols.size() ; ++i)
   {
     SLIC_INFO("Testing protocol: " << protocols[i]);
@@ -1840,11 +1898,9 @@ TEST(sidre_group,save_load_preserve_contents)
   Group* gc = tree0->createGroup("c");
   int ndata = 10;
 
-  // prep a tree that can exactly restored by all
-  // i/o protocols.
-  // Specially, use int64 and float64 b/c the
-  // json i/o case uses those types for parsed integers
-  // and floating point numbers.
+  // Prepare a tree that can be exactly restored by all I/O protocols.
+  // Specifically, use int64 and float64 because the json I/O case
+  // uses those types for parsed integers and floating point numbers.
 
   ga->createViewScalar<conduit::int64>("i0", 100);
   ga->createViewScalar<conduit::float64>("d0", 3000.00);
@@ -1857,65 +1913,74 @@ TEST(sidre_group,save_load_preserve_contents)
     data_ptr[i] = (conduit::int64)i;
   }
 
-  std::string file_path0 = file_path_tree0 + "sidre_hdf5";
-  tree0->save(file_path0, "sidre_hdf5");
-
-  Group* tree1 = tree0->createGroup("tree1");
-
-  Group* gx = tree1->createGroup("x");
-  Group* gy = tree1->createGroup("y");
-  Group* gz = tree1->createGroup("z");
-
-  gx->createViewAndAllocate("int20", DataType::int64(ndata*2));
-  conduit::int64* data_ptr20 = gx->getView("int20")->getArray();
-  for (int i = 0 ; i < ndata*2 ; ++i)
+  std::vector<std::string> protocols = getAvailableSidreProtocols();
+  for(size_t i = 0 ; i < protocols.size() ; ++i)
   {
-    data_ptr20[i] = (conduit::int64)(i*2);
-  }
-  gy->createViewScalar<conduit::int64>("i0", 400);
-  gz->createViewScalar<conduit::float64>("d0", 17.00);
+    std::string& protocol = protocols[i];
 
-  std::string file_path1 = file_path_tree1 + "sidre_hdf5";
+    std::string file_path0 = file_path_tree0 + protocol;
+    tree0->save(file_path0, protocol);
 
-  tree1->save(file_path1, "sidre_hdf5");
+    Group* tree1 = tree0->createGroup("tree1");
 
-  // show the source tree
-  SLIC_INFO("Source tree");
-  ds.print();
+    Group* gx = tree1->createGroup("x");
+    Group* gy = tree1->createGroup("y");
+    Group* gz = tree1->createGroup("z");
 
-  DataStore ds_load;
-  Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
-  loadtree0->load(file_path0, "sidre_hdf5");
-  loadtree0->load(file_path1, "sidre_hdf5", true);
+    gx->createViewAndAllocate("int20", DataType::int64(ndata*2));
+    conduit::int64* data_ptr20 = gx->getView("int20")->getArray();
+    for (int i = 0 ; i < ndata*2 ; ++i)
+    {
+      data_ptr20[i] = (conduit::int64)(i*2);
+    }
+    gy->createViewScalar<conduit::int64>("i0", 400);
+    gz->createViewScalar<conduit::float64>("d0", 17.00);
 
-  SLIC_INFO("Tree from protocol: sidre_hdf5");
-  // show the result
-  ds_load.print();
+    std::string file_path1 = file_path_tree1 + protocol;
 
-  Group* ds_load_root = ds_load.getRoot();
+    tree1->save(file_path1, protocol);
 
-  // check that the values are the same
-  EXPECT_EQ(ds_load_root->getView(
-              "tree1/a/i0")->getData<conduit::int64>(),100);
-  EXPECT_NEAR(ds_load_root->getView(
-                "tree1/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
-  EXPECT_EQ(ds_load_root->getView("tree1/b/s0")->getString(),
-            std::string("foo"));
-  EXPECT_EQ(ds_load_root->getView(
-              "tree1/y/i0")->getData<conduit::int64>(),400);
-  EXPECT_NEAR(ds_load_root->getView(
-                "tree1/z/d0")->getData<conduit::float64>(),17.00,1e-12);
+    // show the source tree
+    SLIC_INFO("Source tree");
+    ds.print();
 
-  conduit::int64* load_data_ptr =
-    ds_load_root->getView("tree1/c/int10")->getData();
-  for(int j=0 ; j< ndata ; j++)
-  {
-    EXPECT_EQ(data_ptr[j],load_data_ptr[j]);
-  }
-  load_data_ptr = ds_load_root->getView("tree1/x/int20")->getData();
-  for(int j=0 ; j< ndata*2 ; j++)
-  {
-    EXPECT_EQ(data_ptr20[j],load_data_ptr[j]);
+    DataStore ds_load;
+    Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
+    loadtree0->load(file_path0, protocol);
+    loadtree0->load(file_path1, protocol, true);
+
+    SLIC_INFO("Tree from protocol: " << protocol);
+    // show the result
+    ds_load.print();
+
+    Group* ds_load_root = ds_load.getRoot();
+
+    // check that the values are the same
+    EXPECT_EQ(ds_load_root->getView(
+                "tree1/a/i0")->getData<conduit::int64>(),100);
+    EXPECT_NEAR(ds_load_root->getView(
+                  "tree1/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+    EXPECT_EQ(ds_load_root->getView("tree1/b/s0")->getString(),
+              std::string("foo"));
+    EXPECT_EQ(ds_load_root->getView(
+                "tree1/y/i0")->getData<conduit::int64>(),400);
+    EXPECT_NEAR(ds_load_root->getView(
+                  "tree1/z/d0")->getData<conduit::float64>(),17.00,1e-12);
+
+    conduit::int64* load_data_ptr =
+      ds_load_root->getView("tree1/c/int10")->getData();
+    for(int j=0 ; j< ndata ; j++)
+    {
+      EXPECT_EQ(data_ptr[j],load_data_ptr[j]);
+    }
+    load_data_ptr = ds_load_root->getView("tree1/x/int20")->getData();
+    for(int j=0 ; j< ndata*2 ; j++)
+    {
+      EXPECT_EQ(data_ptr20[j],load_data_ptr[j]);
+    }
+
+    // Destroy the group so the name can be reused by the next protocol
+    tree0->destroyGroup("tree1");
   }
 
 }

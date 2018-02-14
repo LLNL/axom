@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -28,9 +28,6 @@
 #ifndef IOPARALLEL_HPP_
 #define IOPARALLEL_HPP_
 
-#include "mpi.h"
-#include "hdf5.h"
-
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
@@ -40,6 +37,7 @@
 // Spio headers
 #include "sidre/IOBaton.hpp"
 
+#include "mpi.h"
 
 namespace axom
 {
@@ -67,7 +65,7 @@ public:
    * \param com               MPI communicator
    * \param use_scr           Use SCR library for scalable I/O management.
    *                          If true, the calling code must have already
-   *                          called SCR_Init() afer MPI_Init().
+   *                          called SCR_Init() after MPI_Init().
    */
   IOManager(MPI_Comm com, bool use_scr = false);
 
@@ -87,10 +85,14 @@ public:
    *    sidre_hdf5
    *    sidre_conduit_json
    *    sidre_json
+   *
    *    conduit_hdf5
    *    conduit_bin
    *    conduit_json
    *    json
+   *
+   * \note The sidre_hdf5 and conduit_hdf5 protocols are only available
+   * when Axom is configured with hdf5.
    *
    * \param group         Group to write to output
    * \param num_files     number of output data files
@@ -201,6 +203,17 @@ public:
 
 public:
 
+  /**
+   * \brief Finds conduit relay protocol corresponding to a sidre protocol
+   *
+   * \param sidre_protocol String representing the sidre protocol
+   * \return The conduit relay protocol corresponding to \a sidre_protocol
+   * Options are: "hdf5", "json" and "conduit_json"
+   * \see Group::save() for a list of valid sidre protocols
+   */
+  static std::string correspondingRelayProtocol(
+    const std::string& sidre_protocol);
+
   /*!
    * \brief load external data into a group
    *
@@ -226,20 +239,26 @@ private:
                       int num_files,
                       const std::string& protocol);
 
-  std::string getRankGroupFileName(const std::string& root_name,
-                                   int rankgroup_id,
-                                   const std::string& protocol);
-
-  std::string getHDF5FilePattern(const std::string& root_name);
-
-  std::string getHDF5FileName(const std::string& file_pattern,
-                              const std::string& root_name,
-                              int rankgroup_id);
-
   std::string getProtocol(const std::string& root_name);
+
+  /*!
+   * Collective operation to get the file pattern from the root file.
+   * The string is read on rank 0 and broadcast to the other ranks.
+   * \note Works for all sidre protocols.
+   */
+  std::string getFilePatternFromRoot(const std::string& root_name,
+                                     const std::string& protocol);
+
+#ifdef AXOM_USE_HDF5
+  std::string getHDF5FilePattern(const std::string& root_name);
 
   void readSidreHDF5(sidre::Group* group, const std::string& root_file,
                      bool preserve_contents = false);
+#endif /* AXOM_USE_HDF5 */
+
+  std::string getFileNameForRank(const std::string& file_pattern,
+                                 const std::string& root_name,
+                                 int rankgroup_id);
 
 #ifdef AXOM_USE_SCR
   void readWithSCR(sidre::Group* group,

@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -11,6 +11,8 @@
 ! 
 ! For details about use and distribution, please read axom/LICENSE.
 !
+
+#include "axom/config.hpp"
 
 program spio_parallel_write_read
   use axom_sidre
@@ -40,15 +42,27 @@ program spio_parallel_write_read
 
   type(iomanager) writer, reader
 
+#ifdef AXOM_USE_HDF5
+  character(18) :: protocol = "sidre_hdf5        "
+  character(18) :: root_ext = ".root             "
+#else
+  character(18) :: protocol = "sidre_conduit_json"
+  character(18) :: root_ext = ".conduit_json.root"
+#endif  
+
   call mpi_init(mpierr)
 
   call mpi_comm_rank(MPI_COMM_WORLD, my_rank, mpierr)
   call mpi_comm_size(MPI_COMM_WORLD, num_ranks, mpierr)
 
+#ifdef AXOM_USE_HDF5
   num_output = num_ranks / 2 
   if (num_output == 0) then
      num_output = 1
   endif
+#else
+  num_output = num_ranks 
+#endif
 
 ! create a datastore and give it a small hierarchy of groups and views.
 !
@@ -76,11 +90,11 @@ program spio_parallel_write_read
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "sidre_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_parallel_write_read", protocol )
 
-  ! Extra stuff to exercise writeGroupToRootFile
+  ! Extra stuff to exercise writeGroupToRootFile for 'sidre_hdf5' protocol
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
-  if (my_rank == 0) then
+  if (my_rank == 0 .and. protocol .eq. "sidre_hdf5") then
      dsextra = datastore_new()
      extra_root = dsextra%get_root()
      extra = extra_root%create_group("extra")
@@ -90,7 +104,7 @@ program spio_parallel_write_read
      view = child%create_view_string("word0", "hello")
      view = child%create_view_string("word1", "world")
 
-     call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
+     call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read" // root_ext )
 
      call dsextra%delete()
   endif
@@ -103,7 +117,7 @@ program spio_parallel_write_read
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_parallel_write_read.root")
+  call reader%read(root2, "F_out_spio_parallel_write_read" // root_ext )
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0
