@@ -23,11 +23,8 @@
 #  cd {to directory with this script}
 #  bsub  < bsub_llnl_cz_blueos_all_compilers.sh
 #
-# Note: Updates PYTHONPATH to include a local install of pyyaml
-#       which is missing from LC's default python on blue_os
 
 date
-export PYTHONPATH=${PYTHONPATH}:/usr/gapps/axom/lib/python2.7/site-packages
 cd ..
 build_tpls.py
 date

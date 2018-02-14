@@ -29,7 +29,6 @@ import subprocess
 import datetime
 import glob
 import json
-import yaml
 import getpass
 import shutil
 
@@ -135,6 +134,26 @@ def normalize_job_name(job_name):
     return job_name.replace(' ', '_').replace(',', '')
 
 
+def copy_build_dir_files(build_dir, archive_spec_dir):
+    copy_if_exists(pjoin(build_dir, "info.json"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "failed.json"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "success.json"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.test.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.install.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.docs.txt"), archive_spec_dir)
+
+    # Note: There should only be one of these per spec
+    last_test_logs = glob.glob(pjoin(build_dir, "Testing", "Temporary", "LastTest*.log"))
+    if len(last_test_logs) > 0:
+        copy_if_exists(last_test_logs[0], archive_spec_dir)
+
+    # Note: There should only be one of these per spec
+    test_xmls = glob.glob(pjoin(build_dir, "Testing", "*", "Test.xml"))
+    if len(test_xmls) > 0:
+        copy_if_exists(test_xmls[0], archive_spec_dir)
+
+
 def archive_src_logs(prefix, job_name, timestamp):
     archive_dir = pjoin(get_archive_base_dir(), get_system_type())
     archive_dir = pjoin(archive_dir, normalize_job_name(job_name), timestamp)
@@ -161,19 +180,13 @@ def archive_src_logs(prefix, job_name, timestamp):
             os.makedirs(archive_spec_dir)
 
         # Note: There should only be one of these per spec
-        config_spec_log = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
-        if len(config_spec_log) > 0:
-            copy_if_exists(config_spec_log[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
+        config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
+        if len(config_spec_logs) > 0:
+            copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
 
         # Note: There should only be one of these per spec
         print "[  Build Dir: %s]" % build_dir
-        copy_if_exists(pjoin(build_dir, "info.json"), archive_spec_dir)
-        copy_if_exists(pjoin(build_dir, "failed.json"), archive_spec_dir)
-        copy_if_exists(pjoin(build_dir, "success.json"), archive_spec_dir)
-        copy_if_exists(pjoin(build_dir, "output.log.make.txt"), archive_spec_dir)
-        copy_if_exists(pjoin(build_dir, "output.log.make.test.txt"), archive_spec_dir)
-        copy_if_exists(pjoin(build_dir, "output.log.make.install.txt"), archive_spec_dir)
-        copy_if_exists(pjoin(build_dir, "output.log.make.docs.txt"), archive_spec_dir)
+        copy_build_dir_files(build_dir, archive_spec_dir)
 
     set_axom_group_and_perms(archive_dir)
 
@@ -208,10 +221,10 @@ def archive_tpl_logs(prefix, job_name, timestamp):
 
         copy_if_exists(tpl_log, pjoin(archive_spec_dir, "output.log.spack.txt"))
         
-
-        config_spec_log = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
-        if len(config_spec_log) > 0:
-            copy_if_exists(config_spec_log[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
+        # Note: There should only be one of these per spec
+        config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
+        if len(config_spec_logs) > 0:
+            copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
 
         # Find build dir for spec
         build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (spec))
@@ -220,13 +233,7 @@ def archive_tpl_logs(prefix, job_name, timestamp):
             build_dir = build_dirs[0]
 
             print "[  Build Dir: %s]" % build_dir
-            copy_if_exists(pjoin(build_dir, "info.json"), archive_spec_dir)
-            copy_if_exists(pjoin(build_dir, "failed.json"), archive_spec_dir)
-            copy_if_exists(pjoin(build_dir, "success.json"), archive_spec_dir)
-            copy_if_exists(pjoin(build_dir, "output.log.make.txt"), archive_spec_dir)
-            copy_if_exists(pjoin(build_dir, "output.log.make.test.txt"), archive_spec_dir)
-            copy_if_exists(pjoin(build_dir, "output.log.make.install.txt"), archive_spec_dir)
-            copy_if_exists(pjoin(build_dir, "output.log.make.docs.txt"), archive_spec_dir)
+            copy_build_dir_files(build_dir, archive_spec_dir)
 
     set_axom_group_and_perms(archive_dir)
 
@@ -333,13 +340,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting unit tests]"
     print "[log file: %s]" % tst_output_file
 
-    if "bgqos_0" in os.getenv('SYS_TYPE', ""):
-        # Need to use ctest-3.0 on bg/q
-        ctest_exe = "/usr/global/tools/CMake/bgqos_0/cmake-3.0-bgq-experimental/bin/ctest"
-        tst_cmd = "cd {} && {} -T Test -j16 --verbose".format(build_dir,ctest_exe)
-
-    else:
-        tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test " % build_dir
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"-T Test -VV -j8\"" % build_dir
 
     res = sexe(tst_cmd,
                output_file = tst_output_file,
@@ -527,24 +528,25 @@ def get_archive_base_dir():
         archive_base_dir = "/usr/workspace/wsrzd/axomdev/archive"
     else:
         archive_base_dir = "/usr/workspace/wsb/axomdev/archive"
+
     return archive_base_dir
 
 
 def get_specs_for_current_machine():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    specs_yaml_path = pjoin(script_dir, "../uberenv/specs.yaml")
+    specs_json_path = pjoin(script_dir, "../uberenv/specs.json")
 
-    with open(specs_yaml_path, 'r') as f:
-        specs_yaml = yaml.load(f)
+    with open(specs_json_path, 'r') as f:
+        specs_json = json.load(f)
 
     sys_type = get_system_type()
     machine_name = get_machine_name()
 
     specs = []
-    if machine_name in specs_yaml.keys():
-        specs = specs_yaml[machine_name]
+    if machine_name in specs_json.keys():
+        specs = specs_json[machine_name]
     else:
-        specs = specs_yaml[sys_type]
+        specs = specs_json[sys_type]
 
     specs = ['%' + spec for spec in specs]
 
