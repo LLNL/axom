@@ -42,7 +42,7 @@
 // C/C++ includes
 #include <cmath>   // for sin(), cos(), sqrt(), etc.
 
-#define MINT_FEM_DEBUG
+//#define MINT_FEM_DEBUG
 
 using namespace axom;
 
