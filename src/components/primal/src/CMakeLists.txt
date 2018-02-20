@@ -21,6 +21,7 @@ set( primal_headers
      geometry/HyperSphere.hpp
      geometry/MortonIndex.hpp
      geometry/NumericArray.hpp
+     geometry/Plane.hpp
      geometry/Point.hpp
      geometry/Polygon.hpp
      geometry/Ray.hpp
