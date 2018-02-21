@@ -12,18 +12,24 @@ zero or one parent Group, and zero or more child Groups (indicated by
 arrows between ovals).  Note that the root Group (i.e. "/") is the only Group
 that has no parent.  Each Group also owns zero or more View objects.  Views are
 shown as rectangles and an arrow points from the owning Group to each View.
+
 Datastores contain a collection of Buffer objects, shown as segmented
 rectangles.  View references to Buffers or to external pointers are shown as
-dashed arrows.
+dashed arrows.  Datastores also contains a list of Attributes, each outlined
+with a hexagon, which define the metadata labels available to apply to Views and
+the default value associated with each label.  In this example, the Datastore
+has Attributes "vis" (with default value 0) and "restart" (with default
+value 1).
 
-A Sidre View object has a name and some data
-associated with it.  Here, we show various types of data that can be described
-by a View, including scalars, strings, and arrays (both "external" and managed
-by Sidre Buffer objects).  In the array Views ("x", "y", "z", "temp", "rho",
-"region"), we include a triple indicating the number of elements, offset, and
-stride for the View.  Other aspects of View descriptions are clarified in the
-C++ code shown next.  Sidre provides full C and Fortran APIs that can also be
-used to generate the same result.
+A Sidre View object has a name and some data associated with it, as well as any
+explicitly-set Attributes.  In this example, the Views "temp" and "rho" have the
+Attribute "vis" set to 1.  This example shows various types of data that
+can be described by a View, including scalars, strings, and arrays (both
+"external" and managed by Sidre Buffer objects).  The array Views ("x", "y",
+"z", "temp", "rho", "region") include a triple indicating the number of
+elements, offset, and stride for the View.  Other aspects of View descriptions
+are clarified in the C++ code shown next.  Sidre provides full C and Fortran
+APIs that can also be used to generate the same result.
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: first_example_create_start

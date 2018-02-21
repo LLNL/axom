@@ -30,6 +30,10 @@ DataStore * create_datastore(int * region) {
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
+  // Create two attributes
+  ds->createAttributeScalar("vis", 0);
+  ds->createAttributeScalar("restart", 1);
+
   // Create group children of root group
   Group* state = root->createGroup("state");
   Group* nodes = root->createGroup("nodes");
@@ -64,8 +68,15 @@ DataStore * create_datastore(int * region) {
   // object.  Likewise with "rho."  Both Views have the default offset (0)
   // and stride (1).  These Views could point to data associated with
   // each of the 15 x 15 x 15 hexahedron elements defined by the nodes above.
-  fields->createViewAndAllocate("temp", sidre::DOUBLE_ID, eltcount);
-  fields->createViewAndAllocate("rho", sidre::DOUBLE_ID, eltcount);
+  View * temp =
+    fields->createViewAndAllocate("temp", sidre::DOUBLE_ID, eltcount);
+  View * rho =
+    fields->createViewAndAllocate("rho", sidre::DOUBLE_ID, eltcount);
+
+  // Explicitly set values for the "vis" Attribute on the "temp" and "rho"
+  // buffers.
+  temp->setAttributeScalar("vis", 1);
+  rho->setAttributeScalar("vis", 1);
 
   // The "fields" Group also contains a child Group "ext" which holds a pointer
   // to an externally owned integer array.  Although Sidre does not own the

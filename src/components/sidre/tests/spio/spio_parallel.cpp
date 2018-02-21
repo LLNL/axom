@@ -99,10 +99,10 @@ TEST(spio_parallel, parallel_writeread)
     i1_vals[i] = (i+10) * (404-my_rank-i);
   }
 
+  // parallel_io_save_start
   /*
    * Contents of the DataStore written to files with IOManager.
    */
-  // parallel_io_save_start
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
@@ -111,6 +111,7 @@ TEST(spio_parallel, parallel_writeread)
   writer.write(root, num_files, file_name, PROTOCOL);
 
   std::string root_name = file_name + ROOT_EXT;
+  // parallel_io_save_end
 
   /*
    * Extra stuff to exercise writeGroupToRootFile

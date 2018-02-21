@@ -6,8 +6,8 @@ Sidre provides for file I/O to HDF5 files and file handles and to JSON files.
 Serial I/O is accomplished using methods of the Group class; parallel I/O is done
 through the IOManager class.
 
-HDF5 is an optional dependency for Sidre.  If Sidre was not compiled with HDF5
-support, those APIs that rely on HDF5 will naturally be unavailable.
+HDF5 is an optional dependency for Sidre.  Sidre APIs that rely on HDF5 will be
+available only if Sidre was compiled with HDF5 support.
 
 Serial File I/O
 ---------------
@@ -18,8 +18,9 @@ load() methods allow the user to specify a protocol, specifying how the
 operation should be performed and what file format should be used.  The
 loadExternalData() method takes no protocol argument since it is only used with
 the sidre_hdf5 protocol.  The save() method can also take a pointer to an
-Attribute object.  If not specified, all Views are saved, but if an Attribute
-pointer is provided, only Views with that Attribute set will be saved.
+Attribute object.  If that Attribute pointer is null, all Views are saved, but
+if an Attribute pointer is provided, only Views with that Attribute explicitly
+set will be saved.
 
 Insert a link to Doxygen for Group, and mention that protocols are listed here.
 
