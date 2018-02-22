@@ -83,10 +83,12 @@ TEST(spio_scr, spio_scr_writeread)
 
   MPI_Barrier(MPI_COMM_WORLD);
 
+  /*
+   * SCR write operation is complete. Must finalize and initialize
+   * before reading.
+   */
   SCR_Finalize();
   SCR_Init();
-
-  MPI_Barrier(MPI_COMM_WORLD);
 
   std::string root_name = "out_spio_parallel_write_read.root";
 
