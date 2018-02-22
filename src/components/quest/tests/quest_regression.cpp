@@ -419,7 +419,7 @@ axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb,
  */
 void runContainmentQueries(CommandLineArguments& clargs)
 {
-  const int IGNORE = -1;
+  const int IGNORE_PARAM = -1;
   const bool USE_DISTANCE = false;
 
   SLIC_INFO(fmt::format("Initializing InOutOctree over mesh '{}'...",
@@ -427,7 +427,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   axom::utilities::Timer buildTimer(true);
 
   axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM,
-                          IGNORE, IGNORE);
+                          IGNORE_PARAM, IGNORE_PARAM);
 
   buildTimer.stop();
   SLIC_INFO(fmt::format("Initialization took {} seconds.",
@@ -521,7 +521,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
                 maxDepth, maxEltsPerBucket, clargs.meshName));
   axom::utilities::Timer buildTimer(true);
   axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM,
-                          maxDepth, maxEltsPerBucket);
+                          maxEltsPerBucket, maxDepth);
   buildTimer.stop();
 
   SLIC_INFO(fmt::format("Initialization took {} seconds.",

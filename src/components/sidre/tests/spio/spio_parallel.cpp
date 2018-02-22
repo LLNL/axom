@@ -56,7 +56,6 @@ int numOutputFiles(int numRanks)
 #ifdef AXOM_USE_HDF5
   return std::max( numRanks / 2, 1);
 #else
-  AXOM_DEBUG_VAR(numRanks);
   return numRanks;
 #endif
 }
@@ -402,7 +401,7 @@ TEST(spio_parallel, external_writeread)
 }
 
 //----------------------------------------------------------------------
-TEST(spio_paralle, irregular_writeread)
+TEST(spio_parallel, irregular_writeread)
 {
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -676,7 +675,6 @@ using axom::slic::UnitTestLogger;
 int main(int argc, char* argv[])
 {
   int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,

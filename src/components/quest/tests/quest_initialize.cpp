@@ -20,7 +20,7 @@ typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 
 TEST( quest_interface, pointer_initialize )
 {
-  const int IGNORE = -1;
+  const int IGNORE_PARAM = -1;
 
   SLIC_INFO(fmt::format("Initializing InOutOctree over triangle mesh ..."));
 
@@ -28,9 +28,10 @@ TEST( quest_interface, pointer_initialize )
     axom::quest::utilities::make_tetrahedron_mesh();
 
 #ifdef AXOM_USE_MPI
-  axom::quest::initialize(MPI_COMM_WORLD, input_mesh, false, 3, IGNORE, IGNORE);
+  axom::quest::initialize(MPI_COMM_WORLD, input_mesh, false, 3, IGNORE_PARAM,
+                          IGNORE_PARAM);
 #else
-  axom::quest::initialize(input_mesh, false, 3, IGNORE, IGNORE);
+  axom::quest::initialize(input_mesh, false, 3, IGNORE_PARAM, IGNORE_PARAM);
 #endif
 
   EXPECT_TRUE(axom::quest::inside(3, 2, 0));
