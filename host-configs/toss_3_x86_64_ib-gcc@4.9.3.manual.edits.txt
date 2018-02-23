@@ -33,7 +33,7 @@ set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
-set(SCR_DIR "/usr/gapps/axom/thirdparty_libs/scr-1.1.8/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
+set(SCR_DIR "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
