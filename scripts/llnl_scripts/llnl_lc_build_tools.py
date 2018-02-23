@@ -508,7 +508,7 @@ def get_build_dir(prefix, host_config):
 
 
 def get_build_and_test_root(prefix, timestamp):
-    return pjoin(prefix,"_asctk_build_and_test_%s" % timestamp)
+    return pjoin(prefix,"_axom_build_and_test_%s" % timestamp)
 
 
 def get_machine_name():

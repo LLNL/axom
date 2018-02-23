@@ -38,7 +38,7 @@ from optparse import OptionParser
 from smtplib import SMTP
 from email.MIMEText import MIMEText
 from dateutil.parser import parse
-from llnl_lc_uberenv_install_tools import *
+from llnl_lc_build_tools import *
 
 
 __cellBlackOnGreen = "<td bgcolor=\"#00C000\"><font  color=\"#000000\">%s</font></td>"

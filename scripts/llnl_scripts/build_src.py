@@ -23,7 +23,7 @@
 
 """
 
-from llnl_lc_uberenv_install_tools import *
+from llnl_lc_build_tools import *
 
 from optparse import OptionParser
 

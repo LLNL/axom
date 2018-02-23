@@ -31,7 +31,7 @@ import json
 
 from os.path import join as pjoin
 
-from llnl_lc_uberenv_install_tools import sexe
+from llnl_lc_build_tools import sexe
 
 
 def graveyard_path(d):
