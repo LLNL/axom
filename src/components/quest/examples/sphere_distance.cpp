@@ -25,8 +25,8 @@
 
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
-#include "primal/HyperSphere.hpp"
 #include "primal/Point.hpp"
+#include "primal/Sphere.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 
@@ -62,7 +62,7 @@ using axom::primal::Triangle;
 using axom::primal::BoundingBox;
 using axom::primal::BVHTree;
 using axom::primal::Vector;
-using axom::primal::HyperSphere;
+using axom::primal::Sphere;
 
 
 static const int NDIMS = 3;
@@ -372,7 +372,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   SLIC_INFO("sphere radius: " << Arguments.sphere_radius );
   SLIC_INFO("sphere center: " << Arguments.sphere_center );
 
-  HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
+  Sphere< double, 3 > sphere( Arguments.sphere_radius );
 
   // STEP 1: Add node field to stored exact distance field.
   const int nnodes = umesh->getNumberOfNodes();

@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef HYPERSPHERE_HPP_
-#define HYPERSPHERE_HPP_
+#ifndef PRIMAL_SPHERE_HPP_
+#define PRIMAL_SPHERE_HPP_
 
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
@@ -24,7 +24,7 @@
 
 #include "slic/slic.hpp"
 
-#include "primal/orientation.hpp"
+#include "primal/OrientedSide.hpp"
 
 // C/C++ includes
 #include <cstddef>
@@ -47,7 +47,7 @@ namespace primal
  * \tparam NDIMS the number of dimensions
  */
 template < typename T, int NDIMS >
-class HyperSphere
+class Sphere
 {
 public:
 
@@ -55,31 +55,31 @@ public:
    * \brief Constructs HyperSphere centered at origin with the given radius.
    * \param [in] radius radius of the HyperSphere. Default is 1.0
    */
-  HyperSphere( T radius=1.0 );
+  Sphere( T radius=1.0 );
 
   /*!
    * \brief Constructs HyperSphere with given center and radius
    * \param [in] center user-supplied center.
    * \param [in] radius user-supplied radius. Default is 1.0.
    */
-  HyperSphere( T* center, T radius=1.0 );
+  Sphere( T* center, T radius=1.0 );
 
   /*!
    * \brief Copy constructor.
    * \param [in] other The hypersphere to copy
    */
-  HyperSphere( const HyperSphere< T,NDIMS >& other ) { *this = other; };
+  Sphere( const Sphere< T,NDIMS >& other ) { *this = other; };
 
   /*!
    * \brief Destructor.
    */
-  ~HyperSphere();
+  ~Sphere();
 
   /*!
    * \brief Assignment operator.
    * \param [in] rhs  HyperSphere instance on right-hand-side.
    */
-  HyperSphere< T,NDIMS >& operator=(const HyperSphere< T,NDIMS >& rhs);
+  Sphere< T,NDIMS >& operator=(const Sphere< T,NDIMS >& rhs);
 
   /*!
    * \brief Returns the radius of the HyperSphere.
@@ -118,13 +118,6 @@ private:
   T m_radius;
 };
 
-/// \name Pre-defined HyperSpheres for convenience
-/// @{
-
-typedef HyperSphere< double,3 > Sphere;
-typedef HyperSphere< double,2 > Circle;
-/// @}
-
 } /* namespace primal */
 } /* namespace axom */
 
@@ -138,14 +131,14 @@ namespace primal
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T radius ) : m_radius(radius)
+Sphere< T,NDIMS >::Sphere( T radius ) : m_radius(radius)
 {
   std::fill( m_center, m_center+NDIMS, 0.0 );
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ) : m_radius(radius)
+Sphere< T,NDIMS >::Sphere( T* center, T radius ) : m_radius(radius)
 {
   SLIC_ASSERT( center != AXOM_NULLPTR );
   memcpy( m_center, center, NDIMS*sizeof(T) );
@@ -153,12 +146,12 @@ HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ) : m_radius(radius)
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::~HyperSphere() { }
+Sphere< T,NDIMS >::~Sphere() { }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
-  const HyperSphere< T,NDIMS >& rhs)
+inline Sphere< T,NDIMS >& Sphere< T,NDIMS >::operator=(
+  const Sphere< T,NDIMS >& rhs)
 {
   if ( this == &rhs )
   {
@@ -172,7 +165,7 @@ inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
+T Sphere< T,NDIMS >::getSignedDistance( T* q )
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
@@ -188,7 +181,7 @@ T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int HyperSphere< T,NDIMS >::getOrientation( T* q )
+int Sphere< T,NDIMS >::getOrientation( T* q )
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
@@ -224,4 +217,4 @@ int HyperSphere< T,NDIMS >::getOrientation( T* q )
 } /* namespace primal */
 } /* namespace axom */
 
-#endif /* HYPERSPHERE_HPP_ */
+#endif /* PRIMAL_SPHERE_HPP_ */
