@@ -27,6 +27,7 @@ set( primal_tests
     primal_plane.cpp
     primal_point.cpp
     primal_rectangular_lattice.cpp
+    primal_sphere.cpp
     primal_squared_distance.cpp
     primal_triangle.cpp
     primal_vector.cpp

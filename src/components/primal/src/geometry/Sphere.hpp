@@ -18,16 +18,12 @@
 #ifndef PRIMAL_SPHERE_HPP_
 #define PRIMAL_SPHERE_HPP_
 
-#include "axom/Macros.hpp"
-#include "axom/Types.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom/Macros.hpp"           // for AXOM macros
+#include "axom/Types.hpp"            // for AXOM_NULLPTR
+#include "axom_utils/Utilities.hpp"  // for utilities::isNearlyEqual()
+#include "primal/OrientedSide.hpp"   // for OrientedSide enum definition
 
-#include "slic/slic.hpp"
-
-#include "primal/OrientedSide.hpp"
-
-// C/C++ includes
-#include <cstddef>
+#include "slic/slic.hpp"             // for SLIC macros
 
 namespace axom
 {
@@ -35,13 +31,12 @@ namespace primal
 {
 
 /*!
- * \class HyperSphere
+ * \class Sphere
  *
- * \brief The HyperSphere class provides the means to represent a hypersphere,
- *  \f$ \mathcal{H} \in \mathcal{R}^d \f$, given a center, \f$ \mathcal{C} \f$
- *  and radius \f$ R \f$ namely a circle in \f$ \mathcal{R}^2 \f$ and sphere in
- *  \f$ \mathcal{R}^3 \f$ Further, the class provides the means to perform
- *  distance and inside/outside queries.
+ * \brief Defines an oriented Sphere in 2-D (i.e., a circle) or 3-D given by
+ *  its center, \f$ \mathcal{X} \f$ and radius \f$ \mathcal{R} \f$. The Sphere
+ *  object provides associated operations on a sphere, such as, signed distance
+ *  and orientation.
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
@@ -51,24 +46,29 @@ class Sphere
 {
 public:
 
-  /*!
-   * \brief Constructs HyperSphere centered at origin with the given radius.
-   * \param [in] radius radius of the HyperSphere. Default is 1.0
-   */
-  Sphere( T radius=1.0 );
+/// \name Constructors
+/// @{
 
   /*!
-   * \brief Constructs HyperSphere with given center and radius
+   * \brief Constructs a Sphere centered at origin with the given radius.
+   * \param [in] radius the radius of the Sphere (optional).
+   * \note If a radius is not supplied, the default radius is 1.0.
+   */
+  explicit Sphere( T radius=1.0 );
+
+  /*!
+   * \brief Constructs a Sphere with the given center and radius.
+   *
    * \param [in] center user-supplied center.
-   * \param [in] radius user-supplied radius. Default is 1.0.
+   * \param [in] radius the radius of the Sphere (optional).
+   *
+   * \note If a radius is not supplied, the default radius is 1.0.
+   *
+   * \pre center != AXOM_NULLPTR
    */
-  Sphere( T* center, T radius=1.0 );
+  explicit Sphere( const T* center, T radius=1.0 );
 
-  /*!
-   * \brief Copy constructor.
-   * \param [in] other The hypersphere to copy
-   */
-  Sphere( const Sphere< T,NDIMS >& other ) { *this = other; };
+/// @}
 
   /*!
    * \brief Destructor.
@@ -76,53 +76,73 @@ public:
   ~Sphere();
 
   /*!
-   * \brief Assignment operator.
-   * \param [in] rhs  HyperSphere instance on right-hand-side.
+   * \brief Returns the radius of the Sphere.
+   * \return r the radius of the Sphere.
    */
-  Sphere< T,NDIMS >& operator=(const Sphere< T,NDIMS >& rhs);
+  inline T getRadius( ) const { return m_radius; };
 
   /*!
-   * \brief Returns the radius of the HyperSphere.
-   * \return r the radius of the HyperSphere.
+   * \brief Returns the center of the Sphere.
+   *
+   * \return c pointer to array that holds the center of the Sphere.
+   * \note c points to an array that is NDIMS long.
+   * \post c != AXOM_NULLPTR
    */
-  T radius() const { return m_radius; };
+  inline const T* getCenter( ) const { return m_center; };
 
   /*!
-   * \brief Returns the center of the HyperSphere
-   * \return c pointer to array that holds the center of the HyperSphere.
-   * \note The length of the array is NDIMS.
-   */
-  T* center() { return m_center; };
-  const T* center() const { return m_center; };
-
-  /*!
-   * \brief Computes signed distance of a point to the HyperSphere boundary.
-   * \param [in] q pointer to user-supplied point q.
-   * \return dist signed distance
+   * \brief Computes the signed distance of a point to the Sphere's boundary.
+   *
+   * \param [in] q pointer to buffer consisting of query point coordinates.
+   * \return d the computed signed distance of the point, q, to the sphere.
+   *
+   * \note The signed distance of a point, q, is:
+   *  <ul>
+   *   <li> negative inside the sphere </li>
+   *   <li> positive outside the sphere </li>
+   *   <li> zero on the boundary </li>
+   *  </ul>
+   *
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    */
-  T getSignedDistance( T* q);
+  inline T computeSignedDistance( const T* q ) const;
 
   /*!
-   * \brief Computes orientation of a point with respect to the HyperSphere.
+   * \brief Computes the orientation of a point with respect to the Sphere.
+   *
    * \param [in] q pointer to user-supplied point q.
-   * \return orient orientation of q with respect to the sphere.
+   * \param [in] TOL user-supplied tolerance. Optional. Default is 1.e-9.
+   * \return orient the orientation of q with respect to the sphere.
+   *
+   *  \note This method returns one of the following values:
+   *   <ul>
+   *    <li> <b>ON_BOUNDARY</b>      : if `q` is on the sphere's boundary </li>
+   *    <li> <b>ON_POSITIVE_SIDE</b> : if `q` is outside the sphere </li>
+   *    <li> <b>ON_NEGATIVE_SIDE</b> : if `q` is inside the sphere </li>
+   *  </ul>
+   *
+   * \see OrientedSide for the list of possible return values.
+   *
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
+   *
    */
-  int getOrientation( T* q );
+  inline int getOrientation( const T* q, double TOL=1.e-9 ) const;
 
 private:
-  T m_center[ NDIMS ];
-  T m_radius;
+  T m_center[ NDIMS ]; /*!< sphere center */
+  T m_radius;          /*!< sphere radius */
+
+  DISABLE_COPY_AND_ASSIGNMENT( Sphere );
+  DISABLE_MOVE_AND_ASSIGNMENT( Sphere );
 };
 
 } /* namespace primal */
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
-// HyperSphere Implementation
+// Sphere Implementation
 //------------------------------------------------------------------------------
 namespace axom
 {
@@ -133,15 +153,28 @@ namespace primal
 template < typename T, int NDIMS >
 Sphere< T,NDIMS >::Sphere( T radius ) : m_radius(radius)
 {
-  std::fill( m_center, m_center+NDIMS, 0.0 );
+  AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
+                            "A Sphere object may be defined in 2-D or 3-D" );
+
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    m_center[ i ] = static_cast< T >( 0.0 );
+  }
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-Sphere< T,NDIMS >::Sphere( T* center, T radius ) : m_radius(radius)
+Sphere< T,NDIMS >::Sphere( const T* center, T radius ) : m_radius(radius)
 {
+  AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
+                            "A Sphere object may be defined in 2-D or 3-D" );
+
   SLIC_ASSERT( center != AXOM_NULLPTR );
-  memcpy( m_center, center, NDIMS*sizeof(T) );
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    m_center[ i ] = center[ i ];
+  }
+
 }
 
 //------------------------------------------------------------------------------
@@ -150,22 +183,7 @@ Sphere< T,NDIMS >::~Sphere() { }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-inline Sphere< T,NDIMS >& Sphere< T,NDIMS >::operator=(
-  const Sphere< T,NDIMS >& rhs)
-{
-  if ( this == &rhs )
-  {
-    return *this;
-  }
-
-  memcpy( m_center, rhs.m_center, NDIMS*sizeof(T) );
-  m_radius = rhs.m_radius;
-  return *this;
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int NDIMS >
-T Sphere< T,NDIMS >::getSignedDistance( T* q )
+inline T Sphere< T,NDIMS >::computeSignedDistance( const T* q ) const
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
@@ -181,12 +199,11 @@ T Sphere< T,NDIMS >::getSignedDistance( T* q )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int Sphere< T,NDIMS >::getOrientation( T* q )
+inline int Sphere< T,NDIMS >::getOrientation( const T* q, double TOL ) const
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
-  const double TOL = 1.0e-9;
-  T signed_distance = this->getSignedDistance( q );
+  T signed_distance = this->computeSignedDistance( q );
 
   int orient = -1;
 
