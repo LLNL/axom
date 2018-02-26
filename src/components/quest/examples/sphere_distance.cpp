@@ -394,7 +394,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
     double pnt[3];
     umesh->getNode( i, pnt );
 
-    phi[ i ]  = sphere.getSignedDistance( pnt );
+    phi[ i ]  = sphere.computeSignedDistance( pnt );
   }
 
   SLIC_INFO("done.");

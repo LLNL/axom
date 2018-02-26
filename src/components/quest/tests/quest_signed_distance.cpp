@@ -246,7 +246,7 @@ TEST( quest_signed_distance, sphere_test )
     umesh->getNode( inode, pt.data() );
 
     double computed = signed_distance.computeDistance( pt );
-    double exact    = analytic_sphere.getSignedDistance( pt.data() );
+    double exact    = analytic_sphere.computeSignedDistance( pt.data() );
 
     // compute error
     double dx    = computed - exact;
