@@ -74,7 +74,7 @@ TEST( primal_plane, construct_from_normal_and_offset )
   double offset      = 2.0;
 
   // test 3D
-  primal::Plane< double, 3 > P( normal, offset, true );
+  primal::Plane< double, 3 > P( normal, offset );
   EXPECT_DOUBLE_EQ( P.getNormal()[0], 0.0 );
   EXPECT_DOUBLE_EQ( P.getNormal()[1], 0.0 );
   EXPECT_DOUBLE_EQ( P.getNormal()[2], 1.0 );

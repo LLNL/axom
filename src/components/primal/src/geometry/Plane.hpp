@@ -82,12 +82,9 @@ public:
    *
    * \param [in] normal the supplied plane normal, \f$ \mathcal{N} \f$
    * \param [in] x a specified point that the plane passes through, \f$ x \f$
-   * \param [in] isUnitNormal indicates whether the  supplied normal is a unit
-   *  normal (optional). Default is set to false.
    *
-   * \note The Plane constructor will always normalize the supplied normal
-   *  unless the caller indicates that the supplied normal is a unit normal
-   *  via the third (optional) argument to the constructor.
+   * \note The supplied normal will be normalized, such that, the Plane's normal
+   *  will always be a unit normal.
    *
    * \note The supplied buffers, normal and x must point to buffers that are at
    *  least NDIMS long
@@ -95,7 +92,7 @@ public:
    * \pre normal != AXOM_NULLPTR
    * \pre x != AXOM_NULLPTR
    */
-  Plane( const T* normal, const T* x, bool isUnitNormal=false );
+  Plane( const T* normal, const T* x );
 
   /*!
    * \brief Constructs a plane with a specified normal, \f$ \mathcal{N} \f$,
@@ -103,16 +100,13 @@ public:
    *
    * \param [in] normal the supplied plane normal, \f$ \mathcal{N} \f$
    * \param [in] offset the plane offset from origin
-   * \param [in] isUnitNormal indicates whether the  supplied normal is a unit
-   *  normal (optional). Default is set to false.
    *
-   * \note The Plane constructor will always normalize the supplied normal
-   *  unless the caller indicates that the supplied normal is a unit normal
-   *  via the third (optional) argument to the constructor.
+   * \note The supplied normal will be normalized, such that, the Plane's normal
+   *  will always be a unit normal.
    *
    * \pre normal != AXOM_NULLPTR
    */
-  Plane( const T* normal, T offset, bool isUnitNormal=false );
+  Plane( const T* normal, T offset );
 
   /*!
    * \brief Constructs a Plane that goes through the specified points.
@@ -257,7 +251,7 @@ namespace primal
 {
 
 template < typename T, int NDIMS >
-Plane< T, NDIMS >::Plane( const T* normal, const T* x, bool isUnitNormal )
+Plane< T, NDIMS >::Plane( const T* normal, const T* x )
 {
   AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
                           "A plane object may be defined in 2-D or 3-D" );
@@ -266,19 +260,13 @@ Plane< T, NDIMS >::Plane( const T* normal, const T* x, bool isUnitNormal )
   SLIC_ASSERT( x != AXOM_NULLPTR );
 
   this->setNormal( normal );
-
-  if ( !isUnitNormal )
-  {
-    numerics::normalize( m_normal, NDIMS );
-  }
-
+  numerics::normalize( m_normal, NDIMS );
   m_offset = numerics::dot_product( m_normal, x, NDIMS );
-
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-Plane< T, NDIMS >::Plane( const T* normal, T offset, bool isUnitNormal ) :
+Plane< T, NDIMS >::Plane( const T* normal, T offset ) :
   m_offset( offset )
 {
   AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
@@ -287,12 +275,7 @@ Plane< T, NDIMS >::Plane( const T* normal, T offset, bool isUnitNormal ) :
   SLIC_ASSERT( normal != AXOM_NULLPTR );
 
   this->setNormal( normal );
-
-  if ( !isUnitNormal )
-  {
-    numerics::normalize( m_normal, NDIMS );
-  }
-
+  numerics::normalize( m_normal, NDIMS );
 }
 
 //------------------------------------------------------------------------------
