@@ -32,7 +32,7 @@
 #include "primal/Point.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
-#include "primal/OrientedSide.hpp"
+#include "primal/OrientationResult.hpp"
 
 #include "slic/slic.hpp"
 

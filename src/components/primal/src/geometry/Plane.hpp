@@ -21,7 +21,7 @@
 #include "axom/Macros.hpp"                 // for Axom macros
 #include "axom/Types.hpp"                  // for AXOM_NULLPTR
 #include "axom_utils/vector_utilities.hpp" // for vector operators
-#include "primal/OrientedSide.hpp"         // for OrientedSide enum
+#include "primal/OrientationResult.hpp"    // for OrientedSide enum
 
 #include "slic/slic.hpp"                   // for SLIC macros
 
