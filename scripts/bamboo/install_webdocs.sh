@@ -13,7 +13,8 @@ DOCS_DIR_OLD="${TOOLKIT_WEB_ROOT}/docs_old"
 DOCS_DIR="${TOOLKIT_WEB_ROOT}/docs"
 
 if [[ $HOSTNAME == rz* ]]; then
-    HOST_CONFIGURATION="host-configs/rzgenie-toss_3_x86_64_ib-gcc@7.1.0.cmake"
+    echo "Error: this job is to be run on the CZ"
+    exit 1
 else
     HOST_CONFIGURATION="host-configs/quartz-toss_3_x86_64_ib-gcc@7.1.0.cmake"
 fi
