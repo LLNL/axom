@@ -78,25 +78,33 @@ def main():
         print "   CMake will not allow you to use any TPL's include directory inside the repository."
         return False
 
-    specs = get_specs_for_current_machine()
-    timestamp = get_timestamp()
     
     if opts["archive"] != "":
         job_name = opts["archive"]
     else:
         job_name = get_username() + "/" + os.path.basename(__file__)
 
-    res = full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp)
+    try:
+        original_wd = os.getcwd()
+        os.chdir(repo_dir)
 
-    if opts["archive"] != "":
-        # Get information for archiving
-        archive_base_dir = get_archive_base_dir()
+        timestamp = get_timestamp()
+        specs = get_specs_for_current_machine()
+        res = full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp)
+
         if opts["archive"] != "":
-            job_name = opts["archive"]
-        else:
-            job_name = get_username() + "/" + os.path.basename(__file__)
+            # Get information for archiving
+            archive_base_dir = get_archive_base_dir()
+            if opts["archive"] != "":
+                job_name = opts["archive"]
+            else:
+                job_name = get_username() + "/" + os.path.basename(__file__)
 
-        archive_tpl_logs(builds_dir, job_name, timestamp)
+            archive_tpl_logs(builds_dir, job_name, timestamp)
+    finally:
+        os.chdir(original_wd)
+    
+
 
     return res
 

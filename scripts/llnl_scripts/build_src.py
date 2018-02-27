@@ -77,12 +77,17 @@ def main():
     else:
         job_name = get_username() + "/" + os.path.basename(__file__)
 
-    timestamp = get_timestamp()
-    res = build_and_test_host_configs(src_dir, job_name, timestamp)
+    try:
+        original_wd = os.getcwd()
+        os.chdir(src_dir)
+        timestamp = get_timestamp()
+        res = build_and_test_host_configs(src_dir, job_name, timestamp)
 
-    # Archive logs
-    if opts["archive"] != "":
-        archive_src_logs(src_dir, job_name, timestamp)
+        # Archive logs
+        if opts["archive"] != "":
+            archive_src_logs(src_dir, job_name, timestamp)
+    finally:
+        os.chdir(original_wd)
 
     return res
 

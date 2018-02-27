@@ -242,7 +242,7 @@ def uberenv_create_mirror(prefix,mirror_path):
     """
     Calls uberenv to create a spack mirror.
     """
-    cmd = "python ../uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
+    cmd = "python scripts/uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
     return sexe(cmd,echo=True)
 
 
@@ -250,7 +250,7 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
-    cmd = "python ../uberenv/uberenv.py --prefix %s --spec %s " % (prefix,spec)
+    cmd = "python scripts/uberenv/uberenv.py --prefix %s --spec %s " % (prefix,spec)
     if not mirror is None:
         cmd += "--mirror %s" % mirror
         
@@ -271,7 +271,7 @@ def patch_host_configs(prefix):
     """
     # load manual edits into a dict with keys that we can compare to 
     # generated host config names
-    manual_edits_pattern = os.path.abspath(pjoin("../../host-configs/*manual.edits.txt"))
+    manual_edits_pattern = "host-configs/*manual.edits.txt"
     manual_edits_files = glob.glob(manual_edits_pattern)
     manual_edits = {}
     for f in manual_edits_files:
@@ -314,7 +314,7 @@ def build_and_test_host_config(test_root,host_config):
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print "[starting configure of %s]" % host_config
     print "[log file: %s]" % cfg_output_file
-    res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+    res = sexe("python config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
                output_file = cfg_output_file,
                echo=True)
     
@@ -534,7 +534,7 @@ def get_archive_base_dir():
 
 def get_specs_for_current_machine():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    specs_json_path = pjoin(script_dir, "../uberenv/specs.json")
+    specs_json_path = pjoin(script_dir, "scripts/uberenv/specs.json")
 
     with open(specs_json_path, 'r') as f:
         specs_json = json.load(f)
