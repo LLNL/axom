@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+- A Plane geometric primitive is added in Primal. The Plane defines an oriented
+  plane in 2D and 3D and provides support for operations such as, projection of
+  a point to a plane, signed distance and orientation. 
 - Adds ability to configure Axom (in particular Sidre and Spio) without hdf5. 
 - Adds a Point-In-Cell query to Quest. The Point In Cell query finds the cell
   in a computational mesh that contains an arbitrary point in space.

@@ -24,6 +24,7 @@ set( primal_tests
     primal_numeric_array.cpp
     primal_compute_bounding_box.cpp
     primal_orientation.cpp
+    primal_plane.cpp
     primal_point.cpp
     primal_rectangular_lattice.cpp
     primal_squared_distance.cpp

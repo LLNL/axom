@@ -17,9 +17,11 @@ set( primal_headers
      ## geometry
      geometry/BoundingBox.hpp
      geometry/OrientedBoundingBox.hpp
+     geometry/OrientationResult.hpp
      geometry/HyperSphere.hpp
      geometry/MortonIndex.hpp
      geometry/NumericArray.hpp
+     geometry/Plane.hpp
      geometry/Point.hpp
      geometry/Polygon.hpp
      geometry/Ray.hpp
