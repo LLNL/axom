@@ -7,7 +7,7 @@ class PyShroud(Package):
     homepage = "https://github.com/LLNL/shroud"
     url      = "https://github.com/LLNL/shroud/archive/v0.8.0.tar.gz"
 
-    version('0.8', 'ec94d6f9cf3246d4370007abd4d270d8')
+    version('0.8.0', 'ec94d6f9cf3246d4370007abd4d270d8')
 
     extends('python')
 

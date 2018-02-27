@@ -57,7 +57,6 @@ if (ENABLE_FORTRAN)
     )
     set(slic_fortran_sources
         interface/c_fortran/wrapSLIC.cpp
-        interface/c_fortran/shroudrt.cpp
         interface/c_fortran/wrapfslic.f
     )
 endif()
