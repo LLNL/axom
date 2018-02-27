@@ -33,6 +33,17 @@ namespace axom
 namespace primal
 {
 
+/// \name Forward Declared Overloaded Operators
+/// @{
+
+template < typename T, int NDIMS >
+class Sphere;
+
+template < typename T, int NDIMS >
+std::ostream& operator<<( std::ostream & os, const Sphere< T,NDIMS >& s );
+
+/// @}
+
 /*!
  * \class Sphere
  *
@@ -145,6 +156,14 @@ public:
   inline bool intersectsWith( const Sphere< T, NDIMS >& sphere,
                               double TOL=1.e-9 ) const;
 
+  /*!
+   * \brief Prints the Sphere information in the given output stream.
+   * \param [in,out] os the output stream to write to.
+   * \note This method is primarily used for debugging.
+   * \return s the modified output stream object.
+   */
+  std::ostream& print(std::ostream& os) const;
+
 private:
   T m_center[ NDIMS ]; /*!< sphere center */
   T m_radius;          /*!< sphere radius */
@@ -248,6 +267,18 @@ inline int Sphere< T,NDIMS >::getOrientation( const T* q, double TOL ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+std::ostream& Sphere< T, NDIMS >::print( std::ostream& os ) const
+{
+  os << " center: [ ";
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    os << m_center[ i ] << " ";
+  }
+  os << "] radius: " << m_radius;
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
 inline bool Sphere< T,NDIMS >::intersectsWith( const Sphere< T,NDIMS >& sphere,
                                                double TOL ) const
 {
@@ -265,6 +296,15 @@ inline bool Sphere< T,NDIMS >::intersectsWith( const Sphere< T,NDIMS >& sphere,
   return ( distance_squared < sum_of_radii_2  ||
            utilities::isNearlyEqual( distance_squared, sum_of_radii_2, TOL) );
 
+}
+
+//------------------------------------------------------------------------------
+//  implementation of free functions
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
+std::ostream& operator<<(std::ostream & os , const Sphere< T, NDIMS >& s )
+{
+  return( s.print( os ) );
 }
 
 } /* namespace primal */
