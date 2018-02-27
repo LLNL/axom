@@ -15,14 +15,14 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef PRIMAL_ORIENTEDSIDE_HPP_
-#define PRIMAL_ORIENTEDSIDE_HPP_
+#ifndef PRIMAL_ORIENTATIONRESULT_HPP_
+#define PRIMAL_ORIENTATIONRESULT_HPP_
 
 /*!
  * \file
  *
- * \brief Defines the OrientedSide enum which defines the possible return values
- *  from orientation checks.
+ * \brief Defines the OrientationResult enum which defines possible return
+ *  values for orientation tests in between different geometric primitives
  */
 
 namespace axom
@@ -33,14 +33,14 @@ namespace primal
 /*!
  * \brief Enumerates possible return values for orientation tests.
  */
-enum OrientedSide
+enum OrientationResult
 {
-  ON_BOUNDARY,         /*!< point is on boundary of the given primitive      */
-  ON_POSITIVE_SIDE,    /*!< point is on positive side of the given primitive */
-  ON_NEGATIVE_SIDE     /*!< point is on negative side of the given primitive */
+  ON_BOUNDARY,       /*!< primitive is on the boundary of a primitive      */
+  ON_POSITIVE_SIDE,  /*!< primitive is on the positive side of a primitive */
+  ON_NEGATIVE_SIDE   /*!< primitive is on the negative side of a primitive */
 };
 
 }
 }
 
-#endif /* PRIMAL_ORIENTEDSIDE_HPP_ */
+#endif /* PRIMAL_ORIENTATIONRESULT_HPP_ */
