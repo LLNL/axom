@@ -52,7 +52,6 @@ TEST( primal_plane_DeathTest, invalid_construction )
   typedef primal::Plane< double,2 > Plane2D;
   typedef primal::Plane< double,3 > Plane3D;
 
-  // test 2D
   EXPECT_DEATH_IF_SUPPORTED( Plane2D( x, x, AXOM_NULLPTR ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( Plane3D( x, x, x), IGNORE_OUTPUT );
 }
@@ -254,17 +253,17 @@ TEST( primal_plane, flip )
 
   // STEP 0: test 3D
   primal::Plane< double, 3 > P( x1, x2, x3 );
-  EXPECT_DOUBLE_EQ( P.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
+  EXPECT_EQ( P.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
   P.flip( );
-  EXPECT_DOUBLE_EQ( P.getOrientation( q ), primal::ON_POSITIVE_SIDE );
+  EXPECT_EQ( P.getOrientation( q ), primal::ON_POSITIVE_SIDE );
 
   // STEP 1: test 2D
   double a[ 2 ] = { 2.0, -1.0 };
   double b[ 2 ] = { 2.0,  2.0 };
   primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
-  EXPECT_DOUBLE_EQ( P2.getOrientation( q ), primal::ON_POSITIVE_SIDE );
+  EXPECT_EQ( P2.getOrientation( q ), primal::ON_POSITIVE_SIDE );
   P2.flip( );
-  EXPECT_DOUBLE_EQ( P2.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
+  EXPECT_EQ( P2.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
 }
 
 //------------------------------------------------------------------------------
