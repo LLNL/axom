@@ -20,6 +20,7 @@ library: SPIO
 namespace: axom sidre
 
 options:
+  C_line_length: 1000
   C_prefix: SPIO_
   F_module_name_library_template: axom_{library_lower}
   F_module_per_class: False
