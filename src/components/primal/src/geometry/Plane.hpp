@@ -57,6 +57,11 @@ std::ostream& operator<<( std::ostream & os , const Plane< T,NDIMS >& p );
  *  where, \f$ \mathcal{N} \f$ is a unit normal and \f$ d \f$ is the offset of
  *  the plane (in the direction of the specified normal) to the origin.
  *
+ *  The Plane class defines a co-dimension-one plane that splits the ambient
+ *  space into two halfspaces, such that, the signed distance for any point
+ *  is: (a) negative below the plance, (b) positive above the plane and (c)
+ *  zero on the plane.
+ *
  *  A Plane object may be constructed in three ways:
  *  1. Specifying a normal and a point that the plane passes through
  *  2. Specifying a normal and an offset from the origin, or
@@ -115,8 +120,8 @@ public:
    * \param [in] x2 coordinates of the second point.
    * \param [in] x3 coordinates of the third point, or AXOM_NULLPTR for 2D.
    *
-   * \note A minimum of two points are required to define a plane in 2D, or
-   *  three points for 3D.
+   * \note Two points are required to define a plane in 2D, in which case, the
+   *  caller must pass AXOM_NULLPTR as the third argument to this constructor.
    *
    * \note The specified points, x1, x2, x3, must point to buffers that are
    *  at least NDIMS long
@@ -124,6 +129,7 @@ public:
    * \pre x1 != AXOM_NULLPTR
    * \pre x2 != AXOM_NULLPTR
    * \pre x3 != AXOM_NULLPTR \f$ \iff \f$ NDIMS==3
+   * \pre In 2D, x1 should not be equal to x2
    * \pre In 3D, the user-supplied points, x1, x2, x3 should not be collinear.
    */
   Plane( const T* x1, const T* x2, const T* x3 );
@@ -184,7 +190,7 @@ public:
   inline void projectPoint( const T* x, T* projx ) const;
 
   /*!
-   * \brief Flips the plane in the opposite direction.
+   * \brief Flips the orientation of the plane.
    */
   inline void flip();
 
