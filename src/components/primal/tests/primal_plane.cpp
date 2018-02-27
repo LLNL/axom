@@ -124,19 +124,19 @@ TEST( primal_plane, signed_distance_and_orientation )
   // (a) test point below plane
   signed_distance = P.computeSignedDistance( q );
   EXPECT_DOUBLE_EQ( signed_distance, -3.0 );
-  EXPECT_EQ( P.getOrientedSide( q ), primal::ON_NEGATIVE_SIDE );
+  EXPECT_EQ( P.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
 
   // (b) test point above plane
   q[ 2 ] = 6.0;
   signed_distance = P.computeSignedDistance( q );
   EXPECT_DOUBLE_EQ( signed_distance, 3.0 );
-  EXPECT_EQ( P.getOrientedSide( q ), primal::ON_POSITIVE_SIDE );
+  EXPECT_EQ( P.getOrientation( q ), primal::ON_POSITIVE_SIDE );
 
   // (c) test point on plane
   q[ 2 ] = 3.0;
   signed_distance = P.computeSignedDistance( q );
   EXPECT_DOUBLE_EQ( signed_distance, 0.0 );
-  EXPECT_EQ( P.getOrientedSide( q ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P.getOrientation( q ), primal::ON_BOUNDARY );
 
   // STEP 1: test 2D
   double a[ 2 ] = { 2.0, -1.0 };
@@ -146,19 +146,19 @@ TEST( primal_plane, signed_distance_and_orientation )
   // (a) test point above plane
   signed_distance = P2.computeSignedDistance( q );
   EXPECT_DOUBLE_EQ( signed_distance, 2.0 );
-  EXPECT_EQ( P2.getOrientedSide( q ), primal::ON_POSITIVE_SIDE );
+  EXPECT_EQ( P2.getOrientation( q ), primal::ON_POSITIVE_SIDE );
 
   // (b) test point below plane
   q[ 0 ] = 4.0;
   signed_distance = P2.computeSignedDistance( q );
   EXPECT_DOUBLE_EQ( signed_distance, -2.0 );
-  EXPECT_EQ( P2.getOrientedSide( q ), primal::ON_NEGATIVE_SIDE );
+  EXPECT_EQ( P2.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
 
   // (c) test point on plane
   q[ 0 ] = 2.0;
   signed_distance = P2.computeSignedDistance( q );
   EXPECT_DOUBLE_EQ( signed_distance, 0.0 );
-  EXPECT_EQ( P2.getOrientedSide( q ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P2.getOrientation( q ), primal::ON_BOUNDARY );
 }
 
 //------------------------------------------------------------------------------
@@ -176,7 +176,7 @@ TEST( primal_plane, project_point)
 
   // (a) test project point below plane
   P.projectPoint( q, qproj );
-  EXPECT_EQ( P.getOrientedSide( qproj ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P.getOrientation( qproj ), primal::ON_BOUNDARY );
   EXPECT_DOUBLE_EQ( qproj[ 0 ], 0.0 );
   EXPECT_DOUBLE_EQ( qproj[ 1 ], 0.0 );
   EXPECT_DOUBLE_EQ( qproj[ 2 ], 3.0 );
@@ -185,7 +185,7 @@ TEST( primal_plane, project_point)
   q[ 2 ] = 6.0;
   qproj[ 0 ] = qproj[ 1 ] = qproj[ 2 ] = 0.0;
   P.projectPoint( q, qproj );
-  EXPECT_EQ( P.getOrientedSide( qproj ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P.getOrientation( qproj ), primal::ON_BOUNDARY );
   EXPECT_DOUBLE_EQ( qproj[ 0 ], 0.0 );
   EXPECT_DOUBLE_EQ( qproj[ 1 ], 0.0 );
   EXPECT_DOUBLE_EQ( qproj[ 2 ], 3.0 );
@@ -194,7 +194,7 @@ TEST( primal_plane, project_point)
   q[ 2 ] = 3.0;
   qproj[ 0 ] = qproj[ 1 ] = qproj[ 2 ] = 0.0;
   P.projectPoint( q, qproj );
-  EXPECT_EQ( P.getOrientedSide( qproj ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P.getOrientation( qproj ), primal::ON_BOUNDARY );
   EXPECT_DOUBLE_EQ( qproj[ 0 ], q[ 0 ] );
   EXPECT_DOUBLE_EQ( qproj[ 1 ], q[ 1 ] );
   EXPECT_DOUBLE_EQ( qproj[ 2 ], q[ 2 ] );
@@ -208,7 +208,7 @@ TEST( primal_plane, project_point)
   q[ 0 ] = 4.0;
   qproj[ 0 ] = qproj[ 1 ] = qproj[ 2 ] = 0.0;
   P2.projectPoint( q, qproj );
-  EXPECT_EQ( P2.getOrientedSide( qproj ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P2.getOrientation( qproj ), primal::ON_BOUNDARY );
   EXPECT_DOUBLE_EQ( qproj[ 0 ], 2.0 );
   EXPECT_DOUBLE_EQ( qproj[ 1 ], 0.0 );
 
@@ -216,7 +216,7 @@ TEST( primal_plane, project_point)
   q[ 0 ] = 0.0;
   qproj[ 0 ] = qproj[ 1 ] = qproj[ 2 ] = 0.0;
   P2.projectPoint( q, qproj );
-  EXPECT_EQ( P2.getOrientedSide( qproj ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P2.getOrientation( qproj ), primal::ON_BOUNDARY );
   EXPECT_DOUBLE_EQ( qproj[ 0 ], 2.0 );
   EXPECT_DOUBLE_EQ( qproj[ 1 ], 0.0 );
 
@@ -224,7 +224,7 @@ TEST( primal_plane, project_point)
   q[ 0 ] = 2.0;
   qproj[ 0 ] = qproj[ 1 ] = qproj[ 2 ] = 0.0;
   P2.projectPoint( q, qproj );
-  EXPECT_EQ( P2.getOrientedSide( qproj ), primal::ON_BOUNDARY );
+  EXPECT_EQ( P2.getOrientation( qproj ), primal::ON_BOUNDARY );
   EXPECT_DOUBLE_EQ( qproj[ 0 ], q[ 0 ] );
   EXPECT_DOUBLE_EQ( qproj[ 1 ], q[ 1 ] );
 }
@@ -240,17 +240,17 @@ TEST( primal_plane, flip )
 
   // STEP 0: test 3D
   primal::Plane< double, 3 > P( x1, x2, x3 );
-  EXPECT_DOUBLE_EQ( P.getOrientedSide( q ), primal::ON_NEGATIVE_SIDE );
+  EXPECT_DOUBLE_EQ( P.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
   P.flip( );
-  EXPECT_DOUBLE_EQ( P.getOrientedSide( q ), primal::ON_POSITIVE_SIDE );
+  EXPECT_DOUBLE_EQ( P.getOrientation( q ), primal::ON_POSITIVE_SIDE );
 
   // STEP 1: test 2D
   double a[ 2 ] = { 2.0, -1.0 };
   double b[ 2 ] = { 2.0,  2.0 };
   primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
-  EXPECT_DOUBLE_EQ( P2.getOrientedSide( q ), primal::ON_POSITIVE_SIDE );
+  EXPECT_DOUBLE_EQ( P2.getOrientation( q ), primal::ON_POSITIVE_SIDE );
   P2.flip( );
-  EXPECT_DOUBLE_EQ( P2.getOrientedSide( q ), primal::ON_NEGATIVE_SIDE );
+  EXPECT_DOUBLE_EQ( P2.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
 }
 
 //------------------------------------------------------------------------------

@@ -202,11 +202,11 @@ public:
    *   <li> <b>ON_NEGATIVE_SIDE</b> : if `x` is below the plane </li>
    *  </ul>
    *
-   * \see OrientedSide for the list of possible return values.
+   * \see OrientationResult
    *
    * \pre x != AXOM_NULLPTR
    */
-  inline int getOrientedSide( const T* x, double TOL=1.e-9 ) const;
+  inline int getOrientation( const T* x, double TOL=1.e-9 ) const;
 
   /*!
    * \brief Prints the Plane information in the given output stream.
@@ -354,7 +354,7 @@ inline void Plane< T,NDIMS >::flip()
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-inline int Plane< T,NDIMS >::getOrientedSide( const T* x, double TOL ) const
+inline int Plane< T,NDIMS >::getOrientation( const T* x, double TOL ) const
 {
   int oriented_side = -1;
 
