@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Refactor and clean up the Primal's Sphere class, add a sphere-sphere intersection test and
+  associated unit test.
+
+
+-  
 ## [0.2.9] - 2017-03-08
 
 ### Added
