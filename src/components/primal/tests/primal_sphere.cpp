@@ -127,7 +127,33 @@ void check_signed_distance_and_orientation( )
 
 }
 
+//------------------------------------------------------------------------------
+template < int NDIMS >
+void check_sphere_intersection( )
+{
+  double center[3] = { 0.0, 0.0, 0.0 };
+
+  // STEP 0: test fully overlapping
+  primal::Sphere< double, NDIMS > S0;
+  EXPECT_TRUE( S0.intersectsWith( S0 ) );
+
+  // STEP 1: test inter-penetrating
+  center[ 0 ] = 0.5;
+  primal::Sphere< double, NDIMS > S1( center );
+  EXPECT_TRUE( S0.intersectsWith( S1 ) );
+
+  // STEP 2: test abutting
+  center[ 0 ] = 2.0;
+  primal::Sphere< double, NDIMS > S2( center );
+  EXPECT_TRUE( S0.intersectsWith( S2 ) );
+
+  // STEP 3: test non-intersecting
+  center[ 0 ] = 4.0;
+  primal::Sphere< double, NDIMS > S3( center );
+  EXPECT_FALSE( S0.intersectsWith( S3 ) );
 }
+
+} /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
 // UNIT TESTS
@@ -143,6 +169,13 @@ TEST( primal_sphere, signed_distance_and_orientation )
 {
   check_signed_distance_and_orientation< 2 >( );
   check_signed_distance_and_orientation< 3 >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_sphere, sphere_sphere_intersection )
+{
+  check_sphere_intersection< 2 >( );
+  check_sphere_intersection< 3 >( );
 }
 
 //------------------------------------------------------------------------------

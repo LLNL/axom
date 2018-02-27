@@ -18,12 +18,15 @@
 #ifndef PRIMAL_SPHERE_HPP_
 #define PRIMAL_SPHERE_HPP_
 
-#include "axom/Macros.hpp"           // for AXOM macros
-#include "axom/Types.hpp"            // for AXOM_NULLPTR
-#include "axom_utils/Utilities.hpp"  // for utilities::isNearlyEqual()
-#include "primal/OrientedSide.hpp"   // for OrientedSide enum definition
+#include "axom/Macros.hpp"                 // for AXOM macros
+#include "axom/Types.hpp"                  // for AXOM_NULLPTR
 
-#include "slic/slic.hpp"             // for SLIC macros
+#include "axom_utils/Utilities.hpp"        // for utilities::isNearlyEqual()
+#include "axom_utils/vector_utilities.hpp" // for dot_product()
+
+#include "primal/OrientationResult.hpp"    // for OrientationResult enum
+
+#include "slic/slic.hpp"                   // for SLIC macros
 
 namespace axom
 {
@@ -130,6 +133,18 @@ public:
    */
   inline int getOrientation( const T* q, double TOL=1.e-9 ) const;
 
+  /*!
+   * \brief Tests if this sphere instance intersects with another sphere.
+   *
+   * \param [in] sphere the sphere object to check for intersection
+   * \param [in] TOL tolerance for intersection test. Optional. If not specified
+   *  the default tolerance is set to 1.e-9.
+   *
+   * \return status true if the sphere intersects, false otherwise.
+   */
+  inline bool intersectsWith( const Sphere< T, NDIMS >& sphere,
+                              double TOL=1.e-9 ) const;
+
 private:
   T m_center[ NDIMS ]; /*!< sphere center */
   T m_radius;          /*!< sphere radius */
@@ -229,6 +244,27 @@ inline int Sphere< T,NDIMS >::getOrientation( const T* q, double TOL ) const
   }
 
   return orient;
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
+inline bool Sphere< T,NDIMS >::intersectsWith( const Sphere< T,NDIMS >& sphere,
+                                               double TOL ) const
+{
+
+  double r[ NDIMS ];
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    r[ i ] = m_center[ i ] - sphere.getCenter()[ i ];
+  }
+
+  const T distance_squared  = numerics::dot_product( r, r, NDIMS );
+  const T sum_of_radii      = m_radius + sphere.getRadius( );
+  const T sum_of_radii_2    = sum_of_radii * sum_of_radii;
+
+  return ( distance_squared < sum_of_radii_2  ||
+           utilities::isNearlyEqual( distance_squared, sum_of_radii_2, TOL) );
+
 }
 
 } /* namespace primal */
