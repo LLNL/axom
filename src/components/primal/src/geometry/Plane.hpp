@@ -316,13 +316,18 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
 
     numerics::cross_product( r1, r2, m_normal );
 
-    bool collinear = utilities::isNearlyEqual( m_normal[0], 0.0 );
-    for ( int i=1; i < NDIMS; ++i ) {
-      collinear = collinear && utilities::isNearlyEqual( m_normal[ i ],0.0 );
-    }
-    SLIC_ERROR_IF( collinear, "supplied points are found to be collinear!" );
-
   } // END else
+
+  // check for degenerate line or triangle
+  bool degenerate = utilities::isNearlyEqual( m_normal[0], 0.0 );
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    degenerate = degenerate && utilities::isNearlyEqual( m_normal[i], 0.0 );
+  }
+
+  SLIC_ERROR_IF( degenerate,
+      "cannot construct plane from supplied points." <<
+      "Supplied points form a degenerate line(in 2D) or triangle(in 3D)" );
 
   numerics::normalize( m_normal, NDIMS );
   m_offset = numerics::dot_product( m_normal, x1, NDIMS );
