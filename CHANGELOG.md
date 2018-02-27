@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   If such a cell exists, it also finds the isoparametric coordinates of the 
   point with respect to the cell. The query supports higher order
   mfem meshes (mfem.org).
+- Added cross-product and linspace operators to the vector utilities in ``numerics``
   
 ### Changed
 - The root cmake file for Axom is now located in ``<axom>``'s root directory, 
@@ -33,6 +34,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Fixed a divide-by-zero problem in ``primal::intersect()``
+- Fixed the calculation of the jacobian in ``mint::FiniteElement`` to support
+  elements that are in higher-dimensional ambient space, e.g., surface elements,
+  a Triangle or Quad in 3D.
 
 [Unreleased]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.8&sourceBranch=refs%2Fheads%2Fdevelop&targetRepoId=1066
 [0.2.9]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.8&sourceBranch=refs%2Fheads%2Fdevelop&targetRepoId=1066
