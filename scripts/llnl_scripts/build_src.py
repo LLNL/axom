@@ -57,20 +57,19 @@ def main():
 
     # Determine source directory to be built
     if os.environ.get("UBERENV_PREFIX") != None:
-        src_dir = os.environ["UBERENV_PREFIX"]
-        if not os.path.isdir(src_dir):
+        repo_dir = os.environ["UBERENV_PREFIX"]
+        if not os.path.isdir(repo_dir):
             print "[ERROR: Given environment variable 'UBERENV_PREFIX' is not a valid directory]"
-            print "[    'UBERENV_PREFIX' = %s]" % src_dir
+            print "[    'UBERENV_PREFIX' = %s]" % repo_dir
             return 1
     if opts["directory"] != "":
-        src_dir = opts["directory"]
-        if not os.path.isdir(src_dir):
+        repo_dir = opts["directory"]
+        if not os.path.isdir(repo_dir):
             print "[ERROR: Given command line variable '--directory' is not a valid directory]"
-            print "[    '--directory' = %s]" % src_dir
+            print "[    '--directory' = %s]" % repo_dir
             return 1
     else:
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        src_dir = os.path.abspath(os.path.join(script_dir, "../.."))
+        repo_dir = get_repo_dir()
 
     if opts["archive"] != "":
         job_name = opts["archive"]
@@ -79,13 +78,13 @@ def main():
 
     try:
         original_wd = os.getcwd()
-        os.chdir(src_dir)
+        os.chdir(repo_dir)
         timestamp = get_timestamp()
-        res = build_and_test_host_configs(src_dir, job_name, timestamp)
+        res = build_and_test_host_configs(repo_dir, job_name, timestamp)
 
         # Archive logs
         if opts["archive"] != "":
-            archive_src_logs(src_dir, job_name, timestamp)
+            archive_src_logs(repo_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
 

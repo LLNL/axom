@@ -507,6 +507,10 @@ def get_build_dir(prefix, host_config):
     return pjoin(prefix, "build-" + host_config_root)
 
 
+def get_repo_dir():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.abspath(pjoin(script_dir, "../.."))
+
 def get_build_and_test_root(prefix, timestamp):
     return pjoin(prefix,"_axom_build_and_test_%s" % timestamp)
 
@@ -533,8 +537,8 @@ def get_archive_base_dir():
 
 
 def get_specs_for_current_machine():
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    specs_json_path = pjoin(script_dir, "scripts/uberenv/specs.json")
+    repo_dir = get_repo_dir()
+    specs_json_path = pjoin(repo_dir, "scripts/uberenv/specs.json")
 
     with open(specs_json_path, 'r') as f:
         specs_json = json.load(f)

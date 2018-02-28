@@ -71,8 +71,7 @@ def main():
     builds_dir = os.path.abspath(builds_dir)
 
     # Make sure builds_dir is not located inside of the repository (CMake hates this)
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    repo_dir = os.path.abspath(os.path.join(script_dir, "../.."))
+    repo_dir = get_repo_dir()
     if builds_dir.startswith(repo_dir):
         print "Error: TPL build directory cannot be inside of the AXOM repository."
         print "   CMake will not allow you to use any TPL's include directory inside the repository."
