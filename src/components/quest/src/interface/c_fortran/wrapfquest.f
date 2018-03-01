@@ -24,10 +24,13 @@ module axom_quest
     ! splicer end module_use
     implicit none
 
+    ! splicer begin module_top
+    ! splicer end module_top
 
     interface
 
-        subroutine c_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels) &
+        subroutine c_initialize(comm, fileName, requiresDistance, ndims, &
+                maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
@@ -39,7 +42,8 @@ module axom_quest
             integer(C_INT), value, intent(IN) :: maxLevels
         end subroutine c_initialize
 
-        subroutine c_initialize_bufferify(comm, fileName, LfileName, requiresDistance, ndims, maxElements, maxLevels) &
+        subroutine c_initialize_bufferify(comm, fileName, LfileName, &
+                requiresDistance, ndims, maxElements, maxLevels) &
                 bind(C, name="QUEST_initialize_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
@@ -58,25 +62,25 @@ module axom_quest
         end subroutine quest_finalize
 
         function quest_distance(x, y, z) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="QUEST_distance")
             use iso_c_binding, only : C_DOUBLE
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
             real(C_DOUBLE), value, intent(IN) :: z
-            real(C_DOUBLE) :: SH_rv
+            real(C_DOUBLE) :: SHT_rv
         end function quest_distance
 
         function quest_inside(x, y, z) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="QUEST_inside")
             use iso_c_binding, only : C_DOUBLE, C_INT
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
             real(C_DOUBLE), value, intent(IN) :: z
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function quest_inside
 
         subroutine quest_mesh_min_bounds(coords) &
@@ -106,7 +110,8 @@ module axom_quest
 
 contains
 
-    subroutine quest_initialize(comm, fileName, requiresDistance, ndims, maxElements, maxLevels)
+    subroutine quest_initialize(comm, fileName, requiresDistance, ndims, &
+            maxElements, maxLevels)
         use iso_c_binding, only : C_BOOL, C_INT
         integer, value, intent(IN) :: comm
         character(*), intent(IN) :: fileName
@@ -117,14 +122,9 @@ contains
         integer(C_INT), value, intent(IN) :: maxLevels
         SH_requiresDistance = requiresDistance  ! coerce to C_BOOL
         ! splicer begin function.initialize
-        call c_initialize_bufferify(  &
-            comm,  &
-            fileName,  &
-            len_trim(fileName, kind=C_INT),  &
-            SH_requiresDistance,  &
-            ndims,  &
-            maxElements,  &
-            maxLevels)
+        call c_initialize_bufferify(comm, fileName, &
+            len_trim(fileName, kind=C_INT), SH_requiresDistance, ndims, &
+            maxElements, maxLevels)
         ! splicer end function.initialize
     end subroutine quest_initialize
 
