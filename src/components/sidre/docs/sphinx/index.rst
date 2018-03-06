@@ -3,17 +3,16 @@ Sidre User Documentation
 =========================
 
 The Sidre (Simulation data repository) component of Axom provides tools to
-centralize data management in HPC applications (description, allocation, access,
-and so forth).  Sidre's design grew out of experience with current LLNL
+centralize data management in HPC applications: data description, allocation, access,
+and so forth.  Sidre's design grew out of experience with current LLNL
 applications and requirements identified for new codes to run on future
 architectures.  All of these codes must manage data allocation and placement
 carefully to run efficiently.  Capabilities in existing codes were typically
 developed specifically for each code with little regard to sharing.  In
 contrast, Sidre is designed from inception to be shared by different
 applications.  The goal of Sidre is efficient coordination and sharing of data:
-across physics packages in integrated applications, and between applications,
-libraries, and tools that provide, among others, capabilities such as file I/O,
-in situ visualization and analysis.
+across physics packages in integrated applications, and between applications
+that provide capabilities such as file I/O, *in situ* visualization, and analysis.
 
 Introduction
 -------------
@@ -21,6 +20,8 @@ Introduction
 Sidre provides simple application-level semantics to describe, 
 allocate/deallocate, and provide access to data. Currently supported
 capbilities include:
+
+.. Do we want to make keywords bold for each bullet point?
 
 * Separate data description and allocation operations. This allows applications
   to describe data they need and then perform "counting exercises" to decide
@@ -32,12 +33,12 @@ capbilities include:
   described (i.e., it is "opaque"), Sidre can provide access to the data 
   via a pointer, but the consumer of the pointer must know type information
   to do anything substantial with the data.
-* Multiple, different "views" into a chunk of (shared) data. A Sidre view 
+* Multiple different "views" into a chunk of (shared) data. A Sidre view 
   includes description semantics to define data type, number of elements, 
   offset, stride, etc. Thus, a chunk of data in memory can be interpreted 
   conceptually in different ways.
 * Metadata associated with a Sidre view.
-* Arbitrarily-organized data hierarchies. Many mesh-based application codes 
+* Tree-structured data hierarchies. Many mesh-based application codes 
   organize data into hierarchies of contexts (e.g., domains, regions, blocks, 
   mesh centerings, subsets of elements containing different 
   materials, etc.). Sidre supports hierarchical, tree-based organizations 
@@ -49,7 +50,7 @@ So far, Sidre development has focused on designing and building flexible and
 powerful concepts to build on. The Sidre API includes five main concepts:
 
 * **Datastore.** The main interface; contains a collection of Buffers, a
-  collection of default Attributes, and one root Group.
+  collection of default Attributes, and a tree structure of Groups.
 * **Buffer.**  Describes and holds a chunk of data in memory owned by Sidre.
 * **Group.** Defines a tree structure.  Each Group (except the root) has
   one parent Group; each Group has a collection of Groups and Views.

@@ -15,6 +15,15 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+/* An excerpt from this test file is used in the Sidre Sphinx documentation,
+ * denoted by the comment strings
+ *
+ * parallel_io_save_start
+ * parallel_io_save_end
+ *
+ * prepended with an underscore.
+ */
+
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"   // for AXOM_USE_HDF5
@@ -99,7 +108,7 @@ TEST(spio_parallel, parallel_writeread)
     i1_vals[i] = (i+10) * (404-my_rank-i);
   }
 
-  // parallel_io_save_start
+  // _parallel_io_save_start
   /*
    * Contents of the DataStore written to files with IOManager.
    */
@@ -111,7 +120,7 @@ TEST(spio_parallel, parallel_writeread)
   writer.write(root, num_files, file_name, PROTOCOL);
 
   std::string root_name = file_name + ROOT_EXT;
-  // parallel_io_save_end
+  // _parallel_io_save_end
 
   /*
    * Extra stuff to exercise writeGroupToRootFile

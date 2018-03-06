@@ -15,6 +15,27 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+/* This example code contains snippets used in the Sidre Sphinx documentation.
+ * They begin and end with comments
+ *
+ * first_example_create_start
+ * first_example_create_end
+ * first_example_chain_1
+ * first_example_chain_2
+ * first_example_access_start
+ * first_example_access_end
+ * serial_io_save_start
+ * serial_io_save_end
+ * tiny_create_start
+ * tiny_create_end
+ * blueprint_restructure_start
+ * blueprint_restructure_end
+ * blueprint_save_start
+ * blueprint_save_end
+ *
+ * each prepended with an underscore.
+ */
+
 #include <cstring>
 
 #include "sidre/sidre.hpp"
@@ -24,8 +45,8 @@ using namespace axom;
 using namespace sidre;
 
 DataStore * create_datastore(int * region) {
-  // first_example_create_start
 
+  // _first_example_create_start
   // Create Sidre datastore object and get root group
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
@@ -54,10 +75,10 @@ DataStore * create_datastore(int * region) {
   // holds 3 * nodecount doubles.  These views might describe the location of
   // each node in a 16 x 16 x 16 hexahedron mesh.  Each view is described by
   // number of elements, offset, and stride into that data.
-  // first_example_chain_1
+  // _first_example_chain_1
   Buffer* buff = ds->createBuffer(sidre::DOUBLE_ID, 3*nodecount)->allocate();
   nodes->createView("x", buff)->apply(sidre::DOUBLE_ID, nodecount, 0, 3);
-  // first_example_chain_2
+  // _first_example_chain_2
   nodes->createView("y", buff)->apply(sidre::DOUBLE_ID, nodecount, 1, 3);
   nodes->createView("z", buff)->apply(sidre::DOUBLE_ID, nodecount, 2, 3);
 
@@ -85,13 +106,13 @@ DataStore * create_datastore(int * region) {
   // int * region has been passed in as a function argument.  As with "temp"
   // and "rho", view "region" has default offset and stride.
   ext->createView("region", region)->apply(sidre::INT_ID, eltcount);
-  // first_example_create_end
+  // _first_example_create_end
 
   return ds;
 }
 
 void access_datastore(DataStore * ds) {
-  // first_example_access_start
+  // _first_example_access_start
   // Retrieve Group pointers
   Group * root = ds->getRoot();
   Group * state = root->getGroup("state");
@@ -105,9 +126,15 @@ void access_datastore(DataStore * ds) {
 
   // Access some items in "nodes" and "fields" groups
   double* y = nodes->getView("y")->getArray();
+  int ystride = nodes->getView("y")->getStride();
   double* temp = fields->getView("temp")->getArray();
   int* region = fields->getView("ext/region")->getArray();
-  // first_example_access_end
+
+  // Nudge the 3rd node, adjust temp and region of the 3rd element
+  y[2 * ystride] += 0.0032;
+  temp[2] *= 1.0021;
+  region[2] = 6;
+  // _first_example_access_end
 
   // Deal with unused variables
   AXOM_DEBUG_VAR(cycle);
@@ -118,8 +145,85 @@ void access_datastore(DataStore * ds) {
   AXOM_DEBUG_VAR(region);
 }
 
+DataStore * create_tiny_datastore() {
+  // _tiny_create_start
+  DataStore *ds = new DataStore();
+
+  int nodecount = 12;
+  int elementcount = 2;
+
+  // Create views and buffers to hold node positions and field values
+  Group * nodes = ds->getRoot()->createGroup("nodes");
+  View * xs = nodes->createViewAndAllocate("xs", sidre::DOUBLE_ID, nodecount);
+  View * ys = nodes->createViewAndAllocate("ys", sidre::DOUBLE_ID, nodecount);
+  View * zs = nodes->createViewAndAllocate("zs", sidre::DOUBLE_ID, nodecount);
+
+  Group * fields = ds->getRoot()->createGroup("fields");
+  View * nodefield =
+    fields->createViewAndAllocate("nodefield", sidre::INT_ID, nodecount);
+  View * eltfield =
+    fields->createViewAndAllocate("eltfield", sidre::DOUBLE_ID, elementcount);
+
+  // Set node position for two adjacent hexahedrons
+  double * xptr = xs->getArray();
+  double * yptr = ys->getArray();
+  double * zptr = zs->getArray();
+  for (int pos = 0; pos < nodecount; ++pos) {
+    xptr[pos] = (pos / 2) % 2;
+    yptr[pos] = ((pos + 1) / 2) % 2;
+    zptr[pos] = zpos / 4;
+  }
+
+  // Assign a value to the node field
+  int * nf = nodefield->getArray();
+  for (int pos = 0; pos < nodecount; ++pos) {
+    nf[pos] = 8 - pos;
+  }
+  // and to the element field.
+  double * ef = eltfield->getArray();
+  // There are only two.
+  ef[0] = 2.65;
+  ef[1] = 1.96;
+
+  return ds;
+  // _tiny_create_end
+}
+
+void save_as_blueprint(DataStore * ds) {
+  // _blueprint_restructure_start
+  // Conduit needs a specific hierarchy.
+  // We'll make a new DataStore with that hierarchy, pointing at the
+  // application's data.
+  DataStore *cds = new DataStore();
+  
+  // The Conduit specifies top-level groups:
+  Group * coords = cds->getRoot()->createGroup("coordsets/coords");
+  Group * topos = cds->getRoot()->createGroup("topologies");
+  // no material sets in this example
+  Group * fields = cds->getRoot()->createGroup("fields");
+  Group * adj = cds->getRoot()->createGroup("adjsets");
+
+  // Set up the coordinates as Mesh Blueprint requires
+  coords->createViewString("type", "explicit");
+  // We use prior knowledge of the layout of the original datastore
+  View * origv = ds->getRoot()->getView("nodes/xs");
+  View * conduitval = coords->createGroup("values");
+  conduitval->createView("x", origv->getTypeID(),
+                         origv->getNumElements(),
+                         origv->getArray());
+  origv = ds->getRoot()->getView("nodes/ys");
+  conduitval->createView("y", origv->getTypeID(),
+                         origv->getNumElements(),
+                         origv->getArray());
+  origv = ds->getRoot()->getView("nodes/zs");
+  conduitval->createView("z", origv->getTypeID(),
+                         origv->getNumElements(),
+                         origv->getArray());
+  // _blueprint_restructure_end
+}
+
 void serial_save_datastore_and_load_copy_lower(DataStore *ds) {
-  // serial_io_save_start
+  // _serial_io_save_start
   // Save the data store to a file, using the default sidre_hdf5 protocol,
   // saving all Views
   ds->getRoot()->save("example.hdf5");
@@ -130,7 +234,7 @@ void serial_save_datastore_and_load_copy_lower(DataStore *ds) {
   // Load another copy of the data store into the "additional" group
   // without first clearing all its contents
   additional->load("example.hdf5", "sidre_hdf5", true);
-  // serial_io_save_end
+  // _serial_io_save_end
 }
 
 int main(int argc, char ** argv) {
