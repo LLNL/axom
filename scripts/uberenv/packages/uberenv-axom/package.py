@@ -66,7 +66,7 @@ class UberenvAxom(Package):
     depends_on("scr", when="+scr")
 
     # builds serial version of mfem that does not depend on Sidre
-    depends_on("mfem~mpi",   when="+mfem")
+    depends_on("mfem~mpi~gzstream",   when="+mfem")
 
     # optional tpl builds
     depends_on("cmake@3.9.6",when="+cmake")
@@ -78,14 +78,14 @@ class UberenvAxom(Package):
     depends_on("python",   when="+python")
 
     depends_on("py-sphinx", when="+devtools")
-    depends_on("py-breathe",when="+devtools")
+    #depends_on("py-breathe",when="+devtools")
     depends_on("py-shroud", when="+devtools")
 
     if "darwin" in platform.system().lower():
         depends_on("mpich")
 
-    if not "darwin" in platform.system().lower():
-        depends_on("lcov",when="+devtools")
+    #if not "darwin" in platform.system().lower():
+    #    depends_on("lcov",when="+devtools")
 
     # use dummy tarfile to avoid downloads
     def url_for_version(self, version):
