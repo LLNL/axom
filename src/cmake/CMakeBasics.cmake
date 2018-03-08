@@ -51,6 +51,9 @@ if(ENABLE_FORTRAN)
     FortranCInterface_VERIFY()
     FortranCInterface_VERIFY(CXX)
 
+    # Axom assumes that all Fortran files use free formatting
+    set(CMAKE_Fortran_FORMAT FREE)
+
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module
         find_path(mpif_path

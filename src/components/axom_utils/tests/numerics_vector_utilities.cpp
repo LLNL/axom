@@ -35,7 +35,7 @@ namespace
  */
 void expect_vector_eq( const double* u, const double* v, int N)
 {
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     EXPECT_DOUBLE_EQ( u[i], v[i] );
   }

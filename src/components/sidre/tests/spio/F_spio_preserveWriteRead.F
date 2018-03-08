@@ -144,6 +144,8 @@ program spio_preserve_write_read
   if (num_elems1 .ne. num_elems2) then
      return_val = 1
   else
+     nullify(i1_vals)
+     nullify(i2_vals)
      call view1%get_data(i1_vals)
      call view2%get_data(i2_vals)
      if (any(i1_vals.ne.i2_vals)) then
@@ -193,6 +195,8 @@ program spio_preserve_write_read
 
   call mpi_finalize(mpierr)
 
-  call exit(return_val)
+  if (return_val .ne. 0) then
+     call exit(1)
+  endif
 end program spio_preserve_write_read
 

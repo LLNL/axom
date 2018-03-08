@@ -102,7 +102,7 @@ Axom developers support other tools that can be used by software
 projects independent of the Axom. These include:
 
   *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based buld system developed by the Axom team to simplify CMake usage and development tool integration)
-  *  Shroud (Generator for native C and Fortran APIs from C++ code)
+  *  `Shroud <https://github.com/LLNL/shroud>`_ (Generator for native C and Fortran APIs from C++ code)
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
 
 

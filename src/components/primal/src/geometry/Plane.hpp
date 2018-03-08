@@ -39,7 +39,7 @@ template < typename T, int NDIMS >
 class Plane;
 
 template < typename T, int NDIMS >
-std::ostream& operator<<( std::ostream & os , const Plane< T,NDIMS >& p );
+std::ostream& operator<<( std::ostream & os, const Plane< T,NDIMS >& p );
 
 /// @}
 
@@ -308,7 +308,7 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
     T r1[ NDIMS ];
     T r2[ NDIMS ];
 
-    for ( int i=0; i < NDIMS; ++i )
+    for ( int i=0 ; i < NDIMS ; ++i )
     {
       r1[ i ] = x2[ i ] - x1[ i ];
       r2[ i ] = x3[ i ] - x1[ i ];
@@ -320,13 +320,14 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
 
   // check for degenerate line or triangle
   bool degenerate = utilities::isNearlyEqual( m_normal[0], 0.0 );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     degenerate = degenerate && utilities::isNearlyEqual( m_normal[i], 0.0 );
   }
 
-  SLIC_ERROR_IF( degenerate,
-     "Supplied points form a degenerate " << (NDIMS==2) ? "line" : "triangle");
+  SLIC_ERROR_IF(
+    degenerate,
+    "Supplied points form a degenerate " << (NDIMS==2 ? "line" : "triangle") );
 
   numerics::normalize( m_normal, NDIMS );
   m_offset = numerics::dot_product( m_normal, x1, NDIMS );
@@ -335,16 +336,14 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 Plane< T,NDIMS >::~Plane( )
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 inline void Plane< T,NDIMS >::projectPoint( const T* x, T* projx ) const
 {
   const T signed_distance = this->computeSignedDistance( x );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     projx[ i ] = x[ i ] - signed_distance * m_normal[ i ];
   }
@@ -354,7 +353,7 @@ inline void Plane< T,NDIMS >::projectPoint( const T* x, T* projx ) const
 template < typename T, int NDIMS >
 inline void Plane< T,NDIMS >::flip()
 {
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     m_normal[ i ] *= static_cast< T >( -1.0 );
   }
@@ -394,7 +393,7 @@ template < typename T, int NDIMS >
 std::ostream& Plane< T, NDIMS >::print( std::ostream& os ) const
 {
   os << "unit normal: [ ";
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     os << m_normal[ i ] << " ";
   }
@@ -406,7 +405,7 @@ std::ostream& Plane< T, NDIMS >::print( std::ostream& os ) const
 template < typename T, int NDIMS >
 inline void Plane< T,NDIMS >::setNormal( const T* normal )
 {
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     m_normal[ i ] = normal[ i ];
   }

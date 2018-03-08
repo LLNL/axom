@@ -666,11 +666,13 @@ subroutine DumpUltra( prob )
 
      select case (view%get_type_id())
      case (SIDRE_INT32_ID)
+        nullify(idata)
         call view%get_data(idata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), real(idata(j), C_DOUBLE)
         enddo
      case (SIDRE_FLOAT64_ID)
+        nullify(ddata)
         call view%get_data(ddata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), ddata(j)

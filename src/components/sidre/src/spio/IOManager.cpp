@@ -361,12 +361,14 @@ void IOManager::read(sidre::Group* datagroup,
     {
       int valid = -1;
       SCR_Have_restart(&valid, 0);
-      if (valid == 1) {
+      if (valid == 1)
+      {
         SCR_Start_restart(0);
         readWithSCR(datagroup, root_file, preserve_contents);
         SCR_Complete_restart(valid);
       }
-      else {
+      else
+      {
         SLIC_WARNING(
           "IOManager::read() requested to read files using SCR, but no SCR restart was found. Will attempt to restart without SCR.");
         read(datagroup, root_file, preserve_contents, false);
