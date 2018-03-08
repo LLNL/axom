@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_17_15_33_04/spack/opt/spack/toss_3_x86_64_ib/intel-18.0.0/cmake-3.8.2-lnm37b5y7mhjihmm3kfu6i3tm3flu4kn/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_18_47_52/spack/opt/spack/toss_3_x86_64_ib/intel-18.0.0/cmake-3.8.2-lnm37b5y7mhjihmm3kfu6i3tm3flu4kn/bin/cmake
 
 #######
 # using intel@18.0.0 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-18.0.0/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_17_15_33_04/spack/opt/spack/toss_3_x86_64_ib/intel-18.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_18_47_52/spack/opt/spack/toss_3_x86_64_ib/intel-18.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-irsil6zovibxmnqsutxmdxrl3ywbt5j4" CACHE PATH "")
@@ -33,7 +33,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-irsil6zovibxmnqsutxmdxrl3ywbt5j4" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3wmqrefb443252p7vaocb5n6kgofutsv" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-tqqbku6yoirv2ggv5jb5f7ps5abxenut" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-xkrjwgamcyfelfu7o5k3rvvtosyhbt6e" CACHE PATH "")
