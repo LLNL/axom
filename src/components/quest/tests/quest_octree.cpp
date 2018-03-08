@@ -278,7 +278,8 @@ TEST( quest_octree, octree_block_is_descendant)
     EXPECT_TRUE(grandchild.isDescendantOf( child3));
     EXPECT_TRUE(grandchild.isDescendantOf( rootBlock));
 
-    if (i != 3) {
+    if (i != 3)
+    {
       EXPECT_FALSE( grandchild.isDescendantOf( rootBlock.child(i)));
     }
 
