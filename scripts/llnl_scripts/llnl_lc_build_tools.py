@@ -443,7 +443,13 @@ def set_axom_group_and_perms(directory):
 
 def full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp):
     print "[Building and testing tpls for specs: %s]" % str(specs)
-    mirror_dir = pjoin(builds_dir,"mirror")
+
+    # Use shared network mirror location otherwise create local one
+    mirror_dir = get_shared_tpl_mirror_dir()
+    if not os.path.exists(mirror_dir):
+        mirror_dir = pjoin(builds_dir,"mirror")
+    print "[using mirror location: %s]" % mirror_dir
+
     # unique install location
     prefix =  pjoin(builds_dir, timestamp)
     # create a mirror
@@ -532,8 +538,23 @@ def get_archive_base_dir():
         archive_base_dir = "/usr/workspace/wsrzd/axomdev/archive"
     else:
         archive_base_dir = "/usr/workspace/wsb/axomdev/archive"
-
     return archive_base_dir
+
+
+def get_shared_tpl_base_dir():
+    if on_rz():
+        builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs"
+    else:
+        builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs"
+    return builds_dir
+
+
+def get_shared_tpl_mirror_dir():
+    return pjoin(get_shared_tpl_base_dir(), "mirror")
+
+
+def get_shared_tpl_builds_dir():
+    return pjoin(get_shared_tpl_base_dir(), "builds")
 
 
 def get_specs_for_current_machine():
