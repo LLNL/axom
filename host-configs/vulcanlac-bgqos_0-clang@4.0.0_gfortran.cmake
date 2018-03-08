@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_01_03_16_02_25/spack/opt/spack/bgqos_0/clang-4.0.0_gfortran" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_03_08_11_33_00/spack/opt/spack/bgqos_0/clang-4.0.0_gfortran" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-u72ucrahnfkjno3gj3aicmo3iyu7czfg" CACHE PATH "")
@@ -33,7 +33,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-u72ucrahnfkjno3gj3aicmo3iyu7czfg" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-vmvmyf7gnz6ow7y4rnnv2bi7dh2h273b" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-hrqzeb6efxqetvdawg3fokthpk3d4gfg" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-niahyxq4gel6yee3vhsaij3aoefvz3ks" CACHE PATH "")
