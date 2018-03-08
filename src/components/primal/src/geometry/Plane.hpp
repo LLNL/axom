@@ -240,9 +240,6 @@ private:
 
   T m_normal[ NDIMS ]; /*!< plane unit-normal  */
   T m_offset;          /*!< offset from origin */
-
-  DISABLE_COPY_AND_ASSIGNMENT( Plane );
-  DISABLE_MOVE_AND_ASSIGNMENT( Plane );
 };
 
 } /* namespace primal */

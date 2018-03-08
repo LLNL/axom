@@ -153,6 +153,55 @@ void check_sphere_intersection( )
   EXPECT_FALSE( S0.intersectsWith( S3 ) );
 }
 
+//------------------------------------------------------------------------------
+template < int NDIMS >
+void check_copy_constructor( )
+{
+  const double MAGIC_NUM = 42;
+  double center[ 3 ]     = { MAGIC_NUM, MAGIC_NUM, MAGIC_NUM };
+  double radius          = MAGIC_NUM;
+
+  primal::Sphere< double, NDIMS > s1( center, radius );
+  primal::Sphere< double, NDIMS > s2( s1 );
+
+  const double* c1 = s1.getCenter();
+  const double* c2 = s2.getCenter();
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    EXPECT_DOUBLE_EQ( c1[ i ], c2[ i ] );
+    EXPECT_DOUBLE_EQ( c2[ i ], MAGIC_NUM );
+  }
+
+  EXPECT_DOUBLE_EQ( s1.getRadius(), s2.getRadius() );
+  EXPECT_DOUBLE_EQ( s2.getRadius(), MAGIC_NUM );
+}
+
+//------------------------------------------------------------------------------
+template < int NDIMS >
+void check_assignment_operator( )
+{
+  const double MAGIC_NUM = 42;
+  double center[ 3 ]     = { MAGIC_NUM, MAGIC_NUM, MAGIC_NUM };
+  double radius          = MAGIC_NUM;
+
+  primal::Sphere< double, NDIMS > s1( center, radius );
+  primal::Sphere< double, NDIMS > s2;
+
+  /* test assignment */
+  s2 = s1;
+
+  const double* c1 = s1.getCenter();
+  const double* c2 = s2.getCenter();
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    EXPECT_DOUBLE_EQ( c1[ i ], c2[ i ] );
+    EXPECT_DOUBLE_EQ( c2[ i ], MAGIC_NUM );
+  }
+
+  EXPECT_DOUBLE_EQ( s1.getRadius(), s2.getRadius() );
+  EXPECT_DOUBLE_EQ( s2.getRadius(), MAGIC_NUM );
+}
+
 } /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
@@ -162,6 +211,20 @@ TEST( primal_sphere, constructor )
 {
   check_constructor< 2 >( );
   check_constructor< 3 >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_sphere, copy_constructor )
+{
+  check_copy_constructor< 2 >( );
+  check_copy_constructor< 3 >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_sphere, assignment_operator )
+{
+  check_assignment_operator< 2 >( );
+  check_assignment_operator< 3 >( );
 }
 
 //------------------------------------------------------------------------------

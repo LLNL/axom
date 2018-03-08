@@ -167,9 +167,6 @@ public:
 private:
   T m_center[ NDIMS ]; /*!< sphere center */
   T m_radius;          /*!< sphere radius */
-
-  DISABLE_COPY_AND_ASSIGNMENT( Sphere );
-  DISABLE_MOVE_AND_ASSIGNMENT( Sphere );
 };
 
 } /* namespace primal */
@@ -275,6 +272,8 @@ std::ostream& Sphere< T, NDIMS >::print( std::ostream& os ) const
     os << m_center[ i ] << " ";
   }
   os << "] radius: " << m_radius;
+
+  return os;
 }
 
 //------------------------------------------------------------------------------
