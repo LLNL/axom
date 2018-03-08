@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_16_09_27_34/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/cmake-3.8.2-cjuiep5cinfy7q6khr7hpsb3utzs34cd/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_16_07_57/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/cmake-3.8.2-cjuiep5cinfy7q6khr7hpsb3utzs34cd/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_16_09_27_34/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_16_07_57/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-2xgsiskrcxzxgs7avics5ghpclty2cr6" CACHE PATH "")
@@ -33,7 +33,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-2xgsiskrcxzxgs7avics5ghpclty2cr6" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3t74cwgfr32a6c2i3babrx7q6vehzvkj" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-qkag24ef2f3idmblthtqed7u2uabtwgt" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-fcmuhkaq7537pk3y62q4fbetyvuuokxr" CACHE PATH "")

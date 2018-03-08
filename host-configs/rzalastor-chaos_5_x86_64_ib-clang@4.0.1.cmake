@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_16_09_27_34/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1/cmake-3.8.2-ogx3v5xe7tjiworftog2b65rue7fj5tu/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_16_07_57/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1/cmake-3.8.2-ogx3v5xe7tjiworftog2b65rue7fj5tu/bin/cmake
 
 #######
 # using clang@4.0.1 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_16_09_27_34/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_16_07_57/spack/opt/spack/chaos_5_x86_64_ib/clang-4.0.1" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-f354ty3s3eovs5voooegrffh3yg5zde5" CACHE PATH "")
@@ -33,7 +33,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-f354ty3s3eovs5voooegrffh3yg5zde5" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3xjcjdkzkulzgnfyghbnenfewqq4wtoc" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-v2xb25nhtnm2cbmkupq4z3rv53hdxbth" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-5ilanyoky7ep7egpzp5cttp5n3t3mehe" CACHE PATH "")
@@ -72,7 +72,7 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 ##################################
 
 ##
-## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
