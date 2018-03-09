@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -32,6 +32,19 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
+
+set(sidre_example_depends
+    axom_utils
+    sidre 
+    conduit 
+    conduit_relay 
+    slic
+    )
+
+if(HDF5_FOUND)
+    list(APPEND sidre_example_depends hdf5)
+endif()
+
 #
 # Build the example sources
 #
@@ -41,7 +54,8 @@ foreach(example_source ${example_sources})
         NAME ${exe_name}_ex
         SOURCES ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+        DEPENDS_ON  ${sidre_example_depends} ${EXTRA_LIBS}
+        FOLDER axom/sidre/examples )
     blt_add_test(
         NAME ${exe_name}
         COMMAND ${exe_name}_ex )
@@ -54,16 +68,20 @@ if(ENABLE_FORTRAN)
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+            DEPENDS_ON ${sidre_example_depends} ${EXTRA_LIBS}
+            FOLDER axom/sidre/examples )
         blt_add_test(
             NAME ${exe_name}
             COMMAND ${exe_name}_ex )
     endforeach()
     set_target_properties(${exe_name}_ex PROPERTIES LINKER_LANGUAGE Fortran)
-#   set_target_properties(${exe_name} PROPERTIES Fortran_FORMAT "FREE")
 endif()
 
-add_subdirectory(lulesh2)
+# Note: Lulesh disabled on windows builds due to usage of unix APIs.
+if(NOT WIN32)
+  add_subdirectory(lulesh2)
+endif()
+
 if(ENABLE_MPI)
     add_subdirectory(spio)
 endif()

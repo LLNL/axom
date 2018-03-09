@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -25,7 +25,11 @@ if (SCR_FOUND)
     list(APPEND example_sources IOSCRWrite.cpp)
 endif() 
 
-set(spio_example_depends sidre conduit conduit_relay hdf5 slic ${EXTRA_LIBS})
+set(spio_example_depends sidre conduit conduit_relay slic ${EXTRA_LIBS})
+
+if (HDF5_FOUND)
+    list(APPEND spio_example_depends hdf5)
+endif()
 
 if (SCR_FOUND)
     list(APPEND spio_example_depends scr)

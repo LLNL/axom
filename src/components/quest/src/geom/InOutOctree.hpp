@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -298,7 +298,7 @@ private:
  * \param os The output stream to write to
  * \param iob The InOUtBlockData instance that we are writing
  */
-std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
+inline std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
 {
   os << "InOutBlockData{"
      << "isLeaf: " << (iob.isLeaf() ? "yes" : "no");
@@ -490,7 +490,8 @@ private:
 /**
  * Free function to print a DynamicGrayBlockData instance to an output stream
  */
-std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
+inline std::ostream& operator<<(std::ostream& os,
+                                const DynamicGrayBlockData& bData)
 {
   os << "DynamicGrayBlockData{";
 
@@ -522,9 +523,11 @@ std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
  * \brief Handles generation of a point containment spatial index over a surface
  * mesh
  *
- * The point containment queries determines whether a given arbitrary point in
- * space
- * lies inside or outside of the surface
+ * The point containment queries determine whether a given arbitrary point in
+ * space lies inside or outside of the surface.  This class depends on a
+ * watertight surface mesh.  In order to repair common mesh defects, this
+ * class modifies the Mesh passed to it.  Please discard all other copies
+ * of the Mesh pointer.
  */
 template<int DIM>
 class InOutOctree : public SpatialOctree<DIM, InOutBlockData>
@@ -993,8 +996,9 @@ public:
    *
    * \param [in] bb The spatial extent covered by the octree
    * \note We slightly scale the bounding box so all mesh elements are
-   * guaranteed
-   *       to be enclosed by the octree
+   * guaranteed to be enclosed by the octree.
+   * \note The InOutOctree modifies its mesh in an effort to repair common
+   * problems.  Please make sure to discard all old copies of the meshPtr.
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
     : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) ),
@@ -1282,8 +1286,8 @@ namespace
 /**
  * \brief Utility function to print the vertex indices of a cell
  */
-std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriVertIndices& tvInd)
+inline std::ostream& operator<<(std::ostream& os,
+                                const InOutOctree<3>::TriVertIndices& tvInd)
 {
   os<<"[";
   for(int i=0 ; i< tvInd.size() ; ++i)
@@ -1292,8 +1296,8 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriangleIndexSet& tSet)
+inline std::ostream& operator<<(std::ostream& os,
+                                const InOutOctree<3>::TriangleIndexSet& tSet)
 {
   os<<"[";
   for(int i=0 ; i< tSet.size() ; ++i)
@@ -2013,8 +2017,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     SpaceRay ray(queryPt, SpaceVector(queryPt,triPt));
 
     double rayParam = 0;
-    Point< double, 3 > triParam;
-    if( primal::intersect(tri, ray, rayParam, triParam) )
+    if( primal::intersect(tri, ray, rayParam) )
     {
       minRayParam = rayParam;
       tIdx = idx;
@@ -2026,8 +2029,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
       if(localIdx == idx)
         continue;
 
-      if( primal::intersect(m_meshWrapper.trianglePositions(localIdx),
-                            ray, rayParam, triParam) )
+      if( primal::intersect(
+            m_meshWrapper.trianglePositions(localIdx),ray, rayParam) )
       {
         if (rayParam < minRayParam )
         {

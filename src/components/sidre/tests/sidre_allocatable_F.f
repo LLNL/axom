@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -27,53 +27,6 @@ contains
 ! Allocate array via Fortran
 ! Register with datastore then 
 ! Query metadata using datastore API.
-!----------------------------------------------------------------------
-
-  subroutine external_empty_int
-    integer, allocatable :: iarray(:)
-    integer, pointer :: ipointer(:)
-
-    type(SidreDataStore) ds
-    type(SidreGroup) root
-    type(SidreView)  view
-    integer type
-    integer num_elements
-    integer i
-    integer rank
-    integer(SIDRE_LENGTH) extents(7)
-
-    call set_case_name("external_empty_int")
-
-    ds = datastore_new()
-    root = ds%get_root()
-
-    call assert_false(allocated(iarray), "iarray is not allocated")
-
-    view = root%create_array_view("iarray", iarray)
-
-    call assert_true(view%is_empty(), "view is empty")
-
-    type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID, "check type")
-
-    num_elements = view%get_num_elements()
-    call assert_equals(num_elements, 0, "check size")
-
-    rank = view%get_num_dimensions()
-    call assert_equals(rank, 1, "check dimensions")
-
-    rank = view%get_shape(7, extents)
-    call assert_equals(rank, 1, "check rank")
-    call assert_true(extents(1) == 0, "check extents")
-
-    ! get array via a pointer
-    call view%get_data(ipointer)
-    call assert_false(associated(ipointer), "check association")
-
-    call ds%delete()
-
-  end subroutine external_empty_int
-
 !----------------------------------------------------------------------
 
   subroutine external_allocatable_int
@@ -342,7 +295,6 @@ program fortran_test
 
   call init_fruit
 
-  call external_empty_int
   call external_allocatable_int
   call external_allocatable_int_3d
   call external_static_int

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -278,8 +278,10 @@ TEST( quest_octree, octree_block_is_descendant)
     EXPECT_TRUE(grandchild.isDescendantOf( child3));
     EXPECT_TRUE(grandchild.isDescendantOf( rootBlock));
 
-    if(i != 3)
+    if (i != 3)
+    {
       EXPECT_FALSE( grandchild.isDescendantOf( rootBlock.child(i)));
+    }
 
     EXPECT_FALSE( grandchild.isDescendantOf( BlockIndex::invalid_index() ));
     EXPECT_FALSE( BlockIndex::invalid_index().isDescendantOf( grandchild ));

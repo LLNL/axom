@@ -49,25 +49,51 @@ import platform
 from os.path import join as pjoin
 
 class Conduit(Package):
-    homepage = "http://software.llnl.gov/conduit/"
-    url      = "https://github.com/LLNL/conduit/archive/v0.2.1.tar.gz"
+    """Conduit is an open source project from Lawrence Livermore National
+    Laboratory that provides an intuitive model for describing hierarchical
+    scientific data in C++, C, Fortran, and Python. It is used for data
+    coupling between packages in-core, serialization, and I/O tasks."""
 
+    homepage = "http://software.llnl.gov/conduit"
+    url = "https://github.com/LLNL/conduit/releases/download/v0.3.0/conduit-v0.3.0-src-with-blt.tar.gz"
+
+    version('0.3.1', 'b98d1476199a46bde197220cd9cde042')
+    version('0.3.0', '6396f1d1ca16594d7c66d4535d4f898e')
+    # note: checksums on github automatic release source tars changed ~9/17
     version('0.2.1', 'ed7358af3463ba03f07eddd6a6e626ff')
-    version('0.2.0', 'd595573dedf55514c11d7391092fd760')
+    version('0.2.0', 'a7b398d493fd71b881a217993a9a29d4')
 
     variant('cmake',  default=True, description="Build cmake.")
     variant('shared', default=True, description="Build shared libraries.")
+    variant("hdf5",   default=True, description="Build hdf5")
     
-    depends_on("cmake@3.8.2",when="+cmake")
-    depends_on("hdf5~shared~fortran")
+    # cmake 3.8.2 or newer
+    depends_on("cmake@3.8.2:",when="+cmake")
+    # hdf5 1.8.x
+    depends_on("hdf5@1.8.16:1.8.999~shared~fortran", when="+hdf5")
     
     if "darwin" in platform.system().lower():
         depends_on("mpich")
 
+    def url_for_version(self, version):
+        """
+        Provide proper url
+        """
+        v = str(version)
+        if v == "0.2.0":
+            return "https://github.com/LLNL/conduit/archive/v0.2.0.tar.gz"
+        elif v == "0.2.1":
+            return "https://github.com/LLNL/conduit/archive/v0.2.1.tar.gz"
+        else:
+            # starting with v 0.3.0, conduit uses BLT
+            # (https://github.com/llnl/blt) as a submodule, since github does
+            # not automatically package source from submodules, conduit
+            # provides a custom src tarball
+            return "https://github.com/LLNL/conduit/releases/download/v{0}/conduit-v{1}-src-with-blt.tar.gz".format(v, v)
+        return url
 
     def install(self, spec, prefix):
         with working_dir('spack-build', create=True):
-            hdf5_dir = spec['hdf5'].prefix
             cmake_args = ["../src"]
             # if we have a static build, we need to avoid
             # any of cmake's default settings related to 
@@ -79,7 +105,15 @@ class Conduit(Package):
                     if arg.count("RPATH") == 0:
                         cmake_args.append(arg)
 
-            cmake_args.append("-DHDF5_DIR=%s" % hdf5_dir);
+            # Add HDF5 directory and fix HDF5 library paths on BGQ
+            # to deal with issues with cmake's FindHDF5 on that platform
+            if "+hdf5" in spec:
+                hdf5_dir = spec['hdf5'].prefix
+                cmake_args.append("-DHDF5_DIR=%s" % hdf5_dir)
+                if 'bgqos_0' in os.getenv('SYS_TYPE', ""):
+                    cmake_args.append("-DHDF5_C_LIBRARY_m:STRING=-lm")
+                    cmake_args.append("-DHDF5_C_LIBRARY_dl:STRING=-ldl")
+                
             # turn off docs, so we don't have problems 
             # w/ system sphinx installs
             cmake_args.append("-DENABLE_DOCS=OFF") 
@@ -90,7 +124,11 @@ class Conduit(Package):
                 if os.path.isfile(env["SPACK_FC"]):
                     f_compiler = env["SPACK_FC"]
                     cmake_args.append("-DENABLE_FORTRAN=ON")
-
+                    
+                    # Fix missing std linker flag in xlc compiler
+                    # TODO: Fix to remove hard-coded compiler path
+                    if 'blueos_3' in os.getenv('SYS_TYPE', "") and 'xl@coral' in os.getenv('SPACK_COMPILER_SPEC', ""):
+                        cmake_args.append("-DBLT_FORTRAN_FLAGS:STRING=-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so")
 
             if "+shared" in spec:
                 cmake_args.append("-DBUILD_SHARED_LIBS=ON")

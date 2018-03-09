@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -36,7 +36,7 @@ add_custom_target( copy_axom_includes ALL
             ${axom_headers}
 
         WORKING_DIRECTORY
-            ${CMAKE_SOURCE_DIR}/include
+            ${PROJECT_SOURCE_DIR}/src/include
 
         COMMENT
             "copy axom includes"

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -40,13 +40,15 @@
 //#include "Vista.h"
 //#include "View.h"
 
-// Standard library headers
-#include <stdio.h>
-#include <math.h>
-#include <cstdlib>
+#include "axom/config.hpp"    // For math defines
 
-// SiDRe component headers
+// Sidre component headers
 #include "sidre/sidre.hpp"
+
+// Standard library headers
+#include <cstdio>
+#include <cmath>
+#include <cstdlib>
 
 using axom::sidre::Buffer;
 using axom::sidre::Group;

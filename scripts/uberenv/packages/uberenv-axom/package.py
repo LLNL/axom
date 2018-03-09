@@ -52,12 +52,17 @@ class UberenvAxom(Package):
 
     variant("mfem",   default=True, description="Build mfem")
 
+    variant("hdf5",   default=True, description="Build hdf5")
+
     variant("scr", default=False, description="Build SCR")
 
-    depends_on("conduit~shared+cmake",when="+cmake")
-    depends_on("conduit~shared~cmake",when="~cmake")
+    depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
+
+    depends_on("conduit~shared+cmake+hdf5",when="+cmake+hdf5")
+    depends_on("conduit~shared~cmake+hdf5",when="~cmake+hdf5")
+    depends_on("conduit~shared+cmake~hdf5",when="+cmake~hdf5")
+    depends_on("conduit~shared~cmake~hdf5",when="~cmake~hdf5")
     
-    depends_on("hdf5~cxx~shared~fortran")
     depends_on("scr", when="+scr")
 
     # builds serial version of mfem that does not depend on Sidre
@@ -167,9 +172,12 @@ class UberenvAxom(Package):
             cfg.write("# Root directory for generated TPLs\n")
             cfg.write(cmake_cache_entry("TPL_ROOT",tpl_root))
 
-        hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
-        cfg.write("# hdf5 from uberenv\n")
-        cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
+        if "hdf5" in spec:
+            hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
+            cfg.write("# hdf5 from uberenv\n")
+            cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
+        else:
+            cfg.write("# hdf5 not built by uberenv\n\n")
 
         if "scr" in spec:
             scr_dir = get_spec_path(spec, "scr", path_replacements)

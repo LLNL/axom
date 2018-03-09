@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -56,7 +56,7 @@ void processAbort();
 template < typename T >
 inline T abs( const T& x )
 {
-  return ( x < 0 ) ? -x : x;
+  return ( x < T(0) ) ? -x : x;
 }
 
 /*!
@@ -66,9 +66,9 @@ inline T abs( const T& x )
  * \return max(x, y) the max value of x and y.
  */
 template < typename T >
-inline T max( const T& x, const T& y )
+inline const T& max( const T& x, const T& y )
 {
-  return ( x > y ) ? x : y;
+  return ( y < x ) ? x : y;
 }
 
 /*!
@@ -78,9 +78,9 @@ inline T max( const T& x, const T& y )
  * \return min(x, y) the min value of x and y.
  */
 template < typename T >
-inline T min( const T& x, const T& y )
+inline const T& min( const T& x, const T& y )
 {
-  return ( x < y ) ? x : y;
+  return ( y < x ) ? y : x;
 }
 
 /*!
@@ -118,6 +118,7 @@ inline T log2( T& val)
  * \param [in] lower The lower range.
  * \param [in] upper The upper range.
  * \return The clamped value.
+ * \pre lower <= upper
  * \post lower <= returned value <= upper.
  */
 template < typename T >
@@ -125,6 +126,35 @@ inline T clampVal( T val, T lower, T upper )
 {
   return (val < lower) ? lower
          : (val > upper) ? upper : val;
+}
+
+
+/*!
+ * \brief Clamps the upper range on an input value
+ *
+ * \param [in] val The value to clamp
+ * \param [in] upper The upper range
+ * \return upper if val > upper, else val
+ * \post returned value is less than or equal to upper
+ */
+template < typename T >
+inline T clampUpper(T val, T upper)
+{
+  return val > upper ? upper : val;
+}
+
+/*!
+ * \brief Clamps the lower range on an input value
+ *
+ * \param [in] val The value to clamp
+ * \param [in] lower The lower range
+ * \return lower if val < lower, else val
+ * \post returned value is greater than or equal to lower
+ */
+template < typename T >
+inline T clampLower(T val, T lower)
+{
+  return val < lower ? lower : val;
 }
 
 /*!

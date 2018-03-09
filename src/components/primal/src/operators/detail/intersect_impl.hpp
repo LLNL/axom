@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -53,10 +53,10 @@ typedef primal::Point< double, 2 > Point2;
 bool isGt(double x, double y, double EPS=1.0e-12);
 bool isLt(double x, double y, double EPS=1.0e-12);
 bool isLeq(double x, double y, double EPS=1.0e-12);
-bool isLpeq(double x, double y, const bool includeEqual = false,
+bool isLpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
 bool isGeq(double x, double y, double EPS=1.0e-12);
-bool isGpeq(double x, double y, const bool includeEqual = false,
+bool isGpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
 bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
 bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
@@ -64,19 +64,19 @@ bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
 int  countZeros(double x, double y, double z, double EPS=1.0e-12);
 double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
-bool checkEdge(const Point2 p1,
-               const Point2 q1,
-               const Point2 r1,
-               const Point2 p2,
-               const Point2 r2,
-               const bool includeBoundary);
-bool checkVertex(const Point2 p1,
-                 const Point2 q1,
-                 const Point2 r1,
-                 const Point2 p2,
-                 const Point2 q2,
-                 const Point2 r2,
-                 const bool includeBoundary);
+bool checkEdge(const Point2& p1,
+               const Point2& q1,
+               const Point2& r1,
+               const Point2& p2,
+               const Point2& r2,
+               bool includeBoundary);
+bool checkVertex(const Point2& p1,
+                 const Point2& q1,
+                 const Point2& r1,
+                 const Point2& p2,
+                 const Point2& q2,
+                 const Point2& r2,
+                 bool includeBoundary);
 
 bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& q1,
@@ -84,21 +84,21 @@ bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& p2,
                                   const Point2& q2,
                                   const Point2& r2,
-                                  const bool includeBoundary);
+                                  bool includeBoundary);
 
 bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
   double dp2, double dq2, double dr2,  Vector3 &normal,
-  const bool includeBoundary);
+  bool includeBoundary);
 
-bool intersectTwoPermutedTriangles(const Point3 p1,
-                                   const Point3 q1,
-                                   const Point3 r1,
-                                   const Point3 p2,
-                                   const Point3 q2,
-                                   const Point3 r2,
-                                   const bool includeBoundary);
+bool intersectTwoPermutedTriangles(const Point3& p1,
+                                   const Point3& q1,
+                                   const Point3& r1,
+                                   const Point3& p2,
+                                   const Point3& q2,
+                                   const Point3& r2,
+                                   bool includeBoundary);
 
 bool intersectCoplanar3DTriangles(const Point3& p1,
                                   const Point3& q1,
@@ -107,13 +107,13 @@ bool intersectCoplanar3DTriangles(const Point3& p1,
                                   const Point3& q2,
                                   const Point3& r2,
                                   Vector3 normal,
-                                  const bool includeBoundary);
+                                  bool includeBoundary);
 
 bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
-                            const bool includeBoundary = false);
+                            bool includeBoundary = false);
 
-/** @{ @name 3D triangle-triangle intersection */
+/*! @{ @name 3D triangle-triangle intersection */
 
 /*!
  * \brief Tests if 3D Triangles t1 and t2 intersect.
@@ -135,7 +135,7 @@ bool TriangleIntersection2D(const Triangle2& t1,
 template < typename T >
 bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
                             const Triangle< T, 3 >& t2,
-                            const bool includeBoundary = false)
+                            bool includeBoundary = false)
 {
   typedef primal::Vector< T, 3 > Vector3;
 
@@ -327,86 +327,11 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
  * The sign of dp2, dq2, and dr2 indicates whether the associated vertex
  * of t2 lies in the positive or negative half-space defined by t1.
  */
-inline bool intersectOnePermutedTriangle(
+bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
   double dp2, double dq2, double dr2,  Vector3 &normal,
-  const bool includeBoundary)
-{
-  /* Step 4: repeat Step 3, except doing it for triangle 2
-     instead of triangle 1 */
-  if (isGt(dp2, 0.0))
-  {
-    if (isGt(dq2, 0.0))
-    {
-      return intersectTwoPermutedTriangles(p1,r1,q1,r2,p2,q2,includeBoundary);
-    }
-    else if (isGt(dr2, 0.0))
-    {
-      return intersectTwoPermutedTriangles(p1,r1,q1,q2,r2,p2,includeBoundary);
-    }
-    else
-    {
-      return intersectTwoPermutedTriangles(p1,q1,r1,p2,q2,r2,includeBoundary);
-    }
-  }
-  else if (isLt(dp2,  0.0))
-  {
-    if (isLt(dq2, 0.0))
-    {
-      return intersectTwoPermutedTriangles(p1,q1,r1,r2,p2,q2,includeBoundary);
-    }
-    else if (isLt(dr2, 0.0))
-    {
-      return intersectTwoPermutedTriangles(p1,q1,r1,q2,r2,p2,includeBoundary);
-    }
-    else
-    {
-      return intersectTwoPermutedTriangles(p1,r1,q1,p2,q2,r2,includeBoundary);
-    }
-  }
-  else
-  {
-    if (isLt(dq2, 0.0))
-    {
-      if (isGeq(dr2, 0.0))
-      {
-        return intersectTwoPermutedTriangles(p1,r1,q1,q2,r2,p2,includeBoundary);
-      }
-      else
-      {
-        return intersectTwoPermutedTriangles(p1,q1,r1,p2,q2,r2,includeBoundary);
-      }
-    }
-    else if (isGt(dq2, 0.0))
-    {
-      if (isGt(dr2, 0.0))
-      {
-        return intersectTwoPermutedTriangles(p1,r1,q1,p2,q2,r2,includeBoundary);
-      }
-      else
-      {
-        return intersectTwoPermutedTriangles(p1,q1,r1,q2,r2,p2,includeBoundary);
-      }
-    }
-    else
-    {
-      if (isGt(dr2, 0.0))
-      {
-        return intersectTwoPermutedTriangles(p1,q1,r1,r2,p2,q2,includeBoundary);
-      }
-      else if (isLt(dr2, 0.0))
-      {
-        return intersectTwoPermutedTriangles(p1,r1,q1,r2,p2,q2,includeBoundary);
-      }
-      else
-      {
-        return intersectCoplanar3DTriangles(p1,q1,r1,p2,q2,r2,normal,
-                                            includeBoundary);
-      }
-    }
-  }
-}
+  bool includeBoundary);
 
 /*!
  * \brief Tests for general 3D triangle-triangle intersection.
@@ -430,13 +355,13 @@ inline bool intersectOnePermutedTriangle(
  *
  * Helper function for T-T intersect.
  */
-inline bool intersectTwoPermutedTriangles(const Point3 p1,
-                                          const Point3 q1,
-                                          const Point3 r1,
-                                          const Point3 p2,
-                                          const Point3 q2,
-                                          const Point3 r2,
-                                          const bool includeBoundary)
+inline bool intersectTwoPermutedTriangles(const Point3& p1,
+                                          const Point3& q1,
+                                          const Point3& r1,
+                                          const Point3& p2,
+                                          const Point3& q2,
+                                          const Point3& r2,
+                                          bool includeBoundary)
 {
   /* Step 5: From step's 1 through 4, we now have two triangles that,
      if intersecting, have a line that intersects segments p1r1, p1q1,
@@ -458,68 +383,17 @@ inline bool intersectTwoPermutedTriangles(const Point3 p1,
  * Project (nearly) coplanar triangles 1 and 2 on an axis; call 2D worker
  * function to test for intersection.
  */
-inline bool intersectCoplanar3DTriangles(const Point3& p1,
-                                         const Point3& q1,
-                                         const Point3& r1,
-                                         const Point3& p2,
-                                         const Point3& q2,
-                                         const Point3& r2,
-                                         Vector3 normal,
-                                         const bool includeBoundary)
-{
-  /* Co-planar triangles are projected onto the axis that maximizes their
-     area and the 2d intersection used to check if they intersect.
-   */
+bool intersectCoplanar3DTriangles(const Point3& p1,
+                                  const Point3& q1,
+                                  const Point3& r1,
+                                  const Point3& p2,
+                                  const Point3& q2,
+                                  const Point3& r2,
+                                  Vector3 normal,
+                                  bool includeBoundary);
+/*! @} */
 
-  //find triangle with maximum area:
-  for (int i=0 ; i<3 ; i++)
-  {
-    normal[i] = std::abs(normal[i]);
-  }
-
-  if ((isGt(normal[0], normal[2])) && (isGeq(normal[0], normal[1])))
-  {
-    //if x projection area greatest, project on YZ and return 2D checker
-
-    const Triangle2 t1_2da = Triangle2(Point2::make_point(q1[2],q1[1]),
-                                       Point2::make_point(p1[2],p1[1]),
-                                       Point2::make_point(r1[2],r1[1]));
-
-    const Triangle2 t2_2da = Triangle2(Point2::make_point(q2[2],q2[1]),
-                                       Point2::make_point(p2[2],p2[1]),
-                                       Point2::make_point(r2[2],r2[1]));
-
-    return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
-  }
-  else if (isGt(normal[1],normal[2]) && isGeq(normal[1],normal[0]))
-  {
-    //if y projection area greatest, project on XZ and return 2D checker
-    const Triangle2 t1_2da = Triangle2(Point2::make_point(q1[0],q1[2]),
-                                       Point2::make_point(p1[0],p1[2]),
-                                       Point2::make_point(r1[0],r1[2]));
-
-    const Triangle2 t2_2da = Triangle2(Point2::make_point(q2[0],q2[2]),
-                                       Point2::make_point(p2[0],p2[2]),
-                                       Point2::make_point(r2[0],r2[2]));
-
-    return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
-  }
-
-  //if z projection area greatest, project on XY and return 2D checker
-  const Triangle2 t1_2da = Triangle2(Point2::make_point(p1[0],p1[1]),
-                                     Point2::make_point(q1[0],q1[1]),
-                                     Point2::make_point(r1[0],r1[1]));
-
-  const Triangle2 t2_2da = Triangle2(Point2::make_point(p2[0],p2[1]),
-                                     Point2::make_point(q2[0],q2[1]),
-                                     Point2::make_point(r2[0],r2[1]));
-
-  return TriangleIntersection2D(t1_2da, t2_2da, includeBoundary);
-}
-
-/** @} */
-
-/** @{ @name 2D triangle-triangle intersection */
+/*! @{ @name 2D triangle-triangle intersection */
 /*
  * \brief Tests if 2D Triangles t1 and t2 intersect.
  * \return status true iff t1 intersects with t2, otherwise, false.
@@ -531,7 +405,7 @@ inline bool intersectCoplanar3DTriangles(const Point3& p1,
 template < typename T >
 bool intersect_tri2D_tri2D(const primal::Triangle< T, 2 >& t1,
                            const primal::Triangle< T, 2 >& t2,
-                           const bool includeBoundary = false)
+                           bool includeBoundary = false)
 {
   SLIC_CHECK_MSG(
     !t1.degenerate(),
@@ -550,248 +424,45 @@ bool intersect_tri2D_tri2D(const primal::Triangle< T, 2 >& t1,
  * Determine triangle orientation, then call the worker function with
  * vertices from t1 and t2 permuted to ensure CCW orientation.
  */
-inline bool TriangleIntersection2D(const Triangle2& t1,
-                                   const Triangle2& t2,
-                                   const bool includeBoundary)
-{
-  if (isLt(twoDcross(t1[0],t1[1],t1[2]),0.0))
-  {
-    if ((isLt(twoDcross(t2[0], t2[1], t2[2]),0.0)))
-    {
-      return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
-                                          t2[0], t2[2], t2[1],
-                                          includeBoundary);
-    }
-    else
-    {
-      return intersectPermuted2DTriangles(t1[0], t1[2], t1[1],
-                                          t2[0], t2[1], t2[2],
-                                          includeBoundary);
-    }
-  }
-  else
-  {
-    if (isLt(twoDcross(t2[0], t2[1], t2[2]),0.0))
-    {
-      return intersectPermuted2DTriangles(t1[0], t1[1], t1[2],
-                                          t2[0], t2[2], t2[1],
-                                          includeBoundary);
-    }
-    else
-    {
-      return intersectPermuted2DTriangles(t1[0], t1[1], t1[2],
-                                          t2[0], t2[1], t2[2],
-                                          includeBoundary);
-    }
-  }
-}
+bool TriangleIntersection2D(const Triangle2& t1,
+                            const Triangle2& t2,
+                            bool includeBoundary);
 
 /*!
  * This function finds where p1 lies in relation to the vertices of t2
  * and calls either checkEdge() or checkVertex().
  * \return status true iff triangle p1 q1 r1 intersects triangle p2 q2 r2.
  */
-inline bool intersectPermuted2DTriangles(const Point2& p1,
-                                         const Point2& q1,
-                                         const Point2& r1,
-                                         const Point2& p2,
-                                         const Point2& q2,
-                                         const Point2& r2,
-                                         const bool includeBoundary)
-{
-  // Step 2: Orient triangle 2 to be counter clockwise and break the problem
-  // into two generic cases (where we test the vertex for intersection or the
-  // edges).
-  //
-  // See paper at https://hal.inria.fr/inria-00072100/document for more details
-
-  if (isGpeq(twoDcross(p2,q2,p1), 0.0, includeBoundary))
-  {
-    if (isGpeq(twoDcross(q2,r2,p1), 0.0, includeBoundary))
-    {
-      if (isGpeq(twoDcross(r2,p2,p1), 0.0, includeBoundary))
-      {
-        return true;
-      }
-      else
-      {
-        return checkEdge(p1,q1,r1,p2,r2,includeBoundary); //T1 clockwise
-      }
-    }
-    else
-    {
-      if (isGpeq(twoDcross(r2,p2,p1), 0.0, includeBoundary))
-      {
-        //5 region decomposition with p1 in the +-- region
-        return checkEdge(p1,q1,r1,r2,q2,includeBoundary);
-      }
-      else
-      {
-        return checkVertex(p1,q1,r1,p2,q2,r2,includeBoundary);
-      }
-    }
-  }
-  else
-  {
-    if (isGpeq(twoDcross(q2,r2,p1), 0.0, includeBoundary))
-    {
-      if (isGpeq(twoDcross(r2,p2,p1), 0.0, includeBoundary))
-      {
-        //four region decomposition.  ++- region
-        return checkEdge(p1,q1,r1,q2,p2,includeBoundary);
-      }
-      else
-      {
-        return checkVertex(p1,q1,r1,q2,r2,p2,includeBoundary);
-      }
-    }
-    else
-    {
-      return checkVertex(p1,q1,r1,r2,p2,q2,includeBoundary);
-    }
-  }
-}
+bool intersectPermuted2DTriangles(const Point2& p1,
+                                  const Point2& q1,
+                                  const Point2& r1,
+                                  const Point2& p2,
+                                  const Point2& q2,
+                                  const Point2& r2,
+                                  bool includeBoundary);
 
 /*!
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2p2.
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  */
-inline bool checkEdge(const Point2 p1,
-                      const Point2 q1,
-                      const Point2 r1,
-                      const Point2 p2,
-                      const Point2 r2,
-                      const bool includeBoundary)
-{
-  if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary))
-  {
-    if (isGpeq(twoDcross(r2, p1, q1), 0.0, includeBoundary))
-    {
-      if (isGpeq(twoDcross(p1, p2, q1), 0.0, includeBoundary))
-      {
-        return true;
-      }
-      else
-      {
-        if (isGpeq(twoDcross(p1, p2, r1), 0.0, includeBoundary) &&
-            isGpeq(twoDcross(q1, r1, p2), 0.0, includeBoundary))
-        {
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
-    }
-    else
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (isGpeq(twoDcross(r2, p2, r1), 0.0, includeBoundary) &&
-        isGpeq(twoDcross(q1, r1, r2), 0.0, includeBoundary) &&
-        isGpeq(twoDcross(p1, p2, r1), 0.0, includeBoundary))
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
-}
+bool checkEdge(const Point2& p1,
+               const Point2& q1,
+               const Point2& r1,
+               const Point2& p2,
+               const Point2& r2,
+               bool includeBoundary);
 
 /*!
  * \brief Check for 2D triangle-edge intersection, given p1 close to r2.
  * \return status true iff coplanar CCW triangles 1 and 2 intersect.
  */
-inline bool checkVertex(const Point2 p1,
-                        const Point2 q1,
-                        const Point2 r1,
-                        const Point2 p2,
-                        const Point2 q2,
-                        const Point2 r2,
-                        const bool includeBoundary)
-{
-  if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary))
-  {
-    if (isGpeq(twoDcross(q2, r2, q1), 0.0, includeBoundary))
-    {
-      if (isGpeq(twoDcross(p1, p2, q1), 0.0, includeBoundary))
-      {
-        if (isLpeq(twoDcross(p1, q2, q1), 0.0, includeBoundary))
-        {
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-      {
-        if (isGpeq(twoDcross(p1, p2, r1), 0.0, includeBoundary) &&
-            isGpeq(twoDcross(r2, p2, r1), 0.0, includeBoundary))
-        {
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
-    }
-    else
-    {
-      if (isLpeq(twoDcross(p1, q2, q1), 0.0, includeBoundary) &&
-          isGpeq(twoDcross(q2, r2, r1), 0.0, includeBoundary) &&
-          isGpeq(twoDcross(q1, r1, q2), 0.0, includeBoundary))
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    }
-  }
-  else
-  {
-    if (isGpeq(twoDcross(r2, p2, r1), 0.0, includeBoundary))
-    {
-      if (isGpeq(twoDcross(q1, r1, r2), 0.0, includeBoundary))
-      {
-        if (isGpeq(twoDcross(r1, p1, p2), 0.0, includeBoundary))
-        {
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-      {
-        if (isGpeq(twoDcross(q1, r1, q2), 0.0, includeBoundary) &&
-            isGpeq(twoDcross(q2, r2, r1), 0.0, includeBoundary))
-        {
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
-    }
-    else
-    {
-      return false;
-    }
-  }
-}
+inline bool checkVertex(const Point2& p1,
+                        const Point2& q1,
+                        const Point2& r1,
+                        const Point2& p2,
+                        const Point2& q2,
+                        const Point2& r2,
+                        bool includeBoundary);
 
 /*!
  * \brief Compute cross product of two 2D vectors as if they were 3D.
@@ -840,7 +511,7 @@ inline bool isLeq(double x, double y, double EPS)
  *
  * Supports checkEdge and checkVertex
  */
-inline bool isLpeq(double x, double y, const bool includeEqual, double EPS)
+inline bool isLpeq(double x, double y, bool includeEqual, double EPS)
 {
   if (includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
   {
@@ -867,7 +538,7 @@ inline bool isGeq(double x, double y, double EPS)
  *
  * Supports checkEdge and checkVertex
  */
-inline bool isGpeq(double x, double y, const bool includeEqual, double EPS)
+inline bool isGpeq(double x, double y, bool includeEqual, double EPS)
 {
   if (includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
   {
@@ -919,7 +590,7 @@ inline int countZeros(double x, double y, double z, double EPS)
          (int)axom::utilities::isNearlyEqual(z, 0.0, EPS);
 }
 
-/** @} */
+/*! @} */
 
 /*!
  * \brief Computes the intersection of the given ray, R, with the segment, S.
@@ -1022,8 +693,8 @@ bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
         std::swap(t1,t2);
       }
 
-      tmin = std::max(tmin, t1);
-      tmax = std::min(tmax, t2);
+      tmin = axom::utilities::max(tmin, t1);
+      tmax = axom::utilities::min(tmax, t2);
 
       if (tmin > tmax)
       {
@@ -1087,8 +758,8 @@ bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
         std::swap(t1,t2);
       }
 
-      tmin = std::max(tmin, t1);
-      tmax = std::min(tmax, t2);
+      tmin = axom::utilities::max(tmin, t1);
+      tmax = axom::utilities::min(tmax, t2);
 
       if (tmin > tmax)
       {
@@ -1106,10 +777,19 @@ bool intersect_seg_bbox( const primal::Segment< T,DIM > & S,
 }
 
 typedef primal::Vector< double, 3 > Vector3;
+/*!
+ * \brief Helper function to find disjoint projections for the AABB-triangle
+ * test
+ * \param d0 The first value defining the test interval
+ * \param d1 The second value defining the test interval
+ * \param d2 The third value defining the test interval
+ * \param r Radius of projection
+ * \return True of the intervals are disjoint, false otherwise
+ */
 bool intervalsDisjoint(double d0, double d1, double d2, double r);
 bool crossEdgesDisjoint(double d0, double d1, double r);
 
-/** @{ @name Triangle-bbox intersection */
+/*! @{ @name Triangle-bbox intersection */
 
 /*!
  * \brief Determines if a triangle and a bounding box intersect
@@ -1197,47 +877,18 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
 
 // ------------------------------------------------------------------------------
 
-/**
- * \brief Helper function to find disjoint projections for the AABB-triangle
- * test
- * \param d0 The first value defining the test interval
- * \param d1 The second value defining the test interval
- * \param d2 The third value defining the test interval
- * \param r Radius of projection
- * \return True of the intervals are disjoint, false otherwise
- */
-bool intervalsDisjoint(double d0, double d1, double d2, double r)
-{
-  if (d1 < d0)
-  {
-    std::swap(d1,d0);  // d0 < d1
-  }
-  if (d2 > d1)
-  {
-    std::swap(d2,d1);  // d1 is max(d0,d1,d2)
-  }
-  else if (d2 < d0)
-  {
-    std::swap(d2,d0);  // d0 is min(d0,d1,d2)
-
-  }
-  SLIC_ASSERT(  d0 <= d1 && d0 <= d2);
-  SLIC_ASSERT(  d1 >= d0 && d1 >= d2);
-
-  return d1 < -r || d0 > r;
-}
-
-/**
+/*!
  * \brief Helper function for Triangle/BoundingBox intersection test
  */
-bool crossEdgesDisjoint(double d0, double d1, double r)
+inline bool crossEdgesDisjoint(double d0, double d1, double r)
 {
-  return std::max( -std::max(d0,d1), std::min(d0,d1) ) > r;
+  return axom::utilities::max( -axom::utilities::max(d0,d1),
+                               axom::utilities::min(d0,d1) ) > r;
 }
 
-/** @} */
+/*! @} */
 
-/** @{ @name Triangle-ray intersection */
+/*! @{ @name Triangle-ray intersection */
 
 /*!
  * \brief Tests if 3D triangle tri intersects with 3D ray R.
@@ -1377,7 +1028,7 @@ bool intersect_tri_ray(const Triangle< T, 3 >& tri, const Ray< T,3 >& R,
   return true;
 }
 
-/** @} */
+/*! @} */
 
 /*!
  * \brief Tests if 3D triangle tri intersects with 3D ray S.

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -73,7 +73,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapGroup.h
         interface/c_fortran/wrapBuffer.h
         interface/c_fortran/wrapView.h
-    )   
+    )
     set(sidre_fortran_sources
         # generated source
         interface/c_fortran/wrapSidre.cpp
@@ -82,7 +82,6 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapBuffer.cpp
         interface/c_fortran/wrapView.cpp
         interface/c_fortran/wrapfsidre.F
-        interface/c_fortran/shroudrt.cpp
     )
 
     if(ENABLE_MPI)
@@ -100,8 +99,11 @@ set(sidre_depends
     axom_utils
     conduit
     conduit_relay
-    hdf5
     slic)
+
+if(HDF5_FOUND)
+    list(APPEND sidre_depends hdf5)
+endif()
 
 if(ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
@@ -125,7 +127,7 @@ blt_add_library( NAME
                      sidre
                  DEPENDS_ON
                      ${sidre_depends}
-                 FOLDER 
+                 FOLDER
                      axom/sidre
                 )
 
@@ -133,7 +135,7 @@ if(SPARSEHASH_FOUND)
     blt_add_target_definitions(TO                 sidre
                                TARGET_DEFINITIONS ${SPARSEHASH_COMPILER_DEFS})
     target_include_directories(sidre PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/thirdparty/sparsehash>)
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/thirdparty/sparsehash>)
 endif()
 
 install(TARGETS              sidre
@@ -146,8 +148,8 @@ install(FILES       ${sidre_headers}
         )
 if(ENABLE_FORTRAN)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_sidre.mod DESTINATION lib/fortran)
-    
+
     if(ENABLE_MPI)
-        install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)    
+        install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
     endif()
 endif()

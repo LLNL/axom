@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -80,6 +80,17 @@ public:
     copy( otherMap);
   }
 
+  /** Assignment operator for Map     */
+  Map& operator=(const Map& otherMap)
+  {
+    if(this != &otherMap)
+    {
+      m_set = otherMap.m_set;
+      m_data = otherMap.m_data;
+    }
+
+    return *this;
+  }
 
   ~Map(){}
 

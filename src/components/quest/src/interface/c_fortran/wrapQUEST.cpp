@@ -1,7 +1,7 @@
 // wrapQUEST.cpp
 // This is generated code, do not edit
 //
-// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -13,7 +13,6 @@
 //
 // For details about use and distribution, please read axom/LICENSE.
 //
-// wrapQUEST.cpp
 #include "wrapQUEST.h"
 #include <string>
 #include "quest/quest.hpp"
@@ -36,9 +35,9 @@ void QUEST_initialize(MPI_Fint comm, const char* fileName,
                       int maxLevels)
 {
 // splicer begin function.initialize
+  MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
   const std::string SH_fileName(fileName);
-  initialize(MPI_Comm_f2c(
-               comm), SH_fileName, requiresDistance, ndims, maxElements,
+  initialize(SHCXX_comm, SH_fileName, requiresDistance, ndims, maxElements,
              maxLevels);
   return;
 // splicer end function.initialize
@@ -49,9 +48,9 @@ void QUEST_initialize_bufferify(MPI_Fint comm, const char* fileName,
                                 int maxElements, int maxLevels)
 {
 // splicer begin function.initialize_bufferify
+  MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
   const std::string SH_fileName(fileName, LfileName);
-  initialize(MPI_Comm_f2c(
-               comm), SH_fileName, requiresDistance, ndims, maxElements,
+  initialize(SHCXX_comm, SH_fileName, requiresDistance, ndims, maxElements,
              maxLevels);
   return;
 // splicer end function.initialize_bufferify
@@ -68,16 +67,16 @@ void QUEST_finalize()
 double QUEST_distance(double x, double y, double z)
 {
 // splicer begin function.distance
-  double SH_rv = distance(x, y, z);
-  return SH_rv;
+  double SHC_rv = distance(x, y, z);
+  return SHC_rv;
 // splicer end function.distance
 }
 
 int QUEST_inside(double x, double y, double z)
 {
 // splicer begin function.inside
-  int SH_rv = inside(x, y, z);
-  return SH_rv;
+  int SHC_rv = inside(x, y, z);
+  return SHC_rv;
 // splicer end function.inside
 }
 

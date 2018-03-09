@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+  - Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
   -
   - Produced at the Lawrence Livermore National Laboratory
   -
@@ -20,10 +20,12 @@ library: SPIO
 namespace: axom sidre
 
 options:
-  C_prefix: SPIO_
+  C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
   F_module_per_class: False
 
+format:
+  C_prefix: SPIO_
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
@@ -32,23 +34,22 @@ options:
 types:
   Group:
     base: wrapped
-    cpp_header: sidre/Group.hpp
-    cpp_type: axom::sidre::Group
+    cxx_header: sidre/Group.hpp
+    cxx_type: axom::sidre::Group
     f_derived_type: SidreGroup
     f_module:
       axom_sidre: [ SidreGroup ]
     c_type: SIDRE_group
     c_header: sidre/wrapGroup.h
     f_to_c: '{f_var}%get_instance()'
-    cpp_local_var: True
 
 
 classes:
   - name: IOManager
-    cpp_header: sidre/IOManager.hpp
+    cxx_header: sidre/IOManager.hpp
     methods:
-    - decl: IOManager * new(MPI_Comm com) +constructor
-    - decl: void delete() +destructor
+    - decl: IOManager(MPI_Comm com) +name(new)
+    - decl: ~IOManager() +name(delete)
     - decl: void write(Group * group, int num_files, const std::string& file_string, const std::string& protocol)
     - decl: void writeGroupToRootFile(Group * group, const std::string& file_name)
     - decl: void read(Group * group, const std::string& file_string, const std::string& protocol)

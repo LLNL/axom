@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -32,6 +32,7 @@
 #include "slic/slic.hpp"              // for slic macros
 
 #include <fstream>                     // for std::ofstream
+#include <iomanip>                     // for std::setfill, std::setw
 #include <limits>                      // for std::numeric_limits
 #include <string>                      // for std::string
 
@@ -329,7 +330,8 @@ void write_multidim_data( const Field* field, std::ofstream& file )
   {
     for ( int cur_comp = 0 ; cur_comp < num_components ; ++cur_comp )
     {
-      file << "SCALARS " << field->getName() << "[" << cur_comp << "]";
+      file << "SCALARS " << field->getName() << "_";
+      file << std::setfill('0') << std::setw(3) << cur_comp;
       file << " double\n";
       file << "LOOKUP_TABLE default\n";
 
@@ -346,7 +348,8 @@ void write_multidim_data( const Field* field, std::ofstream& file )
   {
     for ( int cur_comp = 0 ; cur_comp < num_components ; ++cur_comp )
     {
-      file << "SCALARS " << field->getName() << "[" << cur_comp << "]";
+      file << "SCALARS " << field->getName() << "_";
+      file << std::setfill('0') << std::setw(3) << cur_comp;
       file << " int\n";
       file << "LOOKUP_TABLE default\n";
 

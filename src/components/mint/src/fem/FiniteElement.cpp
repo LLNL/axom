@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -275,8 +275,8 @@ void FiniteElement::jacobian( const double* lc,
                               numerics::Matrix< double >& J  )
 {
   SLIC_ASSERT(  lc != AXOM_NULLPTR );
-  SLIC_ASSERT(  J.getNumColumns() == m_dim );
-  SLIC_ASSERT(  J.getNumRows() == m_dim );
+  SLIC_ASSERT(  J.getNumColumns() == this->getReferenceDimension() );
+  SLIC_ASSERT(  J.getNumRows() == this->getPhysicalDimension() );
   SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS )
@@ -287,7 +287,8 @@ void FiniteElement::jacobian( const double* lc,
 
   // STEP 0: evaluate the derivatives
   this->evaluateDerivatives( lc, m_phidot );
-  numerics::Matrix< double > derivs_matrix( m_numdofs, m_dim, m_phidot, true );
+  numerics::Matrix< double > derivs_matrix(
+    m_numdofs, this->getReferenceDimension(), m_phidot, true );
 
   // STEP 1: get the coordinates
   numerics::Matrix< double > coords_matrix( m_dim, m_numnodes, m_xyz, true );

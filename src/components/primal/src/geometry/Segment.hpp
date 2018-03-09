@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -21,10 +21,24 @@
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
 
+#include <ostream>
+
 namespace axom
 {
 namespace primal
 {
+
+// Forward declare the templated classes and operator functions
+template < typename T, int DIM >
+class Segment;
+
+
+/*!
+ * \brief Overloaded output operator for Segment
+ */
+template < typename T, int NDIMS >
+std::ostream& operator<<(std::ostream & os, const Segment< T,NDIMS > & seg);
+
 
 /*!
  * \class
@@ -89,6 +103,19 @@ public:
     typedef Vector< T, NDIMS > VectorType;
     return VectorType(m_source, m_target).norm();
   }
+
+  /*!
+   * \brief Simple formatted print of a segment instance
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   */
+  std::ostream& print(std::ostream& os) const
+  {
+    os <<"{source:"<< m_source<<"; target:"<< m_target<< "}";
+
+    return os;
+  }
+
 private:
 
   /*!
@@ -121,6 +148,17 @@ Segment< T,NDIMS >::Segment(const PointType& A, const PointType& B) :
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 Segment< T,NDIMS >::~Segment() { }
+
+//------------------------------------------------------------------------------
+/// Free functions implementing Segments's operators
+//------------------------------------------------------------------------------
+template < typename T, int NDIMS >
+std::ostream& operator<<(std::ostream & os, const Segment< T,NDIMS > & seg)
+{
+  seg.print(os);
+  return os;
+}
+
 
 } /* namespace primal */
 } /* namespace axom */

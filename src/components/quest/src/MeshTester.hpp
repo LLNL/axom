@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -25,7 +25,6 @@
 
 // Axom includes
 #include "mint/UnstructuredMesh.hpp"
-#include "quest/MeshTester_impl.hpp"
 #include "slic/slic.hpp"
 
 // C/C++ includes
@@ -62,13 +61,7 @@ void findTriMeshIntersections(
   mint::UnstructuredMesh< MINT_TRIANGLE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
-  int spatialIndexResolution = 0)
-{
-  detail::findTriMeshIntersections_impl(surface_mesh,
-                                        intersections,
-                                        degenerateIndices,
-                                        spatialIndexResolution);
-}
+  int spatialIndexResolution = 0);
 
 } // end namespace quest
 } // end namespace axom

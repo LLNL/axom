@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -21,15 +21,19 @@ set(gtest_spio_serial_tests
    )
 
 set(gtest_spio_parallel_tests
+   spio_basic.cpp
    spio_parallel.cpp
    )
 
 set(spio_test_depends
     sidre
     conduit
-    hdf5
     mpi
     )
+
+if(HDF5_FOUND)
+    list(APPEND spio_test_depends hdf5)
+endif()
 
 if(SCR_FOUND)
      list(APPEND spio_test_depends scr)
@@ -74,7 +78,7 @@ endif()
 if(ENABLE_FORTRAN)
    if (ENABLE_MPI)
       blt_add_executable(NAME spio_basicWriteRead_F_test
-                         SOURCES F_spio_basicWriteRead.f
+                         SOURCES F_spio_basicWriteRead.F
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
                          FOLDER axom/sidre/tests
@@ -85,7 +89,7 @@ if(ENABLE_FORTRAN)
                    )
 
       blt_add_executable(NAME spio_parallelWriteRead_F_test
-                         SOURCES F_spio_parallelWriteRead.f
+                         SOURCES F_spio_parallelWriteRead.F
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
                          FOLDER axom/sidre/tests
@@ -96,7 +100,7 @@ if(ENABLE_FORTRAN)
                    )
 
       blt_add_executable(NAME spio_irregularWriteRead_F_test
-                         SOURCES F_spio_irregularWriteRead.f
+                         SOURCES F_spio_irregularWriteRead.F
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
                          FOLDER axom/sidre/tests
@@ -107,7 +111,7 @@ if(ENABLE_FORTRAN)
                    )
 
       blt_add_executable(NAME spio_externalWriteRead_F_test
-                         SOURCES F_spio_externalWriteRead.f
+                         SOURCES F_spio_externalWriteRead.F
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends}
                          FOLDER axom/sidre/tests
@@ -118,7 +122,7 @@ if(ENABLE_FORTRAN)
                    )
 
       blt_add_executable(NAME spio_preserveWriteRead_F_test
-                         SOURCES F_spio_preserveWriteRead.f
+                         SOURCES F_spio_preserveWriteRead.F
                          OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                          DEPENDS_ON ${spio_test_depends} fruit
                          FOLDER axom/sidre/tests

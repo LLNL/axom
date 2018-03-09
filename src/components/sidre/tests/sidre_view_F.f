@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -470,15 +470,19 @@ contains
     call view3%print()
 
     ! check values in depth views...
+    nullify(data)
     call view0%get_data(data)
     call assert_true(all(data == 0), "depth 0 does not compare")
 
+    nullify(data)
     call view1%get_data(data)
     call assert_true(all(data == 1), "depth 1 does not compare")
  
+    nullify(data)
     call view2%get_data(data)
     call assert_true(all(data == 2), "depth 2 does not compare")
 
+    nullify(data)
     call view3%get_data(data)
     call assert_true(all(data == 3), "depth 3 does not compare")
 
@@ -555,12 +559,14 @@ contains
     call field1%print()
 
     ! check values in field views...
+    nullify(data)
     call field0%get_data(data)
     call assert_true(size(data) == field_nelems, &
          "depth 0 is incorrect size")
     call assert_true(all(data == 0), "depth 0 does not compare")
     call assert_true(offset0 == field0%get_offset())
 
+    nullify(data)
     call field1%get_data(data)
     call assert_true(size(data) == field_nelems, &
          "depth 1 is incorrect size")
@@ -888,6 +894,8 @@ contains
     a1 = root%create_view_and_allocate("a1", SIDRE_FLOAT_ID, 5)
     a2 = root%create_view_and_allocate("a2", SIDRE_FLOAT_ID, 5)
 
+    nullify(a1_data)
+    nullify(a2_data)
     call a1%get_data(a1_data)
     call a2%get_data(a2_data)
 
@@ -905,6 +913,8 @@ contains
     call a1%reallocate(10)
     call a2%reallocate(15)
 
+    nullify(a1_data)
+    nullify(a2_data)
     call a1%get_data(a1_data)
     call a2%get_data(a2_data)
 
@@ -940,6 +950,7 @@ contains
     integer(C_INT), target :: src_data
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr
+    logical rv
 
     call set_case_name("simple_opaque")
 
@@ -959,13 +970,14 @@ contains
     call assert_true(ds%get_num_buffers() == 0)
 
     call assert_true(opq_view%is_external(), "opq_view%is_external()")
-    call assert_true(opq_view%is_applied() .eqv. .false., "opq_view%is_applied()")
+    call assert_false(opq_view%is_applied(), "opq_view%is_applied()")
     call assert_true(opq_view%is_opaque(), "opq_view%is_opaque()")
 
     opq_ptr = opq_view%get_void_ptr()
-    call c_f_pointer(opq_ptr, out_data)
+    rv = c_associated(opq_ptr, src_ptr)
+    call assert_true(rv, "c_associated(opq_ptr,src_ptr)")
 
-    call assert_true(c_associated(opq_ptr, src_ptr), "c_associated(opq_ptr,src_ptr)")
+    call c_f_pointer(opq_ptr, out_data)
     call assert_equals(out_data, 42, "out_data, 42")
 
     call ds%print()

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -32,6 +32,7 @@
 #include "primal/Point.hpp"
 #include "primal/Segment.hpp"
 #include "primal/Triangle.hpp"
+#include "primal/OrientationResult.hpp"
 
 #include "slic/slic.hpp"
 
@@ -39,16 +40,6 @@ namespace axom
 {
 namespace primal
 {
-
-/*!
- * \brief Enumerates possible return values for orientation methods
- */
-enum OrientedSide
-{
-  ON_BOUNDARY,         /*!< point is on boundary of the given primitive      */
-  ON_POSITIVE_SIDE,    /*!< point is on positive side of the given primitive */
-  ON_NEGATIVE_SIDE     /*!< point is on negative side of the given primitive */
-};
 
 /*!
  * \brief Computes the orientation of the given point, p, with respect to a

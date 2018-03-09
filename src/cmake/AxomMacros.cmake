@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory.
 #
@@ -62,7 +62,7 @@ macro(axom_add_code_checks)
 
     blt_add_code_checks(PREFIX    ${arg_PREFIX}
                         SOURCES   ${_sources}
-                        UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
+                        UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/src/uncrustify.cfg)
 
 endmacro(axom_add_code_checks)
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -38,8 +38,9 @@ TEST( numerics_determinants, determinant_of_In )
 //------------------------------------------------------------------------------
 TEST( numerics_determinants, determinant5x5 )
 {
-
   const int N = 5;
+  const double EPS = 1e-11;
+
   numerics::Matrix< double > A( N,N );
   A( 0,0 )=1; A( 0,1 )=2; A( 0,2 )=4; A( 0,3 )=3; A( 0,4 )=0;
   A( 1,0 )=2; A( 1,1 )=1; A( 1,2 )=-1; A( 1,3 )=1; A( 1,4 )=3;
@@ -49,5 +50,5 @@ TEST( numerics_determinants, determinant5x5 )
 
   double computed_det = numerics::determinant( A );
   double expected_det = -34.0;
-  EXPECT_DOUBLE_EQ( expected_det, computed_det );
+  EXPECT_NEAR( expected_det, computed_det, EPS );
 }

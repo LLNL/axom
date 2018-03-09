@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory.
 #
@@ -50,6 +50,9 @@ if(ENABLE_FORTRAN)
     include(FortranCInterface)
     FortranCInterface_VERIFY()
     FortranCInterface_VERIFY(CXX)
+
+    # Axom assumes that all Fortran files use free formatting
+    set(CMAKE_Fortran_FORMAT FREE)
 
     if (ENABLE_MPI)
         # Determine if we should use fortran mpif.h header or fortran mpi module

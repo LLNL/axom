@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+  - Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
   -
   - Produced at the Lawrence Livermore National Laboratory
   -
@@ -17,14 +17,16 @@ copyright:
   -
 
 library: SLIC
-cpp_header: slic/slic.hpp
+cxx_header: slic/slic.hpp
 namespace: axom slic
 
 options:
-  C_prefix: SLIC_
+  C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False
 
+format:
+  C_prefix: SLIC_
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
@@ -37,9 +39,9 @@ types:
   Level:
     # enum
     typedef  : int
-    cpp_type : message::Level
-    c_to_cpp : static_cast<message::Level>({c_var})
-    cpp_to_c : static_cast<int>({cpp_var})
+    cxx_type : message::Level
+    c_to_cxx : static_cast<message::Level>({c_var})
+    cxx_to_c : static_cast<int>({cxx_var})
 
 
 ######################################################################

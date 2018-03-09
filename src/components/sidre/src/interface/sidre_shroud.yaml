@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+  - Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
   -
   - Produced at the Lawrence Livermore National Laboratory
   -
@@ -17,21 +17,22 @@ copyright:
   -
 
 library: Sidre
-# cpp_header: each class has its own header file
+# cxx_header: each class has its own header file
 namespace: axom sidre
 
 options:
-  C_prefix: SIDRE_
+  C_line_length: 1000
   F_module_per_class: False
   F_impl_filename_library_template: wrapf{library_lower}.F
   F_module_name_library_template: axom_{library_lower}
+#  wrap_python: True
 
+format:
+  C_prefix: SIDRE_
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
 #  F_string_result_as_arg: name
-#  wrap_python: True
-
 
 types:
   IndexType:
@@ -39,24 +40,24 @@ types:
     typedef  : int
     c_header : sidre/SidreTypes.h
     c_type   : SIDRE_IndexType
-    cpp_type : IndexType
+    cxx_type : IndexType
 
   SidreLength:
 # defined in SidreTypes.hpp
     typedef  : long
     c_header : sidre/SidreTypes.h
     c_type   : SIDRE_SidreLength
-    cpp_type : SidreLength
+    cxx_type : SidreLength
 
   TypeID:
     typedef  : int
     # enum for types
     c_header : sidre/SidreTypes.h
-    cpp_header : sidre/SidreTypes.hpp
-    cpp_type : TypeID
-    c_to_cpp : getTypeID({c_var})
-#    c_to_cpp : static_cast<TypeID>({c_var})
-    cpp_to_c : static_cast<int>({cpp_var})
+    cxx_header : sidre/SidreTypes.hpp
+    cxx_type : TypeID
+    c_to_cxx : getTypeID({c_var})
+#    c_to_cxx : static_cast<TypeID>({c_var})
+    cxx_to_c : static_cast<int>({cxx_var})
 
 
 # XXX
@@ -66,19 +67,22 @@ types:
 classes:
   ####################################################################
   - name: DataStore
-    cpp_header: sidre/DataStore.hpp
-    F_derived_name:  SidreDataStore
+    cxx_header: sidre/DataStore.hpp
+    format:
+      F_derived_name:  SidreDataStore
 
     methods:
-    -  decl: DataStore * new() +constructor
-    -  decl: void delete() +destructor
+    -  decl: DataStore()  +name(new)
+    -  decl: ~DataStore() +name(delete)
     -  decl: Group * getRoot()
 #    -  decl: bool hasBuffer( IndexType idx ) const
     - decl:  Buffer * getBuffer( IndexType idx )
     -  decl: Buffer * createBuffer()
-       function_suffix: _empty
+       format:
+         function_suffix: _empty
     -  decl: Buffer * createBuffer( TypeID type, SidreLength num_elems )
-       function_suffix: _from_type
+       format:
+         function_suffix: _from_type
        fortran_generic:
          num_elems:
          -  int
@@ -103,14 +107,15 @@ classes:
 
   ####################################################################
   - name: Group
-    cpp_header: sidre/Group.hpp
-    F_derived_name:  SidreGroup
+    cxx_header: sidre/Group.hpp
+    format:
+      F_derived_name:  SidreGroup
 
     methods:
     -  decl: IndexType getIndex()
-    -  decl: const std::string& getName+len(MAXNAMESIZE)() const
-    -  decl: std::string getPath+len(MAXNAMESIZE)() const
-    -  decl: std::string getPathName+len(MAXNAMESIZE)() const
+    -  decl: const std::string& getName() const +len(MAXNAMESIZE)
+    -  decl: std::string getPath() const +len(MAXNAMESIZE)
+    -  decl: std::string getPathName() const +len(MAXNAMESIZE)
 #    -  decl: Group* getParent()
     -  decl: const Group* getParent() const
 #    -  decl: DataStore* getDataStore() const
@@ -122,15 +127,17 @@ classes:
     -  decl: bool rename( const string& new_name )
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: View *getView( const std::string& path )
-       function_suffix: _from_name
+       format:
+         function_suffix: _from_name
        PY_error_pattern: PY_null_to_none
 #    -  decl: View const * getView( const std::string& path ) const
     -  decl: View *getView( const IndexType idx )
-       function_suffix: _from_index
+       format:
+         function_suffix: _from_index
        PY_error_pattern: PY_null_to_none
 #    -  decl: View const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
-    -  decl: const std::string& getViewName+len(MAXNAMESIZE)(IndexType idx) const
+    -  decl: const std::string& getViewName(IndexType idx) const +len(MAXNAMESIZE)
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
 
@@ -138,7 +145,8 @@ classes:
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
 
     -  decl: View *createViewAndAllocate( const std::string& path, TypeID type, SidreLength num_elems)
-       function_suffix: _nelems
+       format:
+         function_suffix: _nelems
        fortran_generic:
          num_elems:
          -  int
@@ -146,13 +154,14 @@ classes:
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createViewAndAllocate( const std::string& path, TypeID type, int ndims, SidreLength *shape+dimension)
-       function_suffix: _shape
+       format:
+         function_suffix: _shape
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: View *createViewAndAllocate( const std::string& path, const DataType& dtype)
 
     -  decl: View *createViewScalar( const std::string& path, ScalarType value)
-       cpp_template:
+       cxx_template:
          ScalarType:
          - int
          - long
@@ -164,11 +173,13 @@ classes:
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const string& path )
-       function_suffix: _empty
+       format:
+         function_suffix: _empty
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems)
-       function_suffix: _from_type
+       format:
+         function_suffix: _from_type
        fortran_generic:
          num_elems:
          -  int
@@ -176,7 +187,8 @@ classes:
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems, Buffer *buff)
-       function_suffix: _from_type_and_buffer
+       format:
+         function_suffix: _from_type_and_buffer
        fortran_generic:
          num_elems:
          -  int
@@ -184,7 +196,8 @@ classes:
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems, void * external_ptr)
-       function_suffix: _from_type_external
+       format:
+         function_suffix: _from_type_external
        fortran_generic:
          num_elems:
          -  int
@@ -192,34 +205,41 @@ classes:
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension)
-       function_suffix: _from_shape
+       format:
+         function_suffix: _from_shape
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
-       function_suffix: _from_shape_and_buffer
+       format:
+         function_suffix: _from_shape_and_buffer
        PY_error_pattern: PY_null_to_none
 
     -  decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
-       function_suffix: _from_shape_external
+       format:
+         function_suffix: _from_shape_external
        PY_error_pattern: PY_null_to_none
 
 #    -  decl: View *createView( const std::string& path, const DataType& dtype)
 
     -  decl: View *createView( const std::string& path, Buffer *buff)
-       function_suffix: _into_buffer
+       format:
+         function_suffix: _into_buffer
        PY_error_pattern: PY_null_to_none
 
     -  decl: View * createView( const std::string& path, void * external_ptr)
-       function_suffix: _external
+       format:
+         function_suffix: _external
        PY_error_pattern: PY_null_to_none
 
     -  decl: void destroyView( const std::string &path )
 #    -  decl: void destroyView( IndexType idx )
 #    -  decl: void destroyViews()
     -  decl: void destroyViewAndData(const std::string &path)
-       function_suffix: _name
+       format:
+         function_suffix: _name
     -  decl: void destroyViewAndData(IndexType idx)
-       function_suffix: _index
+       format:
+         function_suffix: _index
 #    -  decl: void destroyViewsAndData()
     -  decl: View *moveView(View *view)
     -  decl: View *copyView(View *view)
@@ -228,15 +248,17 @@ classes:
 #    -  decl: bool hasGroup( IndexType idx )
     -  decl: bool hasChildGroup( const string& name )
     -  decl: Group * getGroup( const std::string& path )
-       function_suffix: _from_name
+       format:
+         function_suffix: _from_name
        PY_error_pattern: PY_null_to_none
 #    -  decl: Group const * getGroup( const std::string& path ) const
     -  decl: Group * getGroup( IndexType idx)
-       function_suffix: _from_index
+       format:
+         function_suffix: _from_index
        PY_error_pattern: PY_null_to_none
 #    -  decl: Group const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
-    -  decl: const std::string& getGroupName+len(MAXNAMESIZE)(IndexType idx) const
+    -  decl: const std::string& getGroupName(IndexType idx) const +len(MAXNAMESIZE)
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
     -  decl: IndexType getFirstValidGroupIndex() const
@@ -244,9 +266,11 @@ classes:
 
     -  decl: Group *createGroup( const string& path )
     -  decl: void destroyGroup(const std::string &path)
-       function_suffix: _name
+       format:
+         function_suffix: _name
     -  decl: void destroyGroup(IndexType idx)
-       function_suffix: _index
+       format:
+         function_suffix: _index
 #    -  decl: void destroyGroups()
     -  decl: Group *moveGroup(Group *grp)
 #    -  decl: Group *copyGroup(Group *grp)
@@ -263,10 +287,12 @@ classes:
     
     -  decl: void save(const std::string& file_path, const std::string& protocol) const
 #   -  decl: void save(const hid_t& h5_id) const
-#      function_suffix: _hdf
+#       format:
+#        function_suffix: _hdf
     -  decl: void load(const std::string& file_path, const std::string& protocol, bool preserve_contents = false)
 #   -  decl: void load(const hid_t& h5_id)
-#      function_suffix: _hdf
+#       format:
+#        function_suffix: _hdf
     -  decl: void loadExternalData(const std::string& file_path)
     
 
@@ -275,8 +301,9 @@ classes:
 
   ####################################################################
   - name: Buffer
-    cpp_header: sidre/Buffer.hpp
-    F_derived_name:  SidreBuffer
+    cxx_header: sidre/Buffer.hpp
+    format:
+      F_derived_name:  SidreBuffer
 
     methods:
       - decl: IndexType getIndex() const
@@ -289,10 +316,12 @@ classes:
           -  long
 #      - decl: Buffer* describe(const DataType& dtype)
       - decl: Buffer* allocate()
-        function_suffix: _existing
+        format:
+          function_suffix: _existing
         return_this: True
       - decl: Buffer* allocate(TypeID type, SidreLength num_elems)
-        function_suffix: _from_type
+        format:
+          function_suffix: _from_type
         return_this: True
         fortran_generic:
           num_elems:
@@ -320,15 +349,18 @@ classes:
 
   ####################################################################
   - name: View
-    cpp_header: sidre/View.hpp
-    F_derived_name:  SidreView
+    cxx_header: sidre/View.hpp
+    format:
+      F_derived_name:  SidreView
 
     methods:
     - decl: View* allocate()
-      function_suffix: _simple
+      format:
+        function_suffix: _simple
       return_this: True
     - decl: View* allocate(TypeID type, SidreLength num_elems)
-      function_suffix: _from_type
+      format:
+        function_suffix: _from_type
       return_this: True
       fortran_generic:
         num_elems:
@@ -347,11 +379,13 @@ classes:
 
     - decl: View* attachBuffer(Buffer * buff)
       return_this: True
-      function_suffix: _only
+      format:
+        function_suffix: _only
 
     - decl: View* attachBuffer(TypeID type, SidreLength num_elems, Buffer * buff)
       return_this: True
-      function_suffix: _type
+      format:
+        function_suffix: _type
       fortran_generic:
         num_elems:
         -  int
@@ -359,7 +393,8 @@ classes:
 
     - decl: View* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
       return_this: True
-      function_suffix: _shape
+      format:
+        function_suffix: _shape
 
     - decl: View* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
       default_arg_suffix:
@@ -374,7 +409,8 @@ classes:
         -  _type_nelems_offset_stride
       return_this: True
     - decl: View * apply( TypeID type, int ndims, SidreLength * shape+dimension )
-      function_suffix: _type_shape
+      format:
+        function_suffix: _type_shape
       return_this: True
 #    - decl: View* apply(const DataType& dtype)
     - decl: bool hasBuffer() const
@@ -387,9 +423,9 @@ classes:
     - decl: bool isScalar() const
     - decl: bool isString() const
     - decl: IndexType getIndex()
-    - decl: const std::string& getName+len(MAXNAMESIZE)() const
-    - decl: std::string getPath+len(MAXNAMESIZE)() const
-    - decl: std::string getPathName+len(MAXNAMESIZE)() const
+    - decl: const std::string& getName() const +len(MAXNAMESIZE)
+    - decl: std::string getPath() const +len(MAXNAMESIZE)
+    - decl: std::string getPathName() const +len(MAXNAMESIZE)
     - decl: Buffer* getBuffer()
 #    - decl: Buffer const* getBuffer() const
     - decl: void * getVoidPtr() const
@@ -399,7 +435,7 @@ classes:
 
 #           template<typename ScalarType>
     - decl: void setScalar(ScalarType value)
-      cpp_template:
+      cxx_template:
         ScalarType:
         - int
         - long
@@ -408,11 +444,13 @@ classes:
 
     -  decl: View * setExternalDataPtr(void * external_ptr)
        return_this: True
-       function_suffix: _only
+       format:
+         function_suffix: _only
 
     -  decl: View * setExternalDataPtr(TypeID type, SidreLength num_elems, void * external_ptr)
        return_this: True
-       function_suffix: _type
+       format:
+         function_suffix: _type
        fortran_generic:
          num_elems:
          -  int
@@ -423,15 +461,16 @@ classes:
 
     -  decl: View * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
        return_this: True
-       function_suffix: _shape
+       format:
+         function_suffix: _shape
 
-    -  decl: const char * getString+len(MAXNAMESIZE)()
-       options:
+    -  decl: const char * getString() +len(MAXNAMESIZE)
+       format:
          F_string_result_as_arg: name
 
 #           template<typename DataType>
     - decl: DataType getData()
-      cpp_template:
+      cxx_template:
         DataType:
         - int
         - long
@@ -463,39 +502,40 @@ classes:
 functions:
   -  decl: bool nameIsValid(const std::string& name)
      # The concept of a valid name is different for C++, C and Fortran
-     C_code:  return name != NULL;
-     F_code:  '{F_result} = name .ne. " "'
      options:
        F_string_len_trim: false
+     format:
+       C_code:  return name != NULL;
+       F_code:  '{F_result} = name .ne. " "'
 
 
 ######################################################################
 patterns:
     C_invalid_name: |
-        if (! nameIsValid({cpp_var})) {{
+        if (! nameIsValid({cxx_var})) {{
             return SIDRE_InvalidName;
         }}
     # return a blank field string if an error occurs
-    C_invalid_name_as_buffer: |
-        if (! nameIsValid({cpp_var})) {{
+    C_invalid_name_buf: |
+        if (! nameIsValid({cxx_var})) {{
             std::memset({c_var}, ' ', {c_var_len});
             return;
         }}
     PY_invalid_name: |
-        if (! nameIsValid({cpp_var})) {{
+        if (! nameIsValid({cxx_var})) {{
             PyErr_SetString(PyExc_KeyError, "XXX - need name");
             return NULL;
         }}
     # report the invalid index, assume local variable idx
     PY_invalid_name_idx: |
-        if (! nameIsValid({cpp_var})) {{
+        if (! nameIsValid({cxx_var})) {{
             Py_RETURN_NONE;
         }}
 #            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
 #            return NULL;
     # Convert NULL to None
     PY_null_to_none: |
-        if ({cpp_var} == AXOM_NULLPTR) {{
+        if ({cxx_var} == AXOM_NULLPTR) {{
             Py_RETURN_NONE;
         }}
 

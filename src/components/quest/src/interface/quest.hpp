@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -22,6 +22,7 @@
 #include <string>
 
 #include "axom/config.hpp"
+#include "mint/Mesh.hpp"
 
 #ifdef AXOM_USE_MPI
 #include "mpi.h"
@@ -37,10 +38,13 @@ namespace quest
  * \brief Initializes quest.
  * \param [in] comm communicator to use (when running in parallel)
  * \param [in] fileName the name of the file to read in the surface.
+ * \param [in] input_mesh pointer to already-read-in mint::Mesh
  * \param [in] requiresDistance flag to determine which structure to build.
  * \param [in] ndims the surface's spatial dimension
  * \param [in] maxElements max elements per bucket.
  * \param [in] maxLevel max levels of subdivision.
+ * \param [in] deleteMesh if true, finalize() will delete the mesh;
+ *       if false, the user is responsible for deleting the mesh
  * \note If requiresDistance is true, we will build a structure that supports
  *       signed distance queries in addition to containment queries.
  *       Otherwise, we build a structure that only supports containment queries.
@@ -49,10 +53,16 @@ namespace quest
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
+void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh = false );
 #else
 void initialize( const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
+void initialize( mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh = false );
 #endif
 
 /*!

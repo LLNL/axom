@@ -5,14 +5,13 @@ class PyShroud(Package):
     """Create Fortran wrappers for a C++ library."""
 
     homepage = "https://github.com/LLNL/shroud"
-    url      = "https://github.com/LLNL/shroud/archive/v0.2.tar.gz"
+    url      = "https://github.com/LLNL/shroud/archive/v0.8.0.tar.gz"
 
-    version('0.2', 'af7b53240c20dcdace0ee0ea8e3e9818')
+    version('0.8.0', 'ec94d6f9cf3246d4370007abd4d270d8')
 
     extends('python')
 
     depends_on("py-pyyaml")
-    depends_on("py-parsley")
 
     def install(self, spec, prefix):
         # simply install to the spack python

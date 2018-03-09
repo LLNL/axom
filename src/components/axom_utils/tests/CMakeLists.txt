@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -26,6 +26,7 @@ set(gtest_utils_tests
    numerics_determinants.cpp
    numerics_linear_solve.cpp
    numerics_eigen_solve.cpp
+   numerics_polynomial_solvers.cpp
    numerics_vector_utilities.cpp
    numerics_lu.cpp
    numerics_matrix.cpp

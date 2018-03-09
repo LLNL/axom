@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -28,6 +28,9 @@
 #include "primal/Vector.hpp"
 
 #include "primal/intersect.hpp"
+
+#include <cmath>     // for sqrt
+
 
 using namespace axom;
 
@@ -172,7 +175,7 @@ TEST( primal_intersect, ray_segment_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -295,7 +298,7 @@ TEST( primal_intersect, triangle_aabb_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection_fromData )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -357,7 +360,7 @@ TEST( primal_intersect, triangle_aabb_intersection_fromData )
 
 TEST( primal_intersect, triangle_aabb_intersection_fromData2 )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -901,7 +904,7 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -952,7 +955,7 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 
 TEST( primal_intersect, ray_aabb_intersection_general3D )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
   typedef primal::Ray< double,DIM > RayType;
   typedef primal::BoundingBox< double, DIM > BoundingBoxType;
@@ -990,7 +993,7 @@ TEST( primal_intersect, ray_aabb_intersection_general3D )
 
 TEST( primal_intersect, ray_aabb_intersection_tinyDirectionVector3D )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
   typedef primal::Ray< double,DIM > RayType;
   typedef primal::BoundingBox< double, DIM > BoundingBoxType;
@@ -1138,7 +1141,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
 
 TEST(primal_intersect, triangle_segment_intersection)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Segment< double, DIM >  SegmentType;
@@ -1207,7 +1210,7 @@ TEST(primal_intersect, triangle_segment_intersection)
 
 TEST(primal_intersect, triangle_ray_intersection)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Ray< double, DIM > RayType;
@@ -1308,7 +1311,7 @@ TEST(primal_intersect, triangle_ray_intersection)
 
 TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Vector< double,DIM >    VectorType;
   typedef primal::Triangle< double, DIM > TriangleType;
@@ -1344,9 +1347,36 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   EXPECT_TRUE(testPointsClose(intersectionPoint, triIntersectionPoint));
 }
 
+
+TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
+{
+  const int DIM = 3;
+  typedef primal::Point< double,DIM >     PointType;
+  typedef primal::Vector< double,DIM >    VectorType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Ray< double, DIM >      RayType;
+
+  // This regression test triggers a division by zero in
+  // a previous implementation of primal::intersect()
+  // when normalizing the barycentric coordinates
+
+  double t = 0.;
+  PointType bary;
+
+  double val = std::sqrt(2)/2;
+  RayType ray(PointType::make_point(-0.1, 1.1, 0.),
+              VectorType::make_vector(0, -val, val));
+
+  TriangleType tri( PointType::make_point(1,0,0),
+                    PointType::make_point(0,1,0),
+                    PointType::make_point(0,0,1));
+
+  EXPECT_FALSE( axom::primal::intersect(tri, ray, t, bary));
+}
+
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Segment< double, DIM >      SegmentType;
@@ -1381,7 +1411,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, obb_obb_test_intersection2D)
 {
-  static const int DIM = 2;
+  const int DIM = 2;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Vector< CoordType, DIM > QVector;
@@ -1436,7 +1466,7 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, obb_obb_test_intersection3D)
 {
-  static const int DIM = 3;
+  const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Vector< CoordType, DIM > QVector;

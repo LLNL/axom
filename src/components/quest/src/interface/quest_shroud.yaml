@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+  - Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
   -
   - Produced at the Lawrence Livermore National Laboratory
   -
@@ -17,19 +17,20 @@ copyright:
   -
 
 library: QUEST
-cpp_header: quest/quest.hpp
+cxx_header: quest/quest.hpp
 namespace: axom quest
 
 options:
-  C_prefix: QUEST_
+  C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False
 
+format:
+  C_prefix: QUEST_
   # Any C++ function which returns a string will be wrapped in
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
-
   
 functions:
 - options:
