@@ -323,7 +323,8 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
   }
 
   SLIC_ERROR_IF( degenerate,
-     "Supplied points form a degenerate " << ( (NDIMS==2)?"line":"triangle" ) );
+                 "Supplied points form a degenerate " <<
+                 ( (NDIMS==2) ? "line" : "triangle" ) );
 
   numerics::normalize( m_normal, NDIMS );
   m_offset = numerics::dot_product( m_normal, x1, NDIMS );
@@ -332,9 +333,7 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 Plane< T,NDIMS >::~Plane( )
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >

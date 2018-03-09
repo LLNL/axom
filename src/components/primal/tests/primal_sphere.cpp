@@ -29,7 +29,7 @@ namespace
 
 void check_array( const double* a, const double* b, int size )
 {
-  for ( int i=0; i < size; ++i )
+  for ( int i=0 ; i < size ; ++i )
   {
     EXPECT_DOUBLE_EQ( a[ i ], b[ i ] );
   }
@@ -41,9 +41,9 @@ template < int NDIMS >
 void check_constructor( )
 {
   const double DEFAULT_RADIUS       = 1.0;
-  const double DEFAULT_CENTER[ ]    = { 0.0, 0.0, 0.0 };
+  const double DEFAULT_CENTER[]     = { 0.0, 0.0, 0.0 };
   const double PRESCRIBED_RADIUS    = 5.0;
-  const double PRESCRIBED_CENTER[ ] = { 1.0, 1.0, 1.0 };
+  const double PRESCRIBED_CENTER[]  = { 1.0, 1.0, 1.0 };
 
   primal::Sphere< double, NDIMS > S0;
   EXPECT_DOUBLE_EQ( S0.getRadius(), DEFAULT_RADIUS );
@@ -80,7 +80,7 @@ void check_signed_distance_and_orientation( )
   EXPECT_DOUBLE_EQ( signed_distance, (-1.0)*radius );
   EXPECT_EQ( sphere.getOrientation( center ), primal::ON_NEGATIVE_SIDE );
 
-  for ( int j=0; j < NDIMS; ++j )
+  for ( int j=0 ; j < NDIMS ; ++j )
   {
     // initialize test point, x
     memcpy( x, center, NDIMS*sizeof( double ) );
@@ -166,7 +166,7 @@ void check_copy_constructor( )
 
   const double* c1 = s1.getCenter();
   const double* c2 = s2.getCenter();
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( c1[ i ], c2[ i ] );
     EXPECT_DOUBLE_EQ( c2[ i ], MAGIC_NUM );
@@ -192,7 +192,7 @@ void check_assignment_operator( )
 
   const double* c1 = s1.getCenter();
   const double* c2 = s2.getCenter();
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( c1[ i ], c2[ i ] );
     EXPECT_DOUBLE_EQ( c2[ i ], MAGIC_NUM );

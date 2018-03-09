@@ -185,9 +185,9 @@ template < typename T, int NDIMS >
 Sphere< T,NDIMS >::Sphere( T radius ) : m_radius(radius)
 {
   AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                            "A Sphere object may be defined in 2-D or 3-D" );
+                          "A Sphere object may be defined in 2-D or 3-D" );
 
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     m_center[ i ] = static_cast< T >( 0.0 );
   }
@@ -198,10 +198,10 @@ template < typename T, int NDIMS >
 Sphere< T,NDIMS >::Sphere( const T* center, T radius ) : m_radius(radius)
 {
   AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                            "A Sphere object may be defined in 2-D or 3-D" );
+                          "A Sphere object may be defined in 2-D or 3-D" );
 
   SLIC_ASSERT( center != AXOM_NULLPTR );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     m_center[ i ] = center[ i ];
   }
@@ -267,7 +267,7 @@ template < typename T, int NDIMS >
 std::ostream& Sphere< T, NDIMS >::print( std::ostream& os ) const
 {
   os << " center: [ ";
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     os << m_center[ i ] << " ";
   }
@@ -283,7 +283,7 @@ inline bool Sphere< T,NDIMS >::intersectsWith( const Sphere< T,NDIMS >& sphere,
 {
 
   double r[ NDIMS ];
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     r[ i ] = m_center[ i ] - sphere.getCenter()[ i ];
   }
@@ -301,7 +301,7 @@ inline bool Sphere< T,NDIMS >::intersectsWith( const Sphere< T,NDIMS >& sphere,
 //  implementation of free functions
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-std::ostream& operator<<(std::ostream & os , const Sphere< T, NDIMS >& s )
+std::ostream& operator<<(std::ostream & os, const Sphere< T, NDIMS >& s )
 {
   return( s.print( os ) );
 }

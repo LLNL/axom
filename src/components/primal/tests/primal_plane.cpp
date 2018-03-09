@@ -51,7 +51,7 @@ void check_copy_constructor( )
 
   numerics::normalize( n1, NDIMS );
 
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], p2.getNormal()[ i ] );
     EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], n1[ i ] );
@@ -79,7 +79,7 @@ void check_assignment_operator( )
 
   numerics::normalize( n1, NDIMS );
 
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], p2.getNormal()[ i ] );
     EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], n1[ i ] );
