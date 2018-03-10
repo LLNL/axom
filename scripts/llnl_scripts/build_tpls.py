@@ -64,10 +64,7 @@ def main():
         if not os.path.exists(builds_dir):
             os.makedirs(builds_dir)
     else:
-        if on_rz():
-            builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"
-        else:
-            builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
+        builds_dir = get_shared_tpl_builds_dir()
     builds_dir = os.path.abspath(builds_dir)
 
     # Make sure builds_dir is not located inside of the repository (CMake hates this)
