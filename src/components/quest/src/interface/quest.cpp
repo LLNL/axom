@@ -37,7 +37,6 @@
 
 #include "quest/InOutOctree.hpp"
 #include "quest/SignedDistance.hpp"
-#include "quest/ANNQuery.hpp"
 
 #include "quest/STLReader.hpp"
 #ifdef AXOM_USE_MPI

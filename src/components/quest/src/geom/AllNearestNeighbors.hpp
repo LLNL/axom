@@ -20,8 +20,8 @@
  * \brief Defines all-nearest-neighbor queries
  */
 
-#ifndef ANN_QUERY_HPP_
-#define ANN_QUERY_HPP_
+#ifndef ALL_NEAREST_NEIGHBORS_HPP_
+#define ALL_NEAREST_NEIGHBORS_HPP_
 
 #include <cfloat>
 
@@ -62,26 +62,32 @@ inline double squared_distance(double x1, double y1, double z1,
  *
  * This method compares each point to each other point, taking O(n^2) time.
  */
-void all_nearest_neighbors_bruteforce(double * x, double * y, double * z,
-                                      int * region, int n, double limit,
-                                      int * neighbor, double *sqdistance)
+void all_nearest_neighbors_bruteforce(double* x, double* y, double* z,
+                                      int* region, int n, double limit,
+                                      int* neighbor, double* sqdistance)
 {
   // O(n^2) brute force approach.  For each point i, test distance to all other
   // points and report result.
 
   double sqlimit = limit * limit;
 
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0 ; i < n ; ++i)
+  {
     sqdistance[i] = DBL_MAX;
     neighbor[i] = -1;
   }
 
-  for (int i = 0; i < n; ++i) {
-    // The j-loop has to go from 0, not i+1, because "closest" is not symmetrical.
-    for (int j = 0; j < n; ++j) {
-      if (region[i] != region[j]) {
+  for (int i = 0 ; i < n ; ++i)
+  {
+    // The j-loop has to go from 0, not i+1, because "closest" is not
+    // symmetrical.
+    for (int j = 0 ; j < n ; ++j)
+    {
+      if (region[i] != region[j])
+      {
         double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
-        if (sqdist < sqdistance[i] && sqdist < sqlimit) {
+        if (sqdist < sqdistance[i] && sqdist < sqlimit)
+        {
           sqdistance[i] = sqdist;
           neighbor[i] = j;
         }
@@ -108,9 +114,9 @@ void all_nearest_neighbors_bruteforce(double * x, double * y, double * z,
  * in a substantial time savings over the brute-force algorithm, but the
  * run time is dependent on the point distribution.
  */
-void all_nearest_neighbors_index1(double * x, double * y, double * z,
-                                  int * region, int n, double limit,
-                                  int * neighbor, double *sqdistance)
+void all_nearest_neighbors_index1(double* x, double* y, double* z,
+                                  int* region, int n, double limit,
+                                  int* neighbor, double* sqdistance)
 {
   // Indexed approach.  For each point i, test distance to all other
   // points in this and neighboring UniformGrid bins (out to distance limit)
@@ -124,7 +130,8 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
   double sqlimit = limit * limit;
 
   PointType pmin, pmax;
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0 ; i < n ; ++i)
+  {
     sqdistance[i] = DBL_MAX;
     neighbor[i] = -1;
     pmin[0] = std::min(pmin[0], x[i]);
@@ -138,31 +145,41 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
 
   int res[3];
   VectorType boxrange = allpointsbox.range();
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0 ; i < 3 ; ++i)
+  {
     res[i] = std::max(1, (int)(boxrange[i] / limit + 0.5));
   }
 
   // 1. Build an index, inserting each point individually
   GridType ugrid(allpointsbox, res);
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0 ; i < n ; ++i)
+  {
     ugrid.insert(BoxType(PointType::make_point(x[i], y[i], z[i])), i);
   }
 
   // 2. For point a,
-  for (int i = 0; i < n; ++i) {
-    // 3. For each other bin B less than limit distance away from a, for each point b in B,
-    PointType qmin = PointType::make_point(x[i] - limit, y[i] - limit, z[i] - limit);
-    PointType qmax = PointType::make_point(x[i] + limit, y[i] + limit, z[i] + limit);
+  for (int i = 0 ; i < n ; ++i)
+  {
+    // 3. For each other bin B less than limit distance away from a, for each
+    // point b in B,
+    PointType qmin =
+      PointType::make_point(x[i] - limit, y[i] - limit, z[i] - limit);
+    PointType qmax =
+      PointType::make_point(x[i] + limit, y[i] + limit, z[i] + limit);
     BoxType qbox(qmin, qmax);
     const std::vector<int> qbins = ugrid.getBinsForBbox(qbox);
-    for (size_t binidx = 0; binidx < qbins.size(); ++binidx) {
+    for (size_t binidx = 0 ; binidx < qbins.size() ; ++binidx)
+    {
       const std::vector<int> bs = ugrid.getBinContents(qbins[binidx]);
-      for (size_t bj = 0; bj < bs.size(); ++bj) {
+      for (size_t bj = 0 ; bj < bs.size() ; ++bj)
+      {
         // 4. Compare distances to find the closest distance d = |ab|
         int j = bs[bj];
-        if (region[i] != region[j]) {
+        if (region[i] != region[j])
+        {
           double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
-          if (sqdist < sqdistance[i] && sqdist < sqlimit) {
+          if (sqdist < sqdistance[i] && sqdist < sqlimit)
+          {
             sqdistance[i] = sqdist;
             neighbor[i] = j;
           }
@@ -176,4 +193,4 @@ void all_nearest_neighbors_index1(double * x, double * y, double * z,
 } // end namespace quest
 } // end namespace axom
 
-#endif  // ANN_QUERY_HPP_
+#endif  // ALL_NEAREST_NEIGHBORS_HPP_

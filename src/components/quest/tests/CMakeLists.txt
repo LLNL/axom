@@ -19,7 +19,7 @@ set(quest_tests
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
     quest_meshtester.cpp
-    quest_ann.cpp
+    quest_all_nearest_neighbors.cpp
    )
 
 set(quest_tests_depends

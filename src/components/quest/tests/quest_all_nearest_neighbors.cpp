@@ -17,37 +17,43 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/ANNQuery.hpp"
+#include "quest/AllNearestNeighbors.hpp"
 
 #include "slic/slic.hpp"
 
 #include <fstream>
 #include <sstream>
 
-char * fname;
-char * outfname;
+char* fname;
+char* outfname;
 
 template < typename T >
 void verify_array(T* standard, T* expt, int n)
 {
   int mismatches = 0;
 
-  for (int i = 0; i < n; ++i) {
-    if (!axom::utilities::isNearlyEqual(standard[i], expt[i])) {
+  for (int i = 0 ; i < n ; ++i)
+  {
+    if (!axom::utilities::isNearlyEqual(static_cast<double>(standard[i]),
+                                        static_cast<double>(expt[i])))
+    {
       ++mismatches;
       SLIC_INFO("i " << i << " std " << standard[i] << " expt " << expt[i]);
     }
   }
 
-  if (mismatches > 0) {
+  if (mismatches > 0)
+  {
     ADD_FAILURE() << " with " << mismatches << " mismatches.";
-  } else {
+  }
+  else
+  {
     SUCCEED();
   }
 }
 
 //----------------------------------------------------------------------
-TEST(quest_ann, simple_2D_query)
+TEST(quest_all_nearnbr, simple_2D_query)
 {
   SLIC_INFO("*** Simple 2D all-nearest-neighbors query.");
 
@@ -79,7 +85,7 @@ TEST(quest_ann, simple_2D_query)
 }
 
 //----------------------------------------------------------------------
-TEST(quest_ann, simple_3D_query)
+TEST(quest_all_nearnbr, simple_3D_query)
 {
   SLIC_INFO("*** Simple 3D all-nearest-neighbors query.");
 
@@ -111,7 +117,7 @@ TEST(quest_ann, simple_3D_query)
 }
 
 //----------------------------------------------------------------------
-TEST(quest_ann, cplx_13region_query)
+TEST(quest_all_nearnbr, cplx_13region_query)
 {
   SLIC_INFO("*** 13-region closely-packed query.");
 
@@ -171,7 +177,8 @@ TEST(quest_ann, cplx_13region_query)
   double bfsqdst[97];
   double idxsqdst[97];
 
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0 ; i < n ; ++i)
+  {
     z[i] = 0.;
     bfneighbor[i] = -1;
     idxneighbor[i] = -1;
@@ -188,7 +195,7 @@ TEST(quest_ann, cplx_13region_query)
   }
 }
 
-void readPointsFile(char * fname,
+void readPointsFile(char* fname,
                     std::vector<double> &x, std::vector<double> &y,
                     std::vector<double> &z, std::vector<int> &region)
 {
@@ -197,10 +204,13 @@ void readPointsFile(char * fname,
   double xi, yi, zi;
   int regioni;
 
-  if (infile.good()) {
+  if (infile.good())
+  {
     std::getline(infile, theline);
-    do {
-      if (theline.size() > 0) {
+    do
+    {
+      if (theline.size() > 0)
+      {
         std::stringstream line(theline);
         line >> xi >> yi >> zi >> regioni;
         x.push_back(xi);
@@ -209,46 +219,52 @@ void readPointsFile(char * fname,
         region.push_back(regioni);
       }
       std::getline(infile, theline);
-    } while (!infile.eof() && infile.good());
+    }
+    while (!infile.eof() && infile.good());
   }
 }
 
-void writeNeigborsFile(char * fname, int * neighbors, int n)
+void writeNeigborsFile(char* fname, int* neighbors, int n)
 {
   std::ofstream outfile(fname);
-  if (outfile.good()) {
-    for (int i = 0; i < n; ++i) {
+  if (outfile.good())
+  {
+    for (int i = 0 ; i < n ; ++i)
+    {
       outfile << neighbors[i] << std::endl;
     }
   }
 }
 
-TEST(quest_ann, file_query)
+TEST(quest_all_nearnbr, file_query)
 {
-  if (fname != nullptr) {
+  if (fname != nullptr)
+  {
     SLIC_INFO("About to read file " << fname);
 
     std::vector<double> x, y, z;
     std::vector<int> region;
-    int *bfneighbor;
-    int *idxneighbor;
-    double *bfsqdst;
-    double *idxsqdst;
+    int* bfneighbor;
+    int* idxneighbor;
+    double* bfsqdst;
+    double* idxsqdst;
 
     readPointsFile(fname, x, y, z, region);
 
-    int n = region.size();
+    size_t n = region.size();
 
     SLIC_INFO("n is " << n);
 
-    if (n > 0 && n == x.size() && n == y.size() && n == z.size()) {
+    if (n > 0 && n == x.size() && n == y.size() && n == z.size())
+    {
       double limit = 2.1;
       bfneighbor = new int[n];
       idxneighbor = new int[n];
       bfsqdst = new double[n];
       idxsqdst = new double[n];
 
-      for (int i = 0; i < n; ++i) {
+      for (size_t i = 0 ; i < n ; ++i)
+      {
         bfneighbor[i] = -1;
         idxneighbor[i] = -1;
       }
@@ -265,7 +281,8 @@ TEST(quest_ann, file_query)
         verify_array(bfsqdst, idxsqdst, n);
       }
 
-      if (outfname != nullptr) {
+      if (outfname != nullptr)
+      {
         writeNeigborsFile(outfname, idxneighbor, n);
       }
 
@@ -283,7 +300,7 @@ TEST(quest_ann, file_query)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
   fname = nullptr;
@@ -291,9 +308,11 @@ int main(int argc, char * argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  if (argc > 1) {
+  if (argc > 1)
+  {
     fname = argv[1];
-    if (argc > 2) {
+    if (argc > 2)
+    {
       outfname = argv[2];
     }
   }

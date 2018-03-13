@@ -288,7 +288,7 @@ void FiniteElement::jacobian( const double* lc,
   // STEP 0: evaluate the derivatives
   this->evaluateDerivatives( lc, m_phidot );
   numerics::Matrix< double > derivs_matrix(
-      m_numdofs, this->getReferenceDimension(), m_phidot, true );
+    m_numdofs, this->getReferenceDimension(), m_phidot, true );
 
   // STEP 1: get the coordinates
   numerics::Matrix< double > coords_matrix( m_dim, m_numnodes, m_xyz, true );

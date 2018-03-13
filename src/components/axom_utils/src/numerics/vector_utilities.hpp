@@ -173,7 +173,7 @@ template < typename T >
 inline bool linspace( const T& x0, const T& x1, T* v, int N )
 {
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< T >::value,
-                             "pre: T is a floating point type" );
+                          "pre: T is a floating point type" );
   assert( "pre: v pointer is null" && (v != AXOM_NULLPTR) );
 
   if ( N <= 1 )
@@ -184,7 +184,7 @@ inline bool linspace( const T& x0, const T& x1, T* v, int N )
 
   const T h = (x1-x0) / static_cast< T >( N-1 );
 
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     v[ i ] = x0 + i*h;
   }

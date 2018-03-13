@@ -100,7 +100,7 @@ public:
   /*!
    * \brief Constructor specifying bounding box and number of bins.
    */
-  UniformGrid(const BoxType & bbox, const int * res);
+  UniformGrid(const BoxType & bbox, const int* res);
 
   /*! \brief Destructor: present for symmetry with constructor */
   ~UniformGrid();
@@ -314,7 +314,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const double* lower_bound,
 }
 
 template < typename T, int NDIMS >
-UniformGrid< T, NDIMS >::UniformGrid(const BoxType & bbox, const int * res)
+UniformGrid< T, NDIMS >::UniformGrid(const BoxType & bbox, const int* res)
   : m_boundingBox(bbox)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
