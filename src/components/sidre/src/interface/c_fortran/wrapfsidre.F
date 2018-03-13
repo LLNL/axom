@@ -21,7 +21,7 @@
 #include "axom/config.hpp"
 ! splicer end file_top
 module axom_sidre
-    use, intrinsic :: iso_c_binding, only : C_PTR
+    use iso_c_binding, only : C_PTR
     ! splicer begin module_use
     ! map conduit type names to sidre type names
     use conduit, only : &
@@ -45,14 +45,6 @@ module axom_sidre
         SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_ID
     use, intrinsic :: iso_c_binding, only : C_LONG
     ! splicer end module_use
-    ! splicer begin class.DataStore.module_use
-    ! splicer end class.DataStore.module_use
-    ! splicer begin class.Group.module_use
-    ! splicer end class.Group.module_use
-    ! splicer begin class.Buffer.module_use
-    ! splicer end class.Buffer.module_use
-    ! splicer begin class.View.module_use
-    ! splicer end class.View.module_use
     implicit none
 
     ! splicer begin module_top
@@ -566,7 +558,6 @@ module axom_sidre
         ! splicer end class.View.type_bound_procedure_part
     end type SidreView
 
-
     interface operator (.eq.)
         module procedure datastore_eq
         module procedure group_eq
@@ -584,11 +575,11 @@ module axom_sidre
     interface
 
         function c_datastore_new() &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_new")
             use iso_c_binding, only : C_PTR
             implicit none
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_datastore_new
 
         subroutine c_datastore_delete(self) &
@@ -599,42 +590,43 @@ module axom_sidre
         end subroutine c_datastore_delete
 
         function c_datastore_get_root(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_get_root")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_datastore_get_root
 
         function c_datastore_get_buffer(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_get_buffer")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_datastore_get_buffer
 
         function c_datastore_create_buffer_empty(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_create_buffer_empty")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_datastore_create_buffer_empty
 
-        function c_datastore_create_buffer_from_type(self, type, num_elems) &
-                result(SH_rv) &
+        function c_datastore_create_buffer_from_type(self, type, &
+                num_elems) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_create_buffer_from_type")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_datastore_create_buffer_from_type
 
         subroutine c_datastore_destroy_buffer(self, id) &
@@ -646,12 +638,12 @@ module axom_sidre
         end subroutine c_datastore_destroy_buffer
 
         pure function c_datastore_get_num_buffers(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_get_num_buffers")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_datastore_get_num_buffers
 
         subroutine c_datastore_print(self) &
@@ -665,242 +657,247 @@ module axom_sidre
         ! splicer end class.DataStore.additional_interfaces
 
         function c_group_get_index(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_index
 
         pure function c_group_get_name(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_name")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) SH_rv
+            type(C_PTR) SHT_rv
         end function c_group_get_name
 
-        subroutine c_group_get_name_bufferify(self, SH_F_rv, NSH_F_rv) &
+        subroutine c_group_get_name_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_group_get_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_name_bufferify
 
-        subroutine c_group_get_path_bufferify(self, SH_F_rv, NSH_F_rv) &
+        subroutine c_group_get_path_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_group_get_path_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_path_bufferify
 
-        subroutine c_group_get_path_name_bufferify(self, SH_F_rv, NSH_F_rv) &
+        subroutine c_group_get_path_name_bufferify(self, SHF_rv, &
+                NSHF_rv) &
                 bind(C, name="SIDRE_group_get_path_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_path_name_bufferify
 
         pure function c_group_get_parent(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_parent")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_parent
 
         pure function c_group_get_data_store(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_data_store")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_data_store
 
         pure function c_group_get_num_views(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_num_views")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_group_get_num_views
 
         pure function c_group_get_num_groups(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_num_groups")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_group_get_num_groups
 
         pure function c_group_has_view(self, path) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_view")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_view
 
         pure function c_group_has_view_bufferify(self, path, Lpath) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_view_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_view_bufferify
 
         pure function c_group_has_child_view(self, name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_view")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_child_view
 
-        pure function c_group_has_child_view_bufferify(self, name, Lname) &
-                result(SH_rv) &
+        pure function c_group_has_child_view_bufferify(self, name, &
+                Lname) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_view_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_child_view_bufferify
 
         function c_group_rename(self, new_name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_rename")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_rename
 
         function c_group_rename_bufferify(self, new_name, Lnew_name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_rename_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
             integer(C_INT), value, intent(IN) :: Lnew_name
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_rename_bufferify
 
         function c_group_get_view_from_name(self, path) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_from_name")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_view_from_name
 
         function c_group_get_view_from_name_bufferify(self, path, Lpath) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_from_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_view_from_name_bufferify
 
         function c_group_get_view_from_index(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_from_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_view_from_index
 
         pure function c_group_get_view_index(self, name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_index")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_view_index
 
-        pure function c_group_get_view_index_bufferify(self, name, Lname) &
-                result(SH_rv) &
+        pure function c_group_get_view_index_bufferify(self, name, &
+                Lname) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_index_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_view_index_bufferify
 
         pure function c_group_get_view_name(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_name")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(C_PTR) SH_rv
+            type(C_PTR) SHT_rv
         end function c_group_get_view_name
 
-        subroutine c_group_get_view_name_bufferify(self, idx, SH_F_rv, NSH_F_rv) &
+        subroutine c_group_get_view_name_bufferify(self, idx, SHF_rv, &
+                NSHF_rv) &
                 bind(C, name="SIDRE_group_get_view_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_view_name_bufferify
 
         pure function c_group_get_first_valid_view_index(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_first_valid_view_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_first_valid_view_index
 
         pure function c_group_get_next_valid_view_index(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_next_valid_view_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_next_valid_view_index
 
-        function c_group_create_view_and_allocate_nelems(self, path, type, num_elems) &
-                result(SH_rv) &
+        function c_group_create_view_and_allocate_nelems(self, path, &
+                type, num_elems) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_nelems")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -908,11 +905,12 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_and_allocate_nelems
 
-        function c_group_create_view_and_allocate_nelems_bufferify(self, path, Lpath, type, num_elems) &
-                result(SH_rv) &
+        function c_group_create_view_and_allocate_nelems_bufferify(self, &
+                path, Lpath, type, num_elems) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_nelems_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -921,11 +919,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_and_allocate_nelems_bufferify
 
-        function c_group_create_view_and_allocate_shape(self, path, type, ndims, shape) &
-                result(SH_rv) &
+        function c_group_create_view_and_allocate_shape(self, path, &
+                type, ndims, shape) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_shape")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -934,11 +933,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_and_allocate_shape
 
-        function c_group_create_view_and_allocate_shape_bufferify(self, path, Lpath, type, ndims, shape) &
-                result(SH_rv) &
+        function c_group_create_view_and_allocate_shape_bufferify(self, &
+                path, Lpath, type, ndims, shape) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_shape_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -948,22 +948,23 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_and_allocate_shape_bufferify
 
         function c_group_create_view_scalar_int(self, path, value) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_int")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_int
 
-        function c_group_create_view_scalar_int_bufferify(self, path, Lpath, value) &
-                result(SH_rv) &
+        function c_group_create_view_scalar_int_bufferify(self, path, &
+                Lpath, value) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_int_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -971,22 +972,23 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_int_bufferify
 
         function c_group_create_view_scalar_long(self, path, value) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_long")
             use iso_c_binding, only : C_CHAR, C_LONG, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_LONG), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_long
 
-        function c_group_create_view_scalar_long_bufferify(self, path, Lpath, value) &
-                result(SH_rv) &
+        function c_group_create_view_scalar_long_bufferify(self, path, &
+                Lpath, value) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_long_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -994,22 +996,23 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_LONG), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_long_bufferify
 
         function c_group_create_view_scalar_float(self, path, value) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_float")
             use iso_c_binding, only : C_CHAR, C_FLOAT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             real(C_FLOAT), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_float
 
-        function c_group_create_view_scalar_float_bufferify(self, path, Lpath, value) &
-                result(SH_rv) &
+        function c_group_create_view_scalar_float_bufferify(self, path, &
+                Lpath, value) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_float_bufferify")
             use iso_c_binding, only : C_CHAR, C_FLOAT, C_INT, C_PTR
             implicit none
@@ -1017,22 +1020,23 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             real(C_FLOAT), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_float_bufferify
 
         function c_group_create_view_scalar_double(self, path, value) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_double")
             use iso_c_binding, only : C_CHAR, C_DOUBLE, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             real(C_DOUBLE), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_double
 
-        function c_group_create_view_scalar_double_bufferify(self, path, Lpath, value) &
-                result(SH_rv) &
+        function c_group_create_view_scalar_double_bufferify(self, path, &
+                Lpath, value) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_double_bufferify")
             use iso_c_binding, only : C_CHAR, C_DOUBLE, C_INT, C_PTR
             implicit none
@@ -1040,22 +1044,23 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             real(C_DOUBLE), value, intent(IN) :: value
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_scalar_double_bufferify
 
         function c_group_create_view_string(self, path, value) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_string")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             character(kind=C_CHAR), intent(IN) :: value(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_string
 
-        function c_group_create_view_string_bufferify(self, path, Lpath, value, Lvalue) &
-                result(SH_rv) &
+        function c_group_create_view_string_bufferify(self, path, Lpath, &
+                value, Lvalue) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_string_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1064,32 +1069,33 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: Lpath
             character(kind=C_CHAR), intent(IN) :: value(*)
             integer(C_INT), value, intent(IN) :: Lvalue
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_string_bufferify
 
         function c_group_create_view_empty(self, path) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_empty")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_empty
 
         function c_group_create_view_empty_bufferify(self, path, Lpath) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_empty_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_empty_bufferify
 
-        function c_group_create_view_from_type(self, path, type, num_elems) &
-                result(SH_rv) &
+        function c_group_create_view_from_type(self, path, type, &
+                num_elems) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1097,11 +1103,12 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_type
 
-        function c_group_create_view_from_type_bufferify(self, path, Lpath, type, num_elems) &
-                result(SH_rv) &
+        function c_group_create_view_from_type_bufferify(self, path, &
+                Lpath, type, num_elems) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1110,11 +1117,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_type_bufferify
 
-        function c_group_create_view_from_type_and_buffer(self, path, type, num_elems, buff) &
-                result(SH_rv) &
+        function c_group_create_view_from_type_and_buffer(self, path, &
+                type, num_elems, buff) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_and_buffer")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1123,11 +1131,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_type_and_buffer
 
-        function c_group_create_view_from_type_and_buffer_bufferify(self, path, Lpath, type, num_elems, buff) &
-                result(SH_rv) &
+        function c_group_create_view_from_type_and_buffer_bufferify( &
+                self, path, Lpath, type, num_elems, buff) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_and_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1137,11 +1146,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_type_and_buffer_bufferify
 
-        function c_group_create_view_from_type_external(self, path, type, num_elems, external_ptr) &
-                result(SH_rv) &
+        function c_group_create_view_from_type_external(self, path, &
+                type, num_elems, external_ptr) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_external")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1150,11 +1160,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_type_external
 
-        function c_group_create_view_from_type_external_bufferify(self, path, Lpath, type, num_elems, external_ptr) &
-                result(SH_rv) &
+        function c_group_create_view_from_type_external_bufferify(self, &
+                path, Lpath, type, num_elems, external_ptr) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1164,11 +1175,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_type_external_bufferify
 
-        function c_group_create_view_from_shape(self, path, type, ndims, shape) &
-                result(SH_rv) &
+        function c_group_create_view_from_shape(self, path, type, ndims, &
+                shape) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1177,11 +1189,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_shape
 
-        function c_group_create_view_from_shape_bufferify(self, path, Lpath, type, ndims, shape) &
-                result(SH_rv) &
+        function c_group_create_view_from_shape_bufferify(self, path, &
+                Lpath, type, ndims, shape) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1191,11 +1204,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_shape_bufferify
 
-        function c_group_create_view_from_shape_and_buffer(self, path, type, ndims, shape, buff) &
-                result(SH_rv) &
+        function c_group_create_view_from_shape_and_buffer(self, path, &
+                type, ndims, shape, buff) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_and_buffer")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1205,11 +1219,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_shape_and_buffer
 
-        function c_group_create_view_from_shape_and_buffer_bufferify(self, path, Lpath, type, ndims, shape, buff) &
-                result(SH_rv) &
+        function c_group_create_view_from_shape_and_buffer_bufferify( &
+                self, path, Lpath, type, ndims, shape, buff) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_and_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1220,11 +1235,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_shape_and_buffer_bufferify
 
-        function c_group_create_view_from_shape_external(self, path, type, ndims, shape, external_ptr) &
-                result(SH_rv) &
+        function c_group_create_view_from_shape_external(self, path, &
+                type, ndims, shape, external_ptr) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_external")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1234,11 +1250,12 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_shape_external
 
-        function c_group_create_view_from_shape_external_bufferify(self, path, Lpath, type, ndims, shape, external_ptr) &
-                result(SH_rv) &
+        function c_group_create_view_from_shape_external_bufferify(self, &
+                path, Lpath, type, ndims, shape, external_ptr) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
             implicit none
@@ -1249,22 +1266,23 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_from_shape_external_bufferify
 
         function c_group_create_view_into_buffer(self, path, buff) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_into_buffer")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_into_buffer
 
-        function c_group_create_view_into_buffer_bufferify(self, path, Lpath, buff) &
-                result(SH_rv) &
+        function c_group_create_view_into_buffer_bufferify(self, path, &
+                Lpath, buff) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_into_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1272,22 +1290,23 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_into_buffer_bufferify
 
         function c_group_create_view_external(self, path, external_ptr) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_external")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_external
 
-        function c_group_create_view_external_bufferify(self, path, Lpath, external_ptr) &
-                result(SH_rv) &
+        function c_group_create_view_external_bufferify(self, path, &
+                Lpath, external_ptr) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1295,7 +1314,7 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_view_external_bufferify
 
         subroutine c_group_destroy_view(self, path) &
@@ -1323,7 +1342,8 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
         end subroutine c_group_destroy_view_and_data_name
 
-        subroutine c_group_destroy_view_and_data_name_bufferify(self, path, Lpath) &
+        subroutine c_group_destroy_view_and_data_name_bufferify(self, &
+                path, Lpath) &
                 bind(C, name="SIDRE_group_destroy_view_and_data_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1341,177 +1361,180 @@ module axom_sidre
         end subroutine c_group_destroy_view_and_data_index
 
         function c_group_move_view(self, view) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_move_view")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: view
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_move_view
 
         function c_group_copy_view(self, view) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_copy_view")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: view
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_copy_view
 
         function c_group_has_group(self, path) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_group")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_group
 
         function c_group_has_group_bufferify(self, path, Lpath) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_group_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_group_bufferify
 
         function c_group_has_child_group(self, name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_group")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_child_group
 
         function c_group_has_child_group_bufferify(self, name, Lname) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_group_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_has_child_group_bufferify
 
         function c_group_get_group_from_name(self, path) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_from_name")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_group_from_name
 
-        function c_group_get_group_from_name_bufferify(self, path, Lpath) &
-                result(SH_rv) &
+        function c_group_get_group_from_name_bufferify(self, path, &
+                Lpath) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_from_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_group_from_name_bufferify
 
         function c_group_get_group_from_index(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_from_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_get_group_from_index
 
         pure function c_group_get_group_index(self, name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_index")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_group_index
 
-        pure function c_group_get_group_index_bufferify(self, name, Lname) &
-                result(SH_rv) &
+        pure function c_group_get_group_index_bufferify(self, name, &
+                Lname) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_index_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_group_index_bufferify
 
         pure function c_group_get_group_name(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_name")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(C_PTR) SH_rv
+            type(C_PTR) SHT_rv
         end function c_group_get_group_name
 
-        subroutine c_group_get_group_name_bufferify(self, idx, SH_F_rv, NSH_F_rv) &
+        subroutine c_group_get_group_name_bufferify(self, idx, SHF_rv, &
+                NSHF_rv) &
                 bind(C, name="SIDRE_group_get_group_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_group_name_bufferify
 
         pure function c_group_get_first_valid_group_index(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_first_valid_group_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_first_valid_group_index
 
         pure function c_group_get_next_valid_group_index(self, idx) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_next_valid_group_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_group_get_next_valid_group_index
 
         function c_group_create_group(self, path) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_group")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_group
 
         function c_group_create_group_bufferify(self, path, Lpath) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_group_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_create_group_bufferify
 
         subroutine c_group_destroy_group_name(self, path) &
@@ -1522,7 +1545,8 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: path(*)
         end subroutine c_group_destroy_group_name
 
-        subroutine c_group_destroy_group_name_bufferify(self, path, Lpath) &
+        subroutine c_group_destroy_group_name_bufferify(self, path, &
+                Lpath) &
                 bind(C, name="SIDRE_group_destroy_group_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1540,13 +1564,13 @@ module axom_sidre
         end subroutine c_group_destroy_group_index
 
         function c_group_move_group(self, grp) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_move_group")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: grp
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_group_move_group
 
         subroutine c_group_print(self) &
@@ -1557,13 +1581,13 @@ module axom_sidre
         end subroutine c_group_print
 
         pure function c_group_is_equivalent_to(self, other) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_group_is_equivalent_to")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: other
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_group_is_equivalent_to
 
         subroutine c_group_save(self, file_path, protocol) &
@@ -1575,7 +1599,8 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_group_save
 
-        subroutine c_group_save_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+        subroutine c_group_save_bufferify(self, file_path, Lfile_path, &
+                protocol, Lprotocol) &
                 bind(C, name="SIDRE_group_save_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1595,7 +1620,8 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_group_load_0
 
-        subroutine c_group_load_0_bufferify(self, file_path, Lfile_path, protocol, Lprotocol) &
+        subroutine c_group_load_0_bufferify(self, file_path, Lfile_path, &
+                protocol, Lprotocol) &
                 bind(C, name="SIDRE_group_load_0_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1606,7 +1632,8 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_group_load_0_bufferify
 
-        subroutine c_group_load_1(self, file_path, protocol, preserve_contents) &
+        subroutine c_group_load_1(self, file_path, protocol, &
+                preserve_contents) &
                 bind(C, name="SIDRE_group_load_1")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
@@ -1616,7 +1643,8 @@ module axom_sidre
             logical(C_BOOL), value, intent(IN) :: preserve_contents
         end subroutine c_group_load_1
 
-        subroutine c_group_load_1_bufferify(self, file_path, Lfile_path, protocol, Lprotocol, preserve_contents) &
+        subroutine c_group_load_1_bufferify(self, file_path, Lfile_path, &
+                protocol, Lprotocol, preserve_contents) &
                 bind(C, name="SIDRE_group_load_1_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
@@ -1636,7 +1664,8 @@ module axom_sidre
             character(kind=C_CHAR), intent(IN) :: file_path(*)
         end subroutine c_group_load_external_data
 
-        subroutine c_group_load_external_data_bufferify(self, file_path, Lfile_path) &
+        subroutine c_group_load_external_data_bufferify(self, file_path, &
+                Lfile_path) &
                 bind(C, name="SIDRE_group_load_external_data_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
@@ -1649,21 +1678,21 @@ module axom_sidre
         ! splicer end class.Group.additional_interfaces
 
         pure function c_buffer_get_index(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_buffer_get_index
 
         pure function c_buffer_get_num_views(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_num_views")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_num_views
 
         subroutine c_buffer_describe(self, type, num_elems) &
@@ -1700,48 +1729,48 @@ module axom_sidre
         end subroutine c_buffer_reallocate
 
         function c_buffer_get_void_ptr(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_void_ptr")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_buffer_get_void_ptr
 
         pure function c_buffer_get_type_id(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_type_id")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_buffer_get_type_id
 
         pure function c_buffer_get_num_elements(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_num_elements")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_num_elements
 
         pure function c_buffer_get_total_bytes(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_total_bytes")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_total_bytes
 
         pure function c_buffer_get_bytes_per_element(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_bytes_per_element")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_bytes_per_element
 
         subroutine c_buffer_print(self) &
@@ -1793,7 +1822,8 @@ module axom_sidre
             type(C_PTR), value, intent(IN) :: buff
         end subroutine c_view_attach_buffer_only
 
-        subroutine c_view_attach_buffer_type(self, type, num_elems, buff) &
+        subroutine c_view_attach_buffer_type(self, type, num_elems, &
+                buff) &
                 bind(C, name="SIDRE_view_attach_buffer_type")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
@@ -1803,7 +1833,8 @@ module axom_sidre
             type(C_PTR), value, intent(IN) :: buff
         end subroutine c_view_attach_buffer_type
 
-        subroutine c_view_attach_buffer_shape(self, type, ndims, shape, buff) &
+        subroutine c_view_attach_buffer_shape(self, type, ndims, shape, &
+                buff) &
                 bind(C, name="SIDRE_view_attach_buffer_shape")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
@@ -1831,7 +1862,8 @@ module axom_sidre
             integer(C_LONG), value, intent(IN) :: offset
         end subroutine c_view_apply_nelems_offset
 
-        subroutine c_view_apply_nelems_offset_stride(self, num_elems, offset, stride) &
+        subroutine c_view_apply_nelems_offset_stride(self, num_elems, &
+                offset, stride) &
                 bind(C, name="SIDRE_view_apply_nelems_offset_stride")
             use iso_c_binding, only : C_LONG, C_PTR
             implicit none
@@ -1850,7 +1882,8 @@ module axom_sidre
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_view_apply_type_nelems
 
-        subroutine c_view_apply_type_nelems_offset(self, type, num_elems, offset) &
+        subroutine c_view_apply_type_nelems_offset(self, type, &
+                num_elems, offset) &
                 bind(C, name="SIDRE_view_apply_type_nelems_offset")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
@@ -1860,7 +1893,8 @@ module axom_sidre
             integer(C_LONG), value, intent(IN) :: offset
         end subroutine c_view_apply_type_nelems_offset
 
-        subroutine c_view_apply_type_nelems_offset_stride(self, type, num_elems, offset, stride) &
+        subroutine c_view_apply_type_nelems_offset_stride(self, type, &
+                num_elems, offset, stride) &
                 bind(C, name="SIDRE_view_apply_type_nelems_offset_stride")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
@@ -1882,147 +1916,147 @@ module axom_sidre
         end subroutine c_view_apply_type_shape
 
         pure function c_view_has_buffer(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_has_buffer")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_has_buffer
 
         pure function c_view_is_external(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_external")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_external
 
         function c_view_is_allocated(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_allocated")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_allocated
 
         pure function c_view_is_applied(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_applied")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_applied
 
         pure function c_view_is_described(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_described")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_described
 
         pure function c_view_is_empty(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_empty")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_empty
 
         pure function c_view_is_opaque(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_opaque")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_opaque
 
         pure function c_view_is_scalar(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_scalar")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_scalar
 
         pure function c_view_is_string(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_string")
             use iso_c_binding, only : C_BOOL, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_is_string
 
         function c_view_get_index(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_index")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_view_get_index
 
         pure function c_view_get_name(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_name")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) SH_rv
+            type(C_PTR) SHT_rv
         end function c_view_get_name
 
-        subroutine c_view_get_name_bufferify(self, SH_F_rv, NSH_F_rv) &
+        subroutine c_view_get_name_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_view_get_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_view_get_name_bufferify
 
-        subroutine c_view_get_path_bufferify(self, SH_F_rv, NSH_F_rv) &
+        subroutine c_view_get_path_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_view_get_path_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_view_get_path_bufferify
 
-        subroutine c_view_get_path_name_bufferify(self, SH_F_rv, NSH_F_rv) &
+        subroutine c_view_get_path_name_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_view_get_path_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(OUT) :: SH_F_rv(*)
-            integer(C_INT), value, intent(IN) :: NSH_F_rv
+            character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
+            integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_view_get_path_name_bufferify
 
         function c_view_get_buffer(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_buffer")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_view_get_buffer
 
         pure function c_view_get_void_ptr(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_void_ptr")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_view_get_void_ptr
 
         subroutine c_view_set_scalar_int(self, value) &
@@ -2065,7 +2099,8 @@ module axom_sidre
             type(C_PTR), value, intent(IN) :: external_ptr
         end subroutine c_view_set_external_data_ptr_only
 
-        subroutine c_view_set_external_data_ptr_type(self, type, num_elems, external_ptr) &
+        subroutine c_view_set_external_data_ptr_type(self, type, &
+                num_elems, external_ptr) &
                 bind(C, name="SIDRE_view_set_external_data_ptr_type")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
@@ -2092,7 +2127,8 @@ module axom_sidre
             integer(C_INT), value, intent(IN) :: Lvalue
         end subroutine c_view_set_string_bufferify
 
-        subroutine c_view_set_external_data_ptr_shape(self, type, ndims, shape, external_ptr) &
+        subroutine c_view_set_external_data_ptr_shape(self, type, ndims, &
+                shape, external_ptr) &
                 bind(C, name="SIDRE_view_set_external_data_ptr_shape")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
@@ -2104,12 +2140,12 @@ module axom_sidre
         end subroutine c_view_set_external_data_ptr_shape
 
         function c_view_get_string(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_string")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) SH_rv
+            type(C_PTR) SHT_rv
         end function c_view_get_string
 
         subroutine c_view_get_string_bufferify(self, name, Nname) &
@@ -2122,143 +2158,143 @@ module axom_sidre
         end subroutine c_view_get_string_bufferify
 
         function c_view_get_data_int(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_int")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_view_get_data_int
 
         function c_view_get_data_long(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_long")
             use iso_c_binding, only : C_LONG, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_LONG) :: SH_rv
+            integer(C_LONG) :: SHT_rv
         end function c_view_get_data_long
 
         function c_view_get_data_float(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_float")
             use iso_c_binding, only : C_FLOAT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            real(C_FLOAT) :: SH_rv
+            real(C_FLOAT) :: SHT_rv
         end function c_view_get_data_float
 
         function c_view_get_data_double(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_double")
             use iso_c_binding, only : C_DOUBLE, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            real(C_DOUBLE) :: SH_rv
+            real(C_DOUBLE) :: SHT_rv
         end function c_view_get_data_double
 
         function c_view_get_owning_group(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_owning_group")
             use iso_c_binding, only : C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: SH_rv
+            type(C_PTR) :: SHT_rv
         end function c_view_get_owning_group
 
         pure function c_view_get_type_id(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_type_id")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_view_get_type_id
 
         pure function c_view_get_total_bytes(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_total_bytes")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_total_bytes
 
         pure function c_view_get_bytes_per_element(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_bytes_per_element")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_bytes_per_element
 
         pure function c_view_get_num_elements(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_num_elements")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_num_elements
 
         pure function c_view_get_offset(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_offset")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_offset
 
         pure function c_view_get_stride(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_stride")
             use iso_c_binding, only : C_PTR, C_SIZE_T
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_SIZE_T) :: SH_rv
+            integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_stride
 
         pure function c_view_get_num_dimensions(self) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_num_dimensions")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_view_get_num_dimensions
 
         function c_view_get_shape(self, ndims, shape) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_shape")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(OUT) :: shape(*)
-            integer(C_INT) :: SH_rv
+            integer(C_INT) :: SHT_rv
         end function c_view_get_shape
 
         function c_view_rename(self, new_name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_rename")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_rename
 
         function c_view_rename_bufferify(self, new_name, Lnew_name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_view_rename_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
             integer(C_INT), value, intent(IN) :: Lnew_name
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_view_rename_bufferify
 
         subroutine c_view_print(self) &
@@ -2272,12 +2308,12 @@ module axom_sidre
         ! splicer end class.View.additional_interfaces
 
         function c_name_is_valid(name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SIDRE_name_is_valid")
             use iso_c_binding, only : C_BOOL, C_CHAR
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_name_is_valid
 
         ! splicer begin additional_interfaces
@@ -2299,10 +2335,11 @@ module axom_sidre
 
 contains
 
-    function datastore_new() result(SH_rv)
-        type(SidreDataStore) :: SH_rv
+    function datastore_new() &
+            result(SHT_rv)
+        type(SidreDataStore) :: SHT_rv
         ! splicer begin class.DataStore.method.new
-        SH_rv%voidptr = c_datastore_new()
+        SHT_rv%voidptr = c_datastore_new()
         ! splicer end class.DataStore.method.new
     end function datastore_new
 
@@ -2315,59 +2352,59 @@ contains
         ! splicer end class.DataStore.method.delete
     end subroutine datastore_delete
 
-    function datastore_get_root(obj) result(SH_rv)
+    function datastore_get_root(obj) &
+            result(SHT_rv)
         class(SidreDataStore) :: obj
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.DataStore.method.get_root
-        SH_rv%voidptr = c_datastore_get_root(obj%voidptr)
+        SHT_rv%voidptr = c_datastore_get_root(obj%voidptr)
         ! splicer end class.DataStore.method.get_root
     end function datastore_get_root
 
-    function datastore_get_buffer(obj, idx) result(SH_rv)
+    function datastore_get_buffer(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreDataStore) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        type(SidreBuffer) :: SH_rv
+        type(SidreBuffer) :: SHT_rv
         ! splicer begin class.DataStore.method.get_buffer
-        SH_rv%voidptr = c_datastore_get_buffer(  &
-            obj%voidptr,  &
-            idx)
+        SHT_rv%voidptr = c_datastore_get_buffer(obj%voidptr, idx)
         ! splicer end class.DataStore.method.get_buffer
     end function datastore_get_buffer
 
-    function datastore_create_buffer_empty(obj) result(SH_rv)
+    function datastore_create_buffer_empty(obj) &
+            result(SHT_rv)
         class(SidreDataStore) :: obj
-        type(SidreBuffer) :: SH_rv
+        type(SidreBuffer) :: SHT_rv
         ! splicer begin class.DataStore.method.create_buffer_empty
-        SH_rv%voidptr = c_datastore_create_buffer_empty(obj%voidptr)
+        SHT_rv%voidptr = c_datastore_create_buffer_empty(obj%voidptr)
         ! splicer end class.DataStore.method.create_buffer_empty
     end function datastore_create_buffer_empty
 
-    function datastore_create_buffer_from_type_int(obj, type, num_elems) result(SH_rv)
+    function datastore_create_buffer_from_type_int(obj, type, num_elems) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreDataStore) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        type(SidreBuffer) :: SH_rv
+        type(SidreBuffer) :: SHT_rv
         ! splicer begin class.DataStore.method.create_buffer_from_type_int
-        SH_rv%voidptr = c_datastore_create_buffer_from_type(  &
-            obj%voidptr,  &
-            type,  &
-            int(num_elems, C_LONG))
+        SHT_rv%voidptr = c_datastore_create_buffer_from_type(obj%voidptr, &
+            type, int(num_elems, C_LONG))
         ! splicer end class.DataStore.method.create_buffer_from_type_int
     end function datastore_create_buffer_from_type_int
 
-    function datastore_create_buffer_from_type_long(obj, type, num_elems) result(SH_rv)
+    function datastore_create_buffer_from_type_long(obj, type, &
+            num_elems) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreDataStore) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(SidreBuffer) :: SH_rv
+        type(SidreBuffer) :: SHT_rv
         ! splicer begin class.DataStore.method.create_buffer_from_type_long
-        SH_rv%voidptr = c_datastore_create_buffer_from_type(  &
-            obj%voidptr,  &
-            type,  &
-            int(num_elems, C_LONG))
+        SHT_rv%voidptr = c_datastore_create_buffer_from_type(obj%voidptr, &
+            type, int(num_elems, C_LONG))
         ! splicer end class.DataStore.method.create_buffer_from_type_long
     end function datastore_create_buffer_from_type_long
 
@@ -2376,18 +2413,17 @@ contains
         class(SidreDataStore) :: obj
         integer(C_INT), value, intent(IN) :: id
         ! splicer begin class.DataStore.method.destroy_buffer
-        call c_datastore_destroy_buffer(  &
-            obj%voidptr,  &
-            id)
+        call c_datastore_destroy_buffer(obj%voidptr, id)
         ! splicer end class.DataStore.method.destroy_buffer
     end subroutine datastore_destroy_buffer
 
-    function datastore_get_num_buffers(obj) result(SH_rv)
+    function datastore_get_num_buffers(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreDataStore) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.DataStore.method.get_num_buffers
-        SH_rv = c_datastore_get_num_buffers(obj%voidptr)
+        SHT_rv = c_datastore_get_num_buffers(obj%voidptr)
         ! splicer end class.DataStore.method.get_num_buffers
     end function datastore_get_num_buffers
 
@@ -2400,7 +2436,6 @@ contains
 
     function datastore_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreDataStore), intent(IN) :: obj
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
@@ -2408,7 +2443,6 @@ contains
 
     subroutine datastore_set_instance(obj, voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreDataStore), intent(INOUT) :: obj
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
@@ -2416,7 +2450,6 @@ contains
 
     function datastore_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         class(SidreDataStore), intent(IN) :: obj
         logical rv
         rv = c_associated(obj%voidptr)
@@ -2425,469 +2458,434 @@ contains
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
 
-    function group_get_index(obj) result(SH_rv)
+    function group_get_index(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_index
-        SH_rv = c_group_get_index(obj%voidptr)
+        SHT_rv = c_group_get_index(obj%voidptr)
         ! splicer end class.Group.method.get_index
     end function group_get_index
 
-    function group_get_name(obj) result(SH_rv)
+    function group_get_name(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreGroup) :: obj
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.Group.method.get_name
-        call c_group_get_name_bufferify(  &
-            obj%voidptr,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_group_get_name_bufferify(obj%voidptr, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.Group.method.get_name
     end function group_get_name
 
-    function group_get_path(obj) result(SH_rv)
+    function group_get_path(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreGroup) :: obj
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.Group.method.get_path
-        call c_group_get_path_bufferify(  &
-            obj%voidptr,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_group_get_path_bufferify(obj%voidptr, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.Group.method.get_path
     end function group_get_path
 
-    function group_get_path_name(obj) result(SH_rv)
+    function group_get_path_name(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreGroup) :: obj
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.Group.method.get_path_name
-        call c_group_get_path_name_bufferify(  &
-            obj%voidptr,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_group_get_path_name_bufferify(obj%voidptr, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.Group.method.get_path_name
     end function group_get_path_name
 
-    function group_get_parent(obj) result(SH_rv)
+    function group_get_parent(obj) &
+            result(SHT_rv)
         class(SidreGroup) :: obj
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.Group.method.get_parent
-        SH_rv%voidptr = c_group_get_parent(obj%voidptr)
+        SHT_rv%voidptr = c_group_get_parent(obj%voidptr)
         ! splicer end class.Group.method.get_parent
     end function group_get_parent
 
-    function group_get_data_store(obj) result(SH_rv)
+    function group_get_data_store(obj) &
+            result(SHT_rv)
         class(SidreGroup) :: obj
-        type(SidreDataStore) :: SH_rv
+        type(SidreDataStore) :: SHT_rv
         ! splicer begin class.Group.method.get_data_store
-        SH_rv%voidptr = c_group_get_data_store(obj%voidptr)
+        SHT_rv%voidptr = c_group_get_data_store(obj%voidptr)
         ! splicer end class.Group.method.get_data_store
     end function group_get_data_store
 
-    function group_get_num_views(obj) result(SH_rv)
+    function group_get_num_views(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreGroup) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.Group.method.get_num_views
-        SH_rv = c_group_get_num_views(obj%voidptr)
+        SHT_rv = c_group_get_num_views(obj%voidptr)
         ! splicer end class.Group.method.get_num_views
     end function group_get_num_views
 
-    function group_get_num_groups(obj) result(SH_rv)
+    function group_get_num_groups(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreGroup) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.Group.method.get_num_groups
-        SH_rv = c_group_get_num_groups(obj%voidptr)
+        SHT_rv = c_group_get_num_groups(obj%voidptr)
         ! splicer end class.Group.method.get_num_groups
     end function group_get_num_groups
 
-    function group_has_view(obj, path) result(SH_rv)
+    function group_has_view(obj, path) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.Group.method.has_view
-        SH_rv = c_group_has_view_bufferify(  &
-            obj%voidptr,  &
-            path,  &
+        SHT_rv = c_group_has_view_bufferify(obj%voidptr, path, &
             len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.has_view
     end function group_has_view
 
-    function group_has_child_view(obj, name) result(SH_rv)
+    function group_has_child_view(obj, name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: name
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.Group.method.has_child_view
-        SH_rv = c_group_has_child_view_bufferify(  &
-            obj%voidptr,  &
-            name,  &
+        SHT_rv = c_group_has_child_view_bufferify(obj%voidptr, name, &
             len_trim(name, kind=C_INT))
         ! splicer end class.Group.method.has_child_view
     end function group_has_child_view
 
-    function group_rename(obj, new_name) result(SH_rv)
+    function group_rename(obj, new_name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: new_name
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.Group.method.rename
-        SH_rv = c_group_rename_bufferify(  &
-            obj%voidptr,  &
-            new_name,  &
+        SHT_rv = c_group_rename_bufferify(obj%voidptr, new_name, &
             len_trim(new_name, kind=C_INT))
         ! splicer end class.Group.method.rename
     end function group_rename
 
-    function group_get_view_from_name(obj, path) result(SH_rv)
+    function group_get_view_from_name(obj, path) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.get_view_from_name
-        SH_rv%voidptr = c_group_get_view_from_name_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT))
+        SHT_rv%voidptr = c_group_get_view_from_name_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.get_view_from_name
     end function group_get_view_from_name
 
-    function group_get_view_from_index(obj, idx) result(SH_rv)
+    function group_get_view_from_index(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.get_view_from_index
-        SH_rv%voidptr = c_group_get_view_from_index(  &
-            obj%voidptr,  &
-            idx)
+        SHT_rv%voidptr = c_group_get_view_from_index(obj%voidptr, idx)
         ! splicer end class.Group.method.get_view_from_index
     end function group_get_view_from_index
 
-    function group_get_view_index(obj, name) result(SH_rv)
+    function group_get_view_index(obj, name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: name
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_view_index
-        SH_rv = c_group_get_view_index_bufferify(  &
-            obj%voidptr,  &
-            name,  &
+        SHT_rv = c_group_get_view_index_bufferify(obj%voidptr, name, &
             len_trim(name, kind=C_INT))
         ! splicer end class.Group.method.get_view_index
     end function group_get_view_index
 
-    function group_get_view_name(obj, idx) result(SH_rv)
+    function group_get_view_name(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.Group.method.get_view_name
-        call c_group_get_view_name_bufferify(  &
-            obj%voidptr,  &
-            idx,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_group_get_view_name_bufferify(obj%voidptr, idx, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.Group.method.get_view_name
     end function group_get_view_name
 
-    function group_get_first_valid_view_index(obj) result(SH_rv)
+    function group_get_first_valid_view_index(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_first_valid_view_index
-        SH_rv = c_group_get_first_valid_view_index(obj%voidptr)
+        SHT_rv = c_group_get_first_valid_view_index(obj%voidptr)
         ! splicer end class.Group.method.get_first_valid_view_index
     end function group_get_first_valid_view_index
 
-    function group_get_next_valid_view_index(obj, idx) result(SH_rv)
+    function group_get_next_valid_view_index(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_next_valid_view_index
-        SH_rv = c_group_get_next_valid_view_index(  &
-            obj%voidptr,  &
-            idx)
+        SHT_rv = c_group_get_next_valid_view_index(obj%voidptr, idx)
         ! splicer end class.Group.method.get_next_valid_view_index
     end function group_get_next_valid_view_index
 
-    function group_create_view_and_allocate_nelems_int(obj, path, type, num_elems) result(SH_rv)
+    function group_create_view_and_allocate_nelems_int(obj, path, type, &
+            num_elems) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_and_allocate_nelems_int
-        SH_rv%voidptr = c_group_create_view_and_allocate_nelems_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
+        SHT_rv%voidptr = c_group_create_view_and_allocate_nelems_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
             int(num_elems, C_LONG))
         ! splicer end class.Group.method.create_view_and_allocate_nelems_int
     end function group_create_view_and_allocate_nelems_int
 
-    function group_create_view_and_allocate_nelems_long(obj, path, type, num_elems) result(SH_rv)
+    function group_create_view_and_allocate_nelems_long(obj, path, type, &
+            num_elems) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_and_allocate_nelems_long
-        SH_rv%voidptr = c_group_create_view_and_allocate_nelems_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
+        SHT_rv%voidptr = c_group_create_view_and_allocate_nelems_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
             int(num_elems, C_LONG))
         ! splicer end class.Group.method.create_view_and_allocate_nelems_long
     end function group_create_view_and_allocate_nelems_long
 
-    function group_create_view_and_allocate_shape(obj, path, type, ndims, shape) result(SH_rv)
+    function group_create_view_and_allocate_shape(obj, path, type, &
+            ndims, shape) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_and_allocate_shape
-        SH_rv%voidptr = c_group_create_view_and_allocate_shape_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            ndims,  &
-            shape)
+        SHT_rv%voidptr = c_group_create_view_and_allocate_shape_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, ndims, shape)
         ! splicer end class.Group.method.create_view_and_allocate_shape
     end function group_create_view_and_allocate_shape
 
-    function group_create_view_scalar_int(obj, path, value) result(SH_rv)
+    function group_create_view_scalar_int(obj, path, value) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: value
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_scalar_int
-        SH_rv%voidptr = c_group_create_view_scalar_int_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            value)
+        SHT_rv%voidptr = c_group_create_view_scalar_int_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), value)
         ! splicer end class.Group.method.create_view_scalar_int
     end function group_create_view_scalar_int
 
-    function group_create_view_scalar_long(obj, path, value) result(SH_rv)
+    function group_create_view_scalar_long(obj, path, value) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_LONG), value, intent(IN) :: value
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_scalar_long
-        SH_rv%voidptr = c_group_create_view_scalar_long_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            value)
+        SHT_rv%voidptr = c_group_create_view_scalar_long_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), value)
         ! splicer end class.Group.method.create_view_scalar_long
     end function group_create_view_scalar_long
 
-    function group_create_view_scalar_float(obj, path, value) result(SH_rv)
+    function group_create_view_scalar_float(obj, path, value) &
+            result(SHT_rv)
         use iso_c_binding, only : C_FLOAT, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         real(C_FLOAT), value, intent(IN) :: value
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_scalar_float
-        SH_rv%voidptr = c_group_create_view_scalar_float_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            value)
+        SHT_rv%voidptr = c_group_create_view_scalar_float_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), value)
         ! splicer end class.Group.method.create_view_scalar_float
     end function group_create_view_scalar_float
 
-    function group_create_view_scalar_double(obj, path, value) result(SH_rv)
+    function group_create_view_scalar_double(obj, path, value) &
+            result(SHT_rv)
         use iso_c_binding, only : C_DOUBLE, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         real(C_DOUBLE), value, intent(IN) :: value
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_scalar_double
-        SH_rv%voidptr = c_group_create_view_scalar_double_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            value)
+        SHT_rv%voidptr = c_group_create_view_scalar_double_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), value)
         ! splicer end class.Group.method.create_view_scalar_double
     end function group_create_view_scalar_double
 
-    function group_create_view_string(obj, path, value) result(SH_rv)
+    function group_create_view_string(obj, path, value) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         character(*), intent(IN) :: value
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_string
-        SH_rv%voidptr = c_group_create_view_string_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            value,  &
+        SHT_rv%voidptr = c_group_create_view_string_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), value, &
             len_trim(value, kind=C_INT))
         ! splicer end class.Group.method.create_view_string
     end function group_create_view_string
 
-    function group_create_view_empty(obj, path) result(SH_rv)
+    function group_create_view_empty(obj, path) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_empty
-        SH_rv%voidptr = c_group_create_view_empty_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT))
+        SHT_rv%voidptr = c_group_create_view_empty_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.create_view_empty
     end function group_create_view_empty
 
-    function group_create_view_from_type_int(obj, path, type, num_elems) result(SH_rv)
+    function group_create_view_from_type_int(obj, path, type, num_elems) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_type_int
-        SH_rv%voidptr = c_group_create_view_from_type_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
+        SHT_rv%voidptr = c_group_create_view_from_type_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
             int(num_elems, C_LONG))
         ! splicer end class.Group.method.create_view_from_type_int
     end function group_create_view_from_type_int
 
-    function group_create_view_from_type_long(obj, path, type, num_elems) result(SH_rv)
+    function group_create_view_from_type_long(obj, path, type, &
+            num_elems) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_type_long
-        SH_rv%voidptr = c_group_create_view_from_type_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
+        SHT_rv%voidptr = c_group_create_view_from_type_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
             int(num_elems, C_LONG))
         ! splicer end class.Group.method.create_view_from_type_long
     end function group_create_view_from_type_long
 
-    function group_create_view_from_type_and_buffer_int(obj, path, type, num_elems, buff) result(SH_rv)
+    function group_create_view_from_type_and_buffer_int(obj, path, type, &
+            num_elems, buff) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         type(SidreBuffer), value, intent(IN) :: buff
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_type_and_buffer_int
-        SH_rv%voidptr = c_group_create_view_from_type_and_buffer_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            buff%get_instance())
+        SHT_rv%voidptr = c_group_create_view_from_type_and_buffer_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
+            int(num_elems, C_LONG), buff%get_instance())
         ! splicer end class.Group.method.create_view_from_type_and_buffer_int
     end function group_create_view_from_type_and_buffer_int
 
-    function group_create_view_from_type_and_buffer_long(obj, path, type, num_elems, buff) result(SH_rv)
+    function group_create_view_from_type_and_buffer_long(obj, path, &
+            type, num_elems, buff) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         type(SidreBuffer), value, intent(IN) :: buff
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_type_and_buffer_long
-        SH_rv%voidptr = c_group_create_view_from_type_and_buffer_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            buff%get_instance())
+        SHT_rv%voidptr = c_group_create_view_from_type_and_buffer_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
+            int(num_elems, C_LONG), buff%get_instance())
         ! splicer end class.Group.method.create_view_from_type_and_buffer_long
     end function group_create_view_from_type_and_buffer_long
 
-    function group_create_view_from_type_external_int(obj, path, type, num_elems, external_ptr) result(SH_rv)
+    function group_create_view_from_type_external_int(obj, path, type, &
+            num_elems, external_ptr) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG, C_PTR
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         type(C_PTR), value, intent(IN) :: external_ptr
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_type_external_int
-        SH_rv%voidptr = c_group_create_view_from_type_external_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            external_ptr)
+        SHT_rv%voidptr = c_group_create_view_from_type_external_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
+            int(num_elems, C_LONG), external_ptr)
         ! splicer end class.Group.method.create_view_from_type_external_int
     end function group_create_view_from_type_external_int
 
-    function group_create_view_from_type_external_long(obj, path, type, num_elems, external_ptr) result(SH_rv)
+    function group_create_view_from_type_external_long(obj, path, type, &
+            num_elems, external_ptr) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG, C_PTR
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         type(C_PTR), value, intent(IN) :: external_ptr
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_type_external_long
-        SH_rv%voidptr = c_group_create_view_from_type_external_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            external_ptr)
+        SHT_rv%voidptr = c_group_create_view_from_type_external_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, &
+            int(num_elems, C_LONG), external_ptr)
         ! splicer end class.Group.method.create_view_from_type_external_long
     end function group_create_view_from_type_external_long
 
-    function group_create_view_from_shape(obj, path, type, ndims, shape) result(SH_rv)
+    function group_create_view_from_shape(obj, path, type, ndims, shape) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_shape
-        SH_rv%voidptr = c_group_create_view_from_shape_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            ndims,  &
-            shape)
+        SHT_rv%voidptr = c_group_create_view_from_shape_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, ndims, shape)
         ! splicer end class.Group.method.create_view_from_shape
     end function group_create_view_from_shape
 
-    function group_create_view_from_shape_and_buffer(obj, path, type, ndims, shape, buff) result(SH_rv)
+    function group_create_view_from_shape_and_buffer(obj, path, type, &
+            ndims, shape, buff) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
@@ -2895,20 +2893,17 @@ contains
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
         type(SidreBuffer), value, intent(IN) :: buff
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_shape_and_buffer
-        SH_rv%voidptr = c_group_create_view_from_shape_and_buffer_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            ndims,  &
-            shape,  &
+        SHT_rv%voidptr = c_group_create_view_from_shape_and_buffer_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, ndims, shape, &
             buff%get_instance())
         ! splicer end class.Group.method.create_view_from_shape_and_buffer
     end function group_create_view_from_shape_and_buffer
 
-    function group_create_view_from_shape_external(obj, path, type, ndims, shape, external_ptr) result(SH_rv)
+    function group_create_view_from_shape_external(obj, path, type, &
+            ndims, shape, external_ptr) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG, C_PTR
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
@@ -2916,46 +2911,37 @@ contains
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
         type(C_PTR), value, intent(IN) :: external_ptr
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_from_shape_external
-        SH_rv%voidptr = c_group_create_view_from_shape_external_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            type,  &
-            ndims,  &
-            shape,  &
+        SHT_rv%voidptr = c_group_create_view_from_shape_external_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), type, ndims, shape, &
             external_ptr)
         ! splicer end class.Group.method.create_view_from_shape_external
     end function group_create_view_from_shape_external
 
-    function group_create_view_into_buffer(obj, path, buff) result(SH_rv)
+    function group_create_view_into_buffer(obj, path, buff) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         type(SidreBuffer), value, intent(IN) :: buff
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_into_buffer
-        SH_rv%voidptr = c_group_create_view_into_buffer_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            buff%get_instance())
+        SHT_rv%voidptr = c_group_create_view_into_buffer_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), buff%get_instance())
         ! splicer end class.Group.method.create_view_into_buffer
     end function group_create_view_into_buffer
 
-    function group_create_view_external(obj, path, external_ptr) result(SH_rv)
+    function group_create_view_external(obj, path, external_ptr) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_PTR
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         type(C_PTR), value, intent(IN) :: external_ptr
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.create_view_external
-        SH_rv%voidptr = c_group_create_view_external_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT),  &
-            external_ptr)
+        SHT_rv%voidptr = c_group_create_view_external_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT), external_ptr)
         ! splicer end class.Group.method.create_view_external
     end function group_create_view_external
 
@@ -2964,9 +2950,7 @@ contains
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         ! splicer begin class.Group.method.destroy_view
-        call c_group_destroy_view_bufferify(  &
-            obj%voidptr,  &
-            path,  &
+        call c_group_destroy_view_bufferify(obj%voidptr, path, &
             len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.destroy_view
     end subroutine group_destroy_view
@@ -2976,10 +2960,8 @@ contains
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         ! splicer begin class.Group.method.destroy_view_and_data_name
-        call c_group_destroy_view_and_data_name_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT))
+        call c_group_destroy_view_and_data_name_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.destroy_view_and_data_name
     end subroutine group_destroy_view_and_data_name
 
@@ -2988,143 +2970,133 @@ contains
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
         ! splicer begin class.Group.method.destroy_view_and_data_index
-        call c_group_destroy_view_and_data_index(  &
-            obj%voidptr,  &
-            idx)
+        call c_group_destroy_view_and_data_index(obj%voidptr, idx)
         ! splicer end class.Group.method.destroy_view_and_data_index
     end subroutine group_destroy_view_and_data_index
 
-    function group_move_view(obj, view) result(SH_rv)
+    function group_move_view(obj, view) &
+            result(SHT_rv)
         class(SidreGroup) :: obj
         type(SidreView), value, intent(IN) :: view
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.move_view
-        SH_rv%voidptr = c_group_move_view(  &
-            obj%voidptr,  &
+        SHT_rv%voidptr = c_group_move_view(obj%voidptr, &
             view%get_instance())
         ! splicer end class.Group.method.move_view
     end function group_move_view
 
-    function group_copy_view(obj, view) result(SH_rv)
+    function group_copy_view(obj, view) &
+            result(SHT_rv)
         class(SidreGroup) :: obj
         type(SidreView), value, intent(IN) :: view
-        type(SidreView) :: SH_rv
+        type(SidreView) :: SHT_rv
         ! splicer begin class.Group.method.copy_view
-        SH_rv%voidptr = c_group_copy_view(  &
-            obj%voidptr,  &
+        SHT_rv%voidptr = c_group_copy_view(obj%voidptr, &
             view%get_instance())
         ! splicer end class.Group.method.copy_view
     end function group_copy_view
 
-    function group_has_group(obj, path) result(SH_rv)
+    function group_has_group(obj, path) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.Group.method.has_group
-        SH_rv = c_group_has_group_bufferify(  &
-            obj%voidptr,  &
-            path,  &
+        SHT_rv = c_group_has_group_bufferify(obj%voidptr, path, &
             len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.has_group
     end function group_has_group
 
-    function group_has_child_group(obj, name) result(SH_rv)
+    function group_has_child_group(obj, name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: name
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.Group.method.has_child_group
-        SH_rv = c_group_has_child_group_bufferify(  &
-            obj%voidptr,  &
-            name,  &
+        SHT_rv = c_group_has_child_group_bufferify(obj%voidptr, name, &
             len_trim(name, kind=C_INT))
         ! splicer end class.Group.method.has_child_group
     end function group_has_child_group
 
-    function group_get_group_from_name(obj, path) result(SH_rv)
+    function group_get_group_from_name(obj, path) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.Group.method.get_group_from_name
-        SH_rv%voidptr = c_group_get_group_from_name_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT))
+        SHT_rv%voidptr = c_group_get_group_from_name_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.get_group_from_name
     end function group_get_group_from_name
 
-    function group_get_group_from_index(obj, idx) result(SH_rv)
+    function group_get_group_from_index(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.Group.method.get_group_from_index
-        SH_rv%voidptr = c_group_get_group_from_index(  &
-            obj%voidptr,  &
-            idx)
+        SHT_rv%voidptr = c_group_get_group_from_index(obj%voidptr, idx)
         ! splicer end class.Group.method.get_group_from_index
     end function group_get_group_from_index
 
-    function group_get_group_index(obj, name) result(SH_rv)
+    function group_get_group_index(obj, name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: name
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_group_index
-        SH_rv = c_group_get_group_index_bufferify(  &
-            obj%voidptr,  &
-            name,  &
+        SHT_rv = c_group_get_group_index_bufferify(obj%voidptr, name, &
             len_trim(name, kind=C_INT))
         ! splicer end class.Group.method.get_group_index
     end function group_get_group_index
 
-    function group_get_group_name(obj, idx) result(SH_rv)
+    function group_get_group_name(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.Group.method.get_group_name
-        call c_group_get_group_name_bufferify(  &
-            obj%voidptr,  &
-            idx,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_group_get_group_name_bufferify(obj%voidptr, idx, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.Group.method.get_group_name
     end function group_get_group_name
 
-    function group_get_first_valid_group_index(obj) result(SH_rv)
+    function group_get_first_valid_group_index(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_first_valid_group_index
-        SH_rv = c_group_get_first_valid_group_index(obj%voidptr)
+        SHT_rv = c_group_get_first_valid_group_index(obj%voidptr)
         ! splicer end class.Group.method.get_first_valid_group_index
     end function group_get_first_valid_group_index
 
-    function group_get_next_valid_group_index(obj, idx) result(SH_rv)
+    function group_get_next_valid_group_index(obj, idx) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Group.method.get_next_valid_group_index
-        SH_rv = c_group_get_next_valid_group_index(  &
-            obj%voidptr,  &
-            idx)
+        SHT_rv = c_group_get_next_valid_group_index(obj%voidptr, idx)
         ! splicer end class.Group.method.get_next_valid_group_index
     end function group_get_next_valid_group_index
 
-    function group_create_group(obj, path) result(SH_rv)
+    function group_create_group(obj, path) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.Group.method.create_group
-        SH_rv%voidptr = c_group_create_group_bufferify(  &
-            obj%voidptr,  &
-            path,  &
-            len_trim(path, kind=C_INT))
+        SHT_rv%voidptr = c_group_create_group_bufferify(obj%voidptr, &
+            path, len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.create_group
     end function group_create_group
 
@@ -3133,9 +3105,7 @@ contains
         class(SidreGroup) :: obj
         character(*), intent(IN) :: path
         ! splicer begin class.Group.method.destroy_group_name
-        call c_group_destroy_group_name_bufferify(  &
-            obj%voidptr,  &
-            path,  &
+        call c_group_destroy_group_name_bufferify(obj%voidptr, path, &
             len_trim(path, kind=C_INT))
         ! splicer end class.Group.method.destroy_group_name
     end subroutine group_destroy_group_name
@@ -3145,19 +3115,17 @@ contains
         class(SidreGroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
         ! splicer begin class.Group.method.destroy_group_index
-        call c_group_destroy_group_index(  &
-            obj%voidptr,  &
-            idx)
+        call c_group_destroy_group_index(obj%voidptr, idx)
         ! splicer end class.Group.method.destroy_group_index
     end subroutine group_destroy_group_index
 
-    function group_move_group(obj, grp) result(SH_rv)
+    function group_move_group(obj, grp) &
+            result(SHT_rv)
         class(SidreGroup) :: obj
         type(SidreGroup), value, intent(IN) :: grp
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.Group.method.move_group
-        SH_rv%voidptr = c_group_move_group(  &
-            obj%voidptr,  &
+        SHT_rv%voidptr = c_group_move_group(obj%voidptr, &
             grp%get_instance())
         ! splicer end class.Group.method.move_group
     end function group_move_group
@@ -3169,14 +3137,14 @@ contains
         ! splicer end class.Group.method.print
     end subroutine group_print
 
-    function group_is_equivalent_to(obj, other) result(SH_rv)
+    function group_is_equivalent_to(obj, other) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreGroup) :: obj
         type(SidreGroup), value, intent(IN) :: other
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.Group.method.is_equivalent_to
-        SH_rv = c_group_is_equivalent_to(  &
-            obj%voidptr,  &
+        SHT_rv = c_group_is_equivalent_to(obj%voidptr, &
             other%get_instance())
         ! splicer end class.Group.method.is_equivalent_to
     end function group_is_equivalent_to
@@ -3187,11 +3155,8 @@ contains
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
         ! splicer begin class.Group.method.save
-        call c_group_save_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
+        call c_group_save_bufferify(obj%voidptr, file_path, &
+            len_trim(file_path, kind=C_INT), protocol, &
             len_trim(protocol, kind=C_INT))
         ! splicer end class.Group.method.save
     end subroutine group_save
@@ -3202,11 +3167,8 @@ contains
         character(*), intent(IN) :: file_path
         character(*), intent(IN) :: protocol
         ! splicer begin class.Group.method.load_0
-        call c_group_load_0_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
+        call c_group_load_0_bufferify(obj%voidptr, file_path, &
+            len_trim(file_path, kind=C_INT), protocol, &
             len_trim(protocol, kind=C_INT))
         ! splicer end class.Group.method.load_0
     end subroutine group_load_0
@@ -3220,13 +3182,9 @@ contains
         logical(C_BOOL) SH_preserve_contents
         SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
         ! splicer begin class.Group.method.load_1
-        call c_group_load_1_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT),  &
-            protocol,  &
-            len_trim(protocol, kind=C_INT),  &
-            SH_preserve_contents)
+        call c_group_load_1_bufferify(obj%voidptr, file_path, &
+            len_trim(file_path, kind=C_INT), protocol, &
+            len_trim(protocol, kind=C_INT), SH_preserve_contents)
         ! splicer end class.Group.method.load_1
     end subroutine group_load_1
 
@@ -3235,16 +3193,13 @@ contains
         class(SidreGroup) :: obj
         character(*), intent(IN) :: file_path
         ! splicer begin class.Group.method.load_external_data
-        call c_group_load_external_data_bufferify(  &
-            obj%voidptr,  &
-            file_path,  &
-            len_trim(file_path, kind=C_INT))
+        call c_group_load_external_data_bufferify(obj%voidptr, &
+            file_path, len_trim(file_path, kind=C_INT))
         ! splicer end class.Group.method.load_external_data
     end subroutine group_load_external_data
 
     function group_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreGroup), intent(IN) :: obj
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
@@ -3252,7 +3207,6 @@ contains
 
     subroutine group_set_instance(obj, voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreGroup), intent(INOUT) :: obj
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
@@ -3260,7 +3214,6 @@ contains
 
     function group_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         class(SidreGroup), intent(IN) :: obj
         logical rv
         rv = c_associated(obj%voidptr)
@@ -4508,21 +4461,23 @@ contains
 
     ! splicer end class.Group.additional_functions
 
-    function buffer_get_index(obj) result(SH_rv)
+    function buffer_get_index(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreBuffer) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Buffer.method.get_index
-        SH_rv = c_buffer_get_index(obj%voidptr)
+        SHT_rv = c_buffer_get_index(obj%voidptr)
         ! splicer end class.Buffer.method.get_index
     end function buffer_get_index
 
-    function buffer_get_num_views(obj) result(SH_rv)
+    function buffer_get_num_views(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreBuffer) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.Buffer.method.get_num_views
-        SH_rv = c_buffer_get_num_views(obj%voidptr)
+        SHT_rv = c_buffer_get_num_views(obj%voidptr)
         ! splicer end class.Buffer.method.get_num_views
     end function buffer_get_num_views
 
@@ -4532,9 +4487,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.Buffer.method.describe_int
-        call c_buffer_describe(  &
-            obj%voidptr,  &
-            type,  &
+        call c_buffer_describe(obj%voidptr, type, &
             int(num_elems, C_LONG))
         ! splicer end class.Buffer.method.describe_int
     end subroutine buffer_describe_int
@@ -4545,9 +4498,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.Buffer.method.describe_long
-        call c_buffer_describe(  &
-            obj%voidptr,  &
-            type,  &
+        call c_buffer_describe(obj%voidptr, type, &
             int(num_elems, C_LONG))
         ! splicer end class.Buffer.method.describe_long
     end subroutine buffer_describe_long
@@ -4565,9 +4516,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.Buffer.method.allocate_from_type_int
-        call c_buffer_allocate_from_type(  &
-            obj%voidptr,  &
-            type,  &
+        call c_buffer_allocate_from_type(obj%voidptr, type, &
             int(num_elems, C_LONG))
         ! splicer end class.Buffer.method.allocate_from_type_int
     end subroutine buffer_allocate_from_type_int
@@ -4578,9 +4527,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.Buffer.method.allocate_from_type_long
-        call c_buffer_allocate_from_type(  &
-            obj%voidptr,  &
-            type,  &
+        call c_buffer_allocate_from_type(obj%voidptr, type, &
             int(num_elems, C_LONG))
         ! splicer end class.Buffer.method.allocate_from_type_long
     end subroutine buffer_allocate_from_type_long
@@ -4590,9 +4537,7 @@ contains
         class(SidreBuffer) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.Buffer.method.reallocate_int
-        call c_buffer_reallocate(  &
-            obj%voidptr,  &
-            int(num_elems, C_LONG))
+        call c_buffer_reallocate(obj%voidptr, int(num_elems, C_LONG))
         ! splicer end class.Buffer.method.reallocate_int
     end subroutine buffer_reallocate_int
 
@@ -4601,54 +4546,57 @@ contains
         class(SidreBuffer) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.Buffer.method.reallocate_long
-        call c_buffer_reallocate(  &
-            obj%voidptr,  &
-            int(num_elems, C_LONG))
+        call c_buffer_reallocate(obj%voidptr, int(num_elems, C_LONG))
         ! splicer end class.Buffer.method.reallocate_long
     end subroutine buffer_reallocate_long
 
-    function buffer_get_void_ptr(obj) result(SH_rv)
+    function buffer_get_void_ptr(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_PTR
         class(SidreBuffer) :: obj
-        type(C_PTR) :: SH_rv
+        type(C_PTR) :: SHT_rv
         ! splicer begin class.Buffer.method.get_void_ptr
-        SH_rv = c_buffer_get_void_ptr(obj%voidptr)
+        SHT_rv = c_buffer_get_void_ptr(obj%voidptr)
         ! splicer end class.Buffer.method.get_void_ptr
     end function buffer_get_void_ptr
 
-    function buffer_get_type_id(obj) result(SH_rv)
+    function buffer_get_type_id(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreBuffer) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.Buffer.method.get_type_id
-        SH_rv = c_buffer_get_type_id(obj%voidptr)
+        SHT_rv = c_buffer_get_type_id(obj%voidptr)
         ! splicer end class.Buffer.method.get_type_id
     end function buffer_get_type_id
 
-    function buffer_get_num_elements(obj) result(SH_rv)
+    function buffer_get_num_elements(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreBuffer) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.Buffer.method.get_num_elements
-        SH_rv = c_buffer_get_num_elements(obj%voidptr)
+        SHT_rv = c_buffer_get_num_elements(obj%voidptr)
         ! splicer end class.Buffer.method.get_num_elements
     end function buffer_get_num_elements
 
-    function buffer_get_total_bytes(obj) result(SH_rv)
+    function buffer_get_total_bytes(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreBuffer) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.Buffer.method.get_total_bytes
-        SH_rv = c_buffer_get_total_bytes(obj%voidptr)
+        SHT_rv = c_buffer_get_total_bytes(obj%voidptr)
         ! splicer end class.Buffer.method.get_total_bytes
     end function buffer_get_total_bytes
 
-    function buffer_get_bytes_per_element(obj) result(SH_rv)
+    function buffer_get_bytes_per_element(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreBuffer) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.Buffer.method.get_bytes_per_element
-        SH_rv = c_buffer_get_bytes_per_element(obj%voidptr)
+        SHT_rv = c_buffer_get_bytes_per_element(obj%voidptr)
         ! splicer end class.Buffer.method.get_bytes_per_element
     end function buffer_get_bytes_per_element
 
@@ -4661,7 +4609,6 @@ contains
 
     function buffer_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreBuffer), intent(IN) :: obj
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
@@ -4669,7 +4616,6 @@ contains
 
     subroutine buffer_set_instance(obj, voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreBuffer), intent(INOUT) :: obj
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
@@ -4677,7 +4623,6 @@ contains
 
     function buffer_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         class(SidreBuffer), intent(IN) :: obj
         logical rv
         rv = c_associated(obj%voidptr)
@@ -4699,9 +4644,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.View.method.allocate_from_type_int
-        call c_view_allocate_from_type(  &
-            obj%voidptr,  &
-            type,  &
+        call c_view_allocate_from_type(obj%voidptr, type, &
             int(num_elems, C_LONG))
         ! splicer end class.View.method.allocate_from_type_int
     end subroutine view_allocate_from_type_int
@@ -4712,9 +4655,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.View.method.allocate_from_type_long
-        call c_view_allocate_from_type(  &
-            obj%voidptr,  &
-            type,  &
+        call c_view_allocate_from_type(obj%voidptr, type, &
             int(num_elems, C_LONG))
         ! splicer end class.View.method.allocate_from_type_long
     end subroutine view_allocate_from_type_long
@@ -4724,9 +4665,7 @@ contains
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.View.method.reallocate_int
-        call c_view_reallocate(  &
-            obj%voidptr,  &
-            int(num_elems, C_LONG))
+        call c_view_reallocate(obj%voidptr, int(num_elems, C_LONG))
         ! splicer end class.View.method.reallocate_int
     end subroutine view_reallocate_int
 
@@ -4735,9 +4674,7 @@ contains
         class(SidreView) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.View.method.reallocate_long
-        call c_view_reallocate(  &
-            obj%voidptr,  &
-            int(num_elems, C_LONG))
+        call c_view_reallocate(obj%voidptr, int(num_elems, C_LONG))
         ! splicer end class.View.method.reallocate_long
     end subroutine view_reallocate_long
 
@@ -4752,9 +4689,7 @@ contains
         class(SidreView) :: obj
         type(SidreBuffer), value, intent(IN) :: buff
         ! splicer begin class.View.method.attach_buffer_only
-        call c_view_attach_buffer_only(  &
-            obj%voidptr,  &
-            buff%get_instance())
+        call c_view_attach_buffer_only(obj%voidptr, buff%get_instance())
         ! splicer end class.View.method.attach_buffer_only
     end subroutine view_attach_buffer_only
 
@@ -4765,11 +4700,8 @@ contains
         integer(C_INT), value, intent(IN) :: num_elems
         type(SidreBuffer), value, intent(IN) :: buff
         ! splicer begin class.View.method.attach_buffer_type_int
-        call c_view_attach_buffer_type(  &
-            obj%voidptr,  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            buff%get_instance())
+        call c_view_attach_buffer_type(obj%voidptr, type, &
+            int(num_elems, C_LONG), buff%get_instance())
         ! splicer end class.View.method.attach_buffer_type_int
     end subroutine view_attach_buffer_type_int
 
@@ -4780,11 +4712,8 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         type(SidreBuffer), value, intent(IN) :: buff
         ! splicer begin class.View.method.attach_buffer_type_long
-        call c_view_attach_buffer_type(  &
-            obj%voidptr,  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            buff%get_instance())
+        call c_view_attach_buffer_type(obj%voidptr, type, &
+            int(num_elems, C_LONG), buff%get_instance())
         ! splicer end class.View.method.attach_buffer_type_long
     end subroutine view_attach_buffer_type_long
 
@@ -4796,11 +4725,7 @@ contains
         integer(C_LONG), intent(IN) :: shape(*)
         type(SidreBuffer), value, intent(IN) :: buff
         ! splicer begin class.View.method.attach_buffer_shape
-        call c_view_attach_buffer_shape(  &
-            obj%voidptr,  &
-            type,  &
-            ndims,  &
-            shape,  &
+        call c_view_attach_buffer_shape(obj%voidptr, type, ndims, shape, &
             buff%get_instance())
         ! splicer end class.View.method.attach_buffer_shape
     end subroutine view_attach_buffer_shape
@@ -4810,9 +4735,7 @@ contains
         class(SidreView) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.View.method.apply_nelems
-        call c_view_apply_nelems(  &
-            obj%voidptr,  &
-            num_elems)
+        call c_view_apply_nelems(obj%voidptr, num_elems)
         ! splicer end class.View.method.apply_nelems
     end subroutine view_apply_nelems
 
@@ -4822,25 +4745,20 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
         ! splicer begin class.View.method.apply_nelems_offset
-        call c_view_apply_nelems_offset(  &
-            obj%voidptr,  &
-            num_elems,  &
-            offset)
+        call c_view_apply_nelems_offset(obj%voidptr, num_elems, offset)
         ! splicer end class.View.method.apply_nelems_offset
     end subroutine view_apply_nelems_offset
 
-    subroutine view_apply_nelems_offset_stride(obj, num_elems, offset, stride)
+    subroutine view_apply_nelems_offset_stride(obj, num_elems, offset, &
+            stride)
         use iso_c_binding, only : C_LONG
         class(SidreView) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
         integer(C_LONG), value, intent(IN) :: stride
         ! splicer begin class.View.method.apply_nelems_offset_stride
-        call c_view_apply_nelems_offset_stride(  &
-            obj%voidptr,  &
-            num_elems,  &
-            offset,  &
-            stride)
+        call c_view_apply_nelems_offset_stride(obj%voidptr, num_elems, &
+            offset, stride)
         ! splicer end class.View.method.apply_nelems_offset_stride
     end subroutine view_apply_nelems_offset_stride
 
@@ -4850,29 +4768,25 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.View.method.apply_type_nelems
-        call c_view_apply_type_nelems(  &
-            obj%voidptr,  &
-            type,  &
-            num_elems)
+        call c_view_apply_type_nelems(obj%voidptr, type, num_elems)
         ! splicer end class.View.method.apply_type_nelems
     end subroutine view_apply_type_nelems
 
-    subroutine view_apply_type_nelems_offset(obj, type, num_elems, offset)
+    subroutine view_apply_type_nelems_offset(obj, type, num_elems, &
+            offset)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
         ! splicer begin class.View.method.apply_type_nelems_offset
-        call c_view_apply_type_nelems_offset(  &
-            obj%voidptr,  &
-            type,  &
-            num_elems,  &
-            offset)
+        call c_view_apply_type_nelems_offset(obj%voidptr, type, &
+            num_elems, offset)
         ! splicer end class.View.method.apply_type_nelems_offset
     end subroutine view_apply_type_nelems_offset
 
-    subroutine view_apply_type_nelems_offset_stride(obj, type, num_elems, offset, stride)
+    subroutine view_apply_type_nelems_offset_stride(obj, type, &
+            num_elems, offset, stride)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -4880,12 +4794,8 @@ contains
         integer(C_LONG), value, intent(IN) :: offset
         integer(C_LONG), value, intent(IN) :: stride
         ! splicer begin class.View.method.apply_type_nelems_offset_stride
-        call c_view_apply_type_nelems_offset_stride(  &
-            obj%voidptr,  &
-            type,  &
-            num_elems,  &
-            offset,  &
-            stride)
+        call c_view_apply_type_nelems_offset_stride(obj%voidptr, type, &
+            num_elems, offset, stride)
         ! splicer end class.View.method.apply_type_nelems_offset_stride
     end subroutine view_apply_type_nelems_offset_stride
 
@@ -4896,154 +4806,159 @@ contains
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(IN) :: shape(*)
         ! splicer begin class.View.method.apply_type_shape
-        call c_view_apply_type_shape(  &
-            obj%voidptr,  &
-            type,  &
-            ndims,  &
-            shape)
+        call c_view_apply_type_shape(obj%voidptr, type, ndims, shape)
         ! splicer end class.View.method.apply_type_shape
     end subroutine view_apply_type_shape
 
-    function view_has_buffer(obj) result(SH_rv)
+    function view_has_buffer(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.has_buffer
-        SH_rv = c_view_has_buffer(obj%voidptr)
+        SHT_rv = c_view_has_buffer(obj%voidptr)
         ! splicer end class.View.method.has_buffer
     end function view_has_buffer
 
-    function view_is_external(obj) result(SH_rv)
+    function view_is_external(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_external
-        SH_rv = c_view_is_external(obj%voidptr)
+        SHT_rv = c_view_is_external(obj%voidptr)
         ! splicer end class.View.method.is_external
     end function view_is_external
 
-    function view_is_allocated(obj) result(SH_rv)
+    function view_is_allocated(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_allocated
-        SH_rv = c_view_is_allocated(obj%voidptr)
+        SHT_rv = c_view_is_allocated(obj%voidptr)
         ! splicer end class.View.method.is_allocated
     end function view_is_allocated
 
-    function view_is_applied(obj) result(SH_rv)
+    function view_is_applied(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_applied
-        SH_rv = c_view_is_applied(obj%voidptr)
+        SHT_rv = c_view_is_applied(obj%voidptr)
         ! splicer end class.View.method.is_applied
     end function view_is_applied
 
-    function view_is_described(obj) result(SH_rv)
+    function view_is_described(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_described
-        SH_rv = c_view_is_described(obj%voidptr)
+        SHT_rv = c_view_is_described(obj%voidptr)
         ! splicer end class.View.method.is_described
     end function view_is_described
 
-    function view_is_empty(obj) result(SH_rv)
+    function view_is_empty(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_empty
-        SH_rv = c_view_is_empty(obj%voidptr)
+        SHT_rv = c_view_is_empty(obj%voidptr)
         ! splicer end class.View.method.is_empty
     end function view_is_empty
 
-    function view_is_opaque(obj) result(SH_rv)
+    function view_is_opaque(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_opaque
-        SH_rv = c_view_is_opaque(obj%voidptr)
+        SHT_rv = c_view_is_opaque(obj%voidptr)
         ! splicer end class.View.method.is_opaque
     end function view_is_opaque
 
-    function view_is_scalar(obj) result(SH_rv)
+    function view_is_scalar(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_scalar
-        SH_rv = c_view_is_scalar(obj%voidptr)
+        SHT_rv = c_view_is_scalar(obj%voidptr)
         ! splicer end class.View.method.is_scalar
     end function view_is_scalar
 
-    function view_is_string(obj) result(SH_rv)
+    function view_is_string(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         class(SidreView) :: obj
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.is_string
-        SH_rv = c_view_is_string(obj%voidptr)
+        SHT_rv = c_view_is_string(obj%voidptr)
         ! splicer end class.View.method.is_string
     end function view_is_string
 
-    function view_get_index(obj) result(SH_rv)
+    function view_get_index(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreView) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.View.method.get_index
-        SH_rv = c_view_get_index(obj%voidptr)
+        SHT_rv = c_view_get_index(obj%voidptr)
         ! splicer end class.View.method.get_index
     end function view_get_index
 
-    function view_get_name(obj) result(SH_rv)
+    function view_get_name(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreView) :: obj
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.View.method.get_name
-        call c_view_get_name_bufferify(  &
-            obj%voidptr,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_view_get_name_bufferify(obj%voidptr, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.View.method.get_name
     end function view_get_name
 
-    function view_get_path(obj) result(SH_rv)
+    function view_get_path(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreView) :: obj
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.View.method.get_path
-        call c_view_get_path_bufferify(  &
-            obj%voidptr,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_view_get_path_bufferify(obj%voidptr, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.View.method.get_path
     end function view_get_path
 
-    function view_get_path_name(obj) result(SH_rv)
+    function view_get_path_name(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_CHAR, C_INT
         class(SidreView) :: obj
-        character(kind=C_CHAR, len=MAXNAMESIZE) :: SH_rv
+        character(kind=C_CHAR, len=MAXNAMESIZE) :: SHT_rv
         ! splicer begin class.View.method.get_path_name
-        call c_view_get_path_name_bufferify(  &
-            obj%voidptr,  &
-            SH_rv,  &
-            len(SH_rv, kind=C_INT))
+        call c_view_get_path_name_bufferify(obj%voidptr, SHT_rv, &
+            len(SHT_rv, kind=C_INT))
         ! splicer end class.View.method.get_path_name
     end function view_get_path_name
 
-    function view_get_buffer(obj) result(SH_rv)
+    function view_get_buffer(obj) &
+            result(SHT_rv)
         class(SidreView) :: obj
-        type(SidreBuffer) :: SH_rv
+        type(SidreBuffer) :: SHT_rv
         ! splicer begin class.View.method.get_buffer
-        SH_rv%voidptr = c_view_get_buffer(obj%voidptr)
+        SHT_rv%voidptr = c_view_get_buffer(obj%voidptr)
         ! splicer end class.View.method.get_buffer
     end function view_get_buffer
 
-    function view_get_void_ptr(obj) result(SH_rv)
+    function view_get_void_ptr(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_PTR
         class(SidreView) :: obj
-        type(C_PTR) :: SH_rv
+        type(C_PTR) :: SHT_rv
         ! splicer begin class.View.method.get_void_ptr
-        SH_rv = c_view_get_void_ptr(obj%voidptr)
+        SHT_rv = c_view_get_void_ptr(obj%voidptr)
         ! splicer end class.View.method.get_void_ptr
     end function view_get_void_ptr
 
@@ -5052,9 +4967,7 @@ contains
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: value
         ! splicer begin class.View.method.set_scalar_int
-        call c_view_set_scalar_int(  &
-            obj%voidptr,  &
-            value)
+        call c_view_set_scalar_int(obj%voidptr, value)
         ! splicer end class.View.method.set_scalar_int
     end subroutine view_set_scalar_int
 
@@ -5063,9 +4976,7 @@ contains
         class(SidreView) :: obj
         integer(C_LONG), value, intent(IN) :: value
         ! splicer begin class.View.method.set_scalar_long
-        call c_view_set_scalar_long(  &
-            obj%voidptr,  &
-            value)
+        call c_view_set_scalar_long(obj%voidptr, value)
         ! splicer end class.View.method.set_scalar_long
     end subroutine view_set_scalar_long
 
@@ -5074,9 +4985,7 @@ contains
         class(SidreView) :: obj
         real(C_FLOAT), value, intent(IN) :: value
         ! splicer begin class.View.method.set_scalar_float
-        call c_view_set_scalar_float(  &
-            obj%voidptr,  &
-            value)
+        call c_view_set_scalar_float(obj%voidptr, value)
         ! splicer end class.View.method.set_scalar_float
     end subroutine view_set_scalar_float
 
@@ -5085,9 +4994,7 @@ contains
         class(SidreView) :: obj
         real(C_DOUBLE), value, intent(IN) :: value
         ! splicer begin class.View.method.set_scalar_double
-        call c_view_set_scalar_double(  &
-            obj%voidptr,  &
-            value)
+        call c_view_set_scalar_double(obj%voidptr, value)
         ! splicer end class.View.method.set_scalar_double
     end subroutine view_set_scalar_double
 
@@ -5096,39 +5003,34 @@ contains
         class(SidreView) :: obj
         type(C_PTR), value, intent(IN) :: external_ptr
         ! splicer begin class.View.method.set_external_data_ptr_only
-        call c_view_set_external_data_ptr_only(  &
-            obj%voidptr,  &
+        call c_view_set_external_data_ptr_only(obj%voidptr, &
             external_ptr)
         ! splicer end class.View.method.set_external_data_ptr_only
     end subroutine view_set_external_data_ptr_only
 
-    subroutine view_set_external_data_ptr_type_int(obj, type, num_elems, external_ptr)
+    subroutine view_set_external_data_ptr_type_int(obj, type, num_elems, &
+            external_ptr)
         use iso_c_binding, only : C_INT, C_LONG, C_PTR
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         type(C_PTR), value, intent(IN) :: external_ptr
         ! splicer begin class.View.method.set_external_data_ptr_type_int
-        call c_view_set_external_data_ptr_type(  &
-            obj%voidptr,  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            external_ptr)
+        call c_view_set_external_data_ptr_type(obj%voidptr, type, &
+            int(num_elems, C_LONG), external_ptr)
         ! splicer end class.View.method.set_external_data_ptr_type_int
     end subroutine view_set_external_data_ptr_type_int
 
-    subroutine view_set_external_data_ptr_type_long(obj, type, num_elems, external_ptr)
+    subroutine view_set_external_data_ptr_type_long(obj, type, &
+            num_elems, external_ptr)
         use iso_c_binding, only : C_INT, C_LONG, C_PTR
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         type(C_PTR), value, intent(IN) :: external_ptr
         ! splicer begin class.View.method.set_external_data_ptr_type_long
-        call c_view_set_external_data_ptr_type(  &
-            obj%voidptr,  &
-            type,  &
-            int(num_elems, C_LONG),  &
-            external_ptr)
+        call c_view_set_external_data_ptr_type(obj%voidptr, type, &
+            int(num_elems, C_LONG), external_ptr)
         ! splicer end class.View.method.set_external_data_ptr_type_long
     end subroutine view_set_external_data_ptr_type_long
 
@@ -5137,14 +5039,13 @@ contains
         class(SidreView) :: obj
         character(*), intent(IN) :: value
         ! splicer begin class.View.method.set_string
-        call c_view_set_string_bufferify(  &
-            obj%voidptr,  &
-            value,  &
+        call c_view_set_string_bufferify(obj%voidptr, value, &
             len_trim(value, kind=C_INT))
         ! splicer end class.View.method.set_string
     end subroutine view_set_string
 
-    subroutine view_set_external_data_ptr_shape(obj, type, ndims, shape, external_ptr)
+    subroutine view_set_external_data_ptr_shape(obj, type, ndims, shape, &
+            external_ptr)
         use iso_c_binding, only : C_INT, C_LONG, C_PTR
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: type
@@ -5152,12 +5053,8 @@ contains
         integer(C_LONG), intent(IN) :: shape(*)
         type(C_PTR), value, intent(IN) :: external_ptr
         ! splicer begin class.View.method.set_external_data_ptr_shape
-        call c_view_set_external_data_ptr_shape(  &
-            obj%voidptr,  &
-            type,  &
-            ndims,  &
-            shape,  &
-            external_ptr)
+        call c_view_set_external_data_ptr_shape(obj%voidptr, type, &
+            ndims, shape, external_ptr)
         ! splicer end class.View.method.set_external_data_ptr_shape
     end subroutine view_set_external_data_ptr_shape
 
@@ -5166,143 +5063,150 @@ contains
         class(SidreView) :: obj
         character(*), intent(OUT) :: name
         ! splicer begin class.View.method.get_string
-        call c_view_get_string_bufferify(  &
-            obj%voidptr,  &
-            name,  &
+        call c_view_get_string_bufferify(obj%voidptr, name, &
             len(name, kind=C_INT))
         ! splicer end class.View.method.get_string
     end subroutine view_get_string
 
-    function view_get_data_int(obj) result(SH_rv)
+    function view_get_data_int(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreView) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.View.method.get_data_int
-        SH_rv = c_view_get_data_int(obj%voidptr)
+        SHT_rv = c_view_get_data_int(obj%voidptr)
         ! splicer end class.View.method.get_data_int
     end function view_get_data_int
 
-    function view_get_data_long(obj) result(SH_rv)
+    function view_get_data_long(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_LONG
         class(SidreView) :: obj
-        integer(C_LONG) :: SH_rv
+        integer(C_LONG) :: SHT_rv
         ! splicer begin class.View.method.get_data_long
-        SH_rv = c_view_get_data_long(obj%voidptr)
+        SHT_rv = c_view_get_data_long(obj%voidptr)
         ! splicer end class.View.method.get_data_long
     end function view_get_data_long
 
-    function view_get_data_float(obj) result(SH_rv)
+    function view_get_data_float(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_FLOAT
         class(SidreView) :: obj
-        real(C_FLOAT) :: SH_rv
+        real(C_FLOAT) :: SHT_rv
         ! splicer begin class.View.method.get_data_float
-        SH_rv = c_view_get_data_float(obj%voidptr)
+        SHT_rv = c_view_get_data_float(obj%voidptr)
         ! splicer end class.View.method.get_data_float
     end function view_get_data_float
 
-    function view_get_data_double(obj) result(SH_rv)
+    function view_get_data_double(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_DOUBLE
         class(SidreView) :: obj
-        real(C_DOUBLE) :: SH_rv
+        real(C_DOUBLE) :: SHT_rv
         ! splicer begin class.View.method.get_data_double
-        SH_rv = c_view_get_data_double(obj%voidptr)
+        SHT_rv = c_view_get_data_double(obj%voidptr)
         ! splicer end class.View.method.get_data_double
     end function view_get_data_double
 
-    function view_get_owning_group(obj) result(SH_rv)
+    function view_get_owning_group(obj) &
+            result(SHT_rv)
         class(SidreView) :: obj
-        type(SidreGroup) :: SH_rv
+        type(SidreGroup) :: SHT_rv
         ! splicer begin class.View.method.get_owning_group
-        SH_rv%voidptr = c_view_get_owning_group(obj%voidptr)
+        SHT_rv%voidptr = c_view_get_owning_group(obj%voidptr)
         ! splicer end class.View.method.get_owning_group
     end function view_get_owning_group
 
-    function view_get_type_id(obj) result(SH_rv)
+    function view_get_type_id(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreView) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.View.method.get_type_id
-        SH_rv = c_view_get_type_id(obj%voidptr)
+        SHT_rv = c_view_get_type_id(obj%voidptr)
         ! splicer end class.View.method.get_type_id
     end function view_get_type_id
 
-    function view_get_total_bytes(obj) result(SH_rv)
+    function view_get_total_bytes(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreView) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.View.method.get_total_bytes
-        SH_rv = c_view_get_total_bytes(obj%voidptr)
+        SHT_rv = c_view_get_total_bytes(obj%voidptr)
         ! splicer end class.View.method.get_total_bytes
     end function view_get_total_bytes
 
-    function view_get_bytes_per_element(obj) result(SH_rv)
+    function view_get_bytes_per_element(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreView) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.View.method.get_bytes_per_element
-        SH_rv = c_view_get_bytes_per_element(obj%voidptr)
+        SHT_rv = c_view_get_bytes_per_element(obj%voidptr)
         ! splicer end class.View.method.get_bytes_per_element
     end function view_get_bytes_per_element
 
-    function view_get_num_elements(obj) result(SH_rv)
+    function view_get_num_elements(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreView) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.View.method.get_num_elements
-        SH_rv = c_view_get_num_elements(obj%voidptr)
+        SHT_rv = c_view_get_num_elements(obj%voidptr)
         ! splicer end class.View.method.get_num_elements
     end function view_get_num_elements
 
-    function view_get_offset(obj) result(SH_rv)
+    function view_get_offset(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreView) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.View.method.get_offset
-        SH_rv = c_view_get_offset(obj%voidptr)
+        SHT_rv = c_view_get_offset(obj%voidptr)
         ! splicer end class.View.method.get_offset
     end function view_get_offset
 
-    function view_get_stride(obj) result(SH_rv)
+    function view_get_stride(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_SIZE_T
         class(SidreView) :: obj
-        integer(C_SIZE_T) :: SH_rv
+        integer(C_SIZE_T) :: SHT_rv
         ! splicer begin class.View.method.get_stride
-        SH_rv = c_view_get_stride(obj%voidptr)
+        SHT_rv = c_view_get_stride(obj%voidptr)
         ! splicer end class.View.method.get_stride
     end function view_get_stride
 
-    function view_get_num_dimensions(obj) result(SH_rv)
+    function view_get_num_dimensions(obj) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         class(SidreView) :: obj
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.View.method.get_num_dimensions
-        SH_rv = c_view_get_num_dimensions(obj%voidptr)
+        SHT_rv = c_view_get_num_dimensions(obj%voidptr)
         ! splicer end class.View.method.get_num_dimensions
     end function view_get_num_dimensions
 
-    function view_get_shape(obj, ndims, shape) result(SH_rv)
+    function view_get_shape(obj, ndims, shape) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT, C_LONG
         class(SidreView) :: obj
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_LONG), intent(OUT) :: shape(*)
-        integer(C_INT) :: SH_rv
+        integer(C_INT) :: SHT_rv
         ! splicer begin class.View.method.get_shape
-        SH_rv = c_view_get_shape(  &
-            obj%voidptr,  &
-            ndims,  &
-            shape)
+        SHT_rv = c_view_get_shape(obj%voidptr, ndims, shape)
         ! splicer end class.View.method.get_shape
     end function view_get_shape
 
-    function view_rename(obj, new_name) result(SH_rv)
+    function view_rename(obj, new_name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         class(SidreView) :: obj
         character(*), intent(IN) :: new_name
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin class.View.method.rename
-        SH_rv = c_view_rename_bufferify(  &
-            obj%voidptr,  &
-            new_name,  &
+        SHT_rv = c_view_rename_bufferify(obj%voidptr, new_name, &
             len_trim(new_name, kind=C_INT))
         ! splicer end class.View.method.rename
     end function view_rename
@@ -5316,7 +5220,6 @@ contains
 
     function view_get_instance(obj) result (voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreView), intent(IN) :: obj
         type(C_PTR) :: voidptr
         voidptr = obj%voidptr
@@ -5324,7 +5227,6 @@ contains
 
     subroutine view_set_instance(obj, voidptr)
         use iso_c_binding, only: C_PTR
-        implicit none
         class(SidreView), intent(INOUT) :: obj
         type(C_PTR), intent(IN) :: voidptr
         obj%voidptr = voidptr
@@ -5332,7 +5234,6 @@ contains
 
     function view_associated(obj) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         class(SidreView), intent(IN) :: obj
         logical rv
         rv = c_associated(obj%voidptr)
@@ -6309,12 +6210,13 @@ contains
     end subroutine view_set_array_data_ptr_double_4d
     ! splicer end class.View.additional_functions
 
-    function name_is_valid(name) result(SH_rv)
+    function name_is_valid(name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
         character(*), intent(IN) :: name
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin function.name_is_valid
-        SH_rv = name .ne. " "
+        SHT_rv = name .ne. " "
         ! splicer end function.name_is_valid
     end function name_is_valid
 
@@ -6323,7 +6225,6 @@ contains
 
     function datastore_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreDataStore), intent(IN) ::a,b
         logical :: rv
         if (c_associated(a%voidptr, b%voidptr)) then
@@ -6335,7 +6236,6 @@ contains
 
     function datastore_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreDataStore), intent(IN) ::a,b
         logical :: rv
         if (.not. c_associated(a%voidptr, b%voidptr)) then
@@ -6347,7 +6247,6 @@ contains
 
     function group_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreGroup), intent(IN) ::a,b
         logical :: rv
         if (c_associated(a%voidptr, b%voidptr)) then
@@ -6359,7 +6258,6 @@ contains
 
     function group_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreGroup), intent(IN) ::a,b
         logical :: rv
         if (.not. c_associated(a%voidptr, b%voidptr)) then
@@ -6371,7 +6269,6 @@ contains
 
     function buffer_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreBuffer), intent(IN) ::a,b
         logical :: rv
         if (c_associated(a%voidptr, b%voidptr)) then
@@ -6383,7 +6280,6 @@ contains
 
     function buffer_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreBuffer), intent(IN) ::a,b
         logical :: rv
         if (.not. c_associated(a%voidptr, b%voidptr)) then
@@ -6395,7 +6291,6 @@ contains
 
     function view_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreView), intent(IN) ::a,b
         logical :: rv
         if (c_associated(a%voidptr, b%voidptr)) then
@@ -6407,7 +6302,6 @@ contains
 
     function view_ne(a,b) result (rv)
         use iso_c_binding, only: c_associated
-        implicit none
         type(SidreView), intent(IN) ::a,b
         logical :: rv
         if (.not. c_associated(a%voidptr, b%voidptr)) then

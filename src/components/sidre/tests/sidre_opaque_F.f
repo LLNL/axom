@@ -183,6 +183,7 @@ contains
 
     type(MeshVar), allocatable, target :: zone_mv, node_mv
     type(Extent), pointer :: dom_ext
+    type(Extent), allocatable, target :: domains(:)
 
     type(MeshVar), pointer :: zonemv, nodemv
     type(C_PTR) zonemv_ptr, nodemv_ptr, dom_ext_ptr
@@ -207,9 +208,10 @@ contains
     ! Create domain groups, add extents
     ! Create data views for mesh var data on domains and allocate
     !
+    allocate(domains(2))
     do idom = 1, 2
        dom_gp = problem_gp%create_group(dom_name(idom))
-       allocate(dom_ext)
+       dom_ext => domains(idom)
        dom_ext = Extent(ilo_val(idom), ihi_val(idom))
        ext_view = dom_gp%create_view_external("ext", c_loc(dom_ext))
 
@@ -262,13 +264,7 @@ contains
     ! clean up...
     deallocate(zone_mv)
     deallocate(node_mv)
-    do idom = 1, 2
-       tmpgroup = problem_gp%get_group(dom_name(idom))
-       tmpview = tmpgroup%get_view("ext")
-       dom_ext_ptr = tmpview%get_void_ptr()
-       call c_f_pointer(dom_ext_ptr, dom_ext)
-       deallocate(dom_ext)
-    enddo
+    deallocate(domains)
     call ds%delete()
   end subroutine meshvar_test
 

@@ -110,14 +110,14 @@ SIDRE_IndexType SIDRE_view_get_index(SIDRE_view* self);
 
 const char* SIDRE_view_get_name(const SIDRE_view* self);
 
-void SIDRE_view_get_name_bufferify(const SIDRE_view* self, char* SH_F_rv,
-                                   int NSH_F_rv);
+void SIDRE_view_get_name_bufferify(const SIDRE_view* self, char* SHF_rv,
+                                   int NSHF_rv);
 
-void SIDRE_view_get_path_bufferify(const SIDRE_view* self, char* SH_F_rv,
-                                   int NSH_F_rv);
+void SIDRE_view_get_path_bufferify(const SIDRE_view* self, char* SHF_rv,
+                                   int NSHF_rv);
 
-void SIDRE_view_get_path_name_bufferify(const SIDRE_view* self, char* SH_F_rv,
-                                        int NSH_F_rv);
+void SIDRE_view_get_path_name_bufferify(const SIDRE_view* self, char* SHF_rv,
+                                        int NSHF_rv);
 
 SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self);
 
@@ -144,8 +144,7 @@ void SIDRE_view_set_string_bufferify(SIDRE_view* self, const char* value,
                                      int Lvalue);
 
 void SIDRE_view_set_external_data_ptr_shape(SIDRE_view* self, int type,
-                                            int ndims,
-                                            SIDRE_SidreLength* shape,
+                                            int ndims, SIDRE_SidreLength* shape,
                                             void* external_ptr);
 
 const char* SIDRE_view_get_string(SIDRE_view* self);

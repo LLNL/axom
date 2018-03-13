@@ -81,9 +81,16 @@ TEST(spio_scr, spio_scr_writeread)
 
   writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
 
-  std::string root_name = "out_spio_parallel_write_read.root";
-
   MPI_Barrier(MPI_COMM_WORLD);
+
+  /*
+   * SCR write operation is complete. Must finalize and initialize
+   * before reading.
+   */
+  SCR_Finalize();
+  SCR_Init();
+
+  std::string root_name = "out_spio_parallel_write_read.root";
 
   /*
    * Create another DataStore that holds nothing but the root group.

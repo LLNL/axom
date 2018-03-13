@@ -13,7 +13,6 @@
 //
 // For details about use and distribution, please read axom/LICENSE.
 //
-// wrapSidre.cpp
 #include "wrapSidre.h"
 #include <string>
 

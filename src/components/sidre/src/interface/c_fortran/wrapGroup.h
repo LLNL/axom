@@ -49,14 +49,14 @@ SIDRE_IndexType SIDRE_group_get_index(SIDRE_group* self);
 
 const char* SIDRE_group_get_name(const SIDRE_group* self);
 
-void SIDRE_group_get_name_bufferify(const SIDRE_group* self, char* SH_F_rv,
-                                    int NSH_F_rv);
+void SIDRE_group_get_name_bufferify(const SIDRE_group* self, char* SHF_rv,
+                                    int NSHF_rv);
 
-void SIDRE_group_get_path_bufferify(const SIDRE_group* self, char* SH_F_rv,
-                                    int NSH_F_rv);
+void SIDRE_group_get_path_bufferify(const SIDRE_group* self, char* SHF_rv,
+                                    int NSHF_rv);
 
-void SIDRE_group_get_path_name_bufferify(const SIDRE_group* self,
-                                         char* SH_F_rv, int NSH_F_rv);
+void SIDRE_group_get_path_name_bufferify(const SIDRE_group* self, char* SHF_rv,
+                                         int NSHF_rv);
 
 const SIDRE_group* SIDRE_group_get_parent(const SIDRE_group* self);
 
@@ -81,8 +81,7 @@ bool SIDRE_group_rename(SIDRE_group* self, const char* new_name);
 bool SIDRE_group_rename_bufferify(SIDRE_group* self, const char* new_name,
                                   int Lnew_name);
 
-SIDRE_view* SIDRE_group_get_view_from_name(SIDRE_group* self,
-                                           const char* path);
+SIDRE_view* SIDRE_group_get_view_from_name(SIDRE_group* self, const char* path);
 
 SIDRE_view* SIDRE_group_get_view_from_name_bufferify(SIDRE_group* self,
                                                      const char* path,
@@ -102,8 +101,8 @@ const char* SIDRE_group_get_view_name(const SIDRE_group* self,
                                       SIDRE_IndexType idx);
 
 void SIDRE_group_get_view_name_bufferify(const SIDRE_group* self,
-                                         SIDRE_IndexType idx, char* SH_F_rv,
-                                         int NSH_F_rv);
+                                         SIDRE_IndexType idx, char* SHF_rv,
+                                         int NSHF_rv);
 
 SIDRE_IndexType SIDRE_group_get_first_valid_view_index(const SIDRE_group* self);
 
@@ -144,8 +143,7 @@ SIDRE_view* SIDRE_group_create_view_scalar_long_bufferify(SIDRE_group* self,
                                                           long value);
 
 SIDRE_view* SIDRE_group_create_view_scalar_float(SIDRE_group* self,
-                                                 const char* path,
-                                                 float value);
+                                                 const char* path, float value);
 
 SIDRE_view* SIDRE_group_create_view_scalar_float_bufferify(SIDRE_group* self,
                                                            const char* path,
@@ -161,8 +159,7 @@ SIDRE_view* SIDRE_group_create_view_scalar_double_bufferify(SIDRE_group* self,
                                                             int Lpath,
                                                             double value);
 
-SIDRE_view* SIDRE_group_create_view_string(SIDRE_group* self,
-                                           const char* path,
+SIDRE_view* SIDRE_group_create_view_string(SIDRE_group* self, const char* path,
                                            const char* value);
 
 SIDRE_view* SIDRE_group_create_view_string_bufferify(SIDRE_group* self,
@@ -171,8 +168,7 @@ SIDRE_view* SIDRE_group_create_view_string_bufferify(SIDRE_group* self,
                                                      const char* value,
                                                      int Lvalue);
 
-SIDRE_view* SIDRE_group_create_view_empty(SIDRE_group* self,
-                                          const char* path);
+SIDRE_view* SIDRE_group_create_view_empty(SIDRE_group* self, const char* path);
 
 SIDRE_view* SIDRE_group_create_view_empty_bufferify(SIDRE_group* self,
                                                     const char* path,
@@ -282,8 +278,8 @@ bool SIDRE_group_has_group_bufferify(SIDRE_group* self, const char* path,
 
 bool SIDRE_group_has_child_group(SIDRE_group* self, const char* name);
 
-bool SIDRE_group_has_child_group_bufferify(SIDRE_group* self,
-                                           const char* name, int Lname);
+bool SIDRE_group_has_child_group_bufferify(SIDRE_group* self, const char* name,
+                                           int Lname);
 
 SIDRE_group* SIDRE_group_get_group_from_name(SIDRE_group* self,
                                              const char* path);
@@ -306,8 +302,8 @@ const char* SIDRE_group_get_group_name(const SIDRE_group* self,
                                        SIDRE_IndexType idx);
 
 void SIDRE_group_get_group_name_bufferify(const SIDRE_group* self,
-                                          SIDRE_IndexType idx, char* SH_F_rv,
-                                          int NSH_F_rv);
+                                          SIDRE_IndexType idx, char* SHF_rv,
+                                          int NSHF_rv);
 
 SIDRE_IndexType SIDRE_group_get_first_valid_group_index(const SIDRE_group* self);
 
@@ -336,9 +332,9 @@ bool SIDRE_group_is_equivalent_to(const SIDRE_group* self,
 void SIDRE_group_save(const SIDRE_group* self, const char* file_path,
                       const char* protocol);
 
-void SIDRE_group_save_bufferify(const SIDRE_group* self,
-                                const char* file_path, int Lfile_path,
-                                const char* protocol, int Lprotocol);
+void SIDRE_group_save_bufferify(const SIDRE_group* self, const char* file_path,
+                                int Lfile_path, const char* protocol,
+                                int Lprotocol);
 
 void SIDRE_group_load_0(SIDRE_group* self, const char* file_path,
                         const char* protocol);

@@ -117,7 +117,7 @@ Package Dependencies:
 ================== ====================================
   Tool               Purpose
 ================== ====================================
-  Shroud            Multi-language binding generation
+  Shroud             Multi-language binding generation
   Doxygen            Source Code Docs
   Sphinx             User Docs
   Breathe            Doxygen integration for Sphinx
