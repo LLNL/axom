@@ -352,9 +352,7 @@ private:
 
     UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
     const int num_nodes = mesh->getMeshNumberOfNodes();
-    mesh->getNodeFieldData().addField(
-      new FieldVariable< double >("temperature", num_nodes, 1) );
-
+    mesh->getNodeFieldData().createField< double >( "temperature", num_nodes );
     return mesh;
   }
 

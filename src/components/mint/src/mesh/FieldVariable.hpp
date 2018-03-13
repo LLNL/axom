@@ -154,7 +154,7 @@ public:
    * \note If num_components is set to 1 if not specified.
    *
    * \note The supplied pointer must point to a buffer that is sufficiently
-   *  allocated to hold \f$ num\_tuples \times num\_components \f$ itmes.
+   *  allocated to hold \f$ num\_tuples \times num\_components \f$ items.
    *
    * \warning When constructing a FieldVariable instance from an external
    *  buffer, all calls to shrink(), resize() and reserve() will fail.

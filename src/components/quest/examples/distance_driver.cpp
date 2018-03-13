@@ -262,9 +262,8 @@ void distance_field( axom::mint::Mesh * surface_mesh,
 
   // mark bucket IDs on surface mesh
   mint::FieldData& CD = surface_mesh->getCellFieldData( );
-  const int ncells = surface_mesh->getMeshNumberOfCells( );
-  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells, 1 ) );
-  int* bidx = mint::Field::getDataPtr< int >( CD.getField( "BucketID" ) );
+  const int ncells    = surface_mesh->getMeshNumberOfCells( );
+  int* bidx           = CD.createField< int >( "BucketID", ncells );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -282,14 +281,9 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
 
   mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField( new mint::FieldVariable< double >("phi", nnodes, 1) );
-  PD.addField( new mint::FieldVariable< int >( "nbuckets", nnodes, 1 ) );
-  PD.addField( new mint::FieldVariable< int >( "ntriangles", nnodes, 1 ) );
-
-  double* phi     = mint::Field::getDataPtr< double >( PD.getField("phi") );
-  int* nbuckets   = mint::Field::getDataPtr< int >( PD.getField("nbuckets") );
-  int* ntriangles = mint::Field::getDataPtr< int >( PD.getField("ntriangles") );
-
+  double* phi         = PD.createField< double >( "phi", nnodes );
+  int* nbuckets       = PD.createField< int >( "nbuckets", nnodes );
+  int* ntriangles     = PD.createField< int >( "ntriangles", nnodes );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
   SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
   SLIC_ASSERT( ntriangles != AXOM_NULLPTR );

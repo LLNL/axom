@@ -355,54 +355,6 @@ public:
 
 protected:
 
-  inline void setCellDataSize( IndexType size )
-  { m_cell_data.resize( size ); }
-
-
-  inline void setFaceDataSize( IndexType size )
-  { m_face_data.resize( size ); }
-
-
-  inline void setEdgeDataSize( IndexType size )
-  { m_edge_data.resize( size ); }
-
-
-  inline void setNodeDataSize( IndexType size )
-  { m_node_data.resize( size ); }
-
-
-  inline void setCellDataCapacity( IndexType capacity )
-  { m_cell_data.reserve( capacity ); }
-
-
-  inline void setFaceDataCapacity( IndexType capacity )
-  { m_face_data.reserve( capacity ); }
-
-
-  inline void setEdgeDataCapacity( IndexType capacity )
-  { m_edge_data.reserve( capacity ); }
-
-
-  inline void setNodeDataCapacity( IndexType capacity )
-  { m_node_data.reserve( capacity ); }
-
-
-  inline void setCellDataResizeRatio( double ratio )
-  { m_cell_data.setResizeRatio( ratio ); }
-
-
-  inline void setFaceDataResizeRatio( double ratio )
-  { m_face_data.setResizeRatio( ratio ); }
-
-
-  inline void setEdgeDataResizeRatio( double ratio )
-  { m_edge_data.setResizeRatio( ratio ); }
-
-
-  inline void setNodeDataResizeRatio( double ratio )
-  { m_node_data.setResizeRatio( ratio ); }
-
-
   int m_ndims;          /*! mesh dimension */
   int m_type;           /*! the type of the mesh */
   int m_block_idx;      /*! the Block ID of the mesh */

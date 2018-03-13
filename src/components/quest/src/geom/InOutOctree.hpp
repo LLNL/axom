@@ -2765,9 +2765,8 @@ private:
   {
     const mint::IndexType nnodes = mesh->getNumberOfNodes();
     mint::FieldData& ND          = mesh->getNodeFieldData();
-    ND.addField( new mint::FieldVariable< int >( name, nnodes, 1 ) );
 
-    int* fld = mint::Field::getDataPtr< int >( ND.getField( name )  );
+    int* fld = ND.createField< int >( name, nnodes );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }
@@ -2777,9 +2776,8 @@ private:
   {
     const mint::IndexType nnodes = mesh->getNumberOfNodes();
     mint::FieldData& ND          = mesh->getNodeFieldData();
-    ND.addField( new mint::FieldVariable< double >( name, nnodes, 1 ) );
 
-    double* fld = mint::Field::getDataPtr< double >( ND.getField( name ) );
+    double* fld = ND.createField< double >( name, nnodes );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }

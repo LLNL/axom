@@ -863,10 +863,8 @@ void check_interp( double TOL=1.e-9 )
   // STEP 1: setup a nodal field to interpolate
   // Note: I don't know why we need to cast as m as a Mesh to add a field
   // it works just fine other places. -BC
-  m->getNodeFieldData().addField(
-      new mint::FieldVariable< double >("foo", nnodes, 1 ) );
-  double* f = mint::Field::getDataPtr< double >(
-                    m->getNodeFieldData().getField( "foo" ) );
+  mint::FieldData& ND = m->getNodeFieldData();
+  double* f = ND.createField< double >( "foo", nnodes );
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 

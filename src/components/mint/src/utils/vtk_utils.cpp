@@ -375,7 +375,7 @@ void write_multidim_data( const Field* field, std::ofstream& file )
 void write_data( const FieldData& field_data, IndexType num_values,
                  std::ofstream& file )
 {
-  for ( int i = 0 ; i < field_data.getNumberOfFields() ; ++i )
+  for ( int i = 0 ; i < field_data.getNumFields() ; ++i )
   {
     const Field* field = field_data.getField( i );
     SLIC_ASSERT( field != AXOM_NULLPTR );
@@ -480,7 +480,7 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
   /* Write out the node data if any. */
   const IndexType num_nodes = mesh->getMeshNumberOfNodes();
   const FieldData& node_data = mesh->getNodeFieldData();
-  if ( node_data.getNumberOfFields() > 0 )
+  if ( node_data.getNumFields() > 0 )
   {
     file << "POINT_DATA " << num_nodes << std::endl;
     internal::write_data( node_data, num_nodes, file );
@@ -489,7 +489,7 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
   /* Write out the cell data if any. */
   const IndexType num_cells = mesh->getMeshNumberOfCells();
   const FieldData& cell_data = mesh->getCellFieldData();
-  if ( cell_data.getNumberOfFields() > 0 )
+  if ( cell_data.getNumFields() > 0 )
   {
     file << "CELL_DATA " << num_cells << std::endl;
     internal::write_data( cell_data, num_cells, file );

@@ -1315,10 +1315,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     const int numCells =  cmesh.getMeshNumberOfCells();
     SLIC_INFO("Mesh has " << numCells << " cells.");
 
-    std::string name = "query_status";
+    std::string name          = "query_status";
     axom::mint::FieldData& CD = cmesh.getCellFieldData();
-    CD.addField( new axom::mint::FieldVariable< int >(name, numCells, 1 ) );
-    int* fld = axom::mint::Field::getDataPtr< int >( CD.getField( name ) );
+    int* fld                  = CD.createField< int >( name, numCells  );
 
     for(int i=0 ; i < res ; ++i)
     {

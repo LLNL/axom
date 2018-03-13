@@ -78,6 +78,7 @@ set( mint_sources
     mesh/RectilinearMesh.cpp
     mesh/StructuredMesh.cpp
     mesh/UniformMesh.cpp
+    mesh/FieldData.cpp
 
     ## utils
     utils/vtk_utils.cpp

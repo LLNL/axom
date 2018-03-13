@@ -17,7 +17,7 @@
 
 #include "axom_utils/Utilities.hpp"     /* for utilities::max */
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
-#include "mint/config.hpp"           /* for IndexType, int64 */
+#include "mint/config.hpp"              /* for IndexType, int64 */
 #include "mint/CellType.hpp"            /* for cell::vtk_types */
 #include "mint/CurvilinearMesh.hpp"     /* for CurvilinearMesh */
 #include "mint/Field.hpp"               /* for Field */
@@ -91,12 +91,13 @@ void create_scalar_data( Mesh* mesh )
   const IndexType mesh_num_nodes = mesh->getMeshNumberOfNodes();
   const IndexType mesh_num_cells = mesh->getMeshNumberOfCells();
 
-  Field* node_field_d = new FieldVariable< double >( "node_scalars_double",
-                                                     mesh_num_nodes, 1 );
-  Field* node_field_i = new FieldVariable< int >( "node_scalars_int",
-                                                  mesh_num_nodes, 1 );
-  double* double_ptr = Field::getDataPtr< double >( node_field_d );
-  int* int_ptr       = Field::getDataPtr< int >( node_field_i );
+  double* double_ptr = AXOM_NULLPTR;
+  int*    int_ptr    = AXOM_NULLPTR;
+
+  mint::FieldData& ND = mesh->getNodeFieldData( );
+  double_ptr = ND.createField< double >( "node_scalars_double",mesh_num_nodes );
+  int_ptr = ND.createField< int >( "node_scalars_int", mesh_num_nodes );
+
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
@@ -118,22 +119,17 @@ void create_scalar_data( Mesh* mesh )
     double_ptr[ idx ] = temp;
     int_ptr[ idx ] = static_cast<int>(temp);
   }
-  mesh->getNodeFieldData().addField( node_field_d );
-  mesh->getNodeFieldData().addField( node_field_i );
 
-  Field* cell_field_d = new FieldVariable< double >( "cell_scalars_double",
-                                                     mesh_num_cells, 1 );
-  Field* cell_field_i = new FieldVariable< int >( "cell_scalars_int",
-                                                  mesh_num_cells, 1 );
-  double_ptr = Field::getDataPtr< double >( cell_field_d );
-  int_ptr    = Field::getDataPtr< int >( cell_field_i );
+  mint::FieldData& CD = mesh->getCellFieldData();
+  double_ptr = CD.createField< double >("cell_scalars_double",mesh_num_cells );
+  int_ptr    = CD.createField< int >( "cell_scalars_int", mesh_num_cells );
+
   for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr[ idx ] = idx;
     int_ptr[ idx ] = idx;
   }
-  mesh->getCellFieldData().addField( cell_field_d );
-  mesh->getCellFieldData().addField( cell_field_i );
+
 }
 
 /*!
@@ -144,24 +140,21 @@ void create_scalar_data( Mesh* mesh )
 void create_vector_data( Mesh* mesh )
 {
   const int mesh_dim = mesh->getDimension();
-  const IndexType mesh_num_nodes = mesh->getMeshNumberOfNodes();
-  const IndexType mesh_num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
+  const IndexType num_cells = mesh->getMeshNumberOfCells();
 
-  Field* node_field_3d = new FieldVariable< double >( "node_vectors_3double",
-                                                      mesh_num_nodes, 3 );
-  Field* node_field_3i = new FieldVariable< int >( "node_vectors_3int",
-                                                   mesh_num_nodes, 3 );
-  Field* node_field_2d = new FieldVariable< double >( "node_vectors_2double",
-                                                      mesh_num_nodes, 2 );
-  Field* node_field_2i = new FieldVariable< int >( "node_vectors_2int",
-                                                   mesh_num_nodes, 2 );
+  double* double_ptr3 = AXOM_NULLPTR;
+  double* double_ptr2 = AXOM_NULLPTR;
+  int*    int_ptr3    = AXOM_NULLPTR;
+  int*    int_ptr2    = AXOM_NULLPTR;
 
-  double* double_ptr3 = Field::getDataPtr< double >( node_field_3d );
-  int* int_ptr3       = Field::getDataPtr< int >( node_field_3i );
-  double* double_ptr2 = Field::getDataPtr< double >( node_field_2d );
-  int* int_ptr2       = Field::getDataPtr< int >( node_field_2i );
+  mint::FieldData& ND = mesh->getNodeFieldData();
+  double_ptr3 = ND.createField< double >("node_vectors_3double",num_nodes,3 );
+  int_ptr3    = ND.createField< int >( "node_vectors_3int",num_nodes,3 );
+  double_ptr2 = ND.createField< double >( "node_vectors_2double",num_nodes,2 );
+  int_ptr2    = ND.createField< int >( "node_vectors_2int", num_nodes, 2 );
 
-  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
     double y = 0;
@@ -196,26 +189,14 @@ void create_vector_data( Mesh* mesh )
     int_ptr2[ 2 * idx ] = static_cast<int>(v1);
     int_ptr2[ 2 * idx + 1 ] = static_cast<int>(v2);
   }
-  mesh->getNodeFieldData().addField( node_field_3d );
-  mesh->getNodeFieldData().addField( node_field_3i );
-  mesh->getNodeFieldData().addField( node_field_2d );
-  mesh->getNodeFieldData().addField( node_field_2i );
 
-  Field* cell_field_3d = new FieldVariable< double >( "cell_vectors_3double",
-                                                      mesh_num_cells, 3 );
-  Field* cell_field_3i = new FieldVariable< int >( "cell_vectors_3int",
-                                                   mesh_num_cells, 3 );
-  Field* cell_field_2d = new FieldVariable< double >( "cell_vectors_2double",
-                                                      mesh_num_cells, 2 );
-  Field* cell_field_2i = new FieldVariable< int >( "cell_vectors_2int",
-                                                   mesh_num_cells, 2 );
+  mint::FieldData& CD = mesh->getCellFieldData();
+  double_ptr3 = CD.createField< double >( "cell_vectors_3double",num_cells,3 );
+  int_ptr3    = CD.createField< int >( "cell_vectors_3int", num_cells, 3 );
+  double_ptr2 = CD.createField< double >( "cell_vectors_2double", num_cells,2);
+  int_ptr2    = CD.createField< int >( "cell_vectors_2int", num_cells, 2 );
 
-  double_ptr3 = Field::getDataPtr< double >( cell_field_3d );
-  int_ptr3    = Field::getDataPtr< int >( cell_field_3i );
-  double_ptr2 = Field::getDataPtr< double >( cell_field_2d );
-  int_ptr2    = Field::getDataPtr< int >( cell_field_2i );
-
-  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
+  for ( int idx = 0 ; idx < num_cells ; ++idx )
   {
     double_ptr3[ 3 * idx ] = idx;
     double_ptr3[ 3 * idx + 1 ] = idx + 1;
@@ -231,10 +212,7 @@ void create_vector_data( Mesh* mesh )
     int_ptr2[ 2 * idx ] = idx;
     int_ptr2[ 2 * idx + 1 ] = idx + 1;
   }
-  mesh->getCellFieldData().addField( cell_field_3d );
-  mesh->getCellFieldData().addField( cell_field_3i );
-  mesh->getCellFieldData().addField( cell_field_2d );
-  mesh->getCellFieldData().addField( cell_field_2i );
+
 }
 
 /*!
@@ -245,17 +223,17 @@ void create_vector_data( Mesh* mesh )
 void create_multidim_data( Mesh* mesh )
 {
   const int mesh_dim = mesh->getDimension();
-  const IndexType mesh_num_nodes = mesh->getMeshNumberOfNodes();
-  const IndexType mesh_num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
+  const IndexType num_cells = mesh->getMeshNumberOfCells();
 
-  Field* node_field_d = new FieldVariable< double >( "node_multidim_double",
-                                                     mesh_num_nodes, 4);
-  Field* node_field_i = new FieldVariable< int >( "node_multidim_int",
-                                                  mesh_num_nodes, 4);
-  double* double_ptr = Field::getDataPtr< double >( node_field_d );
-  int* int_ptr       = Field::getDataPtr< int >( node_field_i );
+  double* double_ptr = AXOM_NULLPTR;
+  int*    int_ptr    = AXOM_NULLPTR;
 
-  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  mint::FieldData& ND = mesh->getNodeFieldData();
+  double_ptr = ND.createField< double >( "node_multidim_double", num_nodes, 4 );
+  int_ptr    = ND.createField< int >( "node_multidim_int", num_nodes, 4 );
+
+  for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
     double x = mesh->getMeshNodeCoordinate( idx, 0 );
     double y = 0;
@@ -287,17 +265,12 @@ void create_multidim_data( Mesh* mesh )
     int_ptr[4 * idx + 2] = static_cast<int>(v3);
     int_ptr[4 * idx + 3] = static_cast<int>(v4);
   }
-  mesh->getNodeFieldData().addField( node_field_d );
-  mesh->getNodeFieldData().addField( node_field_i );
 
-  Field* cell_field_d = new FieldVariable< double >( "cell_multidim_double",
-                                                     mesh_num_cells, 4 );
-  Field* cell_field_i = new FieldVariable< int >( "cell_multidim_int",
-                                                  mesh_num_cells, 4 );
-  double_ptr = Field::getDataPtr< double >( cell_field_d );
-  int_ptr    = Field::getDataPtr< int >( cell_field_i );
+  mint::FieldData& CD = mesh->getCellFieldData();
+  double_ptr = CD.createField< double >( "cell_multidim_double", num_cells, 4 );
+  int_ptr    = CD.createField< int >( "cell_multidim_int", num_cells, 4 );
 
-  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
+  for ( int idx = 0 ; idx < num_cells ; ++idx )
   {
     double_ptr[ 4 * idx  + 0] = idx;
     double_ptr[ 4 * idx  + 1] = idx + 1;
@@ -309,8 +282,7 @@ void create_multidim_data( Mesh* mesh )
     int_ptr[ 4 * idx  + 2] = idx + 2;
     int_ptr[ 4 * idx  + 3] = idx + 3;
   }
-  mesh->getCellFieldData().addField( cell_field_d );
-  mesh->getCellFieldData().addField( cell_field_i );
+
 }
 
 /*!
@@ -558,7 +530,7 @@ void check_fieldData( const FieldData& field_data, std::ifstream& file )
   }
 
   EXPECT_EQ( static_cast< int >( fields_read.size() ),
-             field_data.getNumberOfFields() );
+             field_data.getNumFields() );
   for ( std::set< std::string >::iterator it = fields_read.begin() ;
         it != fields_read.end() ; ++it )
   {

@@ -475,9 +475,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
 //  int * containment =
 //    umesh->addNodeField< int >("octree_containment", 1)->getIntPtr();
   axom::mint::FieldData& PD = umesh->getNodeFieldData( );
-  PD.addField(
-     new axom::mint::FieldVariable< int >("octree_containment", nnodes, 1 ) );
-  int* containment = axom::mint::Field::getDataPtr< int >( PD.getField( "octree_containment" ) );
+  int* containment = PD.createField< int >( "octree_containment", nnodes );
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
   double * coords = new double[3*nnodes];
@@ -566,16 +564,9 @@ void runDistanceQueries(CommandLineArguments& clargs)
   const int nnodes = umesh->getNumberOfNodes();
 
   axom::mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField(
-      new axom::mint::FieldVariable< int >( "bvh_containment",nnodes, 1 ) );
-  int* containment =
-      axom::mint::Field::getDataPtr< int >( PD.getField( "bvh_containment" ) );
 
-  PD.addField(
-      new axom::mint::FieldVariable< double >("bvh_distance",nnodes,1) );
-  double* distance =
-     axom::mint::Field::getDataPtr< double >( PD.getField( "bvh_distance" ) );
-
+  int* containment = PD.createField< int >( "bvh_containment",nnodes );
+  double* distance = PD.createField< double >( "bvh_distance", nnodes );
   SLIC_ASSERT( containment != AXOM_NULLPTR );
   SLIC_ASSERT( distance != AXOM_NULLPTR );
 

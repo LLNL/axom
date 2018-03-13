@@ -462,7 +462,8 @@ void UnstructuredMesh< CellType >::addCell( const IndexType* cell,
 
   m_cell_connectivity->addCell( cell, cell_type );
 
-  this->setCellDataSize( getNumberOfCells() );
+// TODO: revisit this later
+//  this->setCellDataSize( getNumberOfCells() );
   // this->setFaceDataSize( WHAT???? )
   // this->setEdgeDataSize( WHAT???? )
 }
@@ -473,7 +474,8 @@ inline void UnstructuredMesh< CellType >::addNode( double x )
 {
   SLIC_ASSERT( this->getDimension() == 1 );
   m_node_coordinates->append( &x );
-  this->setNodeDataSize( getNumberOfNodes() );
+// TODO: revisit this later
+//  this->setNodeDataSize( getNumberOfNodes() );
 }
 
 //------------------------------------------------------------------------------
@@ -483,7 +485,8 @@ inline void UnstructuredMesh< CellType >::addNode( double x, double y )
   SLIC_ASSERT( this->getDimension() == 2 );
   double xx[2] = { x, y };
   m_node_coordinates->append( xx );
-  this->setNodeDataSize( getNumberOfNodes() );
+// TODO: revisit this later
+//  this->setNodeDataSize( getNumberOfNodes() );
 }
 
 //------------------------------------------------------------------------------
@@ -493,7 +496,8 @@ void UnstructuredMesh< CellType >::addNode( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3 );
   double xx[3] = {x, y, z};
   m_node_coordinates->append( xx );
-  this->setNodeDataSize( getNumberOfNodes() );
+// TODO: revisit this later
+//  this->setNodeDataSize( getNumberOfNodes() );
 }
 
 //------------------------------------------------------------------------------
@@ -502,7 +506,8 @@ inline void UnstructuredMesh< CellType >::addNode( const double* node ) {
   SLIC_ASSERT( node != AXOM_NULLPTR );
 
   m_node_coordinates->append( node );
-  this->setNodeDataSize( getNumberOfNodes() );
+// TODO: revisiti this later
+//  this->setNodeDataSize( getNumberOfNodes() );
 }
 
 //------------------------------------------------------------------------------

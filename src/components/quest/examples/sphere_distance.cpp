@@ -342,9 +342,7 @@ void compute_norms( axom::mint::UniformMesh* umesh,
   SLIC_ASSERT( phi_expected != AXOM_NULLPTR );
 
   // STEP 1: add field to store erroraddCell
-  PD.addField( new mint::FieldVariable< double >( "error", nnodes, 1 ) );
-  double* error = mint::Field::getDataPtr< double >( PD.getField( "error" ) );
-
+  double* error = PD.createField< double >( "error", nnodes );
   SLIC_ASSERT( error != AXOM_NULLPTR );
 
   // STEP 2: loop over nodes and calculate norms
@@ -386,9 +384,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   // STEP 1: Add node field to stored exact distance field.
   const int nnodes    = umesh->getNumberOfNodes();
   mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField( new mint::FieldVariable< double >( "expected_phi", nnodes, 1 ) );
-  double* phi =
-    mint::Field::getDataPtr< double >( PD.getField( "expected_phi" ) );
+  double* phi         = PD.createField< double >( "expected_phi", nnodes  );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -415,10 +411,9 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
   // STEP 1: Setup node-centered signed distance field on uniform mesh
-  const int nnodes = umesh->getNumberOfNodes();
+  const int nnodes    = umesh->getNumberOfNodes();
   mint::FieldData& PD = umesh->getNodeFieldData();
-  PD.addField( new mint::FieldVariable< double >( "n2_phi", nnodes, 1 ) );
-  double* phi = mint::Field::getDataPtr< double >( PD.getField( "n2_phi") );
+  double* phi         = PD.createField< double >("n2_phi", nnodes );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -478,10 +473,9 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
-  const int nnodes = umesh->getNumberOfNodes();
+  const int nnodes    = umesh->getNumberOfNodes();
   mint::FieldData& PD = umesh->getNodeFieldData( );
-  PD.addField( new mint::FieldVariable< double >( "phi", nnodes, 1 ) );
-  double* phi = mint::Field::getDataPtr< double >( PD.getField("phi") );
+  double* phi         = PD.createField< double >( "phi", nnodes );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -502,20 +496,16 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  const int ncells = umesh->getNumberOfCells();
+  const int ncells    = umesh->getNumberOfCells();
   mint::FieldData& CD = umesh->getCellFieldData();
-  CD.addField( new mint::FieldVariable< int >( "BucketID", ncells, 1 ) );
-  int* bidx = mint::Field::getDataPtr< int >( CD.getField( "BucketID" ) );
-
+  int* bidx           = CD.createField< int >( "BucketID", ncells );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
   for ( int i=0 ; i < numObjects ; ++i )
   {
-
     const int idx = btree->getObjectBucketIndex( i );
     bidx[ i ] = idx;
-
   } // END for all objects
 
   axom::mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
