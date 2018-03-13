@@ -90,7 +90,7 @@ def main():
     opts = parse_args()
 
     # Email info
-    sender = "axom-no-reply@llnl.gov"
+    sender = "axom-dev@llnl.gov"
     receiver = opts["email"]
     emailServer = "nospam.llnl.gov"
     if on_rz():
@@ -339,14 +339,16 @@ def getHTMLforJobInfos(jobInfosDict, html, isTPLJob):
                         html += getSuccessFormat(currSpecInfo.success, __cellBlackOnGreen, __cellWhiteOnRed) % cellString
 
                         # Build up a list of failed tests to be added to the html table at the end
+                        cnt = 0
                         if len(currSpecInfo.failed) > 0:
                             if failedTestsString != "":
-                                failedTestsString += " "
+                                failedTestsString += "<br />"
                             failedTestsString += "[{0}]".format(currSpecInfo.name)
                             for name in currSpecInfo.failed:
                                 if failedTestsString[-1] != "]":
-                                    failedTestsString += ","
+                                    failedTestsString += ",\n" if cnt % 20 == 0 else ","
                                 failedTestsString += " " + name
+                                cnt += 1
                     else:
                         # Have a blank cell if spec wasn't here for this job (it was added or removed)
                         html += "<td></td>"
