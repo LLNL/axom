@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_51_29/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.8.2-s65hvfeklaae34jyaoy3ofd7jezjg5cl/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_57_58/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.8.2-s65hvfeklaae34jyaoy3ofd7jezjg5cl/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_51_29/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_57_58/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-3felyqscssovjmznj4pd7qpuq23lzvyk" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-rhlucjc4a4xq7p7nlb6gw3cdxnqnenrn" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-ub6rg4rafniyzeoecke3lfm6zpzbc5fs" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-nvmps5cyz6fnof343goaptduus4n65cz" CACHE PATH "")
@@ -68,6 +68,20 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin
 # end uberenv host-config
 ##################################
 
+##
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
+
 ##############################################################################
 # !---------------------------------------------------------------------------
 ##############################################################################
@@ -89,6 +103,7 @@ set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(SCR_DIR "/usr/gapps/axom/thirdparty_libs/scr-1.1.8/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -52,7 +52,7 @@ const axom::sidre::TypeID INT32_ID = axom::sidre::INT32_ID;
  * The value of element idx will be initVal + ( idx / intDiv) * scaleFac
  */
 template<typename T>
-void setData(T * data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
+void setData(T* data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
 {
   for(int i=0 ; i< size ; ++i)
     data[i] = initVal + ((i+1) / intDiv) * scaleFac;
@@ -67,15 +67,15 @@ void setData(T * data, int size, T initVal=T(0), int intDiv=1, T scaleFac=T(1))
 template<typename T>
 void checkPointersAndData(const std::string& path
                           , axom::sidre::Node& rootNode
-                          , axom::sidre::Group * rootGroup)
+                          , axom::sidre::Group* rootGroup)
 {
   axom::sidre::Node& node = rootNode[path];
-  T * nD = static_cast<T *>(node.element_ptr(0));
+  T* nD = static_cast<T*>(node.element_ptr(0));
 
-  axom::sidre::View * view = rootGroup->getView(path);
+  axom::sidre::View* view = rootGroup->getView(path);
   EXPECT_TRUE(AXOM_NULLPTR != view);
 
-  T * vD = view->getData<T *>();
+  T* vD = view->getData<T*>();
   EXPECT_TRUE(AXOM_NULLPTR != vD);
 
   EXPECT_EQ(nD, vD)
@@ -101,12 +101,12 @@ template<>
 void checkPointersAndData<std::string>(const std::string& path
                                        , axom::sidre::Node& rootNode
                                        ,
-                                       axom::sidre::Group * rootGroup)
+                                       axom::sidre::Group* rootGroup)
 {
   axom::sidre::Node& node = rootNode[path];
   std::string nD = node.as_string();
 
-  axom::sidre::View * view = rootGroup->getView(path);
+  axom::sidre::View* view = rootGroup->getView(path);
   EXPECT_TRUE(AXOM_NULLPTR != view);
   EXPECT_TRUE(view->isString());
 
@@ -125,7 +125,7 @@ void checkPointersAndData<std::string>(const std::string& path
 
 TEST(sidre_native_layout,empty_layout)
 {
-  DataStore * ds   = new DataStore();
+  DataStore* ds   = new DataStore();
 
   SLIC_INFO("Testing sidre_layout function on empty datastore");
 
@@ -153,21 +153,21 @@ TEST(sidre_native_layout,generate_native_layout)
   /// Allocate and initialize two external arrays
   // The REAL_BUF has 10 copies of each integer
   const int EXT_REAL_BUF_SIZE = 20;
-  double * extRealPtr = new double[EXT_REAL_BUF_SIZE];
+  double* extRealPtr = new double[EXT_REAL_BUF_SIZE];
   setData(extRealPtr, EXT_REAL_BUF_SIZE, 0., 1, 1/10.);
 
   // The INT_BUF is a decreasing sequence
   const int EXT_INT_BUF_SIZE = 5;
-  int * extIntPtr = new int[EXT_INT_BUF_SIZE];
+  int* extIntPtr = new int[EXT_INT_BUF_SIZE];
   setData(extIntPtr, EXT_INT_BUF_SIZE, EXT_INT_BUF_SIZE, 1, -1);
 
 
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   // Setup a buffer that will have two views
   const int REAL_BUF_SIZE = 100;
-  Buffer * realBuf = ds->createBuffer(DOUBLE_ID, REAL_BUF_SIZE)->allocate();
+  Buffer* realBuf = ds->createBuffer(DOUBLE_ID, REAL_BUF_SIZE)->allocate();
   setData<double>(realBuf->getData(), REAL_BUF_SIZE, 0., 10, 1.);
 
   // create the views using the path syntax
@@ -232,8 +232,8 @@ TEST(sidre_native_layout,generate_native_layout)
 TEST(sidre_native_layout,native_layout_with_scalars)
 {
 
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   root->createView("Garray/Vdbl20",DOUBLE_ID, 20)->allocate();
   root->createView("Garray/Vint10",INT32_ID, 10)->allocate();
@@ -282,13 +282,14 @@ TEST(sidre_native_layout,native_layout_with_scalars)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger, finalized when exiting main scope
+  UnitTestLogger logger;  // create & initialize test logger, finalized when
+                          // exiting main scope
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();

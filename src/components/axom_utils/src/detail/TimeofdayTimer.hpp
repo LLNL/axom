@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -43,10 +43,12 @@ namespace detail
 /*!
  * \class
  * \brief A simple timer utility based on the glibc gettimeofday() function
- * \note This is a simple class without any checks to ensure proper usage of the timer.
- *       It is meant to be used as a base class for the Timer class in axom_utils/Timer.hpp
- *       Specifically, we do not check that start() was called before stop(),
- *       or if stop() was called before attempting to find the elapsed time.
+ *
+ * \note This is a simple class without any checks to ensure proper usage of the
+ *  timer. It is meant to be used as a base class for the Timer class in
+ *  axom_utils/Timer.hpp Specifically, we do not check that start() was called
+ *  before stop(), or if stop() was called before attempting to find the elapsed
+ *  time.
  */
 class TimeofdayTimer
 {

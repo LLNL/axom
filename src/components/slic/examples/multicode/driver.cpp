@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -58,14 +58,14 @@ void driver_init()
 
   // setup main hsp output
   hsp.open( "hsp.log" );
-  slic::LogStream * ls = new slic::GenericOutputStream( &hsp, hsp_format );
+  slic::LogStream* ls = new slic::GenericOutputStream( &hsp, hsp_format );
   slic::addStreamToAllMsgLevels( ls );
 
   std::string console_format =
     std::string( "[<LEVEL>]: <MESSAGE>\n" );
 
   // setup console output
-  slic::LogStream * console =
+  slic::LogStream* console =
     new slic::GenericOutputStream( &std::cout, console_format );
   slic::addStreamToMsgLevel(  console,  slic::message::Error );
   slic::addStreamToMsgLevel(  console,  slic::message::Warning );
@@ -80,7 +80,7 @@ void driver_finalize()
 }
 
 //-----------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   /* silence compiler warnings */
   static_cast< void >(argc);

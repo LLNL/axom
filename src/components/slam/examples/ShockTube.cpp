@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -23,11 +23,15 @@
  * \author J. Keasler (original)
  * \author K. Weiss (modified to use axom's Slam component)
  *
- * \details  Developing example to use and demo features of Slam on shock tube example over structured 1D mesh.
- *           Tests:
- *           * Sets and subsets.
- *           * Relations over regular grid (should be implicit; currently implemented as explicit static constant relations)
- *           * Fields/maps over the data -- and access to a local datastore (using Slam::FieldRegistry, can easily convert to Sidre).
+ * \details  Developing example to use and demo features of Slam on shock tube
+ *  example over structured 1D mesh.
+ *
+ *  Tests:
+ *      * Sets and subsets.
+ *      * Relations over regular grid (should be implicit; currently
+ *        implemented as explicit static constant relations)
+ *      * Fields/maps over the data -- and access to a local datastore
+ *        (using Slam::FieldRegistry, can easily convert to Sidre).
  *
  * \verbatim
  *         | m  |            |    mv    |
@@ -88,16 +92,21 @@ const bool verboseOutput = false;
  * \brief Simple representation of the mesh for this 1D example
  *
  * \details Mesh contains a set of elements and a set of faces between elements.
- *         It also contains three subsets: a single inflow; a single outflow element; all internal 'tube' elements. (added 5/2015)
- *         The mesh contains the relations from faces to elements and from tube elements to faces.
+ *  It also contains three subsets: a single inflow; a single outflow
+ *  element; all internal 'tube' elements. (added 5/2015)
+ *  The mesh contains the relations from faces to elements and from tube
+ *  elements to faces.
  *
  * \note (5/2015) We are currently missing an implicit constant grid relation.
  *
  * \note For current implementation with explicit static (constant) relations.
  * \note We are missing a nice way to set the relation elements.
- *       It should not have to be done explicitly in each user code -- especially in common use cases
- *       Idea: We could have a relationInverter function that takes a relation from sets A to B
- *             and generates a relation from set B to set A with all the arrows reversed.
+ *  It should not have to be done explicitly in each user code --especially
+    in common use cases
+ *
+ * Idea: We could have a relationInverter function that takes a relation
+ *       from sets A to B and generates a relation from set B to set A with all
+         the arrows reversed.
  */
 class ShockTubeMesh
 {
@@ -150,12 +159,15 @@ public:
   ElemSubset outFlowElems;      // Subset of outflow elements
   FaceSet faces;                // Faces between adjacent pairs of elements
 
-  FaceToElemRelation relationFaceElem;          // co-boundary relation of faces to their elements
-  TubeElemToFaceRelation relationTubeFace;          // boundary relation of internal 'tube' elements
+  FaceToElemRelation relationFaceElem;          // co-boundary relation of faces
+                                                // to their elements
+  TubeElemToFaceRelation relationTubeFace;          // boundary relation of
+                                                    // internal 'tube' elements
 };
 
 
-// Define the explicit instances of our local (key/value) datastore for int and double
+// Define the explicit instances of our local (key/value) datastore for int and
+// double
 typedef axom::slam::FieldRegistry<int>    IntsRegistry;
 typedef axom::slam::FieldRegistry<double> RealsRegistry;
 typedef axom::slam::Map<int>              IntField;
@@ -262,7 +274,7 @@ void GetUserInput()
  *
  * \endverbatim
  */
-void CreateShockTubeMesh(ShockTubeMesh * mesh)
+void CreateShockTubeMesh(ShockTubeMesh* mesh)
 {
   // ------------ Generate the Sets and Subsets
 
@@ -286,8 +298,10 @@ void CreateShockTubeMesh(ShockTubeMesh * mesh)
 
   // ------------ Generate the Relations
 
-  // TODO: Need to define DynamicConstantRelation -- which will allow modifying the relation elements
-  // TODO: Need to define ImplicitConstantRelation -- since the relations are actually implicit
+  // TODO: Need to define DynamicConstantRelation -- which will allow modifying
+  // the relation elements
+  // TODO: Need to define ImplicitConstantRelation -- since the relations are
+  // actually implicit
   //       -- no storage should be necessary for regular grid neighbors
   //       For now, we use explicitly storage for the relation data...
 
@@ -434,8 +448,10 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
   for (ShockTubeMesh::PositionType fIdx = 0 ; fIdx < numFaceElems ; ++fIdx)
   {
     // each face has an upwind and downwind element.
-    IndexType upWind   = mesh.relationFaceElem[fIdx][UPWIND];      // upwind element
-    IndexType downWind = mesh.relationFaceElem[fIdx][DOWNWIND];    // downwind element
+    IndexType upWind   = mesh.relationFaceElem[fIdx][UPWIND];      // upwind
+                                                                   // element
+    IndexType downWind = mesh.relationFaceElem[fIdx][DOWNWIND];    // downwind
+                                                                   // element
 
     // calculate face centered quantities as avg of element centered ones
     double massf      = 0.5 * (mass[upWind]     + mass[downWind] );
@@ -520,7 +536,8 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
   double dt   = realsRegistry.getScalar("dt");
   double & time = realsRegistry.getScalar("time");
 
-  /// Update the element fields based on the face data using the elem->face relation
+  /// Update the element fields based on the face data using the elem->face
+  // relation
   ShockTubeMesh::PositionType numTubeElems =
     static_cast<ShockTubeMesh::PositionType>(mesh.tubeElems.size() );
 
@@ -530,8 +547,10 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
     ShockTubeMesh::IndexType elemIdx = mesh.tubeElems[tPos];
 
     // Each element inside the tube has an upwind and downwind face
-    ShockTubeMesh::IndexType upWind   = mesh.relationTubeFace[tPos][UPWIND];         // upwind face
-    ShockTubeMesh::IndexType downWind = mesh.relationTubeFace[tPos][DOWNWIND];       // downwind face
+    ShockTubeMesh::IndexType upWind   = mesh.relationTubeFace[tPos][UPWIND];         // upwind
+                                                                                     // face
+    ShockTubeMesh::IndexType downWind = mesh.relationTubeFace[tPos][DOWNWIND];       // downwind
+                                                                                     // face
 
     mass[elemIdx]     -= gammaaInverse * (F0[downWind] - F0[upWind]) * dt / dx;
     momentum[elemIdx] -= gammaaInverse * (F1[downWind] - F1[upWind]) * dt / dx;

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -59,8 +59,8 @@ public:
     return 1;
   }
 
-  void push(const char * /* packedMessagesToBeSent */,
-            std::vector<const char *>& /* receivedPackedMessages */)
+  void push(const char* /* packedMessagesToBeSent */,
+            std::vector<const char*>& /* receivedPackedMessages */)
   {}
 
   bool isOutputNode()
@@ -90,7 +90,7 @@ TEST(lumberjack_Lumberjack, combineMessages01)
 
   lumberjack.pushMessagesFully();
 
-  std::vector<axom::lumberjack::Message *> messages = lumberjack.getMessages();
+  std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), 1);
   EXPECT_EQ(messages[0]->text(), "Should be combined.");

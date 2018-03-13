@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -69,13 +69,13 @@ int RootCommunicator::numPushesToFlush()
   return 1;
 }
 
-void RootCommunicator::push(const char * packedMessagesToBeSent,
-                            std::vector<const char *>& receivedPackedMessages)
+void RootCommunicator::push(const char* packedMessagesToBeSent,
+                            std::vector<const char*>& receivedPackedMessages)
 {
   MPI_Barrier(m_mpiComm);
   if (m_mpiCommRank == 0)
   {
-    const char * currPackedMessages;
+    const char* currPackedMessages;
     int ranksDoneCount = 0;
     while(ranksDoneCount < (m_mpiCommSize-1))
     {

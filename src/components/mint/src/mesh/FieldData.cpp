@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -50,7 +50,7 @@ bool FieldData::hasField( const std::string& name ) const
 }
 
 //------------------------------------------------------------------------------
-void FieldData::addField( Field * f )
+void FieldData::addField( Field* f )
 {
   SLIC_ASSERT(  f != AXOM_NULLPTR );
   SLIC_ASSERT(  this->hasField( f->getName() )==false );
@@ -69,7 +69,7 @@ int FieldData::getNumberOfFields() const
 }
 
 //------------------------------------------------------------------------------
-Field * FieldData::getField( int i )
+Field* FieldData::getField( int i )
 {
   SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
 
@@ -82,30 +82,30 @@ Field * FieldData::getField( int i )
 }
 
 //------------------------------------------------------------------------------
-const Field * FieldData::getField( int i ) const
+const Field* FieldData::getField( int i ) const
 {
-  return const_cast< const Field * >(
-    const_cast< FieldData * >( this )->getField( i ) );
+  return const_cast< const Field* >(
+    const_cast< FieldData* >( this )->getField( i ) );
 }
 
 //------------------------------------------------------------------------------
-Field * FieldData::getField( const std::string& name )
+Field* FieldData::getField( const std::string& name )
 {
   SLIC_ASSERT( this->hasField( name ) );
   return m_container[ name ];
 }
 
 //------------------------------------------------------------------------------
-const Field * FieldData::getField( const std::string& name ) const
+const Field* FieldData::getField( const std::string& name ) const
 {
-  return const_cast< const Field * >(
-    const_cast< FieldData * >( this )->getField( name ) );
+  return const_cast< const Field* >(
+    const_cast< FieldData* >( this )->getField( name ) );
 }
 
 //------------------------------------------------------------------------------
 void FieldData::clear()
 {
-  std::map< std::string, Field * >::iterator iter = m_container.begin();
+  std::map< std::string, Field* >::iterator iter = m_container.begin();
   for ( ; iter != m_container.end() ; ++iter )
   {
     delete iter->second;

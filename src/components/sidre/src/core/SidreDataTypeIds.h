@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -19,7 +19,8 @@
 /**
  *  \file SiderDataTypeIds.h
  *
- *  \brief Contains defines used to establish type ids for numeric types in Sidre component.
+ *  \brief Contains defines used to establish type ids for numeric types in
+ *   Sidre component.
  *
  */
 

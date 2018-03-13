@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -48,7 +48,8 @@ public:
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
-   * \param [in] upper_bound the corner opposite lower_bound of the bounding box.
+   * \param [in] upper_bound the corner opposite lower_bound of the bounding
+   * box.
    */
   UniformMesh( int dimension,
                const int ext[6],
@@ -77,7 +78,8 @@ public:
    * \param [in] dimension the dimension of this mesh instance.
    * \param [in] ext the extent of this mesh instance.
    * \param [in] lower_bound a corner of the bounding box.
-   * \param [in] upper_bound the corner opposite lower_bound of the bounding box.
+   * \param [in] upper_bound the corner opposite lower_bound of the bounding
+   *  box.
    * \param [in] blockId the block ID of this mesh.
    * \param [in] partitionId the partition ID of this mesh.
    */
@@ -112,7 +114,7 @@ public:
    * \pre coordinates != AXOM_NULLPTR.
    * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
    */
-  virtual void getNode( int nodeIdx, double * coordinates ) const;
+  virtual void getNode( int nodeIdx, double* coordinates ) const;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -121,7 +123,7 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 2
    */
-  virtual void getNode( int i, int j, double * coordinates ) const;
+  virtual void getNode( int i, int j, double* coordinates ) const;
 
   /*!
    * \brief Returns the coordinates of the node at (i,j)
@@ -131,7 +133,7 @@ public:
    * \param [out] coordinates pointer to buffer to populate with coordinates.
    * \pre this->getDimension() == 3
    */
-  virtual void getNode( int i, int j, int k, double * coordinates ) const;
+  virtual void getNode( int i, int j, int k, double* coordinates ) const;
 
   /*!
    * \brief Returns the coordinate of the given node.
@@ -208,7 +210,7 @@ inline void UniformMesh::getSpacing( double h[3] ) const
 }
 
 //------------------------------------------------------------------------------
-inline void UniformMesh::getNode(int nodeIdx, double * coordinates) const
+inline void UniformMesh::getNode(int nodeIdx, double* coordinates) const
 {
   SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
@@ -223,7 +225,7 @@ inline void UniformMesh::getNode(int nodeIdx, double * coordinates) const
 }
 
 //------------------------------------------------------------------------------
-inline void UniformMesh::getNode( int i, int j, double * coordinates ) const
+inline void UniformMesh::getNode( int i, int j, double* coordinates ) const
 {
   SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==2 );
@@ -238,7 +240,7 @@ inline void UniformMesh::getNode( int i, int j, double * coordinates ) const
 
 //------------------------------------------------------------------------------
 inline
-void UniformMesh::getNode(int i, int j, int k, double * coordinates) const
+void UniformMesh::getNode(int i, int j, int k, double* coordinates) const
 {
   SLIC_ASSERT(  coordinates !=  AXOM_NULLPTR );
   SLIC_ASSERT(  this->getDimension()==3 );

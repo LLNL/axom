@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -122,7 +122,7 @@ inline real determinant(
  * \note if \f$ A \f$ is not square or empty, this function will return 0.0
  */
 template < typename real >
-inline real determinant( const Matrix< real >& A )
+real determinant( const Matrix< real >& A )
 {
   real det = 0.0;
 
@@ -167,7 +167,7 @@ inline real determinant( const Matrix< real >& A )
   {
 
     Matrix< real > lu = A;
-    int * pivots = new int[ N ];
+    int* pivots = new int[ N ];
 
     int rc = lu_decompose( lu, pivots );
     if ( rc == LU_SUCCESS )

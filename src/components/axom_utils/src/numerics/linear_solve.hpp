@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -47,7 +47,7 @@ namespace numerics
  * \note The input matrix is destroyed (modified) in the process.
  */
 template < typename T >
-int linear_solve( Matrix< T >& A, const T * b, T * x );
+int linear_solve( Matrix< T >& A, const T* b, T* x );
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -61,7 +61,7 @@ namespace numerics
 {
 
 template < typename T >
-int linear_solve( Matrix< T >& A, const T * b, T * x )
+int linear_solve( Matrix< T >& A, const T* b, T* x )
 {
   assert( "pre: input matrix must be square" && A.isSquare() );
   assert( "pre: solution vector is null" && (x != AXOM_NULLPTR) );
@@ -105,7 +105,7 @@ int linear_solve( Matrix< T >& A, const T * b, T * x )
   {
 
     // non-trivial system, use LU
-    int * pivots = new int[ N ];
+    int* pivots = new int[ N ];
 
     int rc = lu_decompose( A, pivots );
     if ( rc == LU_SUCCESS )

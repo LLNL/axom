@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -48,7 +48,8 @@ TEST( quest_octree, topological_octree_parent_child)
   int numChildren  = childIndexSet.size();
   for(int i = 0 ; i < numChildren ; ++i)
   {
-    // Root's children are at level one and have coordinates that are either zero or one
+    // Root's children are at level one and have coordinates that are either
+    // zero or one
     BlockIndex childBlock = octree.child( rootBlock, childIndexSet[i]);
     EXPECT_EQ( childBlock.level(), 1);
     EXPECT_EQ( childBlock.level(), rootBlock.childLevel());
@@ -374,7 +375,7 @@ TEST( quest_octree, count_octree_blocks)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

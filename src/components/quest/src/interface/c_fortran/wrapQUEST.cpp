@@ -1,7 +1,7 @@
 // wrapQUEST.cpp
 // This is generated code, do not edit
 //
-// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -31,7 +31,7 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void QUEST_initialize(MPI_Fint comm, const char * fileName,
+void QUEST_initialize(MPI_Fint comm, const char* fileName,
                       bool requiresDistance, int ndims, int maxElements,
                       int maxLevels)
 {
@@ -44,7 +44,7 @@ void QUEST_initialize(MPI_Fint comm, const char * fileName,
 // splicer end function.initialize
 }
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char * fileName,
+void QUEST_initialize_bufferify(MPI_Fint comm, const char* fileName,
                                 int LfileName, bool requiresDistance, int ndims,
                                 int maxElements, int maxLevels)
 {
@@ -81,7 +81,7 @@ int QUEST_inside(double x, double y, double z)
 // splicer end function.inside
 }
 
-void QUEST_mesh_min_bounds(double * coords)
+void QUEST_mesh_min_bounds(double* coords)
 {
 // splicer begin function.mesh_min_bounds
   mesh_min_bounds(coords);
@@ -89,7 +89,7 @@ void QUEST_mesh_min_bounds(double * coords)
 // splicer end function.mesh_min_bounds
 }
 
-void QUEST_mesh_max_bounds(double * coords)
+void QUEST_mesh_max_bounds(double* coords)
 {
 // splicer begin function.mesh_max_bounds
   mesh_max_bounds(coords);
@@ -97,7 +97,7 @@ void QUEST_mesh_max_bounds(double * coords)
 // splicer end function.mesh_max_bounds
 }
 
-void QUEST_mesh_center_of_mass(double * coords)
+void QUEST_mesh_center_of_mass(double* coords)
 {
 // splicer begin function.mesh_center_of_mass
   mesh_center_of_mass(coords);

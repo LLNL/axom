@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -128,7 +128,8 @@ TEST( primal_morton, test_mortonizer)
 
   Point<int,3> pt3(2);  // (0b10, 0b10, 0b10)
   Mortonizer<int,MortonIndexType,3> morton3;
-  MortonIndexType mIdx3 = morton3.mortonize(pt3);             // interleaved bits
+  MortonIndexType mIdx3 = morton3.mortonize(pt3);             // interleaved
+                                                              // bits
   EXPECT_EQ( mIdx3, static_cast<MortonIndexType>(0x38) );     // 0b 0011 1000
 
   MortonIndexType mIdx3Alt = morton3.mortonize(pt3[0],pt3[1],pt3[2]);
@@ -301,7 +302,7 @@ TEST( primal_morton, test_point_hasher)
 
 //----------------------------------------------------------------------
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

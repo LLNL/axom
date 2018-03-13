@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -103,17 +103,12 @@ function group_create_array_view_{typename}{nd}(grp, name, value) result(rv)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
     addr = c_loc(value)
 #else
-    call SHROUD_C_LOC(value{lower_bound}, addr)
+    call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
-    if (c_associated(addr)) then
-      {extents_asgn}
-      rv%voidptr = c_group_create_view_external_bufferify( &
-          grp%voidptr, name, lname, addr)
-      call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
-    else
-      rv%voidptr = c_group_create_view_from_type_bufferify( &
-          grp%voidptr, name, lname, type, 0_C_LONG)
-    endif
+    {extents_asgn}
+    rv%voidptr = c_group_create_view_external_bufferify( &
+        grp%voidptr, name, lname, addr)
+    call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
 end function group_create_array_view_{typename}{nd}""".format(
         extents_decl=extents_decl,
         extents_asgn=extents_asgn, **d)
@@ -158,7 +153,7 @@ subroutine group_set_array_data_ptr_{typename}{nd}(grp, name, value)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
-        call SHROUD_C_LOC(value{lower_bound}, addr)
+        call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
         call c_view_set_external_data_ptr_only(view, addr)
 !        call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
@@ -201,7 +196,7 @@ subroutine view_set_array_data_ptr_{typename}{nd}(view, value)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
     addr = c_loc(value)
 #else
-    call SHROUD_C_LOC(value{lower_bound}, addr)
+    call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
     call c_view_set_external_data_ptr_only(view%voidptr, addr)
 !    call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)

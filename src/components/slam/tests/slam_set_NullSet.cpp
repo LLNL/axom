@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -76,7 +76,7 @@ TEST(slam_set_nullset,subscript_fails)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 
@@ -18,8 +25,8 @@
  * the output datastores.  Optional command line arguments include
  * a --protocol option (the default is 'json')
  * and  a --strip option to truncate the array data to at most N elements.
- * The strip option also prepends each array with its original size and a filler entry
- * of 0 for integer arrays or nan for floating point arrays.
+ * The strip option also prepends each array with its original size and a filler
+ * entry of 0 for integer arrays or nan for floating point arrays.
  * E.g. if the array had 6 entries [1.01. 2.02, 3.03, 4.04, 5.05, 6.06]
  * and the user passed in --strip 3, the array would be converted to
  * [6, nan, 1.01, 2.02, 3.03].
@@ -53,7 +60,7 @@
 #include "sidre/Buffer.hpp"
 #include "sidre/View.hpp"
 
-#include "spio/IOManager.hpp"
+#include "sidre/IOManager.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OffsetPolicies.hpp"
@@ -68,7 +75,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::View;
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 
 
 typedef axom::sidre::IndexType IndexType;
@@ -122,7 +129,7 @@ struct CommandLineArguments
   static void usage()
   {
     fmt::MemoryWriter out;
-    out << "Usage ./spio_convert_format <options>";
+    out << "Usage ./convert_sidre_protocol <options>";
     out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
     out.write("\n\t{:<30}{}", "--input <file>",
               "(required) Filename of input datastore");
@@ -168,7 +175,7 @@ void quitProgram(int exitCode = 0)
  * \brief Utility to parse the command line options
  * \return An instance of the CommandLineArguments struct.
  */
-CommandLineArguments parseArguments(int argc, char * * argv, int myRank)
+CommandLineArguments parseArguments(int argc, char** argv, int myRank)
 {
   CommandLineArguments clargs;
 
@@ -245,17 +252,19 @@ CommandLineArguments parseArguments(int argc, char * * argv, int myRank)
 
 
 /**
- * \brief Helper function to allocate storage for the external data of the input datastore
+ * \brief Helper function to allocate storage for the external data of the input
+ * datastore
  *
- * Iterates recursively through the views and groups of the provided group to find
- * the external data views and allocates the required storage within the extPtrs vector
+ * Iterates recursively through the views and groups of the provided group to
+ * find the external data views and allocates the required storage within the
+ * extPtrs vector
  *
  * \param grp  The group to traverse
  * \param extPtrs [out] A vector to hold pointers to the allocated data
  *
  * \note We also set the data in each allocated array to zeros
  */
-void allocateExternalData(Group * grp, std::vector<void *>& extPtrs)
+void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
 {
   using namespace axom;
 
@@ -264,7 +273,7 @@ void allocateExternalData(Group * grp, std::vector<void *>& extPtrs)
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
-    View * view = grp->getView(idx);
+    View* view = grp->getView(idx);
     if(view->isExternal())
     {
       SLIC_INFO("External view " << view->getPathName()
@@ -299,11 +308,11 @@ void allocateExternalData(Group * grp, std::vector<void *>& extPtrs)
  * \param origSize The size of the original array
  */
 template<typename sidre_type>
-void modifyFinalValuesImpl(View * view, int origSize)
+void modifyFinalValuesImpl(View* view, int origSize)
 {
   SLIC_DEBUG("Looking at view " << view->getPathName());
 
-  sidre_type * arr = view->getData();
+  sidre_type* arr = view->getData();
 
   // Uses a Slam set to help manage the indirection to the view data
   // Note: offset is zero since getData() already accounts for the offset
@@ -345,7 +354,7 @@ void modifyFinalValuesImpl(View * view, int origSize)
 }
 
 
-void modifyFinalValues(View * view, int origSize)
+void modifyFinalValues(View* view, int origSize)
 {
   SLIC_DEBUG("Truncating view " << view->getPathName());
 
@@ -389,13 +398,16 @@ void modifyFinalValues(View * view, int origSize)
 }
 
 /**
- * \brief Recursively traverse views and groups in grp and truncate views to have at most maxSize+2 elements.
+ * \brief Recursively traverse views and groups in grp and truncate views to
+ * have at most maxSize+2 elements.
  *
- * Within the truncated arrays, the first element will be the size of the original array and the second will
+ * Within the truncated arrays, the first element will be the size of the
+ * original array and the second will
  * be 0 for integers and nan for floating points.
- * This will be followed by (at most) the first maxSize elements of the original array
+ * This will be followed by (at most) the first maxSize elements of the original
+ * array
  */
-void truncateBulkData(Group * grp, int maxSize)
+void truncateBulkData(Group* grp, int maxSize)
 {
   using namespace axom;
 
@@ -404,7 +416,7 @@ void truncateBulkData(Group * grp, int maxSize)
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
-    View * view = grp->getView(idx);
+    View* view = grp->getView(idx);
     bool isArray = view->hasBuffer() || view->isExternal();
 
     if(isArray)
@@ -421,7 +433,7 @@ void truncateBulkData(Group * grp, int maxSize)
       // external
       else if(view->isExternal() && numOrigElts > newSize)
       {
-        void * dataPtr = view->getVoidPtr();
+        void* dataPtr = view->getVoidPtr();
         view->setExternalDataPtr(view->getTypeID(),newSize, dataPtr);
       }
 
@@ -464,8 +476,8 @@ void setupLogging()
   // Simple formatting for debug and info messages
   std::string diFormatStr = rankStr + "[<LEVEL>]: <MESSAGE>\n";
 
-  slic::LogStream * wefStream;
-  slic::LogStream * diStream;
+  slic::LogStream* wefStream;
+  slic::LogStream* diStream;
 
 #ifdef AXOM_USE_LUMBERJACK
   const int ranksLimit = 16;
@@ -491,7 +503,7 @@ void teardownLogging()
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
 
@@ -513,7 +525,7 @@ int main(int argc, char * argv[])
 
   // Restore any external data pointers
   SLIC_INFO("Loading external data from datastore");
-  std::vector<void *> externalDataPointers;
+  std::vector<void*> externalDataPointers;
   allocateExternalData(ds.getRoot(), externalDataPointers);
   manager.loadExternalData(ds.getRoot(), args.m_inputName);
 
@@ -548,11 +560,11 @@ int main(int argc, char * argv[])
 
 
   // Free up memory associated with external data
-  for(std::vector<void *>::iterator it = externalDataPointers.begin() ;
+  for(std::vector<void*>::iterator it = externalDataPointers.begin() ;
       it != externalDataPointers.end() ;
       ++it)
   {
-    delete [] static_cast<char *>(*it);
+    delete [] static_cast<char*>(*it);
     *it = AXOM_NULLPTR;
   }
 

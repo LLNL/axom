@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -34,14 +34,14 @@ using axom::sidre::INT_ID;
 //------------------------------------------------------------------------------
 TEST(sidre_external, create_external_view)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   const SidreLength len = 11;
   const int ndims = 1;
   SidreLength shape[] = { len };
 
-  int * idata = new int[len];
+  int* idata = new int[len];
 
   for (int ii = 0 ; ii < len ; ++ii)
   {
@@ -50,7 +50,7 @@ TEST(sidre_external, create_external_view)
 
   for (unsigned int i=0 ; i < 8 ; i++)
   {
-    View * view = AXOM_NULLPTR;
+    View* view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -103,7 +103,7 @@ TEST(sidre_external, create_external_view)
 
     view->print();
 
-    int * idata_chk = view->getData();
+    int* idata_chk = view->getData();
     for (int ii = 0 ; ii < len ; ++ii)
     {
       EXPECT_EQ(idata_chk[ii], idata[ii]);
@@ -119,13 +119,13 @@ TEST(sidre_external, create_external_view)
 //------------------------------------------------------------------------------
 TEST(sidre_external, create_external_view_null)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
-  int * idata = AXOM_NULLPTR;
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
+  int* idata = AXOM_NULLPTR;
 
   for (int i=0 ; i < 2 ; i++)
   {
-    View * view = AXOM_NULLPTR;
+    View* view = AXOM_NULLPTR;
 
     switch (i)
     {
@@ -136,7 +136,7 @@ TEST(sidre_external, create_external_view_null)
       view = root->createView("null1", INT_ID, 0)->setExternalDataPtr(idata);
       break;
     case 2:
-      //	  view = root->createView("null2", INT_ID, 0, idata);
+      //    view = root->createView("null2", INT_ID, 0, idata);
       break;
     }
 
@@ -152,8 +152,8 @@ TEST(sidre_external, create_external_view_null)
     EXPECT_EQ(view->getNumElements(), 0u);
     EXPECT_EQ(view->getTotalBytes(), 0u);
 
-    void * ptr = view->getVoidPtr();
-    EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), ptr);
+    void* ptr = view->getVoidPtr();
+    EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), ptr);
 
     // getData will not work since the address is NULL
     //  int * idata_chk = view->getData();
@@ -170,8 +170,8 @@ TEST(sidre_external, create_external_view_null)
 //------------------------------------------------------------------------------
 TEST(sidre_external, transition_external_view_to_empty)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
   const SidreLength len = 11;
   int idata[len];
 
@@ -180,8 +180,8 @@ TEST(sidre_external, transition_external_view_to_empty)
     idata[ii] = ii;
   }
 
-  View * view = root->createView("data0", INT_ID, len)
-                ->setExternalDataPtr(idata);
+  View* view = root->createView("data0", INT_ID, len)
+               ->setExternalDataPtr(idata);
   EXPECT_TRUE(view->isExternal());
   EXPECT_EQ(idata, view->getVoidPtr());
 
@@ -199,8 +199,8 @@ TEST(sidre_external, transition_external_view_to_empty)
   EXPECT_EQ(view->getTypeID(), INT_ID);
   EXPECT_EQ(view->getNumElements(), len);
 
-  void * ptr = view->getVoidPtr();
-  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), ptr);
+  void* ptr = view->getVoidPtr();
+  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), ptr);
 
   view->print();
 
@@ -210,8 +210,8 @@ TEST(sidre_external, transition_external_view_to_empty)
 
 TEST(sidre_external, verify_external_layout)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   const int SZ = 11;
   int extData[SZ];
@@ -259,7 +259,7 @@ TEST(sidre_external, verify_external_layout)
 
 
   // Initialize the data so we can test it later
-  int * bufData = root->getView("int/desc/bufferview")->getData();
+  int* bufData = root->getView("int/desc/bufferview")->getData();
   for (int i = 0 ; i < SZ ; ++i)
   {
     extData[i] = i;
@@ -281,7 +281,7 @@ TEST(sidre_external, verify_external_layout)
     // Described external views are present and we can access the data
     EXPECT_TRUE( node.has_path("ext/desc"));
     EXPECT_TRUE( node.has_path("ext/desc/external_desc"));
-    int * extLayoutData = node["ext/desc/external_desc"].value();
+    int* extLayoutData = node["ext/desc/external_desc"].value();
     for (int i = 0 ; i < SZ ; ++i)
     {
       EXPECT_EQ(extData[i], extLayoutData[i]);
@@ -307,13 +307,13 @@ TEST(sidre_external, verify_external_layout)
 //------------------------------------------------------------------------------
 TEST(sidre_external, save_load_external_view)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   const SidreLength len = 11;
 
-  int * idata = new int[len];
-  double * ddata = new double[len];
+  int* idata = new int[len];
+  double* ddata = new double[len];
 
   for (int ii = 0 ; ii < len ; ++ii)
   {
@@ -321,8 +321,8 @@ TEST(sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  View * iview = root->createView("idata", idata)->apply(INT_ID, len);
-  View * dview = root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
+  View* iview = root->createView("idata", idata)->apply(INT_ID, len);
+  View* dview = root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
   EXPECT_EQ(root->getNumViews(), 2u);
 
 //  iview->print();
@@ -334,24 +334,24 @@ TEST(sidre_external, save_load_external_view)
 //  ds->print();
 
 
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   ds2->getRoot()->load("out_sidre_external_save_restore_external_view",
                        "conduit");
 
 //  ds2->print();
 
-  Group * root2 = ds2->getRoot();
+  Group* root2 = ds2->getRoot();
 
   EXPECT_EQ(root2->getNumViews(), 2u);
 
-  int * idata_chk = iview->getData();
+  int* idata_chk = iview->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = dview->getData();
+  double* ddata_chk = dview->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -46,7 +46,7 @@ namespace detail
 {
 
 //------------------------------------------------------------------------------
-bool diverged( const double * xi, int N )
+bool diverged( const double* xi, int N )
 {
   const double DIVERGED = 1.e6;
 
@@ -64,7 +64,7 @@ bool diverged( const double * xi, int N )
 //------------------------------------------------------------------------------
 // FINITE ELEMENT CLASS IMPLEMENTATION
 //------------------------------------------------------------------------------
-FiniteElement::FiniteElement( const Mesh * mesh, int cellIdx ) :
+FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
   m_dim( mesh->getDimension() ),
   m_ctype( mesh->getMeshCellType( cellIdx ) ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
@@ -141,8 +141,8 @@ FiniteElement::~FiniteElement()
 }
 
 //------------------------------------------------------------------------------
-int FiniteElement::computeReferenceCoords( const double * xp,
-                                           double * xr,
+int FiniteElement::computeReferenceCoords( const double* xp,
+                                           double* xr,
                                            double TOL )
 {
   SLIC_ASSERT(  xp != AXOM_NULLPTR );
@@ -248,7 +248,7 @@ int FiniteElement::computeReferenceCoords( const double * xp,
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::computePhysicalCoords( const double * xr, double * xp )
+void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
 {
   SLIC_ASSERT(  xr != AXOM_NULLPTR );
   SLIC_ASSERT(  xp != AXOM_NULLPTR );
@@ -271,12 +271,12 @@ void FiniteElement::computePhysicalCoords( const double * xr, double * xp )
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::jacobian( const double * lc,
+void FiniteElement::jacobian( const double* lc,
                               numerics::Matrix< double >& J  )
 {
   SLIC_ASSERT(  lc != AXOM_NULLPTR );
-  SLIC_ASSERT(  J.getNumColumns() == m_dim );
-  SLIC_ASSERT(  J.getNumRows() == m_dim );
+  SLIC_ASSERT(  J.getNumColumns() == this->getReferenceDimension() );
+  SLIC_ASSERT(  J.getNumRows() == this->getPhysicalDimension() );
   SLIC_ASSERT(  this->getBasisType() != MINT_UNDEFINED_BASIS );
 
   if ( this->getBasisType() == MINT_UNDEFINED_BASIS )
@@ -287,7 +287,8 @@ void FiniteElement::jacobian( const double * lc,
 
   // STEP 0: evaluate the derivatives
   this->evaluateDerivatives( lc, m_phidot );
-  numerics::Matrix< double > derivs_matrix( m_numdofs, m_dim, m_phidot, true );
+  numerics::Matrix< double > derivs_matrix(
+      m_numdofs, this->getReferenceDimension(), m_phidot, true );
 
   // STEP 1: get the coordinates
   numerics::Matrix< double > coords_matrix( m_dim, m_numnodes, m_xyz, true );
@@ -297,7 +298,7 @@ void FiniteElement::jacobian( const double * lc,
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::evaluateShapeFunctions( const double * xr, double * phi )
+void FiniteElement::evaluateShapeFunctions( const double* xr, double* phi )
 {
   SLIC_ASSERT(  xr != AXOM_NULLPTR );
   SLIC_ASSERT(  phi != AXOM_NULLPTR );
@@ -314,7 +315,7 @@ void FiniteElement::evaluateShapeFunctions( const double * xr, double * phi )
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::evaluateDerivatives( const double * xr, double * phidot )
+void FiniteElement::evaluateDerivatives( const double* xr, double* phidot )
 {
   SLIC_ASSERT(  xr != AXOM_NULLPTR );
   SLIC_ASSERT(  phidot != AXOM_NULLPTR );
@@ -367,7 +368,7 @@ void FiniteElement::tearDown()
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::getCellCoords( const Mesh * m, int cellIdx )
+void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
 {
   SLIC_ASSERT(  m != AXOM_NULLPTR );
   SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );
@@ -384,7 +385,7 @@ void FiniteElement::getCellCoords( const Mesh * m, int cellIdx )
 }
 
 //------------------------------------------------------------------------------
-bool FiniteElement::inReferenceElement( const double * xi, double TOL )
+bool FiniteElement::inReferenceElement( const double* xi, double TOL )
 {
   SLIC_ASSERT( xi != AXOM_NULLPTR );
 

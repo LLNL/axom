@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -37,7 +37,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   // STEP 0: initialize MPI & logging environment
   MPI_Init( &argc, &argv );

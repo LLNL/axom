@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -65,7 +65,7 @@ public:
   /*!
    *  \brief ctor that creates a Iterator which starts at grp.
    */
-  Iterator(Group * grp);
+  Iterator(Group* grp);
 
   /*!
    * \brief dtor.
@@ -117,28 +117,28 @@ public:
    *
    *  If the current position is not a Group, return AXOM_NULLPTR.
    */
-  Group * asGroup();
+  Group* asGroup();
 
   /*!
    *  \brief Return pointer to const Group at current iterator position.
    *
    *  If the current position is not a Group, return AXOM_NULLPTR.
    */
-  Group const * asGroup() const;
+  Group const* asGroup() const;
 
   /*!
    *  \brief Return pointer to non-const View at current iterator position.
    *
    *  If the current position is not a View, return AXOM_NULLPTR.
    */
-  View * asView();
+  View* asView();
 
   /*!
    *  \brief Return pointer to const View at current iterator position.
    *
    *  If the current position is not a View, return AXOM_NULLPTR.
    */
-  View const * asView() const;
+  View const* asView() const;
 
   /*!
    * \brief Return const reference to name of current iterator object.
@@ -189,7 +189,7 @@ private:
    * \brief Push grp on the stack and push child Groups until a Group
    *  is encountered which contains no other Groups.
    */
-  void findDeepestGroup(Group * grp);
+  void findDeepestGroup(Group* grp);
 
   ///////////////////////////////////////////////////////////////////
   //
@@ -197,7 +197,7 @@ private:
   ///////////////////////////////////////////////////////////////////
 
   /// Current position in tree
-  std::stack< Cursor * > m_stack;
+  std::stack< Cursor* > m_stack;
 
 };
 

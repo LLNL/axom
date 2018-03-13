@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -73,7 +73,7 @@ namespace primal
 template < typename T, int NDIMS >
 inline Point< T,NDIMS > closest_point( const Point< T,NDIMS >& P,
                                        const Triangle< T,NDIMS >& tri,
-                                       int * loc=AXOM_NULLPTR )
+                                       int* loc=AXOM_NULLPTR )
 {
 // convenience macros to access triangle vertices
 #define A(t) t[0]
@@ -234,7 +234,7 @@ inline Point< T, NDIMS > closest_point(const Point< T, NDIMS >& pt,
                                                                   NDIMS >& obb)
 {
   Vector< T, NDIMS > e = obb.getExtents();
-  const Vector< T, NDIMS > * u = obb.getAxes();
+  const Vector< T, NDIMS >* u = obb.getAxes();
 
   Vector< T, NDIMS > pt_l = obb.toLocal(pt);
   Vector< T, NDIMS > res(obb.getCentroid());

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,11 +17,13 @@
 
 /*!
  * \file MortonIndex
- * \brief Classes and functions to convert between points on an integer grid and
- *        their unidimensional MortonIndex.
  *
- * Also has some utility functions for 'mortonizing' and 'demortonizing' points and
- * a PointHash functor class that can be used as a std::hash for unordered_maps
+ * \brief Classes and functions to convert between points on an integer grid and
+ *  their unidimensional MortonIndex.
+ *
+ * Also has some utility functions for 'mortonizing' and 'demortonizing' points
+ * and a PointHash functor class that can be used as a std::hash for
+ * unordered_maps
  */
 
 #ifndef MORTON_INDEX_HXX_
@@ -86,7 +88,8 @@ namespace primal
 template < typename CoordType, typename MortonIndexType, typename Derived >
 struct MortonBase
 {
-  // static assert to ensure that this class is only instantiated on integral types
+  // static assert to ensure that this class is only instantiated on integral
+  // types
 #ifdef AXOM_USE_CXX11
   static_assert( std::is_integral< CoordType >::value,
                  "Coordtype must be integral for Morton indexing" );
@@ -213,9 +216,12 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
     /*!
      * The maximum number of unique bits from each coordinate of type CoordType
      *  that can be represented in a MortonIndex.
-     *  \note If we are use Mortonizer as a (one-way) hash function, it is ok to use
-     *        more bits. But, if we would like to be able to reverse the MortonIndex,
-     *        then we cannot safely use more than MAX_UNIQUE_BITS per coordinate.
+     *
+     * \note If we are use Mortonizer as a (one-way) hash function, it is ok to
+     *  use more bits. But, if we would like to be able to reverse the
+     *  MortonIndex, then we cannot safely use more than MAX_UNIQUE_BITS per
+     *  coordinate.
+     *
      */
     MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
 
@@ -447,16 +453,16 @@ const int MortonBase< CoordType,MortonIndexType,
 
 template < typename CoordType, typename MortonIndexType >
 const MortonIndexType Mortonizer< CoordType,MortonIndexType,2 >::B[] = {
-  static_cast< MortonIndexType >(0x5555555555555555),                         // 0101'0101
-  static_cast< MortonIndexType >(0x3333333333333333),                         // 0011'0011
-  static_cast< MortonIndexType >(0x0F0F0F0F0F0F0F0F),                         // 0000'1111
-  static_cast< MortonIndexType >(0x00FF00FF00FF00FF),                         // 0x8
-                                                                              //  1x8
-  static_cast< MortonIndexType >(0x0000FFFF0000FFFF),                         // 0x16
-                                                                              // 1x16
+  static_cast< MortonIndexType >(0x5555555555555555),  // 0101'0101
+  static_cast< MortonIndexType >(0x3333333333333333),  // 0011'0011
+  static_cast< MortonIndexType >(0x0F0F0F0F0F0F0F0F),  // 0000'1111
+  static_cast< MortonIndexType >(0x00FF00FF00FF00FF),  // 0x8
+                                                       //  1x8
+  static_cast< MortonIndexType >(0x0000FFFF0000FFFF),  // 0x16
+                                                       // 1x16
   static_cast< MortonIndexType >(0x00000000FFFFFFFF)
-};                                                                           //  0x32
-                                                                             // 1x32
+};                                                     //  0x32
+                                                       // 1x32
 
 template < typename CoordType, typename MortonIndexType >
 const int Mortonizer< CoordType,MortonIndexType,
@@ -465,13 +471,13 @@ const int Mortonizer< CoordType,MortonIndexType,
 // Magic numbers in 3D from C. Ericson's Real Time Collision Detection book
 template < typename CoordType, typename MortonIndexType >
 const MortonIndexType Mortonizer< CoordType,MortonIndexType,3 >::B[] = {
-  static_cast< MortonIndexType >(0x9249249249249249),                         // 0010'0100'1001'0010'0100'1001
-  static_cast< MortonIndexType >(0x30C30C30C30C30C3),                         // 0000'1100'0011'0000'1100'0011
-  static_cast< MortonIndexType >(0xF00F00F00F00F00F),                         // 0000'0000'1111'0000'0000'1111
-  static_cast< MortonIndexType >(0x00FF0000FF0000FF),                         // 0000'0000'0000'0000'1111'1111
-  static_cast< MortonIndexType >(0xFFFF00000000FFFF),                         // x16
+  static_cast< MortonIndexType >(0x9249249249249249),  // 0010'0100'1001'0010'0100'1001
+  static_cast< MortonIndexType >(0x30C30C30C30C30C3),  // 0000'1100'0011'0000'1100'0011
+  static_cast< MortonIndexType >(0xF00F00F00F00F00F),  // 0000'0000'1111'0000'0000'1111
+  static_cast< MortonIndexType >(0x00FF0000FF0000FF),  // 0000'0000'0000'0000'1111'1111
+  static_cast< MortonIndexType >(0xFFFF00000000FFFF),  // x16
   static_cast< MortonIndexType >(0x00000000FFFFFFFF)
-};                                                                              // x32
+};                                                     // x32
 
 template < typename CoordType, typename MortonIndexType >
 const int Mortonizer< CoordType,MortonIndexType,

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -221,7 +221,7 @@ public:
    * \param [in] sz number of coordinates. Defaults to SIZE.
    * \note If sz is greater than SIZE, we only take the first SIZE values.
    */
-  NumericArray(const T * vals, int sz = SIZE);
+  NumericArray(const T* vals, int sz = SIZE);
 
   /*!
    * \brief Copy constructor.
@@ -259,8 +259,8 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T * data() const;
-  T * data();
+  const T* data() const;
+  T* data();
 
   /*!
    *
@@ -269,7 +269,7 @@ public:
    * \pre The user needs to make sure that the provided array has been allocated
    * and has sufficient space for SIZE coordinates.
    */
-  void to_array(T * arr) const;
+  void to_array(T* arr) const;
 
   /*!
    * \brief Simple formatted print of a numeric array instance
@@ -298,7 +298,8 @@ public:
    * \brief Scalar multiplication on the NumericArray instance.
    * \param [in] scalar the scalar value with which to multiply.
    * Each element of the numeric array is multiplied by scalar
-   * \return A reference to the NumericArray instance after scalar multiplication.
+   * \return A reference to the NumericArray instance after scalar
+   * multiplication.
    */
   NumericArray< T,SIZE >& operator*=(double scalar);
 
@@ -315,7 +316,8 @@ public:
    * \brief Component-wise multiplication assignment operator.
    * \param [in] arr the array to multiply (component-wise).
    * Multiplies the numeric array arr with this instance (component-wise).
-   * \return A reference to the NumericArray instance after cwise multiplication.
+   * \return A reference to the NumericArray instance after cwise
+   * multiplication.
    */
   NumericArray< T,SIZE >& operator*=( const NumericArray< T,SIZE >& arr );
 
@@ -329,7 +331,9 @@ public:
   NumericArray< T,SIZE >& operator/=( const NumericArray< T,SIZE >& arr );
 
   /*!
-   * \brief Ensures that the highest value of the coordinates is at most upperVal.
+   * \brief Ensures that the highest value of the coordinates is at most
+   *  upperVal.
+   *
    * \param [in] upperVal The highest possible value
    * \post forall i, arr[i] <= upperVal
    * \return A reference to the NumericArray instance after clamping upper
@@ -337,19 +341,27 @@ public:
   NumericArray< T,SIZE >& clampUpper( const T& upperVal);
 
   /*!
-   * \brief Ensures that the lowest value of the coordinates is at least lowerVal.
+   * \brief Ensures that the lowest value of the coordinates is at least
+   *  lowerVal.
+   *
    * \param [in] lowerVal The lowest possible value
+   *
    * \post forall i, arr[i] >= lowerVal
+   *
    * \return A reference to the NumericArray instance after clamping lower
    */
   NumericArray< T,SIZE >& clampLower( const T& lowerVal);
 
   /*!
-   * \brief Ensures that each coordinate's value is in range [lowerVal,upperVal].
+   * \brief Ensures that each coordinate's value is in range
+   *  [lowerVal,upperVal].
+   *
    * \param [in] lowerVal The lowest possible value
    * \param [in] upperVal The highest possible value
+   *
    * \pre lowerVal <= upperVal
    * \post forall i, lowerVal <= arr[i] <= upperVal
+   *
    * \return A reference to the NumericArray instance after clamping
    */
   NumericArray< T,SIZE >& clamp( const T& lowerVal, const T& upperVal);
@@ -421,7 +433,7 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-NumericArray< T, SIZE >::NumericArray(const T * vals, int sz)
+NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
 {
   SLIC_ASSERT( SIZE >= 1 );
 
@@ -472,21 +484,21 @@ inline const T& NumericArray< T,SIZE >::operator[](int i) const
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-inline const T * NumericArray< T,SIZE >::data() const
+inline const T* NumericArray< T,SIZE >::data() const
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-inline T * NumericArray< T,SIZE >::data()
+inline T* NumericArray< T,SIZE >::data()
 {
   return m_components;
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-void NumericArray< T,SIZE >::to_array(T * arr) const
+void NumericArray< T,SIZE >::to_array(T* arr) const
 {
   SLIC_ASSERT( arr != AXOM_NULLPTR);
   memcpy( arr, m_components, NBYTES );

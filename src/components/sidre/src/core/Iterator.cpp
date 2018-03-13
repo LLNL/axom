@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -66,7 +66,7 @@ namespace sidre
  */
 struct Iterator::Cursor
 {
-  Group * m_grp;
+  Group* m_grp;
   IndexType m_igroup;
   IndexType m_iview;
   bool m_is_group;
@@ -98,7 +98,7 @@ struct Iterator::Cursor
  *  return AXOM_NULLPTR
  *************************************************************************
  */
-  Group * getCurrentGroup()
+  Group* getCurrentGroup()
   {
     return m_iview == InvalidIndex ? m_grp : AXOM_NULLPTR;
   }
@@ -109,7 +109,7 @@ struct Iterator::Cursor
  *  return AXOM_NULLPTR
  *************************************************************************
  */
-  View * getCurrentView()
+  View* getCurrentView()
   {
     return m_iview == InvalidIndex ? AXOM_NULLPTR : m_grp->getView(m_iview);
   }
@@ -126,11 +126,11 @@ struct Iterator::Cursor
  *
  *************************************************************************
  */
-void Iterator::findDeepestGroup(Group * grp)
+void Iterator::findDeepestGroup(Group* grp)
 {
   while (true)
   {
-    Iterator::Cursor * state = new Iterator::Cursor;
+    Iterator::Cursor* state = new Iterator::Cursor;
     state->m_grp    = grp;
     state->m_igroup = grp->getFirstValidGroupIndex();
     state->m_iview  = grp->getFirstValidViewIndex();
@@ -150,7 +150,7 @@ void Iterator::findDeepestGroup(Group * grp)
   }
 
   // Check last Group pushed to see if it represents a Group or View
-  Iterator::Cursor * state = m_stack.top();
+  Iterator::Cursor* state = m_stack.top();
   if (state->isView())
   {
     // Start by visiting the first View
@@ -170,7 +170,7 @@ void Iterator::findDeepestGroup(Group * grp)
  * Setup for a depth first query by following down grp to the bottom.
  *************************************************************************
  */
-Iterator::Iterator(Group * grp)
+Iterator::Iterator(Group* grp)
 {
   findDeepestGroup(grp);
 }
@@ -218,15 +218,15 @@ void Iterator::advanceToNext()
 {
   while ( !m_stack.empty())
   {
-    Iterator::Cursor * state = m_stack.top();
-    Group * grp = state->m_grp;
+    Iterator::Cursor* state = m_stack.top();
+    Group* grp = state->m_grp;
 
     if (state->m_igroup != InvalidIndex)
     {
       state->m_igroup = grp->getNextValidGroupIndex(state->m_igroup);
       if (state->m_igroup != InvalidIndex)
       {
-        Group * nextgrp = grp->getGroup(state->m_igroup);
+        Group* nextgrp = grp->getGroup(state->m_igroup);
         findDeepestGroup(nextgrp);
         return; // Found a Group
       }
@@ -303,7 +303,7 @@ bool Iterator::isView() const
  *
  *************************************************************************
  */
-Group * Iterator::asGroup()
+Group* Iterator::asGroup()
 {
   if (m_stack.empty())
   {
@@ -320,7 +320,7 @@ Group * Iterator::asGroup()
  *
  *************************************************************************
  */
-Group const * Iterator::asGroup() const
+Group const* Iterator::asGroup() const
 {
   if (m_stack.empty())
   {
@@ -337,7 +337,7 @@ Group const * Iterator::asGroup() const
  *
  *************************************************************************
  */
-View * Iterator::asView()
+View* Iterator::asView()
 {
   if (m_stack.empty())
   {
@@ -354,7 +354,7 @@ View * Iterator::asView()
  *
  *************************************************************************
  */
-View const * Iterator::asView() const
+View const* Iterator::asView() const
 {
   if (m_stack.empty())
   {
@@ -378,11 +378,11 @@ const std::string & Iterator::getName() const
     return InvalidName;
   }
 
-  Iterator::Cursor * state = m_stack.top();
+  Iterator::Cursor* state = m_stack.top();
 
   if (state->isView())
   {
-    View * view = state->m_grp->getView(state->m_iview);
+    View* view = state->m_grp->getView(state->m_iview);
     return view->getName();
   }
 
@@ -402,8 +402,8 @@ std::string Iterator::getPath() const
 #if 1
   std::string thePath("here");
 #else
-  const Group * root = getDataStore()->getRoot();
-  const Group * curr = getParent();
+  const Group* root = getDataStore()->getRoot();
+  const Group* curr = getParent();
   std::string thePath = curr->getName();
   curr = curr->getParent();
 

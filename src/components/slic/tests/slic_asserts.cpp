@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -183,9 +183,11 @@ TEST_F( SetFixtureS,  in_fixture_setup){}
 // A test using a test fixture with an assert in the teardown phase
 TEST_F( SetFixtureT,  in_fixture_teardown){}
 
-///  Note (KW): the following two tests are warnings since ASSERT_DEATH does not work
+///  Note (KW): the following two tests are warnings since ASSERT_DEATH does not
+// work
 // in a constructor or destructor
-///  Specifically, the ASSERT_DEATH macro has a return statement which is not allowed
+///  Specifically, the ASSERT_DEATH macro has a return statement which is not
+// allowed
 // in constructors or destructors
 
 // A test using a test fixture with an assert in the constructor
@@ -194,7 +196,7 @@ TEST_F( SetFixtureC,  in_fixture_ctor){}
 // A test using a test fixture with an assert in the destructor
 TEST_F( SetFixtureD,  in_fixture_dtor){}
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

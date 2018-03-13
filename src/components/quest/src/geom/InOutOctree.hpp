@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -59,7 +59,8 @@
 #include "mint/vtk_utils.hpp"
 
 
-#include <vector>   // For InOutLeafData triangle lists -- TODO replace with SLAM DynamicVariableRelation...
+#include <vector>   // For InOutLeafData triangle lists -- TODO replace with
+                    // SLAM DynamicVariableRelation...
 #include <iterator> // For back_inserter
 #include <limits>   // numeric_limits traits
 #include <sstream>
@@ -68,8 +69,12 @@
 #define DEBUG_VERT_IDX  -2  // 1160
 #define DEBUG_TRI_IDX   -2 // 1654
 
-#define DEBUG_BLOCK_2  BlockIndex::invalid_index() // BlockIndex( GridPt::make_point(15,15,0), 5)
-#define DEBUG_BLOCK_1  BlockIndex::invalid_index() // BlockIndex( GridPt::make_point(7287,0,2986), 13)
+#define DEBUG_BLOCK_2  BlockIndex::invalid_index() // BlockIndex(
+                                                   // GridPt::make_point(15,15,0),
+                                                   // 5)
+#define DEBUG_BLOCK_1  BlockIndex::invalid_index() // BlockIndex(
+                                                   // GridPt::make_point(7287,0,2986),
+                                                   // 13)
 
 #ifndef DUMP_VTK_MESH
 //    #define DUMP_VTK_MESH
@@ -98,7 +103,8 @@ namespace quest
 
 namespace detail
 {
-// Predeclare utility classes that deals with validating and logging stats of InOutOctrees
+// Predeclare utility classes that deals with validating and logging stats of
+// InOutOctrees
 
 template<int DIM> class InOutOctreeStats;
 template<int DIM> class InOutOctreeValidator;
@@ -110,7 +116,8 @@ template<int DIM> class InOutOctreeMeshDumper;
  * \brief Compact BlockDataType for an InOutOctree
  *
  * Storage requirement is one integer per block, which can implicitly determine
- * the color of a block, and for gray block, the index of the associated triangles
+ * the color of a block, and for gray block, the index of the associated
+ * triangles
  */
 class InOutBlockData
 {
@@ -170,7 +177,8 @@ public:         // API for a BlockData
   /**
    * \brief Predicate to determine if the associated block is in the tree
    *
-   * \return True, if the block is in the tree (internal or leaf), False otherwise
+   * \return True, if the block is in the tree (internal or leaf), False
+   * otherwise
    */
   bool isBlock() const { return m_idx != NON_BLOCK; }
 
@@ -186,7 +194,8 @@ public:         // Other functions
   }
 
   /**
-   * Predicate to determine if the associated block has data (i.e. it is a gray block)
+   * Predicate to determine if the associated block has data (i.e. it is a gray
+   * block)
    * \return True, if the block has data, False otherwise
    * */
   bool hasData() const { return m_idx >= 0; }
@@ -201,7 +210,8 @@ public:         // Other functions
   }
 
   /**
-   * \brief Sets the block as gray, and provides the index of its associated data
+   * \brief Sets the block as gray, and provides the index of its associated
+   * data
    *
    * \param idx The index of the data associated with the gray leaf block
    * \pre The block must be a leaf block
@@ -288,7 +298,7 @@ private:
  * \param os The output stream to write to
  * \param iob The InOUtBlockData instance that we are writing
  */
-std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
+inline std::ostream& operator<<(std::ostream& os, const InOutBlockData& iob)
 {
   os << "InOutBlockData{"
      << "isLeaf: " << (iob.isLeaf() ? "yes" : "no");
@@ -355,7 +365,8 @@ public:
   /**
    * \brief Constructor for an InOutLeafData
    *
-   * \param vInd The index of a vertex (optional; default is to not set a vertex)
+   * \param vInd The index of a vertex (optional; default is to not set a
+   * vertex)
    */
   DynamicGrayBlockData(VertexIndex vInd, bool isLeaf)
     : m_vertIndex(vInd), m_isLeaf(isLeaf) {}
@@ -404,11 +415,14 @@ public:
                          const DynamicGrayBlockData& rhs )
   {
     return
-      //(static_cast<const BlockData&>(lhs) == static_cast<const BlockData&>(rhs))
+      //(static_cast<const BlockData&>(lhs) == static_cast<const
+      // BlockData&>(rhs))
       //&&
       (lhs.m_vertIndex == rhs.m_vertIndex)
-      && (lhs.m_tris.size() == rhs.m_tris.size())     // Note: We are not checking the contents
-      // && (lhs.m_tris == rhs.m_tris)                //       of the triangle array, only the size
+      && (lhs.m_tris.size() == rhs.m_tris.size())     // Note: We are not
+                                                      // checking the contents
+      // && (lhs.m_tris == rhs.m_tris)                //       of the triangle
+      // array, only the size
       && lhs.m_isLeaf == rhs.m_isLeaf
     ;
   }
@@ -419,7 +433,8 @@ public:     // Functions related to whether this is a leaf
   /** Predicate to determine if the associated block is a leaf in the octree */
   bool isLeaf() const { return m_isLeaf; }
 
-  /** Sets a flag to determine whether the associated block is a leaf or internal */
+  /** Sets a flag to determine whether the associated block is a leaf or
+     internal */
   void setLeafFlag(bool isLeaf) { m_isLeaf = isLeaf; }
 
 public:     // Functions related to the associated vertex
@@ -458,10 +473,12 @@ public:     // Functions related to the associated triangles
   /** Associates the surface triangle with the given index with this block */
   void addTriangle(TriangleIndex tInd) { m_tris.push_back(tInd); }
 
-  /** Returns a const reference to the list of triangle indexes associated with the block */
+  /** Returns a const reference to the list of triangle indexes associated with
+     the block */
   const TriangleList& triangles() const { return m_tris; }
 
-  /** Returns a reference to the list of triangle indexes associated with the block */
+  /** Returns a reference to the list of triangle indexes associated with the
+     block */
   TriangleList& triangles() { return m_tris; }
 
 private:
@@ -473,7 +490,8 @@ private:
 /**
  * Free function to print a DynamicGrayBlockData instance to an output stream
  */
-std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
+inline std::ostream& operator<<(std::ostream& os,
+                                const DynamicGrayBlockData& bData)
 {
   os << "DynamicGrayBlockData{";
 
@@ -502,10 +520,14 @@ std::ostream& operator<<(std::ostream& os, const DynamicGrayBlockData& bData)
 
 /**
  * \class
- * \brief Handles generation of a point containment spatial index over a surface mesh
+ * \brief Handles generation of a point containment spatial index over a surface
+ * mesh
  *
- * The point containment queries determines whether a given arbitrary point in space
- * lies inside or outside of the surface
+ * The point containment queries determine whether a given arbitrary point in
+ * space lies inside or outside of the surface.  This class depends on a
+ * watertight surface mesh.  In order to repair common mesh defects, this
+ * class modifies the Mesh passed to it.  Please discard all other copies
+ * of the Mesh pointer.
  */
 template<int DIM>
 class InOutOctree : public SpatialOctree<DIM, InOutBlockData>
@@ -537,11 +559,15 @@ private:
   /**
    * \brief A utility class that wraps the access to the mesh data
    *
-   * This class helps separate the specifics of accessing the underlying mesh for on InOutOctree.
-   * It is customized for unstructured Triangle meshes, but we will later want to apply
-   * the InOutOctree to other mesh types, e.g. Segments and Nurbs in 2D, Bilinear quads and NURBS in 3D.
+   * This class helps separate the specifics of accessing the underlying mesh
+   * for on InOutOctree.
+   * It is customized for unstructured Triangle meshes, but we will later want
+   * to apply
+   * the InOutOctree to other mesh types, e.g. Segments and Nurbs in 2D,
+   * Bilinear quads and NURBS in 3D.
    *
-   * We can later specialize this class for triangle meshes and implement other customized mesh wrappers.
+   * We can later specialize this class for triangle meshes and implement other
+   * customized mesh wrappers.
    */
   class MeshWrapper
   {
@@ -583,7 +609,7 @@ public:
 
 public:
     /** \brief Constructor for a mesh wrapper */
-    MeshWrapper(SurfaceMesh *& meshPtr)
+    MeshWrapper(SurfaceMesh*& meshPtr)
       : m_surfaceMesh(meshPtr),
       m_vertexSet(0),
       m_elementSet(0),
@@ -627,7 +653,8 @@ public:
 
 
     /**
-     * \brief Helper function to retrieve the position of the vertex from the mesh
+     * \brief Helper function to retrieve the position of the vertex from the
+     * mesh
      * \param idx The index of the vertex within the surface mesh
      */
     SpacePt getMeshVertexPosition(VertexIndex idx) const
@@ -683,7 +710,8 @@ public:
     }
 
     /**
-     * \brief Utility function to retrieve the positions of the triangle's vertices
+     * \brief Utility function to retrieve the positions of the triangle's
+     * vertices
      *
      * \return A triangle instance whose vertices are positioned in space
      */
@@ -696,7 +724,8 @@ public:
     }
 
     /**
-     * \brief Checks whether the indexed triangle contains a reference to the given vertex
+     * \brief Checks whether the indexed triangle contains a reference to the
+     * given vertex
      */
     bool incidentInVertex(const TriVertIndices& triVerts,
                           VertexIndex vIdx) const
@@ -708,7 +737,8 @@ public:
 
 
     /**
-     * \brief Finds the index of a vertex in triangle t1 that is not in triangle t0
+     * \brief Finds the index of a vertex in triangle t1 that is not in triangle
+     * t0
      *
      * \param t0 The index of the first triangle
      * \param t1 The index of the second triangle
@@ -724,7 +754,8 @@ public:
         <<"quest::MeshWrapper::findDistinctVertex, got triangle index "
         << t0 << " twice.");
 
-      // Find a vertex from the local surface that is not incident in the first triangle
+      // Find a vertex from the local surface that is not incident in the first
+      // triangle
       TriVertIndices tvRel0 = triangleVertexIndices( t0 );
       TriVertIndices tvRel1 = triangleVertexIndices( t1 );
 
@@ -749,7 +780,8 @@ public:
     bool haveSharedVertex(TriangleIndex t0, TriangleIndex t1,
                           VertexIndex& sharedVert) const
     {
-      // There are two triangles -- check that they have at least one common vertex
+      // There are two triangles -- check that they have at least one common
+      // vertex
       TriVertIndices tvRel0 = triangleVertexIndices(t0);
       TriVertIndices tvRel1 = triangleVertexIndices(t1);
 
@@ -797,16 +829,19 @@ public:
 
 
     /**
-     * \brief Reindexes the mesh vertices and triangle indices using the given map
+     * \brief Reindexes the mesh vertices and triangle indices using the given
+     * map
      *
      * \param numVertices The number of vertices in the new mesh
-     * \param vertexIndexMap A mapping from the old vertex indices to the new ones
+     * \param vertexIndexMap A mapping from the old vertex indices to the new
+     * ones
      * \note This step clears out the original mesh,
      * which can be reconstructed using the regenerateSurfaceMesh() function
      */
     void reindexMesh(int numVertices, const VertexIndexMap& vertexIndexMap)
     {
-      // Create a vertex set on the new vertices and grab coordinates from the old ones
+      // Create a vertex set on the new vertices and grab coordinates from the
+      // old ones
       m_vertexSet = MeshVertexSet( numVertices );
       m_vertexPositions = VertexPositionMap(&m_vertexSet);
 
@@ -869,7 +904,7 @@ public:
       }
 
       typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-      TriangleMesh * triMesh = new TriangleMesh(3);
+      TriangleMesh* triMesh = new TriangleMesh(3);
 
       // Add vertices to the mesh (i.e. vertex positions)
       for(int i=0 ; i< m_vertexSet.size() ; ++i)
@@ -881,7 +916,7 @@ public:
       // Add triangles to the mesh (i.e. boundary vertices)
       for(int i=0 ; i< m_elementSet.size() ; ++i)
       {
-        const TriangleIndex * tv = &triangleVertexIndices(i)[0];
+        const TriangleIndex* tv = &triangleVertexIndices(i)[0];
         triMesh->insertCell(tv, MINT_TRIANGLE, NUM_TRI_VERTS);
       }
 
@@ -889,7 +924,8 @@ public:
     }
 
 private:
-    SurfaceMesh *& m_surfaceMesh;    /** pointer to pointer to allow changing the mesh */
+    SurfaceMesh*& m_surfaceMesh;     /** pointer to pointer to allow changing
+                                        the mesh */
 
     MeshVertexSet m_vertexSet;
     MeshElementSet m_elementSet;
@@ -919,7 +955,8 @@ public:
 
 
 
-  // Some type defs for the Relations from Gray leaf blocks to mesh vertices and elements
+  // Some type defs for the Relations from Gray leaf blocks to mesh vertices and
+  // elements
 
   static const int MAX_VERTS_PER_BLOCK = 1;
   typedef axom::slam::Map<BlockIndex> VertexBlockMap;
@@ -954,13 +991,16 @@ public:
 
 public:
   /**
-   * \brief Construct an InOutOctree to handle containment queries on a surface mesh
+   * \brief Construct an InOutOctree to handle containment queries on a surface
+   * mesh
    *
    * \param [in] bb The spatial extent covered by the octree
-   * \note We slightly scale the bounding box so all mesh elements are guaranteed
-   *       to be enclosed by the octree
+   * \note We slightly scale the bounding box so all mesh elements are
+   * guaranteed to be enclosed by the octree.
+   * \note The InOutOctree modifies its mesh in an effort to repair common
+   * problems.  Please make sure to discard all old copies of the meshPtr.
    */
-  InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh *& meshPtr)
+  InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
     : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) ),
     m_meshWrapper(meshPtr),
     m_vertexToBlockMap(&m_meshWrapper.vertexSet()),
@@ -982,9 +1022,11 @@ public:
   /**
    * \brief The point containment query.
    *
-   * \param pt The point that we want to check for containment within the surface
+   * \param pt The point that we want to check for containment within the
+   * surface
    * \return True if the point is within (or on) the surface, false otherwise
-   * \note Points outside the octree's bounding box are considered outside the surface
+   * \note Points outside the octree's bounding box are considered outside the
+   * surface
    */
   bool within(const SpacePt& pt) const;
 
@@ -1000,7 +1042,8 @@ private:
   void insertVertex(VertexIndex idx, int startingLevel = 0);
 
   /**
-   * \brief Insert all triangles of the mesh into the octree, generating a PM octree
+   * \brief Insert all triangles of the mesh into the octree, generating a PM
+   * octree
    */
   void insertMeshTriangles();
 
@@ -1008,7 +1051,8 @@ private:
   /**
    * \brief Set a color for each leaf block of the octree.
    *
-   * Black blocks are entirely within the surface, white blocks are entirely outside the surface
+   * Black blocks are entirely within the surface, white blocks are entirely
+   * outside the surface
    * and Gray blocks intersect the surface.
    */
   void colorOctreeLeaves();
@@ -1017,8 +1061,10 @@ private:
   /**
    * Use octree index over mesh vertices to convert the 'triangle soup'
    * from the stl file into an indexed triangle mesh representation.
-   * In particular, all vertices in the mesh that are nearly coincident will be merged,
-   * and degenerate triangles (where the three vertices do not have unique indices)
+   * In particular, all vertices in the mesh that are nearly coincident will be
+   * merged,
+   * and degenerate triangles (where the three vertices do not have unique
+   * indices)
    * will be removed.
    */
   void updateSurfaceMeshVertices();
@@ -1030,9 +1076,11 @@ private:
    *
    * \param leafBlock [in] The current octree block
    * \param leafData [inout] The data associated with this block
-   * \note A side effect of this function is that we set the leafData's vertex to the common
+   * \note A side effect of this function is that we set the leafData's vertex
+   * to the common
    * vertex if one is found
-   * \return True, if all triangles indexed by this leaf share a common vertex, false otherwise.
+   * \return True, if all triangles indexed by this leaf share a common vertex,
+   * false otherwise.
    */
   bool allTrianglesIncidentInCommonVertex(const BlockIndex& leafBlock,
                                           DynamicGrayBlockData& leafData) const;
@@ -1051,7 +1099,8 @@ private:
   /**
    * \brief Predicate to determine if the vertex is indexed by the blk
    *
-   * \pre This function assumes the vertices have been inserted and the mesh has been reordered
+   * \pre This function assumes the vertices have been inserted and the mesh has
+   * been reordered
    * \param vIdx The index of the vertex to check
    * \param blk The block that we are checking against
    * \return true if vIdx is indexed by blk, false otherwise
@@ -1065,12 +1114,15 @@ private:
   }
 
   /**
-   * \brief Predicate to determine if any of the elements vertices are indexed by the given BlockIndex
+   * \brief Predicate to determine if any of the elements vertices are indexed
+   * by the given BlockIndex
    *
-   * \pre This function assumes the vertices have been inserted and the mesh has been reordered
+   * \pre This function assumes the vertices have been inserted and the mesh has
+   * been reordered
    * \param tIdx The index of the triangle to check
    * \param blk The block that we are checking against
-   * \return true if one of the triangle's vertices are indexed by blk, false otherwise
+   * \return true if one of the triangle's vertices are indexed by blk, false
+   * otherwise
    */
   bool blockIndexesElementVertex(TriangleIndex tIdx,
                                  const BlockIndex& blk) const
@@ -1093,13 +1145,15 @@ private:
    * \param queryPt The point we are querying
    * \param leafBlk The block of the gray leaf
    * \param data The data associated with the leaf block
-   * \return True, if the point is inside the local surface associated with this block, false otherwise
+   * \return True, if the point is inside the local surface associated with this
+   * block, false otherwise
    */
   bool withinGrayBlock( const SpacePt & queryPt, const BlockIndex& leafBlk,
                         const InOutBlockData&  data) const;
 
   /**
-   * \brief Returns the index of the mesh vertex associated with the given leaf block
+   * \brief Returns the index of the mesh vertex associated with the given leaf
+   * block
    *
    * \pre leafBlk is a leaf block of the octree
    * \param leafBlk The BlockIndex of a leaf block in the octree
@@ -1110,7 +1164,8 @@ private:
                          const InOutBlockData&  leafData) const;
 
   /**
-   * \brief Returns the set of mesh triangle indices associated with the given leaf block
+   * \brief Returns the set of mesh triangle indices associated with the given
+   * leaf block
    *
    * \pre leafBlk is a leaf block of the octree
    * \param leafBlk The BlockIndex of a leaf block in the octree
@@ -1129,14 +1184,16 @@ private:
   void checkValid() const;
 
 
-  /** \brief Helper function to verify that all leaves at the given level have a color */
+  /** \brief Helper function to verify that all leaves at the given level have a
+     color */
   void checkAllLeavesColoredAtLevel(int AXOM_DEBUG_PARAM(level)) const;
 
   void dumpOctreeMeshVTK( const std::string& name) const;
   void dumpTriMeshVTK( const std::string& name) const;
 
   /**
-   * \brief Utility function to dump any Inside blocks whose neighbors are outside (and vice-versa)
+   * \brief Utility function to dump any Inside blocks whose neighbors are
+   * outside (and vice-versa)
    *
    * \note There should not be any such blocks in a valid InOutOctree
    */
@@ -1151,7 +1208,8 @@ private:
 
 
   /**
-   * \brief Utility function to compute the angle-weighted pseudonormal for a vertex in the mesh
+   * \brief Utility function to compute the angle-weighted pseudonormal for a
+   * vertex in the mesh
    *
    * \note Not optimized
    * \note The returned normal is not normalized.
@@ -1228,8 +1286,8 @@ namespace
 /**
  * \brief Utility function to print the vertex indices of a cell
  */
-std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriVertIndices& tvInd)
+inline std::ostream& operator<<(std::ostream& os,
+                                const InOutOctree<3>::TriVertIndices& tvInd)
 {
   os<<"[";
   for(int i=0 ; i< tvInd.size() ; ++i)
@@ -1238,8 +1296,8 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const InOutOctree<3>::TriangleIndexSet& tSet)
+inline std::ostream& operator<<(std::ostream& os,
+                                const InOutOctree<3>::TriangleIndexSet& tSet)
 {
   os<<"[";
   for(int i=0 ; i< tSet.size() ; ++i)
@@ -1276,7 +1334,8 @@ void InOutOctree<DIM>::generateIndex ()
 
 
 
-  // STEP 1(b) -- Update the mesh vertices and cells with after vertex welding from octree
+  // STEP 1(b) -- Update the mesh vertices and cells with after vertex welding
+  // from octree
   timer.start();
   updateSurfaceMeshVertices();
   timer.stop();
@@ -1424,7 +1483,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     dynamicRootData.addTriangle(idx);
 
 
-  /// --- Iterate through octree levels and insert triangles into the blocks that they intersect
+  /// --- Iterate through octree levels and insert triangles into the blocks
+  // that they intersect
   for(int lev=0 ; lev< this->m_levels.size() ; ++lev)
   {
     Timer levelTimer(true);
@@ -1528,7 +1588,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         BlockIndex childBlk[BlockIndex::NUM_CHILDREN];
         GeometricBoundingBox childBB[BlockIndex::NUM_CHILDREN];
         DynamicGrayBlockData childData[BlockIndex::NUM_CHILDREN];
-        DynamicGrayBlockData * childDataPtr[BlockIndex::NUM_CHILDREN];
+        DynamicGrayBlockData* childDataPtr[BlockIndex::NUM_CHILDREN];
 
 
         const typename LeavesLevelMap::BroodData& broodData =
@@ -1593,7 +1653,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
 
             if(shouldAddTriangle)
             {
-              // Place the DynamicGrayBlockData in the array before adding its data
+              // Place the DynamicGrayBlockData in the array before adding its
+              // data
               if(!childDataPtr[j]->hasTriangles())
               {
                 // Copy the DynamicGrayBlockData into the array
@@ -1690,7 +1751,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     }
 
     // Iterate through the uncolored blocks until all have a color
-    // This should terminate since we know that one of its siblings (or their descendants) is gray
+    // This should terminate since we know that one of its siblings (or their
+    // descendants) is gray
     while(!uncoloredBlocks.empty())
     {
       int prevCount = uncoloredBlocks.size();
@@ -1740,7 +1802,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
 
   if( !isColored )
   {
-    // Leaf does not yet have a color... try to find its color from same-level face neighbors
+    // Leaf does not yet have a color... try to find its color from same-level
+    // face neighbors
     for(int i=0 ; !isColored && i< leafBlk.numFaceNeighbors() ; ++i)
     {
       BlockIndex neighborBlk = leafBlk.faceNeighbor(i);
@@ -1797,7 +1860,8 @@ bool InOutOctree<DIM>::colorLeafAndNeighbors(const BlockIndex& leafBlk,
     }
   }
 
-  // If the block has a color, try to color its face neighbors at the same or coarser resolution
+  // If the block has a color, try to color its face neighbors at the same or
+  // coarser resolution
   if( isColored )
   {
     for(int i=0 ; i< leafBlk.numFaceNeighbors() ; ++i)
@@ -1896,9 +1960,11 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
                                        const BlockIndex& leafBlk,
                                        const InOutBlockData&  leafData) const
 {
-  /// The algorithm finds a ray from queryPt to a point of any triangle within leafBlk.
+  /// The algorithm finds a ray from queryPt to a point of any triangle within
+  // leafBlk.
   /// It then finds the first triangle along this ray and tests this vector
-  /// against the triangle normal. queryPt is inside if the dot product is positive.
+  /// against the triangle normal. queryPt is inside if the dot product is
+  // positive.
 
   // Bounding box scaling factor for dealing with grazing triangles
   const double BB_SCALE_FACTOR = 1.005;
@@ -1918,7 +1984,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     TriangleIndex idx = triSet[i];
     SpaceTriangle tri = m_meshWrapper.trianglePositions(idx);
 
-    /// Find a point from this triangle that is within the bounding box of the mesh
+    /// Find a point from this triangle that is within the bounding box of the
+    // mesh
     primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
     if(poly.numVertices() == 0)
     {
@@ -1940,16 +2007,17 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
 
     triPt = poly.centroid();
 
-    /// Use a ray from the query point to the triangle point to find an intersection
-    /// Note: We have to check all triangles to ensure that there is not a closer
+    /// Use a ray from the query point to the triangle point to find an
+    // intersection
+    /// Note: We have to check all triangles to ensure that there is not a
+    // closer
     ///       triangle than tri along this direction.
     TriangleIndex tIdx = MeshWrapper::NO_TRIANGLE;
     double minRayParam = std::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt,triPt));
 
     double rayParam = 0;
-    Point< double, 3 > triParam;
-    if( primal::intersect(tri, ray, rayParam, triParam) )
+    if( primal::intersect(tri, ray, rayParam) )
     {
       minRayParam = rayParam;
       tIdx = idx;
@@ -1961,8 +2029,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
       if(localIdx == idx)
         continue;
 
-      if( primal::intersect(m_meshWrapper.trianglePositions(localIdx),
-                            ray, rayParam, triParam) )
+      if( primal::intersect(
+            m_meshWrapper.trianglePositions(localIdx),ray, rayParam) )
       {
         if (rayParam < minRayParam )
         {
@@ -1977,7 +2045,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
       continue;
     }
 
-    /// We are inside if the dot product of the normal with this triangle is positive
+    /// We are inside if the dot product of the normal with this triangle is
+    // positive
     SpaceVector normal = (tIdx == idx)
                          ? tri.normal()
                          : m_meshWrapper.trianglePositions( tIdx ).normal();
@@ -2052,7 +2121,8 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
   if( blockIndexesVertex(commonVert, leafBlock) )
   {
     // This is a leaf node containing the indexed vertex
-    // Loop through the triangles and check that all are incident with this vertex
+    // Loop through the triangles and check that all are incident with this
+    // vertex
     for(int i=0 ; i< numTris ; ++i)
     {
       if( !m_meshWrapper.incidentInVertex(
@@ -2139,7 +2209,8 @@ void InOutOctree<DIM>::printOctreeStats() const
   SLIC_INFO( octreeStats.summaryStats() );
 
   #ifdef DUMP_VTK_MESH
-  // Print out some debug meshes for vertex, triangle and/or blocks defined in DEBUG_XXX macros
+  // Print out some debug meshes for vertex, triangle and/or blocks defined in
+  // DEBUG_XXX macros
   if(m_generationState >= INOUTOCTREE_ELEMENTS_INSERTED)
   {
     detail::InOutOctreeMeshDumper<DIM> meshDumper(*this);
@@ -2290,8 +2361,10 @@ public:
   }
 
   /**
-   *  Generates a hexahedral VTK mesh with all neighboring blocks where one is inside and the other is outside
-   *  \note By construction, there should be no such pairs in a valid InOutOctree mesh.
+   *  Generates a hexahedral VTK mesh with all neighboring blocks where one is
+   * inside and the other is outside
+   *  \note By construction, there should be no such pairs in a valid
+   * InOutOctree mesh.
    */
   void dumpDifferentColoredNeighborsMeshVTK(const std::string name) const
   {
@@ -2306,7 +2379,8 @@ public:
 
     int totalBlocks = 0;
 
-    // Iterate through the octree leaves looking for neighbor blocks with different labelings
+    // Iterate through the octree leaves looking for neighbor blocks with
+    // different labelings
     for(int lev=m_octree.maxLeafLevel()-1 ; lev >= 0 ; --lev)
     {
       const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
@@ -2527,7 +2601,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh * debugMesh= new DebugMesh(3);
+    DebugMesh* debugMesh= new DebugMesh(3);
 
     const bool hasTriangles =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED);
@@ -2587,10 +2661,10 @@ private:
 
 
     // Add the fields to the mint mesh
-    VertexIndex * vertID = addIntField(debugMesh, "vertID", leafSet.size() );
-    VertexIndex * lLevel = addIntField(debugMesh, "level", leafSet.size() );
+    VertexIndex* vertID = addIntField(debugMesh, "vertID", leafSet.size() );
+    VertexIndex* lLevel = addIntField(debugMesh, "level", leafSet.size() );
 
-    int * blockCoord[3];
+    int* blockCoord[3];
     blockCoord[0] = addIntField(debugMesh, "block_x", leafSet.size() );
     blockCoord[1] = addIntField(debugMesh, "block_y", leafSet.size() );
     blockCoord[2] = addIntField(debugMesh, "block_z", leafSet.size() );
@@ -2607,9 +2681,9 @@ private:
 
     if(hasTriangles)
     {
-      VertexIndex * uniqVertID =
+      VertexIndex* uniqVertID =
         addIntField(debugMesh, "uniqVertID", leafSet.size() );
-      int * triCount =
+      int* triCount =
         addIntField(debugMesh, "triCount", leafSet.size() );
 
       for ( int i=0 ; i < leafSet.size() ; ++i )
@@ -2621,7 +2695,7 @@ private:
 
     if(hasColors)
     {
-      int * colors = addIntField(debugMesh, "colors", leafSet.size() );
+      int* colors = addIntField(debugMesh, "colors", leafSet.size() );
       for ( int i=0 ; i < leafSet.size() ; ++i )
         colors[i] = leafColors[i];
     }
@@ -2642,7 +2716,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh * debugMesh= new DebugMesh(3);
+    DebugMesh* debugMesh= new DebugMesh(3);
 
     for(TriIter it = tris.begin() ; it < tris.end() ; ++it)
     {
@@ -2654,10 +2728,10 @@ private:
     int numTris = tris.size();
 
     // Index of each triangle within the mesh
-    int * triIdx = addIntField(debugMesh, "triangle_index", numTris);
+    int* triIdx = addIntField(debugMesh, "triangle_index", numTris);
 
     // Indices of the three boundary vertices of this triangle
-    int * vertIdx[3];
+    int* vertIdx[3];
     vertIdx[0] = addIntField(debugMesh, "vertex_index_0", numTris);
     vertIdx[1] = addIntField(debugMesh, "vertex_index_1", numTris);
     vertIdx[2] = addIntField(debugMesh, "vertex_index_2", numTris);
@@ -2685,30 +2759,30 @@ private:
 
 private:
 
-  int * addIntField(DebugMesh * mesh, const std::string& name, int size) const
+  int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
   {
-    mint::FieldData * CD = mesh->getCellFieldData();
+    mint::FieldData* CD = mesh->getCellFieldData();
 
     CD->addField( new mint::FieldVariable< int >(name, size) );
-    int * fld = CD->getField( name )->getIntPtr();
+    int* fld = CD->getField( name )->getIntPtr();
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
   }
 
-  double * addRealField(DebugMesh * mesh, const std::string& name,
-                        int size) const
+  double* addRealField(DebugMesh* mesh, const std::string& name,
+                       int size) const
   {
-    mint::FieldData * CD = mesh->getCellFieldData();
+    mint::FieldData* CD = mesh->getCellFieldData();
 
     CD->addField( new mint::FieldVariable< double >(name, size) );
-    double * fld = CD->getField( name )->getDoublePtr();
+    double* fld = CD->getField( name )->getDoublePtr();
     SLIC_ASSERT( fld != AXOM_NULLPTR );
 
     return fld;
   }
 
-  void addTriangle(DebugMesh * mesh, const TriangleIndex& tIdx,
+  void addTriangle(DebugMesh* mesh, const TriangleIndex& tIdx,
                    bool shouldLogTris) const
   {
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
@@ -2724,7 +2798,8 @@ private:
 
     mesh->insertCell(data, MINT_TRIANGLE, 3);
 
-    // Log the triangle info as primal code to simplify adding a test for this case
+    // Log the triangle info as primal code to simplify adding a test for this
+    // case
     if(shouldLogTris)
     {
       SLIC_INFO("// Triangle " << tIdx << "\n\t"
@@ -2735,7 +2810,7 @@ private:
     }
   }
 
-  void addOctreeBlock(DebugMesh * mesh, const BlockIndex& block,
+  void addOctreeBlock(DebugMesh* mesh, const BlockIndex& block,
                       bool shouldLogBlocks) const
   {
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
@@ -2761,7 +2836,8 @@ private:
 
     mesh->insertCell( data, MINT_HEX, 8);
 
-    // Log the triangle info as primal code to simplify adding a test for this case
+    // Log the triangle info as primal code to simplify adding a test for this
+    // case
     if(shouldLogBlocks)
     {
       static int counter = 0;
@@ -2847,7 +2923,8 @@ public:
 
       VertexIndex vertInBlock = m_octree.leafVertex(vertBlock, leafData);
 
-      // Check that we can find the leaf block indexing each vertex from its position
+      // Check that we can find the leaf block indexing each vertex from its
+      // position
       SLIC_ASSERT_MSG(
         leafData.hasData() &&  vertInBlock == i,
         " Vertex "
@@ -2952,7 +3029,8 @@ public:
                 << " in block " << block
                 << " is not incident in vertex " << vIdx );
 
-              // Check that this triangle intersects the bounding box of the block
+              // Check that this triangle intersects the bounding box of the
+              // block
               GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
               SLIC_ASSERT_MSG(
                 m_octree.blockIndexesElementVertex(tIdx, block)
@@ -2989,7 +3067,8 @@ public:
 
         if(data.isLeaf() && data.color() != InOutBlockData::Gray)
         {
-          // Leaf does not yet have a color... try to find its color from same-level face neighbors
+          // Leaf does not yet have a color... try to find its color from
+          // same-level face neighbors
           for(int i=0 ; i< block.numFaceNeighbors() ; ++i)
           {
             BlockIndex neighborBlk =
@@ -2999,7 +3078,8 @@ public:
               const InOutBlockData& neighborData = m_octree[neighborBlk];
               switch(neighborData.color())
               {
-              case InOutBlockData::Black:                       // intentional fallthrough
+              case InOutBlockData::Black:                       // intentional
+              // fallthrough
               case InOutBlockData::White:
                 SLIC_CHECK_MSG(
                   data.color() == neighborData.color(),
@@ -3009,7 +3089,8 @@ public:
                   << " with data " << neighborData
                   <<". Neighboring leaves that are not gray must have the same color." );
                 break;
-              case InOutBlockData::Gray:                        // intentional fallthrough
+              case InOutBlockData::Gray:                        // intentional
+              // fallthrough
               case InOutBlockData::Undetermined:
                 break;
               }
@@ -3030,10 +3111,13 @@ public:
     // Internal blocks should not have associated vertex data
     // Leaf block consistency depends on 'color'
     //      Black or White blocks should not have vertex data
-    //      Gray blocks should have a vertex reference; it may or may not be located within the block
-    //          The sum of vertices located within a block should equal the number of mesh vertices.
+    //      Gray blocks should have a vertex reference; it may or may not be
+    // located within the block
+    //          The sum of vertices located within a block should equal the
+    // number of mesh vertices.
     //      Gray blocks should have one or more triangles.
-    //          All triangles should be incident in a common vertex -- which equals the indexed vertex, if it exists.
+    //          All triangles should be incident in a common vertex -- which
+    // equals the indexed vertex, if it exists.
 
 
     if(m_generationState > InOutOctreeType::INOUTOCTREE_VERTICES_INSERTED )
@@ -3186,7 +3270,8 @@ public:
     }
   }
 
-  /** Generates a string summarizing information about the leaves and blocks of the octree */
+  /** Generates a string summarizing information about the leaves and blocks of
+     the octree */
   std::string blockDataStats() const
   {
     std::stringstream sstr;
@@ -3215,7 +3300,8 @@ public:
         }
         //sstr <<"Hash load factor: "
         //     << this->m_leavesLevelMap[ lev ].load_factor()
-        //     << " -- max lf: " << this->m_leavesLevelMap[ lev ].max_load_factor();
+        //     << " -- max lf: " << this->m_leavesLevelMap[ lev
+        // ].max_load_factor();
         sstr << "\n";
 
       }
@@ -3224,7 +3310,8 @@ public:
     return sstr.str();
   }
 
-  /** Generates a string summarizing information about the mesh elements indexed by the octree */
+  /** Generates a string summarizing information about the mesh elements indexed
+     by the octree */
   std::string meshDataStats() const
   {
     std::stringstream sstr;
@@ -3255,7 +3342,8 @@ public:
     std::stringstream sstr;
 
     // Generate and output a histogram of the bucket counts on a lg-scale
-    LogHistogram triCountHist;        // Create histogram of edge lengths (log scale)
+    LogHistogram triCountHist;        // Create histogram of edge lengths (log
+                                      // scale)
     LogRangeMap triCountRange;
 
     int numElems = m_octree.m_meshWrapper.numMeshElements();

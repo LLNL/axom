@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -85,7 +85,7 @@ public:
   MeshVar(Centering cent, DType type, int depth = 1)
     : m_cent(cent), m_type(type), m_depth(depth) {; }
 
-  int getNumVals(const Extent * ext) const
+  int getNumVals(const Extent* ext) const
   {
     return ( ext->getNumPts(m_cent) * m_depth );
   }
@@ -109,22 +109,22 @@ TEST(sidre_opaque,basic_inout)
 
   const int ihi_val = 9;
 
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
-  Group * problem_gp = root->createGroup("problem");
+  Group* problem_gp = root->createGroup("problem");
 
-  Extent * ext = new Extent(0, ihi_val);
+  Extent* ext = new Extent(0, ihi_val);
 
-  View * ext_view = problem_gp->createView("ext", ext);
+  View* ext_view = problem_gp->createView("ext", ext);
 
   EXPECT_TRUE(ext_view->isExternal());
   EXPECT_FALSE(ext_view->isApplied());
   EXPECT_TRUE(ext_view->isOpaque());
   EXPECT_EQ(ext, ext_view->getVoidPtr());
 
-  Extent * test_extent =
-    static_cast<Extent *>(ext_view->getVoidPtr());
+  Extent* test_extent =
+    static_cast<Extent*>(ext_view->getVoidPtr());
   EXPECT_EQ(ext, test_extent);
 
   int test_ihi = test_extent->m_ihi;
@@ -132,15 +132,15 @@ TEST(sidre_opaque,basic_inout)
 
   // Similar test with different view methods
 
-  Extent * ext2 = new Extent(0, 2 * ihi_val);
+  Extent* ext2 = new Extent(0, 2 * ihi_val);
 
-  View * ext2_view =
+  View* ext2_view =
     problem_gp->createView("ext2")->setExternalDataPtr(ext2);
 
   EXPECT_TRUE(ext2_view->isOpaque());
   EXPECT_EQ(ext2, ext2_view->getVoidPtr());
 
-  Extent * test_extent2 = static_cast<Extent *>(ext2_view->getVoidPtr());
+  Extent* test_extent2 = static_cast<Extent*>(ext2_view->getVoidPtr());
   EXPECT_EQ(test_extent2, ext2_view->getVoidPtr());
 
   int test_ihi2 = test_extent2->m_ihi;
@@ -171,19 +171,19 @@ TEST(sidre_opaque,meshvar)
   const int zone_var_depth = 1;
   const int node_var_depth = 2;
 
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
-  Group * problem_gp = root->createGroup("problem");
+  Group* problem_gp = root->createGroup("problem");
 
   // Add two different mesh vars to mesh var group
-  Group * meshvar_gp = problem_gp->createGroup("mesh_var");
-  MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
-  View * zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
+  Group* meshvar_gp = problem_gp->createGroup("mesh_var");
+  MeshVar* zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
+  View* zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
   EXPECT_EQ(zone_mv, zone_mv_view->getVoidPtr());
 
-  MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
-  View * node_mv_view = meshvar_gp->createView("node_mv", node_mv);
+  MeshVar* node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
+  View* node_mv_view = meshvar_gp->createView("node_mv", node_mv);
   EXPECT_EQ(node_mv, node_mv_view->getVoidPtr());
 
   //
@@ -192,17 +192,17 @@ TEST(sidre_opaque,meshvar)
   //
   for (int idom = 0 ; idom < NUM_DOMAINS ; ++idom)
   {
-    Group * dom_gp = problem_gp->createGroup(dom_name[idom]);
-    Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
+    Group* dom_gp = problem_gp->createGroup(dom_name[idom]);
+    Extent* dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createView("ext", dom_ext);
     EXPECT_EQ(dom_ext, dom_gp->getView("ext")->getVoidPtr());
 
-    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
-    View * dom_zone_view = dom_gp->createView("zone_data");
+    MeshVar* zonemv = static_cast<MeshVar*>( zone_mv_view->getVoidPtr() );
+    View* dom_zone_view = dom_gp->createView("zone_data");
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
-    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getVoidPtr() );
-    View * dom_node_view = dom_gp->createView("node_data");
+    MeshVar* nodemv = static_cast<MeshVar*>( node_mv_view->getVoidPtr() );
+    View* dom_node_view = dom_gp->createView("node_data");
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }
@@ -219,12 +219,12 @@ TEST(sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
 
-    Group * dom_gp = problem_gp->getGroup(dom_name[idom]);
-    Extent * dom_ext = static_cast<Extent *>(
+    Group* dom_gp = problem_gp->getGroup(dom_name[idom]);
+    Extent* dom_ext = static_cast<Extent*>(
       dom_gp->getView("ext")->getVoidPtr() );
 
-    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
-    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getVoidPtr() );
+    MeshVar* zonemv = static_cast<MeshVar*>( zone_mv_view->getVoidPtr() );
+    MeshVar* nodemv = static_cast<MeshVar*>( node_mv_view->getVoidPtr() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
     int test_num_zone_vals = dom_gp->getView("zone_data")->getNumElements();
@@ -241,7 +241,7 @@ TEST(sidre_opaque,meshvar)
   delete node_mv;
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
-    delete static_cast<Extent *>(
+    delete static_cast<Extent*>(
       problem_gp->getGroup(dom_name[idom])->getView("ext")->getVoidPtr() );
   }
   delete ds;

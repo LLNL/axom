@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -27,17 +27,59 @@
 #ifndef AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
 #define AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
 
-#include "axom/Types.hpp" // for AXOM_NULLPTR
-#include "axom_utils/Utilities.hpp"
+#include "axom/Types.hpp"                  // for AXOM_NULLPTR
+
+#include "axom_utils/Determinants.hpp"     // for numerics::determinant()
+#include "axom_utils/Utilities.hpp"        // for isNearlyEqual()
 
 // C/C++ includes
 #include <cassert> // for assert()
-#include <cmath>
+#include <cmath>   // for sqrt()
 
 namespace axom
 {
 namespace numerics
 {
+
+/*!
+ * \brief Generates a vector consisting of a sequence of N uniformly spaced
+ *  values over the interval [x0,x1].
+ *
+ * \param [in] x0 scalar, the start value of the sequence.
+ * \param [in] x1 scalar, the end value of the sequence.
+ * \param [out] v user-supplied buffer where to store the sequence of numbers
+ * \param [in] N the size of the computed vector sequence.
+ *
+ * \return status true if successful, otherwise, false.
+ *
+ * \note The output vector, v, must be able to hold at least N values.
+ * \note if x0 < x1, the sequence of values will be in ascending order.
+ * \note if x0 > x1, the sequence of values will be in descending order.
+ *
+ * \pre v != AXOM_NULLPTR
+ * \pre N > 1
+ *
+ */
+template < typename T >
+inline bool linspace( const T& x0, const T& x1, T* v, int N );
+
+/*!
+ * \brief Computes the vector cross-product of two vectors, u and v.
+ *
+ * \param [in] u array pointer to the vector u
+ * \param [in] v array pointer to the vector v
+ * \param [out] w array pointer where to store the cross-product
+ *
+ * \note The u, v, and w are expected to be 3D vectors and are expected to
+ *  be pointing to array of at least size 3.
+ *
+ * \pre u != AXOM_NULLPTR
+ * \pre v != AXOM_NULLPTR
+ * \pre w != AXOM_NULLPTR
+ *
+ */
+template < typename T >
+inline void cross_product( const T* u, const T* v, T* w );
 
 /*!
  * \brief Computes the dot product of the arrays u and v.
@@ -55,7 +97,7 @@ namespace numerics
  * \pre v has at least dim entries
  */
 template < typename T >
-T dot_product(T * u, T * v, int dim);
+inline T dot_product( const T* u, const T* v, int dim);
 
 /*!
  * \brief Makes u orthogonal to v.
@@ -72,7 +114,7 @@ T dot_product(T * u, T * v, int dim);
  * \pre T is a floating point type
  */
 template < typename T >
-void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
+void make_orthogonal(T* u, T* v, int dim, double tol=1E-16);
 
 /*!
  * \brief Performs Gram-Schmidt orthonormalization in-place on a 2D array
@@ -93,7 +135,7 @@ void make_orthogonal(T * u, T * v, int dim, double tol=1E-16);
  * \pre T is a floating point type
  */
 template < typename T >
-bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
+bool orthonormalize(T* basis, int size, int dim, double eps = 1E-16);
 
 /*!
  * \brief Normalizes the passed in array.
@@ -112,7 +154,7 @@ bool orthonormalize(T * basis, int size, int dim, double eps = 1E-16);
  * \pre T is a floating point type
  */
 template < typename T >
-bool normalize(T * v, int dim, double eps = 1e-16);
+inline bool normalize(T* v, int dim, double eps = 1e-16);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -126,8 +168,48 @@ namespace axom
 namespace numerics
 {
 
+//------------------------------------------------------------------------------
 template < typename T >
-T dot_product(T * u, T * v, int dim)
+inline bool linspace( const T& x0, const T& x1, T* v, int N )
+{
+  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< T >::value,
+                             "pre: T is a floating point type" );
+  assert( "pre: v pointer is null" && (v != AXOM_NULLPTR) );
+
+  if ( N <= 1 )
+  {
+    /* short-circuit */
+    return false;
+  }
+
+  const T h = (x1-x0) / static_cast< T >( N-1 );
+
+  for ( int i=0; i < N; ++i )
+  {
+    v[ i ] = x0 + i*h;
+  }
+
+  return true;
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline void cross_product( const T* u, const T* v, T* w )
+{
+  assert( "pre: u pointer is null" && (u != AXOM_NULLPTR) );
+  assert( "pre: v pointer is null" && (v != AXOM_NULLPTR) );
+  assert( "pre: w pointer is null" && (w != AXOM_NULLPTR) );
+
+  w[ 0 ] = numerics::determinant( u[1], u[2], v[1], v[2] );
+
+  // NOTE: transpose u,v to negate
+  w[ 1 ] = numerics::determinant( v[0], v[2], u[0], u[2] );
+  w[ 2 ] = numerics::determinant( u[0], u[1], v[0], v[1] );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline T dot_product( const T* u, const T* v, int dim)
 {
   assert("pre: u pointer is null" && (u != AXOM_NULLPTR));
   assert("pre: v pointer is null" && (v != AXOM_NULLPTR));
@@ -135,13 +217,16 @@ T dot_product(T * u, T * v, int dim)
 
   T res = u[0]*v[0];
   for (int i = 1 ; i < dim ; ++i)
+  {
     res += u[i]*v[i];
+  }
 
   return res;
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
-void make_orthogonal(T * u, T * v, int dim, double tol)
+void make_orthogonal(T* u, T* v, int dim, double tol)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -162,8 +247,9 @@ void make_orthogonal(T * u, T * v, int dim, double tol)
     u[l] -= ((dot*v[l])/tnorm);
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
-bool orthonormalize(T * basis, int size, int dim, double eps)
+bool orthonormalize(T* basis, int size, int dim, double eps)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -174,12 +260,12 @@ bool orthonormalize(T * basis, int size, int dim, double eps)
 
   for (int i = 0 ; i < size ; ++i)
   {
-    T * curr = &basis[i*dim];
+    T* curr = &basis[i*dim];
 
     // make curr orthogonal to previous ones
     for (int j = 0 ; j < i ; ++j)
     {
-      T * other = &basis[j*dim];
+      T* other = &basis[j*dim];
 
       make_orthogonal(curr, other, dim);
     }
@@ -196,8 +282,9 @@ bool orthonormalize(T * basis, int size, int dim, double eps)
   return true;
 }
 
+//------------------------------------------------------------------------------
 template < typename T >
-bool normalize(T * v, int dim, double eps)
+inline bool normalize(T* v, int dim, double eps)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -211,11 +298,10 @@ bool normalize(T * v, int dim, double eps)
     return false;
   }
 
-
-  const T tnorm = static_cast< T >(std::sqrt(norm));
+  const T tnorm = 1.0 / static_cast< T >(std::sqrt(norm));
   for (int l = 0 ; l < dim ; ++l)
   {
-    v[l] /= tnorm;
+    v[l] *= tnorm;
   }
 
   // success

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -49,7 +49,7 @@ enum State
 
 // Check state of View based on booleans since m_state is private.
 
-static State getState(View * view)
+static State getState(View* view)
 {
   if (view->isEmpty())
   {
@@ -87,7 +87,7 @@ static State getState(View * view)
 // Any failures will have two reports, one from this routine and one
 // from the call site.
 //
-static bool checkViewValues(View * view,
+static bool checkViewValues(View* view,
                             State state,
                             bool isDescribed, bool isAllocated,
                             bool isApplied,
@@ -161,7 +161,7 @@ static bool checkViewValues(View * view,
   if (view->isApplied())
   {
     // Fill with data to help the print function
-    int * data_ptr = view->getData();
+    int* data_ptr = view->getData();
 
     for(int i=0 ; i<len ; i++)
     {
@@ -179,17 +179,17 @@ static bool checkViewValues(View * view,
 
 TEST(sidre_view,create_views)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
-  View * dv_0 = root->createViewAndAllocate("field0", INT_ID, 1);
-  View * dv_1 = root->createViewAndAllocate("field1", INT_ID, 1);
+  View* dv_0 = root->createViewAndAllocate("field0", INT_ID, 1);
+  View* dv_1 = root->createViewAndAllocate("field1", INT_ID, 1);
 
   EXPECT_EQ(0, dv_0->getIndex());
   EXPECT_EQ(1, dv_1->getIndex());
 
-  Buffer * db_0 = dv_0->getBuffer();
-  Buffer * db_1 = dv_1->getBuffer();
+  Buffer* db_0 = dv_0->getBuffer();
+  Buffer* db_1 = dv_1->getBuffer();
 
   EXPECT_EQ(0, db_0->getIndex());
   EXPECT_EQ(1, db_1->getIndex());
@@ -201,12 +201,12 @@ TEST(sidre_view,create_views)
 
 TEST(sidre_view,get_path_name)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  View * v1 = root->createView("test/a/b/v1");
-  View * v2 = root->createView("test/v2");
-  View * v3 = root->createView("v3");
-  View * v4 = root->createView("v4");
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  View* v1 = root->createView("test/a/b/v1");
+  View* v2 = root->createView("test/v2");
+  View* v3 = root->createView("v3");
+  View* v4 = root->createView("v4");
 
   EXPECT_EQ(std::string("v1"), v1->getName());
   EXPECT_EQ(std::string("test/a/b"), v1->getPath());
@@ -228,16 +228,16 @@ TEST(sidre_view,get_path_name)
 
 TEST(sidre_view,create_view_from_path)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   // Verify create works when groups must be created on demand.
-  View * baz = root->createView("foo/bar/baz");
+  View* baz = root->createView("foo/bar/baz");
   // Groups should have been created.
   EXPECT_TRUE( root->hasGroup("foo") );
   EXPECT_TRUE( root->getGroup("foo")->hasGroup("bar") );
 
-  Group * bar = root->getGroup("foo")->getGroup("bar");
+  Group* bar = root->getGroup("foo")->getGroup("bar");
   EXPECT_TRUE( bar->hasView("baz") );
   EXPECT_EQ( bar->getView("baz"), baz );
 
@@ -274,7 +274,7 @@ TEST(sidre_view,create_view_from_path)
 
 //------------------------------------------------------------------------------
 
-static void checkScalarValues(View * view,
+static void checkScalarValues(View* view,
                               State state,
                               bool isDescribed, bool isAllocated,
                               bool isApplied,
@@ -298,27 +298,27 @@ static void checkScalarValues(View * view,
 
 TEST(sidre_view,scalar_view)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
   int i;
-  const char * s;
+  const char* s;
 
-  View * i0view = root->createView("i0")->setScalar(1);
+  View* i0view = root->createView("i0")->setScalar(1);
   checkScalarValues(i0view, SCALAR, true, true, true, INT_ID, 1);
   i = i0view->getScalar();
   EXPECT_EQ( 1, i);
 
-  View * i1view = root->createViewScalar("i1", 2);
+  View* i1view = root->createViewScalar("i1", 2);
   checkScalarValues(i1view, SCALAR, true, true, true, INT_ID, 1);
   i = i1view->getScalar();
   EXPECT_EQ( 2, i);
 
-  View * s0view = root->createView("s0")->setString("I am a string");
+  View* s0view = root->createView("s0")->setString("I am a string");
   checkScalarValues(s0view, STRING, true, true, true, CHAR8_STR_ID, 14);
   s = s0view->getString();
   EXPECT_TRUE( strcmp(s, "I am a string") == 0);
 
-  View * s1view = root->createViewString("s1", "I too am a string");
+  View* s1view = root->createViewString("s1", "I too am a string");
   checkScalarValues(s1view, STRING, true, true, true, CHAR8_STR_ID, 18);
   s = s1view->getString();
   EXPECT_TRUE( strcmp(s, "I too am a string") == 0);
@@ -332,18 +332,18 @@ TEST(sidre_view,scalar_view)
   s0view->allocate();
   s0view->deallocate();
 
-  View * empty = root->createView("empty");
+  View* empty = root->createView("empty");
 #if 0
   try
   {
-    int * j = empty->getScalar();
+    int* j = empty->getScalar();
     //int j = empty->getScalar();
     EXPECT_EQ(0, *j);
   }
   catch ( conduit::Error e)
   {}
 #endif
-  const char * svalue = empty->getString();
+  const char* svalue = empty->getString();
   EXPECT_EQ(NULL, svalue);
 
   delete ds;
@@ -356,10 +356,10 @@ TEST(sidre_view,scalar_view)
 
 TEST(sidre_view,dealloc)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  Buffer * dbuff;
-  View * dv;
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Buffer* dbuff;
+  View* dv;
 
   //----------  EMPTY(F,F,F)
   dv = root->createView("e1");
@@ -414,8 +414,8 @@ TEST(sidre_view,dealloc)
 
 TEST(sidre_view,alloc_zero_items)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
   // Allocate View with zero items
   {
@@ -423,7 +423,7 @@ TEST(sidre_view,alloc_zero_items)
     bool expAlloc = false;
     bool expAppl = false;
 
-    View * dv = root->createView("z0");
+    View* dv = root->createView("z0");
     EXPECT_TRUE(checkViewValues(dv, EMPTY, expDesc, expAlloc, expAppl, 0));
 
     // Allocate with negative value leaves the view unallocated
@@ -445,7 +445,7 @@ TEST(sidre_view,alloc_zero_items)
     bool expAlloc = false;
     bool expAppl = false;
 
-    View * dv = root->createView("z1");
+    View* dv = root->createView("z1");
     EXPECT_TRUE(checkViewValues(dv, EMPTY, expDesc, expAlloc, expAppl, 0));
 
     dv->allocate(INT_ID, BLEN);
@@ -499,9 +499,9 @@ TEST(sidre_view,alloc_zero_items)
     bool expAlloc = true;
     bool expAppl = true;
 
-    Buffer * nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+    Buffer* nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
 
-    View * dv = root->createView("z_nonEmptyBuf_attach_apply");
+    View* dv = root->createView("z_nonEmptyBuf_attach_apply");
     dv->attachBuffer(nonEmptyBuf)->apply(0);
     EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
@@ -536,8 +536,8 @@ TEST(sidre_view,alloc_zero_items)
     bool expAlloc = true;
     bool expAppl = true;
 
-    Buffer * emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
-    View * dv = root->createView("z_emptyBuf_attach_apply");
+    Buffer* emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
+    View* dv = root->createView("z_emptyBuf_attach_apply");
     dv->attachBuffer(emptyBuf)->allocate()->apply(0);
     EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
@@ -565,25 +565,32 @@ TEST(sidre_view,alloc_zero_items)
 TEST(sidre_view,save_empty_view_non_empty_buffer)
 {
   DataStore ds;
-  Group * root = ds.getRoot();
+  Group* root = ds.getRoot();
 
-  Buffer * buf = ds.createBuffer(INT_ID, 10)->allocate();  // allocate non-empty buffer
+  Buffer* buf = ds.createBuffer(INT_ID, 10)->allocate();   // allocate non-empty
+                                                           // buffer
 
-  root->createView("a")->attachBuffer(buf)->apply(0);  // attach zero-sized array to it
+  root->createView("a")->attachBuffer(buf)->apply(0);  // attach zero-sized
+                                                       // array to it
 
   root->save("empty_view_non_empty_buffer.sidre.json", "sidre_json"); // ok
+#ifdef AXOM_USE_HDF5
   root->save("empty_view_non_empty_buffer.sidre.hdf5", "sidre_hdf5"); // ok
+#endif
 }
 
 TEST(sidre_view,save_empty_view)
 {
   DataStore ds;
-  Group * root = ds.getRoot();
+  Group* root = ds.getRoot();
 
-  root->createView("a", INT_ID, 0)->allocate()->apply();  // create View and allocate view of size 0
+  root->createView("a", INT_ID, 0)->allocate()->apply();  // create View and
+                                                          // allocate view of
+                                                          // size 0
 
   root->save("empty_view.sidre.json", "sidre_json");   // this is ok
-  // root->save("empty_view.sidre.hdf5", "sidre_hdf5");   // <-- problem here (in conduit 0.2.1)
+  // root->save("empty_view.sidre.hdf5", "sidre_hdf5");   // <-- problem here
+  // (in conduit 0.2.1)
 }
 
 //------------------------------------------------------------------------------
@@ -593,12 +600,12 @@ TEST(sidre_view,save_empty_view)
 
 TEST(sidre_view,alloc_and_dealloc_multiview)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
-  Buffer * dbuff;
-  View * dv1, * dv2;
-  void * baddr;
+  Buffer* dbuff;
+  View* dv1, * dv2;
+  void* baddr;
 
   //---------- allocate
   dbuff = ds->createBuffer()->describe(INT_ID, BLEN);
@@ -667,9 +674,9 @@ TEST(sidre_view,alloc_and_dealloc_multiview)
 
 TEST(sidre_view,int_alloc_view)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  View * dv;
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  View* dv;
   long shape[] = { BLEN };
 
   dv = root->createView("u0");
@@ -723,10 +730,10 @@ TEST(sidre_view,int_alloc_view)
 
 TEST(sidre_view,int_buffer_view)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  Buffer * dbuff, * otherbuffer;
-  View * dv;
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Buffer* dbuff, * otherbuffer;
+  View* dv;
   IndexType bindex;
   //  long shape[] = { BLEN };
 
@@ -850,7 +857,11 @@ TEST(sidre_view,int_buffer_view)
 
   dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
   dv->attachBuffer(dbuff);
-  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, BLEN+5));  // XXX - how is isAllocated useful
+  EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, false, BLEN+5));  // XXX -
+                                                                        // how
+                                                                        // is
+                                                                        // isAllocated
+                                                                        // useful
 
   delete ds;
 }
@@ -866,12 +877,12 @@ TEST(sidre_view,int_array_strided_views)
   const SidreLength elt_stride = 2;
   const SidreLength elt_bytes = sizeof(int);
 
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  Buffer * dbuff = ds->createBuffer(INT_ID, num_elts);
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Buffer* dbuff = ds->createBuffer(INT_ID, num_elts);
 
   dbuff->allocate();
-  int * data_ptr = dbuff->getData();
+  int* data_ptr = dbuff->getData();
 
   for(int i=0 ; i< num_elts ; i++)
   {
@@ -882,8 +893,8 @@ TEST(sidre_view,int_array_strided_views)
 
   EXPECT_EQ(dbuff->getTotalBytes(), num_elts * elt_bytes);
 
-  View * dv_e = root->createView("even",dbuff);
-  View * dv_o = root->createView("odd",dbuff);
+  View* dv_e = root->createView("even",dbuff);
+  View* dv_o = root->createView("odd",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 2);
 
 
@@ -902,11 +913,11 @@ TEST(sidre_view,int_array_strided_views)
   dv_o->print();
 
   // Check base pointer case:
-  int * v_e_ptr = dv_e->getData();
-  int * v_o_ptr = dv_o->getData();
+  int* v_e_ptr = dv_e->getData();
+  int* v_o_ptr = dv_o->getData();
 
-  EXPECT_EQ(v_e_ptr, static_cast<int *>(dv_e->getVoidPtr())+dv_e->getOffset());
-  EXPECT_EQ(v_o_ptr, static_cast<int *>(dv_o->getVoidPtr())+dv_o->getOffset());
+  EXPECT_EQ(v_e_ptr, static_cast<int*>(dv_e->getVoidPtr())+dv_e->getOffset());
+  EXPECT_EQ(v_o_ptr, static_cast<int*>(dv_o->getVoidPtr())+dv_o->getOffset());
   for(int i=0 ; i< num_elts ; i += 2)
   {
     std::cout << "idx:" <<  i
@@ -938,8 +949,8 @@ TEST(sidre_view,int_array_strided_views)
 
   // Run similar test to above with different view apply method
   // Set up views through Sidre's native interface
-  View * dv_e1 = root->createView("even1",dbuff);
-  View * dv_o1 = root->createView("odd1",dbuff);
+  View* dv_e1 = root->createView("even1",dbuff);
+  View* dv_o1 = root->createView("odd1",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 4);
 
   // (num_elems, offset [in # elems], stride [in # elems])
@@ -954,12 +965,12 @@ TEST(sidre_view,int_array_strided_views)
   dv_o1->print();
 
   // Check base pointer case:
-  int * v_e1_ptr = dv_e1->getData();
-  int * v_o1_ptr = dv_o1->getData();
+  int* v_e1_ptr = dv_e1->getData();
+  int* v_o1_ptr = dv_o1->getData();
   EXPECT_EQ(v_e1_ptr,
-            static_cast<int *>(dv_e1->getVoidPtr())+dv_e1->getOffset());
+            static_cast<int*>(dv_e1->getVoidPtr())+dv_e1->getOffset());
   EXPECT_EQ(v_o1_ptr,
-            static_cast<int *>(dv_o1->getVoidPtr())+dv_o1->getOffset());
+            static_cast<int*>(dv_o1->getVoidPtr())+dv_o1->getOffset());
 
   for(int i=0 ; i< num_elts ; i += 2)
   {
@@ -1007,15 +1018,15 @@ TEST(sidre_view,int_array_strided_views)
 
 TEST(sidre_view,int_array_depth_view)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
   const SidreLength depth_nelems = 10;
-  Buffer * dbuff = ds->createBuffer(INT_ID, 4 * depth_nelems);
+  Buffer* dbuff = ds->createBuffer(INT_ID, 4 * depth_nelems);
 
   // Allocate buffer to hold data for 4 "depth" views
   dbuff->allocate();
-  int * data_ptr = dbuff->getData();
+  int* data_ptr = dbuff->getData();
 
   for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
   {
@@ -1027,7 +1038,7 @@ TEST(sidre_view,int_array_depth_view)
   EXPECT_EQ(dbuff->getNumElements(), 4 * depth_nelems);
 
   // create 4 "depth" views and apply offsets into buffer
-  View * views[4];
+  View* views[4];
   std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
 
   for (int id = 0 ; id < 2 ; ++id)
@@ -1047,11 +1058,11 @@ TEST(sidre_view,int_array_depth_view)
   // Verify that the pointers for each view match that of the buffer
   for (int id = 0 ; id < 4 ; ++id)
   {
-    void * vptr = views[id]->getVoidPtr();
+    void* vptr = views[id]->getVoidPtr();
     SidreLength off = views[id]->getOffset();
 
     EXPECT_EQ(dbuff->getVoidPtr(), vptr);
-    EXPECT_EQ(views[id]->getData<int *>(), static_cast<int *>(vptr)+off);
+    EXPECT_EQ(views[id]->getData<int*>(), static_cast<int*>(vptr)+off);
   }
 
   // print depth views...
@@ -1063,7 +1074,7 @@ TEST(sidre_view,int_array_depth_view)
   // check values in depth views...
   for (int id = 0 ; id < 4 ; ++id)
   {
-    int * dv_ptr = views[id]->getData();
+    int* dv_ptr = views[id]->getData();
     for (SidreLength i = 0 ; i < depth_nelems ; ++i)
     {
       EXPECT_EQ(dv_ptr[i], id);
@@ -1078,14 +1089,14 @@ TEST(sidre_view,int_array_depth_view)
 
 TEST(sidre_view,view_offset_and_stride)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
   const SidreLength nelems = 15;
-  Buffer * dbuff = ds->createBuffer(DOUBLE_ID, nelems)
-                   ->allocate();
+  Buffer* dbuff = ds->createBuffer(DOUBLE_ID, nelems)
+                  ->allocate();
 
-  double * data_ptr = dbuff->getData();
+  double* data_ptr = dbuff->getData();
   for(int i=0 ; i< nelems ; ++i)
   {
     data_ptr[i] = 1.01 * i;
@@ -1102,7 +1113,7 @@ TEST(sidre_view,view_offset_and_stride)
 
   // -- Test offsets and strides on buffer-based views
 
-  Group * bufferGroup = root->createGroup("buffer");
+  Group* bufferGroup = root->createGroup("buffer");
 
   // Create the views off of the buffer
   for(int i=0 ; i < NUM_GROUPS ; ++i)
@@ -1114,7 +1125,7 @@ TEST(sidre_view,view_offset_and_stride)
   // Test the sizes, offsets and strides of the views
   for(int i=0 ; i < NUM_GROUPS ; ++i)
   {
-    View * view = bufferGroup->getView(names[i]);
+    View* view = bufferGroup->getView(names[i]);
     EXPECT_EQ(size[i],   view->getNumElements());
     EXPECT_EQ(offset[i], view->getOffset());
     EXPECT_EQ(stride[i], view->getStride());
@@ -1126,10 +1137,10 @@ TEST(sidre_view,view_offset_and_stride)
   //       of the view, View::getVoidPtr() does not
   for(int i=0 ; i < NUM_GROUPS ; ++i)
   {
-    View * view = bufferGroup->getView(names[i]);
-    void * raw_vp = view->getVoidPtr();
-    double * offset_ptr = static_cast<double *>(raw_vp) + view->getOffset();
-    double * getData_ptr = view->getData();
+    View* view = bufferGroup->getView(names[i]);
+    void* raw_vp = view->getVoidPtr();
+    double* offset_ptr = static_cast<double*>(raw_vp) + view->getOffset();
+    double* getData_ptr = view->getData();
 
     EXPECT_EQ(data_ptr, raw_vp);
     EXPECT_EQ(offset_ptr, getData_ptr);
@@ -1138,7 +1149,7 @@ TEST(sidre_view,view_offset_and_stride)
 
 
   // -- Test offsets and strides on external pointer based views
-  Group * extGroup = root->createGroup("ext");
+  Group* extGroup = root->createGroup("ext");
 
   // Create the views off of external data pointer
   for(int i=0 ; i < NUM_GROUPS ; ++i)
@@ -1150,7 +1161,7 @@ TEST(sidre_view,view_offset_and_stride)
   // Test the sizes, offsets and strides of the views
   for(int i=0 ; i < NUM_GROUPS ; ++i)
   {
-    View * view = extGroup->getView(names[i]);
+    View* view = extGroup->getView(names[i]);
     EXPECT_EQ(size[i],   view->getNumElements());
     EXPECT_EQ(offset[i], view->getOffset());
     EXPECT_EQ(stride[i], view->getStride());
@@ -1162,10 +1173,10 @@ TEST(sidre_view,view_offset_and_stride)
   //       of the view, View::getVoidPtr() does not
   for(int i=0 ; i < NUM_GROUPS ; ++i)
   {
-    View * view = extGroup->getView(names[i]);
-    void * raw_vp = view->getVoidPtr();
-    double * offset_ptr = static_cast<double *>(raw_vp) + view->getOffset();
-    double * getData_ptr = view->getData();
+    View* view = extGroup->getView(names[i]);
+    void* raw_vp = view->getVoidPtr();
+    double* offset_ptr = static_cast<double*>(raw_vp) + view->getOffset();
+    double* getData_ptr = view->getData();
 
     EXPECT_EQ(data_ptr, raw_vp);
     EXPECT_EQ(offset_ptr, getData_ptr);
@@ -1175,9 +1186,9 @@ TEST(sidre_view,view_offset_and_stride)
 
   // -- Test offset and stride on the other view types:
   //          string, scalar, empty, opaque
-  Group * othersGroup = root->createGroup("others");
+  Group* othersGroup = root->createGroup("others");
 
-  typedef std::vector<View *> ViewVec;
+  typedef std::vector<View*> ViewVec;
   ViewVec views;
   axom::sidre::detail::sidre_uint8 ui8  = 3;
   axom::sidre::detail::sidre_uint16 ui16 = 4;
@@ -1192,7 +1203,8 @@ TEST(sidre_view,view_offset_and_stride)
 
 
   views.push_back( othersGroup->createView("key_empty"));
-  views.push_back( othersGroup->createView("key_opaque", data_ptr));   // not described
+  views.push_back( othersGroup->createView("key_opaque", data_ptr));   // not
+                                                                       // described
   views.push_back( othersGroup->createViewString("key_string", "string_value"));
 
   views.push_back( othersGroup->createViewScalar("key_uint8",   ui8));
@@ -1225,7 +1237,7 @@ TEST(sidre_view,view_offset_and_stride)
 
   for(ViewVec::iterator it=views.begin() ; it != views.end() ; ++it)
   {
-    View * view = *it;
+    View* view = *it;
     EXPECT_EQ(0, view->getOffset());
     EXPECT_EQ(1, view->getStride());
     EXPECT_EQ(sizeMap[ view->getName() ], view->getBytesPerElement());
@@ -1244,25 +1256,25 @@ TEST(sidre_view,view_offset_and_stride)
 
 TEST(sidre_view,int_array_view_attach_buffer)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
   const SidreLength field_nelems = 10;
 
   // create 2 "field" views with type and # elems
   SidreLength elem_count = 0;
-  View * field0 = root->createView("field0", INT_ID, field_nelems);
+  View* field0 = root->createView("field0", INT_ID, field_nelems);
   elem_count += field0->getNumElements();
-  View * field1 = root->createView("field1",INT_ID, field_nelems);
+  View* field1 = root->createView("field1",INT_ID, field_nelems);
   elem_count += field1->getNumElements();
   EXPECT_EQ(elem_count, 2 * field_nelems);
 
   // create buffer to hold data for fields and allocate
-  Buffer * dbuff = ds->createBuffer()->allocate(INT_ID, elem_count);
+  Buffer* dbuff = ds->createBuffer()->allocate(INT_ID, elem_count);
   EXPECT_EQ(dbuff->getNumElements(), elem_count);
 
   // Initialize buffer data for testing below.
-  int * b_ptr = dbuff->getData();
+  int* b_ptr = dbuff->getData();
   for(SidreLength i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
@@ -1280,12 +1292,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
   field1->print();
 
   // check values in field views...
-  int * f0_ptr = field0->getData();
+  int* f0_ptr = field0->getData();
   for (SidreLength i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f0_ptr[i], 0);
   }
-  int * f1_ptr = field1->getData();
+  int* f1_ptr = field1->getData();
   for (SidreLength i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f1_ptr[i], 1);
@@ -1312,18 +1324,18 @@ TEST(sidre_view,int_array_multi_view_resize)
   ///
 
   // create our main data store
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   // get access to our root data Group
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   // create a group to hold the "old" or data we want to copy
-  Group * r_old = root->createGroup("r_old");
+  Group* r_old = root->createGroup("r_old");
   // create a view to hold the base buffer and allocate
-  View * base_old = r_old->createViewAndAllocate("base_data",
-                                                 DataType::c_int(40));
+  View* base_old = r_old->createViewAndAllocate("base_data",
+                                                DataType::c_int(40));
 
   // we will create 4 sub views of this array
-  int * data_ptr = base_old->getData();
+  int* data_ptr = base_old->getData();
 
 
   // init the buff with values that align with the
@@ -1347,12 +1359,12 @@ TEST(sidre_view,int_array_multi_view_resize)
 
 
   /// setup our 4 views
-  Buffer * buff_old = base_old->getBuffer();
+  Buffer* buff_old = base_old->getBuffer();
   buff_old->print();
-  View * r0_old = r_old->createView("r0",buff_old);
-  View * r1_old = r_old->createView("r1",buff_old);
-  View * r2_old = r_old->createView("r2",buff_old);
-  View * r3_old = r_old->createView("r3",buff_old);
+  View* r0_old = r_old->createView("r0",buff_old);
+  View* r1_old = r_old->createView("r1",buff_old);
+  View* r2_old = r_old->createView("r2",buff_old);
+  View* r3_old = r_old->createView("r3",buff_old);
 
   // each view is offset by 10 * the # of bytes in a int
   // c_int(num_elems, offset)
@@ -1370,7 +1382,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   /// check that our views actually point to the expected data
   //
-  int * r0_ptr = r0_old->getData();
+  int* r0_ptr = r0_old->getData();
   for(int i=0 ; i<10 ; i++)
   {
     EXPECT_EQ(r0_ptr[i], 1);
@@ -1378,7 +1390,7 @@ TEST(sidre_view,int_array_multi_view_resize)
     EXPECT_EQ(&r0_ptr[i], &data_ptr[i]);
   }
 
-  int * r3_ptr = r3_old->getData();
+  int* r3_ptr = r3_old->getData();
   for(int i=0 ; i<10 ; i++)
   {
     EXPECT_EQ(r3_ptr[i], 4);
@@ -1387,25 +1399,25 @@ TEST(sidre_view,int_array_multi_view_resize)
   }
 
   // create a group to hold the "old" or data we want to copy into
-  Group * r_new = root->createGroup("r_new");
+  Group* r_new = root->createGroup("r_new");
   // create a view to hold the base buffer and allocate
-  View * base_new = r_new->createViewAndAllocate("base_data",
-                                                 DataType::c_int(4 * 12));
+  View* base_new = r_new->createViewAndAllocate("base_data",
+                                                DataType::c_int(4 * 12));
 
-  int * base_new_data = base_new->getData();
+  int* base_new_data = base_new->getData();
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {
     base_new_data[i] = 0;
   }
 
-  Buffer * buff_new = base_new->getBuffer();
+  Buffer* buff_new = base_new->getBuffer();
   buff_new->print();
 
   // create the 4 sub views of this array
-  View * r0_new = r_new->createView("r0",buff_new);
-  View * r1_new = r_new->createView("r1",buff_new);
-  View * r2_new = r_new->createView("r2",buff_new);
-  View * r3_new = r_new->createView("r3",buff_new);
+  View* r0_new = r_new->createView("r0",buff_new);
+  View* r1_new = r_new->createView("r1",buff_new);
+  View* r2_new = r_new->createView("r2",buff_new);
+  View* r3_new = r_new->createView("r3",buff_new);
 
   // apply views to r0,r1,r2,r3
   // each view is offset by 12 * the # of bytes in a int
@@ -1434,7 +1446,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
 
   /// check pointer values
-  int * r2_new_ptr = r2_new->getData();
+  int* r2_new_ptr = r2_new->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -1470,16 +1482,16 @@ TEST(sidre_view,int_array_realloc)
   ///
 
   // create our main data store
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   // get access to our root data Group
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   // create a view to hold the base buffer
-  View * a1 = root->createViewAndAllocate("a1",DataType::c_float(5));
-  View * a2 = root->createViewAndAllocate("a2",DataType::c_int(5));
+  View* a1 = root->createViewAndAllocate("a1",DataType::c_float(5));
+  View* a2 = root->createViewAndAllocate("a2",DataType::c_int(5));
 
-  float * a1_ptr = a1->getData();
-  int * a2_ptr = a2->getData();
+  float* a1_ptr = a1->getData();
+  int* a2_ptr = a2->getData();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -1530,16 +1542,16 @@ TEST(sidre_view,int_array_realloc)
 TEST(sidre_view,simple_opaque)
 {
   // create our main data store
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   // get access to our root data Group
-  Group * root = ds->getRoot();
-  int * src_data = new int[1];
+  Group* root = ds->getRoot();
+  int* src_data = new int[1];
 
   src_data[0] = 42;
 
-  void * src_ptr = (void *)src_data;
+  void* src_ptr = (void*)src_data;
 
-  View * opq_view = root->createView("my_opaque", src_ptr);
+  View* opq_view = root->createView("my_opaque", src_ptr);
 
   // External pointers are held in the view, should not have a buffer.
   EXPECT_EQ(ds->getNumBuffers(), 0u);
@@ -1548,10 +1560,10 @@ TEST(sidre_view,simple_opaque)
   EXPECT_TRUE(!opq_view->isApplied());
   EXPECT_TRUE(opq_view->isOpaque());
 
-  void * opq_ptr = opq_view->getVoidPtr();
+  void* opq_ptr = opq_view->getVoidPtr();
   EXPECT_EQ(src_ptr, opq_ptr);
 
-  int * out_data = (int *)opq_ptr;
+  int* out_data = (int*)opq_ptr;
   EXPECT_EQ(opq_ptr,src_ptr);
   EXPECT_EQ(out_data[0],42);
 
@@ -1563,11 +1575,11 @@ TEST(sidre_view,simple_opaque)
 //------------------------------------------------------------------------------
 TEST(sidre_view,rename_view)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  View * v1 = root->createView("v_a");
-  View * v2 = root->createView("v_b");
-  View * v3 = root->createView("v_c");
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  View* v1 = root->createView("v_a");
+  View* v2 = root->createView("v_b");
+  View* v3 = root->createView("v_c");
 
   bool success = v1->rename("v_r");
   EXPECT_TRUE( success );
@@ -1589,14 +1601,14 @@ TEST(sidre_view,rename_view)
 
 TEST(sidre_datastore,destroy_buffer)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
 
-  Buffer * dbuff1 = ds->createBuffer()->allocate(INT_ID, BLEN);
-  View * view1a = root->createView("view1a", INT_ID, BLEN)
-                  ->attachBuffer(dbuff1);
-  View * view1b = root->createView("view1b", INT_ID, BLEN)
-                  ->attachBuffer(dbuff1);
+  Buffer* dbuff1 = ds->createBuffer()->allocate(INT_ID, BLEN);
+  View* view1a = root->createView("view1a", INT_ID, BLEN)
+                 ->attachBuffer(dbuff1);
+  View* view1b = root->createView("view1b", INT_ID, BLEN)
+                 ->attachBuffer(dbuff1);
 
   EXPECT_TRUE(checkViewValues(view1a, BUFFER, true, true, true, BLEN));
   EXPECT_TRUE(checkViewValues(view1b, BUFFER, true, true, true, BLEN));
@@ -1621,21 +1633,21 @@ TEST(sidre_datastore,destroy_buffer)
 TEST(sidre_view,value_from_uninited_view)
 {
   DataStore ds;
-  View * view = ds.getRoot()->createView("empty");
+  View* view = ds.getRoot()->createView("empty");
 
   // check getScalar
   int val = view->getScalar();
   EXPECT_EQ(val,0);
 
   // check getArray
-  int * aval_ptr =    view->getArray();
+  int* aval_ptr =    view->getArray();
   EXPECT_TRUE( aval_ptr == NULL );
 
   int aval = view->getArray();
   EXPECT_EQ(aval,0);
 
   // check getData
-  int * dval_ptr =    view->getData();
+  int* dval_ptr =    view->getData();
   EXPECT_TRUE( dval_ptr == NULL );
 
   int dval = view->getData();
@@ -1649,7 +1661,7 @@ TEST(sidre_view,value_from_uninited_view)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

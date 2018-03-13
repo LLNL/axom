@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -39,7 +39,7 @@ public:
    * \param [in] ext the extent.
    * \pre ndims >= 1 && ndims <= 3
    */
-  Extent( int ndims, const IndexType * ext );
+  Extent( int ndims, const IndexType* ext );
 
   /*!
    * \brief Returns the dimension of this extent.
@@ -109,7 +109,7 @@ public:
    *
    * \note The indent for the cell offsets table
    */
-  const IndexType * getCellOffSets() const
+  const IndexType* getCellOffSets() const
   { return &m_cell_offsets[0]; };
 
   /*!
@@ -140,7 +140,8 @@ public:
   IndexType getLinearIndex( IndexType i, IndexType j ) const;
 
   /*!
-   * \brief Converts the given grid cell indices to a one-dimensional linear index.
+   * \brief Converts the given grid cell indices to a one-dimensional linear
+   *  index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
    * \param [in] k the grid cell index along the third dimension.
@@ -154,7 +155,8 @@ public:
   IndexType getCellLinearIndex(IndexType i, IndexType j, IndexType k ) const;
 
   /*!
-   * \brief Converts the given grid cell indices to a one-dimensional linear index.
+   * \brief Converts the given grid cell indices to a one-dimensional linear
+   *  index.
    * \param [in] i the grid cell index along the first dimension.
    * \param [in] j the grid cell index along the second dimension.
    * \return linearIdx the linear index over the cells.
@@ -232,7 +234,7 @@ Extent< IndexType >::Extent() :
 
 //------------------------------------------------------------------------------
 template < typename IndexType >
-Extent< IndexType >::Extent( int ndims, const IndexType * ext ) :
+Extent< IndexType >::Extent( int ndims, const IndexType* ext ) :
   m_ndims( ndims )
 {
   SLIC_ASSERT( ndims >= 1 && ndims <= 3 );

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -42,37 +42,38 @@ const int dump_no = 0;
 
 
 //------------------------------------------------------------------------------
-// Internal routine to create a datastore to be used with various iteration schemes
+// Internal routine to create a datastore to be used with various iteration
+// schemes
 // Error checks here are minimal since it is assumed all of the routines used
 // have already been tested.
 
-DataStore * sample_datastore(void)
+DataStore* sample_datastore(void)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_dump = ds->createAttributeScalar(name_dump, dump_no);
-  Attribute * attr_color = ds->createAttributeString(name_color, color_none);
-  Attribute * attr_animal = ds->createAttributeString(name_animal, animal_none);
+  Attribute* attr_dump = ds->createAttributeScalar(name_dump, dump_no);
+  Attribute* attr_color = ds->createAttributeString(name_color, color_none);
+  Attribute* attr_animal = ds->createAttributeString(name_animal, animal_none);
 
   EXPECT_TRUE( attr_dump   != AXOM_NULLPTR );
   EXPECT_TRUE( attr_color  != AXOM_NULLPTR );
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * grpA = root->createGroup("grpA");
-  Group * grpB = root->createGroup("grpB");
-  Group * grpBB = grpB->createGroup("grpBB");
+  Group* grpA = root->createGroup("grpA");
+  Group* grpB = root->createGroup("grpB");
+  Group* grpBB = grpB->createGroup("grpBB");
   root->createGroup("grpC");                 // No Views
 
   // Tree of empty views
-  Group * grpD0 = root->createGroup("grpD0");
-  Group * grpD1 = grpD0->createGroup("grpD1");
-  Group * grpD2 = grpD1->createGroup("grpD2");
-  Group * grpD3 = grpD1->createGroup("grpD3");
-  Group * grpD4 = grpD0->createGroup("grpD4");
-  Group * grpD5 = grpD4->createGroup("grpD5");
+  Group* grpD0 = root->createGroup("grpD0");
+  Group* grpD1 = grpD0->createGroup("grpD1");
+  Group* grpD2 = grpD1->createGroup("grpD2");
+  Group* grpD3 = grpD1->createGroup("grpD3");
+  Group* grpD4 = grpD0->createGroup("grpD4");
+  Group* grpD5 = grpD4->createGroup("grpD5");
 
   // checks to silence compiler about unused variables
   EXPECT_TRUE( grpD2 != AXOM_NULLPTR );
@@ -102,13 +103,13 @@ TEST(sidre_iterator,depth_first)
 
   struct reference
   {
-    const char * name;
+    const char* name;
     nodeclass cls;
   };
 
-  DataStore * ds = sample_datastore();
+  DataStore* ds = sample_datastore();
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   Iterator qitr(root);
 
@@ -147,33 +148,33 @@ TEST(sidre_iterator,depth_first)
       EXPECT_TRUE(qitr.isGroup());
       EXPECT_FALSE(qitr.isView());
 
-      Group * grp_out = qitr.asGroup();
+      Group* grp_out = qitr.asGroup();
       EXPECT_EQ(order[iorder].name, grp_out->getName());
 
-      Group const * grp_const = qitr.asGroup();
+      Group const* grp_const = qitr.asGroup();
       EXPECT_EQ(order[iorder].name, grp_const->getName());
 
-      View * view_out = qitr.asView();
-      EXPECT_EQ(view_out, static_cast<void *>(AXOM_NULLPTR));
+      View* view_out = qitr.asView();
+      EXPECT_EQ(view_out, static_cast<void*>(AXOM_NULLPTR));
 
-      View const * view_const = qitr.asView();
-      EXPECT_EQ(view_const, static_cast<void *>(AXOM_NULLPTR));
+      View const* view_const = qitr.asView();
+      EXPECT_EQ(view_const, static_cast<void*>(AXOM_NULLPTR));
     }
     else
     {
       EXPECT_FALSE(qitr.isGroup());
       EXPECT_TRUE(qitr.isView());
 
-      Group * grp_out = qitr.asGroup();
-      EXPECT_EQ(grp_out, static_cast<void *>(AXOM_NULLPTR));
+      Group* grp_out = qitr.asGroup();
+      EXPECT_EQ(grp_out, static_cast<void*>(AXOM_NULLPTR));
 
-      Group const * grp_const = qitr.asGroup();
-      EXPECT_EQ(grp_const, static_cast<void *>(AXOM_NULLPTR));
+      Group const* grp_const = qitr.asGroup();
+      EXPECT_EQ(grp_const, static_cast<void*>(AXOM_NULLPTR));
 
-      View * view_out = qitr.asView();
+      View* view_out = qitr.asView();
       EXPECT_EQ(order[iorder].name, view_out->getName());
 
-      View const * view_const = qitr.asView();
+      View const* view_const = qitr.asView();
       EXPECT_EQ(order[iorder].name, view_const->getName());
     }
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -135,7 +135,7 @@ public:
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToMsgLevel( LogStream * ls, message::Level level,
+  void addStreamToMsgLevel( LogStream* ls, message::Level level,
                             bool pass_ownership=true );
 
   /*!
@@ -144,7 +144,7 @@ public:
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
-  void addStreamToAllMsgLevels( LogStream * ls );
+  void addStreamToAllMsgLevels( LogStream* ls );
 
   /*!
    * \brief Returns the number of streams at the given level.
@@ -162,7 +162,7 @@ public:
    * \pre i >= 0 && i < this->getNumStreamsAtLevel( level )
    * \post stream_ptr != NULL.
    */
-  LogStream * getStream( message::Level level, int i );
+  LogStream* getStream( message::Level level, int i );
 
   /*!
    * \brief Logs the given message to all registered streams.
@@ -287,13 +287,13 @@ public:
    * \pre s_Logger != NULL
    * \post logger != NULL
    */
-  static Logger * getActiveLogger();
+  static Logger* getActiveLogger();
 
   /*!
    * \brief Returns the root logger
    * \return logger pointer to the root logger instance.
    */
-  static Logger * getRootLogger();
+  static Logger* getRootLogger();
 
   ///@}
 
@@ -305,7 +305,8 @@ private:
   Logger();
 
   /*!
-   * \brief Custom constructor. Constructs a Logger instance with the given name.
+   * \brief Custom constructor. Constructs a Logger instance with the given
+   *  name.
    * \param [in] name the name associated with the logger.
    */
   Logger(const std::string& name);
@@ -323,16 +324,16 @@ private:
   bool m_abortOnWarning;
 
   bool m_isEnabled[ message::Num_Levels ];
-  std::map< LogStream *, LogStream * > m_streamObjectsManager;
-  std::vector< LogStream * > m_logStreams[ message::Num_Levels ];
+  std::map< LogStream*, LogStream* > m_streamObjectsManager;
+  std::vector< LogStream* > m_logStreams[ message::Num_Levels ];
 
   ///@}
 
   /// \name Static Members
   ///@{
 
-  static Logger * s_Logger;
-  static std::map< std::string, Logger * > s_loggers;
+  static Logger* s_Logger;
+  static std::map< std::string, Logger* > s_loggers;
 
   ///@}
 

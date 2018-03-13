@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -62,7 +62,7 @@ public:
    * \note When a field is added ownership is transfered to the corresponding
    *  FieldData instance.
    */
-  void addField( Field * f );
+  void addField( Field* f );
 
   /*!
    * \brief Returns the number of fields of this FieldData instance.
@@ -78,16 +78,17 @@ public:
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  Field * getField( int i );
+  Field* getField( int i );
 
   /*!
-   * \brief Returns the ith field of this FieldData instance as a constant pointer.
+   * \brief Returns the ith field of this FieldData instance as a constant
+   * pointer.
    * \param [in] i the index of the field in query.
    * \return f constant pointer to the field in query.
    * \pre i >= 0 && i < this->getNumberOfFields()
    * \post f == AXOM_NULLPTR \iff i < 0 || i >= this->getNumberOfFieds()
    */
-  const Field * getField( int i ) const;
+  const Field* getField( int i ) const;
 
   /*!
    * \brief Returns the field with the given name.
@@ -96,7 +97,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  Field * getField( const std::string& name );
+  Field* getField( const std::string& name );
 
   /*!
    * \brief Returns the field with the given name as a constant pointer.
@@ -105,7 +106,7 @@ public:
    * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
-  const Field * getField( const std::string& name ) const;
+  const Field* getField( const std::string& name ) const;
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
@@ -123,7 +124,7 @@ private:
 
   // TODO: Revise this. We also need the ability to remove fields (?)
   std::vector< std::string > m_fields;
-  std::map< std::string, Field * > m_container;
+  std::map< std::string, Field* > m_container;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldData);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldData);

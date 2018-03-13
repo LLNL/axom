@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -69,7 +69,7 @@ TEST( primal_OBBox, obb_ctor_from_singlePt)
   EXPECT_FALSE(obbox1.contains(pt2));
   EXPECT_TRUE(obbox1.getCentroid() == pt1)
     <<"OBBox only has a single point, so bbox1.getCentroid()==pt1";
-  const QVector * u_in = obbox1.getAxes();
+  const QVector* u_in = obbox1.getAxes();
 
   for (int i = 0 ; i < DIM ; i++)
   {
@@ -125,7 +125,7 @@ TEST( primal_OBBox, obb_ctor_from_data)
   EXPECT_FALSE(obbox1.contains(pt3));
 
   // check settings
-  const QVector * u_in = obbox1.getAxes();
+  const QVector* u_in = obbox1.getAxes();
   for (int i = 0 ; i < DIM ; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
@@ -317,7 +317,7 @@ TEST( primal_OBBox, obb_test_expand )
   (obbox1.expand(0.5)).expand(-0.5);
   EXPECT_TRUE(pt1 == obbox1.getCentroid());
   EXPECT_TRUE(e == obbox1.getExtents());
-  const QVector * u_in = obbox1.getAxes();
+  const QVector* u_in = obbox1.getAxes();
 
   for (int i = 0 ; i < DIM ; i++)
   {
@@ -447,7 +447,7 @@ TEST( primal_OBBox, obb_copy_and_assignment )
   EXPECT_TRUE(obbox1 == obbox3);
   EXPECT_TRUE(obbox2 == obbox3);
 
-  const QVector * u_in = obbox2.getAxes();
+  const QVector* u_in = obbox2.getAxes();
   for (int i = 0 ; i < DIM ; i++)
   {
     EXPECT_TRUE(u_in[i] == u[i]);
@@ -623,7 +623,7 @@ TEST( primal_OBBox, obb_test_furthest_point )
   EXPECT_TRUE(obbox1.furthestPoint(pt4) == pt5);
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

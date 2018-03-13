@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -11,6 +11,8 @@
 ! 
 ! For details about use and distribution, please read axom/LICENSE.
 !
+
+#include "axom/config.hpp"
 
 program spio_irregularWriteRead
   use axom_sidre
@@ -38,15 +40,27 @@ program spio_irregularWriteRead
 
   type(iomanager) writer, reader
 
+#ifdef AXOM_USE_HDF5
+  character(18) :: protocol = "sidre_hdf5        "
+  character(18) :: root_ext = ".root             "
+#else
+  character(18) :: protocol = "sidre_conduit_json"
+  character(18) :: root_ext = ".conduit_json.root"
+#endif  
+
   call mpi_init(mpierr)
 
   call mpi_comm_rank(MPI_COMM_WORLD, my_rank, mpierr)
   call mpi_comm_size(MPI_COMM_WORLD, num_ranks, mpierr)
 
+#ifdef AXOM_USE_HDF5
   num_output = num_ranks / 2 
   if (num_output == 0) then
      num_output = 1
   endif
+#else
+  num_output = num_ranks 
+#endif
 
 ! create a datastore and give it a small hierarchy of groups and views.
 !
@@ -83,7 +97,7 @@ program spio_irregularWriteRead
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_irregular_write_read", "sidre_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_irregular_write_read", protocol )
 
   ! create another datastore that holds nothing but the root group.
   ds2 = datastore_new()
@@ -92,7 +106,7 @@ program spio_irregularWriteRead
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_irregular_write_read.root")
+  call reader%read(root2, "F_out_spio_irregular_write_read" // root_ext )
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0

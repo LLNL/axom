@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -21,10 +21,11 @@
  *
  * An OctreeLevel associates data with the integer points on a sparse grid.
  * OctreeLevel is an abstract base class.
+ *
  * This file also defines two concrete instantiations:
- * * GridPointOctreeLevel uses a GridPoint as a hash table key for its octree blocks
- * * MortonOctreeLevel uses a Morton index (of the given bit width) as a hash key
- *   for its octree blocks.
+ * GridPointOctreeLevel uses a GridPoint as a hash table key for its octree
+ * blocks  MortonOctreeLevel uses a Morton index (of the given bit width) as a
+ * hash key for its octree blocks.
  */
 
 #ifndef OCTREE_LEVEL__HXX_
@@ -52,7 +53,8 @@ namespace quest
 {
 
 /**
- * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel instance
+ * \brief Helper enumeration for status of a BlockIndex within an OctreeLevel
+ * instance
  */
 enum TreeBlockStatus
 {
@@ -63,13 +65,17 @@ enum TreeBlockStatus
 
 /**
  * \class
- * \brief An abstract base class to represent a sparse level of blocks within an octree.
+ * \brief An abstract base class to represent a sparse level of blocks within an
+ * octree.
  *
  * Each block is associated with an integer grid point whose coordinates
  * have values between 0 and 2^L (where L = this->level() is the encoded level).
- * The OctreeLevel associates data of (templated) type BlockDataType with each such block.
- * \note For efficiency, the data is stored within a brood (collection of siblings that are created simultaneously).
- * \note BlockDataType must define a predicate function with the signature: bool isLeaf() const;
+ * The OctreeLevel associates data of (templated) type BlockDataType with each
+ * such block.
+ * \note For efficiency, the data is stored within a brood (collection of
+ * siblings that are created simultaneously).
+ * \note BlockDataType must define a predicate function with the signature: bool
+ * isLeaf() const;
  */
 template<int DIM, typename BlockDataType>
 class OctreeLevel
@@ -86,7 +92,8 @@ public:
 
   enum { BROOD_SIZE = 1 << DIM };
 
-  /** A brood is a collection of sibling blocks that are generated simultaneously */
+  /** A brood is a collection of sibling blocks that are generated
+     simultaneously */
   typedef NumericArray< BlockDataType, BROOD_SIZE> BroodData;
 
   /** Predeclare the BlockIterator type */
@@ -96,7 +103,8 @@ public:
 protected:
 
   /**
-   * \brief A virtual base class to help with iteration of an OctreeLevel's blocks
+   * \brief A virtual base class to help with iteration of an OctreeLevel's
+   * blocks
    */
   class BlockIteratorHelper
   {
@@ -107,21 +115,23 @@ public:
     /** \brief A function to increment to the next Block in the level */
     virtual void increment() = 0;
 
-    /** \brief Predicate to determine if two BlockIteratorHelpers are equivalent */
-    virtual bool equal(const BlockIteratorHelper * other) = 0;
+    /** \brief Predicate to determine if two BlockIteratorHelpers are equivalent
+     */
+    virtual bool equal(const BlockIteratorHelper* other) = 0;
 
     /** Accessor for the point associated with the current octree block */
     virtual GridPt pt() const =0;
 
     /** Accessor for the data associated with the current octree block */
-    virtual BlockDataType * data() = 0;
+    virtual BlockDataType* data() = 0;
 
     /** Const accessor for the data associated with the current octree block */
-    virtual const BlockDataType * data() const = 0;
+    virtual const BlockDataType* data() const = 0;
   };
 
   /**
-   * \brief A virtual base class to help with constant iteration of an OctreeLevel's blocks
+   * \brief A virtual base class to help with constant iteration of an
+   * OctreeLevel's blocks
    */
   class ConstBlockIteratorHelper
   {
@@ -132,14 +142,15 @@ public:
     /** \brief A function to increment to the next Block in the level */
     virtual void increment() = 0;
 
-    /** \brief Predicate to determine if two BlockIteratorHelpers are equivalent */
-    virtual bool equal(const ConstBlockIteratorHelper * other) = 0;
+    /** \brief Predicate to determine if two BlockIteratorHelpers are equivalent
+     */
+    virtual bool equal(const ConstBlockIteratorHelper* other) = 0;
 
     /** Accessor for the point associated with the current octree block */
     virtual GridPt pt() const =0;
 
     /** Const accessor for the data associated with the current octree block */
-    virtual const BlockDataType * data() const = 0;
+    virtual const BlockDataType* data() const = 0;
   };
 
 public:
@@ -217,11 +228,12 @@ public:
 public:
     typedef BlockIterator<OctreeLevel, IterHelper, DataType>  iter;
 
-    BlockIterator(OctreeLevel * octLevel, bool begin = false)
+    BlockIterator(OctreeLevel* octLevel, bool begin = false)
       : m_octLevel(octLevel)
     {
       SLIC_ASSERT(octLevel != AXOM_NULLPTR);
-      m_iterHelper = octLevel->getIteratorHelper(begin);       // factory function
+      m_iterHelper = octLevel->getIteratorHelper(begin);       // factory
+                                                               // function
     }
 
     ~BlockIterator()
@@ -242,7 +254,8 @@ public:
     /** \brief Equality test against another iterator */
     bool equal(const iter& other) const
     {
-      return (m_octLevel == other.m_octLevel)             // point to same object
+      return (m_octLevel == other.m_octLevel)             // point to same
+                                                          // object
              && m_iterHelper->equal(other.m_iterHelper);
     }
 
@@ -251,8 +264,10 @@ public:
 
 private:
     friend class boost::iterator_core_access;
-    OctreeLevel * m_octLevel;              /** Pointer to the iterator's container class */
-    IterHelper * m_iterHelper;             /** Instance of iterator helper class */
+    OctreeLevel* m_octLevel;               /** Pointer to the iterator's
+                                              container class */
+    IterHelper* m_iterHelper;              /** Instance of iterator helper class
+                                            */
   };
 
 
@@ -308,7 +323,8 @@ public:
    */
   virtual void addAllChildren(const GridPt& pt) = 0;
 
-  /** \brief Virtual const accessor for the data associated with grid point pt */
+  /** \brief Virtual const accessor for the data associated with grid point pt
+   */
   virtual const BlockDataType& operator[](const GridPt& pt) const = 0;
 
   /** \brief Virtual accessor for the data associated with grid point pt */
@@ -329,7 +345,7 @@ public:
    *  \param A boolean to determine if the iterator should be
    *  a begin iterator (true) or an end iterator (false)
    */
-  virtual BlockIteratorHelper * getIteratorHelper(bool) = 0;
+  virtual BlockIteratorHelper* getIteratorHelper(bool) = 0;
 
   /**
    * \brief Virtual factory function to create a const iterator helper
@@ -337,7 +353,7 @@ public:
    * \param A boolean to determine if the iterator should be
    * a begin iterator (true) or an end iterator (false)
    */
-  virtual ConstBlockIteratorHelper * getIteratorHelper(bool) const = 0;
+  virtual ConstBlockIteratorHelper* getIteratorHelper(bool) const = 0;
 
 
   /** \brief Virtual function to compute the number of
@@ -350,7 +366,8 @@ public:
    */
   virtual int numInternalBlocks() const =0;
 
-  /** \brief Virtual function to compute the number of leaf blocks in the level */
+  /** \brief Virtual function to compute the number of leaf blocks in the level
+   */
   virtual int numLeafBlocks() const =0;
 
 

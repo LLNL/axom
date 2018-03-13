@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -148,7 +148,8 @@ public:
   /*!
    * \brief Finds a subset of candidate buckets for the given point query.
    * \param [in] pt the point in query.
-   * \param [out] candidate_buckets list of bucket IDs for the given point query.
+   * \param [out] candidate_buckets list of bucket IDs for the given point
+   * query.
    * \pre this->empty()==false.
    * \pre candidate_buckets.size()==0
    */
@@ -184,7 +185,7 @@ public:
    * \pre bucketIdx >= 0 && bucketIdx < m_tree.size()
    * \post arryPtr != AXOM_NULLPTR
    */
-  const int * getBucketObjectArray( int bucketIdx ) const;
+  const int* getBucketObjectArray( int bucketIdx ) const;
 
   /*!
    * \brief Returns a const reference to the bounding box of the given object.
@@ -195,7 +196,8 @@ public:
   const BoxType& getObjectBox( int objIdx ) const;
 
   /*!
-   * \brief Returns const reference to the data associated with the given object.
+   * \brief Returns const reference to the data associated with the given
+   * object.
    * \param objIdx the ID of the object in query.
    * \return data the data associated with the object.
    * \note The return data is the data supplied when the object was inserted.
@@ -235,7 +237,7 @@ public:
    * \note Primarily used for debugging.
    */
   void writeVtkFile( const std::string& fileName,
-                     const int * bins,
+                     const int* bins,
                      int nbins ) const;
 
 private:
@@ -1012,7 +1014,7 @@ int BVHTree< T,NDIMS >::getBucketNumObjects( int bucketIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-const int * BVHTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
+const int* BVHTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 &&
                bucketIdx < static_cast< int >(m_tree.size()) );
@@ -1048,7 +1050,7 @@ int BVHTree< T,NDIMS >::getObjectBucketIndex( int objIdx ) const
 template < typename T, int NDIMS >
 void BVHTree< T,NDIMS >::writeVtkFile(
   const std::string& fileName,
-  const int * bins,
+  const int* bins,
   int nbins ) const
 {
   // STEP 0: Write VTK header

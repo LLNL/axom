@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -29,7 +29,7 @@ static int const NUM_ELEMS = 5;
 
 TEST(slam_set_virtualbase,construct)
 {
-  axom::slam::Set * s = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s = new axom::slam::RangeSet(NUM_ELEMS);
 
   // Tests function: isValid()
   EXPECT_TRUE( s->isValid() );
@@ -53,9 +53,9 @@ TEST(slam_set_virtualbase,construct)
 
 TEST(slam_set_virtualbase,equality)
 {
-  axom::slam::Set * s1 = new axom::slam::RangeSet(NUM_ELEMS);
-  axom::slam::Set * s2 = new axom::slam::RangeSet(NUM_ELEMS);
-  axom::slam::Set * s3 = new axom::slam::RangeSet(2 * NUM_ELEMS);
+  axom::slam::Set* s1 = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s2 = new axom::slam::RangeSet(NUM_ELEMS);
+  axom::slam::Set* s3 = new axom::slam::RangeSet(2 * NUM_ELEMS);
 
   // Tests function: isValid()
   EXPECT_TRUE(  s1->isValid() );

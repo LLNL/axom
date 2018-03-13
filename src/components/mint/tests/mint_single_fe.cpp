@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -35,7 +42,7 @@
 // C/C++ includes
 #include <cmath>   // for sin(), cos(), sqrt(), etc.
 
-#define MINT_FEM_DEBUG
+//#define MINT_FEM_DEBUG
 
 using namespace axom;
 
@@ -50,7 +57,7 @@ namespace
  * \param [in] fe pointer to a finite element instance.
  * \param [out] centroid buffer to store the centroid
  */
-void compute_centroid( mint::FiniteElement * fe, double * centroid )
+void compute_centroid( mint::FiniteElement* fe, double* centroid )
 {
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
   EXPECT_TRUE(  centroid != AXOM_NULLPTR );
@@ -82,7 +89,7 @@ void compute_centroid( mint::FiniteElement * fe, double * centroid )
       typedef numerics::Matrix< double >::IndexType IndexType;
       IndexType p = 0;
       IndexType N = 0;
-      const double * xp_i = physical_nodes.getRow(i,p,N);
+      const double* xp_i = physical_nodes.getRow(i,p,N);
 
       centroid[ i ] = 0.0;
       for ( int j=0 ; j < N ; j+=p )
@@ -122,7 +129,7 @@ void compute_centroid( mint::FiniteElement * fe, double * centroid )
  * \see get_fe_mesh()
  */
 template < int BasisType, int CellType >
-mint::UnstructuredMesh< CellType > * single_element_mesh( )
+mint::UnstructuredMesh< CellType >* single_element_mesh( )
 {
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
   typedef typename mint::FEBasis< BasisType,CellType > FEMType;
@@ -138,15 +145,15 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  int * cell = new int[ ndofs ];
+  int* cell = new int[ ndofs ];
 
-  double * center = new double[ ndims ];
+  double* center = new double[ ndims ];
   ShapeFunctionType::center( center );
 
-  double * nodes  = new double[ ndofs*ndims ];
+  double* nodes  = new double[ ndofs*ndims ];
   ShapeFunctionType::coords( nodes );
 
-  MeshType * m = new MeshType( ndims );
+  MeshType* m = new MeshType( ndims );
 
   double centroid[]  = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
 
@@ -154,7 +161,7 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
   {
 
     cell[ i ]    = i;
-    double * node = &nodes[ i*ndims ];
+    double* node = &nodes[ i*ndims ];
 
     // scale & rotate cell from the reference space to get a  test cell
     const double dx   = node[ 0 ] - center[ 0 ];
@@ -217,8 +224,8 @@ mint::UnstructuredMesh< CellType > * single_element_mesh( )
  * \see single_element_mesh()
  */
 template < int BasisType, int CellType >
-void get_fe_mesh( mint::UnstructuredMesh< CellType > *& m,
-                  mint::FiniteElement *& fe )
+void get_fe_mesh( mint::UnstructuredMesh< CellType >*& m,
+                  mint::FiniteElement*& fe )
 {
   EXPECT_TRUE(  m==AXOM_NULLPTR );
   EXPECT_TRUE(  fe==AXOM_NULLPTR );
@@ -248,7 +255,7 @@ void get_fe_mesh( mint::UnstructuredMesh< CellType > *& m,
  * \pre fe != AXOM_NULLPTR
  */
 template < typename ShapeFunctionType >
-void check_reference_element( mint::FiniteElement * fe )
+void check_reference_element( mint::FiniteElement* fe )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR);
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
@@ -279,8 +286,8 @@ void check_reference_element( mint::FiniteElement * fe )
   for ( int i=0 ; i < ndofs ; ++i )
   {
 
-    const double * xr_expected = shape_coords.getColumn( i );
-    const double * xr          = ref_coords.getColumn( i );
+    const double* xr_expected = shape_coords.getColumn( i );
+    const double* xr          = ref_coords.getColumn( i );
 
     for ( int j=0 ; j < ndims ; ++j )
     {
@@ -290,7 +297,7 @@ void check_reference_element( mint::FiniteElement * fe )
   } // END for all dofs
 
   // STEP 2: check reference center
-  double * shape_center = new double[ ndims ];
+  double* shape_center = new double[ ndims ];
   sf.center( shape_center );
 
   for ( int j=0 ; j < ref_dim ; ++j )
@@ -317,7 +324,7 @@ void check_reference_element( mint::FiniteElement * fe )
  *
  * \see check_forward_map
  */
-void test_forward_map( mint::FiniteElement * fe, double TOL=1.e-9 )
+void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
@@ -344,11 +351,11 @@ void test_forward_map( mint::FiniteElement * fe, double TOL=1.e-9 )
   {
 
     // forward map
-    const double * xr = reference_coords.getColumn( i );
-    double * xp       = physical_coords.getColumn( i );
+    const double* xr = reference_coords.getColumn( i );
+    double* xp       = physical_coords.getColumn( i );
     fe->computePhysicalCoords( xr, xp );
 
-    double * expected_xp = element_coords.getColumn( i );
+    double* expected_xp = element_coords.getColumn( i );
 
     // check mapping
     for ( int j=0 ; j < ndims ; ++j )
@@ -359,12 +366,12 @@ void test_forward_map( mint::FiniteElement * fe, double TOL=1.e-9 )
   } // END for all dofs
 
   // STEP 3: map center
-  const double * xr_center = fe->getReferenceCenter();
-  double * xp_center       = new double[ ndims ];
+  const double* xr_center = fe->getReferenceCenter();
+  double* xp_center       = new double[ ndims ];
   fe->computePhysicalCoords( xr_center, xp_center );
 
   // STEP 4: compute expected centroid by averaging coordinates
-  double * expected_centroid = new double[ ndims ];
+  double* expected_centroid = new double[ ndims ];
   compute_centroid( fe, expected_centroid );
 
   // STEP 5: check mapping of centroid
@@ -391,7 +398,7 @@ void test_forward_map( mint::FiniteElement * fe, double TOL=1.e-9 )
  *
  * \see check_inverse_map
  */
-void test_inverse_map( mint::FiniteElement * fe, double TOL=1.e-9 )
+void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
   EXPECT_TRUE( fe != AXOM_NULLPTR );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
@@ -409,7 +416,7 @@ void test_inverse_map( mint::FiniteElement * fe, double TOL=1.e-9 )
     ndims, nnodes, fe->getReferenceNodes(), true );
 
   // STEP 2: allocate buffer to store the computed reference coordinates
-  double * xr = new double[ ndims ];
+  double* xr = new double[ ndims ];
 
   // STEP 3: loop over physical nodes and map them to reference space
   for ( int i=0 ; i < nnodes ; ++i )
@@ -421,8 +428,8 @@ void test_inverse_map( mint::FiniteElement * fe, double TOL=1.e-9 )
       continue;
     }
 
-    const double * expected_xr = reference_nodes.getColumn( i );
-    const double * xp          = physical_nodes.getColumn( i );
+    const double* expected_xr = reference_nodes.getColumn( i );
+    const double* xp          = physical_nodes.getColumn( i );
     int rc = fe->computeReferenceCoords( xp, xr, TOL );
     EXPECT_TRUE( rc==mint::INSIDE_ELEMENT );
 
@@ -435,7 +442,7 @@ void test_inverse_map( mint::FiniteElement * fe, double TOL=1.e-9 )
   } // END for all physical nodes
 
   // STEP 4: calculate centroid in physical space by averaging coordinates
-  double * centroid = new double[ ndims ];
+  double* centroid = new double[ ndims ];
   compute_centroid( fe, centroid );
 
   // STEP 4: map centroid
@@ -443,7 +450,7 @@ void test_inverse_map( mint::FiniteElement * fe, double TOL=1.e-9 )
   EXPECT_TRUE( rc==mint::INSIDE_ELEMENT );
 
   // STEP 5: check centroid mapping
-  const double * refcenter = fe->getReferenceCenter();
+  const double* refcenter = fe->getReferenceCenter();
   for ( int i=0 ; i < ndims ; ++i )
   {
     EXPECT_NEAR( refcenter[ i ], xr[ i ], TOL );
@@ -477,8 +484,8 @@ void check_shape( )
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct finite element mesh
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE(  m != AXOM_NULLPTR );
@@ -519,8 +526,8 @@ void check_jacobian( double TOL=1.e-9 )
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE(  m != AXOM_NULLPTR );
@@ -538,7 +545,7 @@ void check_jacobian( double TOL=1.e-9 )
   numerics::Matrix< double > n(rdim,ndofs, fe->getReferenceNodes(), true );
   for ( int i=0 ; i < ndofs ; ++i )
   {
-    const double * xi = n.getColumn( i );
+    const double* xi = n.getColumn( i );
     fe->jacobian( xi, J );
 
     det = numerics::determinant( J );
@@ -546,18 +553,18 @@ void check_jacobian( double TOL=1.e-9 )
   }
 
   // STEP 3: test jacobian at the reference center
-  const double * xi_c = fe->getReferenceCenter();
+  const double* xi_c = fe->getReferenceCenter();
   fe->jacobian( xi_c, J );
   det = numerics::determinant( J );
   EXPECT_GT( det, LTOL );
 
   // STEP 4: test jacobian at interior points; the interior points are
   // computed by taking the midpoint of a reference node and the centroid
-  double * rp = new double[ ndims ];
+  double* rp = new double[ ndims ];
   for ( int i=0 ; i < ndofs ; ++i )
   {
 
-    const double * xi = n.getColumn( i );
+    const double* xi = n.getColumn( i );
     for ( int j=0 ; j < ndims ; ++j )
     {
       rp[ j ] = 0.5 * ( xi[ j ] +  xi_c[ j ] );
@@ -596,8 +603,8 @@ void check_forward_map( double TOL=1.e-9 )
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE(  m != AXOM_NULLPTR );
@@ -635,8 +642,8 @@ void check_inverse_map( double TOL=1.e-9 )
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE(  m != AXOM_NULLPTR );
@@ -672,8 +679,8 @@ void point_in_cell( double TOL=1.e-9 )
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE(  m != AXOM_NULLPTR );
@@ -684,9 +691,9 @@ void point_in_cell( double TOL=1.e-9 )
   // STEP 0: test variables
   const int nnodes = fe->getNumNodes();
   const int ndims  = fe->getPhysicalDimension();
-  double * xi       = new double[ ndims ];
-  double * xc       = new double[ ndims ];
-  double * rp       = new double[ ndims ];
+  double* xi       = new double[ ndims ];
+  double* xc       = new double[ ndims ];
+  double* rp       = new double[ ndims ];
   int status       = 0;
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
@@ -701,7 +708,7 @@ void point_in_cell( double TOL=1.e-9 )
       continue;
     }
 
-    const double * xp = nodes.getColumn( i );
+    const double* xp = nodes.getColumn( i );
 
     status = fe->computeReferenceCoords( xp, xi, TOL );
     EXPECT_TRUE( status==mint::INSIDE_ELEMENT );
@@ -720,7 +727,7 @@ void point_in_cell( double TOL=1.e-9 )
   for ( int i=0 ; i < nnodes ; ++i )
   {
 
-    const double * dof = dofs.getColumn( i );
+    const double* dof = dofs.getColumn( i );
 
     for ( int j=0 ; j < ndims ; ++j )
     {
@@ -739,7 +746,7 @@ void point_in_cell( double TOL=1.e-9 )
   for ( int i=0 ; i < nnodes ; ++i )
   {
 
-    const double * dof = dofs.getColumn( i );
+    const double* dof = dofs.getColumn( i );
 
     // Test +SHIFT
     for ( int j=0 ; j < ndims ; ++j )
@@ -783,7 +790,7 @@ void point_in_cell( double TOL=1.e-9 )
  *
  * \see check_interp()
  */
-double analytic_function( const double * x, int N )
+double analytic_function( const double* x, int N )
 {
   double f = 0.0;
   for ( int i=0 ; i < N ; ++i )
@@ -808,7 +815,7 @@ double analytic_function( const double * x, int N )
  *
  * \see check_interp()
  */
-double interp( const double * f, const double * wgts, int N )
+double interp( const double* f, const double* wgts, int N )
 {
   EXPECT_TRUE(  f != AXOM_NULLPTR );
   EXPECT_TRUE(  wgts != AXOM_NULLPTR );
@@ -842,8 +849,8 @@ void check_interp( double TOL=1.e-9 )
   typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
 
   get_fe_mesh< BasisType, CellType >( m, fe );
   EXPECT_TRUE(  m != AXOM_NULLPTR );
@@ -853,18 +860,18 @@ void check_interp( double TOL=1.e-9 )
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
-  double * wgts = new double[ nnodes ];
+  double* wgts = new double[ nnodes ];
 
   // STEP 1: setup a nodal field to interpolate
-  mint::FieldData * PD = m->getNodeFieldData();
+  mint::FieldData* PD = m->getNodeFieldData();
   PD->addField( new mint::FieldVariable< double >("foo",nnodes) );
-  double * f = PD->getField( "foo" )->getDoublePtr();
+  double* f = PD->getField( "foo" )->getDoublePtr();
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 
   for ( int i=0 ; i < nnodes ; ++i )
   {
-    const double * x = nodes.getColumn( i );
+    const double* x = nodes.getColumn( i );
     f[ i ] = analytic_function( x, ndims );
   }
 
@@ -873,14 +880,14 @@ void check_interp( double TOL=1.e-9 )
   numerics::Matrix< double > dofs( ndims,ndofs,fe->getReferenceNodes(),true );
   for ( int i=0 ; i < ndofs ; ++i )
   {
-    const double * xi = dofs.getColumn( i );
+    const double* xi = dofs.getColumn( i );
     fe->evaluateShapeFunctions( xi, wgts );
     double finterp = interp( f, wgts, ndofs );
     EXPECT_NEAR( f[i], finterp, TOL );
   }
 
   // STEP 3: compute centroid
-  double * xc = new double[ ndims ];
+  double* xc = new double[ ndims ];
   fe->computePhysicalCoords( fe->getReferenceCenter(), xc );
 
   // STEP 4: interpolate
@@ -910,8 +917,8 @@ TEST( mint_single_fe, check_override_max_newton )
   const int MAX_NEWTON = 42; // test value to override max newton
 
   // STEP 0: construct a mesh with a single element
-  MeshType * m             = AXOM_NULLPTR;
-  mint::FiniteElement * fe = AXOM_NULLPTR;
+  MeshType* m             = AXOM_NULLPTR;
+  mint::FiniteElement* fe = AXOM_NULLPTR;
   get_fe_mesh< MINT_LAGRANGE_BASIS, MINT_QUAD >( m, fe );
 
   EXPECT_FALSE( MAX_NEWTON==fe->getMaxSolverIterations() );
@@ -944,11 +951,11 @@ TEST( mint_single_fe, matrix_constructor_deepcopy )
   EXPECT_FALSE( fe.usesExternalBuffer() );
 
   // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
-  double * physical_nodes = fe.getPhysicalNodes();
+  double* physical_nodes = fe.getPhysicalNodes();
   EXPECT_FALSE( physical_nodes == M.data() );
 
   // STEP 4: ensure the contents are the same
-  const double * expected = M.data();
+  const double* expected = M.data();
   for ( int i=0 ; i < NSIZE ; ++i )
   {
     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
@@ -981,15 +988,15 @@ TEST( mint_single_fe, matrix_constructor_shallowcopy)
   M.fillColumn( 2,  3.0 );
 
   // STEP 2: construct FE object by making a shallow-copy
-  mint::FiniteElement * fe = new mint::FiniteElement( M, MINT_TRIANGLE, true );
+  mint::FiniteElement* fe = new mint::FiniteElement( M, MINT_TRIANGLE, true );
   EXPECT_TRUE( fe->usesExternalBuffer() );
 
   // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
-  double * physical_nodes = fe->getPhysicalNodes();
+  double* physical_nodes = fe->getPhysicalNodes();
   EXPECT_TRUE( physical_nodes == M.data() );
 
   // STEP 4: ensure the contents are the same
-  const double * expected = M.data();
+  const double* expected = M.data();
   for ( int i=0 ; i < NSIZE ; ++i )
   {
     EXPECT_DOUBLE_EQ( expected[ i ], physical_nodes[ i ] );
@@ -1099,7 +1106,7 @@ TEST( mint_single_fe, check_fe_interp )
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

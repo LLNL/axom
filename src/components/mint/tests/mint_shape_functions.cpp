@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 #include "gtest/gtest.h"
@@ -63,7 +70,7 @@ void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
   const double LO = sf.min()-TOL;
   const double HI = sf.max()+TOL;
 
-  double * xi = new double[ ndims ];
+  double* xi = new double[ ndims ];
   sf.center( xi );
   for ( int i=0 ; i < ndims ; ++i )
   {
@@ -73,7 +80,7 @@ void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
   delete []  xi;
 
   const int N = ndofs*ndims;
-  double * coords = new double[ N ];
+  double* coords = new double[ N ];
   sf.coords( coords );
   for ( int i=0 ; i < N ; ++i )
   {
@@ -101,14 +108,14 @@ void kronecker_delta( )
   int ndofs = sf.numDofs();
 
   const int N    = ndofs*ndims;
-  double * phi    = new double[ ndofs ];
-  double * coords = new double[ N ];
+  double* phi    = new double[ ndofs ];
+  double* coords = new double[ N ];
   sf.coords( coords );
 
   for ( int i=0 ; i < ndofs ; ++i )
   {
 
-    double * nc = &coords[ i*ndims ];
+    double* nc = &coords[ i*ndims ];
     sf.evaluate( nc, phi );
 
     for ( int j=0 ; j < ndofs ; ++j )
@@ -139,9 +146,9 @@ void partition_of_unity()
   int ndims      = sf.dimension();
   int ndofs      = sf.numDofs();
   const int N    = ndofs*ndims;
-  double * coords = new double[ N ];
-  double * phi    = new double [ ndofs ];
-  double * center = new double[ ndims ];
+  double* coords = new double[ N ];
+  double* phi    = new double [ ndofs ];
+  double* center = new double[ ndims ];
 
   sf.coords( coords );
   sf.center( center );
@@ -149,7 +156,7 @@ void partition_of_unity()
   for ( int i=0 ; i < ndofs ; ++i )
   {
 
-    double * nc = &coords[ i*ndims ];
+    double* nc = &coords[ i*ndims ];
     sf.evaluate( nc, phi );
 
     double sum=0.0;
@@ -173,11 +180,11 @@ void partition_of_unity()
   EXPECT_DOUBLE_EQ( 1.0, sum );
 
   // test other interior nodes
-  double * nc = new double[ ndims ];
+  double* nc = new double[ ndims ];
   for ( int i=0 ; i < ndofs ; ++i )
   {
 
-    double * xi = &coords[i*ndims];
+    double* xi = &coords[i*ndims];
     for ( int j=0 ; j < ndims ; ++j )
     {
       nc[ j ] = ( xi[ j ] + center[ j ] )*0.5;
@@ -251,7 +258,7 @@ TEST( mint_shape_functions, check_partition_of_unity )
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

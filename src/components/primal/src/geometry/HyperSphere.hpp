@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -62,7 +62,7 @@ public:
    * \param [in] center user-supplied center.
    * \param [in] radius user-supplied radius. Default is 1.0.
    */
-  HyperSphere( T * center, T radius=1.0 );
+  HyperSphere( T* center, T radius=1.0 );
 
   /*!
    * \brief Copy constructor.
@@ -92,8 +92,8 @@ public:
    * \return c pointer to array that holds the center of the HyperSphere.
    * \note The length of the array is NDIMS.
    */
-  T * center() { return m_center; };
-  const T * center() const { return m_center; };
+  T* center() { return m_center; };
+  const T* center() const { return m_center; };
 
   /*!
    * \brief Computes signed distance of a point to the HyperSphere boundary.
@@ -102,7 +102,7 @@ public:
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    */
-  T getSignedDistance( T * q);
+  T getSignedDistance( T* q);
 
   /*!
    * \brief Computes orientation of a point with respect to the HyperSphere.
@@ -111,7 +111,7 @@ public:
    * \pre q != AXOM_NULLPTR
    * \pre q must be a pointer to an array that is at least NDIMS long
    */
-  int getOrientation( T * q );
+  int getOrientation( T* q );
 
 private:
   T m_center[ NDIMS ];
@@ -145,7 +145,7 @@ HyperSphere< T,NDIMS >::HyperSphere( T radius ) : m_radius(radius)
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-HyperSphere< T,NDIMS >::HyperSphere( T * center, T radius ) : m_radius(radius)
+HyperSphere< T,NDIMS >::HyperSphere( T* center, T radius ) : m_radius(radius)
 {
   SLIC_ASSERT( center != AXOM_NULLPTR );
   memcpy( m_center, center, NDIMS*sizeof(T) );
@@ -172,7 +172,7 @@ inline HyperSphere< T,NDIMS >& HyperSphere< T,NDIMS >::operator=(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-T HyperSphere< T,NDIMS >::getSignedDistance( T * q )
+T HyperSphere< T,NDIMS >::getSignedDistance( T* q )
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 
@@ -188,7 +188,7 @@ T HyperSphere< T,NDIMS >::getSignedDistance( T * q )
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-int HyperSphere< T,NDIMS >::getOrientation( T * q )
+int HyperSphere< T,NDIMS >::getOrientation( T* q )
 {
   SLIC_ASSERT( q != AXOM_NULLPTR );
 

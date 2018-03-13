@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -61,10 +61,10 @@ enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };
 
-/**
+/*!
  * \struct
  * \brief A simple struct to encapsulate knowledge about which
-   acceleration structure we are using -- the SignedDistance or the InOutOctree
+ *  acceleration structure we are using -- the SignedDistance or the InOutOctree
  */
 template<int DIM>
 struct QuestAccelerator
@@ -80,18 +80,20 @@ struct QuestAccelerator
     m_containmentTree(AXOM_NULLPTR),
     m_queryMode(QUERY_MODE_NONE),
     m_originalLoggerName(""),
-    m_shouldFinalizeSlic(false)
+    m_shouldFinalizeSlic(false),
+    m_shouldDeleteMesh(true)
   {}
 
-  /**
+  /*!
    * \brief Sets the internal mesh pointer and computes some surface
    *  properties (bounding box and center of mass)
    */
-  void setMesh( axom::mint::Mesh * surface_mesh)
+  void setMesh( axom::mint::Mesh*& surface_mesh, bool deleteMesh )
   {
     SLIC_ASSERT( surface_mesh != AXOM_NULLPTR);
 
     m_surface_mesh = surface_mesh;
+    m_shouldDeleteMesh = deleteMesh;
 
     // Compute the mesh's bounding box and center of mass
     m_meshBoundingBox.clear();
@@ -111,40 +113,44 @@ struct QuestAccelerator
     SLIC_ASSERT( m_meshBoundingBox.isValid() );
   }
 
-  /**
+  /*!
    * \brief Initializes the containment tree mode
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
    */
-  void initializeContainmentTree( axom::mint::Mesh * surface_mesh)
+  void initializeContainmentTree( axom::mint::Mesh*& surface_mesh,
+                                  bool deleteMesh )
   {
     SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
-    setMesh(surface_mesh);
+    setMesh(surface_mesh, deleteMesh);
     m_containmentTree =
       new InOutOctree<DIM>( m_meshBoundingBox, m_surface_mesh );
     m_containmentTree->generateIndex();
+    surface_mesh = m_surface_mesh;
     m_queryMode = QUERY_MODE_CONTAINMENT;
   }
 
-  /**
+  /*!
    * \brief Initializes the signed distance mode
    * \param surface_mesh The surface mesh
    * \pre Assumes that we are not yet initialized
    */
-  void initializeSignedDistance( axom::mint::Mesh * surface_mesh,
+  void initializeSignedDistance( axom::mint::Mesh*& surface_mesh,
                                  int maxElements,
-                                 int maxLevels )
+                                 int maxLevels,
+                                 bool deleteMesh )
   {
     SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
 
-    setMesh(surface_mesh);
+    setMesh(surface_mesh, deleteMesh);
     m_region =
       new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
+    surface_mesh = m_surface_mesh;
     m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
   }
 
-  /**
+  /*!
    * \brief Deallocates all memory and sets the state to uninitialized
    */
   void finalize()
@@ -162,7 +168,7 @@ struct QuestAccelerator
     }
     m_queryMode = QUERY_MODE_NONE;
 
-    if ( m_surface_mesh != AXOM_NULLPTR )
+    if ( m_shouldDeleteMesh && m_surface_mesh != AXOM_NULLPTR )
     {
 
       delete m_surface_mesh;
@@ -174,13 +180,15 @@ struct QuestAccelerator
   }
 
 
-  /**
+  /*!
    * \brief Performs the distance query with the 3D point (x, y, z)
    * \param x The x-coordinate of the point
    * \param y The y-coordinate of the point
    * \param z The z-coordinate of the point
-   * \return The signed distance from the point to the closest point on the surface
-   * \note Positive distances are outside the surface, negative distances are inside.
+   * \return The signed distance from the point to the closest point on the
+   * surface
+   * \note Positive distances are outside the surface, negative distances are
+   * inside.
    */
   double distance(double x, double y, double z)
   {
@@ -193,7 +201,7 @@ struct QuestAccelerator
     return m_region->computeDistance( pt );
   }
 
-  /**
+  /*!
    * \brief Performs the containment query with the 3D point (x, y, z)
    * \param x The x-coordinate of the point
    * \param y The y-coordinate of the point
@@ -215,7 +223,7 @@ struct QuestAccelerator
       break;
     case QUERY_MODE_SIGNED_DISTANCE:
     {
-      const quest::SignedDistance<3>::BVHTreeType * tree =
+      const quest::SignedDistance<3>::BVHTreeType* tree =
         m_region->getBVHTree();
       SLIC_ASSERT( tree != AXOM_NULLPTR );
 
@@ -236,7 +244,7 @@ struct QuestAccelerator
     return( sign );
   }
 
-  /**
+  /*!
    * \brief Returns a const reference to the bounding box of the mesh
    */
   const GeometricBoundingBox& meshBoundingBox() const
@@ -244,7 +252,7 @@ struct QuestAccelerator
     return m_meshBoundingBox;
   }
 
-  /**
+  /*!
    * \brief Returns a const reference to the center of mass of the mesh
    */
   const SpacePt& meshCenterOfMass() const
@@ -253,8 +261,9 @@ struct QuestAccelerator
   }
 
       #ifdef AXOM_DEBUG
-  /**
-   * \brief Utility function to determine if we are in a mode that supports distance queries
+  /*!
+   * \brief Utility function to determine if we are in a mode that supports
+   * distance queries
    */
   bool supportsDistanceQuery()
   {
@@ -277,8 +286,9 @@ struct QuestAccelerator
     return isValid;
   }
 
-  /**
-   * \brief Utility function to determine if we are in a mode that supports containment queries
+  /*!
+   * \brief Utility function to determine if we are in a mode that supports
+   * containment queries
    */
   bool supportsContainmentQuery()
   {
@@ -302,8 +312,9 @@ struct QuestAccelerator
     return isValid;
   }
 
-  /**
-   * \brief Utility function to determine if an acceleration structure has been initialized
+  /*!
+   * \brief Utility function to determine if an acceleration structure has been
+   * initialized
    */
   bool isInitialized()
   {
@@ -312,7 +323,7 @@ struct QuestAccelerator
   }
   #endif
 
-  /**
+  /*!
    * \brief Sets up the formatted Slic logger for quest
    */
 #ifdef AXOM_USE_MPI
@@ -325,7 +336,8 @@ struct QuestAccelerator
     if( !slic::isInitialized() )
     {
       slic::initialize();
-      m_shouldFinalizeSlic = true;            // mark that we need to finalize slic
+      m_shouldFinalizeSlic = true;            // mark that we need to finalize
+                                              // slic
     }
 
     const std::string questLoggerName = "quest_logger";
@@ -334,7 +346,7 @@ struct QuestAccelerator
     slic::flushStreams();
     if( !slic::activateLogger(questLoggerName) )
     {
-      slic::LogStream * ls;
+      slic::LogStream* ls;
 
               #ifdef AXOM_USE_MPI
       std::string fmt = "[<RANK>][Quest <LEVEL>]: <MESSAGE>\n";
@@ -355,7 +367,7 @@ struct QuestAccelerator
     }
   }
 
-  /**
+  /*!
    * \brief Deactivates the quest logger
    *
    * If there was a previous logger, it is restored.
@@ -388,9 +400,9 @@ struct QuestAccelerator
 
 
 private:
-  axom::mint::Mesh * m_surface_mesh;
-  SignedDistance< DIM > * m_region;
-  InOutOctree< DIM > * m_containmentTree;
+  axom::mint::Mesh* m_surface_mesh;
+  SignedDistance< DIM >* m_region;
+  InOutOctree< DIM >* m_containmentTree;
   QueryMode m_queryMode;
 
   SpacePt m_meshCenterOfMass;
@@ -398,13 +410,14 @@ private:
 
   std::string m_originalLoggerName;
   bool m_shouldFinalizeSlic;
+  bool m_shouldDeleteMesh;
 };
 
-/**
+/*!
  * \brief A static instance of the acceleration structure in 3D
  * \note In this initial release, we assume a single static accelerator.
- *       Eventually, we will expand on this to support multiple structures in 2D and 3D.
- *       We will probably use Sidre to hold pointers to these structures.
+ *  Eventually, we will expand on this to support multiple structures in 2D
+ *  and 3D. We will probably use Sidre to hold pointers to these structures.
  */
 static QuestAccelerator<3> accelerator3D;
 }
@@ -416,6 +429,27 @@ void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
+  SLIC_ASSERT( comm != MPI_COMM_NULL );
+
+  // Read in the mesh
+  quest::PSTLReader* reader = new quest::PSTLReader( comm );
+  reader->setFileName( fileName );
+  reader->read();
+
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+
+  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  delete reader;
+
+  initialize(comm, surface_mesh, requiresDistance, ndims, maxElements,
+             maxLevels, true);
+}
+
+void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh )
+{
   SLIC_ASSERT( !accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
 
@@ -424,30 +458,24 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
-                  "Quest currently only supports 3D triangle meshes.");
+                  "Quest currently only supports 3D (not 2D) triangle meshes.");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+                  "Quest currently only supports 3D triangle meshes "
+                  "(not any other kind of cell).");
 
   accelerator3D.setupQuestLogger(comm);
 
-  // Read in the mesh
-  quest::PSTLReader * reader = new quest::PSTLReader( comm );
-  reader->setFileName( fileName );
-  reader->read();
-
-  axom::mint::Mesh * surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
-
-  reader->getMesh( static_cast< TriangleMesh * >( surface_mesh ) );
-  delete reader;
+  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
 
   // Initialize the appropriate acceleration structure
   if(requiresDistance)
   {
-    accelerator3D.initializeSignedDistance(surface_mesh, maxElements,
-                                           maxLevels);
+    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
+                                           maxLevels, deleteMesh);
   }
   else
   {
-    accelerator3D.initializeContainmentTree(surface_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   }
 
   accelerator3D.teardownQuestLogger();
@@ -458,6 +486,25 @@ void initialize( const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels )
 {
+  // Read in the mesh
+  quest::STLReader* reader = new quest::STLReader();
+  reader->setFileName( fileName );
+  reader->read();
+
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+
+  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  delete reader;
+
+  initialize(surface_mesh, requiresDistance, ndims, maxElements,
+             maxLevels, true);
+}
+
+void initialize( mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh )
+{
   SLIC_ASSERT( !accelerator3D.isInitialized() );
 
   AXOM_DEBUG_VAR(ndims);
@@ -465,30 +512,24 @@ void initialize( const std::string& fileName,
 
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
-                  "Quest currently only supports 3D triangle meshes.");
+                  "Quest currently only supports 3D (not 2D) triangle meshes.");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+                  "Quest currently only supports 3D triangle meshes "
+                  "(not any other kind of cell).");
 
   accelerator3D.setupQuestLogger();
 
-  // Read in the mesh
-  quest::STLReader * reader = new quest::STLReader();
-  reader->setFileName( fileName );
-  reader->read();
-
-  axom::mint::Mesh * surface_mesh = new TriangleMesh( 3 );
-  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
-
-  reader->getMesh( static_cast< TriangleMesh * >( surface_mesh ) );
-  delete reader;
+  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
 
   // Initialize the appropriate acceleration structure
   if(requiresDistance)
   {
-    accelerator3D.initializeSignedDistance(surface_mesh, maxElements,
-                                           maxLevels );
+    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
+                                           maxLevels, deleteMesh );
   }
   else
   {
-    accelerator3D.initializeContainmentTree(surface_mesh);
+    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   }
 
   accelerator3D.teardownQuestLogger();
@@ -503,7 +544,7 @@ double distance( double x, double y, double z )
 }
 
 //------------------------------------------------------------------------------
-void distance( const double * xyz, double * dist, int npoints )
+void distance( const double* xyz, double* dist, int npoints )
 {
   SLIC_ASSERT( xyz != AXOM_NULLPTR );
   SLIC_ASSERT( dist != AXOM_NULLPTR );
@@ -530,7 +571,7 @@ int inside( double x, double y, double z )
 
 
 //------------------------------------------------------------------------------
-void mesh_min_bounds(double * coords)
+void mesh_min_bounds(double* coords)
 {
   typedef QuestAccelerator<3>::SpacePt SpacePt;
   SLIC_ASSERT(coords != AXOM_NULLPTR);
@@ -540,7 +581,7 @@ void mesh_min_bounds(double * coords)
 }
 
 //------------------------------------------------------------------------------
-void mesh_max_bounds(double * coords)
+void mesh_max_bounds(double* coords)
 {
   typedef QuestAccelerator<3>::SpacePt SpacePt;
   SLIC_ASSERT(coords != AXOM_NULLPTR);
@@ -552,7 +593,7 @@ void mesh_max_bounds(double * coords)
 
 
 //------------------------------------------------------------------------------
-void mesh_center_of_mass(double * coords)
+void mesh_center_of_mass(double* coords)
 {
   typedef QuestAccelerator<3>::SpacePt SpacePt;
   SLIC_ASSERT(coords != AXOM_NULLPTR);
@@ -562,7 +603,7 @@ void mesh_center_of_mass(double * coords)
 }
 
 //------------------------------------------------------------------------------
-void inside( const double * xyz, int * in, int npoints )
+void inside( const double* xyz, int* in, int npoints )
 {
   SLIC_ASSERT( xyz != AXOM_NULLPTR );
   SLIC_ASSERT( in != AXOM_NULLPTR );

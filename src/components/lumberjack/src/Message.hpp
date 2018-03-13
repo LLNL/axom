@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -42,7 +42,8 @@ namespace lumberjack
 const char memberDelimiter = '*';
 /*!
  *****************************************************************************
- * \brief Delimiter used for packing messages and separating their individual tracked ranks.
+ * \brief Delimiter used for packing messages and separating their individual
+ *  tracked ranks.
  *****************************************************************************
  */
 const char rankDelimiter = ',';
@@ -51,10 +52,10 @@ const char rankDelimiter = ',';
  *******************************************************************************
  * \class Message
  *
- * \brief Holds all necessary information about messages and where they came from.
+ * \brief Holds information about messages and where they came from.
  *
- *  This class holds all the information about an individual message and where it
- *  came from, such as rank, file name, and line number.
+ *  This class holds all the information about an individual message and where
+ *  it came from, such as rank, file name, and line number.
  *
  * \see Combiner Lumberjack
  *******************************************************************************
@@ -79,8 +80,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Constructor where you can specify all values for a Message that originated
-   * from a specific rank.
+   * \brief Constructor where you can specify all values for a Message that
+   *  originated from a specific rank.
    *
    * \param [in] text Actual text of the Message.
    * \param [in] rank The rank where the Message originated.
@@ -103,13 +104,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Constructor where you can specify all values for a Message that originated
-   * from a multiple ranks.
+   * \brief Constructor where you can specify all values for a Message that
+   *  originated from a multiple ranks.
    *
    * \param [in] text Actual text of the Message.
    * \param [in] ranks The rank where the Message originated.
-   * \param [in] ranksCount Total amount of ranks where this Message has originated from.
-   * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
+   * \param [in] ranksCount Total amount of ranks where this Message has
+   *  originated from.
+   * \param [in] ranksLimit Limit on how many ranks are individually tracked per
+   *  Message.
    * \param [in] fileName The file name where the Message originated.
    * \param [in] lineNumber The line number where the Message originated.
    * \param [in] level The level of the severity of the Message.
@@ -155,9 +158,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns a string of ranks delimited by ',' unless otherwise specified.
+   * \brief Returns a string of ranks delimited by ',' unless otherwise
+   *  specified.
    *
-   * \param [in] delimiter The delimiter used to separate the ranks in returned string.
+   * \param [in] delimiter The delimiter used to separate the ranks in returned
+   *  string.
    *****************************************************************************
    */
   std::string stringOfRanks(std::string delimiter=",") const;
@@ -242,19 +247,19 @@ public:
    * \brief Adds a rank to this Message.
    *
    * \param [in] newRank The new rank to be added.
-   * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
+   * \param [in] ranksLimit Limits how many ranks are tracked per  Message.
    *****************************************************************************
    */
   void addRank(int newRank, int ranksLimit);
 
   /*!
    *****************************************************************************
-   * \brief Adds multiple ranks to this Message.  ranksCount is used to increment since
-   *  duplicates are removed from Message::ranks.
+   * \brief Adds multiple ranks to this Message.  ranksCount is used to
+   * increment since duplicates are removed from Message::ranks.
    *
    * \param [in] newRanks The new ranks to be added.
    * \param [in] ranksCount Count to add to Message::ranksCount
-   * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
+   * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *****************************************************************************
    */
   void addRanks(const std::vector<int>& newRanks, int ranksCount,
@@ -264,7 +269,8 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns a string of all information about this Message packed into a string.
+   * \brief Returns a string of all information about this Message packed into a
+   *  string.
    *
    * The Message is packed into a string utilizing the following format:
    *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
@@ -275,13 +281,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Overrides the information in this Message with the given packed string.
+   * \brief Overrides the information in this Message with the given packed
+   *  string.
+   *
+   * \param [in] packedMessage Packed Message containing the new information.
+   * \param [in] ranksLimit delimiter used to separate the ranks
    *
    * The Message is unpacked from a string utilizing the following format:
    *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
-   *
-   * \param [in] packedMessage Packed Message containing the new information.
-   * \param [in] ranksLimit The delimiter used to separate the ranks in returned string.
    *****************************************************************************
    */
   void unpack(const std::string& packedMessage, int ranksLimit);

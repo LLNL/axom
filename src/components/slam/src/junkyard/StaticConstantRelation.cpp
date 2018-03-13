@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -26,7 +26,7 @@ namespace axom
 namespace slam
 {
 
-StaticConstantRelation::StaticConstantRelation (Set * fromSet, Set * toSet)
+StaticConstantRelation::StaticConstantRelation (Set* fromSet, Set* toSet)
   : StridePolicy(StridePolicyType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(
     toSet)
 {}
@@ -87,7 +87,8 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
     }
 
 
-    // Check that all elements of the toSetIndices vector point to valid set elements
+    // Check that all elements of the toSetIndices vector point to valid set
+    // elements
     for(RelationVecConstIterator it = m_toSetIndicesVec.begin(),
         itEnd = m_toSetIndicesVec.end() ;
         it != itEnd ; ++it)

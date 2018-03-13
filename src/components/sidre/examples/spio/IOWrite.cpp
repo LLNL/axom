@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -39,7 +39,7 @@ using namespace axom::utilities;
  * Purpose   :
  *************************************************************************/
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
   axom::slic::UnitTestLogger logger;
@@ -63,15 +63,15 @@ int main(int argc, char * argv[])
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   SLIC_ASSERT(ds);
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
@@ -89,9 +89,9 @@ int main(int argc, char * argv[])
   MPI_Barrier(MPI_COMM_WORLD);
   if (my_rank == 0)
   {
-    Group * extra = root->createGroup("extra");
+    Group* extra = root->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
-    Group * child = extra->createGroup("child");
+    Group* child = extra->createGroup("child");
     child->createViewScalar<int>("ival", 7);
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");

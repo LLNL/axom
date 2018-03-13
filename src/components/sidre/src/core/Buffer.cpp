@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -38,7 +38,7 @@ namespace sidre
  *
  *************************************************************************
  */
-Buffer * Buffer::describe(TypeID type, SidreLength num_elems)
+Buffer* Buffer::describe(TypeID type, SidreLength num_elems)
 {
   if ( isAllocated() || num_elems < 0 )
   {
@@ -61,7 +61,7 @@ Buffer * Buffer::describe(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-Buffer * Buffer::allocate()
+Buffer* Buffer::allocate()
 {
   if ( !isDescribed() || isAllocated() )
   {
@@ -71,7 +71,7 @@ Buffer * Buffer::allocate()
     return this;
   }
 
-  void * data = allocateBytes( getTotalBytes() );
+  void* data = allocateBytes( getTotalBytes() );
 
   SLIC_CHECK_MSG( data != AXOM_NULLPTR,
                   "Buffer failed to allocate memory of size " <<
@@ -91,7 +91,7 @@ Buffer * Buffer::allocate()
  *
  *************************************************************************
  */
-Buffer * Buffer::allocate(TypeID type, SidreLength num_elems)
+Buffer* Buffer::allocate(TypeID type, SidreLength num_elems)
 {
   if (isAllocated())
   {
@@ -113,7 +113,7 @@ Buffer * Buffer::allocate(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-Buffer * Buffer::reallocate( SidreLength num_elems)
+Buffer* Buffer::reallocate( SidreLength num_elems)
 {
   if (!isAllocated())
   {
@@ -138,12 +138,12 @@ Buffer * Buffer::reallocate( SidreLength num_elems)
   }
 
   SidreLength old_size = getTotalBytes();
-  void * old_data_ptr = getVoidPtr();
+  void* old_data_ptr = getVoidPtr();
 
   DataType dtype( m_node.dtype() );
   dtype.set_number_of_elements( num_elems );
   SidreLength new_size = dtype.strided_bytes();
-  void * new_data_ptr = allocateBytes(new_size);
+  void* new_data_ptr = allocateBytes(new_size);
 
   if ( new_data_ptr != AXOM_NULLPTR )
   {
@@ -168,7 +168,7 @@ Buffer * Buffer::reallocate( SidreLength num_elems)
  *
  *************************************************************************
  */
-Buffer * Buffer::deallocate()
+Buffer* Buffer::deallocate()
 {
   if (!isAllocated())
   {
@@ -178,7 +178,7 @@ Buffer * Buffer::deallocate()
   releaseBytes(getVoidPtr());
   m_node.set_external( DataType( m_node.dtype() ), AXOM_NULLPTR );
 
-  std::set<View *>::iterator vit = m_views.begin();
+  std::set<View*>::iterator vit = m_views.begin();
   for ( ; vit != m_views.end() ; ++vit)
   {
     (*vit)->unapply();
@@ -195,8 +195,8 @@ Buffer * Buffer::deallocate()
  *
  *************************************************************************
  */
-Buffer * Buffer::copyBytesIntoBuffer(const void * src,
-                                     SidreLength nbytes)
+Buffer* Buffer::copyBytesIntoBuffer(const void* src,
+                                    SidreLength nbytes)
 {
   if ( src == AXOM_NULLPTR || nbytes < 0 || nbytes > getTotalBytes() )
   {
@@ -305,7 +305,7 @@ Buffer::~Buffer()
  *
  *************************************************************************
  */
-void Buffer::attachToView( View * view )
+void Buffer::attachToView( View* view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
 
@@ -322,7 +322,7 @@ void Buffer::attachToView( View * view )
  *
  *************************************************************************
  */
-void Buffer::detachFromView( View * view )
+void Buffer::detachFromView( View* view )
 {
   SLIC_ASSERT(view->m_data_buffer == this);
   SLIC_ASSERT(m_views.count(view) > 0);
@@ -343,7 +343,7 @@ void Buffer::detachFromView( View * view )
  */
 void Buffer::detachFromAllViews()
 {
-  std::set<View *>::iterator vit = m_views.begin();
+  std::set<View*>::iterator vit = m_views.begin();
   for ( ; vit != m_views.end() ; ++vit)
   {
     (*vit)->setBufferViewToEmpty();
@@ -360,7 +360,7 @@ void Buffer::detachFromAllViews()
  *
  *************************************************************************
  */
-void * Buffer::allocateBytes(std::size_t num_bytes)
+void* Buffer::allocateBytes(std::size_t num_bytes)
 {
   return new(std::nothrow) detail::sidre_int8[num_bytes];
 }
@@ -372,7 +372,7 @@ void * Buffer::allocateBytes(std::size_t num_bytes)
  *
  *************************************************************************
  */
-void Buffer::copyBytes( const void * src, void * dst, size_t num_bytes )
+void Buffer::copyBytes( const void* src, void* dst, size_t num_bytes )
 {
   std::memcpy( dst, src, num_bytes );
 }
@@ -384,10 +384,10 @@ void Buffer::copyBytes( const void * src, void * dst, size_t num_bytes )
  *
  *************************************************************************
  */
-void Buffer::releaseBytes( void * ptr)
+void Buffer::releaseBytes( void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  delete[] static_cast<detail::sidre_int8 *>(ptr);
+  delete[] static_cast<detail::sidre_int8*>(ptr);
 }
 
 /*
@@ -413,8 +413,10 @@ void Buffer::exportTo( conduit::Node& data_holder)
     // Do this instead of using the node copy constructor ( keep it zero-copy ).
     data_holder["data"].set_external( m_node.schema(), getVoidPtr() );
 
-    // TODO - Ask Cyrus why he had following way previously.  Are we creating a default dtype
-    // to remove any striding, offset?  Our Buffer does not allow those, only type and length.
+    // TODO - Ask Cyrus why he had following way previously.  Are we creating a
+    // default dtype
+    // to remove any striding, offset?  Our Buffer does not allow those, only
+    // type and length.
     // DataType& dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
     // dtype.set_number_of_elements(ds_buff->getNumElements());
   }

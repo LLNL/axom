@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -110,7 +110,8 @@ PositionType elementCardinality(PositionType AXOM_NOT_USED(fromPos) )
 }
 
 /**
- * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using slam::ModularInt
+ * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using
+ *  slam::ModularInt
  */
 PositionType relationData(PositionType fromPos, PositionType toPos)
 {
@@ -119,7 +120,7 @@ PositionType relationData(PositionType fromPos, PositionType toPos)
 
 
 template<typename VecType>
-void generateIncrementingRelations(PositionType stride, VecType * offsets)
+void generateIncrementingRelations(PositionType stride, VecType* offsets)
 {
   VecType& offsetsVec = *offsets;
 
@@ -139,10 +140,12 @@ void generateIncrementingRelations(PositionType stride, VecType * offsets)
 
 
 /**
- * \brief Traverses the relation's entities using the double subscript access API
+ * \brief Traverses the relation's entities using the double subscript access
+ *  API
  *
- * \note Expects cardinality and relation data for each element to match the results
- *       of the elementCardinality() and relationData() functions above, respectively.
+ * \note Expects cardinality and relation data for each element to match the
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void traverseRelation_doubleSubscript(RelationType& rel)
@@ -164,11 +167,12 @@ void traverseRelation_doubleSubscript(RelationType& rel)
 /**
  * \brief Traverses relation using separated subscript operators
  *
- * The first subscript operator gets the set of entities in the ToSet that are mapped to the
- * given element of the relation's FromSet
+ * The first subscript operator gets the set of entities in the ToSet that are
+ * mapped to the given element of the relation's FromSet
  *
- * \note Expects cardinality and relation data for each element to match the results
- *       of the elementCardinality() and relationData() functions above, respectively.
+ * \note Expects cardinality and relation data for each element to match the
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void traverseRelation_delayedSubscript(RelationType& rel)
@@ -192,8 +196,9 @@ void traverseRelation_delayedSubscript(RelationType& rel)
  * \brief Traverses relation using the iterator API (begin()/end() )
  *
  * \note The iterator API depends on boost
- * \note Expects cardinality and relation data for each element to match the results
- *       of the elementCardinality() and relationData() functions above, respectively.
+ * \note Expects cardinality and relation data for each element to match the
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
@@ -231,8 +236,9 @@ void iterateRelation_begin_end(RelationType& rel)
  * \brief Traverses relation using the iterator range API
  *
  * \note The iterator API depends on boost
- * \note Expects cardinality and relation data for each element to match the results
- *       of the elementCardinality() and relationData() functions above, respectively.
+ * \note Expects cardinality and relation data for each element to match the
+ *  results of the elementCardinality() and relationData() functions above,
+ *  respectively.
  */
 template<typename RelationType>
 void iterateRelation_range(RelationType& rel)
@@ -299,8 +305,12 @@ TEST(slam_relation_static_constant,construct_relation)
   slam::RangeSet toSet(TOSET_SIZE);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);    // init the begins set
-  incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the relation indices set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE);    // init the
+                                                                    // begins
+                                                                    // set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);  // init the
+                                                                // relation
+                                                                // indices set
 
   EXPECT_TRUE(incrementingRel.isValid(true));
 
@@ -383,8 +393,11 @@ TEST(slam_relation_static_constant,out_of_bounds_initialized)
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
 
   StaticConstantRelationType incrementingRel(&fromSet, &toSet);
-  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE); // init the begins set
-  incrementingRel.bindIndices(relIndices.size(), &relIndices);   // init the relation indices set
+  incrementingRel.bindBeginOffsets(fromSet.size(), ELEM_STRIDE); // init the
+                                                                 // begins set
+  incrementingRel.bindIndices(relIndices.size(), &relIndices);   // init the
+                                                                 // relation
+                                                                 // indices set
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
@@ -398,7 +411,8 @@ TEST(slam_relation_static_constant,out_of_bounds_initialized)
 
 }
 
-/// Tests that vary the relation's policies (STL vs. array indirection and compile time vs. runtime offset striding)
+/// Tests that vary the relation's policies (STL vs. array indirection and
+// compile time vs. runtime offset striding)
 
 TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
 {
@@ -475,7 +489,7 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 
   IndexVec relIndices;
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
-  PositionType * data = &relIndices[0];   // Get a pointer to the data
+  PositionType* data = &relIndices[0];    // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -537,7 +551,7 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 
   IndexVec relIndices;
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
-  PositionType * data = &relIndices[0];   // Get a pointer to the data
+  PositionType* data = &relIndices[0];    // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -621,7 +635,7 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

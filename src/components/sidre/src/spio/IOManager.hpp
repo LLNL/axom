@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -28,9 +28,6 @@
 #ifndef IOPARALLEL_HPP_
 #define IOPARALLEL_HPP_
 
-#include "mpi.h"
-#include "hdf5.h"
-
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/Macros.hpp"
@@ -40,6 +37,7 @@
 // Spio headers
 #include "sidre/IOBaton.hpp"
 
+#include "mpi.h"
 
 namespace axom
 {
@@ -67,7 +65,7 @@ public:
    * \param com               MPI communicator
    * \param use_scr           Use SCR library for scalable I/O management.
    *                          If true, the calling code must have already
-   *                          called SCR_Init() afer MPI_Init().
+   *                          called SCR_Init() after MPI_Init().
    */
   IOManager(MPI_Comm com, bool use_scr = false);
 
@@ -87,17 +85,21 @@ public:
    *    sidre_hdf5
    *    sidre_conduit_json
    *    sidre_json
+   *
    *    conduit_hdf5
    *    conduit_bin
    *    conduit_json
    *    json
+   *
+   * \note The sidre_hdf5 and conduit_hdf5 protocols are only available
+   * when Axom is configured with hdf5.
    *
    * \param group         Group to write to output
    * \param num_files     number of output data files
    * \param file_string   base name for output files
    * \param protocol      identifies I/O protocol
    */
-  void write(sidre::Group * group,
+  void write(sidre::Group* group,
              int num_files,
              const std::string& file_string,
              const std::string& protocol);
@@ -119,7 +121,7 @@ public:
    * \param group         Group to add to root file
    * \param file_name     name of existing root file
    */
-  void writeGroupToRootFile(sidre::Group * group,
+  void writeGroupToRootFile(sidre::Group* group,
                             const std::string& file_name);
 
   /*!
@@ -143,7 +145,7 @@ public:
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
-  void writeGroupToRootFileAtPath(sidre::Group * group,
+  void writeGroupToRootFileAtPath(sidre::Group* group,
                                   const std::string& file_name,
                                   const std::string& group_path);
 
@@ -168,7 +170,7 @@ public:
    * \param file_name     name of existing root file
    * \param group_path    path to a location within the root file
    */
-  void writeViewToRootFileAtPath(sidre::View * view,
+  void writeViewToRootFileAtPath(sidre::View* view,
                                  const std::string& file_name,
                                  const std::string& group_path);
 
@@ -180,7 +182,7 @@ public:
    * \param protocol      identifies I/O protocol
    * \param preserve_contents   Preserves group's existing contents if true
    */
-  void read(sidre::Group * group,
+  void read(sidre::Group* group,
             const std::string& file_string,
             const std::string& protocol,
             bool preserve_contents = false);
@@ -194,12 +196,23 @@ public:
    * \param use_scr    Use SCR to find and read the files.  This should be
    *                   set to true only if the files were written with SCR.
    */
-  void read(sidre::Group * group,
+  void read(sidre::Group* group,
             const std::string& root_file,
             bool preserve_contents = false,
             bool use_scr = false);
 
 public:
+
+  /**
+   * \brief Finds conduit relay protocol corresponding to a sidre protocol
+   *
+   * \param sidre_protocol String representing the sidre protocol
+   * \return The conduit relay protocol corresponding to \a sidre_protocol
+   * Options are: "hdf5", "json" and "conduit_json"
+   * \see Group::save() for a list of valid sidre protocols
+   */
+  static std::string correspondingRelayProtocol(
+    const std::string& sidre_protocol);
 
   /*!
    * \brief load external data into a group
@@ -210,7 +223,7 @@ public:
    * \param group         Group to fill with external data from input
    * \param root_file     root file containing input data
    */
-  void loadExternalData(sidre::Group * group,
+  void loadExternalData(sidre::Group* group,
                         const std::string& root_file);
 
   /*!
@@ -226,23 +239,29 @@ private:
                       int num_files,
                       const std::string& protocol);
 
-  std::string getRankGroupFileName(const std::string& root_name,
-                                   int rankgroup_id,
-                                   const std::string& protocol);
-
-  std::string getHDF5FilePattern(const std::string& root_name);
-
-  std::string getHDF5FileName(const std::string& file_pattern,
-                              const std::string& root_name,
-                              int rankgroup_id);
-
   std::string getProtocol(const std::string& root_name);
 
-  void readSidreHDF5(sidre::Group * group, const std::string& root_file,
+  /*!
+   * Collective operation to get the file pattern from the root file.
+   * The string is read on rank 0 and broadcast to the other ranks.
+   * \note Works for all sidre protocols.
+   */
+  std::string getFilePatternFromRoot(const std::string& root_name,
+                                     const std::string& protocol);
+
+#ifdef AXOM_USE_HDF5
+  std::string getHDF5FilePattern(const std::string& root_name);
+
+  void readSidreHDF5(sidre::Group* group, const std::string& root_file,
                      bool preserve_contents = false);
+#endif /* AXOM_USE_HDF5 */
+
+  std::string getFileNameForRank(const std::string& file_pattern,
+                                 const std::string& root_name,
+                                 int rankgroup_id);
 
 #ifdef AXOM_USE_SCR
-  void readWithSCR(sidre::Group * group,
+  void readWithSCR(sidre::Group* group,
                    const std::string& root_file,
                    bool preserve_contents = false);
 #endif
@@ -250,7 +269,7 @@ private:
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
 
-  IOBaton * m_baton;
+  IOBaton* m_baton;
 
   MPI_Comm m_mpi_comm;
 

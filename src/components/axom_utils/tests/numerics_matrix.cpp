@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -171,7 +171,7 @@ TEST( numerics_matrix, array_constructor_with_external_buffer )
 
     for ( int i=0 ; i < NCOLS ; ++i )
     {
-      int * col = A.getColumn( i );
+      int* col = A.getColumn( i );
       for ( int j=0 ; j < MROWS ; ++j )
       {
         EXPECT_EQ( i+1, col[j] );
@@ -228,7 +228,7 @@ TEST( numerics_matrix, array_constructor_with_external_buffer )
 
     for ( int i=0 ; i < NCOLS ; ++i )
     {
-      int * col = A.getColumn( i );
+      int* col = A.getColumn( i );
       for ( int j=0 ; j < MROWS ; ++j )
       {
         EXPECT_EQ( i+1, col[j] );
@@ -248,7 +248,7 @@ TEST( numerics_matrix, array_constructor_with_external_buffer )
 
     for ( int i=0 ; i < NCOLS ; ++i )
     {
-      int * col = A.getColumn( i );
+      int* col = A.getColumn( i );
       for ( int j=0 ; j < MROWS ; ++j )
       {
         EXPECT_EQ( i+1, col[j] );
@@ -357,7 +357,7 @@ TEST( numerics_matrix, getColumn )
 
   for ( int j=0 ; j < N ; ++j )
   {
-    const int * column = M.getColumn( j );
+    const int* column = M.getColumn( j );
     for ( int i=0 ; i < N ; ++i )
     {
       EXPECT_EQ( expected[ j*N+i ], column[ i ] );
@@ -386,7 +386,7 @@ TEST( numerics_matrix, getRow )
   for ( IndexType i=0 ; i < N ; ++i )
   {
 
-    int * row = A.getRow( i, p, size);
+    int* row = A.getRow( i, p, size);
     for ( IndexType j=0 ; j < size ; j+=p )
     {
       EXPECT_EQ( i+1, row[ j ] );
@@ -414,7 +414,7 @@ TEST( numerics_matrix, getDiagonal )
 
   const int EXPECTED_SUM = N;
 
-  int * diagonal = new int[ N ];
+  int* diagonal = new int[ N ];
   M.getDiagonal( diagonal );
 
   int sum = 0;
@@ -431,7 +431,7 @@ TEST( numerics_matrix, getDiagonal )
 
   IndexType p    = 0;
   IndexType size = 0;
-  const int * diag = M.getDiagonal( p, size );
+  const int* diag = M.getDiagonal( p, size );
   EXPECT_EQ( N+1, p );
   EXPECT_EQ( M.getDiagonalSize()*N, size );
 
@@ -456,7 +456,7 @@ TEST( numerics_matrix, fillDiagonal )
 
   M.fillDiagonal( 3 );
 
-  int * diagonal = new int[ N ];
+  int* diagonal = new int[ N ];
   M.getDiagonal( diagonal );
 
   for ( int i=0 ; i < N ; ++i )
@@ -548,7 +548,7 @@ TEST( numerics_matrix, swapRows )
 
   for ( IndexType i=0 ; i < N ; ++i )
   {
-    int * column = A.getColumn( i );
+    int* column = A.getColumn( i );
     for ( IndexType j=0 ; j < M ; ++j )
     {
       EXPECT_EQ( FILL_VAL[ (j+1) % M ], column[ j ] );
@@ -576,8 +576,8 @@ TEST( numerics_matrix, swapColumns )
   int last_column  = N-1;
   A.swapColumns( first_column, last_column );
 
-  int * first_column_data = A.getColumn( first_column );
-  int * last_column_data  = A.getColumn( last_column );
+  int* first_column_data = A.getColumn( first_column );
+  int* last_column_data  = A.getColumn( last_column );
   for ( IndexType i=0 ; i < M ; ++i )
   {
     EXPECT_EQ( last_column+1, first_column_data[ i ] );

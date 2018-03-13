@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -49,7 +49,8 @@ class OrientedBoundingBox;
 /*!
  * \brief Equality comparison operator for oriented bounding boxes.
  *
- * Two oriented bounding boxes are equal when they have the same bounds and axes.
+ * Two oriented bounding boxes are equal when they have the same bounds and
+ * axes.
  */
 template < typename T,int NDIMS >
 bool operator==( const OrientedBoundingBox< T, NDIMS > &lhs,
@@ -74,7 +75,7 @@ std::ostream& operator<<( std::ostream & os,
 // Forward declared methods
 template < typename T, int NDIMS >
 OrientedBoundingBox< T, NDIMS > compute_oriented_bounding_box(
-  const Point< T, NDIMS > * pts, int n);
+  const Point< T, NDIMS >* pts, int n);
 
 ///@}
 
@@ -120,7 +121,7 @@ public:
    * (with srand()).  This constructor uses eigen_solve to find a good fit
    * around the passed-in points, which uses the random number generator.
    */
-  OrientedBoundingBox( const PointType * pts, int n );
+  OrientedBoundingBox( const PointType* pts, int n );
 
   /*!
    * \brief Constructor. Creates an oriented bounding box with given center,
@@ -161,7 +162,7 @@ public:
    * \brief Return the axes.
    * \return Pointer to the axes.
    */
-  const VectorType * getAxes() const { return m_u; };
+  const VectorType* getAxes() const { return m_u; };
 
   /*!
    * \brief Returns the extents of the oriented bounding box.
@@ -327,8 +328,8 @@ private:
    * \brief Recursively enumerates the vertices of this box, storing them in l.
    */
   static void vertex_enum(std::vector< Point< T, NDIMS > > &l, int i,
-                          const Vector< T, NDIMS > u[NDIMS], const Vector< T,
-                                                                           NDIMS > &e,
+                          const Vector< T, NDIMS > u[NDIMS],
+                          const Vector< T,NDIMS > &e,
                           Vector< T, NDIMS > curr)
   {
     if (i == NDIMS)    // base case
@@ -401,7 +402,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType * pts,
+OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType* pts,
                                                      int n)
 {
   if (n <= 0)
@@ -497,7 +498,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
 {
   this->m_c = other.getCentroid();
   this->m_e = other.getExtents();
-  const Vector< T, NDIMS > * u = other.getAxes();
+  const Vector< T, NDIMS >* u = other.getAxes();
   for (int i = 0 ; i < NDIMS ; i++)
   {
     this->m_u[i] = u[i];
@@ -622,7 +623,7 @@ OrientedBoundingBox< T, NDIMS >& OrientedBoundingBox< T, NDIMS >::operator=(
   {
     this->m_e = rhs.getExtents();
     this->m_c = rhs.getCentroid();
-    const Vector< T, NDIMS > * u = rhs.getAxes();
+    const Vector< T, NDIMS >* u = rhs.getAxes();
     for (int i = 0 ; i < NDIMS ; i++)
     {
       this->m_u[i] = u[i];

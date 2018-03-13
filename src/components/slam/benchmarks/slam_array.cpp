@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -32,10 +32,10 @@ const int OFFSET = 12;
 
 
 typedef int IndexType;
-typedef IndexType * IndexArray;
+typedef IndexType* IndexArray;
 
 typedef double DataType;
-typedef DataType * DataArray;
+typedef DataType* DataArray;
 
 // Generate an array of of size sz of indices in the range of [0,sz)
 // NOTE: Caller must delete the array
@@ -94,12 +94,16 @@ class SetFixture : public ::benchmark::Fixture
 public:
   void SetUp() {
 
-    volatile int str_vol = STRIDE;          // pass through volatile variable so the
+    volatile int str_vol = STRIDE;          // pass through volatile variable so
+                                            // the
 
-    str = str_vol;                          // number is not a compile time constant
+    str = str_vol;                          // number is not a compile time
+                                            // constant
 
-    volatile int off_vol = OFFSET;          // pass through volatile variable so the
-    off = off_vol;                          // number is not a compile time constant
+    volatile int off_vol = OFFSET;          // pass through volatile variable so
+                                            // the
+    off = off_vol;                          // number is not a compile time
+                                            // constant
 
     ind = AXOM_NULLPTR;
     data = AXOM_NULLPTR;
@@ -143,7 +147,7 @@ enum ArrSizes { S0 = 1 << 3,        // small
                 S3 = 1 << 25        // Larger than  25M L3 cache
 };
 
-void CustomArgs(benchmark::internal::Benchmark * b) {
+void CustomArgs(benchmark::internal::Benchmark* b) {
   b->Arg(  S0);
   b->Arg(  S1);
   b->Arg(  S2);
@@ -583,7 +587,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_field)
 
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   std::srand (std::time(NULL));
 

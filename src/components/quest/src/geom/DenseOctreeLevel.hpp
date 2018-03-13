@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -36,11 +36,12 @@ namespace quest
  * \brief A representation of a dense OctreeLevel.
  *  that allocates space for all possible blocks at the given level.
  *
- *  It uses a Brood-based organization of the data, where the data for all octree
- *  siblings are stored contiguously, and uses a Morton-based order on the Broods
- *  in the level.  Associated with each block is a BlockDataType
+ *  It uses a Brood-based organization of the data, where the data for all
+ *  octree siblings are stored contiguously, and uses a Morton-based order on
+ *  the Broods in the level.  Associated with each block is a BlockDataType
  *  For efficiency, the data is associated with an entire brood, a collection of
- *  siblings that are created simultaneously. In dimension DIM, there are 2^DIM siblings in a brood.
+ *  siblings that are created simultaneously. In dimension DIM, there are 2^DIM
+ *  siblings in a brood.
  *
  *  \see OctreeLevel
  *  \see Brood
@@ -66,9 +67,11 @@ public:
 public:
 
   /**
-   * \brief Concrete instance of the BlockIteratorHelper class defined in the OctreeLevel base class.
+   * \brief Concrete instance of the BlockIteratorHelper class defined in the
+   * OctreeLevel base class.
    *
-   * \note ParenType must be either BlockIteratorHelper or ConstBlockIteratorHelper,
+   * \note ParenType must be either BlockIteratorHelper or
+   * ConstBlockIteratorHelper,
    *       both are defined in the OctreeLevel base class
    */
   template<typename OctreeLevelType, typename ParentType>
@@ -78,7 +81,7 @@ public:
     typedef IteratorHelper<OctreeLevelType, ParentType> self;
     typedef ParentType BaseBlockItType;
 
-    IteratorHelper(OctreeLevelType * octLevel, bool begin)
+    IteratorHelper(OctreeLevelType* octLevel, bool begin)
       : m_octreeLevel(octLevel),
       m_endIdx( octLevel->m_broodCapacity),
       m_offset(0),
@@ -115,27 +118,30 @@ public:
     }
 
     /** Accessor for data associated with the iterator's block */
-    BlockDataType * data() {
+    BlockDataType* data() {
       return &m_octreeLevel->m_data[m_currentIdx][
         m_offset];
     }
     /** Const accessor for data associated with the iterator's block */
-    const BlockDataType * data() const
+    const BlockDataType* data() const
     {
       return &m_octreeLevel->m_data[m_currentIdx][m_offset];
     }
 
     /** \brief Predicate to determine if two block iterators are the same */
-    bool equal(const BaseBlockItType * other)
+    bool equal(const BaseBlockItType* other)
     {
-      const self * pother = dynamic_cast<const self *>(other);
+      const self* pother = dynamic_cast<const self*>(other);
 
       return (pother != AXOM_NULLPTR)
-             && (m_currentIdx == pother->m_currentIdx)           // iterators are the same
-             && (m_offset == pother->m_offset);                  // brood indices are the same
+             && (m_currentIdx == pother->m_currentIdx)           // iterators
+                                                                 // are the same
+             && (m_offset == pother->m_offset);                  // brood
+                                                                 // indices are
+                                                                 // the same
     }
 private:
-    OctreeLevelType * m_octreeLevel;
+    OctreeLevelType* m_octreeLevel;
     MortonIndexType m_currentIdx, m_endIdx;
     int m_offset;
     bool m_isLevelZero;
@@ -188,7 +194,7 @@ public:
    *  \param begin A boolean to determine if this is to be
    * a begin (true) or end (false) iterator
    */
-  BaseBlockIteratorHelper * getIteratorHelper(bool begin)
+  BaseBlockIteratorHelper* getIteratorHelper(bool begin)
   {
     return new IterHelper(this, begin);
   }
@@ -199,7 +205,7 @@ public:
    *  \param begin A boolean to determine if this is to be
    * a begin (true) or end (false) iterator
    */
-  ConstBaseBlockIteratorHelper * getIteratorHelper(bool begin) const
+  ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
   {
     return new ConstIterHelper(this, begin);
   }
@@ -315,7 +321,8 @@ public:
    * an octree block within this octree level
    *
    * \param pt The grid point of the block index that we are testing
-   * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)
+   * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock,
+   *...)
    */
   TreeBlockStatus blockStatus(const GridPt & pt) const
   {
@@ -335,7 +342,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(DenseOctreeLevel);
 
 private:
-  BroodData * m_data;
+  BroodData* m_data;
   int m_broodCapacity;
   int m_blockCount;
 };

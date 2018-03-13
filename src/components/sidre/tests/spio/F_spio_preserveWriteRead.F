@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -12,9 +12,13 @@
 ! For details about use and distribution, please read axom/LICENSE.
 !
 
-program spio_parallel_write_read
+#include "axom/config.hpp"
+
+program spio_preserve_write_read
   use axom_sidre
   use axom_spio
+  use fruit
+  use iso_c_binding
   implicit none
 
   include 'mpif.h'
@@ -22,17 +26,20 @@ program spio_parallel_write_read
   integer i
   integer mpierr
   integer num_files
-  integer testvalue1, testvalue2
+  integer testvalue1, testvalue2, testvaluex
   integer num_elems1, num_elems2
   integer return_val
   integer my_rank, num_ranks, num_output
+  integer ival
   integer, pointer :: i1_vals(:), i2_vals(:)
+  character(80) :: s0, s1
+  real(C_DOUBLE) :: dval
 
   type(SidreDataStore) ds1, ds2
   type(SidreGroup) root1, root2
-  type(SidreGroup) flds, flds2
+  type(SidreGroup) flds, flds2, fldsx
   type(SidreGroup) ga, gb
-  type(SidreView)  view1, view2
+  type(SidreView)  view1, view2, viewx
 
   type(SidreDataStore) dsextra
   type(SidreGroup) extra_root, extra, child
@@ -40,15 +47,27 @@ program spio_parallel_write_read
 
   type(iomanager) writer, reader
 
+#ifdef AXOM_USE_HDF5
+  character(18) :: protocol = "sidre_hdf5        "
+  character(18) :: root_ext = ".root             "
+#else
+  character(18) :: protocol = "sidre_conduit_json"
+  character(18) :: root_ext = ".conduit_json.root"
+#endif  
+
   call mpi_init(mpierr)
 
   call mpi_comm_rank(MPI_COMM_WORLD, my_rank, mpierr)
   call mpi_comm_size(MPI_COMM_WORLD, num_ranks, mpierr)
 
+#ifdef AXOM_USE_HDF5
   num_output = num_ranks / 2 
   if (num_output == 0) then
      num_output = 1
   endif
+#else
+  num_output = num_ranks 
+#endif
 
 ! create a datastore and give it a small hierarchy of groups and views.
 !
@@ -76,24 +95,21 @@ program spio_parallel_write_read
   num_files = num_output
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_parallel_write_read", "sidre_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_preserve_write_read", protocol )
 
-  ! Extra stuff to exercise writeGroupToRootFile
+  ! Extra stuff to exercise preserve_contents option
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
-  if (my_rank == 0) then
-     dsextra = datastore_new()
-     extra_root = dsextra%get_root()
-     extra = extra_root%create_group("extra")
-     view = extra%create_View_Scalar("dval", 1.1d0)
-     child = extra%create_group("child")
-     view = child%create_view_scalar("ival", 7)
-     view = child%create_view_string("word0", "hello")
-     view = child%create_view_string("word1", "world")
+  dsextra = datastore_new()
+  extra_root = dsextra%get_root()
+  extra = extra_root%create_group("extra")
+  view = extra%create_View_Scalar("dval", 1.1d0)
+  child = extra%create_group("child")
+  view = child%create_view_scalar("ival", 7)
+  view = child%create_view_string("word0", "hello")
+  view = child%create_view_string("word1", "world")
 
-     call writer%write_group_to_root_file(extra, "F_out_spio_parallel_write_read.root")
+  call writer%write(extra, num_files, "F_out_spio_extra", protocol )
 
-     call dsextra%delete()
-  endif
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
 
   ! create another datastore that holds nothing but the root group.
@@ -103,7 +119,7 @@ program spio_parallel_write_read
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_parallel_write_read.root")
+  call reader%read(root2, "F_out_spio_preserve_write_read" // root_ext )
 
   ! verify that the contents of ds2 match those written from ds.
   return_val = 0
@@ -135,11 +151,48 @@ program spio_parallel_write_read
      endif
   endif
 
+  ! Read in extra file while preserving contents
+  fldsx = root2%get_group("fields");
+  call reader%read(fldsx, "F_out_spio_extra" // root_ext, .true.)
+
+  ! Test one of the pre-existing Views to show it's unchanged.
+  viewx = fldsx%get_view("a/i0")
+  testvaluex = viewx%get_data_int()
+  if (testvaluex .ne. testvalue2) then
+     return_val = 1
+  endif
+
+  ! Test the data from the extra file.
+  viewx = fldsx%get_view("dval")
+  dval = viewx%get_data_double()
+
+  if (dval .lt. 1.0000009 .or. dval .gt. 1.1000001) then
+     return_val = 1
+  endif
+
+  viewx = fldsx%get_view("child/ival")
+  ival = viewx%get_data_int() 
+
+  if (ival .ne. 7) then
+     return_val = 1
+  endif
+
+  viewx = fldsx%get_view("child/word0")
+  call viewx%get_string(s0)
+  call assert_equals(s0, "hello")
+
+  viewx = fldsx%get_view("child/word1")
+  call viewx%get_string(s1)
+  call assert_equals(s1, "world")
+
+  
+
   call ds1%delete()
   call ds2%delete()
+  call dsextra%delete()
 
   call mpi_finalize(mpierr)
 
   call exit(return_val)
-end program spio_parallel_write_read
+end program spio_preserve_write_read
 

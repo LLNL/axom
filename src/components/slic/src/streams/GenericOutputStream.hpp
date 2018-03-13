@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -54,7 +54,7 @@ public:
    * \param [in] os pointer to a user-supplied ostream instance.
    * \pre os != NULL
    */
-  GenericOutputStream( std::ostream * os );
+  GenericOutputStream( std::ostream* os );
 
   /*!
    * \brief Constructs a GenericOutputStream instance with the given stream and
@@ -63,7 +63,7 @@ public:
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
    */
-  GenericOutputStream( std::ostream * os, const std::string& format );
+  GenericOutputStream( std::ostream* os, const std::string& format );
 
   /*!
    * \brief Destructor.
@@ -79,14 +79,14 @@ public:
                        bool filter_duplicates );
 private:
 
-  std::ostream * m_stream;
+  std::ostream* m_stream;
 
   /*!
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
    */
   GenericOutputStream() : m_stream(
-      static_cast< std::ostream * >( AXOM_NULLPTR ) )
+      static_cast< std::ostream* >( AXOM_NULLPTR ) )
   {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);

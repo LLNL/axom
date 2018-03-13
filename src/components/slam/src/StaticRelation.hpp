@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -97,7 +97,7 @@ public:
   {}
 
 
-  StaticRelation(FromSetType * fromSet, ToSetType * toSet)
+  StaticRelation(FromSetType* fromSet, ToSetType* toSet)
     : CardinalityPolicy( EmptySetTraits<FromSetType>::
                          isEmpty(fromSet) ? 0 : fromSet->size() ),
     m_fromSet(fromSet),
@@ -124,7 +124,7 @@ public:
       m_toSet( EmptySetTraits<ToSetType>::emptySet() )
     {}
 
-    RelationBuilder& fromSet(FromSetType * pFromSet)
+    RelationBuilder& fromSet(FromSetType* pFromSet)
     {
       m_fromSet = pFromSet;
       if(m_cardPolicy.totalSize() == 0
@@ -135,7 +135,7 @@ public:
       return *this;
     }
 
-    RelationBuilder& toSet(ToSetType * pToSet)
+    RelationBuilder& toSet(ToSetType* pToSet)
     {
       m_toSet  = pToSet;
       return *this;
@@ -157,8 +157,8 @@ public:
     }
 
 private:
-    FromSetType * m_fromSet;
-    ToSetType * m_toSet;
+    FromSetType* m_fromSet;
+    ToSetType* m_toSet;
     CardinalityPolicy m_cardPolicy;
     IndicesSetBuilder m_indBuilder;
   };
@@ -231,39 +231,39 @@ public:
   {
     return !EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
   }
-  FromSetType * fromSet()       { return m_fromSet; }
-  const FromSetType * fromSet() const { return m_fromSet; }
+  FromSetType* fromSet()       { return m_fromSet; }
+  const FromSetType* fromSet() const { return m_fromSet; }
 
 
   bool                hasToSet() const
   {
     return !EmptySetTraits<ToSetType>::isEmpty(m_toSet);
   }
-  ToSetType * toSet()       { return m_toSet; }
-  const ToSetType * toSet() const { return m_toSet; }
+  ToSetType* toSet()       { return m_toSet; }
+  const ToSetType* toSet() const { return m_toSet; }
 
 
   void                bindIndices(SetPosition size,
-                                  IndirectionBufferType * data)
+                                  IndirectionBufferType* data)
   {
     m_relationIndices  = typename IndicesSet::SetBuilder()
                          .size(size)
                          .data(data);
   }
 
-  const IndirectionBufferType * relationData() const
+  const IndirectionBufferType* relationData() const
   {
     return m_relationIndices.data();
   }
 
-  IndirectionBufferType * relationData()
+  IndirectionBufferType* relationData()
   {
     return m_relationIndices.data();
   }
 
 private:
-  FromSetType * m_fromSet;
-  ToSetType * m_toSet;
+  FromSetType* m_fromSet;
+  ToSetType* m_toSet;
 
   IndicesSet m_relationIndices;
 

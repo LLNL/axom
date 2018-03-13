@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -30,8 +30,8 @@ namespace axom
 namespace slic
 {
 
-Logger * Logger::s_Logger = AXOM_NULLPTR;
-std::map< std::string, Logger * > Logger::s_loggers;
+Logger* Logger::s_Logger = AXOM_NULLPTR;
+std::map< std::string, Logger* > Logger::s_loggers;
 
 //------------------------------------------------------------------------------
 Logger::Logger() : m_abortOnError( true ), m_abortOnWarning( false )
@@ -65,7 +65,7 @@ Logger::Logger(const std::string& name) :
 //------------------------------------------------------------------------------
 Logger::~Logger()
 {
-  std::map< LogStream *, LogStream * >::iterator it =
+  std::map< LogStream*, LogStream* >::iterator it =
     m_streamObjectsManager.begin();
   for ( ; it != m_streamObjectsManager.end() ; ++it )
   {
@@ -92,7 +92,7 @@ void Logger::setLoggingMsgLevel( message::Level level )
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToMsgLevel( LogStream * ls, message::Level level,
+void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
                                   bool pass_ownership )
 {
   if ( ls == AXOM_NULLPTR )
@@ -115,7 +115,7 @@ void Logger::addStreamToMsgLevel( LogStream * ls, message::Level level,
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToAllMsgLevels( LogStream * ls )
+void Logger::addStreamToAllMsgLevels( LogStream* ls )
 {
   if ( ls == AXOM_NULLPTR )
   {
@@ -141,7 +141,7 @@ int Logger::getNumStreamsAtMsgLevel( message::Level level )
 }
 
 //------------------------------------------------------------------------------
-LogStream * Logger::getStream( message::Level level, int i )
+LogStream* Logger::getStream( message::Level level, int i )
 {
   if ( i < 0 || i >= static_cast< int >(m_logStreams[ level ].size()) )
   {
@@ -283,7 +283,7 @@ bool Logger::createLogger( const std::string& name, char imask )
     return true;
   } // END if inherit nothing
 
-  Logger * rootLogger = Logger::getRootLogger();
+  Logger* rootLogger = Logger::getRootLogger();
   if ( rootLogger == AXOM_NULLPTR )
   {
     std::cerr << "ERROR: no root logger found!\n";
@@ -336,7 +336,7 @@ bool Logger::activateLogger( const std::string& name )
 //------------------------------------------------------------------------------
 void Logger::finalize()
 {
-  std::map< std::string, Logger * >::iterator it;
+  std::map< std::string, Logger* >::iterator it;
   for ( it=s_loggers.begin() ; it != s_loggers.end() ; ++it )
   {
     it->second->flushStreams();
@@ -358,13 +358,13 @@ std::string Logger::getActiveLoggerName()
 }
 
 //------------------------------------------------------------------------------
-Logger * Logger::getActiveLogger()
+Logger* Logger::getActiveLogger()
 {
   return s_Logger;
 }
 
 //------------------------------------------------------------------------------
-Logger * Logger::getRootLogger()
+Logger* Logger::getRootLogger()
 {
   if ( s_loggers.find( "root" ) == s_loggers.end() )
   {

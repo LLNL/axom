@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -72,28 +72,28 @@ public:
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual double * getDoublePtr();
+  virtual double* getDoublePtr();
 
   /*!
    * \brief Returns a constant double pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the data is not of type double.
    */
-  virtual const double * getDoublePtr() const;
+  virtual const double* getDoublePtr() const;
 
   /*!
    * \brief Returns an int pointer to the field data.
    * \return ptr pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual int * getIntPtr();
+  virtual int* getIntPtr();
 
   /*!
    * \brief Returns a constant int pointer to the field data.
    * \return ptr constant pointer to the field data.
    * \post ptr==AXOM_NULLPTR iff the is not an integer type.
    */
-  virtual const int * getIntPtr() const;
+  virtual const int* getIntPtr() const;
 
 protected:
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -223,7 +223,7 @@ void runQuestContainment(const std::string& fileName, const CoordsVec& points)
  *
  * \endverbatim
  */
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
 #ifdef AXOM_USE_MPI
   // Initialize MPI
@@ -234,7 +234,7 @@ int main( int argc, char * * argv )
   axom::slic::initialize();
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
-  axom::slic::LogStream * logStream;
+  axom::slic::LogStream* logStream;
 
 #ifdef AXOM_USE_MPI
   std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";

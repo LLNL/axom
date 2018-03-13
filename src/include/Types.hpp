@@ -1,11 +1,18 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
 /*!
@@ -38,21 +45,21 @@ namespace common
 #endif
 
 
-typedef detail::int8_t int8;        /** Eight bit signed integer type */
-typedef detail::uint8_t uint8;      /** Eight bit unsigned integer type */
+typedef detail::int8_t int8;        /*!< 8-bit signed integer type      */
+typedef detail::uint8_t uint8;      /*!< 8-bit unsigned integer type    */
 
-typedef detail::int16_t int16;      /** Sixteen bit signed integer type */
-typedef detail::uint16_t uint16;    /** Sixteen bit unsigned integer type */
+typedef detail::int16_t int16;      /*!< 16-bit signed integer type     */
+typedef detail::uint16_t uint16;    /*!< 16-bit unsigned integer type   */
 
-typedef detail::int32_t int32;      /** Thirty-two bit signed integer type */
-typedef detail::uint32_t uint32;    /** Thirty-two bit unsigned integer type */
+typedef detail::int32_t int32;      /*!< 32-bit signed integer type     */
+typedef detail::uint32_t uint32;    /*!< 32-bit unsigned integer type   */
 
 // Note: KW -- We assume that AXOM_NO_INT64_T will be defined
 // on systems/compilers that do not support 64 bit integer types
-  #ifndef AXOM_NO_INT64_T
-typedef detail::int64_t int64;        /** Sixty-four bit signed integer type */
-typedef detail::uint64_t uint64;      /** Sixty-four bit unsigned integer type */
-  #endif
+#ifndef AXOM_NO_INT64_T
+typedef detail::int64_t int64;      /*!< 64-bit signed integer type     */
+typedef detail::uint64_t uint64;    /*!< 64-bit unsigned integer type   */
+#endif
 
 } // end namespace common
 } // end namespace axom

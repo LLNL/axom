@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -56,7 +56,7 @@ public:
 
 public:
   RangeSet(SizeType size = SizeType(),
-           const Set * parentSet = &s_nullSet ) : m_size(size),
+           const Set* parentSet = &s_nullSet ) : m_size(size),
     m_parentSet(parentSet) {}
 
   SizeType size()  const { return m_size; }
@@ -73,7 +73,7 @@ public:
   bool isValid(bool verboseOutput = false) const;
 
   bool isSubset() const { return *m_parentSet != s_nullSet; }
-  const Set * parentSet() const { return m_parentSet; }
+  const Set* parentSet() const { return m_parentSet; }
 
 
 private:
@@ -88,7 +88,7 @@ private:
 
 private:
   SizeType m_size;
-  const Set * m_parentSet;
+  const Set* m_parentSet;
 
 };
 

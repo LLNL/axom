@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -65,7 +65,7 @@ namespace numerics
  * \pre System randomizer has been initialized (for example, with srand())
  */
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas,
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas,
                 int numIterations=125);
 
 } /* end namespace numerics */
@@ -96,7 +96,7 @@ T getRandom()
 } /* end anonymous namespace */
 
 template < typename T >
-int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas, int numIterations)
+int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
 {
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -119,12 +119,12 @@ int eigen_solve(Matrix< T >& A, int k, T * u, T * lambdas, int numIterations)
   int N = A.getNumColumns();
 
   // allocate memory for a temp var
-  T * temp = new T[N];
+  T* temp = new T[N];
 
   for (int i = 0 ; i < k ; i++)
   {
 
-    T * vec = &u[i*N];
+    T* vec = &u[i*N];
     // 1: generate random vec
     for (int j = 0 ; j < N ; j++)
     {

@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_52_23/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/cmake-3.8.2-wtzyqdptt7z4lheevxl53yx2a5lhfldb/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_58_48/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0/cmake-3.8.2-wtzyqdptt7z4lheevxl53yx2a5lhfldb/bin/cmake
 
 #######
 # using clang@3.5.0 compiler spec
@@ -25,7 +25,7 @@ set(CMAKE_CXX_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_52_23/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_58_48/spack/opt/spack/chaos_5_x86_64_ib/clang-3.5.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-ffqxeq6flvcqk2fo6gscvkqvuhvouovx" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-ffqxeq6flvcqk2fo6gscvkqvuhvouovx" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-4uowsvj2al6ig6iedmdygjijmaxnwv3e" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-rzylpuznj7ibzpoff56uzwo2k36yzd2t" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-wp5ufzdnbvisq7djz75z6kuvilcbpbjl" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-a6n4lbbqdnhhkivpxazq5e4zrdhaspei" CACHE PATH "")
@@ -70,6 +70,20 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 ##################################
 # end uberenv host-config
 ##################################
+
+##
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
 
 ##############################################################################
 # !---------------------------------------------------------------------------

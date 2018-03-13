@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -36,14 +36,15 @@ const int OFFSET = 12;
 
 
 typedef int IndexType;
-typedef IndexType * IndexArray;
+typedef IndexType* IndexArray;
 
 typedef double DataType;
-typedef DataType * DataArray;
+typedef DataType* DataArray;
 /*
     // Generate an array of of size sz of indices in the range of [0,sz)
     // NOTE: Caller must delete the array
-    IndexArray generateRandomPermutationArray(int sz, bool shouldPermute = false)
+    IndexArray generateRandomPermutationArray(int sz, bool shouldPermute =
+       false)
     {
         IndexArray indices = new IndexType[sz];
 
@@ -56,7 +57,8 @@ typedef DataType * DataArray;
         {
             for(IndexType idx=0; idx< sz; ++idx)
             {
-                // find a random position in the array and swap value with current idx
+                // find a random position in the array and swap value with
+                   current idx
                 IndexType otherIdx = idx + rand() % (sz - idx);
                 std::swap(indices[idx], indices[otherIdx]);
             }
@@ -84,11 +86,15 @@ typedef DataType * DataArray;
     public:
         void SetUp() {
 
-            volatile int str_vol = STRIDE;  // pass through volatile variable so the
-            str = str_vol;                  // number is not a compile time constant
+            volatile int str_vol = STRIDE;  // pass through volatile variable so
+               the
+            str = str_vol;                  // number is not a compile time
+               constant
 
-            volatile int off_vol = OFFSET;  // pass through volatile variable so the
-            off = off_vol;                  // number is not a compile time constant
+            volatile int off_vol = OFFSET;  // pass through volatile variable so
+               the
+            off = off_vol;                  // number is not a compile time
+               constant
 
             ind = AXOM_NULLPTR;
             data = AXOM_NULLPTR;
@@ -124,7 +130,7 @@ enum ArrSizes { S0 = 1 << 3,      // small
                 S3 = 1 << 25      // Larger than  25M L3 cache
 };
 
-void CustomArgs(benchmark::internal::Benchmark * b) {
+void CustomArgs(benchmark::internal::Benchmark* b) {
   b->Arg(  S0);
   b->Arg(  S1);
   b->Arg(  S2);
@@ -256,7 +262,7 @@ BENCHMARK(positionSet_runtimeTimeSize_iter)->Apply(CustomArgs);
 
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   std::srand (std::time(NULL));
   axom::slic::UnitTestLogger logger;  // create & initialize test logger,

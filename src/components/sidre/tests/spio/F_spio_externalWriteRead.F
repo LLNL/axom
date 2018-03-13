@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -11,6 +11,8 @@
 ! 
 ! For details about use and distribution, please read axom/LICENSE.
 !
+
+#include "axom/config.hpp"
 
 program spio_external_write_read
 
@@ -38,6 +40,8 @@ program spio_external_write_read
 
   type(iomanager) writer, reader
 
+! Loading external data is only currently valid for 'sidre_hdf5' protocol
+#ifdef AXOM_USE_HDF5
   call mpi_init(mpierr)
 
   call mpi_comm_rank(MPI_COMM_WORLD, my_rank, mpierr)
@@ -115,6 +119,10 @@ program spio_external_write_read
   call ds2%delete()
 
   call mpi_finalize(mpierr)
+#else
+  print *, "Loading external data only valid for 'sidre_hdf5' format &
+           & and when Axom is configured with hdf5. Skipping test."
+#endif
 
   call exit(return_val)
 end program spio_external_write_read

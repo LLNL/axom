@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -20,13 +20,15 @@
  *
  * \brief Offset policies for SLAM
  *
- * Offset policies are meant to represent the offset to the first element of SLAM ordered set.
+ * Offset policies are meant to represent the offset to the first element of
+ * SLAM ordered set.
+ *
  * A valid offset policy must support the following interface:
  *   * [required]
  *     * DEFAULT_VALUE is a public static constant of type IntType
  *     * offset() : IntType  -- returns the offset
- *     * isValid() : bool -- indicates whether the Offset policy of the set is valid
- *   * [optional]
+ *     * isValid() : bool -- indicates whether the Offset policy of the set is
+ *       valid  [optional]
  *     * operator(): IntType -- alternate accessor for the offset value
  */
 
@@ -51,7 +53,8 @@ namespace policies
 /// \{
 
 /**
- * \brief A policy class for the offset in a set.  The offset can be set at runtime.
+ * \brief A policy class for the offset in a set.  The offset can be set at
+ * runtime.
  */
 template<typename IntType>
 struct RuntimeOffset

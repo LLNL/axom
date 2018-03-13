@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -45,11 +45,11 @@ typedef SetType::ElementType SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
-SetPosition * allocIncrementingArray(int size)
+SetPosition* allocIncrementingArray(int size)
 {
   SLIC_ASSERT(size > 0);
 
-  SetPosition * arr = new SetPosition[size];
+  SetPosition* arr = new SetPosition[size];
 
   for(int i = 0 ; i< size ; ++i)
     arr[i] = i;
@@ -57,7 +57,7 @@ SetPosition * allocIncrementingArray(int size)
   return arr;
 }
 
-void permuteArray(SetPosition * arr, int size)
+void permuteArray(SetPosition* arr, int size)
 {
   for(int i = 0 ; i<1000 ; ++i)
   {
@@ -250,7 +250,8 @@ TEST(slam_set_indirectionset,out_of_bounds)
   EXPECT_TRUE(s.isValid());
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
@@ -374,7 +375,8 @@ TEST(slam_set_indirectionset,negative_stride)
       EXPECT_EQ( setOffset + setStride * i, vSet[i] );
     }
 
-    /// Several tests to check that sets with bad offsets and strides are not valid
+    /// Several tests to check that sets with bad offsets and strides are not
+    // valid
 
     VecSet noDataVSet(VecSetBuilder()  // Note: Missing a data pointer
                       .size(setSize)
@@ -383,7 +385,8 @@ TEST(slam_set_indirectionset,negative_stride)
     EXPECT_FALSE(noDataVSet.isValid(true));
 
     VecSet outOfBoundsVSet(VecSetBuilder()
-                           .size(setSize + 1) // Note: This will cause the last index to be out of bounds
+                           .size(setSize + 1) // Note: This will cause the last
+                                              // index to be out of bounds
                            .offset(setOffset)
                            .stride(setStride)
                            .data(&intVec));
@@ -391,7 +394,8 @@ TEST(slam_set_indirectionset,negative_stride)
 
     VecSet outOfBoundsVSet2(VecSetBuilder()
                             .size(setSize)
-                            .offset(-1) // Note: This will cause the first index to be out of bounds
+                            .offset(-1) // Note: This will cause the first index
+                                        // to be out of bounds
                             .stride(1)
                             .data(&intVec));
     EXPECT_FALSE(outOfBoundsVSet2.isValid(true));
@@ -432,7 +436,8 @@ TEST(slam_set_indirectionset,negative_stride)
       EXPECT_EQ( setOffset + setStride * i, aSet[i] );
     }
 
-    /// Several tests to check that sets with bad offsets and strides are not valid
+    /// Several tests to check that sets with bad offsets and strides are not
+    // valid
 
     ArrSet noDataASet(ArrSetBuilder()  // Note: Missing a data pointer
                       .size(setSize)
@@ -441,7 +446,8 @@ TEST(slam_set_indirectionset,negative_stride)
     EXPECT_FALSE(noDataASet.isValid(true));
 
     ArrSet outOfBoundsASet1(ArrSetBuilder()
-                            .size(setSize + 1) // Note: This will cause the last index to be out of bounds
+                            .size(setSize + 1) // Note: This will cause the last
+                                               // index to be out of bounds
                             .offset(setOffset)
                             .stride(setStride)
                             .data(&intVec[0]));
@@ -449,7 +455,8 @@ TEST(slam_set_indirectionset,negative_stride)
 
     ArrSet outOfBoundsASet2(ArrSetBuilder()
                             .size(setSize)
-                            .offset(-1) // Note: This will cause the first index to be out of bounds
+                            .offset(-1) // Note: This will cause the first index
+                                        // to be out of bounds
                             .stride(1)
                             .data(&intVec[0]));
     EXPECT_FALSE(outOfBoundsASet2.isValid(true));
@@ -469,7 +476,7 @@ TEST(slam_set_indirectionset,negative_stride)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

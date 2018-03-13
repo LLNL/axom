@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -33,19 +33,20 @@ using axom::sidre::INT_ID;
 
 
 // id's are created in sequence.
-// After detaching or destroying a buffer, the next createBuffer will recycle the id.
+// After detaching or destroying a buffer, the next createBuffer will recycle
+// the id.
 
 TEST(sidre_buffer,create_buffers)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   EXPECT_EQ(0u, ds->getNumBuffers());
 
   // Create two buffers
-  Buffer * dbuff_0 = ds->createBuffer();
+  Buffer* dbuff_0 = ds->createBuffer();
   EXPECT_EQ(1u, ds->getNumBuffers());
   EXPECT_EQ(0, dbuff_0->getIndex());
 
-  Buffer * dbuff_1 = ds->createBuffer();
+  Buffer* dbuff_1 = ds->createBuffer();
   EXPECT_EQ(2u, ds->getNumBuffers());
   EXPECT_EQ(1, dbuff_1->getIndex());
 
@@ -54,7 +55,7 @@ TEST(sidre_buffer,create_buffers)
   ds->destroyBuffer(0);
   EXPECT_EQ(1u, ds->getNumBuffers());
 
-  Buffer * dbuff_0b = ds->createBuffer();
+  Buffer* dbuff_0b = ds->createBuffer();
   EXPECT_EQ(2u, ds->getNumBuffers());
   EXPECT_EQ(0, dbuff_0b->getIndex());
 
@@ -63,7 +64,7 @@ TEST(sidre_buffer,create_buffers)
   ds->destroyBuffer(dbuff_1);
   EXPECT_EQ(1u, ds->getNumBuffers());
 
-  Buffer * dbuff_1b = ds->createBuffer();
+  Buffer* dbuff_1b = ds->createBuffer();
   EXPECT_EQ(2u, ds->getNumBuffers());
   EXPECT_EQ(1, dbuff_1b->getIndex());
 
@@ -74,15 +75,15 @@ TEST(sidre_buffer,create_buffers)
 
 TEST(sidre_buffer,create_buffer_with_description)
 {
-  DataStore * ds = new DataStore();
-  Buffer * dbuff = ds->createBuffer(INT_ID, 10);
+  DataStore* ds = new DataStore();
+  Buffer* dbuff = ds->createBuffer(INT_ID, 10);
   dbuff->allocate();
 
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
 
-  int * data_ptr = dbuff->getData();
+  int* data_ptr = dbuff->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -100,8 +101,8 @@ TEST(sidre_buffer,create_buffer_with_description)
 
 TEST(sidre_buffer,alloc_buffer_for_int_array)
 {
-  DataStore * ds = new DataStore();
-  Buffer * dbuff = ds->createBuffer();
+  DataStore* ds = new DataStore();
+  Buffer* dbuff = ds->createBuffer();
 
   dbuff->allocate(INT_ID, 10);
   // Should be a warning and no-op, buffer is already allocated, we don't want
@@ -113,7 +114,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
 
   //  int * data_ptr = static_cast<int *>(dbuff->getData());
-  int * data_ptr = dbuff->getData();
+  int* data_ptr = dbuff->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -133,8 +134,8 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 
 TEST(sidre_buffer,init_buffer_for_int_array)
 {
-  DataStore * ds = new DataStore();
-  Buffer * dbuff = ds->createBuffer();
+  DataStore* ds = new DataStore();
+  Buffer* dbuff = ds->createBuffer();
 
   dbuff->allocate(INT_ID, 10);
 
@@ -142,7 +143,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   EXPECT_EQ(dbuff->getNumElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
 
-  int * data_ptr = static_cast<int *>(dbuff->getData());
+  int* data_ptr = static_cast<int*>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -160,8 +161,8 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 
 TEST(sidre_buffer,realloc_buffer)
 {
-  DataStore * ds = new DataStore();
-  Buffer * dbuff = ds->createBuffer();
+  DataStore* ds = new DataStore();
+  Buffer* dbuff = ds->createBuffer();
 
   dbuff->allocate(INT_ID, 5);
 
@@ -169,7 +170,7 @@ TEST(sidre_buffer,realloc_buffer)
   EXPECT_EQ(dbuff->getNumElements(), 5u);
   EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 5));
 
-  int * data_ptr = static_cast<int *>(dbuff->getVoidPtr());
+  int* data_ptr = static_cast<int*>(dbuff->getVoidPtr());
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -191,7 +192,7 @@ TEST(sidre_buffer,realloc_buffer)
   EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
 
   // data buffer changes
-  data_ptr = static_cast<int *>(dbuff->getVoidPtr());
+  data_ptr = static_cast<int*>(dbuff->getVoidPtr());
 
   for(int i=5 ; i<10 ; i++)
   {
@@ -218,16 +219,16 @@ TEST(sidre_buffer,realloc_buffer)
 
 TEST(sidre_buffer, create_buffer_view)
 {
-  DataStore * ds   = new DataStore();
-  Group * root = ds->getRoot();
+  DataStore* ds   = new DataStore();
+  Group* root = ds->getRoot();
 
   const SidreLength len = 11;
   const int ndims = 1;
   SidreLength shape[] = { len };
 
-  Buffer * buff = ds->createBuffer(INT_ID, len)->allocate();
+  Buffer* buff = ds->createBuffer(INT_ID, len)->allocate();
 
-  int * idata = buff->getData();
+  int* idata = buff->getData();
 
   for (int ii = 0 ; ii < len ; ++ii)
   {
@@ -236,7 +237,7 @@ TEST(sidre_buffer, create_buffer_view)
 
   for (unsigned int i=0 ; i < 8 ; i++)
   {
-    View * view;
+    View* view;
 
     switch (i)
     {
@@ -287,7 +288,7 @@ TEST(sidre_buffer, create_buffer_view)
 
     view->print();
 
-    int * idata_chk = view->getData();
+    int* idata_chk = view->getData();
     for (int ii = 0 ; ii < len ; ++ii)
     {
       EXPECT_EQ(idata_chk[ii], idata[ii]);
@@ -301,10 +302,10 @@ TEST(sidre_buffer, create_buffer_view)
 
 TEST(sidre_buffer,with_multiple_views)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  Buffer * dbuff;
-  View * dv1, * dv2;
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Buffer* dbuff;
+  View* dv1, * dv2;
 
   dbuff = ds->createBuffer();
   IndexType idx = dbuff->getIndex();
@@ -336,10 +337,10 @@ TEST(sidre_buffer,with_multiple_views)
 //------------------------------------------------------------------------------
 TEST(sidre_buffer,move_buffer)
 {
-  DataStore * ds = new DataStore();
-  Group * root = ds->getRoot();
-  Buffer * dbuff, * dbuff2;
-  View * dv1, * dv2;
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Buffer* dbuff, * dbuff2;
+  View* dv1, * dv2;
 
   dbuff = ds->createBuffer();
 
@@ -363,7 +364,7 @@ TEST(sidre_buffer,move_buffer)
 
 TEST(sidre_buffer,destroy_all_buffers)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   ds->createBuffer();
   ds->createBuffer();

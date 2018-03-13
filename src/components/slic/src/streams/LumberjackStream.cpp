@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -31,7 +31,7 @@ namespace slic
 {
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream * stream, MPI_Comm comm,
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
                                     int ranksLimit ) :
   m_isLJOwnedBySLIC( false ),
   m_stream( stream )
@@ -40,7 +40,7 @@ LumberjackStream::LumberjackStream( std::ostream * stream, MPI_Comm comm,
 }
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream * stream, MPI_Comm comm,
+LumberjackStream::LumberjackStream( std::ostream* stream, MPI_Comm comm,
                                     int ranksLimit,
                                     const std::string& format ) :
   m_isLJOwnedBySLIC( false ),
@@ -51,16 +51,16 @@ LumberjackStream::LumberjackStream( std::ostream * stream, MPI_Comm comm,
 }
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream(std::ostream * stream,
-                                   axom::lumberjack::Lumberjack * lj) :
+LumberjackStream::LumberjackStream(std::ostream* stream,
+                                   axom::lumberjack::Lumberjack* lj) :
   m_lj( lj ),
   m_isLJOwnedBySLIC( false ),
   m_stream( stream )
 {}
 
 //------------------------------------------------------------------------------
-LumberjackStream::LumberjackStream( std::ostream * stream,
-                                    axom::lumberjack::Lumberjack * lj,
+LumberjackStream::LumberjackStream( std::ostream* stream,
+                                    axom::lumberjack::Lumberjack* lj,
                                     const std::string& format ) :
   m_lj( lj ),
   m_isLJOwnedBySLIC( false ),
@@ -135,7 +135,7 @@ void LumberjackStream::write()
   if ( m_lj->isOutputNode() )
   {
 
-    std::vector< axom::lumberjack::Message * > messages =
+    std::vector< axom::lumberjack::Message* > messages =
       m_lj->getMessages();
 
     const int nmessages = static_cast< int >( messages.size() );

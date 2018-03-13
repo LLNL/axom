@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -25,7 +25,8 @@ namespace slam
 
 /**
  * \brief Definition of static instance of nullSet for all relations
- * \note Should this be a singleton or a global object?  Should the scope be public?
+ * \note Should this be a singleton or a global object?  Should the scope be
+ *  public?
  */
 NullSet Relation::s_nullSet;
 

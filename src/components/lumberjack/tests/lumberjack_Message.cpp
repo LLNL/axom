@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -39,7 +39,7 @@ TEST(lumberjack_Message, getSet01)
 TEST(lumberjack_Message, getSet02)
 {
   //Test that const char* will convert fine to string
-  const char * textConstCharPointer = "I... I wanted to be... A LUMBERJACK!";
+  const char* textConstCharPointer = "I... I wanted to be... A LUMBERJACK!";
   std::string textString = "I... I wanted to be... A LUMBERJACK!";
   axom::lumberjack::Message m;
   m.text(textConstCharPointer);
@@ -113,7 +113,8 @@ TEST(lumberjack_Message, getSet05)
 
 TEST(lumberjack_Message, getSet06)
 {
-  //Test case: one text, fill ranks with vector of ranks don't go past ranksLimit
+  //Test case: one text, fill ranks with vector of ranks don't go past
+  // ranksLimit
   const int ranksLimit = 5;
   std::vector<int> ranks;
   axom::lumberjack::Message m;
@@ -135,7 +136,8 @@ TEST(lumberjack_Message, getSet06)
 
 TEST(lumberjack_Message, getSet07)
 {
-  //Test case: one text, fill ranks with vector of ranks that will go past ranksLimit
+  //Test case: one text, fill ranks with vector of ranks that will go past
+  // ranksLimit
   const int ranksLimit = 5;
   std::vector<int> ranks;
   axom::lumberjack::Message m;
@@ -157,7 +159,8 @@ TEST(lumberjack_Message, getSet07)
 
 TEST(lumberjack_Message, getSet08)
 {
-  //Test case: one text, add same rank multiple times to make sure ranks stays 1 but count increments
+  //Test case: one text, add same rank multiple times to make sure ranks stays 1
+  // but count increments
   const int ranksLimit = 5;
   std::vector<int> ranks;
   axom::lumberjack::Message m;
@@ -175,7 +178,8 @@ TEST(lumberjack_Message, getSet08)
 
 TEST(lumberjack_Message, getSet09)
 {
-  //Test case: one text, fill ranks with vector of ranks that will go past ranksLimit
+  //Test case: one text, fill ranks with vector of ranks that will go past
+  // ranksLimit
   const int ranksLimit = 5;
   std::vector<int> ranks;
   axom::lumberjack::Message m;

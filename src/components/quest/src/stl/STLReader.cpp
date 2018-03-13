@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -91,7 +91,7 @@ bool STLReader::isAsciiFormat() const
   // Find the number of triangles (if the file were binary)
   int numTris = 0;
   ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
-  ifs.read( (char *)&numTris, sizeof(axom::common::int32));
+  ifs.read( (char*)&numTris, sizeof(axom::common::int32));
 
   if(!axom::utilities::isLittleEndian() )
   {
@@ -164,7 +164,7 @@ void STLReader::readBinarySTL()
   ifs.seekg(BINARY_HEADER_SIZE);
 
   // read the num faces and reserve room for the vertex positions
-  ifs.read( (char *)&m_num_faces, sizeof(axom::common::int32));
+  ifs.read( (char*)&m_num_faces, sizeof(axom::common::int32));
 
   if(!isLittleEndian )
   {
@@ -177,7 +177,7 @@ void STLReader::readBinarySTL()
   // Read the triangles. Cast to doubles and ignore normals and attributes
   for(int i=0 ; i < m_num_faces ; ++i)
   {
-    ifs.read( (char *)tri.raw, BINARY_TRI_SIZE);
+    ifs.read( (char*)tri.raw, BINARY_TRI_SIZE);
 
     for(int j=0 ; j<9 ; ++j)
     {
@@ -208,7 +208,7 @@ void STLReader::read()
 
 //------------------------------------------------------------------------------
 void STLReader::getMesh(
-  axom::mint::UnstructuredMesh< MINT_TRIANGLE > * mesh )
+  axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
 {
   /* Sanity checks */
   SLIC_ASSERT( mesh != AXOM_NULLPTR );

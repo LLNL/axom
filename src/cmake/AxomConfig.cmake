@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory.
 #
@@ -58,7 +58,7 @@ endif()
 
 
 ## Add a configuration define for each enabled axom component
-set(COMPS AXOM_UTILS LUMBERJACK SLIC SLAM SIDRE MINT PRIMAL QUEST SPIO)
+set(COMPS AXOM_UTILS LUMBERJACK SLIC SLAM SIDRE MINT PRIMAL QUEST)
 foreach(comp in ${COMPS})
     if( ENABLE_${comp} )
         set(AXOM_USE_${comp} TRUE)
@@ -67,6 +67,34 @@ endforeach()
 
 convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
+
+################################
+# Compiler checks
+################################
+
+if(ENABLE_FORTRAN)
+
+    file(WRITE ${PROJECT_BINARY_DIR}/c_loc_with_assumed_shape.f "
+! This is expected to fail with gcc 4.7.1
+! Error: Assumed-shape array 'arg' at (1) cannot be an argument to the
+!      procedure 'c_loc' because it is not C interoperable
+! https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53945
+      program main
+      end program main
+      subroutine test(arg, addr)
+        use iso_c_binding
+        integer(C_INT), target, intent(IN) :: arg(:)
+        type(C_ptr), intent(OUT) :: addr
+        addr = C_LOC(arg)
+      end subroutine test
+    ")
+    try_compile(
+        USE_C_LOC_WITH_ASSUMED_SHAPE
+        ${PROJECT_BINARY_DIR}
+        ${PROJECT_BINARY_DIR}/c_loc_with_assumed_shape.f
+    )
+
+endif(ENABLE_FORTRAN)
 
 configure_file(
     include/config.hpp.in

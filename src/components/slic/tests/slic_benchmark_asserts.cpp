@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -171,8 +171,10 @@ BENCHMARK_F(SetFixtureD, assertDtor)(benchmark::State& state)
   }
 }
 
-// The following two benchmarks are here to show the order of construction, setup, teardown and destruction of benchmarks fixtures.
-// Note: Need to enable printing (by setting SHOULD_PRINT above to true) to see this.
+// The following two benchmarks are here to show the order of construction,
+// setup, teardown and destruction of benchmarks fixtures.
+// Note: Need to enable printing (by setting SHOULD_PRINT above to true) to see
+// this.
 BENCHMARK_F(SetFixtureOutput, process1)(benchmark::State& state)
 {
   printMsg("   P1 (before)"); while(state.KeepRunning())
@@ -192,7 +194,7 @@ BENCHMARK_F(SetFixtureOutput, process2)(benchmark::State& state)
 
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   printMsg("at start of main");
 

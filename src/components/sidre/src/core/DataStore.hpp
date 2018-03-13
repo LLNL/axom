@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -31,8 +31,6 @@
 // Standard C++ headers
 #include <vector>
 #include <stack>
-
-#include "hdf5.h"
 
 // Other axom headers
 #include "axom/Macros.hpp"
@@ -83,7 +81,7 @@ public:
   /*!
    * \brief Return pointer to the root Group.
    */
-  Group * getRoot()
+  Group* getRoot()
   {
     return m_RootGroup;
   };
@@ -91,7 +89,7 @@ public:
   /*!
    * \brief Return pointer to the root Group.
    */
-  const Group * getRoot() const
+  const Group* getRoot() const
   {
     return m_RootGroup;
   };
@@ -121,7 +119,7 @@ public:
    * \brief Return (non-const) pointer to Buffer object with given index,
    *        or AXOM_NULLPTR if none exists.
    */
-  Buffer * getBuffer( IndexType idx ) const;
+  Buffer* getBuffer( IndexType idx ) const;
 
   /*!
    * \brief Create an undescribed Buffer object and return a pointer to it.
@@ -131,7 +129,7 @@ public:
    *        The Buffer object is assigned a unique index when created and the
    *        Buffer object is owned by the DataStore object.
    */
-  Buffer * createBuffer();
+  Buffer* createBuffer();
 
   /*!
    * \brief Create a Buffer object with specified type and number of
@@ -142,7 +140,7 @@ public:
    *        The Buffer object is assigned a unique index when created and the
    *        Buffer object is owned by the DataStore object.
    */
-  Buffer * createBuffer( TypeID type, SidreLength num_elems );
+  Buffer* createBuffer( TypeID type, SidreLength num_elems );
 
   /*!
    * \brief Remove Buffer from the DataStore and destroy it and
@@ -151,7 +149,7 @@ public:
    *        Note that Buffer destruction detaches it from all Views to
    *        which it is attached.
    */
-  void destroyBuffer( Buffer * buff );
+  void destroyBuffer( Buffer* buff );
 
   /*!
    * \brief Remove Buffer with given index from the DataStore and
@@ -207,10 +205,10 @@ public:
    *        Attribute object is owned by the DataStore object.
    */
   template<typename ScalarType>
-  Attribute * createAttributeScalar( const std::string & name,
-                                     ScalarType default_value)
+  Attribute* createAttributeScalar( const std::string & name,
+                                    ScalarType default_value)
   {
-    Attribute * new_attribute = createAttributeEmpty(name);
+    Attribute* new_attribute = createAttributeEmpty(name);
     if ( new_attribute != AXOM_NULLPTR )
     {
       new_attribute->setDefaultScalar(default_value);
@@ -224,10 +222,10 @@ public:
    *        The Attribute object is assigned a unique index when created and the
    *        Attribute object is owned by the DataStore object.
    */
-  Attribute * createAttributeString( const std::string & name,
-                                     const std::string & default_value)
+  Attribute* createAttributeString( const std::string & name,
+                                    const std::string & default_value)
   {
-    Attribute * new_attribute = createAttributeEmpty(name);
+    Attribute* new_attribute = createAttributeEmpty(name);
     if ( new_attribute != AXOM_NULLPTR )
     {
       new_attribute->setDefaultString(default_value);
@@ -241,7 +239,8 @@ public:
   bool hasAttribute( const std::string& name ) const;
 
   /*!
-   * \brief Return true if DataStore has created attribute with index; else false.
+   * \brief Return true if DataStore has created attribute with index; else
+   * false.
    */
   bool hasAttribute( IndexType idx ) const;
 
@@ -270,7 +269,7 @@ public:
    * XXX    Note that Attribute destruction detaches it from all Views to
    *        which it is attached.
    */
-  void destroyAttribute( Attribute * attr );
+  void destroyAttribute( Attribute* attr );
 
   /*!
    * \brief Remove all Attributes from the DataStore and destroy them
@@ -291,28 +290,28 @@ public:
    *
    * If no such Attribute exists, AXOM_NULLPTR is returned.
    */
-  Attribute * getAttribute( IndexType idx );
+  Attribute* getAttribute( IndexType idx );
 
   /*!
    * \brief Return pointer to const Attribute with given index.
    *
    * If no such Attribute exists, AXOM_NULLPTR is returned.
    */
-  const Attribute * getAttribute( IndexType idx ) const;
+  const Attribute* getAttribute( IndexType idx ) const;
 
   /*!
    * \brief Return pointer to non-const Attribute with given name.
    *
    * If no such Attribute exists, AXOM_NULLPTR is returned.
    */
-  Attribute * getAttribute( const std::string& name );
+  Attribute* getAttribute( const std::string& name );
 
   /*!
    * \brief Return pointer to const Attribute with given name.
    *
    * If no such Attribute exists, AXOM_NULLPTR is returned.
    */
-  const Attribute * getAttribute( const std::string& name ) const;
+  const Attribute* getAttribute( const std::string& name ) const;
 
   /*!
    * \brief Return first valid Attribute index in DataStore object
@@ -323,8 +322,10 @@ public:
   IndexType getFirstValidAttributeIndex() const;
 
   /*!
-   * \brief Return next valid Attribute index in DataStore object after given index
-   *        (i.e., smallest index over all Attribute indices larger than given one).
+   * \brief Return next valid Attribute index in DataStore object after given
+   * index
+   *        (i.e., smallest index over all Attribute indices larger than given
+   * one).
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
@@ -370,15 +371,15 @@ private:
    * \brief Create an Attribute and insert it into the DataStore.
    *        The attribute will be untyped.
    */
-  Attribute * createAttributeEmpty(const std::string & name);
+  Attribute* createAttributeEmpty(const std::string & name);
 
 //@}
 
   /// Root Group, created when DataStore object is created.
-  Group * m_RootGroup;
+  Group* m_RootGroup;
 
   /// Collection of Buffers in DataStore instance.
-  std::vector<Buffer *> m_data_buffers;
+  std::vector<Buffer*> m_data_buffers;
 
   /// Collection of unused unique Buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;
@@ -389,7 +390,7 @@ private:
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Attributes
-  AttributeCollection * m_attribute_coll;
+  AttributeCollection* m_attribute_coll;
 
   /// Flag indicating whether SLIC logging environment was initialized in ctor.
   bool m_need_to_finalize_slic;

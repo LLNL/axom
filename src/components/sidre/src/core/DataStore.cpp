@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -154,7 +154,7 @@ DataStore::~DataStore()
  *
  *************************************************************************
  */
-Buffer * DataStore::getBuffer( IndexType idx ) const
+Buffer* DataStore::getBuffer( IndexType idx ) const
 {
   if ( !hasBuffer(idx) )
   {
@@ -173,7 +173,7 @@ Buffer * DataStore::getBuffer( IndexType idx ) const
  *
  *************************************************************************
  */
-Buffer * DataStore::createBuffer()
+Buffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
   IndexType newIndex;
@@ -188,7 +188,7 @@ Buffer * DataStore::createBuffer()
     m_free_buffer_ids.pop();
   }
 
-  Buffer * const obj = new(std::nothrow) Buffer( newIndex );
+  Buffer* const obj = new(std::nothrow) Buffer( newIndex );
   m_data_buffers[newIndex] = obj;
 
   return obj;
@@ -201,9 +201,9 @@ Buffer * DataStore::createBuffer()
  *
  *************************************************************************
  */
-Buffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
+Buffer* DataStore::createBuffer( TypeID type, SidreLength num_elems )
 {
-  Buffer * buffer = createBuffer();
+  Buffer* buffer = createBuffer();
 
   if (buffer != AXOM_NULLPTR)
   {
@@ -221,7 +221,7 @@ Buffer * DataStore::createBuffer( TypeID type, SidreLength num_elems )
  *
  *************************************************************************
  */
-void DataStore::destroyBuffer( Buffer * buff )
+void DataStore::destroyBuffer( Buffer* buff )
 {
   if ( buff != AXOM_NULLPTR )
   {
@@ -314,7 +314,7 @@ SidreLength DataStore::getNumAttributes() const
  *
  *************************************************************************
  */
-Attribute * DataStore::createAttributeEmpty(const std::string & name)
+Attribute* DataStore::createAttributeEmpty(const std::string & name)
 {
   if ( name.empty() || hasAttribute(name) )
   {
@@ -325,7 +325,7 @@ Attribute * DataStore::createAttributeEmpty(const std::string & name)
     return AXOM_NULLPTR;
   }
 
-  Attribute * new_attribute = new(std::nothrow) Attribute(name);
+  Attribute* new_attribute = new(std::nothrow) Attribute(name);
   if ( new_attribute == AXOM_NULLPTR )
   {
     return AXOM_NULLPTR;
@@ -368,7 +368,7 @@ bool DataStore::hasAttribute( IndexType idx ) const
  */
 void DataStore::destroyAttribute( const std::string & name )
 {
-  Attribute * attr = getAttribute(name);
+  Attribute* attr = getAttribute(name);
   destroyAttribute(attr);
 }
 
@@ -381,7 +381,7 @@ void DataStore::destroyAttribute( const std::string & name )
  */
 void DataStore::destroyAttribute( IndexType idx )
 {
-  Attribute * attr = m_attribute_coll->removeItem(idx);
+  Attribute* attr = m_attribute_coll->removeItem(idx);
   if ( attr != AXOM_NULLPTR )
   {
     delete attr;
@@ -395,7 +395,7 @@ void DataStore::destroyAttribute( IndexType idx )
  *
  *************************************************************************
  */
-void DataStore::destroyAttribute( Attribute * attr )
+void DataStore::destroyAttribute( Attribute* attr )
 {
   SLIC_ASSERT( attr != AXOM_NULLPTR);
 
@@ -428,7 +428,7 @@ void DataStore::destroyAllAttributes()
  *
  *************************************************************************
  */
-Attribute * DataStore::getAttribute( IndexType idx )
+Attribute* DataStore::getAttribute( IndexType idx )
 {
   SLIC_CHECK_MSG( hasAttribute(idx),
                   "DataStore has no Attribute with index " << idx);
@@ -445,7 +445,7 @@ Attribute * DataStore::getAttribute( IndexType idx )
  *
  *************************************************************************
  */
-const Attribute * DataStore::getAttribute( IndexType idx ) const
+const Attribute* DataStore::getAttribute( IndexType idx ) const
 {
   SLIC_CHECK_MSG( hasAttribute(idx),
                   "DataStore has no Attribute with index " << idx);
@@ -462,7 +462,7 @@ const Attribute * DataStore::getAttribute( IndexType idx ) const
  *
  *************************************************************************
  */
-Attribute * DataStore::getAttribute( const std::string& name )
+Attribute* DataStore::getAttribute( const std::string& name )
 {
   SLIC_CHECK_MSG( hasAttribute(name),
                   "DataStore has no Attribute with name " << name);
@@ -479,7 +479,7 @@ Attribute * DataStore::getAttribute( const std::string& name )
  *
  *************************************************************************
  */
-const Attribute * DataStore::getAttribute( const std::string& name ) const
+const Attribute* DataStore::getAttribute( const std::string& name ) const
 {
   SLIC_CHECK_MSG( hasAttribute(name),
                   "DataStore has no Attribute with name " << name);
@@ -504,8 +504,10 @@ IndexType DataStore::getFirstValidAttributeIndex() const
 /*
  *************************************************************************
  *
- * \brief Return next valid Attribute index in DataStore object after given index
- *        (i.e., smallest index over all Attribute indices larger than given one).
+ * \brief Return next valid Attribute index in DataStore object after given
+ * index
+ *        (i.e., smallest index over all Attribute indices larger than given
+ * one).
  *
  * sidre::InvalidIndex is returned if there is no valid index greater
  * than given one.
@@ -536,7 +538,7 @@ bool DataStore::saveAttributeLayout(Node& node) const
   IndexType aidx = getFirstValidAttributeIndex();
   while ( indexIsValid(aidx) )
   {
-    const Attribute * attr = getAttribute(aidx);
+    const Attribute* attr = getAttribute(aidx);
 
     node[attr->getName()] = attr->getDefaultNodeRef();
 
@@ -566,7 +568,7 @@ void DataStore::loadAttributeLayout(Node& node)
       Node& n_attr = attrs_itr.next();
       std::string attr_name = attrs_itr.name();
 
-      Attribute * attr = createAttributeEmpty(attr_name);
+      Attribute* attr = createAttributeEmpty(attr_name);
       attr->setDefaultNodeRef(n_attr);
     }
   }

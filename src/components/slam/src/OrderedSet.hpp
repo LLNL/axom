@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -19,8 +19,8 @@
  * \file OrderedSet.hpp
  *
  * \brief Basic API for an ordered set of entities in a simulation
- * \note We are actually storing (ordered) multisets, since elements can be repeated
- * an arbitrary number of times (e.g. for indirection sets)
+ * \note We are actually storing (ordered) multisets, since elements can be
+ *  repeated an arbitrary number of times (e.g. for indirection sets)
  *
  */
 
@@ -111,7 +111,8 @@ public:
   OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE,
              PositionType offset  = OffsetPolicyType::DEFAULT_VALUE,
              PositionType stride  = StridePolicyType::DEFAULT_VALUE
-                                    // Note: constructor does not yet take an indirection type pointer...
+                                    // Note: constructor does not yet take an
+                                    // indirection type pointer...
                                     // const Set* parentSet = &s_nullSet
              )
     : SizePolicyType(size),
@@ -144,7 +145,8 @@ public:
    * \class SetBuilder
    * \brief Helper class for constructing an ordered set.
    *
-   *  Uses named parameter idiom to enable function chaining and for better code self-documentation
+   *  Uses named parameter idiom to enable function chaining and for better code
+   *  self-documentation
    * */
   struct SetBuilder
   {
@@ -171,19 +173,20 @@ public:
       return *this;
     }
 
-    SetBuilder& data(DataType * bufPtr)
+    SetBuilder& data(DataType* bufPtr)
     {
       m_data   = IndirectionPolicyType(bufPtr);
       return *this;
     }
 
-    SetBuilder& parent(ParentSetType * parSet)
+    SetBuilder& parent(ParentSetType* parSet)
     {
       m_parent = SubsettingPolicyType(parSet);
       return *this;
     }
 
-    /** Alternate means of setting the offset and size from a contiguous range of values */
+    /** Alternate means of setting the offset and size from a contiguous range
+       of values */
     SetBuilder& range(PositionType lower, PositionType upper)
     {
       // Set by range rather than size and offset.
@@ -232,8 +235,10 @@ public:
 
 
     const ElementType & dereference()    const {
-      // Note: Since we return a reference to the pointed-to value, we need different functions
-      //       for OrderedSets with indirection buffers than with those that have no indirection
+      // Note: Since we return a reference to the pointed-to value, we need
+      // different functions
+      //       for OrderedSets with indirection buffers than with those that
+      // have no indirection
       typedef policies::
         NoIndirection<PositionType,ElementType> NoIndirectionType;
       return indirection( HasIndirection<
@@ -299,7 +304,8 @@ public:     // Functions related to iteration
 
 public:
   /**
-   * \brief Given a position in the Set, return a position in the larger index space
+   * \brief Given a position in the Set, return a position in the larger index
+   *  space
    */
   inline typename IndirectionPolicy::IndirectionResult
   operator[](PositionType pos) const

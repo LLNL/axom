@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -69,13 +69,13 @@ namespace slic
 class LumberjackStream : public LogStream
 {
 public:
-  LumberjackStream( std::ostream * stream, MPI_Comm comm, int ranksLimit );
-  LumberjackStream( std::ostream * stream, MPI_Comm comm, int ranksLimit,
+  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
+  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
                     const std::string& format );
-  LumberjackStream( std::ostream * stream,
-                    axom::lumberjack::Lumberjack * lj );
-  LumberjackStream( std::ostream * stream,
-                    axom::lumberjack::Lumberjack * lj,
+  LumberjackStream( std::ostream* stream,
+                    axom::lumberjack::Lumberjack* lj );
+  LumberjackStream( std::ostream* stream,
+                    axom::lumberjack::Lumberjack* lj,
                     const std::string& format );
 
   virtual ~LumberjackStream();
@@ -109,9 +109,11 @@ public:
   virtual void flush();
 
   /*!
-   * \brief Pushes all messages once to their parent node according to Lumberjack's
-   *  Communication scheme. This does not guarantee all messages have reached the
-   *  output node. This does not write out to the given stream.
+   * \brief Pushes all messages once to their parent node according to
+   *  Lumberjack's Communication scheme.
+
+   * \note This does not guarantee all messages have reached the output node.
+   * \note This does not write out to the given stream.
    */
   virtual void push();
 
@@ -129,10 +131,10 @@ private:
   /// \name Private Members
   /// @{
 
-  axom::lumberjack::Lumberjack * m_lj;
-  axom::lumberjack::Communicator * m_ljComm;
+  axom::lumberjack::Lumberjack* m_lj;
+  axom::lumberjack::Communicator* m_ljComm;
   bool m_isLJOwnedBySLIC;
-  std::ostream * m_stream;
+  std::ostream* m_stream;
   /// @}
 
   /*!
@@ -141,9 +143,9 @@ private:
    * instance
    *  should be used.
    */
-  LumberjackStream() : m_lj( static_cast< axom::lumberjack::Lumberjack * >(
+  LumberjackStream() : m_lj( static_cast< axom::lumberjack::Lumberjack* >(
                                AXOM_NULLPTR) ),
-    m_stream( static_cast< std::ostream * >(AXOM_NULLPTR) )
+    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
   { };
 
   DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);

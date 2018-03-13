@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -44,9 +44,11 @@ namespace quest
 {
 
 /**
- * \brief Traits class to manage types for different point representations in a SparseOctreeLevel
+ * \brief Traits class to manage types for different point representations in a
+ * SparseOctreeLevel
  *
- * The general case is meant for Representations types that are unsigned integers
+ * The general case is meant for Representations types that are unsigned
+ * integers
  * and uses a Morton-based index as the hashmap key.
  */
 template<typename CoordType, int DIM, typename BroodDataType,
@@ -56,7 +58,8 @@ struct BroodRepresentationTraits
   typedef Point<CoordType,DIM> GridPt;
   typedef RepresentationType PointRepresenationType;
 
-  // Requires an unsigned int for RepresentationType with 8-,16-,32-, or 64- bits
+  // Requires an unsigned int for RepresentationType with 8-,16-,32-, or 64-
+  // bits
         #if defined(AXOM_USE_CXX11)
   static_assert( std::is_integral<CoordType>::value,
                  "CoordType must be integral" );
@@ -84,10 +87,12 @@ struct BroodRepresentationTraits
 };
 
 /**
- * \brief Traits class to manage types for different point representations in a SparseOctreeLevel
+ * \brief Traits class to manage types for different point representations in a
+ * SparseOctreeLevel
  *
  * This is a specialization meant for point representation
- * that use an integer grid point.  The underlying hashmap uses a Morton-based hash function.
+ * that use an integer grid point.  The underlying hashmap uses a Morton-based
+ * hash function.
  */
 template<typename CoordType, int DIM, typename BroodDataType>
 struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
@@ -183,7 +188,7 @@ public:
     typedef IteratorHelper<OctreeLevelType, AdaptedIterType, ParentType> self;
     typedef ParentType BaseBlockItType;
 
-    IteratorHelper(OctreeLevelType * octLevel, bool begin)
+    IteratorHelper(OctreeLevelType* octLevel, bool begin)
       : m_offset(0),
       m_isLevelZero( octLevel->level() == 0)
     {
@@ -211,20 +216,25 @@ public:
     }
 
     /** Accessor for data associated with the iterator's block */
-    BlockDataType * data() { return &m_currentIter->second[m_offset]; }
+    BlockDataType* data() { return &m_currentIter->second[m_offset]; }
     /** Const accessor for data associated with the iterator's block */
-    const BlockDataType * data() const {
+    const BlockDataType* data() const {
       return &m_currentIter->second[m_offset];
     }
 
     /** \brief Predicate to determine if two block iterators are the same */
-    bool equal(const BaseBlockItType * other)
+    bool equal(const BaseBlockItType* other)
     {
-      const self * pother = dynamic_cast<const self *>(other);
+      const self* pother = dynamic_cast<const self*>(other);
 
       return (pother != AXOM_NULLPTR)
-             && (m_currentIter == pother->m_currentIter)           // iterators are the same
-             && (m_offset == pother->m_offset);                    // brood indices are the same
+             && (m_currentIter == pother->m_currentIter)           // iterators
+                                                                   // are the
+                                                                   // same
+             && (m_offset == pother->m_offset);                    // brood
+                                                                   // indices
+                                                                   // are the
+                                                                   // same
     }
 private:
     AdaptedIterType m_currentIter;
@@ -244,18 +254,19 @@ public:
    * \param begin A boolean to determine if this is to be
    *  a begin (true) or end (false) iterator
    */
-  BaseBlockIteratorHelper * getIteratorHelper(bool begin)
+  BaseBlockIteratorHelper* getIteratorHelper(bool begin)
   {
     return new IterHelper(this, begin);
   }
 
   /**
-   * \brief Factory function to return a ConstSparseBlockIterHelper for this level
+   * \brief Factory function to return a ConstSparseBlockIterHelper for this
+   * level
    *
    * \param begin A boolean to determine if this is to be
    * a begin (true) or end (false) iterator
    */
-  ConstBaseBlockIteratorHelper * getIteratorHelper(bool begin) const
+  ConstBaseBlockIteratorHelper* getIteratorHelper(bool begin) const
   {
     return new ConstIterHelper(this, begin);
   }
@@ -290,7 +301,8 @@ public:
       << "each coordinate must be between 0 and "
       << this->maxCoord() << ".");
 
-    BroodData& bd = getBroodData(pt);           // Adds entire brood at once (default constructed)
+    BroodData& bd = getBroodData(pt);           // Adds entire brood at once
+                                                // (default constructed)
     if( this->level() == 0)
     {
       for(int j=1 ; j< Base::BROOD_SIZE ; ++j)
@@ -378,7 +390,8 @@ public:
    * octree block within this octree level
    *
    * \param pt The grid point of the block index that we are testing
-   * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock, ...)
+   * \return The status of the grid point pt (e.g. LeafBlock, InternalBlock,
+   *...)
    */
   TreeBlockStatus blockStatus(const GridPt & pt) const
   {

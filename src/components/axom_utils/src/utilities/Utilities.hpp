@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -56,7 +56,7 @@ void processAbort();
 template < typename T >
 inline T abs( const T& x )
 {
-  return ( x < 0 ) ? -x : x;
+  return ( x < T(0) ) ? -x : x;
 }
 
 /*!
@@ -66,9 +66,9 @@ inline T abs( const T& x )
  * \return max(x, y) the max value of x and y.
  */
 template < typename T >
-inline T max( const T& x, const T& y )
+inline const T& max( const T& x, const T& y )
 {
-  return ( x > y ) ? x : y;
+  return ( y < x ) ? x : y;
 }
 
 /*!
@@ -78,9 +78,9 @@ inline T max( const T& x, const T& y )
  * \return min(x, y) the min value of x and y.
  */
 template < typename T >
-inline T min( const T& x, const T& y )
+inline const T& min( const T& x, const T& y )
 {
-  return ( x < y ) ? x : y;
+  return ( y < x ) ? y : x;
 }
 
 /*!
@@ -118,6 +118,7 @@ inline T log2( T& val)
  * \param [in] lower The lower range.
  * \param [in] upper The upper range.
  * \return The clamped value.
+ * \pre lower <= upper
  * \post lower <= returned value <= upper.
  */
 template < typename T >
@@ -125,6 +126,35 @@ inline T clampVal( T val, T lower, T upper )
 {
   return (val < lower) ? lower
          : (val > upper) ? upper : val;
+}
+
+
+/*!
+ * \brief Clamps the upper range on an input value
+ *
+ * \param [in] val The value to clamp
+ * \param [in] upper The upper range
+ * \return upper if val > upper, else val
+ * \post returned value is less than or equal to upper
+ */
+template < typename T >
+inline T clampUpper(T val, T upper)
+{
+  return val > upper ? upper : val;
+}
+
+/*!
+ * \brief Clamps the lower range on an input value
+ *
+ * \param [in] val The value to clamp
+ * \param [in] lower The lower range
+ * \return lower if val < lower, else val
+ * \post returned value is greater than or equal to lower
+ */
+template < typename T >
+inline T clampLower(T val, T lower)
+{
+  return val < lower ? lower : val;
 }
 
 /*!
@@ -166,8 +196,9 @@ T swapEndian(T val)
 {
   const int NBYTES = sizeof(T);
 
-  AXOM_STATIC_ASSERT_MSG( NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
-                          "swapEndian only valid for types of size 2, 4 or 8 bytes.");
+  AXOM_STATIC_ASSERT_MSG(
+    NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
+    "swapEndian only valid for types of size 2, 4 or 8 bytes.");
 
   #ifdef AXOM_USE_CXX11
   AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
@@ -180,7 +211,7 @@ T swapEndian(T val)
     T val;
   } swp;
 
-  axom::common::uint8 * src = reinterpret_cast<axom::common::uint8 *>(&val);
+  axom::common::uint8* src = reinterpret_cast<axom::common::uint8*>(&val);
 
   // Reverse the bytes
   for(int i=0 ; i < NBYTES ; ++i)
@@ -196,7 +227,8 @@ T swapEndian(T val)
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
  * \param [in] thresh The threshold of the fuzzy comparison.  Default is 1.0e-8.
- * \return True if the absolute value of the difference is less than thresh and false otherwise.
+ * \return True if the absolute value of the difference is less than thresh and
+ *  false otherwise.
  */
 template<typename RealType>
 bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
@@ -208,10 +240,13 @@ bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
  * \brief Fuzzy comparison of two real valued quantities.
  * \param [in] a The first real valued quantities we are comparing.
  * \param [in] b The second real valued quantities we are comparing.
- * \param [in] relThresh The relative threshold of the fuzzy comparison.  Default is 1.0e-6.
- * \param [in] absThresh The absolute threshold of the fuzzy comparison.  Default is 1.0e-8.
- * \return True if the absolute value of the difference is less than the sum of absThresh
- *  and the relative difference (relThresh times the absolute max of a and b).
+ * \param [in] relThresh The relative threshold of the fuzzy comparison.
+ *  Default is 1.0e-6.
+ * \param [in] absThresh The absolute threshold of the fuzzy comparison.
+ *  Default is 1.0e-8.
+ * \return True if the absolute value of the difference is less than the sum of
+ *  absThresh and the relative difference (relThresh times the absolute max of
+ *  a and b).
  */
 template<typename RealType>
 bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
@@ -220,7 +255,8 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
   RealType maxFabs = max(abs(a), abs(b) );
   return abs(a-b) <= ( maxFabs * relThresh + absThresh);
 
-  // Equation from Real-Time Collsion Detection book -- http://realtimecollisiondetection.net/pubs/Tolerances/
+  // Equation from Real-Time Collsion Detection book --
+  // http://realtimecollisiondetection.net/pubs/Tolerances/
   // Note: If we use this, we must update the doxygen
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
 }

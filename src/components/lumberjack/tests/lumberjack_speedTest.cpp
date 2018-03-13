@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -32,7 +32,7 @@
 #include <vector>
 
 //------------------------------------------------------------------------------
-int main(int argc, char * * argv)
+int main(int argc, char** argv)
 {
   //Process command line options
   bool commandLineError = false;
@@ -48,7 +48,7 @@ int main(int argc, char * * argv)
   }
   std::string communicatorName = "";
   int cycleLimit = axom::utilities::string::stringToInt(argv[2]);
-  char * fileName = argv[3];
+  char* fileName = argv[3];
 
   if (std::string(argv[1]) == "b")
   {
@@ -83,7 +83,7 @@ int main(int argc, char * * argv)
   int ranksLimit = commSize/2;
 
   // Initialize which lumberjack communicator we want
-  axom::lumberjack::Communicator * communicator = AXOM_NULLPTR;
+  axom::lumberjack::Communicator* communicator = AXOM_NULLPTR;
   if (communicatorName == "binary")
   {
     communicator = new axom::lumberjack::BinaryTreeCommunicator;
@@ -135,7 +135,7 @@ int main(int argc, char * * argv)
   // Get messages back out of lumberjack since they have been pushed.
   if (lj.isOutputNode())
   {
-    std::vector<axom::lumberjack::Message *> messages = lj.getMessages();
+    std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
 
     std::ofstream outFile;
     outFile.open("speedTestOutput");

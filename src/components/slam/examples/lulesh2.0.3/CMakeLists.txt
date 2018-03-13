@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -47,6 +47,10 @@ endif()
 
 if (ENABLE_OPENMP)
     list(APPEND slam_tests_depends_on openmp)
+endif()
+
+if (ENABLE_MPI)
+    list(APPEND slam_tests_depends_on mpi)
 endif()
 
 blt_add_executable(

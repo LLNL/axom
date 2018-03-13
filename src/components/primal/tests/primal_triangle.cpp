@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -135,7 +135,7 @@ TEST( primal_triangle, triangle_physical_to_bary)
                        QPoint::make_point(-0.4, 1.2, 0.2)));
 
   // Now run the actual tests
-  for (TestVec::const_iterator it= testData.begin();  it != testData.end();
+  for (TestVec::const_iterator it= testData.begin() ; it != testData.end() ;
        ++it)
   {
     const QPoint& query = it->first;
@@ -146,7 +146,8 @@ TEST( primal_triangle, triangle_physical_to_bary)
     SLIC_DEBUG(fmt::format(
                  "Computed barycentric coordinates for triangle {} and point {} are {}",
                  tri, query, bary));
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0 ; i < 3 ; ++i)
+    {
       EXPECT_NEAR(bary[i], expBary[i], EPS);
       EXPECT_NEAR(phys[i], query[i], EPS);
     }
@@ -204,17 +205,22 @@ TEST( primal_triangle, triangle_bary_to_physical)
                               pt[2].array())));
 
   // Now run the actual tests
-  for (TestVec::const_iterator it= testData.begin(); it != testData.end();
-       ++it) {
+  for (TestVec::const_iterator it= testData.begin() ;
+       it != testData.end() ;
+       ++it)
+  {
     const QPoint& query = it->first;
     const QPoint& expWorld = it->second;
     QPoint phys = tri.baryToPhysical(query);
     QPoint bary = tri.physToBarycentric(phys);
 
-    SLIC_DEBUG(fmt::format(
-                 "Computed physical coordinates for triangle {} at barycentric {} are {}",
-                 tri, query, phys));
-    for (int i = 0; i < 3; ++i) {
+    SLIC_DEBUG(
+      fmt::format(
+        "Computed physical coordinates for triangle {} at barycentric {} are {}",
+        tri, query, phys));
+
+    for (int i = 0 ; i < 3 ; ++i)
+    {
       EXPECT_NEAR(phys[i], expWorld[i], EPS);
       EXPECT_NEAR(bary[i], query[i], EPS);
     }
@@ -344,7 +350,7 @@ TEST( primal_triangle, triangle_3D_point_containment)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

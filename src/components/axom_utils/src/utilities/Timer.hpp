@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -63,8 +63,8 @@ namespace utilities
 /*!
  * \brief A simple Timer class to measure execution time.
  *
- * \note The actual timing functionality is implemented using a HighPrecisionTimer
- *  instance.  These are located in the detail namespace
+ * \note The actual timing functionality is implemented using a
+ *  HighPrecisionTimer instance.  These are located in the detail namespace
  *  using the chrono library in C++11, GetTickCount64() on Windows
  *  and glibc's gettimeofday() otherwise.
  *

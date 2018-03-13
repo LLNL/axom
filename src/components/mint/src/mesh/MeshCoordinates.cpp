@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -137,7 +137,7 @@ double MeshCoordinates::getCoordinate( int pntIdx, int dim )
 }
 
 //------------------------------------------------------------------------------
-double * MeshCoordinates::getCoordinateArray(int dim)
+double* MeshCoordinates::getCoordinateArray(int dim)
 {
   SLIC_ASSERT( dim < m_ndims );
   return &(m_coordinates[ dim ][ 0 ]);

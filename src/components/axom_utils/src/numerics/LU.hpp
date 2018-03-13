@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -68,7 +68,7 @@ enum ReturnCodes
  * \pre A.isSquare()==true
  */
 template < typename T >
-int lu_decompose( Matrix< T >& A, int * pivots );
+int lu_decompose( Matrix< T >& A, int* pivots );
 
 /*!
  * \brief Solve the system \f$ Ax=b \f$ by back-substitution, where, A is an LU
@@ -86,7 +86,7 @@ int lu_decompose( Matrix< T >& A, int * pivots );
  * \pre x != AXOM_NULLPTR
  */
 template < typename T >
-int lu_solve( const Matrix< T >& A, const int * pivots, const T * b, T * x );
+int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x );
 
 /// @}
 
@@ -102,7 +102,7 @@ namespace numerics
 {
 
 template < typename T >
-int lu_decompose( Matrix< T >& LU, int * pivots )
+int lu_decompose( Matrix< T >& LU, int* pivots )
 {
   // Sanity Checks
   assert( "pre: pivots buffer is NULL" && (pivots != AXOM_NULLPTR) );
@@ -169,7 +169,7 @@ int lu_decompose( Matrix< T >& LU, int * pivots )
 
 //------------------------------------------------------------------------------
 template < typename T >
-int lu_solve( const Matrix< T >& A, const int * pivots, const T * b, T * x )
+int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
 {
   // Sanity checks
   assert( "pre: pivots buffer is NULL!" && (pivots != AXOM_NULLPTR) );
@@ -182,7 +182,7 @@ int lu_solve( const Matrix< T >& A, const int * pivots, const T * b, T * x )
   }
 
   const int size = A.getNumRows();
-  T * rhs = new T[ size ];
+  T* rhs = new T[ size ];
   memcpy( rhs, b, size*sizeof( T ) );
 
   typedef typename Matrix< T >::IndexType IndexType;

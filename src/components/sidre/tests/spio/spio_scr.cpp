@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -29,7 +29,7 @@
 #include "sidre/sidre.hpp"
 #include "conduit_relay.hpp"
 
-using axom::spio::IOManager;
+using axom::sidre::IOManager;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
@@ -55,18 +55,18 @@ TEST(spio_scr, spio_scr_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
-  int * i1_vals = gb->getView("i1")->getData();
+  int* i1_vals = gb->getView("i1")->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -88,7 +88,7 @@ TEST(spio_scr, spio_scr_writeread)
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
@@ -109,16 +109,16 @@ TEST(spio_scr, spio_scr_writeread)
 
   EXPECT_EQ(testvalue, testvalue2);
 
-  View * view_i1_orig =
+  View* view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  View * view_i1_restored =
+  View* view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();
   EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
 
-  int * i1_orig = view_i1_orig->getData();
-  int * i1_restored = view_i1_restored->getData();
+  int* i1_orig = view_i1_orig->getData();
+  int* i1_restored = view_i1_restored->getData();
 
   for (int i = 0 ; i < num_elems ; ++i)
   {
@@ -136,7 +136,7 @@ TEST(spio_scr, spio_scr_writeread)
 using axom::slic::UnitTestLogger;
 
 //------------------------------------------------------------------------------
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

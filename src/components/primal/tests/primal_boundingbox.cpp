@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -184,7 +184,8 @@ TEST( primal_boundingBox, bb_addPoint)
   bbox1.addPoint(pt10);
   EXPECT_TRUE(bbox1.contains(pt10));
 
-  // Testing that if we add a point, then points outside the bounds remain outside
+  // Testing that if we add a point, then points outside the bounds remain
+  // outside
   EXPECT_FALSE(bbox1.contains(pt30));
   bbox1.addPoint(pt20);                 // note: adding 20, but testing 30
   EXPECT_FALSE(bbox1.contains(pt30));
@@ -243,7 +244,8 @@ TEST( primal_boundingBox, bb_copy_and_assignment)
   EXPECT_EQ(bbox1.getMax(), bbox2.getMax());
   EXPECT_TRUE(  bbox2.contains(midPt));
 
-  QBBox bbox3(pt2);                 // some initialization that we don't care about
+  QBBox bbox3(pt2);                 // some initialization that we don't care
+                                    // about
   EXPECT_TRUE(  bbox3.isValid());
   EXPECT_FALSE(bbox3.contains(pt1));
   bbox3 = bbox1;                    // assignment operation
@@ -548,8 +550,10 @@ TEST( primal_boundingBox, highest_lowest_values)
   // Testing that our default constructor for bounding boxes is properly
   // setting the range.
 
-  // Note: The bounds are intentionally in the reverse order -- this is how we ensure
-  // that adding a point to an empty bounding box always updates the bounds properly
+  // Note: The bounds are intentionally in the reverse order -- this is how we
+  // ensure
+  // that adding a point to an empty bounding box always updates the bounds
+  // properly
 
   typedef primal::BoundingBox< double, DIM > BBoxD;
   EXPECT_TRUE(BBoxD().getMin()[0] > 0 );
@@ -622,7 +626,7 @@ TEST( primal_boundingBox, bb_get_centroid )
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

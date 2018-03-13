@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -36,7 +36,7 @@ class Mesh;
  * \pre mesh != AXOM_NULLPTR
  * \note Thise method is primarily intended for debugging.
  */
-int write_vtk( const Mesh * mesh, const std::string& file_path );
+int write_vtk( const Mesh* mesh, const std::string& file_path );
 
 } /* namespace mint */
 } /* namespace axom */

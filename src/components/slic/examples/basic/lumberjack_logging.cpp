@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -43,7 +43,7 @@ slic::message::Level getRandomEvent( const int start, const int end )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   // Initialize MPI
   MPI_Init( &argc, &argv );
@@ -62,7 +62,7 @@ int main( int argc, char * * argv )
   // Set SLIC logging level and Lumberjack Logging stream
   slic::setLoggingMsgLevel( slic::message::Debug );
   slic::disableAbortOnError();
-  slic::LumberjackStream * ljStream =
+  slic::LumberjackStream* ljStream =
     new slic::LumberjackStream( &std::cout, MPI_COMM_WORLD, RANKSLIMIT,
                                 format );
   slic::addStreamToAllMsgLevels( ljStream );

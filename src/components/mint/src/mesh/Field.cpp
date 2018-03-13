@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -50,25 +50,25 @@ Field::~Field()
 {}
 
 //------------------------------------------------------------------------------
-double * Field::getDoublePtr()
+double* Field::getDoublePtr()
 {
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-const double * Field::getDoublePtr() const
+const double* Field::getDoublePtr() const
 {
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-int * Field::getIntPtr()
+int* Field::getIntPtr()
 {
   return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-const int * Field::getIntPtr() const
+const int* Field::getIntPtr() const
 {
   return AXOM_NULLPTR;
 }

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -57,7 +57,7 @@ void printVector(StrType const& msg, VecType const& vec)
             std::ostream_iterator<PositionType>(std::cout, " "));
 }
 
-void generateIncrementingRelations(DynamicVariableRelation * rel)
+void generateIncrementingRelations(DynamicVariableRelation* rel)
 {
   PositionType curIdx = PositionType();
 
@@ -145,7 +145,8 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
       for(PositionType toPos = 0 ; toPos < fromSize ; ++toPos)
       {
-        PositionType actualVal = incrementingRel[fromPos][toPos]; // double subscript
+        PositionType actualVal = incrementingRel[fromPos][toPos]; // double
+                                                                  // subscript
 
         PositionType expectedVal =  toPos % TOSET_SIZE;
         EXPECT_EQ( expectedVal, actualVal);
@@ -235,7 +236,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

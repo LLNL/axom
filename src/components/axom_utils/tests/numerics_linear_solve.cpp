@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -32,14 +32,14 @@ TEST( numerics_linear_solve, linear_solve_with_identity_matrix )
     numerics::Matrix< double > A = numerics::Matrix< double >::identity( i );
 
     // form right-hand side
-    double * b = new double[ i ];
+    double* b = new double[ i ];
     for ( int j=0 ; j < i ; ++j )
     {
       b[ j ] = j;
     }
 
     // allocate solution vector
-    double * x = new double[ i ];
+    double* x = new double[ i ];
 
     // solve
     int rc = numerics::linear_solve( A, b, x );

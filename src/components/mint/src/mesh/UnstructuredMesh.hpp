@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -106,10 +106,10 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshCell( int cellIdx, int * cell ) const
+  virtual void getMeshCell( int cellIdx, int* cell ) const
   {
     const int numNodes = this->getNumberOfCellNodes( cellIdx );
-    const int * myCell  = this->getCell( cellIdx );
+    const int* myCell  = this->getCell( cellIdx );
     memcpy( cell, myCell, numNodes*sizeof(int) );
   }
 
@@ -129,11 +129,11 @@ public:
    * \warning this is a virtual method, downcast to the derived class and use
    *  the non-virtual API instead to avoid the overhead of a virtual call.
    */
-  virtual void getMeshNode( int nodeIdx, double * coordinates ) const
+  virtual void getMeshNode( int nodeIdx, double* coordinates ) const
   {
     for ( int i=0 ; i < m_ndims ; ++i )
     {
-      const double * coord = this->getMeshCoordinateArray( i );
+      const double* coord = this->getMeshCoordinateArray( i );
       coordinates[ i ] = coord[ nodeIdx ];
     } // END for all dimensions
   }
@@ -189,7 +189,7 @@ public:
    * \param [in] numNodes number of nodes for the cell.
    * \pre cell != AXOM_NULLPTR.
    */
-  void insertCell( const int * cell, int cell_type, int numNodes );
+  void insertCell( const int* cell, int cell_type, int numNodes );
 
   /*!
    * \brief Inserts a new node in the mesh.
@@ -221,7 +221,7 @@ public:
    * \pre node != AXOM_NULLPTR
    * \pre node must at least be m_ndims long
    */
-  void insertNode( const double * node );
+  void insertNode( const double* node );
 
   /*!
    * \brief Returns pointer to coordinates array for the requested dimension.
@@ -231,7 +231,7 @@ public:
    * \pre dim < m_ndims
    * \post ptr != AXOM_NULLPTR.
    */
-  const double * getMeshCoordinateArray( int dim ) const;
+  const double* getMeshCoordinateArray( int dim ) const;
 
   /*!
    * \brief Returns pointer to the connectivity array of the given cell.
@@ -241,7 +241,7 @@ public:
    * \pre cellIdx >= 0 && cellIdx < this->getNumberOfCells()
    * \post cell_ptr != AXOM_NULLPTR.
    */
-  const int * getCell( int cellIdx ) const;
+  const int* getCell( int cellIdx ) const;
 
 private:
 
@@ -251,8 +251,8 @@ private:
    */
   UnstructuredMesh();
 
-  MeshCoordinates * m_node_coordinates;
-  CellConnectivity< int, CellType > * m_cell_connectivity;
+  MeshCoordinates* m_node_coordinates;
+  CellConnectivity< int, CellType >* m_cell_connectivity;
 
   DISABLE_COPY_AND_ASSIGNMENT(UnstructuredMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(UnstructuredMesh);
@@ -304,7 +304,7 @@ UnstructuredMesh< CellType >::~UnstructuredMesh()
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-void UnstructuredMesh< CellType >::insertCell( const int * cell, int cell_type,
+void UnstructuredMesh< CellType >::insertCell( const int* cell, int cell_type,
                                                int num_nodes )
 {
   SLIC_ASSERT(  cell != AXOM_NULLPTR );
@@ -347,7 +347,7 @@ void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline void UnstructuredMesh< CellType >::insertNode( const double * node )
+inline void UnstructuredMesh< CellType >::insertNode( const double* node )
 {
   SLIC_ASSERT(  node != AXOM_NULLPTR );
   SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
@@ -371,7 +371,7 @@ inline void UnstructuredMesh< CellType >::insertNode( const double * node )
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const double * UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
+const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
 const
 {
   SLIC_ASSERT(  m_node_coordinates != AXOM_NULLPTR );
@@ -382,7 +382,7 @@ const
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const int * UnstructuredMesh< CellType >::getCell( int cellIdx ) const
+const int* UnstructuredMesh< CellType >::getCell( int cellIdx ) const
 {
   SLIC_ASSERT(  m_cell_connectivity != AXOM_NULLPTR );
   SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );

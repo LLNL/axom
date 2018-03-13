@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -63,7 +63,7 @@ typedef Octree3D::BlockIndex BlockIndex;
 
 
 
-void queryOctahedronMesh(axom::mint::Mesh *& mesh,
+void queryOctahedronMesh(axom::mint::Mesh*& mesh,
                          const GeometricBoundingBox& bbox)
 {
   const double bbMin = bbox.getMin()[0];
@@ -146,7 +146,7 @@ TEST( quest_inout_octree, octahedron_mesh)
             << " and tests point containment.\n");
 
   // Generate the InOutOctree
-  axom::mint::Mesh * mesh = axom::quest::utilities::make_octahedron_mesh();
+  axom::mint::Mesh* mesh = axom::quest::utilities::make_octahedron_mesh();
   // axom::mint::write_vtk(mesh, "octahedron.vtk");
 
   ///
@@ -182,7 +182,7 @@ TEST( quest_inout_octree, octahedron_mesh)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

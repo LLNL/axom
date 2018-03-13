@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,45 +17,65 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"   // for AXOM_USE_HDF5
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
+
+#include "mpi.h"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::IOManager;
 
+using axom::sidre::detail::sidre_int64;
+
+namespace
+{
+#ifdef AXOM_USE_HDF5
+const std::string PROTOCOL = "sidre_hdf5";
+const std::string ROOT_EXT = ".root";
+#else
+const std::string PROTOCOL = "sidre_json";
+const std::string ROOT_EXT = ".json.root";
+#endif
+}
+
 //------------------------------------------------------------------------------
 
 TEST(spio_serial, basic_writeread)
 {
-  DataStore * ds1 = new DataStore();
+  DataStore* ds1 = new DataStore();
 
-  Group * root1 = ds1->getRoot();
+  Group* root1 = ds1->getRoot();
 
-  Group * flds1 = root1->createGroup("fields");
-  Group * flds2 = root1->createGroup("fields2");
+  Group* flds1 = root1->createGroup("fields");
+  Group* flds2 = root1->createGroup("fields2");
 
-  Group * ga = flds1->createGroup("a");
-  Group * gb = flds2->createGroup("b");
-  ga->createViewScalar<int>("i0", 101);
-  gb->createViewScalar<int>("i1", 404);
+  Group* ga = flds1->createGroup("a");
+  Group* gb = flds2->createGroup("b");
+
+  // Note: use 64-bit integers since that is the native type for json
+  ga->createViewScalar<sidre_int64>("i0", 101);
+  gb->createViewScalar<sidre_int64>("i1", 404);
 
   int num_files = 1;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root1, num_files, "out_spio_basic_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_basic_write_read";
 
-  DataStore * ds2 = new DataStore();
+  writer.write(root1, num_files, file_name, PROTOCOL);
+
+  DataStore* ds2 = new DataStore();
 
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_basic_write_read.root");
+  reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-  int testvalue1 =
+  sidre_int64 testvalue1 =
     ds1->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-  int testvalue2 =
+  sidre_int64 testvalue2 =
     ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
   EXPECT_EQ(testvalue1,testvalue2);
@@ -71,9 +91,6 @@ TEST(spio_serial, basic_writeread)
   delete ds2;
 }
 
-const std::string PROTOCOL = "sidre_hdf5";
-const std::string ROOT_EXT = ".root";
-
 //------------------------------------------------------------------------------
 TEST(spio_serial, write_read_write)
 {
@@ -87,7 +104,7 @@ TEST(spio_serial, write_read_write)
   std::string filename = sstr.str();
 
   // Initialize a datastore and dump to disk
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   ds->getRoot()->createViewScalar("grp/i",2);
   ds->getRoot()->createViewScalar("grp/f",3.0);
   IOManager writer_a(MPI_COMM_WORLD);
@@ -99,12 +116,14 @@ TEST(spio_serial, write_read_write)
   reader.read(ds_r.getRoot(), filename + ROOT_EXT);
 
   // Dump this datastore to disk.
-  // Regression: This used to produce the following HDF5 error:
+  // Regression for sidre_hdf5 protocol:
+  // This used to produce the following HDF5 error:
   //  HDF5-DIAG: Error detected in HDF5 (1.8.16) thread 0:
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file
   //      major: File accessibility
   //      minor: Unable to open file
-  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which is already open
+  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which
+  // is already open
   //      major: File accessibility
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
@@ -118,7 +137,7 @@ TEST(spio_serial, write_read_write)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -23,7 +23,7 @@
 
 TEST(C_sidre_smoke,create_datastore)
 {
-  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datastore* ds = SIDRE_datastore_new();
   SIDRE_datastore_delete(ds);
   EXPECT_TRUE( true );
 }
@@ -32,17 +32,17 @@ TEST(C_sidre_smoke,create_datastore)
 
 TEST(sidre_smoke,valid_invalid)
 {
-  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datastore* ds = SIDRE_datastore_new();
 
   SIDRE_IndexType idx = 3;
   EXPECT_TRUE(idx != SIDRE_InvalidIndex);
 
-  const char * name = "foo";
+  const char* name = "foo";
   EXPECT_TRUE(SIDRE_name_is_valid(name));
 
-  SIDRE_group * root = SIDRE_datastore_get_root(ds);
+  SIDRE_group* root = SIDRE_datastore_get_root(ds);
 
-  const char * gp_name = SIDRE_group_get_group_name(root, idx);
+  const char* gp_name = SIDRE_group_get_group_name(root, idx);
   EXPECT_TRUE(gp_name == NULL);
   EXPECT_TRUE(gp_name == SIDRE_InvalidName);
   EXPECT_FALSE(SIDRE_name_is_valid(gp_name));

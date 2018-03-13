@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -50,7 +50,8 @@ namespace slam
  *  <li> Mesh elements: vertices, edges, faces, cells
  *  <li> Subzonal elements: sides, corners, finite element degrees of freedom
  *  <li> Boundary elements: external surfaces and springs
- *  <li> Elements of a space partition: e.g. Domains in a block structured mesh, leaf nodes of an octree/kd-tree
+ *  <li> Elements of a space partition: e.g. Domains in a block structured mesh,
+ *       leaf nodes of an octree/kd-tree
  *  <li> AMR bricks / tiles
  *  <li> Thread ids, MPI ranks, warps, thread groups, etc...
  *  <li> particles
@@ -66,14 +67,16 @@ namespace slam
  * </ol>
  *
  * Note: Elements of a set do not necessarily need explicit indices.
- * E.g. if we have a contiguous range of elements (or slices of contiguous ranges),
+ * E.g. if we have a contiguous range of elements (or slices of contiguous
+ * ranges),
  * they can be implicitly encoded.
  *
  * Thus, we can have
  * <ol>
  *  <li> Implicit indexes -- all we need here is a size operator
  *  <li> Sliced indices -- here we need the dimension and the striding
- *  <li> Explicit indices -- for a subset, we need the indices with respect to some other indexing scheme
+ *  <li> Explicit indices -- for a subset, we need the indices with respect to
+ *       some other indexing scheme
  * </ol>
  *
  * The interface is for constant access to the elements.
@@ -82,7 +85,8 @@ class Set
 {
 public:
   typedef MeshIndexType IndexType;                          // Index into a set
-  typedef MeshSizeType PositionType;                        // Position in which we are indexing
+  typedef MeshSizeType PositionType;                        // Position in which
+                                                            // we are indexing
   typedef MeshIndexType ElementType;
 
 
@@ -95,9 +99,12 @@ public:
    * \brief Random access to the entities of the set
    * \param The index of the desired element
    * \return The value of the element at the given position
-   * \pre The position must be less than the number of elements in the set ( size() )
-   * \note Concrete realizations of Set also support subscript operator -- operator[].
-   * \note How are we planning to handle indexes that are out or range (accidentally)?
+   * \pre The position must be less than the number of elements in the set (
+   * size() )
+   * \note Concrete realizations of Set also support subscript operator --
+   * operator[].
+   * \note How are we planning to handle indexes that are out or range
+   *(accidentally)?
    *       Are we planning to handle indexes that are intentionally out of range
    *       (e.g. to indicate a problem, or a missing element etc..)?
    */
@@ -122,7 +129,8 @@ public:
   virtual bool          isValid(bool verboseOutput = false)  const    = 0;
 
   /**
-   * \brief Checks if there are any elements in the set -- equivalent to: set.size() == 0
+   * \brief Checks if there are any elements in the set -- equivalent to:
+   * set.size() == 0
    */
   virtual bool          empty() const = 0;
 
@@ -130,7 +138,8 @@ public:
   /**
    * \brief Returns true if the set contains the given element.
    *
-   * Alternatively, we can return the position in the set containing the element,
+   * Alternatively, we can return the position in the set containing the
+   * element,
    * with some value for not containing the element
    */
   virtual bool          contains(const SetElement & elt) const = 0;
@@ -142,7 +151,8 @@ public:
 
 private:
   /**
-   * \brief Utility function to verify that the given SetPosition is in a valid range.
+   * \brief Utility function to verify that the given SetPosition is in a valid
+   * range.
    */
   virtual void verifyPosition(PositionType) const = 0;
 };
@@ -151,7 +161,8 @@ private:
 
 /**
  * \brief General equality operator for two sets.
- * \details Two sets are considered equal if they have the same number of elements,
+ * \details Two sets are considered equal if they have the same number of
+ * elements,
  * and their ordered indices agree.
  */
 inline bool operator==(Set const& set1, Set const& set2)

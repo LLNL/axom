@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -15,9 +15,10 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "gtest/gtest.h"
-
+#include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "sidre/sidre.hpp"
+
+#include "gtest/gtest.h"
 
 using axom::sidre::DataStore;
 using axom::sidre::Attribute;
@@ -54,11 +55,17 @@ const double g_size_medium = 2.3;
 const double g_size_large = 3.4;
 
 // intel has a problem overloading 'Attribute *' and 'IndexType'.
-const Attribute * g_attr_null = AXOM_NULLPTR;
+const Attribute* g_attr_null = AXOM_NULLPTR;
 
 // Test protocols
+#ifdef AXOM_USE_HDF5
 const int g_nprotocols = 3;
 const std::string g_protocols[] = { "sidre_json", "sidre_hdf5", "json" };
+#else
+const int g_nprotocols = 2;
+const std::string g_protocols[] = { "sidre_json", "json" };
+#endif
+
 
 //------------------------------------------------------------------------------
 // Create attribute in a Datastore
@@ -67,7 +74,7 @@ TEST(sidre_attribute,create_attr)
 {
   bool ok;
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   int nattrs = ds->getNumAttributes();
   EXPECT_EQ(0, nattrs);
@@ -78,7 +85,7 @@ TEST(sidre_attribute,create_attr)
   EXPECT_FALSE( has_name );
 
   // Create string attribute
-  Attribute * color = ds->createAttributeString(g_name_color, g_color_none);
+  Attribute* color = ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
   EXPECT_EQ( CHAR8_STR_ID, color->getTypeID());
 
@@ -111,9 +118,9 @@ TEST(sidre_attribute,create_attr)
   ok = color->setDefaultString(std::string("string"));  // non-const string
   EXPECT_TRUE(ok);
 
-  Attribute * attr = ds->getAttribute(g_name_color);
+  Attribute* attr = ds->getAttribute(g_name_color);
   EXPECT_EQ(attr, color);
-  const Attribute * attrc = ds->getAttribute(g_name_color);
+  const Attribute* attrc = ds->getAttribute(g_name_color);
   EXPECT_EQ(attrc, color);
 
   attr = ds->getAttribute(0);
@@ -129,13 +136,13 @@ TEST(sidre_attribute,create_attr)
   // At this point color points to deallocated memory
 
   // Create additional attributes
-  Attribute * dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   attr_index = dump->getIndex();
   EXPECT_EQ(0, attr_index);
 
-  Attribute * size = ds->createAttributeScalar(g_name_size, g_size_small);
+  Attribute* size = ds->createAttributeScalar(g_name_size, g_size_small);
   EXPECT_TRUE( size != AXOM_NULLPTR );
 
   attr_index = size->getIndex();
@@ -168,23 +175,23 @@ TEST(sidre_attribute,view_attr)
 {
   bool ok;
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_color =
+  Attribute* attr_color =
     ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  Attribute * attr_animal = ds->createAttributeString(g_name_animal,
-                                                      g_animal_none);
+  Attribute* attr_animal = ds->createAttributeString(g_name_animal,
+                                                     g_animal_none);
   EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   //----------------------------------------
   // Set the first attribute in a Group
-  Group * grp1 = root->createGroup("grp1");
-  View * view1a = grp1->createView(g_namea);
+  Group* grp1 = root->createGroup("grp1");
+  View* view1a = grp1->createView(g_namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   EXPECT_FALSE(view1a->hasAttributeValue(g_attr_null));
@@ -226,9 +233,9 @@ TEST(sidre_attribute,view_attr)
 
   //----------------------------------------
   // Set the second attribute in a Group
-  Group * grp2 = root->createGroup("grp2");
+  Group* grp2 = root->createGroup("grp2");
 
-  View * view2a = grp2->createView(g_namea);
+  View* view2a = grp2->createView(g_namea);
   EXPECT_TRUE( view2a != AXOM_NULLPTR );
 
   EXPECT_FALSE(view2a->hasAttributeValue(attr_color));
@@ -263,10 +270,10 @@ TEST(sidre_attribute,view_attr)
 
   //----------------------------------------
   // Set attribute on second View in a Group
-  Group * grp3 = root->createGroup("grp3");
-  View * view3a = grp3->createView(g_namea);
+  Group* grp3 = root->createGroup("grp3");
+  View* view3a = grp3->createView(g_namea);
   EXPECT_TRUE( view3a != AXOM_NULLPTR );
-  View * view3b = grp3->createView(g_nameb);
+  View* view3b = grp3->createView(g_nameb);
   EXPECT_TRUE( view3b != AXOM_NULLPTR );
 
   ok = view3b->setAttributeString(attr_animal, g_animal_dog);
@@ -280,7 +287,7 @@ TEST(sidre_attribute,view_attr)
 
   //----------------------------------------
   // Moving a view should preserve attributes
-  Group * grp4 = root->createGroup("grp4");
+  Group* grp4 = root->createGroup("grp4");
 
   grp4->moveView(view3b);
 
@@ -303,23 +310,23 @@ TEST(sidre_attribute,view_int_and_double)
 {
   bool ok;
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
   EXPECT_EQ( INT_ID, attr_dump->getTypeID());
 
-  Attribute * attr_size = ds->createAttributeScalar(g_name_size, g_size_small);
+  Attribute* attr_size = ds->createAttributeScalar(g_name_size, g_size_small);
   EXPECT_TRUE( attr_size != AXOM_NULLPTR );
   EXPECT_EQ( DOUBLE_ID, attr_size->getTypeID());
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   //----------------------------------------
   // Create a View
-  Group * grp1 = root->createGroup("grp1");
-  View * view1a = grp1->createView(g_namea);
+  Group* grp1 = root->createGroup("grp1");
+  View* view1a = grp1->createView(g_namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   // Get default values
@@ -355,7 +362,7 @@ TEST(sidre_attribute,view_int_and_double)
   EXPECT_FALSE( ok );
 
   // Try to get a string from a scalar
-  const char * nostr = view1a->getAttributeString(attr_dump);
+  const char* nostr = view1a->getAttributeString(attr_dump);
   EXPECT_EQ(AXOM_NULLPTR, nostr);
 
   int i = -1;
@@ -372,23 +379,23 @@ TEST(sidre_attribute,set_default)
 {
   bool ok;
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create all attributes for DataStore
-  Attribute * attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
   EXPECT_EQ( INT_ID, attr_dump->getTypeID());
 
-  Attribute * attr_size = ds->createAttributeScalar(g_name_size, g_size_small);
+  Attribute* attr_size = ds->createAttributeScalar(g_name_size, g_size_small);
   EXPECT_TRUE( attr_size != AXOM_NULLPTR );
   EXPECT_EQ( DOUBLE_ID, attr_size->getTypeID());
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   //----------------------------------------
   // Create a View
-  Group * grp1 = root->createGroup("grp1");
-  View * view1a = grp1->createView(g_namea);
+  Group* grp1 = root->createGroup("grp1");
+  View* view1a = grp1->createView(g_namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   // reset unset attribute 1
@@ -431,22 +438,22 @@ TEST(sidre_attribute,as_node)
 {
   bool ok;
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create attributes for DataStore
-  Attribute * attr_color =
+  Attribute* attr_color =
     ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
 
-  Attribute * attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   //----------------------------------------
   // Set the first attribute in a Group
-  Group * grp1 = root->createGroup("grp1");
-  View * view1a = grp1->createView(g_namea);
+  Group* grp1 = root->createGroup("grp1");
+  View* view1a = grp1->createView(g_namea);
   EXPECT_TRUE( view1a != AXOM_NULLPTR );
 
   ok = view1a->setAttributeString(attr_color, g_color_red);
@@ -470,16 +477,16 @@ TEST(sidre_attribute,as_node)
 TEST(sidre_attribute,overloads)
 {
   bool ok;
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create string and scalar attributes
-  Attribute * attr_color =
+  Attribute* attr_color =
     ds->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( attr_color != AXOM_NULLPTR );
   IndexType icolor = attr_color->getIndex();
   EXPECT_EQ(0, icolor);
 
-  Attribute * attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* attr_dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( attr_dump != AXOM_NULLPTR );
   IndexType idump = attr_dump->getIndex();
   EXPECT_EQ(1, idump);
@@ -488,8 +495,8 @@ TEST(sidre_attribute,overloads)
   EXPECT_EQ(attr_color, ds->getAttribute(icolor));
 
   //----------------------------------------
-  Group * root = ds->getRoot();
-  View * view = root->createView("view1");
+  Group* root = ds->getRoot();
+  View* view = root->createView("view1");
 
   // string
   ok = view->setAttributeString(attr_color, g_color_red);
@@ -499,11 +506,11 @@ TEST(sidre_attribute,overloads)
   ok = view->setAttributeString(g_name_color, g_color_red);
   EXPECT_TRUE(ok);
 
-  const char * attr1a = view->getAttributeString(attr_color);
+  const char* attr1a = view->getAttributeString(attr_color);
   EXPECT_EQ(g_color_red, attr1a);
-  const char * attr2a = view->getAttributeString(icolor);
+  const char* attr2a = view->getAttributeString(icolor);
   EXPECT_EQ(g_color_red, attr2a);
-  const char * attr3a = view->getAttributeString(g_name_color);
+  const char* attr3a = view->getAttributeString(g_name_color);
   EXPECT_EQ(g_color_red, attr3a);
 
   // scalar
@@ -561,18 +568,18 @@ TEST(sidre_attribute,overloads)
 
 TEST(sidre_attribute, loop_attributes)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   // Create attributes for DataStore
-  Attribute * color = ds->createAttributeString(g_name_color, g_color_none);
+  Attribute* color = ds->createAttributeString(g_name_color, g_color_none);
   IndexType icolor = color->getIndex();
   EXPECT_EQ(0, icolor);
 
-  Attribute * dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
   IndexType idump = dump->getIndex();
   EXPECT_EQ(1, idump);
 
-  Attribute * size = ds->createAttributeScalar(g_name_size, g_size_small);
+  Attribute* size = ds->createAttributeScalar(g_name_size, g_size_small);
   IndexType isize = size->getIndex();
   EXPECT_EQ(2, isize);
 
@@ -590,10 +597,10 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   //----------------------------------------
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   // set all attributes
-  View * view1 = root->createView("view1");
+  View* view1 = root->createView("view1");
   view1->setAttributeString(color, g_color_red);
   view1->setAttributeScalar(dump, g_dump_yes);
   view1->setAttributeScalar(size, g_size_large);
@@ -610,7 +617,7 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   // set first attribute
-  View * view2 = root->createView("view2");
+  View* view2 = root->createView("view2");
   view2->setAttributeString(color, g_color_red);
 
   {
@@ -621,7 +628,7 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   // set last attribute
-  View * view3 = root->createView("view3");
+  View* view3 = root->createView("view3");
   view3->setAttributeScalar(size, g_size_large);
 
   {
@@ -632,7 +639,7 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   // set first and last attributes
-  View * view4 = root->createView("view4");
+  View* view4 = root->createView("view4");
   view4->setAttributeString(color, g_color_red);
   view4->setAttributeScalar(size, g_size_large);
 
@@ -646,7 +653,7 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   // no attributes
-  View * view5 = root->createView("view5");
+  View* view5 = root->createView("view5");
 
   {
     IndexType idx1 = view5->getFirstValidAttrValueIndex();
@@ -667,43 +674,43 @@ TEST(sidre_attribute,save_attributes)
   int idata[5], * bdata;
 
   const std::string file_path_base("sidre_attribute_datastore_");
-  DataStore * ds1 = new DataStore();
-  Group * root1 = ds1->getRoot();
+  DataStore* ds1 = new DataStore();
+  Group* root1 = ds1->getRoot();
 
   // Create attributes for DataStore
-  Attribute * color = ds1->createAttributeString(g_name_color, g_color_none);
+  Attribute* color = ds1->createAttributeString(g_name_color, g_color_none);
   EXPECT_TRUE( color != AXOM_NULLPTR );
 
-  Attribute * dump = ds1->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* dump = ds1->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
-  Attribute * size = ds1->createAttributeScalar(g_name_size, g_size_small);
+  Attribute* size = ds1->createAttributeScalar(g_name_size, g_size_small);
   EXPECT_TRUE( size != AXOM_NULLPTR );
 
   EXPECT_EQ(3, ds1->getNumAttributes());
 
   // empty
-  View * view1a = root1->createView("empty");
+  View* view1a = root1->createView("empty");
   view1a->setAttributeString(color, "color-empty");
   view1a->setAttributeScalar(dump, g_dump_yes);
   view1a->setAttributeScalar(size, g_size_small);
 
   // buffer
-  View * view1b = root1->createViewAndAllocate("buffer", INT_ID, 5);
+  View* view1b = root1->createViewAndAllocate("buffer", INT_ID, 5);
   bdata = view1b->getData();
   view1b->setAttributeString(color, "color-buffer");
   view1b->setAttributeScalar(size, g_size_medium);
 
   // external
-  View * view1c = root1->createView("external", INT_ID, 5, idata);
+  View* view1c = root1->createView("external", INT_ID, 5, idata);
   view1c->setAttributeScalar(size, g_size_large);
 
   // scalar
-  View * view1d = root1->createViewScalar("scalar", 1);
+  View* view1d = root1->createViewScalar("scalar", 1);
   view1d->setAttributeString(color, "color-scalar");
 
   // string
-  View * view1e = root1->createViewString("string", "value");
+  View* view1e = root1->createViewString("string", "value");
   view1e->setAttributeString(color, "color-string");
 
   // empty without attributes
@@ -726,31 +733,36 @@ TEST(sidre_attribute,save_attributes)
   delete ds1;
 
   //----------------------------------------
-  // Only restore sidre_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < g_nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(g_protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + g_protocols[i];
 
-    DataStore * ds2 = new DataStore();
-    Group * root2 = ds2->getRoot();
+    DataStore* ds2 = new DataStore();
+    Group* root2 = ds2->getRoot();
 
     root2->load(file_path, g_protocols[i]);
     EXPECT_EQ(3, ds2->getNumAttributes());
 
     // Check available attributes
 
-    Attribute * attr_color = ds2->getAttribute(g_name_color);
+    Attribute* attr_color = ds2->getAttribute(g_name_color);
     EXPECT_EQ(g_color_none, attr_color->getDefaultNodeRef().as_string());
 
-    Attribute * attr_dump = ds2->getAttribute(g_name_dump);
+    Attribute* attr_dump = ds2->getAttribute(g_name_dump);
     EXPECT_EQ(g_dump_no, attr_dump->getDefaultNodeRef().as_int());
 
-    Attribute * attr_size = ds2->getAttribute(g_name_size);
+    Attribute* attr_size = ds2->getAttribute(g_name_size);
     EXPECT_EQ(g_size_small, attr_size->getDefaultNodeRef().as_double());
 
     // Check attributes assigned to Views
 
-    View * view2a = root2->getView("empty");
+    View* view2a = root2->getView("empty");
     EXPECT_TRUE(view2a->hasAttributeValue(g_name_color));
     EXPECT_TRUE(view2a->hasAttributeValue(g_name_dump));
     EXPECT_TRUE(view2a->hasAttributeValue(g_name_size));
@@ -759,7 +771,7 @@ TEST(sidre_attribute,save_attributes)
     EXPECT_EQ(g_dump_yes, view2a->getAttributeScalar<int>(attr_dump));
     EXPECT_EQ(g_size_small, view2a->getAttributeScalar<double>(attr_size));
 
-    View * view2b = root2->getView("buffer");
+    View* view2b = root2->getView("buffer");
     EXPECT_TRUE(view2b->hasAttributeValue(g_name_color));
     EXPECT_FALSE(view2b->hasAttributeValue(g_name_dump));
     EXPECT_TRUE(view2b->hasAttributeValue(g_name_size));
@@ -767,27 +779,27 @@ TEST(sidre_attribute,save_attributes)
                        view2b->getAttributeString(attr_color)) == 0);
     EXPECT_EQ(g_size_medium, view2b->getAttributeScalar<double>(attr_size));
 
-    View * view2c = root2->getView("external");
+    View* view2c = root2->getView("external");
     EXPECT_FALSE(view2c->hasAttributeValue(g_name_color));
     EXPECT_FALSE(view2c->hasAttributeValue(g_name_dump));
     EXPECT_TRUE(view2c->hasAttributeValue(g_name_size));
     EXPECT_EQ(g_size_large, view2c->getAttributeScalar<double>(attr_size));
 
-    View * view2d = root2->getView("scalar");
+    View* view2d = root2->getView("scalar");
     EXPECT_TRUE(view2d->hasAttributeValue(g_name_color));
     EXPECT_FALSE(view2d->hasAttributeValue(g_name_dump));
     EXPECT_FALSE(view2d->hasAttributeValue(g_name_size));
     EXPECT_TRUE(strcmp("color-scalar",
                        view2d->getAttributeString(attr_color)) == 0);
 
-    View * view2e = root2->getView("string");
+    View* view2e = root2->getView("string");
     EXPECT_TRUE(view2e->hasAttributeValue(g_name_color));
     EXPECT_FALSE(view2e->hasAttributeValue(g_name_dump));
     EXPECT_FALSE(view2e->hasAttributeValue(g_name_size));
     EXPECT_TRUE(strcmp("color-string",
                        view2e->getAttributeString(attr_color)) == 0);
 
-    View * view2f = root2->getView("empty-no-attributes");
+    View* view2f = root2->getView("empty-no-attributes");
     EXPECT_FALSE(view2f->hasAttributeValue(g_name_color));
     EXPECT_FALSE(view2f->hasAttributeValue(g_name_dump));
     EXPECT_FALSE(view2f->hasAttributeValue(g_name_size));
@@ -805,11 +817,11 @@ TEST(sidre_attribute,save_by_attribute)
   int idata[5], jdata[5];
 
   const std::string file_path_base("sidre_attribute_by_attribute_");
-  DataStore * ds1 = new DataStore();
-  Group * root1 = ds1->getRoot();
+  DataStore* ds1 = new DataStore();
+  Group* root1 = ds1->getRoot();
 
   // Create attributes for DataStore
-  Attribute * dump = ds1->createAttributeScalar(g_name_dump, g_dump_no);
+  Attribute* dump = ds1->createAttributeScalar(g_name_dump, g_dump_no);
   EXPECT_TRUE( dump != AXOM_NULLPTR );
 
   // scalar
@@ -821,7 +833,8 @@ TEST(sidre_attribute,save_by_attribute)
   // Create a deep path with and without attribute
   root1->createViewScalar("grp1a/grp1b/view3", 3);
 
-  root1->createViewScalar("grp2a/view4", 4);   // make sure empty "views" not saved
+  root1->createViewScalar("grp2a/view4", 4);   // make sure empty "views" not
+                                               // saved
   root1->createViewScalar("grp2a/grp2b/view5", 5)->
   setAttributeScalar(dump,g_dump_yes);
 
@@ -848,13 +861,18 @@ TEST(sidre_attribute,save_by_attribute)
   delete ds1;
 
   //----------------------------------------
-  // Only restore sidre_hdf5
-  for (int i = 1 ; i < 2 ; ++i)
+  for (int i = 0 ; i < g_nprotocols ; ++i)
   {
+    // Only restore sidre_hdf5 protocol
+    if(g_protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
     const std::string file_path = file_path_base + g_protocols[i];
 
-    DataStore * ds2 = new DataStore();
-    Group * root2 = ds2->getRoot();
+    DataStore* ds2 = new DataStore();
+    Group* root2 = ds2->getRoot();
 
     root2->load(file_path, g_protocols[i]);
 

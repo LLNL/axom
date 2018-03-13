@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -147,7 +147,7 @@ public:
    * \pre dim < m_ndims
    * \post coord_array != AXOM_NULLPTR.
    */
-  double * getCoordinateArray( int dim );
+  double* getCoordinateArray( int dim );
 
   /*!
    * \brief Number of coordinates along the given dimension.

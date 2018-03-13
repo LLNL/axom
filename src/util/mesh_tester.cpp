@@ -1,20 +1,27 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
-
 
 // Axom includes
 #include "axom_utils/FileUtilities.hpp"
 
+#include "mint/FieldVariable.hpp"
 #include "mint/Mesh.hpp"
 #include "mint/UniformMesh.hpp"
+#include "mint/vtk_utils.hpp" // for write_vtk
 
 #include "primal/BoundingBox.hpp"
 #include "primal/intersect.hpp"
@@ -57,24 +64,24 @@ enum InputStatus
 struct Input
 {
   std::string stlInput;
-  std::string textOutput;
+  std::string vtkOutput;
   int resolution;
   InputStatus errorCode;
 
   Input() : stlInput(""),
-    textOutput("meshTestResults.txt"),
+    vtkOutput(""),
     resolution(0),
     errorCode(SUCCESS)
   { };
 
-  Input(int argc, char * * argv);
+  Input(int argc, char** argv);
 
   void showhelp()
   {
     std::cout
       << "Argument usage:" << std::endl <<
       "  --help           Show this help message." << std::endl <<
-      "  --resolution N   Resolution of uniform grid.  Default N = 10.  "
+      "  --resolution N   Resolution of uniform grid.  Default N = 0."
       << std::endl <<
       "       Set to 1 to run the naive algorithm, without the spatial index."
       << std::endl <<
@@ -84,7 +91,8 @@ struct Input
       << std::endl <<
       "  --infile fname   The STL input file (must be specified)."
       << std::endl      <<
-      "  --outfile fname  The text output file (defaults to meshTestResults.txt)."
+      "  --outfile fname  The VTK output file (defaults to the input file name"
+      << std::endl << "         with .vtk appended)."
       << std::endl << std::endl;
   };
 };
@@ -92,16 +100,24 @@ struct Input
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 bool checkTT(Triangle3& t1, Triangle3& t2);
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
-  mint::Mesh * surface_mesh,
+  mint::Mesh* surface_mesh,
   std::vector<int> & degenerate);
 bool canOpenFile(const std::string & fname);
+void announceMeshProblems(int triangleCount,
+                          int intersectPairCount,
+                          int degenerateCount);
+void saveProblemFlagsToMesh(mint::Mesh* surface_mesh,
+                            const std::vector< std::pair<int, int> > & c,
+                            const std::vector<int> & d);
+bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
+                        const std::string & outfile);
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
-                     const std::string & outfile);
+                     std::string basename);
 
-Input::Input(int argc, char * * argv) :
+Input::Input(int argc, char** argv) :
   stlInput(""),
-  textOutput("meshTestResults.txt"),
+  vtkOutput(""),
   resolution(0),
   errorCode(SUCCESS)
 {
@@ -131,7 +147,7 @@ Input::Input(int argc, char * * argv) :
       }
       else if (arg == "--outfile")
       {
-        textOutput = argv[++i];
+        vtkOutput = argv[++i];
       }
       ++i;
     }
@@ -143,12 +159,18 @@ Input::Input(int argc, char * * argv) :
     return;
   }
 
+  if (vtkOutput.size() < 1)
+  {
+    vtkOutput = stlInput;
+    vtkOutput.append(".vtk");
+  }
+
   SLIC_INFO ("Using parameter values: " << std::endl <<
              "  resolution = " << resolution <<
              (resolution < 1 ? " (use cube root of triangle count)" : "") <<
              std::endl <<
              "  infile = " << stlInput << std::endl <<
-             "  outfile = " << textOutput << std::endl);
+             "  outfile = " << vtkOutput << std::endl);
 }
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
@@ -170,8 +192,22 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
   return false;
 }
 
+inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
+{
+  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
+  primal::Point<int, 3> triCell;
+  Triangle3 tri;
+  surface_mesh->getMeshCell(i, triCell.data());
+
+  surface_mesh->getMeshNode(triCell[0], tri[0].data());
+  surface_mesh->getMeshNode(triCell[1], tri[1].data());
+  surface_mesh->getMeshNode(triCell[2], tri[2].data());
+
+  return tri;
+}
+
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
-  mint::Mesh * surface_mesh,
+  mint::Mesh* surface_mesh,
   std::vector<int> & degenerate)
 {
   // For each triangle, check for intersection against
@@ -188,7 +224,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   // For each triangle in the mesh
   for (int i = 0 ; i< ncells ; i++)
   {
-    t1 = axom::quest::detail::getMeshTriangle(i, surface_mesh);
+    t1 = getMeshTriangle(i, surface_mesh);
 
     // Skip if degenerate
     if (t1.degenerate())
@@ -201,7 +237,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     // triangles that this triangle has not been checked against
     for (int j = i + 1 ; j < ncells ; j++)
     {
-      t2 = axom::quest::detail::getMeshTriangle(j, surface_mesh);
+      t2 = getMeshTriangle(j, surface_mesh);
       if (checkTT(t1, t2))
       {
         retval.push_back(std::make_pair(i, j));
@@ -218,11 +254,68 @@ bool canOpenFile(const std::string & fname)
   return teststream.good();
 }
 
+void announceMeshProblems(int triangleCount,
+                          int intersectPairCount,
+                          int degenerateCount)
+{
+  std::cout << triangleCount << " triangles, with " << intersectPairCount <<
+    " intersecting tri pairs, " << degenerateCount << " degenerate tris." <<
+    std::endl;
+}
+
+void saveProblemFlagsToMesh(mint::Mesh* mesh,
+                            const std::vector< std::pair<int, int> > & c,
+                            const std::vector<int> & d)
+{
+  // Create new Field variables to hold degenerate and intersecting info
+  const int num_cells = mesh->getMeshNumberOfCells();
+
+  mint::FieldVariable<int>* intersect =
+    new mint::FieldVariable<int>("nbr_intersection", num_cells);
+  mesh->getCellFieldData()->addField(intersect);
+  int* intersectptr = intersect->getIntPtr();
+  mint::FieldVariable<int>* dgn =
+    new mint::FieldVariable<int>("degenerate_triangles", num_cells);
+  mesh->getCellFieldData()->addField(dgn);
+  int* dgnptr = dgn->getIntPtr();
+
+  // Initialize everything to 0
+  for (int i = 0 ; i < num_cells ; ++i)
+  {
+    intersectptr[i] = 0;
+    dgnptr[i] = 0;
+  }
+
+  // Fill in intersect flag
+  size_t csize = c.size();
+  for (size_t i = 0 ; i < csize ; ++i)
+  {
+    std::pair<int, int> theC = c[i];
+    intersectptr[theC.first] += 1;
+    intersectptr[theC.second] += 1;
+  }
+
+  // Fill in degenerate flag
+  size_t dsize = d.size();
+  for (size_t i = 0 ; i < dsize ; ++i)
+  {
+    dgnptr[d[i]] = 1;
+  }
+}
+
+bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
+                        const std::string & outfile)
+{
+  return write_vtk(surface_mesh, outfile) == 0;
+}
+
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
-                     const std::string & outfile)
+                     std::string basename)
 {
-  std::ofstream outf(outfile.c_str());
+  basename.append(".collisions.txt");
+
+  std::ofstream outf(basename.c_str());
   if (!outf)
   {
     return false;
@@ -257,7 +350,7 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
  * Currently, the mesh tester works only with Triangle meshes.
  */
 
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   int retval = EXIT_SUCCESS;
 
@@ -267,9 +360,9 @@ int main( int argc, char * * argv )
 
   // Customize logging levels and formatting
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream * defaultStream =
+  slic::GenericOutputStream* defaultStream =
     new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream * compactStream =
+  slic::GenericOutputStream* compactStream =
     new slic::GenericOutputStream(&std::cout, slicFormatStr);
   slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
   slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
@@ -302,13 +395,13 @@ int main( int argc, char * * argv )
 
   // Read file
   SLIC_INFO("Reading file: " <<  params.stlInput << "...\n");
-  quest::STLReader * reader = new quest::STLReader();
+  quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( params.stlInput );
   reader->read();
   SLIC_INFO("done\n");
 
   // Get surface mesh
-  TriangleMesh * surface_mesh = new TriangleMesh( 3 );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
   reader->getMesh( surface_mesh );
 
   // Delete the reader
@@ -331,9 +424,21 @@ int main( int argc, char * * argv )
                                     degenerate,
                                     params.resolution);
   }
-  if (!writeCollisions(collisions, degenerate, params.textOutput))
+
+  announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
+                       collisions.size(), degenerate.size());
+
+  saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
+
+  if (!writeAnnotatedMesh(surface_mesh, params.vtkOutput))
   {
-    SLIC_ERROR("Couldn't write results to " << params.textOutput);
+    SLIC_ERROR("Couldn't write results to " << params.vtkOutput);
+  }
+
+  if (!writeCollisions(collisions, degenerate, params.stlInput))
+  {
+    SLIC_ERROR("Couldn't write results to " << params.stlInput <<
+               ".collisions.txt");
   }
 
   return retval;

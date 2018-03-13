@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -23,12 +23,13 @@
  * Subsetting policies encompass the type and availability of a set's parent
  * A valid subset policy must support the following interface:
  *   * [required]
- *     * isSubset(): bool -- returns whether the set is a subset of another set
- *     * parentSet() : ParentSetType -- returns a pointer to the parent set.
- *                                      AXOM_NULLPTR when isSubset() is false
- *     * isValid() : bool -- indicates whether the Subsetting policy of the set is valid
+ *   * isSubset(): bool -- returns whether the set is a subset of another set
+ *   * parentSet() : ParentSetType -- returns a pointer to the parent set.
+ *                                     AXOM_NULLPTR when isSubset() is false
+ *   * isValid() : bool -- indicates whether the Subsetting policy of the set
+ *     is valid
  *   * [optional]
- *     * operator(): IntType -- alternate accessor for indirection
+ *   * operator(): IntType -- alternate accessor for indirection
  */
 
 #ifndef SLAM_POLICIES_SUBSET_H_
@@ -60,13 +61,13 @@ struct NoSubset
   NoSubset() {}
 
   // This empty .ctor is here to satisfy the SubsettingPolicy API
-  NoSubset(ParentSetType *) {}
+  NoSubset(ParentSetType*) {}
 
   /**
    * \brief Checks whether the set containing this policy class is a subset
    */
   bool                  isSubset() const { return false; }
-  const ParentSetType * parentSet() const { return AXOM_NULLPTR; }
+  const ParentSetType* parentSet() const { return AXOM_NULLPTR; }
 
   template<typename OrderedSetIt>
   bool                  isValid(OrderedSetIt, OrderedSetIt, bool) const
@@ -81,15 +82,15 @@ struct VirtualParentSubset
 
   typedef Set ParentSetType;
 
-  VirtualParentSubset(ParentSetType * parSet = &s_nullSet)
+  VirtualParentSubset(ParentSetType* parSet = &s_nullSet)
     : m_parentSet(parSet) {}
 
   /**
    * \brief Checks whether the set containing this policy class is a subset
    */
   bool        isSubset() const { return *m_parentSet != s_nullSet; }
-  const Set * parentSet() const { return m_parentSet; }
-  Set *&       parentSet() { return m_parentSet; }
+  const Set* parentSet() const { return m_parentSet; }
+  Set*&       parentSet() { return m_parentSet; }
 
   template<typename OrderedSetIt>
   bool        isValid(OrderedSetIt beg, OrderedSetIt end,
@@ -137,7 +138,7 @@ struct VirtualParentSubset
   }
 
 private:
-  Set * m_parentSet;
+  Set* m_parentSet;
 };
 
 template<typename TheParentSetType>
@@ -145,7 +146,7 @@ struct ConcreteParentSubset
 {
   typedef const TheParentSetType ParentSetType;
 
-  ConcreteParentSubset(ParentSetType * parSet = AXOM_NULLPTR)
+  ConcreteParentSubset(ParentSetType* parSet = AXOM_NULLPTR)
     : m_parentSet(parSet) {}
 
   /**
@@ -156,8 +157,8 @@ struct ConcreteParentSubset
     return m_parentSet != AXOM_NULLPTR;
   }
 
-  ParentSetType * const& parentSet() const { return m_parentSet; }
-  ParentSetType * &      parentSet()       { return m_parentSet; }
+  ParentSetType* const& parentSet() const { return m_parentSet; }
+  ParentSetType* &      parentSet()       { return m_parentSet; }
 
 
   template<typename OrderedSetIt>
@@ -206,7 +207,7 @@ struct ConcreteParentSubset
   }
 
 private:
-  ParentSetType * m_parentSet;
+  ParentSetType* m_parentSet;
 };
 
 /// \}

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -112,7 +112,7 @@ TEST( primal_numeric_array, component_wise_arithmetic)
   CoordType caDiff[] = {-3, 4, 0};
   CoordType scalar = 5.3;
 
-  CoordType caScalar[] = {scalar * 3, scalar * 4, scalar * 2.4};
+  CoordType caScalar[] = {scalar* 3, scalar * 4, scalar * 2.4};
 
   CoordType caProduct[] = {-3 * 3, 4 * 4, 0. * 2.4};
 
@@ -221,7 +221,8 @@ TEST( primal_numeric_array, clamping)
   EXPECT_EQ(  QArray(seq).clamp(3,7), QArray(seq).clampLower(3).clampUpper(7));
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in
   // debug mode
   SLIC_INFO("Checking that clamping with ill-formed range throws an assert.");
 
@@ -235,7 +236,7 @@ TEST( primal_numeric_array, clamping)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

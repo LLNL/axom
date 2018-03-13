@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -157,7 +157,7 @@ public:
    * \pre pt must point to at least n valid point
    * \note If n <= 0, defaults to default constructor values
    */
-  BoundingBox(PointType * pts, int n);
+  BoundingBox(PointType* pts, int n);
 
   /*!
    * \brief Constructor. Creates a bounding box with a given min and max point
@@ -468,7 +468,7 @@ bool BoundingBox< T,
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-BoundingBox< T, NDIMS >::BoundingBox(PointType * pts, int n)
+BoundingBox< T, NDIMS >::BoundingBox(PointType* pts, int n)
 {
   if (n <= 0)
   {

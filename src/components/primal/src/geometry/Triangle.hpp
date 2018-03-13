@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -238,7 +238,8 @@ public:
                     "Barycentric coordinates must sum to (near) one." );
 
     PointType res;
-    for (int i = 0; i < NDIMS; ++i) {
+    for (int i = 0 ; i < NDIMS ; ++i)
+    {
       res[i] = bary[0] * m_points[0][i] +
                bary[1] * m_points[1][i] +
                bary[2] * m_points[2][i];

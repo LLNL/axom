@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -109,7 +109,7 @@ public:
   /*!
    * \brief Return void-pointer to data held by Buffer.
    */
-  void * getVoidPtr()
+  void* getVoidPtr()
   {
     return m_node.data_ptr();
   }
@@ -167,7 +167,8 @@ public:
 
 
   /*!
-   * \brief Return true if Buffer has been (re)allocated with length >= 0, else false.
+   * \brief Return true if Buffer has been (re)allocated with length >= 0, else
+   *  false.
    */
   bool isAllocated() const
   {
@@ -199,7 +200,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer * describe(TypeID type, SidreLength num_elems);
+  Buffer* describe(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data for a Buffer.
@@ -208,7 +209,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer * allocate();
+  Buffer* allocate();
 
   /*!
    * \brief Allocate Buffer with data type and number of elements.
@@ -219,7 +220,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer * allocate(TypeID type, SidreLength num_elems);
+  Buffer* allocate(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -232,7 +233,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer * reallocate(SidreLength num_elems);
+  Buffer* reallocate(SidreLength num_elems);
 
   /*!
    * \brief Deallocate data in a Buffer.
@@ -249,7 +250,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer * deallocate();
+  Buffer* deallocate();
 
 //@}
 
@@ -262,7 +263,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer * copyBytesIntoBuffer(const void * src, SidreLength nbytes);
+  Buffer* copyBytesIntoBuffer(const void* src, SidreLength nbytes);
 
   /*!
    * \brief Copy Buffer description to given Conduit node.
@@ -316,14 +317,14 @@ private:
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void attachToView( View * view );
+  void attachToView( View* view );
 
   /*!
    * \brief Private method to detach Buffer from View.
    *
    * Note: If View's Buffer pointer does not match 'this', method is a no-op.
    */
-  void detachFromView( View * view );
+  void detachFromView( View* view );
 
   /*!
    * \brief Private method to detach Buffer from all Views it is attached to.
@@ -334,23 +335,23 @@ private:
    * \brief Private method to allocate num_bytes bytes of data and
    * return void-pointer to allocation.
    */
-  void * allocateBytes(std::size_t num_bytes);
+  void* allocateBytes(std::size_t num_bytes);
 
   /*!
    * \brief Private method to copy num_bytes of data from src to dst.
    */
-  void copyBytes( const void * src, void * dst, size_t num_bytes );
+  void copyBytes( const void* src, void* dst, size_t num_bytes );
 
   /*!
    * \brief Private method to delete data referenced by pointer.
    */
-  void  releaseBytes(void * ptr);
+  void  releaseBytes(void* ptr);
 
   /// Buffer's unique index within DataStore object that created it.
   IndexType m_index;
 
   /// Container of Views attached to this Buffer.
-  std::set<View *> m_views;
+  std::set<View*> m_views;
 
   /// Conduit Node that holds Buffer data.
   Node m_node;

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -94,8 +94,8 @@ public:
    * defines an index extending from 0 up to 2 divided into two bins in the
    * x-dimension and from 0 up to 4 divided into four bins in the y dimension.
    */
-  UniformGrid(const double * lower_bound, const double * upper_bound,
-              const int * res);
+  UniformGrid(const double* lower_bound, const double* upper_bound,
+              const int* res);
 
   /*!
    * \brief Constructor specifying bounding box and number of bins.
@@ -281,9 +281,9 @@ UniformGrid< T, NDIMS >::UniformGrid()
 }
 
 template < typename T, int NDIMS >
-UniformGrid< T, NDIMS >::UniformGrid(const double * lower_bound,
-                                     const double * upper_bound,
-                                     const int * res)
+UniformGrid< T, NDIMS >::UniformGrid(const double* lower_bound,
+                                     const double* upper_bound,
+                                     const int* res)
 {
   SLIC_ASSERT(lower_bound != AXOM_NULLPTR);
   SLIC_ASSERT(upper_bound != AXOM_NULLPTR);

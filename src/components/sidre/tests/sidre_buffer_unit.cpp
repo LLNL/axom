@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -34,10 +34,10 @@ using axom::sidre::getTypeID;
 
 //------------------------------------------------------------------------------
 
-int countMismatch(unsigned int elts, int * standard, int * undertest,
+int countMismatch(unsigned int elts, int* standard, int* undertest,
                   bool printTest = false);
 
-int countMismatch(unsigned int elts, int * standard, int * undertest,
+int countMismatch(unsigned int elts, int* standard, int* undertest,
                   bool printTest)
 {
   int retval = 0;
@@ -55,16 +55,17 @@ int countMismatch(unsigned int elts, int * standard, int * undertest,
   return retval;
 }
 
-// Create buffer, verify its index is what is expected, verify it has zero elements
+// Create buffer, verify its index is what is expected, verify it has zero
+// elements
 // and zero total bytes, verify it has zero views (hasView(idx) returns false,
 // getView(idx) returns null ptr).
 TEST(sidre_buffer, buffer_create)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Buffer * buf1 = ds->createBuffer();
+  Buffer* buf1 = ds->createBuffer();
 
-  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), buf1->getVoidPtr());
+  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), buf1->getVoidPtr());
   // EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), buf1->getData());
   EXPECT_EQ(0, buf1->getIndex());
   EXPECT_EQ(0, buf1->getNumViews());
@@ -76,7 +77,7 @@ TEST(sidre_buffer, buffer_create)
   delete ds;
 }
 
-void verifyDescribedBuffer(Buffer * buf, bool isDescribed,
+void verifyDescribedBuffer(Buffer* buf, bool isDescribed,
                            DataTypeId tid, int eltsize, int eltcount)
 {
   EXPECT_FALSE(buf->isAllocated());
@@ -85,10 +86,10 @@ void verifyDescribedBuffer(Buffer * buf, bool isDescribed,
   EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), buf->getVoidPtr());
+  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), buf->getVoidPtr());
 }
 
-void verifyAllocatedBuffer(Buffer * buf, DataTypeId tid, int eltsize,
+void verifyAllocatedBuffer(Buffer* buf, DataTypeId tid, int eltsize,
                            int eltcount)
 {
   EXPECT_TRUE(buf->isAllocated());
@@ -97,20 +98,20 @@ void verifyAllocatedBuffer(Buffer * buf, DataTypeId tid, int eltsize,
   EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_NE(static_cast<void *>(AXOM_NULLPTR), buf->getVoidPtr());
+  EXPECT_NE(static_cast<void*>(AXOM_NULLPTR), buf->getVoidPtr());
 }
 
 // Test describe methods
 TEST(sidre_buffer,buffer_describe)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   bool isDescribed = false;
   DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
   int eltsize = 0;
   int eltcount = 0;
 
-  Buffer * buf1 = ds->createBuffer();
+  Buffer* buf1 = ds->createBuffer();
   {
     SCOPED_TRACE("created undescribed");
     verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
@@ -141,7 +142,8 @@ TEST(sidre_buffer,buffer_describe)
     verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
   }
 
-  // change something legal; it should change (because we haven't allocated the buffer yet)
+  // change something legal; it should change (because we haven't allocated the
+  // buffer yet)
   tid = getTypeID(SIDRE_DOUBLE_ID);
   eltsize = sizeof(double);
   eltcount = 27;
@@ -155,7 +157,7 @@ TEST(sidre_buffer,buffer_describe)
   tid = getTypeID(SIDRE_FLOAT_ID);
   eltsize = sizeof(float);
   eltcount = 45;
-  Buffer * buf2 = ds->createBuffer(tid, eltcount);
+  Buffer* buf2 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("created described");
     verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
@@ -168,7 +170,8 @@ TEST(sidre_buffer,buffer_describe)
     verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
   }
 
-  // change something legal; it should change (because we haven't allocated the buffer yet)
+  // change something legal; it should change (because we haven't allocated the
+  // buffer yet)
   tid = getTypeID(SIDRE_INT_ID);
   eltsize = sizeof(int);
   eltcount = 56;
@@ -184,7 +187,7 @@ TEST(sidre_buffer,buffer_describe)
 // Test allocate methods
 TEST(sidre_buffer,buffer_allocate)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   bool isDescribed = false;
   DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
@@ -192,7 +195,7 @@ TEST(sidre_buffer,buffer_allocate)
   int eltcount = 0;
   const int undescribedSize = 0;
 
-  Buffer * buf1 = ds->createBuffer();
+  Buffer* buf1 = ds->createBuffer();
   verifyDescribedBuffer(buf1, isDescribed, tid, undescribedSize, eltcount);
 
   // Call allocate and reallocate on a non-described buffer: should be no-op
@@ -227,7 +230,7 @@ TEST(sidre_buffer,buffer_allocate)
   tid = getTypeID(SIDRE_UINT_ID);
   eltsize = sizeof(unsigned int);
   eltcount = 65;
-  Buffer * buf2 = ds->createBuffer(tid, eltcount);
+  Buffer* buf2 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("allocate buffer created with description");
     verifyDescribedBuffer(buf2, isDescribed, tid, eltsize, eltcount);
@@ -238,7 +241,7 @@ TEST(sidre_buffer,buffer_allocate)
   tid = getTypeID(SIDRE_FLOAT_ID);
   eltsize = sizeof(float);
   eltcount = 41;
-  Buffer * buf3 = ds->createBuffer(tid, eltcount);
+  Buffer* buf3 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("alloc-describe buffer created with description");
     verifyDescribedBuffer(buf3, isDescribed, tid, eltsize, eltcount);
@@ -253,7 +256,7 @@ TEST(sidre_buffer,buffer_allocate)
   tid = getTypeID(SIDRE_FLOAT_ID);
   eltsize = sizeof(float);
   eltcount = 0;
-  Buffer * buf4 = ds->createBuffer(tid, eltcount);
+  Buffer* buf4 = ds->createBuffer(tid, eltcount);
   {
     SCOPED_TRACE("allocate a described zero-element buffer");
     verifyDescribedBuffer(buf4, isDescribed, tid, eltsize, eltcount);
@@ -263,7 +266,7 @@ TEST(sidre_buffer,buffer_allocate)
 
   isDescribed = false;
   tid = getTypeID(SIDRE_NO_TYPE_ID);
-  Buffer * buf4a = ds->createBuffer();
+  Buffer* buf4a = ds->createBuffer();
   {
     SCOPED_TRACE("describe and allocate (in one step) a zero-element buffer");
     verifyDescribedBuffer(buf4a, isDescribed, tid, undescribedSize, eltcount);
@@ -271,7 +274,7 @@ TEST(sidre_buffer,buffer_allocate)
     buf4a->allocate(tid, eltcount);
     verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);
 
-    void * ptr = buf4a->getVoidPtr();
+    void* ptr = buf4a->getVoidPtr();
     std::cout << "Pointer from zero-allocated buffer is: " << ptr << std::endl;
   }
 
@@ -290,14 +293,14 @@ TEST(sidre_buffer,buffer_allocate)
 // Test reallocate methods
 TEST(sidre_buffer,buffer_reallocate)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   bool isDescribed = false;
   DataTypeId tid = getTypeID(SIDRE_NO_TYPE_ID);
   int eltsize = 0;
   int eltcount = 0;
 
-  Buffer * buf1 = ds->createBuffer();
+  Buffer* buf1 = ds->createBuffer();
   verifyDescribedBuffer(buf1, isDescribed, tid, eltsize, eltcount);
 
   {
@@ -360,7 +363,7 @@ TEST(sidre_buffer,buffer_reallocate)
 // Test interaction of buffer deletion with views
 TEST(sidre_buffer,buffer_delete_view_detach)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   int vAtest[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   int vB1test[] = { 1, 2, 3, 4, 5, 6, 7 };
@@ -372,10 +375,10 @@ TEST(sidre_buffer,buffer_delete_view_detach)
   int Bcount = 7;
 
   // Create a buffer bA, fill with dummy data, attach two views vA and vB
-  Buffer * bA = ds->createBuffer(tid, Acount)->allocate();
+  Buffer* bA = ds->createBuffer(tid, Acount)->allocate();
   bA->copyBytesIntoBuffer(vAtest, Acount * eltsize);
-  View * vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
-  View * vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
+  View* vA = ds->getRoot()->createView("vA", bA)->apply(tid, Acount);
+  View* vB = ds->getRoot()->createView("vB", bA)->apply(tid, Bcount, 1, 1);
 
   // Verify vA and vB are attached to bA, and we can see the data
   EXPECT_EQ(2, bA->getNumViews());
@@ -387,18 +390,20 @@ TEST(sidre_buffer,buffer_delete_view_detach)
   // Detach buffer bA from view vB
   EXPECT_EQ(bA, vB->detachBuffer());
 
-  // Verify that vB now has no buffer but vA still does, and that bA still exists
+  // Verify that vB now has no buffer but vA still does, and that bA still
+  // exists
   EXPECT_EQ(1, bA->getNumViews());
   EXPECT_EQ(bA, vA->getBuffer());
   EXPECT_EQ(0, countMismatch(8, vAtest, vA->getArray()));
-  EXPECT_EQ(static_cast<void *>(AXOM_NULLPTR), vB->getBuffer());
+  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), vB->getBuffer());
 
   // Make a new buffer bB and attach to vB; verify we can see the data in bB
-  Buffer * bB = ds->createBuffer(tid, Bcount)->allocate();
+  Buffer* bB = ds->createBuffer(tid, Bcount)->allocate();
   bB->copyBytesIntoBuffer(vB1test, Bcount * eltsize);
   vB->attachBuffer(tid, Bcount, bB);
 
-  // Detach bA from vA using attach(NULL); verify that vA nas no buffer and bA is destroyed
+  // Detach bA from vA using attach(NULL); verify that vA nas no buffer and bA
+  // is destroyed
   IndexType aidx = bA->getIndex();
   vA->attachBuffer(AXOM_NULLPTR);
   //  EXPECT_FALSE(vA->isAttached());
@@ -418,9 +423,9 @@ TEST(sidre_buffer,buffer_alloc_realloc_0)
   const DataTypeId tid = getTypeID(SIDRE_INT_ID);
   const int ELT_SIZE = sizeof(int);
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Buffer * buf1 = ds->createBuffer();
+  Buffer* buf1 = ds->createBuffer();
   buf1->allocate(tid,0);
   {
     SCOPED_TRACE("allocate(0) on new buffer");
@@ -473,7 +478,7 @@ TEST(sidre_buffer,buffer_alloc_realloc_0)
     verifyAllocatedBuffer(buf1, tid, ELT_SIZE, 0);
   }
 
-  Buffer * buf2 = ds->createBuffer();
+  Buffer* buf2 = ds->createBuffer();
   buf2->describe(tid,0);
   buf2->reallocate(0);
   {

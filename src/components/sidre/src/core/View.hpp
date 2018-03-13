@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -152,7 +152,7 @@ public:
   /*!
    * \brief Return pointer to non-const Group that owns View object.
    */
-  Group * getOwningGroup()
+  Group* getOwningGroup()
   {
     return m_owning_group;
   }
@@ -160,7 +160,7 @@ public:
   /*!
    * \brief Return pointer to const Group that owns View object.
    */
-  const Group * getOwningGroup() const
+  const Group* getOwningGroup() const
   {
     return m_owning_group;
   }
@@ -178,7 +178,7 @@ public:
   /*!
    * \brief Return pointer to non-const Buffer associated with View.
    */
-  Buffer * getBuffer()
+  Buffer* getBuffer()
   {
     return m_data_buffer;
   }
@@ -186,7 +186,7 @@ public:
   /*!
    * \brief Return pointer to const Buffer associated with View.
    */
-  const Buffer * getBuffer() const
+  const Buffer* getBuffer() const
   {
     return m_data_buffer;
   }
@@ -203,7 +203,8 @@ public:
    * \brief Return true if view is described and refers to a buffer
    * that has been allocated.
    */
-  // TODO - Would like to make this a const function.  Need to have conduit element_ptr() be const to do this.
+  // TODO - Would like to make this a const function.  Need to have conduit
+  // element_ptr() be const to do this.
   bool isAllocated();
 
   /*!
@@ -308,32 +309,38 @@ public:
   }
 
   /*!
-   * \brief Return the offset in number of elements for the data described by this View object.
+   * \brief Return the offset in number of elements for the data described by
+   *  this View object.
    *
-   * \warning The code currently assumes that offsets into a view are given in terms of whole elements.
-   *       And it is an assertion error if this is not the case.
-   *       If you have a different use case, please talk to the Sidre team
+   * \warning The code currently assumes that offsets into a view are given in
+   *  terms of whole elements. And it is an assertion error if this is not the
+   *  case. If you have a different use case, please talk to the Sidre team
    *
    * \note View::getData() and View::getArray() already account for the offset,
    *        and return a pointer to the first element in the array:
    *        View::getVoidPtr() does not account for the offset.
    *
-   * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
+   * IMPORTANT: This function is based on the view description, it does not
+   * imply that the data is allocated
    *
-   * \return The offset, in terms of the number of elements, from the described array to the first element.
+   * \return The offset, in terms of the number of elements, from the described
+   *  array to the first element.
    */
   SidreLength getOffset() const;
 
   /*!
-   * \brief Return the stride in number of elements for the data described by this View object.
+   * \brief Return the stride in number of elements for the data described by
+   *  this View object.
    *
-   * \warning The code currently assumes that strides into a view are given in terms of whole elements.
-   *       And it is an assertion error if this is not the case.
-   *       If you have a different use case, please talk to the Sidre team
+   * \warning The code currently assumes that strides into a view are given in
+   *  terms of whole elements. And it is an assertion error if this is not the
+   *  case. If you have a different use case, please talk to the Sidre team
    *
-   * IMPORTANT: This function is based on the view description, it does not imply that the data is allocated
+   * IMPORTANT: This function is based on the view description, it does not
+   * imply that the data is allocated
    *
-   * \return The stride, in terms of the number of elements, between elements in the described array.
+   * \return The stride, in terms of the number of elements, between elements in
+   *  the described array.
    */
   SidreLength getStride() const;
 
@@ -355,7 +362,7 @@ public:
    *  Return the number of dimensions of the view.
    *  Return -1 if shape is too short to hold all dimensions.
    */
-  int getShape(int ndims, SidreLength * shape) const;
+  int getShape(int ndims, SidreLength* shape) const;
 
   /*!
    * \brief Return const reference to schema describing data.
@@ -383,10 +390,10 @@ public:
 
   /*!
    * \brief Returns boolean telling whether two Views have equivalent
-   * internal description, in terms of name, datatype, and current state of the
-   * object.  Values of the data are not checked.
+   *  internal description, in terms of name, datatype, and current state of the
+   *  object. Values of the data are not checked.
    */
-  bool isEquivalentTo(const View * other) const;
+  bool isEquivalentTo(const View* other) const;
 
 //@}
 
@@ -404,7 +411,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * allocate();
+  View* allocate();
 
   /*!
    * \brief Allocate data for view given type and number of elements.
@@ -416,7 +423,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * allocate( TypeID type, SidreLength num_elems);
+  View* allocate( TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
@@ -427,7 +434,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * allocate(const DataType& dtype);
+  View* allocate(const DataType& dtype);
 
   /*!
    * \brief  Reallocate data for view to given number of elements (type
@@ -439,7 +446,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * reallocate(SidreLength num_elems);
+  View* reallocate(SidreLength num_elems);
 
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
@@ -453,7 +460,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * reallocate(const DataType& dtype);
+  View* reallocate(const DataType& dtype);
 
   /*!
    * \brief  Deallocate data for view.
@@ -464,7 +471,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * deallocate();
+  View* deallocate();
 
 //@}
 
@@ -491,16 +498,16 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * attachBuffer( Buffer * buff );
+  View* attachBuffer( Buffer* buff );
 
   /*!
    * \brief Describe the data view and attach Buffer object.
    *
    * \return pointer to this View object.
    */
-  View * attachBuffer( TypeID type,
-                       SidreLength num_elems,
-                       Buffer * buff )
+  View* attachBuffer( TypeID type,
+                      SidreLength num_elems,
+                      Buffer* buff )
   {
     describe(type, num_elems);
     attachBuffer(buff);
@@ -512,10 +519,10 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * attachBuffer( TypeID type,
-                       int ndims,
-                       SidreLength * shape,
-                       Buffer * buff )
+  View* attachBuffer( TypeID type,
+                      int ndims,
+                      SidreLength* shape,
+                      Buffer* buff )
   {
     describe(type, ndims, shape);
     attachBuffer(buff);
@@ -530,7 +537,7 @@ public:
    *
    * \return pointer to detached buffer.
    */
-  Buffer * detachBuffer();
+  Buffer* detachBuffer();
 
 //@{
 //!  @name Methods to apply View description to data.
@@ -542,7 +549,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * apply();
+  View* apply();
 
   /*!
    * \brief Apply data description defined by number of elements, and
@@ -564,9 +571,9 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * apply( SidreLength num_elems,
-                SidreLength offset = 0,
-                SidreLength stride = 1);
+  View* apply( SidreLength num_elems,
+               SidreLength offset = 0,
+               SidreLength stride = 1);
 
   /*!
    * \brief Apply data description defined by type and number of elements, and
@@ -584,9 +591,9 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * apply( TypeID type, SidreLength num_elems,
-                SidreLength offset = 0,
-                SidreLength stride = 1);
+  View* apply( TypeID type, SidreLength num_elems,
+               SidreLength offset = 0,
+               SidreLength stride = 1);
 
   /*!
    * \brief Apply data description defined by type and shape information
@@ -603,7 +610,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * apply( TypeID type, int ndims, SidreLength * shape );
+  View* apply( TypeID type, int ndims, SidreLength* shape );
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
@@ -612,7 +619,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * apply(const DataType& dtype);
+  View* apply(const DataType& dtype);
 
 //@}
 
@@ -626,7 +633,7 @@ public:
    * \return pointer to this View object.
    */
   template<typename ScalarType>
-  View * setScalar(ScalarType value)
+  View* setScalar(ScalarType value)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -636,7 +643,7 @@ public:
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
       SLIC_CHECK_MSG(arg_id == m_node.dtype().id(),
                      "You are setting a scalar value in view "
-                     << m_name
+                     << getPathName()
                      << " which has changed the underlying data type."
                      << "Old type = " << m_node.dtype().name()
                      << ", new type ="
@@ -659,7 +666,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
                      "Unable to set scalar value on view "
-                     << m_name << " with state: "
+                     << getPathName() << " with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -672,7 +679,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * setScalar(Node &value)
+  View* setScalar(Node &value)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -681,7 +688,7 @@ public:
     {
       SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
                      "You are setting a scalar value in view "
-                     << m_name
+                     << getPathName()
                      << " which has changed the underlying data type."
                      << "Old type = " << m_node.dtype().name()
                      << ", new type ="
@@ -704,7 +711,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
                      "Unable to set scalar value on view "
-                     << m_name << " with state: "
+                     << getPathName() << " with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -719,7 +726,7 @@ public:
  *
  * \return pointer to this View object.
  */
-  View * setString(const std::string& value)
+  View* setString(const std::string& value)
   {
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a string.  May be
@@ -736,7 +743,7 @@ public:
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
                      "Unable to set string value on view "
-                     << m_name << " with state: "
+                     << getPathName() << " with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -753,7 +760,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * setExternalDataPtr(void * external_ptr);
+  View* setExternalDataPtr(void* external_ptr);
 
   /*!
    * \brief Set view to hold described external data.
@@ -762,9 +769,9 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * setExternalDataPtr(TypeID type,
-                            SidreLength num_elems,
-                            void * external_ptr)
+  View* setExternalDataPtr(TypeID type,
+                           SidreLength num_elems,
+                           void* external_ptr)
   {
     describe(type, num_elems);
     setExternalDataPtr(external_ptr);
@@ -778,10 +785,10 @@ public:
    *
    * \return pointer to this View object.
    */
-  View * setExternalDataPtr(TypeID type,
-                            int ndims,
-                            SidreLength * shape,
-                            void * external_ptr)
+  View* setExternalDataPtr(TypeID type,
+                           int ndims,
+                           SidreLength* shape,
+                           void* external_ptr)
   {
     describe(type, ndims, shape);
     setExternalDataPtr(external_ptr);
@@ -825,7 +832,7 @@ public:
      //        Conduit also provides a as_string() method.
      //
    */
-  const char * getString()
+  const char* getString()
   {
     if (m_state == STRING)
     {
@@ -854,8 +861,9 @@ public:
    *  If view does not contain allocated data, an empty Node::Value will be
    *  returned.
    *
-   *  \note The return value already accounts for the View's offset (when present),
-   *        so, if the View is an array, getData()[0] already points to the first element
+   *  \note The return value already accounts for the View's offset
+   *   (when present), so, if the View is an array, getData()[0] already points
+   *   to thefirst element
    */
   Node::Value getData()
   {
@@ -871,8 +879,8 @@ public:
   }
 
   /*!
-   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(),
-   *        but not assigning the return type.
+   * \brief Lightweight templated wrapper around getData() that can be used when
+   *  you are calling getData(), but not assigning the return type.
    *
    * \sa getData()
    */
@@ -886,12 +894,13 @@ public:
   /*!
    * \brief Returns a void pointer to the view's data
    *
-   * \note This function returns the base pointer that was used to set up the view.
-   *       It does not account for any offsets or strides in the View's description.
+   * \note This function returns the base pointer that was used to set up the
+   *  view. It does not account for any offsets or strides in the View's
+   *  description.
    *
-   * To access the first data element, you will need to cast to the appropriate type
-   * and add the offset.  E.g. if the underlying data is an array of integers
-   * you can access the first element as follows:
+   * To access the first data element, you will need to cast to the appropriate
+   * type and add the offset.  E.g. if the underlying data is an array of
+   * integers you can access the first element as follows:
    * \verbatim
    *    void* vptr = view->getVoidPtr();
    *    int*  iptr = static_cast<int*>(vptr) + view->getOffset();
@@ -899,7 +908,7 @@ public:
    *
    * \sa getData(), getArray()
    */
-  void * getVoidPtr() const;
+  void* getVoidPtr() const;
 
 //@}
 
@@ -927,9 +936,10 @@ public:
   /*!
    * \brief Copy data view native layout to given Conduit node.
    *
-   * The native layout is a Conduit Node hierarchy that maps the Conduit Node data
-   * externally to the Sidre View data so that it can be filled in from the data
-   * in the file (independent of file format) and can be accessed as a Conduit tree.
+   * The native layout is a Conduit Node hierarchy that maps the Conduit Node
+   * data externally to the Sidre View data so that it can be filled in from the
+   * data in the file (independent of file format) and can be accessed as a
+   * Conduit tree.
    */
   void createNativeLayout(Node& n) const;
 
@@ -955,13 +965,13 @@ public:
 //@{
 //!  @name View query and accessor methods
 
-  Attribute * getAttribute(IndexType idx);
+  Attribute* getAttribute(IndexType idx);
 
-  const Attribute * getAttribute(IndexType idx) const;
+  const Attribute* getAttribute(IndexType idx) const;
 
-  Attribute * getAttribute(const std::string & name);
+  Attribute* getAttribute(const std::string & name);
 
-  const Attribute * getAttribute(const std::string & name) const;
+  const Attribute* getAttribute(const std::string & name) const;
 
 //@}
 
@@ -973,7 +983,7 @@ public:
    */
   bool hasAttributeValue( IndexType idx ) const
   {
-    const Attribute * attr = getAttribute(idx);
+    const Attribute* attr = getAttribute(idx);
     return m_attr_values.hasValue(attr);
   }
 
@@ -982,14 +992,14 @@ public:
    */
   bool hasAttributeValue( const std::string & name ) const
   {
-    const Attribute * attr = getAttribute(name);
+    const Attribute* attr = getAttribute(name);
     return m_attr_values.hasValue(attr);
   }
 
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasAttributeValue( const Attribute * attr ) const
+  bool hasAttributeValue( const Attribute* attr ) const
   {
     if (attr == AXOM_NULLPTR)
     {
@@ -1007,7 +1017,7 @@ public:
    */
   bool setAttributeToDefault( IndexType idx )
   {
-    const Attribute * attr = getAttribute(idx);
+    const Attribute* attr = getAttribute(idx);
     return m_attr_values.setToDefault(attr);
   }
 
@@ -1018,7 +1028,7 @@ public:
    */
   bool setAttributeToDefault( const std::string & name )
   {
-    const Attribute * attr = getAttribute(name);
+    const Attribute* attr = getAttribute(name);
     return m_attr_values.setToDefault(attr);
   }
 
@@ -1027,7 +1037,7 @@ public:
    *
    * This causes hasAttributeValue to return false for the attribute.
    */
-  bool setAttributeToDefault( const Attribute * attr )
+  bool setAttributeToDefault( const Attribute* attr )
   {
     if (attr == AXOM_NULLPTR)
     {
@@ -1044,7 +1054,7 @@ public:
   template<typename ScalarType>
   bool setAttributeScalar( IndexType idx, ScalarType value )
   {
-    const Attribute * attr = getAttribute(idx);
+    const Attribute* attr = getAttribute(idx);
     if (attr == AXOM_NULLPTR)
     {
       return false;
@@ -1059,7 +1069,7 @@ public:
   template<typename ScalarType>
   bool setAttributeScalar( const std::string & name, ScalarType value )
   {
-    const Attribute * attr = getAttribute(name);
+    const Attribute* attr = getAttribute(name);
     if (attr == AXOM_NULLPTR)
     {
       return false;
@@ -1072,7 +1082,7 @@ public:
    * \brief Set Attribute for a View from Attribute pointer.
    */
   template<typename ScalarType>
-  bool setAttributeScalar( const Attribute * attr, ScalarType value )
+  bool setAttributeScalar( const Attribute* attr, ScalarType value )
   {
     if (attr == AXOM_NULLPTR)
     {
@@ -1098,14 +1108,14 @@ public:
   /*!
    * \brief Set Attribute for a View from Attribute pointer.
    */
-  bool setAttributeString( const Attribute * attr, const std::string & value );
+  bool setAttributeString( const Attribute* attr, const std::string & value );
 
   /*!
    * \brief Return scalar attribute value from Attribute indx.
    */
   Node::ConstValue getAttributeScalar(IndexType idx) const
   {
-    const Attribute * attr = getAttribute(idx);
+    const Attribute* attr = getAttribute(idx);
     if (attr == AXOM_NULLPTR)
     {
       return m_attr_values.getEmptyNodeRef().value();
@@ -1119,7 +1129,7 @@ public:
    */
   Node::ConstValue getAttributeScalar(const std::string & name) const
   {
-    const Attribute * attr = getAttribute(name);
+    const Attribute* attr = getAttribute(name);
     if (attr == AXOM_NULLPTR)
     {
       return m_attr_values.getEmptyNodeRef().value();
@@ -1131,7 +1141,7 @@ public:
   /*!
    * \brief Return scalar attribute value from Attribute pointer.
    */
-  Node::ConstValue getAttributeScalar(const Attribute * attr) const
+  Node::ConstValue getAttributeScalar(const Attribute* attr) const
   {
     if (attr == AXOM_NULLPTR)
     {
@@ -1145,15 +1155,15 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getAttributeScalar()
-   *        that can be used when you are calling
-   *        getAttributeScalar(), but not assigning the return type.
+   *  that can be used when you are calling getAttributeScalar(), but not
+   *  assigning the return type.
    *
    * \sa getAttributeScalar()
    */
   template<typename DataType>
   DataType getAttributeScalar(IndexType idx)
   {
-    const Attribute * attr = getAttribute(idx);
+    const Attribute* attr = getAttribute(idx);
     const Node & node = m_attr_values.getValueNodeRef(attr);
     DataType data = node.value();
     return data;
@@ -1161,15 +1171,15 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getAttributeScalar()
-   *        that can be used when you are calling
-   *        getAttributeScalar(), but not assigning the return type.
+   *  that can be used when you are calling getAttributeScalar(), but not
+   *  assigning the return type.
    *
    * \sa getAttributeScalar()
    */
   template<typename DataType>
   DataType getAttributeScalar(const std::string & name)
   {
-    const Attribute * attr = getAttribute(name);
+    const Attribute* attr = getAttribute(name);
     const Node & node = m_attr_values.getValueNodeRef(attr);
     DataType data = node.value();
     return data;
@@ -1177,13 +1187,13 @@ public:
 
   /*!
    * \brief Lightweight templated wrapper around getAttributeScalar()
-   *        that can be used when you are calling
-   *        getAttributeScalar(), but not assigning the return type.
+   *  that can be used when you are calling getAttributeScalar(), but not
+   *  assigning the return type.
    *
    * \sa getAttributeScalar()
    */
   template<typename DataType>
-  DataType getAttributeScalar(const Attribute * attr)
+  DataType getAttributeScalar(const Attribute* attr)
   {
     if (attr == AXOM_NULLPTR)
     {
@@ -1201,21 +1211,21 @@ public:
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeString( IndexType idx ) const;
+  const char* getAttributeString( IndexType idx ) const;
 
   /*!
    * \brief Return a string attribute from the Attribute name.
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeString( const std::string & name ) const;
+  const char* getAttributeString( const std::string & name ) const;
 
   /*!
    * \brief Return a string attribute from the Attribute pointer.
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const char * getAttributeString( const Attribute * attr ) const;
+  const char* getAttributeString( const Attribute* attr ) const;
 
   /*!
    * \brief Return reference to attribute node from Attribute index.
@@ -1224,7 +1234,7 @@ public:
    */
   const Node & getAttributeNodeRef( IndexType idx ) const
   {
-    const Attribute * attr = getAttribute(idx);
+    const Attribute* attr = getAttribute(idx);
     return m_attr_values.getValueNodeRef(attr);
   }
 
@@ -1235,7 +1245,7 @@ public:
    */
   const Node & getAttributeNodeRef( const std::string & name ) const
   {
-    const Attribute * attr = getAttribute(name);
+    const Attribute* attr = getAttribute(name);
     return m_attr_values.getValueNodeRef(attr);
   }
 
@@ -1244,7 +1254,7 @@ public:
    *
    * If the value has not been explicitly set, return the current default.
    */
-  const Node & getAttributeNodeRef( const Attribute * attr ) const
+  const Node & getAttributeNodeRef( const Attribute* attr ) const
   {
     if (attr == AXOM_NULLPTR)
     {
@@ -1344,7 +1354,7 @@ private:
    *
    * \return pointer to this View object.
    */
-  void describe(TypeID type, int ndims, SidreLength * shape);
+  void describe(TypeID type, int ndims, SidreLength* shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
@@ -1360,14 +1370,15 @@ private:
   void describe(const DataType& dtype);
 
   /*!
-   * \brief Set the shape to be a one dimension with the described number of elements.
+   * \brief Set the shape to be a one dimension with the described number of
+   * elements.
    */
   void describeShape();
 
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    */
-  void describeShape(int ndims, SidreLength * shape);
+  void describeShape(int ndims, SidreLength* shape);
 
   /*!
    * \brief Copy view contents into an undescribed EMPTY view.
@@ -1375,7 +1386,7 @@ private:
    * For SCALAR and STRING the data is copied; EXTERNAL,
    * data pointer is copied; BUFFER attaches the buffer.
    */
-  void copyView( View * copy ) const;
+  void copyView( View* copy ) const;
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.
@@ -1479,7 +1490,7 @@ private:
   /*!
    *  \brief Private method returns string name of given view state enum value.
    */
-  static char const * getStateStringName(State state);
+  static char const* getStateStringName(State state);
 
   /*!
    *  \brief Private method returns state enum value give a state name.
@@ -1493,10 +1504,10 @@ private:
   IndexType m_index;
 
   /// Group object that owns this View object.
-  Group * m_owning_group;
+  Group* m_owning_group;
 
   /// Buffer associated with this View object.
-  Buffer * m_data_buffer;
+  Buffer* m_data_buffer;
 
   /// Data description (schema) that describes the view's data.
   Schema m_schema;
@@ -1508,7 +1519,7 @@ private:
   std::vector<SidreLength> m_shape;
 
   /// Pointer to external memory
-  void * m_external_ptr;
+  void* m_external_ptr;
 
   /// State of view.
   State m_state;

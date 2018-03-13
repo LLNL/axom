@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -45,7 +45,7 @@ using namespace axom::utilities;
  * Purpose   :
  *************************************************************************/
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
   SCR_Init();
@@ -70,15 +70,15 @@ int main(int argc, char * argv[])
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   SLIC_ASSERT(ds);
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", my_rank + 101);
   gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 

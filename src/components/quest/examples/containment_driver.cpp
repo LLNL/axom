@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -89,7 +89,7 @@ const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( axom::mint::Mesh * mesh)
+GeometricBoundingBox compute_bounds( axom::mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -126,7 +126,7 @@ void testIntersectionOnRegularGrid()
   TriangleType unitTri( ptX, ptY, ptZ );
 
   typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
-  DebugMesh * debugMesh = new DebugMesh(3);
+  DebugMesh* debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
   debugMesh->insertNode( ptX[0], ptX[1], ptX[2]);
@@ -202,16 +202,16 @@ void testContainmentOnRegularGrid(
   ext[0] = ext[2] = ext[4] = 0;
   ext[1] = ext[3] = ext[5] = gridRes;
 
-  axom::mint::UniformMesh * umesh =
+  axom::mint::UniformMesh* umesh =
     new axom::mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
 
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData * PD = umesh->getNodeFieldData();
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
   PD->addField( new axom::mint::FieldVariable< int >("containment",nnodes) );
-  int * containment = PD->getField( "containment" )->getIntPtr();
+  int* containment = PD->getField( "containment" )->getIntPtr();
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
 
@@ -242,7 +242,7 @@ void testContainmentOnRegularGrid(
 /**
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
-TriVertIndices getTriangleVertIndices(axom::mint::Mesh * mesh, int cellIndex)
+TriVertIndices getTriangleVertIndices(axom::mint::Mesh* mesh, int cellIndex)
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
@@ -256,7 +256,7 @@ TriVertIndices getTriangleVertIndices(axom::mint::Mesh * mesh, int cellIndex)
  * \brief Extracts the positions of a traingle's vertices from the mesh
  * \return The triangle vertex positions in a SpaceTriangle instance
  */
-SpaceTriangle getMeshTriangle(axom::mint::Mesh * mesh,
+SpaceTriangle getMeshTriangle(axom::mint::Mesh* mesh,
                               const TriVertIndices& vertIndices )
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
@@ -271,10 +271,10 @@ SpaceTriangle getMeshTriangle(axom::mint::Mesh * mesh,
 /**
  * \brief Computes some statistics about the surface mesh.
  *
- * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
- * on a logarithmic scale and logs the results
+ * Specifically, computes histograms (and ranges) of the edge lengths and
+ * triangle areas son a logarithmic scale and logs the results
  */
-void print_surface_stats( axom::mint::Mesh * mesh)
+void print_surface_stats( axom::mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -291,12 +291,16 @@ void print_surface_stats( axom::mint::Mesh * mesh)
 
   // simple binning based on the exponent
   typedef std::map<int,int> LogHistogram;
-  LogHistogram edgeLenHist;         // Create histogram of edge lengths (log scale)
-  LogHistogram areaHist;            // Create histogram of triangle areas (log scale)
+  LogHistogram edgeLenHist;         // Create histogram of edge lengths (log
+                                    // scale)
+  LogHistogram areaHist;            // Create histogram of triangle areas (log
+                                    // scale)
 
   typedef std::map<int,MinMaxRange> LogRangeMap;
-  LogRangeMap edgeLenRangeMap;      // Tracks range of edge lengths at each scale
-  LogRangeMap areaRangeMap;         // Tracks range of triangle areas at each scale
+  LogRangeMap edgeLenRangeMap;      // Tracks range of edge lengths at each
+                                    // scale
+  LogRangeMap areaRangeMap;         // Tracks range of triangle areas at each
+                                    // scale
 
   typedef axom::primal::Point<int,3> TriVertIndices;
   int expBase2;
@@ -398,7 +402,8 @@ void print_surface_stats( axom::mint::Mesh * mesh)
 }
 
 /**
- * \brief Finds the octree leaf containing the given query point, and optionally refines the leaf
+ * \brief Finds the octree leaf containing the given query point, and optionally
+ *  refines the leaf
  */
 void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
                     bool shouldRefine = true)
@@ -421,7 +426,7 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   axom::slic::UnitTestLogger logger;  // create & initialize logger
   // axom::slic::debug::checksAreErrors = true;
@@ -450,15 +455,15 @@ int main( int argc, char * * argv )
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));
   SLIC_INFO("Reading file: " << stlFile << "...");
 
-  quest::STLReader * reader = new quest::STLReader();
+  quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
   SLIC_INFO("done.");
 
 
   // STEP 3: create surface mesh
-  axom::mint::Mesh * surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
+  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  reader->getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
             << surface_mesh->getMeshNumberOfNodes() << " nodes and "
@@ -508,7 +513,8 @@ int main( int argc, char * * argv )
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 
-  // Other -- find leaf block of a given query point at various levels of resolution
+  // Other -- find leaf block of a given query point at various levels of
+  // resolution
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Other octree operations "));
   double alpha = 2./3.;
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);

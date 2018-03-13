@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -29,8 +29,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_diagonal_matrix )
   const int N = 10;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -71,8 +71,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_partial_diagonal )
   const int N = 10;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -130,8 +130,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_two_by_two )
   const int N = 2;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -165,8 +165,8 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
   const int N = 3;
   const double EPS = 1E-4;
 
-  double * u = new double[N*N];
-  double * lambdas = new double[N];
+  double* u = new double[N*N];
+  double* lambdas = new double[N];
 
   numerics::Matrix< double > A(N, N);
 
@@ -199,7 +199,7 @@ TEST( numerics_eigen_solve, eigen_solve_with_three_by_three )
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

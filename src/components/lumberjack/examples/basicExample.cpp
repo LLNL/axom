@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -23,7 +23,7 @@
 #include <iostream>
 
 //------------------------------------------------------------------------------
-int main(int argc, char * * argv)
+int main(int argc, char** argv)
 {
   // Initialize MPI and get rank and comm size
   MPI_Init(&argc, &argv);
@@ -62,7 +62,7 @@ int main(int argc, char * * argv)
   if (lj.isOutputNode())
   {
     // Get Messages from Lumberjack
-    std::vector<axom::lumberjack::Message *> messages = lj.getMessages();
+    std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
     for(int i=0 ; i<(int)(messages.size()) ; ++i)
     {
       // Output a single Message at a time to screen

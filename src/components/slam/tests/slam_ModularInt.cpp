@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -35,7 +35,8 @@ TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
     ModularIntType;
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in debug mode
   SLIC_INFO("Checking that modular int with modulus zero fails.");
   SLIC_INFO("Note: Expecting a SLIC Failure: ");
 
@@ -70,7 +71,8 @@ TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 #ifdef AXOM_DEBUG
   typedef ModularInt<policies::CompileTimeSize<int, 0> > ModularIntZero;
 
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in debug mode
   SLIC_INFO("Checking that modular int with modulus "
             <<" zero fails.\nNote: Expecting a SLIC Failure: ");
 
@@ -224,7 +226,7 @@ TEST(slam_modInt,compiletime_modular_int)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

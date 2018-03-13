@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -126,7 +126,8 @@ TEST(axom_utils_config,config_libraries)
 
 TEST(axom_utils_config,config_components)
 {
-  // This test checks which toolkit components are available in the configuration
+  // This test checks which toolkit components are available in the
+  // configuration
 
   std::cout << "Available components: " << std::endl;
 
@@ -140,7 +141,7 @@ TEST(axom_utils_config,config_components)
   comps.push_back("mint");
 #endif
 
-  #ifdef AXOM_USE_LUMBERJACK
+#ifdef AXOM_USE_LUMBERJACK
   comps.push_back("lumberjack");
 #endif
 
@@ -156,16 +157,12 @@ TEST(axom_utils_config,config_components)
   comps.push_back("sidre");
 #endif
 
-  #ifdef AXOM_USE_SLAM
+#ifdef AXOM_USE_SLAM
   comps.push_back("slam");
 #endif
 
 #ifdef AXOM_USE_SLIC
   comps.push_back("slic");
-#endif
-
-#ifdef AXOM_USE_SPIO
-  comps.push_back("spio");
 #endif
 
 
@@ -185,13 +182,13 @@ TEST(axom_utils_config,config_openmp)
 #ifdef AXOM_USE_OPENMP
   std::cout << "OpenMP is available in this configuration." << std::endl;
 
-    #pragma omp parallel
+  #pragma omp parallel
   {
     int thId = omp_get_thread_num();
     int thNum = omp_get_num_threads();
     int thMax = omp_get_max_threads();
 
-      #pragma omp critical
+    #pragma omp critical
     std::cout <<"\tMy thread id is: " << thId
               <<"\tNum threads is: " << thNum
               <<"\tMax threads is: " << thMax
@@ -208,7 +205,7 @@ TEST(axom_utils_config,config_openmp)
   //       to ignore usage of unknown openmp pragmas
   const int N = 100;
   int sum=0;
-    #pragma omp parallel for reduction(+:sum)
+  #pragma omp parallel for reduction(+:sum)
   for(int i=1 ; i<=N ; ++i)
   {
     sum += i;
@@ -233,18 +230,29 @@ TEST(axom_utils_config,boost_version)
 #ifdef AXOM_USE_MFEM
 TEST(axom_utils_config,mfem_configuration)
 {
+  #ifdef MFEM_VERSION
+  std::cout << "Using mfem version "
+            << MFEM_VERSION_MAJOR << "." // major version
+            << MFEM_VERSION_MINOR << "." // minor version
+            << MFEM_VERSION_PATCH        // patch level
+            << std::endl;
+  #endif // MFEM_VERSION
+
   // Verify that this copy of mfem is configured without MPI
   bool hasMPI = false;
-    #ifdef MFEM_USE_MPI
+
+  #ifdef MFEM_USE_MPI
   hasMPI = true;
-    #endif
+  #endif
+
   EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
 
   // Verify that this copy of mfem is configured without Sidre
   bool hasSidre = false;
-    #ifdef MFEM_USE_SIDRE
+  #ifdef MFEM_USE_SIDRE
   hasSidre = true;
-    #endif
+  #endif
+
   EXPECT_FALSE(hasSidre) << "Axom expects mfem to be built without Sidre";
 }
 #endif // AXOM_USE_MFEM

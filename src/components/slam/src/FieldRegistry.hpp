@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -36,10 +36,11 @@ namespace slam
 
 
 /**
- * \brief Very simple container for fields of a given type DataType with minimal error checking.
- * \note
- *         We are using concrete instances for int and double in the code below.
- *         This should eventually be replaced with the sidre datastore.
+ * \brief Very simple container for fields of a given type DataType with minimal
+ *  error checking.
+ *
+ * \note We are using concrete instances for int and double in the code below.
+ *       This should eventually be replaced with the sidre datastore.
  */
 template<typename TheDataType>
 class FieldRegistry
@@ -62,12 +63,12 @@ public:
     return m_maps.find(key) != m_maps.end();
   }
 
-  MapType&  addField(KeyType key, Set const * theSet)
+  MapType&  addField(KeyType key, Set const* theSet)
   {
     return m_maps[key] = MapType(theSet);
   }
 
-  MapType&  addNamelessField(Set const * theSet)
+  MapType&  addNamelessField(Set const* theSet)
   {
     static int cnt = 0;
     std::stringstream key;

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -63,9 +63,9 @@ struct NoIndirection
 struct HasIndirection
 {
   inline int  indirection(int pos) const { return m_data[pos]; }
-  int *&       data() { return m_data; }
+  int*&       data() { return m_data; }
 private:
-  int * m_data;
+  int* m_data;
 };
 
 /// Striding policies
@@ -183,7 +183,7 @@ inline ResType sumSet(const SetType& set)
 }
 
 template<typename SetType>
-inline void copySet(const SetType& set, int * buf)
+inline void copySet(const SetType& set, int* buf)
 {
   for(int i = 0 ; i< set.size() ; ++i)
     *buf++ = set.at(i);
@@ -191,7 +191,7 @@ inline void copySet(const SetType& set, int * buf)
 
 
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   // Process command line arguments
   // first argument is the size of the set
@@ -206,7 +206,7 @@ int main(int argc, char * argv[])
   }
 
   // allocate and initialize the indirection array elements
-  int * pVal = new int[ numElts ];
+  int* pVal = new int[ numElts ];
   for(int i = 0 ; i< numElts ; ++i)
     pVal[i] = i * i;
   if(numElts > 0)
@@ -226,7 +226,7 @@ int main(int argc, char * argv[])
 
 
   // Test 2 -- copy all three sets into a buffer
-  int * buf = new int[3 * numElts];
+  int* buf = new int[3 * numElts];
   copySet(pSet, buf + numElts * 0);
   copySet(rSet, buf + numElts * 1);
   copySet(iSet, buf + numElts * 2);

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -57,7 +57,7 @@ namespace detail
  * \param [in] mesh pointer to the mesh instance.
  * \pre mesh != AXOM_NULLPTR
  */
-void getMesh( TriangleMesh * mesh )
+void getMesh( TriangleMesh* mesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -164,7 +164,7 @@ void getMesh( TriangleMesh * mesh )
  * \param [in] mesh pointer to the mesh instance.
  * \return bb bounding box of the mesh
  */
-BoundingBox< double,3 > getBounds( const axom::mint::Mesh * mesh )
+BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -186,7 +186,7 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh * mesh )
  * \param [in] mesh pointer to the input mesh.
  * \param [in] umesh pointer to the uniform mesh;
  */
-void getUniformMesh( const TriangleMesh * mesh, UniformMesh *& umesh )
+void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh == AXOM_NULLPTR );
@@ -221,11 +221,11 @@ TEST( quest_signed_distance, sphere_test )
   const double TOL             = 1.e-3;
 
   SLIC_INFO( "Constructing sphere mesh..." );
-  TriangleMesh * surface_mesh = new TriangleMesh( 3 );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
   detail::getMesh( surface_mesh );
 
   SLIC_INFO( "Generating uniform mesh..." );
-  UniformMesh * umesh = AXOM_NULLPTR;
+  UniformMesh* umesh = AXOM_NULLPTR;
   detail::getUniformMesh( surface_mesh, umesh );
 
   const int nnodes = umesh->getNumberOfNodes();
@@ -281,7 +281,7 @@ TEST( quest_signed_distance, sphere_test )
 }
 
 //------------------------------------------------------------------------------
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

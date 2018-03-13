@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -40,13 +40,15 @@
 //#include "Vista.h"
 //#include "View.h"
 
-// Standard library headers
-#include <stdio.h>
-#include <math.h>
-#include <cstdlib>
+#include "axom/config.hpp"    // For math defines
 
-// SiDRe component headers
+// Sidre component headers
 #include "sidre/sidre.hpp"
+
+// Standard library headers
+#include <cstdio>
+#include <cmath>
+#include <cstdlib>
 
 using axom::sidre::Buffer;
 using axom::sidre::Group;
@@ -63,14 +65,14 @@ const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
 
-void CreateScalarIntViewAndSetVal( Group * const grp,
+void CreateScalarIntViewAndSetVal( Group* const grp,
                                    const std::string& name, int32 const value )
 {
   grp->createViewScalar(name, value);
 }
 
 
-void CreateScalarFloatBufferViewAndSetVal( Group * const grp,
+void CreateScalarFloatBufferViewAndSetVal( Group* const grp,
                                            const std::string& name,
                                            float64 const value )
 {
@@ -85,7 +87,7 @@ void CreateScalarFloatBufferViewAndSetVal( Group * const grp,
  * Purpose   :  Ask for control and output information
  *************************************************************************/
 
-void GetUserInput(Group * const prob)
+void GetUserInput(Group* const prob)
 {
   /**********************************/
   /* Get mesh info, and create mesh */
@@ -188,7 +190,7 @@ void GetUserInput(Group * const prob)
 
  *************************************************************************/
 
-void CreateShockTubeMesh(Group * const prob)
+void CreateShockTubeMesh(Group* const prob)
 {
   int i;
   int32 const numElems = prob->getView("numElems")->getData();
@@ -199,8 +201,8 @@ void CreateShockTubeMesh(Group * const prob)
 
   /* create element and face classes */
 
-  Group * const elem = prob->createGroup("elem");
-  Group * const face = prob->createGroup("face");
+  Group* const elem = prob->createGroup("elem");
+  Group* const face = prob->createGroup("face");
 
   /* set up some important views */
 
@@ -215,11 +217,11 @@ void CreateShockTubeMesh(Group * const prob)
 
 
   int32 numTubeElems = numElems - 2;
-  Group * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
+  Group* const tube = elem->createGroup("tube"); //->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
-  int32 * const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(
-                                                           numTubeElems))->
-                             getData();
+  int32* const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(
+                                                          numTubeElems))->
+                            getData();
 
 
   for ( int k = 0u ; k < numTubeElems ; ++k)
@@ -231,9 +233,9 @@ void CreateShockTubeMesh(Group * const prob)
 
   /* Each face connects to two elements */
 
-  int32 * const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(
-                                                           2*
-                                                           numFaces))->getData();
+  int32* const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(
+                                                          2*
+                                                          numFaces))->getData();
 
   for (i = 0 ; i < numFaces ; ++i)
   {
@@ -243,8 +245,8 @@ void CreateShockTubeMesh(Group * const prob)
 
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
-  int32 * elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(
-                                                     2*numElems))->getData();
+  int32* elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(
+                                                    2*numElems))->getData();
 
   for (i = 0 ; i < numElems ; ++i)
   {
@@ -260,31 +262,31 @@ void CreateShockTubeMesh(Group * const prob)
  * Purpose   :  Populate the mesh with values
  *************************************************************************/
 
-void InitializeShockTube(Group * const prob)
+void InitializeShockTube(Group* const prob)
 {
   int i;
 
   /* These were created in GetUserInput() */
-  Group * const elem = (prob->getGroup("elem"));
-  Group * const face = (prob->getGroup("face"));
+  Group* const elem = (prob->getGroup("elem"));
+  Group* const face = (prob->getGroup("face"));
 
   /* Create element centered quantities */
 
   int32 const numElems = prob->getView("numElems")->getData();
   int32 const numFaces = prob->getView("numFaces")->getData();
 
-  float64 * const mass =
+  float64* const mass =
     elem->createViewAndAllocate("mass", DataType::float64(numElems))->getData();
 
 
-  float64 * const momentum = elem->createViewAndAllocate("momentum", DataType::float64(
-                                                           numElems))->getData();
+  float64* const momentum = elem->createViewAndAllocate("momentum", DataType::float64(
+                                                          numElems))->getData();
 
-  float64 * const energy = elem->createViewAndAllocate("energy", DataType::float64(
-                                                         numElems))->getData();
+  float64* const energy = elem->createViewAndAllocate("energy", DataType::float64(
+                                                        numElems))->getData();
 
-  float64 * const pressure = elem->createViewAndAllocate("pressure", DataType::float64(
-                                                           numElems))->getData();
+  float64* const pressure = elem->createViewAndAllocate("pressure", DataType::float64(
+                                                          numElems))->getData();
 
   /* Create face centered quantities */
 
@@ -357,22 +359,22 @@ void InitializeShockTube(Group * const prob)
  *
  *************************************************************************/
 
-void ComputeFaceInfo(Group * const prob)
+void ComputeFaceInfo(Group* const prob)
 {
   int i;
-  Group * const face = prob->getGroup("face");
+  Group* const face = prob->getGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
-  int32 const * const faceToElem = face->getView("faceToElem")->getData();
+  int32 const* const faceToElem = face->getView("faceToElem")->getData();
 
-  float64 * const F0 = face->getView("F0")->getData();
-  float64 * const F1 = face->getView("F1")->getData();
-  float64 * const F2 = face->getView("F2")->getData();
+  float64* const F0 = face->getView("F0")->getData();
+  float64* const F1 = face->getView("F1")->getData();
+  float64* const F2 = face->getView("F2")->getData();
   int numFaces = face->getView("F0")->getNumElements();
 
-  Group * const elem = prob->getGroup("elem");
-  float64 * const mass = elem->getView("mass")->getData();
-  float64 * const momentum = elem->getView("momentum")->getData();
-  float64 * const energy = elem->getView("energy")->getData();
+  Group* const elem = prob->getGroup("elem");
+  float64* const mass = elem->getView("mass")->getData();
+  float64* const momentum = elem->getView("momentum")->getData();
+  float64* const energy = elem->getView("energy")->getData();
 
   for (i = 0 ; i < numFaces ; ++i)
   {
@@ -450,36 +452,36 @@ void ComputeFaceInfo(Group * const prob)
  *
  *************************************************************************/
 
-void UpdateElemInfo(Group * const prob)
+void UpdateElemInfo(Group* const prob)
 {
   int i;
 
   /* get the element quantities we want to update */
-  Group * const elem = prob->getGroup("elem");
-  float64 * const mass = elem->getView("mass")->getData();
-  float64 * const momentum = elem->getView("momentum")->getData();
-  float64 * const energy = elem->getView("energy")->getData();
-  float64 * const pressure = elem->getView("pressure")->getData();
+  Group* const elem = prob->getGroup("elem");
+  float64* const mass = elem->getView("mass")->getData();
+  float64* const momentum = elem->getView("momentum")->getData();
+  float64* const energy = elem->getView("energy")->getData();
+  float64* const pressure = elem->getView("pressure")->getData();
 
   /* focus on just the elements within the shock tube */
-  Group * const tube = elem->getGroup("tube");
-  int32 * const elemToFace = tube->getView("elemToFace")->getData();
+  Group* const tube = elem->getGroup("tube");
+  int32* const elemToFace = tube->getView("elemToFace")->getData();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
   int numTubeElems = tube->getView("mapToElems")->getNumElements();
 
 //  int *is = tube->map();
-  int32 * const is = tube->getView("mapToElems")->getData();
+  int32* const is = tube->getView("mapToElems")->getData();
 
   /* The element update is calculated as the flux between faces */
-  Group * const face = prob->getGroup("face");
-  float64 * const F0 = face->getView("F0")->getData();
-  float64 * const F1 = face->getView("F1")->getData();
-  float64 * const F2 = face->getView("F2")->getData();
+  Group* const face = prob->getGroup("face");
+  float64* const F0 = face->getView("F0")->getData();
+  float64* const F1 = face->getView("F1")->getData();
+  float64* const F2 = face->getView("F2")->getData();
 
   double const dx = prob->getView("dx")->getData();
   double const dt = prob->getView("dt")->getData();
-  float64& time = *prob->getView("time")->getData<float64 *>();
+  float64& time = *prob->getView("time")->getData<float64*>();
 
   for (i = 0 ; i < numTubeElems ; ++i)
   {
@@ -510,12 +512,12 @@ void UpdateElemInfo(Group * const prob)
 #include <ctype.h>
 
 
-void DumpUltra( Group * const prob)
+void DumpUltra( Group* const prob)
 {
 #if 1
-  FILE * fp;
+  FILE* fp;
   char fname[100];
-  char * tail;
+  char* tail;
 
 //   VHashTraverse_t content ;
 
@@ -539,7 +541,7 @@ void DumpUltra( Group * const prob)
 
   for(size_t i=0 ; i<prob->getNumViews() ; i++)
   {
-    View * const view = prob->getView(i);
+    View* const view = prob->getView(i);
     const int length = view->getNumElements();
     const std::string& name = view->getName();
     if( length <= 1 )
@@ -560,18 +562,18 @@ void DumpUltra( Group * const prob)
   }
 
 
-  Group * const elem = prob->getGroup("elem");
+  Group* const elem = prob->getGroup("elem");
 
   for(size_t i=0 ; i<elem->getNumViews() ; i++)
   {
-    View * const view = elem->getView(i);
+    View* const view = elem->getView(i);
     const int length = view->getNumElements();
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 
     if( view->getTypeID() == axom::sidre::INT32_ID )
     {
-      int32 const * const data = view->getData();
+      int32 const* const data = view->getData();
       for ( int j=0 ; j<length ; ++j)
       {
         fprintf(fp, "%f %f\n", (double) j, (double) data[j]);
@@ -580,7 +582,7 @@ void DumpUltra( Group * const prob)
     }
     else if( view->getTypeID() == axom::sidre::FLOAT64_ID )
     {
-      float64 const * const data = view->getData();
+      float64 const* const data = view->getData();
       for ( int j=0 ; j<length ; ++j)
       {
         fprintf(fp, "%f %f\n", (double) j, (double) data[j]);
@@ -609,16 +611,16 @@ int main(void)
   /* and calling MPI_Finalize() at the end of main() */
 
   DataStore DATASTORE;
-  DataStore * const dataStore = &DATASTORE;
-  Group * const rootGroup = dataStore->getRoot();
-  Group * const prob = rootGroup->createGroup("problem");
+  DataStore* const dataStore = &DATASTORE;
+  Group* const rootGroup = dataStore->getRoot();
+  Group* const prob = rootGroup->createGroup("problem");
 
   GetUserInput(prob);
   CreateShockTubeMesh(prob);
   InitializeShockTube(prob);
 
   /* use a reference when you want to update the param directly */
-  int * const currCycle = prob->getView("cycle")->getData();
+  int* const currCycle = prob->getView("cycle")->getData();
 
   int numTotalCycles = prob->getView("numTotalCycles")->getData();
   int dumpInterval = prob->getView("numCyclesPerDump")->getData();

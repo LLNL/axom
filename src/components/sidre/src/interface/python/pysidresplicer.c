@@ -2,7 +2,7 @@
 
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -59,16 +59,16 @@ PyModule_AddIntConstant(m, "DOUBLE_ID", SIDRE_DOUBLE_ID);
 // ----- pyDataStoretype.cpp
 
 // splicer begin class.DataStore.type.init
-DataStore * ds = new DataStore();
+DataStore* ds = new DataStore();
 self->BBB = ds;
 return 0;
 // splicer end class.DataStore.type.init
 
 // splicer begin class.DataStore.type.richcompare
-PyObject * rv = Py_NotImplemented;
-if (PyObject_IsInstance(other, (PyObject *) &PY_DataStore_Type))
+PyObject* rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataStore_Type))
 {
-  PY_DataStore * pyother = (PY_DataStore *) other;
+  PY_DataStore* pyother = (PY_DataStore*) other;
   switch (opid)
   {
   case Py_EQ:
@@ -107,7 +107,7 @@ return rv;
 // ----- pyDataGrouptype.cpp
 
 // splicer begin class.DataGroup.type.init
-PyObject * grpobj;
+PyObject* grpobj;
 
 /* By requiring a PyCapsule, it is difficult to call directly from Python.
  * But the C++ constructors are private so that makes sense.
@@ -117,8 +117,8 @@ if (!PyArg_ParseTuple(args, "O!:DataGroup_init",
   return -1;
 
 /* capsule_dbnode */
-DataGroup * grp = static_cast<DataGroup *>
-                  (PyCapsule_GetPointer(grpobj, PY_DataGroup_capsule_name));
+DataGroup* grp = static_cast<DataGroup *>
+                 (PyCapsule_GetPointer(grpobj, PY_DataGroup_capsule_name));
 self->BBB = grp;
 if (grp == NULL && PyErr_Occurred())
   return -1;
@@ -129,15 +129,15 @@ return 0;
 
 // splicerX begin class.DataGroup.method.getName
 const std::string & name = self->BBB->getName();
-PyObject * rv = PyString_FromString(name.c_str());
+PyObject* rv = PyString_FromString(name.c_str());
 return rv;
 // splicerX end class.DataGroup.method.getName
 
 // splicer begin class.DataGroup.type.richcompare
-PyObject * rv = Py_NotImplemented;
-if (PyObject_IsInstance(other, (PyObject *) &PY_DataGroup_Type))
+PyObject* rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataGroup_Type))
 {
-  PY_DataGroup * pyother = (PY_DataGroup *) other;
+  PY_DataGroup* pyother = (PY_DataGroup*) other;
   switch (opid)
   {
   case Py_EQ:
@@ -175,10 +175,10 @@ return rv;
 // ----- pyDataBuffertype.cpp
 
 // splicer begin class.DataBuffer.type.richcompare
-PyObject * rv = Py_NotImplemented;
-if (PyObject_IsInstance(other, (PyObject *) &PY_DataBuffer_Type))
+PyObject* rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataBuffer_Type))
 {
-  PY_DataBuffer * pyother = (PY_DataBuffer *) other;
+  PY_DataBuffer* pyother = (PY_DataBuffer*) other;
   switch (opid)
   {
   case Py_EQ:
@@ -216,10 +216,10 @@ return rv;
 // ----- pyDataViewtype.cpp
 
 // splicer begin class.DataView.type.richcompare
-PyObject * rv = Py_NotImplemented;
-if (PyObject_IsInstance(other, (PyObject *) &PY_DataView_Type))
+PyObject* rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataView_Type))
 {
-  PY_DataView * pyother = (PY_DataView *) other;
+  PY_DataView* pyother = (PY_DataView*) other;
   switch (opid)
   {
   case Py_EQ:
@@ -258,9 +258,9 @@ return rv;
 
 // splicer begin function.name_is_valid
 // Allow any sort of object.  This will allow None to return False.
-PyObject * name;
-const char * kwcpp = "name";
-char * kw_list[] = { (char *) kwcpp+0, NULL };
+PyObject* name;
+const char* kwcpp = "name";
+char* kw_list[] = { (char*) kwcpp+0, NULL };
 bool rv = false;
 
 if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:nameIsValid", kw_list,

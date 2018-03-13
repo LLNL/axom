@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,9 +18,11 @@
 /**
  * \file
  *
- * \brief Simple example that uses Slam for generating and processing a simple 3D mesh.
+ * \brief Simple example that uses Slam for generating and processing a simple
+ *  3D mesh.
  *
- * \details Loads a hex mesh from a VTK file, generates the Node to Zone relation and does simple mesh processing.
+ * \details Loads a hex mesh from a VTK file, generates the Node to Zone
+ *  relation and does simple mesh processing.
  *
  * \author T. Brunner (original)
  * \author K. Weiss (modified to use axom's Slam component)
@@ -186,11 +188,14 @@ public:
   ZoneSet zones;
 
   /// Relations in the mesh
-  ZoneToNodeRelation zoneToNodeRelation;        // storage for relation_(3,0) -- zones -> nodes
-  NodeToZoneRelation nodeToZoneRelation;        // storage for relation_(0,3) -- nodes -> zones
+  ZoneToNodeRelation zoneToNodeRelation;        // storage for relation_(3,0) --
+                                                // zones -> nodes
+  NodeToZoneRelation nodeToZoneRelation;        // storage for relation_(0,3) --
+                                                // nodes -> zones
 
 
-  /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar fields
+  /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar
+  // fields
   PositionsVec nodePosition;
   PositionsVec zonePosition;
   ZoneField zoneField;
@@ -201,7 +206,8 @@ public:
 /// The repository is a proxy for a data allocator/manager
 struct Repository
 {
-  // Define the explicit instances of our local (key/value) datastore for int and double
+  // Define the explicit instances of our local (key/value) datastore for int
+  // and double
   typedef axom::slam::FieldRegistry<int>    IntsRegistry;
   typedef axom::slam::FieldRegistry<double> RealsRegistry;
   typedef axom::slam::Map<int>              IntField;
@@ -276,8 +282,10 @@ public:
 
     SLIC_INFO("-- Number of zones: " << numZones );
 
-    // Note: The VTK format has an extra value per zone for the number of indices
-    // This is constant since we're assuming a Hex mesh.  General meshes can be different.
+    // Note: The VTK format has an extra value per zone for the number of
+    // indices
+    // This is constant since we're assuming a Hex mesh.  General meshes can be
+    // different.
     SLIC_ASSERT_MSG( (listSize - numZones) == numNodeZoneIndices,
                      fmt::format(
                        "Error while reading mesh!\n "
@@ -304,7 +312,7 @@ private:
   std::ifstream vtkMesh;
 };
 
-void readHexMesh(std::string fileName, HexMesh * mesh)
+void readHexMesh(std::string fileName, HexMesh* mesh)
 {
   {
     SimpleVTKHexMeshReader vtkMeshReader(fileName);
@@ -352,7 +360,7 @@ void readHexMesh(std::string fileName, HexMesh * mesh)
 
 }
 
-void generateNodeZoneRelation(HexMesh * mesh)
+void generateNodeZoneRelation(HexMesh* mesh)
 {
   // Create NodeToZone relation by inverting the ZoneToZone relation
   // TODO: This function to invert a relation should be moved into Slam
@@ -360,7 +368,8 @@ void generateNodeZoneRelation(HexMesh * mesh)
   typedef Repository::IntsRegistry::BufferType IndexBuf;
   typedef HexMesh::ZoneToNodeRelation::RelationSet RelationSet;
 
-  /// Step 1: Compute the cardinalities of each node by looping through zone to node relation
+  /// Step 1: Compute the cardinalities of each node by looping through zone to
+  // node relation
   IndexBuf& nzBegins = Repository::intsRegistry
                        .addBuffer("node_zone_begins", mesh->nodes.size() + 1 );
   for(IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
@@ -373,7 +382,8 @@ void generateNodeZoneRelation(HexMesh * mesh)
   }
 
   /// Step 2: Compute begin offsets for each node based on cardinalities
-  // Strategy: perform (inplace) exclusive prefix sum of cardinalities in nzBegins
+  // Strategy: perform (inplace) exclusive prefix sum of cardinalities in
+  // nzBegins
   IndexType prevVal = nzBegins[0];
   nzBegins[0] = 0;
   for(int i = 1 ; i <= mesh->numNodes() ; ++i)
@@ -384,7 +394,8 @@ void generateNodeZoneRelation(HexMesh * mesh)
   }
 
 
-  /// Step 3: Invert the zone_node relation, use nzBegins[node_index] as offset for next zone
+  /// Step 3: Invert the zone_node relation, use nzBegins[node_index] as offset
+  // for next zone
   IndexBuf& zIndices = Repository::intsRegistry
                        .addBuffer("node_zone_indices",
                                   nzBegins[mesh->numNodes()] );
@@ -420,7 +431,7 @@ void generateNodeZoneRelation(HexMesh * mesh)
 
 }
 
-void computeZoneBarycenters(HexMesh * mesh)
+void computeZoneBarycenters(HexMesh* mesh)
 {
   typedef HexMesh::ZoneToNodeRelation::RelationSet NodeSet;
 
@@ -445,7 +456,7 @@ void computeZoneBarycenters(HexMesh * mesh)
   }
 }
 
-void createZoneRadiusField (HexMesh * mesh)
+void createZoneRadiusField (HexMesh* mesh)
 {
   // Compute a zone field based on the L2 norm of their position vectors
   mesh->zoneField = HexMesh::ZoneField ( &mesh->zones );
@@ -456,7 +467,7 @@ void createZoneRadiusField (HexMesh * mesh)
   }
 }
 
-DataType computeNodalErrors(HexMesh * mesh)
+DataType computeNodalErrors(HexMesh* mesh)
 {
   // Compute the node average version, and the approximation error
   typedef HexMesh::NodeToZoneRelation::RelationSet ZoneSet;
@@ -498,7 +509,7 @@ DataType computeNodalErrors(HexMesh * mesh)
 }   // end namespace slamUnstructuredHex
 
 
-int main(int argc, char * * argv)
+int main(int argc, char** argv)
 {
   using namespace slamUnstructuredHex;
 

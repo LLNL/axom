@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -70,9 +70,9 @@ public:
 
   /*!
    * \brief Constructor for an empty polygon that reserves space for
-   *    the given number of vertices
+   *  the given number of vertices
    *
-   * \param [in] numExpectedVerts The number of vertices for which to reserve space
+   * \param [in] numExpectedVerts number of vertices for which to reserve space
    * \pre numExpectedVerts is not negative
    *
    */
@@ -103,9 +103,11 @@ public:
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
   /*!
-   * \brief Computes the centroid as the average of the polygon's vertex positions
+   * \brief Computes the centroid as the average of the polygon's vertex
+   *  positions
    *
    * \return The centroid of the polygon's vertices
+   *
    * \pre  polygon.isValid() is true
    */
   PointType centroid() const

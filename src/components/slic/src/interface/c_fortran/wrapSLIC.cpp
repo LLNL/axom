@@ -1,7 +1,7 @@
 // wrapSLIC.cpp
 // This is generated code, do not edit
 //
-// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -57,7 +57,7 @@ void SLIC_finalize()
 // splicer end function.finalize
 }
 
-void SLIC_create_logger(const char * name, char imask)
+void SLIC_create_logger(const char* name, char imask)
 {
 // splicer begin function.create_logger
   const std::string SH_name(name);
@@ -66,7 +66,7 @@ void SLIC_create_logger(const char * name, char imask)
 // splicer end function.create_logger
 }
 
-void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
+void SLIC_create_logger_bufferify(const char* name, int Lname, char imask)
 {
 // splicer begin function.create_logger_bufferify
   const std::string SH_name(name, Lname);
@@ -75,7 +75,7 @@ void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
 // splicer end function.create_logger_bufferify
 }
 
-bool SLIC_activate_logger(const char * name)
+bool SLIC_activate_logger(const char* name)
 {
 // splicer begin function.activate_logger
   const std::string SH_name(name);
@@ -84,7 +84,7 @@ bool SLIC_activate_logger(const char * name)
 // splicer end function.activate_logger
 }
 
-bool SLIC_activate_logger_bufferify(const char * name, int Lname)
+bool SLIC_activate_logger_bufferify(const char* name, int Lname)
 {
 // splicer begin function.activate_logger_bufferify
   const std::string SH_name(name, Lname);
@@ -93,7 +93,7 @@ bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 // splicer end function.activate_logger_bufferify
 }
 
-void SLIC_get_active_logger_name_bufferify(char * name, int Nname)
+void SLIC_get_active_logger_name_bufferify(char* name, int Nname)
 {
 // splicer begin function.get_active_logger_name_bufferify
   std::string SH_rv = getActiveLoggerName();
@@ -181,7 +181,7 @@ bool SLIC_is_abort_on_warnings_enabled()
 // splicer end function.is_abort_on_warnings_enabled
 }
 
-void SLIC_log_message(int level, const char * message, const char * fileName,
+void SLIC_log_message(int level, const char* message, const char* fileName,
                       int line, bool filter)
 {
 // splicer begin function.log_message
@@ -193,8 +193,8 @@ void SLIC_log_message(int level, const char * message, const char * fileName,
 // splicer end function.log_message
 }
 
-void SLIC_log_message_bufferify(int level, const char * message, int Lmessage,
-                                const char * fileName, int LfileName, int line,
+void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
+                                const char* fileName, int LfileName, int line,
                                 bool filter)
 {
 // splicer begin function.log_message_bufferify

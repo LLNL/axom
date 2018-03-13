@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 !
@@ -11,6 +11,8 @@
 !
 ! For details about use and distribution, please read axom/LICENSE.
 !
+
+#include "axom/config.hpp"
 
 program spio_basic_write_read
   use iso_c_binding
@@ -33,6 +35,15 @@ program spio_basic_write_read
 
   type(iomanager) writer, reader
 
+#ifdef AXOM_USE_HDF5
+  character(18) :: protocol = "sidre_hdf5        "
+  character(18) :: root_ext = ".root             "
+#else
+  character(18) :: protocol = "sidre_conduit_json"
+  character(18) :: root_ext = ".conduit_json.root"
+#endif  
+
+
   call mpi_init(mpierr)
 
   ds1 = datastore_new()
@@ -50,14 +61,14 @@ program spio_basic_write_read
   num_files = 1
   writer = iomanager_new(MPI_COMM_WORLD)
 
-  call writer%write(root1, num_files, "F_out_spio_basic_write_read", "sidre_hdf5")
+  call writer%write(root1, num_files, "F_out_spio_basic_write_read", protocol )
 
   ds2 = datastore_new()
 
   reader = iomanager_new(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
-  call reader%read(root2, "F_out_spio_basic_write_read.root")
+  call reader%read(root2, "F_out_spio_basic_write_read" // root_ext )
 
   return_val = 0
   if (.not. root2%is_equivalent_to(root1)) then

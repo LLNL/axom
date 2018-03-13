@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -36,7 +36,7 @@ using axom::sidre::IOManager;
  * Purpose   :
  *************************************************************************/
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
   axom::slic::UnitTestLogger logger;
@@ -45,9 +45,9 @@ int main(int argc, char * argv[])
                 "Missing required command line argument. \n\t"
                 << "Usage: spio_IORead <sidre_root_file>");
 
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   SLIC_ASSERT(ds);
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   std::string root_file;
   if (argc == 2)

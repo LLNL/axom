@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -37,7 +37,7 @@ namespace axom
 namespace lumberjack
 {
 
-void Lumberjack::initialize(Communicator * communicator, int ranksLimit)
+void Lumberjack::initialize(Communicator* communicator, int ranksLimit)
 {
   m_communicator = communicator;
   m_ranksLimit = ranksLimit;
@@ -51,7 +51,7 @@ void Lumberjack::finalize()
   clearMessages();
 }
 
-void Lumberjack::addCombiner(Combiner * combiner)
+void Lumberjack::addCombiner(Combiner* combiner)
 {
   bool identifierFound = false;
   for (int i=0 ; i<(int)m_combiners.size() ; ++i)
@@ -95,7 +95,7 @@ void Lumberjack::clearCombiners()
   m_combiners.clear();
 }
 
-const std::vector<Message *>& Lumberjack::getMessages() const
+const std::vector<Message*>& Lumberjack::getMessages() const
 {
   return m_messages;
 }
@@ -129,21 +129,21 @@ void Lumberjack::queueMessage(const std::string& text,
                               const std::string& fileName, const int lineNumber,
                               int level, const std::string& tag)
 {
-  Message * mi = new Message(text, m_communicator->rank(),
-                             fileName, lineNumber, level, tag);
+  Message* mi = new Message(text, m_communicator->rank(),
+                            fileName, lineNumber, level, tag);
   m_messages.push_back(mi);
 }
 
 void Lumberjack::pushMessagesOnce()
 {
-  const char * packedMessagesToBeSent = "";
+  const char* packedMessagesToBeSent = "";
   if (!m_communicator->isOutputNode())
   {
     combineMessages();
     packedMessagesToBeSent = packMessages();
     clearMessages();
   }
-  std::vector<const char *> receivedPackedMessages;
+  std::vector<const char*> receivedPackedMessages;
 
   m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
@@ -164,8 +164,8 @@ void Lumberjack::pushMessagesOnce()
 
 void Lumberjack::pushMessagesFully()
 {
-  const char * packedMessagesToBeSent = "";
-  std::vector<const char *> receivedPackedMessages;
+  const char* packedMessagesToBeSent = "";
+  std::vector<const char*> receivedPackedMessages;
   int numPushesToFlush = m_communicator->numPushesToFlush();
   for (int i=0 ; i<numPushesToFlush ; ++i)
   {
@@ -199,16 +199,17 @@ bool Lumberjack::isOutputNode()
   return m_communicator->isOutputNode();
 }
 
-const char * Lumberjack::packMessages()
+const char* Lumberjack::packMessages()
 {
   //This function packs the messages into one long char array
   //  in the following format:
   //
-  // <message count><packed message size><packed message><packed message size>...
+  // <message count><packed message size><packed message><packed message
+  // size>...
 
   if (m_messages.size() == 0)
   {
-    char * zero = new char[2];
+    char* zero = new char[2];
     std::strcpy(zero, "0");
     return zero;
   }
@@ -240,8 +241,8 @@ const char * Lumberjack::packMessages()
     axom::utilities::string::intToString(messageCount) + memberDelimiter;
   totalSize += messageCountString.size();
 
-  const char * packedMessagesString = new char[totalSize];
-  char * packedMessagesIndex = (char *)packedMessagesString;
+  const char* packedMessagesString = new char[totalSize];
+  char* packedMessagesIndex = (char*)packedMessagesString;
 
   // Copy message count to start of packed message
   std::memcpy(packedMessagesIndex, messageCountString.c_str(),
@@ -255,7 +256,14 @@ const char * Lumberjack::packMessages()
                 sizeStrings[i].size());
     packedMessagesIndex += sizeStrings[i].size();
     // Copy memberDelimiter
-    std::memcpy(packedMessagesIndex, &memberDelimiter, sizeof(char));      //ToDo: better way to copy this im sure
+    std::memcpy(packedMessagesIndex, &memberDelimiter, sizeof(char));      //ToDo:
+                                                                           // better
+                                                                           // way
+                                                                           // to
+                                                                           // copy
+                                                                           // this
+                                                                           // im
+                                                                           // sure
     packedMessagesIndex += 1;
     // Copy packed message
     std::memcpy(packedMessagesIndex, packedMessages[i].c_str(),
@@ -267,7 +275,7 @@ const char * Lumberjack::packMessages()
   return packedMessagesString;
 }
 
-void Lumberjack::unpackMessages(const char * packedMessages)
+void Lumberjack::unpackMessages(const char* packedMessages)
 {
   std::string packedMessagesString = std::string(packedMessages);
   std::size_t start, end;
@@ -280,7 +288,7 @@ void Lumberjack::unpackMessages(const char * packedMessages)
   start = end + 1;
 
   // Grab each message
-  Message * message;
+  Message* message;
   int messageSize;
   for (int j = 0 ; j < messageCount ; ++j)
   {
@@ -307,7 +315,7 @@ void Lumberjack::combineMessages()
     return;
   }
 
-  std::vector<Message *> finalMessages;
+  std::vector<Message*> finalMessages;
   std::vector<int> indexesToBeDeleted;
   int combinersSize = (int)m_combiners.size();
   bool combinedMessage = false;

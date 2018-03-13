@@ -1,28 +1,34 @@
 /*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 #include "axom/config.hpp"           // defines AXOM_USE_CXX11
 
 /*!
- *******************************************************************************
+ *
  * \file AxomMacros.hpp
  *
  * \brief Contains several useful macros for the axom project
- *******************************************************************************
+ *
  */
 
 #ifndef AXOM_MACROS_HPP_
 #define AXOM_MACROS_HPP_
 
 /*!
- *******************************************************************************
+ *
  * \def AXOM_NOT_USED(x)
  * \brief Macro used to silence compiler warnings in methods with unused
  *  arguments.
@@ -35,18 +41,16 @@
  *  }
  *
  * \endcode
- *******************************************************************************
  */
 #define AXOM_NOT_USED(x)
 
 /*!
- *******************************************************************************
+ *
  * \def AXOM_STATIC_ASSERT(cond)
  * \def AXOM_STATIC_ASSERT_MSG(cond, MSG)
  *
  * \brief This macro wraps C++11 compile time static_assert functionality. Used
  *  for backwards compatibility with non C++11 compilers.
- *******************************************************************************
  */
 #ifdef AXOM_USE_CXX11
 #define AXOM_STATIC_ASSERT( cond ) static_assert( cond, #cond )
@@ -57,7 +61,7 @@
 #endif
 
 /*!
- *******************************************************************************
+ *
  * \def AXOM_DEBUG_VAR(x)
  * \brief Macro used to silence compiler warnings about variables
  *        that are defined but not used.
@@ -66,18 +70,19 @@
  * \code
  *
  *  double myVar = ...
- *  AXOM_DEBUG_VAR(myVar);       // code will emit the following warning in release builds
- *                              // if extra warnings are enabled and macro is not called
- *                              // warning: unused variable 'myVar' [-Wunused-variable]
+ *  AXOM_DEBUG_VAR(myVar);
+ *
+ *  // code emits the following warning in release builds
+ *  // if extra warnings are enabled and this macro is not called
+ *  // warning: unused variable 'myVar' [-Wunused-variable]
+ *
  *  SLIC_ASSERT(myVar > 0)
  *
  * \endcode
- *******************************************************************************
  */
 #define AXOM_DEBUG_VAR(_x)   static_cast<void>(_x)
 
 /*!
- *******************************************************************************
  * \def AXOM_DEBUG_PARAM(x)
  * \brief Macro used to silence compiler warnings about parameters
  *        that are used in debug code but not in release code.
@@ -91,7 +96,6 @@
  *  }
  *
  * \endcode
- *******************************************************************************
  */
 #ifdef AXOM_DEBUG
  #define AXOM_DEBUG_PARAM(_x)  _x
@@ -100,7 +104,6 @@
 #endif
 
 /*!
- *******************************************************************************
  * \def DISABLE_DEFAULT_CTOR(className)
  * \brief Macro to disable default constructor for the given class.
  * \note This macro should only be used within the private section of a class,
@@ -119,7 +122,6 @@
  *   };
  *
  * \endcode
- *******************************************************************************
  */
 #ifdef AXOM_USE_CXX11
 #define DISABLE_DEFAULT_CTOR(className)                      \
@@ -130,7 +132,6 @@
 #endif
 
 /*!
- *******************************************************************************
  * \def DISABLE_COPY_AND_ASSIGNMENT(className)
  * \brief Macro to disable copy and assignment operations for the given class.
  * \note This macro should only be used within the private section of a class,
@@ -151,20 +152,18 @@
  *   };
  *
  * \endcode
- *******************************************************************************
  */
 #ifdef AXOM_USE_CXX11
-#define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
+#define DISABLE_COPY_AND_ASSIGNMENT(className)                                 \
   className( const className & ) = delete;                                     \
   className& operator=(const className&) = delete
 #else
-#define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
+#define DISABLE_COPY_AND_ASSIGNMENT(className)                                 \
   className( const className & );                                              \
   className& operator=( const className& )
 #endif
 
 /*!
- *******************************************************************************
  * \def DISABLE_MOVE_AND_ASSIGNMENT(className)
  * \brief Macro to disable move constructor and move assignment operations for
  * the given class.
@@ -186,7 +185,6 @@
  *   };
  *
  * \endcode
- *******************************************************************************
  */
 #ifdef AXOM_USE_CXX11
 #define DISABLE_MOVE_AND_ASSIGNMENT(className)                                \

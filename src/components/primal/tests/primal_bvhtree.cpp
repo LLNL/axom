@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -57,7 +57,7 @@ TEST( primal_bucket_tree, insert_object )
   const int N     = bucketTree.getBucketNumObjects( 0 );
   EXPECT_EQ( 5, N );
 
-  const int * objs = bucketTree.getBucketObjectArray( 0 );
+  const int* objs = bucketTree.getBucketObjectArray( 0 );
   ASSERT_TRUE( objs != AXOM_NULLPTR );
 
   const BoxType& bucketBox = bucketTree.getBucketBox( 0 );
@@ -80,7 +80,7 @@ TEST( primal_bucket_tree, insert_object )
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

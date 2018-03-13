@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -63,7 +63,7 @@ public:
   }
 
   inline bool isSubset() const { return false; }
-  const Set * parentSet() const { return this; }
+  const Set* parentSet() const { return this; }
 
   bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const
   {

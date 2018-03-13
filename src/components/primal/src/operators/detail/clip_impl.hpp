@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -40,7 +40,7 @@ namespace detail
 {
 
 /*! Returns true when index is even */
-bool isEven(int index)
+inline bool isEven(int index)
 {
   return (index & 1)==0;
 }
@@ -140,8 +140,8 @@ Point< T,NDIMS > findIntersectionPoint(const Point< T, NDIMS >& a,
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
  */
 template < typename T, int NDIMS >
-void clipAxisPlane(const Polygon< T,NDIMS > * prevPoly,
-                   Polygon< T,NDIMS > * currentPoly, int index, T val)
+void clipAxisPlane(const Polygon< T,NDIMS >* prevPoly,
+                   Polygon< T,NDIMS >* currentPoly, int index, T val)
 {
   typedef Point< T,NDIMS > PointType;
 
@@ -154,12 +154,12 @@ void clipAxisPlane(const Polygon< T,NDIMS > * prevPoly,
   }
 
   // Initialize point a with the last vertex of the polygon
-  const PointType * a = &(*prevPoly)[numVerts-1];
+  const PointType* a = &(*prevPoly)[numVerts-1];
   int aSide = classifyPointAxisPlane(*a, index, val);
 
   for (int i=0 ; i< numVerts ; ++i)
   {
-    const PointType * b = &(*prevPoly)[i];
+    const PointType* b = &(*prevPoly)[i];
     int bSide = classifyPointAxisPlane(*b, index, val);
 
     switch (bSide)

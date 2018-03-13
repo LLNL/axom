@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -98,7 +98,7 @@ private:
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
    */
-  bool hasValue(const Attribute * attr) const;
+  bool hasValue(const Attribute* attr) const;
 
   /*!
    * \brief Create a Conduit Node to store an attribute.
@@ -112,13 +112,13 @@ private:
   /*!
    * \brief Set attribute to its default value.
    */
-  bool setToDefault(const Attribute * attr);
+  bool setToDefault(const Attribute* attr);
 
   /*!
    * \brief Set attribute value from a scalar.
    */
   template<typename ScalarType>
-  bool setScalar(const Attribute * attr, ScalarType value)
+  bool setScalar(const Attribute* attr, ScalarType value)
   {
     DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
     if (arg_id != attr->getTypeID())
@@ -144,7 +144,7 @@ private:
   /*!
    * \brief Set attribute value from a string.
    */
-  bool setString(const Attribute * attr, const std::string & value)
+  bool setString(const Attribute* attr, const std::string & value)
   {
     DataTypeId arg_id = CHAR8_STR_ID;
     if (arg_id != attr->getTypeID())
@@ -173,7 +173,7 @@ private:
    * Used when restoring attributes from a file.
    * The type of node is not check.
    */
-  bool setNode(const Attribute * attr, const Node & node)
+  bool setNode(const Attribute* attr, const Node & node)
   {
     IndexType iattr = attr->getIndex();
     bool ok = createNode(iattr);
@@ -187,17 +187,17 @@ private:
   /*!
    * \brief Return a scalar attribute value.
    */
-  Node::ConstValue getScalar( const Attribute * attr ) const;
+  Node::ConstValue getScalar( const Attribute* attr ) const;
 
   /*!
    * \brief Return a string attribute value.
    */
-  const char * getString( const Attribute * attr ) const;
+  const char* getString( const Attribute* attr ) const;
 
   /*!
    * \brief Return reference to value Node.
    */
-  const Node & getValueNodeRef( const Attribute * attr ) const;
+  const Node & getValueNodeRef( const Attribute* attr ) const;
 
   /*!
    * \brief Return a reference to an empty Node.
@@ -256,7 +256,7 @@ private:
   ///////////////////////////////////////////////////////////////////
 
   /// Attributes values.
-  Values * m_values;
+  Values* m_values;
 
 };
 

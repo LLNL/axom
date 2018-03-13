@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -173,7 +173,7 @@ bool isAbortOnWarningsEnabled()
 }
 
 //------------------------------------------------------------------------------
-void addStreamToMsgLevel( LogStream * ls, message::Level level )
+void addStreamToMsgLevel( LogStream* ls, message::Level level )
 {
   if ( !isInitialized() )
   {
@@ -185,7 +185,7 @@ void addStreamToMsgLevel( LogStream * ls, message::Level level )
 }
 
 //------------------------------------------------------------------------------
-void addStreamToAllMsgLevels( LogStream * ls )
+void addStreamToAllMsgLevels( LogStream* ls )
 {
   Logger::getActiveLogger()->addStreamToAllMsgLevels( ls );
 }
@@ -299,11 +299,11 @@ void finalize()
 #ifdef WIN32
 std::string stacktrace( )
 {
-  void * stack[10];
+  void* stack[10];
   std::ostringstream oss;
 
   unsigned short frames;
-  SYMBOL_INFO * symbol;
+  SYMBOL_INFO* symbol;
   HANDLE process;
 
   process = GetCurrentProcess();
@@ -311,7 +311,7 @@ std::string stacktrace( )
   SymInitialize( process, NULL, TRUE );
 
   frames               = CaptureStackBackTrace( 0, 10, stack, NULL );
-  symbol               = ( SYMBOL_INFO * )calloc(
+  symbol               = ( SYMBOL_INFO* )calloc(
     sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
   symbol->MaxNameLen   = 255;
   symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
@@ -336,9 +336,9 @@ std::string stacktrace( )
 #else
 std::string stacktrace( )
 {
-  void * array[10];
+  void* array[10];
   const int size = backtrace( array, 10 );
-  char * * strings = backtrace_symbols( array, size );
+  char** strings = backtrace_symbols( array, size );
 
   std::ostringstream oss;
   oss << "\n** StackTrace of " << size << " frames **\n";

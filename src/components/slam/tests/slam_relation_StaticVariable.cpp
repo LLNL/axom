@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -104,7 +104,7 @@ void printVector(StrType const& msg, VecType const& vec)
 
 
 template<typename VecType>
-void generateIncrementingRelations(VecType * begins, VecType * indices)
+void generateIncrementingRelations(VecType* begins, VecType* indices)
 {
   VecType& beginsVec = *begins;
   VecType& indicesVec = *indices;
@@ -126,7 +126,8 @@ void generateIncrementingRelations(VecType * begins, VecType * indices)
 
 
 /**
- * \brief Traverses the relation's entities using the double subscript access API
+ * \brief Traverses the relation's entities using the double subscript access
+ *  API
  *
  * \note Assumes that the relation data has been set
  * using the generateIncrementingRelations() function
@@ -353,7 +354,8 @@ TEST(slam_static_variable_relation,empty_relation_out_of_bounds)
   StaticVariableRelationType emptyRel;
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( emptyRel[FROMSET_SIZE], "");
 #else
@@ -378,7 +380,8 @@ TEST(slam_static_variable_relation,initialized_rel_out_of_bounds)
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( incrementingRel[FROMSET_SIZE], "");
 #else
@@ -392,7 +395,7 @@ TEST(slam_static_variable_relation,initialized_rel_out_of_bounds)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

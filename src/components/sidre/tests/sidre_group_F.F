@@ -1,5 +1,5 @@
 !
-! Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ! 
 ! Produced at the Lawrence Livermore National Laboratory
 ! 
@@ -15,15 +15,23 @@
 ! API coverage tests
 ! Each test should be documented with the interface functions being tested
 
+#include "axom/config.hpp"
+
 module sidre_group_test
   use iso_c_binding
   use fruit
   use axom_sidre
   implicit none
 
+#ifdef AXOM_USE_HDF5
   ! Test protocols
   integer, parameter :: nprotocols = 3
   character(12) :: protocols(nprotocols) = [ "sidre_json  ", "sidre_hdf5  ", "json        " ]
+#else
+  ! Test protocols
+  integer, parameter :: nprotocols = 2
+  character(12) :: protocols(nprotocols) = [ "sidre_json  ", "json        " ]
+#endif
 
 contains
 
@@ -690,8 +698,12 @@ contains
 
     call ds1%delete()
 
-    ! Only restore sidre_hdf5 protocol
-    do i = 2,2
+    do i = 1, nprotocols
+       ! Only restore sidre_hdf5 protocol
+       if(protocols(i) .ne. "sidre_hdf5") then 
+          cycle
+       endif
+
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
@@ -737,8 +749,13 @@ contains
        call root1%save(file_path, protocols(i))
     enddo
 
-    ! Only restore sidre_hdf5 protocol
-    do i = 2,2
+    ! Restore datastore
+    do i = 1, nprotocols
+       ! Only restore sidre_hdf5 protocol
+       if(protocols(i) .ne. "sidre_hdf5") then 
+          cycle
+       endif
+       
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
@@ -777,7 +794,7 @@ contains
     integer i, j
     integer, parameter :: nfoo = 10
     integer foo1(nfoo), foo2(nfoo)
-    integer, pointer :: foo3(:) => null()
+!    integer, pointer :: foo3(:) => null()
     integer(C_INT), target :: foo4(nfoo)
     integer int2d1(nfoo,2), int2d2(nfoo,2)
     integer, pointer :: int2d3(:,:)
@@ -802,7 +819,9 @@ contains
     root1 = ds1%get_root()
 
     view1 = root1%create_array_view("external_array", foo1)
-    view2 = root1%create_array_view("empty_array", foo3)
+    ! unable to use create_array_view since foo3 is not associated.
+    view2 = root1%create_view("empty_array")
+    call view2%apply_type_nelems(SIDRE_INT_ID, 0_C_LONG)
     view3 = root1%create_view("external_undescribed")
     call view3%set_external_data_ptr(C_LOC(foo4))
     view4 = root1%create_array_view("int2d", int2d1)
@@ -814,8 +833,13 @@ contains
 
     call ds1%delete()
     
-    ! Now load back in; Only restore sidre_hdf5 protocol
-    do i = 2, 2
+    ! Now load back in; 
+    do i = 1, nprotocols
+       ! Only restore sidre_hdf5 protocol
+       if(protocols(i) .ne. "sidre_hdf5") then 
+          cycle
+       endif
+
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
@@ -838,7 +862,7 @@ contains
        call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_array get_type_id")
        call assert_true(view2%get_num_elements() == 0, "empty_array get_num_elements")
 !       call view2%set_array_data_ptr(foo3)
-       call root2%set_array_data_ptr("empty_array", foo3)
+!       call root2%set_array_data_ptr("empty_array", foo3)
 
        view3 = root2%get_view("external_undescribed");
        call assert_true(view3%is_empty(), "external_undescribed is_empty")
@@ -904,8 +928,13 @@ contains
 
     call ds1%delete()
 
-    ! Now load back in; Only restore sidre_hdf5 protocol
-    do i = 2,2
+    ! Now load back in; 
+    do i = 1, nprotocols
+       ! Only restore sidre_hdf5 protocol
+       if(protocols(i) .ne. "sidre_hdf5") then 
+          cycle
+       endif
+
        file_path = file_path_base //  protocols(i)
 
        ds2 = datastore_new()
@@ -1089,7 +1118,7 @@ contains
     type(SidreView) i20_view, i1_view, f1_view
     character(80) :: s0
     integer(C_INT), pointer :: v1_vals(:), v2_vals(:)
-    integer(C_INT) i, i0, i1
+    integer(C_INT) i, j, i0, i1
     real(C_FLOAT) :: f0, f1
 
     call set_case_name("save_load_preserve_contents")
@@ -1113,72 +1142,77 @@ contains
        v1_vals(i) = i
     enddo
 
-    file_path0 = file_path_base0 // "sidre_hdf5"
-    call tree0%save(file_path0, "sidre_hdf5")
+    do j = 1, nprotocols
+       file_path0 = file_path_base0 //  protocols(j)
+       call tree0%save(file_path0, protocols(j) )
 
-    tree1 = root%create_group("tree1")
+       tree1 = root%create_group("tree1")
 
-    gx = tree1%create_group("x")
-    gy = tree1%create_group("y")
-    gz = tree1%create_group("z")
+       gx = tree1%create_group("x")
+       gy = tree1%create_group("y")
+       gz = tree1%create_group("z")
 
-    i20_view = gx%create_view_and_allocate("int20", SIDRE_INT_ID, 20)
+       i20_view = gx%create_view_and_allocate("int20", SIDRE_INT_ID, 20)
 
-    call i20_view%get_data(v2_vals)
+       call i20_view%get_data(v2_vals)
 
-    do i = 1, 10
-       v2_vals(i) = 2*i
-    enddo
+       do i = 1, 10
+          v2_vals(i) = 2*i
+       enddo
 
-    i1_view = gy%create_view_scalar_int("i1", 400);
-    f1_view = gz%create_view_scalar_float("f1", 17.0);
+       i1_view = gy%create_view_scalar_int("i1", 400);
+       f1_view = gz%create_view_scalar_float("f1", 17.0);
 
-    file_path1 =  file_path_base1 // "sidre_hdf5" 
-    call tree1%save(file_path1, "sidre_hdf5")
+       file_path1 =  file_path_base1 // protocols(j) 
+       call tree1%save(file_path1, protocols(j) )
 
-    call ds%print()
+       call ds%print()
 
-    dsload = datastore_new()
-    ldroot = dsload%get_root()
+       dsload = datastore_new()
+       ldroot = dsload%get_root()
 
-    ldtree0 = ldroot%create_group("tree0")
-    call ldtree0%load(file_path0, "sidre_hdf5")
-    call ldtree0%load(file_path1, "sidre_hdf5", .true.)
+       ldtree0 = ldroot%create_group("tree0")
+       call ldtree0%load(file_path0, protocols(j) )
+       call ldtree0%load(file_path1, protocols(j), .true.)
 
-    call dsload%print()
+       call dsload%print()
 
-    i0_view = ldroot%get_view("tree1/a/i0")
-    i0 = i0_view%get_data_int()
-    call assert_equals(i0, 100)
+       i0_view = ldroot%get_view("tree1/a/i0")
+       i0 = i0_view%get_data_int()
+       call assert_equals(i0, 100)
 
-    f0_view = ldroot%get_view("tree1/a/f0")
-    f0 = f0_view%get_data_float()
-    call assert_equals(f0, 3000.0)
+       f0_view = ldroot%get_view("tree1/a/f0")
+       f0 = f0_view%get_data_float()
+       call assert_equals(f0, 3000.0)
 
-    s0_view = ldroot%get_view("tree1/b/s0")
-    call s0_view%get_string(s0)
-    call assert_equals(s0, "foo")
+       s0_view = ldroot%get_view("tree1/b/s0")
+       call s0_view%get_string(s0)
+       call assert_equals(s0, "foo")
 
-    i1_view = ldroot%get_view("tree1/y/i1")
-    i1 = i1_view%get_data_int()
-    call assert_equals(i1, 400)
+       i1_view = ldroot%get_view("tree1/y/i1")
+       i1 = i1_view%get_data_int()
+       call assert_equals(i1, 400)
 
-    f1_view = ldroot%get_view("tree1/z/f1")
-    f1 = f1_view%get_data_float()
-    call assert_equals(f1, 17.0)
+       f1_view = ldroot%get_view("tree1/z/f1")
+       f1 = f1_view%get_data_float()
+       call assert_equals(f1, 17.0)
 
-    i10_view = ldroot%get_view("tree1/c/int10")
-    i20_view = ldroot%get_view("tree1/c/int20")
+       i10_view = ldroot%get_view("tree1/c/int10")
+       i20_view = ldroot%get_view("tree1/c/int20")
 
-    call i10_view%get_data(v1_vals)
-    call i20_view%get_data(v2_vals)
+       call i10_view%get_data(v1_vals)
+       call i20_view%get_data(v2_vals)
 
-    do i = 1, 10
-      call assert_equals(v1_vals(i), i)
-    enddo
+       do i = 1, 10
+         call assert_equals(v1_vals(i), i)
+       enddo
 
-    do i = 1, 20
-      call assert_equals(v2_vals(i), 2*i)
+       do i = 1, 20
+         call assert_equals(v2_vals(i), 2*i)
+       enddo
+       
+       ! Delete the group so it is ready to use by the next protocol
+       call root%destroy_group("tree1")
     enddo
 
   end subroutine save_load_preserve_contents

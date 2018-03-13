@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 
 ###############################################################################
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -188,7 +188,7 @@ def build_and_test_host_config(test_root,host_config):
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print "[starting configure of %s]" % host_config
     print "[log file: %s]" % cfg_output_file
-    res = sexe("python ../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+    res = sexe("python ../../../config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
                output_file = cfg_output_file,
                echo=True)
     

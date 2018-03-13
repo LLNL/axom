@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -94,7 +94,7 @@ public:
    * \param [out] center buffer (ndims long) to store the centroid
    * \pre center != AXOM_NULLPTR
    */
-  static void center( double * center ) { ShapeType::getCenter( center ); };
+  static void center( double* center ) { ShapeType::getCenter( center ); };
 
   /*!
    * \brief Returns the coordinates of the reference element.
@@ -104,7 +104,7 @@ public:
    *
    * \note THe coordinates are arranged in column-major flat array layout
    */
-  static void coords( double * coords ) { ShapeType::getCoords( coords ); };
+  static void coords( double* coords ) { ShapeType::getCoords( coords ); };
 
   /*!
    * \brief Evaluates the ShapeFunction at the given natural coordinates.
@@ -115,7 +115,7 @@ public:
    * \pre nc != AXOM_NULLPTR
    * \pre phi != AXOM_NULLPTR
    */
-  static void evaluate( const double * nc, double * phi )
+  static void evaluate( const double* nc, double* phi )
   {
     ShapeType::computeShape( nc, phi );
   }
@@ -130,7 +130,7 @@ public:
    * \pre nc != AXOM_NULLPTR
    * \pre phidot != AXOM_NULLPTR
    */
-  static void derivatives( const double * nc, double * phidot )
+  static void derivatives( const double* nc, double* phidot )
   {
     ShapeType::computeDerivatives( nc, phidot );
   }

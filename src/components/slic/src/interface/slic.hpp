@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -448,7 +448,7 @@ void setAbortOnWarning( bool status );
 void enableAbortOnWarning();
 
 /*!
- * \brief Disables aborts on warnings messages for the curernt active logger.
+ * \brief Disables aborts on warnings messages for the current active logger.
  * \note This is equivalent to calling slic::setAbortOnWarnings( false )
  * \post slic::isAbortOnWarnigsEnabled() == true.
  * \pre slic::isInitialized() == true.
@@ -468,14 +468,14 @@ bool isAbortOnWarningsEnabled();
  * \param [in] level the level to log.
  * \pre ls != AXOM_NULLPTR
  */
-void addStreamToMsgLevel( LogStream * ls, message::Level level);
+void addStreamToMsgLevel( LogStream* ls, message::Level level);
 
 /*!
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
  * \pre ls != AXOM_NULLPTR.
  */
-void addStreamToAllMsgLevels( LogStream * ls );
+void addStreamToAllMsgLevels( LogStream* ls );
 
 /*!
  * \brief Logs the given message to all registered streams.

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,17 +17,51 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"   // for AXOM_USE_HDF5
+
 #include "conduit_relay.hpp"
+
+#ifdef AXOM_USE_HDF5
 #include "conduit_relay_hdf5.hpp"
+#endif
 
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
+
+#include "mpi.h"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
 using axom::sidre::View;
 using axom::sidre::IOManager;
+
+using axom::sidre::detail::sidre_int64;
+
+namespace
+{
+#ifdef AXOM_USE_HDF5
+const std::string PROTOCOL = "sidre_hdf5";
+const std::string ROOT_EXT = ".root";
+#else
+// Note: 'sidre_json' does not work for this test
+// since it doesn't preserve bitwidth sizes (e.g. int)
+const std::string PROTOCOL = "sidre_conduit_json";
+const std::string ROOT_EXT = ".conduit_json.root";
+#endif
+
+/** Returns the number of output files for spio  */
+int numOutputFiles(int numRanks)
+{
+#ifdef AXOM_USE_HDF5
+  return std::max( numRanks / 2, 1);
+#else
+  return numRanks;
+#endif
+}
+
+
+}
 
 //------------------------------------------------------------------------------
 
@@ -39,11 +73,7 @@ TEST(spio_parallel, parallel_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -51,18 +81,18 @@ TEST(spio_parallel, parallel_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
-  int * i1_vals = gb->getView("i1")->getData();
+  int* i1_vals = gb->getView("i1")->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -75,34 +105,37 @@ TEST(spio_parallel, parallel_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_parallel_write_read";
 
-  std::string root_name = "out_spio_parallel_write_read.root";
+  writer.write(root, num_files, file_name, PROTOCOL);
+
+  std::string root_name = file_name + ROOT_EXT;
 
   /*
    * Extra stuff to exercise writeGroupToRootFile
+   * Note: This is only valid for the 'sidre_hdf5' protocol
    */
   MPI_Barrier(MPI_COMM_WORLD);
-  if (my_rank == 0)
+  if (my_rank == 0 && PROTOCOL == "sidre_hdf5")
   {
-    DataStore * dsextra = new DataStore();
-    Group * extra = dsextra->getRoot()->createGroup("extra");
+    DataStore* dsextra = new DataStore();
+    Group* extra = dsextra->getRoot()->createGroup("extra");
     extra->createViewScalar<double>("dval", 1.1);
-    Group * child = extra->createGroup("child");
+    Group* child = extra->createGroup("child");
     child->createViewScalar<int>("ival", 7);
     child->createViewString("word0", "hello");
     child->createViewString("word1", "world");
 
     writer.writeGroupToRootFile(extra, root_name);
 
-    Group * path_test = dsextra->getRoot()->createGroup("path_test");
+    Group* path_test = dsextra->getRoot()->createGroup("path_test");
 
     path_test->createViewScalar<int>("path_val", 9);
     path_test->createViewString("word2", "again");
 
     writer.writeGroupToRootFileAtPath(path_test, root_name, "extra/child");
 
-    View * view_test =
+    View* view_test =
       dsextra->getRoot()->createViewString("word3", "new_view");
 
     writer.writeViewToRootFileAtPath(view_test,
@@ -116,7 +149,7 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Read the root file on rank 1, unless this is a serial run.
    */
-  if (my_rank == 1 || num_ranks == 1)
+  if ( (my_rank == 1 || num_ranks == 1) && PROTOCOL == "sidre_hdf5" )
   {
 
     conduit::Node n;
@@ -138,7 +171,7 @@ TEST(spio_parallel, parallel_writeread)
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
@@ -161,17 +194,17 @@ TEST(spio_parallel, parallel_writeread)
 
   EXPECT_EQ(testvalue, testvalue2);
 
-  View * view_i1_orig =
+  View* view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  View * view_i1_restored =
+  View* view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();
   EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
   if (view_i1_restored->getNumElements() == num_elems)
   {
-    int * i1_orig = view_i1_orig->getData();
-    int * i1_restored = view_i1_restored->getData();
+    int* i1_orig = view_i1_orig->getData();
+    int* i1_restored = view_i1_restored->getData();
 
     for (int i = 0 ; i < num_elems ; ++i)
     {
@@ -184,9 +217,6 @@ TEST(spio_parallel, parallel_writeread)
 
 }
 
-const std::string PROTOCOL = "sidre_hdf5";
-const std::string ROOT_EXT = ".root";
-
 //----------------------------------------------------------------------
 TEST(spio_parallel, write_read_write)
 {
@@ -194,13 +224,14 @@ TEST(spio_parallel, write_read_write)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_files = std::max( num_ranks / 2, 1);
+  const int num_files = numOutputFiles (num_ranks);
+
   std::stringstream sstr;
   sstr << "out_spio_WRW_" << num_ranks;
   std::string filename = sstr.str();
 
   // Initialize a datastore and dump to disk
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   ds->getRoot()->createViewScalar("grp/i",2);
   ds->getRoot()->createViewScalar("grp/f",3.0);
   IOManager writer_a(MPI_COMM_WORLD);
@@ -212,12 +243,14 @@ TEST(spio_parallel, write_read_write)
   reader.read(ds_r.getRoot(), filename + ROOT_EXT);
 
   // Dump this datastore to disk.
-  // Regression: This used to produce the following HDF5 error:
+  // Regression for sidre_hdf5 protocol:
+  // This used to produce the following HDF5 error:
   //  HDF5-DIAG: Error detected in HDF5 (1.8.16) thread 0:
   //    #000: H5F.c line 522 in H5Fcreate(): unable to create file
   //      major: File accessibility
   //      minor: Unable to open file
-  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which is already open
+  //    #001: H5Fint.c line 1024 in H5F_open(): unable to truncate a file which
+  // is already open
   //      major: File accessibility
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
@@ -227,17 +260,21 @@ TEST(spio_parallel, write_read_write)
 //------------------------------------------------------------------------------
 TEST(spio_parallel, external_writeread)
 {
+  if( PROTOCOL != "sidre_hdf5")
+  {
+    SUCCEED()
+      << "Loading external data in spio only currently supported "
+      << " for 'sidre_hdf5' protocol";
+    return;
+  }
+
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   const int nvals = 10;
   int orig_vals1[nvals], orig_vals2[nvals];
@@ -253,15 +290,15 @@ TEST(spio_parallel, external_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds1 = new DataStore();
+  DataStore* ds1 = new DataStore();
 
-  Group * root1 = ds1->getRoot();
+  Group* root1 = ds1->getRoot();
 
-  Group * flds = root1->createGroup("fields");
-  Group * flds2 = root1->createGroup("fields2");
+  Group* flds = root1->createGroup("fields");
+  Group* flds2 = root1->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
   gb->createView("external_undescribed")->setExternalDataPtr(orig_vals2);
 
@@ -271,20 +308,22 @@ TEST(spio_parallel, external_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root1, num_files, "out_spio_external_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_external_write_read";
+
+  writer.write(root1, num_files, file_name, PROTOCOL);
 
   /*
    * Create another DataStore than holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
-  Group * root2 = ds2->getRoot();
+  DataStore* ds2 = new DataStore();
+  Group* root2 = ds2->getRoot();
 
   /*
    * Read from the files that were written above.
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(root2, "out_spio_external_write_read.root");
+  reader.read(root2, file_name + ROOT_EXT);
 
   int restored_vals1[nvals], restored_vals2[nvals];
   for (int i = 0 ; i < nvals ; ++i)
@@ -293,10 +332,10 @@ TEST(spio_parallel, external_writeread)
     restored_vals2[i] = -1;
   }
 
-  View * view1 = root2->getView("fields/a/external_array");
+  View* view1 = root2->getView("fields/a/external_array");
   view1->setExternalDataPtr(restored_vals1);
 
-  View * view2 = root2->getView("fields2/b/external_undescribed");
+  View* view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
   reader.loadExternalData(root2, "out_spio_external_write_read.root");
@@ -361,11 +400,8 @@ TEST(spio_parallel, external_writeread)
 
 }
 
-#include "slic/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 //----------------------------------------------------------------------
-TEST(spio_paralle, irregular_writeread)
+TEST(spio_parallel, irregular_writeread)
 {
   int my_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -373,11 +409,7 @@ TEST(spio_paralle, irregular_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -385,9 +417,9 @@ TEST(spio_paralle, irregular_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds1 = new DataStore();
+  DataStore* ds1 = new DataStore();
 
-  Group * root1 = ds1->getRoot();
+  Group* root1 = ds1->getRoot();
 
   int num_fields = my_rank + 2;
 
@@ -395,21 +427,21 @@ TEST(spio_paralle, irregular_writeread)
   {
     std::ostringstream ostream;
     ostream << "fields" << f;
-    Group * flds = root1->createGroup(ostream.str());
+    Group* flds = root1->createGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
     for (int g = 0 ; g < num_subgroups ; ++g)
     {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
-      Group * sg = flds->createGroup(gstream.str());
+      Group* sg = flds->createGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
       if (g % 2)
       {
         sg->createView(vstream.str())->allocate(DataType::c_int(10+my_rank));
-        int * vals = sg->getView(vstream.str())->getData();
+        int* vals = sg->getView(vstream.str())->getData();
 
         for(int i=0 ; i<10+my_rank ; i++)
         {
@@ -431,19 +463,20 @@ TEST(spio_paralle, irregular_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root1, num_files, "out_spio_irregular_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_irregular_write_read";
+  writer.write(root1, num_files, file_name, PROTOCOL);
 
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), "out_spio_irregular_write_read.root");
+  reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
 
   /*
@@ -455,29 +488,29 @@ TEST(spio_paralle, irregular_writeread)
   {
     std::ostringstream ostream;
     ostream << "fields" << f;
-    Group * flds1 = ds1->getRoot()->getGroup(ostream.str());
-    Group * flds2 = ds2->getRoot()->getGroup(ostream.str());
+    Group* flds1 = ds1->getRoot()->getGroup(ostream.str());
+    Group* flds2 = ds2->getRoot()->getGroup(ostream.str());
 
     int num_subgroups = ((f+my_rank)%3) + 1;
     for (int g = 0 ; g < num_subgroups ; ++g)
     {
       std::ostringstream gstream;
       gstream << "subgroup" << g;
-      Group * sg1 = flds1->getGroup(gstream.str());
-      Group * sg2 = flds2->getGroup(gstream.str());
+      Group* sg1 = flds1->getGroup(gstream.str());
+      Group* sg2 = flds2->getGroup(gstream.str());
 
       std::ostringstream vstream;
       vstream << "view" << g;
       if (g % 2)
       {
 
-        View * view_orig = sg1->getView(vstream.str());
-        View * view_restored = sg2->getView(vstream.str());
+        View* view_orig = sg1->getView(vstream.str());
+        View* view_restored = sg2->getView(vstream.str());
 
         int num_elems = view_orig->getNumElements();
         EXPECT_EQ(view_restored->getNumElements(), num_elems);
-        int * vals_orig = view_orig->getData();
-        int * vals_restored = view_restored->getData();
+        int* vals_orig = view_orig->getData();
+        int* vals_restored = view_restored->getData();
 
         for (int i = 0 ; i < num_elems ; ++i)
         {
@@ -507,11 +540,7 @@ TEST(spio_parallel, preserve_writeread)
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  int num_output = num_ranks / 2;
-  if (num_output == 0)
-  {
-    num_output = 1;
-  }
+  const int num_output = numOutputFiles (num_ranks);
 
   /*
    * Create a DataStore and give it a small hierarchy of groups and views.
@@ -519,18 +548,18 @@ TEST(spio_parallel, preserve_writeread)
    * The views are filled with repeatable nonsense data that will vary based
    * on rank.
    */
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
-  Group * flds = root->createGroup("fields");
-  Group * flds2 = root->createGroup("fields2");
+  Group* flds = root->createGroup("fields");
+  Group* flds2 = root->createGroup("fields2");
 
-  Group * ga = flds->createGroup("a");
-  Group * gb = flds2->createGroup("b");
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds2->createGroup("b");
   ga->createViewScalar<int>("i0", 101*my_rank);
   gb->createView("i1")->allocate(DataType::c_int(10));
-  int * i1_vals = gb->getView("i1")->getData();
+  int* i1_vals = gb->getView("i1")->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -543,31 +572,33 @@ TEST(spio_parallel, preserve_writeread)
   int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  writer.write(root, num_files, "out_spio_preserve_write_read", "sidre_hdf5");
+  const std::string file_name = "out_spio_preserve_write_read";
+  writer.write(root, num_files, file_name, PROTOCOL);
 
-  std::string root_name = "out_spio_preserve_write_read.root";
+  std::string root_name = file_name + ROOT_EXT;
 
   /*
    * Extra stuff to exercise preserve_contents option
    */
   MPI_Barrier(MPI_COMM_WORLD);
-  DataStore * dsextra = new DataStore();
-  Group * extra = dsextra->getRoot()->createGroup("extra");
+  DataStore* dsextra = new DataStore();
+  Group* extra = dsextra->getRoot()->createGroup("extra");
   extra->createViewScalar<double>("dval", 1.1);
-  Group * child = extra->createGroup("child");
+  Group* child = extra->createGroup("child");
   child->createViewScalar<int>("ival", 7);
   child->createViewString("word0", "hello");
   child->createViewString("word1", "world");
 
-  writer.write(extra, num_files, "out_spio_extra", "sidre_hdf5");
-  std::string extra_root = "out_spio_extra.root";
+  const std::string extra_file_name = "out_spio_extra";
+  writer.write(extra, num_files, extra_file_name, PROTOCOL);
+  std::string extra_root = extra_file_name + ROOT_EXT;
 
   MPI_Barrier(MPI_COMM_WORLD);
 
   /*
    * Create another DataStore that holds nothing but the root group.
    */
-  DataStore * ds2 = new DataStore();
+  DataStore* ds2 = new DataStore();
 
   /*
    * Read from the files that were written above.
@@ -588,16 +619,16 @@ TEST(spio_parallel, preserve_writeread)
 
   EXPECT_EQ(testvalue, testvalue2);
 
-  View * view_i1_orig =
+  View* view_i1_orig =
     ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
-  View * view_i1_restored =
+  View* view_i1_restored =
     ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
 
   int num_elems = view_i1_orig->getNumElements();
   EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
 
-  int * i1_orig = view_i1_orig->getData();
-  int * i1_restored = view_i1_restored->getData();
+  int* i1_orig = view_i1_orig->getData();
+  int* i1_restored = view_i1_restored->getData();
 
   for (int i = 0 ; i < num_elems ; ++i)
   {
@@ -607,7 +638,7 @@ TEST(spio_parallel, preserve_writeread)
   /*
    * Read in extra file while preserving contents
    */
-  Group * extra_fields = ds2->getRoot()->getGroup("fields");
+  Group* extra_fields = ds2->getRoot()->getGroup("fields");
   reader.read(extra_fields, extra_root, true);
 
   /*
@@ -637,11 +668,13 @@ TEST(spio_parallel, preserve_writeread)
   delete dsextra;
 }
 
+#include "slic/UnitTestLogger.hpp"
+using axom::slic::UnitTestLogger;
+
 //----------------------------------------------------------------------
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,

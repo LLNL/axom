@@ -1,7 +1,7 @@
 // wrapSidre.h
 // This is generated code, do not edit
 //
-// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -34,7 +34,7 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-bool SIDRE_name_is_valid(const char * name);
+bool SIDRE_name_is_valid(const char* name);
 
 #ifdef __cplusplus
 }

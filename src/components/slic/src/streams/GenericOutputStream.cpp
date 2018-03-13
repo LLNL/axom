@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -24,12 +24,12 @@ namespace axom
 namespace slic
 {
 
-GenericOutputStream::GenericOutputStream( std::ostream * os ) :
+GenericOutputStream::GenericOutputStream( std::ostream* os ) :
   m_stream( os )
 {}
 
 //------------------------------------------------------------------------------
-GenericOutputStream::GenericOutputStream(std::ostream * os,
+GenericOutputStream::GenericOutputStream(std::ostream* os,
                                          const std::string& format) :
   m_stream( os )
 {

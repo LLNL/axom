@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -283,7 +283,8 @@ TEST(slam_generic_range_set,virtual_parent_set)
 
 
   // Note: Equality is based on Base class Set
-  //-- it does not differentiate based on whether a set is a subset of another set
+  //-- it does not differentiate based on whether a set is a subset of another
+  // set
   EXPECT_EQ(childSet, nonChildSet);
 }
 
@@ -336,7 +337,8 @@ TEST(slam_generic_range_set,concrete_parent_set)
 
 
   // Note: Equality is based on Base class Set
-  //-- it does not differentiate based on whether a set is a subset of another set
+  //-- it does not differentiate based on whether a set is a subset of another
+  // set
   EXPECT_EQ(childSet, nonChildSet);
 
 }
@@ -346,7 +348,7 @@ TEST(slam_generic_range_set,concrete_parent_set)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

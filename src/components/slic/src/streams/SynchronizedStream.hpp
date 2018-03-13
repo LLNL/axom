@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -57,8 +57,8 @@ namespace slic
 class SynchronizedStream : public LogStream
 {
 public:
-  SynchronizedStream( std::ostream * stream, MPI_Comm comm );
-  SynchronizedStream( std::ostream * stream, MPI_Comm comm,
+  SynchronizedStream( std::ostream* stream, MPI_Comm comm );
+  SynchronizedStream( std::ostream* stream, MPI_Comm comm,
                       const std::string& format);
 
   virtual ~SynchronizedStream();
@@ -99,8 +99,8 @@ private:
   /// @{
 
   MPI_Comm m_comm;
-  MessageCache * m_cache;
-  std::ostream * m_stream;
+  MessageCache* m_cache;
+  std::ostream* m_stream;
   /// @}
 
   /*!
@@ -109,8 +109,8 @@ private:
    *  should be used.
    */
   SynchronizedStream() : m_comm(MPI_COMM_NULL),
-    m_cache( static_cast< MessageCache * >(AXOM_NULLPTR) ),
-    m_stream( static_cast< std::ostream * >(AXOM_NULLPTR) )
+    m_cache( static_cast< MessageCache* >(AXOM_NULLPTR) ),
+    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
   { };
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);

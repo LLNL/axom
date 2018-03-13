@@ -1,7 +1,7 @@
 // shroudrt.cpp
 // This is generated code, do not edit
 //
-// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -26,7 +26,7 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
-void shroud_FccCopy(char * a, int la, const char * s)
+void shroud_FccCopy(char* a, int la, const char* s)
 {
   int ls,nm;
   ls = strlen(s);
@@ -51,11 +51,11 @@ void shroud_FccCopy(char * a, int la, const char * s)
 //
 // The result must be an argument because some compilers (Intel)
 // cannot return type(C_PTR)
-void shroud_c_loc(void * addr, void * * out)
+void shroud_c_loc(void* addr, void** out)
 {
   *out = addr;
 }
-void shroud_c_loc_(void * addr, void * * out)
+void shroud_c_loc_(void* addr, void** out)
 {
   *out = addr;
 }

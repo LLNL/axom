@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -45,8 +45,10 @@ namespace slam
  *
  * It can be useful when we are iterating circularly through the elements
  * in a relation (e.g. consecutive edges around a polygon).
- * The class invariant is that 0 <= val < modulus(), where val is the wrapped integer.
- * The modulus is controlled by a SizePolicy which allows it to be given at compile time or at runtime.
+ * The class invariant is that 0 <= val < modulus(), where val is the wrapped
+ * integer.
+ * The modulus is controlled by a SizePolicy which allows it to be given at
+ * compile time or at runtime.
  */
 template< typename SizePolicy          = policies::RuntimeSize<int> >
 class ModularInt : private SizePolicy
@@ -64,7 +66,8 @@ public:
     SLIC_ASSERT( modulus() != 0);
 
     // For efficiency, we are assuming that argument zn is consistent
-    // (and avoiding normalization). This assumption is tested in debug builds...
+    // (and avoiding normalization). This assumption is tested in debug
+    // builds...
     //normalize();
     verifyValue();
   }
@@ -128,7 +131,8 @@ private:
     //  the branching and branchless implementations
 
         #if MODINT_BRANCHLESS
-    // This solution avoids branching (at the expense of a second mod operation),
+    // This solution avoids branching (at the expense of a second mod
+    // operation),
     // but appears to be slower on some platforms (chaos)
     m_val = (sz + (m_val % sz)) % sz;
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -54,9 +54,10 @@ namespace quest
  * \brief Minimal implementation of a BlockDataType for an OctreeBase.
  *
  * BlockData is default constructible and provides the following functions:
- *    isLeaf(), setInternal(), setNonBlock() and isBlock().
- * \note This implementation uses ones-complement to differentiate between leaf and internal blocks.
- * This has the nice properties that
+ *  isLeaf(), setInternal(), setNonBlock() and isBlock().
+ *
+ * \note This implementation uses ones-complement to differentiate between leaf
+ * and internal blocks. This has the nice properties that
  *    (a) all internal LeafData have an id with a negative number,
  *    (b) all BlockDatas -- representing leaf and internal blocks
  *        can live in the same index space.
@@ -78,7 +79,8 @@ public:
   }
 
   /**
-   * \brief Predicate to determine if this BlockData represents a leaf block in the tree
+   * \brief Predicate to determine if this BlockData represents a leaf block in
+   * the tree
    */
   bool isLeaf() const { return m_id >= 0; }
 
@@ -127,22 +129,31 @@ protected:
 
 /**
  * \class
- * \brief Handles the non-geometric operations for our octree such as refinement,
- * finding the parents and children of a node and determining whether a leaf node exists
+ * \brief Handles the non-geometric operations for our octree such as
+ * refinement,
+ * finding the parents and children of a node and determining whether a leaf
+ * node exists
  *
  * \note There are two concepts here.
- *      A set of nested dyadic integer grids -- A grid at level n has 2^n cells in each of the DIM dimensions
- *      and an adaptive octree defined by a subset of the grid cells from these nested grids.
- *      The former is a conceptual aid in the sense that it is implicitly encoded.
+ *      A set of nested dyadic integer grids -- A grid at level n has 2^n cells
+ * in each of the DIM dimensions
+ *      and an adaptive octree defined by a subset of the grid cells from these
+ * nested grids.
+ *      The former is a conceptual aid in the sense that it is implicitly
+ * encoded.
  *
- *      An octree block at level l is refined by adding its 2^DIM children blocks at level (l+1).
+ *      An octree block at level l is refined by adding its 2^DIM children
+ * blocks at level (l+1).
  *      The root of the octree covers the entire domains and has no parent.
  *      The leaf blocks of the octree have no children.
- *      The interior of the children do not overlap, and their union covers that of their parent block.
+ *      The interior of the children do not overlap, and their union covers that
+ * of their parent block.
  *      Non-leaf blocks are referred to as 'internal'
  *
- * \note Requirements for BlockDataType: it must be default constructible and provide an isLeaf() predicate as well
- * as a setInternal() function that changes its state from representing a leaf block to representing an internal
+ * \note Requirements for BlockDataType: it must be default constructible and
+ * provide an isLeaf() predicate as well
+ * as a setInternal() function that changes its state from representing a leaf
+ * block to representing an internal
  * block.
  */
 template<int DIM, typename BlockDataType>
@@ -163,17 +174,20 @@ public:
   typedef typename OctreeLevelType::ConstBlockIter LevelMapCIterator;
 
 
-  typedef axom::slam::Map<OctreeLevelType *> LeafIndicesLevelMap;
+  typedef axom::slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
    *
-   * Each block index is represented as a point on an integer grid (the minimum point of the block's extent)
+   * Each block index is represented as a point on an integer grid (the minimum
+   * point of the block's extent)
    * at a given level of resolution.
    *
    * Each level of resolution is a regular grid with \f$ 2^{level} \f$
-   * grid points along each dimension.  The <em>root</em> block (at level 0) covers the entire domain.
-   * An octree block at level \f$ \ell \f$ has \f$ 2^{DIM} \f$ <em>children</em> at level \f$ \ell + 1 \f$
+   * grid points along each dimension.  The <em>root</em> block (at level 0)
+   * covers the entire domain.
+   * An octree block at level \f$ \ell \f$ has \f$ 2^{DIM} \f$ <em>children</em>
+   * at level \f$ \ell + 1 \f$
    * covering its domain.
    */
   class BlockIndex
@@ -182,9 +196,11 @@ public:
 
     enum
     {
-      /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
+      /** The number of children of an octree block (\f$ 2^{DIM} \f$ in
+         dimension DIM ) */
       NUM_CHILDREN = 1 << DIM,
-      /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in dimension DIM ) */
+      /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in
+         dimension DIM ) */
       NUM_FACE_NEIGHBORS = 2 * DIM
     };
 private:
@@ -260,7 +276,8 @@ public:
     /**
      * \brief Returns the grid point of the block's child at index childIndex
      *
-     * \param [in] childIndex The index of the child whose grid point we are finding
+     * \param [in] childIndex The index of the child whose grid point we are
+     * finding
      * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
      */
     GridPt childPt(int childIndex) const
@@ -309,7 +326,8 @@ public:
     /**
      * \brief Returns the child BlockIndex of this block
      *
-     * \param [in] childIndex The index of the child whose grid point we are finding
+     * \param [in] childIndex The index of the child whose grid point we are
+     * finding
      * \pre \f$ 0 \le childIndex < \f$ Octree::NUM_CHILDREN
      */
     BlockIndex child(int childIndex) const
@@ -322,8 +340,10 @@ public:
      * \brief Returns the face neighbor grid point of this block
      *
      * \pre 0 <= neighborIndex < 2 * DIM
-     * \note The face neighbors indices cycle through the dimensions, two per dimension,
-     *   e.g. Neighbor 0 is at offset (-1, 0,0,...,0), neighbor 1 is at offset (1,0,0,..,0)
+     * \note The face neighbors indices cycle through the dimensions, two per
+     * dimension,
+     *   e.g. Neighbor 0 is at offset (-1, 0,0,...,0), neighbor 1 is at offset
+     *(1,0,0,..,0)
      *   and neighbor 2 is at offset (0,-1, 0, 0, ..., 0) etc...
      */
     BlockIndex faceNeighbor(int neighborIndex) const
@@ -393,12 +413,16 @@ public:
     }
 
     /**
-     * \brief Predicate to determine if the block instance is a descendant of ancestor block
+     * \brief Predicate to determine if the block instance is a descendant of
+     * ancestor block
      *
      * \param ancestor The potential ancestor of the block
-     * \note A block is an ancestor of another block if neither block is an invalid_index()
-     *      and the block's are equivalent after 0 or more calls to BlockIndex::parent()
-     *  \return True, if the block instance is a descendant of the ancestor block
+     * \note A block is an ancestor of another block if neither block is an
+     * invalid_index()
+     *      and the block's are equivalent after 0 or more calls to
+     * BlockIndex::parent()
+     *  \return True, if the block instance is a descendant of the ancestor
+     * block
      */
     bool isDescendantOf(const BlockIndex & ancestor) const
     {
@@ -477,11 +501,11 @@ private:
   typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>
     SparsePtOctLevType;
 
-  typedef DenseOctLevType * DenseOctLevPtr;
-  typedef Sparse16OctLevType * Sparse16OctLevPtr;
-  typedef Sparse32OctLevType * Sparse32OctLevPtr;
-  typedef Sparse64OctLevType * Sparse64OctLevPtr;
-  typedef SparsePtOctLevType * SparsePtOctLevPtr;
+  typedef DenseOctLevType* DenseOctLevPtr;
+  typedef Sparse16OctLevType* Sparse16OctLevPtr;
+  typedef Sparse32OctLevType* Sparse32OctLevPtr;
+  typedef Sparse64OctLevType* Sparse64OctLevPtr;
+  typedef SparsePtOctLevType* SparsePtOctLevPtr;
 
   /**
    * \brief Simple utility to check if a pointer of type BasePtrType
@@ -656,7 +680,8 @@ public:
   }
 
   /**
-   * \brief Const accessor for a reference to the octree level instance at level lev
+   * \brief Const accessor for a reference to the octree level instance at level
+   * lev
    */
   const OctreeLevelType& getOctreeLevel(int lev) const
   {
@@ -676,11 +701,13 @@ public:
   }
 
   /**
-   * \brief Determine whether the octree contains a leaf block associated with grid point pt at level lev
+   * \brief Determine whether the octree contains a leaf block associated with
+   * grid point pt at level lev
    *
    * \param [in] pt The grid point to check
    * \param [in] lev The level of the grid point
-   * \returns true if the associated block is a leaf in the octree, false otherwise
+   * \returns true if the associated block is a leaf in the octree, false
+   * otherwise
    */
   bool isLeaf(const GridPt& pt, int lev) const
   {
@@ -688,10 +715,12 @@ public:
   }
 
   /**
-   * \brief Determine whether the octree contains a leaf block associated with this BlockIndex
+   * \brief Determine whether the octree contains a leaf block associated with
+   * this BlockIndex
    *
    * \param [in] block The BlockIndex of the tree to check
-   * \returns true if the associated block is a leaf in the octree, false otherwise
+   * \returns true if the associated block is a leaf in the octree, false
+   * otherwise
    */
   bool isLeaf(const BlockIndex& block) const
   {
@@ -701,11 +730,13 @@ public:
 
 
   /**
-   * \brief Determine whether the octree contains an internal block associated with grid point pt at level lev
+   * \brief Determine whether the octree contains an internal block associated
+   * with grid point pt at level lev
    *
    * \param [in] pt The grid point to check
    * \param [in] lev The level of the grid point
-   * \returns true if the associated block is an internal block of the octree, false otherwise
+   * \returns true if the associated block is an internal block of the octree,
+   * false otherwise
    */
   bool isInternal(const GridPt& pt, int lev) const
   {
@@ -713,10 +744,12 @@ public:
   }
 
   /**
-   * \brief Determine whether the octree contains an internal block associated with this BlockIndex
+   * \brief Determine whether the octree contains an internal block associated
+   * with this BlockIndex
    *
    * \param [in] block The BlockIndex of the tree to check
-   * \returns true if the associated block is an internal block of the octree, false otherwise
+   * \returns true if the associated block is an internal block of the octree,
+   * false otherwise
    */
   bool isInternal(const BlockIndex& block) const
   {
@@ -725,7 +758,8 @@ public:
   }
 
   /**
-   * \brief Determine whether the octree contains a block (internal or leaf) associated with grid point pt at level lev
+   * \brief Determine whether the octree contains a block (internal or leaf)
+   * associated with grid point pt at level lev
    *
    * \param [in] pt The grid point to check
    * \param [in] lev The level of the grid point
@@ -772,10 +806,12 @@ public:
 
 
   /**
-   * \brief Determine whether the octree contains a block (internal or leaf) associated with this BlockIndex
+   * \brief Determine whether the octree contains a block (internal or leaf)
+   * associated with this BlockIndex
    *
    * \param [in] block The BlockIndex of the tree to check
-   * \returns true if the associated block is a block of the octree, false otherwise
+   * \returns true if the associated block is a block of the octree, false
+   * otherwise
    */
   bool hasBlock(const BlockIndex& block) const
   {
@@ -783,9 +819,11 @@ public:
   }
 
   /**
-   * \brief Determine whether the octree block associated with grid point pt and level lev is a possible block in this octree
+   * \brief Determine whether the octree block associated with grid point pt and
+   * level lev is a possible block in this octree
    *
-   * \note A block index is out of bounds if its level is not in the tree, or its grid point is out of the
+   * \note A block index is out of bounds if its level is not in the tree, or
+   * its grid point is out of the
    * range of possible grid points for its level
    */
   bool inBounds(const GridPt& pt, int lev) const
@@ -795,9 +833,11 @@ public:
 
 
   /**
-   * \brief Determine whether the octree block associated with BlockIndex is a possible block in this octree
+   * \brief Determine whether the octree block associated with BlockIndex is a
+   * possible block in this octree
    *
-   * \note A block index is out of bounds if its level is not in the tree, or its grid point is out of the
+   * \note A block index is out of bounds if its level is not in the tree, or
+   * its grid point is out of the
    * range of possible grid points for its level
    */
   bool inBounds(const BlockIndex& block) const
@@ -915,8 +955,10 @@ public:
    * \param checkInBounds A flag to determine if we should check that
    *        the block lies within the octree bounds (default=true)
    * \post The returned block, if valid, is blk or one of its ancestor blocks.
-   * \return The blockIndex of the finest octree leaf covering blk, if it exists,
-   *    BlockIndex::invalid_index otherwise (e.g. blk is an internal block of the tree
+   * \return The blockIndex of the finest octree leaf covering blk, if it
+   * exists,
+   *    BlockIndex::invalid_index otherwise (e.g. blk is an internal block of
+   * the tree
    *    or is out of bounds)
    */
   BlockIndex coveringLeafBlock(const BlockIndex& blk,
@@ -928,7 +970,8 @@ public:
 
     switch( blockStatus(blk) )
     {
-    case BlockNotInTree:    // Find its nearest ancestor in the tree (it will be a leaf)
+    case BlockNotInTree:    // Find its nearest ancestor in the tree (it will be
+                            // a leaf)
     {
       BlockIndex ancBlk = blk.parent();
       while( !this->hasBlock(ancBlk))
@@ -953,9 +996,11 @@ public:
 protected:
 
   /**
-   * \brief Helper function to determine the status of a BlockIndex within an octree instance
+   * \brief Helper function to determine the status of a BlockIndex within an
+   * octree instance
    *
-   * \note This function is meant to help with implementing basic octree functionality
+   * \note This function is meant to help with implementing basic octree
+   * functionality
    *       and is not meant to be exposed in the public API
    * \param pt The grid point of the block index that we are testing
    * \param lev The level of the block index that we are testing
@@ -1001,9 +1046,11 @@ protected:
   }
 
   /**
-   * \brief Helper function to determine the status of a BlockIndex within an octree instance
+   * \brief Helper function to determine the status of a BlockIndex within an
+   * octree instance
    *
-   * \note This function is meant to help with implementing basic octree functionality
+   * \note This function is meant to help with implementing basic octree
+   * functionality
    *       and is not meant to be exposed in the public API
    * \param blk The block index we are testing
    */

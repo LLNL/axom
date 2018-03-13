@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -84,36 +84,36 @@ static struct
 // Function Prototypes
 //------------------------------------------------------------------------------
 void init();
-void parse_args( int argc, char * * argv );
-void read_stl_mesh( TriangleMesh * stl_mesh );
-BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh * mesh );
-void get_uniform_mesh( TriangleMesh * surface_mesh,
-                       axom::mint::UniformMesh *& umesh);
+void parse_args( int argc, char** argv );
+void read_stl_mesh( TriangleMesh* stl_mesh );
+BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh );
+void get_uniform_mesh( TriangleMesh* surface_mesh,
+                       axom::mint::UniformMesh*& umesh);
 BoundingBox< double,NDIMS > getCellBoundingBox(
-  int cellIdx, axom::mint::Mesh * surface_mesh );
-void computeUsingBucketTree( axom::mint::Mesh * surface_mesh,
-                             axom::mint::UniformMesh * umesh );
-void n2( axom::mint::Mesh * surface_mesh, axom::mint::UniformMesh * umesh );
-void expected_phi(axom::mint::UniformMesh * umesh);
-void compute_norms( axom::mint::UniformMesh * umesh,
+  int cellIdx, axom::mint::Mesh* surface_mesh );
+void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
+                             axom::mint::UniformMesh* umesh );
+void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh );
+void expected_phi(axom::mint::UniformMesh* umesh);
+void compute_norms( axom::mint::UniformMesh* umesh,
                     double& l1, double& l2, double& linf );
 void showHelp();
 void finalize();
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
   init();
   parse_args( argc, argv );
 
   // STEP 1: read file
-  TriangleMesh * surface_mesh = new TriangleMesh( 3 );
+  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
   read_stl_mesh( surface_mesh );
   axom::mint::write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 2: get uniform mesh
-  axom::mint::UniformMesh * umesh = AXOM_NULLPTR;
+  axom::mint::UniformMesh* umesh = AXOM_NULLPTR;
   get_uniform_mesh( surface_mesh, umesh );
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
@@ -172,8 +172,8 @@ int main( int argc, char * * argv )
 }
 
 //------------------------------------------------------------------------------
-void get_uniform_mesh( TriangleMesh * surface_mesh,
-                       axom::mint::UniformMesh *& umesh)
+void get_uniform_mesh( TriangleMesh* surface_mesh,
+                       axom::mint::UniformMesh*& umesh)
 {
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
@@ -197,7 +197,7 @@ void get_uniform_mesh( TriangleMesh * surface_mesh,
 }
 
 //------------------------------------------------------------------------------
-void parse_args( int argc, char * * argv )
+void parse_args( int argc, char** argv )
 {
   // Defaults
   Arguments.fileName          = "";
@@ -281,10 +281,10 @@ void showHelp()
 }
 
 //------------------------------------------------------------------------------
-void read_stl_mesh( TriangleMesh * stl_mesh )
+void read_stl_mesh( TriangleMesh* stl_mesh )
 {
   SLIC_INFO("Reading file: " << Arguments.fileName << "...");
-  quest::STLReader * reader = new quest::STLReader();
+  quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( Arguments.fileName );
   reader->read();
   SLIC_INFO("done");
@@ -303,9 +303,9 @@ void init()
 
   // Create a more verbose message for this application (only level and message)
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  axom::slic::GenericOutputStream * defaultStream =
+  axom::slic::GenericOutputStream* defaultStream =
     new axom::slic::GenericOutputStream(&std::cout);
-  axom::slic::GenericOutputStream * compactStream =
+  axom::slic::GenericOutputStream* compactStream =
     new axom::slic::GenericOutputStream(&std::cout, slicFormatStr);
   axom::slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
   axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
@@ -321,7 +321,7 @@ void finalize()
 }
 
 //------------------------------------------------------------------------------
-void compute_norms( axom::mint::UniformMesh * umesh,
+void compute_norms( axom::mint::UniformMesh* umesh,
                     double& l1, double& l2, double& linf )
 {
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
@@ -329,13 +329,13 @@ void compute_norms( axom::mint::UniformMesh * umesh,
   const int nnodes = umesh->getNumberOfNodes();
 
   // STEP 0: grab field pointers
-  axom::mint::FieldData * PD = umesh->getNodeFieldData();
-  double * phi_computed  = PD->getField( "phi" )->getDoublePtr();
-  double * phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
+  double* phi_computed  = PD->getField( "phi" )->getDoublePtr();
+  double* phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
 
   // STEP 1: add field to store error
   PD->addField( new axom::mint::FieldVariable< double >( "error", nnodes ) );
-  double * error = PD->getField( "error" )->getDoublePtr();
+  double* error = PD->getField( "error" )->getDoublePtr();
   SLIC_ASSERT( error != AXOM_NULLPTR );
 
   // STEP 2: loop over nodes and calculate norms
@@ -363,7 +363,7 @@ void compute_norms( axom::mint::UniformMesh * umesh,
 }
 
 //------------------------------------------------------------------------------
-void expected_phi(axom::mint::UniformMesh * umesh)
+void expected_phi(axom::mint::UniformMesh* umesh)
 {
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
@@ -376,11 +376,11 @@ void expected_phi(axom::mint::UniformMesh * umesh)
 
   // STEP 1: Add node field to stored exact distance field.
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData * PD = umesh->getNodeFieldData();
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
   PD->addField( new axom::mint::FieldVariable<double>("expected_phi",nnodes) );
-  double * phi = PD->getField( "expected_phi" )->getDoublePtr();
+  double* phi = PD->getField( "expected_phi" )->getDoublePtr();
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -401,18 +401,18 @@ void expected_phi(axom::mint::UniformMesh * umesh)
 }
 
 //------------------------------------------------------------------------------
-void n2( axom::mint::Mesh * surface_mesh, axom::mint::UniformMesh * umesh )
+void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 {
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
   // STEP 1: Setup node-centered signed distance field on uniform mesh
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData * PD = umesh->getNodeFieldData();
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
   PD->addField( new axom::mint::FieldVariable<double>("n2_phi",nnodes) );
-  double * phi = PD->getField( "n2_phi" )->getDoublePtr();
+  double* phi = PD->getField( "n2_phi" )->getDoublePtr();
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
 
@@ -467,8 +467,8 @@ void n2( axom::mint::Mesh * surface_mesh, axom::mint::UniformMesh * umesh )
 }
 
 //------------------------------------------------------------------------------
-void computeUsingBucketTree( axom::mint::Mesh * surface_mesh,
-                             axom::mint::UniformMesh * umesh )
+void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
+                             axom::mint::UniformMesh* umesh )
 {
   // Sanity Checks
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
@@ -477,11 +477,11 @@ void computeUsingBucketTree( axom::mint::Mesh * surface_mesh,
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
   const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData * PD = umesh->getNodeFieldData();
+  axom::mint::FieldData* PD = umesh->getNodeFieldData();
   SLIC_ASSERT( PD != AXOM_NULLPTR );
 
   PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
-  double * phi = PD->getField( "phi" )->getDoublePtr();
+  double* phi = PD->getField( "phi" )->getDoublePtr();
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -496,16 +496,16 @@ void computeUsingBucketTree( axom::mint::Mesh * surface_mesh,
 
 #ifdef AXOM_DEBUG
   // write the bucket tree to a file
-  const BVHTree< int,NDIMS > * btree = signedDistance.getBVHTree();
+  const BVHTree< int,NDIMS >* btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != AXOM_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
   const int ncells = surface_mesh->getMeshNumberOfCells();
-  axom::mint::FieldData * CD = surface_mesh->getCellFieldData();
+  axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
   CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
-  int * bidx = CD->getField( "BucketID" )->getIntPtr();
+  int* bidx = CD->getField( "BucketID" )->getIntPtr();
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -523,7 +523,7 @@ void computeUsingBucketTree( axom::mint::Mesh * surface_mesh,
 
 //------------------------------------------------------------------------------
 BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
-                                                axom::mint::Mesh * surface_mesh )
+                                                axom::mint::Mesh* surface_mesh )
 {
   // Sanity checks
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
@@ -548,7 +548,7 @@ BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
 
 
 //------------------------------------------------------------------------------
-BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh * mesh)
+BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 

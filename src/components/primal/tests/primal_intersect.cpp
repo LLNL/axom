@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -28,6 +28,9 @@
 #include "primal/Vector.hpp"
 
 #include "primal/intersect.hpp"
+
+#include <cmath>     // for sqrt
+
 
 using namespace axom;
 
@@ -172,7 +175,7 @@ TEST( primal_intersect, ray_segment_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -295,7 +298,7 @@ TEST( primal_intersect, triangle_aabb_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection_fromData )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -357,7 +360,7 @@ TEST( primal_intersect, triangle_aabb_intersection_fromData )
 
 TEST( primal_intersect, triangle_aabb_intersection_fromData2 )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -734,17 +737,16 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle< double, 3 > & l,
 
   Q= Point3::make_point(Q_x,Q_y,Q_z);
 
-  /*PQ is so random segment on the triangle.  We create a vertex called vertex1 and
-     use
-     it to create the triangle formed by P', Q' and vertex1. */
+  /*PQ is so random segment on the triangle.  We create a vertex called vertex1
+     and use it to create the triangle formed by P', Q' and vertex1. */
 
   //Step 3: choose some vertex away from the triangle
   Point3 vertex1 = randomPt< 3 >(0.,1.);
 
   //Step 4:
-  //we scale the segments formed by both vertex 1 and P and by vertex 1 and Q so that
-  // we now
-  //have a triangle whose base is not necessarily on the plane formed by ABC
+  // we scale the segments formed by both vertex 1 and P and by vertex 1 and Q
+  // so that we now have a triangle whose base is not necessarily on the plane
+  // formed by ABC
   Vector3 vertex2Direction = Vector3(Q, vertex1);
   Vector3 vertex3Direction = Vector3(P, vertex1);
 
@@ -869,12 +871,12 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
   //future work: test triangle triangle with a bunch of random test cases
 
-  srand(1);   //we want same random number sequence everytime to make sure our tests
-              // don't differ on a case to case basis
+  srand(1);   // we want same random number sequence everytime to make sure our
+              // tests don't differ on a case to case basis
 
-  //Randomly generate a bunch of intersecting triangles (whose intersections form
-  // segments) and test them
-  // How many tests are we actually performing here?
+  //Randomly generate a bunch of intersecting triangles (whose intersections
+  // form segments) and test them How many tests are we actually performing
+  // here?
   int rantests = 0;
   int skiptests = 0;
   for (int i=0 ; i<5000 ; i++)
@@ -902,7 +904,7 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
 TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double,DIM > TriangleType;
   typedef primal::BoundingBox< double,DIM > BoundingBoxType;
@@ -943,7 +945,8 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
             << " against triangle " << tri2
             << "\n\t -- intersects? "
             << (primal::intersect(tri2, box2) ? "yes" : "no")
-            //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ? "yes":"no")
+            //<< "\n\t -- distance: " << (primal::distance(tri2, box2) ?
+            // "yes":"no")
             );
   //EXPECT_TRUE( primal::intersect(tri, box1));
 
@@ -952,7 +955,7 @@ TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 
 TEST( primal_intersect, ray_aabb_intersection_general3D )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
   typedef primal::Ray< double,DIM > RayType;
   typedef primal::BoundingBox< double, DIM > BoundingBoxType;
@@ -990,7 +993,7 @@ TEST( primal_intersect, ray_aabb_intersection_general3D )
 
 TEST( primal_intersect, ray_aabb_intersection_tinyDirectionVector3D )
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double, DIM >   PointType;
   typedef primal::Ray< double,DIM > RayType;
   typedef primal::BoundingBox< double, DIM > BoundingBoxType;
@@ -1112,8 +1115,9 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
     EXPECT_TRUE(intersect(tri, seg1, t1, tip1));
     PointType tripoint1 = tri.baryToPhysical(tip1);
     PointType segpoint1 = seg1.at(t1);
-    EXPECT_TRUE(testPointsClose(tripoint1, segpoint1)) << "Tripoint is " << tripoint1 << 
-      " and segpoint is " << segpoint1;
+    EXPECT_TRUE(testPointsClose(tripoint1,segpoint1))
+      << "Tripoint is " << tripoint1
+      << " and segpoint is " << segpoint1;
 
     // Find the intersection of segment from p1 to p2
     double t2 = 0;
@@ -1137,7 +1141,7 @@ void testTriSegBothEnds(const primal::Triangle< double, DIM > & tri,
 
 TEST(primal_intersect, triangle_segment_intersection)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Segment< double, DIM >  SegmentType;
@@ -1206,7 +1210,7 @@ TEST(primal_intersect, triangle_segment_intersection)
 
 TEST(primal_intersect, triangle_ray_intersection)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >   PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Ray< double, DIM > RayType;
@@ -1307,7 +1311,7 @@ TEST(primal_intersect, triangle_ray_intersection)
 
 TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Vector< double,DIM >    VectorType;
   typedef primal::Triangle< double, DIM > TriangleType;
@@ -1330,7 +1334,8 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
                    PointType::make_point( 2,0,2));
   EXPECT_TRUE( axom::primal::intersect(t2, r, intersectionParam, intBary));
 
-  // Here, intersectionParam is the distance along the ray, with the source being 0.
+  // Here, intersectionParam is the distance along the ray, with the source
+  // being 0.
   // This is different from a segment's intersection parameter (see below).
   EXPECT_DOUBLE_EQ(2.0, intersectionParam);
 
@@ -1342,9 +1347,36 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
   EXPECT_TRUE(testPointsClose(intersectionPoint, triIntersectionPoint));
 }
 
+
+TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
+{
+  const int DIM = 3;
+  typedef primal::Point< double,DIM >     PointType;
+  typedef primal::Vector< double,DIM >    VectorType;
+  typedef primal::Triangle< double, DIM > TriangleType;
+  typedef primal::Ray< double, DIM >      RayType;
+
+  // This regression test triggers a division by zero in
+  // a previous implementation of primal::intersect()
+  // when normalizing the barycentric coordinates
+
+  double t = 0.;
+  PointType bary;
+
+  double val = std::sqrt(2)/2;
+  RayType ray(PointType::make_point(-0.1, 1.1, 0.),
+              VectorType::make_vector(0, -val, val));
+
+  TriangleType tri( PointType::make_point(1,0,0),
+                    PointType::make_point(0,1,0),
+                    PointType::make_point(0,0,1));
+
+  EXPECT_FALSE( axom::primal::intersect(tri, ray, t, bary));
+}
+
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   typedef primal::Triangle< double, DIM > TriangleType;
   typedef primal::Segment< double, DIM >      SegmentType;
@@ -1361,8 +1393,10 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
   double intersectionParam = 0.;
   EXPECT_TRUE( axom::primal::intersect(t, s, intersectionParam, intBary));
 
-  // Here, intersectionParam is the distance along the segment, with the source being 0
-  // and the target being 1.  This is different from a ray's intersection parameter
+  // Here, intersectionParam is the distance along the segment, with the source
+  // being 0
+  // and the target being 1.  This is different from a ray's intersection
+  // parameter
   // (see above).
   EXPECT_DOUBLE_EQ(0.5, intersectionParam);
 
@@ -1377,7 +1411,7 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, obb_obb_test_intersection2D)
 {
-  static const int DIM = 2;
+  const int DIM = 2;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Vector< CoordType, DIM > QVector;
@@ -1432,7 +1466,7 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, obb_obb_test_intersection3D)
 {
-  static const int DIM = 3;
+  const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Vector< CoordType, DIM > QVector;
@@ -1535,7 +1569,7 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

@@ -5,14 +5,13 @@ Axom provides libraries that address common computer science needs.  It grew fro
 
 # Axom components
 
-* @subpage axom_utilstop provides shared utility functionality to all components
+* @subpage axomutiltop provides shared utility functionality to all components
 * @subpage lumberjacktop provides logging aggregation and filtering capability
 * @subpage slictop provides logging levels and targets
 * @subpage slamtop provides an API to construct and process meshes
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
 * @subpage questtop provides an API to query point distance and position relative to meshes
 * @subpage sidretop provides a data store with hierarchical structure
-* @subpage spiotop provides parallel I/O services
 
 More to come.
 

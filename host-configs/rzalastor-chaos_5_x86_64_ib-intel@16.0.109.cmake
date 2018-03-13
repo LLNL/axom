@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_52_23/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/cmake-3.8.2-o55qeefhlmunbygv2vtxnbibaao7gcny/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_58_48/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109/cmake-3.8.2-o55qeefhlmunbygv2vtxnbibaao7gcny/bin/cmake
 
 #######
 # using intel@16.0.109 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-16.0.109/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_52_23/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_58_48/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.109" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-lkavbwiq2g26mxzbmdpvtji6t6np2hex" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-lkavbwiq2g26mxzbmdpvtji6t6np2hex" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-btylrdvyqlz3ktx4ct6l5h25sriojf74" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-r67cgn6jxgfmexi3qosmpzl2sxr5pqjq" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-iyxmvzdultuk5dnezbjagbvjfyheldpz" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-vaxfagykvpueronnzybsyr63rhcmldzj" CACHE PATH "")
@@ -70,6 +70,20 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 ##################################
 # end uberenv host-config
 ##################################
+
+##
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
 
 ##############################################################################
 # !---------------------------------------------------------------------------

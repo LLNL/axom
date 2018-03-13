@@ -25,7 +25,7 @@ set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r2
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_10_31_17_51_52/spack/opt/spack/bgqos_0/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2017_11_13_15_57_08/spack/opt/spack/bgqos_0/clang-4.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-y7l7rg3y7j7hxdsom3nwcpwwfq3tu75b" CACHE PATH "")
@@ -36,7 +36,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-y7l7rg3y7j7hxdsom3nwcpwwfq3tu75b" CACHE PA
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.2.1-lps3i452m3y4ebespcl7atv4bukml7xq" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3-gkwllnyyluegb6fi2uxwkkflm3d7sxov" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-qtbnjv44avhlwb7l6zl3taypjzllki4w" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-22q34tajrlunpnme5ezp72t4iwy2qpgz" CACHE PATH "")

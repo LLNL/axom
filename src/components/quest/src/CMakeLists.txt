@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -19,6 +19,7 @@ set( quest_headers
     ## Geometry Headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
+    geom/ImplicitGrid.hpp
     geom/InOutOctree.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
@@ -26,10 +27,14 @@ set( quest_headers
     geom/SpatialOctree.hpp
     geom/ANNQuery.hpp
 
-    # Mesh tester
+    # Mesh tester headers
     MeshTester.hpp
-    detail/MeshTester_impl.hpp
 
+    # PointInCell headers
+    PointInCell.hpp
+    detail/PointFinder.hpp
+    detail/PointInCellMeshWrapper_mfem.hpp
+    
     ## STL library headers
     stl/STLReader.hpp
 
@@ -42,6 +47,9 @@ set( quest_sources
 
     ## Geometry Sources
     # <nothing yet>
+
+    ## Mesh tester sources
+    MeshTester.cpp
 
     ## STL library sources
     stl/STLReader.cpp

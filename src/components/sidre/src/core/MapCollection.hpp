@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -219,7 +219,7 @@ public:
   }
 
   ///
-  TYPE * getItem(const std::string& name)
+  TYPE* getItem(const std::string& name)
   {
     typename MapType::iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
@@ -227,7 +227,7 @@ public:
   }
 
   ///
-  TYPE const * getItem(const std::string& name) const
+  TYPE const* getItem(const std::string& name) const
   {
     typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return ( mit != m_name2idx_map.end() ?
@@ -235,13 +235,13 @@ public:
   }
 
   ///
-  TYPE * getItem(IndexType idx)
+  TYPE* getItem(IndexType idx)
   {
     return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : AXOM_NULLPTR );
   }
 
   ///
-  TYPE const * getItem(IndexType idx) const
+  TYPE const* getItem(IndexType idx) const
   {
     return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : AXOM_NULLPTR );
   }
@@ -262,13 +262,13 @@ public:
   }
 
   ///
-  IndexType insertItem(TYPE * item, const std::string& name);
+  IndexType insertItem(TYPE* item, const std::string& name);
 
   ///
-  TYPE * removeItem(const std::string& name);
+  TYPE* removeItem(const std::string& name);
 
   ///
-  TYPE * removeItem(IndexType idx);
+  TYPE* removeItem(IndexType idx);
 
   ///
   void removeAllItems()
@@ -291,7 +291,7 @@ public:
   }
 
 private:
-  std::vector<TYPE *>  m_items;
+  std::vector<TYPE*>  m_items;
   std::stack< IndexType > m_free_ids;
 
 #if defined(AXOM_USE_SPARSEHASH)
@@ -339,7 +339,7 @@ IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 
 
 template <typename TYPE>
-IndexType MapCollection<TYPE>::insertItem(TYPE * item,
+IndexType MapCollection<TYPE>::insertItem(TYPE* item,
                                           const std::string& name)
 {
   bool use_recycled_index = false;
@@ -385,9 +385,9 @@ IndexType MapCollection<TYPE>::insertItem(TYPE * item,
 }
 
 template <typename TYPE>
-TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
+TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
 {
-  TYPE * ret_val = AXOM_NULLPTR;
+  TYPE* ret_val = AXOM_NULLPTR;
 
   typename MapType::iterator mit = m_name2idx_map.find(name);
   if ( mit != m_name2idx_map.end() )
@@ -405,11 +405,11 @@ TYPE * MapCollection<TYPE>::removeItem(const std::string& name)
 }
 
 template <typename TYPE>
-TYPE * MapCollection<TYPE>::removeItem(IndexType idx)
+TYPE* MapCollection<TYPE>::removeItem(IndexType idx)
 {
   if ( hasItem(idx) )
   {
-    TYPE * item = removeItem( m_items[idx]->getName() );
+    TYPE* item = removeItem( m_items[idx]->getName() );
     return item;
   }
   else

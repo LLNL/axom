@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -79,7 +79,7 @@ void reportVectorMismatch(const std::vector<T> & standard,
 }
 
 void runIntersectTest(const std::string &tname,
-                      TriangleMesh * surface_mesh,
+                      TriangleMesh* surface_mesh,
                       const std::vector< std::pair<int, int> > & expisect,
                       const std::vector< int > & expdegen)
 {
@@ -138,9 +138,12 @@ std::string readIntersectTest(std::string & test,
 {
   // given a test file path in argument test,
   // return the display name for the test (from the first line of the file).
-  // Output argument tfname supplies the mesh file to read in (second line, path relative to test)
-  // Output arg expisect (third line) supplies the expected intersecting triangles
-  // Output arg expdegen (fourth line) supplies the expected degenerate triangles
+  // Output argument tfname supplies the mesh file to read in (second line, path
+  // relative to test)
+  // Output arg expisect (third line) supplies the expected intersecting
+  // triangles
+  // Output arg expdegen (fourth line) supplies the expected degenerate
+  // triangles
 
   std::string testdir;
   axom::utilities::filesystem::getDirName(testdir, test);
@@ -186,7 +189,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 {
   std::vector< std::pair<int, int> > intersections;
   std::vector< int > degenerate;
-  TriangleMesh * surface_mesh = AXOM_NULLPTR;
+  TriangleMesh* surface_mesh = AXOM_NULLPTR;
   std::string testname;
   std::string testdescription;
 
@@ -354,7 +357,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
       reader.read();
 
       // Get surface mesh
-      TriangleMesh * surface_mesh = new TriangleMesh( 3 );
+      TriangleMesh* surface_mesh = new TriangleMesh( 3 );
       reader.getMesh( surface_mesh );
 
       runIntersectTest(tname, surface_mesh, expisect, expdegen);
@@ -368,7 +371,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 

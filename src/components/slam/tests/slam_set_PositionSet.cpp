@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,8 +18,8 @@
 /*
  * \file slam_set_positionset.cpp
  *
- * This file tests PositionSets within Slam.  These are OrderedSets with a runtime size,
- * but no offsets, stride or indirection.
+ * This file tests PositionSets within Slam.  These are OrderedSets with a
+ * runtime size, but no offsets, stride or indirection.
  */
 
 #include <iterator>
@@ -198,7 +198,8 @@ TEST(slam_set_positionset,out_of_bounds_at)
   SetType s(MAX_SET_SIZE);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
+  // in debug mode
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -241,8 +242,10 @@ TEST(slam_set_positionset,awkward_resize)
   EXPECT_TRUE(s1.empty());
   SLIC_INFO("Original size of set: " << s1.size());
 
-  // Resize the set after construction by casting to its SizePolicyType base class
-  // Note that this is awkward, but the only way to do this using the existing API
+  // Resize the set after construction by casting to its SizePolicyType base
+  // class
+  // Note that this is awkward, but the only way to do this using the existing
+  // API
   static_cast<SetType::SizePolicyType&>(s1).size() = MAX_SET_SIZE;
 
   EXPECT_TRUE(s1.isValid());
@@ -256,7 +259,7 @@ TEST(slam_set_positionset,awkward_resize)
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
   int result = 0;
 

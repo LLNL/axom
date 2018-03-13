@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -72,13 +72,13 @@ public:
 
   static double getMax() { return 1; }
 
-  static void getCenter( double * center )
+  static void getCenter( double* center )
   {
     SLIC_ASSERT( center != AXOM_NULLPTR );
     center[ 0 ] = center[ 1 ] = TRI_ONE_THIRD;
   }
 
-  static void getCoords( double * coords )
+  static void getCoords( double* coords )
   {
     SLIC_ASSERT( coords != AXOM_NULLPTR );
 
@@ -95,7 +95,7 @@ public:
     coords[ 5 ] = 1.0;
   }
 
-  static void computeShape( const double * xr, double * phi )
+  static void computeShape( const double* xr, double* phi )
   {
     SLIC_ASSERT(  xr != AXOM_NULLPTR );
     SLIC_ASSERT(  phi != AXOM_NULLPTR );
@@ -108,8 +108,8 @@ public:
     phi[ 2 ] = s;
   }
 
-  static void computeDerivatives( const double * AXOM_NOT_USED(xr),
-                                  double * phidot )
+  static void computeDerivatives( const double* AXOM_NOT_USED(xr),
+                                  double* phidot )
   {
     SLIC_ASSERT( phidot != AXOM_NULLPTR );
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -22,6 +22,7 @@
 #include <string>
 
 #include "axom/config.hpp"
+#include "mint/Mesh.hpp"
 
 #ifdef AXOM_USE_MPI
 #include "mpi.h"
@@ -37,10 +38,13 @@ namespace quest
  * \brief Initializes quest.
  * \param [in] comm communicator to use (when running in parallel)
  * \param [in] fileName the name of the file to read in the surface.
+ * \param [in] input_mesh pointer to already-read-in mint::Mesh
  * \param [in] requiresDistance flag to determine which structure to build.
  * \param [in] ndims the surface's spatial dimension
  * \param [in] maxElements max elements per bucket.
  * \param [in] maxLevel max levels of subdivision.
+ * \param [in] deleteMesh if true, finalize() will delete the mesh;
+ *       if false, the user is responsible for deleting the mesh
  * \note If requiresDistance is true, we will build a structure that supports
  *       signed distance queries in addition to containment queries.
  *       Otherwise, we build a structure that only supports containment queries.
@@ -49,10 +53,16 @@ namespace quest
 void initialize( MPI_Comm comm, const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
+void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh = false );
 #else
 void initialize( const std::string& fileName,
                  bool requiresDistance, int ndims, int maxElements,
                  int maxLevels );
+void initialize( mint::Mesh*& input_mesh,
+                 bool requiresDistance, int ndims, int maxElements,
+                 int maxLevels, bool deleteMesh = false );
 #endif
 
 /*!
@@ -75,7 +85,7 @@ double distance(double x, double y, double z=0.0);
  * \pre dist != AXOM_NULLPTR
  * \pre npoints >= 0
  */
-void distance( const double * xyz, double * dist, int npoints);
+void distance( const double* xyz, double* dist, int npoints);
 
 /*!
  * \brief Checks if the given point is inside or outside.
@@ -94,7 +104,7 @@ int inside(double x, double y, double z=0.0);
  * \pre xyz != AXOM_NULLPTR
  * \pre  in != AXOM_NULLPTR
  */
-void inside( const double * xyz, int * in, int npoints);
+void inside( const double* xyz, int* in, int npoints);
 
 
 
@@ -103,14 +113,14 @@ void inside( const double * xyz, int * in, int npoints);
  * \param [out] coords user-supplied array to store the coordinates
  * \pre coords must be preallocated with room for at least three doubles.
  */
-void mesh_min_bounds(double * coords);
+void mesh_min_bounds(double* coords);
 
 /*!
  * \brief Gets coordinates of the maximum corner of the mesh's bounding box
  * \param [out] coords user-supplied array to store the coordinates
  * \pre coords must be preallocated with room for at least three doubles.
  */
-void mesh_max_bounds(double * coords);
+void mesh_max_bounds(double* coords);
 
 /*!
  * \brief Gets coordinates of the mesh's center of mass
@@ -118,7 +128,7 @@ void mesh_max_bounds(double * coords);
  * \pre coords must be preallocated with room for at least three doubles.
  * \note The center of mass is computed as the average vertex position
  */
-void mesh_center_of_mass(double * coords);
+void mesh_center_of_mass(double* coords);
 
 /*!
  * \brief Finalize quest.

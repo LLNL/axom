@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -46,7 +46,7 @@ namespace sidre
  *
  *************************************************************************
  */
-bool AttrValues::hasValue( const Attribute * attr ) const
+bool AttrValues::hasValue( const Attribute* attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
@@ -87,7 +87,7 @@ bool AttrValues::hasValue( const Attribute * attr ) const
  *
  *************************************************************************
  */
-bool AttrValues::setToDefault( const Attribute * attr )
+bool AttrValues::setToDefault( const Attribute* attr )
 {
   if (attr == AXOM_NULLPTR)
   {
@@ -150,7 +150,7 @@ bool AttrValues::createNode(IndexType iattr)
  *
  *************************************************************************
  */
-Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
+Node::ConstValue AttrValues::getScalar( const Attribute* attr ) const
 {
   const Node & node = getValueNodeRef(attr);
   return node.value();
@@ -165,7 +165,7 @@ Node::ConstValue AttrValues::getScalar( const Attribute * attr ) const
  *
  *************************************************************************
  */
-const char * AttrValues::getString( const Attribute * attr ) const
+const char* AttrValues::getString( const Attribute* attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {
@@ -194,7 +194,7 @@ const char * AttrValues::getString( const Attribute * attr ) const
  *
  *************************************************************************
  */
-const Node & AttrValues::getValueNodeRef( const Attribute * attr ) const
+const Node & AttrValues::getValueNodeRef( const Attribute* attr ) const
 {
   if (attr == AXOM_NULLPTR)
   {

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -21,32 +21,33 @@
 ##################################################
 # convert_protocol is a utility that converts
 # a datastore from the sidre_hdf5 protocol
-# to any of the other supported protocols
+# to any of the other supported protocols.
+# It requires slam, sidre, mpi and hdf5.
 ##################################################
-set(datastore_converter_sources
-    convert_sidre_protocol.cpp
-)
-set(datastore_converter_depends 
-    spio sidre conduit conduit_relay hdf5
-    slic fmt 
-    slam 
+if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
+    set(datastore_converter_sources
+        convert_sidre_protocol.cpp
     )
+    set(datastore_converter_depends 
+        sidre conduit conduit_relay hdf5
+        slic fmt 
+        slam 
+        mpi
+        )
 
-if(ENABLE_LUMBERJACK)
-  list(APPEND datastore_converter_depends lumberjack)
-endif()
-
-
-if(BOOST_FOUND)
-  list(APPEND datastore_converter_depends boost)
-endif()
-
-if(SCR_FOUND)
-  list(APPEND datastore_converter_depends scr)
-endif()
+    if(ENABLE_LUMBERJACK)
+      list(APPEND datastore_converter_depends lumberjack)
+    endif()
 
 
-if( ENABLE_SLAM AND ENABLE_SPIO )
+    if(BOOST_FOUND)
+      list(APPEND datastore_converter_depends boost)
+    endif()
+
+    if(SCR_FOUND)
+      list(APPEND datastore_converter_depends scr)
+    endif()
+
     blt_add_executable(
         NAME       convert_sidre_protocol
         SOURCES    ${datastore_converter_sources}

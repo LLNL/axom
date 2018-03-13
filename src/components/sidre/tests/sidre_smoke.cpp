@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -31,7 +31,7 @@ using axom::sidre::nameIsValid;
 
 TEST(sidre_smoke,create_datastore)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
   delete ds;
   EXPECT_TRUE( true );
 }
@@ -40,7 +40,7 @@ TEST(sidre_smoke,create_datastore)
 
 TEST(sidre_smoke,valid_invalid)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   IndexType idx = 3;
   EXPECT_TRUE(idx != InvalidIndex);
@@ -48,7 +48,7 @@ TEST(sidre_smoke,valid_invalid)
   std::string name("foo");
   EXPECT_TRUE(nameIsValid(name));
 
-  Group * root = ds->getRoot();
+  Group* root = ds->getRoot();
 
   EXPECT_TRUE(root->getGroupName(idx) == InvalidName);
   EXPECT_TRUE(root->getGroupIndex(name) == InvalidIndex);

@@ -1,7 +1,7 @@
 // shroudrt.hpp
 // This is generated code, do not edit
 //
-// Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-void shroud_FccCopy(char * a, int la, const char * s);
+void shroud_FccCopy(char* a, int la, const char* s);
 
 #ifdef __cplusplus
 }  // extern "C"

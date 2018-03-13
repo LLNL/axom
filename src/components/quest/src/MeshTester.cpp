@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -15,11 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MESH_TESTER_IMPL_HPP_
-#define MESH_TESTER_IMPL_HPP_
-
 // Axom includes
-#include "mint/UnstructuredMesh.hpp"
+#include "quest/MeshTester.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/intersect.hpp"
@@ -37,8 +34,6 @@ namespace axom
 {
 namespace quest
 {
-namespace detail
-{
 
 typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 typedef primal::Triangle<double, 3> Triangle3;
@@ -49,7 +44,7 @@ typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
-inline SpatialBoundingBox compute_bounds(mint::Mesh * mesh)
+inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -79,7 +74,7 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-Triangle3 getMeshTriangle(int i, mint::Mesh * surface_mesh)
+inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
   SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
   primal::Point<int, 3> triCell;
@@ -98,8 +93,8 @@ Triangle3 getMeshTriangle(int i, mint::Mesh * surface_mesh)
  *
  * \see findTriMeshIntersections
  */
-void  findTriMeshIntersections_impl(
-  TriangleMesh * surface_mesh,
+void findTriMeshIntersections(
+  TriangleMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution)
@@ -197,8 +192,5 @@ void  findTriMeshIntersections_impl(
   }
 }
 
-} // end namespace detail
 } // end namespace quest
 } // end namespace axom
-
-#endif  // MESH_TESTER_IMPL_HPP_

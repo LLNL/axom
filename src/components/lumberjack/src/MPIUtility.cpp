@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -37,9 +37,9 @@ namespace axom
 namespace lumberjack
 {
 
-const char * mpiBlockingRecieveMessages(MPI_Comm comm)
+const char* mpiBlockingRecieveMessages(MPI_Comm comm)
 {
-  char * charArray = AXOM_NULLPTR;
+  char* charArray = AXOM_NULLPTR;
   int messageSize = -1;
   MPI_Status mpiStatus;
 
@@ -63,10 +63,10 @@ const char * mpiBlockingRecieveMessages(MPI_Comm comm)
 }
 
 void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
-                                const char * packedMessagesToBeSent)
+                                const char* packedMessagesToBeSent)
 {
   MPI_Request mpiRequest;
-  MPI_Isend(const_cast<char *>(packedMessagesToBeSent),
+  MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
             strlen(packedMessagesToBeSent), MPI_CHAR,
             destinationRank, 0, comm, &mpiRequest);
 }

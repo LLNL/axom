@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,7 +18,8 @@
 /**
  * \file DynamicVariableRelation.hpp
  *
- * \brief API for a topological relation between two sets in which entities from the first set
+ * \brief API for a topological relation between two sets in which entities from
+ * the first set
  *        can be related to an arbitrary number of entities from the second set
  *        This relation is dynamic, so it cannot
  *
@@ -62,8 +63,8 @@ public:
   typedef RelationsContainer::iterator RelationsContainerIt;
 
 public:
-  DynamicVariableRelation (Set * fromSet = &s_nullSet,
-                           Set * toSet = &s_nullSet);
+  DynamicVariableRelation (Set* fromSet = &s_nullSet,
+                           Set* toSet = &s_nullSet);
   ~DynamicVariableRelation(){}
 
   RelationVecConstIterator begin(SetPosition fromSetIndex)       const
@@ -117,7 +118,8 @@ public:     // Modifying functions
 public:
   /**
    * \name DirectDataAccess
-   * \brief Accessor functions to get the underlying relation data for each element
+   * \brief Accessor functions to get the underlying relation data for each
+   *  element
 
    * \note We will have to figure out a good way
    * to limit this access to situations where it makes sense.
@@ -177,8 +179,8 @@ private:
 
 private:
 
-  Set * m_fromSet;
-  Set * m_toSet;
+  Set* m_fromSet;
+  Set* m_toSet;
 
   RelationsContainer m_relationsVec;
 };

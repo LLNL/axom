@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -20,19 +20,25 @@
  *
  * \brief Indirection policies for SLAM
  *
- * Indirection policies encompass the underlying storage for indirection buffers for a SLAM set, relation or map.
- *
- * A valid indirection policy must support the following interface:
+ * Indirection policies encompass the underlying storage for indirection buffers
+ * for a SLAM set, relation or map. A valid indirection policy must support the
+ * following interface:
  *   * [required]
- *     * typedef IndirectionResult -- the type of the result of an indirection (const/nonconst and ref/nonref)
- *     * indirection() : IntType  -- returns the value of the element after indirection
- *     * hasIndirection(): bool -- returns whether there is an indirection buffer
- *     * isValid() : bool -- indicates whether the Indirection policy of the set is valid
+ *   * typedef IndirectionResult -- the type of the result of an indirection
+ *      (const/nonconst and ref/nonref)
+ *   * indirection() : IntType  -- returns the value of the element after
+ *     indirection
+ *   * hasIndirection(): bool -- returns whether there is an indirection
+ *     buffer
+ *   * isValid() : bool -- indicates whether the Indirection policy of the set
+ *      is valid
  *   * [optional]
  *     * operator(): IntType -- alternate accessor for indirection
- *     * data() : ElementType* -- allows direct access to the underlying buffer (when this exists)
+ *     * data() : ElementType* -- allows direct access to the underlying buffer
+ *       (when this exists)
  *
- * \note Slam's Sets, Relations and Maps are not responsible for allocating/deallocating their own memory
+ * \note Slam's Sets, Relations and Maps are not responsible for
+ *  allocating/deallocating their own memory
  */
 
 #ifndef SLAM_POLICIES_INDIRECTION_H_
@@ -69,7 +75,7 @@ struct NoIndirection
   NoIndirection() {}
 
   // This empty .ctor exists to satisfy IndirectionPolicy interface
-  NoIndirection(IndirectionBufferType *) {}
+  NoIndirection(IndirectionBufferType*) {}
 
   inline IndirectionResult          indirection(PositionType pos) const
   {
@@ -81,7 +87,7 @@ struct NoIndirection
     return indirection(pos);
   }
 
-  IndirectionBufferType * data() { return AXOM_NULLPTR; }
+  IndirectionBufferType* data() { return AXOM_NULLPTR; }
 
   bool hasIndirection() const { return false; }
   inline bool isValid(PositionType, PositionType, PositionType, bool ) const
@@ -99,10 +105,10 @@ struct ArrayIndirection
   typedef const ElementType&  IndirectionResult;
   typedef ElementType IndirectionBufferType;
 
-  ArrayIndirection(IndirectionBufferType * buf = AXOM_NULLPTR)
+  ArrayIndirection(IndirectionBufferType* buf = AXOM_NULLPTR)
     : m_arrBuf(buf) {}
 
-  IndirectionBufferType *&   data() { return m_arrBuf; }
+  IndirectionBufferType*&   data() { return m_arrBuf; }
 
   inline IndirectionResult  indirection(PositionType pos) const
   {
@@ -150,7 +156,8 @@ struct ArrayIndirection
     else
     {
       // Check that none of the elements have negative indices within the array
-      // Note: We do not have sufficient information about the array to know its upper bound
+      // Note: We do not have sufficient information about the array to know its
+      // upper bound
 
       PositionType firstEltInd = offset;
       PositionType lastEltInd = (size - 1) * stride + offset;
@@ -176,7 +183,7 @@ struct ArrayIndirection
   }
 
 private:
-  IndirectionBufferType * m_arrBuf;
+  IndirectionBufferType* m_arrBuf;
 };
 
 /**
@@ -190,11 +197,11 @@ struct STLVectorIndirection
   typedef const VectorType IndirectionBufferType;
 
 
-  STLVectorIndirection(IndirectionBufferType * buf = AXOM_NULLPTR)
+  STLVectorIndirection(IndirectionBufferType* buf = AXOM_NULLPTR)
     : m_vecBuf(buf) {}
 
-  IndirectionBufferType * &        data()       { return m_vecBuf; }
-  IndirectionBufferType * const &  data() const { return m_vecBuf; }
+  IndirectionBufferType* &        data()       { return m_vecBuf; }
+  IndirectionBufferType* const &  data() const { return m_vecBuf; }
 
   inline IndirectionResult        indirection(PositionType pos) const
   {
@@ -225,7 +232,8 @@ struct STLVectorIndirection
     PositionType stride,
     bool verboseOutput = false) const
   {
-    // If set has zero size, we are always valid (even if indirection buffer is null)
+    // If set has zero size, we are always valid (even if indirection buffer is
+    // null)
     if(size == 0)
       return true;
 
@@ -237,16 +245,18 @@ struct STLVectorIndirection
       if(verboseOutput)
       {
         SLIC_DEBUG(
-          "Vector-based indirection set with non-zero size (size="<< size
-                                                                  << ") requires a valid data buffer, but buffer pointer was null.");
+          "Vector-based indirection set with non-zero size (size="<< size <<
+          ") requires a valid data buffer, but buffer pointer was null.");
       }
 
       bValid = false;
     }
     else
     {
-      // Finally, check that the underlying vector has sufficient storage for all set elements
-      // Note that it is valid for the data buffer to have more space than the set's positions
+      // Finally, check that the underlying vector has sufficient storage for
+      // all set elements
+      // Note that it is valid for the data buffer to have more space than the
+      // set's positions
       PositionType firstEltInd = offset;
       PositionType lastEltInd = (size - 1) * stride + offset;
       PositionType vecSize = m_vecBuf->size();
@@ -275,7 +285,7 @@ struct STLVectorIndirection
   }
 
 private:
-  IndirectionBufferType * m_vecBuf;
+  IndirectionBufferType* m_vecBuf;
 };
 
 /// \}
