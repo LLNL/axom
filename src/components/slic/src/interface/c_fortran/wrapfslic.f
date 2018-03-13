@@ -24,6 +24,8 @@ module axom_slic
     ! splicer end module_use
     implicit none
 
+    ! splicer begin module_top
+    ! splicer end module_top
 
     interface
 
@@ -33,11 +35,11 @@ module axom_slic
         end subroutine slic_initialize
 
         function c_is_initialized() &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SLIC_is_initialized")
             use iso_c_binding, only : C_BOOL
             implicit none
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_is_initialized
 
         subroutine slic_finalize() &
@@ -63,22 +65,22 @@ module axom_slic
         end subroutine c_create_logger_bufferify
 
         function c_activate_logger(name) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SLIC_activate_logger")
             use iso_c_binding, only : C_BOOL, C_CHAR
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_activate_logger
 
         function c_activate_logger_bufferify(name, Lname) &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SLIC_activate_logger_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_activate_logger_bufferify
 
         subroutine c_get_active_logger_name_bufferify(name, Nname) &
@@ -114,11 +116,11 @@ module axom_slic
         end subroutine slic_disable_abort_on_error
 
         function c_is_abort_on_errors_enabled() &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SLIC_is_abort_on_errors_enabled")
             use iso_c_binding, only : C_BOOL
             implicit none
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_is_abort_on_errors_enabled
 
         subroutine c_set_abort_on_warning(status) &
@@ -139,11 +141,11 @@ module axom_slic
         end subroutine slic_disable_abort_on_warning
 
         function c_is_abort_on_warnings_enabled() &
-                result(SH_rv) &
+                result(SHT_rv) &
                 bind(C, name="SLIC_is_abort_on_warnings_enabled")
             use iso_c_binding, only : C_BOOL
             implicit none
-            logical(C_BOOL) :: SH_rv
+            logical(C_BOOL) :: SHT_rv
         end function c_is_abort_on_warnings_enabled
 
         subroutine c_log_message(level, message, fileName, line, filter) &
@@ -157,7 +159,8 @@ module axom_slic
             logical(C_BOOL), value, intent(IN) :: filter
         end subroutine c_log_message
 
-        subroutine c_log_message_bufferify(level, message, Lmessage, fileName, LfileName, line, filter) &
+        subroutine c_log_message_bufferify(level, message, Lmessage, &
+                fileName, LfileName, line, filter) &
                 bind(C, name="SLIC_log_message_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
@@ -176,11 +179,12 @@ module axom_slic
 
 contains
 
-    function slic_is_initialized() result(SH_rv)
+    function slic_is_initialized() &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin function.is_initialized
-        SH_rv = c_is_initialized()
+        SHT_rv = c_is_initialized()
         ! splicer end function.is_initialized
     end function slic_is_initialized
 
@@ -189,20 +193,18 @@ contains
         character(*), intent(IN) :: name
         character, value, intent(IN) :: imask
         ! splicer begin function.create_logger
-        call c_create_logger_bufferify(  &
-            name,  &
-            len_trim(name, kind=C_INT),  &
+        call c_create_logger_bufferify(name, len_trim(name, kind=C_INT), &
             imask)
         ! splicer end function.create_logger
     end subroutine slic_create_logger
 
-    function slic_activate_logger(name) result(SH_rv)
+    function slic_activate_logger(name) &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         character(*), intent(IN) :: name
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin function.activate_logger
-        SH_rv = c_activate_logger_bufferify(  &
-            name,  &
+        SHT_rv = c_activate_logger_bufferify(name, &
             len_trim(name, kind=C_INT))
         ! splicer end function.activate_logger
     end function slic_activate_logger
@@ -211,8 +213,7 @@ contains
         use iso_c_binding, only : C_INT
         character(*), intent(OUT) :: name
         ! splicer begin function.get_active_logger_name
-        call c_get_active_logger_name_bufferify(  &
-            name,  &
+        call c_get_active_logger_name_bufferify(name, &
             len(name, kind=C_INT))
         ! splicer end function.get_active_logger_name
     end subroutine slic_get_active_logger_name
@@ -227,11 +228,12 @@ contains
         ! splicer end function.set_abort_on_error
     end subroutine slic_set_abort_on_error
 
-    function slic_is_abort_on_errors_enabled() result(SH_rv)
+    function slic_is_abort_on_errors_enabled() &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin function.is_abort_on_errors_enabled
-        SH_rv = c_is_abort_on_errors_enabled()
+        SHT_rv = c_is_abort_on_errors_enabled()
         ! splicer end function.is_abort_on_errors_enabled
     end function slic_is_abort_on_errors_enabled
 
@@ -245,11 +247,12 @@ contains
         ! splicer end function.set_abort_on_warning
     end subroutine slic_set_abort_on_warning
 
-    function slic_is_abort_on_warnings_enabled() result(SH_rv)
+    function slic_is_abort_on_warnings_enabled() &
+            result(SHT_rv)
         use iso_c_binding, only : C_BOOL
-        logical :: SH_rv
+        logical :: SHT_rv
         ! splicer begin function.is_abort_on_warnings_enabled
-        SH_rv = c_is_abort_on_warnings_enabled()
+        SHT_rv = c_is_abort_on_warnings_enabled()
         ! splicer end function.is_abort_on_warnings_enabled
     end function slic_is_abort_on_warnings_enabled
 
@@ -263,14 +266,9 @@ contains
         logical(C_BOOL) SH_filter
         SH_filter = filter  ! coerce to C_BOOL
         ! splicer begin function.log_message
-        call c_log_message_bufferify(  &
-            level,  &
-            message,  &
-            len_trim(message, kind=C_INT),  &
-            fileName,  &
-            len_trim(fileName, kind=C_INT),  &
-            line,  &
-            SH_filter)
+        call c_log_message_bufferify(level, message, &
+            len_trim(message, kind=C_INT), fileName, &
+            len_trim(fileName, kind=C_INT), line, SH_filter)
         ! splicer end function.log_message
     end subroutine slic_log_message
 

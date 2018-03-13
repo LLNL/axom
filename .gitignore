@@ -5,6 +5,7 @@ install-
 .settings
 build-*
 install-*
+_axom_build_and_test_*
 *.pyc
 *.orig
 *.uncrustify

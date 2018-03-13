@@ -21,69 +21,114 @@
 
 compilers:
     chaos_5_x86_64_ib:
-        gcc@4.7.1:
-            cc:  /usr/apps/gnu/4.7.1/bin/gcc
-            cxx: /usr/apps/gnu/4.7.1/bin/g++
-            f77: /usr/apps/gnu/4.7.1/bin/gfortran
-            fc:  /usr/apps/gnu/4.7.1/bin/gfortran
         gcc@4.9.3:
             cc:  /usr/apps/gnu/4.9.3/bin/gcc
             cxx: /usr/apps/gnu/4.9.3/bin/g++
             f77: /usr/apps/gnu/4.9.3/bin/gfortran
             fc:  /usr/apps/gnu/4.9.3/bin/gfortran
-        clang@3.5.0:
-            cc:  /usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/bin/clang
-            cxx: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/bin/clang++
-            f77: None
-            fc:  None     
-        intel@15.0.187:
-            cc:  /usr/local/tools/ic-15.0.187/bin/icc
-            cxx: /usr/local/tools/ic-15.0.187/bin/icpc
-            f77: /usr/local/tools/ic-15.0.187/bin/ifort
-            fc:  /usr/local/tools/ic-15.0.187/bin/ifort
-        intel@16.0.109:
-            cc: /usr/local/tools/ic-16.0.109/bin/icc
-            cxx: /usr/local/tools/ic-16.0.109/bin/icpc
-            f77: /usr/local/tools/ic-16.0.109/bin/ifort
-            fc: /usr/local/tools/ic-16.0.109/bin/ifort
+        clang@3.9.1:
+            cc:  /usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.9.1/bin/clang
+            cxx: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.9.1/bin/clang++
+            f77: /usr/apps/gnu/4.9.3/bin/gfortran
+            fc:  /usr/apps/gnu/4.9.3/bin/gfortran
+        clang@4.0.1:
+            cc:  /usr/global/tools/clang/chaos_5_x86_64_ib/clang-4.0.1/bin/clang
+            cxx: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-4.0.1/bin/clang++
+            f77: /usr/apps/gnu/4.9.3/bin/gfortran
+            fc:  /usr/apps/gnu/4.9.3/bin/gfortran
+        intel@15.0.223:
+            cc:  /usr/local/tools/ic-15.0.223/bin/icc
+            cxx: /usr/local/tools/ic-15.0.223/bin/icpc
+            f77: /usr/local/tools/ic-15.0.223/bin/ifort
+            fc:  /usr/local/tools/ic-15.0.223/bin/ifort
+        intel@16.0.258:
+            cc:  /usr/local/tools/ic-16.0.258/bin/icc
+            cxx: /usr/local/tools/ic-16.0.258/bin/icpc
+            f77: /usr/local/tools/ic-16.0.258/bin/ifort
+            fc:  /usr/local/tools/ic-16.0.258/bin/ifort
+        intel@17.0.174:
+            cc:  /usr/local/tools/ic-17.0.174/bin/icc
+            cxx: /usr/local/tools/ic-17.0.174/bin/icpc
+            f77: /usr/local/tools/ic-17.0.174/bin/ifort
+            fc:  /usr/local/tools/ic-17.0.174/bin/ifort
     toss_3_x86_64_ib:
         gcc@4.9.3:
             cc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gcc
             cxx: /usr/tce/packages/gcc/gcc-4.9.3/bin/g++
             f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
             fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-        clang@3.9.0:
-            cc:  /usr/tce/packages/clang/clang-3.9.0/bin/clang
-            cxx: /usr/tce/packages/clang/clang-3.9.0/bin/clang++
-            f77: None
-            fc:  None
+        gcc@6.1.0:
+            cc:  /usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+            f77: /usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran
+            fc:  /usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran
+        gcc@7.1.0:
+            cc:  /usr/tce/packages/gcc/gcc-7.1.0/bin/gcc
+            cxx: /usr/tce/packages/gcc/gcc-7.1.0/bin/g++
+            f77: /usr/tce/packages/gcc/gcc-7.1.0/bin/gfortran
+            fc:  /usr/tce/packages/gcc/gcc-7.1.0/bin/gfortran
+        clang@3.9.1:
+            cc:  /usr/tce/packages/clang/clang-3.9.1/bin/clang
+            cxx: /usr/tce/packages/clang/clang-3.9.1/bin/clang++
+            f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
+            fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
+        clang@4.0.0:
+            cc:  /usr/tce/packages/clang/clang-4.0.0/bin/clang
+            cxx: /usr/tce/packages/clang/clang-4.0.0/bin/clang++
+            f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
+            fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
         intel@16.0.4:
             cc:  /usr/tce/packages/intel/intel-16.0.4/bin/icc
             cxx: /usr/tce/packages/intel/intel-16.0.4/bin/icpc
             f77: /usr/tce/packages/intel/intel-16.0.4/bin/ifort
             fc:  /usr/tce/packages/intel/intel-16.0.4/bin/ifort
-        intel@17.0.0:
-            cc: /usr/tce/packages/intel/intel-17.0.0/bin/icc
-            cxx: /usr/tce/packages/intel/intel-17.0.0/bin/icpc
-            f77: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
-            fc: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
+        intel@17.0.2:
+            cc:  /usr/tce/packages/intel/intel-17.0.2/bin/icc
+            cxx: /usr/tce/packages/intel/intel-17.0.2/bin/icpc
+            f77: /usr/tce/packages/intel/intel-17.0.2/bin/ifort
+            fc:  /usr/tce/packages/intel/intel-17.0.2/bin/ifort
+        intel@18.0.0:
+            cc:  /usr/tce/packages/intel/intel-18.0.0/bin/icc
+            cxx: /usr/tce/packages/intel/intel-18.0.0/bin/icpc
+            f77: /usr/tce/packages/intel/intel-18.0.0/bin/ifort
+            fc:  /usr/tce/packages/intel/intel-18.0.0/bin/ifort
     blueos_3_ppc64le_ib:
-        clang@coral:
-            cc:  /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang
-            cxx: /usr/tcetmp/packages/clang/clang-coral-2017.05.19/bin/clang++
-            f77: None 
-            fc: None 
+        clang@coral_xlf:
+            cc:  /usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang
+            cxx: /usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang++
+            f77: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf
+            fc:  /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003
+        clang@coral_xlflang:
+            cc:  /usr/tce/packages/clang/clang-coral-2017.11.27/bin/clang
+            cxx: /usr/tce/packages/clang/clang-coral-2017.11.27/bin/clang++
+            f77: /usr/tce/packages/clang/clang-coral-2017.11.27/bin/xlflang
+            fc:  /usr/tce/packages/clang/clang-coral-2017.11.27/bin/xlflang
+        xl@coral:
+            cc:  /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlc
+            cxx: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlC
+            f77: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf
+            fc:  /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003        
         gcc@4.9.3:
             cc:  /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gcc
             cxx: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/g++
             f77: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
-            fc: /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
+            fc:  /usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran
+        pgi@17.9-0:
+            cc:  /usr/tce/packages/pgi/pgi-17.9/bin/pgcc
+            cxx: /usr/tce/packages/pgi/pgi-17.9/bin/pgc++
+            f77: /usr/tce/packages/pgi/pgi-17.9/bin/pgf90
+            fc:  /usr/tce/packages/pgi/pgi-17.9/bin/pgf90
     bgqos_0:
-          clang@4.0.0:
+          clang@4.0.0_gfortran:
              cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
              cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
-             f77: None
-             fc:  None
+             f77: /usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran
+             fc:  /usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran
+          clang@4.0.0_xlf:
+             cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
+             cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
+             f77: /opt/ibmcmp/xlf/bg/14.1/bin/bgxlf
+             fc:  /opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003
     macosx_10.9_x86_64:
          clang@3.4svn:
              cc:  /usr/bin/clang

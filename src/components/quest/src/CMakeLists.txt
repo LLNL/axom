@@ -92,7 +92,6 @@ if (ENABLE_FORTRAN)
         ## append shroud generated headers/sources to corresponding lists
         list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
         list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
-        list(APPEND quest_sources interface/c_fortran/shroudrt.cpp)
         list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
     endif()
 endif()

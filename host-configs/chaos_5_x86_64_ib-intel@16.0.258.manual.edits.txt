@@ -1,0 +1,39 @@
+##
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
+
+##############################################################################
+# !---------------------------------------------------------------------------
+##############################################################################
+# Options added manually to 
+# lc chaos5 intel@16.0.258 host configs
+##############################################################################
+
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+##############################################################################
+# MPI - manually added for now
+##############################################################################
+set(ENABLE_MPI ON CACHE BOOL "")
+
+set(MPI_HOME             "/usr/local/tools/mvapich2-intel-2.0" CACHE PATH "")
+set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc" CACHE PATH "")
+set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx" CACHE PATH "")
+set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpif90" CACHE PATH "")
+
+set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+##############################################################################
+# !---------------------------------------------------------------------------
+##############################################################################

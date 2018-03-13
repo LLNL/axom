@@ -82,7 +82,6 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapBuffer.cpp
         interface/c_fortran/wrapView.cpp
         interface/c_fortran/wrapfsidre.F
-        interface/c_fortran/shroudrt.cpp
     )
 
     if(ENABLE_MPI)

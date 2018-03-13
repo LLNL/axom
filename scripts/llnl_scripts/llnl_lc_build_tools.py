@@ -1,0 +1,595 @@
+#!/usr/local/bin/python
+
+###############################################################################
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+###############################################################################
+
+"""
+ file: llnl_lc_uberenv_install_tools.py
+
+ description: 
+  helpers for installing axom tpls on llnl lc systems.
+
+"""
+
+import os
+import socket
+import sys
+import subprocess
+import datetime
+import glob
+import json
+import getpass
+import shutil
+
+from os.path import join as pjoin
+
+def sexe(cmd,
+         ret_output=False,
+         output_file = None,
+         echo = False):
+    """ Helper for executing shell commands. """
+    if echo:
+        print "[exe: %s]" % cmd
+    if ret_output:
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        res =p.communicate()[0]
+        return p.returncode,res
+    elif output_file != None:
+        ofile = open(output_file,"w")
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             stdout= ofile,
+                             stderr=subprocess.STDOUT)
+        res =p.communicate()[0]
+        return p.returncode
+    else:
+        rcode = subprocess.call(cmd,shell=True)
+        if rcode != 0:
+            print "{ERROR [return code: %d] from command: %s}" % (rcode,cmd)
+        return rcode
+
+
+def get_timestamp(t=None,sep="_"):
+    """ Creates a timestamp that can easily be included in a filename. """
+    if t is None:
+        t = datetime.datetime.now()
+    sargs = (t.year,t.month,t.day,t.hour,t.minute,t.second)
+    sbase = "".join(["%04d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d"])
+    return  sbase % sargs
+
+
+def build_info(job_name):
+    res = {}
+    res["built_by"] = os.environ["USER"]
+    res["built_from_branch"] = "unknown"
+    res["built_from_sha1"]   = "unknown"
+    res["job_name"] = job_name
+    rc, out = sexe('git branch -a | grep \"*\"',ret_output=True)
+    out = out.strip()
+    if rc == 0 and out != "":
+        res["built_from_branch"]  = out.split()[1]
+    rc,out = sexe('git rev-parse --verify HEAD',ret_output=True)
+    out = out.strip()
+    if rc == 0 and out != "":
+        res["built_from_sha1"] = out
+    return res
+
+
+def write_build_info(ofile, job_name):
+    print "[build info]"
+    binfo_str = json.dumps(build_info(job_name),indent=2)
+    print binfo_str
+    open(ofile,"w").write(binfo_str)
+
+
+def log_success(prefix, msg, timestamp=""):
+    """
+    Called at the end of the process to signal success.
+    """
+    info = {}
+    info["prefix"] = prefix
+    info["status"] = "success"
+    info["message"] = msg
+    if timestamp == "":
+        info["timestamp"] = get_timestamp()
+    else:
+        info["timestamp"] = timestamp
+    json.dump(info,open(pjoin(prefix,"success.json"),"w"),indent=2)
+
+def log_failure(prefix, msg, timestamp=""):
+    """
+    Called when the process failed.
+    """
+    info = {}
+    info["prefix"] = prefix
+    info["status"] = "failed"
+    info["message"] = msg
+    if timestamp == "":
+        info["timestamp"] = get_timestamp()
+    else:
+        info["timestamp"] = timestamp
+    json.dump(info,open(pjoin(prefix,"failed.json"),"w"),indent=2)
+
+
+def copy_if_exists(src, dst):
+    if os.path.exists(src):
+        shutil.copy2(src, dst)
+
+
+def normalize_job_name(job_name):
+    return job_name.replace(' ', '_').replace(',', '')
+
+
+def copy_build_dir_files(build_dir, archive_spec_dir):
+    copy_if_exists(pjoin(build_dir, "info.json"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "failed.json"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "success.json"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.test.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.install.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.make.docs.txt"), archive_spec_dir)
+
+    # Note: There should only be one of these per spec
+    last_test_logs = glob.glob(pjoin(build_dir, "Testing", "Temporary", "LastTest*.log"))
+    if len(last_test_logs) > 0:
+        copy_if_exists(last_test_logs[0], archive_spec_dir)
+
+    # Note: There should only be one of these per spec
+    test_xmls = glob.glob(pjoin(build_dir, "Testing", "*", "Test.xml"))
+    if len(test_xmls) > 0:
+        copy_if_exists(test_xmls[0], archive_spec_dir)
+
+
+def archive_src_logs(prefix, job_name, timestamp):
+    archive_dir = pjoin(get_archive_base_dir(), get_system_type())
+    archive_dir = pjoin(archive_dir, normalize_job_name(job_name), timestamp)
+    print "[Starting Archiving]"
+    print "[  Archive Dir: %s]" % archive_dir
+    print "[  Prefix: %s]" % prefix
+
+    if not os.path.exists(archive_dir):
+        os.makedirs(archive_dir)
+
+    copy_if_exists(pjoin(prefix, "info.json"), archive_dir)
+    copy_if_exists(pjoin(prefix, "failed.json"), archive_dir)
+    copy_if_exists(pjoin(prefix, "success.json"), archive_dir)
+
+    build_and_test_root = get_build_and_test_root(prefix, timestamp)
+    build_dirs = glob.glob(pjoin(build_and_test_root, "build-*"))
+    for build_dir in build_dirs:
+        spec = get_spec_from_build_dir(build_dir)
+        archive_spec_dir = pjoin(archive_dir, spec)
+
+        print "[  Spec Dir: %s]" % archive_spec_dir
+
+        if not os.path.exists(archive_spec_dir):
+            os.makedirs(archive_spec_dir)
+
+        # Note: There should only be one of these per spec
+        config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
+        if len(config_spec_logs) > 0:
+            copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
+
+        # Note: There should only be one of these per spec
+        print "[  Build Dir: %s]" % build_dir
+        copy_build_dir_files(build_dir, archive_spec_dir)
+
+    set_axom_group_and_perms(archive_dir)
+
+
+def archive_tpl_logs(prefix, job_name, timestamp):
+    archive_dir = pjoin(get_archive_base_dir(), get_system_type())
+    archive_dir = pjoin(archive_dir, normalize_job_name(job_name), timestamp)
+    print "[Starting Archiving]"
+    print "[  Archive Dir: %s]" % archive_dir
+    print "[  Prefix: %s]" % prefix
+
+    if not os.path.exists(archive_dir):
+        os.makedirs(archive_dir)
+
+    tpl_build_dir = pjoin(prefix, timestamp)
+
+    copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
+    copy_if_exists(pjoin(tpl_build_dir, "failed.json"), archive_dir)
+    copy_if_exists(pjoin(tpl_build_dir, "success.json"), archive_dir)
+
+    build_and_test_root = get_build_and_test_root(tpl_build_dir, timestamp)
+
+    tpl_logs = glob.glob(pjoin(tpl_build_dir, "output.log.spack.tpl.build.*"))
+    for tpl_log in tpl_logs:
+        spec = get_spec_from_tpl_log(tpl_log)
+        archive_spec_dir = pjoin(archive_dir, spec)
+
+        print "[  Spec Dir: %s]" % archive_spec_dir
+
+        if not os.path.exists(archive_spec_dir):
+            os.makedirs(archive_spec_dir)
+
+        copy_if_exists(tpl_log, pjoin(archive_spec_dir, "output.log.spack.txt"))
+        
+        # Note: There should only be one of these per spec
+        config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
+        if len(config_spec_logs) > 0:
+            copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
+
+        # Find build dir for spec
+        build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (spec))
+        build_dirs = glob.glob(build_dir_glob)
+        if len(build_dirs) > 0:
+            build_dir = build_dirs[0]
+
+            print "[  Build Dir: %s]" % build_dir
+            copy_build_dir_files(build_dir, archive_spec_dir)
+
+    set_axom_group_and_perms(archive_dir)
+
+
+def uberenv_create_mirror(prefix,mirror_path):
+    """
+    Calls uberenv to create a spack mirror.
+    """
+    cmd = "python scripts/uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
+    return sexe(cmd,echo=True)
+
+
+def uberenv_install_tpls(prefix,spec,mirror = None):
+    """
+    Calls uberenv to install tpls for a given spec to given prefix.
+    """
+    cmd = "python scripts/uberenv/uberenv.py --prefix %s --spec %s " % (prefix,spec)
+    if not mirror is None:
+        cmd += "--mirror %s" % mirror
+        
+    spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec)
+    print "[starting tpl install of spec %s]" % spec
+    print "[log file: %s]" % spack_tpl_build_log
+    res = sexe(cmd,
+               echo=True,
+               output_file = spack_tpl_build_log)
+    if res != 0:
+        log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
+    return res
+
+def patch_host_configs(prefix):
+    """
+    Sanity check that looks for host config files generated at 
+    the given prefix. 
+    """
+    # load manual edits into a dict with keys that we can compare to 
+    # generated host config names
+    manual_edits_pattern = "host-configs/*manual.edits.txt"
+    manual_edits_files = glob.glob(manual_edits_pattern)
+    manual_edits = {}
+    for f in manual_edits_files:
+        base = os.path.basename(f)[:-(len("manual.edits.txt")+1)]
+        manual_edits[base] = open(f).read()
+    # loop over 
+    fs = glob.glob(pjoin(prefix,"*.cmake"))
+    print "[found %d host config files @ %s]" % (len(fs),prefix)
+    for f in fs:
+        print "[ -> %s  ]" %  f
+        for me_key in manual_edits.keys():
+            # see if the key matches
+            if f.count(me_key) == 1:
+                # make sure the text wasn't already appended
+                patch_txt = manual_edits[me_key]
+                host_cfg_txt = open(f).read()
+                if not patch_txt in host_cfg_txt:
+                    # append the manual edits
+                    print "[patching %s with manual edits for %s]" % (f,me_key)
+                    ofile = open(f,"w")
+                    ofile.write(host_cfg_txt)
+                    ofile.write(patch_txt)
+                    ofile.write("\n")
+    return 0
+
+############################################################
+# helpers for testing a set of host configs
+############################################################
+
+def build_and_test_host_config(test_root,host_config):
+    host_config_root = get_host_config_root(host_config)
+    # setup build and install dirs
+    build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
+    install_dir = pjoin(test_root,"install-%s" % host_config_root)
+    print "[testing build, test, and install of host config file: %s]" % host_config
+    print "[ build dir: %s]"   % build_dir
+    print "[ install dir: %s]" % install_dir
+
+    # configure
+    cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
+    print "[starting configure of %s]" % host_config
+    print "[log file: %s]" % cfg_output_file
+    res = sexe("python config-build.py  -bp %s -ip %s -hc %s" % (build_dir,install_dir,host_config),
+               output_file = cfg_output_file,
+               echo=True)
+    
+    if res != 0:
+        print "[ERROR: Configure for host-config: %s failed]" % host_config
+        return res
+        
+    ####
+    # build, test, and install
+    ####
+    bld_output_file =  pjoin(build_dir,"output.log.make.txt")
+    print "[starting build]"
+    print "[log file: %s]" % bld_output_file
+    res = sexe("cd %s && make -j 8 VERBOSE=1 " % build_dir,
+                output_file = bld_output_file,
+                echo=True)
+
+    if res != 0:
+        print "[ERROR: Build for host-config: %s failed]" % host_config
+        return res
+
+    tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
+    print "[starting unit tests]"
+    print "[log file: %s]" % tst_output_file
+
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"-T Test -VV -j8\"" % build_dir
+
+    res = sexe(tst_cmd,
+               output_file = tst_output_file,
+               echo=True)
+
+    if res != 0:
+        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        return res
+
+
+    inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
+    print "[starting install]"
+    print "[log file: %s]" % inst_output_file
+
+    res = sexe("cd %s && make install " % build_dir,
+               output_file = inst_output_file,
+               echo=True)
+
+    if res != 0:
+        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        return res
+
+    # simple sanity check for make install
+    print "[checking install dir %s]" % install_dir 
+    sexe("ls %s/include" % install_dir, echo=True)
+    sexe("ls %s/lib" %     install_dir, echo=True)
+    sexe("ls %s/bin" %     install_dir, echo=True)
+    print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
+
+    set_axom_group_and_perms(build_dir)
+    set_axom_group_and_perms(install_dir)
+
+    return 0
+
+
+def build_and_test_host_configs(prefix, job_name, timestamp):
+    host_configs = get_host_configs_for_current_machine(prefix)
+    if len(host_configs) == 0:
+        log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
+        return 1
+
+    test_root =  get_build_and_test_root(prefix, timestamp)
+    os.mkdir(test_root)
+    write_build_info(pjoin(test_root,"info.json"), job_name) 
+    ok  = []
+    bad = []
+    for host_config in host_configs:
+        build_dir = get_build_dir(test_root, host_config)
+
+        if build_and_test_host_config(test_root,host_config) == 0:
+            ok.append(host_config)
+            log_success(build_dir, job_name, timestamp)
+        else:
+            bad.append(host_config)
+            log_failure(build_dir, job_name, timestamp)
+
+
+    # Log overall job success/failure
+    if len(bad) != 0:
+        log_failure(test_root, job_name, timestamp)
+    else:
+        log_success(test_root, job_name, timestamp)
+
+    # Output summary of failure/succesful builds
+    if len(ok) > 0:
+        print "Succeeded:"
+        for host_config in ok:
+            print "    " + host_config
+
+    if len(bad) > 0:
+        print "Failed:"
+        for host_config in bad:
+            print "    " + host_config
+        print "\n"
+        return 1
+
+    print "\n"
+
+    return 0
+
+
+def set_axom_group_and_perms(directory):
+    """
+    Sets the proper group and access permissions of given input
+    directory. 
+    """
+    print "[changing group and access perms of: %s]" % directory
+    # change group to axomdev
+    print "[changing group to axomdev]"
+    sexe("chgrp -f -R axomdev %s" % (directory),echo=True)
+    # change group perms to rwX
+    print "[changing perms for axomdev members to rwX]"
+    sexe("chmod -f -R g+rwX %s" % (directory),echo=True)
+    # change perms for all to rX
+    print "[changing perms for all users to rX]"
+    sexe("chmod -f -R a+rX %s" % (directory),echo=True)
+    print "[done setting perms for: %s]" % directory
+    return 0
+
+
+def full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp):
+    print "[Building and testing tpls for specs: %s]" % str(specs)
+
+    # Use shared network mirror location otherwise create local one
+    mirror_dir = get_shared_tpl_mirror_dir()
+    if not os.path.exists(mirror_dir):
+        mirror_dir = pjoin(builds_dir,"mirror")
+    print "[using mirror location: %s]" % mirror_dir
+
+    # unique install location
+    prefix =  pjoin(builds_dir, timestamp)
+    # create a mirror
+    uberenv_create_mirror(prefix,mirror_dir)
+    # write info about this build
+    write_build_info(pjoin(prefix,"info.json"), job_name)
+    # use uberenv to install for all specs
+    for spec in specs:
+        res = uberenv_install_tpls(prefix,spec,mirror_dir)
+        if res != 0:
+            print "[ERROR: Failed build of tpls for spec %s]" % spec
+            # set perms, then early exit
+            # set proper perms for installed tpls
+            set_axom_group_and_perms(prefix)
+            # set proper perms for the mirror files
+            set_axom_group_and_perms(mirror_dir)
+            return res
+        else:
+            print "[SUCCESS: Finished build tpls for spec %s]" % spec
+    # patch manual edits into host config files
+    patch_host_configs(prefix)
+    # build the axom against the new tpls
+    res = build_and_test_host_configs(prefix, job_name, timestamp)
+    if res != 0:
+        print "[ERROR: build and test of axom vs tpls test failed.]"
+    else:
+        print "[SUCCESS: build and test of axom vs tpls test passed.]"
+    # set proper perms for installed tpls
+    set_axom_group_and_perms(prefix)
+    # set proper perms for the mirror files
+    set_axom_group_and_perms(mirror_dir)
+    return res
+
+
+def get_host_configs_for_current_machine(src_dir):
+    host_configs = []
+
+    # Note: This function is called in two situations:
+    # (1) To test the checked-in host-configs from a source dir 
+    #   In that case, check the 'host-configs' directory
+    # (2) To test the uberenv-generated host-configs
+    #   In that case, host-configs should be in src_dir
+    
+    host_configs_dir = pjoin(src_dir, "host-configs")
+    if not os.path.isdir(host_configs_dir):
+        host_configs_dir = src_dir
+
+    hostname_base = get_machine_name()
+
+    host_configs = glob.glob(pjoin(host_configs_dir, hostname_base + "*.cmake"))
+
+    return host_configs
+
+
+def get_host_config_root(host_config):
+    return os.path.splitext(os.path.basename(host_config))[0]
+
+
+def get_build_dir(prefix, host_config):
+    host_config_root = get_host_config_root(host_config)
+    return pjoin(prefix, "build-" + host_config_root)
+
+
+def get_repo_dir():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.abspath(pjoin(script_dir, "../.."))
+
+def get_build_and_test_root(prefix, timestamp):
+    return pjoin(prefix,"_axom_build_and_test_%s" % timestamp)
+
+
+def get_machine_name():
+    return socket.gethostname().rstrip('1234567890')
+
+
+def get_system_type():
+    return os.environ["SYS_TYPE"]
+
+
+def get_username():
+    return getpass.getuser()
+
+
+def get_archive_base_dir():
+    if on_rz():
+        archive_base_dir = "/usr/workspace/wsrzd/axomdev/archive"
+    else:
+        archive_base_dir = "/usr/workspace/wsb/axomdev/archive"
+    return archive_base_dir
+
+
+def get_shared_tpl_base_dir():
+    if on_rz():
+        builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs"
+    else:
+        builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs"
+    return builds_dir
+
+
+def get_shared_tpl_mirror_dir():
+    return pjoin(get_shared_tpl_base_dir(), "mirror")
+
+
+def get_shared_tpl_builds_dir():
+    return pjoin(get_shared_tpl_base_dir(), "builds")
+
+
+def get_specs_for_current_machine():
+    repo_dir = get_repo_dir()
+    specs_json_path = pjoin(repo_dir, "scripts/uberenv/specs.json")
+
+    with open(specs_json_path, 'r') as f:
+        specs_json = json.load(f)
+
+    sys_type = get_system_type()
+    machine_name = get_machine_name()
+
+    specs = []
+    if machine_name in specs_json.keys():
+        specs = specs_json[machine_name]
+    else:
+        specs = specs_json[sys_type]
+
+    specs = ['%' + spec for spec in specs]
+
+    return specs
+
+
+def get_spec_from_build_dir(build_dir):
+    base = "build-%s-%s-" % (get_machine_name(), get_system_type())
+    return os.path.basename(build_dir)[len(base):]
+
+
+def get_spec_from_tpl_log(tpl_log):
+    basename = os.path.basename(tpl_log)
+    return basename[len("output.log.spack.tpl.build.%"):-4]
+
+
+def on_rz():
+    machine_name = get_machine_name()
+    if machine_name.startswith("rz"):
+        return True
+    return False

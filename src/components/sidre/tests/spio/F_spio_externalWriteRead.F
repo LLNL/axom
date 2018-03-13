@@ -124,6 +124,8 @@ program spio_external_write_read
            & and when Axom is configured with hdf5. Skipping test."
 #endif
 
-  call exit(return_val)
+  if (return_val .ne. 0) then
+     call exit(1)
+  endif
 end program spio_external_write_read
 

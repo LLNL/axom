@@ -83,8 +83,7 @@ void SPIO_iomanager_read_2_bufferify(SPIO_iomanager* self, SIDRE_group* group,
                                      const char* root_file, int Lroot_file,
                                      bool preserve_contents);
 
-void SPIO_iomanager_load_external_data(SPIO_iomanager* self,
-                                       SIDRE_group* group,
+void SPIO_iomanager_load_external_data(SPIO_iomanager* self, SIDRE_group* group,
                                        const char* root_file);
 
 void SPIO_iomanager_load_external_data_bufferify(SPIO_iomanager* self,
