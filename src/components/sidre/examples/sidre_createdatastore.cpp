@@ -169,9 +169,9 @@ DataStore * create_tiny_datastore() {
   double * yptr = ys->getArray();
   double * zptr = zs->getArray();
   for (int pos = 0; pos < nodecount; ++pos) {
-    xptr[pos] = (pos / 2) % 2;
-    yptr[pos] = ((pos + 1) / 2) % 2;
-    zptr[pos] = zpos / 4;
+    xptr[pos] = ((pos + 1) / 2) % 2;
+    yptr[pos] = (pos / 2) % 2;
+    zptr[pos] = pos / 4;
   }
 
   // Assign a value to the node field
@@ -190,36 +190,118 @@ DataStore * create_tiny_datastore() {
 }
 
 void save_as_blueprint(DataStore * ds) {
-  // _blueprint_restructure_start
+  // _blueprint_restructure_toplevel_start
   // Conduit needs a specific hierarchy.
   // We'll make a new DataStore with that hierarchy, pointing at the
   // application's data.
-  DataStore *cds = new DataStore();
+  DataStore cds;
+  std::string mesh_name = "tinymesh";
   
   // The Conduit specifies top-level groups:
-  Group * coords = cds->getRoot()->createGroup("coordsets/coords");
-  Group * topos = cds->getRoot()->createGroup("topologies");
+  Group * mroot = cds.getRoot()->createGroup(mesh_name);
+  Group * coords = mroot->createGroup("coordsets/coords");
+  Group * topos = mroot->createGroup("topologies");
   // no material sets in this example
-  Group * fields = cds->getRoot()->createGroup("fields");
-  Group * adj = cds->getRoot()->createGroup("adjsets");
+  Group * fields = mroot->createGroup("fields");
+  // no adjacency sets in this (single-domain) example
+  // _blueprint_restructure_toplevel_end
 
+  // _blueprint_restructure_coords_start
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
   View * origv = ds->getRoot()->getView("nodes/xs");
-  View * conduitval = coords->createGroup("values");
-  conduitval->createView("x", origv->getTypeID(),
+  Group * conduitval = coords->createGroup("values");
+  conduitval->createView("x", sidre::DOUBLE_ID,
                          origv->getNumElements(),
-                         origv->getArray());
+                         static_cast<double *>(origv->getArray()));
   origv = ds->getRoot()->getView("nodes/ys");
-  conduitval->createView("y", origv->getTypeID(),
+  conduitval->createView("y", sidre::DOUBLE_ID,
                          origv->getNumElements(),
-                         origv->getArray());
+                         static_cast<double *>(origv->getArray()));
   origv = ds->getRoot()->getView("nodes/zs");
-  conduitval->createView("z", origv->getTypeID(),
+  conduitval->createView("z", sidre::DOUBLE_ID,
                          origv->getNumElements(),
-                         origv->getArray());
-  // _blueprint_restructure_end
+                         static_cast<double *>(origv->getArray()));
+  // _blueprint_restructure_coords_end
+
+  // _blueprint_restructure_topo_start
+  // Sew the nodes together into the two hexahedra, using prior knowledge.
+  Group * connmesh = mroot->createGroup("topologies/mesh");
+  connmesh->createViewString("type", "unstructured");
+  connmesh->createViewString("coordset", "coords");
+  Group * elts = connmesh->createGroup("elements");
+  elts->createViewString("shape", "hex");
+  // We have two eight-node hex elements, so we need 2 * 8 = 16 ints.
+  View * connectivity =
+    elts->createViewAndAllocate("connectivity", sidre::INT_ID, 16);
+  // The Mesh Blueprint connectivity array for a hexahedron lists four nodes on
+  // one face arranged by right-hand rule to indicate a normal pointing into
+  // the element, then the four nodes of the opposite face arranged to point
+  // the normal the same way (out of the element).  This is the same as for
+  // a VTK_HEXAHEDROM.  See
+  // https://www.vtk.org/wp-content/uploads/2015/04/file-formats.pdf.
+  int * c = connectivity->getArray();
+  // First hex.  In this example, the Blueprint node ordering matches the
+  // dataset layout.  This is fortuitous but not required.
+  c[0] = 0; c[1] = 1; c[2] = 2; c[3] = 3;
+  c[4] = 4; c[5] = 5; c[6] = 6; c[7] = 7;
+  // Second and last hex
+  c[8] = 4; c[9] = 5; c[10] = 6; c[11] = 7;
+  c[12] = 8; c[13] = 9; c[14] = 10; c[15] = 11;
+  // _blueprint_restructure_topo_end
+
+  // _blueprint_restructure_field_start
+  // Set up the node-centered field
+  // Get the original data
+  origv = ds->getRoot()->getView("fields/nodefield");
+  Group * nodefield = fields->createGroup("nodefield");
+  nodefield->createViewString("association", "vertex");
+  nodefield->createViewString("type", "scalar");
+  nodefield->createViewString("topology", "mesh");
+  nodefield->createView("nodefield", sidre::INT_ID,
+                       origv->getNumElements(),
+                       static_cast<double *>(origv->getArray()));
+
+  // Set up the element-centered field
+  // Get the original data
+  origv = ds->getRoot()->getView("fields/eltfield");
+  Group * eltfield = fields->createGroup("eltfield");
+  eltfield->createViewString("association", "element");
+  eltfield->createViewString("type", "scalar");
+  eltfield->createViewString("topology", "mesh");
+  eltfield->createView("eltfield", sidre::DOUBLE_ID,
+                       origv->getNumElements(),
+                       static_cast<double *>(origv->getArray()));
+  // _blueprint_restructure_field_end
+
+  // _blueprint_restructure_save_start
+  conduit::Node info, mesh_node, root_node;
+  cds.getRoot()->createNativeLayout(mesh_node);
+  if (conduit::blueprint::verify(mesh_node, info)) {
+    // Generate the Conduit index
+    conduit::Node & index = root_node["blueprint_index"];
+    conduit::blueprint::mesh::generate_index(mesh_node[mesh_name], mesh_name, 1, index[mesh_name]);
+
+    std::string root_output_path = mesh_name + ".root";
+    std::string output_path = mesh_name + ".json";
+
+    root_node["protocol/name"] = "conduit_json";
+    root_node["protocol/version"] = "0.1";
+    root_node["number_of_files"] = 1;
+    root_node["number_of_trees"] = 1;
+    root_node["file_pattern"] = output_path;
+    root_node["tree_pattern"] = "/";
+
+    // Now save both the index and the data set
+    conduit::relay::io::save(root_node, root_output_path);
+    conduit::relay::io::save(mesh_node, output_path);
+  } else {
+    std::cout << "does not conform to Mesh Blueprint: ";
+    info.print();
+    std::cout << std::endl;
+  }
+  // _blueprint_restructure_save_end
 }
 
 void serial_save_datastore_and_load_copy_lower(DataStore *ds) {

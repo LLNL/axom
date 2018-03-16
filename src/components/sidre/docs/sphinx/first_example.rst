@@ -6,6 +6,7 @@ As an introduction to the core concepts in Sidre and how they work, here is an
 example where we construct the Sidre Datastore shown in the following figure:
 
 .. image:: sidre_datastore_example.png
+   :width: 650px
 
 Here, a black rectangle represents the Datastore, which contains all Sidre objects.
 Ovals represent Sidre Group objects.  Each Group has a name, 
