@@ -16,6 +16,10 @@ set( quest_headers
 
     SignedDistance.hpp
 
+    ## All-nearest-neighbors query
+    AllNearestNeighbors.hpp
+    detail/AllNearestNeighbors_detail.hpp
+
     ## Geometry Headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
@@ -25,8 +29,6 @@ set( quest_headers
     geom/OctreeLevel.hpp
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
-    geom/AllNearestNeighbors.hpp
-    detail/AllNearestNeighbors_detail.hpp
 
     # Mesh tester headers
     MeshTester.hpp

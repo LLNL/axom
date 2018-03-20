@@ -27,10 +27,11 @@
 
 #include "axom/config.hpp"
 
-#include "primal/AllNearestNeighbors_detail.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/UniformGrid.hpp"
+
+#include "quest/AllNearestNeighbors_detail.hpp"
 
 namespace axom
 {

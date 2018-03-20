@@ -40,6 +40,30 @@ namespace primal
 {
 
 /*!
+ * \brief Computes the squared distance from point A to point B,
+ *  represented by arrays of length N.
+ * \param [in] A source point
+ * \param [in] B end point.
+ * \param [in] N length of A and B.
+ * \return d the distance from point A to point B.  If N < 1, return 0.
+ * \pre A and B are arrays of at least length N.
+ */
+inline double squared_distance( const double * A,
+                                const double * B,
+                                int N )
+{
+  double retval = 0;
+
+  for (int i = 0; i < N; ++i)
+  {
+    double d = B[i] - A[i];
+    retval += d * d;
+  }
+
+  return retval;
+}
+
+/*!
  * \brief Computes the squared distance from point A to point B.
  * \param [in] A source point
  * \param [in] B end point.

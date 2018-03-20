@@ -90,7 +90,7 @@ void all_nearest_neighbors_bruteforce(const double* x, const double* y, const do
     {
       if (region[i] != region[j])
       {
-        double sqdist = axom::quest::squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
+        double sqdist = axom::quest::detail::squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
         if (sqdist < sqdistance[i] && sqdist < sqlimit)
         {
           sqdistance[i] = sqdist;
