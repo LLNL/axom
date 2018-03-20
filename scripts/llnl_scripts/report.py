@@ -68,13 +68,18 @@ class SpecInfo(object):
 def parse_args():
     "Parses args from command line"
     parser = OptionParser()
-    # Location of source directory to build
+    
     parser.add_option("-e", "--email",
                       type="string",
                       dest="email",
                       default="axom-dev@llnl.gov",
                       help="Email address to send report (Defaults to 'axom-dev@llnl.gov')")
 
+    parser.add_option("--html",
+                      type="string",
+                      dest="html",
+                      default="status.html",
+                      help="File name for saving generated html status file (Defaults to 'status.html')")
 
     ###############
     # parse args
@@ -110,7 +115,11 @@ def main():
     print "Generating email content..."
     emailContent = generateEmailContent(basicJobInfos, specJobInfos, tplJobInfos)
     
-    print "Sending email..."
+    print "Saving html file '{}'".format( opts["html"] )
+    with open(opts["html"], 'w') as f:
+        f.write(emailContent)
+
+    print "Sending email to {}...".format(opts["email"])
     return sendEmail(emailContent, emailSubject, sender, receiver, emailServer)
 
 
