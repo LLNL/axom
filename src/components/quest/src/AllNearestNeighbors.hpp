@@ -40,7 +40,8 @@ namespace quest
 
 
 /*!
- * \brief Find the closest point (in another region) to each given point
+ * \brief Given a list of point locations and regions, for each point, find
+ *   the closest point in a different region within a given search radius.
  * \param [in] x X-coordinates of input points
  * \param [in] y Y-coordinates of input points
  * \param [in] z Z-coordinates of input points
@@ -52,11 +53,15 @@ namespace quest
  * \pre x, y, z, and region have n entries
  * \pre neighbor is allocated with room for n entries
  *
- * This method compares each point p to each other point in the UniformGrid
- * bins that are at least partly within a Manhattan distance of limit
- * from p.  This cuts out the far-away points.  We expect this will result
- * in a substantial time savings over the brute-force algorithm, but the
- * run time is dependent on the point distribution.
+ * This method inserts all points p at (x[i], y[i], z[i]) into a UniformGrid
+ * index. Then for each point p, it gets the UniformGrid bins that overlap
+ * the box (p - (limit, limit, limit), p + (limit, limit, limit).  The method
+ * compares p to each point in this list of bins and returns the index of the
+ * closest point.
+ *
+ * We expect the use of the UniformGrid  will result in a substantial time
+ * savings over a brute-force all-to-all algorithm, but the query's run time
+ * is dependent on the point distribution.
  */
 void all_nearest_neighbors(const double* x, const double* y, const double* z,
                            const int* region, int n, double limit,
