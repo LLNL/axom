@@ -1,0 +1,10 @@
+MAILTO=""
+################################################################################
+# DO NOT EDIT this crontab directly.  
+# Instead update the corresponding file in axom's git repo, it will update automatically by Bamboo
+################################################################################
+
+30 * * * * /usr/bin/ssh rzalastor2 usr/global/tools/bamboo/agents/atk/axom-rzalastor2-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh rzgenie2 /usr/global/tools/bamboo/agents/atk/axom-rzgenie2-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh rzmanta23 /usr/global/tools/bamboo/agents/atk/axom-rzmanta23-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh rzuseqlac2 /usr/global/tools/bamboo/agents/atk/axom-rzuseqlac2-atk-1/bin/bamboo-agent.sh start

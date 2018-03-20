@@ -381,6 +381,10 @@ def build_and_test_host_configs(prefix, job_name, timestamp):
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
         return 1
+    print "Found Host-configs:"
+    for host_config in host_configs:
+        print "    " + host_config
+    print "\n"
 
     test_root =  get_build_and_test_root(prefix, timestamp)
     os.mkdir(test_root)
