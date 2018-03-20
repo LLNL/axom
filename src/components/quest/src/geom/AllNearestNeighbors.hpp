@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -27,6 +27,7 @@
 
 #include "axom/config.hpp"
 
+#include "primal/AllNearestNeighbors_detail.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/UniformGrid.hpp"
@@ -35,17 +36,6 @@ namespace axom
 {
 namespace quest
 {
-
-//------------------------------------------------------------------------------
-inline double squared_distance(double x1, double y1, double z1,
-                               double x2, double y2, double z2)
-{
-  double dx = x2 - x1;
-  double dy = y2 - y1;
-  double dz = z2 - z1;
-
-  return dx*dx + dy*dy + dz*dz;
-}
 
 
 /*!
@@ -132,7 +122,7 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
         int j = bs[bj];
         if (region[i] != region[j])
         {
-          double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
+          double sqdist = detail::squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
           if (sqdist < sqdistance[i] && sqdist < sqlimit)
           {
             sqdistance[i] = sqdist;

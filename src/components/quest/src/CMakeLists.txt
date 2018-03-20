@@ -26,6 +26,7 @@ set( quest_headers
     geom/SparseOctreeLevel.hpp
     geom/SpatialOctree.hpp
     geom/AllNearestNeighbors.hpp
+    detail/AllNearestNeighbors_detail.hpp
 
     # Mesh tester headers
     MeshTester.hpp
