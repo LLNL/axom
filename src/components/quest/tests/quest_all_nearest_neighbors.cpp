@@ -52,6 +52,55 @@ void verify_array(T* standard, T* expt, int n)
   }
 }
 
+/*!
+ * \brief Find the closest point (in another region) to each given point
+ * \param [in] x X-coordinates of input points
+ * \param [in] y Y-coordinates of input points
+ * \param [in] z Z-coordinates of input points
+ * \param [in] region Region of each point
+ * \param [in] n Number of points
+ * \param [in] limit Max distance for all-nearest-neighbors query
+ * \param [out] neighbor Index of nearest neighbor not in the same class
+ * \param [out] sqdistance Squared distance to nearest neighbor
+ * \pre x, y, z, and region have n entries
+ * \pre neighbor is allocated with room for n entries
+ *
+ * This method compares each point to each other point, taking O(n^2) time.
+ */
+void all_nearest_neighbors_bruteforce(const double* x, const double* y, const double* z,
+                                      const int* region, int n, double limit,
+                                      int* neighbor, double* sqdistance)
+{
+  // O(n^2) brute force approach.  For each point i, test distance to all other
+  // points and report result.
+
+  double sqlimit = limit * limit;
+
+  for (int i = 0 ; i < n ; ++i)
+  {
+    sqdistance[i] = DBL_MAX;
+    neighbor[i] = -1;
+  }
+
+  for (int i = 0 ; i < n ; ++i)
+  {
+    // The j-loop has to go from 0, not i+1, because "closest" is not
+    // symmetrical.
+    for (int j = 0 ; j < n ; ++j)
+    {
+      if (region[i] != region[j])
+      {
+        double sqdist = axom::quest::squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
+        if (sqdist < sqdistance[i] && sqdist < sqlimit)
+        {
+          sqdistance[i] = sqdist;
+          neighbor[i] = j;
+        }
+      }
+    }
+  }
+}
+
 //----------------------------------------------------------------------
 TEST(quest_all_nearnbr, simple_2D_query)
 {
@@ -70,14 +119,14 @@ TEST(quest_all_nearnbr, simple_2D_query)
 
   {
     SCOPED_TRACE("brute force limit 1.9");
-    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
+    all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
                                                   neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
     verify_array(expdsq, dsq, n);
   }
   {
     SCOPED_TRACE("indexed limit 1.9");
-    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit,
+    axom::quest::all_nearest_neighbors(x, y, z, region, n, limit,
                                               neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
     verify_array(expdsq, dsq, n);
@@ -102,14 +151,14 @@ TEST(quest_all_nearnbr, simple_3D_query)
 
   {
     SCOPED_TRACE("brute force limit 1.9");
-    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
+    all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
                                                   neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
     verify_array(expdsq, dsq, n);
   }
   {
     SCOPED_TRACE("indexed limit 1.9");
-    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit,
+    axom::quest::all_nearest_neighbors(x, y, z, region, n, limit,
                                               neighbor, dsq);
     verify_array(expneighbor, neighbor, n);
     verify_array(expdsq, dsq, n);
@@ -186,9 +235,9 @@ TEST(quest_all_nearnbr, cplx_13region_query)
 
   {
     SCOPED_TRACE("Comparing brute force with indexed, limit 1.4");
-    axom::quest::all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
+    all_nearest_neighbors_bruteforce(x, y, z, region, n, limit,
                                                   bfneighbor, bfsqdst);
-    axom::quest::all_nearest_neighbors_index1(x, y, z, region, n, limit,
+    axom::quest::all_nearest_neighbors(x, y, z, region, n, limit,
                                               idxneighbor, idxsqdst);
     verify_array(bfneighbor, idxneighbor, n);
     verify_array(bfsqdst, idxsqdst, n);
@@ -271,10 +320,10 @@ TEST(quest_all_nearnbr, file_query)
 
       {
         SCOPED_TRACE("Read file, compare brute force with indexed, limit 2.1");
-        axom::quest::all_nearest_neighbors_bruteforce(&x[0], &y[0], &z[0],
+        all_nearest_neighbors_bruteforce(&x[0], &y[0], &z[0],
                                                       &region[0], n, limit,
                                                       bfneighbor, bfsqdst);
-        axom::quest::all_nearest_neighbors_index1(&x[0], &y[0], &z[0],
+        axom::quest::all_nearest_neighbors(&x[0], &y[0], &z[0],
                                                   &region[0], n, limit,
                                                   idxneighbor, idxsqdst);
         verify_array(bfneighbor, idxneighbor, n);

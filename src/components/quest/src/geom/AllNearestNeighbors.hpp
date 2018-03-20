@@ -23,7 +23,7 @@
 #ifndef ALL_NEAREST_NEIGHBORS_HPP_
 #define ALL_NEAREST_NEIGHBORS_HPP_
 
-#include <cfloat>
+#include <cfloat>   // for DBL_MAX
 
 #include "axom/config.hpp"
 
@@ -57,54 +57,7 @@ inline double squared_distance(double x1, double y1, double z1,
  * \param [in] n Number of points
  * \param [in] limit Max distance for all-nearest-neighbors query
  * \param [out] neighbor Index of nearest neighbor not in the same class
- * \pre x, y, z, and region have n entries
- * \pre neighbor is allocated with room for n entries
- *
- * This method compares each point to each other point, taking O(n^2) time.
- */
-void all_nearest_neighbors_bruteforce(double* x, double* y, double* z,
-                                      int* region, int n, double limit,
-                                      int* neighbor, double* sqdistance)
-{
-  // O(n^2) brute force approach.  For each point i, test distance to all other
-  // points and report result.
-
-  double sqlimit = limit * limit;
-
-  for (int i = 0 ; i < n ; ++i)
-  {
-    sqdistance[i] = DBL_MAX;
-    neighbor[i] = -1;
-  }
-
-  for (int i = 0 ; i < n ; ++i)
-  {
-    // The j-loop has to go from 0, not i+1, because "closest" is not
-    // symmetrical.
-    for (int j = 0 ; j < n ; ++j)
-    {
-      if (region[i] != region[j])
-      {
-        double sqdist = squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
-        if (sqdist < sqdistance[i] && sqdist < sqlimit)
-        {
-          sqdistance[i] = sqdist;
-          neighbor[i] = j;
-        }
-      }
-    }
-  }
-}
-
-/*!
- * \brief Find the closest point (in another region) to each given point
- * \param [in] x X-coordinates of input points
- * \param [in] y Y-coordinates of input points
- * \param [in] z Z-coordinates of input points
- * \param [in] region Region of each point
- * \param [in] n Number of points
- * \param [in] limit Max distance for all-nearest-neighbors query
- * \param [out] neighbor Index of nearest neighbor not in the same class
+ * \param [out] sqdistance Squared distance to nearest neighbor
  * \pre x, y, z, and region have n entries
  * \pre neighbor is allocated with room for n entries
  *
@@ -114,9 +67,9 @@ void all_nearest_neighbors_bruteforce(double* x, double* y, double* z,
  * in a substantial time savings over the brute-force algorithm, but the
  * run time is dependent on the point distribution.
  */
-void all_nearest_neighbors_index1(double* x, double* y, double* z,
-                                  int* region, int n, double limit,
-                                  int* neighbor, double* sqdistance)
+void all_nearest_neighbors(const double* x, const double* y, const double* z,
+                           const int* region, int n, double limit,
+                           int* neighbor, double* sqdistance)
 {
   // Indexed approach.  For each point i, test distance to all other
   // points in this and neighboring UniformGrid bins (out to distance limit)
@@ -168,10 +121,12 @@ void all_nearest_neighbors_index1(double* x, double* y, double* z,
       PointType::make_point(x[i] + limit, y[i] + limit, z[i] + limit);
     BoxType qbox(qmin, qmax);
     const std::vector<int> qbins = ugrid.getBinsForBbox(qbox);
-    for (size_t binidx = 0 ; binidx < qbins.size() ; ++binidx)
+    const size_t querybincount = qbins.size();
+    for (size_t binidx = 0 ; binidx < querybincount ; ++binidx)
     {
       const std::vector<int> bs = ugrid.getBinContents(qbins[binidx]);
-      for (size_t bj = 0 ; bj < bs.size() ; ++bj)
+      const size_t binsize = bs.size();
+      for (size_t bj = 0 ; bj < binsize ; ++bj)
       {
         // 4. Compare distances to find the closest distance d = |ab|
         int j = bs[bj];
