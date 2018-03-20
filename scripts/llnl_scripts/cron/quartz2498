@@ -1,7 +1,7 @@
 MAILTO=""
 ################################################################################
 # DO NOT EDIT this crontab directly.  
-# Instead update the file corresponding file in git, it will update automatically by Bamboo
+# Instead update the corresponding file in axom's git repo, it will update automatically by Bamboo
 ################################################################################
 
 30 * * * * /usr/bin/ssh cab690 /usr/global/tools/bamboo/agents/atk/axom-cab690-atk-1/bin/bamboo-agent.sh start
