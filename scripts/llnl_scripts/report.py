@@ -290,8 +290,8 @@ def generateEmailContent(basicJobInfos, specJobInfos, tplJobInfos):
         # Close table for basic jobs
         html += "</table>\n"
 
-    html += getHTMLforJobInfos(specJobInfos, html, False)
-    html += getHTMLforJobInfos(tplJobInfos, html, True)
+    html += getHTMLforJobInfos(specJobInfos, False)
+    html += getHTMLforJobInfos(tplJobInfos, True)
 
     # Add date time to the end of the email to make listserv not reject duplicate emails
     html += get_timestamp()
