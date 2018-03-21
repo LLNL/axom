@@ -71,13 +71,17 @@ inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
   SpatialBoundingBox meshBB;
   Point3 pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  const int numNodes = mesh->getMeshNumberOfNodes();
+  for ( int i=0 ; i < numNodes ; ++i )
   {
     mesh->getMeshNode( i, pt.data() );
     meshBB.addPoint( pt );
   } // END for all nodes
 
-  SLIC_ASSERT( meshBB.isValid() );
+  if(numNodes > 0)
+  {
+    SLIC_ASSERT( meshBB.isValid() );
+  }
 
   return meshBB;
 }
