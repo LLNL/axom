@@ -352,7 +352,6 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
                         html += getSuccessFormat(currSpecInfo.success, __cellBlackOnGreen, __cellWhiteOnRed) % cellString
 
                         # Build up a list of failed tests to be added to the html table at the end
-                        cnt = 0
                         if len(currSpecInfo.failed) > 0:
                             if failedTestsString != "":
                                 failedTestsString += "<br />"
@@ -361,7 +360,6 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
                                 if failedTestsString[-1] != "]":
                                     failedTestsString += ",\n"
                                 failedTestsString += " " + name
-                                cnt += 1
                     else:
                         # Have a blank cell if spec wasn't here for this job (it was added or removed)
                         html += "<td></td>"
