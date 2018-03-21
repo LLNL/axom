@@ -95,7 +95,7 @@ def main():
     opts = parse_args()
 
     # Email info
-    sender = "axom-dev@llnl.gov"
+    sender = "white238@llnl.gov"
     receiver = opts["email"]
     emailServer = "nospam.llnl.gov"
     if on_rz():
@@ -260,7 +260,7 @@ def sortAndFilterJobInfos(basicJobInfos, specJobInfos, tplJobInfos):
 
     for sys_type in tplJobInfos.keys():
         # we just want the newest 5
-        jobInfoList = specJobInfos[sys_type] # This gets all jobs with the specific sys_type
+        jobInfoList = tplJobInfos[sys_type] # This gets all jobs with the specific sys_type
         jobInfoList.sort(key=operator.attrgetter("datetime"))
         jobInfoList.reverse()
         del jobInfoList[5:]
@@ -359,7 +359,7 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
                             failedTestsString += "[{0}]".format(currSpecInfo.name)
                             for name in currSpecInfo.failed:
                                 if failedTestsString[-1] != "]":
-                                    failedTestsString += ",\n" if cnt % 20 == 0 else ","
+                                    failedTestsString += ",\n"
                                 failedTestsString += " " + name
                                 cnt += 1
                     else:
