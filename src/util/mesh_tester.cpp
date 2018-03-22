@@ -85,24 +85,21 @@ struct Input
   {
     std::cout
       << "Argument usage:"
-      << std::endl <<
-      "  --help           Show this help message."
-      << std::endl <<
-      "  --resolution N   Resolution of uniform grid.  Default N = 0. \n"
-      "       Set to 1 to run the naive algorithm, without a spatial index.\n"
-      "       Set to less than 1 to use the spatial index with a resolution\n"
-      "         of the cube root of the number of triangles."
-      << std::endl <<
-      "  --infile fname   The STL input file (must be specified)."
-      << std::endl      <<
-      "  --outfile fname  The VTK output file (defaults to the input file \n"
-      "         name with '.vtk' appended)."
-      << std::endl      <<
-      "  --weldThresh     Distance threshold for welding vertices. Default: 1e-6"
-      << std::endl      <<
-      "  --weldOutfile fname    \n"
-      "       The VTK output file for the welded mesh (defaults to the \n"
-      "         input file name with '.weld.vtk' appended)."
+       "\n  --help           Show this help message."
+       "\n  --resolution N   Resolution of uniform grid.  Default N = 0."
+       "\n                   - Set to 1 to run the naive algorithm, without"
+       "\n                   a spatial index."
+       "\n                   - Set to less than 1 to use the spatial index"
+       "\n                   with a resolution of the cube root of the"
+       "\n                   number of triangles."
+       "\n  --infile fname   The STL input file (must be specified)."
+       "\n  --outfile fname  The VTK output file (defaults to the input file"
+       "\n                   name with '.vtk' appended, and placed in the CWD)."
+       "\n  --weldThresh     Distance threshold for welding vertices. Default: 1e-6"
+       "\n  --weldOutfile fname"
+       "\n                   The VTK output file for the welded mesh"
+       "\n                   (defaults to the input file name with '.weld.vtk'"
+       "\n                   appended and placed in the CWD)."
       << std::endl << std::endl;
   };
 };
@@ -179,32 +176,31 @@ Input::Input(int argc, char** argv) :
     return;
   }
 
+  // Extract the stem of the input file, so can output files in the CWD
+  std::string inFileDir;
+  axom::utilities::filesystem::getDirName(inFileDir, stlInput);
+  std::string inFileStem = stlInput.substr(inFileDir.size() +1 );
+  std::string outFileBase = axom::utilities::filesystem::joinPath(
+    axom::utilities::filesystem::getCWD(),inFileStem);
+
   if (vtkOutput.size() < 1)
   {
-    vtkOutput = stlInput;
-    vtkOutput.append(".vtk");
+    vtkOutput = outFileBase + ".vtk";
   }
 
   if (weldOutput.size() < 1)
   {
-    weldOutput = stlInput;
-    weldOutput.append(".weld.vtk");
+    weldOutput = outFileBase + ".weld.vtk";
   }
 
   SLIC_INFO (
     "Using parameter values: "
-    << std::endl <<
-    "  resolution = " << resolution
+    <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
-    << std::endl <<
-    "  weld threshold = " <<  weldThreshold
-    << std::endl <<
-    "  infile = " << stlInput
-    << std::endl <<
-    "  outfile = " << vtkOutput
-    << std::endl <<
-    "  weldOutfile = " << weldOutput
-    << std::endl);
+    <<"\n  weld threshold = " <<  weldThreshold
+    <<"\n  infile = " << stlInput
+    <<"\n  outfile = " << vtkOutput
+    <<"\n  weldOutfile = " << weldOutput);
 }
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
@@ -428,7 +424,7 @@ int main( int argc, char** argv )
   }
 
   // Read file
-  SLIC_INFO("Reading file: " <<  params.stlInput << "...\n");
+  SLIC_INFO("Reading file: '" <<  params.stlInput << "'...\n");
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( params.stlInput );
   reader->read();
@@ -442,9 +438,8 @@ int main( int argc, char** argv )
   reader = AXOM_NULLPTR;
 
   SLIC_INFO(
-    "Mesh has " << surface_mesh->getMeshNumberOfNodes()
-                << " vertices and " <<  surface_mesh->getMeshNumberOfCells()
-                << " triangles.");
+    "Mesh has " << surface_mesh->getMeshNumberOfNodes() << " vertices and "
+                <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
 
   // Detect collisions
   {
@@ -466,7 +461,7 @@ int main( int argc, char** argv )
                                       params.resolution);
     }
     timer.stop();
-    SLIC_INFO("Detection intersecting triangles took "
+    SLIC_INFO("Detecting intersecting triangles took "
               << timer.elapsedTimeInSec() << " seconds.");
 
     announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
@@ -481,8 +476,8 @@ int main( int argc, char** argv )
 
     if (!writeCollisions(collisions, degenerate, params.stlInput))
     {
-      SLIC_ERROR("Couldn't write results to " << params.stlInput <<
-                 ".collisions.txt");
+      SLIC_ERROR("Couldn't write results to "
+                 << params.stlInput << ".collisions.txt");
     }
   }
 
