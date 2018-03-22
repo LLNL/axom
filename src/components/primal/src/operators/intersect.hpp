@@ -24,12 +24,14 @@
 #ifndef INTERSECTION_HPP_
 #define INTERSECTION_HPP_
 
-#include "primal/OrientedBoundingBox.hpp"
 #include "primal/BoundingBox.hpp"
+#include "primal/OrientedBoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Ray.hpp"
 #include "primal/Segment.hpp"
+#include "primal/Sphere.hpp"
 #include "primal/Triangle.hpp"
+
 #include "axom_utils/Utilities.hpp"
 
 #include "primal/intersect_impl.hpp"
@@ -126,6 +128,25 @@ bool intersect( const BoundingBox< T, DIM >& bb1,
                 const BoundingBox< T, DIM >& bb2)
 {
   return bb1.intersectsWith(bb2);
+}
+
+/*!
+ * \brief Determines if two spheres intersect.
+ *
+ * \param [in] s1 user-supplied sphere object to check for intersection.
+ * \param [in] s2 user-supplied sphere object to check for intersection.
+ * \param [in] TOL tolerance used for intersection check (optional)
+ *
+ * \note If TOL is not supplied, the default is 1.e-9.
+ *
+ * \return status true iff s1 intersects with s2, otherwise, false.
+ */
+template < typename T, int DIM >
+bool intersect( const Sphere< T,DIM >& s1,
+                const Sphere< T,DIM >& s2,
+                double TOL=1.e-9 )
+{
+  return s1.intersectsWith( s2, TOL );
 }
 
 /*!

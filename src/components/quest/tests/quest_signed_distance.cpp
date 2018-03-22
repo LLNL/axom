@@ -25,7 +25,7 @@ using axom::slic::UnitTestLogger;
 #include "mint/UnstructuredMesh.hpp"
 
 #include "primal/BoundingBox.hpp"
-#include "primal/HyperSphere.hpp"
+#include "primal/Sphere.hpp"
 #include "primal/Point.hpp"
 
 #include "quest/SignedDistance.hpp"
@@ -40,7 +40,7 @@ typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
 typedef axom::mint::UniformMesh UniformMesh;
 
 using axom::primal::BoundingBox;
-using axom::primal::HyperSphere;
+using axom::primal::Sphere;
 using axom::primal::Point;
 
 // pi / 180
@@ -234,7 +234,7 @@ TEST( quest_signed_distance, sphere_test )
   axom::quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 10 );
 
   SLIC_INFO( "Compute signed distance..." );
-  HyperSphere< double,3 > analytic_sphere( sphere_radius );
+  Sphere< double,3 > analytic_sphere( sphere_radius );
   double l1norm = 0.0;
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >::min( );
@@ -246,7 +246,7 @@ TEST( quest_signed_distance, sphere_test )
     umesh->getNode( inode, pt.data() );
 
     double computed = signed_distance.computeDistance( pt );
-    double exact    = analytic_sphere.getSignedDistance( pt.data() );
+    double exact    = analytic_sphere.computeSignedDistance( pt.data() );
 
     // compute error
     double dx    = computed - exact;
