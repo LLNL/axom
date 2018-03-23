@@ -66,14 +66,14 @@ struct Input
 {
   std::string stlInput;
   std::string vtkOutput;
-  std::string weldOutput;
+
   int resolution;
   double weldThreshold;
   InputStatus errorCode;
 
-  Input() : stlInput(""),
+  Input() :
+    stlInput(""),
     vtkOutput(""),
-    weldOutput(""),
     resolution(0),
     weldThreshold(1e-6),
     errorCode(SUCCESS)
@@ -93,15 +93,18 @@ struct Input
        "\n                   with a resolution of the cube root of the"
        "\n                   number of triangles."
        "\n  --infile fname   The STL input file (must be specified)."
-       "\n  --outfile fname  The VTK output file (defaults to the input file"
-       "\n                   name with '.vtk' appended, and placed in the CWD)."
-       "\n  --weldThresh     Distance threshold for welding vertices. Default: 1e-6"
-       "\n  --weldOutfile fname"
-       "\n                   The VTK output file for the welded mesh"
-       "\n                   (defaults to the input file name with '.weld.vtk'"
-       "\n                   appended and placed in the CWD)."
+       "\n  --outfile fname  Output file name for collisions and welded mesh"
+       "\n                   (defaults to a file in the CWD with the input file name)"
+       "\n                   Collisions mesh will end with '.collisions.vtk' and"
+       "\n                   welded mesh will end with '.welded.vtk'."
+       "\n  --weldThresh eps Distance threshold for welding vertices. "
+       "\n                   Default: eps = 1e-6"
       << std::endl << std::endl;
   };
+
+  std::string collisionsMeshName() { return vtkOutput + ".collisions.vtk"; }
+  std::string collisionsTextName() { return vtkOutput + ".collisions.txt"; }
+  std::string weldMeshName() { return vtkOutput + ".weld.vtk"; }
 };
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
@@ -125,7 +128,6 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
 Input::Input(int argc, char** argv) :
   stlInput(""),
   vtkOutput(""),
-  weldOutput(""),
   resolution(0),
   weldThreshold(1e-6),
   errorCode(SUCCESS)
@@ -137,12 +139,6 @@ Input::Input(int argc, char** argv) :
   }
   else
   {
-    std::string help = argv[1];
-    if(help == "--help")
-    {
-      errorCode = SHOWHELP;
-      return;
-    }
     for (int i = 1 ; i < argc ; /* increment i in loop */)
     {
       std::string arg = argv[i];
@@ -162,9 +158,15 @@ Input::Input(int argc, char** argv) :
       {
         weldThreshold = atof(argv[++i]);
       }
-      else if (arg == "--weldOutfile")
+      else // help or unknown parameter
       {
-        weldOutput = argv[++i];
+        if(arg != "--help" && arg != "-h")
+        {
+          SLIC_WARNING("Unrecognized parameter: " << arg);
+        }
+
+        errorCode = SHOWHELP;
+        return;
       }
       ++i;
     }
@@ -176,21 +178,32 @@ Input::Input(int argc, char** argv) :
     return;
   }
 
-  // Extract the stem of the input file, so can output files in the CWD
-  std::string inFileDir;
-  axom::utilities::filesystem::getDirName(inFileDir, stlInput);
-  std::string inFileStem = stlInput.substr(inFileDir.size() +1 );
-  std::string outFileBase = axom::utilities::filesystem::joinPath(
-    axom::utilities::filesystem::getCWD(),inFileStem);
-
-  if (vtkOutput.size() < 1)
+  // Set the output file name
   {
-    vtkOutput = outFileBase + ".vtk";
-  }
+    // Extract the stem of the input file, so can output files in the CWD
+    std::string inFileDir;
+    axom::utilities::filesystem::getDirName(inFileDir, stlInput);
+    std::string inFileStem = stlInput.substr(inFileDir.size() +1 );
+    std::string outFileBase = axom::utilities::filesystem::joinPath(
+      axom::utilities::filesystem::getCWD(),inFileStem);
 
-  if (weldOutput.size() < 1)
-  {
-    weldOutput = outFileBase + ".weld.vtk";
+    // set output file name when not provided
+    int sz = vtkOutput.size();
+    if (sz < 1)
+    {
+      vtkOutput = outFileBase;
+      sz = vtkOutput.size();
+    }
+
+    // ensure that output file does not end with '.vtk'
+    if(sz > 4)
+    {
+      std::string ext = vtkOutput.substr(sz-4, 4);
+      if( ext == ".vtk" || ext == ".stl")
+      {
+        vtkOutput = vtkOutput.substr(0, sz-ext.size());
+      }
+    }
   }
 
   SLIC_INFO (
@@ -199,8 +212,8 @@ Input::Input(int argc, char** argv) :
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  infile = " << stlInput
-    <<"\n  outfile = " << vtkOutput
-    <<"\n  weldOutfile = " << weldOutput);
+    <<"\n  collisions outfile = " << collisionsMeshName()
+    <<"\n  weld outfile = " << weldMeshName()  );
 }
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
@@ -341,11 +354,9 @@ bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
 
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
-                     std::string basename)
+                     std::string filename)
 {
-  basename.append(".collisions.txt");
-
-  std::ofstream outf(basename.c_str());
+  std::ofstream outf(filename.c_str());
   if (!outf)
   {
     return false;
@@ -469,15 +480,14 @@ int main( int argc, char** argv )
 
     saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
 
-    if (!writeAnnotatedMesh(surface_mesh, params.vtkOutput))
+    if (!writeAnnotatedMesh(surface_mesh, params.collisionsMeshName()) )
     {
-      SLIC_ERROR("Couldn't write results to " << params.vtkOutput);
+      SLIC_ERROR("Couldn't write results to " << params.collisionsMeshName());
     }
 
-    if (!writeCollisions(collisions, degenerate, params.stlInput))
+    if (!writeCollisions(collisions,degenerate,params.collisionsTextName()) )
     {
-      SLIC_ERROR("Couldn't write results to "
-                 << params.stlInput << ".collisions.txt");
+      SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
     }
   }
 
@@ -494,7 +504,7 @@ int main( int argc, char** argv )
               << surface_mesh->getMeshNumberOfNodes() << " vertices and "
               <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
 
-    mint::write_vtk(surface_mesh, params.weldOutput);
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Delete the mesh

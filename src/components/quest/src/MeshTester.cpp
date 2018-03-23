@@ -274,7 +274,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
     // A map from Morton indices to the new vertex indices
     MortonMap vertexIndexMap;
 
-    // First, find unique indices for the wleded vertices
+    // First, find unique indices for the welded vertices
     const int numVerts = oldMesh->getMeshNumberOfNodes();
     int uniqueVertCount = 0;
 
