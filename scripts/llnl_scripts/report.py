@@ -107,13 +107,13 @@ def main():
 
     #Generate build email and send
     print "Reading archived job information..."
-    basicJobInfos, specJobInfos, tplJobInfos = generateJobInfos(archive_dir)
+    basicJobInfos, srcJobInfos, tplJobInfos = generateJobInfos(archive_dir)
 
     print "Sorting and filtering out old jobs..."
-    basicJobInfos, specJobInfos, tplJobInfos = sortAndFilterJobInfos(basicJobInfos, specJobInfos, tplJobInfos)
+    basicJobInfos, srcJobInfos, tplJobInfos = sortAndFilterJobInfos(basicJobInfos, srcJobInfos, tplJobInfos)
 
     print "Generating email content..."
-    emailContent = generateEmailContent(basicJobInfos, specJobInfos, tplJobInfos)
+    emailContent = generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos)
     
     print "Saving html file '{}'".format( opts["html"] )
     with open(opts["html"], 'w') as f:
@@ -140,7 +140,7 @@ def determineSuccessState(path):
 
 def generateJobInfos(archive_dir):
     basicJobInfos = {} # key's are job names, value is a list of jobs
-    specJobInfos = {} # key's are sys_type, value is a list of jobs
+    srcJobInfos = {} # key's are sys_type, value is a list of jobs
     tplJobInfos = {} # key's are sys_type, value is a list of jobs
     sys_types = getAllDirectoryNames(archive_dir)
 
@@ -173,9 +173,9 @@ def generateJobInfos(archive_dir):
                     if os.path.exists(pjoin(datetime_dir, "info.json")):
                         jobType = "tpl"
                     else:
-                        jobType = "spec"
+                        jobType = "src"
 
-                    # spec or tpl job
+                    # src or tpl job
                     for spec in specs:
                         currSpecInfo = SpecInfo()
                         currSpecInfo.name = spec
@@ -191,7 +191,7 @@ def generateJobInfos(archive_dir):
                         for specName in currJobInfo.specInfos.keys():
                             # if any tests have failed then the whole job fails
                             currSpecInfo = currJobInfo.specInfos[specName]
-                            if len(currSpecInfo.failed) > 0:
+                            if len(currSpecInfo.failed) > 0 or currSpecInfo.success is None:
                                 currJobInfo.success = False
                                 break
 
@@ -199,10 +199,10 @@ def generateJobInfos(archive_dir):
                     if not basicJobInfos.has_key(jobName):
                         basicJobInfos[jobName] = []
                     basicJobInfos[jobName].append(currJobInfo)
-                elif jobType == "spec":
-                    if not specJobInfos.has_key(currJobInfo.sys_type):
-                        specJobInfos[currJobInfo.sys_type] = []
-                    specJobInfos[currJobInfo.sys_type].append(currJobInfo)
+                elif jobType == "src":
+                    if not srcJobInfos.has_key(currJobInfo.sys_type):
+                        srcJobInfos[currJobInfo.sys_type] = []
+                    srcJobInfos[currJobInfo.sys_type].append(currJobInfo)
                 elif jobType == "tpl":
                     if not tplJobInfos.has_key(currJobInfo.sys_type):
                         tplJobInfos[currJobInfo.sys_type] = []
@@ -210,7 +210,7 @@ def generateJobInfos(archive_dir):
                 else:
                     print "Error: Unsupported job type: {0}".format(jobType)
 
-    return basicJobInfos, specJobInfos, tplJobInfos
+    return basicJobInfos, srcJobInfos, tplJobInfos
 
 
 def populateTests(specInfo, path):
@@ -242,7 +242,7 @@ def populateTests(specInfo, path):
             print "Error: {0}: Unknown test status ({1})".format(test_xml_path, test_elem.attrib["Status"])
 
 
-def sortAndFilterJobInfos(basicJobInfos, specJobInfos, tplJobInfos):
+def sortAndFilterJobInfos(basicJobInfos, srcJobInfos, tplJobInfos):
     # Sort all jobs with the same name with newest job first based on date time
     # and cut off at the number we want to report
     for jobName in basicJobInfos.keys():
@@ -251,9 +251,9 @@ def sortAndFilterJobInfos(basicJobInfos, specJobInfos, tplJobInfos):
         basicJobInfos[jobName].reverse()
         del basicJobInfos[jobName][1:]
 
-    for sys_type in specJobInfos.keys():
+    for sys_type in srcJobInfos.keys():
         # we just want the newest 5
-        jobInfoList = specJobInfos[sys_type] # This gets all jobs with the specific sys_type
+        jobInfoList = srcJobInfos[sys_type] # This gets all jobs with the specific sys_type
         jobInfoList.sort(key=operator.attrgetter("datetime"))
         jobInfoList.reverse()
         del jobInfoList[5:]
@@ -265,10 +265,10 @@ def sortAndFilterJobInfos(basicJobInfos, specJobInfos, tplJobInfos):
         jobInfoList.reverse()
         del jobInfoList[5:]
 
-    return basicJobInfos, specJobInfos, tplJobInfos
+    return basicJobInfos, srcJobInfos, tplJobInfos
 
 
-def generateEmailContent(basicJobInfos, specJobInfos, tplJobInfos):
+def generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos):
     html = __contentHeader
 
     # Add Basic jobs to the email
@@ -299,11 +299,11 @@ def generateEmailContent(basicJobInfos, specJobInfos, tplJobInfos):
         # Close table for basic jobs
         html += "</table>\n"
 
-    html += getHTMLforJobInfos(specJobInfos, False)
+    html += getHTMLforJobInfos(srcJobInfos, False)
     html += getHTMLforJobInfos(tplJobInfos, True)
 
     # Add date time to the end of the email to make listserv not reject duplicate emails
-    html += get_timestamp()
+    html += "<br/>Generated at " + get_timestamp()
 
     html += __contentFooter
     return html
@@ -312,12 +312,12 @@ def generateEmailContent(basicJobInfos, specJobInfos, tplJobInfos):
 def getHTMLforJobInfos(jobInfosDict, isTPLJob):
     html = ""
     if len(jobInfosDict.keys()) > 0:
-        # Header for all spec jobs
+        # Header for all src jobs
         html += "<center><font size=\"5\"> </font></center><br>"
         if (isTPLJob):
             html += "<center><b><font size=\"5\">TPL Jobs</font></b></center>"
         else:    
-            html += "<center><b><font size=\"5\">Spec Jobs</font></b></center>"
+            html += "<center><b><font size=\"5\">Source Jobs</font></b></center>"
 
         sys_types = jobInfosDict.keys()
         sys_types.sort()
@@ -327,7 +327,7 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
 
             # Header for this sys_type
             html += "<center><font size=\"5\"> </font></center><br>"
-            html += "<font size=\"3\">" + sys_type + "</font>"
+            html += "<b><font size=\"4\">" + sys_type + "</font></b>"
 
             # Start table for this spec jobs
             html += "<table border=\"1\">"
