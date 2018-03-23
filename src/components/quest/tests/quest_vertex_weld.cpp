@@ -37,14 +37,14 @@ typedef axom::primal::Point<double, 3> Point3;
 void insertVertex(TriangleMesh* mesh, double x, double y, double z)
 {
   double coords[3] = {x,y,z};
-  mesh->insertNode(coords);
+  mesh->addNode(coords);
 }
 
 /*! Insert a triangle with vertex indices (v1,v2,v3) into \a mesh  */
 void insertTriangle(TriangleMesh* mesh, int v1, int v2, int v3)
 {
   int indices[3] = {v1,v2,v3};
-  mesh->insertCell(indices, MINT_TRIANGLE, 3);
+  mesh->addCell(indices, MINT_TRIANGLE);
 }
 
 }

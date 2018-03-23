@@ -357,9 +357,7 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
                      std::string filename)
 {
-  basename.append(".collisions.txt");
-
-  std::ofstream outf(basename.c_str());
+  std::ofstream outf(filename.c_str());
   if (!outf)
   {
     return false;

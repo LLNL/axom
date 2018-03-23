@@ -296,7 +296,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       if(res.second == true)
       {
         uniqueVertCount++;
-        newMesh->insertNode(vert.data());
+        newMesh->addNode(vert.data());
       }
       vertex_remap[i] = res.first->second;
     }
@@ -317,7 +317,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       // Degeneracy check -- vertices need to be distinct
       if( areTriangleIndicesDistinct(triInds) )
       {
-        newMesh->insertCell(triInds, MINT_TRIANGLE, NUM_TRI_VERTS);
+        newMesh->addCell(triInds, MINT_TRIANGLE);
       }
     }
 
