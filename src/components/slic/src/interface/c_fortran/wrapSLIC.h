@@ -38,8 +38,6 @@ void SLIC_initialize();
 
 bool SLIC_is_initialized();
 
-void SLIC_finalize();
-
 void SLIC_create_logger(const char* name, char imask);
 
 void SLIC_create_logger_bufferify(const char* name, int Lname, char imask);
@@ -74,6 +72,8 @@ void SLIC_log_message(int level, const char* message, const char* fileName,
 void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
                                 const char* fileName, int LfileName, int line,
                                 bool filter);
+
+void SLIC_finalize();
 
 #ifdef __cplusplus
 }

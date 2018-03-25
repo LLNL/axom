@@ -56,14 +56,6 @@ void QUEST_initialize_bufferify(MPI_Fint comm, const char* fileName,
 // splicer end function.initialize_bufferify
 }
 
-void QUEST_finalize()
-{
-// splicer begin function.finalize
-  finalize();
-  return;
-// splicer end function.finalize
-}
-
 double QUEST_distance(double x, double y, double z)
 {
 // splicer begin function.distance
@@ -102,6 +94,14 @@ void QUEST_mesh_center_of_mass(double* coords)
   mesh_center_of_mass(coords);
   return;
 // splicer end function.mesh_center_of_mass
+}
+
+void QUEST_finalize()
+{
+// splicer begin function.finalize
+  finalize();
+  return;
+// splicer end function.finalize
 }
 
 }  // extern "C"

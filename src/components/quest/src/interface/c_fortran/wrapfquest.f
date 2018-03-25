@@ -56,11 +56,6 @@ module axom_quest
             integer(C_INT), value, intent(IN) :: maxLevels
         end subroutine c_initialize_bufferify
 
-        subroutine quest_finalize() &
-                bind(C, name="QUEST_finalize")
-            implicit none
-        end subroutine quest_finalize
-
         function quest_distance(x, y, z) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_distance")
@@ -103,6 +98,11 @@ module axom_quest
             implicit none
             real(C_DOUBLE), intent(OUT) :: coords(*)
         end subroutine quest_mesh_center_of_mass
+
+        subroutine quest_finalize() &
+                bind(C, name="QUEST_finalize")
+            implicit none
+        end subroutine quest_finalize
 
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces

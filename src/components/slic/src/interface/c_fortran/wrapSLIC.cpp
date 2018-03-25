@@ -59,14 +59,6 @@ bool SLIC_is_initialized()
 // splicer end function.is_initialized
 }
 
-void SLIC_finalize()
-{
-// splicer begin function.finalize
-  finalize();
-  return;
-// splicer end function.finalize
-}
-
 void SLIC_create_logger(const char* name, char imask)
 {
 // splicer begin function.create_logger
@@ -215,6 +207,14 @@ void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
   logMessage(SHCXX_level, SH_message, SH_fileName, line, filter);
   return;
 // splicer end function.log_message_bufferify
+}
+
+void SLIC_finalize()
+{
+// splicer begin function.finalize
+  finalize();
+  return;
+// splicer end function.finalize
 }
 
 }  // extern "C"

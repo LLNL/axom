@@ -44,157 +44,91 @@ extern "C" {
 // splicer begin class.View.C_definitions
 // splicer end class.View.C_definitions
 
-void SIDRE_view_allocate_simple(SIDRE_view* self)
+SIDRE_IndexType SIDRE_view_get_index(SIDRE_view* self)
 {
-// splicer begin class.View.method.allocate_simple
+// splicer begin class.View.method.get_index
   View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->allocate();
-  return;
-// splicer end class.View.method.allocate_simple
+  IndexType SHC_rv = SH_this->getIndex();
+  return SHC_rv;
+// splicer end class.View.method.get_index
 }
 
-void SIDRE_view_allocate_from_type(SIDRE_view* self, int type,
-                                   SIDRE_SidreLength num_elems)
+const char* SIDRE_view_get_name(const SIDRE_view* self)
 {
-// splicer begin class.View.method.allocate_from_type
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->allocate(SHCXX_type, num_elems);
-  return;
-// splicer end class.View.method.allocate_from_type
+// splicer begin class.View.method.get_name
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  const std::string & SHCXX_rv = SH_this->getName();
+  const char* SHC_rv = SHCXX_rv.c_str();
+  return SHC_rv;
+// splicer end class.View.method.get_name
 }
 
-void SIDRE_view_reallocate(SIDRE_view* self, SIDRE_SidreLength num_elems)
+void SIDRE_view_get_name_bufferify(const SIDRE_view* self, char* SHF_rv,
+                                   int NSHF_rv)
 {
-// splicer begin class.View.method.reallocate
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->reallocate(num_elems);
+// splicer begin class.View.method.get_name_bufferify
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  const std::string & SHCXX_rv = SH_this->getName();
+  if (SHCXX_rv.empty())
+  {
+    std::memset(SHF_rv, ' ', NSHF_rv);
+  }
+  else
+  {
+    ShroudStrCopy(SHF_rv, NSHF_rv, SHCXX_rv.c_str());
+  }
   return;
-// splicer end class.View.method.reallocate
+// splicer end class.View.method.get_name_bufferify
 }
 
-void SIDRE_view_apply_0(SIDRE_view* self)
+void SIDRE_view_get_path_bufferify(const SIDRE_view* self, char* SHF_rv,
+                                   int NSHF_rv)
 {
-// splicer begin class.View.method.apply_0
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->apply();
+// splicer begin class.View.method.get_path_bufferify
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  std::string SHCXX_rv = SH_this->getPath();
+  if (SHCXX_rv.empty())
+  {
+    std::memset(SHF_rv, ' ', NSHF_rv);
+  }
+  else
+  {
+    ShroudStrCopy(SHF_rv, NSHF_rv, SHCXX_rv.c_str());
+  }
   return;
-// splicer end class.View.method.apply_0
+// splicer end class.View.method.get_path_bufferify
 }
 
-void SIDRE_view_attach_buffer_only(SIDRE_view* self, SIDRE_buffer* buff)
+void SIDRE_view_get_path_name_bufferify(const SIDRE_view* self, char* SHF_rv,
+                                        int NSHF_rv)
 {
-// splicer begin class.View.method.attach_buffer_only
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  SH_this->attachBuffer(SHCXX_buff);
+// splicer begin class.View.method.get_path_name_bufferify
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  std::string SHCXX_rv = SH_this->getPathName();
+  if (SHCXX_rv.empty())
+  {
+    std::memset(SHF_rv, ' ', NSHF_rv);
+  }
+  else
+  {
+    ShroudStrCopy(SHF_rv, NSHF_rv, SHCXX_rv.c_str());
+  }
   return;
-// splicer end class.View.method.attach_buffer_only
+// splicer end class.View.method.get_path_name_bufferify
 }
 
-void SIDRE_view_attach_buffer_type(SIDRE_view* self, int type,
-                                   SIDRE_SidreLength num_elems,
-                                   SIDRE_buffer* buff)
+SIDRE_group* SIDRE_view_get_owning_group(SIDRE_view* self)
 {
-// splicer begin class.View.method.attach_buffer_type
+// splicer begin class.View.method.get_owning_group
   View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  SH_this->attachBuffer(SHCXX_type, num_elems, SHCXX_buff);
-  return;
-// splicer end class.View.method.attach_buffer_type
-}
-
-void SIDRE_view_attach_buffer_shape(SIDRE_view* self, int type, int ndims,
-                                    SIDRE_SidreLength* shape,
-                                    SIDRE_buffer* buff)
-{
-// splicer begin class.View.method.attach_buffer_shape
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  SH_this->attachBuffer(SHCXX_type, ndims, shape, SHCXX_buff);
-  return;
-// splicer end class.View.method.attach_buffer_shape
-}
-
-void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_SidreLength num_elems)
-{
-// splicer begin class.View.method.apply_nelems
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->apply(num_elems);
-  return;
-// splicer end class.View.method.apply_nelems
-}
-
-void SIDRE_view_apply_nelems_offset(SIDRE_view* self,
-                                    SIDRE_SidreLength num_elems,
-                                    SIDRE_SidreLength offset)
-{
-// splicer begin class.View.method.apply_nelems_offset
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->apply(num_elems, offset);
-  return;
-// splicer end class.View.method.apply_nelems_offset
-}
-
-void SIDRE_view_apply_nelems_offset_stride(SIDRE_view* self,
-                                           SIDRE_SidreLength num_elems,
-                                           SIDRE_SidreLength offset,
-                                           SIDRE_SidreLength stride)
-{
-// splicer begin class.View.method.apply_nelems_offset_stride
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->apply(num_elems, offset, stride);
-  return;
-// splicer end class.View.method.apply_nelems_offset_stride
-}
-
-void SIDRE_view_apply_type_nelems(SIDRE_view* self, int type,
-                                  SIDRE_SidreLength num_elems)
-{
-// splicer begin class.View.method.apply_type_nelems
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->apply(SHCXX_type, num_elems);
-  return;
-// splicer end class.View.method.apply_type_nelems
-}
-
-void SIDRE_view_apply_type_nelems_offset(SIDRE_view* self, int type,
-                                         SIDRE_SidreLength num_elems,
-                                         SIDRE_SidreLength offset)
-{
-// splicer begin class.View.method.apply_type_nelems_offset
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->apply(SHCXX_type, num_elems, offset);
-  return;
-// splicer end class.View.method.apply_type_nelems_offset
-}
-
-void SIDRE_view_apply_type_nelems_offset_stride(SIDRE_view* self, int type,
-                                                SIDRE_SidreLength num_elems,
-                                                SIDRE_SidreLength offset,
-                                                SIDRE_SidreLength stride)
-{
-// splicer begin class.View.method.apply_type_nelems_offset_stride
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->apply(SHCXX_type, num_elems, offset, stride);
-  return;
-// splicer end class.View.method.apply_type_nelems_offset_stride
-}
-
-void SIDRE_view_apply_type_shape(SIDRE_view* self, int type, int ndims,
-                                 SIDRE_SidreLength* shape)
-{
-// splicer begin class.View.method.apply_type_shape
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->apply(SHCXX_type, ndims, shape);
-  return;
-// splicer end class.View.method.apply_type_shape
+  Group* SHCXX_rv = SH_this->getOwningGroup();
+  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.View.method.get_owning_group
 }
 
 bool SIDRE_view_has_buffer(const SIDRE_view* self)
@@ -205,6 +139,17 @@ bool SIDRE_view_has_buffer(const SIDRE_view* self)
   bool SHC_rv = SH_this->hasBuffer();
   return SHC_rv;
 // splicer end class.View.method.has_buffer
+}
+
+SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self)
+{
+// splicer begin class.View.method.get_buffer
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  Buffer* SHCXX_rv = SH_this->getBuffer();
+  SIDRE_buffer* SHC_rv =
+    static_cast<SIDRE_buffer*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.View.method.get_buffer
 }
 
 bool SIDRE_view_is_external(const SIDRE_view* self)
@@ -286,102 +231,239 @@ bool SIDRE_view_is_string(const SIDRE_view* self)
 // splicer end class.View.method.is_string
 }
 
-SIDRE_IndexType SIDRE_view_get_index(SIDRE_view* self)
+int SIDRE_view_get_type_id(const SIDRE_view* self)
 {
-// splicer begin class.View.method.get_index
+// splicer begin class.View.method.get_type_id
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  TypeID SHCXX_rv = SH_this->getTypeID();
+  int SHC_rv = static_cast<int>(SHCXX_rv);
+  return SHC_rv;
+// splicer end class.View.method.get_type_id
+}
+
+size_t SIDRE_view_get_total_bytes(const SIDRE_view* self)
+{
+// splicer begin class.View.method.get_total_bytes
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  size_t SHC_rv = SH_this->getTotalBytes();
+  return SHC_rv;
+// splicer end class.View.method.get_total_bytes
+}
+
+size_t SIDRE_view_get_num_elements(const SIDRE_view* self)
+{
+// splicer begin class.View.method.get_num_elements
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  size_t SHC_rv = SH_this->getNumElements();
+  return SHC_rv;
+// splicer end class.View.method.get_num_elements
+}
+
+size_t SIDRE_view_get_bytes_per_element(const SIDRE_view* self)
+{
+// splicer begin class.View.method.get_bytes_per_element
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  size_t SHC_rv = SH_this->getBytesPerElement();
+  return SHC_rv;
+// splicer end class.View.method.get_bytes_per_element
+}
+
+size_t SIDRE_view_get_offset(const SIDRE_view* self)
+{
+// splicer begin class.View.method.get_offset
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  size_t SHC_rv = SH_this->getOffset();
+  return SHC_rv;
+// splicer end class.View.method.get_offset
+}
+
+size_t SIDRE_view_get_stride(const SIDRE_view* self)
+{
+// splicer begin class.View.method.get_stride
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  size_t SHC_rv = SH_this->getStride();
+  return SHC_rv;
+// splicer end class.View.method.get_stride
+}
+
+int SIDRE_view_get_num_dimensions(const SIDRE_view* self)
+{
+// splicer begin class.View.method.get_num_dimensions
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  int SHC_rv = SH_this->getNumDimensions();
+  return SHC_rv;
+// splicer end class.View.method.get_num_dimensions
+}
+
+int SIDRE_view_get_shape(const SIDRE_view* self, int ndims,
+                         SIDRE_SidreLength* shape)
+{
+// splicer begin class.View.method.get_shape
+  const View* SH_this =
+    static_cast<const View*>(static_cast<const void*>(self));
+  int SHC_rv = SH_this->getShape(ndims, shape);
+  return SHC_rv;
+// splicer end class.View.method.get_shape
+}
+
+void SIDRE_view_allocate_simple(SIDRE_view* self)
+{
+// splicer begin class.View.method.allocate_simple
   View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  IndexType SHC_rv = SH_this->getIndex();
-  return SHC_rv;
-// splicer end class.View.method.get_index
-}
-
-const char* SIDRE_view_get_name(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_name
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  const std::string & SHCXX_rv = SH_this->getName();
-  const char* SHC_rv = SHCXX_rv.c_str();
-  return SHC_rv;
-// splicer end class.View.method.get_name
-}
-
-void SIDRE_view_get_name_bufferify(const SIDRE_view* self, char* SHF_rv,
-                                   int NSHF_rv)
-{
-// splicer begin class.View.method.get_name_bufferify
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  const std::string & SHCXX_rv = SH_this->getName();
-  if (SHCXX_rv.empty())
-  {
-    std::memset(SHF_rv, ' ', NSHF_rv);
-  }
-  else
-  {
-    ShroudStrCopy(SHF_rv, NSHF_rv, SHCXX_rv.c_str());
-  }
+  SH_this->allocate();
   return;
-// splicer end class.View.method.get_name_bufferify
+// splicer end class.View.method.allocate_simple
 }
 
-void SIDRE_view_get_path_bufferify(const SIDRE_view* self, char* SHF_rv,
-                                   int NSHF_rv)
+void SIDRE_view_allocate_from_type(SIDRE_view* self, int type,
+                                   SIDRE_SidreLength num_elems)
 {
-// splicer begin class.View.method.get_path_bufferify
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  std::string SHCXX_rv = SH_this->getPath();
-  if (SHCXX_rv.empty())
-  {
-    std::memset(SHF_rv, ' ', NSHF_rv);
-  }
-  else
-  {
-    ShroudStrCopy(SHF_rv, NSHF_rv, SHCXX_rv.c_str());
-  }
-  return;
-// splicer end class.View.method.get_path_bufferify
-}
-
-void SIDRE_view_get_path_name_bufferify(const SIDRE_view* self, char* SHF_rv,
-                                        int NSHF_rv)
-{
-// splicer begin class.View.method.get_path_name_bufferify
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  std::string SHCXX_rv = SH_this->getPathName();
-  if (SHCXX_rv.empty())
-  {
-    std::memset(SHF_rv, ' ', NSHF_rv);
-  }
-  else
-  {
-    ShroudStrCopy(SHF_rv, NSHF_rv, SHCXX_rv.c_str());
-  }
-  return;
-// splicer end class.View.method.get_path_name_bufferify
-}
-
-SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self)
-{
-// splicer begin class.View.method.get_buffer
+// splicer begin class.View.method.allocate_from_type
   View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  Buffer* SHCXX_rv = SH_this->getBuffer();
-  SIDRE_buffer* SHC_rv =
-    static_cast<SIDRE_buffer*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.View.method.get_buffer
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->allocate(SHCXX_type, num_elems);
+  return;
+// splicer end class.View.method.allocate_from_type
 }
 
-void* SIDRE_view_get_void_ptr(const SIDRE_view* self)
+void SIDRE_view_reallocate(SIDRE_view* self, SIDRE_SidreLength num_elems)
 {
-// splicer begin class.View.method.get_void_ptr
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  void* SHC_rv = SH_this->getVoidPtr();
-  return SHC_rv;
-// splicer end class.View.method.get_void_ptr
+// splicer begin class.View.method.reallocate
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  SH_this->reallocate(num_elems);
+  return;
+// splicer end class.View.method.reallocate
+}
+
+void SIDRE_view_attach_buffer_only(SIDRE_view* self, SIDRE_buffer* buff)
+{
+// splicer begin class.View.method.attach_buffer_only
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  SH_this->attachBuffer(SHCXX_buff);
+  return;
+// splicer end class.View.method.attach_buffer_only
+}
+
+void SIDRE_view_attach_buffer_type(SIDRE_view* self, int type,
+                                   SIDRE_SidreLength num_elems,
+                                   SIDRE_buffer* buff)
+{
+// splicer begin class.View.method.attach_buffer_type
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  SH_this->attachBuffer(SHCXX_type, num_elems, SHCXX_buff);
+  return;
+// splicer end class.View.method.attach_buffer_type
+}
+
+void SIDRE_view_attach_buffer_shape(SIDRE_view* self, int type, int ndims,
+                                    SIDRE_SidreLength* shape,
+                                    SIDRE_buffer* buff)
+{
+// splicer begin class.View.method.attach_buffer_shape
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  SH_this->attachBuffer(SHCXX_type, ndims, shape, SHCXX_buff);
+  return;
+// splicer end class.View.method.attach_buffer_shape
+}
+
+void SIDRE_view_apply_0(SIDRE_view* self)
+{
+// splicer begin class.View.method.apply_0
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  SH_this->apply();
+  return;
+// splicer end class.View.method.apply_0
+}
+
+void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_SidreLength num_elems)
+{
+// splicer begin class.View.method.apply_nelems
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  SH_this->apply(num_elems);
+  return;
+// splicer end class.View.method.apply_nelems
+}
+
+void SIDRE_view_apply_nelems_offset(SIDRE_view* self,
+                                    SIDRE_SidreLength num_elems,
+                                    SIDRE_SidreLength offset)
+{
+// splicer begin class.View.method.apply_nelems_offset
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  SH_this->apply(num_elems, offset);
+  return;
+// splicer end class.View.method.apply_nelems_offset
+}
+
+void SIDRE_view_apply_nelems_offset_stride(SIDRE_view* self,
+                                           SIDRE_SidreLength num_elems,
+                                           SIDRE_SidreLength offset,
+                                           SIDRE_SidreLength stride)
+{
+// splicer begin class.View.method.apply_nelems_offset_stride
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  SH_this->apply(num_elems, offset, stride);
+  return;
+// splicer end class.View.method.apply_nelems_offset_stride
+}
+
+void SIDRE_view_apply_type_nelems(SIDRE_view* self, int type,
+                                  SIDRE_SidreLength num_elems)
+{
+// splicer begin class.View.method.apply_type_nelems
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->apply(SHCXX_type, num_elems);
+  return;
+// splicer end class.View.method.apply_type_nelems
+}
+
+void SIDRE_view_apply_type_nelems_offset(SIDRE_view* self, int type,
+                                         SIDRE_SidreLength num_elems,
+                                         SIDRE_SidreLength offset)
+{
+// splicer begin class.View.method.apply_type_nelems_offset
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->apply(SHCXX_type, num_elems, offset);
+  return;
+// splicer end class.View.method.apply_type_nelems_offset
+}
+
+void SIDRE_view_apply_type_nelems_offset_stride(SIDRE_view* self, int type,
+                                                SIDRE_SidreLength num_elems,
+                                                SIDRE_SidreLength offset,
+                                                SIDRE_SidreLength stride)
+{
+// splicer begin class.View.method.apply_type_nelems_offset_stride
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->apply(SHCXX_type, num_elems, offset, stride);
+  return;
+// splicer end class.View.method.apply_type_nelems_offset_stride
+}
+
+void SIDRE_view_apply_type_shape(SIDRE_view* self, int type, int ndims,
+                                 SIDRE_SidreLength* shape)
+{
+// splicer begin class.View.method.apply_type_shape
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->apply(SHCXX_type, ndims, shape);
+  return;
+// splicer end class.View.method.apply_type_shape
 }
 
 void SIDRE_view_set_scalar_int(SIDRE_view* self, int value)
@@ -420,27 +502,6 @@ void SIDRE_view_set_scalar_double(SIDRE_view* self, double value)
 // splicer end class.View.method.set_scalar_double
 }
 
-void SIDRE_view_set_external_data_ptr_only(SIDRE_view* self, void* external_ptr)
-{
-// splicer begin class.View.method.set_external_data_ptr_only
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  SH_this->setExternalDataPtr(external_ptr);
-  return;
-// splicer end class.View.method.set_external_data_ptr_only
-}
-
-void SIDRE_view_set_external_data_ptr_type(SIDRE_view* self, int type,
-                                           SIDRE_SidreLength num_elems,
-                                           void* external_ptr)
-{
-// splicer begin class.View.method.set_external_data_ptr_type
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->setExternalDataPtr(SHCXX_type, num_elems, external_ptr);
-  return;
-// splicer end class.View.method.set_external_data_ptr_type
-}
-
 void SIDRE_view_set_string(SIDRE_view* self, const char* value)
 {
 // splicer begin class.View.method.set_string
@@ -460,6 +521,27 @@ void SIDRE_view_set_string_bufferify(SIDRE_view* self, const char* value,
   SH_this->setString(SH_value);
   return;
 // splicer end class.View.method.set_string_bufferify
+}
+
+void SIDRE_view_set_external_data_ptr_only(SIDRE_view* self, void* external_ptr)
+{
+// splicer begin class.View.method.set_external_data_ptr_only
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  SH_this->setExternalDataPtr(external_ptr);
+  return;
+// splicer end class.View.method.set_external_data_ptr_only
+}
+
+void SIDRE_view_set_external_data_ptr_type(SIDRE_view* self, int type,
+                                           SIDRE_SidreLength num_elems,
+                                           void* external_ptr)
+{
+// splicer begin class.View.method.set_external_data_ptr_type
+  View* SH_this = static_cast<View*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->setExternalDataPtr(SHCXX_type, num_elems, external_ptr);
+  return;
+// splicer end class.View.method.set_external_data_ptr_type
 }
 
 void SIDRE_view_set_external_data_ptr_shape(SIDRE_view* self, int type,
@@ -536,96 +618,24 @@ double SIDRE_view_get_data_double(SIDRE_view* self)
 // splicer end class.View.method.get_data_double
 }
 
-SIDRE_group* SIDRE_view_get_owning_group(SIDRE_view* self)
+void* SIDRE_view_get_void_ptr(const SIDRE_view* self)
 {
-// splicer begin class.View.method.get_owning_group
-  View* SH_this = static_cast<View*>(static_cast<void*>(self));
-  Group* SHCXX_rv = SH_this->getOwningGroup();
-  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.View.method.get_owning_group
-}
-
-int SIDRE_view_get_type_id(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_type_id
+// splicer begin class.View.method.get_void_ptr
   const View* SH_this =
     static_cast<const View*>(static_cast<const void*>(self));
-  TypeID SHCXX_rv = SH_this->getTypeID();
-  int SHC_rv = static_cast<int>(SHCXX_rv);
+  void* SHC_rv = SH_this->getVoidPtr();
   return SHC_rv;
-// splicer end class.View.method.get_type_id
+// splicer end class.View.method.get_void_ptr
 }
 
-size_t SIDRE_view_get_total_bytes(const SIDRE_view* self)
+void SIDRE_view_print(const SIDRE_view* self)
 {
-// splicer begin class.View.method.get_total_bytes
+// splicer begin class.View.method.print
   const View* SH_this =
     static_cast<const View*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getTotalBytes();
-  return SHC_rv;
-// splicer end class.View.method.get_total_bytes
-}
-
-size_t SIDRE_view_get_bytes_per_element(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_bytes_per_element
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getBytesPerElement();
-  return SHC_rv;
-// splicer end class.View.method.get_bytes_per_element
-}
-
-size_t SIDRE_view_get_num_elements(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_num_elements
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getNumElements();
-  return SHC_rv;
-// splicer end class.View.method.get_num_elements
-}
-
-size_t SIDRE_view_get_offset(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_offset
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getOffset();
-  return SHC_rv;
-// splicer end class.View.method.get_offset
-}
-
-size_t SIDRE_view_get_stride(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_stride
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getStride();
-  return SHC_rv;
-// splicer end class.View.method.get_stride
-}
-
-int SIDRE_view_get_num_dimensions(const SIDRE_view* self)
-{
-// splicer begin class.View.method.get_num_dimensions
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  int SHC_rv = SH_this->getNumDimensions();
-  return SHC_rv;
-// splicer end class.View.method.get_num_dimensions
-}
-
-int SIDRE_view_get_shape(const SIDRE_view* self, int ndims,
-                         SIDRE_SidreLength* shape)
-{
-// splicer begin class.View.method.get_shape
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  int SHC_rv = SH_this->getShape(ndims, shape);
-  return SHC_rv;
-// splicer end class.View.method.get_shape
+  SH_this->print();
+  return;
+// splicer end class.View.method.print
 }
 
 bool SIDRE_view_rename(SIDRE_view* self, const char* new_name)
@@ -647,16 +657,6 @@ bool SIDRE_view_rename_bufferify(SIDRE_view* self, const char* new_name,
   bool SHC_rv = SH_this->rename(SH_new_name);
   return SHC_rv;
 // splicer end class.View.method.rename_bufferify
-}
-
-void SIDRE_view_print(const SIDRE_view* self)
-{
-// splicer begin class.View.method.print
-  const View* SH_this =
-    static_cast<const View*>(static_cast<const void*>(self));
-  SH_this->print();
-  return;
-// splicer end class.View.method.print
 }
 
 }  // extern "C"
