@@ -46,32 +46,37 @@ types:
 
 ######################################################################
 
+#declarations:
+#  - namespace: axom
+#    declarations:
+#    - namespace: slic
+#      declarations:
 functions:
-- options:
-    # Change the default template for Fortran functions to include the library name.
-    F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
-- decl: void initialize()
-- decl: bool isInitialized()
+      - options:
+          # Change the default template for Fortran functions to include the library name.
+          F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+      - decl: void initialize()
+      - decl: bool isInitialized()
 
-- decl: void createLogger( const std::string& name, char imask )
-- decl: bool activateLogger( const std::string& name )
-- decl: std::string getActiveLoggerName()
-- decl: void setLoggingMsgLevel( Level level )
+      - decl: void createLogger( const std::string& name, char imask )
+      - decl: bool activateLogger( const std::string& name )
+      - decl: std::string getActiveLoggerName()
+      - decl: void setLoggingMsgLevel( Level level )
 
-- decl: void setAbortOnError( bool status )
-- decl: void enableAbortOnError()
-- decl: void disableAbortOnError()
-- decl: bool isAbortOnErrorsEnabled()
+      - decl: void setAbortOnError( bool status )
+      - decl: void enableAbortOnError()
+      - decl: void disableAbortOnError()
+      - decl: bool isAbortOnErrorsEnabled()
 
-- decl: void setAbortOnWarning( bool status )
-- decl: void enableAbortOnWarning()
-- decl: void disableAbortOnWarning()
-- decl: bool isAbortOnWarningsEnabled()
+      - decl: void setAbortOnWarning( bool status )
+      - decl: void enableAbortOnWarning()
+      - decl: void disableAbortOnWarning()
+      - decl: bool isAbortOnWarningsEnabled()
 
-- decl: void logMessage( Level level,
-                         const std::string& message,
-                         const std::string& fileName,
-                         int line,
-                         bool filter )
-- decl: void finalize()
+      - decl: void logMessage( Level level,
+                               const std::string& message,
+                               const std::string& fileName,
+                               int line,
+                               bool filter )
+      - decl: void finalize()
   
