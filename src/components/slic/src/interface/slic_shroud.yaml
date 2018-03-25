@@ -52,7 +52,6 @@ functions:
     F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
 - decl: void initialize()
 - decl: bool isInitialized()
-- decl: void finalize()
 
 - decl: void createLogger( const std::string& name, char imask )
 - decl: bool activateLogger( const std::string& name )
@@ -69,5 +68,10 @@ functions:
 - decl: void disableAbortOnWarning()
 - decl: bool isAbortOnWarningsEnabled()
 
-- decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
+- decl: void logMessage( Level level,
+                         const std::string& message,
+                         const std::string& fileName,
+                         int line,
+                         bool filter )
+- decl: void finalize()
   

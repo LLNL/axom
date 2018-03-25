@@ -238,7 +238,7 @@ public:
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
    */
-  bool  isOpaque() const
+  bool isOpaque() const
   {
     return m_state == EXTERNAL && !isApplied();
   }

@@ -48,10 +48,21 @@ classes:
   - name: IOManager
     cxx_header: sidre/IOManager.hpp
     methods:
-    - decl: IOManager(MPI_Comm com) +name(new)
+    - decl: IOManager(MPI_Comm com, bool use_scr = false) +name(new)
     - decl: ~IOManager() +name(delete)
-    - decl: void write(Group * group, int num_files, const std::string& file_string, const std::string& protocol)
-    - decl: void writeGroupToRootFile(Group * group, const std::string& file_name)
-    - decl: void read(Group * group, const std::string& file_string, const std::string& protocol)
-    - decl: void read(Group * group, const std::string& root_file, bool preserve_contents = false)
-    - decl: void loadExternalData(Group * group, const std::string& root_file)
+    - decl: void write(Group * group,
+                       int num_files,
+                       const std::string& file_string,
+                       const std::string& protocol)
+    - decl: void writeGroupToRootFile(Group * group,
+                                      const std::string& file_name)
+    - decl: void read(Group * group,
+                      const std::string& file_string,
+                      const std::string& protocol,
+                      bool preserve_contents = false)
+    - decl: void read(Group * group,
+                      const std::string& root_file,
+                      bool preserve_contents = false,
+                      bool use_scr = false)
+    - decl: void loadExternalData(Group * group,
+                                  const std::string& root_file)
