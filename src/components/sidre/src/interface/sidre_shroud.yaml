@@ -157,7 +157,9 @@ classes:
             function_suffix: _empty
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems)
+        - decl: View *createView( const std::string& path,
+                                  TypeID type,
+                                  SidreLength num_elems )
           format:
             function_suffix: _from_type
           fortran_generic:
@@ -166,7 +168,10 @@ classes:
             -  long
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension)
+        - decl: View *createView( const std::string& path,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape+dimension)
           format:
             function_suffix: _from_shape
           PY_error_pattern: PY_null_to_none
@@ -174,12 +179,16 @@ classes:
 #        - decl: View *createView( const std::string& path, const DataType& dtype)
 
          # Methods to create a View with a Buffer attached.
-        - decl: View *createView( const std::string& path, Buffer *buff)
+        - decl: View *createView( const std::string& path,
+                                  Buffer *buff)
           format:
             function_suffix: _into_buffer
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems, Buffer *buff)
+        - decl: View *createView( const std::string& path,
+                                  TypeID type,
+                                  SidreLength num_elems,
+                                  Buffer *buff)
           format:
             function_suffix: _from_type_and_buffer
           fortran_generic:
@@ -188,18 +197,26 @@ classes:
             -  long
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
+        - decl: View *createView( const std::string& path,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape+dimension,
+                                  Buffer * buff)
           format:
             function_suffix: _from_shape_and_buffer
           PY_error_pattern: PY_null_to_none
 
         # Methods to create a View with externally-owned data attached.
-        - decl: View * createView( const std::string& path, void * external_ptr)
+        - decl: View * createView( const std::string& path,
+                                   void * external_ptr)
           format:
             function_suffix: _external
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createView( const std::string& path, TypeID type, SidreLength num_elems, void * external_ptr)
+        - decl: View *createView( const std::string& path,
+                                  TypeID type,
+                                  SidreLength num_elems,
+                                  void * external_ptr)
           format:
             function_suffix: _from_type_external
           fortran_generic:
@@ -208,13 +225,19 @@ classes:
             -  long
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createView( const std::string& path, TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
+        - decl: View *createView( const std::string& path,
+                                  TypeID type,
+                                  int ndims,
+                                  SidreLength * shape+dimension,
+                                  void * external_ptr)
           format:
             function_suffix: _from_shape_external
           PY_error_pattern: PY_null_to_none
 
         # Methods to create a View and allocate data for it.
-        - decl: View *createViewAndAllocate( const std::string& path, TypeID type, SidreLength num_elems)
+        - decl: View *createViewAndAllocate( const std::string& path,
+                                             TypeID type,
+                                             SidreLength num_elems)
           format:
             function_suffix: _nelems
           fortran_generic:
@@ -223,7 +246,10 @@ classes:
             -  long
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createViewAndAllocate( const std::string& path, TypeID type, int ndims, SidreLength *shape+dimension)
+        - decl: View *createViewAndAllocate( const std::string& path,
+                                             TypeID type,
+                                             int ndims,
+                                             SidreLength *shape+dimension)
           format:
             function_suffix: _shape
           PY_error_pattern: PY_null_to_none
@@ -239,7 +265,8 @@ classes:
             - double
           PY_error_pattern: PY_null_to_none
 
-        - decl: View *createViewString( const std::string& path, const std::string& value)
+        - decl: View *createViewString( const std::string& path,
+                                        const std::string& value)
           PY_error_pattern: PY_null_to_none
 
         # View destruction methods.
@@ -303,8 +330,11 @@ classes:
         - decl: bool isEquivalentTo(const Group * other) const
 
         # Group I/O methods
-        - decl: void save(const std::string& file_path, const std::string& protocol) const
-        - decl: void load(const std::string& file_path, const std::string& protocol, bool preserve_contents = false)
+        - decl: void save(const std::string& file_path,
+                          const std::string& protocol) const
+        - decl: void load(const std::string& file_path,
+                          const std::string& protocol,
+                          bool preserve_contents = false)
         - decl: void loadExternalData(const std::string& file_path)
 #       - decl: void save(const hid_t& h5_id) const
 #          format:
@@ -442,7 +472,9 @@ classes:
           format:
             function_suffix: _only
 
-        - decl: View* attachBuffer(TypeID type, SidreLength num_elems, Buffer * buff)
+        - decl: View* attachBuffer(TypeID type,
+                                   SidreLength num_elems,
+                                   Buffer * buff)
           return_this: True
           format:
             function_suffix: _type
@@ -451,7 +483,10 @@ classes:
             -  int
             -  long
 
-        - decl: View* attachBuffer(TypeID type, int ndims, SidreLength * shape+dimension, Buffer * buff)
+        - decl: View* attachBuffer(TypeID type,
+                                   int ndims,
+                                   SidreLength * shape+dimension,
+                                   Buffer * buff)
           return_this: True
           format:
             function_suffix: _shape
@@ -461,14 +496,19 @@ classes:
         - decl: View* apply()
           return_this: True
 
-        - decl: View* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+        - decl: View* apply(SidreLength num_elems,
+                            SidreLength offset = 0,
+                            SidreLength stride = 1)
           default_arg_suffix:
             -  _nelems
             -  _nelems_offset
             -  _nelems_offset_stride
           return_this: True
 
-        - decl: View* apply(TypeID type, SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+        - decl: View* apply(TypeID type,
+                            SidreLength num_elems,
+                            SidreLength offset = 0,
+                            SidreLength stride = 1)
           default_arg_suffix:
             -  _type_nelems
             -  _type_nelems_offset
@@ -499,7 +539,9 @@ classes:
           format:
             function_suffix: _only
 
-        - decl: View * setExternalDataPtr(TypeID type, SidreLength num_elems, void * external_ptr)
+        - decl: View * setExternalDataPtr(TypeID type,
+                                          SidreLength num_elems,
+                                          void * external_ptr)
           return_this: True
           format:
             function_suffix: _type
@@ -508,7 +550,10 @@ classes:
             -  int
             -  long
 
-        - decl: View * setExternalDataPtr(TypeID type, int ndims, SidreLength * shape+dimension, void * external_ptr)
+        - decl: View * setExternalDataPtr(TypeID type,
+                                          int ndims,
+                                          SidreLength * shape+dimension,
+                                          void * external_ptr)
           return_this: True
           format:
             function_suffix: _shape
