@@ -40,7 +40,7 @@ namespace utilities
 void processAbort()
 {
 #ifndef AXOM_USE_MPI
-  exit( EXIT_FAILURE );
+  abort();
 #else
   int mpi = 0;
   MPI_Initialized( &mpi );
@@ -50,7 +50,7 @@ void processAbort()
   }
   else
   {
-    exit( EXIT_FAILURE );
+    abort();
   }
 #endif
 }
