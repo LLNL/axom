@@ -165,7 +165,7 @@ TEST( quest_vertex_weld, vertexAdjacentTrianglePair)
   EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
-  insertTriangle(mesh, 4, 5, 6);
+  insertTriangle(mesh, 3, 4, 5);
   EXPECT_EQ(2, mesh->getMeshNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
@@ -197,7 +197,7 @@ TEST( quest_vertex_weld, edgeAdjacentTrianglePair)
   EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
-  insertTriangle(mesh, 4, 5, 6);
+  insertTriangle(mesh, 3, 4, 5);
   EXPECT_EQ(2, mesh->getMeshNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
@@ -229,7 +229,7 @@ TEST( quest_vertex_weld, fuzzWeld)
   EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
-  insertTriangle(mesh, 4, 5, 6);
+  insertTriangle(mesh, 3, 4, 5);
   EXPECT_EQ(2, mesh->getMeshNumberOfCells());
 
   const double eps = .1;
@@ -260,7 +260,7 @@ TEST( quest_vertex_weld, disconnectedTrianglePair)
   EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
-  insertTriangle(mesh, 4, 5, 6);
+  insertTriangle(mesh, 3, 4, 5);
   EXPECT_EQ(2, mesh->getMeshNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
