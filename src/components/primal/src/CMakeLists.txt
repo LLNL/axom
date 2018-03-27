@@ -18,7 +18,6 @@ set( primal_headers
      geometry/BoundingBox.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
-     geometry/HyperSphere.hpp
      geometry/MortonIndex.hpp
      geometry/NumericArray.hpp
      geometry/Plane.hpp
@@ -27,6 +26,7 @@ set( primal_headers
      geometry/Ray.hpp
      geometry/RectangularLattice.hpp
      geometry/Segment.hpp
+     geometry/Sphere.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp
 

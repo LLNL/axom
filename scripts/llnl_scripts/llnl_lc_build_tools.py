@@ -37,7 +37,8 @@ from os.path import join as pjoin
 def sexe(cmd,
          ret_output=False,
          output_file = None,
-         echo = False):
+         echo = False,
+         error_prefix = "ERROR:"):
     """ Helper for executing shell commands. """
     if echo:
         print "[exe: %s]" % cmd
@@ -59,7 +60,7 @@ def sexe(cmd,
     else:
         rcode = subprocess.call(cmd,shell=True)
         if rcode != 0:
-            print "{ERROR [return code: %d] from command: %s}" % (rcode,cmd)
+            print "[{0} [return code: {1}] from command: {2}]".format(error_prefix, rcode,cmd)
         return rcode
 
 
@@ -78,11 +79,11 @@ def build_info(job_name):
     res["built_from_branch"] = "unknown"
     res["built_from_sha1"]   = "unknown"
     res["job_name"] = job_name
-    rc, out = sexe('git branch -a | grep \"*\"',ret_output=True)
+    rc, out = sexe('git branch -a | grep \"*\"',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
         res["built_from_branch"]  = out.split()[1]
-    rc,out = sexe('git rev-parse --verify HEAD',ret_output=True)
+    rc,out = sexe('git rev-parse --verify HEAD',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
         res["built_from_sha1"] = out
@@ -243,7 +244,7 @@ def uberenv_create_mirror(prefix,mirror_path):
     Calls uberenv to create a spack mirror.
     """
     cmd = "python scripts/uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
-    return sexe(cmd,echo=True)
+    return sexe(cmd,echo=True,error_prefix="WARNING:")
 
 
 def uberenv_install_tpls(prefix,spec,mirror = None):
@@ -365,9 +366,9 @@ def build_and_test_host_config(test_root,host_config):
 
     # simple sanity check for make install
     print "[checking install dir %s]" % install_dir 
-    sexe("ls %s/include" % install_dir, echo=True)
-    sexe("ls %s/lib" %     install_dir, echo=True)
-    sexe("ls %s/bin" %     install_dir, echo=True)
+    sexe("ls %s/include" % install_dir, echo=True, error_prefix="WARNING:")
+    sexe("ls %s/lib" %     install_dir, echo=True, error_prefix="WARNING:")
+    sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
     print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
 
     set_axom_group_and_perms(build_dir)
@@ -381,6 +382,10 @@ def build_and_test_host_configs(prefix, job_name, timestamp):
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
         return 1
+    print "Found Host-configs:"
+    for host_config in host_configs:
+        print "    " + host_config
+    print "\n"
 
     test_root =  get_build_and_test_root(prefix, timestamp)
     os.mkdir(test_root)
@@ -430,19 +435,23 @@ def set_axom_group_and_perms(directory):
     print "[changing group and access perms of: %s]" % directory
     # change group to axomdev
     print "[changing group to axomdev]"
-    sexe("chgrp -f -R axomdev %s" % (directory),echo=True)
+    sexe("chgrp -f -R axomdev %s" % (directory),echo=True,error_prefix="WARNING:")
     # change group perms to rwX
     print "[changing perms for axomdev members to rwX]"
-    sexe("chmod -f -R g+rwX %s" % (directory),echo=True)
+    sexe("chmod -f -R g+rwX %s" % (directory),echo=True,error_prefix="WARNING:")
     # change perms for all to rX
     print "[changing perms for all users to rX]"
-    sexe("chmod -f -R a+rX %s" % (directory),echo=True)
+    sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
     print "[done setting perms for: %s]" % directory
     return 0
 
 
-def full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp):
-    print "[Building and testing tpls for specs: %s]" % str(specs)
+def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
+    specs = get_specs_for_current_machine()
+    print "[Building and testing tpls for specs: "
+    for spec in specs:
+        print "{0}".format(spec)
+    print "]\n"
 
     # Use shared network mirror location otherwise create local one
     mirror_dir = get_shared_tpl_mirror_dir()

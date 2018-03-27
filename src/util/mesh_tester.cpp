@@ -17,6 +17,7 @@
 
 // Axom includes
 #include "axom_utils/FileUtilities.hpp"
+#include "axom_utils/Timer.hpp"
 
 #include "mint/FieldVariable.hpp"
 #include "mint/Mesh.hpp"
@@ -65,12 +66,16 @@ struct Input
 {
   std::string stlInput;
   std::string vtkOutput;
+
   int resolution;
+  double weldThreshold;
   InputStatus errorCode;
 
-  Input() : stlInput(""),
+  Input() :
+    stlInput(""),
     vtkOutput(""),
     resolution(0),
+    weldThreshold(1e-6),
     errorCode(SUCCESS)
   { };
 
@@ -79,22 +84,27 @@ struct Input
   void showhelp()
   {
     std::cout
-      << "Argument usage:" << std::endl <<
-      "  --help           Show this help message." << std::endl <<
-      "  --resolution N   Resolution of uniform grid.  Default N = 0."
-      << std::endl <<
-      "       Set to 1 to run the naive algorithm, without the spatial index."
-      << std::endl <<
-      "       Set to less than 1 to use the spatial index with a resolution of the"
-      << std::endl <<
-      "         cube root of the number of triangles."
-      << std::endl <<
-      "  --infile fname   The STL input file (must be specified)."
-      << std::endl      <<
-      "  --outfile fname  The VTK output file (defaults to the input file name"
-      << std::endl << "         with .vtk appended)."
+      << "Argument usage:"
+       "\n  --help           Show this help message."
+       "\n  --resolution N   Resolution of uniform grid.  Default N = 0."
+       "\n                   - Set to 1 to run the naive algorithm, without"
+       "\n                   a spatial index."
+       "\n                   - Set to less than 1 to use the spatial index"
+       "\n                   with a resolution of the cube root of the"
+       "\n                   number of triangles."
+       "\n  --infile fname   The STL input file (must be specified)."
+       "\n  --outfile fname  Output file name for collisions and welded mesh"
+       "\n                   (defaults to a file in the CWD with the input file name)"
+       "\n                   Collisions mesh will end with '.collisions.vtk' and"
+       "\n                   welded mesh will end with '.welded.vtk'."
+       "\n  --weldThresh eps Distance threshold for welding vertices. "
+       "\n                   Default: eps = 1e-6"
       << std::endl << std::endl;
   };
+
+  std::string collisionsMeshName() { return vtkOutput + ".collisions.vtk"; }
+  std::string collisionsTextName() { return vtkOutput + ".collisions.txt"; }
+  std::string weldMeshName() { return vtkOutput + ".weld.vtk"; }
 };
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
@@ -119,6 +129,7 @@ Input::Input(int argc, char** argv) :
   stlInput(""),
   vtkOutput(""),
   resolution(0),
+  weldThreshold(1e-6),
   errorCode(SUCCESS)
 {
   if (argc < 2)
@@ -128,12 +139,6 @@ Input::Input(int argc, char** argv) :
   }
   else
   {
-    std::string help = argv[1];
-    if(help == "--help")
-    {
-      errorCode = SHOWHELP;
-      return;
-    }
     for (int i = 1 ; i < argc ; /* increment i in loop */)
     {
       std::string arg = argv[i];
@@ -149,6 +154,20 @@ Input::Input(int argc, char** argv) :
       {
         vtkOutput = argv[++i];
       }
+      else if (arg == "--weldThresh")
+      {
+        weldThreshold = atof(argv[++i]);
+      }
+      else // help or unknown parameter
+      {
+        if(arg != "--help" && arg != "-h")
+        {
+          SLIC_WARNING("Unrecognized parameter: " << arg);
+        }
+
+        errorCode = SHOWHELP;
+        return;
+      }
       ++i;
     }
   }
@@ -159,18 +178,42 @@ Input::Input(int argc, char** argv) :
     return;
   }
 
-  if (vtkOutput.size() < 1)
+  // Set the output file name
   {
-    vtkOutput = stlInput;
-    vtkOutput.append(".vtk");
+    // Extract the stem of the input file, so can output files in the CWD
+    std::string inFileDir;
+    axom::utilities::filesystem::getDirName(inFileDir, stlInput);
+    std::string inFileStem = stlInput.substr(inFileDir.size() +1 );
+    std::string outFileBase = axom::utilities::filesystem::joinPath(
+      axom::utilities::filesystem::getCWD(),inFileStem);
+
+    // set output file name when not provided
+    int sz = vtkOutput.size();
+    if (sz < 1)
+    {
+      vtkOutput = outFileBase;
+      sz = vtkOutput.size();
+    }
+
+    // ensure that output file does not end with '.vtk'
+    if(sz > 4)
+    {
+      std::string ext = vtkOutput.substr(sz-4, 4);
+      if( ext == ".vtk" || ext == ".stl")
+      {
+        vtkOutput = vtkOutput.substr(0, sz-ext.size());
+      }
+    }
   }
 
-  SLIC_INFO ("Using parameter values: " << std::endl <<
-             "  resolution = " << resolution <<
-             (resolution < 1 ? " (use cube root of triangle count)" : "") <<
-             std::endl <<
-             "  infile = " << stlInput << std::endl <<
-             "  outfile = " << vtkOutput << std::endl);
+  SLIC_INFO (
+    "Using parameter values: "
+    <<"\n  resolution = " << resolution
+    << (resolution < 1 ? " (use cube root of triangle count)" : "")
+    <<"\n  weld threshold = " <<  weldThreshold
+    <<"\n  infile = " << stlInput
+    <<"\n  collisions outfile = " << collisionsMeshName()
+    <<"\n  weld outfile = " << weldMeshName()  );
 }
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
@@ -311,11 +354,9 @@ bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
 
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
-                     std::string basename)
+                     std::string filename)
 {
-  basename.append(".collisions.txt");
-
-  std::ofstream outf(basename.c_str());
+  std::ofstream outf(filename.c_str());
   if (!outf)
   {
     return false;
@@ -394,11 +435,10 @@ int main( int argc, char** argv )
   }
 
   // Read file
-  SLIC_INFO("Reading file: " <<  params.stlInput << "...\n");
+  SLIC_INFO("Reading file: '" <<  params.stlInput << "'...\n");
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( params.stlInput );
   reader->read();
-  SLIC_INFO("done\n");
 
   // Get surface mesh
   TriangleMesh* surface_mesh = new TriangleMesh( 3 );
@@ -408,38 +448,68 @@ int main( int argc, char** argv )
   delete reader;
   reader = AXOM_NULLPTR;
 
-  std::vector< std::pair<int, int> > collisions;
-  std::vector<int> degenerate;
+  SLIC_INFO(
+    "Mesh has " << surface_mesh->getMeshNumberOfNodes() << " vertices and "
+                <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
 
-  if (params.resolution == 1)
+  // Detect collisions
   {
-    // Naive method
-    collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
+    std::vector< std::pair<int, int> > collisions;
+    std::vector<int> degenerate;
+
+    axom::utilities::Timer timer(true);
+    if (params.resolution == 1)
+    {
+      // Naive method
+      collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
+    }
+    else
+    {
+      // Use a spatial index
+      quest::findTriMeshIntersections(surface_mesh,
+                                      collisions,
+                                      degenerate,
+                                      params.resolution);
+    }
+    timer.stop();
+    SLIC_INFO("Detecting intersecting triangles took "
+              << timer.elapsedTimeInSec() << " seconds.");
+
+    announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
+                         collisions.size(), degenerate.size());
+
+    saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
+
+    if (!writeAnnotatedMesh(surface_mesh, params.collisionsMeshName()) )
+    {
+      SLIC_ERROR("Couldn't write results to " << params.collisionsMeshName());
+    }
+
+    if (!writeCollisions(collisions,degenerate,params.collisionsTextName()) )
+    {
+      SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
+    }
   }
-  else
+
+  // Vertex welding
   {
-    // Use a spatial index
-    quest::findTriMeshIntersections(surface_mesh,
-                                    collisions,
-                                    degenerate,
-                                    params.resolution);
+    axom::utilities::Timer timer(true);
+
+    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+
+    timer.stop();
+    SLIC_INFO("Vertex welding took "
+              << timer.elapsedTimeInSec() << " seconds.");
+    SLIC_INFO("After welding, mesh has "
+              << surface_mesh->getMeshNumberOfNodes() << " vertices and "
+              <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
-  announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
-                       collisions.size(), degenerate.size());
-
-  saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
-
-  if (!writeAnnotatedMesh(surface_mesh, params.vtkOutput))
-  {
-    SLIC_ERROR("Couldn't write results to " << params.vtkOutput);
-  }
-
-  if (!writeCollisions(collisions, degenerate, params.stlInput))
-  {
-    SLIC_ERROR("Couldn't write results to " << params.stlInput <<
-               ".collisions.txt");
-  }
+  // Delete the mesh
+  delete surface_mesh;
+  surface_mesh = AXOM_NULLPTR;
 
   return retval;
 }

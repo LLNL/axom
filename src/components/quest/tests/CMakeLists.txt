@@ -20,6 +20,7 @@ set(quest_tests
     quest_spatial_octree.cpp
     quest_meshtester.cpp
     quest_all_nearest_neighbors.cpp
+    quest_vertex_weld.cpp
    )
 
 set(quest_tests_depends
@@ -37,13 +38,17 @@ if (ENABLE_OPENMP)
     list(APPEND quest_tests_depends openmp)
 endif()
 
+
+set(quest_vertex_weld_extra_depends mint)
+
+
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends}
+        DEPENDS_ON ${quest_tests_depends} ${${test_name}_extra_depends}
 		FOLDER axom/quest/tests
     )
     blt_add_test(
