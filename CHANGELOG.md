@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   If such a cell exists, it also finds the isoparametric coordinates of the 
   point with respect to the cell. The query supports higher order
   [mfem](http://mfem.org) meshes.
+- Adds a bounded All-Nearest-Neighbor query to Quest.  This query takes a list
+  of points locations and regions, and for each point reports the nearest point
+  in a different region that is no farther than a max search radius.
 - Added cross-product and linspace operators to the vector utilities in ``numerics``
   
 ### Changed
