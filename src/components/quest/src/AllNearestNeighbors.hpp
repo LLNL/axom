@@ -38,6 +38,10 @@ namespace axom
 namespace quest
 {
 
+enum SearchStatus {
+  NEIGHBOR_NOT_FOUND = -1
+};
+
 
 /*!
  * \brief Given a list of point locations and regions, for each point, find
@@ -49,6 +53,7 @@ namespace quest
  * \param [in] n Number of points
  * \param [in] limit Max distance for all-nearest-neighbors query
  * \param [out] neighbor Index of nearest neighbor not in the same class
+ *    (or NEIGHBOR_NOT_FOUND)
  * \param [out] sqdistance Squared distance to nearest neighbor
  * \pre x, y, z, and region have n entries
  * \pre neighbor is allocated with room for n entries
@@ -82,7 +87,7 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
   for (int i = 0 ; i < n ; ++i)
   {
     sqdistance[i] = DBL_MAX;
-    neighbor[i] = -1;
+    neighbor[i] = NEIGHBOR_NOT_FOUND;
     pmin[0] = std::min(pmin[0], x[i]);
     pmax[0] = std::max(pmax[0], x[i]);
     pmin[1] = std::min(pmin[1], y[i]);

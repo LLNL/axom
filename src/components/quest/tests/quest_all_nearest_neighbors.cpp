@@ -287,7 +287,7 @@ void writeNeigborsFile(char* fname, int* neighbors, int n)
 
 TEST(quest_all_nearnbr, file_query)
 {
-  if (fname != nullptr)
+  if (fname != AXOM_NULLPTR)
   {
     SLIC_INFO("About to read file " << fname);
 
@@ -330,7 +330,7 @@ TEST(quest_all_nearnbr, file_query)
         verify_array(bfsqdst, idxsqdst, n);
       }
 
-      if (outfname != nullptr)
+      if (outfname != AXOM_NULLPTR)
       {
         writeNeigborsFile(outfname, idxneighbor, n);
       }
@@ -352,8 +352,8 @@ using axom::slic::UnitTestLogger;
 int main(int argc, char* argv[])
 {
   int result = 0;
-  fname = nullptr;
-  outfname = nullptr;
+  fname = AXOM_NULLPTR;
+  outfname = AXOM_NULLPTR;
 
   ::testing::InitGoogleTest(&argc, argv);
 
