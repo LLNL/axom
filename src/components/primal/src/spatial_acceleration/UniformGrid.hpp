@@ -225,7 +225,7 @@ private:
    * default_res is used in each dimension.
    *****************************************************************************
    */
-  void initialize(const int * res, int default_res = 1);
+  void initialize(const int* res, int default_res = 1);
 
 protected:
 
@@ -309,7 +309,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const BoxType & bbox, const int* res)
 }
 
 template < typename T, int NDIMS >
-void UniformGrid< T, NDIMS >::initialize(const int * res, int default_res)
+void UniformGrid< T, NDIMS >::initialize(const int* res, int default_res)
 {
   // set up the grid resolution and (row-major) strides
   m_resolution[0] = (res ? res[0] : default_res);

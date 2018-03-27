@@ -38,7 +38,8 @@ namespace axom
 namespace quest
 {
 
-enum SearchStatus {
+enum SearchStatus
+{
   NEIGHBOR_NOT_FOUND = -1
 };
 
@@ -133,7 +134,8 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
         int j = bs[bj];
         if (region[i] != region[j])
         {
-          double sqdist = detail::squared_distance(x[i], y[i], z[i], x[j], y[j], z[j]);
+          double sqdist = detail::squared_distance(x[i], y[i], z[i],
+                                                   x[j], y[j], z[j]);
           if (sqdist < sqdistance[i] && sqdist < sqlimit)
           {
             sqdistance[i] = sqdist;

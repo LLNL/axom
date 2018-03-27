@@ -48,13 +48,13 @@ namespace primal
  * \return d the distance from point A to point B.  If N < 1, return 0.
  * \pre A and B are arrays of at least length N.
  */
-inline double squared_distance( const double * A,
-                                const double * B,
+inline double squared_distance( const double* A,
+                                const double* B,
                                 int N )
 {
   double retval = 0;
 
-  for (int i = 0; i < N; ++i)
+  for (int i = 0 ; i < N ; ++i)
   {
     double d = B[i] - A[i];
     retval += d * d;
