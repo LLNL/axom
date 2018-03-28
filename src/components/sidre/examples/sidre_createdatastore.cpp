@@ -36,9 +36,16 @@
  * each prepended with an underscore.
  */
 
-#include <cstring>
-
+// Axom headers
 #include "sidre/sidre.hpp"
+
+// Conduit headers
+#include "conduit.hpp"
+#include "conduit_blueprint.hpp"
+#include "conduit_relay.hpp"
+
+// C++ headers
+#include <cstring>
 
 // "using" directives to simplify code
 using namespace axom;
@@ -278,7 +285,7 @@ void save_as_blueprint(DataStore * ds) {
   // _blueprint_restructure_save_start
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify(mesh_node, info)) {
+  if (conduit::blueprint::verify("mesh", mesh_node, info)) {
     // Generate the Conduit index
     conduit::Node & index = root_node["blueprint_index"];
     conduit::blueprint::mesh::generate_index(mesh_node[mesh_name], mesh_name, 1, index[mesh_name]);
