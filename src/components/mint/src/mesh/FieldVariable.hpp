@@ -269,7 +269,12 @@ public:
    * \see Field::resize()
    */
   virtual void resize( IndexType newNumTuples ) final
-  { m_field->resize( newNumTuples ); }
+  {
+    SLIC_ERROR_IF( m_field->isExternal(),
+        "field [" << getName() << "] is pointing to an external buffer!"
+        << "resize() is not allowed!" );
+    m_field->resize( newNumTuples );
+  }
 
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.
@@ -278,7 +283,12 @@ public:
    * \see Field::reserve()
    */
   virtual void reserve( IndexType newCapacity ) final
-  { m_field->reserve( newCapacity ); }
+  {
+    SLIC_ERROR_IF( m_field->isExternal(),
+        "field [" << getName() << "] is pointing to an external buffer!"
+        << "reserve() is not allowed!" );
+    m_field->reserve( newCapacity );
+  }
 
   /*!
    * \brief Shrinks the field capacity to be equal to the number of tuples.
@@ -286,7 +296,12 @@ public:
    * \see Field::shrink()
    */
   virtual void shrink( ) final
-  { m_field->shrink(); }
+  {
+    SLIC_ERROR_IF( m_field->isExternal(),
+        "field [" << getName() << "] is pointing to an external buffer!"
+        << "shrink() is not allowed!" );
+    m_field->shrink();
+  }
 
 /// @}
 
