@@ -169,8 +169,8 @@ public:
     m_mesh->getOrigin( origin );
     IndexType size[3];
     m_mesh->getExtentSize( size );
-    double* t =
-      Field::getDataPtr< double >( m_mesh->getNodeFieldData().getField(0) );
+    double* t = m_mesh->getFieldPtr< double >( "temperature",
+                                                mint::NODE_CENTERED );
 
     IndexType idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
@@ -198,9 +198,9 @@ public:
               const std::string& path )
   {
     const IndexType num_nodes = m_mesh->getMeshNumberOfNodes();
-    double* new_temp = new double[num_nodes];
-    double* prev_temp = Field::getDataPtr< double >(
-            m_mesh->getNodeFieldData().getField( "temperature" ) );
+    double* new_temp  = new double[num_nodes];
+    double* prev_temp = m_mesh->getFieldPtr< double >( "temperature",
+                                                        mint::NODE_CENTERED );
 
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */
@@ -351,8 +351,7 @@ private:
     }
 
     UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
-    const int num_nodes = mesh->getMeshNumberOfNodes();
-    mesh->getNodeFieldData().createField< double >( "temperature", num_nodes );
+    mesh->createField< double >( "temperature", mint::NODE_CENTERED );
     return mesh;
   }
 

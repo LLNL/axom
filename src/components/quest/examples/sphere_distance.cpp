@@ -330,19 +330,16 @@ void compute_norms( axom::mint::UniformMesh* umesh,
   const int nnodes = umesh->getNumberOfNodes();
 
   // STEP 0: grab field pointers
-  mint::FieldData& PD = umesh->getNodeFieldData();
-
-  double * phi_computed  =
-      mint::Field::getDataPtr< double >( PD.getField( "phi" ) );
-
-  double * phi_expected  =
-      mint::Field::getDataPtr< double >( PD.getField( "expected_phi" ) );
+  double* phi_computed = umesh->getFieldPtr< double >( "phi",
+                                                       mint::NODE_CENTERED );
+  double* phi_expected = umesh->getFieldPtr< double >( "expected_phi",
+                                                       mint::NODE_CENTERED  );
 
   SLIC_ASSERT( phi_computed != AXOM_NULLPTR );
   SLIC_ASSERT( phi_expected != AXOM_NULLPTR );
 
   // STEP 1: add field to store erroraddCell
-  double* error = PD.createField< double >( "error", nnodes );
+  double* error = umesh->createField< double >( "error", mint::NODE_CENTERED );
   SLIC_ASSERT( error != AXOM_NULLPTR );
 
   // STEP 2: loop over nodes and calculate norms
@@ -383,8 +380,8 @@ void expected_phi(axom::mint::UniformMesh* umesh)
 
   // STEP 1: Add node field to stored exact distance field.
   const int nnodes    = umesh->getNumberOfNodes();
-  mint::FieldData& PD = umesh->getNodeFieldData();
-  double* phi         = PD.createField< double >( "expected_phi", nnodes  );
+  double* phi         = umesh->createField< double >( "expected_phi",
+                                                      mint::NODE_CENTERED  );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -412,8 +409,8 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
   // STEP 1: Setup node-centered signed distance field on uniform mesh
   const int nnodes    = umesh->getNumberOfNodes();
-  mint::FieldData& PD = umesh->getNodeFieldData();
-  double* phi         = PD.createField< double >("n2_phi", nnodes );
+  double* phi         = umesh->createField< double >( "n2_phi",
+                                                       mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -474,8 +471,8 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
   const int nnodes    = umesh->getNumberOfNodes();
-  mint::FieldData& PD = umesh->getNodeFieldData( );
-  double* phi         = PD.createField< double >( "phi", nnodes );
+  double* phi         = umesh->createField< double >( "phi",
+                                                      mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -496,9 +493,7 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  const int ncells    = umesh->getNumberOfCells();
-  mint::FieldData& CD = umesh->getCellFieldData();
-  int* bidx           = CD.createField< int >( "BucketID", ncells );
+  int* bidx = umesh->createField< int >( "BucketID", mint::CELL_CENTERED );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();

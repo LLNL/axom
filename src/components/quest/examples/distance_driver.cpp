@@ -261,9 +261,8 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  mint::FieldData& CD = surface_mesh->getCellFieldData( );
-  const int ncells    = surface_mesh->getMeshNumberOfCells( );
-  int* bidx           = CD.createField< int >( "BucketID", ncells );
+  int* bidx = surface_mesh->createField< int >( "BucketID",
+                                                mint::CELL_CENTERED );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -275,15 +274,17 @@ void distance_field( axom::mint::Mesh * surface_mesh,
 
   } // END for all objects
 
-  axom::mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
+  mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
 #endif
 
-  const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
+  const mint::IndexType nnodes = umesh->getNumberOfNodes();
 
-  mint::FieldData& PD = umesh->getNodeFieldData();
-  double* phi         = PD.createField< double >( "phi", nnodes );
-  int* nbuckets       = PD.createField< int >( "nbuckets", nnodes );
-  int* ntriangles     = PD.createField< int >( "ntriangles", nnodes );
+  double* phi         = umesh->createField< double >( "phi",
+                                                      mint::NODE_CENTERED );
+  int* nbuckets       = umesh->createField< int >( "nbuckets",
+                                                   mint::NODE_CENTERED );
+  int* ntriangles     = umesh->createField< int >( "ntriangles",
+                                                   mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
   SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
   SLIC_ASSERT( ntriangles != AXOM_NULLPTR );

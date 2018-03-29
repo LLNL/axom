@@ -15,13 +15,17 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MESH_HXX_
-#define MESH_HXX_
+#ifndef MINT_MESH_HPP_
+#define MINT_MESH_HPP_
 
-#include "axom/Macros.hpp"
-#include "mint/FieldData.hpp"
-#include "mint/MeshType.hpp"
-#include "mint/config.hpp"
+#include "axom/Macros.hpp"            // for Axom macros
+
+#include "mint/config.hpp"            // for mint compile-time type definitions
+#include "mint/FieldAssociation.hpp"  // for FieldAssociation enum
+#include "mint/FieldData.hpp"         // for mint::FieldData
+#include "mint/MeshType.hpp"          // for MeshType enum and property traits
+
+#include "slic/slic.hpp"              // for SLIC macros
 
 
 namespace axom
@@ -131,140 +135,155 @@ public:
   { return m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH; }
 
   /*!
-   * \brief Returns the FieldData instance associated with cell-centered fields.
-   * \return fd pointer to the FieldData instance for cell-centered fields.
-   * \post fd != AXOM_NULLPTR
+   * \brief Checks if this Mesh instance is associated with a Sidre Group.
+   * \return status true if the Mesh is associated with a group in a Sidre
+   *  hierarchy, else, false.
    */
-  inline FieldData& getCellFieldData()
-  { return m_cell_data; }
+  inline bool hasSidreGroup( ) const;
+
+/// \name Methods to Create, Access & Remove Fields from a Mesh
+/// @{
 
   /*!
-   * \brief Returns the FieldData instance associated with cell-centered fields.
-   * \return fd pointer to the FieldData instance for cell-centered fields.
+   * \brief Returns const pointer to the FieldData instance with the specified
+   *  mesh field association, e.g., NODE_CENTERED, CELL_CENTERED, etc.
+   *
+   * \param [in] association the specified mesh field association
+   * \return fd pointer to the requested FieldData instance
+   *
+   * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
    * \post fd != AXOM_NULLPTR
+   *
+   * \see FieldAssociation
+   * \see FieldData
    */
-  inline const FieldData& getCellFieldData() const
-  { return m_cell_data; }
+  inline const FieldData* getFieldData( int association ) const;
 
   /*!
-   * \brief Returns the FieldData instance associated with face-centered fields.
-   * \return fd pointer to the FieldData instance for face-centered fields.
-   * \post fd != AXOM_NULLPTR
+   * \brief Check if a field with the given name and association exists.
+   *
+   * \param [in] name the name of the field in query.
+   * \param [in] association the field association, e.g., NODE_CENTERED, etc.
+   *
+   * \return status true if the field exists, else, false.
+   *
+   * \pre name.empty()==false
+   * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   *
+   * \see FieldAssociation
    */
-  inline FieldData& getFaceFieldData()
-  { return m_face_data; }
+  inline bool hasField( const std::string& name, int association ) const;
 
   /*!
-   * \brief Returns the FieldData instance associated with face-centered fields.
-   * \return fd pointer to the FieldData instance for face-centered fields.
-   * \post fd != AXOM_NULLPTR
+   * \brief Creates a new field with the given name and specified mesh field
+   *  association, e.g., NODE_CENTERED, CELL_CENTERED, etc.
+   *
+   * \param [in] name the name of the new field.
+   * \param [in] association the mesh field association.
+   * \param [in] num_components number of components of the field (optional).
+   * \param [in] storeInSidre indicates whether to store the field in the
+   *  corresponding Sidre group (optional).
+   * \param [in] capacity
+   *
+   * \return ptr raw pointer to the data buffer of the new field.
+   *
+   * \pre name.empty() == false
+   * \pre hasField( name ) == false
+   * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   * \post ptr != AXOM_NULLPTR
+   * \post hasField( name ) == true
+   *
+   * \see FieldAssociation
    */
-  inline const FieldData& getFaceFieldData() const
-  { return m_face_data; }
+  template < typename T >
+  inline T* createField( const std::string& name,
+                         int association,
+                         IndexType num_components=1,
+                         bool storeInSidre=true,
+                         IndexType capacity=Array< T >::USE_DEFAULT );
 
   /*!
-   * \brief Returns the FieldData instance associated with edge-centered fields.
-   * \return fd pointer to the FieldData instance for edge-centered fields.
-   * \post fd != AXOM_NULLPTR
+   * \brief Creates a new field from an external buffer that has the given name
+   *  and specified mesh field association, e.g., NODE_CENTERED, CELL_CENTERED,
+   *  etc.
+   *
+   * \param [in] name the name of the new field.
+   * \param [in] association the mesh field association.
+   * \param [in] data pointer to the external data buffer.
+   * \param [in] num_components number of components of the field (optional).
+   *
+   * \return ptr raw pointer to the data buffer of the new field.
+   *
+   * \pre name.empty() == false
+   * \pre hasField( name ) == false
+   * \pre data != AXOM_NULLPTR
+   * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   * \post ptr != AXOM_NULLPTR
+   * \post ptr == data
+   * \post hasField( name ) == true
+   *
+   * \see FieldAssociation
    */
-  inline FieldData& getEdgeFieldData()
-  { return m_edge_data; }
+  template < typename T >
+  inline T* createField( const std::string& name,
+                         int association,
+                         T* data,
+                         IndexType num_components=1 );
 
   /*!
-   * \brief Returns the FieldData instance associated with edge-centered fields.
-   * \return fd pointer to the FieldData instance for edge-centered fields.
-   * \post fd != AXOM_NULLPTR
+   * \brief Removes the field with the given name and specified association.
+   *
+   * \param [in] name the name of the field to remove.
+   * \param [in] association the mesh field association.
+   *
+   * \return status true if the field is removed successfully, else, false.
+   *
+   * \pre name.emtpy() == false
+   * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   *
+   * \see FieldAssociation
    */
-  inline const FieldData& getEdgeFieldData() const
-  { return m_edge_data; }
+  inline bool removeField( const std::string& name, int association );
 
   /*!
-   * \brief Returns the FieldData instance associated with node-centered fields.
-   * \return fd pointer to the FieldData instance for node-centered fields.
-   * \post fd != AXOM_NULLPTR
+   * \brief Returns pointer to buffer of the field with the given ane and
+   *  specified mesh field association.
+   *
+   * \param [in] name the name of the requested field.
+   * \param [in] association the mesh field association.
+   * \param [out] num_components the number of components per tuple (optional).
+   *
+   * \return ptr raw pointer to the data buffer of the requested field.
+   *
+   * \pre name.empty() == false
+   * \pre hasField( name )
+   * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   *
+   * \see FieldAssociation
    */
-  inline FieldData& getNodeFieldData()
-  { return m_node_data; }
+  /// @{
 
-  /*!
-   * \brief Returns the FieldData instance associated with node-centered fields.
-   * \return fd pointer to the FieldData instance for node-centered fields.
-   * \post fd != AXOM_NULLPTR
-   */
-  inline const FieldData& getNodeFieldData() const
-  { return m_node_data; }
+  template < typename T >
+  inline T* getFieldPtr( const std::string& name,
+                         int association,
+                         IndexType& num_components );
 
-  /*!
-   * \brief Add a cell centered field to the mesh.
-   * \param name the name of the field.
-   * \param num_components the number of components per value.
-   * \tparam T the type of field to add.
-   * \return true iff the field was successfully added.
-   */
-//  template < typename FieldType >
-//  Field * addCellField( const std::string& name, int num_components=1 )
-//  {
-//    int size = getMeshNumberOfCells();
-//    int capacity = getMeshCellCapacity();
-//    double resize_ratio = getMeshCellResizeRatio();
-//    return m_cell_data.addField< FieldType >( name, size, capacity,
-//                                              num_components,
-//                                              resize_ratio );
-//  }
-//
-//  /*!
-//   * \brief Add a face centered field to the mesh.
-//   * \param name the name of the field.
-//   * \param num_components the number of components per value.
-//   * \tparam T the type of field to add.
-//   * \return true iff the field was successfully added.
-//   */
-//  template < typename FieldType >
-//  Field * addFaceField( const std::string& name, int num_components=1 )
-//  {
-//    int size = getMeshNumberOfFaces();
-//    int capacity = getMeshCellCapacity();
-//    double resize_ratio = getMeshCellResizeRatio();
-//    return m_face_data.addField< FieldType >( name, size, capacity,
-//                                              num_components,
-//                                              resize_ratio );
-//  }
-//
-//  /*!
-//   * \brief Add a edge centered field to the mesh.
-//   * \param name the name of the field.
-//   * \param num_components the number of components per value.
-//   * \tparam T the type of field to add.
-//   * \return true iff the field was successfully added.
-//   */
-//  template < typename FieldType >
-//  Field * addEdgeField( const std::string& name, int num_components=1 )
-//  {
-//    int size = getMeshNumberOfEdges();
-//    int capacity = getMeshCellCapacity();
-//    double resize_ratio = getMeshCellResizeRatio();
-//    return m_edge_data.addField< FieldType >( name, size, capacity,
-//                                              num_components,
-//                                              resize_ratio );
-//  }
-//
-//  /*!
-//   * \brief Add a node centered field to the mesh.
-//   * \param name the name of the field.
-//   * \param num_components the number of components per value.
-//   * \tparam T the type of field to add.
-//   * \return true iff the field was successfully added.
-//   */
-//  template < typename FieldType >
-//  Field * addNodeField( const std::string& name, int num_components=1 )
-//  {
-//    int size = getMeshNumberOfNodes();
-//    int capacity = getMeshNodeCapacity();
-//    double resize_ratio = getMeshNodeResizeRatio();
-//    return m_node_data.addField< FieldType >( name, size, capacity,
-//                                              num_components,
-//                                              resize_ratio );
-//  }
+  template < typename T >
+  inline T* getFieldPtr( const std::string& name,
+                         int association );
+
+  template < typename T >
+  inline const T* getFieldPtr( const std::string& name,
+                               int association,
+                               IndexType& num_components ) const;
+
+  template < typename T >
+  inline const T* getFieldPtr( const std::string& name,
+                               int association ) const;
+
+  /// @}
+
+/// @}
 
   /// \name Virtual API
   /// @{
@@ -277,12 +296,6 @@ public:
    */
   virtual IndexType getMeshNumberOfNodes() const = 0;
 
-//
-//  virtual IndexType getMeshNodeCapacity() const = 0;
-//
-//
-//  virtual double getMeshNodeResizeRatio() const = 0;
-
   /*!
    * \brief Returns the total number of cells in the mesh.
    * \return numCells the total number of cells.
@@ -290,18 +303,6 @@ public:
    * \warning This is a virtual method -- do not call inside a loop.
    */
   virtual IndexType getMeshNumberOfCells() const = 0;
-
-//
-//  virtual IndexType getMeshCellCapacity() const = 0;
-//
-//
-//  virtual double getMeshCellResizeRatio() const = 0;
-//
-//
-//  virtual IndexType getMeshNumberOfFaces() const = 0;
-//
-//
-//  virtual IndexType getMeshNumberOfEdges() const = 0;
 
   /*!
    * \brief Returns the number of nodes for the given cell.
@@ -360,12 +361,29 @@ protected:
   int m_block_idx;      /*! the Block ID of the mesh */
   int m_part_idx;       /*! the partition ID of the mesh */
 
-  FieldData m_cell_data; /*! FieldData instance for cell-centered fields. */
-  FieldData m_face_data; /*! FieldData instance for face-centered fields. */
-  FieldData m_edge_data; /*! FieldData instance for edge-centered fields. */
-  FieldData m_node_data; /*! FieldData instance for node-centered fields. */
-
 private:
+
+  /*!
+   * \brief Returns the number of tuples for the given mesh field association.
+   * \param [in] association the mesh field association, e.g., NODE_CENTERED
+   * \return N the number of tuples
+   * \post N >= 0
+   */
+  inline IndexType getNumTuples( int association ) const;
+
+  /*!
+   * \brief Allocates the FieldData internal data-structures.
+   * \note Helper method that is called from the constructor.
+   */
+  void allocateFieldData( );
+
+  /*!
+   * \brief Deallocates the FieldData internal data-structures.
+   * \note Helper method that is called by the destructor.
+   */
+  void deallocateFieldData( );
+
+  FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
 
 #ifdef MINT_USE_SIDRE
   sidre::Group * m_group;
@@ -388,9 +406,163 @@ private:
   double* m_node_resize_ratio;    /*! The node resize ratio */
 
 
-  DISABLE_COPY_AND_ASSIGNMENT(Mesh);
-  DISABLE_MOVE_AND_ASSIGNMENT(Mesh);
+  DISABLE_COPY_AND_ASSIGNMENT( Mesh );
+  DISABLE_MOVE_AND_ASSIGNMENT( Mesh );
 };
+
+//------------------------------------------------------------------------------
+//  IMPLEMENTATION OF TEMPLATE & IN-LINE METHODS
+//------------------------------------------------------------------------------
+
+inline bool Mesh::hasSidreGroup( ) const
+{
+#ifdef MINT_USE_SIDRE
+  return ( m_group != AXOM_NULLPTR );
+#else
+  return false;
+#endif
+}
+
+//------------------------------------------------------------------------------
+inline IndexType Mesh::getNumTuples( int association ) const
+{
+  IndexType num_tuples = 0;
+
+  switch ( association )
+  {
+  case NODE_CENTERED:
+    num_tuples = *m_num_nodes;
+    break;
+  case CELL_CENTERED:
+    num_tuples = *m_num_cells;
+    break;
+  case FACE_CENTERED:
+    num_tuples = *m_num_faces;
+    break;
+  default:
+    SLIC_ASSERT( association==EDGE_CENTERED );
+    num_tuples = *m_num_edges;
+  } // END switch
+
+  return ( num_tuples );
+}
+
+//------------------------------------------------------------------------------
+inline const FieldData* Mesh::getFieldData( int association ) const
+{
+  SLIC_ERROR_IF( association < 0 || association >= NUM_FIELD_ASSOCIATIONS,
+                  "invalid field association [" << association << "]" );
+  SLIC_ERROR_IF( m_mesh_fields[ association ]==AXOM_NULLPTR,
+              "null field data object w/association [" << association << "]" );
+  return m_mesh_fields[ association ];
+}
+
+//------------------------------------------------------------------------------
+inline bool Mesh::hasField( const std::string& name, int association ) const
+{
+  const FieldData* fd = getFieldData( association );
+  SLIC_ASSERT( fd != AXOM_NULLPTR );
+  return fd->hasField( name );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline T* Mesh::createField( const std::string& name,
+                             int association,
+                             IndexType num_components,
+                             bool storeInSidre,
+                             IndexType capacity )
+{
+  FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
+  SLIC_ASSERT( fd != AXOM_NULLPTR );
+
+  IndexType num_tuples = getNumTuples( association );
+  T* ptr = fd->createField< T >( name, num_tuples, num_components,
+                                 storeInSidre, capacity );
+  SLIC_ASSERT( ptr != AXOM_NULLPTR );
+
+  return ( ptr );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline T* Mesh::createField( const std::string& name,
+                             int association,
+                             T* data,
+                             IndexType num_components )
+{
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+
+  FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
+  SLIC_ASSERT( fd != AXOM_NULLPTR );
+
+  IndexType num_tuples = getNumTuples( association );
+  T* ptr = fd->createField< T >( name, data, num_tuples, num_components );
+  SLIC_ASSERT( ptr != AXOM_NULLPTR );
+
+  return ( ptr );
+}
+
+//------------------------------------------------------------------------------
+inline bool Mesh::removeField( const std::string& name, int association )
+{
+  bool status   = false;
+  FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
+
+  const bool hasField = fd->hasField( name );
+  SLIC_WARNING_IF( !hasField, "field [" << name << "] does not exist!" );
+
+  if ( hasField )
+  {
+    fd->removeField( name );
+    status = true;
+  }
+
+  return ( status );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline T* Mesh::getFieldPtr( const std::string& name,int association )
+{
+  IndexType num_components = 0;
+  return getFieldPtr< T >( name, association, num_components );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline T* Mesh::getFieldPtr( const std::string& name,
+                             int association,
+                             IndexType& num_components )
+{
+  const T* ptr = getFieldPtr< T >( name, association, num_components );
+  return ( const_cast< T* >( ptr ) );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline const T* Mesh::getFieldPtr( const std::string& name,
+                                   int association ) const
+{
+  IndexType num_components = 0;
+  return getFieldPtr< T >( name, association, num_components );
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline const T* Mesh::getFieldPtr( const std::string& name,
+                             int association,
+                             IndexType& num_components ) const
+{
+  const FieldData* fd = getFieldData( association );
+  SLIC_ASSERT( fd != AXOM_NULLPTR );
+
+  IndexType num_tuples = 0;
+  const T* ptr = fd->getFieldPtr< T >( name, num_tuples, num_components );
+  SLIC_ASSERT( ptr != AXOM_NULLPTR );
+
+  return ( ptr );
+}
 
 } /* namespace mint */
 } /* namespace axom */

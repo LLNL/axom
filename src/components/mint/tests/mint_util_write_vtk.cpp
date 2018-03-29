@@ -94,9 +94,10 @@ void create_scalar_data( Mesh* mesh )
   double* double_ptr = AXOM_NULLPTR;
   int*    int_ptr    = AXOM_NULLPTR;
 
-  mint::FieldData& ND = mesh->getNodeFieldData( );
-  double_ptr = ND.createField< double >( "node_scalars_double",mesh_num_nodes );
-  int_ptr = ND.createField< int >( "node_scalars_int", mesh_num_nodes );
+  double_ptr = mesh->createField< double >( "node_scalars_double",
+                                            mint::NODE_CENTERED );
+  int_ptr = mesh->createField< int >( "node_scalars_int",
+                                      mint::NODE_CENTERED );
 
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
@@ -120,9 +121,11 @@ void create_scalar_data( Mesh* mesh )
     int_ptr[ idx ] = static_cast<int>(temp);
   }
 
-  mint::FieldData& CD = mesh->getCellFieldData();
-  double_ptr = CD.createField< double >("cell_scalars_double",mesh_num_cells );
-  int_ptr    = CD.createField< int >( "cell_scalars_int", mesh_num_cells );
+  double_ptr = mesh->createField< double >( "cell_scalars_double",
+                                            mint::CELL_CENTERED  );
+
+  int_ptr    = mesh->createField< int >( "cell_scalars_int",
+                                         mint::CELL_CENTERED );
 
   for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
@@ -148,11 +151,14 @@ void create_vector_data( Mesh* mesh )
   int*    int_ptr3    = AXOM_NULLPTR;
   int*    int_ptr2    = AXOM_NULLPTR;
 
-  mint::FieldData& ND = mesh->getNodeFieldData();
-  double_ptr3 = ND.createField< double >("node_vectors_3double",num_nodes,3 );
-  int_ptr3    = ND.createField< int >( "node_vectors_3int",num_nodes,3 );
-  double_ptr2 = ND.createField< double >( "node_vectors_2double",num_nodes,2 );
-  int_ptr2    = ND.createField< int >( "node_vectors_2int", num_nodes, 2 );
+  double_ptr3 = mesh->createField< double >( "node_vectors_3double",
+                                             mint::NODE_CENTERED, 3 );
+  int_ptr3    = mesh->createField< int >( "node_vectors_3int",
+                                          mint::NODE_CENTERED, 3 );
+  double_ptr2 = mesh->createField< double >( "node_vectors_2double",
+                                             mint::NODE_CENTERED, 2);
+  int_ptr2    =  mesh->createField< int >( "node_vectors_2int",
+                                           mint::NODE_CENTERED, 2 );
 
   for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
@@ -190,11 +196,14 @@ void create_vector_data( Mesh* mesh )
     int_ptr2[ 2 * idx + 1 ] = static_cast<int>(v2);
   }
 
-  mint::FieldData& CD = mesh->getCellFieldData();
-  double_ptr3 = CD.createField< double >( "cell_vectors_3double",num_cells,3 );
-  int_ptr3    = CD.createField< int >( "cell_vectors_3int", num_cells, 3 );
-  double_ptr2 = CD.createField< double >( "cell_vectors_2double", num_cells,2);
-  int_ptr2    = CD.createField< int >( "cell_vectors_2int", num_cells, 2 );
+  double_ptr3 = mesh->createField< double >( "cell_vectors_3double",
+                                              mint::CELL_CENTERED,3 );
+  int_ptr3    = mesh->createField< int >( "cell_vectors_3int",
+                                          mint::CELL_CENTERED, 3 );
+  double_ptr2 = mesh->createField< double >( "cell_vectors_2double",
+                                             mint::CELL_CENTERED,2);
+  int_ptr2    = mesh->createField< int >( "cell_vectors_2int",
+                                          mint::CELL_CENTERED, 2 );
 
   for ( int idx = 0 ; idx < num_cells ; ++idx )
   {
@@ -229,9 +238,10 @@ void create_multidim_data( Mesh* mesh )
   double* double_ptr = AXOM_NULLPTR;
   int*    int_ptr    = AXOM_NULLPTR;
 
-  mint::FieldData& ND = mesh->getNodeFieldData();
-  double_ptr = ND.createField< double >( "node_multidim_double", num_nodes, 4 );
-  int_ptr    = ND.createField< int >( "node_multidim_int", num_nodes, 4 );
+  double_ptr = mesh->createField< double >( "node_multidim_double",
+                                            mint::NODE_CENTERED, 4 );
+  int_ptr    = mesh->createField< int >( "node_multidim_int",
+                                         mint::NODE_CENTERED, 4 );
 
   for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
@@ -266,9 +276,10 @@ void create_multidim_data( Mesh* mesh )
     int_ptr[4 * idx + 3] = static_cast<int>(v4);
   }
 
-  mint::FieldData& CD = mesh->getCellFieldData();
-  double_ptr = CD.createField< double >( "cell_multidim_double", num_cells, 4 );
-  int_ptr    = CD.createField< int >( "cell_multidim_int", num_cells, 4 );
+  double_ptr = mesh->createField< double >( "cell_multidim_double",
+                                            mint::CELL_CENTERED, 4 );
+  int_ptr    = mesh->createField< int >( "cell_multidim_int",
+                                         mint::CELL_CENTERED, 4 );
 
   for ( int idx = 0 ; idx < num_cells ; ++idx )
   {
@@ -453,7 +464,7 @@ void check_multidim_data( const Field* field, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre field_data != AXOM_NULLPTR
  */
-void check_fieldData( const FieldData& field_data, std::ifstream& file )
+void check_fieldData( const FieldData* field_data, std::ifstream& file )
 {
   std::set< std::string > fields_read;
   std::string type, name, d_type;
@@ -462,10 +473,10 @@ void check_fieldData( const FieldData& field_data, std::ifstream& file )
   {
     file >> type >> name >> d_type;
 
-    if ( field_data.hasField( name ) )
+    if ( field_data->hasField( name ) )
     {
       fields_read.insert( name );
-      const Field* field = field_data.getField( name );
+      const Field* field = field_data->getField( name );
 
       if ( d_type == "double" )
       {
@@ -498,10 +509,10 @@ void check_fieldData( const FieldData& field_data, std::ifstream& file )
       ASSERT_NE( bracket_pos, std::string::npos) << name;
       std::string true_name = name.substr( 0, bracket_pos );
       EXPECT_EQ( name.substr(bracket_pos), "[0]" );
-      ASSERT_TRUE( field_data.hasField( true_name ) ) << true_name;
+      ASSERT_TRUE( field_data->hasField( true_name ) ) << true_name;
       fields_read.insert( true_name );
 
-      const Field* field = field_data.getField( true_name );
+      const Field* field = field_data->getField( true_name );
 
       if ( d_type == "double" )
       {
@@ -530,11 +541,11 @@ void check_fieldData( const FieldData& field_data, std::ifstream& file )
   }
 
   EXPECT_EQ( static_cast< int >( fields_read.size() ),
-             field_data.getNumFields() );
+             field_data->getNumFields() );
   for ( std::set< std::string >::iterator it = fields_read.begin() ;
         it != fields_read.end() ; ++it )
   {
-    EXPECT_TRUE( field_data.hasField( *it ) );
+    EXPECT_TRUE( field_data->hasField( *it ) );
   }
 }
 
@@ -554,13 +565,13 @@ void check_data( const Mesh* mesh, std::ifstream& file )
     if ( data_type == "POINT_DATA" )
     {
       EXPECT_EQ( data_size, mesh->getMeshNumberOfNodes() );
-      const FieldData& node_data = mesh->getNodeFieldData();
+      const FieldData* node_data = mesh->getFieldData( mint::NODE_CENTERED );
       check_fieldData( node_data, file );
     }
     else if ( data_type == "CELL_DATA" )
     {
       EXPECT_EQ( data_size, mesh->getMeshNumberOfCells() );
-      const FieldData& cell_data = mesh->getCellFieldData();
+      const FieldData* cell_data = mesh->getFieldData( mint::CELL_CENTERED );
       check_fieldData( cell_data, file );
     }
   }

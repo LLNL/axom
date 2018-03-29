@@ -2761,23 +2761,18 @@ private:
 
 private:
 
-  int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
+  int* addIntField(DebugMesh* mesh, const std::string& name,
+                   int AXOM_NOT_USED(size) ) const
   {
-    const mint::IndexType nnodes = mesh->getNumberOfNodes();
-    mint::FieldData& ND          = mesh->getNodeFieldData();
-
-    int* fld = ND.createField< int >( name, nnodes );
+    int* fld = mesh->createField< int >( name, mint::NODE_CENTERED );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }
 
   double* addRealField(DebugMesh* mesh, const std::string& name,
-                       int size) const
+                       int AXOM_NOT_USED(size) ) const
   {
-    const mint::IndexType nnodes = mesh->getNumberOfNodes();
-    mint::FieldData& ND          = mesh->getNodeFieldData();
-
-    double* fld = ND.createField< double >( name, nnodes );
+    double* fld = mesh->createField< double >( name, mint::NODE_CENTERED );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }

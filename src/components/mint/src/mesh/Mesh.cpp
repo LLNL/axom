@@ -20,7 +20,6 @@
 // axom includes
 #include "axom/Types.hpp"
 #include "mint/FieldData.hpp"
-#include "mint/FieldAssociation.hpp"
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"
@@ -41,10 +40,6 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
   m_type( type ),
   m_block_idx( blockId ),
   m_part_idx( partId ),
-  m_cell_data( CELL_CENTERED ),
-  m_face_data( FACE_CENTERED ),
-  m_edge_data( EDGE_CENTERED ),
-  m_node_data( NODE_CENTERED ),
 #ifdef MINT_USE_SIDRE
   m_group( AXOM_NULLPTR ),
 #endif
@@ -87,10 +82,6 @@ Mesh::Mesh( sidre::Group* group ) :
   m_type( 0 ),
   m_block_idx( 0 ),
   m_part_idx( 0 ),
-  m_cell_data( CELL_CENTERED ),
-  m_face_data( FACE_CENTERED ),
-  m_edge_data( EDGE_CENTERED ),
-  m_node_data( NODE_CENTERED ),
   m_group( group ),
   m_num_cells( AXOM_NULLPTR ),
   m_cell_capacity( AXOM_NULLPTR ),
@@ -178,10 +169,6 @@ Mesh::Mesh( sidre::Group* group, int ndims, int type, int blockId,
   m_type( type ),
   m_block_idx( blockId ),
   m_part_idx( partId ),
-  m_cell_data( CELL_CENTERED ),
-  m_face_data( FACE_CENTERED ),
-  m_edge_data( EDGE_CENTERED ),
-  m_node_data( NODE_CENTERED ),
   m_group( group ),
   m_num_cells( AXOM_NULLPTR ),
   m_cell_capacity( AXOM_NULLPTR ),
@@ -275,7 +262,51 @@ Mesh::~Mesh()
   delete m_node_resize_ratio;
 }
 
+//------------------------------------------------------------------------------
+void Mesh::allocateFieldData( )
+{
+#ifdef MINT_USE_SIDRE
+  if ( hasSidreGroup() )
+  {
+    sidre::Group* fields_group = ( m_group->hasChildGroup("fields") ?
+            m_group->getGroup( "fields") : m_group->createGroup( "fields") );
+    SLIC_ASSERT( fields_group != AXOM_NULLPTR );
+    SLIC_ASSERT( fields_group->getParent()==m_group );
 
+    for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
+    {
+      m_mesh_fields[ i ] = new mint::FieldData( i, fields_group );
+    }
+  }
+  else
+  {
+    for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
+    {
+       m_mesh_fields[ i ] = new mint::FieldData( i );
+    }
+  }
+#else
+  for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
+  {
+    m_mesh_fields[ i ] = new mint::FieldData( i );
+  }
+#endif
+
+}
+
+//------------------------------------------------------------------------------
+void Mesh::deallocateFieldData( )
+{
+
+  for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
+  {
+    SLIC_ASSERT( m_mesh_fields[ i ] != AXOM_NULLPTR );
+
+    delete m_mesh_fields[ i ];
+    m_mesh_fields[ i ] = AXOM_NULLPTR;
+  }
+
+}
 
 } /* namespace mint */
 } /* namespace axom */

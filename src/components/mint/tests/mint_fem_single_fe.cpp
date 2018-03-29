@@ -861,10 +861,7 @@ void check_interp( double TOL=1.e-9 )
   double* wgts = new double[ nnodes ];
 
   // STEP 1: setup a nodal field to interpolate
-  // Note: I don't know why we need to cast as m as a Mesh to add a field
-  // it works just fine other places. -BC
-  mint::FieldData& ND = m->getNodeFieldData();
-  double* f = ND.createField< double >( "foo", nnodes );
+  double* f = m-> template createField< double >( "foo", mint::NODE_CENTERED );
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 
