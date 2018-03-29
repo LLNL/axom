@@ -31,20 +31,28 @@ format:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
-  
+
+#declarations:
+#  - namespace: axom
+#    declarations:
+#    - namespace: quest
+#      declarations:
 functions:
-- options:
-    # Change the default template for Fortran functions to include the library name.
-    F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
-- decl: void initialize( MPI_Comm comm, const std::string& fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels )
-- decl: void finalize()
+      - options:
+          # Change the default template for Fortran functions to include the library name.
+          F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+      - decl: void initialize( MPI_Comm comm, const std::string& fileName,
+                               bool requiresDistance, int ndims, int maxElements,
+                               int maxLevels )
 
-- decl: double distance( double x, double y, double z )
-##- decl: void distance( const double* xyz, double* dist, int npoints )
+      - decl: double distance(double x, double y, double z)
+##    - decl: void distance( const double* xyz, double* dist, int npoints )
 
-- decl: int inside( double x, double y, double z )
-##- decl: void inside( const double* xyz, int* in, int npoints )
+      - decl: int inside(double x, double y, double z)
+##    - decl: void inside( const double* xyz, int* in, int npoints )
 
-- decl: void mesh_min_bounds( double* coords+dimension+intent(OUT) )
-- decl: void mesh_max_bounds( double* coords+dimension+intent(OUT) )
-- decl: void mesh_center_of_mass( double* coords+dimension+intent(OUT) )
+      - decl: void mesh_min_bounds(double* coords+dimension+intent(OUT))
+      - decl: void mesh_max_bounds(double* coords+dimension+intent(OUT))
+      - decl: void mesh_center_of_mass(double* coords+dimension+intent(OUT))
+
+      - decl: void finalize()

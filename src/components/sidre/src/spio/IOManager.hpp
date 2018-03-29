@@ -201,8 +201,6 @@ public:
             bool preserve_contents = false,
             bool use_scr = false);
 
-public:
-
   /**
    * \brief Finds conduit relay protocol corresponding to a sidre protocol
    *

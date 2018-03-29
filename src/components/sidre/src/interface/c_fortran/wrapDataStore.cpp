@@ -59,6 +59,16 @@ SIDRE_group* SIDRE_datastore_get_root(SIDRE_datastore* self)
 // splicer end class.DataStore.method.get_root
 }
 
+size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore* self)
+{
+// splicer begin class.DataStore.method.get_num_buffers
+  const DataStore* SH_this =
+    static_cast<const DataStore*>(static_cast<const void*>(self));
+  size_t SHC_rv = SH_this->getNumBuffers();
+  return SHC_rv;
+// splicer end class.DataStore.method.get_num_buffers
+}
+
 SIDRE_buffer* SIDRE_datastore_get_buffer(SIDRE_datastore* self,
                                          SIDRE_IndexType idx)
 {
@@ -103,16 +113,6 @@ void SIDRE_datastore_destroy_buffer(SIDRE_datastore* self, SIDRE_IndexType id)
   SH_this->destroyBuffer(id);
   return;
 // splicer end class.DataStore.method.destroy_buffer
-}
-
-size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore* self)
-{
-// splicer begin class.DataStore.method.get_num_buffers
-  const DataStore* SH_this =
-    static_cast<const DataStore*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getNumBuffers();
-  return SHC_rv;
-// splicer end class.DataStore.method.get_num_buffers
 }
 
 void SIDRE_datastore_print(const SIDRE_datastore* self)

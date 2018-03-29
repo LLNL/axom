@@ -42,6 +42,8 @@ module axom_spio
         procedure :: read_0 => iomanager_read_0
         procedure :: read_1 => iomanager_read_1
         procedure :: read_2 => iomanager_read_2
+        procedure :: read_3 => iomanager_read_3
+        procedure :: read_4 => iomanager_read_4
         procedure :: load_external_data => iomanager_load_external_data
         procedure :: get_instance => iomanager_get_instance
         procedure :: set_instance => iomanager_set_instance
@@ -51,7 +53,9 @@ module axom_spio
             ! splicer end class.IOManager.generic.read
             read_0,  &
             read_1,  &
-            read_2
+            read_2,  &
+            read_3,  &
+            read_4
         ! splicer begin class.IOManager.type_bound_procedure_part
         ! splicer end class.IOManager.type_bound_procedure_part
     end type iomanager
@@ -66,14 +70,24 @@ module axom_spio
 
     interface
 
-        function c_iomanager_new(com) &
+        function c_iomanager_new_0(com) &
                 result(SHT_rv) &
-                bind(C, name="SPIO_iomanager_new")
+                bind(C, name="SPIO_iomanager_new_0")
             use iso_c_binding, only : C_INT, C_PTR
             implicit none
             integer(C_INT), value, intent(IN) :: com
             type(C_PTR) :: SHT_rv
-        end function c_iomanager_new
+        end function c_iomanager_new_0
+
+        function c_iomanager_new_1(com, use_scr) &
+                result(SHT_rv) &
+                bind(C, name="SPIO_iomanager_new_1")
+            use iso_c_binding, only : C_BOOL, C_INT, C_PTR
+            implicit none
+            integer(C_INT), value, intent(IN) :: com
+            logical(C_BOOL), value, intent(IN) :: use_scr
+            type(C_PTR) :: SHT_rv
+        end function c_iomanager_new_1
 
         subroutine c_iomanager_delete(self) &
                 bind(C, name="SPIO_iomanager_delete")
@@ -153,40 +167,67 @@ module axom_spio
             integer(C_INT), value, intent(IN) :: Lprotocol
         end subroutine c_iomanager_read_0_bufferify
 
-        subroutine c_iomanager_read_1(self, group, root_file) &
+        subroutine c_iomanager_read_1(self, group, file_string, &
+                protocol, preserve_contents) &
                 bind(C, name="SPIO_iomanager_read_1")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: file_string(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+        end subroutine c_iomanager_read_1
+
+        subroutine c_iomanager_read_1_bufferify(self, group, &
+                file_string, Lfile_string, protocol, Lprotocol, &
+                preserve_contents) &
+                bind(C, name="SPIO_iomanager_read_1_bufferify")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: file_string(*)
+            integer(C_INT), value, intent(IN) :: Lfile_string
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+        end subroutine c_iomanager_read_1_bufferify
+
+        subroutine c_iomanager_read_2(self, group, root_file) &
+                bind(C, name="SPIO_iomanager_read_2")
             use iso_c_binding, only : C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
-        end subroutine c_iomanager_read_1
+        end subroutine c_iomanager_read_2
 
-        subroutine c_iomanager_read_1_bufferify(self, group, root_file, &
+        subroutine c_iomanager_read_2_bufferify(self, group, root_file, &
                 Lroot_file) &
-                bind(C, name="SPIO_iomanager_read_1_bufferify")
+                bind(C, name="SPIO_iomanager_read_2_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
-        end subroutine c_iomanager_read_1_bufferify
+        end subroutine c_iomanager_read_2_bufferify
 
-        subroutine c_iomanager_read_2(self, group, root_file, &
+        subroutine c_iomanager_read_3(self, group, root_file, &
                 preserve_contents) &
-                bind(C, name="SPIO_iomanager_read_2")
+                bind(C, name="SPIO_iomanager_read_3")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             logical(C_BOOL), value, intent(IN) :: preserve_contents
-        end subroutine c_iomanager_read_2
+        end subroutine c_iomanager_read_3
 
-        subroutine c_iomanager_read_2_bufferify(self, group, root_file, &
+        subroutine c_iomanager_read_3_bufferify(self, group, root_file, &
                 Lroot_file, preserve_contents) &
-                bind(C, name="SPIO_iomanager_read_2_bufferify")
+                bind(C, name="SPIO_iomanager_read_3_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -194,7 +235,32 @@ module axom_spio
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
             logical(C_BOOL), value, intent(IN) :: preserve_contents
-        end subroutine c_iomanager_read_2_bufferify
+        end subroutine c_iomanager_read_3_bufferify
+
+        subroutine c_iomanager_read_4(self, group, root_file, &
+                preserve_contents, use_scr) &
+                bind(C, name="SPIO_iomanager_read_4")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: root_file(*)
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+            logical(C_BOOL), value, intent(IN) :: use_scr
+        end subroutine c_iomanager_read_4
+
+        subroutine c_iomanager_read_4_bufferify(self, group, root_file, &
+                Lroot_file, preserve_contents, use_scr) &
+                bind(C, name="SPIO_iomanager_read_4_bufferify")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT, C_PTR
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: group
+            character(kind=C_CHAR), intent(IN) :: root_file(*)
+            integer(C_INT), value, intent(IN) :: Lroot_file
+            logical(C_BOOL), value, intent(IN) :: preserve_contents
+            logical(C_BOOL), value, intent(IN) :: use_scr
+        end subroutine c_iomanager_read_4_bufferify
 
         subroutine c_iomanager_load_external_data(self, group, &
                 root_file) &
@@ -221,16 +287,34 @@ module axom_spio
         ! splicer end class.IOManager.additional_interfaces
     end interface
 
+    interface iomanager_new
+        module procedure iomanager_new_0
+        module procedure iomanager_new_1
+    end interface iomanager_new
+
 contains
 
-    function iomanager_new(com) &
+    function iomanager_new_0(com) &
             result(SHT_rv)
         integer, value, intent(IN) :: com
         type(iomanager) :: SHT_rv
-        ! splicer begin class.IOManager.method.new
-        SHT_rv%voidptr = c_iomanager_new(com)
-        ! splicer end class.IOManager.method.new
-    end function iomanager_new
+        ! splicer begin class.IOManager.method.new_0
+        SHT_rv%voidptr = c_iomanager_new_0(com)
+        ! splicer end class.IOManager.method.new_0
+    end function iomanager_new_0
+
+    function iomanager_new_1(com, use_scr) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL
+        integer, value, intent(IN) :: com
+        logical, value, intent(IN) :: use_scr
+        logical(C_BOOL) SH_use_scr
+        type(iomanager) :: SHT_rv
+        SH_use_scr = use_scr  ! coerce to C_BOOL
+        ! splicer begin class.IOManager.method.new_1
+        SHT_rv%voidptr = c_iomanager_new_1(com, SH_use_scr)
+        ! splicer end class.IOManager.method.new_1
+    end function iomanager_new_1
 
     subroutine iomanager_delete(obj)
         use iso_c_binding, only : C_NULL_PTR
@@ -286,20 +370,39 @@ contains
         ! splicer end class.IOManager.method.read_0
     end subroutine iomanager_read_0
 
-    subroutine iomanager_read_1(obj, group, root_file)
+    subroutine iomanager_read_1(obj, group, file_string, protocol, &
+            preserve_contents)
+        use axom_sidre, only : SidreGroup
+        use iso_c_binding, only : C_BOOL, C_INT
+        class(iomanager) :: obj
+        type(SidreGroup), value, intent(IN) :: group
+        character(*), intent(IN) :: file_string
+        character(*), intent(IN) :: protocol
+        logical, value, intent(IN) :: preserve_contents
+        logical(C_BOOL) SH_preserve_contents
+        SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
+        ! splicer begin class.IOManager.method.read_1
+        call c_iomanager_read_1_bufferify(obj%voidptr, &
+            group%get_instance(), file_string, &
+            len_trim(file_string, kind=C_INT), protocol, &
+            len_trim(protocol, kind=C_INT), SH_preserve_contents)
+        ! splicer end class.IOManager.method.read_1
+    end subroutine iomanager_read_1
+
+    subroutine iomanager_read_2(obj, group, root_file)
         use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
         class(iomanager) :: obj
         type(SidreGroup), value, intent(IN) :: group
         character(*), intent(IN) :: root_file
-        ! splicer begin class.IOManager.method.read_1
-        call c_iomanager_read_1_bufferify(obj%voidptr, &
+        ! splicer begin class.IOManager.method.read_2
+        call c_iomanager_read_2_bufferify(obj%voidptr, &
             group%get_instance(), root_file, &
             len_trim(root_file, kind=C_INT))
-        ! splicer end class.IOManager.method.read_1
-    end subroutine iomanager_read_1
+        ! splicer end class.IOManager.method.read_2
+    end subroutine iomanager_read_2
 
-    subroutine iomanager_read_2(obj, group, root_file, &
+    subroutine iomanager_read_3(obj, group, root_file, &
             preserve_contents)
         use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_BOOL, C_INT
@@ -309,12 +412,33 @@ contains
         logical, value, intent(IN) :: preserve_contents
         logical(C_BOOL) SH_preserve_contents
         SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
-        ! splicer begin class.IOManager.method.read_2
-        call c_iomanager_read_2_bufferify(obj%voidptr, &
+        ! splicer begin class.IOManager.method.read_3
+        call c_iomanager_read_3_bufferify(obj%voidptr, &
             group%get_instance(), root_file, &
             len_trim(root_file, kind=C_INT), SH_preserve_contents)
-        ! splicer end class.IOManager.method.read_2
-    end subroutine iomanager_read_2
+        ! splicer end class.IOManager.method.read_3
+    end subroutine iomanager_read_3
+
+    subroutine iomanager_read_4(obj, group, root_file, &
+            preserve_contents, use_scr)
+        use axom_sidre, only : SidreGroup
+        use iso_c_binding, only : C_BOOL, C_INT
+        class(iomanager) :: obj
+        type(SidreGroup), value, intent(IN) :: group
+        character(*), intent(IN) :: root_file
+        logical, value, intent(IN) :: preserve_contents
+        logical(C_BOOL) SH_preserve_contents
+        logical, value, intent(IN) :: use_scr
+        logical(C_BOOL) SH_use_scr
+        SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
+        SH_use_scr = use_scr  ! coerce to C_BOOL
+        ! splicer begin class.IOManager.method.read_4
+        call c_iomanager_read_4_bufferify(obj%voidptr, &
+            group%get_instance(), root_file, &
+            len_trim(root_file, kind=C_INT), SH_preserve_contents, &
+            SH_use_scr)
+        ! splicer end class.IOManager.method.read_4
+    end subroutine iomanager_read_4
 
     subroutine iomanager_load_external_data(obj, group, root_file)
         use axom_sidre, only : SidreGroup
