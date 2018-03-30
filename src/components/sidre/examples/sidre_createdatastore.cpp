@@ -311,7 +311,7 @@ void save_as_blueprint(DataStore * ds) {
     std::string root_output_path = mesh_name + ".root";
     std::string output_path = mesh_name + ".json";
 
-    root_node["protocol/name"] = "conduit_json";
+    root_node["protocol/name"] = "json";
     root_node["protocol/version"] = "0.1";
     root_node["number_of_files"] = 1;
     root_node["number_of_trees"] = 1;
@@ -319,8 +319,8 @@ void save_as_blueprint(DataStore * ds) {
     root_node["tree_pattern"] = "/";
 
     // Now save both the index and the data set
-    conduit::relay::io::save(root_node, root_output_path);
-    conduit::relay::io::save(mesh_node, output_path);
+    conduit::relay::io::save(root_node, root_output_path, "json");
+    conduit::relay::io::save(mesh_node, output_path, "json");
   } else {
     std::cout << "does not conform to Mesh Blueprint: ";
     info.print();

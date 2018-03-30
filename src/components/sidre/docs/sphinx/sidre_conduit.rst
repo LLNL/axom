@@ -81,20 +81,19 @@ choose to save it as JSON.
    :end-before: _blueprint_restructure_save_end
    :language: C++
 
+The code listed above produces the files `tinymesh.json` and `tinymesh.root`.
+Any code that uses Mesh Blueprint can open and use this pair of files.
+
 Data Visualization
 ------------------
 
 The `VisIt <http://visitusers.org/>`_ tool can read in a Blueprint, interpret
 the index file, and sensibly display the data contained in the data file.
-VisIt produced the following image from the Mesh Blueprint file saved above.
+Starting from version 2.13.1, VisIt can open a `.root` file just like any other
+data file.  VisIt produced the following image from the Mesh Blueprint file saved above.
 
-.. image:: tiny_mesh.png
-   :width: 300px
-
-.. Cyrus, can you fill in a paragraph here with a really simple recipe?
-   The following statement is lame but true and summarizes my personal knowledge.
-
-Configuring and using VisIt is beyond the scope of this document.
+.. image:: tiny_mesh_rendered.png
+   :width: 600px
 
 Conduit is also a foundational building block for the 
 `Ascent <http://ascent.readthedocs.io/>`_ project, which provides a powerful
