@@ -196,23 +196,8 @@ DataStore * create_tiny_datastore() {
   // _tiny_create_end
 }
 
-void save_as_blueprint(DataStore * ds) {
-  // _blueprint_restructure_toplevel_start
-  // Conduit needs a specific hierarchy.
-  // We'll make a new DataStore with that hierarchy, pointing at the
-  // application's data.
-  DataStore cds;
-  std::string mesh_name = "tinymesh";
-  
-  // The Conduit specifies top-level groups:
-  Group * mroot = cds.getRoot()->createGroup(mesh_name);
-  Group * coords = mroot->createGroup("coordsets/coords");
-  Group * topos = mroot->createGroup("topologies");
-  // no material sets in this example
-  Group * fields = mroot->createGroup("fields");
-  // no adjacency sets in this (single-domain) example
-  // _blueprint_restructure_toplevel_end
-
+void setup_blueprint_coords(DataStore * ds, Group * coords)
+{
   // _blueprint_restructure_coords_start
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
@@ -231,10 +216,13 @@ void save_as_blueprint(DataStore * ds) {
                          origv->getNumElements(),
                          static_cast<double *>(origv->getArray()));
   // _blueprint_restructure_coords_end
+}
 
+void setup_blueprint_topos(DataStore * ds, Group * topos)
+{
   // _blueprint_restructure_topo_start
   // Sew the nodes together into the two hexahedra, using prior knowledge.
-  Group * connmesh = mroot->createGroup("topologies/mesh");
+  Group * connmesh = topos->createGroup("mesh");
   connmesh->createViewString("type", "unstructured");
   connmesh->createViewString("coordset", "coords");
   Group * elts = connmesh->createGroup("elements");
@@ -246,7 +234,7 @@ void save_as_blueprint(DataStore * ds) {
   // one face arranged by right-hand rule to indicate a normal pointing into
   // the element, then the four nodes of the opposite face arranged to point
   // the normal the same way (out of the element).  This is the same as for
-  // a VTK_HEXAHEDROM.  See
+  // a VTK_HEXAHEDRON.  See
   // https://www.vtk.org/wp-content/uploads/2015/04/file-formats.pdf.
   int * c = connectivity->getArray();
   // First hex.  In this example, the Blueprint node ordering matches the
@@ -258,17 +246,23 @@ void save_as_blueprint(DataStore * ds) {
   c[12] = 8; c[13] = 9; c[14] = 10; c[15] = 11;
   // _blueprint_restructure_topo_end
 
+  // Deal with unused variable
+  AXOM_DEBUG_VAR(ds);
+}
+
+void setup_blueprint_fields(DataStore * ds, Group * fields)
+{
   // _blueprint_restructure_field_start
   // Set up the node-centered field
   // Get the original data
-  origv = ds->getRoot()->getView("fields/nodefield");
+  View * origv = ds->getRoot()->getView("fields/nodefield");
   Group * nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
   nodefield->createViewString("topology", "mesh");
-  nodefield->createView("nodefield", sidre::INT_ID,
+  nodefield->createView("values", sidre::INT_ID,
                        origv->getNumElements(),
-                       static_cast<double *>(origv->getArray()));
+                       static_cast<int *>(origv->getArray()));
 
   // Set up the element-centered field
   // Get the original data
@@ -277,15 +271,39 @@ void save_as_blueprint(DataStore * ds) {
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
   eltfield->createViewString("topology", "mesh");
-  eltfield->createView("eltfield", sidre::DOUBLE_ID,
+  eltfield->createView("values", sidre::DOUBLE_ID,
                        origv->getNumElements(),
                        static_cast<double *>(origv->getArray()));
   // _blueprint_restructure_field_end
+}
+
+void save_as_blueprint(DataStore * ds) {
+  // _blueprint_restructure_toplevel_start
+  // Conduit needs a specific hierarchy.
+  // We'll make a new DataStore with that hierarchy, pointing at the
+  // application's data.
+  DataStore cds;
+  std::string mesh_name = "tinymesh";
+
+  // The Conduit specifies top-level groups:
+  Group * mroot = cds.getRoot()->createGroup(mesh_name);
+  Group * coords = mroot->createGroup("coordsets/coords");
+  Group * topos = mroot->createGroup("topologies");
+  // no material sets in this example
+  Group * fields = mroot->createGroup("fields");
+  // no adjacency sets in this (single-domain) example
+  // _blueprint_restructure_toplevel_end
+
+  setup_blueprint_coords(ds, coords);
+
+  setup_blueprint_topos(ds, topos);
+
+  setup_blueprint_fields(ds, fields);
 
   // _blueprint_restructure_save_start
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify("mesh", mesh_node, info)) {
+  if (conduit::blueprint::verify("mesh", mesh_node[mesh_name], info)) {
     // Generate the Conduit index
     conduit::Node & index = root_node["blueprint_index"];
     conduit::blueprint::mesh::generate_index(mesh_node[mesh_name], mesh_name, 1, index[mesh_name]);
@@ -336,6 +354,9 @@ int main(int argc, char ** argv) {
 
   DataStore * ds = create_datastore(region);
   access_datastore(ds);
+
+  DataStore * tds = create_tiny_datastore();
+  save_as_blueprint(tds);
 
   return 0;
 }
