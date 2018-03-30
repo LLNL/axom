@@ -50,28 +50,11 @@ I/O using the IOManager class.
 Parallel File I/O
 -----------------
 
-To accomplish parallel I/O, Sidre provides the IOManager class.  This class is
-instantiated with an MPI communicator and provides several overloads of the
-:code:`write()` and :code:`read()` methods.  The :code:`IOManager::write()` 
-method takes a Group
-pointer, the number of files to write (distributed over MPI ranks), a string
-specifying the base file name, and an I/O protocol (corresponding to the
-protocols available to :code:`Group::save()` and :code:`load()`).  The 
-:code:`IOManager::read()` method
-takes a Group pointer into which it should read the data, a base file name, an
-I/O protocol, and a boolean flag specifying if the contents of the Group should
-be preserved.  By default, the Group is cleared before the data set is read in.
-
-When :code:`write()` is called, the IOManager produces a root file and a number of data
-files.  These files together contain the data hierarchy rooted in the Group
-passed to :code:`write()`.  The :code:`read()` method will access all these files 
-to instantiate the hierarchy under the Group pointer passed to it.
-
-The IOManager constructor takes an optional boolean argument to use the SCR
-library for scalable I/O management (i.e. use burst buffers if available).  This
-defaults to false, so Sidre will use burst buffers only if specifically requested.  
-IOManager provides other methods to add additional Groups or
-Views to a root file, specified by name.
+To accomplish parallel I/O, Sidre provides the IOManager class within .  This class is
+instantiated with an MPI communicator and provides several overloads of the 
+``write()`` and ``read()`` methods, to save a Group to HDF5 format or read a Group
+in from HDF5.  IOManager optionally uses the SCR library for scalable I/O 
+management (such as using burst buffers if available.
 
 In the following example, an IOManager is created and used to write the contents
 of the Group "root" in parallel.
@@ -81,3 +64,4 @@ of the Group "root" in parallel.
    :end-before: _parallel_io_save_end
    :language: C++
 
+See the :ref:`full documentation <spio-core-concepts>` for parallel file I/O using IOManager.
