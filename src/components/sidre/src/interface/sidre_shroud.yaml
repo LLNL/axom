@@ -23,7 +23,6 @@ namespace: axom sidre
 options:
   C_line_length: 1000
   F_module_per_class: False
-  F_impl_filename_library_template: wrapf{library_lower}.F
   F_module_name_library_template: axom_{library_lower}
 #  wrap_python: True
 
@@ -33,6 +32,7 @@ format:
   # Fortran as a subroutine with an additional character argument
   # for the result.
 #  F_string_result_as_arg: name
+  F_filename_suffix: F
 
 declarations:
   - namespace: axom
