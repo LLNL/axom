@@ -18,7 +18,7 @@ copyright:
 
 library: Sidre
 # cxx_header: each class has its own header file
-namespace: axom sidre
+#namespace: axom sidre
 
 options:
   C_line_length: 1000
@@ -40,23 +40,20 @@ declarations:
     - namespace: sidre
       declarations:
 
-      - typedef: IndexType
+      - decl: typedef int IndexType
         fields:
           # defined in SidreTypes.hpp
-          typedef  : int
           c_header : sidre/SidreTypes.h
           c_type   : SIDRE_IndexType
 
-      - typedef: SidreLength
+      - decl: typedef long SidreLength
         fields:
           # defined in SidreTypes.hpp
-          typedef  : long
           c_header : sidre/SidreTypes.h
           c_type   : SIDRE_SidreLength
 
-      - typedef: TypeID
+      - decl: typedef int TypeID
         fields:
-          typedef  : int
           # enum for types
           c_header : sidre/SidreTypes.h
           cxx_header : sidre/SidreTypes.hpp

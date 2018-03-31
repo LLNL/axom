@@ -18,7 +18,7 @@ copyright:
 
 library: QUEST
 cxx_header: quest/quest.hpp
-namespace: axom quest
+#namespace: axom quest
 
 options:
   C_line_length: 1000

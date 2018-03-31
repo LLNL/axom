@@ -17,7 +17,7 @@ copyright:
   -
 
 library: SPIO
-namespace: axom sidre
+#namespace: axom sidre
 
 options:
   C_line_length: 1000

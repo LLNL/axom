@@ -18,7 +18,7 @@ copyright:
 
 library: SLIC
 cxx_header: slic/slic.hpp
-namespace: axom slic
+#namespace: axom slic
 
 options:
   C_line_length: 1000
