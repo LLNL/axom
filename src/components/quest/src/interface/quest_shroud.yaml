@@ -31,8 +31,14 @@ format:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
+  F_filename_suffix: F
 
 declarations:
+
+  - type: MPI_Comm
+    fields:
+      cpp_if: ifdef AXOM_USE_MPI
+
   - namespace: axom
     declarations:
     - namespace: quest
@@ -45,6 +51,15 @@ declarations:
       - decl: void initialize( MPI_Comm comm, const std::string& fileName,
                                bool requiresDistance, int ndims, int maxElements,
                                int maxLevels )
+        format:
+          function_suffix: _mpi
+        cpp_if: ifdef AXOM_USE_MPI
+      - decl: void initialize( const std::string& fileName,
+                               bool requiresDistance, int ndims, int maxElements,
+                               int maxLevels )
+        format:
+          function_suffix: _serial
+        cpp_if: ifndef AXOM_USE_MPI
 
       - decl: double distance(double x, double y, double z=0.0)
 ##    - decl: void distance( const double* xyz, double* dist, int npoints )
