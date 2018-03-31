@@ -31,27 +31,26 @@ format:
   # for the result.
   F_string_result_as_arg: name
 
-types:
-  Group:
-    base: wrapped
-    cxx_header: sidre/Group.hpp
-    cxx_type: axom::sidre::Group
-    f_derived_type: SidreGroup
-    f_module:
-      axom_sidre: [ SidreGroup ]
-    c_type: SIDRE_group
-    c_header: sidre/wrapGroup.h
-    f_to_c: '{f_var}%get_instance()'
+declarations:
+  - namespace: axom
+    declarations:
+    - namespace: sidre
+      declarations:
 
-#declarations:
-#  - namespace: axom
-#    declarations:
-#    - namespace: sidre
-#      declarations:
-classes:
-      - name: IOManager
+      - forward: Group
+        fields:
+          cxx_header: sidre/Group.hpp
+#          cxx_type: Group
+          f_derived_type: SidreGroup
+          f_module:
+            axom_sidre: [ SidreGroup ]
+          c_type: SIDRE_group
+          c_header: sidre/wrapGroup.h
+          f_to_c: '{f_var}%get_instance()'
+
+      - class: IOManager
         cxx_header: sidre/IOManager.hpp
-        methods:
+        declarations:
         - decl: IOManager(MPI_Comm com, bool use_scr = false) +name(new)
         - decl: ~IOManager() +name(delete)
         - decl: void write(Group * group,

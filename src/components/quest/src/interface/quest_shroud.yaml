@@ -32,23 +32,24 @@ format:
   # for the result.
   F_string_result_as_arg: name
 
-#declarations:
-#  - namespace: axom
-#    declarations:
-#    - namespace: quest
-#      declarations:
-functions:
-      - options:
-          # Change the default template for Fortran functions to include the library name.
-          F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+declarations:
+  - namespace: axom
+    declarations:
+    - namespace: quest
+      options:
+        # Change the default template for Fortran functions to include the library name.
+        F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+        F_name_generic_template: "{library_lower}_{underscore_name}"
+
+      declarations:
       - decl: void initialize( MPI_Comm comm, const std::string& fileName,
                                bool requiresDistance, int ndims, int maxElements,
                                int maxLevels )
 
-      - decl: double distance(double x, double y, double z)
+      - decl: double distance(double x, double y, double z=0.0)
 ##    - decl: void distance( const double* xyz, double* dist, int npoints )
 
-      - decl: int inside(double x, double y, double z)
+      - decl: int inside(double x, double y, double z=0.0)
 ##    - decl: void inside( const double* xyz, int* in, int npoints )
 
       - decl: void mesh_min_bounds(double* coords+dimension+intent(OUT))

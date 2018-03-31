@@ -34,50 +34,50 @@ format:
   # for the result.
 #  F_string_result_as_arg: name
 
-types:
-  IndexType:
-# defined in SidreTypes.hpp
-    typedef  : int
-    c_header : sidre/SidreTypes.h
-    c_type   : SIDRE_IndexType
-    cxx_type : IndexType
+declarations:
+  - namespace: axom
+    declarations:
+    - namespace: sidre
+      declarations:
 
-  SidreLength:
-# defined in SidreTypes.hpp
-    typedef  : long
-    c_header : sidre/SidreTypes.h
-    c_type   : SIDRE_SidreLength
-    cxx_type : SidreLength
+      - typedef: IndexType
+        fields:
+          # defined in SidreTypes.hpp
+          typedef  : int
+          c_header : sidre/SidreTypes.h
+          c_type   : SIDRE_IndexType
 
-  TypeID:
-    typedef  : int
-    # enum for types
-    c_header : sidre/SidreTypes.h
-    cxx_header : sidre/SidreTypes.hpp
-    cxx_type : TypeID
-    c_to_cxx : getTypeID({c_var})
-#    c_to_cxx : static_cast<TypeID>({c_var})
-    cxx_to_c : static_cast<int>({cxx_var})
+      - typedef: SidreLength
+        fields:
+          # defined in SidreTypes.hpp
+          typedef  : long
+          c_header : sidre/SidreTypes.h
+          c_type   : SIDRE_SidreLength
 
+      - typedef: TypeID
+        fields:
+          typedef  : int
+          # enum for types
+          c_header : sidre/SidreTypes.h
+          cxx_header : sidre/SidreTypes.hpp
+          c_to_cxx : axom::sidre::getTypeID({c_var})
+          cxx_to_c : static_cast<int>({cxx_var})
 
 # XXX
 # parameters:
 #  InvalidID: IDTYPE -1
 
-#declarations:
-#  - namespace: axom
-#    declarations:
-#    - namespace: sidre
-#      declarations:
-classes:
+      - forward: Buffer
+      - forward: Group
+      - forward: View
 
   ####################################################################
-      - name: DataStore
+      - class: DataStore
         cxx_header: sidre/DataStore.hpp
         format:
           F_derived_name:  SidreDataStore
 
-        functions:
+        declarations:
         - decl: DataStore()  +name(new)
         - decl: ~DataStore() +name(delete)
         - decl: Group * getRoot()
@@ -110,12 +110,12 @@ classes:
           type: [ init, richcompare ]
 
       ####################################################################
-      - name: Group
+      - class: Group
         cxx_header: sidre/Group.hpp
         format:
           F_derived_name:  SidreGroup
 
-        functions:
+        declarations:
         # Basic query and accessor methods.
         - decl: IndexType getIndex()
         - decl: const std::string& getName() const +len(MAXNAMESIZE)
@@ -349,12 +349,12 @@ classes:
           type: [ init, richcompare ]
 
       ####################################################################
-      - name: Buffer
+      - class: Buffer
         cxx_header: sidre/Buffer.hpp
         format:
           F_derived_name:  SidreBuffer
 
-        functions:
+        declarations:
           # Basic query and accessor methods
           - decl: IndexType getIndex() const
           - decl: size_t getNumViews() const
@@ -403,12 +403,12 @@ classes:
           type: [ init, richcompare ]
 
       ####################################################################
-      - name: View
+      - class: View
         cxx_header: sidre/View.hpp
         format:
           F_derived_name:  SidreView
 
-        functions:
+        declarations:
 
         # View query and accessor methods
         - decl: IndexType getIndex()
@@ -585,7 +585,6 @@ classes:
 
 #    #####################################################################
 
-functions:
       - decl: bool nameIsValid(const std::string& name)
          # The concept of a valid name is different for C++, C and Fortran
         options:
@@ -598,23 +597,23 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: |
-        if (! nameIsValid({cxx_var})) {{
+        if (! axom::sidre::nameIsValid({cxx_var})) {{
             return SIDRE_InvalidName;
         }}
     # return a blank field string if an error occurs
     C_invalid_name_buf: |
-        if (! nameIsValid({cxx_var})) {{
+        if (! axom::sidre::nameIsValid({cxx_var})) {{
             std::memset({c_var}, ' ', {c_var_len});
             return;
         }}
     PY_invalid_name: |
-        if (! nameIsValid({cxx_var})) {{
+        if (! axom::sidre::nameIsValid({cxx_var})) {{
             PyErr_SetString(PyExc_KeyError, "XXX - need name");
             return NULL;
         }}
     # report the invalid index, assume local variable idx
     PY_invalid_name_idx: |
-        if (! nameIsValid({cxx_var})) {{
+        if (! axom::sidre::nameIsValid({cxx_var})) {{
             Py_RETURN_NONE;
         }}
 #            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
