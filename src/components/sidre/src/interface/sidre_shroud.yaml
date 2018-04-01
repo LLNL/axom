@@ -35,9 +35,9 @@ format:
   F_filename_suffix: F
 
 declarations:
-  - namespace: axom
+  - decl: namespace axom
     declarations:
-    - namespace: sidre
+    - decl: namespace sidre
       declarations:
 
       - decl: typedef int IndexType

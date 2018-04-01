@@ -35,15 +35,15 @@ format:
 ######################################################################
 
 declarations:
-  - namespace: axom
+  - decl: namespace axom
     declarations:
-    - namespace: slic
+    - decl: namespace slic
       options:
         # Change the default template for Fortran functions to include the library name.
          F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
       declarations:
 
-      - namespace: message
+      - decl: namespace message
         # MessageLevel.h
         declarations:
         - decl: |

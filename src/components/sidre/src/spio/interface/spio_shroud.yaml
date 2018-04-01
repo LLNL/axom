@@ -32,9 +32,9 @@ format:
   F_string_result_as_arg: name
 
 declarations:
-  - namespace: axom
+  - decl: namespace axom
     declarations:
-    - namespace: sidre
+    - decl: namespace sidre
       declarations:
 
       - decl: class Group

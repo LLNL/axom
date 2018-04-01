@@ -39,9 +39,9 @@ declarations:
     fields:
       cpp_if: ifdef AXOM_USE_MPI
 
-  - namespace: axom
+  - decl: namespace axom
     declarations:
-    - namespace: quest
+    - decl: namespace quest
       options:
         # Change the default template for Fortran functions to include the library name.
         F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
