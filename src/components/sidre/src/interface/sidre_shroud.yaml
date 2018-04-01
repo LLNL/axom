@@ -64,12 +64,12 @@ declarations:
 # parameters:
 #  InvalidID: IDTYPE -1
 
-      - forward: Buffer
-      - forward: Group
-      - forward: View
+      - decl: class Buffer
+      - decl: class Group
+      - decl: class View
 
   ####################################################################
-      - class: DataStore
+      - decl: class DataStore
         cxx_header: sidre/DataStore.hpp
         format:
           F_derived_name:  SidreDataStore
@@ -107,7 +107,7 @@ declarations:
           type: [ init, richcompare ]
 
       ####################################################################
-      - class: Group
+      - decl: class Group
         cxx_header: sidre/Group.hpp
         format:
           F_derived_name:  SidreGroup
@@ -346,7 +346,7 @@ declarations:
           type: [ init, richcompare ]
 
       ####################################################################
-      - class: Buffer
+      - decl: class Buffer
         cxx_header: sidre/Buffer.hpp
         format:
           F_derived_name:  SidreBuffer
@@ -400,7 +400,7 @@ declarations:
           type: [ init, richcompare ]
 
       ####################################################################
-      - class: View
+      - decl: class View
         cxx_header: sidre/View.hpp
         format:
           F_derived_name:  SidreView
