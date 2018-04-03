@@ -211,7 +211,7 @@ public:
    *
    * \return ptr pointer to the buffer associated with this field.
    *
-   * \pre hasName( name ) == false
+   * \pre hasField( name ) == false
    * \pre num_components >= 1
    * \post ptr != AXOM_NULLPTR
    *
@@ -247,7 +247,7 @@ public:
    *
    * \return ptr pointer to the buffer associated with this field.
    *
-   * \pre hasName( name ) == false
+   * \pre hasField( name ) == false
    * \pre data != AXOM_NULLPTR
    * \post ptr != AXOM_NULLPTR
    * \post ptr == data
