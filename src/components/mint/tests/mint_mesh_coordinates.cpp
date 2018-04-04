@@ -679,7 +679,13 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
       EXPECT_EQ( mesh_coords.dimension(), dim );
       EXPECT_EQ( mesh_coords.numNodes(), SMALL_NUM_NODES );
       EXPECT_TRUE( mesh_coords.numNodes() <= mesh_coords.capacity() );
-      EXPECT_EQ( mesh_coords.capacity(), 2*SMALL_NUM_NODES );
+
+      mint::IndexType capacity = SMALL_NUM_NODES * mesh_coords.getResizeRatio() + 0.5;
+      if ( capacity < mint::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
+      {
+        capacity = mint::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
+      }
+      EXPECT_EQ( mesh_coords.capacity(), capacity );
 
       // populate the coordinates, writes to the corresponding sidre views
       mint::Array< double > xx( dim, 1, dim );

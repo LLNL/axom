@@ -410,7 +410,13 @@ TEST( mint_mesh_field_variable, shrink )
 
   mint::FieldVariable< double > field( "f", SMALL_NUM_TUPLES, NUM_COMPONENTS );
   EXPECT_EQ( field.getName(), "f" );
-  EXPECT_EQ( field.getCapacity(), 2*field.getNumTuples() );
+
+  mint::IndexType capacity = SMALL_NUM_TUPLES * field.getResizeRatio() + 0.5;
+  if ( capacity < mint::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
+  {
+    capacity = mint::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
+  }
+  EXPECT_EQ( field.getCapacity(), capacity );
 
   field.shrink( );
   EXPECT_EQ( field.getCapacity(), field.getNumTuples() );
