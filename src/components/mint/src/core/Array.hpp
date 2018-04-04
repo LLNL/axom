@@ -102,7 +102,7 @@ class Array
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
-  static constexpr IndexType USE_DEFAULT = -1;
+  static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
 
 public:
 
@@ -246,9 +246,33 @@ public:
    * \param [in] pos the tuple to querry.
    * \param [in] component the component to return.
    * \return a reference to the given component of the specified tuple.
+   *
+   * \pre 0 <= pos < size()
+   * \pre 0 <= component < numComponents()
    */
   inline T & operator()( IndexType pos, IndexType component=0 )
-  { return m_data[ pos * m_num_components + component ]; }
+  { 
+    SLIC_ASSERT( pos >= 0 );
+    SLIC_ASSERT( pos < m_num_tuples );
+    SLIC_ASSERT( component >= 0 );
+    SLIC_ASSERT( component < m_num_components );
+    return m_data[ pos * m_num_components + component ]; 
+  }
+
+  /*!
+   * \brief Accessor, returns a reference to the given value.
+   * \param [in] idx the position of the value to return.
+   * \return a reference to the given value.
+   * \note equivalent to *(array.getData() + idx).
+   *
+   * \pre 0 <= idx < m_num_tuples * m_num_components
+   */
+  inline T & operator[]( IndexType idx )
+  { 
+    SLIC_ASSERT( idx >= 0 );
+    SLIC_ASSERT( idx < m_num_tuples * m_num_components );
+    return m_data[ idx ]; 
+  }
 
   /*!
    * \brief Constant accessor, returns a reference to the given component of the
@@ -395,6 +419,19 @@ public:
    */
   inline bool isExternal() const { return m_is_external; }
 
+  /*!
+   * \brief Checks if this array instance is in sidre.
+   * \return status true iff a sidre constructor was called.
+   */
+  inline bool isInSidre() const 
+  { 
+    #ifdef MINT_USE_SIDRE
+    return m_view != AXOM_NULLPTR;
+    #else
+    return false;
+    #endif 
+  }
+
 #ifdef MINT_USE_SIDRE
   /*!
    * \brief Return a pointer to the sidre::View that this Array wraps.
@@ -436,6 +473,27 @@ private:
   inline T* reserveForInsert( IndexType n, IndexType pos );
 
 #ifdef MINT_USE_SIDRE
+
+  /*!
+   * \brief Return the sidre::TypeID corresponding to T. This function
+   *  handles when T is not an enum.
+   */
+  template < typename U = T >
+  static constexpr 
+  typename std::enable_if< !std::is_enum< U >::value, sidre::TypeID >::type
+  sidreTypeId()
+  { return sidre::detail::SidreTT< U >::id; }
+
+  /*!
+   * \brief Return the sidre::TypeID corresponding to T. This function handles
+   *  when T is an enum.
+   */
+  template < typename U = T >
+  static constexpr 
+  typename std::enable_if< std::is_enum< U >::value, sidre::TypeID >::type
+  sidreTypeId()
+  { return sidre::detail::SidreTT< 
+                               typename std::underlying_type< U >::type >::id; }
 
   /*!
    * \brief Describes m_view as having dimensions 
@@ -505,13 +563,11 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
                  "(" << capacity << ")." );
 
   if ( capacity == USE_DEFAULT )
-  {
-    setCapacity( m_num_tuples * m_resize_ratio );
+  { 
+    IndexType temp = m_num_tuples * m_resize_ratio + 0.5;
+    capacity = ( temp > MIN_DEFAULT_CAPACITY ) ? temp : MIN_DEFAULT_CAPACITY;
   }
-  else
-  {
-    setCapacity( capacity );
-  }
+  setCapacity( capacity );
 
   // sanity checks
   SLIC_ASSERT( m_data != AXOM_NULLPTR );
@@ -595,7 +651,7 @@ Array< T >::Array( sidre::View* view ) :
                  "(" << m_capacity << ")." );
 
   sidre::TypeID view_type = m_view->getTypeID();
-  sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
+  sidre::TypeID T_type = sidreTypeId();
   SLIC_ERROR_IF( view_type != T_type,
                  "View data type (" << view_type << ")" <<
                  "differs from this Array type (" << T_type << ")." );
@@ -629,12 +685,15 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
 
   if ( capacity == USE_DEFAULT )
   {
-    setCapacity( m_num_tuples * m_resize_ratio );
+    IndexType temp = m_num_tuples * m_resize_ratio + 0.5;
+    capacity = ( temp > MIN_DEFAULT_CAPACITY ) ? temp : MIN_DEFAULT_CAPACITY;
   }
-  else
-  {
-    setCapacity( capacity );
-  }
+  SLIC_ERROR_IF( m_num_tuples > capacity,
+                 "Number of tuples (" << m_num_tuples << ") " <<
+                 "cannot be greater than the tuple capacity " <<
+                 "(" << capacity << ")." );
+
+  setCapacity( capacity );
 }
 #endif
 
@@ -693,10 +752,11 @@ inline void Array< T >::append( const T* tuples, IndexType n )
 template< typename T >
 inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 {
+  SLIC_ASSERT( tuples != AXOM_NULLPTR );
   SLIC_ASSERT( pos >= 0 );
-  SLIC_ASSERT( pos + n <= m_num_tuples*m_num_components );
+  SLIC_ASSERT( pos + n <= m_num_tuples );
 
-  T* set_position = &m_data[ pos*m_num_components ];
+  T* set_position = &m_data[ pos * m_num_components ];
   IndexType byte_size = n * m_num_components * sizeof(T);
   std::memcpy( set_position, tuples, byte_size );
 }
@@ -827,7 +887,7 @@ inline void Array< T >::describeView()
 {
   SLIC_ASSERT( m_view != AXOM_NULLPTR );
 
-  static constexpr sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
+  static constexpr sidre::TypeID T_type = sidreTypeId();
   sidre::SidreLength dims[2];
   dims[0] = m_num_tuples;
   dims[1] = m_num_components;
@@ -855,7 +915,7 @@ inline void Array< T >::reallocViewData()
 {
   if ( m_view->isEmpty() )
   {
-    constexpr sidre::TypeID T_type = sidre::detail::SidreTT< T >::id;
+    constexpr sidre::TypeID T_type = sidreTypeId();
     m_view->allocate( T_type, m_capacity * m_num_components );
   }
   else

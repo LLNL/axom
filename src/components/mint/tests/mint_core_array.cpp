@@ -36,6 +36,8 @@ namespace axom
 namespace mint
 {
 
+const char IGNORE_OUTPUT[] = ".*";
+
 namespace internal
 {
 
@@ -603,7 +605,6 @@ void check_external( Array< T >& v )
   EXPECT_TRUE( v.isExternal() );
   EXPECT_EQ( v.size(), v.capacity() );
 
-  const char IGNORE_OUTPUT[] = ".*";
   const IndexType size = v.size();
   const IndexType num_components = v.numComponents();
   const IndexType num_values = size * num_components;
@@ -767,7 +768,12 @@ TEST( mint_core_array, checkResize )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  /* Resizing isn't allowed with a ratio less than 1.0. */
+  Array< int > v_int( ZERO, 1, 100 );
+  v_int.setResizeRatio( 0.99 );
+  EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
+
+  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 )
   {
     for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
     {
@@ -785,18 +791,27 @@ TEST( mint_core_array, checkResize )
         Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
                                   capacity );
         v_int_sidre.setResizeRatio( ratio );
-        internal::check_insert( v_int_sidre );
+        internal::check_resize( v_int_sidre );
 
         Array< double > v_double_sidre( root->createView( "double" ), ZERO,
                                         n_components, capacity );
         v_double_sidre.setResizeRatio( ratio );
-        internal::check_insert( v_double_sidre );
+        internal::check_resize( v_double_sidre );
 
         root->destroyViewsAndData();
 #endif
       }
     }
   }
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_core_array_DeathTest, checkResize )
+{
+  /* Resizing isn't allowed with a ratio less than 1.0. */
+  Array< int > v_int( 0, 1, 100 );
+  v_int.setResizeRatio( 0.99 );
+  EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------
