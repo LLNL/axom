@@ -200,7 +200,7 @@ public:
                          int association,
                          IndexType num_components=1,
                          bool storeInSidre=true,
-                         IndexType capacity=Array< T >::USE_DEFAULT );
+                         IndexType capacity=USE_DEFAULT );
 
   /*!
    * \brief Creates a new field from an external buffer that has the given name

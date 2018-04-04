@@ -54,7 +54,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
   SLIC_ERROR_IF( this->invalidDimension(), "invalid dimension" );
 
   IndexType max_capacity = -1;
-  if ( capacity==USE_DEFAULT_CAPACITY )
+  if ( capacity==USE_DEFAULT )
   {
     const double ratio = mint::Array< double >::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(
@@ -152,7 +152,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
   SLIC_ERROR_IF( group==AXOM_NULLPTR, "null sidre::Group" );
   SLIC_ERROR_IF( group->getNumGroups() != 0, "sidre::Group is not empty!" );
   SLIC_ERROR_IF( group->getNumViews() !=0, "sidre::Group is not empty!" );
-  SLIC_ERROR_IF( (capacity != USE_DEFAULT_CAPACITY) && (numNodes > capacity),
+  SLIC_ERROR_IF( (capacity != USE_DEFAULT) && (numNodes > capacity),
                 "numNodes < capacity pre-condition violated!" );
 
   group->createView( "type" )->setString( "explicit" );

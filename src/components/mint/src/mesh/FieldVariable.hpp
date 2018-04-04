@@ -104,9 +104,6 @@ template < typename T >
 class FieldVariable : public Field
 {
 public:
-  static constexpr IndexType USE_DEFAULT_CAPACITY = Array< T >::USE_DEFAULT;
-
-public:
 
   /*!
    * \brief Default constructor. Disabled.
@@ -136,7 +133,7 @@ public:
   FieldVariable( const std::string& name,
                  IndexType num_tuples,
                  IndexType num_components=1,
-                 IndexType capacity=USE_DEFAULT_CAPACITY );
+                 IndexType capacity=USE_DEFAULT );
 
 /// @}
 
@@ -222,7 +219,7 @@ public:
                  sidre::View* field_view,
                  IndexType num_tuples,
                  IndexType num_components=1,
-                 IndexType capacity=USE_DEFAULT_CAPACITY );
+                 IndexType capacity=USE_DEFAULT );
 #endif
 
   /*!

@@ -221,7 +221,7 @@ public:
                          IndexType num_tuples,
                          IndexType num_components=1,
                          bool storeInSidre=true,
-                         IndexType capacity=Array< T >::USE_DEFAULT );
+                         IndexType capacity=USE_DEFAULT );
 
   /*!
    * \brief Creates a new field from a supplied external buffer which consists
@@ -677,7 +677,7 @@ inline T* FieldData::createField( const std::string& name,
 
   m_name2idx[ name ] = fldIdx;
 
-  if ( capacity == Array< T > ::USE_DEFAULT )
+  if ( capacity == USE_DEFAULT )
   {
     // by default, the total capacity is the total number of tuples specified.
     capacity = num_tuples;

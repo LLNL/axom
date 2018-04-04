@@ -115,9 +115,6 @@ static constexpr int Z_COORDINATE = 2;
  */
 class MeshCoordinates
 {
-private:
-  static constexpr IndexType USE_DEFAULT_CAPACITY = Array< double >::USE_DEFAULT;
-
 public:
 
 /// \name Native Storage Constructors
@@ -155,11 +152,11 @@ public:
    * \pre 1 <= dimension() <= 3
    * \post numNodes() <= capacity()
    * \post numNodes() == numNodes
-   * \post if capacity == USE_DEFAULT_CAPACITY then
+   * \post if capacity == USE_DEFAULT then
    *  capacity() == max(DEFAULT_CAPACITY, numNodes()*DEFAULT_RESIZE_RATIO)
    */
   MeshCoordinates( int dimension, IndexType numNodes,
-                   IndexType capacity=USE_DEFAULT_CAPACITY );
+                   IndexType capacity=USE_DEFAULT );
 
 /// @}
 
@@ -241,7 +238,7 @@ public:
   MeshCoordinates( sidre::Group* group,
                    int dimension,
                    IndexType numNodes,
-                   IndexType capacity=USE_DEFAULT_CAPACITY );
+                   IndexType capacity=USE_DEFAULT );
 
 #endif
 
