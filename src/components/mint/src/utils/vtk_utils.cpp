@@ -20,17 +20,22 @@
 #include "mint/vtk_utils.hpp"         // file header
 
 #include "axom_utils/Utilities.hpp"   // for utilities::max
+#include "axom_utils/Matrix.hpp"      // for numerics::Matrix
+
 #include "mint/CellType.hpp"          // for cell::vtk_types
 #include "mint/Field.hpp"             // for Field
 #include "mint/FieldData.hpp"         // for FieldData
 #include "mint/FieldTypes.hpp"        // for *_FIELD_TYPE
+#include "mint/FiniteElement.hpp"     // for mint::FiniteElement
 #include "mint/Mesh.hpp"              // for Mesh
 #include "mint/MeshType.hpp"          // for MINT_*_*_MESH
 #include "mint/RectilinearMesh.hpp"   // for RectilinearMesh
 #include "mint/StructuredMesh.hpp"    // for StructuredMesh
 #include "mint/UniformMesh.hpp"       // for UniformMesh
+
 #include "slic/slic.hpp"              // for slic macros
 
+// C/C++ includes
 #include <fstream>                     // for std::ofstream
 #include <iomanip>                     // for std::setfill, std::setw
 #include <limits>                      // for std::numeric_limits
@@ -497,6 +502,73 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
   }
 
   file.close();
+  return 0;
+}
+
+//------------------------------------------------------------------------------
+int write_vtk( mint::FiniteElement& fe, const std::string& file_path )
+{
+  if ( file_path.empty() )
+  {
+    return -1;
+  }
+
+  std::ofstream ofs ( file_path.c_str( ) );
+  if ( !ofs.is_open() )
+  {
+    SLIC_WARNING( "Could not open file at path " << file_path );
+    return -1;
+  }
+
+  ofs.setf( ofs.scientific );
+#if __cplusplus >= 201103L
+  ofs.precision(  std::numeric_limits< double >::max_digits10 );
+#else
+  ofs.precision(  std::numeric_limits< double >::digits10 + 2 );
+#endif
+
+  const bool zero_copy = true;
+  const int cell_type  = fe.getCellType( );
+  const int ndims      = fe.getPhysicalDimension( );
+  const int nnodes     = fe.getNumNodes( );
+  numerics::Matrix< double > nodes( ndims, nnodes, fe.getPhysicalNodes(),
+                                    zero_copy );
+
+  // write VTK header
+  ofs << "# vtk DataFile Version 3.0\n";
+  ofs << " FiniteElement\n";
+  ofs << "ASCII\n";
+  ofs << "DATASET UNSTRUCTURED_GRID\n";
+  ofs << "POINTS " << nnodes << " double\n";
+
+  // write the cell coordinates
+  for ( int i=0; i < nnodes; ++i )
+  {
+    const double* pt = nodes.getColumn( i );
+    const double x   = pt[ 0 ];
+    const double y   = ( ndims > 1 ) ? pt[ 1 ] : 0.0;
+    const double z   = ( ndims > 2 ) ? pt[ 2 ] : 0.0;
+
+    ofs << x << " " << y << " " << z << std::endl;
+
+  } // END for all nodes
+
+  // write cell connectivity
+  ofs << "CELLS 1 " << nnodes+1 << std::endl;
+  ofs << nnodes << " ";
+  for ( int i=0; i < nnodes; ++i ) {
+    ofs << i << " ";
+  }
+  ofs << std::endl;
+
+  // write cell type information
+  ofs << "CELL_TYPES 1\n";
+  ofs << mint::cell::vtk_types[ cell_type ] << std::endl;
+
+  // close the file
+  ofs.close();
+
+  // return success
   return 0;
 }
 
