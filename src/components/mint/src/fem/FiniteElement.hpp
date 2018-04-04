@@ -31,9 +31,6 @@ namespace axom
 namespace mint
 {
 
-// Forward Declarations
-class Mesh;
-
 /*!
  * \enum
  *
@@ -85,10 +82,27 @@ enum
  *  mint::Mesh* m = get_mesh();
  *  const int N   = m->getMeshNumberOfCells();
  *
+ *  const bool zero_copy = true;
+ *
  *  for ( int idx=0; idx < N; ++idx ) {
- *     mint::FiniteElement fe( m, idx );
+ *
+ *     ...
+ *     // gather cell coordinates in a buffer
+ *     double coords[ ] = {
+ *         x1[ idx ], y1[ idx ],
+ *         x2[ idx ], y2[ idx ],
+ *         x3[ idx ], y3[ idx ],
+ *         x4[ idx ], y4[ idx ],
+ *     };
+ *
+ *     // put cell coordinates in matrix form
+ *     numeric::Matrix< double > m( 2, 4, coords, zero_copy );
+ *
+ *     // construct finite element and bind to basis
+ *     mint::FiniteElement fe( m, MINT_QUAD, zero_copy );
  *     mint::bind_basis< MINT_LAGRANGE, MINT_QUAD >( fe );
  *
+ *     // compute reference coordinates
  *     int status = fe.computeReferenceCoords( xp, xr );
  *
  *     if ( status == mint::INSIDE_ELEMENT ) {
@@ -109,23 +123,6 @@ enum
 class FiniteElement
 {
 public:
-
-  /*!
-   * \brief Constructs a FiniteElement instance corresponding to a mesh element.
-   *
-   * \param [in] mesh pointer to the mesh object
-   * \param [in] cellIdx index of the element on the mesh
-   *
-   * \note By construction this FiniteElement instance is not bound to a
-   *  particular FiniteElement basis. After the FiniteElement instance is
-   *  constructed, the caller must call bind_basis().
-   *
-   * \pre mesh != AXOM_NULLPTR
-   * \pre cellIdx >= 0 && cellIdx < mesh->MeshNumberOfCells()
-   *
-   * \see mint::Mesh
-   */
-  FiniteElement( const Mesh* mesh, int cellIdx );
 
   /*!
    * \brief Constructs a FiniteElement instance from a matrix consisting of the
@@ -460,18 +457,6 @@ private:
    *  and destroy internal data-structures.
    */
   void tearDown();
-
-  /*!
-   * \brief Helper method to get the coordinates of this FiniteElement instance
-   *  from a corresponding cell on a given mesh.
-   *
-   * \param [in] m pointer to the mesh
-   * \param [in] cellIdx the index of the corresponding cell on the mesh
-   *
-   * \pre m != AXOM_NULLPTR
-   * \pre cellIdx >= 0 && cellIdx < m->getMeshNumberOfCells()
-   */
-  void getCellCoords( const Mesh* m, IndexType cellIdx );
 
   /*!
    * \brief Given reference coordinates, \f$ \xi \in \bar{\Omega}^e \f$,

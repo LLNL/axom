@@ -107,8 +107,7 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 }
 
 /*!
- * \brief Helper method to construct a single element (unstructured) mesh of
- *  the given cell type.
+ * \brief Helper method to construct a single element of the specified type.
  *
  * \note Constructs the mesh element by scaling and rotating the reference
  *  element.
@@ -116,30 +115,26 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
  * \tparam BasisType the FEM basis of the element, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the cell type of the element, e.g., MINT_QUAD
  *
- * \post mesh != AXOM_NULLPTR
- * \post mesh->getNumberOfCells()==1
- * \post mesh->getNumberOfNodes()==N
- *
  * \note Ownership of the returned pointer is propagated to the caller. The
  *  calling method is therefore responsible for managing and properly
  *  deallocating the returned mesh object.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
  * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *
- * \see get_fe_mesh()
  */
 template < int BasisType, int CellType >
-mint::UnstructuredMesh< CellType >* single_element_mesh( )
+void get_single_fe( mint::FiniteElement*& fe )
 {
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
+  EXPECT_TRUE( fe==AXOM_NULLPTR );
+
   typedef typename mint::FEBasis< BasisType,CellType > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
 
-  const double SCALE = 10.0;
-  const double ANGLE = 0.785398; // 45 degrees
-  const double SINT  = sin( ANGLE );
-  const double COST  = cos( ANGLE );
+  const bool zero_copy = true;
+  const double SCALE   = 10.0;
+  const double ANGLE   = 0.785398; // 45 degrees
+  const double SINT    = sin( ANGLE );
+  const double COST    = cos( ANGLE );
 
   const int ndims = ShapeFunctionType::dimension();
   EXPECT_TRUE( ndims==2 || ndims==3 );
@@ -154,13 +149,10 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
   double* nodes  = new double[ ndofs*ndims ];
   ShapeFunctionType::coords( nodes );
 
-  MeshType* m = new MeshType( ndims, ndofs, 1 );
-
   double centroid[]  = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
 
   for ( int i=0 ; i < ndofs ; ++i )
   {
-    cell[ i ]    = i;
     double* node = &nodes[ i*ndims ];
 
     // scale & rotate cell from the reference space to get a  test cell
@@ -190,60 +182,22 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
       node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
     }
 
-    m->addNode( node );
   }
 
-  m->addCell( cell, CellType );
+  numerics::Matrix< double > m( ndims, ndofs, nodes, zero_copy );
+  fe = new mint::FiniteElement( m, CellType );
+  mint::bind_basis< BasisType, CellType >( *fe );
+  EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 
 #ifdef MINT_FEM_DEBUG
   std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
-  mint::write_vtk( m, vtkFile );
+  mint::write_vtk(  *fe, vtkFile );
 #endif
 
   // clean up
   delete [] center;
   delete [] nodes;
   delete [] cell;
-
-  return ( m );
-}
-
-/*!
- * \brief Constructs a finite element mesh consisting of a single element.
- *
- * \param [out] m pointer to the mesh object
- * \param [out] fe finite element object bound to the mesh
- *
- * \note Ownership of the mesh and finite element objects is propagated to the
- *  caller. The calling method is therefore responsible for managing and
- *  properly deallocating these objects.
- *
- * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *
- * \see single_element_mesh()
- */
-template < int BasisType, int CellType >
-void get_fe_mesh( mint::UnstructuredMesh< CellType >*& m,
-                  mint::FiniteElement*& fe )
-{
-  EXPECT_TRUE(  m==AXOM_NULLPTR );
-  EXPECT_TRUE(  fe==AXOM_NULLPTR );
-
-  // STEP 0: construct a mesh with a single element
-  m = single_element_mesh< BasisType, CellType >( );
-
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
-
-  // STEP 1: construct FE instance.
-  fe = new mint::FiniteElement( m, 0 );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_TRUE(  fe->getBasisType()==MINT_UNDEFINED_BASIS );
-
-  mint::bind_basis< BasisType, CellType >( *fe );
-  EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 }
 
 /*!
@@ -481,24 +435,19 @@ void check_shape( )
 
   typedef typename mint::FEBasis< BasisType, CellType > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct finite element mesh
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
+  get_single_fe< BasisType, CellType >( fe );
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  fe->getNumNodes() );
 
   // STEP 1: test FE instance
   check_reference_element< ShapeFunctionType >( fe );
 
   // STEP 2: clean up
   delete fe;
-  delete m;
 }
 
 /*!
@@ -523,17 +472,12 @@ void check_jacobian( double TOL=1.e-9 )
   const double LTOL = 0.0-TOL;
   double det = 0.0;
 
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-
-  // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
+  // STEP 0: construct a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
+  get_single_fe< BasisType, CellType >( fe );
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  fe->getNumNodes() );
 
   // STEP 1: construct a Matrix object to store the jacobian
   const int ndims = fe->getPhysicalDimension();
@@ -578,7 +522,6 @@ void check_jacobian( double TOL=1.e-9 )
   // STEP 5: clean up
   delete []  rp;
   delete fe;
-  delete m;
 }
 
 /*!
@@ -600,24 +543,18 @@ void check_forward_map( double TOL=1.e-9 )
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
 
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CellType >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  fe->getNumNodes() );
 
   // STEP 1: check forward mapping
   test_forward_map( fe, TOL );
 
   // STEP 2: clean up
   delete fe;
-  delete m;
 }
 
 /*!
@@ -639,24 +576,18 @@ void check_inverse_map( double TOL=1.e-9 )
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
 
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CellType >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  fe->getNumNodes() );
 
   // STEP 1: check inverse map
   test_inverse_map( fe, TOL );
 
   // STEP 2: clean up
   delete fe;
-  delete m;
 }
 
 /*!
@@ -676,17 +607,12 @@ void point_in_cell( double TOL=1.e-9 )
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::cell::name[ CellType ] );
 
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CellType >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  fe->getNumNodes() );
 
   // STEP 0: test variables
   const int nnodes = fe->getNumNodes();
@@ -776,7 +702,6 @@ void point_in_cell( double TOL=1.e-9 )
   delete [] xc;
   delete [] rp;
   delete fe;
-  delete m;
 }
 
 /*!
@@ -847,21 +772,18 @@ void check_interp( double TOL=1.e-9 )
                          << mint::cell::name[ CellType ] );
 
   // STEP 0: construct a mesh with a single element
-  mint::UnstructuredMesh< CellType >* m = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CellType >( fe );
   EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell::num_nodes[ CellType ], m->getNumberOfNodes() );
-  EXPECT_EQ( 1, m->getNumberOfCells() );
+  EXPECT_EQ( mint::cell::num_nodes[ CellType ], fe->getNumNodes() );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   double* wgts = new double[ nnodes ];
 
   // STEP 1: setup a nodal field to interpolate
-  double* f = m-> template createField< double >( "foo", mint::NODE_CENTERED );
+  double* f = new double[ nnodes ];
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 
@@ -895,7 +817,6 @@ void check_interp( double TOL=1.e-9 )
   EXPECT_NEAR( fexpected, finterp, TOL );
 
   // STEP 6: clean up
-  delete m;
   delete fe;
   delete [] xc;
   delete [] wgts;
@@ -908,14 +829,11 @@ void check_interp( double TOL=1.e-9 )
 //------------------------------------------------------------------------------
 TEST( mint_single_fe, check_override_max_newton )
 {
-  typedef mint::UnstructuredMesh< MINT_QUAD > MeshType;
-
   const int MAX_NEWTON = 42; // test value to override max newton
 
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
-  get_fe_mesh< MINT_LAGRANGE_BASIS, MINT_QUAD >( m, fe );
+  get_single_fe< MINT_LAGRANGE_BASIS, MINT_QUAD >( fe );
 
   EXPECT_FALSE( MAX_NEWTON==fe->getMaxSolverIterations() );
 
@@ -925,7 +843,6 @@ TEST( mint_single_fe, check_override_max_newton )
 
   // clean up
   delete fe;
-  delete m;
 }
 
 //------------------------------------------------------------------------------
