@@ -163,7 +163,7 @@ public:
    * \param [in] ratio the new resize ratio.
    * \post getResizeRatio() == ratio
    */
-  virtual void getResizeRatio( double ratio ) = 0;
+  virtual void setResizeRatio( double ratio ) = 0;
 
 
 /// @}

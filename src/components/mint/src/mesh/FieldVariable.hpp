@@ -238,7 +238,7 @@ public:
    * \post N >= 0
    * \see Field::getNumTuples()
    */
-  virtual IndexType getNumTuples( ) const final
+  virtual IndexType getNumTuples( ) const final override
   { return m_field->size(); }
 
   /*!
@@ -247,7 +247,7 @@ public:
    * \post N >= 1
    * \see Field::getNumComponents()
    */
-  virtual IndexType getNumComponents( ) const final
+  virtual IndexType getNumComponents( ) const final override
   { return m_field->numComponents(); };
 
   /*!
@@ -256,7 +256,7 @@ public:
    * \post N >= this->getNumTuples()
    * \see Field::getCapacity()
    */
-  virtual IndexType getCapacity( ) const final
+  virtual IndexType getCapacity( ) const final override
   { return m_field->capacity(); };
 
   /*!
@@ -265,7 +265,7 @@ public:
    * \note Reallocation is done only if the new size exceeds the capacity.
    * \see Field::resize()
    */
-  virtual void resize( IndexType newNumTuples ) final
+  virtual void resize( IndexType newNumTuples ) final override
   {
     SLIC_ERROR_IF( m_field->isExternal(),
         "field [" << getName() << "] is pointing to an external buffer!"
@@ -279,7 +279,7 @@ public:
    * \note if newCapacity < getCapacity() this method returns immediately.
    * \see Field::reserve()
    */
-  virtual void reserve( IndexType newCapacity ) final
+  virtual void reserve( IndexType newCapacity ) final override
   {
     SLIC_ERROR_IF( m_field->isExternal(),
         "field [" << getName() << "] is pointing to an external buffer!"
@@ -292,7 +292,7 @@ public:
    * \post getCapacity()==getNumTuple()
    * \see Field::shrink()
    */
-  virtual void shrink( ) final
+  virtual void shrink( ) final override
   {
     SLIC_ERROR_IF( m_field->isExternal(),
         "field [" << getName() << "] is pointing to an external buffer!"
@@ -303,7 +303,7 @@ public:
   /*!
    * \brief Return the resize ratio of this field.
    */
-  virtual double getResizeRatio() const final
+  virtual double getResizeRatio() const final override
   {
     return m_field->getResizeRatio();
   }
@@ -313,7 +313,7 @@ public:
    * \param [in] ratio the new resize ratio.
    * \post getResizeRatio() == ratio
    */
-  virtual void getResizeRatio( double ratio ) final
+  virtual void setResizeRatio( double ratio ) final override
   {
     m_field->setResizeRatio( ratio );
   }
