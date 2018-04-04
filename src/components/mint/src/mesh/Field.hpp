@@ -153,6 +153,19 @@ public:
    */
   virtual void shrink( ) = 0;
 
+  /*!
+   * \brief Return the resize ratio of this field.
+   */
+  virtual double getResizeRatio() const = 0;
+
+  /*!
+   * \brief Set the resize ratio of this field.
+   * \param [in] ratio the new resize ratio.
+   * \post getResizeRatio() == ratio
+   */
+  virtual void getResizeRatio( double ratio ) = 0;
+
+
 /// @}
 
 /// \name Static Methods

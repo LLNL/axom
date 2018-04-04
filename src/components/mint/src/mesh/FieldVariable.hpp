@@ -300,6 +300,24 @@ public:
     m_field->shrink();
   }
 
+  /*!
+   * \brief Return the resize ratio of this field.
+   */
+  virtual double getResizeRatio() const final
+  {
+    return m_field->getResizeRatio();
+  }
+
+  /*!
+   * \brief Set the resize ratio of this field.
+   * \param [in] ratio the new resize ratio.
+   * \post getResizeRatio() == ratio
+   */
+  virtual void getResizeRatio( double ratio ) final
+  {
+    m_field->setResizeRatio( ratio );
+  }
+
 /// @}
 
   /*!

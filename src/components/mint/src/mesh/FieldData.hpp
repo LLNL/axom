@@ -509,7 +509,6 @@ private:
 /// @}
 
   int m_association;
-
   std::vector< Field* > m_fields;
   std::vector< int > m_nextidx;
   std::map< std::string, int > m_name2idx;
