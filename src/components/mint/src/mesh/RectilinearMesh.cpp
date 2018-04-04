@@ -36,7 +36,7 @@ RectilinearMesh::RectilinearMesh( int dimension, int64 ext[6] ) :
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     m_coordinates[ dim ] =
-      new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
+      new Array< double >( ext_size[ dim ], 1, ext_size[ dim ] );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   }
 
@@ -59,7 +59,7 @@ RectilinearMesh::RectilinearMesh( int dimension, int64 ext[6],
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     m_coordinates[ dim ] =
-      new Array< double >( ext_size[ dim ], ext_size[ dim ], 1 );
+      new Array< double >( ext_size[ dim ], 1, ext_size[ dim ] );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   }
 
