@@ -83,8 +83,8 @@ static constexpr int Z_COORDINATE = 2;
  *    \warning Since the memory is not owned by the MeshCoordinates object
  *     when external buffers are supplied, the MeshCoordinates object cannot
  *     dynamically grow the storage. Consequently, the number of nodes the
- *     MeshCoordinates instance can hold is fixed in this instance. All calls
- *     to append(), shrink(), resize() and reserve() will fail.
+ *     MeshCoordinates instance can hold is fixed. All calls to `shrink()` and 
+ *     `reserve()` will fail.
  *
  *    \warning Moreover, when the MeshCoordinates object goes out-of-scope, the
  *     associated buffers are not deleted. The caller owns the external data
