@@ -43,6 +43,8 @@ set( mint_headers
     ## Mesh data-model
     mesh/CellConnectivity.hpp
     mesh/CellType.hpp
+    mesh/CellTypes.hpp
+    mesh/ConnectivityArray.hpp
     mesh/CurvilinearMesh.hpp
     mesh/Extent.hpp
     mesh/Field.hpp
@@ -61,6 +63,11 @@ set( mint_headers
 
     ## utils
     utils/vtk_utils.hpp
+
+    ## Internal implementation
+    internal/ConnectivityArray_indirection.hpp
+    internal/ConnectivityArray_indirection_and_types.hpp
+    internal/ConnectivityArray_internal.hpp
    )
 
 ## mint sources
@@ -72,13 +79,13 @@ set( mint_sources
     ## Mesh data-model
     mesh/CurvilinearMesh.cpp
     mesh/Extent.cpp
+    mesh/FieldData.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
     mesh/ParticleMesh.cpp
     mesh/RectilinearMesh.cpp
     mesh/StructuredMesh.cpp
     mesh/UniformMesh.cpp
-    mesh/FieldData.cpp
 
     ## utils
     utils/vtk_utils.cpp

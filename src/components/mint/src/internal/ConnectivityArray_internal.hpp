@@ -1,0 +1,345 @@
+/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+#ifndef MINT_ConnectivityArray_internal_HXX_
+#define MINT_ConnectivityArray_internal_HXX_
+
+#include "mint/config.hpp"
+#include "mint/Array.hpp"
+#include "mint/CellTypes.hpp"
+#include "slic/slic.hpp"
+
+#ifdef MINT_USE_SIDRE
+#include "sidre/sidre.hpp"
+#endif
+
+#include <cmath>                        /* for std::ceil */
+
+namespace axom
+{
+namespace mint
+{
+namespace internal
+{
+
+#ifdef MINT_USE_SIDRE
+
+/*!
+ * \brief Initializes the members of a  a ConnectivityArray instance from a 
+ *  sidre::Group which already has data.
+ * 
+ * \param [in] group the sidre::Group to create the ConnectivityArray from.
+ * \param [out] m_values a pointer to a pointer to the values array.
+ * \param [out] m_offsets a pointer to a pointer to the offsets array.
+ * \param [out] m_types a pointer to a pointer to the types array.
+ *
+ * \note if the offset/types pointers aren't given then this method does not
+ *  check that the appropriate views exist.
+ * \note the given Group must conform to a single Blueprint topology.
+ *
+ * \pre group != AXOM_NULLPTR
+ * \pre m_values != AXOM_NULLPTR
+ *
+ * \tparam TYPE the ElementType of the IDs.
+ */
+template < CellTypes TYPE >
+void initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values, 
+                          Array< IndexType >** m_offsets=AXOM_NULLPTR,
+                          Array< CellTypes >** m_types=AXOM_NULLPTR )
+{
+  SLIC_ERROR_IF( group == AXOM_NULLPTR, 
+                   "sidre::Group pointer must not be null." );
+  SLIC_ERROR_IF( m_values == AXOM_NULLPTR,
+                   "Pointer values array must not be null." );
+  
+  SLIC_ERROR_IF( !group->hasView( "coordset" ), 
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. No child view 'coordset'." );
+  SLIC_ERROR_IF( !group->getView( "coordset" )->isString(), 
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. Child view 'coordset' " <<
+                  "does not hold a string." );
+
+  SLIC_ERROR_IF( !group->hasView( "type" ), 
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. No child view 'type'." );
+  sidre::View* type_view = group->getView( "type" );
+  SLIC_ERROR_IF( !type_view->isString(), 
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. Child view 'type' " <<
+                  "does not hold a string." );
+  SLIC_ERROR_IF( std::strcmp( type_view->getString(), "unstructured" ) != 0, 
+                  "Incorrect type found. Expected 'unstructured' but got '" <<
+                  type_view->getString() << "'.");
+
+  SLIC_ERROR_IF( !group->hasGroup( "elements" ),
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. No 'elements' group " <<
+                  "found." );
+  sidre::Group* elems_group = group->getGroup( "elements" );
+
+  SLIC_ERROR_IF( !elems_group->hasView( "shape" ), 
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. The elements group " <<
+                  "does not have a child view 'shape'." );
+  sidre::View* shape_view = elems_group->getView( "shape" );
+  SLIC_ERROR_IF( std::strcmp( cell_info< TYPE >::blueprint_name,
+                 shape_view->getString() ) != 0,
+                 "Incorrect shape found. Expected '" << 
+                 cell_info< TYPE >::blueprint_name << "' but got '" <<
+                 shape_view->getString() << "'.");
+
+  SLIC_ERROR_IF( !elems_group->hasView( "connectivity" ),
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint. The elements group " <<
+                  "does not have a child view 'connectivity'."  );
+
+  sidre::View* connec_view = elems_group->getView( "connectivity" );
+  *m_values = new Array< IndexType >( connec_view );
+  SLIC_ERROR_IF( *m_values == AXOM_NULLPTR, "Error in Array allocation." );
+
+  if ( m_offsets != AXOM_NULLPTR )
+  {
+    SLIC_ERROR_IF( !elems_group->hasView( "offsets" ), 
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint." );
+
+    sidre::View* offsets_view = elems_group->getView( "offsets" );
+    *m_offsets = new Array< IndexType >( offsets_view );
+    
+    SLIC_ERROR_IF( *m_offsets == AXOM_NULLPTR, "Error in Array allocation." );
+    SLIC_ERROR_IF( (*m_offsets)->numComponents() != 1, 
+                   "offsets array must have only 1 component not " <<
+                   (*m_offsets)->numComponents() << "." );
+    
+    if ( (*m_offsets)->size() == 0 )
+    {
+     (*m_offsets)->append(0);
+    }
+    SLIC_ERROR_IF( (**m_offsets)[0] != 0, "The offset of ID 0 must be 0 not " <<
+                                         (**m_offsets)[0] << "." );
+  }
+
+  if ( m_types != AXOM_NULLPTR )
+  {
+    SLIC_ERROR_IF( !elems_group->hasView( "types" ),
+                  "sidre::Group " << group->getPathName() << 
+                  " does not conform to mesh blueprint." );
+    
+    sidre::View* type_view = elems_group->getView( "types" );
+    *m_types = new Array< CellTypes >( type_view );
+
+    SLIC_ERROR_IF( *m_types == AXOM_NULLPTR, "Error in Array allocation." );
+    SLIC_ERROR_IF( (*m_types)->numComponents() != 1, 
+                   "Types array must have only 1 component not " <<
+                   (*m_types)->numComponents() << "." );
+  }
+}
+
+/*!
+ * \brief Initializees an empty sidre::Group to hold a ConnectivityArray.
+ * 
+ * \param [out] group the empty sidre::Group.
+ * \param [in] coordset the name of the Blueprint coordinate set to associate
+ *  this ConnectivityArray with.
+ * \param [in] create_offsets iff true will create a view for the offsets array.
+ * \param [in] create_types iff true will create a view for the types array.
+ *
+ * \pre group != AXOM_NULLPTR
+ * \pre group->getNumGroups() == group->getNumViews() == 0
+ *
+ * \tparam TYPE the ElementType of the IDs.
+ */
+template < CellTypes TYPE >
+void initializeGroup( sidre::Group* group, const std::string& coordset, 
+                      bool create_offsets=false, bool create_types=false )
+{
+  SLIC_ERROR_IF( group == AXOM_NULLPTR, 
+                   "sidre::Group pointer must not be null." );
+  SLIC_ERROR_IF( group->getNumGroups() != 0, "sidre::Group is not empty." );
+  SLIC_ERROR_IF( group->getNumViews() != 0, "sidre::Group is not empty." );
+
+  group->createView( "coordset" )->setString( coordset );
+  group->createView( "type" )->setString( "unstructured" );
+
+  sidre::Group* elems_group = group->createGroup( "elements" );
+  elems_group->createView( "shape" )
+                             ->setString( cell_info< TYPE >::blueprint_name );
+
+  elems_group->createView( "connectivity" );
+  
+  if ( create_offsets ) 
+  {
+    elems_group->createView( "offsets" );
+  }
+
+  if ( create_types ) 
+  {
+    elems_group->createView( "types" );
+  }
+}
+
+#endif
+
+/*!
+ * \brief Append multiple IDs to the members of a ConnectivityArray.
+ *
+ * \param [in] n_IDs the number of IDs to append.
+ * \param [in] values pointer to the values to set, of length at least 
+ *  n_values
+ * \param [in] the offsets array of length n_IDs + 1.
+ * \param [in/out] a pointer to the values array.
+ * \param [in/out] a pointer to the offsets array.
+ *
+ * \pre n_IDs >= 0
+ * \pre values != AXOM_NULLPTR
+ * \pre offsets != AXOM_NULLPTR
+ * \pre m_values != AXOM_NULLPTR
+ * \pre m_offsets != AXOM_NULLPTR
+ */
+inline void append( IndexType n_IDs, const IndexType* values, 
+                    const IndexType* offsets, Array< IndexType >* m_values,
+                    Array< IndexType >* m_offsets )
+{
+  SLIC_ASSERT( values != AXOM_NULLPTR );
+  SLIC_ASSERT( offsets != AXOM_NULLPTR );
+  SLIC_ASSERT( m_values != AXOM_NULLPTR );
+  SLIC_ASSERT( m_offsets != AXOM_NULLPTR );
+
+  IndexType n_values_to_add = offsets[ n_IDs ] - offsets[0];
+  IndexType old_n_values = m_values->size();
+  IndexType old_n_offsets = m_offsets->size();
+
+  m_offsets->append( offsets + 1, n_IDs );
+  m_values->append( values, n_values_to_add );
+
+  /* Correct the appended offsets. */
+  IndexType* m_offsets_ptr = m_offsets->getData();
+  const IndexType correction = old_n_values - offsets[0];
+  for ( IndexType i = 0; i < n_IDs; ++i )
+  {
+    m_offsets_ptr[ old_n_offsets + i ] += correction; 
+  }
+}
+
+/*!
+ * \brief Sets the values of multiple IDs starting with the given ID.
+ *
+ * \param [in] start_ID the ID to start at.
+ * \param [in] values pointer to the values to set, of length at least 
+ *  the sum of the number of values of each ID to set.
+ * \param [in] n_IDs the number of IDs to set.
+ * \param [in/out] a pointer to the values array.
+ * \param [in] m_offsets a pointer to the offsets Array.
+ * 
+ * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
+ * \pre values != AXOM_NULLPTR
+ * \pre m_values != AXOM_NULLPTR
+ */
+inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
+                 Array< IndexType >* m_values, Array< IndexType >* m_offsets ) 
+{
+  SLIC_ASSERT( start_ID >= 0 );
+  SLIC_ASSERT( start_ID + n_IDs <= m_offsets->size() - 1 );
+  SLIC_ASSERT( values != AXOM_NULLPTR );
+  SLIC_ASSERT( m_values != AXOM_NULLPTR );
+
+  IndexType offset = (*m_offsets)[ start_ID ];
+  IndexType n_values = (*m_offsets)[ start_ID + n_IDs ] - offset;
+  m_values->set( values, n_values, offset );
+}
+
+/*!
+ * \brief Insert the values of a new ID before the given ID.
+ *
+ * \param [in] start_ID the ID to start at.
+ * \param [in] n_IDs the number of IDs to insert.
+ * \param [in] values pointer to the values to set, of length at least 
+ *  n_values
+ * \param [in] the offsets array of length n_IDs + 1.
+ * \param [in/out] m_values a pointer to the values Array.
+ * \param [in/out] m_offsets a pointer to the offsets Array.
+ *
+ * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
+ * \pre n_IDs >= 0
+ * \pre values != AXOM_NULLPTR
+ * \pre offsets != AXOM_NULLPTR
+ * \pre m_values != AXOM_NULLPTR
+ * \pre m_offsets != AXOM_NULLPTR
+ */
+inline void insert( IndexType start_ID, IndexType n_IDs, 
+                    const IndexType* values, const IndexType* offsets,
+                    Array< IndexType >* m_values, 
+                    Array< IndexType >* m_offsets )
+{
+  SLIC_ASSERT( start_ID >= 0 );
+  SLIC_ASSERT( start_ID <= m_offsets->size() - 1 );
+  SLIC_ASSERT( n_IDs >= 0 );
+  SLIC_ASSERT( values != AXOM_NULLPTR );
+  SLIC_ASSERT( offsets != AXOM_NULLPTR );
+  SLIC_ASSERT( m_values != AXOM_NULLPTR );
+  SLIC_ASSERT( m_offsets != AXOM_NULLPTR );
+
+  IndexType n_values = offsets[ n_IDs ] - offsets[0];
+  IndexType* m_offsets_ptr = m_offsets->getData();
+  IndexType insert_pos = m_offsets_ptr[ start_ID ];
+
+  /* Increment the offsets after the insertion position. */
+  IndexType n_offsets = m_offsets->size();
+  for ( IndexType i = start_ID + 1; i < n_offsets; ++i )
+  {
+    m_offsets_ptr[ i ] += n_values; 
+  }
+
+  m_offsets->insert( offsets + 1, n_IDs, start_ID + 1 );
+  m_values->insert( values, n_values, insert_pos );
+
+  /* Correct the inserted offsets. */
+  m_offsets_ptr = m_offsets->getData();
+  const IndexType correction = insert_pos - offsets[0];
+  for ( IndexType i = 0; i < n_IDs; ++i )
+  {
+    m_offsets_ptr[ start_ID + 1 + i ] += correction; 
+  }
+}
+
+
+IndexType calcValueCapacity( IndexType n_IDs, IndexType n_values,
+                              IndexType ID_capacity, IndexType value_capacity )
+{
+  if ( value_capacity == USE_DEFAULT )
+  {
+    if ( n_IDs == 0 )
+    {
+      value_capacity = ID_capacity * MAX_NUM_NODES;
+    }
+    else
+    {
+      double avg_n_vals =  double( n_values ) / n_IDs; 
+      value_capacity = std::ceil( avg_n_vals * n_IDs );
+    }
+  }
+
+  return value_capacity;
+}
+
+
+} /* namespace internal */
+} /* namespace mint */
+} /* namespace axom */
+
+#endif  /* MINT_ConnectivityArray_internal_HXX_ */
