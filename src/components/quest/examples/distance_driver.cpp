@@ -222,7 +222,7 @@ BoundingBox< double,3 > compute_bounds( axom::mint::Mesh * mesh)
   BoundingBox< double,3 > meshBB;
   Point< double,3 > pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
     mesh->getMeshNode( i, pt.data() );
     meshBB.addPoint( pt );
@@ -382,8 +382,8 @@ int main( int argc, char * * argv )
   axom::mint::Mesh * surface_mesh = new TriangleMesh( 3 );
   reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
   SLIC_INFO("Mesh has "
-            << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-            << surface_mesh->getMeshNumberOfCells() << " cells.");
+            << surface_mesh->getNumberOfNodes() << " nodes and "
+            << surface_mesh->getNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;

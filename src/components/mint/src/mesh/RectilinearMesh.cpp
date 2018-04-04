@@ -19,8 +19,6 @@
 #include "mint/config.hpp"         /* For IndexType */
 #include "mint/MeshType.hpp"          /* For MINT_STRUCTURED_RECTILINEAR_MESH */
 
-#include "axom/Types.hpp"             /* For AXOM_NULLPTR */
-
 namespace axom
 {
 namespace mint

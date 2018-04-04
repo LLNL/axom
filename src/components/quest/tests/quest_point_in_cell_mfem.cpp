@@ -1312,7 +1312,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   // -- value is 1 when isoparametric transform succeeds, 0 otherwise
   {
     int numSuccesses = 0;
-    const int numCells =  cmesh.getMeshNumberOfCells();
+    const int numCells =  cmesh.getNumberOfCells();
     SLIC_INFO("Mesh has " << numCells << " cells.");
 
     std::string name = "query_status";

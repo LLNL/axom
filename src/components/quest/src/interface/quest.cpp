@@ -99,7 +99,7 @@ struct QuestAccelerator
     m_meshCenterOfMass = SpacePt::zero();
 
     SpacePt pt;
-    int numMeshNodes = m_surface_mesh->getMeshNumberOfNodes();
+    int numMeshNodes = m_surface_mesh->getNumberOfNodes();
     for ( int i=0 ; i < numMeshNodes ; ++i )
     {
       m_surface_mesh->getMeshNode( i, pt.data() );

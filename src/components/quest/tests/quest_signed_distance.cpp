@@ -170,7 +170,7 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
   BoundingBox< double,3 > bb;
   Point< double,3 > pt;
 
-  const int nnodes = mesh->getMeshNumberOfNodes();
+  const int nnodes = mesh->getNumberOfNodes();
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     mesh->getMeshNode( inode, pt.data() );
@@ -242,7 +242,7 @@ TEST( quest_signed_distance, sphere_test )
   {
 
     Point< double,3 > pt;
-    umesh->getNode( inode, pt.data() );
+    umesh->getMeshNode( inode, pt.data() );
 
     double computed = signed_distance.computeDistance( pt );
     double exact    = analytic_sphere.computeSignedDistance( pt.data() );

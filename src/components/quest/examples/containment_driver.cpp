@@ -97,7 +97,7 @@ GeometricBoundingBox compute_bounds( mint::Mesh * mesh)
   GeometricBoundingBox meshBB;
   SpacePt pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
     mesh->getMeshNode( i, pt.data() );
     meshBB.addPoint( pt );
@@ -178,7 +178,7 @@ void testIntersectionOnRegularGrid()
               if( primal::intersect( unitTri, blockBB))
               {
                 // Add to debug mesh
-                mint::IndexType vStart = debugMesh->getMeshNumberOfNodes();
+                mint::IndexType vStart = debugMesh->getNumberOfNodes();
 
                 debugMesh->addNode( blockBB.getMin()[0],
                                     blockBB.getMin()[1], blockBB.getMin()[2]);
@@ -238,7 +238,7 @@ void testContainmentOnRegularGrid(
   mint::UniformMesh * umesh =
     new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
-  const int nnodes    = umesh->getMeshNumberOfNodes();
+  const int nnodes    = umesh->getNumberOfNodes();
   int* containment    = umesh->createField< int >( "containment",
                                                    mint::NODE_CENTERED );
 
@@ -275,7 +275,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh * mesh,
                                       mint::IndexType cellIndex)
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
-  SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getMeshNumberOfCells());
+  SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
 
   TriVertIndices tvInd;
   mesh->getMeshCell( cellIndex, tvInd.data() );
@@ -315,7 +315,7 @@ void print_surface_stats( mint::Mesh * mesh)
 
   MinMaxRange meshEdgeLenRange;
   MinMaxRange meshTriAreaRange;
-  const int nCells = mesh->getMeshNumberOfCells();
+  const int nCells = mesh->getNumberOfCells();
   typedef std::set<mint::IndexType> TriIdxSet;
   TriIdxSet badTriangles;
 
@@ -389,7 +389,7 @@ void print_surface_stats( mint::Mesh * mesh)
 
 
   // Log the results
-  const int nVerts = mesh->getMeshNumberOfNodes();
+  const int nVerts = mesh->getNumberOfNodes();
   SLIC_INFO(fmt::format("Mesh has {} vertices  and {} triangles.", nVerts,
                         nCells));
 
@@ -505,8 +505,8 @@ int main( int argc, char * * argv )
   reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
-            << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-            << surface_mesh->getMeshNumberOfCells() << " cells.");
+            << surface_mesh->getNumberOfNodes() << " nodes and "
+            << surface_mesh->getNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;

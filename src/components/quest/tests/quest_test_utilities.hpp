@@ -188,8 +188,8 @@ axom::mint::Mesh * make_octahedron_mesh()
     triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE);
   }
 
-  SLIC_ASSERT( NUM_VERTS == triMesh->getMeshNumberOfNodes() );
-  SLIC_ASSERT( NUM_TRIS == triMesh->getMeshNumberOfCells() );
+  SLIC_ASSERT( NUM_VERTS == triMesh->getNumberOfNodes() );
+  SLIC_ASSERT( NUM_TRIS == triMesh->getNumberOfCells() );
 
   return triMesh;
 }

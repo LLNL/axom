@@ -238,7 +238,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
 
 inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
-  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
+  SLIC_ASSERT(surface_mesh->getMeshCellType( i ) == MINT_TRIANGLE );
   primal::Point<int, 3> triCell;
   Triangle3 tri;
   surface_mesh->getMeshCell(i, triCell.data());
@@ -259,7 +259,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   // degenerate triangles.
   std::vector< std::pair<int, int> > retval;
 
-  const int ncells = surface_mesh->getMeshNumberOfCells();
+  const int ncells = surface_mesh->getNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
 
   Triangle3 t1 = Triangle3();
@@ -312,7 +312,7 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
                             const std::vector<int> & d)
 {
   // Create new Field variables to hold degenerate and intersecting info
-  const int num_cells = mesh->getMeshNumberOfCells();
+  const int num_cells = mesh->getNumberOfCells();
   int* intersectptr = mesh->createField< int >(
                             "nbr_intersection", mint::CELL_CENTERED );
   int* dgnptr       = mesh->createField< int >(
@@ -445,8 +445,8 @@ int main( int argc, char** argv )
   reader = AXOM_NULLPTR;
 
   SLIC_INFO(
-    "Mesh has " << surface_mesh->getMeshNumberOfNodes() << " vertices and "
-                <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
+    "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
+                <<  surface_mesh->getNumberOfCells() << " triangles.");
 
   // Detect collisions
   {
@@ -471,7 +471,7 @@ int main( int argc, char** argv )
     SLIC_INFO("Detecting intersecting triangles took "
               << timer.elapsedTimeInSec() << " seconds.");
 
-    announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
+    announceMeshProblems(surface_mesh->getNumberOfCells(),
                          collisions.size(), degenerate.size());
 
     saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
@@ -497,8 +497,8 @@ int main( int argc, char** argv )
     SLIC_INFO("Vertex welding took "
               << timer.elapsedTimeInSec() << " seconds.");
     SLIC_INFO("After welding, mesh has "
-              << surface_mesh->getMeshNumberOfNodes() << " vertices and "
-              <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
+              << surface_mesh->getNumberOfNodes() << " vertices and "
+              <<  surface_mesh->getNumberOfCells() << " triangles.");
 
     mint::write_vtk(surface_mesh, params.weldMeshName() );
   }

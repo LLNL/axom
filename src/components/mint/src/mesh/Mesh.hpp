@@ -24,6 +24,7 @@
 #include "mint/FieldAssociation.hpp"  // for FieldAssociation enum
 #include "mint/FieldData.hpp"         // for mint::FieldData
 #include "mint/MeshType.hpp"          // for MeshType enum and property traits
+#include "mint/MeshCoordinates.hpp"   // for mint::MeshCoordinates
 
 #include "slic/slic.hpp"              // for SLIC macros
 
@@ -45,42 +46,37 @@ namespace mint
 /* Forward declarations */
 class Field;
 
+/*!
+ * \class Mesh
+ *
+ * \brief TODO:
+ *
+ * \note The mesh class is a base class and should not be used directly.
+ *
+ * \see mint::UnstructuredMesh
+ * \see mint::StructuredMesh
+ * \see mint::CurvilinearMesh
+ * \see mint::RectilinearMesh
+ * \see mint::UniformMesh
+ * \see mint::Field
+ * \see mint::FieldData
+ */
 class Mesh
 {
 public:
-  /*!
-   * \brief Constructor.
-   * \param [in] ndims the number of dimensions
-   * \param [in] type the mesh type.
-   * \param [in] blockId the block ID for this mesh instance.
-   * \param [in] partId the partition ID for this mesh instance.
-   */
-  Mesh( int ndims, int type, int blockId, int partId );
-
-#ifdef MINT_USE_SIDRE
-  /*!
-   * \brief Constructor for use with a group that already has data.
-   * \param [in] group the sidre::Group to use.
-   * \pre group != AXOM_NULLPTR.
-   */
-  Mesh( sidre::Group* group );
 
   /*!
-   * \brief Constructor for use with an empty group.
-   * \param [in] group the sidre::Group to use.
-   * \param [in] ndims the number of dimensions
-   * \param [in] type the mesh type.
-   * \param [in] blockId the block ID for this mesh instance.
-   * \param [in] partId the partition ID for this mesh instance.
-   * \pre group != AXOM_NULLPTR.
+   * \brief Default constructor. Disabled.
    */
-  Mesh( sidre::Group* group, int ndims, int type, int blockId, int partId );
-#endif
+  Mesh( ) = delete;
 
   /*!
    * \brief Destructor.
    */
   virtual ~Mesh();
+
+/// \name Mesh Attribute Query Methods
+/// @{
 
   /*!
    * \brief Returns the dimension for this mesh instance.
@@ -113,6 +109,38 @@ public:
   { return m_type; }
 
   /*!
+   * \brief Returns the number of nodes in this mesh instance.
+   * \return N the number of nodes
+   * \post N >= 0
+   */
+  inline IndexType getNumberOfNodes() const
+  { return m_num_nodes; }
+
+  /*!
+   * \brief Returns the number of cells in this mesh instance.
+   * \return N the number of cells
+   * \post N >= 0
+   */
+  inline IndexType getNumberOfCells() const
+  { return m_num_cells; }
+
+  /*!
+   * \brief Returns the number of faces in this mesh instance.
+   * \return N the number of faces
+   * \post N >= 0
+   */
+  inline IndexType getNumberOfFaces() const
+  { return m_num_faces; }
+
+  /*!
+   * \brief Returns the number of edges in this mesh instance.
+   * \return N the number of edges
+   * \post N >= 0
+   */
+  inline IndexType getNumberOfEdges() const
+  { return m_num_edges; }
+
+  /*!
    * \brief Checks if this mesh instance has explicit coordinates.
    * \return status true iff the mesh defines coordinates explicitly.
    */
@@ -140,6 +168,34 @@ public:
    *  hierarchy, else, false.
    */
   inline bool hasSidreGroup( ) const;
+
+/// @}
+
+  /*!
+   * \brief Returns pointer to the requested mesh coordinate buffer.
+   *
+   * \param [in] dim the dimension of the requested coordinate buffer
+   * \return ptr pointer to the coordinate buffer.
+   *
+   * \pre hasExplicitCoordinates()==true
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim==X_COORDINATE || dim==Y_COORDINATE || dim==Z_COORDINATE
+   * \post ptr != AXOM_NULLPTR
+   *
+   * \see MeshCoordinates
+   */
+  /// @{
+
+  inline double* getCoordinateArray( int dim );
+  inline const double* getCoordinateArray( int dim ) const;
+
+  /// @}
+
+  void getMeshNode( IndexType nodeIdx, double* node ) const;
+
+  void getMeshCell( IndexType cellIdx, IndexType* cell ) const;
+
+  int getMeshCellType( IndexType cellIdx ) const;
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
 /// @{
@@ -285,81 +341,65 @@ public:
 
 /// @}
 
-  /// \name Virtual API
-  /// @{
-
-  /*!
-   * \brief Returns the total number of nodes in the mesh.
-   * \return numNodes the total number of nodes.
-   * \post numNodes >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual IndexType getMeshNumberOfNodes() const = 0;
-
-  /*!
-   * \brief Returns the total number of cells in the mesh.
-   * \return numCells the total number of cells.
-   * \post numCells >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual IndexType getMeshNumberOfCells() const = 0;
-
-  /*!
-   * \brief Returns the number of nodes for the given cell.
-   * \param cellIdx the index of the cell in query.
-   * \return numCellNodes the number of nodes in the given cell.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual int getMeshNumberOfCellNodes( IndexType cellIdx ) const = 0;
-
-  /*!
-   * \brief Returns the cell connectivity of the given cell.
-   * \param [in] cellIdx the index of the cell in query.
-   * \param [out] cell user-supplied buffer to store cell connectivity info.
-   * \note cell must have sufficient size to hold the connectivity information.
-   * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != AXOM_NULLPTR.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshCell( IndexType cellIdx, IndexType* cell ) const = 0;
-
-  /*!
-   * \brief Returns the cell type of the cell associated with the given Id.
-   * \param [in] cellIdx the index of the cell in query.
-   * \return cellType the cell type of the cell at the given index.
-   */
-  virtual int getMeshCellType( IndexType cellIdx ) const = 0;
-
-  /*!
-   * \brief Returns the coordinates of the given node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] coordinates user-supplied buffer to store the node coordinates.
-   * \pre 0 <= nodeIdx < this->getMeshNumberOfNodes()
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshNode( IndexType nodeIdx,
-                            double* coordinates ) const = 0;
-
-  /*!
-   * \brief Returns the coordinate of a mesh node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
-   * \return c the coordinate value of the node at
-   * \pre dim >= 0 && dim < m_ndims
-   */
-  virtual double getMeshNodeCoordinate( IndexType nodeIdx, int dim ) const = 0;
-
-  /// @}
-
 protected:
 
-  int m_ndims;          /*! mesh dimension */
-  int m_type;           /*! the type of the mesh */
-  int m_block_idx;      /*! the Block ID of the mesh */
-  int m_part_idx;       /*! the partition ID of the mesh */
+/// \name Protected Members
+/// @{
+
+  int m_ndims;                    /*! mesh dimension */
+  int m_type;                     /*! the type of the mesh */
+  int m_block_idx;                /*! the Block ID of the mesh */
+  int m_part_idx;                 /*! the partition ID of the mesh */
+
+  IndexType m_num_cells;          /*! The number of cells in the mesh */
+  IndexType m_num_faces;          /*! The number of faces in the mesh */
+  IndexType m_num_edges;          /*! The number of edges in the mesh */
+  IndexType m_num_nodes;          /*! The number of nodes in the mesh */
+
+  MeshCoordinates* m_coordinates; /*! The mesh coordinates object */
+
+#ifdef MINT_USE_SIDRE
+  sidre::Group* m_group;
+  sidre::Group* m_fields_group;
+  sidre::Group* m_coordsets_group;
+  sidre::Group* m_topologies_group;
+#endif
+
+/// @}
+
+/// \name Protected Constructors (used in derived classes )
+/// @{
+
+  /*!
+   * \brief Constructor.
+   * \param [in] ndims the number of dimensions
+   * \param [in] type the mesh type.
+   * \param [in] blockId the block ID for this mesh instance.
+   * \param [in] partId the partition ID for this mesh instance.
+   */
+  Mesh( int ndims, int type, int blockId, int partId );
+
+#ifdef MINT_USE_SIDRE
+  /*!
+   * \brief Constructor for use with a group that already has data.
+   * \param [in] group the sidre::Group to use.
+   * \pre group != AXOM_NULLPTR.
+   */
+  explicit Mesh( sidre::Group* group );
+
+  /*!
+   * \brief Constructor for use with an empty group.
+   * \param [in] group the sidre::Group to use.
+   * \param [in] ndims the number of dimensions
+   * \param [in] type the mesh type.
+   * \param [in] blockId the block ID for this mesh instance.
+   * \param [in] partId the partition ID for this mesh instance.
+   * \pre group != AXOM_NULLPTR.
+   */
+  Mesh( sidre::Group* group, int ndims, int type, int blockId, int partId );
+#endif
+
+/// @}
 
 private:
 
@@ -383,28 +423,12 @@ private:
    */
   void deallocateFieldData( );
 
+/// \name Private Members
+/// @{
+
   FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
 
-#ifdef MINT_USE_SIDRE
-  sidre::Group * m_group;
-#endif
-
-  IndexType * m_num_cells;       /*! The number of cells in the mesh */
-  IndexType* m_cell_capacity;    /*! The cell storage capacity */
-  double* m_cell_resize_ratio;    /*! The cell resize ratio */
-
-  IndexType* m_num_faces;        /*! The number of faces in the mesh */
-  IndexType* m_face_capacity;    /*! The face storage capacity */
-  double* m_face_resize_ratio;    /*! The face resize ratio */
-
-  IndexType* m_num_edges;        /*! The number of edges in the mesh */
-  IndexType* m_edge_capacity;    /*! The edge storage capacity */
-  double* m_edge_resize_ratio;    /*! The edge resize ratio */
-
-  IndexType* m_num_nodes;        /*! The number of nodes in the mesh */
-  IndexType* m_node_capacity;    /*! The node storage capacity */
-  double* m_node_resize_ratio;    /*! The node resize ratio */
-
+/// @}
 
   DISABLE_COPY_AND_ASSIGNMENT( Mesh );
   DISABLE_MOVE_AND_ASSIGNMENT( Mesh );
@@ -414,6 +438,33 @@ private:
 //  IMPLEMENTATION OF TEMPLATE & IN-LINE METHODS
 //------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+inline double* Mesh::getCoordinateArray( int dim )
+{
+  SLIC_ERROR_IF( !hasExplicitCoordinates(),
+        "mesh of type [" << m_type << "] does not have explicit coordinates" );
+  SLIC_ERROR_IF( ( (dim >= 0) && ( dim < getDimension() ) ),
+    "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
+  getDimension() << "]" );
+
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  return m_coordinates->getCoordinateArray( dim );
+}
+
+//------------------------------------------------------------------------------
+inline const double* Mesh::getCoordinateArray( int dim ) const
+{
+  SLIC_ERROR_IF( !hasExplicitCoordinates(),
+       "mesh of type [" << m_type << "] does not have explicit coordinates" );
+  SLIC_ERROR_IF( ( (dim >= 0) && ( dim < getDimension() ) ),
+   "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
+   getDimension() << "]" );
+
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  return m_coordinates->getCoordinateArray( dim );
+}
+
+//------------------------------------------------------------------------------
 inline bool Mesh::hasSidreGroup( ) const
 {
 #ifdef MINT_USE_SIDRE
@@ -431,17 +482,17 @@ inline IndexType Mesh::getNumTuples( int association ) const
   switch ( association )
   {
   case NODE_CENTERED:
-    num_tuples = *m_num_nodes;
+    num_tuples = m_num_nodes;
     break;
   case CELL_CENTERED:
-    num_tuples = *m_num_cells;
+    num_tuples = m_num_cells;
     break;
   case FACE_CENTERED:
-    num_tuples = *m_num_faces;
+    num_tuples = m_num_faces;
     break;
   default:
     SLIC_ASSERT( association==EDGE_CENTERED );
-    num_tuples = *m_num_edges;
+    num_tuples = m_num_edges;
   } // END switch
 
   return ( num_tuples );

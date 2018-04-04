@@ -62,23 +62,26 @@ namespace internal
 void write_points( const Mesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
   const int mesh_dim = mesh->getDimension();
+
+  const double* x = mesh->getCoordinateArray( X_COORDINATE );
+  SLIC_ASSERT( x != AXOM_NULLPTR );
+
+  const double* y = ( mesh_dim==2 ) ?
+      mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
+  const double* z = ( mesh_dim==3 ) ?
+      mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
 
   file << "POINTS " << num_nodes << " double\n";
   for ( IndexType nodeIdx = 0 ; nodeIdx < num_nodes ; ++nodeIdx )
   {
-    file << mesh->getMeshNodeCoordinate( nodeIdx, 0 );
-    for ( int dim = 1 ; dim < mesh_dim ; ++dim )
-    {
-      file << " " << mesh->getMeshNodeCoordinate( nodeIdx, dim );
-    }
-    for ( int dim = 0 ; dim < 3 - mesh_dim ; ++dim )
-    {
-      file << " 0.0";
-    }
-    file << std::endl;
+    double xx = x[ nodeIdx ];
+    double yy = ( y != AXOM_NULLPTR ) ? y[ nodeIdx ] : 0.0;
+    double zz = ( z != AXOM_NULLPTR ) ? z[ nodeIdx ] : 0.0;
+    file << xx << " " << yy << " " << zz << std::endl;
   }
+
 }
 
 /*!
@@ -90,49 +93,51 @@ void write_points( const Mesh* mesh, std::ofstream& file )
  */
 void write_cells( const Mesh* mesh, std::ofstream& file )
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  const IndexType num_cells = mesh->getMeshNumberOfCells();
+  // TODO: implement this
+  SLIC_ERROR( "Needs refactoring once the UnstructuredMesh is refactored!" );
+//  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+//  const IndexType num_cells = mesh->getNumberOfCells();
 
   /* First need to get total size of the connectivity array. */
   /* If the mesh only has one cell type we can calculate this directly. */
-  int max_cell_nodes = mesh->getMeshNumberOfCellNodes( 0 );
-  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
-
-  /* If the mesh has mixed cells then we need to loop over the elements. */
-  if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
-  {
-    total_size = num_cells;
-    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-    {
-      const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-      max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
-      total_size += num_cell_nodes;
-    }
-  }
-  file << "CELLS " << num_cells << " " << total_size << std::endl;
-
-  /* Write out the mesh cell connectivity. */
-  IndexType cell_nodes[ max_cell_nodes ];
-  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-  {
-    const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-    mesh->getMeshCell( cellIdx, cell_nodes );
-
-    file << num_cell_nodes;
-    for ( int i = 0 ; i < num_cell_nodes ; ++i )
-    {
-      file << " " << cell_nodes[ i ];
-    }
-    file << std::endl;
-  }
-
-  /* Write out the mesh cell types. */
-  file << "CELL_TYPES " << num_cells << std::endl;
-  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-  {
-    int cell_type = mesh->getMeshCellType( cellIdx );
-    file << cell::vtk_types[ cell_type ] << std::endl;
-  }
+//  int max_cell_nodes = mesh->getMeshNumberOfCellNodes( 0 );
+//  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
+//
+//  /* If the mesh has mixed cells then we need to loop over the elements. */
+//  if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
+//  {
+//    total_size = num_cells;
+//    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+//    {
+//      const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
+//      max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
+//      total_size += num_cell_nodes;
+//    }
+//  }
+//  file << "CELLS " << num_cells << " " << total_size << std::endl;
+//
+//  /* Write out the mesh cell connectivity. */
+//  IndexType cell_nodes[ max_cell_nodes ];
+//  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+//  {
+//    const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
+//    mesh->getMeshCell( cellIdx, cell_nodes );
+//
+//    file << num_cell_nodes;
+//    for ( int i = 0 ; i < num_cell_nodes ; ++i )
+//    {
+//      file << " " << cell_nodes[ i ];
+//    }
+//    file << std::endl;
+//  }
+//
+//  /* Write out the mesh cell types. */
+//  file << "CELL_TYPES " << num_cells << std::endl;
+//  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+//  {
+//    int cell_type = mesh->getMeshCellType( cellIdx );
+//    file << cell::vtk_types[ cell_type ] << std::endl;
+//  }
 }
 
 /*!
@@ -484,7 +489,7 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
   }
 
   /* Write out the node data if any. */
-  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
   const FieldData* node_data = mesh->getFieldData( mint::NODE_CENTERED );
   if ( node_data->getNumFields() > 0 )
   {
@@ -493,7 +498,7 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
   }
 
   /* Write out the cell data if any. */
-  const IndexType num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_cells = mesh->getNumberOfCells();
   const FieldData* cell_data = mesh->getFieldData( mint::CELL_CENTERED );
   if ( cell_data->getNumFields() > 0 )
   {

@@ -132,7 +132,7 @@ private:
    * \param [in] icell the index of the cell on the surface mesh.
    * \return box bounding box of the cell.
    * \pre m_surfaceMesh != AXOM_NULLPTR
-   * \pre icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells()
+   * \pre icell >= 0 && icell < m_surfaceMesh->getNumberOfCells()
    */
   BoxType getCellBoundingBox( axom::mint::IndexType icell );
 
@@ -267,15 +267,18 @@ SignedDistance< NDIMS >::SignedDistance(
   SLIC_ASSERT( maxLevels >= 1 );
 
   m_surfaceMesh    = surfaceMesh;
-  const axom::mint::IndexType ncells = m_surfaceMesh->getMeshNumberOfCells();
-  const axom::mint::IndexType nnodes = m_surfaceMesh->getMeshNumberOfNodes();
+  const axom::mint::IndexType ncells = m_surfaceMesh->getNumberOfCells();
+  const axom::mint::IndexType nnodes = m_surfaceMesh->getNumberOfNodes();
 
   // compute bounding box of surface mesh
   // NOTE: this should be changed to an oriented bounding box in the future.
-  PointType pt;
   for ( axom::mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
-    m_surfaceMesh->getMeshNode( inode, pt.data() );
+    PointType pt;
+    for ( int i=0; i < NDIMS; ++i )
+    {
+      pt[ i ] = m_surfaceMesh->getCoordinateArray( i )[ inode ];
+    }
     m_boxDomain.addPoint( pt );
   }
 
@@ -605,7 +608,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
 {
   // Sanity checks
   SLIC_ASSERT( m_surfaceMesh != AXOM_NULLPTR );
-  SLIC_ASSERT( icell >= 0 && icell < m_surfaceMesh->getMeshNumberOfCells() );
+  SLIC_ASSERT( icell >= 0 && icell < m_surfaceMesh->getNumberOfCells() );
 
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.

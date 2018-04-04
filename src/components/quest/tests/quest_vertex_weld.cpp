@@ -56,13 +56,13 @@ TEST( quest_vertex_weld, emptyMesh)
 
   TriangleMesh* mesh = new TriangleMesh(DIM);
 
-  EXPECT_EQ(0, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(0, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(0, mesh->getNumberOfNodes());
+  EXPECT_EQ(0, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
-  EXPECT_EQ(0, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(0, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(0, mesh->getNumberOfNodes());
+  EXPECT_EQ(0, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -80,13 +80,13 @@ TEST( quest_vertex_weld, onlyVertices)
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
 
-  EXPECT_EQ(3, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(0, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(3, mesh->getNumberOfNodes());
+  EXPECT_EQ(0, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
-  EXPECT_EQ(3, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(0, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(3, mesh->getNumberOfNodes());
+  EXPECT_EQ(0, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -102,15 +102,15 @@ TEST( quest_vertex_weld, oneTriangle)
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
 
-  EXPECT_EQ(3, mesh->getMeshNumberOfNodes());
+  EXPECT_EQ(3, mesh->getNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
-  EXPECT_EQ(1, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(1, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
-  EXPECT_EQ(3, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(1, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(3, mesh->getNumberOfNodes());
+  EXPECT_EQ(1, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -128,19 +128,19 @@ TEST( quest_vertex_weld, degenerateTriangle)
   insertVertex(mesh, 1, 1, 1);
   insertVertex(mesh, 1.01, 1.01, 1.01); // should be welded
 
-  EXPECT_EQ(4, mesh->getMeshNumberOfNodes());
+  EXPECT_EQ(4, mesh->getNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
   insertTriangle(mesh, 0, 1, 1); // degenerate: only two distinct vertices
   insertTriangle(mesh, 1, 1, 1); // degenerate: one one distinct vertex
   insertTriangle(mesh, 1, 2, 3); // degenerate: verts 2 and 3 should be welded
-  EXPECT_EQ(4, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(4, mesh->getNumberOfCells());
 
   const double eps = .1;
   axom::quest::weldTriMeshVertices(&mesh, eps);
 
-  EXPECT_EQ(3, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(1, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(3, mesh->getNumberOfNodes());
+  EXPECT_EQ(1, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -162,17 +162,17 @@ TEST( quest_vertex_weld, vertexAdjacentTrianglePair)
   insertVertex(mesh, 0, 1, 1);
   insertVertex(mesh, 1, 1, 1); // Duplicate
 
-  EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
+  EXPECT_EQ(6, mesh->getNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
   insertTriangle(mesh, 3, 4, 5);
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
   // Duplicated vertices should have been removed
-  EXPECT_EQ(5, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(5, mesh->getNumberOfNodes());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -194,17 +194,17 @@ TEST( quest_vertex_weld, edgeAdjacentTrianglePair)
   insertVertex(mesh, 1, 1, 0); // Duplicate
   insertVertex(mesh, 1, 1, 1); // Duplicate
 
-  EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
+  EXPECT_EQ(6, mesh->getNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
   insertTriangle(mesh, 3, 4, 5);
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
   // Duplicated vertices should have been removed
-  EXPECT_EQ(4, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(4, mesh->getNumberOfNodes());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -226,17 +226,17 @@ TEST( quest_vertex_weld, fuzzWeld)
   insertVertex(mesh, 1.01, 1.01, 1.01);  // should weld with 3rd vert
   insertVertex(mesh, 0, 1, 0);
 
-  EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
+  EXPECT_EQ(6, mesh->getNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
   insertTriangle(mesh, 3, 4, 5);
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   const double eps = .1;
   axom::quest::weldTriMeshVertices(&mesh, eps);
 
-  EXPECT_EQ(4, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(4, mesh->getNumberOfNodes());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -257,17 +257,17 @@ TEST( quest_vertex_weld, disconnectedTrianglePair)
   insertVertex(mesh, -1, -1,  0);
   insertVertex(mesh, -1, -1, -1);
 
-  EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
+  EXPECT_EQ(6, mesh->getNumberOfNodes());
 
   insertTriangle(mesh, 0, 1, 2);
   insertTriangle(mesh, 3, 4, 5);
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
   // Duplicated vertices should have been removed
-  EXPECT_EQ(6, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(2, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(6, mesh->getNumberOfNodes());
+  EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -285,14 +285,14 @@ TEST( quest_vertex_weld, indexedTetrahedron)
   const int NV = 4;
   const int NT = 4;
 
-  EXPECT_EQ(NV, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(NT, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(NV, mesh->getNumberOfNodes());
+  EXPECT_EQ(NT, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
   // welding shouldn't change anything on this mesh
-  EXPECT_EQ(NV, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(NT, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(NV, mesh->getNumberOfNodes());
+  EXPECT_EQ(NT, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;
@@ -310,14 +310,14 @@ TEST( quest_vertex_weld, indexedOctahedron)
   const int NV = 6;
   const int NT = 8;
 
-  EXPECT_EQ(NV, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(NT, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(NV, mesh->getNumberOfNodes());
+  EXPECT_EQ(NT, mesh->getNumberOfCells());
 
   axom::quest::weldTriMeshVertices(&mesh, EPS);
 
   // welding shouldn't change anything on this mesh
-  EXPECT_EQ(NV, mesh->getMeshNumberOfNodes());
-  EXPECT_EQ(NT, mesh->getMeshNumberOfCells());
+  EXPECT_EQ(NV, mesh->getNumberOfNodes());
+  EXPECT_EQ(NT, mesh->getNumberOfCells());
 
   delete mesh;
   mesh = AXOM_NULLPTR;

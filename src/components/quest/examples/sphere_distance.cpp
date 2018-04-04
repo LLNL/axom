@@ -393,7 +393,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   {
 
     double pnt[3];
-    umesh->getNode( i, pnt );
+    umesh->getMeshNode( i, pnt );
 
     phi[ i ]  = sphere.computeSignedDistance( pnt );
   }
@@ -424,13 +424,13 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
     // get target node
     Point< double,NDIMS > pnt;
-    umesh->getNode( i, pnt.data() );
+    umesh->getMeshNode( i, pnt.data() );
     Point< double,NDIMS > Q = pnt;
 
     double unsignedMinDistSQ = std::numeric_limits< double >::max();
     int sign = 0;
 
-    const axom::mint::IndexType ncells = surface_mesh->getMeshNumberOfCells();
+    const axom::mint::IndexType ncells = surface_mesh->getNumberOfCells();
     for (axom::mint::IndexType j=0 ; j < ncells ; ++j )
     {
       // find minimum distance from query point to triangle
@@ -513,7 +513,7 @@ BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::IndexType cellIdx,
 {
   // Sanity checks
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
+  SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getNumberOfCells());
 
   axom::mint::IndexType cell[3];
   surface_mesh->getMeshCell( cellIdx, cell );
@@ -538,7 +538,7 @@ BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)
   BoundingBox< double,NDIMS > meshBB;
   Point< double,NDIMS > pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
     mesh->getMeshNode( i, pt.data() );
     meshBB.addPoint( pt );

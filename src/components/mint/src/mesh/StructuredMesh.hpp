@@ -18,16 +18,15 @@
 #ifndef STRUCTUREDMESH_HXX_
 #define STRUCTUREDMESH_HXX_
 
-#include "mint/Mesh.hpp"
-#include "mint/Extent.hpp"
-#include "mint/config.hpp"
-
 #include "axom/Types.hpp"
 #include "axom/Macros.hpp"
-#include "slic/slic.hpp"
 
-// C/C++ includes
-#include <cstddef> // for AXOM_NULLPTR
+#include "mint/CellType.hpp"
+#include "mint/config.hpp"
+#include "mint/Extent.hpp"
+#include "mint/Mesh.hpp"
+
+#include "slic/slic.hpp"
 
 namespace axom
 {
@@ -41,107 +40,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  virtual ~StructuredMesh()
-  {}
-
-  /// \name Virtual Mesh API
-  /// @{
-
-  /*!
-   * \brief Returns the total number of nodes in the mesh.
-   * \return numNodes the total number of nodes.
-   * \post numNodes >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual IndexType getMeshNumberOfNodes() const override
-  { return getNumberOfNodes(); }
-
-//  virtual IndexType getMeshNodeCapacity() const override
-//  { return getNumberOfNodes(); }
-//
-//  virtual double getMeshNodeResizeRatio() const override
-//  { return 0.0; }
-
-  /*!
-   * \brief Returns the total number of cells in the mesh.
-   * \return numCells the total number of cells.
-   * \post numCells >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual IndexType getMeshNumberOfCells() const override
-  { return getNumberOfCells(); }
-
-//  virtual IndexType getMeshCellCapacity() const override
-//  { return getNumberOfCells(); }
-//
-//  virtual double getMeshCellResizeRatio() const override
-//  { return 0.0; }
-//
-//  virtual IndexType getMeshNumberOfFaces() const override
-//  { return getNumberOfFaces(); }
-//
-//  virtual IndexType getMeshNumberOfEdges() const override
-//  { return getNumberOfEdges(); }
-
-  /*!
-   * \brief Returns the number of nodes for the given cell.
-   * \param cellIdx the index of the cell in query.
-   * \return numCellNodes the number of nodes in the given cell.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual int getMeshNumberOfCellNodes( IndexType AXOM_NOT_USED( cellIdx ) )
-  const override
-  { return getNumberOfCellNodes(); }
-
-  /*!
-   * \brief Returns the cell connectivity of the given cell.
-   * \param [in] cellIdx the index of the cell in query.
-   * \param [out] cell user-supplied buffer to store cell connectivity info.
-   * \note cell must have sufficient size to hold the connectivity information.
-   * \pre cellIdx >= 0 && cellIdx < getMeshNumberOfCells()
-   * \pre cell != AXOM_NULLPTR.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshCell( IndexType cellIdx,
-                            IndexType* cell ) const override
-  { getCell( cellIdx, cell ); };
-
-  /*!
-   * \brief Returns the cell type of the cell associated with the given Id.
-   * \param [in] cellIdx the index of the cell in query.
-   * \return cellType the cell type of the cell at the given index.
-   */
-  virtual int getMeshCellType( IndexType AXOM_NOT_USED( cellIdx ) ) const
-  override;
-
-  /*!
-   * \brief Returns the coordinates of the given node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [out] coordinates user-supplied buffer to store the node
-   * coordinates.
-   * \pre nodeIdx >= && nodeIdx < getMeshNumberOfNodes()
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshNode( IndexType nodeIdx,
-                            double* coordinates ) const override
-  { getNode( nodeIdx, coordinates ); };
-
-  /*!
-   * \brief Returns the coordinate of a mesh node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
-   * \return c the coordinate value of the node at
-   * \pre dim >= 0 && dim < this->getDimension()
-   */
-  virtual double getMeshNodeCoordinate( IndexType nodeIdx,
-                                        int dim ) const override
-  { return getNodeCoordinate( nodeIdx, dim ); };
-
-
-  /// @}
+  virtual ~StructuredMesh() { }
 
   /// \name Structured Mesh API
   /// @{
@@ -176,27 +75,6 @@ public:
   inline IndexType kp() const
   { return m_extent.kp(); }
 
-  /*!
-   * \brief Returns the number of nodes in this mesh instance.
-   * \return N the total number of nodes in the mesh.
-   * \pre m_extent != AXOM_NULLPTR
-   * \post N >= 0.
-   */
-  inline IndexType getNumberOfNodes() const
-  { return m_extent.getNumNodes(); };
-
-  /*!
-   * \brief Returns the number of cells in this mesh instance.
-   * \return N the total number of cells in the mesh.
-   * \pre m_extent != AXOM_NULLPTR.
-   * \post N >= 0.
-   */
-  inline IndexType getNumberOfCells() const
-  { return m_extent.getNumCells(); };
-
-  inline IndexType getNumberOfFaces() const;
-
-  inline IndexType getNumberOfEdges() const;
 
   /*!
    * \brief Returns the number of cell nodes.
@@ -204,6 +82,13 @@ public:
    * \post N=4 if 2-D, else N=8.
    */
   inline int getNumberOfCellNodes() const;
+
+  /*!
+   * \brief Returns the cell type.
+   * \return ctype the cell type
+   * \see CellType.hpp
+   */
+  inline int getCellType( ) const;
 
   /*!
    * \brief Returns the linear index corresponding to the given logical indices.
@@ -279,75 +164,6 @@ public:
   inline void getCell( IndexType i, IndexType j, IndexType k,
                        IndexType* cell) const;
 
-  /// \name GetNode() methods -- implemented in concrete instances.
-  /// @{
-
-  /*!
-   * \brief Returns the coordinates of the given node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre coordinates != AXOM_NULLPTR.
-   * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes().
-   */
-  virtual void getNode( IndexType nodeIdx, double* coordinates ) const = 0;
-
-  /*!
-   * \brief Returns the coordinates of the node at (i,j)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre this->getDimension() == 2
-   */
-  virtual void getNode( IndexType i, IndexType j,
-                        double* coordinates ) const = 0;
-
-  /*!
-   * \brief Returns the coordinates of the node at (i,j)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] k logical index of the node along the third dimension.
-   * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre this->getDimension() == 3
-   */
-  virtual void getNode( IndexType i, IndexType j, IndexType k,
-                        double* coordinates ) const = 0;
-
-  /*!
-   * \brief Returns the coordinate of the given node.
-   * \param [in] nodeIdx index of the node in query.
-   * \param [in] dim requested coordinate dimension.
-   * \return x the coordinate value of the node.
-   * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes()
-   * \pre dim >= 0 && dim < this->getDimension().
-   */
-  virtual double getNodeCoordinate( IndexType nodeIdx, int dim ) const = 0;
-
-  /*!
-   * \brief Returns the coordinate value of the node at (i,j)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] dim requested coordinate dimension.
-   * \return x the coordinate value of the node.
-   * \pre this->getDimension()==2.
-   * \pre dim >= 0 && dim < this->getDimension().
-   */
-  virtual double getNodeCoordinate( IndexType i, IndexType j,
-                                    int dim ) const = 0;
-
-  /*!
-   * \brief Returns the coordinate value of the node at (i,j,k)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] k logical index of the node along the third dimension.
-   * \param [in] dim requested coordinate dimension.
-   * \return x the coordinate value of the node.
-   * \pre this->getDimension()==3.
-   * \pre dim >= 0 && dim < this->getDimension().
-   */
-  virtual double getNodeCoordinate( IndexType i, IndexType j, IndexType k,
-                                    int dim ) const = 0;
-
-  /// @}
 
   /// @}
 
@@ -389,53 +205,16 @@ private:
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-inline int StructuredMesh::getNumberOfCellNodes() const
+inline int StructuredMesh::getCellType( ) const
 {
-  int dim = this->getDimension();
-  if ( dim == 3 )
-  {
-    return 8;
-  }
-  else if ( dim == 2 )
-  {
-    return 4;
-  }
-  return 2;
+  return ( (m_ndims==3)? MINT_HEX : ( (m_ndims==2)? MINT_QUAD:MINT_SEGMENT ) );
 }
 
 //------------------------------------------------------------------------------
-inline IndexType StructuredMesh::getNumberOfFaces() const
+inline int StructuredMesh::getNumberOfCellNodes( ) const
 {
-// TODO: ???
-//  if ( this->getDimension() < 3 )
-//  {
-//    return getMeshNumberOfEdges();
-//  }
-
-  IndexType size[3];
-  getExtentSize( size );
-  IndexType num_faces = size[0] * (size[1] - 1) * (size[2] - 1);
-  num_faces += (size[0] - 1) * size[1] * (size[2] - 1);
-  num_faces += (size[0] - 1) * (size[1] - 1) * size[2];
-  return num_faces;
-}
-
-//------------------------------------------------------------------------------
-inline IndexType StructuredMesh::getNumberOfEdges() const
-{
-  IndexType size[3];
-  getExtentSize( size );
-
-  if ( this->getDimension() == 1 )
-  {
-    return size[0];
-  }
-
-  IndexType num_edges = size[0] * size[1] * (size[2] - 1);
-  num_edges += size[0] * (size[1] - 1) * size[2];
-  num_edges += (size[0] - 1) * size[1] * size[2];
-  return num_edges;
+  const int cell_type = getCellType( );
+  return cell::num_nodes[ cell_type ];
 }
 
 //------------------------------------------------------------------------------

@@ -635,7 +635,7 @@ public:
       if(m_meshWasReindexed)
         return m_vertexSet.size();
       else
-        return m_surfaceMesh->getMeshNumberOfNodes();
+        return m_surfaceMesh->getNumberOfNodes();
     }
 
     /** Accessor for the number of elements in the wrapped surface mesh */
@@ -644,7 +644,7 @@ public:
       if(m_meshWasReindexed)
         return m_elementSet.size();
       else
-        return m_surfaceMesh->getMeshNumberOfCells();
+        return m_surfaceMesh->getNumberOfCells();
     }
 
     /** Predicate to determine if the wrapped surface mesh has been reindexed */
@@ -664,8 +664,26 @@ public:
       }
       else
       {
+        int mesh_dim = m_surfaceMesh->getDimension();
+        SLIC_ASSERT( mesh_dim==SpacePt::dimension() );
+
+        double* x = m_surfaceMesh->getCoordinateArray(mint::X_COORDINATE);
+
         SpacePt pt;
-        m_surfaceMesh->getMeshNode(idx, pt.data() );
+        pt[ 0 ] = x[ idx ];
+
+        if ( mesh_dim > 1 )
+        {
+          double* y = m_surfaceMesh->getCoordinateArray(mint::Y_COORDINATE);
+          pt[ 1 ]   = y[ idx ];
+        }
+
+        if ( mesh_dim > 2 )
+        {
+          double* z = m_surfaceMesh->getCoordinateArray(mint::Z_COORDINATE);
+          pt[ 2 ]   = z[ idx ];
+        }
+
         return pt;
       }
     }
@@ -860,8 +878,9 @@ public:
       for(mint::IndexType i=0 ; i< numOrigTris ; ++i)
       {
         // Grab relation from mesh
-        mint::IndexType vertIds[NUM_TRI_VERTS];
-        m_surfaceMesh->getMeshCell(i, vertIds);
+        using TriangleMesh = mint::UnstructuredMesh< MINT_TRIANGLE >;
+        mint::IndexType* vertIds =
+            static_cast< TriangleMesh* >(m_surfaceMesh)->getCell( i );
 
         // Remap the vertex IDs
         for(int j=0 ; j< NUM_TRI_VERTS ; ++j)
@@ -2778,7 +2797,7 @@ private:
   {
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
-    mint::IndexType vStart = mesh->getMeshNumberOfNodes();
+    mint::IndexType vStart = mesh->getNumberOfNodes();
     mesh->addNode( triPos[0][0], triPos[0][1], triPos[0][2]);
     mesh->addNode( triPos[1][0], triPos[1][1], triPos[1][2]);
     mesh->addNode( triPos[2][0], triPos[2][1], triPos[2][2]);
@@ -2808,7 +2827,7 @@ private:
   {
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
 
-    mint::IndexType vStart = mesh->getMeshNumberOfNodes();
+    mint::IndexType vStart = mesh->getNumberOfNodes();
 
     mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
                   blockBB.getMin()[2]);

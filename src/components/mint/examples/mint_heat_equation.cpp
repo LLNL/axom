@@ -197,7 +197,7 @@ public:
   void solve( double alpha, double dt, double t_max, int period,
               const std::string& path )
   {
-    const IndexType num_nodes = m_mesh->getMeshNumberOfNodes();
+    const IndexType num_nodes = m_mesh->getNumberOfNodes();
     double* new_temp  = new double[num_nodes];
     double* prev_temp = m_mesh->getFieldPtr< double >( "temperature",
                                                         mint::NODE_CENTERED );

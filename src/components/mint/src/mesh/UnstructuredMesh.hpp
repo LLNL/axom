@@ -75,138 +75,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  virtual ~UnstructuredMesh()
-  {}
-
-  /// \name Virtual API
-  /// @{
-
-  /*!
-   * \brief Returns the total number of nodes in the mesh.
-   * \return numNodes the total number of nodes.
-   * \post numNodes >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual IndexType getMeshNumberOfNodes() const override
-  { return getNumberOfNodes(); };
-
-
-//  virtual IndexType getMeshNodeCapacity() const override
-//  { return getNodeCapacity(); }
-//
-//
-//  virtual double getMeshNodeResizeRatio() const override
-//  { return getNodeResizeRatio(); }
-
-  /*!
-   * \brief Returns the total number of cells in the mesh.
-   * \return numCells the total number of cells.
-   * \post numCells >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual IndexType getMeshNumberOfCells() const override
-  { return getNumberOfCells(); };
-
-
-//  virtual IndexType getMeshCellCapacity() const override
-//  {
-//    double capacity_ratio = getCellNodeCapacity();
-//    capacity_ratio /= getNumberOfCells();
-//    return std::ceil( capacity_ratio * getNumberOfCells() );
-//  }
-//
-//
-//  virtual double getMeshCellResizeRatio() const override
-//  { return getCellResizeRatio(); }
-//
-//
-//  virtual IndexType getMeshNumberOfFaces() const override
-//  { return 0; }
-//
-//
-//  virtual IndexType getMeshNumberOfEdges() const override
-//  { return 0; }
-
-
-  /*!
-   * \brief Returns the number of nodes for the given cell.
-   * \param cellIdx the index of the cell in query.
-   * \return numCellNodes the number of nodes in the given cell.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual int getMeshNumberOfCellNodes( IndexType cellIdx ) const override
-  { return getNumberOfCellNodes( cellIdx ); }
-
-  /*!
-   * \brief Returns the cell connectivity of the given cell.
-   * \param [in] cellIdx the index of the cell in query.
-   * \param [out] cell user-supplied buffer to store cell connectivity info.
-   * \note cell must have sufficient size to hold the connectivity information.
-   * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != AXOM_NULLPTR.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshCell( IndexType cellIdx,
-                            IndexType* cell ) const override
-  {
-    const int numNodes = getNumberOfCellNodes( cellIdx );
-    const IndexType* myCell  = getCell( cellIdx );
-    std::memcpy( cell, myCell, numNodes * sizeof(IndexType) );
-  }
-
-  /*!
-   * \brief Returns the cell type of the cell associated with the given Id.
-   * \param [in] cellIdx the index of the cell in query.
-   * \return cellType the cell type of the cell at the given index.
-   */
-  virtual int getMeshCellType( IndexType cellIdx ) const override
-  { return m_cell_connectivity->getCellType( cellIdx ); }
-
-  /*!
-   * \brief Returns the coordinates of the given node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] coordinates user-supplied buffer to store the node coordinates.
-   * \pre nodeIdx >= && nodeIdx < this->getMeshNumberOfNodes()
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshNode( IndexType nodeIdx,
-                            double* coordinates ) const override
-  {
-    for ( int i=0 ; i < getDimension() ; ++i )
-    {
-      const double* coord = getMeshCoordinateArray( i );
-      coordinates[ i ] = coord[ nodeIdx ];
-    } // END for all dimensions
-  }
-
-  /*!
-   * \brief Returns the coordinate of a mesh node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
-   * \return c the coordinate value of the node at
-   * \pre dim >= 0 && dim < this->getDimension()
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual double getMeshNodeCoordinate( IndexType nodeIdx,
-                                        int dim ) const override
-  {
-    SLIC_ASSERT( dim >= 0 && dim < this->getDimension() );
-    return getMeshCoordinateArray( dim )[ nodeIdx ];
-  }
-
-  /// @}
-
-  /*!
-   * \brief Returns the total number of nodes in the mesh.
-   * \return N the total number of nodes in the mesh.
-   * \post N >= 0.
-   */
-  constexpr IndexType getNumberOfNodes() const
-  { return m_node_coordinates->numNodes(); };
+  virtual ~UnstructuredMesh() { }
 
   /*!
    * \brief Get the number of nodes that can be stored.
@@ -214,16 +83,6 @@ public:
    */
   constexpr IndexType getNodeCapacity() const
   { return m_node_coordinates->capacity(); };
-
-//  /*!
-//   * \brief Set the number of nodes that can be stored.
-//   */
-//  void setNodeCapacity( IndexType capacity )
-//  {
-//    m_node_coordinates.setCapacity( capacity );
-//    this->setNodeDataCapacity( capacity );
-//  }
-
 
   constexpr double getNodeResizeRatio() const
   { return m_node_coordinates->getResizeRatio(); }
@@ -234,14 +93,6 @@ public:
     m_node_coordinates->setResizeRatio( ratio );
     this->setNodeDataResizeRatio( ratio );
   }
-
-  /*!
-   * \brief Returns the total number cells in the mesh.
-   * \return N the total number of cells in the mesh.
-   * \post N >= 0.
-   */
-  constexpr IndexType getNumberOfCells() const
-  { return m_cell_connectivity->getNumberOfCells(); };
 
   /*!
    * \brief Returns the number of nodes for the given cell.
@@ -323,15 +174,6 @@ public:
   void addNode( const double* node );
 
   /*!
-   * \brief Returns pointer to coordinates array for the requested dimension.
-   * \param [in] dim the requested dimension.
-   * \return ptr pointer to the coordinates array for the given dimension.
-   * \pre dim < this->getDimension()
-   * \post ptr != AXOM_NULLPTR.
-   */
-  const double* getMeshCoordinateArray( int dim ) const;
-
-  /*!
    * \brief Returns pointer to the connectivity array of the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \return cell_ptr pointer to the connectivity array of the cell.
@@ -339,6 +181,7 @@ public:
    * \post cell_ptr != AXOM_NULLPTR.
    */
   const IndexType* getCell( IndexType cellIdx ) const;
+  IndexType* getCell( IndexType cellIdx );
 
 private:
 
@@ -513,20 +356,23 @@ inline void UnstructuredMesh< CellType >::addNode( const double* node ) {
 //------------------------------------------------------------------------------
 template < int CellType >
 inline
-const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim)
-const {
-  SLIC_ASSERT( dim < this->getDimension() );
-  return m_node_coordinates->getCoordinateArray( dim );
+const IndexType* UnstructuredMesh< CellType >::getCell( IndexType cellIdx )
+const
+{
+  // TODO: implement this
+  return AXOM_NULLPTR;
+//  SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+//  return (*m_cell_connectivity)[ cellIdx ];
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline
-const IndexType* UnstructuredMesh< CellType >::getCell( IndexType cellIdx )
-const
+inline IndexType* UnstructuredMesh< CellType >::getCell( IndexType cellIdx )
 {
-  SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
-  return (*m_cell_connectivity)[ cellIdx ];
+  // TODO: implement this
+  return AXOM_NULLPTR;
+//  SLIC_ASSERT(  cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+//  return (*m_cell_connectivity)[ cellIdx ];
 }
 
 } /* namespace mint */

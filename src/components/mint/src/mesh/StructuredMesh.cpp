@@ -42,20 +42,5 @@ StructuredMesh::StructuredMesh( int meshType, int ndims,
   m_extent( ndims, ext )
 {}
 
-//------------------------------------------------------------------------------
-int StructuredMesh::getMeshCellType( IndexType AXOM_NOT_USED( cellIdx ) ) const
-{
-  const int dim = this->getDimension();
-  if ( dim == 3 )
-  {
-    return MINT_HEX;
-  }
-  else if ( dim == 2 )
-  {
-    return MINT_QUAD;
-  }
-  return MINT_SEGMENT;
-}
-
 }   /* end namespace mint */
 }   /* end namespace axom */

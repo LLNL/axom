@@ -88,8 +88,8 @@ double randomD(double min, double max)
 void create_scalar_data( Mesh* mesh )
 {
   const int mesh_dim = mesh->getDimension();
-  const IndexType mesh_num_nodes = mesh->getMeshNumberOfNodes();
-  const IndexType mesh_num_cells = mesh->getMeshNumberOfCells();
+  const IndexType mesh_num_nodes = mesh->getNumberOfNodes();
+  const IndexType mesh_num_cells = mesh->getNumberOfCells();
 
   double* double_ptr = AXOM_NULLPTR;
   int*    int_ptr    = AXOM_NULLPTR;
@@ -99,20 +99,17 @@ void create_scalar_data( Mesh* mesh )
   int_ptr = mesh->createField< int >( "node_scalars_int",
                                       mint::NODE_CENTERED );
 
+  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
+  const double* yy = ( mesh_dim > 1 ) ?
+        mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
+  const double* zz = ( mesh_dim > 2 ) ?
+        mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
+
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
-    double x = mesh->getMeshNodeCoordinate( idx, 0 );
-    double y = 0;
-    double z = 0;
-
-    if ( mesh_dim > 1)
-    {
-      y = mesh->getMeshNodeCoordinate( idx, 1 );
-    }
-    if ( mesh_dim > 2)
-    {
-      z = mesh->getMeshNodeCoordinate( idx, 2 );
-    }
+    double x = xx[ idx ];
+    double y = ( mesh_dim > 1 ) ? yy[ idx ] : 0.0;
+    double z = ( mesh_dim > 2 ) ? zz[ idx ] : 0.0;
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -143,8 +140,8 @@ void create_scalar_data( Mesh* mesh )
 void create_vector_data( Mesh* mesh )
 {
   const int mesh_dim = mesh->getDimension();
-  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
-  const IndexType num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
+  const IndexType num_cells = mesh->getNumberOfCells();
 
   double* double_ptr3 = AXOM_NULLPTR;
   double* double_ptr2 = AXOM_NULLPTR;
@@ -160,20 +157,17 @@ void create_vector_data( Mesh* mesh )
   int_ptr2    =  mesh->createField< int >( "node_vectors_2int",
                                            mint::NODE_CENTERED, 2 );
 
+  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
+  const double* yy = ( mesh_dim > 1 ) ?
+        mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
+  const double* zz = ( mesh_dim > 2 ) ?
+        mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
+
   for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = mesh->getMeshNodeCoordinate( idx, 0 );
-    double y = 0;
-    double z = 0;
-
-    if ( mesh_dim > 1)
-    {
-      y = mesh->getMeshNodeCoordinate( idx, 1 );
-    }
-    if ( mesh_dim > 2)
-    {
-      z = mesh->getMeshNodeCoordinate( idx, 2 );
-    }
+    double x = xx[ idx ];
+    double y = ( mesh_dim > 1 ) ? yy[ idx ] : 0.0;
+    double z = ( mesh_dim > 2 ) ? zz[ idx ] : 0.0;
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -232,8 +226,8 @@ void create_vector_data( Mesh* mesh )
 void create_multidim_data( Mesh* mesh )
 {
   const int mesh_dim = mesh->getDimension();
-  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
-  const IndexType num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
+  const IndexType num_cells = mesh->getNumberOfCells();
 
   double* double_ptr = AXOM_NULLPTR;
   int*    int_ptr    = AXOM_NULLPTR;
@@ -243,20 +237,17 @@ void create_multidim_data( Mesh* mesh )
   int_ptr    = mesh->createField< int >( "node_multidim_int",
                                          mint::NODE_CENTERED, 4 );
 
+  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
+  const double* yy = ( mesh_dim > 1 ) ?
+      mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
+  const double* zz = ( mesh_dim > 2 ) ?
+      mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
+
   for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = mesh->getMeshNodeCoordinate( idx, 0 );
-    double y = 0;
-    double z = 0;
-
-    if ( mesh_dim > 1)
-    {
-      y = mesh->getMeshNodeCoordinate( idx, 1 );
-    }
-    if ( mesh_dim > 2)
-    {
-      z = mesh->getMeshNodeCoordinate( idx, 2 );
-    }
+    double x = xx[ idx ];
+    double y = ( mesh_dim > 1 ) ? yy[ idx ] : 0.0;
+    double z = ( mesh_dim > 2 ) ? zz[ idx ] : 0.0;
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -564,13 +555,13 @@ void check_data( const Mesh* mesh, std::ifstream& file )
     file >> data_type >> data_size;
     if ( data_type == "POINT_DATA" )
     {
-      EXPECT_EQ( data_size, mesh->getMeshNumberOfNodes() );
+      EXPECT_EQ( data_size, mesh->getNumberOfNodes() );
       const FieldData* node_data = mesh->getFieldData( mint::NODE_CENTERED );
       check_fieldData( node_data, file );
     }
     else if ( data_type == "CELL_DATA" )
     {
-      EXPECT_EQ( data_size, mesh->getMeshNumberOfCells() );
+      EXPECT_EQ( data_size, mesh->getNumberOfCells() );
       const FieldData* cell_data = mesh->getFieldData( mint::CELL_CENTERED );
       check_fieldData( cell_data, file );
     }
@@ -690,7 +681,7 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
  */
 void check_points( const Mesh* mesh, std::ifstream& file )
 {
-  const IndexType num_nodes = mesh->getMeshNumberOfNodes();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
   const int mesh_dim = mesh->getDimension();
 
   std::string extracted_name, extracted_type;
@@ -700,21 +691,28 @@ void check_points( const Mesh* mesh, std::ifstream& file )
   EXPECT_EQ(  extracted_size, num_nodes );
   EXPECT_EQ(  extracted_type, "double" );
 
-  double extracted_coord;
+  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
+  const double* yy = ( mesh_dim > 1 ) ?
+          mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
+  const double* zz = ( mesh_dim > 2 ) ?
+          mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
+
+  double extracted_coord = 0.0;
   for ( IndexType nodeIdx = 0 ; nodeIdx < num_nodes ; ++nodeIdx )
   {
+    double x = xx[ nodeIdx ];
+    double y = ( mesh_dim > 1 ) ? yy[ nodeIdx ] : 0.0;
+    double z = ( mesh_dim > 2 ) ? zz[ nodeIdx ] : 0.0;
+
     file >> extracted_coord;
-    EXPECT_EQ( extracted_coord, mesh->getMeshNodeCoordinate( nodeIdx, 0 ) );
-    for ( int dim = 1 ; dim < mesh_dim ; ++dim )
-    {
-      file >> extracted_coord;
-      EXPECT_EQ( extracted_coord, mesh->getMeshNodeCoordinate( nodeIdx, dim ) );
-    }
-    for ( int dim = 0 ; dim < 3 - mesh_dim ; ++dim )
-    {
-      file >> extracted_coord;
-      EXPECT_EQ( extracted_coord, 0.0 );
-    }
+    EXPECT_EQ( extracted_coord, x );
+
+    file >> extracted_coord;
+    EXPECT_EQ( extracted_coord, y );
+
+    file >> extracted_coord;
+    EXPECT_EQ( extracted_coord, z );
+
   }
 }
 
@@ -726,59 +724,61 @@ void check_points( const Mesh* mesh, std::ifstream& file )
  */
 void check_cells( const Mesh* mesh, std::ifstream& file )
 {
-  const IndexType num_cells = mesh->getMeshNumberOfCells();
-
-  /* First need to get total size of the connectivity array. */
-  /* If the mesh only has one cell type we can calculate this directly. */
-  int max_cell_nodes = mesh->getMeshNumberOfCellNodes( 0 );
-  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
-
-  /* If the mesh has mixed cells then we need to loop over the elements. */
-  if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
-  {
-    total_size = num_cells;
-    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-    {
-      const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-      max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
-      total_size += num_cell_nodes;
-    }
-  }
-
-  std::string type;
-  IndexType extracted_cells, extracted_size;
-  file >> type >> extracted_cells >> extracted_size;
-  EXPECT_EQ( type, "CELLS" );
-  EXPECT_EQ( extracted_cells, num_cells );
-  EXPECT_EQ( extracted_size, total_size );
-
-  /* Write out the mesh cell connectivity. */
-  IndexType temp;
-  IndexType cell_nodes[ max_cell_nodes ];
-  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-  {
-    const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-    mesh->getMeshCell( cellIdx, cell_nodes );
-
-    file >> temp;
-    EXPECT_EQ( temp, num_cell_nodes );
-    for ( int i = 0 ; i < num_cell_nodes ; ++i )
-    {
-      file >> temp;
-      EXPECT_EQ( temp, cell_nodes[ i ] );
-    }
-  }
-
-  /* Write out the mesh cell types. */
-  file >> type >> extracted_cells;
-  EXPECT_EQ( type, "CELL_TYPES" );
-  EXPECT_EQ( extracted_cells,  num_cells );
-  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-  {
-    int cell_type = mesh->getMeshCellType( cellIdx );
-    file >> temp;
-    EXPECT_EQ( temp, cell::vtk_types[ cell_type ] );
-  }
+  // TODO: Need to refactor this after the UnstructuredMesh changes
+  EXPECT_TRUE ( false );
+//  const IndexType num_cells = mesh->getNumberOfCells();
+//
+//  /* First need to get total size of the connectivity array. */
+//  /* If the mesh only has one cell type we can calculate this directly. */
+//  int max_cell_nodes = mesh->getMeshNumberOfCellNodes( 0 );
+//  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
+//
+//  /* If the mesh has mixed cells then we need to loop over the elements. */
+//  if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
+//  {
+//    total_size = num_cells;
+//    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+//    {
+//      const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
+//      max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
+//      total_size += num_cell_nodes;
+//    }
+//  }
+//
+//  std::string type;
+//  IndexType extracted_cells, extracted_size;
+//  file >> type >> extracted_cells >> extracted_size;
+//  EXPECT_EQ( type, "CELLS" );
+//  EXPECT_EQ( extracted_cells, num_cells );
+//  EXPECT_EQ( extracted_size, total_size );
+//
+//  /* Write out the mesh cell connectivity. */
+//  IndexType temp;
+//  IndexType cell_nodes[ max_cell_nodes ];
+//  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+//  {
+//    const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
+//    mesh->getMeshCell( cellIdx, cell_nodes );
+//
+//    file >> temp;
+//    EXPECT_EQ( temp, num_cell_nodes );
+//    for ( int i = 0 ; i < num_cell_nodes ; ++i )
+//    {
+//      file >> temp;
+//      EXPECT_EQ( temp, cell_nodes[ i ] );
+//    }
+//  }
+//
+//  /* Write out the mesh cell types. */
+//  file >> type >> extracted_cells;
+//  EXPECT_EQ( type, "CELL_TYPES" );
+//  EXPECT_EQ( extracted_cells,  num_cells );
+//  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+//  {
+//    int cell_type = mesh->getMeshCellType( cellIdx );
+//    file >> temp;
+//    EXPECT_EQ( temp, cell::vtk_types[ cell_type ] );
+//  }
 }
 
 /*!
