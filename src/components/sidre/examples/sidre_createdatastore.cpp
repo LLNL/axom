@@ -196,7 +196,7 @@ DataStore * create_tiny_datastore() {
   // Assign a value to the node field
   int * nf = nodefield->getArray();
   for (int pos = 0; pos < nodecount; ++pos) {
-    nf[pos] = 8 - pos;
+    nf[pos] = static_cast<int>(xptr[pos] + yptr[pos] + zptr[pos]);
   }
   // and to the element field.
   double * ef = eltfield->getArray();

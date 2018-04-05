@@ -5,8 +5,24 @@ An introductory example
 As an introduction to the core concepts in Sidre and how they work, here is an
 example where we construct the Sidre Datastore shown in the following figure:
 
-.. image:: sidre_datastore_example.png
-   :width: 650px
+.. figure:: figs/sidre_datastore_example.png
+   :figwidth: 650px
+   :alt: diagram of an example datastore
+
+   ..
+
+   +------------------------------------+-------------+
+   | Symbol                             | Sidre class |
+   +====================================+=============+
+   | .. image:: figs/roundrectangle.png | Group       |
+   |    :width: 120px                   |             |
+   +------------------------------------+-------------+
+   | .. image:: figs/rectangle.png      | View        |
+   |    :width: 61px                    |             |
+   +------------------------------------+-------------+
+   | .. image:: figs/hexagon.png        | Attribute   |
+   |    :width: 72px                    |             |
+   +------------------------------------+-------------+
 
 Here, a black rectangle represents the Datastore, which contains all Sidre objects.
 Ovals represent Sidre Group objects.  Each Group has a name, 

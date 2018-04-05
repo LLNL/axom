@@ -24,7 +24,7 @@ with one node-centered field and one element-centered field.  In the diagram,
 nodes are labeled in black, the node-centered field values are in blue, and
 the element-centered field values are in green.
 
-.. image:: tiny_mesh.png
+.. image:: figs/tiny_mesh.png
    :width: 300px
 
 A simulation organizes its Sidre data as the code design dictates.
@@ -92,7 +92,7 @@ the index file, and sensibly display the data contained in the data file.
 Starting from version 2.13.1, VisIt can open a `.root` file just like any other
 data file.  VisIt produced the following image from the Mesh Blueprint file saved above.
 
-.. image:: tiny_mesh_rendered.png
+.. image:: figs/tiny_mesh_rendered.png
    :width: 600px
 
 Conduit is also a foundational building block for the 
