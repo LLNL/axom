@@ -2663,13 +2663,13 @@ private:
 
 
     // Add the fields to the mint mesh
-    VertexIndex* vertID = addIntField(debugMesh, "vertID", leafSet.size() );
-    VertexIndex* lLevel = addIntField(debugMesh, "level", leafSet.size() );
+    VertexIndex* vertID = addIntField(debugMesh, "vertID" );
+    VertexIndex* lLevel = addIntField(debugMesh, "level" );
 
     int* blockCoord[3];
-    blockCoord[0] = addIntField(debugMesh, "block_x", leafSet.size() );
-    blockCoord[1] = addIntField(debugMesh, "block_y", leafSet.size() );
-    blockCoord[2] = addIntField(debugMesh, "block_z", leafSet.size() );
+    blockCoord[0] = addIntField(debugMesh, "block_x" );
+    blockCoord[1] = addIntField(debugMesh, "block_y" );
+    blockCoord[2] = addIntField(debugMesh, "block_z" );
 
     for ( int i=0 ; i < leafSet.size() ; ++i )
     {
@@ -2683,10 +2683,8 @@ private:
 
     if(hasTriangles)
     {
-      VertexIndex* uniqVertID =
-        addIntField(debugMesh, "uniqVertID", leafSet.size() );
-      int* triCount =
-        addIntField(debugMesh, "triCount", leafSet.size() );
+      VertexIndex* uniqVertID = addIntField(debugMesh, "uniqVertID" );
+      int* triCount = addIntField(debugMesh, "triCount" );
 
       for ( int i=0 ; i < leafSet.size() ; ++i )
       {
@@ -2697,7 +2695,7 @@ private:
 
     if(hasColors)
     {
-      int* colors = addIntField(debugMesh, "colors", leafSet.size() );
+      int* colors = addIntField(debugMesh, "colors" );
       for ( int i=0 ; i < leafSet.size() ; ++i )
         colors[i] = leafColors[i];
     }
@@ -2730,13 +2728,13 @@ private:
     int numTris = tris.size();
 
     // Index of each triangle within the mesh
-    int* triIdx = addIntField(debugMesh, "triangle_index", numTris);
+    int* triIdx = addIntField(debugMesh, "triangle_index" );
 
     // Indices of the three boundary vertices of this triangle
     int* vertIdx[3];
-    vertIdx[0] = addIntField(debugMesh, "vertex_index_0", numTris);
-    vertIdx[1] = addIntField(debugMesh, "vertex_index_1", numTris);
-    vertIdx[2] = addIntField(debugMesh, "vertex_index_2", numTris);
+    vertIdx[0] = addIntField(debugMesh, "vertex_index_0" );
+    vertIdx[1] = addIntField(debugMesh, "vertex_index_1" );
+    vertIdx[2] = addIntField(debugMesh, "vertex_index_2" );
 
     for(int i=0 ; i< numTris ; ++i)
     {
@@ -2761,16 +2759,14 @@ private:
 
 private:
 
-  int* addIntField(DebugMesh* mesh, const std::string& name,
-                   int AXOM_NOT_USED(size) ) const
+  int* addIntField(DebugMesh* mesh, const std::string& name ) const
   {
     int* fld = mesh->createField< int >( name, mint::NODE_CENTERED );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
     return fld;
   }
 
-  double* addRealField(DebugMesh* mesh, const std::string& name,
-                       int AXOM_NOT_USED(size) ) const
+  double* addRealField(DebugMesh* mesh, const std::string& name ) const
   {
     double* fld = mesh->createField< double >( name, mint::NODE_CENTERED );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
