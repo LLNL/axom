@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_03_07_19_03_24/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.8.2-f4bp77lrsuauuncgtivaoox2vfombs32/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_04_05_00_04_40/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.8.2-f4bp77lrsuauuncgtivaoox2vfombs32/bin/cmake
 
 #######
 # using clang@coral_xlf compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_03_07_19_03_24/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_04_05_00_04_40/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-73nxx5224rq5zpn4kjrkq2hfmuzu4hmt" CACHE PATH "")
