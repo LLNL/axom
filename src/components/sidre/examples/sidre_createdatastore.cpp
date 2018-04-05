@@ -126,6 +126,18 @@ void access_datastore(DataStore * ds) {
   Group * nodes = root->getGroup("nodes");
   Group * fields = root->getGroup("fields");
 
+  // Accessing a Group that is not there gives a null pointer
+  // Requesting a nonexistent View also gives a null pointer
+  Group * goofy = root->getGroup("goofy");
+  if (goofy == AXOM_NULLPTR)
+  {
+    std::cout << "no such group: goofy" << std::endl;
+  }
+  else
+  {
+    std::cout << "Something is very wrong!" << std::endl;
+  }
+
   // Access items in "state" group
   int cycle = state->getView("cycle")->getScalar();
   double time = state->getView("time")->getScalar();

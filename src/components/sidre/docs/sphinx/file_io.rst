@@ -7,7 +7,10 @@ Serial I/O is accomplished using methods of the Group class; parallel I/O is don
 using the IOManager class.
 
 HDF5 is an optional dependency for Sidre.  Sidre APIs that rely on HDF5 will be
-available only if Sidre was compiled with HDF5 support.
+available only if Sidre was compiled with HDF5 support.  The symbol that controls
+dependency on HDF5 is :code:`AXOM_USE_HDF5`, defined in the source file axom/config.hpp.
+
+.. _sidre-serial-io:
 
 Serial File I/O
 ---------------
@@ -58,6 +61,15 @@ management (such as using burst buffers if available.
 
 In the following example, an IOManager is created and used to write the contents
 of the Group "root" in parallel.
+
+First include needed headers.
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_headers_start
+   :end-before: _parallel_io_headers_end
+   :language: C++
+
+Then use IOManager to save in parallel.
 
 .. literalinclude:: ../../tests/spio/spio_parallel.cpp
    :start-after: _parallel_io_save_start

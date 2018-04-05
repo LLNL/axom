@@ -31,7 +31,7 @@ can be described by a View, including scalars, strings, and arrays (both
 "external" and managed by Sidre Buffer objects).  The array Views ("x", "y",
 "z", "temp", "rho", "region") include a triple indicating the number of
 elements, offset, and stride for the View.  Other aspects of View descriptions
-are clarified in the C++ code shown next.  Sidre provides full C and Fortran
+are clarified in the C++ code shown next.  Sidre also provides full C and Fortran
 APIs that can also be used to generate the same result.
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
@@ -39,9 +39,9 @@ APIs that can also be used to generate the same result.
    :end-before: _first_example_create_end
    :language: C++
 
-Sidre operations that create Buffers, Groups, and Views return a pointer to the
-object that is created. This allows chaining operations.  From the previous 
-example:
+C++ Sidre operations that create Buffers, Groups, and Views return a pointer to the
+object that is created. This allows chaining operations.  (Chaining is supported
+in the C++ API, but not in C or Fortran.)  From the previous example:
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _first_example_chain_1

@@ -20,12 +20,15 @@
  *
  * parallel_io_save_start
  * parallel_io_save_end
+ * parallel_io_headers_start
+ * parallel_io_headers_end
  *
  * prepended with an underscore.
  */
 
 #include "gtest/gtest.h"
 
+// _parallel_io_headers_start
 #include "axom/config.hpp"   // for AXOM_USE_HDF5
 
 #include "conduit_relay.hpp"
@@ -38,6 +41,7 @@
 #include "sidre/IOManager.hpp"
 
 #include "mpi.h"
+// _parallel_io_headers_end
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
@@ -108,12 +112,15 @@ TEST(spio_parallel, parallel_writeread)
     i1_vals[i] = (i+10) * (404-my_rank-i);
   }
 
+  // The namespace qualifying IOManager is not necessary for compilation
+  // (because are already using axom::sidre::IOManager), but is there
+  // because the following code is used in the documentation as an example.
   // _parallel_io_save_start
   /*
    * Contents of the DataStore written to files with IOManager.
    */
   int num_files = num_output;
-  IOManager writer(MPI_COMM_WORLD);
+  axom::sidre::IOManager writer(MPI_COMM_WORLD);
 
   const std::string file_name = "out_spio_parallel_write_read";
 
