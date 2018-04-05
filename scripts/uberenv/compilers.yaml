@@ -87,11 +87,11 @@ compilers:
             cxx: /usr/tce/packages/intel/intel-17.0.2/bin/icpc
             f77: /usr/tce/packages/intel/intel-17.0.2/bin/ifort
             fc:  /usr/tce/packages/intel/intel-17.0.2/bin/ifort
-        intel@18.0.0:
-            cc:  /usr/tce/packages/intel/intel-18.0.0/bin/icc
-            cxx: /usr/tce/packages/intel/intel-18.0.0/bin/icpc
-            f77: /usr/tce/packages/intel/intel-18.0.0/bin/ifort
-            fc:  /usr/tce/packages/intel/intel-18.0.0/bin/ifort
+        intel@18.0.2:
+            cc:  /usr/tce/packages/intel/intel-18.0.2/bin/icc
+            cxx: /usr/tce/packages/intel/intel-18.0.2/bin/icpc
+            f77: /usr/tce/packages/intel/intel-18.0.2/bin/ifort
+            fc:  /usr/tce/packages/intel/intel-18.0.2/bin/ifort
     blueos_3_ppc64le_ib:
         clang@coral_xlf:
             cc:  /usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang
