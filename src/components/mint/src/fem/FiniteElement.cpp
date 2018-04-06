@@ -26,7 +26,7 @@
 #include "axom_utils/linear_solve.hpp" // for linear_solve()
 
 // Mint includes
-#include "mint/CellType.hpp"           // for cell type definitions
+#include "mint/CellTypes.hpp"          // for cell type definitions
 #include "mint/Lagrange.hpp"           // For Lagrange ShapeFunctions
 #include "mint/Mesh.hpp"               // for mesh data structure
 #include "mint/ShapeFunction.hpp"      // For ShapeFunction definition

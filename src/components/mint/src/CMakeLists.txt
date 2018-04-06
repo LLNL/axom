@@ -42,7 +42,6 @@ set( mint_headers
 
     ## Mesh data-model
     mesh/CellConnectivity.hpp
-    mesh/CellType.hpp
     mesh/CellTypes.hpp
     mesh/ConnectivityArray.hpp
     mesh/CurvilinearMesh.hpp

@@ -19,7 +19,7 @@
 #define MINT_LAGRANGE_HEXA_27_HPP_
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/FEBasisTypes.hpp"
 #include "mint/ShapeFunction.hpp"
 
@@ -77,11 +77,12 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_HEX27 > : public ShapeFunction< Lagrange< MINT_HEX27 > >
+class Lagrange< CellTypes::HEX27 > :
+  public ShapeFunction< Lagrange< CellTypes::HEX27 > >
 {
 public:
 
-  static int getCellType() { return MINT_HEX27; }
+  static CellTypes getCellType() { return CellTypes::HEX27; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 
