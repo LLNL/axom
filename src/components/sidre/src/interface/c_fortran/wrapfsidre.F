@@ -75,12 +75,8 @@ module axom_sidre
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
         procedure :: associated => datastore_associated
-        generic :: create_buffer => &
-            ! splicer begin class.DataStore.generic.create_buffer
-            ! splicer end class.DataStore.generic.create_buffer
-            create_buffer_empty,  &
-            create_buffer_from_type_int,  &
-            create_buffer_from_type_long
+        generic :: create_buffer => create_buffer_empty,  &
+            create_buffer_from_type_int, create_buffer_from_type_long
         ! splicer begin class.DataStore.type_bound_procedure_part
         ! splicer end class.DataStore.type_bound_procedure_part
     end type SidreDataStore
@@ -156,59 +152,30 @@ module axom_sidre
         procedure :: get_instance => group_get_instance
         procedure :: set_instance => group_set_instance
         procedure :: associated => group_associated
-        generic :: create_view => &
-            ! splicer begin class.Group.generic.create_view
-            ! splicer end class.Group.generic.create_view
-            create_view_empty,  &
-            create_view_from_type_int,  &
-            create_view_from_type_long,  &
-            create_view_from_shape,  &
-            create_view_into_buffer,  &
+        generic :: create_view => create_view_empty,  &
+            create_view_from_type_int, create_view_from_type_long,  &
+            create_view_from_shape, create_view_into_buffer,  &
             create_view_from_type_and_buffer_int,  &
             create_view_from_type_and_buffer_long,  &
-            create_view_from_shape_and_buffer,  &
-            create_view_external,  &
+            create_view_from_shape_and_buffer, create_view_external,  &
             create_view_from_type_external_int,  &
             create_view_from_type_external_long,  &
             create_view_from_shape_external
-        generic :: create_view_and_allocate => &
-            ! splicer begin class.Group.generic.create_view_and_allocate
-            ! splicer end class.Group.generic.create_view_and_allocate
+        generic :: create_view_and_allocate =>  &
             create_view_and_allocate_nelems_int,  &
             create_view_and_allocate_nelems_long,  &
             create_view_and_allocate_shape
-        generic :: create_view_scalar => &
-            ! splicer begin class.Group.generic.create_view_scalar
-            ! splicer end class.Group.generic.create_view_scalar
-            create_view_scalar_int,  &
-            create_view_scalar_long,  &
-            create_view_scalar_float,  &
+        generic :: create_view_scalar => create_view_scalar_int,  &
+            create_view_scalar_long, create_view_scalar_float,  &
             create_view_scalar_double
-        generic :: destroy_group => &
-            ! splicer begin class.Group.generic.destroy_group
-            ! splicer end class.Group.generic.destroy_group
-            destroy_group_name,  &
+        generic :: destroy_group => destroy_group_name,  &
             destroy_group_index
-        generic :: destroy_view_and_data => &
-            ! splicer begin class.Group.generic.destroy_view_and_data
-            ! splicer end class.Group.generic.destroy_view_and_data
-            destroy_view_and_data_name,  &
+        generic :: destroy_view_and_data => destroy_view_and_data_name,  &
             destroy_view_and_data_index
-        generic :: get_group => &
-            ! splicer begin class.Group.generic.get_group
-            ! splicer end class.Group.generic.get_group
-            get_group_from_name,  &
+        generic :: get_group => get_group_from_name,  &
             get_group_from_index
-        generic :: get_view => &
-            ! splicer begin class.Group.generic.get_view
-            ! splicer end class.Group.generic.get_view
-            get_view_from_name,  &
-            get_view_from_index
-        generic :: load => &
-            ! splicer begin class.Group.generic.load
-            ! splicer end class.Group.generic.load
-            load_0,  &
-            load_1
+        generic :: get_view => get_view_from_name, get_view_from_index
+        generic :: load => load_0, load_1
         ! splicer begin class.Group.type_bound_procedure_part
         procedure :: get_scalar_int => group_get_scalar_int
         procedure :: get_scalar_long => group_get_scalar_long
@@ -341,22 +308,10 @@ module axom_sidre
         procedure :: get_instance => buffer_get_instance
         procedure :: set_instance => buffer_set_instance
         procedure :: associated => buffer_associated
-        generic :: allocate => &
-            ! splicer begin class.Buffer.generic.allocate
-            ! splicer end class.Buffer.generic.allocate
-            allocate_existing,  &
-            allocate_from_type_int,  &
-            allocate_from_type_long
-        generic :: describe => &
-            ! splicer begin class.Buffer.generic.describe
-            ! splicer end class.Buffer.generic.describe
-            describe_int,  &
-            describe_long
-        generic :: reallocate => &
-            ! splicer begin class.Buffer.generic.reallocate
-            ! splicer end class.Buffer.generic.reallocate
-            reallocate_int,  &
-            reallocate_long
+        generic :: allocate => allocate_existing, allocate_from_type_int &
+            , allocate_from_type_long
+        generic :: describe => describe_int, describe_long
+        generic :: reallocate => reallocate_int, reallocate_long
         ! splicer begin class.Buffer.type_bound_procedure_part
         ! splicer end class.Buffer.type_bound_procedure_part
     end type SidreBuffer
@@ -429,49 +384,21 @@ module axom_sidre
         procedure :: get_instance => view_get_instance
         procedure :: set_instance => view_set_instance
         procedure :: associated => view_associated
-        generic :: allocate => &
-            ! splicer begin class.View.generic.allocate
-            ! splicer end class.View.generic.allocate
-            allocate_simple,  &
-            allocate_from_type_int,  &
+        generic :: allocate => allocate_simple, allocate_from_type_int,  &
             allocate_from_type_long
-        generic :: apply => &
-            ! splicer begin class.View.generic.apply
-            ! splicer end class.View.generic.apply
-            apply_0,  &
-            apply_nelems,  &
-            apply_nelems_offset,  &
-            apply_nelems_offset_stride,  &
-            apply_type_nelems,  &
-            apply_type_nelems_offset,  &
-            apply_type_nelems_offset_stride,  &
+        generic :: apply => apply_0, apply_nelems, apply_nelems_offset,  &
+            apply_nelems_offset_stride, apply_type_nelems,  &
+            apply_type_nelems_offset, apply_type_nelems_offset_stride,  &
             apply_type_shape
-        generic :: attach_buffer => &
-            ! splicer begin class.View.generic.attach_buffer
-            ! splicer end class.View.generic.attach_buffer
-            attach_buffer_only,  &
-            attach_buffer_type_int,  &
-            attach_buffer_type_long,  &
+        generic :: attach_buffer => attach_buffer_only,  &
+            attach_buffer_type_int, attach_buffer_type_long,  &
             attach_buffer_shape
-        generic :: reallocate => &
-            ! splicer begin class.View.generic.reallocate
-            ! splicer end class.View.generic.reallocate
-            reallocate_int,  &
-            reallocate_long
-        generic :: set_external_data_ptr => &
-            ! splicer begin class.View.generic.set_external_data_ptr
-            ! splicer end class.View.generic.set_external_data_ptr
-            set_external_data_ptr_only,  &
+        generic :: reallocate => reallocate_int, reallocate_long
+        generic :: set_external_data_ptr => set_external_data_ptr_only,  &
             set_external_data_ptr_type_int,  &
-            set_external_data_ptr_type_long,  &
-            set_external_data_ptr_shape
-        generic :: set_scalar => &
-            ! splicer begin class.View.generic.set_scalar
-            ! splicer end class.View.generic.set_scalar
-            set_scalar_int,  &
-            set_scalar_long,  &
-            set_scalar_float,  &
-            set_scalar_double
+            set_external_data_ptr_type_long, set_external_data_ptr_shape
+        generic :: set_scalar => set_scalar_int, set_scalar_long,  &
+            set_scalar_float, set_scalar_double
         ! splicer begin class.View.type_bound_procedure_part
         procedure :: get_data_int_scalar_ptr => view_get_data_int_scalar_ptr
         procedure :: get_data_int_1d_ptr => view_get_data_int_1d_ptr

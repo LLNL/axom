@@ -29,7 +29,15 @@
 extern "C" {
 #endif
 
-// declaration of wrapped types
+//  Level
+enum SLIC_Level
+{
+  Error,
+  Warning,
+  Info,
+  Debug,
+  Num_Levels
+};
 
 // splicer begin C_declarations
 // splicer end C_declarations

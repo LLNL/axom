@@ -20,12 +20,20 @@
 ! splicer begin file_top
 ! splicer end file_top
 module axom_slic
+    use iso_c_binding, only : C_INT
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
 
     ! splicer begin module_top
     ! splicer end module_top
+
+    !  Level
+    integer(C_INT), parameter :: level_error = 0
+    integer(C_INT), parameter :: level_warning = 1
+    integer(C_INT), parameter :: level_info = 2
+    integer(C_INT), parameter :: level_debug = 3
+    integer(C_INT), parameter :: level_num_levels = 4
 
     interface
 

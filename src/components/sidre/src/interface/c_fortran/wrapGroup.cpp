@@ -31,11 +31,6 @@ static void ShroudStrCopy(char* a, int la, const char* s)
     std::memset(a+nm,' ',la-nm);
 }
 
-namespace axom
-{
-namespace sidre
-{
-
 // splicer begin class.Group.CXX_definitions
 // splicer end class.Group.CXX_definitions
 
@@ -47,8 +42,9 @@ extern "C" {
 SIDRE_IndexType SIDRE_group_get_index(SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  IndexType SHC_rv = SH_this->getIndex();
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
+  axom::sidre::IndexType SHC_rv = SH_this->getIndex();
   return SHC_rv;
 // splicer end class.Group.method.get_index
 }
@@ -56,8 +52,8 @@ SIDRE_IndexType SIDRE_group_get_index(SIDRE_group* self)
 const char* SIDRE_group_get_name(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_name
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string & SHCXX_rv = SH_this->getName();
   const char* SHC_rv = SHCXX_rv.c_str();
   return SHC_rv;
@@ -68,8 +64,8 @@ void SIDRE_group_get_name_bufferify(const SIDRE_group* self, char* SHF_rv,
                                     int NSHF_rv)
 {
 // splicer begin class.Group.method.get_name_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string & SHCXX_rv = SH_this->getName();
   if (SHCXX_rv.empty())
   {
@@ -87,8 +83,8 @@ void SIDRE_group_get_path_bufferify(const SIDRE_group* self, char* SHF_rv,
                                     int NSHF_rv)
 {
 // splicer begin class.Group.method.get_path_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   std::string SHCXX_rv = SH_this->getPath();
   if (SHCXX_rv.empty())
   {
@@ -106,8 +102,8 @@ void SIDRE_group_get_path_name_bufferify(const SIDRE_group* self, char* SHF_rv,
                                          int NSHF_rv)
 {
 // splicer begin class.Group.method.get_path_name_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   std::string SHCXX_rv = SH_this->getPathName();
   if (SHCXX_rv.empty())
   {
@@ -124,9 +120,9 @@ void SIDRE_group_get_path_name_bufferify(const SIDRE_group* self, char* SHF_rv,
 const SIDRE_group* SIDRE_group_get_parent(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_parent
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  const Group* SHCXX_rv = SH_this->getParent();
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SHCXX_rv = SH_this->getParent();
   const SIDRE_group* SHC_rv =
     static_cast<const SIDRE_group*>(static_cast<const void*>(SHCXX_rv));
   return SHC_rv;
@@ -136,8 +132,8 @@ const SIDRE_group* SIDRE_group_get_parent(const SIDRE_group* self)
 size_t SIDRE_group_get_num_groups(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_num_groups
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   size_t SHC_rv = SH_this->getNumGroups();
   return SHC_rv;
 // splicer end class.Group.method.get_num_groups
@@ -146,8 +142,8 @@ size_t SIDRE_group_get_num_groups(const SIDRE_group* self)
 size_t SIDRE_group_get_num_views(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_num_views
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   size_t SHC_rv = SH_this->getNumViews();
   return SHC_rv;
 // splicer end class.Group.method.get_num_views
@@ -156,9 +152,9 @@ size_t SIDRE_group_get_num_views(const SIDRE_group* self)
 const SIDRE_datastore* SIDRE_group_get_data_store(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_data_store
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  const DataStore* SHCXX_rv = SH_this->getDataStore();
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  const axom::sidre::DataStore* SHCXX_rv = SH_this->getDataStore();
   const SIDRE_datastore* SHC_rv =
     static_cast<const SIDRE_datastore*>(static_cast<const void*>(SHCXX_rv));
   return SHC_rv;
@@ -168,8 +164,8 @@ const SIDRE_datastore* SIDRE_group_get_data_store(const SIDRE_group* self)
 bool SIDRE_group_has_view(const SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.has_view
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_path(path);
   bool SHC_rv = SH_this->hasView(SH_path);
   return SHC_rv;
@@ -180,8 +176,8 @@ bool SIDRE_group_has_view_bufferify(const SIDRE_group* self, const char* path,
                                     int Lpath)
 {
 // splicer begin class.Group.method.has_view_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_path(path, Lpath);
   bool SHC_rv = SH_this->hasView(SH_path);
   return SHC_rv;
@@ -191,8 +187,8 @@ bool SIDRE_group_has_view_bufferify(const SIDRE_group* self, const char* path,
 bool SIDRE_group_has_child_view(const SIDRE_group* self, const char* name)
 {
 // splicer begin class.Group.method.has_child_view
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_name(name);
   bool SHC_rv = SH_this->hasChildView(SH_name);
   return SHC_rv;
@@ -203,8 +199,8 @@ bool SIDRE_group_has_child_view_bufferify(const SIDRE_group* self,
                                           const char* name, int Lname)
 {
 // splicer begin class.Group.method.has_child_view_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_name(name, Lname);
   bool SHC_rv = SH_this->hasChildView(SH_name);
   return SHC_rv;
@@ -215,10 +211,10 @@ SIDRE_IndexType SIDRE_group_get_view_index(const SIDRE_group* self,
                                            const char* name)
 {
 // splicer begin class.Group.method.get_view_index
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_name(name);
-  IndexType SHC_rv = SH_this->getViewIndex(SH_name);
+  axom::sidre::IndexType SHC_rv = SH_this->getViewIndex(SH_name);
   return SHC_rv;
 // splicer end class.Group.method.get_view_index
 }
@@ -228,10 +224,10 @@ SIDRE_IndexType SIDRE_group_get_view_index_bufferify(const SIDRE_group* self,
                                                      int Lname)
 {
 // splicer begin class.Group.method.get_view_index_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_name(name, Lname);
-  IndexType SHC_rv = SH_this->getViewIndex(SH_name);
+  axom::sidre::IndexType SHC_rv = SH_this->getViewIndex(SH_name);
   return SHC_rv;
 // splicer end class.Group.method.get_view_index_bufferify
 }
@@ -240,11 +236,11 @@ const char* SIDRE_group_get_view_name(const SIDRE_group* self,
                                       SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.get_view_name
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string & SHCXX_rv = SH_this->getViewName(idx);
   // C_error_pattern
-  if (!nameIsValid(SHCXX_rv))
+  if (!axom::sidre::nameIsValid(SHCXX_rv))
   {
     return SIDRE_InvalidName;
   }
@@ -259,11 +255,11 @@ void SIDRE_group_get_view_name_bufferify(const SIDRE_group* self,
                                          int NSHF_rv)
 {
 // splicer begin class.Group.method.get_view_name_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string & SHCXX_rv = SH_this->getViewName(idx);
   // C_error_pattern
-  if (!nameIsValid(SHCXX_rv))
+  if (!axom::sidre::nameIsValid(SHCXX_rv))
   {
     std::memset(SHF_rv, ' ', NSHF_rv);
     return;
@@ -284,9 +280,10 @@ void SIDRE_group_get_view_name_bufferify(const SIDRE_group* self,
 SIDRE_view* SIDRE_group_get_view_from_name(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.get_view_from_name
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->getView(SH_path);
+  axom::sidre::View* SHCXX_rv = SH_this->getView(SH_path);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.get_view_from_name
@@ -297,9 +294,10 @@ SIDRE_view* SIDRE_group_get_view_from_name_bufferify(SIDRE_group* self,
                                                      int Lpath)
 {
 // splicer begin class.Group.method.get_view_from_name_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->getView(SH_path);
+  axom::sidre::View* SHCXX_rv = SH_this->getView(SH_path);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.get_view_from_name_bufferify
@@ -309,8 +307,9 @@ SIDRE_view* SIDRE_group_get_view_from_index(SIDRE_group* self,
                                             const SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.get_view_from_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  View* SHCXX_rv = SH_this->getView(idx);
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
+  axom::sidre::View* SHCXX_rv = SH_this->getView(idx);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.get_view_from_index
@@ -319,9 +318,9 @@ SIDRE_view* SIDRE_group_get_view_from_index(SIDRE_group* self,
 SIDRE_IndexType SIDRE_group_get_first_valid_view_index(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_first_valid_view_index
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  IndexType SHC_rv = SH_this->getFirstValidViewIndex();
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  axom::sidre::IndexType SHC_rv = SH_this->getFirstValidViewIndex();
   return SHC_rv;
 // splicer end class.Group.method.get_first_valid_view_index
 }
@@ -330,9 +329,9 @@ SIDRE_IndexType SIDRE_group_get_next_valid_view_index(const SIDRE_group* self,
                                                       SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.get_next_valid_view_index
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  IndexType SHC_rv = SH_this->getNextValidViewIndex(idx);
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  axom::sidre::IndexType SHC_rv = SH_this->getNextValidViewIndex(idx);
   return SHC_rv;
 // splicer end class.Group.method.get_next_valid_view_index
 }
@@ -340,9 +339,10 @@ SIDRE_IndexType SIDRE_group_get_next_valid_view_index(const SIDRE_group* self,
 SIDRE_view* SIDRE_group_create_view_empty(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.create_view_empty
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createView(SH_path);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_empty
@@ -352,9 +352,10 @@ SIDRE_view* SIDRE_group_create_view_empty_bufferify(SIDRE_group* self,
                                                     const char* path, int Lpath)
 {
 // splicer begin class.Group.method.create_view_empty_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createView(SH_path);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_empty_bufferify
@@ -365,10 +366,12 @@ SIDRE_view* SIDRE_group_create_view_from_type(SIDRE_group* self,
                                               SIDRE_SidreLength num_elems)
 {
 // splicer begin class.Group.method.create_view_from_type
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type,
+                                                    num_elems);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_type
@@ -380,10 +383,12 @@ SIDRE_view* SIDRE_group_create_view_from_type_bufferify(SIDRE_group* self,
                                                         SIDRE_SidreLength num_elems)
 {
 // splicer begin class.Group.method.create_view_from_type_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type,
+                                                    num_elems);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_type_bufferify
@@ -395,10 +400,12 @@ SIDRE_view* SIDRE_group_create_view_from_shape(SIDRE_group* self,
                                                SIDRE_SidreLength* shape)
 {
 // splicer begin class.Group.method.create_view_from_shape
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims,
+                                                    shape);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_shape
@@ -411,10 +418,12 @@ SIDRE_view* SIDRE_group_create_view_from_shape_bufferify(SIDRE_group* self,
                                                          SIDRE_SidreLength* shape)
 {
 // splicer begin class.Group.method.create_view_from_shape_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims,
+                                                    shape);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_shape_bufferify
@@ -425,10 +434,12 @@ SIDRE_view* SIDRE_group_create_view_into_buffer(SIDRE_group* self,
                                                 SIDRE_buffer* buff)
 {
 // splicer begin class.Group.method.create_view_into_buffer
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
+  axom::sidre::Buffer* SHCXX_buff =
+    static_cast<axom::sidre::Buffer*>(static_cast<void*>(buff));
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_into_buffer
@@ -440,10 +451,12 @@ SIDRE_view* SIDRE_group_create_view_into_buffer_bufferify(SIDRE_group* self,
                                                           SIDRE_buffer* buff)
 {
 // splicer begin class.Group.method.create_view_into_buffer_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
+  axom::sidre::Buffer* SHCXX_buff =
+    static_cast<axom::sidre::Buffer*>(static_cast<void*>(buff));
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_into_buffer_bufferify
@@ -456,12 +469,14 @@ SIDRE_view* SIDRE_group_create_view_from_type_and_buffer(SIDRE_group* self,
                                                          SIDRE_buffer* buff)
 {
 // splicer begin class.Group.method.create_view_from_type_and_buffer
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       SHCXX_buff);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::Buffer* SHCXX_buff =
+    static_cast<axom::sidre::Buffer*>(static_cast<void*>(buff));
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type,
+                                                    num_elems, SHCXX_buff);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_type_and_buffer
@@ -472,12 +487,14 @@ SIDRE_view* SIDRE_group_create_view_from_type_and_buffer_bufferify(
   SIDRE_SidreLength num_elems, SIDRE_buffer* buff)
 {
 // splicer begin class.Group.method.create_view_from_type_and_buffer_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       SHCXX_buff);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::Buffer* SHCXX_buff =
+    static_cast<axom::sidre::Buffer*>(static_cast<void*>(buff));
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type,
+                                                    num_elems, SHCXX_buff);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_type_and_buffer_bufferify
@@ -490,12 +507,14 @@ SIDRE_view* SIDRE_group_create_view_from_shape_and_buffer(SIDRE_group* self,
                                                           SIDRE_buffer* buff)
 {
 // splicer begin class.Group.method.create_view_from_shape_and_buffer
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       SHCXX_buff);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::Buffer* SHCXX_buff =
+    static_cast<axom::sidre::Buffer*>(static_cast<void*>(buff));
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims,
+                                                    shape, SHCXX_buff);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_shape_and_buffer
@@ -506,12 +525,14 @@ SIDRE_view* SIDRE_group_create_view_from_shape_and_buffer_bufferify(
   SIDRE_SidreLength* shape, SIDRE_buffer* buff)
 {
 // splicer begin class.Group.method.create_view_from_shape_and_buffer_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       SHCXX_buff);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::Buffer* SHCXX_buff =
+    static_cast<axom::sidre::Buffer*>(static_cast<void*>(buff));
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims,
+                                                    shape, SHCXX_buff);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_shape_and_buffer_bufferify
@@ -522,9 +543,10 @@ SIDRE_view* SIDRE_group_create_view_external(SIDRE_group* self,
                                              void* external_ptr)
 {
 // splicer begin class.Group.method.create_view_external
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_external
@@ -536,9 +558,10 @@ SIDRE_view* SIDRE_group_create_view_external_bufferify(SIDRE_group* self,
                                                        void* external_ptr)
 {
 // splicer begin class.Group.method.create_view_external_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_external_bufferify
@@ -551,11 +574,12 @@ SIDRE_view* SIDRE_group_create_view_from_type_external(SIDRE_group* self,
                                                        void* external_ptr)
 {
 // splicer begin class.Group.method.create_view_from_type_external
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       external_ptr);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type,
+                                                    num_elems, external_ptr);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_type_external
@@ -566,11 +590,12 @@ SIDRE_view* SIDRE_group_create_view_from_type_external_bufferify(
   SIDRE_SidreLength num_elems, void* external_ptr)
 {
 // splicer begin class.Group.method.create_view_from_type_external_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       external_ptr);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type,
+                                                    num_elems, external_ptr);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_type_external_bufferify
@@ -583,11 +608,12 @@ SIDRE_view* SIDRE_group_create_view_from_shape_external(SIDRE_group* self,
                                                         void* external_ptr)
 {
 // splicer begin class.Group.method.create_view_from_shape_external
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       external_ptr);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims,
+                                                    shape, external_ptr);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_shape_external
@@ -598,11 +624,12 @@ SIDRE_view* SIDRE_group_create_view_from_shape_external_bufferify(
   SIDRE_SidreLength* shape, void* external_ptr)
 {
 // splicer begin class.Group.method.create_view_from_shape_external_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       external_ptr);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims,
+                                                    shape, external_ptr);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_from_shape_external_bufferify
@@ -614,11 +641,13 @@ SIDRE_view* SIDRE_group_create_view_and_allocate_nelems(SIDRE_group* self,
                                                         SIDRE_SidreLength num_elems)
 {
 // splicer begin class.Group.method.create_view_and_allocate_nelems
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv =
-    SH_this->createViewAndAllocate(SH_path, SHCXX_type, num_elems);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewAndAllocate(SH_path,
+                                                               SHCXX_type,
+                                                               num_elems);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_and_allocate_nelems
@@ -629,11 +658,13 @@ SIDRE_view* SIDRE_group_create_view_and_allocate_nelems_bufferify(
   SIDRE_SidreLength num_elems)
 {
 // splicer begin class.Group.method.create_view_and_allocate_nelems_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv =
-    SH_this->createViewAndAllocate(SH_path, SHCXX_type, num_elems);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewAndAllocate(SH_path,
+                                                               SHCXX_type,
+                                                               num_elems);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_and_allocate_nelems_bufferify
@@ -645,11 +676,13 @@ SIDRE_view* SIDRE_group_create_view_and_allocate_shape(SIDRE_group* self,
                                                        SIDRE_SidreLength* shape)
 {
 // splicer begin class.Group.method.create_view_and_allocate_shape
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createViewAndAllocate(SH_path, SHCXX_type, ndims,
-                                                  shape);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewAndAllocate(SH_path,
+                                                               SHCXX_type,
+                                                               ndims, shape);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_and_allocate_shape
@@ -660,11 +693,13 @@ SIDRE_view* SIDRE_group_create_view_and_allocate_shape_bufferify(
   SIDRE_SidreLength* shape)
 {
 // splicer begin class.Group.method.create_view_and_allocate_shape_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createViewAndAllocate(SH_path, SHCXX_type, ndims,
-                                                  shape);
+  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewAndAllocate(SH_path,
+                                                               SHCXX_type,
+                                                               ndims, shape);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_and_allocate_shape_bufferify
@@ -674,9 +709,10 @@ SIDRE_view* SIDRE_group_create_view_scalar_int(SIDRE_group* self,
                                                const char* path, int value)
 {
 // splicer begin class.Group.method.create_view_scalar_int
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createViewScalar<int>(SH_path, value);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewScalar<int>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_int
@@ -687,9 +723,10 @@ SIDRE_view* SIDRE_group_create_view_scalar_int_bufferify(SIDRE_group* self,
                                                          int Lpath, int value)
 {
 // splicer begin class.Group.method.create_view_scalar_int_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createViewScalar<int>(SH_path, value);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewScalar<int>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_int_bufferify
@@ -699,9 +736,10 @@ SIDRE_view* SIDRE_group_create_view_scalar_long(SIDRE_group* self,
                                                 const char* path, long value)
 {
 // splicer begin class.Group.method.create_view_scalar_long
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createViewScalar<long>(SH_path, value);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewScalar<long>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_long
@@ -712,9 +750,10 @@ SIDRE_view* SIDRE_group_create_view_scalar_long_bufferify(SIDRE_group* self,
                                                           int Lpath, long value)
 {
 // splicer begin class.Group.method.create_view_scalar_long_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createViewScalar<long>(SH_path, value);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewScalar<long>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_long_bufferify
@@ -724,9 +763,11 @@ SIDRE_view* SIDRE_group_create_view_scalar_float(SIDRE_group* self,
                                                  const char* path, float value)
 {
 // splicer begin class.Group.method.create_view_scalar_float
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createViewScalar<float>(SH_path, value);
+  axom::sidre::View* SHCXX_rv =
+    SH_this->createViewScalar<float>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_float
@@ -738,9 +779,11 @@ SIDRE_view* SIDRE_group_create_view_scalar_float_bufferify(SIDRE_group* self,
                                                            float value)
 {
 // splicer begin class.Group.method.create_view_scalar_float_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createViewScalar<float>(SH_path, value);
+  axom::sidre::View* SHCXX_rv =
+    SH_this->createViewScalar<float>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_float_bufferify
@@ -751,9 +794,11 @@ SIDRE_view* SIDRE_group_create_view_scalar_double(SIDRE_group* self,
                                                   double value)
 {
 // splicer begin class.Group.method.create_view_scalar_double
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createViewScalar<double>(SH_path, value);
+  axom::sidre::View* SHCXX_rv =
+    SH_this->createViewScalar<double>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_double
@@ -765,9 +810,11 @@ SIDRE_view* SIDRE_group_create_view_scalar_double_bufferify(SIDRE_group* self,
                                                             double value)
 {
 // splicer begin class.Group.method.create_view_scalar_double_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createViewScalar<double>(SH_path, value);
+  axom::sidre::View* SHCXX_rv =
+    SH_this->createViewScalar<double>(SH_path, value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_scalar_double_bufferify
@@ -777,10 +824,11 @@ SIDRE_view* SIDRE_group_create_view_string(SIDRE_group* self, const char* path,
                                            const char* value)
 {
 // splicer begin class.Group.method.create_view_string
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
   const std::string SH_value(value);
-  View* SHCXX_rv = SH_this->createViewString(SH_path, SH_value);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewString(SH_path, SH_value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_string
@@ -793,10 +841,11 @@ SIDRE_view* SIDRE_group_create_view_string_bufferify(SIDRE_group* self,
                                                      int Lvalue)
 {
 // splicer begin class.Group.method.create_view_string_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
   const std::string SH_value(value, Lvalue);
-  View* SHCXX_rv = SH_this->createViewString(SH_path, SH_value);
+  axom::sidre::View* SHCXX_rv = SH_this->createViewString(SH_path, SH_value);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_view_string_bufferify
@@ -805,7 +854,8 @@ SIDRE_view* SIDRE_group_create_view_string_bufferify(SIDRE_group* self,
 void SIDRE_group_destroy_view(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.destroy_view
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
   SH_this->destroyView(SH_path);
   return;
@@ -816,7 +866,8 @@ void SIDRE_group_destroy_view_bufferify(SIDRE_group* self, const char* path,
                                         int Lpath)
 {
 // splicer begin class.Group.method.destroy_view_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
   SH_this->destroyView(SH_path);
   return;
@@ -826,7 +877,8 @@ void SIDRE_group_destroy_view_bufferify(SIDRE_group* self, const char* path,
 void SIDRE_group_destroy_view_and_data_name(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.destroy_view_and_data_name
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
   SH_this->destroyViewAndData(SH_path);
   return;
@@ -838,7 +890,8 @@ void SIDRE_group_destroy_view_and_data_name_bufferify(SIDRE_group* self,
                                                       int Lpath)
 {
 // splicer begin class.Group.method.destroy_view_and_data_name_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
   SH_this->destroyViewAndData(SH_path);
   return;
@@ -849,7 +902,8 @@ void SIDRE_group_destroy_view_and_data_index(SIDRE_group* self,
                                              SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.destroy_view_and_data_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   SH_this->destroyViewAndData(idx);
   return;
 // splicer end class.Group.method.destroy_view_and_data_index
@@ -858,9 +912,11 @@ void SIDRE_group_destroy_view_and_data_index(SIDRE_group* self,
 SIDRE_view* SIDRE_group_move_view(SIDRE_group* self, SIDRE_view* view)
 {
 // splicer begin class.Group.method.move_view
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  View* SHCXX_view = static_cast<View*>(static_cast<void*>(view));
-  View* SHCXX_rv = SH_this->moveView(SHCXX_view);
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
+  axom::sidre::View* SHCXX_view =
+    static_cast<axom::sidre::View*>(static_cast<void*>(view));
+  axom::sidre::View* SHCXX_rv = SH_this->moveView(SHCXX_view);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.move_view
@@ -869,9 +925,11 @@ SIDRE_view* SIDRE_group_move_view(SIDRE_group* self, SIDRE_view* view)
 SIDRE_view* SIDRE_group_copy_view(SIDRE_group* self, SIDRE_view* view)
 {
 // splicer begin class.Group.method.copy_view
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  View* SHCXX_view = static_cast<View*>(static_cast<void*>(view));
-  View* SHCXX_rv = SH_this->copyView(SHCXX_view);
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
+  axom::sidre::View* SHCXX_view =
+    static_cast<axom::sidre::View*>(static_cast<void*>(view));
+  axom::sidre::View* SHCXX_rv = SH_this->copyView(SHCXX_view);
   SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.copy_view
@@ -880,7 +938,8 @@ SIDRE_view* SIDRE_group_copy_view(SIDRE_group* self, SIDRE_view* view)
 bool SIDRE_group_has_group(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.has_group
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
   bool SHC_rv = SH_this->hasGroup(SH_path);
   return SHC_rv;
@@ -891,7 +950,8 @@ bool SIDRE_group_has_group_bufferify(SIDRE_group* self, const char* path,
                                      int Lpath)
 {
 // splicer begin class.Group.method.has_group_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
   bool SHC_rv = SH_this->hasGroup(SH_path);
   return SHC_rv;
@@ -901,7 +961,8 @@ bool SIDRE_group_has_group_bufferify(SIDRE_group* self, const char* path,
 bool SIDRE_group_has_child_group(SIDRE_group* self, const char* name)
 {
 // splicer begin class.Group.method.has_child_group
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_name(name);
   bool SHC_rv = SH_this->hasChildGroup(SH_name);
   return SHC_rv;
@@ -912,7 +973,8 @@ bool SIDRE_group_has_child_group_bufferify(SIDRE_group* self, const char* name,
                                            int Lname)
 {
 // splicer begin class.Group.method.has_child_group_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_name(name, Lname);
   bool SHC_rv = SH_this->hasChildGroup(SH_name);
   return SHC_rv;
@@ -923,10 +985,10 @@ SIDRE_IndexType SIDRE_group_get_group_index(const SIDRE_group* self,
                                             const char* name)
 {
 // splicer begin class.Group.method.get_group_index
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_name(name);
-  IndexType SHC_rv = SH_this->getGroupIndex(SH_name);
+  axom::sidre::IndexType SHC_rv = SH_this->getGroupIndex(SH_name);
   return SHC_rv;
 // splicer end class.Group.method.get_group_index
 }
@@ -936,10 +998,10 @@ SIDRE_IndexType SIDRE_group_get_group_index_bufferify(const SIDRE_group* self,
                                                       int Lname)
 {
 // splicer begin class.Group.method.get_group_index_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_name(name, Lname);
-  IndexType SHC_rv = SH_this->getGroupIndex(SH_name);
+  axom::sidre::IndexType SHC_rv = SH_this->getGroupIndex(SH_name);
   return SHC_rv;
 // splicer end class.Group.method.get_group_index_bufferify
 }
@@ -948,11 +1010,11 @@ const char* SIDRE_group_get_group_name(const SIDRE_group* self,
                                        SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.get_group_name
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string & SHCXX_rv = SH_this->getGroupName(idx);
   // C_error_pattern
-  if (!nameIsValid(SHCXX_rv))
+  if (!axom::sidre::nameIsValid(SHCXX_rv))
   {
     return SIDRE_InvalidName;
   }
@@ -967,11 +1029,11 @@ void SIDRE_group_get_group_name_bufferify(const SIDRE_group* self,
                                           int NSHF_rv)
 {
 // splicer begin class.Group.method.get_group_name_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string & SHCXX_rv = SH_this->getGroupName(idx);
   // C_error_pattern
-  if (!nameIsValid(SHCXX_rv))
+  if (!axom::sidre::nameIsValid(SHCXX_rv))
   {
     std::memset(SHF_rv, ' ', NSHF_rv);
     return;
@@ -993,9 +1055,10 @@ SIDRE_group* SIDRE_group_get_group_from_name(SIDRE_group* self,
                                              const char* path)
 {
 // splicer begin class.Group.method.get_group_from_name
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  Group* SHCXX_rv = SH_this->getGroup(SH_path);
+  axom::sidre::Group* SHCXX_rv = SH_this->getGroup(SH_path);
   SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.get_group_from_name
@@ -1006,9 +1069,10 @@ SIDRE_group* SIDRE_group_get_group_from_name_bufferify(SIDRE_group* self,
                                                        int Lpath)
 {
 // splicer begin class.Group.method.get_group_from_name_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  Group* SHCXX_rv = SH_this->getGroup(SH_path);
+  axom::sidre::Group* SHCXX_rv = SH_this->getGroup(SH_path);
   SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.get_group_from_name_bufferify
@@ -1018,8 +1082,9 @@ SIDRE_group* SIDRE_group_get_group_from_index(SIDRE_group* self,
                                               SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.get_group_from_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  Group* SHCXX_rv = SH_this->getGroup(idx);
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SHCXX_rv = SH_this->getGroup(idx);
   SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.get_group_from_index
@@ -1028,9 +1093,9 @@ SIDRE_group* SIDRE_group_get_group_from_index(SIDRE_group* self,
 SIDRE_IndexType SIDRE_group_get_first_valid_group_index(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_first_valid_group_index
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  IndexType SHC_rv = SH_this->getFirstValidGroupIndex();
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  axom::sidre::IndexType SHC_rv = SH_this->getFirstValidGroupIndex();
   return SHC_rv;
 // splicer end class.Group.method.get_first_valid_group_index
 }
@@ -1039,9 +1104,9 @@ SIDRE_IndexType SIDRE_group_get_next_valid_group_index(const SIDRE_group* self,
                                                        SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.get_next_valid_group_index
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  IndexType SHC_rv = SH_this->getNextValidGroupIndex(idx);
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  axom::sidre::IndexType SHC_rv = SH_this->getNextValidGroupIndex(idx);
   return SHC_rv;
 // splicer end class.Group.method.get_next_valid_group_index
 }
@@ -1049,9 +1114,10 @@ SIDRE_IndexType SIDRE_group_get_next_valid_group_index(const SIDRE_group* self,
 SIDRE_group* SIDRE_group_create_group(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.create_group
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
-  Group* SHCXX_rv = SH_this->createGroup(SH_path);
+  axom::sidre::Group* SHCXX_rv = SH_this->createGroup(SH_path);
   SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_group
@@ -1061,9 +1127,10 @@ SIDRE_group* SIDRE_group_create_group_bufferify(SIDRE_group* self,
                                                 const char* path, int Lpath)
 {
 // splicer begin class.Group.method.create_group_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
-  Group* SHCXX_rv = SH_this->createGroup(SH_path);
+  axom::sidre::Group* SHCXX_rv = SH_this->createGroup(SH_path);
   SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.create_group_bufferify
@@ -1072,7 +1139,8 @@ SIDRE_group* SIDRE_group_create_group_bufferify(SIDRE_group* self,
 void SIDRE_group_destroy_group_name(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.destroy_group_name
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path);
   SH_this->destroyGroup(SH_path);
   return;
@@ -1083,7 +1151,8 @@ void SIDRE_group_destroy_group_name_bufferify(SIDRE_group* self,
                                               const char* path, int Lpath)
 {
 // splicer begin class.Group.method.destroy_group_name_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_path(path, Lpath);
   SH_this->destroyGroup(SH_path);
   return;
@@ -1093,7 +1162,8 @@ void SIDRE_group_destroy_group_name_bufferify(SIDRE_group* self,
 void SIDRE_group_destroy_group_index(SIDRE_group* self, SIDRE_IndexType idx)
 {
 // splicer begin class.Group.method.destroy_group_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   SH_this->destroyGroup(idx);
   return;
 // splicer end class.Group.method.destroy_group_index
@@ -1102,9 +1172,11 @@ void SIDRE_group_destroy_group_index(SIDRE_group* self, SIDRE_IndexType idx)
 SIDRE_group* SIDRE_group_move_group(SIDRE_group* self, SIDRE_group* grp)
 {
 // splicer begin class.Group.method.move_group
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  Group* SHCXX_grp = static_cast<Group*>(static_cast<void*>(grp));
-  Group* SHCXX_rv = SH_this->moveGroup(SHCXX_grp);
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SHCXX_grp =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(grp));
+  axom::sidre::Group* SHCXX_rv = SH_this->moveGroup(SHCXX_grp);
   SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
   return SHC_rv;
 // splicer end class.Group.method.move_group
@@ -1113,8 +1185,8 @@ SIDRE_group* SIDRE_group_move_group(SIDRE_group* self, SIDRE_group* grp)
 void SIDRE_group_print(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.print
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   SH_this->print();
   return;
 // splicer end class.Group.method.print
@@ -1124,10 +1196,10 @@ bool SIDRE_group_is_equivalent_to(const SIDRE_group* self,
                                   const SIDRE_group* other)
 {
 // splicer begin class.Group.method.is_equivalent_to
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
-  const Group* SHCXX_other =
-    static_cast<const Group*>(static_cast<const void*>(other));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SHCXX_other =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(other));
   bool SHC_rv = SH_this->isEquivalentTo(SHCXX_other);
   return SHC_rv;
 // splicer end class.Group.method.is_equivalent_to
@@ -1137,8 +1209,8 @@ void SIDRE_group_save(const SIDRE_group* self, const char* file_path,
                       const char* protocol)
 {
 // splicer begin class.Group.method.save
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
   SH_this->save(SH_file_path, SH_protocol);
@@ -1151,8 +1223,8 @@ void SIDRE_group_save_bufferify(const SIDRE_group* self, const char* file_path,
                                 int Lprotocol)
 {
 // splicer begin class.Group.method.save_bufferify
-  const Group* SH_this =
-    static_cast<const Group*>(static_cast<const void*>(self));
+  const axom::sidre::Group* SH_this =
+    static_cast<const axom::sidre::Group*>(static_cast<const void*>(self));
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
   SH_this->save(SH_file_path, SH_protocol);
@@ -1164,7 +1236,8 @@ void SIDRE_group_load_0(SIDRE_group* self, const char* file_path,
                         const char* protocol)
 {
 // splicer begin class.Group.method.load_0
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
   SH_this->load(SH_file_path, SH_protocol);
@@ -1177,7 +1250,8 @@ void SIDRE_group_load_0_bufferify(SIDRE_group* self, const char* file_path,
                                   int Lprotocol)
 {
 // splicer begin class.Group.method.load_0_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
   SH_this->load(SH_file_path, SH_protocol);
@@ -1189,7 +1263,8 @@ void SIDRE_group_load_1(SIDRE_group* self, const char* file_path,
                         const char* protocol, bool preserve_contents)
 {
 // splicer begin class.Group.method.load_1
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_file_path(file_path);
   const std::string SH_protocol(protocol);
   SH_this->load(SH_file_path, SH_protocol, preserve_contents);
@@ -1202,7 +1277,8 @@ void SIDRE_group_load_1_bufferify(SIDRE_group* self, const char* file_path,
                                   int Lprotocol, bool preserve_contents)
 {
 // splicer begin class.Group.method.load_1_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_file_path(file_path, Lfile_path);
   const std::string SH_protocol(protocol, Lprotocol);
   SH_this->load(SH_file_path, SH_protocol, preserve_contents);
@@ -1213,7 +1289,8 @@ void SIDRE_group_load_1_bufferify(SIDRE_group* self, const char* file_path,
 void SIDRE_group_load_external_data(SIDRE_group* self, const char* file_path)
 {
 // splicer begin class.Group.method.load_external_data
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_file_path(file_path);
   SH_this->loadExternalData(SH_file_path);
   return;
@@ -1225,7 +1302,8 @@ void SIDRE_group_load_external_data_bufferify(SIDRE_group* self,
                                               int Lfile_path)
 {
 // splicer begin class.Group.method.load_external_data_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_file_path(file_path, Lfile_path);
   SH_this->loadExternalData(SH_file_path);
   return;
@@ -1235,7 +1313,8 @@ void SIDRE_group_load_external_data_bufferify(SIDRE_group* self,
 bool SIDRE_group_rename(SIDRE_group* self, const char* new_name)
 {
 // splicer begin class.Group.method.rename
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_new_name(new_name);
   bool SHC_rv = SH_this->rename(SH_new_name);
   return SHC_rv;
@@ -1246,7 +1325,8 @@ bool SIDRE_group_rename_bufferify(SIDRE_group* self, const char* new_name,
                                   int Lnew_name)
 {
 // splicer begin class.Group.method.rename_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  axom::sidre::Group* SH_this =
+    static_cast<axom::sidre::Group*>(static_cast<void*>(self));
   const std::string SH_new_name(new_name, Lnew_name);
   bool SHC_rv = SH_this->rename(SH_new_name);
   return SHC_rv;
@@ -1254,6 +1334,3 @@ bool SIDRE_group_rename_bufferify(SIDRE_group* self, const char* new_name,
 }
 
 }  // extern "C"
-
-}  // namespace sidre
-}  // namespace axom

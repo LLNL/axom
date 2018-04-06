@@ -22,7 +22,9 @@
 #ifndef WRAPQUEST_H
 #define WRAPQUEST_H
 
+#ifdef AXOM_USE_MPI
 #include "mpi.h"
+#endif
 
 // splicer begin CXX_declarations
 // splicer end CXX_declarations
@@ -31,22 +33,39 @@
 extern "C" {
 #endif
 
-// declaration of wrapped types
-
 // splicer begin C_declarations
 // splicer end C_declarations
 
-void QUEST_initialize(MPI_Fint comm, const char* fileName,
-                      bool requiresDistance, int ndims, int maxElements,
-                      int maxLevels);
+#ifdef AXOM_USE_MPI
+void QUEST_initialize_mpi(MPI_Fint comm, const char* fileName,
+                          bool requiresDistance, int ndims, int maxElements,
+                          int maxLevels);
+#endif
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char* fileName,
-                                int LfileName, bool requiresDistance, int ndims,
-                                int maxElements, int maxLevels);
+#ifdef AXOM_USE_MPI
+void QUEST_initialize_mpi_bufferify(MPI_Fint comm, const char* fileName,
+                                    int LfileName, bool requiresDistance,
+                                    int ndims, int maxElements, int maxLevels);
+#endif
 
-double QUEST_distance(double x, double y, double z);
+#ifndef AXOM_USE_MPI
+void QUEST_initialize_serial(const char* fileName, bool requiresDistance,
+                             int ndims, int maxElements, int maxLevels);
+#endif
 
-int QUEST_inside(double x, double y, double z);
+#ifndef AXOM_USE_MPI
+void QUEST_initialize_serial_bufferify(const char* fileName, int LfileName,
+                                       bool requiresDistance, int ndims,
+                                       int maxElements, int maxLevels);
+#endif
+
+double QUEST_distance_0(double x, double y);
+
+double QUEST_distance_1(double x, double y, double z);
+
+int QUEST_inside_0(double x, double y);
+
+int QUEST_inside_1(double x, double y, double z);
 
 void QUEST_mesh_min_bounds(double* coords);
 

@@ -17,11 +17,6 @@
 #include <string>
 #include "quest/quest.hpp"
 
-namespace axom
-{
-namespace quest
-{
-
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
 
@@ -30,52 +25,99 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void QUEST_initialize(MPI_Fint comm, const char* fileName,
-                      bool requiresDistance, int ndims, int maxElements,
-                      int maxLevels)
+#ifdef AXOM_USE_MPI
+void QUEST_initialize_mpi(MPI_Fint comm, const char* fileName,
+                          bool requiresDistance, int ndims, int maxElements,
+                          int maxLevels)
 {
-// splicer begin function.initialize
+// splicer begin function.initialize_mpi
   MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
   const std::string SH_fileName(fileName);
-  initialize(SHCXX_comm, SH_fileName, requiresDistance, ndims, maxElements,
-             maxLevels);
+  axom::quest::initialize(SHCXX_comm, SH_fileName, requiresDistance, ndims,
+                          maxElements, maxLevels);
   return;
-// splicer end function.initialize
+// splicer end function.initialize_mpi
 }
+#endif  // ifdef AXOM_USE_MPI
 
-void QUEST_initialize_bufferify(MPI_Fint comm, const char* fileName,
-                                int LfileName, bool requiresDistance, int ndims,
-                                int maxElements, int maxLevels)
+#ifdef AXOM_USE_MPI
+void QUEST_initialize_mpi_bufferify(MPI_Fint comm, const char* fileName,
+                                    int LfileName, bool requiresDistance,
+                                    int ndims, int maxElements, int maxLevels)
 {
-// splicer begin function.initialize_bufferify
+// splicer begin function.initialize_mpi_bufferify
   MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
   const std::string SH_fileName(fileName, LfileName);
-  initialize(SHCXX_comm, SH_fileName, requiresDistance, ndims, maxElements,
-             maxLevels);
+  axom::quest::initialize(SHCXX_comm, SH_fileName, requiresDistance, ndims,
+                          maxElements, maxLevels);
   return;
-// splicer end function.initialize_bufferify
+// splicer end function.initialize_mpi_bufferify
+}
+#endif  // ifdef AXOM_USE_MPI
+
+#ifndef AXOM_USE_MPI
+void QUEST_initialize_serial(const char* fileName, bool requiresDistance,
+                             int ndims, int maxElements, int maxLevels)
+{
+// splicer begin function.initialize_serial
+  const std::string SH_fileName(fileName);
+  axom::quest::initialize(SH_fileName, requiresDistance, ndims, maxElements,
+                          maxLevels);
+  return;
+// splicer end function.initialize_serial
+}
+#endif  // ifndef AXOM_USE_MPI
+
+#ifndef AXOM_USE_MPI
+void QUEST_initialize_serial_bufferify(const char* fileName, int LfileName,
+                                       bool requiresDistance, int ndims,
+                                       int maxElements, int maxLevels)
+{
+// splicer begin function.initialize_serial_bufferify
+  const std::string SH_fileName(fileName, LfileName);
+  axom::quest::initialize(SH_fileName, requiresDistance, ndims, maxElements,
+                          maxLevels);
+  return;
+// splicer end function.initialize_serial_bufferify
+}
+#endif  // ifndef AXOM_USE_MPI
+
+double QUEST_distance_0(double x, double y)
+{
+// splicer begin function.distance_0
+  double SHC_rv = axom::quest::distance(x, y);
+  return SHC_rv;
+// splicer end function.distance_0
 }
 
-double QUEST_distance(double x, double y, double z)
+double QUEST_distance_1(double x, double y, double z)
 {
-// splicer begin function.distance
-  double SHC_rv = distance(x, y, z);
+// splicer begin function.distance_1
+  double SHC_rv = axom::quest::distance(x, y, z);
   return SHC_rv;
-// splicer end function.distance
+// splicer end function.distance_1
 }
 
-int QUEST_inside(double x, double y, double z)
+int QUEST_inside_0(double x, double y)
 {
-// splicer begin function.inside
-  int SHC_rv = inside(x, y, z);
+// splicer begin function.inside_0
+  int SHC_rv = axom::quest::inside(x, y);
   return SHC_rv;
-// splicer end function.inside
+// splicer end function.inside_0
+}
+
+int QUEST_inside_1(double x, double y, double z)
+{
+// splicer begin function.inside_1
+  int SHC_rv = axom::quest::inside(x, y, z);
+  return SHC_rv;
+// splicer end function.inside_1
 }
 
 void QUEST_mesh_min_bounds(double* coords)
 {
 // splicer begin function.mesh_min_bounds
-  mesh_min_bounds(coords);
+  axom::quest::mesh_min_bounds(coords);
   return;
 // splicer end function.mesh_min_bounds
 }
@@ -83,7 +125,7 @@ void QUEST_mesh_min_bounds(double* coords)
 void QUEST_mesh_max_bounds(double* coords)
 {
 // splicer begin function.mesh_max_bounds
-  mesh_max_bounds(coords);
+  axom::quest::mesh_max_bounds(coords);
   return;
 // splicer end function.mesh_max_bounds
 }
@@ -91,7 +133,7 @@ void QUEST_mesh_max_bounds(double* coords)
 void QUEST_mesh_center_of_mass(double* coords)
 {
 // splicer begin function.mesh_center_of_mass
-  mesh_center_of_mass(coords);
+  axom::quest::mesh_center_of_mass(coords);
   return;
 // splicer end function.mesh_center_of_mass
 }
@@ -99,12 +141,9 @@ void QUEST_mesh_center_of_mass(double* coords)
 void QUEST_finalize()
 {
 // splicer begin function.finalize
-  finalize();
+  axom::quest::finalize();
   return;
 // splicer end function.finalize
 }
 
 }  // extern "C"
-
-}  // namespace quest
-}  // namespace axom

@@ -22,8 +22,8 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
+#include <stddef.h>
 #include "sidre/SidreTypes.h"
-#include "stdlib.h"
 
 // splicer begin class.DataStore.CXX_declarations
 // splicer end class.DataStore.CXX_declarations
@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-// declaration of wrapped types
+// declaration of shadow types
 struct s_SIDRE_buffer;
 typedef struct s_SIDRE_buffer SIDRE_buffer;
 struct s_SIDRE_datastore;
