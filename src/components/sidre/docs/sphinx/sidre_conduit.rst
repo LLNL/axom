@@ -28,26 +28,40 @@ the element-centered field values are in green.
    :width: 300px
 
 A simulation organizes its Sidre data as the code design dictates.
+Here is a simple example.
+
+.. image:: figs/ds.png
+   :width: 300px
+
+Here is the code to create that Dataset ``ds``.
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _tiny_create_start
    :end-before: _tiny_create_end
    :language: C++
 
-To use the Mesh Blueprint, make a new Datastore conforming to the protocol
+To use the Mesh Blueprint, make a new Datastore ``cds`` conforming to the protocol
 that points at the data of the original Datastore.  The structure of the
 conforming Datastore is shown below (summarizing the
 `Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
 documentation).
 
-First build top-level groups.
+First build top-level groups required by the Blueprint.
+
+.. image:: figs/cds.png
+   :width: 650px
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _blueprint_restructure_toplevel_start
    :end-before: _blueprint_restructure_toplevel_end
    :language: C++
 
-Add in the node coordinates.
+Add the node coordinates.  The Groups in ``cds`` will use the Buffers within ``ds``
+as external pointers that have a description: while Sidre and Conduit will use the
+array type and shape information, ``cds`` will not deallocate the memory.
+
+.. image:: figs/cdscoords.png
+   :width: 650px
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _blueprint_restructure_coords_start
@@ -55,23 +69,31 @@ Add in the node coordinates.
    :language: C++
 
 Arrange the nodes into elements.  Each simulation has its own knowledge of
-topology.  This tiny example doesn't encode topology into the
-Dataset, so we must explicitly specify it.
+topology.  This tiny example doesn't encode topology in ``ds``,
+so we must explicitly specify it.
+
+.. image:: figs/cdstopo.png
+   :width: 650px
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _blueprint_restructure_topo_start
    :end-before: _blueprint_restructure_topo_end
    :language: C++
 
-Put the fields into the Blueprint Datastore.
+Link the fields into ``cds``.  As with the node positions, ``cds`` gets an external
+pointer to the field data.
+
+.. image:: figs/cdsfields.png
+   :width: 650px
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _blueprint_restructure_field_start
    :end-before: _blueprint_restructure_field_end
    :language: C++
 
-Conduit includes a ``verify`` method to let a programmer make sure the structure
-of the data set conforms to the Mesh Blueprint.
+Conduit includes a ``verify`` method to test if the structure
+of the ``cds`` conforms to the Mesh Blueprint.  This is valuable for writing and 
+debugging data adapters.
 Once the Datastore is properly structured, save it, then use Conduit to save the 
 index file (ending with `.root`).  This toy data set is small enough that we can
 choose to save it as JSON.
