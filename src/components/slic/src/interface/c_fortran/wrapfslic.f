@@ -42,11 +42,6 @@ module axom_slic
             logical(C_BOOL) :: SHT_rv
         end function c_is_initialized
 
-        subroutine slic_finalize() &
-                bind(C, name="SLIC_finalize")
-            implicit none
-        end subroutine slic_finalize
-
         subroutine c_create_logger(name, imask) &
                 bind(C, name="SLIC_create_logger")
             use iso_c_binding, only : C_CHAR
@@ -172,6 +167,11 @@ module axom_slic
             integer(C_INT), value, intent(IN) :: line
             logical(C_BOOL), value, intent(IN) :: filter
         end subroutine c_log_message_bufferify
+
+        subroutine slic_finalize() &
+                bind(C, name="SLIC_finalize")
+            implicit none
+        end subroutine slic_finalize
 
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces

@@ -50,46 +50,6 @@ size_t SIDRE_buffer_get_num_views(const SIDRE_buffer* self)
 // splicer end class.Buffer.method.get_num_views
 }
 
-void SIDRE_buffer_describe(SIDRE_buffer* self, int type,
-                           SIDRE_SidreLength num_elems)
-{
-// splicer begin class.Buffer.method.describe
-  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->describe(SHCXX_type, num_elems);
-  return;
-// splicer end class.Buffer.method.describe
-}
-
-void SIDRE_buffer_allocate_existing(SIDRE_buffer* self)
-{
-// splicer begin class.Buffer.method.allocate_existing
-  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
-  SH_this->allocate();
-  return;
-// splicer end class.Buffer.method.allocate_existing
-}
-
-void SIDRE_buffer_allocate_from_type(SIDRE_buffer* self, int type,
-                                     SIDRE_SidreLength num_elems)
-{
-// splicer begin class.Buffer.method.allocate_from_type
-  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
-  TypeID SHCXX_type = getTypeID(type);
-  SH_this->allocate(SHCXX_type, num_elems);
-  return;
-// splicer end class.Buffer.method.allocate_from_type
-}
-
-void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_SidreLength num_elems)
-{
-// splicer begin class.Buffer.method.reallocate
-  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
-  SH_this->reallocate(num_elems);
-  return;
-// splicer end class.Buffer.method.reallocate
-}
-
 void* SIDRE_buffer_get_void_ptr(SIDRE_buffer* self)
 {
 // splicer begin class.Buffer.method.get_void_ptr
@@ -138,6 +98,46 @@ size_t SIDRE_buffer_get_bytes_per_element(const SIDRE_buffer* self)
   size_t SHC_rv = SH_this->getBytesPerElement();
   return SHC_rv;
 // splicer end class.Buffer.method.get_bytes_per_element
+}
+
+void SIDRE_buffer_describe(SIDRE_buffer* self, int type,
+                           SIDRE_SidreLength num_elems)
+{
+// splicer begin class.Buffer.method.describe
+  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->describe(SHCXX_type, num_elems);
+  return;
+// splicer end class.Buffer.method.describe
+}
+
+void SIDRE_buffer_allocate_existing(SIDRE_buffer* self)
+{
+// splicer begin class.Buffer.method.allocate_existing
+  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
+  SH_this->allocate();
+  return;
+// splicer end class.Buffer.method.allocate_existing
+}
+
+void SIDRE_buffer_allocate_from_type(SIDRE_buffer* self, int type,
+                                     SIDRE_SidreLength num_elems)
+{
+// splicer begin class.Buffer.method.allocate_from_type
+  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
+  TypeID SHCXX_type = getTypeID(type);
+  SH_this->allocate(SHCXX_type, num_elems);
+  return;
+// splicer end class.Buffer.method.allocate_from_type
+}
+
+void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_SidreLength num_elems)
+{
+// splicer begin class.Buffer.method.reallocate
+  Buffer* SH_this = static_cast<Buffer*>(static_cast<void*>(self));
+  SH_this->reallocate(num_elems);
+  return;
+// splicer end class.Buffer.method.reallocate
 }
 
 void SIDRE_buffer_print(const SIDRE_buffer* self)

@@ -133,16 +133,14 @@ const SIDRE_group* SIDRE_group_get_parent(const SIDRE_group* self)
 // splicer end class.Group.method.get_parent
 }
 
-const SIDRE_datastore* SIDRE_group_get_data_store(const SIDRE_group* self)
+size_t SIDRE_group_get_num_groups(const SIDRE_group* self)
 {
-// splicer begin class.Group.method.get_data_store
+// splicer begin class.Group.method.get_num_groups
   const Group* SH_this =
     static_cast<const Group*>(static_cast<const void*>(self));
-  const DataStore* SHCXX_rv = SH_this->getDataStore();
-  const SIDRE_datastore* SHC_rv =
-    static_cast<const SIDRE_datastore*>(static_cast<const void*>(SHCXX_rv));
+  size_t SHC_rv = SH_this->getNumGroups();
   return SHC_rv;
-// splicer end class.Group.method.get_data_store
+// splicer end class.Group.method.get_num_groups
 }
 
 size_t SIDRE_group_get_num_views(const SIDRE_group* self)
@@ -155,14 +153,16 @@ size_t SIDRE_group_get_num_views(const SIDRE_group* self)
 // splicer end class.Group.method.get_num_views
 }
 
-size_t SIDRE_group_get_num_groups(const SIDRE_group* self)
+const SIDRE_datastore* SIDRE_group_get_data_store(const SIDRE_group* self)
 {
-// splicer begin class.Group.method.get_num_groups
+// splicer begin class.Group.method.get_data_store
   const Group* SH_this =
     static_cast<const Group*>(static_cast<const void*>(self));
-  size_t SHC_rv = SH_this->getNumGroups();
+  const DataStore* SHCXX_rv = SH_this->getDataStore();
+  const SIDRE_datastore* SHC_rv =
+    static_cast<const SIDRE_datastore*>(static_cast<const void*>(SHCXX_rv));
   return SHC_rv;
-// splicer end class.Group.method.get_num_groups
+// splicer end class.Group.method.get_data_store
 }
 
 bool SIDRE_group_has_view(const SIDRE_group* self, const char* path)
@@ -209,62 +209,6 @@ bool SIDRE_group_has_child_view_bufferify(const SIDRE_group* self,
   bool SHC_rv = SH_this->hasChildView(SH_name);
   return SHC_rv;
 // splicer end class.Group.method.has_child_view_bufferify
-}
-
-bool SIDRE_group_rename(SIDRE_group* self, const char* new_name)
-{
-// splicer begin class.Group.method.rename
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_new_name(new_name);
-  bool SHC_rv = SH_this->rename(SH_new_name);
-  return SHC_rv;
-// splicer end class.Group.method.rename
-}
-
-bool SIDRE_group_rename_bufferify(SIDRE_group* self, const char* new_name,
-                                  int Lnew_name)
-{
-// splicer begin class.Group.method.rename_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_new_name(new_name, Lnew_name);
-  bool SHC_rv = SH_this->rename(SH_new_name);
-  return SHC_rv;
-// splicer end class.Group.method.rename_bufferify
-}
-
-SIDRE_view* SIDRE_group_get_view_from_name(SIDRE_group* self, const char* path)
-{
-// splicer begin class.Group.method.get_view_from_name
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->getView(SH_path);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.get_view_from_name
-}
-
-SIDRE_view* SIDRE_group_get_view_from_name_bufferify(SIDRE_group* self,
-                                                     const char* path,
-                                                     int Lpath)
-{
-// splicer begin class.Group.method.get_view_from_name_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->getView(SH_path);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.get_view_from_name_bufferify
-}
-
-SIDRE_view* SIDRE_group_get_view_from_index(SIDRE_group* self,
-                                            const SIDRE_IndexType idx)
-{
-// splicer begin class.Group.method.get_view_from_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  View* SHCXX_rv = SH_this->getView(idx);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.get_view_from_index
 }
 
 SIDRE_IndexType SIDRE_group_get_view_index(const SIDRE_group* self,
@@ -337,6 +281,41 @@ void SIDRE_group_get_view_name_bufferify(const SIDRE_group* self,
 // splicer end class.Group.method.get_view_name_bufferify
 }
 
+SIDRE_view* SIDRE_group_get_view_from_name(SIDRE_group* self, const char* path)
+{
+// splicer begin class.Group.method.get_view_from_name
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  View* SHCXX_rv = SH_this->getView(SH_path);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.get_view_from_name
+}
+
+SIDRE_view* SIDRE_group_get_view_from_name_bufferify(SIDRE_group* self,
+                                                     const char* path,
+                                                     int Lpath)
+{
+// splicer begin class.Group.method.get_view_from_name_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  View* SHCXX_rv = SH_this->getView(SH_path);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.get_view_from_name_bufferify
+}
+
+SIDRE_view* SIDRE_group_get_view_from_index(SIDRE_group* self,
+                                            const SIDRE_IndexType idx)
+{
+// splicer begin class.Group.method.get_view_from_index
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  View* SHCXX_rv = SH_this->getView(idx);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.get_view_from_index
+}
+
 SIDRE_IndexType SIDRE_group_get_first_valid_view_index(const SIDRE_group* self)
 {
 // splicer begin class.Group.method.get_first_valid_view_index
@@ -356,6 +335,277 @@ SIDRE_IndexType SIDRE_group_get_next_valid_view_index(const SIDRE_group* self,
   IndexType SHC_rv = SH_this->getNextValidViewIndex(idx);
   return SHC_rv;
 // splicer end class.Group.method.get_next_valid_view_index
+}
+
+SIDRE_view* SIDRE_group_create_view_empty(SIDRE_group* self, const char* path)
+{
+// splicer begin class.Group.method.create_view_empty
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  View* SHCXX_rv = SH_this->createView(SH_path);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_empty
+}
+
+SIDRE_view* SIDRE_group_create_view_empty_bufferify(SIDRE_group* self,
+                                                    const char* path, int Lpath)
+{
+// splicer begin class.Group.method.create_view_empty_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  View* SHCXX_rv = SH_this->createView(SH_path);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_empty_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_from_type(SIDRE_group* self,
+                                              const char* path, int type,
+                                              SIDRE_SidreLength num_elems)
+{
+// splicer begin class.Group.method.create_view_from_type
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_type
+}
+
+SIDRE_view* SIDRE_group_create_view_from_type_bufferify(SIDRE_group* self,
+                                                        const char* path,
+                                                        int Lpath, int type,
+                                                        SIDRE_SidreLength num_elems)
+{
+// splicer begin class.Group.method.create_view_from_type_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_type_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_from_shape(SIDRE_group* self,
+                                               const char* path, int type,
+                                               int ndims,
+                                               SIDRE_SidreLength* shape)
+{
+// splicer begin class.Group.method.create_view_from_shape
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_shape
+}
+
+SIDRE_view* SIDRE_group_create_view_from_shape_bufferify(SIDRE_group* self,
+                                                         const char* path,
+                                                         int Lpath, int type,
+                                                         int ndims,
+                                                         SIDRE_SidreLength* shape)
+{
+// splicer begin class.Group.method.create_view_from_shape_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_shape_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_into_buffer(SIDRE_group* self,
+                                                const char* path,
+                                                SIDRE_buffer* buff)
+{
+// splicer begin class.Group.method.create_view_into_buffer
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_into_buffer
+}
+
+SIDRE_view* SIDRE_group_create_view_into_buffer_bufferify(SIDRE_group* self,
+                                                          const char* path,
+                                                          int Lpath,
+                                                          SIDRE_buffer* buff)
+{
+// splicer begin class.Group.method.create_view_into_buffer_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_into_buffer_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_from_type_and_buffer(SIDRE_group* self,
+                                                         const char* path,
+                                                         int type,
+                                                         SIDRE_SidreLength num_elems,
+                                                         SIDRE_buffer* buff)
+{
+// splicer begin class.Group.method.create_view_from_type_and_buffer
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  TypeID SHCXX_type = getTypeID(type);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
+                                       SHCXX_buff);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_type_and_buffer
+}
+
+SIDRE_view* SIDRE_group_create_view_from_type_and_buffer_bufferify(
+  SIDRE_group* self, const char* path, int Lpath, int type,
+  SIDRE_SidreLength num_elems, SIDRE_buffer* buff)
+{
+// splicer begin class.Group.method.create_view_from_type_and_buffer_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  TypeID SHCXX_type = getTypeID(type);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
+                                       SHCXX_buff);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_type_and_buffer_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_from_shape_and_buffer(SIDRE_group* self,
+                                                          const char* path,
+                                                          int type, int ndims,
+                                                          SIDRE_SidreLength* shape,
+                                                          SIDRE_buffer* buff)
+{
+// splicer begin class.Group.method.create_view_from_shape_and_buffer
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  TypeID SHCXX_type = getTypeID(type);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
+                                       SHCXX_buff);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_shape_and_buffer
+}
+
+SIDRE_view* SIDRE_group_create_view_from_shape_and_buffer_bufferify(
+  SIDRE_group* self, const char* path, int Lpath, int type, int ndims,
+  SIDRE_SidreLength* shape, SIDRE_buffer* buff)
+{
+// splicer begin class.Group.method.create_view_from_shape_and_buffer_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  TypeID SHCXX_type = getTypeID(type);
+  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
+                                       SHCXX_buff);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_shape_and_buffer_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_external(SIDRE_group* self,
+                                             const char* path,
+                                             void* external_ptr)
+{
+// splicer begin class.Group.method.create_view_external
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_external
+}
+
+SIDRE_view* SIDRE_group_create_view_external_bufferify(SIDRE_group* self,
+                                                       const char* path,
+                                                       int Lpath,
+                                                       void* external_ptr)
+{
+// splicer begin class.Group.method.create_view_external_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_external_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_from_type_external(SIDRE_group* self,
+                                                       const char* path,
+                                                       int type,
+                                                       SIDRE_SidreLength num_elems,
+                                                       void* external_ptr)
+{
+// splicer begin class.Group.method.create_view_from_type_external
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
+                                       external_ptr);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_type_external
+}
+
+SIDRE_view* SIDRE_group_create_view_from_type_external_bufferify(
+  SIDRE_group* self, const char* path, int Lpath, int type,
+  SIDRE_SidreLength num_elems, void* external_ptr)
+{
+// splicer begin class.Group.method.create_view_from_type_external_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
+                                       external_ptr);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_type_external_bufferify
+}
+
+SIDRE_view* SIDRE_group_create_view_from_shape_external(SIDRE_group* self,
+                                                        const char* path,
+                                                        int type, int ndims,
+                                                        SIDRE_SidreLength* shape,
+                                                        void* external_ptr)
+{
+// splicer begin class.Group.method.create_view_from_shape_external
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
+                                       external_ptr);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_shape_external
+}
+
+SIDRE_view* SIDRE_group_create_view_from_shape_external_bufferify(
+  SIDRE_group* self, const char* path, int Lpath, int type, int ndims,
+  SIDRE_SidreLength* shape, void* external_ptr)
+{
+// splicer begin class.Group.method.create_view_from_shape_external_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  TypeID SHCXX_type = getTypeID(type);
+  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
+                                       external_ptr);
+  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.create_view_from_shape_external_bufferify
 }
 
 SIDRE_view* SIDRE_group_create_view_and_allocate_nelems(SIDRE_group* self,
@@ -552,277 +802,6 @@ SIDRE_view* SIDRE_group_create_view_string_bufferify(SIDRE_group* self,
 // splicer end class.Group.method.create_view_string_bufferify
 }
 
-SIDRE_view* SIDRE_group_create_view_empty(SIDRE_group* self, const char* path)
-{
-// splicer begin class.Group.method.create_view_empty
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createView(SH_path);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_empty
-}
-
-SIDRE_view* SIDRE_group_create_view_empty_bufferify(SIDRE_group* self,
-                                                    const char* path, int Lpath)
-{
-// splicer begin class.Group.method.create_view_empty_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createView(SH_path);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_empty_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_from_type(SIDRE_group* self,
-                                              const char* path, int type,
-                                              SIDRE_SidreLength num_elems)
-{
-// splicer begin class.Group.method.create_view_from_type
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_type
-}
-
-SIDRE_view* SIDRE_group_create_view_from_type_bufferify(SIDRE_group* self,
-                                                        const char* path,
-                                                        int Lpath, int type,
-                                                        SIDRE_SidreLength num_elems)
-{
-// splicer begin class.Group.method.create_view_from_type_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_type_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_from_type_and_buffer(SIDRE_group* self,
-                                                         const char* path,
-                                                         int type,
-                                                         SIDRE_SidreLength num_elems,
-                                                         SIDRE_buffer* buff)
-{
-// splicer begin class.Group.method.create_view_from_type_and_buffer
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       SHCXX_buff);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_type_and_buffer
-}
-
-SIDRE_view* SIDRE_group_create_view_from_type_and_buffer_bufferify(
-  SIDRE_group* self, const char* path, int Lpath, int type,
-  SIDRE_SidreLength num_elems, SIDRE_buffer* buff)
-{
-// splicer begin class.Group.method.create_view_from_type_and_buffer_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       SHCXX_buff);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_type_and_buffer_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_from_type_external(SIDRE_group* self,
-                                                       const char* path,
-                                                       int type,
-                                                       SIDRE_SidreLength num_elems,
-                                                       void* external_ptr)
-{
-// splicer begin class.Group.method.create_view_from_type_external
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       external_ptr);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_type_external
-}
-
-SIDRE_view* SIDRE_group_create_view_from_type_external_bufferify(
-  SIDRE_group* self, const char* path, int Lpath, int type,
-  SIDRE_SidreLength num_elems, void* external_ptr)
-{
-// splicer begin class.Group.method.create_view_from_type_external_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, num_elems,
-                                       external_ptr);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_type_external_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_from_shape(SIDRE_group* self,
-                                               const char* path, int type,
-                                               int ndims,
-                                               SIDRE_SidreLength* shape)
-{
-// splicer begin class.Group.method.create_view_from_shape
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_shape
-}
-
-SIDRE_view* SIDRE_group_create_view_from_shape_bufferify(SIDRE_group* self,
-                                                         const char* path,
-                                                         int Lpath, int type,
-                                                         int ndims,
-                                                         SIDRE_SidreLength* shape)
-{
-// splicer begin class.Group.method.create_view_from_shape_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_shape_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_from_shape_and_buffer(SIDRE_group* self,
-                                                          const char* path,
-                                                          int type, int ndims,
-                                                          SIDRE_SidreLength* shape,
-                                                          SIDRE_buffer* buff)
-{
-// splicer begin class.Group.method.create_view_from_shape_and_buffer
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       SHCXX_buff);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_shape_and_buffer
-}
-
-SIDRE_view* SIDRE_group_create_view_from_shape_and_buffer_bufferify(
-  SIDRE_group* self, const char* path, int Lpath, int type, int ndims,
-  SIDRE_SidreLength* shape, SIDRE_buffer* buff)
-{
-// splicer begin class.Group.method.create_view_from_shape_and_buffer_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       SHCXX_buff);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_shape_and_buffer_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_from_shape_external(SIDRE_group* self,
-                                                        const char* path,
-                                                        int type, int ndims,
-                                                        SIDRE_SidreLength* shape,
-                                                        void* external_ptr)
-{
-// splicer begin class.Group.method.create_view_from_shape_external
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       external_ptr);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_shape_external
-}
-
-SIDRE_view* SIDRE_group_create_view_from_shape_external_bufferify(
-  SIDRE_group* self, const char* path, int Lpath, int type, int ndims,
-  SIDRE_SidreLength* shape, void* external_ptr)
-{
-// splicer begin class.Group.method.create_view_from_shape_external_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  TypeID SHCXX_type = getTypeID(type);
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_type, ndims, shape,
-                                       external_ptr);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_from_shape_external_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_into_buffer(SIDRE_group* self,
-                                                const char* path,
-                                                SIDRE_buffer* buff)
-{
-// splicer begin class.Group.method.create_view_into_buffer
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_into_buffer
-}
-
-SIDRE_view* SIDRE_group_create_view_into_buffer_bufferify(SIDRE_group* self,
-                                                          const char* path,
-                                                          int Lpath,
-                                                          SIDRE_buffer* buff)
-{
-// splicer begin class.Group.method.create_view_into_buffer_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  Buffer* SHCXX_buff = static_cast<Buffer*>(static_cast<void*>(buff));
-  View* SHCXX_rv = SH_this->createView(SH_path, SHCXX_buff);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_into_buffer_bufferify
-}
-
-SIDRE_view* SIDRE_group_create_view_external(SIDRE_group* self,
-                                             const char* path,
-                                             void* external_ptr)
-{
-// splicer begin class.Group.method.create_view_external
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_external
-}
-
-SIDRE_view* SIDRE_group_create_view_external_bufferify(SIDRE_group* self,
-                                                       const char* path,
-                                                       int Lpath,
-                                                       void* external_ptr)
-{
-// splicer begin class.Group.method.create_view_external_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  View* SHCXX_rv = SH_this->createView(SH_path, external_ptr);
-  SIDRE_view* SHC_rv = static_cast<SIDRE_view*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.create_view_external_bufferify
-}
-
 void SIDRE_group_destroy_view(SIDRE_group* self, const char* path)
 {
 // splicer begin class.Group.method.destroy_view
@@ -940,42 +919,6 @@ bool SIDRE_group_has_child_group_bufferify(SIDRE_group* self, const char* name,
 // splicer end class.Group.method.has_child_group_bufferify
 }
 
-SIDRE_group* SIDRE_group_get_group_from_name(SIDRE_group* self,
-                                             const char* path)
-{
-// splicer begin class.Group.method.get_group_from_name
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path);
-  Group* SHCXX_rv = SH_this->getGroup(SH_path);
-  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.get_group_from_name
-}
-
-SIDRE_group* SIDRE_group_get_group_from_name_bufferify(SIDRE_group* self,
-                                                       const char* path,
-                                                       int Lpath)
-{
-// splicer begin class.Group.method.get_group_from_name_bufferify
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  const std::string SH_path(path, Lpath);
-  Group* SHCXX_rv = SH_this->getGroup(SH_path);
-  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.get_group_from_name_bufferify
-}
-
-SIDRE_group* SIDRE_group_get_group_from_index(SIDRE_group* self,
-                                              SIDRE_IndexType idx)
-{
-// splicer begin class.Group.method.get_group_from_index
-  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
-  Group* SHCXX_rv = SH_this->getGroup(idx);
-  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
-  return SHC_rv;
-// splicer end class.Group.method.get_group_from_index
-}
-
 SIDRE_IndexType SIDRE_group_get_group_index(const SIDRE_group* self,
                                             const char* name)
 {
@@ -1044,6 +987,42 @@ void SIDRE_group_get_group_name_bufferify(const SIDRE_group* self,
   }
   return;
 // splicer end class.Group.method.get_group_name_bufferify
+}
+
+SIDRE_group* SIDRE_group_get_group_from_name(SIDRE_group* self,
+                                             const char* path)
+{
+// splicer begin class.Group.method.get_group_from_name
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path);
+  Group* SHCXX_rv = SH_this->getGroup(SH_path);
+  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.get_group_from_name
+}
+
+SIDRE_group* SIDRE_group_get_group_from_name_bufferify(SIDRE_group* self,
+                                                       const char* path,
+                                                       int Lpath)
+{
+// splicer begin class.Group.method.get_group_from_name_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_path(path, Lpath);
+  Group* SHCXX_rv = SH_this->getGroup(SH_path);
+  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.get_group_from_name_bufferify
+}
+
+SIDRE_group* SIDRE_group_get_group_from_index(SIDRE_group* self,
+                                              SIDRE_IndexType idx)
+{
+// splicer begin class.Group.method.get_group_from_index
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  Group* SHCXX_rv = SH_this->getGroup(idx);
+  SIDRE_group* SHC_rv = static_cast<SIDRE_group*>(static_cast<void*>(SHCXX_rv));
+  return SHC_rv;
+// splicer end class.Group.method.get_group_from_index
 }
 
 SIDRE_IndexType SIDRE_group_get_first_valid_group_index(const SIDRE_group* self)
@@ -1251,6 +1230,27 @@ void SIDRE_group_load_external_data_bufferify(SIDRE_group* self,
   SH_this->loadExternalData(SH_file_path);
   return;
 // splicer end class.Group.method.load_external_data_bufferify
+}
+
+bool SIDRE_group_rename(SIDRE_group* self, const char* new_name)
+{
+// splicer begin class.Group.method.rename
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_new_name(new_name);
+  bool SHC_rv = SH_this->rename(SH_new_name);
+  return SHC_rv;
+// splicer end class.Group.method.rename
+}
+
+bool SIDRE_group_rename_bufferify(SIDRE_group* self, const char* new_name,
+                                  int Lnew_name)
+{
+// splicer begin class.Group.method.rename_bufferify
+  Group* SH_this = static_cast<Group*>(static_cast<void*>(self));
+  const std::string SH_new_name(new_name, Lnew_name);
+  bool SHC_rv = SH_this->rename(SH_new_name);
+  return SHC_rv;
+// splicer end class.Group.method.rename_bufferify
 }
 
 }  // extern "C"
