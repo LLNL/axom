@@ -72,3 +72,9 @@ declarations:
       - decl: void mesh_center_of_mass(double* coords+dimension+intent(OUT))
 
       - decl: void finalize()
+
+
+splicer_code:
+  f:
+    file_top:
+    - "#include <axom/config.hpp>"
