@@ -20,7 +20,6 @@
 #include "mint/config.hpp"               /* For IndexType */
 #include "axom/Types.hpp"                   /* For AXOM_NULLPTR */
 #include "mint/Extent.hpp"                  /* For Extent */
-#include "mint/CellType.hpp"                /* For MINT_HEX, MINT_QUAD, ect. */
 
 namespace axom
 {

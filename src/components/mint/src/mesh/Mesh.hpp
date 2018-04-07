@@ -18,15 +18,15 @@
 #ifndef MINT_MESH_HPP_
 #define MINT_MESH_HPP_
 
-#include "axom/Macros.hpp"            // for Axom macros
+#include "axom/Macros.hpp"             // for Axom macros
 
-#include "mint/config.hpp"            // for mint compile-time type definitions
-#include "mint/FieldAssociation.hpp"  // for FieldAssociation enum
-#include "mint/FieldData.hpp"         // for mint::FieldData
-#include "mint/MeshType.hpp"          // for MeshType enum and property traits
-#include "mint/MeshCoordinates.hpp"   // for mint::MeshCoordinates
+#include "mint/config.hpp"             // for mint compile-time type definitions
+#include "mint/FieldAssociation.hpp"   // for FieldAssociation enum
+#include "mint/FieldData.hpp"          // for mint::FieldData
+#include "mint/MeshTypes.hpp"          // for MeshType enum and property traits
+#include "mint/MeshCoordinates.hpp"    // for mint::MeshCoordinates
 
-#include "slic/slic.hpp"              // for SLIC macros
+#include "slic/slic.hpp"               // for SLIC macros
 
 
 namespace axom
@@ -145,14 +145,14 @@ public:
    * \return status true iff the mesh defines coordinates explicitly.
    */
   inline bool hasExplicitCoordinates() const
-  { return mesh_properties::explicit_coordinates[ m_type ]; }
+  { return m_explicit_coords; }
 
   /*!
    * \brief Checks if this mesh instance has explicit connectivity.
    * \return status true iff the mesh defines cell connectivity explicitly.
    */
   inline bool hasExplicitConnectivity() const
-  { return mesh_properties::explicit_connectivity[ m_type ]; }
+  { return m_explicit_connectivity; }
 
   /*!
    * \brief Checks if the mesh has mixed cell types, e.g., consisting of both
@@ -160,7 +160,7 @@ public:
    * \return status true iff the mesh has mixed cell types.
    */
   inline bool hasMixedCellTypes() const
-  { return m_type==MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH; }
+  { return m_has_mixed_topology; }
 
   /*!
    * \brief Checks if this Mesh instance is associated with a Sidre Group.
@@ -357,6 +357,10 @@ protected:
   IndexType m_num_nodes;          /*! The number of nodes in the mesh */
 
   MeshCoordinates* m_coordinates; /*! The mesh coordinates object */
+
+  bool m_explicit_coords;
+  bool m_explicit_connectivity;
+  bool m_has_mixed_topology;
 
 #ifdef MINT_USE_SIDRE
   sidre::Group* m_group;

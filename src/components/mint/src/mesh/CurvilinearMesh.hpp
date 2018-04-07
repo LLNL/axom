@@ -31,6 +31,8 @@ class CurvilinearMesh : public StructuredMesh
 {
 public:
 
+  CurvilinearMesh() = delete;
+
   /*!
    * \brief Constructs a curvilinear mesh instance.
    * \param [in] dimension the dimension of this mesh instance.
@@ -115,7 +117,6 @@ private:
 
   MeshCoordinates m_coordinates;
 
-  CurvilinearMesh();
 
   CurvilinearMesh(const CurvilinearMesh&); // Not implemented
   CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented

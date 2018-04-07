@@ -19,7 +19,6 @@
 #define PARTICLEMESH_HXX_
 
 #include "mint/Mesh.hpp"
-#include "mint/CellType.hpp"
 #include "mint/MeshCoordinates.hpp"
 #include "slic/slic.hpp"
 #include "mint/config.hpp"           /* For IndexType */

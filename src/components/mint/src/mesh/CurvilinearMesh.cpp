@@ -16,7 +16,7 @@
  */
 
 #include "CurvilinearMesh.hpp"
-#include "MeshType.hpp"
+#include "MeshTypes.hpp"
 
 // axom includes
 #include "slic/slic.hpp"
@@ -31,7 +31,7 @@ namespace mint
 
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6] ) :
-  StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
+  StructuredMesh( STRUCTURED_MESH, ndims, ext ),
   m_coordinates( ndims, m_extent.getNumNodes() )
 {
 //  TODO: ???
@@ -41,19 +41,13 @@ CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6] ) :
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6],
                                   int blockId, int partId ) :
-  StructuredMesh( MINT_STRUCTURED_CURVILINEAR_MESH, ndims, ext, blockId,
+  StructuredMesh( STRUCTURED_MESH, ndims, ext, blockId,
                   partId),
   m_coordinates( ndims, m_extent.getNumNodes() )
 {
 // TODO: ???
 //  m_coordinates.setSize( m_extent.getNumNodes() );
 }
-
-//------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh() :
-  StructuredMesh( MINT_UNDEFINED_MESH, -1, AXOM_NULLPTR, -1, -1 ),
-  m_coordinates( -1, -1 )
-{}
 
 
 } /* namespace mint */
