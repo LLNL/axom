@@ -53,7 +53,7 @@ set( mint_headers
     mesh/FieldVariable.hpp
     mesh/Mesh.hpp
     mesh/MeshCoordinates.hpp
-    mesh/MeshType.hpp
+    mesh/MeshTypes.hpp
     mesh/ParticleMesh.hpp
     mesh/RectilinearMesh.hpp
     mesh/StructuredMesh.hpp
