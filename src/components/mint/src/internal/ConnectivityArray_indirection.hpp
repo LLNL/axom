@@ -48,16 +48,14 @@ namespace mint
  *  In this specialized ConnectivityArray it is assumed that each ID is of
  *  the same type but has a different number of values, as such an offset array
  *  is used to store the starting location of the values corresponding to each
- *  ID.
+ *  ID. 
  *
- * \tparam TYPE the element type of the stored IDs. 
- *
- * \see ConnectivityArray_indirection
- * \see ConnectivityArray_indirection_and_types
- * \see ConnectivityArray_internal
+ * \see ConnectivityArray_indirection.hpp
+ * \see ConnectivityArray_typed_indirection.hpp
+ * \see ConnectivityArray_internal.hpp
  */
-template < CellTypes TYPE >
-class ConnectivityArray< NEED_INDIRECTION, TYPE >
+template <>
+class ConnectivityArray< ConnectivityType::INDIRECTION >
 {
 public:
 
@@ -76,11 +74,15 @@ public:
    * \post getNumberOfValues() == 0
    * \post getIDType() == TYPE
    */
-  ConnectivityArray( IndexType ID_capacity=USE_DEFAULT, 
+  ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT, 
                      IndexType value_capacity=USE_DEFAULT ):
+    m_cell_type( cell_type ),
     m_values( new Array< IndexType >( 0, 1, value_capacity ) ),
     m_offsets( new Array< IndexType >( 0, 1, ID_capacity ) )
   {
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+
     m_offsets->append(0);
   }
 
@@ -115,12 +117,18 @@ public:
    * \post getNumberOfValues() == offsets[ n_IDs ]
    * \post getIDType() == TYPE 
    */
-  ConnectivityArray( IndexType n_IDs, IndexType* values, IndexType* offsets,
+  ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values, 
+                     IndexType* offsets,
                      IndexType ID_capacity=USE_DEFAULT, 
                      IndexType value_capacity=USE_DEFAULT ):
+    m_cell_type( cell_type ),
     m_values( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+
+
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs 
                                                                        << "." );
     if ( ID_capacity == USE_DEFAULT )
@@ -165,11 +173,14 @@ public:
    * \post getIDType() == TYPE 
    */
   ConnectivityArray( sidre::Group* group ):
+    m_cell_type( UNDEFINED_CELL ),
     m_values( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
-    internal::initializeFromGroup< TYPE >( group, &m_values, &m_offsets );
+    m_cell_type = internal::initializeFromGroup( group, &m_values, &m_offsets );
 
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
     SLIC_ERROR_IF( m_values->numComponents() != 1, 
                    "values array must have only 1 component not " <<
                    m_values->numComponents() << "." );
@@ -192,14 +203,18 @@ public:
    * \post getValueCapacity() >= getNumberOfValues()
    * \post getIDType() == TYPE 
    */
-  ConnectivityArray( sidre::Group* group, const std::string& coordset,
+  ConnectivityArray( CellType cell_type, sidre::Group* group, const std::string& coordset,
                      IndexType ID_capacity=USE_DEFAULT, 
                      IndexType value_capacity=USE_DEFAULT ):
+    m_cell_type( cell_type ),
     m_values( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+
     bool create_offsets = true;
-    internal::initializeGroup< TYPE >( group, coordset, create_offsets );
+    internal::initializeGroup( group, coordset, cell_type, create_offsets );
 
     sidre::Group* elems_group = group->getGroup( "elements" );
     SLIC_ASSERT( elems_group != AXOM_NULLPTR );
@@ -221,7 +236,7 @@ public:
   /*!
    * \brief Destructor, free's the allocated vectors.
    */
-  virtual ~ConnectivityArray()
+  ~ConnectivityArray()
   {
     if ( m_values != AXOM_NULLPTR )
     {
@@ -254,8 +269,8 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellTypes getIDType( IndexType AXOM_NOT_USED(id)=0) const
-  { return TYPE; }
+  CellType getIDType( IndexType AXOM_NOT_USED(id)=0) const
+  { return m_cell_type; }
 
   /*!
    * \brief Access operator for the values of the given ID.
@@ -288,7 +303,7 @@ public:
   /*!
    * \brief Returns a pointer to the types array, of length getNumberOfIDs().
    */
-  const CellTypes* getTypePtr() const
+  const CellType* getTypePtr() const
   { return AXOM_NULLPTR; }
 
 /// @}
@@ -307,7 +322,7 @@ public:
    * \pre values != AXOM_NULLPTR
    */
   void append( const IndexType* values, IndexType n_values,
-               CellTypes AXOM_NOT_USED(type)=CellTypes::UNDEFINED_ELEMENT )
+               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
   {
     SLIC_ASSERT( values != AXOM_NULLPTR );
     m_values->append( values, n_values );
@@ -329,7 +344,7 @@ public:
    */
   void appendM( const IndexType* values, IndexType n_IDs, 
                 const IndexType* offsets, 
-                const CellTypes* AXOM_NOT_USED(types)=AXOM_NULLPTR )
+                const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR )
   { internal::append( n_IDs, values, offsets, m_values, m_offsets ); }
 
   /*!
@@ -374,7 +389,7 @@ public:
    * \pre offsets != AXOM_NULLPTR
    */
   void insert( const IndexType* values, IndexType start_ID, IndexType n_values, 
-               CellTypes AXOM_NOT_USED(type)=CellTypes::UNDEFINED_ELEMENT )
+               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
   {
     IndexType offsets[2];
     offsets[0] = 0;
@@ -399,7 +414,7 @@ public:
    */
   void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs, 
                 const IndexType* offsets, 
-                const CellTypes* AXOM_NOT_USED(types)=AXOM_NULLPTR )
+                const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR )
   { 
     internal::insert( start_ID, n_IDs, values, offsets, m_values, 
                           m_offsets );
@@ -537,6 +552,7 @@ public:
 /// @}
 
 private:
+  CellType m_cell_type;
   Array< IndexType >* m_values;
   Array< IndexType >* m_offsets;
 

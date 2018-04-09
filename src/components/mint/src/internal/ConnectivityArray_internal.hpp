@@ -53,13 +53,10 @@ namespace internal
  *
  * \pre group != AXOM_NULLPTR
  * \pre m_values != AXOM_NULLPTR
- *
- * \tparam TYPE the ElementType of the IDs.
  */
-template < CellTypes TYPE >
-void initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values, 
-                          Array< IndexType >** m_offsets=AXOM_NULLPTR,
-                          Array< CellTypes >** m_types=AXOM_NULLPTR )
+CellType initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values, 
+                               Array< IndexType >** m_offsets=AXOM_NULLPTR,
+                               Array< CellType >** m_types=AXOM_NULLPTR )
 {
   SLIC_ERROR_IF( group == AXOM_NULLPTR, 
                    "sidre::Group pointer must not be null." );
@@ -96,12 +93,19 @@ void initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values,
                   "sidre::Group " << group->getPathName() << 
                   " does not conform to mesh blueprint. The elements group " <<
                   "does not have a child view 'shape'." );
+  
   sidre::View* shape_view = elems_group->getView( "shape" );
-  SLIC_ERROR_IF( std::strcmp( cell_info< TYPE >::blueprint_name,
-                 shape_view->getString() ) != 0,
-                 "Incorrect shape found. Expected '" << 
-                 cell_info< TYPE >::blueprint_name << "' but got '" <<
-                 shape_view->getString() << "'.");
+  std::string bp_name = shape_view->getString();
+  CellType cell_type = UNDEFINED_CELL;
+
+  for ( IndexType i = 0; i < NUM_CELL_TYPES; ++i )
+  {
+    if ( cell_info[i].blueprint_name == bp_name )
+    {
+      cell_type = cell_info[i].cell_type;
+      break;
+    }
+  }
 
   SLIC_ERROR_IF( !elems_group->hasView( "connectivity" ),
                   "sidre::Group " << group->getPathName() << 
@@ -141,13 +145,15 @@ void initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values,
                   " does not conform to mesh blueprint." );
     
     sidre::View* type_view = elems_group->getView( "types" );
-    *m_types = new Array< CellTypes >( type_view );
+    *m_types = new Array< CellType >( type_view );
 
     SLIC_ERROR_IF( *m_types == AXOM_NULLPTR, "Error in Array allocation." );
     SLIC_ERROR_IF( (*m_types)->numComponents() != 1, 
                    "Types array must have only 1 component not " <<
                    (*m_types)->numComponents() << "." );
   }
+
+  return cell_type;
 }
 
 /*!
@@ -161,11 +167,8 @@ void initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values,
  *
  * \pre group != AXOM_NULLPTR
  * \pre group->getNumGroups() == group->getNumViews() == 0
- *
- * \tparam TYPE the ElementType of the IDs.
  */
-template < CellTypes TYPE >
-void initializeGroup( sidre::Group* group, const std::string& coordset, 
+void initializeGroup( sidre::Group* group, const std::string& coordset, CellType cell_type,
                       bool create_offsets=false, bool create_types=false )
 {
   SLIC_ERROR_IF( group == AXOM_NULLPTR, 
@@ -176,9 +179,11 @@ void initializeGroup( sidre::Group* group, const std::string& coordset,
   group->createView( "coordset" )->setString( coordset );
   group->createView( "type" )->setString( "unstructured" );
 
+  const std::string bp_name = ( cell_type==UNDEFINED_CELL )? "mixed" : 
+                                          cell_info[ cell_type ].blueprint_name;
+
   sidre::Group* elems_group = group->createGroup( "elements" );
-  elems_group->createView( "shape" )
-                             ->setString( cell_info< TYPE >::blueprint_name );
+  elems_group->createView( "shape" )->setString( bp_name );
 
   elems_group->createView( "connectivity" );
   

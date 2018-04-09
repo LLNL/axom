@@ -22,12 +22,16 @@
 
 #include <algorithm>
 
-const char IGNORE_OUTPUT[] = ".*";
-
 namespace axom
 {
 namespace mint
 {
+
+const char IGNORE_OUTPUT[] = ".*";
+
+constexpr IndexType vertex_stride = cell_info[ VERTEX ].num_nodes;
+constexpr IndexType hex_stride = cell_info[ HEX ].num_nodes;
+
 namespace internal
 {
 
@@ -38,12 +42,8 @@ namespace internal
  *
  * \param [in] connec the ConnectivityArray in question.
  * \param [in] increase the ammount the number of IDs will increase by
- *
- * \note this template specialization is for the ConnectivityArray with fixed
- *  stride.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-IndexType calc_ID_capacity( const ConnectivityArray< STRIDE, TYPE >& connec, 
+IndexType calc_ID_capacity( const ConnectivityArray< ConnectivityType::NO_INDIRECTION >& connec, 
                             IndexType increase )
 {
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
@@ -62,12 +62,10 @@ IndexType calc_ID_capacity( const ConnectivityArray< STRIDE, TYPE >& connec,
  * \param [in] connec the ConnectivityArray in question.
  * \param [in] increase the ammount the number of IDs will increase by
  *
- * \note this template specialization is for the ConnectivityArray with
- *  indirection but fixed type. The plus/minus one are to account for the
- *  fact that the offset array which has capacity getIDCapacity() + 1.
+ * \note The plus/minus one are to account for the fact that the offset array is
+ *  what gets resized which has capacity getIDCapacity() + 1.
  */
-template< CellTypes TYPE >
-IndexType calc_ID_capacity( const ConnectivityArray< NEED_INDIRECTION, TYPE >& connec, 
+IndexType calc_ID_capacity( const ConnectivityArray< ConnectivityType::INDIRECTION >& connec, 
                             IndexType increase )
 {
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
@@ -85,13 +83,8 @@ IndexType calc_ID_capacity( const ConnectivityArray< NEED_INDIRECTION, TYPE >& c
  *
  * \param [in] connec the ConnectivityArray in question.
  * \param [in] increase the ammount the number of IDs will increase by
- *
- * \note this template specialization is for the ConnectivityArray with
- *  indirection and variable type. No plus/minus one is needed since the
- *  types Array is used to calculate ID capacity which has capacity
- *  getIDCapacity().
  */
-IndexType calc_ID_capacity( const ConnectivityArray< NEED_INDIRECTION, CellTypes::MIXED >& connec, 
+IndexType calc_ID_capacity( const ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >& connec, 
                             IndexType increase )
 {
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
@@ -109,14 +102,13 @@ IndexType calc_ID_capacity( const ConnectivityArray< NEED_INDIRECTION, CellTypes
  *
  * \param [in] connec the ConnectivityArray in question.
  * \param [in] increase the ammount the number of values will increase by
- *
- * \note this template specialization is for the ConnectivityArray with fixed
- *  stride.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-IndexType calc_value_capacity( const ConnectivityArray< STRIDE, TYPE >& connec, 
+IndexType calc_value_capacity( const ConnectivityArray< ConnectivityType::NO_INDIRECTION >& connec, 
                               IndexType increase )
-{ return calc_ID_capacity( connec, increase / STRIDE ) * STRIDE; }
+{ 
+  IndexType stride = cell_info[ connec.getIDType() ].num_nodes;
+  return calc_ID_capacity( connec, increase / stride ) * stride; 
+}
 
 
 /*!
@@ -125,12 +117,9 @@ IndexType calc_value_capacity( const ConnectivityArray< STRIDE, TYPE >& connec,
  *
  * \param [in] connec the ConnectivityArray in question.
  * \param [in] increase the ammount the number of values will increase by
- *
- * \note this template specialization is for the ConnectivityArray with
- *  indirection.
  */
-template< CellTypes TYPE >
-IndexType calc_value_capacity( const ConnectivityArray< NEED_INDIRECTION, TYPE >& connec, 
+template< ConnectivityType TYPE >
+IndexType calc_value_capacity( const ConnectivityArray< TYPE >& connec, 
                               IndexType increase )
 {
   IndexType new_n_values = connec.getNumberOfValues() + increase;
@@ -147,16 +136,14 @@ IndexType calc_value_capacity( const ConnectivityArray< NEED_INDIRECTION, TYPE >
  *  ConnectivityArray.
  *
  * \param [in] ID the ID in question.
+ * \param [in] cell_type the CellType of the ConnectivityArray.
  * \param [in] types the array of types.
- *
- * \tparam TYPE the type of the ConnectivityArray to be inseted into.
  */
-template< CellTypes TYPE >
-CellTypes get_type( IndexType ID, const CellTypes* types )
+CellType get_type( IndexType ID, CellType cell_type, const CellType* types )
 {
   if ( types == AXOM_NULLPTR )
   {
-    return TYPE;
+    return cell_type;
   }
   else
   {
@@ -169,10 +156,8 @@ CellTypes get_type( IndexType ID, const CellTypes* types )
  *
  * \param [in] ID the ID in question.
  * \param [in] types the array of types.
- *
- * \tparam TYPE the type of the ConnectivityArray to be inseted into.
  */
-const CellTypes* get_type_ptr( IndexType ID, const CellTypes* types )
+const CellType* get_type_ptr( IndexType ID, const CellType* types )
 {
   if ( types == AXOM_NULLPTR )
   {
@@ -188,16 +173,14 @@ const CellTypes* get_type_ptr( IndexType ID, const CellTypes* types )
  * \brief Return the number of values associated with ID.
  *
  * \param [in] ID the ID in question.
+ * \param [in] stride the stride of the ConnectivityArray.
  * \param [in] offsets the offsets array.
- *
- * \tparam STRIDE the stride of the ConnectivityArray to be inseted into.
  */
-template< IndexType STRIDE  >
-IndexType get_n_values( IndexType ID, const IndexType* offsets )
+IndexType get_n_values( IndexType ID, IndexType stride, const IndexType* offsets )
 {
   if ( offsets == AXOM_NULLPTR )
   {
-    return STRIDE;
+    return stride;
   }
   else
   {
@@ -210,16 +193,15 @@ IndexType get_n_values( IndexType ID, const IndexType* offsets )
  *
  * \param [in] startID the start of the range.
  * \param [in] endID the end of the range.
- *
- * \tparam STRIDE the stride of the ConnectivityArray to be inseted into.
+ * \param [in] stride the stride of the ConnectivityArray.
+ * \param [in] offsets pointer to the offsets array for the values in question.
  */
-template< IndexType STRIDE  >
-IndexType get_n_values( IndexType startID, IndexType endID, 
+IndexType get_n_values( IndexType startID, IndexType endID, IndexType stride,
                         const IndexType* offsets )
 {
   if ( offsets == AXOM_NULLPTR )
   {
-    return STRIDE * (endID - startID);
+    return stride * (endID - startID);
   }
   else
   {
@@ -230,19 +212,17 @@ IndexType get_n_values( IndexType startID, IndexType endID,
 /*!
  * \brief Return a pointer to the values array starting with the given ID.
  *
- * \param [in] ID the ID in question.
- * \param [in] values the values array.
- * \param [in] offsets the offsets array.
- *
- * \tparam STRIDE the stride of the ConnectivityArray to be inseted into.
+ * \param [in] ID the ID used to index into the values array.
+ * \param [in] stride the stride of the ConnectivityArray.
+ * \param [in] values the array of values.
+ * \param [in] offsets pointer to the offsets array for the values in question.
  */
-template< IndexType STRIDE >
-const IndexType* get_value_ptr( IndexType ID, const IndexType* values, 
+const IndexType* get_value_ptr( IndexType ID, IndexType stride, const IndexType* values, 
                                 const IndexType* offsets  )
 {
   if ( offsets == AXOM_NULLPTR )
   {
-    return values + ID * STRIDE;
+    return values + ID * stride;
   }
   else
   {
@@ -275,10 +255,9 @@ const IndexType* get_offset_ptr( IndexType ID, const IndexType* offsets  )
  * \param [in] p1 the first pointer to check.
  * \param [in] p2 the second pointer to check.
  * \param [in] n the number of values to check.
- * \param [in] line the line from which this function was called.
  */
 template < typename T >
-void check_pointers( const T* p1, const T* p2, IndexType n, int line )
+void check_pointers( const T* p1, const T* p2, IndexType n )
 {
   if ( p1 == AXOM_NULLPTR && p2 == AXOM_NULLPTR )
   {
@@ -287,8 +266,7 @@ void check_pointers( const T* p1, const T* p2, IndexType n, int line )
 
   for ( IndexType i = 0; i < n; ++i )
   {
-    EXPECT_EQ( p1[ i ], p2[ i ] ) << "i = " << i << ". Called from line " 
-                                                               << line << ".\n";
+    EXPECT_EQ( p1[ i ], p2[ i ] ) << "i = " << i;
   }
 }
 
@@ -297,13 +275,10 @@ void check_pointers( const T* p1, const T* p2, IndexType n, int line )
  *
  * \param [in] lhs the first ConnectivityArray to check.
  * \param [in] rhs the second ConnectivityArray to check.
- * \param [in] line the line from which this function was called.
- *
- * \note does not compare resize ratios.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-void check_equality( const ConnectivityArray< STRIDE, TYPE >& lhs, 
-                     const ConnectivityArray< STRIDE, TYPE >& rhs, int line )
+template< ConnectivityType TYPE >
+void check_equality( const ConnectivityArray< TYPE >& lhs, 
+                     const ConnectivityArray< TYPE >& rhs)
 {
   ASSERT_EQ( lhs.getNumberOfIDs(), rhs.getNumberOfIDs() );
   ASSERT_EQ( lhs.getNumberOfValues(), rhs.getNumberOfValues() );
@@ -317,7 +292,39 @@ void check_equality( const ConnectivityArray< STRIDE, TYPE >& lhs,
     const IndexType cur_n_values = lhs.getNumberOfValuesForID( ID );
     ASSERT_EQ( cur_n_values, rhs.getNumberOfValuesForID( ID ) );
     EXPECT_EQ( lhs.getIDType( ID ), rhs.getIDType( ID ) );
-    check_pointers( lhs[ ID ], rhs[ ID ], cur_n_values, line );
+    check_pointers( lhs[ ID ], rhs[ ID ], cur_n_values);
+  }
+}
+
+/*!
+ * \brief Checks that the given values were properly appended to the
+ *  ConnectivityArray.
+ *
+ * \param [in/out] connec the ConnectivityArray to check.
+ * \param [in] n_IDs the number of IDs appended.
+ * \param [in] initial_n_IDs the number of IDs in the ConnectivityArray before
+ *  appending.
+ * \param [in] values the array of values to check.
+ * \param [in] offsets the offsets array.
+ * \param [in] types the type of each ID that was appended.
+ */
+template< ConnectivityType TYPE >
+void checkAppend( const ConnectivityArray< TYPE >& connec, IndexType n_IDs, 
+                  IndexType initial_n_IDs, const IndexType* values,
+                  const IndexType* offsets=AXOM_NULLPTR, 
+                  const CellType* types=AXOM_NULLPTR )
+{
+  const CellType cell_type = connec.getIDType();
+  const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 : cell_info[ cell_type ].num_nodes;
+
+  for ( IndexType ID = 0; ID < n_IDs; ++ID )
+  {
+    const IndexType cur_n_values = get_n_values( ID, stride, offsets);
+    const IndexType* cur_values = get_value_ptr( ID, stride, values, offsets );
+    const CellType cur_type = get_type( ID, cell_type, types );
+    EXPECT_EQ( connec.getIDType( initial_n_IDs + ID ), cur_type );
+    EXPECT_EQ( connec.getNumberOfValuesForID( initial_n_IDs + ID ), cur_n_values );
+    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values );
   }
 }
 
@@ -330,49 +337,67 @@ void check_equality( const ConnectivityArray< STRIDE, TYPE >& lhs,
  * \param [in] values the array of values to append.
  * \param [in] offsets the offsets array.
  * \param [in] types the type of each ID to append.
- *
- * \note offsets only need to be specified for ConnectivityArrays that need 
- *  indirection and types only needs to be specified for ConnectivityArrays
- *  that have variable ID types. First appends half of the IDs one at a time and
- *  then appends the other half all at once.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-void append( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
+template< ConnectivityType TYPE >
+void append( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
              const IndexType* values, const IndexType* offsets=AXOM_NULLPTR, 
-             const CellTypes* types=AXOM_NULLPTR )
+             const CellType* types=AXOM_NULLPTR )
 {
+  const CellType cell_type = connec.getIDType();
+  const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 : cell_info[ cell_type ].num_nodes;
   const IndexType initial_n_IDs = connec.getNumberOfIDs();
+
   IndexType half_n_IDs = n_IDs / 2;
   for ( IndexType ID = 0; ID < half_n_IDs; ++ID )
   {
-    const IndexType cur_n_values = get_n_values< STRIDE >( ID, offsets );
-    const IndexType* cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    const CellTypes type = get_type< TYPE >( ID, types );
+    const IndexType cur_n_values = get_n_values( ID, stride, offsets );
+    const IndexType* cur_values = get_value_ptr( ID, stride, values, offsets );
+    const CellType type = get_type( ID, cell_type, types );
 
     connec.append( cur_values, cur_n_values, type );
     EXPECT_EQ( connec.getNumberOfIDs(), initial_n_IDs + ID + 1 );
     EXPECT_EQ( connec.getIDType( initial_n_IDs + ID ), type );
     EXPECT_EQ( connec.getNumberOfValuesForID( initial_n_IDs + ID ), cur_n_values );
-    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values, 
-                    __LINE__ );
+    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values );
   }
 
   const IndexType cur_ID = half_n_IDs;
-  const IndexType* cur_values = get_value_ptr< STRIDE >( cur_ID, values, offsets );
+  const IndexType* cur_values = get_value_ptr( cur_ID, stride, values, offsets );
   const IndexType* cur_offsets = get_offset_ptr( cur_ID, offsets );
-  const CellTypes* cur_types = get_type_ptr( cur_ID, types );
+  const CellType* cur_types = get_type_ptr( cur_ID, types );
   connec.appendM( cur_values, n_IDs - cur_ID, cur_offsets, cur_types );
   
   EXPECT_EQ( connec.getNumberOfIDs(), initial_n_IDs + n_IDs );
-  for ( IndexType ID = 0; ID < n_IDs; ++ID )
+  checkAppend( connec, n_IDs, initial_n_IDs, values, offsets, types );
+}
+
+/*!
+ * \brief Calls internal::append multiple times and checks that the output is as
+ *  expected.
+ *
+ * \param [in/out] connec the ConnectivityArray to append to.
+ * \param [in] max_IDs the max number of IDs to append in a given iteration.
+ * \param [in] values the array of values to append.
+ * \param [in] offsets the offsets array.
+ * \param [in] types the type of each ID to append.
+ */
+template< ConnectivityType TYPE >
+void testAppend( ConnectivityArray< TYPE >& connec, IndexType max_IDs,
+                 const IndexType* values, const IndexType* offsets=AXOM_NULLPTR, 
+                 const CellType* types=AXOM_NULLPTR )
+{
+  /* Append the values */
+  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
   {
-    const IndexType cur_n_values = get_n_values< STRIDE >( ID, offsets);
-    const IndexType* cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    const CellTypes cur_type = get_type< TYPE >( ID, types );
-    EXPECT_EQ( connec.getIDType( initial_n_IDs + ID ), cur_type );
-    EXPECT_EQ( connec.getNumberOfValuesForID( initial_n_IDs + ID ), cur_n_values );
-    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values, 
-                    __LINE__ );
+    internal::append( connec, n_IDs, values, offsets, types );
+  }
+
+  /* Check that the values were appended properly */
+  IndexType initial_n_IDs = 0;
+  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
+  {
+    checkAppend( connec, n_IDs, initial_n_IDs, values, offsets, types );
+    initial_n_IDs += n_IDs;
   }
 }
 
@@ -386,19 +411,15 @@ void append( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
  * \param [in] values the array of values to set.
  * \param [in] offsets the offsets array.
  * \param [in] types the type of each ID to append.
- *
- * \note offsets only need to be specified for ConnectivityArrays that need 
- *  indirection and types only needs to be specified for ConnectivityArrays
- *  that have variable ID types. First appends the initial_values then sets
- *  for half of n_IDs sets the values one at a time then sets the rest all at
- *  once.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-void set( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
+template< ConnectivityType TYPE >
+void set( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
           const IndexType* initial_values, const IndexType* values, 
           const IndexType* offsets=AXOM_NULLPTR, 
-          const CellTypes* types=AXOM_NULLPTR )
+          const CellType* types=AXOM_NULLPTR )
 {
+  const CellType cell_type = connec.getIDType();
+  const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 : cell_info[ cell_type ].num_nodes;
   const IndexType initial_n_IDs = connec.getNumberOfIDs();
   
   /* Append the initial values. */
@@ -407,30 +428,52 @@ void set( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
   IndexType half_n_IDs = n_IDs / 2;
   for ( IndexType ID = 0; ID < half_n_IDs; ++ID )
   {
-    const IndexType cur_n_values = get_n_values< STRIDE >( ID, offsets );
-    const IndexType* cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    const CellTypes type = get_type< TYPE >( ID, types );
+    const IndexType cur_n_values = get_n_values( ID, stride, offsets );
+    const IndexType* cur_values = get_value_ptr( ID, stride, values, offsets );
+    const CellType type = get_type( ID, cell_type, types );
 
     connec.set( cur_values, initial_n_IDs + ID );
     EXPECT_EQ( connec.getIDType( initial_n_IDs + ID ), type );
     EXPECT_EQ( connec.getNumberOfValuesForID( initial_n_IDs + ID ), cur_n_values );
-    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values, 
-                    __LINE__ );
+    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values );
   }
 
   const IndexType cur_ID = half_n_IDs;
-  const IndexType* cur_values = get_value_ptr< STRIDE >( cur_ID, values, offsets );
+  const IndexType* cur_values = get_value_ptr( cur_ID, stride, values, offsets );
   connec.setM( cur_values, initial_n_IDs + cur_ID, n_IDs - cur_ID );
   
-  for ( IndexType ID = 0; ID < n_IDs; ++ID )
+  EXPECT_EQ( connec.getNumberOfIDs(), initial_n_IDs + n_IDs );
+  checkAppend( connec, n_IDs, initial_n_IDs, values, offsets, types );
+}
+
+/*!
+ * \brief Calls internal::set multiple times and checks that the output is as
+ *  expected.
+ *
+ * \param [in/out] connec the ConnectivityArray to append to and then set.
+ * \param [in] max_IDs the max number of IDs to append in a given iteration.
+ * \param [in] initial_values the array of values to append.
+ * \param [in] values the array of values to set.
+ * \param [in] offsets the offsets array.
+ * \param [in] types the type of each ID to append.
+ */
+template< ConnectivityType TYPE >
+void testSet( ConnectivityArray< TYPE >& connec, IndexType max_IDs,
+              const IndexType* initial_values, const IndexType* values, 
+              const IndexType* offsets=AXOM_NULLPTR, 
+              const CellType* types=AXOM_NULLPTR )
+{
+  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
   {
-    const IndexType cur_n_values = get_n_values< STRIDE >( ID, offsets);
-    const IndexType* cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    const CellTypes cur_type = get_type< TYPE >( ID, types );
-    EXPECT_EQ( connec.getIDType( initial_n_IDs + ID ), cur_type );
-    EXPECT_EQ( connec.getNumberOfValuesForID( initial_n_IDs + ID ), cur_n_values );
-    check_pointers( cur_values, connec[ initial_n_IDs + ID ], cur_n_values, 
-                    __LINE__ );
+    internal::set( connec, n_IDs, initial_values, values, offsets, types );
+  }
+
+  /* Check that the values were appended and set properly */
+  IndexType initial_n_IDs = 0;
+  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
+  {
+    checkAppend( connec, n_IDs, initial_n_IDs, values, offsets, types );
+    initial_n_IDs += n_IDs;
   }
 }
 
@@ -447,22 +490,22 @@ void set( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
  * \pre connec.empty()
  * \pre n_IDs % 6 == 0
  *
- * \note offsets only need to be specified for ConnectivityArrays that need 
- *  indirection and types only needs to be specified for ConnectivityArrays
- *  that have variable ID types. For n_IDs / 6 repetitions inserts an ID
- *  to the front, inside, and rear of the ConnectivityArray. Finally inserts
- *  n_IDs / 6 IDs each to the front, interior, and rear of the
- *  ConnectivityArray in one go.
+ * \note For n_IDs / 6 repetitions inserts an ID to the front, interior, and
+ *  rear of the ConnectivityArray. Finally inserts n_IDs / 6 IDs each to the
+ *  front, interior, and rear of the ConnectivityArray in one go.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-void insert( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
-             const IndexType* values, const IndexType* offsets=AXOM_NULLPTR, 
-             const CellTypes* types=AXOM_NULLPTR )
+template< ConnectivityType TYPE >
+void testInsert( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
+                 const IndexType* values, const IndexType* offsets=AXOM_NULLPTR, 
+                 const CellType* types=AXOM_NULLPTR )
 {
   SLIC_ERROR_IF( !connec.empty(), 
                  "Insertion test requires an empty ConnectivityArray." );
   SLIC_ERROR_IF( n_IDs % 6 != 0, 
                  "Insertion test requires n_IDs to be a multiple of 6." );
+
+  const CellType cell_type = connec.getIDType();
+  const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 : cell_info[ cell_type ].num_nodes;
 
   const IndexType half_n_IDs = n_IDs / 2;
   const IndexType third_n_IDs = n_IDs / 3;
@@ -480,15 +523,15 @@ void insert( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
     {
       const IndexType cur_ID = IDs[ i ];
       const IndexType insert_pos = insert_positions[ i ];
-      const IndexType cur_n_values = get_n_values< STRIDE >( cur_ID, offsets );
-      const IndexType* cur_values = get_value_ptr< STRIDE >( cur_ID, values, offsets );
-      const CellTypes type = get_type< TYPE >( cur_ID, types );
+      const IndexType cur_n_values = get_n_values( cur_ID, stride, offsets );
+      const IndexType* cur_values = get_value_ptr( cur_ID, stride, values, offsets );
+      const CellType type = get_type( cur_ID, cell_type, types );
 
       connec.insert( cur_values, insert_pos, cur_n_values, type );
       EXPECT_EQ( connec.getNumberOfIDs(), 3 * round + i + 1 );
       EXPECT_EQ( connec.getIDType( insert_pos ), type );
       EXPECT_EQ( connec.getNumberOfValuesForID( insert_pos ), cur_n_values );
-      check_pointers( cur_values, connec[ insert_pos ], cur_n_values, __LINE__ );
+      check_pointers( cur_values, connec[ insert_pos ], cur_n_values );
     }
 
     /* The middle insertion increases by two, the back by three. */
@@ -504,8 +547,8 @@ void insert( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
   /* Insert the rest of the front values. */
   const IndexType front_ID = 0;
   const IndexType* front_offsets = get_offset_ptr( front_ID, offsets );
-  const IndexType* front_values = get_value_ptr< STRIDE >( front_ID, values, offsets );
-  const CellTypes* front_types = get_type_ptr( front_ID, types );
+  const IndexType* front_values = get_value_ptr( front_ID, stride, values, offsets );
+  const CellType* front_types = get_type_ptr( front_ID, types );
   connec.insertM( front_values , front_ID, sixth_n_IDs, front_offsets, 
                   front_types );
   EXPECT_EQ( connec.getNumberOfIDs(), 2 * third_n_IDs );
@@ -513,8 +556,8 @@ void insert( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
   /* Insert the rest of the middle values. */
   const IndexType middle_ID = half_n_IDs;
   const IndexType* middle_offsets = get_offset_ptr( middle_ID, offsets );
-  const IndexType* middle_values = get_value_ptr< STRIDE >( middle_ID, values, offsets );
-  const CellTypes* middle_types = get_type_ptr( middle_ID, types );
+  const IndexType* middle_values = get_value_ptr( middle_ID, stride, values, offsets );
+  const CellType* middle_types = get_type_ptr( middle_ID, types );
   connec.insertM( middle_values, middle_ID, sixth_n_IDs, middle_offsets, 
                   middle_types );
   EXPECT_EQ( connec.getNumberOfIDs(), 5 * sixth_n_IDs );
@@ -522,21 +565,13 @@ void insert( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
   /* Insert the rest of the back values. */
   const IndexType back_ID = 5 * sixth_n_IDs;
   const IndexType* back_offsets = get_offset_ptr( back_ID, offsets );
-  const IndexType* back_values = get_value_ptr< STRIDE >( back_ID, values, offsets );
-  const CellTypes* back_types = get_type_ptr( back_ID, types );
+  const IndexType* back_values = get_value_ptr( back_ID, stride, values, offsets );
+  const CellType* back_types = get_type_ptr( back_ID, types );
   connec.insertM( back_values, back_ID, sixth_n_IDs, back_offsets, back_types );
   EXPECT_EQ( connec.getNumberOfIDs(), n_IDs );
 
   /* Check that the values were correctly inserted. */
-  for ( IndexType ID = 0; ID < n_IDs; ++ID )
-  {
-    const IndexType cur_n_values = get_n_values< STRIDE >( ID, offsets);
-    const IndexType* cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    const CellTypes cur_type = get_type< TYPE >( ID, types );
-    EXPECT_EQ( connec.getIDType( ID ), cur_type );
-    EXPECT_EQ( connec.getNumberOfValuesForID( ID ), cur_n_values );
-    check_pointers( cur_values, connec[ ID ], cur_n_values, __LINE__ );
-  }
+  checkAppend( connec, n_IDs, 0, values, offsets, types );
 }
 
 /*!
@@ -558,18 +593,19 @@ void insert( ConnectivityArray< STRIDE, TYPE >& connec, IndexType n_IDs,
  *  ID and checks that the resizing occured as expected. Then shrinks the
  *  ConnectivityArray and appends the remaining IDs all at once.
  */
-template< IndexType STRIDE, CellTypes TYPE >
-void append_capacity( ConnectivityArray< STRIDE, TYPE >& connec, 
-                      IndexType n_IDs, const IndexType* values, 
-                      const IndexType* offsets=AXOM_NULLPTR, 
-                      const CellTypes* types=AXOM_NULLPTR )
+template< ConnectivityType TYPE >
+void testCapacity( ConnectivityArray< TYPE >& connec, 
+                   IndexType n_IDs, const IndexType* values, 
+                   const IndexType* offsets=AXOM_NULLPTR, 
+                   const CellType* types=AXOM_NULLPTR )
 {
   SLIC_ERROR_IF( !connec.empty(), 
                  "Insertion test requires an empty ConnectivityArray." );
-
+  const CellType cell_type = connec.getIDType();
+  const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 : cell_info[ cell_type ].num_nodes;
   const IndexType half_n_IDs = n_IDs / 2;
-  const IndexType n_values = get_n_values< STRIDE >( 0, n_IDs, offsets );
-  const IndexType first_half_n_values = get_n_values< STRIDE >( 0, half_n_IDs, offsets );
+  const IndexType n_values = get_n_values( 0, n_IDs, stride, offsets );
+  const IndexType first_half_n_values = get_n_values( 0, half_n_IDs, stride, offsets );
   IndexType cur_ID_size = connec.getNumberOfIDs();
   IndexType cur_value_size = connec.getNumberOfValues();
 
@@ -579,7 +615,7 @@ void append_capacity( ConnectivityArray< STRIDE, TYPE >& connec,
   connec.reserve( half_n_IDs, first_half_n_values );
   const IndexType* cur_values_ptr = connec.getValuePtr();
   const IndexType* cur_offsets_ptr = connec.getOffsetPtr();
-  const CellTypes* cur_types_ptr = connec.getTypePtr();
+  const CellType* cur_types_ptr = connec.getTypePtr();
   IndexType cur_ID_capacity = connec.getIDCapacity();
   IndexType cur_value_capacity = connec.getValueCapacity();
 
@@ -590,30 +626,30 @@ void append_capacity( ConnectivityArray< STRIDE, TYPE >& connec,
   /* Append the first half of the IDs, no resize should occur. */
   for ( IndexType ID = 0; ID < half_n_IDs; ++ID )
   {
-    const IndexType cur_n_values = get_n_values< STRIDE >( ID, offsets );
-    const IndexType* cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    const CellTypes type = get_type< TYPE >( ID, types );
+    const IndexType cur_n_values = get_n_values( ID, stride, offsets );
+    const IndexType* cur_values = get_value_ptr( ID, stride, values, offsets );
+    const CellType type = get_type( ID, cell_type, types );
 
     connec.append( cur_values, cur_n_values, type );
     cur_ID_size += 1;
     cur_value_size += cur_n_values;
+    EXPECT_EQ( connec.getNumberOfIDs(), cur_ID_size );
     EXPECT_EQ( connec.getIDCapacity(), cur_ID_capacity );
+    EXPECT_EQ( connec.getNumberOfValues(), cur_value_size );
     EXPECT_EQ( connec.getValueCapacity(), cur_value_capacity );
     EXPECT_EQ( connec.getValuePtr(), cur_values_ptr );
     EXPECT_EQ( connec.getOffsetPtr(), cur_offsets_ptr );
     EXPECT_EQ( connec.getTypePtr(), cur_types_ptr );
-    EXPECT_EQ( connec.getNumberOfIDs(), cur_ID_size );
-    EXPECT_EQ( connec.getNumberOfValues(), cur_value_size );
     EXPECT_EQ( connec.getIDType( ID ), type );
     EXPECT_EQ( connec.getNumberOfValuesForID( ID ), cur_n_values );
-    check_pointers( cur_values, connec[ ID ], cur_n_values, __LINE__ );
+    check_pointers( cur_values, connec[ ID ], cur_n_values );
   }
 
   /* Append one more value, should trigger a resize. */
   IndexType cur_ID = half_n_IDs;
-  IndexType cur_n_values = get_n_values< STRIDE >( cur_ID, offsets );
-  const IndexType* cur_values = get_value_ptr< STRIDE >( cur_ID, values, offsets );
-  CellTypes type = get_type< TYPE >( cur_ID, types );
+  IndexType cur_n_values = get_n_values( cur_ID, stride, offsets );
+  const IndexType* cur_values = get_value_ptr( cur_ID, stride, values, offsets );
+  CellType type = get_type( cur_ID, cell_type, types );
   
   cur_ID_capacity = calc_ID_capacity( connec, 1 );
   cur_value_capacity = calc_value_capacity( connec, cur_n_values );
@@ -621,13 +657,13 @@ void append_capacity( ConnectivityArray< STRIDE, TYPE >& connec,
   cur_ID_size += 1;
   cur_value_size += cur_n_values;
 
-  EXPECT_EQ( connec.getIDCapacity(), cur_ID_capacity );
-  EXPECT_EQ( connec.getValueCapacity(), cur_value_capacity );
   EXPECT_EQ( connec.getNumberOfIDs(), cur_ID_size );
+  EXPECT_EQ( connec.getIDCapacity(), cur_ID_capacity );
   EXPECT_EQ( connec.getNumberOfValues(), cur_value_size );
+  EXPECT_EQ( connec.getValueCapacity(), cur_value_capacity );
   EXPECT_EQ( connec.getIDType( cur_ID ), type );
   EXPECT_EQ( connec.getNumberOfValuesForID( cur_ID ), cur_n_values );
-  check_pointers( cur_values, connec[ cur_ID ], cur_n_values, __LINE__ );
+  check_pointers( cur_values, connec[ cur_ID ], cur_n_values );
 
   /* Shrink. */
   connec.shrink();
@@ -638,37 +674,243 @@ void append_capacity( ConnectivityArray< STRIDE, TYPE >& connec,
 
   /* Append the rest of the values all at once, should trigger a resize. */
   cur_ID = half_n_IDs + 1;
-  cur_values = get_value_ptr< STRIDE >( cur_ID, values, offsets );
-  cur_n_values = get_n_values< STRIDE >( cur_ID, n_IDs, offsets );
+  cur_values = get_value_ptr( cur_ID, stride, values, offsets );
+  cur_n_values = get_n_values( cur_ID, n_IDs, stride, offsets );
   const IndexType* cur_offsets = get_offset_ptr( cur_ID, offsets );
-  const CellTypes* cur_types = get_type_ptr( cur_ID, types );
-  
+  const CellType* cur_types = get_type_ptr( cur_ID, types );
   
   cur_ID_capacity = calc_ID_capacity( connec, n_IDs - cur_ID );
   cur_value_capacity = calc_value_capacity( connec, cur_n_values );
   connec.appendM( cur_values, n_IDs - cur_ID, cur_offsets, cur_types );
-  cur_ID_size += n_IDs - cur_ID;
-  cur_value_size += cur_n_values;
-
-  EXPECT_EQ( connec.getIDCapacity(), cur_ID_capacity );
-  EXPECT_EQ( connec.getValueCapacity(), cur_value_capacity );
-  EXPECT_EQ( connec.getNumberOfIDs(), cur_ID_size );
-  EXPECT_EQ( connec.getNumberOfValues(), cur_value_size );
   EXPECT_EQ( connec.getNumberOfIDs(), n_IDs );
+  EXPECT_EQ( connec.getIDCapacity(), cur_ID_capacity );
   EXPECT_EQ( connec.getNumberOfValues(), n_values );
+  EXPECT_EQ( connec.getValueCapacity(), cur_value_capacity );
 
   for ( IndexType ID = 0; ID < n_IDs; ++ID )
   {
-    cur_n_values = get_n_values< STRIDE >( ID, offsets);
-    cur_values = get_value_ptr< STRIDE >( ID, values, offsets );
-    type = get_type< TYPE >( ID, types );
+    cur_n_values = get_n_values( ID, stride, offsets);
+    cur_values = get_value_ptr( ID, stride, values, offsets );
+    type = get_type( ID, cell_type, types );
     EXPECT_EQ( connec.getIDType( ID ), type );
-    check_pointers( cur_values, connec[ ID ], cur_n_values, __LINE__ );
+    check_pointers( cur_values, connec[ ID ], cur_n_values );
   }
 
-  check_pointers( connec.getValuePtr(), values, n_values, __LINE__ );
-  check_pointers( connec.getOffsetPtr(), offsets, n_IDs + 1, __LINE__ );
-  check_pointers( connec.getTypePtr(), types, n_IDs, __LINE__ );
+  check_pointers( connec.getValuePtr(), values, n_values );
+  check_pointers( connec.getOffsetPtr(), offsets, n_IDs + 1 );
+  check_pointers( connec.getTypePtr(), types, n_IDs );
+}
+
+
+/*!
+ * \brief Create values in the range [0, n_vals) scaled by a factor.
+ *
+ * \param [in] n_vals the number of values to create.
+ * \param [in] factor the scaling factor.
+ */
+const IndexType* createValues( IndexType n_vals, const IndexType factor=1 )
+{
+  IndexType* values = new IndexType[ n_vals ];
+  for ( IndexType i = 0; i < n_vals; ++i )
+  {
+    values[ i ] = factor * i;
+  }
+
+  return values;
+}
+
+/*!
+ * \brief Create offsets and types arrays for the given number of IDs.
+ *
+ * \param [in] n_IDs the number of values to create.
+ * \param [out] offsets where the offsets array is stored.
+ * \param [out] types where the types array is stored.
+ * 
+ * \return The number of values accounted for in the offsets array. 
+ */
+IndexType createOffsetsAndTypes( IndexType n_IDs, IndexType*& offsets, CellType*& types )
+{
+  offsets = new IndexType[ n_IDs + 1 ];
+  types = new CellType[ n_IDs ];
+  offsets[ 0 ] = 0;
+  for ( IndexType i = 0; i < n_IDs; ++i ) 
+  {
+    if ( i % 2 == 0 )
+    {
+      types[ i ] = VERTEX;
+      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
+    }
+    else
+    {
+      types[ i ] = HEX;
+      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
+    }
+  }
+
+  return offsets[ n_IDs ];
+}
+
+/*!
+ * \brief Calaculate the total number of IDs and Values to insert given
+ *  the maximum number inserted in a given iteration.
+ *
+ * \param [in] max_IDs the max number of IDs inserted in a single iteration.
+ * \param [out] total_IDs the total number of IDs calculated.
+ * \param [out] total_values the total number of values calculated.
+ */
+void calcTotalIDsAndValues( IndexType max_IDs, IndexType& total_IDs, IndexType& total_values )
+{
+  total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
+  total_values = 0;
+  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
+  {
+    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
+    if (n_IDs % 2 == 1)
+    {
+      total_values += vertex_stride;
+    }
+  }
+}
+
+/*!
+ * \brief Check that the provided ConnectivityArray meets certain criteria.
+ *
+ * \param [in] connec the ConnectivityArray to check.
+ * \param [in] external if the ConnectivityArray is external.
+ * \param [in] n_IDs the number of IDs.
+ * \param [in] n_values the number of values.
+ * \param [in] pointer to the values array.
+ * \param [in] pointer to the offsets array.
+ * \param [in] pointer to the types array.
+ */
+template < ConnectivityType TYPE >
+void checkConnectivity( const ConnectivityArray< TYPE >& connec, bool external, 
+                        IndexType n_IDs, IndexType n_values, 
+                        const IndexType* values=AXOM_NULLPTR, 
+                        const IndexType* offsets=AXOM_NULLPTR, 
+                        const CellType* types=AXOM_NULLPTR )
+{
+  EXPECT_EQ( connec.isExternal(), external );
+  EXPECT_EQ( connec.isInSidre(), false );
+  EXPECT_EQ( connec.getNumberOfIDs(), n_IDs);
+  EXPECT_EQ( connec.getNumberOfValues(), n_values );
+  bool empty = n_IDs == 0 && n_values == 0;
+  EXPECT_EQ( connec.empty(), empty );
+
+  if ( values != AXOM_NULLPTR )
+  {
+    EXPECT_EQ( connec.getValuePtr(), values );
+  }
+
+  if ( offsets != AXOM_NULLPTR )
+  {
+    EXPECT_EQ( connec.getOffsetPtr(), offsets );
+  }
+  
+  if ( types != AXOM_NULLPTR )
+  {
+    EXPECT_EQ( connec.getTypePtr(), types );
+  }  
+
+#ifdef MINT_USE_SIDRE
+  EXPECT_EQ( connec.getGroup(), AXOM_NULLPTR );
+#endif
+}
+
+#ifdef MINT_USE_SIDRE
+/*!
+ * \brief Check that the provided ConnectivityArray meets certain criteria.
+ *
+ * \param [in] connec the ConnectivityArray to check.
+ * \param [in] n_IDs the number of IDs.
+ * \param [in] n_values the number of values.
+ * \param [in] group the sidr::Group of the ConnectivityArray.
+ */
+template < ConnectivityType TYPE >
+void checkConnectivity( const ConnectivityArray< TYPE >& connec,  
+                        IndexType n_IDs, IndexType n_values,
+                        const sidre::Group* group=AXOM_NULLPTR )
+{
+  EXPECT_EQ( connec.isExternal(), false );
+  EXPECT_EQ( connec.isInSidre(), true );
+  EXPECT_EQ( connec.getNumberOfIDs(), n_IDs);
+  EXPECT_EQ( connec.getNumberOfValues(), n_values );
+  bool empty = n_IDs == 0 && n_values == 0;
+  EXPECT_EQ( connec.empty(), empty );
+  EXPECT_EQ( connec.getGroup(), group );
+}
+
+/*!
+ * \brief Check that the ConnectivityArray can be reconstructed from
+ *  a sidre::Group.
+ *
+ * \param [in] connec the ConnectivityArray to check.
+ */
+template < ConnectivityType TYPE >
+void checkSidreConstructor( const ConnectivityArray< TYPE >& connec )
+{
+  ASSERT_TRUE( connec.isInSidre() );
+
+  sidre::Group* group = const_cast< sidre::Group* >( connec.getGroup() );
+  ConnectivityArray< TYPE > cpy( group );
+  internal::check_equality( connec, cpy );
+}
+#endif  /* MINT_USE_SIDRE */
+
+/*!
+ * \brief Check that the ConnectivityArray can be reconstructed from
+ *  a external buffers.
+ *
+ * \param [in] connec the ConnectivityArray to check.
+ */
+void checkExternalConstructor( const ConnectivityArray< ConnectivityType::NO_INDIRECTION >& connec )
+{
+  ASSERT_TRUE( connec.isExternal() );
+
+  CellType cell_type = connec.getIDType();
+  const IndexType n_IDs = connec.getNumberOfIDs();
+  IndexType* values = const_cast< IndexType * >( connec.getValuePtr() );
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > 
+              connec_cpy( cell_type, n_IDs, values );
+  internal::check_equality( connec, connec_cpy );
+}
+
+/*!
+ * \brief Check that the ConnectivityArray can be reconstructed from
+ *  a external buffers.
+ *
+ * \param [in] connec the ConnectivityArray to check.
+ */
+void checkExternalConstructor( const ConnectivityArray< ConnectivityType::INDIRECTION >& connec )
+{
+  ASSERT_TRUE( connec.isExternal() );
+
+  CellType cell_type = connec.getIDType();
+  const IndexType n_IDs = connec.getNumberOfIDs();
+  IndexType* values = const_cast< IndexType * >( connec.getValuePtr() );
+  IndexType* offsets = const_cast< IndexType * >( connec.getOffsetPtr() );
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+              connec_cpy( cell_type, n_IDs, values, offsets );
+  internal::check_equality( connec, connec_cpy );
+}
+
+/*!
+ * \brief Check that the ConnectivityArray can be reconstructed from
+ *  a external buffers.
+ *
+ * \param [in] connec the ConnectivityArray to check.
+ */
+void checkExternalConstructor( const ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >& connec )
+{
+  ASSERT_TRUE( connec.isExternal() );
+
+  const IndexType n_IDs = connec.getNumberOfIDs();
+  IndexType* values = const_cast< IndexType * >( connec.getValuePtr() );
+  IndexType* offsets = const_cast< IndexType * >( connec.getOffsetPtr() );
+  CellType* types = const_cast< CellType * >( connec.getTypePtr() );
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > 
+              connec_cpy( n_IDs, values, offsets, types );
+  internal::check_equality( connec, connec_cpy );
 }
 
 
@@ -682,157 +924,67 @@ void append_capacity( ConnectivityArray< STRIDE, TYPE >& connec,
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionNativeAppend )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
   
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray< vertex_stride, vertex > native_vertex;
-  EXPECT_FALSE( native_vertex.isExternal() );
-  EXPECT_FALSE( native_vertex.isInSidre() );
-  EXPECT_TRUE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_vertex( VERTEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-  ConnectivityArray< hex_stride, CellTypes::HEX > native_hex;
-  EXPECT_FALSE( native_hex.isExternal() );
-  EXPECT_FALSE( native_hex.isInSidre() );
-  EXPECT_TRUE( native_hex.empty() );
-  EXPECT_EQ( native_hex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_hex( HEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( native_hex.getGroup(), AXOM_NULLPTR );
-#endif
-
-  /* Append the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::append( native_vertex, n_IDs, values );
-    internal::append( native_hex, n_IDs, values );
-  }
-
-  /* Check that the values were appended properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::check_pointers( values, native_vertex[ cur_offset ], 
-                              n_IDs * vertex_stride, __LINE__ );
-    internal::check_pointers( values, native_hex[ cur_offset ], 
-                              n_IDs * hex_stride, __LINE__ );
-    cur_offset += n_IDs;
-  }
+  internal::testAppend( native_vertex, max_IDs, values );
+  internal::testAppend( native_hex, max_IDs, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_vertex.getNumberOfValues(), total_IDs * vertex_stride);
-
-  EXPECT_FALSE( native_hex.empty() );
-  EXPECT_EQ( native_hex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_hex.getNumberOfValues(), total_IDs * hex_stride);
+  internal::checkConnectivity( native_vertex, false, total_IDs, total_IDs * vertex_stride );
+  internal::checkConnectivity( native_hex, false, total_IDs, total_IDs * hex_stride );
 
   delete[] values;
 }
 
+
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, NoIndirectionExternalAppend )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
 
   /* Create the external storage ConnectivityArrays to be tested. */
   IndexType* ext_vertex_values = new IndexType[ total_IDs * vertex_stride ];
-  ConnectivityArray< vertex_stride, vertex > ext_vertex( 0, ext_vertex_values, 
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > ext_vertex( VERTEX, 0, ext_vertex_values, 
                                                          total_IDs );
-  EXPECT_TRUE( ext_vertex.isExternal() );
-  EXPECT_FALSE( ext_vertex.isInSidre() );
-  EXPECT_TRUE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), 0);
-  EXPECT_EQ( ext_vertex.getValuePtr(), ext_vertex_values );
+  internal::checkConnectivity( ext_vertex, true, 0, 0, ext_vertex_values );
 
   IndexType* ext_hex_values = new IndexType[ total_IDs * hex_stride ];
-  ConnectivityArray< hex_stride, hex > ext_hex( 0, ext_hex_values, 
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > ext_hex( HEX, 0, ext_hex_values, 
                                                 total_IDs );
-  EXPECT_TRUE( ext_hex.isExternal() );
-  EXPECT_FALSE( ext_hex.isInSidre() );
-  EXPECT_TRUE( ext_hex.empty() );
-  EXPECT_EQ( ext_hex.getNumberOfIDs(), 0);
-  EXPECT_EQ( ext_hex.getValuePtr(), ext_hex_values );
+  internal::checkConnectivity( ext_hex, true, 0, 0, ext_hex_values );
 
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( ext_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( ext_hex.getGroup(), AXOM_NULLPTR );
-#endif
-
-  /* Append the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::append( ext_vertex, n_IDs, values );
-    internal::append( ext_hex, n_IDs, values );
-  }
-
-  /* Check that the values were appended properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::check_pointers( values, ext_vertex[ cur_offset ], 
-                              n_IDs * vertex_stride, __LINE__ );
-    internal::check_pointers( values, ext_hex[ cur_offset ], 
-                              n_IDs * hex_stride, __LINE__ );
-    cur_offset += n_IDs;
-  }
+  /* Check that appending functions properly */
+  internal::testAppend( ext_vertex, max_IDs, values );
+  internal::testAppend( ext_hex, max_IDs, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_vertex.getNumberOfValues(), total_IDs * vertex_stride);
-  EXPECT_EQ( ext_vertex.getValuePtr(), ext_vertex_values );
-
-  EXPECT_FALSE( ext_hex.empty() );
-  EXPECT_EQ( ext_hex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_hex.getNumberOfValues(), total_IDs * hex_stride);
-  EXPECT_EQ( ext_hex.getValuePtr(), ext_hex_values );
-
+  internal::checkConnectivity( ext_vertex, true, total_IDs, total_IDs * vertex_stride, ext_vertex_values );
+  internal::checkConnectivity( ext_hex, true, total_IDs, total_IDs * hex_stride, ext_hex_values );
 
   /* Check that the external ConnectivityArrays cannot append any more. */
   EXPECT_DEATH_IF_SUPPORTED( ext_vertex.append( values ), IGNORE_OUTPUT ); 
   EXPECT_DEATH_IF_SUPPORTED( ext_hex.append( values ), IGNORE_OUTPUT ); 
 
   /* Check that the external constructor functions properly. */
-  ConnectivityArray< vertex_stride, vertex > 
-              ext_vertex_cpy( ext_vertex.getNumberOfIDs(), ext_vertex_values );
-  internal::check_equality( ext_vertex, ext_vertex_cpy, __LINE__ );
-
-  ConnectivityArray< hex_stride, hex > 
-                        ext_hex_cpy( ext_hex.getNumberOfIDs(), ext_hex_values );
-  internal::check_equality( ext_hex, ext_hex_cpy, __LINE__ );
+  internal::checkExternalConstructor( ext_vertex );
+  internal::checkExternalConstructor( ext_hex );
 
   delete[] values;
   delete[] ext_vertex_values;
@@ -843,83 +995,37 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionExternalAppend )
 TEST( mint_connectivity_array, NoIndirectionSidreAppend )
 {
 #ifdef MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
 
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
   
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  ConnectivityArray< vertex_stride, vertex > 
-                          sidre_vertex( root->createGroup( "vertex" ), "test" );
-  EXPECT_TRUE( sidre_vertex.isInSidre() );
-  EXPECT_FALSE( sidre_vertex.isExternal() );
-  EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-  EXPECT_TRUE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > 
+                          sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+  internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-  ConnectivityArray< hex_stride, hex >
-                          sidre_hex( root->createGroup( "hex" ), "test" );
-  EXPECT_TRUE( sidre_hex.isInSidre() );
-  EXPECT_FALSE( sidre_hex.isExternal() );
-  EXPECT_EQ( sidre_hex.getGroup(), root->getGroup( "hex") );
-  EXPECT_TRUE( sidre_hex.empty() );
-  EXPECT_EQ( sidre_hex.getNumberOfIDs(), 0);
-
-  /* Append the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::append( sidre_vertex, n_IDs, values );
-    internal::append( sidre_hex, n_IDs, values );
-  }
-
-  /* Check that the values were appended properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::check_pointers( values, sidre_vertex[ cur_offset ], 
-                              n_IDs * vertex_stride, __LINE__ );
-    internal::check_pointers( values, sidre_hex[ cur_offset ], 
-                              n_IDs * hex_stride, __LINE__ );
-    cur_offset += n_IDs;
-  }
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION >
+                          sidre_hex( HEX, root->createGroup( "hex" ), "test" );
+  internal::checkConnectivity( sidre_hex, 0, 0, root->getGroup( "hex" ) );
+  
+  internal::testAppend( sidre_vertex, max_IDs, values );
+  internal::testAppend( sidre_hex, max_IDs, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_vertex.getNumberOfValues(), total_IDs * vertex_stride);
-
-  EXPECT_FALSE( sidre_hex.empty() );
-  EXPECT_EQ( sidre_hex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_hex.getNumberOfValues(), total_IDs * hex_stride);
+  internal::checkConnectivity( sidre_vertex, total_IDs, total_IDs * vertex_stride, root->getGroup( "vertex" ) );
+  internal::checkConnectivity( sidre_hex, total_IDs, total_IDs * hex_stride, root->getGroup( "hex" ) );
 
   /* Check that restoring from sidre functions properly */
-  sidre::Group* vertex_group = 
-                        const_cast< sidre::Group* >( sidre_vertex.getGroup() );
-  ConnectivityArray< vertex_stride, vertex > sidre_vertex_cpy( vertex_group );
-  internal::check_equality( sidre_vertex, sidre_vertex_cpy, __LINE__ );
-
-  sidre::Group* hex_group = 
-                        const_cast< sidre::Group* >( sidre_hex.getGroup() );
-  ConnectivityArray< hex_stride, hex > sidre_hex_cpy( hex_group );
-  internal::check_equality( sidre_hex, sidre_hex_cpy, __LINE__ );
+  internal::checkSidreConstructor( sidre_vertex );
+  internal::checkSidreConstructor( sidre_hex );
 
   delete[] values;
-
 #else
   EXPECT_TRUE( true );
 #endif  /* MINT_USE_SIDRE */
@@ -928,104 +1034,35 @@ TEST( mint_connectivity_array, NoIndirectionSidreAppend )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionNativeAppend )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType max_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * max_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
 
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ max_IDs + 1 ];
-  CellTypes* types = new CellTypes[ max_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < max_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( max_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( max_values );
 
   /* Calculate the total number of IDs and values. */
-  constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
-  IndexType total_values = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
-    if (n_IDs % 2 == 1)
-    {
-      total_values += vertex_stride;
-    }
-  }
+  IndexType total_IDs;
+  IndexType total_values;
+  internal::calcTotalIDsAndValues( max_IDs, total_IDs, total_values );
   
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > native_vertex;
-  EXPECT_FALSE( native_vertex.isExternal() );
-  EXPECT_FALSE( native_vertex.isInSidre() );
-  EXPECT_TRUE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::INDIRECTION > native_vertex( VERTEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-  ConnectivityArray< NEED_INDIRECTION, mixed > native_mixed;
-  EXPECT_FALSE( native_mixed.isExternal() );
-  EXPECT_FALSE( native_mixed.isInSidre() );
-  EXPECT_TRUE( native_mixed.empty() );
-  EXPECT_EQ( native_mixed.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( native_mixed.getGroup(), AXOM_NULLPTR );
-#endif
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > native_mixed;
+  internal::checkConnectivity( native_mixed, false, 0, 0 );
 
   /* Append the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::append( native_vertex, n_IDs, values, offsets );
-    internal::append( native_mixed, n_IDs, values, offsets, types );
-  }
-
-  /* Check that the values were appended properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    for ( IndexType ID = 0; ID < n_IDs; ++ID )
-    {
-      const IndexType* cur_values = values + offsets[ ID ];
-      const IndexType n_values = offsets[ ID + 1 ] - offsets[ ID ];
-      internal::check_pointers( cur_values, native_vertex[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-      internal::check_pointers( cur_values, native_mixed[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-    }
-
-    cur_offset += n_IDs;
-  }
+  internal::testAppend( native_vertex, max_IDs, values, offsets );
+  internal::testAppend( native_mixed, max_IDs, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_vertex.getNumberOfValues(), total_values);
-
-  EXPECT_FALSE( native_mixed.empty() );
-  EXPECT_EQ( native_mixed.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_mixed.getNumberOfValues(), total_values);
+  internal::checkConnectivity( native_vertex, false, total_IDs, total_values );
+  internal::checkConnectivity( native_mixed, false, total_IDs, total_values );
 
   delete[] values;
   delete[] offsets;
@@ -1035,138 +1072,52 @@ TEST( mint_connectivity_array, IndirectionNativeAppend )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, IndirectionExternalAppend )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType max_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * max_IDs / 2;
-
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
 
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ max_IDs + 1 ];
-  CellTypes* types = new CellTypes[ max_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < max_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( max_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( max_values );
 
   /* Calculate the total number of IDs and values. */
-  constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
-  IndexType total_values = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
-    if (n_IDs % 2 == 1)
-    {
-      total_values += vertex_stride;
-    }
-  }
+  IndexType total_IDs;
+  IndexType total_values;
+  internal::calcTotalIDsAndValues( max_IDs, total_IDs, total_values );
   
   /* Create the external storage ConnectivityArrays to be tested. */
   IndexType* ext_vertex_values = new IndexType[ total_values ];
   IndexType* ext_vertex_offsets = new IndexType[ total_IDs + 1 ];
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-                          ext_vertex( 0, ext_vertex_values, ext_vertex_offsets,
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+                          ext_vertex( VERTEX, 0, ext_vertex_values, ext_vertex_offsets,
                                       total_IDs, total_values );
-  EXPECT_TRUE( ext_vertex.isExternal() );
-  EXPECT_FALSE( ext_vertex.isInSidre() );
-  EXPECT_TRUE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), 0);
-  EXPECT_EQ( ext_vertex.getValuePtr(), ext_vertex_values );
-  EXPECT_EQ( ext_vertex.getOffsetPtr(), ext_vertex_offsets );
+  internal::checkConnectivity( ext_vertex, true, 0, 0, ext_vertex_values, ext_vertex_offsets );
 
   IndexType* ext_mixed_values = new IndexType[ total_IDs * hex_stride ];
   IndexType* ext_mixed_offsets = new IndexType[ total_IDs + 1 ];
-  CellTypes* ext_mixed_types = new CellTypes[ total_IDs ];
-  ConnectivityArray< NEED_INDIRECTION, mixed > 
+  CellType* ext_mixed_types = new CellType[ total_IDs ];
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > 
                           ext_mixed( 0, ext_mixed_values, ext_mixed_offsets, 
                                      ext_mixed_types, total_IDs, total_values );
-  EXPECT_TRUE( ext_mixed.isExternal() );
-  EXPECT_FALSE( ext_mixed.isInSidre() );
-  EXPECT_TRUE( ext_mixed.empty() );
-  EXPECT_EQ( ext_mixed.getNumberOfIDs(), 0);
-  EXPECT_EQ( ext_mixed.getValuePtr(), ext_mixed_values );
-  EXPECT_EQ( ext_mixed.getOffsetPtr(), ext_mixed_offsets );
-  EXPECT_EQ( ext_mixed.getTypePtr(), ext_mixed_types );
+  internal::checkConnectivity( ext_mixed, true, 0, 0, ext_mixed_values, ext_mixed_offsets, ext_mixed_types );
 
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( ext_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( ext_mixed.getGroup(), AXOM_NULLPTR );
-#endif
-
-  /* Append the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::append( ext_vertex, n_IDs, values, offsets );
-    internal::append( ext_mixed, n_IDs, values, offsets, types );
-  }
-
-  /* Check that the values were appended properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    for ( IndexType ID = 0; ID < n_IDs; ++ID )
-    {
-      const IndexType* cur_values = values + offsets[ ID ];
-      const IndexType n_values = offsets[ ID + 1 ] - offsets[ ID ];
-      internal::check_pointers( cur_values, ext_vertex[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-      internal::check_pointers( cur_values, ext_mixed[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-    }
-
-    cur_offset += n_IDs;
-  }
+  /* Check that appending functions properly */
+  internal::testAppend( ext_vertex, max_IDs, values, offsets );
+  internal::testAppend( ext_mixed, max_IDs, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_vertex.getNumberOfValues(), total_values);
-  EXPECT_EQ( ext_vertex.getValuePtr(), ext_vertex_values );
-  EXPECT_EQ( ext_vertex.getOffsetPtr(), ext_vertex_offsets );
-
-  EXPECT_FALSE( ext_mixed.empty() );
-  EXPECT_EQ( ext_mixed.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_mixed.getNumberOfValues(), total_values);
-  EXPECT_EQ( ext_mixed.getValuePtr(), ext_mixed_values );
-  EXPECT_EQ( ext_mixed.getOffsetPtr(), ext_mixed_offsets );
-  EXPECT_EQ( ext_mixed.getTypePtr(), ext_mixed_types );
+  internal::checkConnectivity( ext_vertex, true, total_IDs, total_values, ext_vertex_values, ext_vertex_offsets );
+  internal::checkConnectivity( ext_mixed, true, total_IDs, total_values, ext_mixed_values, ext_mixed_offsets, ext_mixed_types );
 
   /* Check that the external ConnectivityArrays cannot append any more. */
   EXPECT_DEATH_IF_SUPPORTED( ext_vertex.append( values, 1 ), IGNORE_OUTPUT ); 
-  EXPECT_DEATH_IF_SUPPORTED( ext_mixed.append( values,  1, vertex ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( ext_mixed.append( values,  1, VERTEX ), IGNORE_OUTPUT );
 
   /* Check that the external constructor functions properly. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-              ext_vertex_cpy( ext_vertex.getNumberOfIDs(), ext_vertex_values, 
-                              ext_vertex_offsets );
-  internal::check_equality( ext_vertex, ext_vertex_cpy, __LINE__ );
-
-  ConnectivityArray< NEED_INDIRECTION, mixed > 
-                        ext_mixed_cpy( ext_mixed.getNumberOfIDs(), ext_mixed_values, 
-                                       ext_mixed_offsets, ext_mixed_types );
-  internal::check_equality( ext_mixed, ext_mixed_cpy, __LINE__ );
+  internal::checkExternalConstructor( ext_vertex );
+  internal::checkExternalConstructor( ext_mixed );
 
   delete[] values;
   delete[] offsets;
@@ -1185,114 +1136,41 @@ TEST( mint_connectivity_array, IndirectionSidreAppend )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType max_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * max_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
 
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ max_IDs + 1 ];
-  CellTypes* types = new CellTypes[ max_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < max_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( max_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( max_values );
 
   /* Calculate the total number of IDs and values. */
-  constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
-  IndexType total_values = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
-    if (n_IDs % 2 == 1)
-    {
-      total_values += vertex_stride;
-    }
-  }
+  IndexType total_IDs;
+  IndexType total_values;
+  internal::calcTotalIDsAndValues( max_IDs, total_IDs, total_values );
 
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-                          sidre_vertex( root->createGroup( "vertex" ), "test" );
-  EXPECT_TRUE( sidre_vertex.isInSidre() );
-  EXPECT_FALSE( sidre_vertex.isExternal() );
-  EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-  EXPECT_TRUE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+                          sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+  internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-  ConnectivityArray< NEED_INDIRECTION, mixed >
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
                           sidre_mixed( root->createGroup( "mixed" ), "test" );
-  EXPECT_TRUE( sidre_mixed.isInSidre() );
-  EXPECT_FALSE( sidre_mixed.isExternal() );
-  EXPECT_EQ( sidre_mixed.getGroup(), root->getGroup( "mixed" ) );
-  EXPECT_TRUE( sidre_mixed.empty() );
-  EXPECT_EQ( sidre_mixed.getNumberOfIDs(), 0);
-
+  internal::checkConnectivity( sidre_mixed, 0, 0, root->getGroup( "mixed" ) );
+  
   /* Append the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::append( sidre_vertex, n_IDs, values, offsets );
-    internal::append( sidre_mixed, n_IDs, values, offsets, types );
-  }
-
-  /* Check that the values were appended properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    for ( IndexType ID = 0; ID < n_IDs; ++ID )
-    {
-      const IndexType* cur_values = values + offsets[ ID ];
-      const IndexType n_values = offsets[ ID + 1 ] - offsets[ ID ];
-      internal::check_pointers( cur_values, sidre_vertex[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-      internal::check_pointers( cur_values, sidre_mixed[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-    }
-
-    cur_offset += n_IDs;
-  }
+  internal::testAppend( sidre_vertex, max_IDs, values, offsets );
+  internal::testAppend( sidre_mixed, max_IDs, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_vertex.getNumberOfValues(), total_values);
-
-  EXPECT_FALSE( sidre_mixed.empty() );
-  EXPECT_EQ( sidre_mixed.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_mixed.getNumberOfValues(), total_values);
+  internal::checkConnectivity( sidre_vertex, total_IDs, total_values, root->getGroup( "vertex" ) );
+  internal::checkConnectivity( sidre_mixed, total_IDs, total_values, root->getGroup( "mixed" ) );
 
   /* Check that restoring from sidre functions properly */
-  sidre::Group* vertex_group = 
-                        const_cast< sidre::Group* >( sidre_vertex.getGroup() );
-  ConnectivityArray< NEED_INDIRECTION, vertex > sidre_vertex_cpy( vertex_group );
-  internal::check_equality( sidre_vertex, sidre_vertex_cpy, __LINE__ );
-
-  sidre::Group* mixed_group = 
-                        const_cast< sidre::Group* >( sidre_mixed.getGroup() );
-  ConnectivityArray< NEED_INDIRECTION, mixed > sidre_mixed_cpy( mixed_group );
-  internal::check_equality( sidre_mixed, sidre_mixed_cpy, __LINE__ );
+  internal::checkSidreConstructor( sidre_vertex );
+  internal::checkSidreConstructor( sidre_mixed );
 
   delete[] values;
   delete[] offsets;
@@ -1311,69 +1189,28 @@ TEST( mint_connectivity_array, IndirectionSidreAppend )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionNativeSet )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
 
   /* Allocate and populate the values buffer. */
-  IndexType* initial_values = new IndexType[ max_values ];
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    initial_values[ i ] = -i;
-    values[ i ] = i;
-  }
+  const IndexType* initial_values = internal::createValues( max_values, -1 );
+  const IndexType* values = internal::createValues( max_values );
   
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray< vertex_stride, vertex > native_vertex;
-  EXPECT_FALSE( native_vertex.isExternal() );
-  EXPECT_FALSE( native_vertex.isInSidre() );
-  EXPECT_TRUE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_vertex( VERTEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-  ConnectivityArray< hex_stride, CellTypes::HEX > native_hex;
-  EXPECT_FALSE( native_hex.isExternal() );
-  EXPECT_FALSE( native_hex.isInSidre() );
-  EXPECT_TRUE( native_hex.empty() );
-  EXPECT_EQ( native_hex.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( native_hex.getGroup(), AXOM_NULLPTR );
-#endif
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_hex( HEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
   /* Append and set the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::set( native_vertex, n_IDs, initial_values, values );
-    internal::set( native_hex, n_IDs, initial_values, values );
-  }
-
-  /* Check that the values were appended and set properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::check_pointers( values, native_vertex[ cur_offset ], 
-                              n_IDs * vertex_stride, __LINE__ );
-    internal::check_pointers( values, native_hex[ cur_offset ], 
-                              n_IDs * hex_stride, __LINE__ );
-    cur_offset += n_IDs;
-  }
+  internal::testSet( native_vertex, max_IDs, initial_values, values );
+  internal::testSet( native_hex, max_IDs, initial_values, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_vertex.getNumberOfValues(), total_IDs * vertex_stride);
-
-  EXPECT_FALSE( native_hex.empty() );
-  EXPECT_EQ( native_hex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_hex.getNumberOfValues(), total_IDs * hex_stride);
+  internal::checkConnectivity( native_vertex, false, total_IDs, total_IDs * vertex_stride );
+  internal::checkConnectivity( native_hex, false, total_IDs, total_IDs * hex_stride );
 
   delete[] values;
   delete[] initial_values;
@@ -1382,73 +1219,36 @@ TEST( mint_connectivity_array, NoIndirectionNativeSet )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionExternalSet )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  IndexType* initial_values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-    initial_values[ i ] = -i;
-  }
+  const IndexType* initial_values = internal::createValues( max_values, -1 );
+  const IndexType* values = internal::createValues( max_values );
 
   /* Create the external storage ConnectivityArrays to be tested. */
   IndexType* ext_vertex_values = new IndexType[ total_IDs * vertex_stride ];
-  ConnectivityArray< vertex_stride, vertex > ext_vertex( 0, ext_vertex_values, 
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > ext_vertex( VERTEX, 0, ext_vertex_values, 
                                                          total_IDs );
-  EXPECT_TRUE( ext_vertex.isExternal() );
-  EXPECT_FALSE( ext_vertex.isInSidre() );
-  EXPECT_TRUE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), 0);
+  internal::checkConnectivity( ext_vertex, true, 0, 0, ext_vertex_values );
 
   IndexType* ext_hex_values = new IndexType[ total_IDs * hex_stride ];
-  ConnectivityArray< hex_stride, hex > ext_hex( 0, ext_hex_values, 
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > ext_hex( HEX, 0, ext_hex_values, 
                                                 total_IDs );
-  EXPECT_TRUE( ext_hex.isExternal() );
-  EXPECT_FALSE( ext_hex.isInSidre() );
-  EXPECT_TRUE( ext_hex.empty() );
-  EXPECT_EQ( ext_hex.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( ext_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( ext_hex.getGroup(), AXOM_NULLPTR );
-#endif
+  internal::checkConnectivity( ext_hex, true, 0, 0, ext_hex_values );
 
   /* Append and set the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::set( ext_vertex, n_IDs, initial_values, values );
-    internal::set( ext_hex, n_IDs, initial_values, values );
-  }
-
-  /* Check that the values were appended and set properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::check_pointers( values, ext_vertex[ cur_offset ], 
-                              n_IDs * vertex_stride, __LINE__ );
-    internal::check_pointers( values, ext_hex[ cur_offset ], 
-                              n_IDs * hex_stride, __LINE__ );
-    cur_offset += n_IDs;
-  }
+  internal::testSet( ext_vertex, max_IDs, initial_values, values );
+  internal::testSet( ext_hex, max_IDs, initial_values, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_vertex.getNumberOfValues(), total_IDs * vertex_stride);
+  internal::checkConnectivity( ext_vertex, true, total_IDs, total_IDs * vertex_stride, ext_vertex_values );
+  internal::checkConnectivity( ext_hex, true, total_IDs, total_IDs * hex_stride, ext_hex_values );
 
-  EXPECT_FALSE( ext_hex.empty() );
-  EXPECT_EQ( ext_hex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_hex.getNumberOfValues(), total_IDs * hex_stride);
+  /* Check that the external constructor functions properly. */
+  internal::checkExternalConstructor( ext_vertex );
+  internal::checkExternalConstructor( ext_hex );
 
   delete[] values;
   delete[] initial_values;
@@ -1460,86 +1260,40 @@ TEST( mint_connectivity_array, NoIndirectionExternalSet )
 TEST( mint_connectivity_array, NoIndirectionSidreSet )
 {
 #ifdef MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
 
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  IndexType* initial_values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-    initial_values[ i ] = -i;
-  }
+  const IndexType* initial_values = internal::createValues( max_values, -1 );
+  const IndexType* values = internal::createValues( max_values );
   
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  ConnectivityArray< vertex_stride, vertex > 
-                          sidre_vertex( root->createGroup( "vertex" ), "test" );
-  EXPECT_TRUE( sidre_vertex.isInSidre() );
-  EXPECT_FALSE( sidre_vertex.isExternal() );
-  EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-  EXPECT_TRUE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > 
+                          sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+  internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-  ConnectivityArray< hex_stride, hex >
-                          sidre_hex( root->createGroup( "hex" ), "test" );
-  EXPECT_TRUE( sidre_hex.isInSidre() );
-  EXPECT_FALSE( sidre_hex.isExternal() );
-  EXPECT_EQ( sidre_hex.getGroup(), root->getGroup( "hex") );
-  EXPECT_TRUE( sidre_hex.empty() );
-  EXPECT_EQ( sidre_hex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION >
+                          sidre_hex( HEX, root->createGroup( "hex" ), "test" );
+  internal::checkConnectivity( sidre_hex, 0, 0, root->getGroup( "hex" ) );
 
   /* Append and set the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::set( sidre_vertex, n_IDs, initial_values, values );
-    internal::set( sidre_hex, n_IDs, initial_values, values );
-  }
-
-  /* Check that the values were appended and set properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::check_pointers( values, sidre_vertex[ cur_offset ], 
-                              n_IDs * vertex_stride, __LINE__ );
-    internal::check_pointers( values, sidre_hex[ cur_offset ], 
-                              n_IDs * hex_stride, __LINE__ );
-    cur_offset += n_IDs;
-  }
+  internal::testSet( sidre_vertex, max_IDs, initial_values, values );
+  internal::testSet( sidre_hex, max_IDs, initial_values, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_vertex.getNumberOfValues(), total_IDs * vertex_stride);
-
-  EXPECT_FALSE( sidre_hex.empty() );
-  EXPECT_EQ( sidre_hex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_hex.getNumberOfValues(), total_IDs * hex_stride);
+  internal::checkConnectivity( sidre_vertex, total_IDs, total_IDs * vertex_stride, root->getGroup( "vertex" ) );
+  internal::checkConnectivity( sidre_hex, total_IDs, total_IDs * hex_stride, root->getGroup( "hex" ) );
 
   /* Check that restoring from sidre functions properly */
-  sidre::Group* vertex_group = 
-                        const_cast< sidre::Group* >( sidre_vertex.getGroup() );
-  ConnectivityArray< vertex_stride, vertex > sidre_vertex_cpy( vertex_group );
-  internal::check_equality( sidre_vertex, sidre_vertex_cpy, __LINE__ );
-
-  sidre::Group* hex_group = 
-                        const_cast< sidre::Group* >( sidre_hex.getGroup() );
-  ConnectivityArray< hex_stride, hex > sidre_hex_cpy( hex_group );
-  internal::check_equality( sidre_hex, sidre_hex_cpy, __LINE__ );
+  internal::checkSidreConstructor( sidre_vertex );
+  internal::checkSidreConstructor( sidre_hex );
 
   delete[] values;
   delete[] initial_values;
-
 #else
   EXPECT_TRUE( true );
 #endif  /* MINT_USE_SIDRE */
@@ -1548,106 +1302,36 @@ TEST( mint_connectivity_array, NoIndirectionSidreSet )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionNativeSet )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType max_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * max_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  IndexType* initial_values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-    initial_values[ i ] = -i;
-  }
 
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ max_IDs + 1 ];
-  CellTypes* types = new CellTypes[ max_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < max_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( max_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* initial_values = internal::createValues( max_values, -1 );
+  const IndexType* values = internal::createValues( max_values );
 
   /* Calculate the total number of IDs and values. */
-  constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
-  IndexType total_values = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
-    if (n_IDs % 2 == 1)
-    {
-      total_values += vertex_stride;
-    }
-  }
+  IndexType total_IDs;
+  IndexType total_values;
+  internal::calcTotalIDsAndValues( max_IDs, total_IDs, total_values );
   
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > native_vertex;
-  EXPECT_FALSE( native_vertex.isExternal() );
-  EXPECT_FALSE( native_vertex.isInSidre() );
-  EXPECT_TRUE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::INDIRECTION > native_vertex( VERTEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-  ConnectivityArray< NEED_INDIRECTION, mixed > native_mixed;
-  EXPECT_FALSE( native_mixed.isExternal() );
-  EXPECT_FALSE( native_mixed.isInSidre() );
-  EXPECT_TRUE( native_mixed.empty() );
-  EXPECT_EQ( native_mixed.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( native_mixed.getGroup(), AXOM_NULLPTR );
-#endif
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > native_mixed;
+  internal::checkConnectivity( native_mixed, false, 0, 0 );
 
   /* Append and set the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::set( native_vertex, n_IDs, initial_values, values, offsets );
-    internal::set( native_mixed, n_IDs, initial_values, values, offsets, types );
-  }
-
-  /* Check that the values were appended and set properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    for ( IndexType ID = 0; ID < n_IDs; ++ID )
-    {
-      const IndexType* cur_values = values + offsets[ ID ];
-      const IndexType n_values = offsets[ ID + 1 ] - offsets[ ID ];
-      internal::check_pointers( cur_values, native_vertex[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-      internal::check_pointers( cur_values, native_mixed[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-    }
-
-    cur_offset += n_IDs;
-  }
+  internal::testSet( native_vertex, max_IDs, initial_values, values, offsets );
+  internal::testSet( native_mixed, max_IDs, initial_values, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_vertex.getNumberOfValues(), total_values);
-
-  EXPECT_FALSE( native_mixed.empty() );
-  EXPECT_EQ( native_mixed.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( native_mixed.getNumberOfValues(), total_values);
+  internal::checkConnectivity( native_vertex, false, total_IDs, total_values );
+  internal::checkConnectivity( native_mixed, false, total_IDs, total_values );
 
   delete[] values;
   delete[] initial_values;
@@ -1658,115 +1342,49 @@ TEST( mint_connectivity_array, IndirectionNativeSet )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionExternalSet )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType max_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * max_IDs / 2;
-
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  IndexType* initial_values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-    initial_values[ i ] = -i;
-  }
 
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ max_IDs + 1 ];
-  CellTypes* types = new CellTypes[ max_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < max_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( max_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* initial_values = internal::createValues( max_values, -1 );
+  const IndexType* values = internal::createValues( max_values );
 
   /* Calculate the total number of IDs and values. */
-  constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
-  IndexType total_values = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
-    if (n_IDs % 2 == 1)
-    {
-      total_values += vertex_stride;
-    }
-  }
+  IndexType total_IDs;
+  IndexType total_values;
+  internal::calcTotalIDsAndValues( max_IDs, total_IDs, total_values );
   
   /* Create the external storage ConnectivityArrays to be tested. */
   IndexType* ext_vertex_values = new IndexType[ total_values ];
   IndexType* ext_vertex_offsets = new IndexType[ total_IDs + 1 ];
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-                          ext_vertex( 0, ext_vertex_values, ext_vertex_offsets,
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+                          ext_vertex( VERTEX, 0, ext_vertex_values, ext_vertex_offsets,
                                       total_IDs, total_values );
-  EXPECT_TRUE( ext_vertex.isExternal() );
-  EXPECT_FALSE( ext_vertex.isInSidre() );
-  EXPECT_TRUE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), 0);
+  internal::checkConnectivity( ext_vertex, true, 0, 0, ext_vertex_values, ext_vertex_offsets );
 
   IndexType* ext_mixed_values = new IndexType[ total_IDs * hex_stride ];
   IndexType* ext_mixed_offsets = new IndexType[ total_IDs + 1 ];
-  CellTypes* ext_mixed_types = new CellTypes[ total_IDs ];
-  ConnectivityArray< NEED_INDIRECTION, mixed > 
+  CellType* ext_mixed_types = new CellType[ total_IDs ];
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > 
                           ext_mixed( 0, ext_mixed_values, ext_mixed_offsets, 
                                      ext_mixed_types, total_IDs, total_values );
-  EXPECT_TRUE( ext_mixed.isExternal() );
-  EXPECT_FALSE( ext_mixed.isInSidre() );
-  EXPECT_TRUE( ext_mixed.empty() );
-  EXPECT_EQ( ext_mixed.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( ext_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( ext_mixed.getGroup(), AXOM_NULLPTR );
-#endif
+  internal::checkConnectivity( ext_mixed, true, 0, 0, ext_mixed_values, ext_mixed_offsets, ext_mixed_types );
 
   /* Append and set the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::set( ext_vertex, n_IDs, initial_values, values, offsets );
-    internal::set( ext_mixed, n_IDs, initial_values, values, offsets, types );
-  }
-
-  /* Check that the values were appended and set properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    for ( IndexType ID = 0; ID < n_IDs; ++ID )
-    {
-      const IndexType* cur_values = values + offsets[ ID ];
-      const IndexType n_values = offsets[ ID + 1 ] - offsets[ ID ];
-      internal::check_pointers( cur_values, ext_vertex[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-      internal::check_pointers( cur_values, ext_mixed[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-    }
-
-    cur_offset += n_IDs;
-  }
+  internal::testSet( ext_vertex, max_IDs, initial_values, values, offsets );
+  internal::testSet( ext_mixed, max_IDs, initial_values, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_vertex.getNumberOfValues(), total_values);
+  internal::checkConnectivity( ext_vertex, true, total_IDs, total_values, ext_vertex_values, ext_vertex_offsets );
+  internal::checkConnectivity( ext_mixed, true, total_IDs, total_values, ext_mixed_values, ext_mixed_offsets, ext_mixed_types );
 
-  EXPECT_FALSE( ext_mixed.empty() );
-  EXPECT_EQ( ext_mixed.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( ext_mixed.getNumberOfValues(), total_values);
+  /* Check that the external constructor functions properly. */
+  internal::checkExternalConstructor( ext_vertex );
+  internal::checkExternalConstructor( ext_mixed );
 
   delete[] values;
   delete[] offsets;
@@ -1785,118 +1403,42 @@ TEST( mint_connectivity_array, IndirectionSidreSet )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType max_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * max_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  IndexType* initial_values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-    initial_values[ i ] = -i;
-  }
 
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ max_IDs + 1 ];
-  CellTypes* types = new CellTypes[ max_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < max_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( max_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* initial_values = internal::createValues( max_values, -1 );
+  const IndexType* values = internal::createValues( max_values );
 
   /* Calculate the total number of IDs and values. */
-  constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
-  IndexType total_values = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    total_values += (n_IDs / 2) * (vertex_stride + hex_stride);
-    if (n_IDs % 2 == 1)
-    {
-      total_values += vertex_stride;
-    }
-  }
+  IndexType total_IDs;
+  IndexType total_values;
+  internal::calcTotalIDsAndValues( max_IDs, total_IDs, total_values );
 
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-                          sidre_vertex( root->createGroup( "vertex" ), "test" );
-  EXPECT_TRUE( sidre_vertex.isInSidre() );
-  EXPECT_FALSE( sidre_vertex.isExternal() );
-  EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-  EXPECT_TRUE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+                          sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+  internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-  ConnectivityArray< NEED_INDIRECTION, mixed >
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
                           sidre_mixed( root->createGroup( "mixed" ), "test" );
-  EXPECT_TRUE( sidre_mixed.isInSidre() );
-  EXPECT_FALSE( sidre_mixed.isExternal() );
-  EXPECT_EQ( sidre_mixed.getGroup(), root->getGroup( "mixed" ) );
-  EXPECT_TRUE( sidre_mixed.empty() );
-  EXPECT_EQ( sidre_mixed.getNumberOfIDs(), 0);
-
-
+  internal::checkConnectivity( sidre_mixed, 0, 0, root->getGroup( "mixed" ) );
 
   /* Append and set the values */
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    internal::set( sidre_vertex, n_IDs, initial_values, values, offsets );
-    internal::set( sidre_mixed, n_IDs, initial_values, values, offsets, types );
-  }
-
-  /* Check that the values were appended and set properly */
-  IndexType cur_offset = 0;
-  for ( IndexType n_IDs = 1; n_IDs <= max_IDs; ++n_IDs )
-  {
-    for ( IndexType ID = 0; ID < n_IDs; ++ID )
-    {
-      const IndexType* cur_values = values + offsets[ ID ];
-      const IndexType n_values = offsets[ ID + 1 ] - offsets[ ID ];
-      internal::check_pointers( cur_values, sidre_vertex[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-      internal::check_pointers( cur_values, sidre_mixed[ cur_offset + ID ], 
-                                n_values, __LINE__ );
-    }
-
-    cur_offset += n_IDs;
-  }
+  internal::testSet( sidre_vertex, max_IDs, initial_values, values, offsets );
+  internal::testSet( sidre_mixed, max_IDs, initial_values, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_vertex.getNumberOfValues(), total_values);
-
-  EXPECT_FALSE( sidre_mixed.empty() );
-  EXPECT_EQ( sidre_mixed.getNumberOfIDs(), total_IDs);
-  EXPECT_EQ( sidre_mixed.getNumberOfValues(), total_values);
+  internal::checkConnectivity( sidre_vertex, total_IDs, total_values, root->getGroup( "vertex" ) );
+  internal::checkConnectivity( sidre_mixed, total_IDs, total_values, root->getGroup( "mixed" ) );
 
   /* Check that restoring from sidre functions properly */
-  sidre::Group* vertex_group = 
-                        const_cast< sidre::Group* >( sidre_vertex.getGroup() );
-  ConnectivityArray< NEED_INDIRECTION, vertex > sidre_vertex_cpy( vertex_group );
-  internal::check_equality( sidre_vertex, sidre_vertex_cpy, __LINE__ );
-
-  sidre::Group* mixed_group = 
-                        const_cast< sidre::Group* >( sidre_mixed.getGroup() );
-  ConnectivityArray< NEED_INDIRECTION, mixed > sidre_mixed_cpy( mixed_group );
-  internal::check_equality( sidre_mixed, sidre_mixed_cpy, __LINE__ );
+  internal::checkSidreConstructor( sidre_vertex );
+  internal::checkSidreConstructor( sidre_mixed );
 
   delete[] values;
   delete[] initial_values;
@@ -1916,52 +1458,26 @@ TEST( mint_connectivity_array, IndirectionSidreSet )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionNativeInsert )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr IndexType n_IDs = 500 * 6;
-  constexpr IndexType n_values = hex_stride * n_IDs;
+  constexpr IndexType total_IDs = 500 * 6;
+  constexpr IndexType max_values = hex_stride * total_IDs;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ n_values ];
-  for ( IndexType i = 0; i < n_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
   
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray< vertex_stride, vertex > native_vertex;
-  EXPECT_FALSE( native_vertex.isExternal() );
-  EXPECT_FALSE( native_vertex.isInSidre() );
-  EXPECT_TRUE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_vertex( VERTEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-  ConnectivityArray< hex_stride, CellTypes::HEX > native_hex;
-  EXPECT_FALSE( native_hex.isExternal() );
-  EXPECT_FALSE( native_hex.isInSidre() );
-  EXPECT_TRUE( native_hex.empty() );
-  EXPECT_EQ( native_hex.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( native_hex.getGroup(), AXOM_NULLPTR );
-#endif
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_hex( HEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
   /* Insert the values */
-  internal::insert( native_vertex, n_IDs, values );
-  internal::insert( native_hex, n_IDs, values );
+  internal::testInsert( native_vertex, total_IDs, values );
+  internal::testInsert( native_hex, total_IDs, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( native_vertex.getNumberOfValues(), n_IDs * vertex_stride);
-
-  EXPECT_FALSE( native_hex.empty() );
-  EXPECT_EQ( native_hex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( native_hex.getNumberOfValues(), n_IDs * hex_stride);
+  internal::checkConnectivity( native_vertex, false, total_IDs, total_IDs * vertex_stride );
+  internal::checkConnectivity( native_hex, false, total_IDs, total_IDs * hex_stride );
 
   delete[] values;
 }
@@ -1969,60 +1485,38 @@ TEST( mint_connectivity_array, NoIndirectionNativeInsert )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, NoIndirectionExternalInsert )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr IndexType n_IDs = 500 * 6;
-  constexpr IndexType n_values = hex_stride * n_IDs;
+  constexpr IndexType total_IDs = 500 * 6;
+  constexpr IndexType max_values = hex_stride * total_IDs;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ n_values ];
-  for ( IndexType i = 0; i < n_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
 
   /* Create the external storage ConnectivityArrays to be tested. */
-  IndexType* ext_vertex_values = new IndexType[ n_IDs * vertex_stride ];
-  ConnectivityArray< vertex_stride, vertex > ext_vertex( 0, ext_vertex_values, 
-                                                         n_IDs );
-  EXPECT_TRUE( ext_vertex.isExternal() );
-  EXPECT_FALSE( ext_vertex.isInSidre() );
-  EXPECT_TRUE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), 0);
+  IndexType* ext_vertex_values = new IndexType[ total_IDs * vertex_stride ];
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > ext_vertex( VERTEX, 0, ext_vertex_values, 
+                                                         total_IDs );
+  internal::checkConnectivity( ext_vertex, true, 0, 0, ext_vertex_values );
 
-  IndexType* ext_hex_values = new IndexType[ n_IDs * hex_stride ];
-  ConnectivityArray< hex_stride, hex > ext_hex( 0, ext_hex_values, 
-                                                n_IDs );
-  EXPECT_TRUE( ext_hex.isExternal() );
-  EXPECT_FALSE( ext_hex.isInSidre() );
-  EXPECT_TRUE( ext_hex.empty() );
-  EXPECT_EQ( ext_hex.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( ext_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( ext_hex.getGroup(), AXOM_NULLPTR );
-#endif
+  IndexType* ext_hex_values = new IndexType[ total_IDs * hex_stride ];
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > ext_hex( HEX, 0, ext_hex_values, 
+                                                total_IDs );
+  internal::checkConnectivity( ext_hex, true, 0, 0, ext_hex_values );
 
   /* Insert the values */
-  internal::insert( ext_vertex, n_IDs, values );
-  internal::insert( ext_hex, n_IDs, values );
+  internal::testInsert( ext_vertex, total_IDs, values );
+  internal::testInsert( ext_hex, total_IDs, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( ext_vertex.getNumberOfValues(), n_IDs * vertex_stride);
-
-  EXPECT_FALSE( ext_hex.empty() );
-  EXPECT_EQ( ext_hex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( ext_hex.getNumberOfValues(), n_IDs * hex_stride);
+  internal::checkConnectivity( ext_vertex, true, total_IDs, total_IDs * vertex_stride, ext_vertex_values );
+  internal::checkConnectivity( ext_hex, true, total_IDs, total_IDs * hex_stride, ext_hex_values );
 
   /* Check that the external ConnectivityArrays cannot insert any more. */
   EXPECT_DEATH_IF_SUPPORTED( ext_vertex.insert( values, 0 ), IGNORE_OUTPUT ); 
-  EXPECT_DEATH_IF_SUPPORTED( ext_hex.insert( values, 0 ), IGNORE_OUTPUT ); 
+  EXPECT_DEATH_IF_SUPPORTED( ext_hex.insert( values, 0 ), IGNORE_OUTPUT );
+
+  /* Check that the external constructor functions properly. */
+  internal::checkExternalConstructor( ext_vertex );
+  internal::checkExternalConstructor( ext_hex );
 
   delete[] values;
   delete[] ext_vertex_values;
@@ -2036,65 +1530,34 @@ TEST( mint_connectivity_array, NoIndirectionSidreInsert )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr IndexType n_IDs = 500 * 6;
-  constexpr IndexType n_values = hex_stride * n_IDs;
+  constexpr IndexType total_IDs = 500 * 6;
+  constexpr IndexType max_values = hex_stride * total_IDs;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ n_values ];
-  for ( IndexType i = 0; i < n_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
   
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  ConnectivityArray< vertex_stride, vertex > 
-                          sidre_vertex( root->createGroup( "vertex" ), "test" );
-  EXPECT_TRUE( sidre_vertex.isInSidre() );
-  EXPECT_FALSE( sidre_vertex.isExternal() );
-  EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-  EXPECT_TRUE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION > 
+                          sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+  internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-  ConnectivityArray< hex_stride, hex >
-                          sidre_hex( root->createGroup( "hex" ), "test" );
-  EXPECT_TRUE( sidre_hex.isInSidre() );
-  EXPECT_FALSE( sidre_hex.isExternal() );
-  EXPECT_EQ( sidre_hex.getGroup(), root->getGroup( "hex") );
-  EXPECT_TRUE( sidre_hex.empty() );
-  EXPECT_EQ( sidre_hex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::NO_INDIRECTION >
+                          sidre_hex( HEX, root->createGroup( "hex" ), "test" );
+  internal::checkConnectivity( sidre_hex, 0, 0, root->getGroup( "hex" ) );
 
   /* Insert the values */
-  internal::insert( sidre_vertex, n_IDs, values );
-  internal::insert( sidre_hex, n_IDs, values );
+  internal::testInsert( sidre_vertex, total_IDs, values );
+  internal::testInsert( sidre_hex, total_IDs, values );
 
   /* Check that the number of IDs is correct. */
-  EXPECT_FALSE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( sidre_vertex.getNumberOfValues(), n_IDs * vertex_stride);
-
-  EXPECT_FALSE( sidre_hex.empty() );
-  EXPECT_EQ( sidre_hex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( sidre_hex.getNumberOfValues(), n_IDs * hex_stride);
+  internal::checkConnectivity( sidre_vertex, total_IDs, total_IDs * vertex_stride, root->getGroup( "vertex" ) );
+  internal::checkConnectivity( sidre_hex, total_IDs, total_IDs * hex_stride, root->getGroup( "hex" ) );
 
   /* Check that restoring from sidre functions properly */
-  sidre::Group* vertex_group = 
-                        const_cast< sidre::Group* >( sidre_vertex.getGroup() );
-  ConnectivityArray< vertex_stride, vertex > sidre_vertex_cpy( vertex_group );
-  internal::check_equality( sidre_vertex, sidre_vertex_cpy, __LINE__ );
-
-  sidre::Group* hex_group = 
-                        const_cast< sidre::Group* >( sidre_hex.getGroup() );
-  ConnectivityArray< hex_stride, hex > sidre_hex_cpy( hex_group );
-  internal::check_equality( sidre_hex, sidre_hex_cpy, __LINE__ );
+  internal::checkSidreConstructor( sidre_vertex );
+  internal::checkSidreConstructor( sidre_hex );
 
   delete[] values;
-
 #else
   EXPECT_TRUE( true );
 #endif  /* MINT_USE_SIDRE */
@@ -2103,72 +1566,29 @@ TEST( mint_connectivity_array, NoIndirectionSidreInsert )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionNativeInsert )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
+  constexpr IndexType total_IDs = 500 * 6;
   
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
-  constexpr IndexType n_IDs = 500 * 6;
-  constexpr IndexType n_values = (vertex_stride + hex_stride) * n_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ n_values ];
-  for ( IndexType i = 0; i < n_values; ++i )
-  {
-    values[ i ] = i;
-  }
-
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ n_IDs + 1 ];
-  CellTypes* types = new CellTypes[ n_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < n_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
-  
+  IndexType* offsets;
+  CellType* types;
+  const IndexType total_values = internal::createOffsetsAndTypes( total_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( total_values );
+
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > native_vertex;
-  EXPECT_FALSE( native_vertex.isExternal() );
-  EXPECT_FALSE( native_vertex.isInSidre() );
-  EXPECT_TRUE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::INDIRECTION > native_vertex( VERTEX );
+  internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-  ConnectivityArray< NEED_INDIRECTION, mixed > native_mixed;
-  EXPECT_FALSE( native_mixed.isExternal() );
-  EXPECT_FALSE( native_mixed.isInSidre() );
-  EXPECT_TRUE( native_mixed.empty() );
-  EXPECT_EQ( native_mixed.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( native_mixed.getGroup(), AXOM_NULLPTR );
-#endif
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > native_mixed;
+  internal::checkConnectivity( native_mixed, false, 0, 0 );
 
   /* Insert the values. */
-  internal::insert( native_vertex, n_IDs, values, offsets );
-  internal::insert( native_mixed, n_IDs, values, offsets, types );
+  internal::testInsert( native_vertex, total_IDs, values, offsets );
+  internal::testInsert( native_mixed, total_IDs, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( native_vertex.empty() );
-  EXPECT_EQ( native_vertex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( native_vertex.getNumberOfValues(), n_values);
-
-  EXPECT_FALSE( native_mixed.empty() );
-  EXPECT_EQ( native_mixed.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( native_mixed.getNumberOfValues(), n_values);
+  internal::checkConnectivity( native_vertex, false, total_IDs, total_values );
 
   delete[] values;
   delete[] offsets;
@@ -2178,86 +1598,49 @@ TEST( mint_connectivity_array, IndirectionNativeInsert )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, IndirectionExternalInsert )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
+  constexpr IndexType total_IDs = 500 * 6;
   
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
-  constexpr IndexType n_IDs = 500 * 6;
-  constexpr IndexType n_values = (vertex_stride + hex_stride) * n_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ n_values ];
-  for ( IndexType i = 0; i < n_values; ++i )
-  {
-    values[ i ] = i;
-  }
-
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ n_IDs + 1 ];
-  CellTypes* types = new CellTypes[ n_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < n_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType total_values = internal::createOffsetsAndTypes( total_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( total_values );
   
   /* Create the external storage ConnectivityArrays to be tested. */
-  IndexType* ext_vertex_values = new IndexType[ n_values ];
-  IndexType* ext_vertex_offsets = new IndexType[ n_IDs + 1 ];
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-                          ext_vertex( 0, ext_vertex_values, ext_vertex_offsets,
-                                      n_IDs, n_values );
-  EXPECT_TRUE( ext_vertex.isExternal() );
-  EXPECT_FALSE( ext_vertex.isInSidre() );
-  EXPECT_TRUE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), 0);
+  IndexType* ext_vertex_values = new IndexType[ total_values ];
+  IndexType* ext_vertex_offsets = new IndexType[ total_IDs + 1 ];
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+                          ext_vertex( VERTEX, 0, ext_vertex_values, ext_vertex_offsets,
+                                      total_IDs, total_values );
+  internal::checkConnectivity( ext_vertex, true, 0, 0, ext_vertex_values, ext_vertex_offsets );
 
-  IndexType* ext_mixed_values = new IndexType[ n_IDs * hex_stride ];
-  IndexType* ext_mixed_offsets = new IndexType[ n_IDs + 1 ];
-  CellTypes* ext_mixed_types = new CellTypes[ n_IDs ];
-  ConnectivityArray< NEED_INDIRECTION, mixed > 
+  IndexType* ext_mixed_values = new IndexType[ total_IDs * hex_stride ];
+  IndexType* ext_mixed_offsets = new IndexType[ total_IDs + 1 ];
+  CellType* ext_mixed_types = new CellType[ total_IDs ];
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > 
                           ext_mixed( 0, ext_mixed_values, ext_mixed_offsets, 
-                                     ext_mixed_types, n_IDs, n_values );
-  EXPECT_TRUE( ext_mixed.isExternal() );
-  EXPECT_FALSE( ext_mixed.isInSidre() );
-  EXPECT_TRUE( ext_mixed.empty() );
-  EXPECT_EQ( ext_mixed.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-  EXPECT_EQ( ext_vertex.getGroup(), AXOM_NULLPTR );
-  EXPECT_EQ( ext_mixed.getGroup(), AXOM_NULLPTR );
-#endif
+                                     ext_mixed_types, total_IDs, total_values );
+  internal::checkConnectivity( ext_mixed, true, 0, 0, ext_mixed_values, ext_mixed_offsets, ext_mixed_types );
 
   /* Insert the values. */
-  internal::insert( ext_vertex, n_IDs, values, offsets );
-  internal::insert( ext_mixed, n_IDs, values, offsets, types );
+  internal::testInsert( ext_vertex, total_IDs, values, offsets );
+  internal::testInsert( ext_mixed, total_IDs, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( ext_vertex.empty() );
-  EXPECT_EQ( ext_vertex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( ext_vertex.getNumberOfValues(), n_values);
+  internal::checkConnectivity( ext_vertex, true, total_IDs, total_values, ext_vertex_values, ext_vertex_offsets );
+  internal::checkConnectivity( ext_mixed, true, total_IDs, total_values, ext_mixed_values, ext_mixed_offsets, ext_mixed_types );
 
-  EXPECT_FALSE( ext_mixed.empty() );
-  EXPECT_EQ( ext_mixed.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( ext_mixed.getNumberOfValues(), n_values);
 
   /* Check that the external ConnectivityArrays cannot append any more. */
   EXPECT_DEATH_IF_SUPPORTED( ext_vertex.insert( values, 0, 1 ), IGNORE_OUTPUT ); 
-  EXPECT_DEATH_IF_SUPPORTED( ext_mixed.insert( values,  0, 1, vertex ), 
-                             IGNORE_OUTPUT ); 
+  EXPECT_DEATH_IF_SUPPORTED( ext_mixed.insert( values,  0, 1, VERTEX ), 
+                             IGNORE_OUTPUT );
+
+  /* Check that the external constructor functions properly. */
+  internal::checkExternalConstructor( ext_vertex );
+  internal::checkExternalConstructor( ext_mixed );
 
   delete[] values;
   delete[] offsets;
@@ -2276,87 +1659,40 @@ TEST( mint_connectivity_array, IndirectionSidreInsert )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
+  constexpr IndexType total_IDs = 500 * 6;
   
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
-  constexpr IndexType n_IDs = 500 * 6;
-  constexpr IndexType n_values = (vertex_stride + hex_stride) * n_IDs / 2;
-  
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ n_values ];
-  for ( IndexType i = 0; i < n_values; ++i )
-  {
-    values[ i ] = i;
-  }
-
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ n_IDs + 1 ];
-  CellTypes* types = new CellTypes[ n_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < n_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType total_values = internal::createOffsetsAndTypes( total_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( total_values );
 
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  ConnectivityArray< NEED_INDIRECTION, vertex > 
-                          sidre_vertex( root->createGroup( "vertex" ), "test" );
-  EXPECT_TRUE( sidre_vertex.isInSidre() );
-  EXPECT_FALSE( sidre_vertex.isExternal() );
-  EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-  EXPECT_TRUE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+  ConnectivityArray< ConnectivityType::INDIRECTION > 
+                          sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+  internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-  ConnectivityArray< NEED_INDIRECTION, mixed >
+  ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
                           sidre_mixed( root->createGroup( "mixed" ), "test" );
-  EXPECT_TRUE( sidre_mixed.isInSidre() );
-  EXPECT_FALSE( sidre_mixed.isExternal() );
-  EXPECT_EQ( sidre_mixed.getGroup(), root->getGroup( "mixed" ) );
-  EXPECT_TRUE( sidre_mixed.empty() );
-  EXPECT_EQ( sidre_mixed.getNumberOfIDs(), 0);
+  internal::checkConnectivity( sidre_mixed, 0, 0, root->getGroup( "mixed" ) );
 
   /* Insert the values */
-  internal::insert( sidre_vertex, n_IDs, values, offsets );
-  internal::insert( sidre_mixed, n_IDs, values, offsets, types );
+  internal::testInsert( sidre_vertex, total_IDs, values, offsets );
+  internal::testInsert( sidre_mixed, total_IDs, values, offsets, types );
 
   /* Check that the number of IDs and values is correct. */
-  EXPECT_FALSE( sidre_vertex.empty() );
-  EXPECT_EQ( sidre_vertex.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( sidre_vertex.getNumberOfValues(), n_values);
-
-  EXPECT_FALSE( sidre_mixed.empty() );
-  EXPECT_EQ( sidre_mixed.getNumberOfIDs(), n_IDs);
-  EXPECT_EQ( sidre_mixed.getNumberOfValues(), n_values);
+  internal::checkConnectivity( sidre_vertex, total_IDs, total_values, root->getGroup( "vertex" ) );
+  internal::checkConnectivity( sidre_mixed, total_IDs, total_values, root->getGroup( "mixed" ) );
 
   /* Check that restoring from sidre functions properly */
-  sidre::Group* vertex_group = 
-                        const_cast< sidre::Group* >( sidre_vertex.getGroup() );
-  ConnectivityArray< NEED_INDIRECTION, vertex > sidre_vertex_cpy( vertex_group );
-  internal::check_equality( sidre_vertex, sidre_vertex_cpy, __LINE__ );
-
-  sidre::Group* mixed_group = 
-                        const_cast< sidre::Group* >( sidre_mixed.getGroup() );
-  ConnectivityArray< NEED_INDIRECTION, mixed > sidre_mixed_cpy( mixed_group );
-  internal::check_equality( sidre_mixed, sidre_mixed_cpy, __LINE__ );
+  internal::checkSidreConstructor( sidre_vertex );
+  internal::checkSidreConstructor( sidre_mixed );
 
   delete[] values;
   delete[] offsets;
   delete[] types;
-
 #else
   EXPECT_TRUE( true );
 #endif  /* MINT_USE_SIDRE */
@@ -2370,64 +1706,42 @@ TEST( mint_connectivity_array, IndirectionSidreInsert )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, NoIndirectionNativeCapacity )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType n_IDs = 100;
   constexpr IndexType max_values = hex_stride * n_IDs;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
   
   for ( double ratio = 0.75; ratio <= 3.0; ratio += 0.25 )
   {
     /* Create the native storage ConnectivityArrays to be tested. */
-    ConnectivityArray< vertex_stride, vertex > native_vertex;
+    ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_vertex( VERTEX );
     native_vertex.setResizeRatio( ratio );
-    EXPECT_FALSE( native_vertex.isExternal() );
-    EXPECT_FALSE( native_vertex.isInSidre() );
-    EXPECT_TRUE( native_vertex.empty() );
-    EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+    internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-    ConnectivityArray< hex_stride, CellTypes::HEX > native_hex;
+    ConnectivityArray< ConnectivityType::NO_INDIRECTION > native_hex( HEX );
     native_hex.setResizeRatio( ratio );
-    EXPECT_FALSE( native_hex.isExternal() );
-    EXPECT_FALSE( native_hex.isInSidre() );
-    EXPECT_TRUE( native_hex.empty() );
-    EXPECT_EQ( native_hex.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-    EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-    EXPECT_EQ( native_hex.getGroup(), AXOM_NULLPTR );
-#endif
+    internal::checkConnectivity( native_vertex, false, 0, 0 );
 
     /* Append the values */
     if ( ratio < 1.0 )
     {
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( native_vertex, n_IDs, values ), 
+        internal::testCapacity( native_vertex, n_IDs, values ), 
         IGNORE_OUTPUT );
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( native_hex, n_IDs, values ), 
+        internal::testCapacity( native_hex, n_IDs, values ), 
         IGNORE_OUTPUT );
     }
     else
     {
-      internal::append_capacity( native_vertex, n_IDs, values );
-      internal::append_capacity( native_hex, n_IDs, values );
+      internal::testCapacity( native_vertex, n_IDs, values );
+      internal::testCapacity( native_hex, n_IDs, values );
     }
   }
 
   delete[] values;
 }
-
 
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, NoIndirectionSidreCapacity )
@@ -2436,57 +1750,39 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionSidreCapacity )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
   constexpr IndexType n_IDs = 100;
   constexpr IndexType max_values = hex_stride * n_IDs;
 
   /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
+  const IndexType* values = internal::createValues( max_values );
   
   for ( double ratio = 0.75; ratio <= 3.0; ratio += 0.25 )
   {
-    /* Create the sidre storage ConnectivityArrays to be tested. */
-    ConnectivityArray< vertex_stride, vertex > 
-                            sidre_vertex( root->createGroup( "vertex" ), "test" );
+      /* Create the sidre storage ConnectivityArrays to be tested. */
+    ConnectivityArray< ConnectivityType::NO_INDIRECTION > 
+                            sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
     sidre_vertex.setResizeRatio( ratio );
-    EXPECT_TRUE( sidre_vertex.isInSidre() );
-    EXPECT_FALSE( sidre_vertex.isExternal() );
-    EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-    EXPECT_TRUE( sidre_vertex.empty() );
-    EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+    internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-    ConnectivityArray< hex_stride, hex >
-                            sidre_hex( root->createGroup( "hex" ), "test" );
+    ConnectivityArray< ConnectivityType::NO_INDIRECTION >
+                            sidre_hex( HEX, root->createGroup( "hex" ), "test" );
     sidre_hex.setResizeRatio( ratio );
-    EXPECT_TRUE( sidre_hex.isInSidre() );
-    EXPECT_FALSE( sidre_hex.isExternal() );
-    EXPECT_EQ( sidre_hex.getGroup(), root->getGroup( "hex") );
-    EXPECT_TRUE( sidre_hex.empty() );
-    EXPECT_EQ( sidre_hex.getNumberOfIDs(), 0);
+    internal::checkConnectivity( sidre_hex, 0, 0, root->getGroup( "hex" ) );
 
     /* Append the values */
     if ( ratio < 1.0 )
     {
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( sidre_vertex, n_IDs, values ), 
+        internal::testCapacity( sidre_vertex, n_IDs, values ), 
         IGNORE_OUTPUT );
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( sidre_hex, n_IDs, values ), 
+        internal::testCapacity( sidre_hex, n_IDs, values ), 
         IGNORE_OUTPUT );
     }
     else
     {
-      internal::append_capacity( sidre_vertex, n_IDs, values );
-      internal::append_capacity( sidre_hex, n_IDs, values );
+      internal::testCapacity( sidre_vertex, n_IDs, values );
+      internal::testCapacity( sidre_hex, n_IDs, values );
     }
 
     root->destroyGroups();
@@ -2501,78 +1797,41 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionSidreCapacity )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, IndirectionNativeCapacity )
 {
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType n_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * n_IDs / 2;
   
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
-
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ n_IDs + 1 ];
-  CellTypes* types = new CellTypes[ n_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < n_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( n_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( max_values );
   
   for ( double ratio = 0.75; ratio <= 3.0; ratio += 0.25 )
   {
     /* Create the native storage ConnectivityArrays to be tested. */
-    ConnectivityArray< NEED_INDIRECTION, vertex > native_vertex;
+    ConnectivityArray< ConnectivityType::INDIRECTION > native_vertex( VERTEX );
     native_vertex.setResizeRatio( ratio );
-    EXPECT_FALSE( native_vertex.isExternal() );
-    EXPECT_FALSE( native_vertex.isInSidre() );
-    EXPECT_TRUE( native_vertex.empty() );
-    EXPECT_EQ( native_vertex.getNumberOfIDs(), 0);
+    internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-    ConnectivityArray< NEED_INDIRECTION, mixed > native_mixed;
+    ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > native_mixed;
     native_mixed.setResizeRatio( ratio );
-    EXPECT_FALSE( native_mixed.isExternal() );
-    EXPECT_FALSE( native_mixed.isInSidre() );
-    EXPECT_TRUE( native_mixed.empty() );
-    EXPECT_EQ( native_mixed.getNumberOfIDs(), 0);
-
-#ifdef MINT_USE_SIDRE
-    EXPECT_EQ( native_vertex.getGroup(), AXOM_NULLPTR );
-    EXPECT_EQ( native_mixed.getGroup(), AXOM_NULLPTR );
-#endif
+    internal::checkConnectivity( native_mixed, false, 0, 0 );
 
     /* Append the values */
     if ( ratio < 1.0 )
     {
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( native_vertex, n_IDs, values, offsets ), 
+        internal::testCapacity( native_vertex, n_IDs, values, offsets ), 
         IGNORE_OUTPUT );
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( native_mixed, n_IDs, values, offsets, types ), 
+        internal::testCapacity( native_mixed, n_IDs, values, offsets, types ), 
         IGNORE_OUTPUT );
     }
     else
     {
-      internal::append_capacity( native_vertex, n_IDs, values, offsets );
-      internal::append_capacity( native_mixed, n_IDs, values, offsets, types );
+      internal::testCapacity( native_vertex, n_IDs, values, offsets );
+      internal::testCapacity( native_mixed, n_IDs, values, offsets, types );
     }
   }
 
@@ -2588,77 +1847,43 @@ TEST( mint_connectivity_array_DeathTest, IndirectionSidreCapacity )
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
-  constexpr CellTypes vertex = CellTypes::VERTEX;
-  constexpr IndexType vertex_stride = cell_info< vertex >::num_nodes;
-  
-  constexpr CellTypes hex = CellTypes::HEX;
-  constexpr IndexType hex_stride = cell_info< hex >::num_nodes;
-
-  constexpr CellTypes mixed = CellTypes::MIXED;
-
   constexpr IndexType n_IDs = 100;
-  constexpr IndexType max_values = (vertex_stride + hex_stride) * n_IDs / 2;
   
-  /* Allocate and populate the values buffer. */
-  IndexType* values = new IndexType[ max_values ];
-  for ( IndexType i = 0; i < max_values; ++i )
-  {
-    values[ i ] = i;
-  }
-
   /* Allocate and populate the types and offsets buffer. */
-  IndexType* offsets = new IndexType[ n_IDs + 1 ];
-  CellTypes* types = new CellTypes[ n_IDs ];
-  offsets[ 0 ] = 0;
-  for ( IndexType i = 0; i < n_IDs; ++i ) 
-  {
-    if ( i % 2 == 0 )
-    {
-      types[ i ] = vertex;
-      offsets[ i + 1 ] = offsets[ i ] + vertex_stride;
-    }
-    else
-    {
-      types[ i ] = hex;
-      offsets[ i + 1 ] = offsets[ i ] + hex_stride;
-    }
-  }
+  IndexType* offsets;
+  CellType* types;
+  const IndexType max_values = internal::createOffsetsAndTypes( n_IDs, offsets, types );
+
+  /* Allocate and populate the values buffer. */
+  const IndexType* values = internal::createValues( max_values );
 
   for ( double ratio = 0.75; ratio <= 3.0; ratio += 0.25 )
   {
     /* Create the sidre storage ConnectivityArrays to be tested. */
-    ConnectivityArray< NEED_INDIRECTION, vertex > 
-                            sidre_vertex( root->createGroup( "vertex" ), "test" );
+    ConnectivityArray< ConnectivityType::INDIRECTION > 
+                            sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
     sidre_vertex.setResizeRatio( ratio );
-    EXPECT_TRUE( sidre_vertex.isInSidre() );
-    EXPECT_FALSE( sidre_vertex.isExternal() );
-    EXPECT_EQ( sidre_vertex.getGroup(), root->getGroup( "vertex" ) );
-    EXPECT_TRUE( sidre_vertex.empty() );
-    EXPECT_EQ( sidre_vertex.getNumberOfIDs(), 0);
+    internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
-    ConnectivityArray< NEED_INDIRECTION, mixed >
+    ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
                             sidre_mixed( root->createGroup( "mixed" ), "test" );
     sidre_mixed.setResizeRatio( ratio );
-    EXPECT_TRUE( sidre_mixed.isInSidre() );
-    EXPECT_FALSE( sidre_mixed.isExternal() );
-    EXPECT_EQ( sidre_mixed.getGroup(), root->getGroup( "mixed" ) );
-    EXPECT_TRUE( sidre_mixed.empty() );
-    EXPECT_EQ( sidre_mixed.getNumberOfIDs(), 0);
+    internal::checkConnectivity( sidre_mixed, 0, 0, root->getGroup( "mixed" ) );
 
     /* Append the values */
     if ( ratio < 1.0 )
     {
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( sidre_vertex, n_IDs, values, offsets ), 
+        internal::testCapacity( sidre_vertex, n_IDs, values, offsets ), 
         IGNORE_OUTPUT );
       EXPECT_DEATH_IF_SUPPORTED( 
-        internal::append_capacity( sidre_mixed, n_IDs, values, offsets, types ), 
+        internal::testCapacity( sidre_mixed, n_IDs, values, offsets, types ), 
         IGNORE_OUTPUT );
     }
     else
     {
-      internal::append_capacity( sidre_vertex, n_IDs, values, offsets );
-      internal::append_capacity( sidre_mixed, n_IDs, values, offsets, types );
+      internal::testCapacity( sidre_vertex, n_IDs, values, offsets );
+      internal::testCapacity( sidre_mixed, n_IDs, values, offsets, types );
     }
 
     root->destroyGroups();
@@ -2667,12 +1892,10 @@ TEST( mint_connectivity_array_DeathTest, IndirectionSidreCapacity )
   delete[] values;
   delete[] offsets;
   delete[] types;
-
 #else
   EXPECT_TRUE( true );
 #endif  /* MINT_USE_SIDRE */
 }
-
 
 }   /* end namespace mint */
 }   /* end namespace axom */

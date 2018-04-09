@@ -22,6 +22,7 @@
 
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
+#include "axom_utils/Utilities.hpp"
 #include "mint/CellTypes.hpp"
 #include "mint/Array.hpp"
 #include "mint/config.hpp"
@@ -115,16 +116,19 @@ namespace mint
  *  deal with the case where the number of values per ID differ but the type
  *  remains the same and the case where both differ.
  *
- * \tparam STRIDE the number of values per ID.
- * \tparam TYPE the element type of the stored IDs. 
+ * \tparam TYPE the type of the ConnectivityArray this class deals with the 
+ *  case of TYPE == ConnectivityType::NO_INDIRECTION.
  *
- * \see ConnectivityArray_indirection
- * \see ConnectivityArray_indirection_and_types
- * \see ConnectivityArray_internal
+ * \see ConnectivityArray_indirection.hpp
+ * \see ConnectivityArray_typed_indirection.hpp
+ * \see ConnectivityArray_internal.hpp
  */
-template < IndexType STRIDE, CellTypes TYPE >
+template < ConnectivityType TYPE >
 class ConnectivityArray
 {
+  AXOM_STATIC_ASSERT_MSG( TYPE == ConnectivityType::NO_INDIRECTION, 
+                          "pre: TYPE == NO_INDIRECTION" );
+
 public:
 
 /// \name Native Storage ConnectivityArray Constructors
@@ -139,9 +143,18 @@ public:
    * \post getNumberOfIDs() == 0
    * \post getIDType() == TYPE
    */
-  ConnectivityArray( IndexType ID_capacity=USE_DEFAULT ):
-    m_values( new Array< IndexType >( 0, STRIDE, ID_capacity ) )
-  {}
+  ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT ):
+    m_cell_type( cell_type ),
+    m_stride( -1 ),
+    m_values( AXOM_NULLPTR )
+  {
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+    SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
+
+    m_stride = cell_info[ cell_type ].num_nodes;
+    m_values = new Array< IndexType >( 0, m_stride, ID_capacity );
+  }
 
 /// @}
 
@@ -164,10 +177,19 @@ public:
    * \post getNumberOfIDs() == n_IDs
    * \post getIDType() == TYPE 
    */
-  ConnectivityArray( IndexType n_IDs, IndexType* values,
+  ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values,
                      IndexType ID_capacity=USE_DEFAULT ):
-    m_values( new Array< IndexType >( values, n_IDs, STRIDE, ID_capacity ) )
-  {}
+    m_cell_type( cell_type ),
+    m_stride( -1 ),
+    m_values( AXOM_NULLPTR )
+  {
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+    SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
+
+    m_stride = cell_info[ cell_type ].num_nodes;
+    m_values = new Array< IndexType >( values, n_IDs, m_stride, ID_capacity );
+  }
 
 /// @}
 
@@ -190,11 +212,20 @@ public:
    * \post getIDType() == TYPE 
    */
   ConnectivityArray( sidre::Group* group ):
+    m_cell_type( UNDEFINED_CELL ),
+    m_stride( -1 ),
     m_values( AXOM_NULLPTR )
   {
-    internal::initializeFromGroup< TYPE >( group, &m_values );
-    SLIC_ERROR_IF( m_values->numComponents() != STRIDE, 
-                   "values array must have " << STRIDE << " components, is " <<
+    m_cell_type = internal::initializeFromGroup( group, &m_values );
+    
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+
+
+    m_stride = cell_info[ static_cast< int >( m_cell_type ) ].num_nodes;
+
+    SLIC_ERROR_IF( m_values->numComponents() != m_stride, 
+                   "values array must have " << m_stride << " components, is " <<
                    m_values->numComponents() << "." );
   }
 
@@ -213,17 +244,24 @@ public:
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getIDType() == TYPE 
    */
-  ConnectivityArray( sidre::Group* group, const std::string& coordset,
+  ConnectivityArray( CellType cell_type, sidre::Group* group, 
+                     const std::string& coordset, 
                      IndexType ID_capacity=USE_DEFAULT ):
+    m_cell_type( cell_type ),
+    m_stride( cell_info[ static_cast< int >( m_cell_type ) ].num_nodes ),
     m_values( AXOM_NULLPTR )
   {
-    internal::initializeGroup< TYPE >( group, coordset );
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+                   "Cannot have an undefined cell type." );
+
+
+    internal::initializeGroup( group, coordset, m_cell_type );
 
     sidre::Group* elems_group = group->getGroup( "elements" );
     SLIC_ASSERT( elems_group != AXOM_NULLPTR );
 
     sidre::View* connec_view = elems_group->getView( "connectivity" );
-    m_values = new Array< IndexType >( connec_view, 0, STRIDE, ID_capacity );
+    m_values = new Array< IndexType >( connec_view, 0, m_stride, ID_capacity );
     SLIC_ASSERT( m_values != AXOM_NULLPTR );
   }
 
@@ -252,15 +290,15 @@ public:
    * \param [in] ID not used, does not need to be specified.
    */
   IndexType getNumberOfValuesForID( IndexType AXOM_NOT_USED(ID)=0 ) const
-  { return STRIDE; }
+  { return m_stride; }
 
   /*!
    * \brief Returns the cell type of the given ID.
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellTypes getIDType( IndexType AXOM_NOT_USED(ID)=0 ) const
-  { return TYPE;  }
+  CellType getIDType( IndexType AXOM_NOT_USED(ID)=0 ) const
+  { return m_cell_type;  }
 
   /*!
    * \brief Access operator for the values of the given ID.
@@ -275,7 +313,7 @@ public:
   const IndexType* operator[]( IndexType ID ) const 
   {
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return m_values->getData() + ID * STRIDE;
+    return m_values->getData() + ID * m_stride;
   }
 
   /*!
@@ -293,7 +331,7 @@ public:
   /*!
    * \brief Returns a pointer to the types array, of length getNumberOfIDs().
    */
-  const CellTypes* getTypePtr() const
+  const CellType* getTypePtr() const
   { return AXOM_NULLPTR; }
 
 
@@ -312,7 +350,7 @@ public:
    * \pre values != AXOM_NULLPTR
    */
   void append( const IndexType* values, IndexType AXOM_NOT_USED(n_values)=0,
-               CellTypes AXOM_NOT_USED(type)=CellTypes::UNDEFINED_ELEMENT ) 
+               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL ) 
   { appendM( values, 1 ); }
 
   /*!
@@ -329,7 +367,7 @@ public:
    */
   void appendM( const IndexType* values, IndexType n_IDs, 
                 const IndexType* AXOM_NOT_USED(offsets)=AXOM_NULLPTR,
-                const CellTypes* AXOM_NOT_USED(types)=AXOM_NULLPTR ) 
+                const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR ) 
   {
     SLIC_ASSERT( values != AXOM_NULLPTR );
     SLIC_ASSERT( n_IDs >= 0 );
@@ -386,7 +424,7 @@ public:
    */
   void insert( const IndexType* values, IndexType start_ID, 
                IndexType AXOM_NOT_USED(n_values)=0, 
-               CellTypes AXOM_NOT_USED(type)=CellTypes::UNDEFINED_ELEMENT )
+               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
   { insertM( values, start_ID, 1 ); }
 
   /*!
@@ -405,7 +443,7 @@ public:
    */
   void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs,
                 const IndexType* AXOM_NOT_USED(offsets)=AXOM_NULLPTR, 
-                const CellTypes* AXOM_NOT_USED(types)=AXOM_NULLPTR )
+                const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR )
   {
     SLIC_ASSERT( start_ID >= 0 );
     SLIC_ASSERT( start_ID <= getNumberOfIDs() );
@@ -442,7 +480,7 @@ public:
    * \brief Returns the number of values in this ConnectivityArray instance.
    */
   IndexType getNumberOfValues() const
-  { return m_values->size() * STRIDE; }
+  { return m_values->size() * m_stride; }
 
   /*!
    * \brief Return the number of IDs available for storage without resizing.
@@ -454,7 +492,7 @@ public:
    * \brief Return the number of values available for storage without resizing.
    */
   IndexType getValueCapacity() const
-  { return getIDCapacity() * STRIDE; }
+  { return getIDCapacity() * m_stride; }
 
   /*!
    * \brief Get the resize ratio.
@@ -529,6 +567,8 @@ public:
 
 private:
 
+  CellType m_cell_type;
+  IndexType m_stride;
   Array< IndexType >* m_values;
 
   DISABLE_COPY_AND_ASSIGNMENT( ConnectivityArray );
@@ -540,6 +580,6 @@ private:
 } /* namespace axom */
 
 #include "ConnectivityArray_indirection.hpp"
-#include "ConnectivityArray_indirection_and_types.hpp"
+#include "ConnectivityArray_typed_indirection.hpp"
 
 #endif /* MINT_ConnectivityArray_HXX_ */

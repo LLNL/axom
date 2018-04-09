@@ -50,13 +50,13 @@ namespace mint
  *  is used to store the starting location of the values corresponding to each
  *  ID as well as a type array to store the type of each ID.
  *
- * \see ConnectivityArray_indirection
- * \see ConnectivityArray_indirection_and_types
- * \see ConnectivityArray_internal
+ * \see ConnectivityArray_indirection.hpp
+ * \see ConnectivityArray_indirection_and_types.hpp
+ * \see ConnectivityArray_internal.hpp
  */
 
 template <>
-class ConnectivityArray< NEED_INDIRECTION, CellTypes::MIXED >
+class ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
 {
 public:
 /// \name Native Storage ConnectivityArray Constructors
@@ -77,7 +77,7 @@ public:
                      IndexType ID_capacity=USE_DEFAULT ):
     m_values( new Array< IndexType >( 0, 1, value_capacity ) ),
     m_offsets( new Array< IndexType >( 0, 1, ID_capacity ) ),
-    m_types( new Array< CellTypes >( 0, 1, ID_capacity ) )
+    m_types( new Array< CellType >( 0, 1, ID_capacity ) )
   {
     m_offsets->append(0);
   }
@@ -115,11 +115,11 @@ public:
    * \post getNumberOfValues() == offsets[ n_IDs ]
    */
   ConnectivityArray( IndexType n_IDs, IndexType* values, IndexType* offsets, 
-                     CellTypes* types, IndexType ID_capacity=USE_DEFAULT, 
+                     CellType* types, IndexType ID_capacity=USE_DEFAULT, 
                      IndexType value_capacity=USE_DEFAULT ):
     m_values( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR ),
-    m_types( new Array< CellTypes >( types, n_IDs, 1, ID_capacity ) )
+    m_types( new Array< CellType >( types, n_IDs, 1, ID_capacity ) )
   {
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs 
                                                                        << "." );
@@ -167,14 +167,15 @@ public:
     m_values( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
-    internal::initializeFromGroup< CellTypes::MIXED >( group, &m_values, 
-                                                          &m_offsets, 
-                                                          &m_types );
+    CellType cell_type = internal::initializeFromGroup( group, &m_values, 
+                                                         &m_offsets, &m_types );
+    SLIC_ERROR_IF( cell_type != UNDEFINED_CELL, 
+                          "Mixed topology requires UNDEFINED_CELL cell type." );
+
     IndexType num_IDs = getNumberOfIDs();
     SLIC_ERROR_IF( m_types->size() != num_IDs, 
                    "Types array not of correct size. Expected" <<
                    num_IDs << " was " << m_types->size() << "." );
-
   }
 
   /*!
@@ -202,9 +203,8 @@ public:
   {
     bool create_offsets = true;
     bool create_types = true;
-    internal::initializeGroup< CellTypes::MIXED >( group, coordset, 
-                                                      create_offsets, 
-                                                      create_types );
+    internal::initializeGroup( group, coordset, UNDEFINED_CELL, create_offsets, 
+                               create_types );
 
     sidre::Group* elems_group = group->getGroup( "elements" );
     SLIC_ASSERT( elems_group != AXOM_NULLPTR );
@@ -219,7 +219,7 @@ public:
     (*m_offsets)[0] = 0;
 
     sidre::View* types_view = elems_group->getView( "types" );
-    m_types = new Array< CellTypes >( types_view, 0, 1, ID_capacity );
+    m_types = new Array< CellType >( types_view, 0, 1, ID_capacity );
     SLIC_ASSERT( m_types != AXOM_NULLPTR );
   }
 
@@ -230,7 +230,7 @@ public:
   /*!
    * \brief Destructor, free's the allocated vectors.
    */
-  virtual ~ConnectivityArray()
+  ~ConnectivityArray()
   {
     if ( m_values != AXOM_NULLPTR )
     {
@@ -264,11 +264,17 @@ public:
   }
 
   /*!
+   * \brief Returns the cell type of the mesh.
+   */
+  CellType getIDType() const
+  { return UNDEFINED_CELL; }
+
+  /*!
    * \brief Returns the cell type of the given ID.
    *
    * \param ID the ID in question.
    */
-  CellTypes getIDType( IndexType ID ) const
+  CellType getIDType( IndexType ID ) const
   { 
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
     return (*m_types)[ ID ]; 
@@ -305,7 +311,7 @@ public:
   /*!
    * \brief Returns a pointer to the types array, of length getNumberOfIDs().
    */
-  const CellTypes* getTypePtr() const
+  const CellType* getTypePtr() const
   { return m_types->getData(); }
 
 /// @}
@@ -323,7 +329,7 @@ public:
    *
    * \pre values != AXOM_NULLPTR
    */
-  void append( const IndexType* values, IndexType n_values, CellTypes type )
+  void append( const IndexType* values, IndexType n_values, CellType type )
   {
     SLIC_ASSERT( values != AXOM_NULLPTR );
     m_values->append( values, n_values );
@@ -345,7 +351,7 @@ public:
    * \pre offsets != AXOM_NULLPTR
    */
   void appendM( const IndexType* values, IndexType n_IDs, 
-                const IndexType* offsets, const CellTypes* types )
+                const IndexType* offsets, const CellType* types )
   {
     internal::append( n_IDs, values, offsets, m_values, m_offsets );
     m_types->append( types, n_IDs );
@@ -392,7 +398,7 @@ public:
    * \pre values != AXOM_NULLPTR
    */
   void insert( const IndexType* values, IndexType start_ID, IndexType n_values, 
-               CellTypes type )
+               CellType type )
   {
     SLIC_ASSERT( start_ID >= 0 );
     SLIC_ASSERT( n_values >= 0 );
@@ -422,7 +428,7 @@ public:
    * \pre offsets != AXOM_NULLPTR
    */
   void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs, 
-                const IndexType* offsets, const CellTypes* types )
+                const IndexType* offsets, const CellType* types )
   { 
     internal::insert( start_ID, n_IDs, values, offsets, m_values, 
                           m_offsets );
@@ -567,7 +573,7 @@ public:
 private:
   Array< IndexType >* m_values;
   Array< IndexType >* m_offsets;
-  Array< CellTypes >* m_types;
+  Array< CellType >* m_types;
 
   DISABLE_COPY_AND_ASSIGNMENT( ConnectivityArray );
   DISABLE_MOVE_AND_ASSIGNMENT( ConnectivityArray );

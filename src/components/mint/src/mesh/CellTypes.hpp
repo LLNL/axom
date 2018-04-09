@@ -27,10 +27,25 @@ namespace mint
 
 constexpr int MAX_NUM_NODES = 27;
 
+enum class Topology : unsigned char
+{
+  SINGLE,
+  MIXED
+};
+
+enum class ConnectivityType : unsigned char
+{
+  NO_INDIRECTION,
+  INDIRECTION,
+  TYPED_INDIRECTION
+};
+
+
 /*!
  * \brief Enumerates all cell types supported by Mint
  */
-enum CellTypes
+using CellType = signed char;
+enum CellTypes : CellType
 {
   UNDEFINED_CELL = -1,    ///< UNDEFINED
 
@@ -59,7 +74,7 @@ enum CellTypes
  * \param MINT_NAME the associated mint name for the cell type.
  * \param BP_NAME the associated name in the mesh blueprint.
  * \param VTK_TYPE the corresponding VTK type.
- * \param N the number of nodes that the cell hass.
+ * \param N the number of nodes that the cell has.
  */
 #define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N ) \
   namespace internal                                                          \
@@ -91,7 +106,7 @@ enum CellTypes
  */
 typedef struct
 {
-   int cell_type;               /*!< cell type, .e.g, mint::QUAD, mint::HEX */
+   CellType cell_type;          /*!< cell type, .e.g, mint::QUAD, mint::HEX */
    const char* name;            /*!< the name associated with the cell */
    const char* blueprint_name;  /*!< corresponding mesh blueprint name */
    int vtk_type;                /*!< corresponding vtk_type */
@@ -129,6 +144,7 @@ static constexpr CellInfo cell_info[ NUM_CELL_TYPES ] = {
   CELL_INFO( QUAD9 ),
   CELL_INFO( HEX27 )
 };
+
 
 } /* namespace mint */
 } /* namespace axom */
