@@ -226,16 +226,12 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
       {
         utilities::filesystem::makeDirsForPath(dir_name);
       }
-      h5_file_id = H5Fcreate(hdf5_name.c_str(),
-                             H5F_ACC_TRUNC,
-                             H5P_DEFAULT,
-                             H5P_DEFAULT);
+      h5_file_id = conduit::relay::io::hdf5_create_file(hdf5_name);
     }
     else
     {
-      h5_file_id = H5Fopen(hdf5_name.c_str(),
-                           H5F_ACC_RDWR,
-                           H5P_DEFAULT);
+      h5_file_id =
+        conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
@@ -453,9 +449,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
 
-  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
-                             H5F_ACC_RDONLY,
-                             H5P_DEFAULT);
+  hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
   SLIC_ASSERT(h5_file_id >= 0);
 
   std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
@@ -713,9 +707,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
 
   std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
 
-  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
-                             H5F_ACC_RDONLY,
-                             H5P_DEFAULT);
+  hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
   SLIC_ASSERT(h5_file_id >= 0);
 
   std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
@@ -806,9 +798,8 @@ void IOManager::writeGroupToRootFile(sidre::Group* group,
                                      const std::string& file_name)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id = H5Fopen(file_name.c_str(),
-                               H5F_ACC_RDWR,
-                               H5P_DEFAULT);
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
   SLIC_ASSERT(root_file_id >= 0);
 
@@ -859,9 +850,8 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
                                            const std::string& group_path)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id = H5Fopen(file_name.c_str(),
-                               H5F_ACC_RDWR,
-                               H5P_DEFAULT);
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
   SLIC_ASSERT(root_file_id >= 0);
 
@@ -917,9 +907,8 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
                                           const std::string& group_path)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id = H5Fopen(file_name.c_str(),
-                               H5F_ACC_RDWR,
-                               H5P_DEFAULT);
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
   SLIC_ASSERT(root_file_id >= 0);
 
