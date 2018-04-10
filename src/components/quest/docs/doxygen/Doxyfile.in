@@ -1,6 +1,10 @@
 PROJECT_NAME  = QUEST
 PROJECT_BRIEF = "QUEST: Query Surface Tool"
-INPUT = @PROJECT_SOURCE_DIR@/src/mesh @PROJECT_SOURCE_DIR@/src/geom
+INPUT = @PROJECT_SOURCE_DIR@/src/components/quest/src \
+        @PROJECT_SOURCE_DIR@/src/components/quest/src/detail \
+        @PROJECT_SOURCE_DIR@/src/components/quest/src/geom \
+        @PROJECT_SOURCE_DIR@/src/components/quest/src/interface \
+        @PROJECT_SOURCE_DIR@/src/components/quest/src/stl
 GENERATE_XML = YES
 USE_MATHJAX = YES
 MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
@@ -10,7 +14,8 @@ INLINE_INHERITED_MEMB  = YES
 BUILTIN_STL_SUPPORT    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
-#TYPEDEF_HIDES_STRUCT   = NO
+#TYPEDEF_HIDES_STRUCT  = NO
+GENERATE_TAGFILE       = quest.tag
 GENERATE_TREEVIEW      = YES
 GENERATE_LATEX         = NO
 GENERATE_XML           = NO

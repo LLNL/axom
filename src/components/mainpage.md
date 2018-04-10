@@ -13,5 +13,4 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage questtop provides an API to query point distance and position relative to meshes
 * @subpage sidretop provides a data store with hierarchical structure
 
-More to come.
 

@@ -771,23 +771,23 @@ WARN_LOGFILE           = dox.warnings
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @PROJECT_SOURCE_DIR@/components/mainpage.md \
-                         @PROJECT_SOURCE_DIR@/components/axom_utils/README.md \
-                         @PROJECT_SOURCE_DIR@/components/axom_utils/src/ \
-                         @PROJECT_SOURCE_DIR@/components/lumberjack/README.md \
-                         @PROJECT_SOURCE_DIR@/components/lumberjack/src/ \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/ \
-                         @PROJECT_SOURCE_DIR@/components/primal/README.md \
-                         @PROJECT_SOURCE_DIR@/components/primal/src/ \
-                         @PROJECT_SOURCE_DIR@/components/quest/README.md \
-                         @PROJECT_SOURCE_DIR@/components/quest/src/ \
-                         @PROJECT_SOURCE_DIR@/components/sidre/README.md \
-                         @PROJECT_SOURCE_DIR@/components/sidre/src/ \
-                         @PROJECT_SOURCE_DIR@/components/slam/README.md \
-                         @PROJECT_SOURCE_DIR@/components/slam/src/ \
-                         @PROJECT_SOURCE_DIR@/components/slic/README.md \
-                         @PROJECT_SOURCE_DIR@/components/slic/src/ \
-                         @PROJECT_SOURCE_DIR@/components/sidre/src/spio/
+INPUT                  = @PROJECT_SOURCE_DIR@/src/components/mainpage.md \
+                         @PROJECT_SOURCE_DIR@/src/components/axom_utils/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/lumberjack/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/primal/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/quest/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/sidre/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/slam/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/slic/README.md
+#                         @PROJECT_SOURCE_DIR@/src/components/axom_utils/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/lumberjack/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/mint/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/primal/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/quest/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/slam/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/slic/src/ \
+#                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/spio/
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -822,7 +822,7 @@ FILE_PATTERNS          = *.md \
 # be searched for input files as well.
 # The default value is: NO.
 
-RECURSIVE              = YES
+RECURSIVE              = NO
 
 # The EXCLUDE tag can be used to specify files and/or directories that should be
 # excluded from the INPUT source files. This way you can easily exclude a
@@ -2097,7 +2097,14 @@ SKIP_FUNCTION_MACROS   = YES
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
 
-TAGFILES               =
+TAGFILES               = @CMAKE_BINARY_DIR@/src/components/axom_utils/docs/doxygen/axom_utils.tag = ../../../axom_utils/html \
+                         @CMAKE_BINARY_DIR@/src/components/lumberjack/docs/doxygen/lumberjack.tag = ../../../lumberjack/html \
+                         @CMAKE_BINARY_DIR@/src/components/primal/docs/doxygen/primal.tag = ../../../primal/html \
+                         @CMAKE_BINARY_DIR@/src/components/mint/docs/doxygen/mint.tag = ../../../mint/html \
+                         @CMAKE_BINARY_DIR@/src/components/quest/docs/doxygen/quest.tag = ../../../quest/html \
+                         @CMAKE_BINARY_DIR@/src/components/sidre/docs/doxygen/sidre.tag = ../../../sidre/html \
+                         @CMAKE_BINARY_DIR@/src/components/slam/docs/doxygen/slam.tag = ../../../slam/html \
+                         @CMAKE_BINARY_DIR@/src/components/slic/docs/doxygen/slic.tag = ../../../slic/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to

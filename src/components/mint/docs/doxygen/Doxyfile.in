@@ -1,7 +1,11 @@
 PROJECT_NAME  = Mint
 PROJECT_BRIEF = "Mint: Mesh Infrastructure Toolkit"
-INPUT = @PROJECT_SOURCE_DIR@/src
-RECURSIVE = YES
+INPUT = @PROJECT_SOURCE_DIR@/src/components/mint/src \
+        @PROJECT_SOURCE_DIR@/src/components/mint/src/fem \
+        @PROJECT_SOURCE_DIR@/src/components/mint/src/fem/shape_functions \
+        @PROJECT_SOURCE_DIR@/src/components/mint/src/fem/shape_functions/lagrange \
+        @PROJECT_SOURCE_DIR@/src/components/mint/src/mesh \
+        @PROJECT_SOURCE_DIR@/src/components/mint/src/utils
 GENERATE_XML = YES
 USE_MATHJAX = YES
 MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
@@ -15,6 +19,7 @@ REFERENCES_RELATION    = YES
 GENERATE_TREEVIEW      = YES
 GENERATE_LATEX         = NO
 GENERATE_XML           = NO
+GENERATE_TAGFILE       = mint.tag
 HAVE_DOT               = YES
 #CALL_GRAPH            = YES
 #CALLER_GRAPH          = YES

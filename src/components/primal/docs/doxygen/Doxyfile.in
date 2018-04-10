@@ -1,6 +1,9 @@
 PROJECT_NAME  = PRIMAL
 PROJECT_BRIEF = "PRIMAL: Primitives & Algorithms"
-INPUT = @PROJECT_SOURCE_DIR@/src/geometry @PROJECT_SOURCE_DIR@/src/numerics @PROJECT_SOURCE_DIR@/src/operators @PROJECT_SOURCE_DIR@/src/spatial_acceleration
+INPUT = @PROJECT_SOURCE_DIR@/src/components/primal/src/geometry \
+        @PROJECT_SOURCE_DIR@/src/components/primal/src/operators \
+        @PROJECT_SOURCE_DIR@/src/components/primal/src/operators/detail \
+        @PROJECT_SOURCE_DIR@/src/components/primal/src/spatial_acceleration
 GENERATE_XML = YES
 USE_MATHJAX = YES
 MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
@@ -10,7 +13,8 @@ INLINE_INHERITED_MEMB  = YES
 BUILTIN_STL_SUPPORT    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
-#TYPEDEF_HIDES_STRUCT   = NO
+#TYPEDEF_HIDES_STRUCT  = NO
+GENERATE_TAGFILE       = primal.tag
 GENERATE_TREEVIEW      = YES
 GENERATE_LATEX         = NO
 GENERATE_XML           = NO

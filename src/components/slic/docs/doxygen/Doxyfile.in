@@ -1,5 +1,8 @@
 PROJECT_NAME  = SLIC
 PROJECT_BRIEF = "SLIC: Simple Logging Interface Code"
-INPUT = @PROJECT_SOURCE_DIR@/src/core @PROJECT_SOURCE_DIR@/src/interface @PROJECT_SOURCE_DIR@/src/streams
+INPUT = @PROJECT_SOURCE_DIR@/src/components/slic/src/core \
+        @PROJECT_SOURCE_DIR@/src/components/slic/src/interface \
+        @PROJECT_SOURCE_DIR@/src/components/slic/src/streams
 GENERATE_XML = YES
+GENERATE_TAGFILE  = slic.tag
 EXTENSION_MAPPING = f=FortranFree
