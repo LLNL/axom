@@ -401,11 +401,37 @@ protected:
    * \pre group != AXOM_NULLPTR.
    */
   Mesh( sidre::Group* group, int ndims, int type, int blockId, int partId );
+
+  /*!
+   * \brief Helper which detects the mesh type and dimension from a group.
+   *
+   * \pre m_group != AXOM_NULLPTR
+   * \pre m_coordsets_group != AXOM_NULLPTR
+   * \pre m_
+   * \post m_type  >= 0 && m_type < mint::NUM_MESH_TYPES
+   * \post m_ndims >= 1 && m_ndims <= 3
+   */
+  void detectMeshTypeAndDimension( );
+
 #endif
 
 /// @}
 
 private:
+
+  /*!
+   * \brief Helper method to check if the mesh type is valid.
+   * \return status true if the mesh type is valie, else, false.
+   */
+  inline bool validMeshType( ) const
+  { return ( (m_type >= 0) && (mint::NUM_MESH_TYPES) ); }
+
+  /*!
+   * \brief Helper method to check if the mesh dimension is valid.
+   * \return status true if the mesh dimension is valid, else, false.
+   */
+  inline bool validDimension( ) const
+  { return ( m_ndims >= 1 && m_ndims <= 3 ); }
 
   /*!
    * \brief Returns the number of tuples for the given mesh field association.
