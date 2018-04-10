@@ -35,7 +35,7 @@ module quest_interface_ex
 #endif
 
   integer :: num_pts = 10, rank, nprocs, ierr
-  character(LEN=256) :: FileName
+  character(LEN=:), allocatable :: FileName
   integer :: dim = 3
 
 contains
@@ -190,9 +190,12 @@ program quest_fortran
   use quest_interface_ex
 
   implicit none
+  integer len_name
 
   call init_mpi()
 
+  call get_command_argument(1, length=len_name)
+  allocate(character(len_name):: FileName)
   call get_command_argument(1, FileName)
 
   !...exercise the distance functions in quest module
