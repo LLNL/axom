@@ -18,6 +18,7 @@ set( mint_tests
      mint_core_array.cpp
 
      ## mesh tests
+     mint_mesh_cell_types.cpp
      mint_mesh_coordinates.cpp
      mint_mesh_extent.cpp
      mint_mesh_field.cpp
