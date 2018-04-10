@@ -44,7 +44,7 @@ namespace axom
 namespace quest
 {
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -340,7 +340,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       // Degeneracy check -- vertices need to be distinct
       if( areTriangleIndicesDistinct(triInds) )
       {
-        newMesh->addCell(triInds, MINT_TRIANGLE);
+        newMesh->addCell(triInds, mint::TRIANGLE);
       }
     }
 

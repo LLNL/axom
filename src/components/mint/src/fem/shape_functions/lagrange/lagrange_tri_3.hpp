@@ -53,12 +53,12 @@ static const double TRI_ONE_THIRD =  1.0/3.0;
  * \see ShapeFunction
  */
 template < >
-class Lagrange< CellTypes::TRIANGLE > :
-  public ShapeFunction< Lagrange< CellTypes::TRIANGLE > >
+class Lagrange< mint::TRIANGLE > :
+  public ShapeFunction< Lagrange< mint::TRIANGLE > >
 {
 public:
 
-  static CellTypes getCellType() { return CellTypes::TRIANGLE; }
+  static int getCellType() { return mint::TRIANGLE; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

@@ -19,8 +19,8 @@
 #define UNSTRUCTUREDMESH_HXX_
 
 #include "mint/Mesh.hpp"
-#include "mint/MeshType.hpp"
-#include "mint/CellType.hpp"
+#include "mint/MeshTypes.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/CellConnectivity.hpp"
 #include "mint/MeshCoordinates.hpp"
 #include "mint/Array.hpp"
@@ -213,7 +213,7 @@ private:
     {
       linear_num_nodes = 0;
     }
-    return std::pow( linear_num_cells, ndims ) * cell::num_nodes[ CellType ];
+    return std::pow( linear_num_cells, ndims )*cell_info[ CellType ].num_nodes;
   }
 
   /*!
@@ -238,7 +238,7 @@ private:
 // ------------------------------------------------------------------------------
 template < int CellType >
 UnstructuredMesh< CellType >::UnstructuredMesh( int ndims ) :
-  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+  Mesh( ndims, mint::UNSTRUCTURED_MESH, 0, 0 ),
   m_node_coordinates( new MeshCoordinates( ndims ) ),
   m_cell_connectivity( new CellConnectivity< CellType >() )
 {}
@@ -286,7 +286,7 @@ template < int CellType >
 UnstructuredMesh< CellType >::UnstructuredMesh( int ndims,
                                                 IndexType num_nodes,
                                                 IndexType num_cells ) :
-  Mesh( ndims, mesh_properties::mesh_of_cell_type[ CellType ], 0, 0 ),
+  Mesh( ndims, mint::UNSTRUCTURED_MESH, 0, 0 ),
   m_node_coordinates( new MeshCoordinates( num_nodes ) ),
   m_cell_connectivity( new CellConnectivity< CellType >( num_cells ) )
 {
@@ -299,9 +299,7 @@ inline
 void UnstructuredMesh< CellType >::addCell( const IndexType* cell,
                                             int cell_type ) {
   SLIC_ASSERT( cell != AXOM_NULLPTR );
-  SLIC_ASSERT( cell_type > MINT_UNDEFINED_CELL );
-  SLIC_ASSERT( cell_type <= MINT_MIXED_CELL );
-  SLIC_ASSERT( (CellType == MINT_MIXED_CELL) ? true : CellType == cell_type );
+  SLIC_ASSERT( cell_type > mint::UNDEFINED_CELL );
 
   m_cell_connectivity->addCell( cell, cell_type );
 

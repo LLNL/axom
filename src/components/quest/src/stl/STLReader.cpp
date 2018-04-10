@@ -209,7 +209,7 @@ void STLReader::read()
 
 //------------------------------------------------------------------------------
 void STLReader::getMesh(
-  axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh )
+  axom::mint::UnstructuredMesh< mint::TRIANGLE >* mesh )
 {
   /* Sanity checks */
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
@@ -226,7 +226,7 @@ void STLReader::getMesh(
   for ( axom::mint::IndexType i=0 ; i < m_num_faces ; ++i )
   {
     axom::mint::IndexType tv[3] = {3*i, 3*i+1, 3*i+2};
-    mesh->addCell( tv, MINT_TRIANGLE );
+    mesh->addCell( tv, mint::TRIANGLE );
   }
 
 }

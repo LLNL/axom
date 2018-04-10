@@ -67,7 +67,7 @@ using axom::primal::Sphere;
 
 
 static const int NDIMS = 3;
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 
 static struct
 {

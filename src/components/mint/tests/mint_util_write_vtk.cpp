@@ -18,7 +18,7 @@
 #include "axom_utils/Utilities.hpp"     /* for utilities::max */
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 #include "mint/config.hpp"              /* for IndexType, int64 */
-#include "mint/CellType.hpp"            /* for cell::vtk_types */
+#include "mint/CellTypes.hpp"           /* for cell::vtk_types */
 #include "mint/CurvilinearMesh.hpp"     /* for CurvilinearMesh */
 #include "mint/Field.hpp"               /* for Field */
 #include "mint/FieldData.hpp"           /* for FieldData */
@@ -1135,8 +1135,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
   const IndexType nz = 13;
   const IndexType nNodes = nx * ny * nz;
   const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-  UnstructuredMesh< MINT_HEX >* u_mesh =
-    new UnstructuredMesh< MINT_HEX >( 3, nNodes, nCells );
+  UnstructuredMesh< mint::HEX >* u_mesh =
+    new UnstructuredMesh< mint::HEX >( 3, nNodes, nCells );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1169,7 +1169,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
         cell[6] = cell[2] + 1;
         cell[7] = cell[3] + 1;
 
-        u_mesh->addCell( cell, MINT_HEX );
+        u_mesh->addCell( cell, mint::HEX );
       }
     }
   }
@@ -1199,8 +1199,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
   const IndexType ny = 12;
   const IndexType nNodes = nx * ny;
   const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< MINT_QUAD >* u_mesh =
-    new UnstructuredMesh< MINT_QUAD >( 2, nNodes, nCells );
+  UnstructuredMesh< mint::QUAD >* u_mesh =
+    new UnstructuredMesh< mint::QUAD >( 2, nNodes, nCells );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1223,7 +1223,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
       cell[2] = index + ny + 1;
       cell[3] = index + 1;
 
-      u_mesh->addCell( cell, MINT_QUAD );
+      u_mesh->addCell( cell, mint::QUAD );
     }
   }
 
@@ -1249,8 +1249,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
 {
   const std::string path = "unstructuredMesh1D.vtk";
   const IndexType nx = 11;
-  UnstructuredMesh< MINT_SEGMENT >* u_mesh =
-    new UnstructuredMesh< MINT_SEGMENT >( 1, nx, nx-1 );
+  UnstructuredMesh< mint::SEGMENT >* u_mesh =
+    new UnstructuredMesh< mint::SEGMENT >( 1, nx, nx-1 );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1263,7 +1263,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
   {
     cell[0] = idx;
     cell[1] = idx + 1;
-    u_mesh->addCell( cell, MINT_SEGMENT );
+    u_mesh->addCell( cell, mint::SEGMENT );
   }
 
   internal::populate_and_write( u_mesh, path );
@@ -1294,105 +1294,107 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
   const IndexType nz = 2;
   const IndexType nNodes = nx * ny * nz;
   const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh =
-    new UnstructuredMesh< MINT_MIXED_CELL >( 3, nNodes, nCells );
-
-  /* Create the nodes for the hexahedron. */
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-    {
-      for ( IndexType idz = 0 ; idz < nz ; ++idz )
-      {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
-        u_mesh->addNode( x, y, z );
-      }
-    }
-  }
-
-  /* Create the nodes for the pyramids. */
-  u_mesh->addNode( -1.0, 0.5, 0.5 );
-  u_mesh->addNode( 2.0, 0.5, 0.5 );
-  u_mesh->addNode( 0.5, -1.0, 0.5 );
-  u_mesh->addNode( 0.5, 2.0, 0.5 );
-  u_mesh->addNode( 0.5, 0.5, -1.0 );
-  u_mesh->addNode( 0.5, 0.5, 2.0 );
-
-  /* Create the hexahedron. */
-  IndexType hex[8];
-  hex[0] = 0;
-  hex[1] = 4;
-  hex[2] = 6;
-  hex[3] = 2;
-  hex[4] = 1;
-  hex[5] = 5;
-  hex[6] = 7;
-  hex[7] = 3;
-  u_mesh->addCell( hex, MINT_HEX );
-
-  /* Create the pyramid for the -x face. */
-  IndexType pyramid[5];
-  pyramid[0] = hex[0];
-  pyramid[1] = hex[4];
-  pyramid[2] = hex[7];
-  pyramid[3] = hex[3];
-  pyramid[4] = 8;
-  u_mesh->addCell( pyramid, MINT_PYRAMID );
-
-  /* Create the pyramid for the +x face. */
-  pyramid[0] = hex[1];
-  pyramid[1] = hex[2];
-  pyramid[2] = hex[6];
-  pyramid[3] = hex[5];
-  pyramid[4] = 9;
-  u_mesh->addCell( pyramid, MINT_PYRAMID );
-
-  /* Create the pyramid for the -y face. */
-  pyramid[0] = hex[0];
-  pyramid[1] = hex[1];
-  pyramid[2] = hex[5];
-  pyramid[3] = hex[4];
-  pyramid[4] = 10;
-  u_mesh->addCell( pyramid, MINT_PYRAMID );
-
-  /* Create the pyramid for the +x face. */
-  pyramid[0] = hex[2];
-  pyramid[1] = hex[3];
-  pyramid[2] = hex[7];
-  pyramid[3] = hex[6];
-  pyramid[4] = 11;
-  u_mesh->addCell( pyramid, MINT_PYRAMID );
-
-  /* Create the pyramid for the -z face. */
-  pyramid[0] = hex[3];
-  pyramid[1] = hex[2];
-  pyramid[2] = hex[1];
-  pyramid[3] = hex[0];
-  pyramid[4] = 12;
-  u_mesh->addCell( pyramid, MINT_PYRAMID );
-
-  /* Create the pyramid for the +z face. */
-  pyramid[0] = hex[4];
-  pyramid[1] = hex[5];
-  pyramid[2] = hex[6];
-  pyramid[3] = hex[7];
-  pyramid[4] = 13;
-  u_mesh->addCell( pyramid, MINT_PYRAMID );
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
+  EXPECT_TRUE( false );
+// TODO: fix this
+//  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh =
+//    new UnstructuredMesh< MINT_MIXED_CELL >( 3, nNodes, nCells );
+//
+//  /* Create the nodes for the hexahedron. */
+//  for ( IndexType idx = 0 ; idx < nx ; ++idx )
+//  {
+//    for ( IndexType idy = 0 ; idy < ny ; ++idy )
+//    {
+//      for ( IndexType idz = 0 ; idz < nz ; ++idz )
+//      {
+//        double x = idx + internal::randomD( -0.45, 0.45 );
+//        double y = idy + internal::randomD( -0.45, 0.45 );
+//        double z = idz + internal::randomD( -0.45, 0.45 );
+//        u_mesh->addNode( x, y, z );
+//      }
+//    }
+//  }
+//
+//  /* Create the nodes for the pyramids. */
+//  u_mesh->addNode( -1.0, 0.5, 0.5 );
+//  u_mesh->addNode( 2.0, 0.5, 0.5 );
+//  u_mesh->addNode( 0.5, -1.0, 0.5 );
+//  u_mesh->addNode( 0.5, 2.0, 0.5 );
+//  u_mesh->addNode( 0.5, 0.5, -1.0 );
+//  u_mesh->addNode( 0.5, 0.5, 2.0 );
+//
+//  /* Create the hexahedron. */
+//  IndexType hex[8];
+//  hex[0] = 0;
+//  hex[1] = 4;
+//  hex[2] = 6;
+//  hex[3] = 2;
+//  hex[4] = 1;
+//  hex[5] = 5;
+//  hex[6] = 7;
+//  hex[7] = 3;
+//  u_mesh->addCell( hex, MINT_HEX );
+//
+//  /* Create the pyramid for the -x face. */
+//  IndexType pyramid[5];
+//  pyramid[0] = hex[0];
+//  pyramid[1] = hex[4];
+//  pyramid[2] = hex[7];
+//  pyramid[3] = hex[3];
+//  pyramid[4] = 8;
+//  u_mesh->addCell( pyramid, MINT_PYRAMID );
+//
+//  /* Create the pyramid for the +x face. */
+//  pyramid[0] = hex[1];
+//  pyramid[1] = hex[2];
+//  pyramid[2] = hex[6];
+//  pyramid[3] = hex[5];
+//  pyramid[4] = 9;
+//  u_mesh->addCell( pyramid, MINT_PYRAMID );
+//
+//  /* Create the pyramid for the -y face. */
+//  pyramid[0] = hex[0];
+//  pyramid[1] = hex[1];
+//  pyramid[2] = hex[5];
+//  pyramid[3] = hex[4];
+//  pyramid[4] = 10;
+//  u_mesh->addCell( pyramid, MINT_PYRAMID );
+//
+//  /* Create the pyramid for the +x face. */
+//  pyramid[0] = hex[2];
+//  pyramid[1] = hex[3];
+//  pyramid[2] = hex[7];
+//  pyramid[3] = hex[6];
+//  pyramid[4] = 11;
+//  u_mesh->addCell( pyramid, MINT_PYRAMID );
+//
+//  /* Create the pyramid for the -z face. */
+//  pyramid[0] = hex[3];
+//  pyramid[1] = hex[2];
+//  pyramid[2] = hex[1];
+//  pyramid[3] = hex[0];
+//  pyramid[4] = 12;
+//  u_mesh->addCell( pyramid, MINT_PYRAMID );
+//
+//  /* Create the pyramid for the +z face. */
+//  pyramid[0] = hex[4];
+//  pyramid[1] = hex[5];
+//  pyramid[2] = hex[6];
+//  pyramid[3] = hex[7];
+//  pyramid[4] = 13;
+//  u_mesh->addCell( pyramid, MINT_PYRAMID );
+//
+//  internal::populate_and_write( u_mesh, path );
+//  std::ifstream file( path.c_str() );
+//  ASSERT_TRUE( file );
+//  internal::check_header( file );
+//  internal::check_unstructured_mesh( u_mesh, file );
+//  internal::check_data( u_mesh, file );
+//
+//  file.close();
+//  delete u_mesh;
+//#if DELETE_VTK_FILES
+//  std::remove( path.c_str() );
+//#endif
 }
 
 /*!
@@ -1403,76 +1405,79 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
  */
 TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
 {
-  const std::string path = "unstructuredMixedMesh2D.vtk";
-  const IndexType nx = 2;
-  const IndexType ny = 2;
-  const IndexType nNodes = nx * ny;
-  const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh =
-    new UnstructuredMesh< MINT_MIXED_CELL >( 2, nNodes, nCells );
+  EXPECT_TRUE( false );
 
-  /* Create the nodes for the quad. */
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-    {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
-      u_mesh->addNode( x, y );
-    }
-  }
-
-  /* Create the nodes for the triangles. */
-  u_mesh->addNode( -1.0, 0.5 );
-  u_mesh->addNode( 2.0, 0.5 );
-  u_mesh->addNode( 0.5, -1.0 );
-  u_mesh->addNode( 0.5, 2.0 );
-
-  /* Create the quad. */
-  IndexType quad[4];
-  quad[0] = 0;
-  quad[1] = 2;
-  quad[2] = 3;
-  quad[3] = 1;
-  u_mesh->addCell( quad, MINT_QUAD );
-
-  /* Create the triangle for the -x face. */
-  IndexType triangle[3];
-  triangle[0] = quad[0];
-  triangle[1] = quad[3];
-  triangle[2] = 4;
-  u_mesh->addCell( triangle, MINT_TRIANGLE );
-
-  /* Create the triangle for the +x face. */
-  triangle[0] = quad[2];
-  triangle[1] = quad[1];
-  triangle[2] = 5;
-  u_mesh->addCell( triangle, MINT_TRIANGLE );
-
-  /* Create the triangle for the -y face. */
-  triangle[0] = quad[1];
-  triangle[1] = quad[0];
-  triangle[2] = 6;
-  u_mesh->addCell( triangle, MINT_TRIANGLE );
-
-  /* Create the triangle for the +y face. */
-  triangle[0] = quad[3];
-  triangle[1] = quad[2];
-  triangle[2] = 7;
-  u_mesh->addCell( triangle, MINT_TRIANGLE );
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
+// TODO: fix this
+//  const std::string path = "unstructuredMixedMesh2D.vtk";
+//  const IndexType nx = 2;
+//  const IndexType ny = 2;
+//  const IndexType nNodes = nx * ny;
+//  const IndexType nCells = (nx-1) * (ny-1);
+//  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh =
+//    new UnstructuredMesh< MINT_MIXED_CELL >( 2, nNodes, nCells );
+//
+//  /* Create the nodes for the quad. */
+//  for ( IndexType idx = 0 ; idx < nx ; ++idx )
+//  {
+//    for ( IndexType idy = 0 ; idy < ny ; ++idy )
+//    {
+//      double x = idx + internal::randomD( -0.45, 0.45 );
+//      double y = idy + internal::randomD( -0.45, 0.45 );
+//      u_mesh->addNode( x, y );
+//    }
+//  }
+//
+//  /* Create the nodes for the triangles. */
+//  u_mesh->addNode( -1.0, 0.5 );
+//  u_mesh->addNode( 2.0, 0.5 );
+//  u_mesh->addNode( 0.5, -1.0 );
+//  u_mesh->addNode( 0.5, 2.0 );
+//
+//  /* Create the quad. */
+//  IndexType quad[4];
+//  quad[0] = 0;
+//  quad[1] = 2;
+//  quad[2] = 3;
+//  quad[3] = 1;
+//  u_mesh->addCell( quad, MINT_QUAD );
+//
+//  /* Create the triangle for the -x face. */
+//  IndexType triangle[3];
+//  triangle[0] = quad[0];
+//  triangle[1] = quad[3];
+//  triangle[2] = 4;
+//  u_mesh->addCell( triangle, MINT_TRIANGLE );
+//
+//  /* Create the triangle for the +x face. */
+//  triangle[0] = quad[2];
+//  triangle[1] = quad[1];
+//  triangle[2] = 5;
+//  u_mesh->addCell( triangle, MINT_TRIANGLE );
+//
+//  /* Create the triangle for the -y face. */
+//  triangle[0] = quad[1];
+//  triangle[1] = quad[0];
+//  triangle[2] = 6;
+//  u_mesh->addCell( triangle, MINT_TRIANGLE );
+//
+//  /* Create the triangle for the +y face. */
+//  triangle[0] = quad[3];
+//  triangle[1] = quad[2];
+//  triangle[2] = 7;
+//  u_mesh->addCell( triangle, MINT_TRIANGLE );
+//
+//  internal::populate_and_write( u_mesh, path );
+//  std::ifstream file( path.c_str() );
+//  ASSERT_TRUE( file );
+//  internal::check_header( file );
+//  internal::check_unstructured_mesh( u_mesh, file );
+//  internal::check_data( u_mesh, file );
+//
+//  file.close();
+//  delete u_mesh;
+//#if DELETE_VTK_FILES
+//  std::remove( path.c_str() );
+//#endif
 }
 
 /*!

@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_CellTypes_HXX_
-#define MINT_CellTypes_HXX_
+#ifndef MINT_CELLTYPES_HPP_
+#define MINT_CELLTYPES_HPP_
 
 #include "mint/config.hpp"
 
@@ -25,10 +25,12 @@ namespace axom
 namespace mint
 {
 
-constexpr IndexType MAX_NUM_NODES = 27;
-constexpr IndexType NEED_INDIRECTION = -1;
+constexpr int MAX_NUM_NODES = 27;
 
-enum class CellTypes : signed char
+/*!
+ * \brief Enumerates all cell types supported by Mint
+ */
+enum CellTypes
 {
   UNDEFINED_CELL = -1,    ///< UNDEFINED
 
@@ -45,124 +47,88 @@ enum class CellTypes : signed char
   QUAD9,                  ///< QUADRATIC QUAD
   HEX27,                  ///< QUADRATIC HEX
 
-  MIXED,                  ///< MIXED
+  NUM_CELL_TYPES          ///<  total number of cell types
 };
 
-template< CellTypes TYPE > struct cell_info
+/*!
+ * \def REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N )
+ *
+ * \brief Convenience macro used to register information about a cell type.
+ *
+ * \param MINT_CELL_TYPE the mint cell type, e.g., mint::QUAD, mint::HEX, etc.
+ * \param MINT_NAME the associated mint name for the cell type.
+ * \param BP_NAME the associated name in the mesh blueprint.
+ * \param VTK_TYPE the corresponding VTK type.
+ * \param N the number of nodes that the cell hass.
+ */
+#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N ) \
+  namespace internal                                                          \
+  {                                                                           \
+    static constexpr CellInfo MINT_CELL_TYPE##_INFO =                         \
+    {                                                                         \
+      MINT_CELL_TYPE,                                                         \
+      MINT_NAME,                                                              \
+      BP_NAME,                                                                \
+      VTK_TYPE,                                                               \
+      N                                                                       \
+    };                                                                        \
+  }
+
+/*!
+ * \def CELL_INFO( MINT_CELL_TYPE )
+ *
+ * \brief Convenience macro used to access a registered CellInfo struct for
+ *  the specified mint cell type.
+ *
+ * \param MINT_CELL_TYPE the mint cell type, e.g., mint::QUAD, mint::HEX, etc.
+ */
+#define CELL_INFO( MINT_CELL_TYPE ) internal::MINT_CELL_TYPE##_INFO
+
+/*!
+ * \struct CellInfo
+ *
+ * \brief Holds information associated with a given cell type.
+ */
+typedef struct
 {
-  static constexpr bool valid = false;
-};
+   int cell_type;               /*!< cell type, .e.g, mint::QUAD, mint::HEX */
+   const char* name;            /*!< the name associated with the cell */
+   const char* blueprint_name;  /*!< corresponding mesh blueprint name */
+   int vtk_type;                /*!< corresponding vtk_type */
+   int num_nodes;               /*!< number of nodes for the given cell */
+} CellInfo;
 
-template< >
-struct cell_info< CellTypes::VERTEX >
-{
-  static constexpr const char* name = "VERTEX";
-  static constexpr const char* blueprint_name = "point";
-  static constexpr int vtk_type = 1;
-  static constexpr int num_nodes = 1;
-  static constexpr bool valid = true;
-};
+// Cell Info registration
+REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1 );
+REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2 );
 
-template< >
-struct cell_info< CellTypes::SEGMENT >
-{
-  static constexpr const char* name = "SEGMENT";
-  static constexpr const char* blueprint_name = "LINE";
-  static constexpr int vtk_type = 3;
-  static constexpr int num_nodes = 2;
-  static constexpr bool valid = true;
-};
+REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3 );
+REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4 );
+REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4 );
+REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8 );
+REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6 );
+REGISTER_CELL_INFO( PYRAMID, "PYRAMID", "pyramid-no-bp", 14, 5 );
 
-template< >
-struct cell_info< CellTypes::TRIANGLE >
-{
-  static constexpr const char* name = "TRIANGLE";
-  static constexpr const char* blueprint_name = "tri";
-  static constexpr int vtk_type = 5;
-  static constexpr int num_nodes = 3;
-  static constexpr bool valid = true;
-};
+REGISTER_CELL_INFO( QUAD9, "QUAD9", "quad9-no-bp", 28, 9 );
+REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27 );
 
-template< >
-struct cell_info< CellTypes::QUAD >
-{
-  static constexpr const char* name = "QUAD";
-  static constexpr const char* blueprint_name = "quad";
-  static constexpr int vtk_type = 9;
-  static constexpr int num_nodes = 4;
-  static constexpr bool valid = true;
+/*!
+ * \brief Array of CellInfo corresponding to each cell type
+ * \note The order at which CellInfo for each type is added has to match
+ *  the order of the cell types in the CellTypes enum above.
+ */
+static constexpr CellInfo cell_info[ NUM_CELL_TYPES ] = {
+  CELL_INFO( VERTEX ),
+  CELL_INFO( SEGMENT ),
+  CELL_INFO( TRIANGLE ),
+  CELL_INFO( QUAD ),
+  CELL_INFO( TET ),
+  CELL_INFO( HEX ),
+  CELL_INFO( PRISM ),
+  CELL_INFO( PYRAMID ),
+  CELL_INFO( QUAD9 ),
+  CELL_INFO( HEX27 )
 };
-
-template< >
-struct cell_info< CellTypes::TET >
-{
-  static constexpr const char* name = "TET";
-  static constexpr const char* blueprint_name = "tet";
-  static constexpr int vtk_type = 10;
-  static constexpr int num_nodes = 4;
-  static constexpr bool valid = true;
-};
-
-template< >
-struct cell_info< CellTypes::HEX >
-{
-  static constexpr const char* name = "HEX";
-  static constexpr const char* blueprint_name = "hex";
-  static constexpr int vtk_type = 12;
-  static constexpr int num_nodes = 8;
-  static constexpr bool valid = true;
-};
-
-template< >
-struct cell_info< CellTypes::PRISM >
-{
-  static constexpr const char* name = "PRISM";
-  static constexpr const char* blueprint_name = "prism_non_bp";
-  static constexpr int vtk_type = 13;
-  static constexpr int num_nodes = 6;
-  static constexpr bool valid = true;
-};
-
-template< >
-struct cell_info< CellTypes::PYRAMID >
-{
-  static constexpr const char* name = "PYRAMID";
-  static constexpr const char* blueprint_name = "pyramid_non_bp";
-  static constexpr int vtk_type = 14;
-  static constexpr int num_nodes = 5;
-  static constexpr bool valid = true;
-};
-
-template< >
-struct cell_info< CellTypes::QUAD9 >
-{
-  static constexpr const char* name = "QUAD9";
-  static constexpr const char* blueprint_name = "quad9_non_bp";
-  static constexpr int vtk_type = 28;
-  static constexpr int num_nodes = 9;
-  static constexpr bool valid = true;
-};
-
-template< >
-struct cell_info< CellTypes::HEX27 >
-{
-  static constexpr const char* name = "HEX27";
-  static constexpr const char* blueprint_name = "HEX27_non_bp";
-  static constexpr int vtk_type = 29;
-  static constexpr int num_nodes = 27;
-  static constexpr bool valid = true;
-};
-
-template< >
-struct cell_info< CellTypes::MIXED >
-{
-  static constexpr const char* name = "MIXED";
-  static constexpr const char* blueprint_name = "mixed_non_bp";
-  static constexpr int vtk_type = 0;
-  static constexpr int num_nodes = NEED_INDIRECTION;
-  static constexpr bool valid = true;
-};
-
 
 } /* namespace mint */
 } /* namespace axom */

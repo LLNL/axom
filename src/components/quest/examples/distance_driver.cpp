@@ -59,7 +59,7 @@ using axom::primal::Vector;
 
 using quest::SignedDistance;
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 
 static struct
 {
@@ -204,7 +204,7 @@ void write_triangles( axom::mint::Mesh * mesh,
     subset->addNode( n3[0], n3[1], n3[2] );
     new_cell[2] = icount; ++icount;
 
-    subset->addCell( new_cell, MINT_TRIANGLE );
+    subset->addCell( new_cell, mint::TRIANGLE );
   }
 
   axom::mint::write_vtk( subset, fileName );

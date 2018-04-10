@@ -55,7 +55,7 @@ namespace
 
 namespace slic = axom::slic;
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };
@@ -458,7 +458,7 @@ void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
                   "Quest currently only supports 3D (not 2D) triangle meshes.");
-  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == mint::UNSTRUCTURED_MESH,
                   "Quest currently only supports 3D triangle meshes "
                   "(not any other kind of cell).");
 

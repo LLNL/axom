@@ -56,11 +56,11 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< CellTypes::TET > : public ShapeFunction< Lagrange< CellTypes::TET > >
+class Lagrange< mint::TET > : public ShapeFunction< Lagrange< mint::TET > >
 {
 public:
 
-  static CellTypes getCellType() { return CellTypes::TET; }
+  static int getCellType() { return mint::TET; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

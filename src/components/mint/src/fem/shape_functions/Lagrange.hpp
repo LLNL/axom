@@ -37,12 +37,12 @@ namespace mint
 /*!
  * \brief Defines the Lagrange family of Finite Elements
  *
- * \tparam CellType the cell type of the element, e.g., MINT_QUAD, etc.
+ * \tparam CellType the cell type of the element, e.g., mint::QUAD, etc.
  *
  * \note This is the default implementation. Only stubs are defined at this
  *  level.This class is specialized according to cell type.
  */
-template < CellTypes CellType >
+template < int CellType >
 class Lagrange : public ShapeFunction< Lagrange< CellType > >
 {
 
@@ -55,11 +55,11 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static CellTypes getCellType()
+  static int getCellType()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
-    return CellTypes::UNDEFINED_CELL;
+    return CellType;
   }
 
   /*!
@@ -71,7 +71,7 @@ public:
    */
   static int getType()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
     return MINT_UNDEFINED_BASIS;
   }
@@ -84,7 +84,7 @@ public:
    */
   static int getNumDofs()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
     return 0;
   }
@@ -98,7 +98,7 @@ public:
    */
   static int getMaxNewtonIters()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
     return 0;
   }
@@ -112,7 +112,7 @@ public:
    */
   static int getDimension()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
     return 0;
   }
@@ -125,7 +125,7 @@ public:
    */
   static int getMin()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
     return 0;
   }
@@ -138,7 +138,7 @@ public:
    */
   static int getMax()
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
     return 0;
   }
@@ -153,7 +153,7 @@ public:
    */
   static void getCenter( double* AXOM_NOT_USED(center) )
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
   }
 
@@ -168,7 +168,7 @@ public:
    */
   static void getCoords( double* AXOM_NOT_USED(coords) )
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
   }
 
@@ -187,7 +187,7 @@ public:
   static void computeShape( const double* AXOM_NOT_USED(nc),
                             double* AXOM_NOT_USED(phi) )
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
   }
 
@@ -206,7 +206,7 @@ public:
   static void computeDerivatives( const double* AXOM_NOT_USED(nc),
                                   double* AXOM_NOT_USED(phidot) )
   {
-    AXOM_STATIC_ASSERT( cell_info< CellType >::valid );
+    AXOM_STATIC_ASSERT( (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
     Lagrange< CellType >::checkCellType();
   }
 
@@ -217,8 +217,16 @@ private:
    */
   static void checkCellType( )
   {
-    SLIC_ERROR( "Lagrange ShapeFuction does not support " <<
-                cell_info< CellType >::name   );
+    if ( (CellType >= 0) && ( CellType < mint::NUM_CELL_TYPES ) )
+    {
+      SLIC_ERROR( "Lagrange shape functions for ["  <<
+                  cell_info[ CellType ].name  << "] are not defined!" );
+    }
+    else
+    {
+      SLIC_ERROR( "Invalid CellType: " << CellType );
+    }
+
   }
 
 };

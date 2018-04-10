@@ -21,7 +21,7 @@
 #include "axom/Types.hpp"
 #include "axom/Macros.hpp"
 
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/config.hpp"
 #include "mint/Extent.hpp"
 #include "mint/Mesh.hpp"
@@ -207,14 +207,15 @@ private:
 
 inline int StructuredMesh::getCellType( ) const
 {
-  return ( (m_ndims==3)? MINT_HEX : ( (m_ndims==2)? MINT_QUAD:MINT_SEGMENT ) );
+  return ( (m_ndims==3)? mint::HEX :
+             ( (m_ndims==2)? mint::QUAD : mint::SEGMENT ) );
 }
 
 //------------------------------------------------------------------------------
 inline int StructuredMesh::getNumberOfCellNodes( ) const
 {
   const int cell_type = getCellType( );
-  return cell::num_nodes[ cell_type ];
+  return cell_info[ cell_type ].num_nodes;
 }
 
 //------------------------------------------------------------------------------

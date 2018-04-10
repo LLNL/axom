@@ -22,13 +22,13 @@
 #include "axom_utils/Utilities.hpp"   // for utilities::max
 #include "axom_utils/Matrix.hpp"      // for numerics::Matrix
 
-#include "mint/CellType.hpp"          // for cell::vtk_types
+#include "mint/CellTypes.hpp"          // for cell::vtk_types
 #include "mint/Field.hpp"             // for Field
 #include "mint/FieldData.hpp"         // for FieldData
 #include "mint/FieldTypes.hpp"        // for *_FIELD_TYPE
 #include "mint/FiniteElement.hpp"     // for mint::FiniteElement
 #include "mint/Mesh.hpp"              // for Mesh
-#include "mint/MeshType.hpp"          // for MINT_*_*_MESH
+#include "mint/MeshTypes.hpp"          // for MINT_*_*_MESH
 #include "mint/RectilinearMesh.hpp"   // for RectilinearMesh
 #include "mint/StructuredMesh.hpp"    // for StructuredMesh
 #include "mint/UniformMesh.hpp"       // for UniformMesh
@@ -445,19 +445,14 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
   file << "ASCII\n";
 
   /* Write out the mesh node and cell coordinates. */
-  if ( mesh_type == MINT_UNSTRUCTURED_SEGMENT_MESH ||
-       mesh_type == MINT_UNSTRUCTURED_TRIANGLE_MESH ||
-       mesh_type == MINT_UNSTRUCTURED_QUAD_MESH ||
-       mesh_type == MINT_UNSTRUCTURED_TET_MESH ||
-       mesh_type == MINT_UNSTRUCTURED_HEX_MESH ||
-       mesh_type == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH ||
-       mesh_type == MINT_PARTICLE_MESH )
+  if ( mesh_type == mint::UNSTRUCTURED_MESH ||
+       mesh_type == mint::PARTICLE_MESH )
   {
     file << "DATASET UNSTRUCTURED_GRID\n";
     internal::write_points( mesh, file );
     internal::write_cells( mesh, file );
   }
-  else if ( mesh_type == MINT_STRUCTURED_CURVILINEAR_MESH )
+  else if ( mesh_type == mint::STRUCTURED_MESH )
   {
     file << "DATASET STRUCTURED_GRID\n";
     const StructuredMesh* struc_mesh =
@@ -465,14 +460,14 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
     internal::write_dimensions( struc_mesh, file );
     internal::write_points( struc_mesh, file );
   }
-  else if ( mesh_type == MINT_STRUCTURED_RECTILINEAR_MESH )
+  else if ( mesh_type == mint::RECTILINEAR_MESH )
   {
     file << "DATASET RECTILINEAR_GRID\n";
     const RectilinearMesh* rect_mesh =
       dynamic_cast< const RectilinearMesh* >( mesh );
     internal::write_rectilinear_mesh( rect_mesh, file );
   }
-  else if ( mesh_type == MINT_STRUCTURED_UNIFORM_MESH )
+  else if ( mesh_type == mint::UNIFORM_MESH )
   {
     file << "DATASET STRUCTURED_POINTS\n";
     const UniformMesh* uniform_mesh =
@@ -568,7 +563,7 @@ int write_vtk( mint::FiniteElement& fe, const std::string& file_path )
 
   // write cell type information
   ofs << "CELL_TYPES 1\n";
-  ofs << mint::cell::vtk_types[ cell_type ] << std::endl;
+  ofs << mint::cell_info[ cell_type ].vtk_type << std::endl;
 
   // close the file
   ofs.close();

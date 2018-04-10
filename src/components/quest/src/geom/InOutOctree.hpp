@@ -878,7 +878,7 @@ public:
       for(mint::IndexType i=0 ; i< numOrigTris ; ++i)
       {
         // Grab relation from mesh
-        using TriangleMesh = mint::UnstructuredMesh< MINT_TRIANGLE >;
+        using TriangleMesh = mint::UnstructuredMesh< mint::TRIANGLE >;
         mint::IndexType* vertIds =
             static_cast< TriangleMesh* >(m_surfaceMesh)->getCell( i );
 
@@ -921,7 +921,7 @@ public:
         m_surfaceMesh = AXOM_NULLPTR;
       }
 
-      typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+      typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
       TriangleMesh * triMesh =
           new TriangleMesh(3, m_vertexSet.size(), m_elementSet.size() );
 
@@ -936,7 +936,7 @@ public:
       for(int i=0; i< m_elementSet.size(); ++i)
       {
         const TriangleIndex * tv = &triangleVertexIndices(i)[0];
-        triMesh->addCell(tv, MINT_TRIANGLE);
+        triMesh->addCell(tv, mint::TRIANGLE);
       }
 
       m_surfaceMesh = triMesh;
@@ -2357,7 +2357,7 @@ public:
   typedef axom::slam::Map<int> LeafIntMap;
   typedef axom::slam::Map<GridPt> LeafGridPtMap;
 
-  typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::MIXED > DebugMesh;
 
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
@@ -2808,7 +2808,7 @@ private:
         data[i] = vStart + i;
     }
 
-    mesh->addCell(data, MINT_TRIANGLE);
+    mesh->addCell(data, mint::TRIANGLE);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2851,7 +2851,7 @@ private:
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
-    mesh->addCell(data, MINT_HEX);
+    mesh->addCell(data, mint::HEX);
 
     // Log the triangle info as primal code to simplify adding a test for this case
     if(shouldLogBlocks)

@@ -173,7 +173,7 @@ axom::mint::Mesh * make_octahedron_mesh()
   }
 
   // Now create an unstructured triangle mesh from the two arrays
-  typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+  typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
   TriangleMesh * triMesh = new TriangleMesh(3);
 
   // insert verts
@@ -185,7 +185,7 @@ axom::mint::Mesh * make_octahedron_mesh()
   // insert triangles
   for(int i=0 ; i< NUM_TRIS ; ++i)
   {
-    triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], MINT_TRIANGLE);
+    triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], mint::TRIANGLE);
   }
 
   SLIC_ASSERT( NUM_VERTS == triMesh->getNumberOfNodes() );
@@ -202,7 +202,7 @@ axom::mint::Mesh * make_octahedron_mesh()
  */
 axom::mint::Mesh* make_tetrahedron_mesh()
 {
-  typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+  typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 
   TriangleMesh* surface_mesh = new TriangleMesh(3);
   surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
@@ -211,13 +211,13 @@ axom::mint::Mesh* make_tetrahedron_mesh()
   surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
   int cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-  surface_mesh->addCell(cell, MINT_TRIANGLE);
+  surface_mesh->addCell(cell, mint::TRIANGLE);
   cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-  surface_mesh->addCell(cell, MINT_TRIANGLE);
+  surface_mesh->addCell(cell, mint::TRIANGLE);
   cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-  surface_mesh->addCell(cell, MINT_TRIANGLE);
+  surface_mesh->addCell(cell, mint::TRIANGLE);
   cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-  surface_mesh->addCell(cell, MINT_TRIANGLE);
+  surface_mesh->addCell(cell, mint::TRIANGLE);
 
   return surface_mesh;
 }

@@ -19,9 +19,9 @@
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/config.hpp"
-#include "mint/MeshType.hpp"
+#include "mint/MeshTypes.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
@@ -37,7 +37,7 @@ using axom::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::TRIANGLE > TriangleMesh;
 typedef axom::mint::UniformMesh UniformMesh;
 
 using axom::primal::BoundingBox;
@@ -125,7 +125,7 @@ void getMesh( TriangleMesh* mesh )
     c[2] = phiResolution*i + /* number of poles */ 2;
     c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
     c[0] = 0;
-    mesh->addCell( c, MINT_TRIANGLE );
+    mesh->addCell( c, axom::mint::TRIANGLE );
   } // END for
 
   // Generate mesh connectivity around south pole
@@ -135,7 +135,7 @@ void getMesh( TriangleMesh* mesh )
     c[2] = phiResolution*i + offset;
     c[1] = ( phiResolution*(i+1) % stride ) + offset;
     c[0] = 1;
-    mesh->addCell( c, MINT_TRIANGLE );
+    mesh->addCell( c, axom::mint::TRIANGLE );
   }
 
   // Generate mesh connectivity in between poles
@@ -149,11 +149,11 @@ void getMesh( TriangleMesh* mesh )
       c[ 1 ] = c[0] + 1;
       c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
 
-      mesh->addCell( c, MINT_TRIANGLE );
+      mesh->addCell( c, axom::mint::TRIANGLE );
 
       c[ 1 ] = c[ 2 ];
       c[ 2 ] = c[ 1 ] - 1;
-      mesh->addCell( c, MINT_TRIANGLE );
+      mesh->addCell( c, axom::mint::TRIANGLE );
     }  // END for all j
   } // END for all i
 }

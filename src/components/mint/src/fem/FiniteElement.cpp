@@ -353,12 +353,12 @@ bool FiniteElement::inReferenceElement( const double* xi, double TOL )
 
   bool is_inside = true;
 
-  switch ( m_ctype )
+  switch ( m_ctype  )
   {
-  case MINT_TRIANGLE:
-  case MINT_TET:
-  case MINT_PRISM:
-  case MINT_PYRAMID:
+  case mint::TRIANGLE:
+  case mint::TET:
+  case mint::PRISM:
+  case mint::PYRAMID:
     this->evaluateShapeFunctions( xi, m_phi );
     for ( int i=0 ; is_inside && (i < m_numdofs) ; ++i )
     {

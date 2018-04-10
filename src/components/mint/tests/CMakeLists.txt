@@ -24,7 +24,7 @@ set( mint_tests
      mint_mesh_field_data.cpp
      mint_mesh_field_types.cpp
      mint_mesh_field_variable.cpp
-     mint_mesh_connectivity_array.cpp
+#     mint_mesh_connectivity_array.cpp
 
      ## fem tests
      mint_fem_shape_functions.cpp

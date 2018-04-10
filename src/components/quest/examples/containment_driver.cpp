@@ -66,7 +66,7 @@
 
 using namespace axom;
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
@@ -126,7 +126,7 @@ void testIntersectionOnRegularGrid()
 
   TriangleType unitTri( ptX, ptY, ptZ );
 
-  typedef mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::MIXED > DebugMesh;
   DebugMesh * debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
@@ -135,7 +135,7 @@ void testIntersectionOnRegularGrid()
   debugMesh->addNode( ptZ[0], ptZ[1], ptZ[2]);
 
   mint::IndexType tArr[3] = {0,1,2};
-  debugMesh->addCell(tArr, MINT_TRIANGLE);
+  debugMesh->addCell(tArr, mint::TRIANGLE);
 
   PointType bbMin(-0.1);
   PointType bbMax(1.1);
@@ -204,7 +204,7 @@ void testIntersectionOnRegularGrid()
                   data[i] = vStart + i;
                 }
 
-                debugMesh->addCell(data, MINT_HEX);
+                debugMesh->addCell(data, mint::HEX);
               }
 
             }

@@ -51,12 +51,12 @@ static const double PRISM_ONE_THIRD =  1.0/3.0;
  * \see ShapeFunction
  */
 template < >
-class Lagrange< CellTypes::PRISM > :
-  public ShapeFunction< Lagrange< CellTypes::PRISM > >
+class Lagrange< mint::PRISM > :
+  public ShapeFunction< Lagrange< mint::PRISM > >
 {
 public:
 
-  static CellTypes getCellType() { return CellTypes::PRISM; }
+  static int getCellType() { return mint::PRISM; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

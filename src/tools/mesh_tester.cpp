@@ -45,7 +45,7 @@
 
 using namespace axom;
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -238,7 +238,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
 
 inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
-  SLIC_ASSERT(surface_mesh->getMeshCellType( i ) == MINT_TRIANGLE );
+  SLIC_ASSERT(surface_mesh->getMeshCellType( i ) == mint::TRIANGLE );
   primal::Point<int, 3> triCell;
   Triangle3 tri;
   surface_mesh->getMeshCell(i, triCell.data());

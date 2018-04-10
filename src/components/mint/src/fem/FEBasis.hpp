@@ -52,19 +52,19 @@ namespace mint
  * \see ShapeFunction
  * \see FEBasisTypes
  */
-template < int BasisType, CellTypes CellType >
+template < int BasisType, int CellType >
 struct FEBasis { };
 
 // Lagrange Basis
-REGISTER_LAGRANGE_BASIS(  CellTypes::QUAD );
-REGISTER_LAGRANGE_BASIS(  CellTypes::TRIANGLE );
-REGISTER_LAGRANGE_BASIS(  CellTypes::TET );
-REGISTER_LAGRANGE_BASIS(  CellTypes::HEX );
-REGISTER_LAGRANGE_BASIS(  CellTypes::PRISM );
-REGISTER_LAGRANGE_BASIS(  CellTypes::PYRAMID );
+REGISTER_LAGRANGE_BASIS(  mint::QUAD );
+REGISTER_LAGRANGE_BASIS(  mint::TRIANGLE );
+REGISTER_LAGRANGE_BASIS(  mint::TET );
+REGISTER_LAGRANGE_BASIS(  mint::HEX );
+REGISTER_LAGRANGE_BASIS(  mint::PRISM );
+REGISTER_LAGRANGE_BASIS(  mint::PYRAMID );
 
-REGISTER_LAGRANGE_BASIS(  CellTypes::QUAD9 );
-REGISTER_LAGRANGE_BASIS(  CellTypes::HEX27 );
+REGISTER_LAGRANGE_BASIS(  mint::QUAD9 );
+REGISTER_LAGRANGE_BASIS(  mint::HEX27 );
 
 } /* namespace mint */
 } /* namespace axom */

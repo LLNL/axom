@@ -77,12 +77,12 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< CellTypes::HEX27 > :
-  public ShapeFunction< Lagrange< CellTypes::HEX27 > >
+class Lagrange< mint::HEX27 > :
+  public ShapeFunction< Lagrange< mint::HEX27 > >
 {
 public:
 
-  static CellTypes getCellType() { return CellTypes::HEX27; }
+  static int getCellType() { return mint::HEX27; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

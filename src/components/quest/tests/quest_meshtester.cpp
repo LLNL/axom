@@ -35,7 +35,7 @@
 #include <fstream>
 #include <sstream>
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::TRIANGLE > TriangleMesh;
 
 std::string vecToString(const std::vector<int> & v)
 {
@@ -210,13 +210,13 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
     axom::mint::IndexType cell[3];
     cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
 
     // No self-intersections or degenerate triangles
     intersections.clear();
@@ -240,13 +240,13 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode( -0.200003, -0.100003, 18.999999);
     axom::mint::IndexType cell[3];
     cell[0] = 4;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
 
     // No self-intersections or degenerate triangles
     intersections.clear();
@@ -270,13 +270,13 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
     axom::mint::IndexType cell[3];
     cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 3;    cell[1] = 2;    cell[2] = 4;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 1;    cell[1] = 4;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
 
     intersections.clear();
     intersections.push_back(std::make_pair(0, 1));
@@ -302,17 +302,17 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
     axom::mint::IndexType cell[3];
     cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 3;    cell[1] = 2;    cell[2] = 4;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 1;    cell[1] = 4;    cell[2] = 2;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 0;    cell[1] = 0;    cell[2] = 0;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
     cell[0] = 3;    cell[1] = 4;    cell[2] = 3;
-    surface_mesh->addCell(cell, MINT_TRIANGLE);
+    surface_mesh->addCell(cell, axom::mint::TRIANGLE);
 
     intersections.clear();
     intersections.push_back(std::make_pair(0, 1));

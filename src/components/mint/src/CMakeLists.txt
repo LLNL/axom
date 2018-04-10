@@ -43,7 +43,7 @@ set( mint_headers
     ## Mesh data-model
     mesh/CellConnectivity.hpp
     mesh/CellTypes.hpp
-    mesh/ConnectivityArray.hpp
+#    mesh/ConnectivityArray.hpp
     mesh/CurvilinearMesh.hpp
     mesh/Extent.hpp
     mesh/Field.hpp
@@ -64,9 +64,9 @@ set( mint_headers
     utils/vtk_utils.hpp
 
     ## Internal implementation
-    internal/ConnectivityArray_indirection.hpp
-    internal/ConnectivityArray_indirection_and_types.hpp
-    internal/ConnectivityArray_internal.hpp
+#    internal/ConnectivityArray_indirection.hpp
+#    internal/ConnectivityArray_indirection_and_types.hpp
+#    internal/ConnectivityArray_internal.hpp
    )
 
 ## mint sources

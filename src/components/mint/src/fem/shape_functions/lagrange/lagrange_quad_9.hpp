@@ -54,12 +54,12 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< CellTypes::QUAD9 > :
-  public ShapeFunction< Lagrange< CellTypes::QUAD9 > >
+class Lagrange< mint::QUAD9 > :
+  public ShapeFunction< Lagrange< mint::QUAD9 > >
 {
 public:
 
-  static CellTypes getCellType() { return CellTypes::QUAD9; }
+  static int getCellType() { return mint::QUAD9; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

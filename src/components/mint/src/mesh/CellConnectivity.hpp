@@ -22,7 +22,7 @@
 
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/Array.hpp"
 #include "mint/config.hpp"
 #include "slic/slic.hpp"
@@ -45,8 +45,8 @@ public:
    * \brief Default constructor.
    */
   CellConnectivity( IndexType capacity=100, double resize_ratio=2.0 ) :
-    m_stride( cell::num_nodes[ cell_type ] ),
-    m_connectivity( capacity, 0, cell::num_nodes[ cell_type ] )
+    m_stride( -1 ),
+    m_connectivity( capacity, 0, -1 )
   { m_connectivity.setResizeRatio( resize_ratio ); };
 
   /*!
@@ -173,7 +173,7 @@ private:
 //------------------------------------------------------------------------------
 
 template <>
-class CellConnectivity< MINT_MIXED_CELL >
+class CellConnectivity< -1 >
 {
 public:
 
@@ -267,7 +267,7 @@ public:
    * \pre cell != AXOM_NULLPTR .
    */
   void addCell( const IndexType* cell, int type ) {
-    int num_nodes = cell::num_nodes[ type ];
+    int num_nodes = cell_info[ type ].num_nodes;
 
     /* STEP 0: get the last cell index before adding the new cell. */
     IndexType new_cell_id  = this->getNumberOfCells();

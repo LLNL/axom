@@ -30,7 +30,7 @@ namespace
 static const int DIM = 3;
 static const double EPS = 1e-6;
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::TRIANGLE > TriangleMesh;
 typedef axom::primal::Point<double, 3> Point3;
 
 /*! Insert a vertex with coordinates (x,y,z) into \a mesh  */
@@ -44,7 +44,7 @@ void insertVertex(TriangleMesh* mesh, double x, double y, double z)
 void insertTriangle(TriangleMesh* mesh, int v1, int v2, int v3)
 {
   int indices[3] = {v1,v2,v3};
-  mesh->addCell(indices, MINT_TRIANGLE);
+  mesh->addCell(indices, axom::mint::TRIANGLE);
 }
 
 }
