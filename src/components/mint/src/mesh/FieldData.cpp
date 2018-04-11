@@ -212,6 +212,21 @@ void FieldData::reserve( IndexType newCapacity )
 }
 
 //------------------------------------------------------------------------------
+void FieldData::shrink( )
+{
+  const int numFields = getNumFields( );
+
+  for ( int i=0; i < numFields; ++i )
+  {
+    if ( m_fields[ i ] != AXOM_NULLPTR )
+    {
+      m_fields[ i ]->shrink( );
+    }
+  }
+
+}
+
+//------------------------------------------------------------------------------
 void FieldData::removeField( const std::string& name )
 {
   SLIC_ERROR_IF( name.empty(), "field name cannot be empty!" );

@@ -428,6 +428,18 @@ public:
    */
   void reserve( IndexType newCapacity );
 
+  /*!
+   * \brief Shrinks the tuple capacity of all fields in this FieldData instance
+   *  to be equal to the actual number of tuples in the field.
+   *
+   * \warning If the FieldData instance contains a FieldVariable that cannot be
+   *  re-sized, e.g., it points to an external buffer, this method will abort
+   *  with an error.
+   *
+   * \see FieldVariable
+   */
+  void shrink( );
+
 /// @}
 
 private:

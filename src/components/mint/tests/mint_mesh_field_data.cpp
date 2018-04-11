@@ -103,6 +103,36 @@ void check_reserve( mint::FieldData& field_data, int NEW_CAPACITY )
 }
 
 //------------------------------------------------------------------------------
+void check_shrink( mint::FieldData& field_data )
+{
+  EXPECT_TRUE( field_data.getNumFields() >  1 );
+
+  const int numFields = field_data.getNumFields();
+
+  // ensure the current capacity is larger than num_tuples
+  mint::IndexType num_tuples = field_data.getField( 0 )->getNumTuples();
+  field_data.reserve( num_tuples*10 );
+  for ( int i=0; i < numFields; ++i )
+  {
+    mint::Field* f = field_data.getField( i );
+    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f->getNumTuples() < f->getCapacity() );
+    EXPECT_EQ( f->getCapacity(), num_tuples*10 );
+  }
+
+  // shrink the space
+  field_data.shrink( );
+
+  // check that max capacity is num_tuples
+  for ( int i=0; i < numFields; ++i )
+  {
+    mint::Field* f = field_data.getField( i );
+    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_EQ( f->getCapacity(), f->getNumTuples() );
+  }
+
+}
+//------------------------------------------------------------------------------
 void check_create_and_access_data( mint::FieldData& field_data,
                                    int NUM_TUPLES,
                                    int NUM_COMPONENTS,
@@ -298,6 +328,7 @@ TEST( mint_mesh_field_data_DeathTest, invalid_operations )
   // to external buffers.
   EXPECT_DEATH_IF_SUPPORTED( field_data.reserve( 10 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( field_data.resize( 10 ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( field_data.shrink(), IGNORE_OUTPUT );
 
   // creating an external field with a null pointer should fail
   EXPECT_DEATH_IF_SUPPORTED(
@@ -637,6 +668,42 @@ TEST( mint_mesh_field_data, reserve )
   mint::Array< double > f2( fields_group->getView("f2/values") );
   EXPECT_EQ( f1.capacity(), NEW_CAPACITY );
   EXPECT_EQ( f2.capacity(), NEW_CAPACITY );
+#endif
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_field_data, shrink )
+{
+  constexpr int NUM_TUPLES      = 4;
+  constexpr int NEW_CAPACITY    = 256;
+  constexpr int NUM_COMPONENTS  = 3;
+  constexpr int MAGIC_INT       = 42;
+  constexpr double MAGIC_DOUBLE = 3.14;
+
+  mint::FieldData native_data( mint::NODE_CENTERED );
+  check_create_and_access_data( native_data, NUM_TUPLES, NUM_COMPONENTS,
+                                MAGIC_INT, MAGIC_DOUBLE );
+  EXPECT_EQ( native_data.getNumFields(), 2 );
+
+  check_shrink( native_data );
+
+#ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* fields_group = ds.getRoot( );
+
+  mint::FieldData sidre_data( mint::NODE_CENTERED, fields_group );
+  check_create_and_access_data( sidre_data, NUM_TUPLES, NUM_COMPONENTS,
+                                MAGIC_INT, MAGIC_DOUBLE );
+  EXPECT_EQ( sidre_data.getNumFields(), 2 );
+  EXPECT_TRUE( sidre_data.hasSidreGroup() );
+
+  check_shrink( sidre_data );
+
+  // check the raw sidre data
+  mint::Array< int > f1( fields_group->getView("f1/values") );
+  mint::Array< double > f2( fields_group->getView("f2/values") );
+  EXPECT_EQ( f1.capacity(), f1.size() );
+  EXPECT_EQ( f2.capacity(), f2.size() );
 #endif
 }
 
