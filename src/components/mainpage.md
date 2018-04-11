@@ -17,8 +17,8 @@ Axom provides libraries that address common computer science needs.  It grew fro
 
 # Further documentation
 
-- [Quick start guide](../../../sphinx/quickstart_guide_docs/html/index.html)
 - [User manual](../../../sphinx/web_main_docs/html/index.html)
+- [Quick start guide](../../../sphinx/quickstart_guide_docs/html/index.html)
 - [Development guide](../../../sphinx/dev_guide_docs/html/index.html) (intended for Axom contributors)
 - Coding [style guide](../../../sphinx/coding_guide_docs/html/index.html) (intended for Axom contributors)
 
