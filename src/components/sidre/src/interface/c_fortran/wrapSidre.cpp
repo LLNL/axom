@@ -16,11 +16,6 @@
 #include "wrapSidre.h"
 #include <string>
 
-namespace axom
-{
-namespace sidre
-{
-
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
 
@@ -59,6 +54,3 @@ bool SIDRE_name_is_valid(const char* name)
 }
 
 }  // extern "C"
-
-}  // namespace sidre
-}  // namespace axom

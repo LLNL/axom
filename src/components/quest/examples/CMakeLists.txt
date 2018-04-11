@@ -83,8 +83,7 @@ else()
 endif()
 
 
-# The quest fortran API depends on MPI
-if (ENABLE_MPI AND ENABLE_FORTRAN)
+if (ENABLE_FORTRAN)
     blt_add_executable(
         NAME        quest_interface_F_ex
         SOURCES     quest_interface_fortran.F
@@ -96,4 +95,16 @@ if (ENABLE_MPI AND ENABLE_FORTRAN)
     set_target_properties(quest_interface_F_ex
                           PROPERTIES LINKER_LANGUAGE Fortran)
 
+    if (ENABLE_MPI)
+        blt_add_test(
+            NAME quest_interface_mpi_F_test
+            COMMAND quest_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+            NUM_MPI_TASKS 2
+            )
+    else()
+        blt_add_test(
+            NAME quest_interface_F_test
+            COMMAND quest_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+            )
+    endif()
 endif()

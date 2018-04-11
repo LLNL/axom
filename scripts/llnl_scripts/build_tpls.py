@@ -85,8 +85,7 @@ def main():
         os.chdir(repo_dir)
 
         timestamp = get_timestamp()
-        specs = get_specs_for_current_machine()
-        res = full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp)
+        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp)
 
         if opts["archive"] != "":
             # Get information for archiving
@@ -99,10 +98,9 @@ def main():
             archive_tpl_logs(builds_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
-    
-
 
     return res
+
 
 if __name__ == "__main__":
     sys.exit(main())

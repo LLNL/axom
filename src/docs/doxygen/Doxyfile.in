@@ -794,11 +794,10 @@ INPUT                  = @PROJECT_SOURCE_DIR@/src/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/src/components/quest/src \
                          @PROJECT_SOURCE_DIR@/src/components/quest/src/detail \
                          @PROJECT_SOURCE_DIR@/src/components/quest/src/geom \
-                         @PROJECT_SOURCE_DIR@/src/components/quest/src/interface \
                          @PROJECT_SOURCE_DIR@/src/components/quest/src/stl \
                          @PROJECT_SOURCE_DIR@/src/components/sidre/README.md \
                          @PROJECT_SOURCE_DIR@/src/components/sidre/src/core \
-                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/capi \
+                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/spio \
                          @PROJECT_SOURCE_DIR@/src/components/slam/README.md \
                          @PROJECT_SOURCE_DIR@/src/components/slam/src \
                          @PROJECT_SOURCE_DIR@/src/components/slam/src/policies \
@@ -807,7 +806,6 @@ INPUT                  = @PROJECT_SOURCE_DIR@/src/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/src/components/slam/examples/tinyHydro \
                          @PROJECT_SOURCE_DIR@/src/components/slic/README.md \
                          @PROJECT_SOURCE_DIR@/src/components/slic/src/core \
-                         @PROJECT_SOURCE_DIR@/src/components/slic/src/interface \
                          @PROJECT_SOURCE_DIR@/src/components/slic/src/streams
 
 # This tag can be used to specify the character encoding of the source files

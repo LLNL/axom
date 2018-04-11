@@ -56,9 +56,7 @@ endif()
 
 if(SHROUD_FOUND)
     add_subdirectory(interface)
-    if(ENABLE_MPI)
-        add_subdirectory(spio/interface)
-    endif()
+    add_subdirectory(spio/interface)
 endif()
 
 if (ENABLE_FORTRAN)

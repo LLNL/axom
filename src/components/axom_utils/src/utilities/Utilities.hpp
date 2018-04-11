@@ -48,9 +48,6 @@ namespace utilities
  */
 void processAbort();
 
-/// \name Math utilities
-/// @{
-
 /*!
  * \brief Returns the absolute value of x.
  * \param [in] x value whose absolute value is computed.
@@ -263,8 +260,6 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
   // Note: If we use this, we must update the doxygen
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
 }
-
-/// @}
 
 }  // namespace utilities
 }  // namespace axom

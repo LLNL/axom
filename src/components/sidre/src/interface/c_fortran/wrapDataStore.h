@@ -22,8 +22,8 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
+#include <stddef.h>
 #include "sidre/SidreTypes.h"
-#include "stdlib.h"
 
 // splicer begin class.DataStore.CXX_declarations
 // splicer end class.DataStore.CXX_declarations
@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-// declaration of wrapped types
+// declaration of shadow types
 struct s_SIDRE_buffer;
 typedef struct s_SIDRE_buffer SIDRE_buffer;
 struct s_SIDRE_datastore;
@@ -49,6 +49,8 @@ void SIDRE_datastore_delete(SIDRE_datastore* self);
 
 SIDRE_group* SIDRE_datastore_get_root(SIDRE_datastore* self);
 
+size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore* self);
+
 SIDRE_buffer* SIDRE_datastore_get_buffer(SIDRE_datastore* self,
                                          SIDRE_IndexType idx);
 
@@ -59,8 +61,6 @@ SIDRE_buffer* SIDRE_datastore_create_buffer_from_type(SIDRE_datastore* self,
                                                       SIDRE_SidreLength num_elems);
 
 void SIDRE_datastore_destroy_buffer(SIDRE_datastore* self, SIDRE_IndexType id);
-
-size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore* self);
 
 void SIDRE_datastore_print(const SIDRE_datastore* self);
 

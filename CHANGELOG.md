@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Added a sphere-sphere intersection test and associated unit test.
+- Added a utility function to Quest to *weld* vertices in a triangle mesh that are within 
+  a given tolerance. After welding, all triangles incident in a vertex have the same 
+  index for that vertex. This function has been integrated into the ``mesh_tester`` utility.
+- Adds a bounded All-Nearest-Neighbor query to Quest.  This query takes a list
+  of point locations and associated regions, and for each point reports the nearest 
+  point in a different region that is no farther than a max search radius.
+
+### Changed
+- Refactored and cleaned up Primal's Sphere class.
+-  
 ## [0.2.9] - 2017-03-08
 
 ### Added
