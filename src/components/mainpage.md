@@ -5,12 +5,19 @@ Axom provides libraries that address common computer science needs.  It grew fro
 
 # Axom components
 
-* @subpage axomutiltop provides shared utility functionality to all components
-* @subpage lumberjacktop provides logging aggregation and filtering capability
-* @subpage slictop provides logging levels and targets
-* @subpage slamtop provides an API to construct and process meshes
+* @subpage axomutiltop provides shared utility functionality to all components.
+* @subpage lumberjacktop provides logging aggregation and filtering capability.
+* @subpage minttop provides a mesh representation with finite element operations.
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
-* @subpage questtop provides an API to query point distance and position relative to meshes
-* @subpage sidretop provides a data store with hierarchical structure
+* @subpage questtop provides an API to query point distance and position relative to meshes.
+* @subpage sidretop provides a data store with hierarchical structure.
+* @subpage slamtop provides an API to construct and process meshes.
+* @subpage slictop provides logging levels and targets.
 
 
+# Further documentation
+
+- [Quick start guide](../../../sphinx/quickstart_guide_docs/html/index.html)
+- [User manual](../../../sphinx/web_main_docs/html/index.html)
+- [Development guide](../../../sphinx/dev_guide_docs/html/index.html) (intended for Axom contributors)
+- Coding [style guide](../../../sphinx/coding_guide_docs/html/index.html) (intended for Axom contributors)

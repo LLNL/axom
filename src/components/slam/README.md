@@ -1,21 +1,17 @@
 SLAM: A (S)et-theoretic (L)ightweight (A)PI for (M)eshes {#slamtop}
 =========
 
-Axom's Slam component provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for [the lab's multiphysics] simulation codes. 
+Axom's [Slam](@ref axom::slam) component provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for multiphysics simulation codes.  Slam's [classes and functions](@ref axom::slam) provide context to a mesh's entities and associated data stored as raw data.  Slam models meshes in terms of three set-theoretic concepts:
 
-The SLAM component is a collection of low-level primitives that provide context to the mesh's entities and associated data stored as raw data. Specifically, it models meshes in terms of three set-theoretic concepts: 
-
-* [Sets](#sets) of entities (e.g. vertices, cells, particles)
-* [Relations](#relations) among pairs of sets (e.g. incidence, adjacency and containment relations)
-* [Maps](#maps) defining fields and attributes on the elements of a given set. 
+* Sets of entities (e.g. vertices, cells, particles)
+* Relations among pairs of sets (e.g. incidence, adjacency and containment relations)
+* Maps defining fields and attributes on the elements of a given set
 
 <!--    (see ['components' section](@ref #components) for more detail) -->
 
 # Design goals {#goals}
 
-The concepts in this component are not new. In fact, since they lie at the foundation of computational meshes, they are implemented (to some degree) in every simulation code.  However, the underlying abstractions are typically latent in the design, and developers are often wary of making changes to working code.
-
-It is our belief that explicitly modeling these underlying abstractions improves the comprehensibility and maintainability of the code while also presenting opportunities for optimization
+The concepts in this component are not new. In fact, since they lie at the foundation of computational meshes, they are implemented (to some degree) in every simulation code.  However, the underlying abstractions are typically latent in the design, and developers are often wary of making changes to working code.   Explicitly modeling these underlying abstractions improves the comprehensibility and maintainability of the code and presents opportunities for optimization.
 <!-- (e.g. we can define some constants at compile time, when they are known). -->
 
 Our template-based implementation helps reduce the abstraction cost (or at least moves it to compile time).
@@ -30,10 +26,10 @@ where we can associate an index with each element.
 
 Each element of such a set can be described in terms of an offset, a stride and an indirection.
 That is, for a set `theSet`, the element at position `p` is:
-    someSet[p] = indirection( stride*pos + offset) 
 
-## Subsets {#subsets}
+    someSet[p] = indirection( stride*pos + offset)
 
+<!-- ## Subsets {#subsets} -->
 
 # Relations {#relations}
 
@@ -46,11 +42,9 @@ A taxonomy of relations
 * Cardinality: Fixed vs. Variable
 
 
-
-
 # Maps {#maps}
 
-Maps are
+Maps associate a value with a set member, storing field data.
 
 
 # Expected usage
@@ -60,8 +54,8 @@ Maps are
   This layer will define a generic API for accessing the mesh geometry.
   All mesh implementations must satisfy this API (either natively or through an adaptor) to work with axom components.  
           
-  We envision a CMI-like interface for this layer.
-  [It should also be possible to have an ITAPS iMesh interface as well since the design goals will be similar at this level].
+<!--  We envision a CMI-like interface for this layer.
+  [It should also be possible to have an ITAPS iMesh interface as well since the design goals will be similar at this level]. -->
   
   
   

@@ -773,21 +773,42 @@ WARN_LOGFILE           = dox.warnings
 
 INPUT                  = @PROJECT_SOURCE_DIR@/src/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/src/components/axom_utils/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/axom_utils/src/utilities \
+                         @PROJECT_SOURCE_DIR@/src/components/axom_utils/src/numerics \
+                         @PROJECT_SOURCE_DIR@/src/components/axom_utils/src/detail \
                          @PROJECT_SOURCE_DIR@/src/components/lumberjack/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/lumberjack/src \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src/fem \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src/fem/shape_functions \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src/fem/shape_functions/lagrange \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src/mesh \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src/utils \
                          @PROJECT_SOURCE_DIR@/src/components/primal/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/primal/src/geometry \
+                         @PROJECT_SOURCE_DIR@/src/components/primal/src/operators \
+                         @PROJECT_SOURCE_DIR@/src/components/primal/src/operators/detail \
+                         @PROJECT_SOURCE_DIR@/src/components/primal/src/spatial_acceleration \
                          @PROJECT_SOURCE_DIR@/src/components/quest/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/quest/src \
+                         @PROJECT_SOURCE_DIR@/src/components/quest/src/detail \
+                         @PROJECT_SOURCE_DIR@/src/components/quest/src/geom \
+                         @PROJECT_SOURCE_DIR@/src/components/quest/src/interface \
+                         @PROJECT_SOURCE_DIR@/src/components/quest/src/stl \
                          @PROJECT_SOURCE_DIR@/src/components/sidre/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/core \
+                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/capi \
                          @PROJECT_SOURCE_DIR@/src/components/slam/README.md \
-                         @PROJECT_SOURCE_DIR@/src/components/slic/README.md
-#                         @PROJECT_SOURCE_DIR@/src/components/axom_utils/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/lumberjack/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/mint/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/primal/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/quest/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/slam/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/slic/src/ \
-#                         @PROJECT_SOURCE_DIR@/src/components/sidre/src/spio/
+                         @PROJECT_SOURCE_DIR@/src/components/slam/src \
+                         @PROJECT_SOURCE_DIR@/src/components/slam/src/policies \
+                         @PROJECT_SOURCE_DIR@/src/components/slam/examples \
+                         @PROJECT_SOURCE_DIR@/src/components/slam/examples/lulesh2.0.3 \
+                         @PROJECT_SOURCE_DIR@/src/components/slam/examples/tinyHydro \
+                         @PROJECT_SOURCE_DIR@/src/components/slic/README.md \
+                         @PROJECT_SOURCE_DIR@/src/components/slic/src/core \
+                         @PROJECT_SOURCE_DIR@/src/components/slic/src/interface \
+                         @PROJECT_SOURCE_DIR@/src/components/slic/src/streams
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -2097,14 +2118,7 @@ SKIP_FUNCTION_MACROS   = YES
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
 
-TAGFILES               = @CMAKE_BINARY_DIR@/src/components/axom_utils/docs/doxygen/axom_utils.tag = ../../../axom_utils/html \
-                         @CMAKE_BINARY_DIR@/src/components/lumberjack/docs/doxygen/lumberjack.tag = ../../../lumberjack/html \
-                         @CMAKE_BINARY_DIR@/src/components/primal/docs/doxygen/primal.tag = ../../../primal/html \
-                         @CMAKE_BINARY_DIR@/src/components/mint/docs/doxygen/mint.tag = ../../../mint/html \
-                         @CMAKE_BINARY_DIR@/src/components/quest/docs/doxygen/quest.tag = ../../../quest/html \
-                         @CMAKE_BINARY_DIR@/src/components/sidre/docs/doxygen/sidre.tag = ../../../sidre/html \
-                         @CMAKE_BINARY_DIR@/src/components/slam/docs/doxygen/slam.tag = ../../../slam/html \
-                         @CMAKE_BINARY_DIR@/src/components/slic/docs/doxygen/slic.tag = ../../../slic/html
+TAGFILES               =
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to
