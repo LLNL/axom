@@ -22,8 +22,8 @@
 #ifndef WRAPBUFFER_H
 #define WRAPBUFFER_H
 
+#include <stddef.h>
 #include "sidre/SidreTypes.h"
-#include "stdlib.h"
 
 // splicer begin class.Buffer.CXX_declarations
 // splicer end class.Buffer.CXX_declarations
@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-// declaration of wrapped types
+// declaration of shadow types
 struct s_SIDRE_buffer;
 typedef struct s_SIDRE_buffer SIDRE_buffer;
 

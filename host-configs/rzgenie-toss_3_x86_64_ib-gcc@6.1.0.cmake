@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_18_47_52/spack/opt/spack/toss_3_x86_64_ib/gcc-6.1.0/cmake-3.8.2-75v5s4uacaiymbl7vsuah3mpxke6n3do/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_04_04_23_59_06/spack/opt/spack/toss_3_x86_64_ib/gcc-6.1.0/cmake-3.8.2-75v5s4uacaiymbl7vsuah3mpxke6n3do/bin/cmake
 
 #######
 # using gcc@6.1.0 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_18_47_52/spack/opt/spack/toss_3_x86_64_ib/gcc-6.1.0" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_04_04_23_59_06/spack/opt/spack/toss_3_x86_64_ib/gcc-6.1.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-qp4afhvt4p3klk74736c5ya5eoxa7r7d" CACHE PATH "")

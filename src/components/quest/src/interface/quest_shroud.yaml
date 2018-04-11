@@ -18,7 +18,7 @@ copyright:
 
 library: QUEST
 cxx_header: quest/quest.hpp
-namespace: axom quest
+#namespace: axom quest
 
 options:
   C_line_length: 1000
@@ -31,24 +31,40 @@ format:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
+  F_filename_suffix: F
 
-#declarations:
-#  - namespace: axom
-#    declarations:
-#    - namespace: quest
-#      declarations:
-functions:
-      - options:
-          # Change the default template for Fortran functions to include the library name.
-          F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+declarations:
+
+  - type: MPI_Comm
+    fields:
+      cpp_if: ifdef AXOM_USE_MPI
+
+  - decl: namespace axom
+    declarations:
+    - decl: namespace quest
+      options:
+        # Change the default template for Fortran functions to include the library name.
+        F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+        F_name_generic_template: "{library_lower}_{underscore_name}"
+
+      declarations:
       - decl: void initialize( MPI_Comm comm, const std::string& fileName,
                                bool requiresDistance, int ndims, int maxElements,
                                int maxLevels )
+        format:
+          function_suffix: _mpi
+        cpp_if: ifdef AXOM_USE_MPI
+      - decl: void initialize( const std::string& fileName,
+                               bool requiresDistance, int ndims, int maxElements,
+                               int maxLevels )
+        format:
+          function_suffix: _serial
+        cpp_if: ifndef AXOM_USE_MPI
 
-      - decl: double distance(double x, double y, double z)
+      - decl: double distance(double x, double y, double z=0.0)
 ##    - decl: void distance( const double* xyz, double* dist, int npoints )
 
-      - decl: int inside(double x, double y, double z)
+      - decl: int inside(double x, double y, double z=0.0)
 ##    - decl: void inside( const double* xyz, int* in, int npoints )
 
       - decl: void mesh_min_bounds(double* coords+dimension+intent(OUT))
@@ -56,3 +72,9 @@ functions:
       - decl: void mesh_center_of_mass(double* coords+dimension+intent(OUT))
 
       - decl: void finalize()
+
+
+splicer_code:
+  f:
+    file_top:
+    - "#include <axom/config.hpp>"

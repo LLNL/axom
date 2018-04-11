@@ -22,18 +22,20 @@ module quest_interface_ex
 
 #include "axom/config.hpp"
 
-#ifndef AXOM_USE_MPIF_HEADER
+ use iso_c_binding, only : C_DOUBLE
+
+#if defined AXOM_USE_MPI && ! defined AXOM_USE_MPIF_HEADER
   use mpi
 #endif
   use axom_quest
   implicit none
 
-#ifdef AXOM_USE_MPIF_HEADER
+#if defined AXOM_USE_MPI && defined AXOM_USE_MPIF_HEADER
   include 'mpif.h'
 #endif
 
   integer :: num_pts = 10, rank, nprocs, ierr
-  character(LEN=40) :: FileName = "sphere.stl"
+  character(LEN=:), allocatable :: FileName
   integer :: dim = 3
 
 contains
@@ -46,8 +48,8 @@ contains
   function random_double(lb,ub ) result(d)
     implicit none
 
-    real*8, value, intent(in) ::  lb, ub
-    real*8 :: d
+    real(C_DOUBLE), value, intent(in) ::  lb, ub
+    real(C_DOUBLE) :: d
 
     call random_number(d)
     d =  (ub-lb) * d + lb
@@ -56,14 +58,18 @@ contains
 
   subroutine init_mpi()
     !...initialize MPI
+#ifdef AXOM_USE_MPI
     call mpi_init( ierr )
     call mpi_comm_rank( MPI_COMM_WORLD, rank, ierr )
     call mpi_comm_size( MPI_COMM_WORLD, nprocs, ierr )
+#endif
   end subroutine init_mpi
 
   subroutine finalize_mpi()
     !... finalize MPI
+#ifdef AXOM_USE_MPI
     call mpi_finalize( ierr )
+#endif
   end subroutine finalize_mpi
 
   !-------------------------------------------------------------------------------
@@ -75,10 +81,10 @@ contains
     implicit none
 
     integer :: i, ins
-    real*8  :: x, y, z, phi
+    real(C_DOUBLE)  :: x, y, z, phi
     integer :: bucket_size = 25
     integer :: depth = 10
-    real*8 :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
+    real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, F6.2, I3)"
 
     if (rank == 0) then
@@ -88,7 +94,11 @@ contains
 
 
     !...initialize quest
+#ifdef AXOM_USE_MPI
     call quest_initialize( MPI_COMM_WORLD, FileName, .true., dim, bucket_size, depth )
+#else
+    call quest_initialize( FileName, .true., dim, bucket_size, depth )
+#endif
     call quest_mesh_min_bounds(mesh_bb_min)
     call quest_mesh_max_bounds(mesh_bb_max)
     call quest_mesh_center_of_mass(mesh_center_of_mass)
@@ -126,9 +136,9 @@ contains
     implicit none
 
     integer :: i, ins
-    real*8  :: x, y, z
+    real(C_DOUBLE)  :: x, y, z
     integer :: unused = -1
-    real*8 :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
+    real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, I3)"
 
     if (rank == 0) then
@@ -138,7 +148,12 @@ contains
 
 
     !...initialize quest
+#ifdef AXOM_USE_MPI
     call quest_initialize( MPI_COMM_WORLD, FileName, .false., dim, unused, unused )
+#else
+    call quest_initialize( FileName, .false., dim, unused, unused )
+#endif
+
     call quest_mesh_min_bounds(mesh_bb_min)
     call quest_mesh_max_bounds(mesh_bb_max)
     call quest_mesh_center_of_mass(mesh_center_of_mass)
@@ -175,8 +190,13 @@ program quest_fortran
   use quest_interface_ex
 
   implicit none
+  integer len_name
 
   call init_mpi()
+
+  call get_command_argument(1, length=len_name)
+  allocate(character(len_name):: FileName)
+  call get_command_argument(1, FileName)
 
   !...exercise the distance functions in quest module
   call run_distance_queries()

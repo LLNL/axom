@@ -29,8 +29,6 @@
 extern "C" {
 #endif
 
-// declaration of wrapped types
-
 // splicer begin C_declarations
 // splicer end C_declarations
 

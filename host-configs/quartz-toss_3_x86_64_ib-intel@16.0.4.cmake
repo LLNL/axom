@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_03_07_22_05_22/spack/opt/spack/toss_3_x86_64_ib/intel-16.0.4/cmake-3.8.2-w6l263mvbyzmlptgiyibdtx4mfczorwz/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_04_05_00_04_28/spack/opt/spack/toss_3_x86_64_ib/intel-16.0.4/cmake-3.8.2-w6l263mvbyzmlptgiyibdtx4mfczorwz/bin/cmake
 
 #######
 # using intel@16.0.4 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-16.0.4/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_03_07_22_05_22/spack/opt/spack/toss_3_x86_64_ib/intel-16.0.4" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_04_05_00_04_28/spack/opt/spack/toss_3_x86_64_ib/intel-16.0.4" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-z6nt2tyk2j2eop2df6ghod6dnfhwei6s" CACHE PATH "")

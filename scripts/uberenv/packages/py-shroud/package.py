@@ -5,8 +5,9 @@ class PyShroud(Package):
     """Create Fortran wrappers for a C++ library."""
 
     homepage = "https://github.com/LLNL/shroud"
-    url      = "https://github.com/LLNL/shroud/archive/v0.8.0.tar.gz"
+    url      = "https://github.com/LLNL/shroud/archive/v0.9.0.tar.gz"
 
+    version('0.9.0', 'f6a5ce0602a0c2d1d47de78c04ab302c')
     version('0.8.0', 'ec94d6f9cf3246d4370007abd4d270d8')
 
     extends('python')

@@ -48,14 +48,7 @@ module axom_spio
         procedure :: get_instance => iomanager_get_instance
         procedure :: set_instance => iomanager_set_instance
         procedure :: associated => iomanager_associated
-        generic :: read => &
-            ! splicer begin class.IOManager.generic.read
-            ! splicer end class.IOManager.generic.read
-            read_0,  &
-            read_1,  &
-            read_2,  &
-            read_3,  &
-            read_4
+        generic :: read => read_0, read_1, read_2, read_3, read_4
         ! splicer begin class.IOManager.type_bound_procedure_part
         ! splicer end class.IOManager.type_bound_procedure_part
     end type iomanager
