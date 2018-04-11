@@ -1490,12 +1490,15 @@ TEST( mint_util_write_vtk, ParticleMesh3D )
   const IndexType nParticles = 1000;
   ParticleMesh* p_mesh = new ParticleMesh( 3, nParticles );
 
+  double* x = p_mesh->getParticlePositions( X_COORDINATE );
+  double* y = p_mesh->getParticlePositions( Y_COORDINATE );
+  double* z = p_mesh->getParticlePositions( Z_COORDINATE );
+
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    double x = 10.0 * internal::randomD( 0.0, 1.0 );
-    double y = 10.0 * internal::randomD( 0.0, 1.0 );
-    double z = 10.0 * internal::randomD( 0.0, 1.0 );
-    p_mesh->addParticle( x, y, z );
+    x[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
+    y[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
+    z[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1522,11 +1525,13 @@ TEST( mint_util_write_vtk, ParticleMesh2D )
   const IndexType nParticles = 1000;
   ParticleMesh* p_mesh = new ParticleMesh( 2, nParticles );
 
+  double* x = p_mesh->getParticlePositions( X_COORDINATE );
+  double* y = p_mesh->getParticlePositions( Y_COORDINATE );
+
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    double x = 10.0 * internal::randomD( 0.0, 1.0 );
-    double y = 10.0 * internal::randomD( 0.0, 1.0 );
-    p_mesh->addParticle( x, y );
+    x[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
+    y[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1553,10 +1558,11 @@ TEST( mint_util_write_vtk, ParticleMesh1D )
   const IndexType nParticles = 1000;
   ParticleMesh* p_mesh = new ParticleMesh( 1, nParticles );
 
+  double* x = p_mesh->getParticlePositions( X_COORDINATE );
+
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    double x = 10.0 * internal::randomD( 0.0, 1.0 );
-    p_mesh->addParticle( x );
+    x[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );

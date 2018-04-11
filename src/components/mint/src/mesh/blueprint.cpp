@@ -137,9 +137,6 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
   SLIC_WARNING_IF( coords==AXOM_NULLPTR,
     "null coordset [" << coordset_name << "] in " <<coordsets->getPathName() );
 
-  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( coords ),
-                 "requested coordset does not conform to the blueprint" );
-
   return coords;
 }
 

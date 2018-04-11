@@ -14,6 +14,8 @@
 
 set( mint_examples
      mint_heat_equation.cpp
+     mint_nbody_solver.cpp
+     mint_particle_mesh.cpp
    )
 
 foreach( example ${mint_examples} )

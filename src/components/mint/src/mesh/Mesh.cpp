@@ -19,7 +19,9 @@
 
 // axom includes
 #include "axom/Types.hpp"
+
 #include "mint/FieldData.hpp"
+#include "mint/ParticleMesh.hpp"
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"
@@ -81,7 +83,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   SLIC_ERROR_IF( ! blueprint::validRootGroup( m_group ),
                 "root group does not conform to blueprint" );
 
-  if ( m_group->hasChildView("state") )
+  if ( m_group->hasChildGroup("state") )
   {
     sidre::Group* state_group = m_group->getGroup( "state" );
     if ( state_group->hasChildView( "block_id" ) )
@@ -96,6 +98,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   }
 
   blueprint::getMeshTypeAndDimension( m_type, m_ndims, m_group, m_topology );
+  m_topology = getTopologyGroup( )->getName( );
 
   SLIC_ERROR_IF( !validMeshType(), "invalid mesh type=" << m_type );
   SLIC_ERROR_IF( !validDimension(), "invalid mesh dimension=" << m_ndims );
@@ -138,11 +141,21 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId,
   m_topology = ( topo.empty() )? "t1" : topo;
   std::string coordset_name = ( coordset.empty() )? "c1" : coordset;
 
-  sidre::Group* state_group = m_group->createGroup( "state_group" );
+  // create state group for this mesh
+  sidre::Group* state_group = m_group->createGroup( "state" );
   state_group->createView( "block_id" )->setScalar( m_block_idx );
   state_group->createView( "partition_id" )->setScalar( m_part_idx );
+
+  // create the coordset group
   m_group->createGroup( "coordsets" )->createGroup( coordset_name );
-  m_group->createGroup( "topologies" )->createGroup( m_topology);
+
+  // create the topology group for this mesh and link to the coordset
+  sidre::Group* t =
+      m_group->createGroup( "topologies" )->createGroup( m_topology);
+  t->createView( "coordset" )->setString( coordset_name );
+  t->createView( "type" )->setString( "undefined" );
+
+  // create the fields group  for this mesh
   m_group->createGroup( "fields" );
 
   allocateFieldData();
@@ -182,51 +195,29 @@ Mesh::~Mesh()
 //------------------------------------------------------------------------------
 double* Mesh::getCoordinateArray( int dim )
 {
-  SLIC_ERROR_IF( !hasExplicitCoordinates(),
-        "mesh of type [" << m_type << "] does not have explicit coordinates" );
-  SLIC_ERROR_IF( ( (dim >= 0) && ( dim < getDimension() ) ),
-    "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
-  getDimension() << "]" );
-
-  switch ( m_type )
-  {
-  case PARTICLE_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case STRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case RECTILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case UNSTRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  default:
-    SLIC_ERROR( "Undefined MeshType!" );
-  } // END switch
-
-  return AXOM_NULLPTR;
+  const double* coords =
+      const_cast< const Mesh* >( this )->getCoordinateArray( dim );
+  return ( const_cast< double* >( coords ) );
 }
 
 //------------------------------------------------------------------------------
-inline const double* Mesh::getCoordinateArray( int dim ) const
+const double* Mesh::getCoordinateArray( int dim ) const
 {
   SLIC_ERROR_IF( !hasExplicitCoordinates(),
        "mesh of type [" << m_type << "] does not have explicit coordinates" );
-  SLIC_ERROR_IF( ( (dim >= 0) && ( dim < getDimension() ) ),
+  SLIC_ERROR_IF( !( (dim >= 0) && ( dim < getDimension() ) ),
    "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
    getDimension() << "]" );
+
+  const double* coord = AXOM_NULLPTR;
 
   switch ( m_type )
   {
   case PARTICLE_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    {
+      const ParticleMesh* pm = static_cast< const ParticleMesh* >( this );
+      coord = pm->getParticlePositions( dim );
+    }
     break;
   case STRUCTURED_MESH:
     SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
@@ -244,7 +235,7 @@ inline const double* Mesh::getCoordinateArray( int dim ) const
     SLIC_ERROR( "Undefined MeshType!" );
   } // END switch
 
-  return AXOM_NULLPTR;
+  return coord;
 }
 
 //------------------------------------------------------------------------------
@@ -257,8 +248,16 @@ void Mesh::getMeshNode( IndexType nodeIdx, double* node ) const
   switch ( m_type )
   {
   case PARTICLE_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    {
+      const ParticleMesh* pm = static_cast< const ParticleMesh* >( this );
+      SLIC_ASSERT( pm != AXOM_NULLPTR );
+
+      for ( int i=0; i < m_ndims; ++i )
+      {
+        node[ i ] = pm->getParticlePositions( i )[ nodeIdx ];
+      }
+
+    }
     break;
   case UNIFORM_MESH:
     SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
@@ -351,8 +350,7 @@ void Mesh::allocateFieldData( )
 
   if ( hasSidreGroup() )
   {
-    sidre::Group* fields_group = ( m_group->hasChildGroup("fields") ?
-            m_group->getGroup( "fields") : m_group->createGroup( "fields") );
+    sidre::Group* fields_group = m_group->getGroup( "fields");
     SLIC_ASSERT( fields_group != AXOM_NULLPTR );
 
     for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
@@ -422,8 +420,7 @@ Mesh* Mesh::getMesh( const sidre::Group* group, const std::string& topo )
     // TODO: implement this
     break;
   case PARTICLE_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    m = new ParticleMesh( const_cast< sidre::Group* >( group ), topo );
     break;
   default:
     SLIC_ERROR( "undefined mesh_type [" << mesh_type << "]\n" );

@@ -328,7 +328,10 @@ public:
    * \brief Returns the cell type of the requested cell
    *
    * \param [in] cellIdx the index of the requested cell (optional).
-   * \return
+   * \return cellType the cellType at the requested cell index.
+   *
+   * \note If a cell index is not specified, this method will return the
+   *  cell type of the cell at the zero location.
    *
    * \see CellTypes.hpp
    */
@@ -721,6 +724,9 @@ inline const FieldData* Mesh::getFieldData( int association ) const
                   "invalid field association [" << association << "]" );
   SLIC_ERROR_IF( m_mesh_fields[ association ]==AXOM_NULLPTR,
               "null field data object w/association [" << association << "]" );
+  SLIC_ERROR_IF( m_type==PARTICLE_MESH && association != NODE_CENTERED,
+              "a particle mesh may only store node-centered fields" );
+
   return m_mesh_fields[ association ];
 }
 
@@ -802,7 +808,8 @@ inline T* Mesh::getFieldPtr( const std::string& name,
                              int association,
                              IndexType& num_components )
 {
-  const T* ptr = getFieldPtr< T >( name, association, num_components );
+  const Mesh* self = const_cast< const Mesh* >( this );
+  const T* ptr = self->getFieldPtr< T >( name, association, num_components );
   return ( const_cast< T* >( ptr ) );
 }
 
