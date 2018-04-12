@@ -153,21 +153,19 @@ const
 //------------------------------------------------------------------------------
 inline void ParticleMesh::addParticle( double x ) {
   SLIC_ASSERT( this->getDimension() == 1 );
-  m_particle_coordinates.append( &x );
+  m_particle_coordinates.append( x );
 }
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::addParticle( double x, double y ) {
   SLIC_ASSERT( this->getDimension() == 2 );
-  double xx[2] = { x, y };
-  m_particle_coordinates.append( xx );
+  m_particle_coordinates.append( x, y );
 }
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::addParticle( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3);
-  double xx[3] = { x, y, z };
-  m_particle_coordinates.append( xx );
+  m_particle_coordinates.append( x, y, z );
 }
 
 //------------------------------------------------------------------------------

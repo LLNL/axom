@@ -131,50 +131,48 @@ private:
 inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y,
                                       double z)
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT( this->getDimension() == 3 );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < getNumberOfNodes() );
+  SLIC_ASSERT( getDimension() == 3 );
 
-  double xx[3] = { x, y, z };
-  m_coordinates.set( nodeIdx, xx );
+  m_coordinates.set( nodeIdx, x, y, z );
 }
 
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( IndexType i, IndexType j, IndexType k,
                                       double x, double y, double z )
 {
-  SLIC_ASSERT( this->getDimension() == 3 );
+  SLIC_ASSERT( getDimension() == 3 );
 
   IndexType nodeIdx = m_extent.getLinearIndex( i, j, k );
-  this->setNode( nodeIdx, x, y, z );
+  setNode( nodeIdx, x, y, z );
 }
 
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y )
 {
   SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < m_num_nodes );
-  SLIC_ASSERT(  this->getDimension() == 2 );
+  SLIC_ASSERT(  getDimension() == 2 );
 
-  double xx[3] = { x, y };
-  m_coordinates.set( nodeIdx, xx );
+  m_coordinates.set( nodeIdx, x, y );
 }
 
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( IndexType i, IndexType j, double x,
                                       double y )
 {
-  SLIC_ASSERT( this->getDimension() == 2 );
+  SLIC_ASSERT( getDimension() == 2 );
 
   IndexType nodeIdx = m_extent.getLinearIndex( i, j );
-  this->setNode( nodeIdx, x, y );
+  setNode( nodeIdx, x, y );
 }
 
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x )
 {
   SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < m_num_nodes );
-  SLIC_ASSERT( this->getDimension() == 1 );
+  SLIC_ASSERT( getDimension() == 1 );
 
-  m_coordinates.set( nodeIdx, &x );
+  m_coordinates.set( nodeIdx, x );
 }
 
 } /* namespace mint */

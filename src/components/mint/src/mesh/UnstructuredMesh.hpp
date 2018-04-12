@@ -314,7 +314,7 @@ template < int CellType >
 inline void UnstructuredMesh< CellType >::addNode( double x )
 {
   SLIC_ASSERT( this->getDimension() == 1 );
-  m_node_coordinates->append( &x );
+  m_node_coordinates->append( x );
 // TODO: revisit this later
 //  this->setNodeDataSize( getNumberOfNodes() );
 }
@@ -324,8 +324,7 @@ template < int CellType >
 inline void UnstructuredMesh< CellType >::addNode( double x, double y )
 {
   SLIC_ASSERT( this->getDimension() == 2 );
-  double xx[2] = { x, y };
-  m_node_coordinates->append( xx );
+  m_node_coordinates->append( x, y );
 // TODO: revisit this later
 //  this->setNodeDataSize( getNumberOfNodes() );
 }
@@ -335,18 +334,17 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::addNode( double x, double y, double z ) {
   SLIC_ASSERT( this->getDimension() == 3 );
-  double xx[3] = {x, y, z};
-  m_node_coordinates->append( xx );
+  m_node_coordinates->append( x, y, z );
 // TODO: revisit this later
 //  this->setNodeDataSize( getNumberOfNodes() );
 }
 
 //------------------------------------------------------------------------------
 template < int CellType >
-inline void UnstructuredMesh< CellType >::addNode( const double* node ) {
-  SLIC_ASSERT( node != AXOM_NULLPTR );
+inline void UnstructuredMesh< CellType >::addNode( const double*) {
+  // SLIC_ASSERT( node != AXOM_NULLPTR );
 
-  m_node_coordinates->append( node );
+  // m_node_coordinates->append( node );
 // TODO: revisiti this later
 //  this->setNodeDataSize( getNumberOfNodes() );
 }

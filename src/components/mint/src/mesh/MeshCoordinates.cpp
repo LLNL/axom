@@ -70,13 +70,13 @@ MeshCoordinates::MeshCoordinates( int dimension,
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( IndexType numNodes, double* x, double* y,
-                                  double* z )
+MeshCoordinates::MeshCoordinates( IndexType numNodes, IndexType capacity, 
+                                  double* x, double* y, double* z )
 {
 
   m_ndims = ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) ;
   SLIC_ERROR_IF( invalidDimension(), "invalid dimension" );
-  SLIC_ERROR_IF( numNodes < 1, "numNodes < 1" );
+  SLIC_ERROR_IF( capacity < 1, "capacity < 1" );
 
   double* ptrs[3];
   ptrs[ 0 ] = x;
@@ -88,7 +88,7 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes, double* x, double* y,
     SLIC_ERROR_IF( ptrs[ i ]==AXOM_NULLPTR,
                   "encountered null coordinate array for i=" << i );
 
-    m_coordinates[ i ] = new Array< double >( ptrs[i], numNodes, 1 );
+    m_coordinates[ i ] = new Array< double >( ptrs[i], numNodes, 1, capacity );
   }
 
   SLIC_ASSERT( consistencyCheck() );

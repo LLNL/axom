@@ -187,8 +187,8 @@ public:
    * \post numNodes() == numNodes
    * \post numNodes() <= capacity()
    */
-  MeshCoordinates( IndexType numNodes, double* x, double* y=AXOM_NULLPTR,
-                   double* z=AXOM_NULLPTR );
+  MeshCoordinates( IndexType numNodes, IndexType capacity, double* x, 
+                   double* y=AXOM_NULLPTR, double* z=AXOM_NULLPTR );
 /// @}
 
 /// \name Sidre Constructors
@@ -308,30 +308,74 @@ public:
   /*!
    * \brief Appends a new node to the MeshCoordinates instance
    *
-   * \param [in] x pointer to buffer consisting the coordinates of the new node.
-   * \return idx the index of the new node
+   * \param [in] x the coordinate to append.
    *
-   * \note x should point to a buffer that is at least m_ndims long
-   *
-   * \warning The append() operation is invalid when a MeshCoordinates object
-   *  is constructed using external buffers. Since, in this case the object does
-   *  not own the associated memory, dynamic resizing is not allowed.
-   *
-   * \pre x != AXOM_NULLPTR
+   * \pre dimension() == 1
    * \post idx >=0 && idx == numNodes()-1
    * \post the number of nodes is incremented by one.
    */
-  inline IndexType append( const double* x );
+  inline IndexType append( double x );
+
+  /*!
+   * \brief Appends a new node to the MeshCoordinates instance
+   *
+   * \param [in] x the first coordinate to append.
+   * \param [in] y the second coordinate to append.
+   *
+   * \pre dimension() == 2
+   * \post idx >=0 && idx == numNodes()-1
+   * \post the number of nodes is incremented by one.
+   */
+  inline IndexType append( double x, double y );
+
+  /*!
+   * \brief Appends a new node to the MeshCoordinates instance
+   *
+   * \param [in] x the first coordinate to append.
+   * \param [in] y the second coordinate to append.
+   * \param [in] z the third coordinate to append.
+   *
+   * \pre dimension() == 3
+   * \post idx >=0 && idx == numNodes()-1
+   * \post the number of nodes is incremented by one.
+   */
+  inline IndexType append( double x, double y, double z );
 
   /*!
    * \brief Sets the coordinates for the given node.
    *
-   * \param [in] nodeIdx the index of the node whose coordinates to set
-   * \param [in] x pointer to the coordinates buffer.
+   * \param [in] nodeIdx the index of the node whose coordinates to set.
+   * \param [in] x the new value of the first coordinate.
    *
-   * \note x should point to a buffer that is at least m_ndims long
+   * \pre dimension() == 1
+   * \post idx >=0 && idx == numNodes()-1
    */
-  inline void set( IndexType nodeIdx, const double* x );
+  inline void set( IndexType nodeIdx, double x );
+
+  /*!
+   * \brief Sets the coordinates for the given node.
+   *
+   * \param [in] nodeIdx the index of the node whose coordinates to set.
+   * \param [in] x the new value of the first coordinate.
+   * \param [in] y the new value of the second coordinate.
+   *
+   * \pre dimension() == 2
+   * \post idx >=0 && idx == numNodes()-1
+   */
+  inline void set( IndexType nodeIdx, double x, double y );
+
+  /*!
+   * \brief Sets the coordinates for the given node.
+   *
+   * \param [in] nodeIdx the index of the node whose coordinates to set.
+   * \param [in] x the new value of the first coordinate.
+   * \param [in] y the new value of the second coordinate.
+   * \param [in] z the new value of the third coordinate.
+   *
+   * \pre dimension() == 3
+   * \post idx >=0 && idx == numNodes()-1
+   */
+  inline void set( IndexType nodeIdx, double x, double y, double z );
 
 /// @}
 
@@ -482,39 +526,114 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline IndexType MeshCoordinates::append( const double* x )
+inline IndexType MeshCoordinates::append( double x )
 {
-  SLIC_ASSERT( x != AXOM_NULLPTR );
-
+  SLIC_ASSERT( dimension() == 1 );
+  SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
+  
   IndexType idx = numNodes();
-
-  for ( int dim = 0; dim < m_ndims; ++dim )
-  {
-    SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
-    m_coordinates[ dim ]->append( x[ dim ] );
-  }
+  m_coordinates[0]->append( x );
 
   SLIC_ASSERT( idx == numNodes() - 1 );
   SLIC_ASSERT( this->validIndex( idx ) ) ;
-  SLIC_ASSERT( this->consistencyCheck( ) );
+  SLIC_ASSERT( this->consistencyCheck() );
 
   return idx;
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::set( IndexType nodeIdx, const double* x )
+inline IndexType MeshCoordinates::append( double x, double y )
 {
-  SLIC_ASSERT( x != AXOM_NULLPTR );
-  SLIC_ASSERT( this->validIndex( nodeIdx ) );
+  SLIC_ASSERT( dimension() == 2 );
+  SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates[1] != AXOM_NULLPTR );
 
-  for ( int dim=0; dim < m_ndims; ++dim )
-  {
-    double* data = m_coordinates[ dim ]->getData( );
-    SLIC_ASSERT( m_coordinates[ dim ]->numComponents() == 1 );
-    SLIC_ASSERT( data != AXOM_NULLPTR );
+  IndexType idx = numNodes();
+  m_coordinates[0]->append( x );
+  m_coordinates[1]->append( y );
 
-    data[ nodeIdx ] = x[ dim ];
-  }
+  SLIC_ASSERT( idx == numNodes() - 1 );
+  SLIC_ASSERT( this->validIndex( idx ) ) ;
+  SLIC_ASSERT( this->consistencyCheck() );
+
+  return idx;
+}
+
+//------------------------------------------------------------------------------
+inline IndexType MeshCoordinates::append( double x, double y, double z )
+{
+  SLIC_ASSERT( dimension() == 3 );
+  SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates[1] != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates[2] != AXOM_NULLPTR );
+
+  IndexType idx = numNodes();
+  m_coordinates[0]->append( x );
+  m_coordinates[1]->append( y );
+  m_coordinates[2]->append( z );
+
+  SLIC_ASSERT( idx == numNodes() - 1 );
+  SLIC_ASSERT( validIndex( idx ) ) ;
+  SLIC_ASSERT( consistencyCheck() );
+
+  return idx;
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::set( IndexType nodeIdx, double x )
+{
+  SLIC_ASSERT( dimension() == 1 );
+  SLIC_ASSERT( validIndex( nodeIdx ) );
+  SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
+
+  double* data = m_coordinates[0]->getData();
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+  data[ nodeIdx ] = x;
+
+  SLIC_ASSERT( consistencyCheck() );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::set( IndexType nodeIdx, double x, double y )
+{
+  SLIC_ASSERT( dimension() == 2 );
+  SLIC_ASSERT( validIndex( nodeIdx ) );
+  SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates[1] != AXOM_NULLPTR );
+
+  double* data = m_coordinates[0]->getData();
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+  data[ nodeIdx ] = x;
+
+  data = m_coordinates[1]->getData();
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+  data[ nodeIdx ] = y;
+
+  SLIC_ASSERT( consistencyCheck() );
+}
+
+//------------------------------------------------------------------------------
+inline void MeshCoordinates::set( IndexType nodeIdx, double x, double y, double z )
+{
+  SLIC_ASSERT( dimension() == 3 );
+  SLIC_ASSERT( validIndex( nodeIdx ) );
+  SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates[1] != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates[2] != AXOM_NULLPTR );
+
+  double* data = m_coordinates[0]->getData();
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+  data[ nodeIdx ] = x;
+
+  data = m_coordinates[1]->getData();
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+  data[ nodeIdx ] = y;
+
+  data = m_coordinates[2]->getData();
+  SLIC_ASSERT( data != AXOM_NULLPTR );
+  data[ nodeIdx ] = z;
+
+  SLIC_ASSERT( consistencyCheck() );
 }
 
 //------------------------------------------------------------------------------
