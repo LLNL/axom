@@ -130,7 +130,7 @@ public:
    * \post this->getAssociation() == association
    * \post this->hasSidreGroup() == true
    */
-  FieldData( int association, sidre::Group* field_group);
+  FieldData( int association, sidre::Group* field_group, const std::string& topo);
 #endif
 
 /// @}
@@ -527,6 +527,7 @@ private:
 
 #ifdef MINT_USE_SIDRE
   sidre::Group* m_fields_group;
+  const std::string m_topology;
 #endif
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldData);
@@ -707,7 +708,7 @@ inline T* FieldData::createField( const std::string& name,
     field->createView( "volume_dependent" )->setString( "true" );
 
     // TODO: how should we bind this to the topology?
-    field->createView( "type" )->setString( "topo" );
+    field->createView( "topology" )->setString( m_topology );
 
     sidre::View* values = field->createView( "values" );
     newField = new mint::FieldVariable< T >( name, values, num_tuples,

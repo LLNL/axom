@@ -24,6 +24,7 @@
 #include "mint/FieldAssociation.hpp"   // for FieldAssociation enum
 #include "mint/FieldData.hpp"          // for mint::FieldData
 #include "mint/MeshTypes.hpp"          // for MeshType enum and property traits
+#include "mint/CellTypes.hpp"
 #include "mint/MeshCoordinates.hpp"    // for mint::MeshCoordinates
 
 #include "slic/slic.hpp"               // for SLIC macros
@@ -195,7 +196,7 @@ public:
 
   void getMeshCell( IndexType cellIdx, IndexType* cell ) const;
 
-  int getMeshCellType( IndexType cellIdx ) const;
+  CellType getMeshCellType( IndexType cellIdx ) const;
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
 /// @{
@@ -356,17 +357,15 @@ protected:
   IndexType m_num_edges;          /*! The number of edges in the mesh */
   IndexType m_num_nodes;          /*! The number of nodes in the mesh */
 
-  MeshCoordinates* m_coordinates; /*! The mesh coordinates object */
-
   bool m_explicit_coords;
   bool m_explicit_connectivity;
   bool m_has_mixed_topology;
 
+  FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
+
 #ifdef MINT_USE_SIDRE
   sidre::Group* m_group;
-  sidre::Group* m_fields_group;
-  sidre::Group* m_coordsets_group;
-  sidre::Group* m_topologies_group;
+  std::string m_topology;
 #endif
 
 /// @}
@@ -389,7 +388,7 @@ protected:
    * \param [in] group the sidre::Group to use.
    * \pre group != AXOM_NULLPTR.
    */
-  explicit Mesh( sidre::Group* group );
+  explicit Mesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
    * \brief Constructor for use with an empty group.
@@ -400,7 +399,8 @@ protected:
    * \param [in] partId the partition ID for this mesh instance.
    * \pre group != AXOM_NULLPTR.
    */
-  Mesh( sidre::Group* group, int ndims, int type, int blockId, int partId );
+  Mesh( sidre::Group* group, const std::string& topo, const std::string& coordset,
+        int ndims, int type, int blockId, int partId );
 
   /*!
    * \brief Helper which detects the mesh type and dimension from a group.
@@ -453,13 +453,6 @@ private:
    */
   void deallocateFieldData( );
 
-/// \name Private Members
-/// @{
-
-  FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
-
-/// @}
-
   DISABLE_COPY_AND_ASSIGNMENT( Mesh );
   DISABLE_MOVE_AND_ASSIGNMENT( Mesh );
 };
@@ -477,8 +470,8 @@ inline double* Mesh::getCoordinateArray( int dim )
     "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
   getDimension() << "]" );
 
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
-  return m_coordinates->getCoordinateArray( dim );
+  /* TO DO !!!!!!!!!!! */
+  return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
@@ -490,8 +483,8 @@ inline const double* Mesh::getCoordinateArray( int dim ) const
    "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
    getDimension() << "]" );
 
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
-  return m_coordinates->getCoordinateArray( dim );
+  /* TO DO !!!!!!!!!!! */
+  return AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
