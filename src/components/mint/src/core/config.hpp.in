@@ -34,7 +34,6 @@ using IndexType = common::int32;
 #endif
 
 constexpr IndexType USE_DEFAULT = -1;
-constexpr int MIXED = -1;					/* TO BE REMOVED!!!!!!!! */
 
 using int64 = common::int64;
 

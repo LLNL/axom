@@ -33,11 +33,28 @@ enum class Topology : unsigned char
   MIXED
 };
 
+
 enum class ConnectivityType : unsigned char
 {
   NO_INDIRECTION,
   INDIRECTION,
   TYPED_INDIRECTION
+};
+
+
+template < Topology TOPO >
+struct topology_traits {};
+
+template <>
+struct topology_traits< Topology::SINGLE > 
+{
+  constexpr static ConnectivityType cell_connec = ConnectivityType::NO_INDIRECTION;
+};
+
+template <>
+struct topology_traits< Topology::MIXED > 
+{
+  constexpr static ConnectivityType cell_connec = ConnectivityType::TYPED_INDIRECTION;
 };
 
 
