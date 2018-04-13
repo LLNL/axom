@@ -34,9 +34,10 @@ Parallel I/O using IOManager class
 
 To accomplish parallel I/O, Sidre provides the IOManager class.  This class is
 instantiated with an MPI communicator and provides several overloads of the
-``write()`` and ``read()`` methods, to save a Group to HDF5 format or read a Group
-in from HDF5.  IOManager optionally uses the SCR library for scalable I/O
-management (such as using burst buffers if available.
+``write()`` and ``read()`` methods.  These methods save a Group in parallel
+to a set of files and read a Group from existing files.
+IOManager optionally uses the SCR library for scalable I/O
+management (such as using burst buffers if available).
 
 In the following example, an IOManager is created and used to write the contents
 of the Group "root" in parallel.
@@ -103,8 +104,8 @@ each processor will read to load data into the argument group.
 The ``write()`` and ``read()`` methods above are sufficient to do a restart save/load
 when the data is the group is completely owned by the Sidre data structures.
 If Sidre is used to manage data that is externally allocated, the loading
-procedure requires some additional restore data in the same externally-
-allocated state.
+procedure requires some additional steps to restore data in the same 
+externally-allocated state.
 
 First the ``read()`` method is called, and the full hierarchy structure of the
 group is loaded into the Sidre Group, but no data is allocated for Views
@@ -117,7 +118,7 @@ user-allocated arrays.
 Below is a code example for loading external data.  We assume that this code
 somehow has knowledge that the root group contains a single external view at
 the location "fields/external_array" describing an array of doubles.  See the
-Sidre documentation for information about how to query the Sidre data
+Group and View documentation for information about how to query the Sidre data
 structures for this type of information when the code does not have a priori
 knowledge.
 
