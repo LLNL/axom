@@ -18,6 +18,7 @@
 set(example_sources
     sidre_stressgroups.cpp
     sidre_shocktube.cpp
+    sidre_createdatastore.cpp
 )
 
 
@@ -37,6 +38,7 @@ set(sidre_example_depends
     axom_utils
     sidre 
     conduit 
+    conduit_blueprint 
     conduit_relay 
     slic
     )
