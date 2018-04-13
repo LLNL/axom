@@ -1,16 +1,75 @@
 .. _spio-core-concepts:
+
 ******************************************************
-Core concepts
+Parallel File I/O
 ******************************************************
 
-IOManager
----------
 
-The API for the SPIO component is provided by class IOManager.  An IOManager
+The Sidre IOManager class provides
+an interface to manage parallel I/O of the data managed by Sidre.  It
+enables the writing of data from parallel runs and can
+be used for the purposes of restart or visualization.
+
+Introduction
+-------------
+
+The IOManager class provides parallel I/O services to Sidre.
+IOManager relies on the fact that Sidre's Group and View objects are
+capable of saving and loading themselves.  These I/O operations in Sidre are
+inherently serial, so IOManager coordinates the I/O operations of multiple
+Sidre objects that exist across the MPI ranks of a parallel run.
+
+* The internal details of the I/O of individual Sidre objects are opaque to
+  IOManager, which needs only to make calls to the I/O methods in Sidre's public
+  API.
+* Sidre data is written from M ranks to N files (M >= N), and the files can
+  be read to restart a run on M ranks.
+* When saving output, a root file is created that contains some bookkeeping
+  data that is used to coordinate a subsequent restart read.
+* The calling code can also add extra data to the root file to provide 
+  metadata that gives necessary instructions to visualization tools.
+
+Parallel I/O using IOManager class
+----------------------------------
+
+To accomplish parallel I/O, Sidre provides the IOManager class.  This class is
+instantiated with an MPI communicator and provides several overloads of the
+``write()`` and ``read()`` methods, to save a Group to HDF5 format or read a Group
+in from HDF5.  IOManager optionally uses the SCR library for scalable I/O
+management (such as using burst buffers if available.
+
+In the following example, an IOManager is created and used to write the contents
+of the Group "root" in parallel.
+
+First include needed headers.
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_headers_start
+   :end-before: _parallel_io_headers_end
+   :language: C++
+
+Then use IOManager to save in parallel.
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_save_start
+   :end-before: _parallel_io_save_end
+   :language: C++
+
+Loading data in parallel is easy:
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_load_start
+   :end-before: _parallel_io_load_end
+   :language: C++
+
+IOManager class use
+-------------------
+
+An IOManager
 is constructed with an MPI communicator and does I/O operations on all ranks
 associated with that communicator
 
-The core functionality of IOManager is contained in the write and read methods.
+The core functionality of IOManager is contained in the ``write()`` and ``read()`` methods.
 
 .. code-block:: cpp
 
@@ -19,14 +78,14 @@ The core functionality of IOManager is contained in the write and read methods.
              const std::string& file_string,
              const std::string& protocol);
 
-write() is called in parallel with each rank passing in a DataGroup pointer
+``write()`` is called in parallel with each rank passing in a Group pointer
 for its local data.  The calling code specifies the number of output files,
 and IOManager organizes the output so that each file receives data from a
 roughly equal number of ranks.  The files containing the data from the group
 will have names of the format "file_string/file_string_*******.suffix", with a
 7-digit integer value identifying the files from 0 to num_files-1, and the
 suffix indicating the file format according to the protocol argument.
-Additionally write() will produce a root file with the name file_string.root
+Additionally ``write()`` will produce a root file with the name file_string.root
 that holds some bookkeeping data about the other files and can also receive
 extra user-specified data.
 
@@ -35,24 +94,24 @@ extra user-specified data.
   void read(sidre::DataGroup * group,
             const std::string& root_file);
 
-read() is called in parallel with the root file as an argument.  It must be
-called on a run with the same processor count as the run that called write().
+``read()`` is called in parallel with the root file as an argument.  It must be
+called on a run with the same processor count as the run that called ``write()``.
 The first argument is a pointer to a group that contains no child groups or
 views, and the information in the root file is used to identify the files that
 each processor will read to load data into the argument group.
 
-The write and read methods above are sufficient to do a restart save/load
+The ``write()`` and ``read()`` methods above are sufficient to do a restart save/load
 when the data is the group is completely owned by the Sidre data structures.
 If Sidre is used to manage data that is externally allocated, the loading
 procedure requires some additional restore data in the same externally-
 allocated state.
 
-First the read method is called, and the full hierarchy structure of the
-group is loaded into the DataGroup, but no data is allocated for views
+First the ``read()`` method is called, and the full hierarchy structure of the
+group is loaded into the Sidre Group, but no data is allocated for Views
 identified as external.  Then the calling code can examine the group and
-allocate data for the external views.  DataView::setExternalDataPtr is used
+allocate data for the external Views.  ``View::setExternalDataPtr()`` is used
 to associate the pointer with the view.  Once this is done, IOManager's
-loadExternalData can be used to load the data from the file into the
+``loadExternalData()`` can be used to load the data from the file into the
 user-allocated arrays.
 
 Below is a code example for loading external data.  We assume that this code
@@ -92,7 +151,8 @@ bookkeeping information that is used when reading data, but it can also
 be used to store additional data that may be useful to the calling code or
 is needed to allow other tools to interact with the data in the output files,
 such as for visualization.  For example, Conduit's blueprint index can be
-stored in a DataGroup written to the root file to provide metadata about the
+:ref:`stored in a DataGroup <sidre-conduit>` written to the root file
+to provide metadata about the
 mesh layout and data fields that can be visualized from the output files.
 
 .. code-block:: cpp
