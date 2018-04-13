@@ -1,6 +1,7 @@
 .. _spio-core-concepts:
+
 ******************************************************
-Core concepts
+Parallel File I/O
 ******************************************************
 
 
@@ -28,8 +29,41 @@ Sidre objects that exist across the MPI ranks of a parallel run.
 * The calling code can also add extra data to the root file to provide 
   metadata that gives necessary instructions to visualization tools.
 
-IOManager
----------
+Parallel I/O using IOManager class
+----------------------------------
+
+To accomplish parallel I/O, Sidre provides the IOManager class.  This class is
+instantiated with an MPI communicator and provides several overloads of the
+``write()`` and ``read()`` methods, to save a Group to HDF5 format or read a Group
+in from HDF5.  IOManager optionally uses the SCR library for scalable I/O
+management (such as using burst buffers if available.
+
+In the following example, an IOManager is created and used to write the contents
+of the Group "root" in parallel.
+
+First include needed headers.
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_headers_start
+   :end-before: _parallel_io_headers_end
+   :language: C++
+
+Then use IOManager to save in parallel.
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_save_start
+   :end-before: _parallel_io_save_end
+   :language: C++
+
+Loading data in parallel is easy:
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_load_start
+   :end-before: _parallel_io_load_end
+   :language: C++
+
+IOManager class use
+-------------------
 
 An IOManager
 is constructed with an MPI communicator and does I/O operations on all ranks

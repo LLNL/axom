@@ -1,5 +1,5 @@
 ******************************************************
-File I/O
+Serial File I/O
 ******************************************************
 
 Sidre provides for file I/O to HDF5 files and file handles, and to JSON files.
@@ -12,8 +12,8 @@ dependency on HDF5 is :code:`AXOM_USE_HDF5`, defined in the source file axom/con
 
 .. _sidre-serial-io:
 
-Serial File I/O
----------------
+File I/O using Group class
+--------------------------
 
 The Group class contains the :code:`save()`, :code:`load()`, and 
 :code:`loadExternalData()` methods.  Each method can be called with a file 
@@ -50,38 +50,3 @@ The overloads of :code:`save()` and :code:`load()` that take HDF5 handles and th
 :code:`loadExternalData()` method are public APIs, but also exist to implement parallel
 I/O using the IOManager class.
 
-Parallel File I/O
------------------
-
-To accomplish parallel I/O, Sidre provides the IOManager class.  This class is
-instantiated with an MPI communicator and provides several overloads of the 
-``write()`` and ``read()`` methods, to save a Group to HDF5 format or read a Group
-in from HDF5.  IOManager optionally uses the SCR library for scalable I/O 
-management (such as using burst buffers if available.
-
-In the following example, an IOManager is created and used to write the contents
-of the Group "root" in parallel.
-
-First include needed headers.
-
-.. literalinclude:: ../../tests/spio/spio_parallel.cpp
-   :start-after: _parallel_io_headers_start
-   :end-before: _parallel_io_headers_end
-   :language: C++
-
-Then use IOManager to save in parallel.
-
-.. literalinclude:: ../../tests/spio/spio_parallel.cpp
-   :start-after: _parallel_io_save_start
-   :end-before: _parallel_io_save_end
-   :language: C++
-
-Loading data in parallel is easy:
-
-.. literalinclude:: ../../tests/spio/spio_parallel.cpp
-   :start-after: _parallel_io_load_start
-   :end-before: _parallel_io_load_end
-   :language: C++
-
-See :ref:`further documentation <spio-core-concepts>` on the concepts and use of Sidre
-parallel I/O facilities.

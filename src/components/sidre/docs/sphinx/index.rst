@@ -86,5 +86,6 @@ needs and use cases.
    first_example
    core_concepts
    file_io
+   parallel_io_concepts
    sidre_conduit
 
