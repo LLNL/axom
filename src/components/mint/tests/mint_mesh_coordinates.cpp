@@ -770,7 +770,6 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_operations )
   MeshCoordinates coords( N, N, x, y, z );
 
   EXPECT_DEATH_IF_SUPPORTED( coords.append( 1, 1, 1 ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( coords.shrink(), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( coords.resize( 10 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( coords.reserve( 10 ), IGNORE_OUTPUT );
 }
