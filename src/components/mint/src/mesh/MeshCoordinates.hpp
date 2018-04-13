@@ -83,7 +83,7 @@ static constexpr int Z_COORDINATE = 2;
  *    \warning Since the memory is not owned by the MeshCoordinates object
  *     when external buffers are supplied, the MeshCoordinates object cannot
  *     dynamically grow the storage. Consequently, the number of nodes the
- *     MeshCoordinates instance can hold is fixed. All calls to `shrink()` and 
+ *     MeshCoordinates instance can hold is fixed. All calls to `shrink()` and
  *     `reserve()` will fail.
  *
  *    \warning Moreover, when the MeshCoordinates object goes out-of-scope, the
@@ -166,10 +166,11 @@ public:
   /*!
    * \brief Creates a MeshCoordinates object from the given coordinate buffers.
    *
+   * \param [in] numNodes the number of nodes in the supplied array
+   * \param [in] capacity the actual node capacity on the supplied buffers.
    * \param [in] x pointer to the x-coordinates
    * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D
    * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D
-   * \param [in] numNodes the number of nodes in the supplied array
    *
    * \warning This constructor wraps the given coordinate buffers and does not
    *  own the data. Consequently, new nodes cannot be added to this
@@ -187,7 +188,7 @@ public:
    * \post numNodes() == numNodes
    * \post numNodes() <= capacity()
    */
-  MeshCoordinates( IndexType numNodes, IndexType capacity, double* x, 
+  MeshCoordinates( IndexType numNodes, IndexType capacity, double* x,
                    double* y=AXOM_NULLPTR, double* z=AXOM_NULLPTR );
 /// @}
 
@@ -530,7 +531,7 @@ inline IndexType MeshCoordinates::append( double x )
 {
   SLIC_ASSERT( dimension() == 1 );
   SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
-  
+
   IndexType idx = numNodes();
   m_coordinates[0]->append( x );
 
@@ -613,7 +614,8 @@ inline void MeshCoordinates::set( IndexType nodeIdx, double x, double y )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::set( IndexType nodeIdx, double x, double y, double z )
+inline void MeshCoordinates::set( IndexType nodeIdx,
+                                  double x, double y, double z )
 {
   SLIC_ASSERT( dimension() == 3 );
   SLIC_ASSERT( validIndex( nodeIdx ) );
