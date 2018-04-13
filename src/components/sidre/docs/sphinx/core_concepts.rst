@@ -40,9 +40,9 @@ child Groups and Views it has or the presence of a Group or View by
 name.  Unlike many filesystems, the path may not contain the "parent" entry
 (such as ".." on Unix filesystems).
 
-Methods on the Group class (:ref:`discussed here <sidre-serial-io>`) use
+Methods on the Group class use
 `Conduit <https://github.com/LLNL/conduit>`_ to
-write the data (sub)tree rooted in a Group to a file,
+:ref:`write the data (sub)tree <sidre-serial-io>` rooted in a Group to a file,
 `HDF5 <https://www.hdfgroup.org/HDF5/>`_ handle, or other
 Conduit protocol, or to an in-memory Conduit data structure.  The program may
 provide an Attribute to the method call, so only Views with that Attribute
