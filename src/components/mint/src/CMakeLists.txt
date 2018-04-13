@@ -41,6 +41,7 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Mesh data-model
+    mesh/blueprint.hpp
     mesh/CellConnectivity.hpp
     mesh/CellTypes.hpp
     mesh/ConnectivityArray.hpp
@@ -76,6 +77,7 @@ set( mint_sources
     fem/FiniteElement.cpp
 
     ## Mesh data-model
+    mesh/blueprint.cpp
     mesh/CurvilinearMesh.cpp
     mesh/Extent.cpp
     mesh/FieldData.cpp
