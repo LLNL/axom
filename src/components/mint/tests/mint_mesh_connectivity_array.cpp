@@ -1810,11 +1810,11 @@ TEST( mint_connectivity_array_DeathTest, IndirectionNativeCapacity )
   for ( double ratio = 0.75; ratio <= 3.0; ratio += 0.25 )
   {
     /* Create the native storage ConnectivityArrays to be tested. */
-    ConnectivityArray< ConnectivityType::INDIRECTION > native_vertex( VERTEX );
+    ConnectivityArray< ConnectivityType::INDIRECTION > native_vertex( VERTEX, 0, 0 );
     native_vertex.setResizeRatio( ratio );
     internal::checkConnectivity( native_vertex, false, 0, 0 );
 
-    ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > native_mixed;
+    ConnectivityArray< ConnectivityType::TYPED_INDIRECTION > native_mixed( 0, 0 );
     native_mixed.setResizeRatio( ratio );
     internal::checkConnectivity( native_mixed, false, 0, 0 );
 
@@ -1861,12 +1861,12 @@ TEST( mint_connectivity_array_DeathTest, IndirectionSidreCapacity )
   {
     /* Create the sidre storage ConnectivityArrays to be tested. */
     ConnectivityArray< ConnectivityType::INDIRECTION > 
-                            sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test" );
+                            sidre_vertex( VERTEX, root->createGroup( "vertex" ), "test", 0, 0 );
     sidre_vertex.setResizeRatio( ratio );
     internal::checkConnectivity( sidre_vertex, 0, 0, root->getGroup( "vertex" ) );
 
     ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
-                            sidre_mixed( root->createGroup( "mixed" ), "test" );
+                            sidre_mixed( root->createGroup( "mixed" ), "test", 0, 0 );
     sidre_mixed.setResizeRatio( ratio );
     internal::checkConnectivity( sidre_mixed, 0, 0, root->getGroup( "mixed" ) );
 

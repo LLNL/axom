@@ -73,12 +73,17 @@ public:
    * \post getNumberOfIDs() == 0
    * \post getNumberOfValues() == 0
    */
-  ConnectivityArray( IndexType value_capacity=USE_DEFAULT, 
-                     IndexType ID_capacity=USE_DEFAULT ):
-    m_values( new Array< IndexType >( 0, 1, value_capacity ) ),
-    m_offsets( new Array< IndexType >( 0, 1, ID_capacity ) ),
+  ConnectivityArray( IndexType ID_capacity=USE_DEFAULT,  
+                     IndexType value_capacity=USE_DEFAULT ):
+    m_values( AXOM_NULLPTR ),
+    m_offsets( new Array< IndexType >( 0, 1, 
+               (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 ) ),
     m_types( new Array< CellType >( 0, 1, ID_capacity ) )
   {
+    IndexType new_value_capacity = 
+           internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
+    m_values = new Array< IndexType >( 0, 1, new_value_capacity );
+
     m_offsets->append(0);
   }
 
@@ -123,15 +128,9 @@ public:
   {
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs 
                                                                        << "." );
-    if ( ID_capacity == USE_DEFAULT )
-    {
-      m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1, ID_capacity );
-    }
-    else
-    {
-      m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1, ID_capacity + 1 );
-    }
 
+    m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1, 
+                 (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 );
     if ( n_IDs == 0 )
     {
       (*m_offsets)[0] = 0;
@@ -209,18 +208,21 @@ public:
     sidre::Group* elems_group = group->getGroup( "elements" );
     SLIC_ASSERT( elems_group != AXOM_NULLPTR );
 
-    sidre::View* connec_view = elems_group->getView( "connectivity" );
-    m_values = new Array< IndexType >( connec_view, 0, 1, value_capacity );
-    SLIC_ASSERT( m_values != AXOM_NULLPTR );
-    
     sidre::View* offsets_view = elems_group->getView( "offsets" );
-    m_offsets = new Array< IndexType >( offsets_view, 1, 1, ID_capacity );
+    m_offsets = new Array< IndexType >( offsets_view, 1, 1, 
+                 (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 );
     SLIC_ASSERT( m_offsets != AXOM_NULLPTR );
     (*m_offsets)[0] = 0;
 
     sidre::View* types_view = elems_group->getView( "types" );
     m_types = new Array< CellType >( types_view, 0, 1, ID_capacity );
     SLIC_ASSERT( m_types != AXOM_NULLPTR );
+
+    IndexType new_value_capacity = 
+          internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
+    sidre::View* connec_view = elems_group->getView( "connectivity" );
+    m_values = new Array< IndexType >( connec_view, 0, 1, new_value_capacity );
+    SLIC_ASSERT( m_values != AXOM_NULLPTR );
   }
 
 #endif
@@ -303,7 +305,8 @@ public:
   { return m_values->getData(); }
 
   /*!
-   * \brief Returns a pointer to the offsets array, of length getNumberOfIDs() + 1.
+   * \brief Returns a pointer to the offsets array, of length 
+   *  getNumberOfIDs() + 1.
    */
   const IndexType* getOffsetPtr() const
   { return m_offsets->getData(); }
@@ -332,6 +335,7 @@ public:
   void append( const IndexType* values, IndexType n_values, CellType type )
   {
     SLIC_ASSERT( values != AXOM_NULLPTR );
+    SLIC_ASSERT( type != UNDEFINED_CELL );
     m_values->append( values, n_values );
     m_offsets->append( getNumberOfValues() );
     m_types->append( type );
@@ -435,6 +439,41 @@ public:
     m_types->insert( types, n_IDs, start_ID );
   }
 
+  /*!
+   * \brief Access operator for the values of the given ID.
+   *
+   * \param [in] ID the ID in question.
+   *
+   * \return pointer to the values of the given ID.
+   *
+   * \pre ID >= 0 && ID < getNumberOfIDs()
+   * \post cell_ptr != AXOM_NULLPTR.
+   */
+  IndexType* operator[]( IndexType ID )
+  {
+    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
+    return m_values->getData() + (*m_offsets)[ ID ];
+  }
+
+  /*!
+   * \brief Returns a pointer to the values array, of length getNumberOfValues().
+   */
+  IndexType* getValuePtr()
+  { return m_values->getData(); }
+
+  /*!
+   * \brief Returns a pointer to the offsets array, of length 
+   *  getNumberOfIDs() + 1.
+   */
+  IndexType* getOffsetPtr()
+  { return m_offsets->getData(); }
+
+  /*!
+   * \brief Returns a pointer to the types array, of length getNumberOfIDs().
+   */
+  CellType* getTypePtr()
+  { return m_types->getData(); }
+
 /// @}
 
 /// \name Constant Attribute Querying Methods
@@ -488,13 +527,29 @@ public:
    * \brief Return true iff constructed via the external constructor.
    */
   bool isExternal() const
-  { return m_values->isExternal(); }
+  {  
+    bool consistent = true;
+    bool is_external = m_values->isExternal();
+    consistent &= is_external == m_offsets->isExternal();
+    consistent &= is_external == m_types->isExternal();
+
+    SLIC_WARNING_IF( !consistent, "External state not consistent." );
+    return is_external;
+  }
 
   /*!
    * \brief Return true iff constructed via the sidre constructors.
    */
   bool isInSidre() const
-  { return m_values->isInSidre(); }
+  {
+    bool consistent = true;
+    bool is_in_sidre = m_values->isInSidre();
+    consistent &= is_in_sidre == m_offsets->isInSidre();
+    consistent &= is_in_sidre == m_types->isInSidre();
+
+    SLIC_WARNING_IF( !consistent, "External state not consistent." );
+    return is_in_sidre;
+  }
 
 
   /*
@@ -532,12 +587,12 @@ public:
    */
   void reserve( IndexType ID_capacity, IndexType value_capacity=USE_DEFAULT )
   {
-    value_capacity = internal::calcValueCapacity( getNumberOfIDs(),
-                                                   getNumberOfValues(), 
-                                                   ID_capacity, value_capacity);
-    m_values->reserve( value_capacity );
     m_offsets->reserve( ID_capacity + 1 );
     m_types->reserve( ID_capacity );
+    IndexType new_value_capacity = 
+                internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(), 
+                                          getNumberOfValues(), value_capacity );
+    m_values->reserve( new_value_capacity );
   }
 
   /*!

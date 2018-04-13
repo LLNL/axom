@@ -323,7 +323,8 @@ public:
   { return m_values->getData(); }
 
   /*!
-   * \brief Returns a pointer to the offsets array, of length getNumberOfIDs() + 1.
+   * \brief Returns a pointer to the offsets array, of length 
+   *  getNumberOfIDs() + 1.
    */
   const IndexType* getOffsetPtr() const
   { return AXOM_NULLPTR; }
@@ -422,10 +423,10 @@ public:
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
-  void insert( const IndexType* values, IndexType start_ID, 
+  void insert( const IndexType* values, IndexType ID, 
                IndexType AXOM_NOT_USED(n_values)=0, 
                CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
-  { insertM( values, start_ID, 1 ); }
+  { insertM( values, ID, 1 ); }
 
   /*!
    * \brief Insert the values of multiple IDs before the given ID.
@@ -451,9 +452,43 @@ public:
     m_values->insert( values, n_IDs, start_ID );
   }
 
+    /*!
+   * \brief Access operator for the values of the given ID.
+   *
+   * \param [in] ID the ID in question.
+   *
+   * \return pointer to the values of the given ID.
+   *
+   * \pre ID >= 0 && ID < getNumberOfIDs()
+   * \post cell_ptr != AXOM_NULLPTR.
+   */
+  IndexType* operator[]( IndexType ID )
+  {
+    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
+    return m_values->getData() + ID * m_stride;
+  }
+
+  /*!
+   * \brief Returns a pointer to the values array, of length getNumberOfValues().
+   */
+  IndexType* getValuePtr()
+  { return m_values->getData(); }
+
+  /*!
+   * \brief Returns a pointer to the offsets array, in this case AXOM_NULLPTR.
+   */
+  IndexType* getOffsetPtr()
+  { return AXOM_NULLPTR; }
+
+  /*!
+   * \brief Returns a pointer to the types array, in this case AXOM_NULLPTR.
+   */
+  CellType* getTypePtr()
+  { return AXOM_NULLPTR; }
+
 /// @}
 
-/// \name Constant Attribute Querying Methods
+/// \name Attribute Querying Methods
 /// @{
 
   /*!

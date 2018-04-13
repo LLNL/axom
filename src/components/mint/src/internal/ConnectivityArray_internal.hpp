@@ -54,9 +54,10 @@ namespace internal
  * \pre group != AXOM_NULLPTR
  * \pre m_values != AXOM_NULLPTR
  */
-CellType initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values, 
-                               Array< IndexType >** m_offsets=AXOM_NULLPTR,
-                               Array< CellType >** m_types=AXOM_NULLPTR )
+inline CellType initializeFromGroup( sidre::Group* group, 
+                                     Array< IndexType >** m_values, 
+                                     Array< IndexType >** m_offsets=AXOM_NULLPTR,
+                                     Array< CellType >** m_types=AXOM_NULLPTR )
 {
   SLIC_ERROR_IF( group == AXOM_NULLPTR, 
                    "sidre::Group pointer must not be null." );
@@ -168,8 +169,9 @@ CellType initializeFromGroup( sidre::Group* group, Array< IndexType >** m_values
  * \pre group != AXOM_NULLPTR
  * \pre group->getNumGroups() == group->getNumViews() == 0
  */
-void initializeGroup( sidre::Group* group, const std::string& coordset, CellType cell_type,
-                      bool create_offsets=false, bool create_types=false )
+inline void initializeGroup( sidre::Group* group, const std::string& coordset, 
+                             CellType cell_type, bool create_offsets=false,
+                             bool create_types=false )
 {
   SLIC_ERROR_IF( group == AXOM_NULLPTR, 
                    "sidre::Group pointer must not be null." );
@@ -275,7 +277,7 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  * \param [in] n_IDs the number of IDs to insert.
  * \param [in] values pointer to the values to set, of length at least 
  *  n_values
- * \param [in] the offsets array of length n_IDs + 1.
+ * \param [in] offsets the offsets array of length n_IDs + 1.
  * \param [in/out] m_values a pointer to the values Array.
  * \param [in/out] m_offsets a pointer to the offsets Array.
  *
@@ -322,9 +324,19 @@ inline void insert( IndexType start_ID, IndexType n_IDs,
   }
 }
 
-
-IndexType calcValueCapacity( IndexType n_IDs, IndexType n_values,
-                              IndexType ID_capacity, IndexType value_capacity )
+/*!
+ * \brief Return the value capacity given the number of IDs, the ID_capacity,
+ *  and the number of values.
+ *
+ * \param [in] n_IDs the number of IDs in the ConnectivityArray.
+ * \param [in] ID_capacity the ID capacity of the ConnectivityArray.
+ * \param [in] n_values the number of values in the ConnectivityArray.
+ * \param [in] value_capacity the value capacity of the ConnectivityArray.
+ *  If this is not USE_DEFAULT it simply returns the given capacity, otherwise
+ *  it calculates the capacity given the other three parameters. 
+ */
+inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity, 
+                                    IndexType n_values, IndexType value_capacity )
 {
   if ( value_capacity == USE_DEFAULT )
   {
@@ -334,7 +346,7 @@ IndexType calcValueCapacity( IndexType n_IDs, IndexType n_values,
     }
     else
     {
-      double avg_n_vals =  double( n_values ) / n_IDs; 
+      const double avg_n_vals =  double( n_values ) / n_IDs; 
       value_capacity = std::ceil( avg_n_vals * n_IDs );
     }
   }
