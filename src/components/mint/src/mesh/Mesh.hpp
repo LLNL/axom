@@ -20,12 +20,12 @@
 
 #include "axom/Macros.hpp"             // for Axom macros
 
+#include "mint/CellTypes.hpp"          // for CellType enum definitions
 #include "mint/config.hpp"             // for mint compile-time type definitions
 #include "mint/FieldAssociation.hpp"   // for FieldAssociation enum
 #include "mint/FieldData.hpp"          // for mint::FieldData
-#include "mint/MeshTypes.hpp"          // for MeshType enum and property traits
-#include "mint/CellTypes.hpp"
 #include "mint/MeshCoordinates.hpp"    // for mint::MeshCoordinates
+#include "mint/MeshTypes.hpp"          // for MeshType enum and property traits
 
 #include "slic/slic.hpp"               // for SLIC macros
 
@@ -50,9 +50,117 @@ class Field;
 /*!
  * \class Mesh
  *
- * \brief TODO:
+ * \brief Base class that defines the core API common to all Mesh types.
  *
- * \note The mesh class is a base class and should not be used directly.
+ * A Mesh, \f$ \mathcal{M}(\Omega) \f$, provides an approximation of a physical
+ * domain, \f$ \Omega \in \mathcal{R}^d \f$, where \f$ d \in [1,3] \f$ . The
+ * Mesh is essentially a discrete representation of a problem and is used to
+ * facilitate the analysis, e.g., FEA, CFD, etc. The solution domain is
+ * approximated by dividing it into a finite number of <em> nodes </em> and
+ * <em> cells </em> at which the variables of the underlying mathematical model
+ * (i.e., a PDE) are then computed via a numerical method, such as,
+ * Finite Difference (FD), Finite Volume (FV) or Finite Element (FE), chief
+ * among them.
+ *
+ * There are a variety of mesh types. Mint supports the following mesh types:
+ *
+ *  * <b> Structured Mesh </b> <br />
+ *
+ *    A <em> structured mesh </em> divides the solution domain according to a
+ *    logical grid where each node/cell of the mesh can be uniquely identified
+ *    by a corresponding logical ijk-index. The nodes of the mesh are found at
+ *    the intersection of the grid lines, but, are explicitly defined via a
+ *    mapping onto the physical Cartesian coordinate system of the domain. For
+ *    this reason, these types of meshes are also called <em> mapped </em> or
+ *    <em> body-fitted </em> meshes.
+ *
+ *    However, the mesh topology (e.g., connectivity, neighbor information) is
+ *    implicitly defined by the logical indexing scheme. For example,  a
+ *    structured mesh is composed of <em> quadrilateral </em> cells in 2-D and
+ *    <em> hexahedron </em> cells in 3-D. Given the logical index of a cell
+ *    one can compute the node indices of the cell and neighbor information by
+ *    performing simple shift operations on the associated index.
+ *
+ *  * <b> Rectilinear Mesh </b> <br />
+ *
+ *    A <em> rectilinear mesh </em>, also known as a product mesh, is similar
+ *    to the <em> structured mesh </em> in that it is also defined according to
+ *    a logical indexing scheme and has implicit topology.
+ *
+ *    However, the nodes and cells on a <em> rectilinear mesh </em> are arranged
+ *    on a regular lattice that is axis-aligned with the Cartesian coordinate
+ *    system. In contrast to the general <em> structured mesh </em>, the
+ *    <em> rectilinear mesh </em> does not explicitly define **all** the nodes
+ *    of the mesh. Instead, the nodes are only defined along each coordinate
+ *    axis and may have variable spacing between nodes. Given a logical index,
+ *    the corresponding physical position of a node can be evaluated by taking
+ *    the cartesian product of the corresponding coordinate along each
+ *    coordinate axis.
+ *
+ *  * <b> Uniform Mesh </b> <br />
+ *
+ *    A <em> uniform mesh </em>, also called a regular mesh, subdivides the
+ *    domain in cells that have uniform spacing across each coordinate axis.
+ *    Similar to the <em> structured mesh </em>, a <em> uniform mesh </em>
+ *    adheres to the same logical indexing scheme and implicit topology
+ *    representation. Moreover, The nodes and cells of a <em> uniform </em> mesh
+ *    are arranged on a regular lattice as with the <em> rectilinear mesh </em>.
+ *    However, both topology and geometry is implicitly defined on a
+ *    <em> uniform mesh </em>. The geometry is solely defined by an origin,
+ *    \f$ \hat{x_0} \f$ and spacing, \f$ \hat{h} \f$, along each axis. The
+ *    coordinates of a node can be evaluated algebraically by the following:
+ *    \f$ \hat{p} = \hat{x_0} + \hat{i} \times \hat{h} \f$, where \f$\hat{i}\f$
+ *    is the logical ijk-index of the corresponding node.
+ *
+ *  * <b> Unstructured Mesh </b> <br />
+ *
+ *    An <em> unstructured mesh </em> stores both node and topology information
+ *    explicitly. This allows the flexibility of discretizing the solution
+ *    domain using a variety of cell types not just quadrilateral (in 2D) or
+ *    hexahedral (in 3D) cells. Due to this added flexibility, the use of
+ *    <em> unstructured meshes </em> is more common when dealing with complex
+ *    geometries. However, <em> unstructured meshes </em> require additional
+ *    storage and generally incur some performance penalty to store, create and
+ *    access mesh topology information respectively.
+ *
+ *    Mint classifies <em> unstructured meshes </em> in two basic types based on
+ *    the underlying mesh topology:
+ *
+ *    * <b> Single Cell Topology </b>
+ *
+ *      In this case, the <em> unstructured mesh </em> consists of a single cell
+ *      type, e.g., a quad or triangle mesh in 2D, or, a hex or tet mesh in 3D.
+ *      In this case  the underlying implementation is optimized for the
+ *      specified cell type (specified in the constructor).
+ *
+ *    * <b> Mixed Cell Topology </b>
+ *
+ *      When <em> mixed cell topology </em> is specified, the <em> unstructured
+ *      mesh </em> can be composed of any of the supported cell types, e.g.,
+ *      a mesh consisting of both quads and triangles. This mode incurs
+ *      additional overhead for storage and access to mesh topology information,
+ *      since it requires indirection.
+ *
+ *    The list of supported cell types for an <em> unstructured mesh </em> is
+ *    available in CellTypes.hpp
+ *
+ *  * <b> Particle Mesh </b> <br />
+ *
+ *    A <em> particle mesh </em> discretizes the solution domain using
+ *    a set of discrete particle elements which correspond to the the nodes
+ *    of the mesh. There is no ordering imposed on the particles and the
+ *    coordinates of the particles are explicitly defined. A particle mesh
+ *    has no connectivity information connecting the particles, which is why
+ *    in literature methods using a particle discretization are also referred
+ *    to as <em> meshless </em> or <em> meshfree </em> methods.
+ *
+ * \note Mesh is a base class and cannot be instantiated directly
+ *
+ * \note Typically, the computational mesh can be defined across one or more
+ *  <em> blocks </em>, e.g., for multi-block problems, where each block is
+ *  subsequently decomposed into several <em> partitions </em> for parallel
+ *  computation. A Mesh instance represents a <em> single </em> partition for
+ *  a given block.
  *
  * \see mint::UnstructuredMesh
  * \see mint::StructuredMesh
@@ -61,6 +169,7 @@ class Field;
  * \see mint::UniformMesh
  * \see mint::Field
  * \see mint::FieldData
+ * \see mint::MeshTypes
  */
 class Mesh
 {
@@ -187,16 +296,43 @@ public:
    */
   /// @{
 
-  inline double* getCoordinateArray( int dim );
-  inline const double* getCoordinateArray( int dim ) const;
+  double* getCoordinateArray( int dim );
+  const double* getCoordinateArray( int dim ) const;
 
   /// @}
 
+  /*!
+   * \brief Returns the coordinates of the node at the specified index.
+   *
+   * \param [in] nodeIdx the index of the requested node.
+   * \param [out] node user-supplied buffer to store the node coordinates.
+   *
+   * \pre node != AXOM_NULLPTR
+   * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes( )
+   */
   void getMeshNode( IndexType nodeIdx, double* node ) const;
 
+  /*!
+   * \brief Returns the cell node-connectivity information for the cell at
+   *  the corresponding cell index.
+   *
+   * \param [in] cellIdx the index of the requested cell.
+   * \param [out] cell user-supplied buffer to store the cell node-connectivity
+   *
+   * \pre cell != AXOM_NULLPTR
+   * \pre cellIdx >= 0 && cellIdx < getNumberOfCells( )
+   */
   void getMeshCell( IndexType cellIdx, IndexType* cell ) const;
 
-  CellType getMeshCellType( IndexType cellIdx ) const;
+  /*!
+   * \brief Returns the cell type of the requested cell
+   *
+   * \param [in] cellIdx the index of the requested cell (optional).
+   * \return
+   *
+   * \see CellTypes.hpp
+   */
+  CellType getMeshCellType( IndexType cellIdx=0 ) const;
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
 /// @{
@@ -342,6 +478,43 @@ public:
 
 /// @}
 
+/// \name Static Methods
+/// @{
+
+#ifdef MINT_USE_SIDRE
+
+  /*!
+   * \brief Creates a mesh instance from the given Sidre group.
+   *
+   * \param [in] group pointer to the root group of the mesh in Sidre.
+   * \param [in] topo topology associated with the requested mesh (optional)
+   *
+   * \return m pointer to a mesh instance corresponding to the specified group.
+   *
+   * \note If a topology name is not provided, the implementation will construct
+   *  a mesh based on the 1st topology group under the parent "topologies"
+   *  group.
+   *
+   * \note Ownership of the resulting mesh object is passed to the caller.
+   *
+   * \note When using Mint with Sidre, Sidre maintains ownership of the data.
+   *  Although the data can be modified via calls to Mint, groups and views
+   *  cannot be deleted. The data remains persistent in Sidre once the mesh
+   *  object goes out-of-scope.
+   *
+   * \pre  group != AXOM_NULLPTR
+   * \pre  blueprint::validRootGroup( group ) == true
+   * \post m != AXOM_NULLPTR
+   */
+  /// @{
+  static Mesh* getMesh( const sidre::Group* group, const std::string& topo );
+  static Mesh* getMesh( const sidre::Group* group );
+  /// @}
+
+#endif
+
+/// @}
+
 protected:
 
 /// \name Protected Members
@@ -351,6 +524,7 @@ protected:
   int m_type;                     /*! the type of the mesh */
   int m_block_idx;                /*! the Block ID of the mesh */
   int m_part_idx;                 /*! the partition ID of the mesh */
+
 
   IndexType m_num_cells;          /*! The number of cells in the mesh */
   IndexType m_num_faces;          /*! The number of faces in the mesh */
@@ -374,7 +548,8 @@ protected:
 /// @{
 
   /*!
-   * \brief Constructor.
+   * \brief Mesh Constructor.
+   *
    * \param [in] ndims the number of dimensions
    * \param [in] type the mesh type.
    * \param [in] blockId the block ID for this mesh instance.
@@ -385,33 +560,77 @@ protected:
 #ifdef MINT_USE_SIDRE
   /*!
    * \brief Constructor for use with a group that already has data.
+   *
    * \param [in] group the sidre::Group to use.
+   * \param [in] topo optional argument specifying the name of the topology
+   *  associated with this Mesh instance.
+   *
+   * \note If a topology name is not provided, the implementation will construct
+   *  a mesh based on the 1st topology group under the parent "topologies"
+   *  group.
+   *
    * \pre group != AXOM_NULLPTR.
+   * \pre blueprint::validRootGroup( group ) == true
+   *
+   * \see sidre::Group
    */
-  explicit Mesh( sidre::Group* group, const std::string& topo="" );
+  /// @{
+
+  Mesh( sidre::Group* group, const std::string& topo );
+  explicit Mesh( sidre::Group* group );
+
+  /// @}
 
   /*!
    * \brief Constructor for use with an empty group.
-   * \param [in] group the sidre::Group to use.
+   *
    * \param [in] ndims the number of dimensions
    * \param [in] type the mesh type.
    * \param [in] blockId the block ID for this mesh instance.
    * \param [in] partId the partition ID for this mesh instance.
+   * \param [in] group the sidre::Group to use.
+   * \param [in] topo the name of the associated topology group.
+   * \param [in] coordset the name of the associated coordset group.
+   *
+   * \note If a topology and coordset name is not provided a default name is
+   *  used by the implementation.
+   *
    * \pre group != AXOM_NULLPTR.
+   * \pre group->getNumGroups() == 0
+   * \pre group->getNumViews() == 0
+   * \post blueprint::validRootGroup( group )
+   *
+   * \see sidre::Group
    */
-  Mesh( sidre::Group* group, const std::string& topo, const std::string& coordset,
-        int ndims, int type, int blockId, int partId );
+  /// @{
+
+  Mesh( int ndims, int type, int blockId, int partId,
+        sidre::Group* group,
+        const std::string& topo,
+        const std::string& coordset );
+
+  Mesh( int ndims, int type, int blockId, int partId, sidre::Group* group );
+  /// @}
 
   /*!
-   * \brief Helper which detects the mesh type and dimension from a group.
+   * \brief Helper method to return the associated coordset group.
+   * \return coordset the associated coordset group.
    *
-   * \pre m_group != AXOM_NULLPTR
-   * \pre m_coordsets_group != AXOM_NULLPTR
-   * \pre m_
-   * \post m_type  >= 0 && m_type < mint::NUM_MESH_TYPES
-   * \post m_ndims >= 1 && m_ndims <= 3
+   * \pre  m_group != AXOM_NULLPTR
+   * \pre  blueprint::validRootGroup( m_group )
+   * \post blueprint::validCoordsetGroup( coordset )
    */
-  void detectMeshTypeAndDimension( );
+  sidre::Group* getCoordsetGroup( );
+
+  /*!
+   * \brief Helper method to return the associated topology group.
+   * \return topology the associated topology group.
+   *
+   * \pre  m_group != AXOM_NULLPTR
+   * \pre  blueprint::validRootGroup( m_group )
+   * \post blueprint::validTopologyGroup( topology )
+   */
+  sidre::Group* getTopologyGroup( );
 
 #endif
 
@@ -460,32 +679,6 @@ private:
 //------------------------------------------------------------------------------
 //  IMPLEMENTATION OF TEMPLATE & IN-LINE METHODS
 //------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-inline double* Mesh::getCoordinateArray( int dim )
-{
-  SLIC_ERROR_IF( !hasExplicitCoordinates(),
-        "mesh of type [" << m_type << "] does not have explicit coordinates" );
-  SLIC_ERROR_IF( ( (dim >= 0) && ( dim < getDimension() ) ),
-    "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
-  getDimension() << "]" );
-
-  /* TO DO !!!!!!!!!!! */
-  return AXOM_NULLPTR;
-}
-
-//------------------------------------------------------------------------------
-inline const double* Mesh::getCoordinateArray( int dim ) const
-{
-  SLIC_ERROR_IF( !hasExplicitCoordinates(),
-       "mesh of type [" << m_type << "] does not have explicit coordinates" );
-  SLIC_ERROR_IF( ( (dim >= 0) && ( dim < getDimension() ) ),
-   "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
-   getDimension() << "]" );
-
-  /* TO DO !!!!!!!!!!! */
-  return AXOM_NULLPTR;
-}
 
 //------------------------------------------------------------------------------
 inline bool Mesh::hasSidreGroup( ) const
