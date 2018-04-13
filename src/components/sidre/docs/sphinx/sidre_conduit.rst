@@ -1,8 +1,7 @@
+.. _sidre-conduit:
 ******************************************************
 Sidre Interaction with Conduit
 ******************************************************
-
-.. Again, should the link point to github or to LC conduit home?
 
 Internally, Sidre uses the in-memory data description capabilities of 
 `Conduit <https://github.com/LLNL/conduit>`_.  Sidre also leverages Conduit

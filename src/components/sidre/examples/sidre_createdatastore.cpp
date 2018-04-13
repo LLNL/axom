@@ -27,10 +27,14 @@
 /* This example code contains snippets used in the Sidre Sphinx documentation.
  * They begin and end with comments
  *
- * first_example_create_start
- * first_example_create_end
- * first_example_chain_1
- * first_example_chain_2
+ * first_example_creategroups_start
+ * first_example_creategroups_end
+ * first_example_state_start
+ * first_example_state_end
+ * first_example_nodes_start
+ * first_example_nodes_end
+ * first_example_fields_start
+ * first_example_fields_end
  * first_example_access_start
  * first_example_access_end
  * serial_io_save_start
@@ -62,7 +66,7 @@ using namespace sidre;
 
 DataStore* create_datastore(int* region)
 {
-  // _first_example_create_start
+  // _first_example_creategroups_start
   // Create Sidre datastore object and get root group
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
@@ -75,12 +79,16 @@ DataStore* create_datastore(int* region)
   Group* state = root->createGroup("state");
   Group* nodes = root->createGroup("nodes");
   Group* fields = root->createGroup("fields");
+  // _first_example_creategroups_end
 
+  // _first_example_state_start
   // Populate "state" group
   state->createViewScalar("cycle", 25);
   state->createViewScalar("time", 1.2562e-2);
   state->createViewString("name", "sample_20171206_a");
+  // _first_example_state_end
 
+  // _first_example_nodes_start
   int N = 16;
   int nodecount = N * N * N;
   int eltcount = (N-1) * (N-1) * (N-1);
@@ -91,13 +99,13 @@ DataStore* create_datastore(int* region)
   // holds 3 * nodecount doubles.  These views might describe the location of
   // each node in a 16 x 16 x 16 hexahedron mesh.  Each view is described by
   // number of elements, offset, and stride into that data.
-  // _first_example_chain_1
   Buffer* buff = ds->createBuffer(sidre::DOUBLE_ID, 3*nodecount)->allocate();
   nodes->createView("x", buff)->apply(sidre::DOUBLE_ID, nodecount, 0, 3);
-  // _first_example_chain_2
   nodes->createView("y", buff)->apply(sidre::DOUBLE_ID, nodecount, 1, 3);
   nodes->createView("z", buff)->apply(sidre::DOUBLE_ID, nodecount, 2, 3);
+  // _first_example_nodes_end
 
+  // _first_example_fields_start
   // Populate "fields" group
   //
   // "temp" is a view into a buffer that is not shared with another View.
@@ -122,7 +130,7 @@ DataStore* create_datastore(int* region)
   // int * region has been passed in as a function argument.  As with "temp"
   // and "rho", view "region" has default offset and stride.
   ext->createView("region", region)->apply(sidre::INT_ID, eltcount);
-  // _first_example_create_end
+  // _first_example_fields_end
 
   return ds;
 }

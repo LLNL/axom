@@ -18,10 +18,12 @@
 /* An excerpt from this test file is used in the Sidre Sphinx documentation,
  * denoted by the comment strings
  *
- * parallel_io_save_start
- * parallel_io_save_end
  * parallel_io_headers_start
  * parallel_io_headers_end
+ * parallel_io_save_start
+ * parallel_io_save_end
+ * parallel_io_load_start
+ * parallel_io_load_end
  *
  * prepended with an underscore.
  */
@@ -113,7 +115,7 @@ TEST(spio_parallel, parallel_writeread)
   }
 
   // The namespace qualifying IOManager is not necessary for compilation
-  // (because are already using axom::sidre::IOManager), but is there
+  // (because are already using axom::sidre::IOManager), but we've kept it
   // because the following code is used in the documentation as an example.
   // _parallel_io_save_start
   /*
@@ -186,6 +188,7 @@ TEST(spio_parallel, parallel_writeread)
 
   }
 
+  // _parallel_io_load_start
   /*
    * Create another DataStore that holds nothing but the root group.
    */
@@ -198,6 +201,7 @@ TEST(spio_parallel, parallel_writeread)
 
 
   reader.read(ds2->getRoot(), root_name);
+  // _parallel_io_load_end
 
 
   /*

@@ -53,7 +53,7 @@ I/O using the IOManager class.
 Parallel File I/O
 -----------------
 
-To accomplish parallel I/O, Sidre provides the IOManager class within .  This class is
+To accomplish parallel I/O, Sidre provides the IOManager class.  This class is
 instantiated with an MPI communicator and provides several overloads of the 
 ``write()`` and ``read()`` methods, to save a Group to HDF5 format or read a Group
 in from HDF5.  IOManager optionally uses the SCR library for scalable I/O 
@@ -76,4 +76,12 @@ Then use IOManager to save in parallel.
    :end-before: _parallel_io_save_end
    :language: C++
 
-See the :ref:`full documentation <spio-core-concepts>` for parallel file I/O using IOManager.
+Loading data in parallel is easy:
+
+.. literalinclude:: ../../tests/spio/spio_parallel.cpp
+   :start-after: _parallel_io_load_start
+   :end-before: _parallel_io_load_end
+   :language: C++
+
+See :ref:`further documentation <spio-core-concepts>` on the concepts and use of Sidre
+parallel I/O facilities.
