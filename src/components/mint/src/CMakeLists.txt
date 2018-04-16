@@ -92,13 +92,22 @@ set( mint_sources
     utils/vtk_utils.cpp
    )
 
+set( mint_dependencies
+     axom_utils
+     slic
+     )
+
+if ( ${MINT_USE_SIDRE} )
+  list(APPEND mint_dependencies sidre conduit)
+endif()
+
 ## create the mint library
 blt_add_library(
     NAME mint
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
-    DEPENDS_ON axom_utils slic sidre conduit
+    DEPENDS_ON ${mint_dependencies}
     FOLDER axom/mint
    )
 

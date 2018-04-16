@@ -36,6 +36,17 @@ set( mint_tests
      mint_util_write_vtk.cpp
    )
 
+## lists all axom depencies used for testing
+set( mint_test_dependencies
+     axom_utils
+     slic
+     mint
+     )
+
+if ( ${MINT_USE_SIDRE} )
+  list(APPEND mint_test_dependencies sidre conduit)
+endif()
+
 foreach( test ${mint_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
@@ -44,7 +55,7 @@ foreach( test ${mint_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON axom_utils slic mint gtest
+        DEPENDS_ON ${mint_test_dependencies} gtest
         FOLDER     axom/mint/tests
         )
 
