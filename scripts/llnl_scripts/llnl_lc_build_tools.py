@@ -205,8 +205,6 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     tpl_build_dir = pjoin(prefix, timestamp)
 
     copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
-    copy_if_exists(pjoin(tpl_build_dir, "failed.json"), archive_dir)
-    copy_if_exists(pjoin(tpl_build_dir, "success.json"), archive_dir)
 
     build_and_test_root = get_build_and_test_root(tpl_build_dir, timestamp)
 
@@ -228,7 +226,9 @@ def archive_tpl_logs(prefix, job_name, timestamp):
             copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
 
         # Find build dir for spec
-        build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (spec))
+        # Note: only compiler name/version is used in build directory not full spack spec
+        compiler = get_compiler_from_spec(spec)
+        build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (compiler))
         build_dirs = glob.glob(build_dir_glob)
         if len(build_dirs) > 0:
             build_dir = build_dirs[0]
@@ -602,3 +602,11 @@ def on_rz():
     if machine_name.startswith("rz"):
         return True
     return False
+
+def get_compiler_from_spec(spec):
+    compiler = spec
+    for c in ['~', '+']:
+        index = compiler.find(c)
+        if index != -1: 
+            compiler = compiler[:index]
+    return compiler
