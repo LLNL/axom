@@ -104,7 +104,7 @@ each processor will read to load data into the argument group.
 The ``write()`` and ``read()`` methods above are sufficient to do a restart save/load
 when the data is the group is completely owned by the Sidre data structures.
 If Sidre is used to manage data that is externally allocated, the loading
-procedure requires some additional steps to restore data in the same 
+procedure requires some additional steps to restore data in the same
 externally-allocated state.
 
 First the ``read()`` method is called, and the full hierarchy structure of the
