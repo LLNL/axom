@@ -21,5 +21,5 @@
 blt_add_sphinx_target( primal_docs )
 
 if (DOXYGEN_FOUND)
-  add_dependencies(primal_docs primal_doxygen)
+  add_dependencies(primal_docs doxygen_docs)
 endif()

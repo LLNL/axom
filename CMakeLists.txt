@@ -57,3 +57,8 @@ include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 # Add src
 ################################
 add_subdirectory(src)
+
+################################
+# Add license files
+################################
+install(FILES LICENSE NOTICE DESTINATION docs)

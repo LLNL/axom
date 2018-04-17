@@ -261,7 +261,6 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
 }
 
-
 }  // namespace utilities
 }  // namespace axom
 

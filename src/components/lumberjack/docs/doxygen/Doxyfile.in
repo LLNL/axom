@@ -1,5 +1,0 @@
-PROJECT_NAME  = Lumberjack
-PROJECT_BRIEF = "Scalable and Filtering Logging Library"
-INPUT = @PROJECT_SOURCE_DIR@/src
-GENERATE_XML = YES
-EXTENSION_MAPPING = f=FortranFree

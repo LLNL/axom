@@ -1,20 +1,29 @@
 Sidre: Simulation Data Repository {#sidretop}
 =========
 
-Axom provides Sidre, a data repository library for flexible, low-overhead organization of buffers in a hierarchical tree.  Four concepts are embodied in Sidre classes:
+Axom provides Sidre, a data repository library for flexible, low-overhead organization of buffers in a hierarchical tree.  Five concepts are embodied in Sidre classes:
 
-* Buffers are linear arrays of data.
-* Views provide access to data in buffers, specifying type, offset, and stride.
-* Groups contain views.  Groups also contain other groups, in a tree structure.
-* Stores contain buffers and a root group.
+* [Buffers](@ref axom::sidre::Buffer) are linear arrays of data.
+* [Views](@ref axom::sidre::View) provide access to data in Buffers, specifying type, offset, and stride.
+* [Groups](@ref axom::sidre::Group) contain Views.  Groups also contain other Groups, in a tree structure.
+* [Data stores](@ref axom::sidre::DataStore) contain Buffers and a root group.
+* [Attributes](@ref axom::sidre::Attribute) hold metadata that apply to Views.
 
 # Work flow {#workflow}
 
-A code will instantiate a Sidre data store and create a hierarchy of groups, then allocate buffers and create views (within the group hierarchy) into the buffers.  Each view specifies the type and shape of the data, as well as offset and stride, and provides the mechanism for access to the buffers' contents.  A view can also provide access into a memory buffer allocated by an outside code.  Alternately, the SPIO component of the ASC toolkit can produce a Sidre store from an external data source.
+A code will typically
+- Instantiate a Sidre data store
+  - create a hierarchy of groups
+  - allocate buffers and create views into the buffers
+  - create a list of attributes and set attribute values on views
+- Alternately, read in a data store from an external data source
+- Retrieve groups and views from the data store by name
+- Using the pointer from a view, read from and write into data arrays
+- Save the hierarchical data store to a file, such as an HDF5 archive
+  - Save the subset of the data store: only the views with a specific attribute set
+- Dispose of the data store
+  - External pointers must be dealt with manually
 
-After instantiantion, a code can use a string, formatted for proper path notation, to obtain a pointer to a group or view.  A view provides access to its underlying buffer, 
-
-# Design goals {#goals}
-
-Sidre was designed to provide a data store library that is conceptually close to existing functionality in current physics codes, and easily mapped to storage options such as HDF5.  Sidre also aims to be simple.  In contrast to HDF5, all buffers are contained by a store directly, not by groups, and groups are arranged in a tree structure, not a directed acyclic graph.  This simplicity promotes robust code and ease of use, while remaining powerful enough to fulfill the needs of physics codes.
+The [Sidre guide](../../../sphinx/sidre_docs/html/index.html)
+introduces these concepts in more detail.
 

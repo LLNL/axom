@@ -1,5 +1,0 @@
-PROJECT_NAME  = Datastore
-PROJECT_BRIEF = "Inter-Operable Data Interface for HPC Simulations"
-INPUT = @PROJECT_SOURCE_DIR@/src/core @PROJECT_SOURCE_DIR@/src/capi
-GENERATE_XML = YES
-EXTENSION_MAPPING = f=FortranFree
