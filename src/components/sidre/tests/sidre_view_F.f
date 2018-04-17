@@ -470,19 +470,15 @@ contains
     call view3%print()
 
     ! check values in depth views...
-    nullify(data)
     call view0%get_data(data)
     call assert_true(all(data == 0), "depth 0 does not compare")
 
-    nullify(data)
     call view1%get_data(data)
     call assert_true(all(data == 1), "depth 1 does not compare")
  
-    nullify(data)
     call view2%get_data(data)
     call assert_true(all(data == 2), "depth 2 does not compare")
 
-    nullify(data)
     call view3%get_data(data)
     call assert_true(all(data == 3), "depth 3 does not compare")
 
@@ -559,14 +555,12 @@ contains
     call field1%print()
 
     ! check values in field views...
-    nullify(data)
     call field0%get_data(data)
     call assert_true(size(data) == field_nelems, &
          "depth 0 is incorrect size")
     call assert_true(all(data == 0), "depth 0 does not compare")
     call assert_true(offset0 == field0%get_offset())
 
-    nullify(data)
     call field1%get_data(data)
     call assert_true(size(data) == field_nelems, &
          "depth 1 is incorrect size")
@@ -894,8 +888,6 @@ contains
     a1 = root%create_view_and_allocate("a1", SIDRE_FLOAT_ID, 5)
     a2 = root%create_view_and_allocate("a2", SIDRE_FLOAT_ID, 5)
 
-    nullify(a1_data)
-    nullify(a2_data)
     call a1%get_data(a1_data)
     call a2%get_data(a2_data)
 
@@ -913,8 +905,6 @@ contains
     call a1%reallocate(10)
     call a2%reallocate(15)
 
-    nullify(a1_data)
-    nullify(a2_data)
     call a1%get_data(a1_data)
     call a2%get_data(a2_data)
 

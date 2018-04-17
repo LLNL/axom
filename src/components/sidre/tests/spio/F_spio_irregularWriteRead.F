@@ -83,7 +83,6 @@ program spio_irregularWriteRead
         write(name, "(a,i0)") "view", g
         if (mod(g, 2) .ne. 0) then
            view1 = sg1%create_view_and_allocate(name, SIDRE_INT_ID, 10+my_rank)
-           nullify(vals1)
            call view1%get_data(vals1)
            do i = 0, 9+my_rank
               vals1(i+1) = (i+10) * (404-my_rank-i-g-f)
@@ -136,8 +135,6 @@ program spio_irregularWriteRead
            if (num_elems1 .ne. num_elems2) then
               return_val = 1 
            else
-              nullify(vals1)
-              nullify(vals2)
               call view1%get_data(vals1)
               call view2%get_data(vals2)
               if (any(vals1.ne.vals2)) then
