@@ -70,7 +70,6 @@ Component User Guides
   *  Slic (Simple Logging Interface Code for integrated applications)
   *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
   *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
-  *  `Spio (Sidre Parallel I/O) <../../spio_docs/html/index.html>`_
   *  Slam (Set-theoretic lightweight API for meshes)
   *  Quest (Querying on surface tool)
   *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
@@ -81,15 +80,14 @@ Source Code Documentation
 --------------------------
 
   *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
-  *  `Axom Utils <../../../doxygen/axom_utils_doxygen/html/index.html>`_
-  *  `Slic <../../../doxygen/slic_doxygen/html/index.html>`_
-  *  `Lumberjack <../../../doxygen/lumberjack_doxygen/html/index.html>`_
-  *  `Sidre <../../../doxygen/sidre_doxygen/html/index.html>`_
-  *  `Spio <../../../doxygen/spio_doxygen/html/index.html>`_
-  *  `Slam <../../../doxygen/slam_doxygen/html/index.html>`_
-  *  `Quest <../../../doxygen/quest_doxygen/html/index.html>`_
-  *  `Mint <../../../doxygen/mint_doxygen/html/index.html>`_ 
-  *  `Primal <../../../doxygen/primal_doxygen/html/index.html>`_ 
+  *  `Axom Utils <../../../doxygen/axom_doxygen/html/axomutiltop.html>`_
+  *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
+  *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
+  *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
+  *  `Quest <../../../doxygen/axom_doxygen/html/questtop.html>`_
+  *  `Sidre <../../../doxygen/axom_doxygen/html/sidretop.html>`_
+  *  `Slic <../../../doxygen/axom_doxygen/html/slictop.html>`_
+  *  `Slam <../../../doxygen/axom_doxygen/html/slamtop.html>`_
 
 Look for documentation to appear for new components as they are developed.
 
