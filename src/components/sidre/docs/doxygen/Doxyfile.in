@@ -1,7 +1,0 @@
-PROJECT_NAME  = Datastore
-PROJECT_BRIEF = "Inter-Operable Data Interface for HPC Simulations"
-INPUT = @PROJECT_SOURCE_DIR@/src/components/sidre/src/core \
-        @PROJECT_SOURCE_DIR@/src/components/sidre/src/capi
-GENERATE_XML = YES
-GENERATE_TAGFILE  = sidre.tag
-EXTENSION_MAPPING = f=FortranFree

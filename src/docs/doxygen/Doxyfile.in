@@ -801,9 +801,6 @@ INPUT                  = @PROJECT_SOURCE_DIR@/src/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/src/components/slam/README.md \
                          @PROJECT_SOURCE_DIR@/src/components/slam/src \
                          @PROJECT_SOURCE_DIR@/src/components/slam/src/policies \
-                         @PROJECT_SOURCE_DIR@/src/components/slam/examples \
-                         @PROJECT_SOURCE_DIR@/src/components/slam/examples/lulesh2.0.3 \
-                         @PROJECT_SOURCE_DIR@/src/components/slam/examples/tinyHydro \
                          @PROJECT_SOURCE_DIR@/src/components/slic/README.md \
                          @PROJECT_SOURCE_DIR@/src/components/slic/src/core \
                          @PROJECT_SOURCE_DIR@/src/components/slic/src/streams

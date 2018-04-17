@@ -1,6 +1,0 @@
-PROJECT_NAME  = Lumberjack
-PROJECT_BRIEF = "Scalable and Filtering Logging Library"
-INPUT = @PROJECT_SOURCE_DIR@/src/components/lumberjack/src
-GENERATE_XML = YES
-GENERATE_TAGFILE  = lumberjack.tag
-EXTENSION_MAPPING = f=FortranFree
