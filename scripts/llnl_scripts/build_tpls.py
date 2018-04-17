@@ -90,11 +90,6 @@ def main():
         if opts["archive"] != "":
             # Get information for archiving
             archive_base_dir = get_archive_base_dir()
-            if opts["archive"] != "":
-                job_name = opts["archive"]
-            else:
-                job_name = get_username() + "/" + os.path.basename(__file__)
-
             archive_tpl_logs(builds_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
