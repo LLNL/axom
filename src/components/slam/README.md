@@ -1,7 +1,7 @@
 SLAM: A (S)et-theoretic (L)ightweight (A)PI for (M)eshes {#slamtop}
 =========
 
-Axom's [Slam](@ref axom::slam) component provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for multiphysics simulation codes.  Slam's [classes and functions](@ref axom::slam) provide context to a mesh's entities and associated data stored as raw data.  Slam models meshes in terms of three set-theoretic concepts:
+Axom's [Slam](@ref axom::slam) component provides a collection of high performance, thoroughly tested, reusable components that can be combined to define distributed mesh data structures for multiphysics simulation codes.  Slam's classes and functions provide context to a mesh's entities and associated data stored as raw data.  Slam models meshes in terms of three set-theoretic concepts:
 
 * Sets of entities (e.g. vertices, cells, particles)
 * Relations among pairs of sets (e.g. incidence, adjacency and containment relations)

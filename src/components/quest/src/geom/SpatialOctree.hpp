@@ -194,6 +194,7 @@ public:
    * \post Each coordinate of the returned gridPt is in range
    *  \f$ [0, 2^{lev}) \f$
    * \return The grid point of the block covering this point at this level
+   * \internal
    * \todo KW: Should this function be protected? Is it generally useful?
    */
   GridPt findGridCellAtLevel(const SpacePt& pt, int lev) const

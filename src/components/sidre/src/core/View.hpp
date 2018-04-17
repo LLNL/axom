@@ -54,7 +54,7 @@ class Attribute;
 /*!
  * \class View
  *
- * \brief A View object describes a "view" into data, which may be
+ * \brief A View object describes a data array, which may be
  *        owned by the view object (via an attached Buffer) or
  *        owned externally.
  *
@@ -71,19 +71,19 @@ class Attribute;
  *      owns it.
  *    - A View object can describe and provide access to data in one of
  *      four ways:
- *        # A view can describe (a subset of) data owned by an existing
+ *        * A view can describe (a subset of) data owned by an existing
  *          Buffer. In this case, the data can be (re)allocated or
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
- *        # A view can describe and allocate data using semantics similar
+ *        * A view can describe and allocate data using semantics similar
  *          to Buffer data description and allocation. In this case, no
  *          other view is allowed to (re)allocate or deallocate the data held
  *          by the associated data buffer.
- *        # A view can describe data associated with a pointer to an
+ *        * A view can describe data associated with a pointer to an
  *          "external" data object. In this case, the view cannot (re)allocate
  *          or deallocate the data. However, all other view operations are
  *          essentially the same as the previous two cases.
- *        # It can hold a pointer to an undescribed (i.e., "opaque") data
+ *        * It can hold a pointer to an undescribed (i.e., "opaque") data
  *          object. In this case, the view knows nothing about the type or
  *          structure of the data; it is essentially just a handle to the data.
  *    - For any View object that is "external" or associated with a

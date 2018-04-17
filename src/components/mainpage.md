@@ -21,5 +21,6 @@ Axom provides libraries that address common computer science needs.  It grew fro
 - [Quick start guide](../../../sphinx/quickstart_guide_docs/html/index.html)
 - [Development guide](../../../sphinx/dev_guide_docs/html/index.html) (intended for Axom contributors)
 - Coding [style guide](../../../sphinx/coding_guide_docs/html/index.html) (intended for Axom contributors)
+- Please see our [license](../../../LICENSE) and accompanying [notice](../../../NOTICE).
 
 Each component contains a `test` subdirectory containing numerous code unit tests and an `example` subdirectory with more extensive demonstrations of the Axom library.  The Sidre, Mint, and Slam examples include several versions of the `lulesh` mini-app,  an implementation of the heat equation and a 1-D shock tube simulation.

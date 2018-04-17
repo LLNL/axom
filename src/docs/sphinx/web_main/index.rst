@@ -168,10 +168,16 @@ group access by sending an email request to 'axom-dev@llnl.gov'.
 
 
 ======================================================
-Axom Release and Copyright License Information
+Axom Copyright and License Information
 ======================================================
 
-Fill this in when we have it..
+Please see our `license <../../../LICENSE>`_ and accompanying
+`notice <../../../NOTICE>`_.
+
+Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+Produced at the Lawrence Livermore National Laboratory.
+
+LLNL-CODE-741217
 
 
 .. toctree::
