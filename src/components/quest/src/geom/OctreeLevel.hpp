@@ -42,7 +42,7 @@
 
 #include "quest/Brood.hpp"
 
-#include <boost/iterator/iterator_facade.hpp>
+#include <iterator>
 
 using axom::primal::Point;
 using axom::primal::NumericArray;
@@ -220,10 +220,10 @@ public:
    *   \a increment(), \a equal() \a update(), \a pt() and \a data()
    */
   template<typename OctreeLevel, typename IterHelper, typename DataType>
-  class BlockIterator : public boost::iterator_facade<
-      BlockIterator<OctreeLevel, IterHelper, DataType>,
-      DataType,
-      boost::forward_traversal_tag >
+  class BlockIterator : public std::iterator <
+      std::forward_iterator_tag,
+      DataType
+      >
   {
 public:
     typedef BlockIterator<OctreeLevel, IterHelper, DataType>  iter;
@@ -245,29 +245,48 @@ public:
       }
     }
 
-    /** \brief A const dereference function used for accessing the data  */
-    DataType& dereference() const { return *m_iterHelper->data(); }
+    /** \brief A const dereference function to access the data  */
+    DataType& operator*() const { return *m_iterHelper->data(); }
+
+    /** \brief A const pointer dereference function to access the data  */
+    DataType* operator->() const { return m_iterHelper->data(); }
 
     /** \brief Const accessor for the iterator's current grid point */
     GridPt pt() const { return m_iterHelper->pt(); }
 
     /** \brief Equality test against another iterator */
-    bool equal(const iter& other) const
+    bool operator==(const iter& other) const
     {
       return (m_octLevel == other.m_octLevel)             // point to same
                                                           // object
              && m_iterHelper->equal(other.m_iterHelper);
     }
 
+    /** \brief Inequality test against another iterator */
+    bool operator!=(const iter& other) const
+    {
+      return !operator==(other);
+    }
+
     /** \brief Increment the iterator to the next point */
-    void increment() { m_iterHelper->increment(); }
+    iter& operator++()
+    {
+      m_iterHelper->increment();
+      return *this;
+    }
+
+    /** \brief Increment the iterator to the next point */
+    iter operator++(int)
+    {
+      iter res = *this;
+      m_iterHelper->increment();
+      return res;
+    }
 
 private:
-    friend class boost::iterator_core_access;
     OctreeLevel* m_octLevel;               /** Pointer to the iterator's
                                               container class */
-    IterHelper* m_iterHelper;              /** Instance of iterator helper class
-                                            */
+    IterHelper* m_iterHelper;              /// Instance of iterator helper class
   };
 
 
