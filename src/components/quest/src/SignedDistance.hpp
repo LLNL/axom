@@ -475,12 +475,12 @@ double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
     cpt->element_ids[ i ] = cellIdx;
 
     mint::IndexType cellIds[3];
-    m_surfaceMesh->getMeshCell( cellIdx, cellIds );
+    m_surfaceMesh->getCell( cellIdx, cellIds );
 
     TriangleType surface_element;
-    m_surfaceMesh->getMeshNode( cellIds[0], surface_element[0].data() );
-    m_surfaceMesh->getMeshNode( cellIds[1], surface_element[1].data() );
-    m_surfaceMesh->getMeshNode( cellIds[2], surface_element[2].data() );
+    m_surfaceMesh->getNode( cellIds[0], surface_element[0].data() );
+    m_surfaceMesh->getNode( cellIds[1], surface_element[1].data() );
+    m_surfaceMesh->getNode( cellIds[2], surface_element[2].data() );
     cpt->surface_elements[ i ] = surface_element;
 
     closest_pts[ i ] =
@@ -612,7 +612,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
 
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
-  const int cellType = m_surfaceMesh->getMeshCellType( icell );
+  const int cellType = m_surfaceMesh->getCellType( icell );
   SLIC_ASSERT( cellType == mint::TRIANGLE ||
                cellType == mint::QUAD ||
                cellType == mint::SEGMENT );
@@ -620,7 +620,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
 
   // Get the cell node IDs that make up the cell
   axom::mint::IndexType * cellIds = new axom::mint::IndexType[ nnodes ];
-  m_surfaceMesh->getMeshCell( icell, cellIds );
+  m_surfaceMesh->getCell( icell, cellIds );
 
   // compute the cell's bounding box
   BoxType bb;
@@ -629,7 +629,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
   for ( int i=0 ; i < nnodes ; ++i )
   {
 
-    m_surfaceMesh->getMeshNode( cellIds[ i ], pt.data() );
+    m_surfaceMesh->getNode( cellIds[ i ], pt.data() );
     bb.addPoint( pt );
 
   } // END for all cell nodes

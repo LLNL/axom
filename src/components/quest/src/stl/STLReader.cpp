@@ -209,7 +209,7 @@ void STLReader::read()
 
 //------------------------------------------------------------------------------
 void STLReader::getMesh(
-  axom::mint::UnstructuredMesh< mint::TRIANGLE >* mesh )
+  axom::mint::UnstructuredMesh< mint::Topology::SINGLE >* mesh )
 {
   /* Sanity checks */
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
@@ -219,14 +219,14 @@ void STLReader::getMesh(
   // Load the vertices into the mesh
   for ( axom::mint::IndexType i=0 ; i < m_num_nodes ; ++i )
   {
-    mesh->addNode( m_nodes[i*3], m_nodes[i*3+1], m_nodes[i*3+2] );
+    mesh->appendNode( m_nodes[i*3], m_nodes[i*3+1], m_nodes[i*3+2] );
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
   for ( axom::mint::IndexType i=0 ; i < m_num_faces ; ++i )
   {
     axom::mint::IndexType tv[3] = {3*i, 3*i+1, 3*i+2};
-    mesh->addCell( tv, mint::TRIANGLE );
+    mesh->appendCell( tv );
   }
 
 }

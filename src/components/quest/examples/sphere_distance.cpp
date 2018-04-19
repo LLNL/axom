@@ -67,7 +67,7 @@ using axom::primal::Sphere;
 
 
 static const int NDIMS = 3;
-typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
 
 static struct
 {
@@ -86,9 +86,9 @@ static struct
 //------------------------------------------------------------------------------
 void init();
 void parse_args( int argc, char** argv );
-void read_stl_mesh( TriangleMesh* stl_mesh );
+void read_stl_mesh( UMesh* stl_mesh );
 BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh );
-void get_uniform_mesh( TriangleMesh* surface_mesh,
+void get_uniform_mesh( UMesh* surface_mesh,
                        axom::mint::UniformMesh*& umesh);
 BoundingBox< double,NDIMS > getCellBoundingBox(
   int cellIdx, axom::mint::Mesh* surface_mesh );
@@ -109,7 +109,7 @@ int main( int argc, char** argv )
   parse_args( argc, argv );
 
   // STEP 1: read file
-  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  UMesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   read_stl_mesh( surface_mesh );
   axom::mint::write_vtk( surface_mesh, "surface_mesh.vtk" );
 
@@ -173,7 +173,7 @@ int main( int argc, char** argv )
 }
 
 //------------------------------------------------------------------------------
-void get_uniform_mesh( TriangleMesh* surface_mesh,
+void get_uniform_mesh( UMesh* surface_mesh,
                        axom::mint::UniformMesh*& umesh)
 {
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
@@ -282,7 +282,7 @@ void showHelp()
 }
 
 //------------------------------------------------------------------------------
-void read_stl_mesh( TriangleMesh* stl_mesh )
+void read_stl_mesh( UMesh* stl_mesh )
 {
   SLIC_INFO("Reading file: " << Arguments.fileName << "...");
   quest::STLReader* reader = new quest::STLReader();
@@ -393,7 +393,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   {
 
     double pnt[3];
-    umesh->getMeshNode( i, pnt );
+    umesh->getNode( i, pnt );
 
     phi[ i ]  = sphere.computeSignedDistance( pnt );
   }
@@ -424,7 +424,7 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
     // get target node
     Point< double,NDIMS > pnt;
-    umesh->getMeshNode( i, pnt.data() );
+    umesh->getNode( i, pnt.data() );
     Point< double,NDIMS > Q = pnt;
 
     double unsignedMinDistSQ = std::numeric_limits< double >::max();
@@ -435,12 +435,12 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
     {
       // find minimum distance from query point to triangle
       axom::mint::IndexType closest_cell[ 3 ];
-      surface_mesh->getMeshCell( j, closest_cell );
+      surface_mesh->getCell( j, closest_cell );
 
       Point< double,NDIMS > a,b,c;
-      surface_mesh->getMeshNode( closest_cell[0], a.data() );
-      surface_mesh->getMeshNode( closest_cell[1], b.data() );
-      surface_mesh->getMeshNode( closest_cell[2], c.data() );
+      surface_mesh->getNode( closest_cell[0], a.data() );
+      surface_mesh->getNode( closest_cell[1], b.data() );
+      surface_mesh->getNode( closest_cell[2], c.data() );
       Triangle< double,3 > T( a,b,c);
       const double sqDist = axom::primal::squared_distance( Q, T );
       if ( sqDist < unsignedMinDistSQ)
@@ -479,7 +479,7 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   {
 
     Point< double,NDIMS > pt;
-    umesh->getMeshNode( inode, pt.data() );
+    umesh->getNode( inode, pt.data() );
 
     phi[ inode ] = signedDistance.computeDistance( pt );
 
@@ -516,14 +516,14 @@ BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::IndexType cellIdx,
   SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getNumberOfCells());
 
   axom::mint::IndexType cell[3];
-  surface_mesh->getMeshCell( cellIdx, cell );
+  surface_mesh->getCell( cellIdx, cell );
 
   BoundingBox< double,3 > bb;
   Point< double,3 > pt;
 
   for ( int i=0 ; i < 3 ; ++i )
   {
-    surface_mesh->getMeshNode( cell[i], pt.data() );
+    surface_mesh->getNode( cell[i], pt.data() );
     bb.addPoint( pt );
   }  // END for all cell nodes
 
@@ -540,7 +540,7 @@ BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)
 
   for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    mesh->getNode( i, pt.data() );
     meshBB.addPoint( pt );
   }  // END for all nodes
 

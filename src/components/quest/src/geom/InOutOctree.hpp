@@ -878,9 +878,9 @@ public:
       for(mint::IndexType i=0 ; i< numOrigTris ; ++i)
       {
         // Grab relation from mesh
-        using TriangleMesh = mint::UnstructuredMesh< mint::TRIANGLE >;
+        using UMesh = mint::UnstructuredMesh< mint::Topology::SINGLE >;
         mint::IndexType* vertIds =
-            static_cast< TriangleMesh* >(m_surfaceMesh)->getCell( i );
+            static_cast< UMesh* >(m_surfaceMesh)->getCell( i );
 
         // Remap the vertex IDs
         for(int j=0 ; j< NUM_TRI_VERTS ; ++j)
@@ -921,22 +921,22 @@ public:
         m_surfaceMesh = AXOM_NULLPTR;
       }
 
-      typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
-      TriangleMesh * triMesh =
-          new TriangleMesh(3, m_vertexSet.size(), m_elementSet.size() );
+      typedef mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+      UMesh * triMesh =
+          new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size() );
 
       // Add vertices to the mesh (i.e. vertex positions)
       for(int i=0; i< m_vertexSet.size(); ++i)
       {
         const SpacePt& pt = vertexPosition(i);
-        triMesh->addNode(pt[0], pt[1], pt[2]);
+        triMesh->appendNode(pt[0], pt[1], pt[2]);
       }
 
       // Add triangles to the mesh (i.e. boundary vertices)
       for(int i=0; i< m_elementSet.size(); ++i)
       {
         const TriangleIndex * tv = &triangleVertexIndices(i)[0];
-        triMesh->addCell(tv, mint::TRIANGLE);
+        triMesh->appendCell(tv);
       }
 
       m_surfaceMesh = triMesh;
@@ -2357,7 +2357,7 @@ public:
   typedef axom::slam::Map<int> LeafIntMap;
   typedef axom::slam::Map<GridPt> LeafGridPtMap;
 
-  typedef mint::UnstructuredMesh< mint::MIXED > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::Topology::MIXED > DebugMesh;
 
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
@@ -2798,9 +2798,9 @@ private:
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
     mint::IndexType vStart = mesh->getNumberOfNodes();
-    mesh->addNode( triPos[0][0], triPos[0][1], triPos[0][2]);
-    mesh->addNode( triPos[1][0], triPos[1][1], triPos[1][2]);
-    mesh->addNode( triPos[2][0], triPos[2][1], triPos[2][2]);
+    mesh->appendNode( triPos[0][0], triPos[0][1], triPos[0][2]);
+    mesh->appendNode( triPos[1][0], triPos[1][1], triPos[1][2]);
+    mesh->appendNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
     mint::IndexType data[3];
     for(int i=0 ; i< 3 ; ++i)
@@ -2808,7 +2808,7 @@ private:
         data[i] = vStart + i;
     }
 
-    mesh->addCell(data, mint::TRIANGLE);
+    mesh->appendCell(data);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2829,29 +2829,29 @@ private:
 
     mint::IndexType vStart = mesh->getNumberOfNodes();
 
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
+    mesh->appendNode(blockBB.getMin()[0], blockBB.getMin()[1],
                   blockBB.getMin()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1],
+    mesh->appendNode(blockBB.getMax()[0], blockBB.getMin()[1],
                   blockBB.getMin()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1],
+    mesh->appendNode(blockBB.getMax()[0], blockBB.getMax()[1],
                   blockBB.getMin()[2]);
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1],
+    mesh->appendNode(blockBB.getMin()[0], blockBB.getMax()[1],
                   blockBB.getMin()[2]);
 
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMin()[1],
+    mesh->appendNode(blockBB.getMin()[0], blockBB.getMin()[1],
                   blockBB.getMax()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMin()[1],
+    mesh->appendNode(blockBB.getMax()[0], blockBB.getMin()[1],
                   blockBB.getMax()[2]);
-    mesh->addNode(blockBB.getMax()[0], blockBB.getMax()[1],
+    mesh->appendNode(blockBB.getMax()[0], blockBB.getMax()[1],
                   blockBB.getMax()[2]);
-    mesh->addNode(blockBB.getMin()[0], blockBB.getMax()[1],
+    mesh->appendNode(blockBB.getMin()[0], blockBB.getMax()[1],
                   blockBB.getMax()[2]);
 
     mint::IndexType data[8];
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
-    mesh->addCell(data, mint::HEX);
+    mesh->appendCell(data);
 
     // Log the triangle info as primal code to simplify adding a test for this case
     if(shouldLogBlocks)

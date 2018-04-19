@@ -16,7 +16,7 @@
 // Google test include
 #include "gtest/gtest.h"
 
-typedef axom::mint::UnstructuredMesh< axom::mint::TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::Topology::SINGLE > UMesh;
 
 TEST( quest_interface, pointer_initialize )
 {

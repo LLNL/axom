@@ -66,7 +66,7 @@
 
 using namespace axom;
 
-typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
@@ -99,7 +99,7 @@ GeometricBoundingBox compute_bounds( mint::Mesh * mesh)
 
   for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    mesh->getNode( i, pt.data() );
     meshBB.addPoint( pt );
   }
 
@@ -126,16 +126,16 @@ void testIntersectionOnRegularGrid()
 
   TriangleType unitTri( ptX, ptY, ptZ );
 
-  typedef mint::UnstructuredMesh< mint::MIXED > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::Topology::MIXED > DebugMesh;
   DebugMesh * debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
-  debugMesh->addNode( ptX[0], ptX[1], ptX[2]);
-  debugMesh->addNode( ptY[0], ptY[1], ptY[2]);
-  debugMesh->addNode( ptZ[0], ptZ[1], ptZ[2]);
+  debugMesh->appendNode( ptX[0], ptX[1], ptX[2]);
+  debugMesh->appendNode( ptY[0], ptY[1], ptY[2]);
+  debugMesh->appendNode( ptZ[0], ptZ[1], ptZ[2]);
 
   mint::IndexType tArr[3] = {0,1,2};
-  debugMesh->addCell(tArr, mint::TRIANGLE);
+  debugMesh->appendCell(tArr, mint::TRIANGLE);
 
   PointType bbMin(-0.1);
   PointType bbMax(1.1);
@@ -180,22 +180,22 @@ void testIntersectionOnRegularGrid()
                 // Add to debug mesh
                 mint::IndexType vStart = debugMesh->getNumberOfNodes();
 
-                debugMesh->addNode( blockBB.getMin()[0],
+                debugMesh->appendNode( blockBB.getMin()[0],
                                     blockBB.getMin()[1], blockBB.getMin()[2]);
-                debugMesh->addNode( blockBB.getMax()[0],
+                debugMesh->appendNode( blockBB.getMax()[0],
                                     blockBB.getMin()[1], blockBB.getMin()[2]);
-                debugMesh->addNode( blockBB.getMax()[0],
+                debugMesh->appendNode( blockBB.getMax()[0],
                                     blockBB.getMax()[1], blockBB.getMin()[2]);
-                debugMesh->addNode( blockBB.getMin()[0],
+                debugMesh->appendNode( blockBB.getMin()[0],
                                     blockBB.getMax()[1], blockBB.getMin()[2]);
 
-                debugMesh->addNode( blockBB.getMin()[0],
+                debugMesh->appendNode( blockBB.getMin()[0],
                                     blockBB.getMin()[1], blockBB.getMax()[2]);
-                debugMesh->addNode( blockBB.getMax()[0],
+                debugMesh->appendNode( blockBB.getMax()[0],
                                     blockBB.getMin()[1], blockBB.getMax()[2]);
-                debugMesh->addNode( blockBB.getMax()[0],
+                debugMesh->appendNode( blockBB.getMax()[0],
                                     blockBB.getMax()[1], blockBB.getMax()[2]);
-                debugMesh->addNode( blockBB.getMin()[0],
+                debugMesh->appendNode( blockBB.getMin()[0],
                                     blockBB.getMax()[1], blockBB.getMax()[2]);
 
                 mint::IndexType data[8];
@@ -204,7 +204,7 @@ void testIntersectionOnRegularGrid()
                   data[i] = vStart + i;
                 }
 
-                debugMesh->addCell(data, mint::HEX);
+                debugMesh->appendCell(data, mint::HEX);
               }
 
             }
@@ -248,7 +248,7 @@ void testContainmentOnRegularGrid(
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     primal::Point< double,3 > pt;
-    umesh->getMeshNode( inode, pt.data() );
+    umesh->getNode( inode, pt.data() );
 
     containment[ inode ] = inOutOctree.within(pt) ? 1 : 0;
   }
@@ -278,7 +278,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh * mesh,
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
 
   TriVertIndices tvInd;
-  mesh->getMeshCell( cellIndex, tvInd.data() );
+  mesh->getCell( cellIndex, tvInd.data() );
   return tvInd;
 }
 
@@ -293,7 +293,7 @@ SpaceTriangle getMeshTriangle(mint::Mesh * mesh,
 
   SpaceTriangle tri;
   for(int i=0 ; i< 3 ; ++i)
-    mesh->getMeshNode( vertIndices[i], tri[i].data() );
+    mesh->getNode( vertIndices[i], tri[i].data() );
 
   return tri;
 }
@@ -428,12 +428,12 @@ void print_surface_stats( mint::Mesh * mesh)
     {
       badTriStr<< "\n\tTriangle " << *it;
       TriVertIndices vertIndices;
-      mesh->getMeshCell( *it, vertIndices.data() );
+      mesh->getCell( *it, vertIndices.data() );
 
       SpacePt vertPos;
       for(int j=0 ; j<3 ; ++j)
       {
-        mesh->getMeshNode( vertIndices[j], vertPos.data() );
+        mesh->getNode( vertIndices[j], vertPos.data() );
         badTriStr.write("\n\t\t vId: {} @ position: {}",
                         vertIndices[j], vertPos);
       }
@@ -501,8 +501,8 @@ int main( int argc, char * * argv )
 
 
   // STEP 3: create surface mesh
-  mint::Mesh * surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
+  mint::Mesh * surface_mesh = new UMesh( 3, mint::TRIANGLE );
+  reader->getMesh( static_cast<UMesh *>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
             << surface_mesh->getNumberOfNodes() << " nodes and "

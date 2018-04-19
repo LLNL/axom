@@ -482,7 +482,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
     #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
-    umesh->getMeshNode( inode, coords+3*inode );
+    umesh->getNode( inode, coords+3*inode );
   }
   fillTimer.stop();
 
@@ -574,7 +574,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
-    umesh->getMeshNode( inode, coords+3*inode );
+    umesh->getNode( inode, coords+3*inode );
   }
   fillTimer.stop();
 
@@ -653,7 +653,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
         if(diffCount < MAX_RESULTS)
         {
           axom::primal::Point< double,3 > pt;
-          umesh->getMeshNode( inode, pt.data() );
+          umesh->getNode( inode, pt.data() );
 
           out.write(
             "\n  Disagreement on sample {} @ {}.  Signed distance: {} -- InOutOctree: {} ",
@@ -716,7 +716,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
         if(diffCount < MAX_RESULTS)
         {
           axom::primal::Point< double,3 > pt;
-          umesh->getMeshNode( inode, pt.data() );
+          umesh->getNode( inode, pt.data() );
 
           out.write("\n  Disagreement on sample {} @ {}.  Expected {}, got {}",
                     inode, pt, expected, actual);
@@ -761,7 +761,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
         if(diffCount < MAX_RESULTS)
         {
           axom::primal::Point< double,3 > pt;
-          umesh->getMeshNode( inode, pt.data() );
+          umesh->getNode( inode, pt.data() );
 
           out.write("\n  Disagreement on sample {} @ {}.  "
                     "Expected {} ({}), got {} ({})",

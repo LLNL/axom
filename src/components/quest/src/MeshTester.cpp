@@ -44,7 +44,7 @@ namespace axom
 namespace quest
 {
 
-typedef mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -64,7 +64,7 @@ typedef std::map<IndexType, IndexType> MortonMap;
 #endif
 typedef std::pair<MortonMap::iterator, bool> MortonMapResult;
 
-inline SpatialBoundingBox compute_bounds( TriangleMesh* mesh)
+inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -105,7 +105,7 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-inline Triangle3 getMeshTriangle(mint::IndexType i, TriangleMesh* surface_mesh)
+inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
 {
   SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
 
@@ -143,7 +143,7 @@ inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
  * \see findTriMeshIntersections
  */
 void findTriMeshIntersections(
-  TriangleMesh* surface_mesh,
+  UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution)
@@ -243,7 +243,7 @@ void findTriMeshIntersections(
 
 
 /* Weld vertices of a triangle mesh that are closer than \a eps  */
-void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
+void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 {
   /// Implementation notes:
   ///
@@ -269,7 +269,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
     "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
 
   int const DIM = 3;
-  TriangleMesh* oldMesh = *surface_mesh;
+  UMesh* oldMesh = *surface_mesh;
 
   SpatialBoundingBox meshBB = compute_bounds(oldMesh).expand(eps);
 
@@ -281,7 +281,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       it != offsets.end() ; ++it)
   {
     // We will build up a new triangle mesh with the welded indices
-    TriangleMesh* newMesh = new TriangleMesh(DIM);
+    UMesh* newMesh = new UMesh(DIM, mint::TRIANGLE);
 
     // Set up the lattice for quantizing points to an integer lattice
     Point3 origin(meshBB.getMin().array() - Point3(*it).array() );
@@ -318,7 +318,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       if(res.second == true)
       {
         uniqueVertCount++;
-        newMesh->addNode(vert.data());
+        newMesh->appendNodes(vert.data());
       }
       vertex_remap[i] = res.first->second;
     }
@@ -340,7 +340,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       // Degeneracy check -- vertices need to be distinct
       if( areTriangleIndicesDistinct(triInds) )
       {
-        newMesh->addCell(triInds, mint::TRIANGLE);
+        newMesh->appendCell(triInds, mint::TRIANGLE);
       }
     }
 

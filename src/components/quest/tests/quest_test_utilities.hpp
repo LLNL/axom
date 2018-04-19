@@ -173,19 +173,19 @@ axom::mint::Mesh * make_octahedron_mesh()
   }
 
   // Now create an unstructured triangle mesh from the two arrays
-  typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
-  TriangleMesh * triMesh = new TriangleMesh(3);
+  typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+  UMesh * triMesh = new UMesh(3, mint::TRIANGLE);
 
   // insert verts
   for(int i=0 ; i< NUM_VERTS ; ++i)
   {
-    triMesh->addNode(verts[i][0], verts[i][1], verts[i][2]);
+    triMesh->appendNode(verts[i][0], verts[i][1], verts[i][2]);
   }
 
   // insert triangles
   for(int i=0 ; i< NUM_TRIS ; ++i)
   {
-    triMesh->addCell(&tvRelation[i*VERTS_PER_TRI], mint::TRIANGLE);
+    triMesh->appendCell(&tvRelation[i*VERTS_PER_TRI]);
   }
 
   SLIC_ASSERT( NUM_VERTS == triMesh->getNumberOfNodes() );
@@ -202,22 +202,22 @@ axom::mint::Mesh * make_octahedron_mesh()
  */
 axom::mint::Mesh* make_tetrahedron_mesh()
 {
-  typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
+  typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
 
-  TriangleMesh* surface_mesh = new TriangleMesh(3);
-  surface_mesh->addNode( -0.000003, -0.000003, 19.999999);
-  surface_mesh->addNode(-18.213671,  4.880339, -6.666668);
-  surface_mesh->addNode(  4.880339,-18.213671, -6.666668);
-  surface_mesh->addNode( 13.333334, 13.333334, -6.666663);
+  UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
+  surface_mesh->appendNode( -0.000003, -0.000003, 19.999999);
+  surface_mesh->appendNode(-18.213671,  4.880339, -6.666668);
+  surface_mesh->appendNode(  4.880339,-18.213671, -6.666668);
+  surface_mesh->appendNode( 13.333334, 13.333334, -6.666663);
   int cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
-  surface_mesh->addCell(cell, mint::TRIANGLE);
+  surface_mesh->appendCell(cell);
   cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
-  surface_mesh->addCell(cell, mint::TRIANGLE);
+  surface_mesh->appendCell(cell);
   cell[0] = 0;    cell[1] = 2;    cell[2] = 3;
-  surface_mesh->addCell(cell, mint::TRIANGLE);
+  surface_mesh->appendCell(cell);
   cell[0] = 1;    cell[1] = 3;    cell[2] = 2;
-  surface_mesh->addCell(cell, mint::TRIANGLE);
+  surface_mesh->appendCell(cell);
 
   return surface_mesh;
 }

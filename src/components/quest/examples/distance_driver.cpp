@@ -59,7 +59,7 @@ using axom::primal::Vector;
 
 using quest::SignedDistance;
 
-typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
 
 static struct
 {
@@ -176,8 +176,8 @@ void write_triangles( axom::mint::Mesh * mesh,
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-  TriangleMesh * subset = new TriangleMesh(3);
-  SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
+  UMesh * subset = new UMesh(3, mint::TRIANGLE);
+  SLIC_ASSERT( subset->getCellType() == mesh->getCellType() );
 
   axom::mint::IndexType cellIds[3];
   Point< double, 3 > n1;
@@ -191,20 +191,20 @@ void write_triangles( axom::mint::Mesh * mesh,
   {
 
     const axom::mint::IndexType cellIdx = cells[ i ];
-    mesh->getMeshCell( cellIdx, cellIds );
+    mesh->getCell( cellIdx, cellIds );
 
-    mesh->getMeshNode( cellIds[0], n1.data() );
-    mesh->getMeshNode( cellIds[1], n2.data() );
-    mesh->getMeshNode( cellIds[2], n3.data() );
+    mesh->getNode( cellIds[0], n1.data() );
+    mesh->getNode( cellIds[1], n2.data() );
+    mesh->getNode( cellIds[2], n3.data() );
 
-    subset->addNode( n1[0], n1[1], n1[2] );
+    subset->appendNode( n1[0], n1[1], n1[2] );
     new_cell[0] = icount; ++icount;
-    subset->addNode( n2[0], n2[1], n2[2] );
+    subset->appendNode( n2[0], n2[1], n2[2] );
     new_cell[1] = icount; ++icount;
-    subset->addNode( n3[0], n3[1], n3[2] );
+    subset->appendNode( n3[0], n3[1], n3[2] );
     new_cell[2] = icount; ++icount;
 
-    subset->addCell( new_cell, mint::TRIANGLE );
+    subset->appendCell( new_cell );
   }
 
   axom::mint::write_vtk( subset, fileName );
@@ -224,7 +224,7 @@ BoundingBox< double,3 > compute_bounds( axom::mint::Mesh * mesh)
 
   for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    mesh->getNode( i, pt.data() );
     meshBB.addPoint( pt );
   }  // END for all nodes
 
@@ -296,7 +296,7 @@ void distance_field( axom::mint::Mesh * surface_mesh,
   {
 
     Point< double,3 > pt;
-    umesh->getMeshNode( inode, pt.data() );
+    umesh->getNode( inode, pt.data() );
 
     std::vector< int > buckets;
     std::vector< mint::IndexType > triangles;
@@ -379,8 +379,8 @@ int main( int argc, char * * argv )
   SLIC_INFO("done");
 
   // STEP 3: get surface mesh
-  axom::mint::Mesh * surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh *>( surface_mesh ) );
+  axom::mint::Mesh * surface_mesh = new UMesh( 3, mint::TRIANGLE );
+  reader->getMesh( static_cast<UMesh *>( surface_mesh ) );
   SLIC_INFO("Mesh has "
             << surface_mesh->getNumberOfNodes() << " nodes and "
             << surface_mesh->getNumberOfCells() << " cells.");

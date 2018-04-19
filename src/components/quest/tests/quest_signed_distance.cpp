@@ -37,7 +37,7 @@ using axom::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef axom::mint::UnstructuredMesh< axom::mint::TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::Topology::SINGLE > UMesh;
 typedef axom::mint::UniformMesh UniformMesh;
 
 using axom::primal::BoundingBox;
@@ -58,7 +58,7 @@ namespace detail
  * \param [in] mesh pointer to the mesh instance.
  * \pre mesh != AXOM_NULLPTR
  */
-void getMesh( TriangleMesh* mesh )
+void getMesh( UMesh* mesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -79,11 +79,11 @@ void getMesh( TriangleMesh* mesh )
   x[0] = SPHERE_CENTER[0];
   x[1] = SPHERE_CENTER[1];
   x[2] = SPHERE_CENTER[2] + RADIUS;
-  mesh->addNode( x[0], x[1], x[2] );
+  mesh->appendNode( x[0], x[1], x[2] );
 
   // South pole point
   x[2] = SPHERE_CENTER[2] - RADIUS;
-  mesh->addNode( x[0], x[1], x[2] );
+  mesh->appendNode( x[0], x[1], x[2] );
 
   // Calculate spacing
   const double dphi   = ( phi_end-phi_start ) /
@@ -110,7 +110,7 @@ void getMesh( TriangleMesh* mesh )
       x[1] = n[1] + SPHERE_CENTER[1];
       x[2] = n[2] + SPHERE_CENTER[2];
 
-      mesh->addNode( x[0], x[1], x[2] );
+      mesh->appendNode( x[0], x[1], x[2] );
 
     }  // END for all j
 
@@ -125,7 +125,7 @@ void getMesh( TriangleMesh* mesh )
     c[2] = phiResolution*i + /* number of poles */ 2;
     c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
     c[0] = 0;
-    mesh->addCell( c, axom::mint::TRIANGLE );
+    mesh->appendCell( c );
   } // END for
 
   // Generate mesh connectivity around south pole
@@ -135,7 +135,7 @@ void getMesh( TriangleMesh* mesh )
     c[2] = phiResolution*i + offset;
     c[1] = ( phiResolution*(i+1) % stride ) + offset;
     c[0] = 1;
-    mesh->addCell( c, axom::mint::TRIANGLE );
+    mesh->appendCell( c );
   }
 
   // Generate mesh connectivity in between poles
@@ -149,11 +149,11 @@ void getMesh( TriangleMesh* mesh )
       c[ 1 ] = c[0] + 1;
       c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
 
-      mesh->addCell( c, axom::mint::TRIANGLE );
+      mesh->appendCell( c );
 
       c[ 1 ] = c[ 2 ];
       c[ 2 ] = c[ 1 ] - 1;
-      mesh->addCell( c, axom::mint::TRIANGLE );
+      mesh->appendCell( c );
     }  // END for all j
   } // END for all i
 }
@@ -173,7 +173,7 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
   const int nnodes = mesh->getNumberOfNodes();
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
-    mesh->getMeshNode( inode, pt.data() );
+    mesh->getNode( inode, pt.data() );
     bb.addPoint( pt );
   }
 
@@ -185,7 +185,7 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
  * \param [in] mesh pointer to the input mesh.
  * \param [in] umesh pointer to the uniform mesh;
  */
-void getUniformMesh( const TriangleMesh* mesh, UniformMesh*& umesh )
+void getUniformMesh( const UMesh* mesh, UniformMesh*& umesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh == AXOM_NULLPTR );
@@ -220,7 +220,7 @@ TEST( quest_signed_distance, sphere_test )
   const double TOL             = 1.e-3;
 
   SLIC_INFO( "Constructing sphere mesh..." );
-  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  UMesh* surface_mesh = new UMesh( 3, axom::mint::TRIANGLE );
   detail::getMesh( surface_mesh );
 
   SLIC_INFO( "Generating uniform mesh..." );
@@ -242,7 +242,7 @@ TEST( quest_signed_distance, sphere_test )
   {
 
     Point< double,3 > pt;
-    umesh->getMeshNode( inode, pt.data() );
+    umesh->getNode( inode, pt.data() );
 
     double computed = signed_distance.computeDistance( pt );
     double exact    = analytic_sphere.computeSignedDistance( pt.data() );

@@ -30,21 +30,20 @@ namespace
 static const int DIM = 3;
 static const double EPS = 1e-6;
 
-typedef axom::mint::UnstructuredMesh< axom::mint::TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::Topology::SINGLE > UMesh;
 typedef axom::primal::Point<double, 3> Point3;
 
 /*! Insert a vertex with coordinates (x,y,z) into \a mesh  */
-void insertVertex(TriangleMesh* mesh, double x, double y, double z)
+void insertVertex(UMesh* mesh, double x, double y, double z)
 {
-  double coords[3] = {x,y,z};
-  mesh->addNode(coords);
+  mesh->appendNode(x, y, z);
 }
 
 /*! Insert a triangle with vertex indices (v1,v2,v3) into \a mesh  */
-void insertTriangle(TriangleMesh* mesh, int v1, int v2, int v3)
+void insertTriangle(UMesh* mesh, int v1, int v2, int v3)
 {
   int indices[3] = {v1,v2,v3};
-  mesh->addCell(indices, axom::mint::TRIANGLE);
+  mesh->appendCell(indices);
 }
 
 }
@@ -54,7 +53,7 @@ TEST( quest_vertex_weld, emptyMesh)
 {
   SLIC_INFO("*** Tests welding function on an empty triangle mesh");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
 
   EXPECT_EQ(0, mesh->getNumberOfNodes());
   EXPECT_EQ(0, mesh->getNumberOfCells());
@@ -75,7 +74,7 @@ TEST( quest_vertex_weld, onlyVertices)
     "*** Tests welding function on a triangle mesh"
     << " with vertices but no triangles.");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -97,7 +96,7 @@ TEST( quest_vertex_weld, oneTriangle)
 {
   SLIC_INFO("*** Tests welding function on a triangle mesh with one triangle.");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -122,7 +121,7 @@ TEST( quest_vertex_weld, degenerateTriangle)
   SLIC_INFO(
     "*** Tests welding function on a triangle mesh degenerate triangles.");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -153,7 +152,7 @@ TEST( quest_vertex_weld, vertexAdjacentTrianglePair)
     "*** Tests welding function on a triangle mesh"
     << " with two triangles adjacent along a vertex.");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -185,7 +184,7 @@ TEST( quest_vertex_weld, edgeAdjacentTrianglePair)
     "*** Tests welding function on a triangle mesh"
     << " with two triangles adjacent along an edge.");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -218,7 +217,7 @@ TEST( quest_vertex_weld, fuzzWeld)
     << " with a pair of triangles adjacent along an edge"
     << " whose vertices are welded");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -249,7 +248,7 @@ TEST( quest_vertex_weld, disconnectedTrianglePair)
     "*** Tests welding function on a triangle mesh"
     << " with a pair of disconnected triangles.");
 
-  TriangleMesh* mesh = new TriangleMesh(DIM);
+  UMesh* mesh = new UMesh(DIM, axom::mint::TRIANGLE);
   insertVertex(mesh, 1, 0, 0);    // verts for first triangle
   insertVertex(mesh, 1, 1, 0);
   insertVertex(mesh, 1, 1, 1);
@@ -279,7 +278,7 @@ TEST( quest_vertex_weld, indexedTetrahedron)
   SLIC_INFO("*** Tests welding function on an indexed tetrahedron");
 
   // Get the tetrahedron mesh.  It is already an indexed mesh.
-  TriangleMesh* mesh = static_cast<TriangleMesh*>(
+  UMesh* mesh = static_cast<UMesh*>(
     axom::quest::utilities::make_tetrahedron_mesh());
 
   const int NV = 4;
@@ -304,7 +303,7 @@ TEST( quest_vertex_weld, indexedOctahedron)
   SLIC_INFO("*** Tests welding function on an indexed octahedron");
 
   // Get the octahedron mesh.  It is already an indexed mesh.
-  TriangleMesh* mesh = static_cast<TriangleMesh*>(
+  UMesh* mesh = static_cast<UMesh*>(
     axom::quest::utilities::make_octahedron_mesh());
 
   const int NV = 6;

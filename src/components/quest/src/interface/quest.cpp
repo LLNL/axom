@@ -55,7 +55,7 @@ namespace
 
 namespace slic = axom::slic;
 
-typedef axom::mint::UnstructuredMesh< mint::TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
 enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };
@@ -102,7 +102,7 @@ struct QuestAccelerator
     int numMeshNodes = m_surface_mesh->getNumberOfNodes();
     for ( int i=0 ; i < numMeshNodes ; ++i )
     {
-      m_surface_mesh->getMeshNode( i, pt.data() );
+      m_surface_mesh->getNode( i, pt.data() );
 
       m_meshBoundingBox.addPoint( pt );
       m_meshCenterOfMass.array() += pt.array();
@@ -435,10 +435,10 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
-  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
   delete reader;
 
   initialize(comm, surface_mesh, requiresDistance, ndims, maxElements,
@@ -490,10 +490,10 @@ void initialize( const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new UMesh( 3 );
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
-  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
   delete reader;
 
   initialize(surface_mesh, requiresDistance, ndims, maxElements,
