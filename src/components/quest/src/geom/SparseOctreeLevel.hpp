@@ -21,6 +21,7 @@
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
 #include "axom/Types.hpp"
+#include "axom/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 
 #include "primal/MortonIndex.hpp"
 
@@ -31,8 +32,6 @@
   #include <type_traits>
   #include <unordered_map>
 #elif defined(AXOM_USE_BOOST)
-  #include <boost/static_assert.hpp>
-  #include <boost/type_traits.hpp>
   #include "boost/unordered_map.hpp"
 #else
   #error "quest::SparseOctreeLevel requires either C++11 or boost"
@@ -58,24 +57,20 @@ struct BroodRepresentationTraits
   typedef Point<CoordType,DIM> GridPt;
   typedef RepresentationType PointRepresenationType;
 
+  AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
+                          "CoordType must be integral" );
+  AXOM_STATIC_ASSERT_MSG( std::is_integral<PointRepresenationType>::value,
+                          "RepresentationType must be integral" );
+  AXOM_STATIC_ASSERT_MSG( std::is_unsigned<PointRepresenationType>::value,
+                          "RepresentationType must be unsigned" );
+
   // Requires an unsigned int for RepresentationType with 8-,16-,32-, or 64-
   // bits
-        #if defined(AXOM_USE_CXX11)
-  static_assert( std::is_integral<CoordType>::value,
-                 "CoordType must be integral" );
-  static_assert( std::is_integral<PointRepresenationType>::value,
-                 "RepresentationType must be integral" );
-  static_assert( std::is_unsigned<PointRepresenationType>::value,
-                 "RepresentationType must be unsigned" );
-
+#if defined(AXOM_USE_CXX11)
   typedef std::unordered_map<RepresentationType, BroodDataType> MapType;
-        #elif defined(AXOM_USE_BOOST)
-  BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
-  BOOST_STATIC_ASSERT(boost::is_integral<PointRepresenationType>::value);
-  BOOST_STATIC_ASSERT(boost::is_unsigned<PointRepresenationType>::value);
-
+#elif defined(AXOM_USE_BOOST)
   typedef boost::unordered_map<PointRepresenationType, BroodDataType> MapType;
-        #endif
+#endif
 
   typedef Brood<GridPt, PointRepresenationType> BroodType;
 
@@ -101,16 +96,16 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
   typedef Point<CoordType,DIM> GridPt;
   typedef GridPt PointRepresenationType;
 
-      #if defined(AXOM_USE_CXX11)
-  static_assert( std::is_integral<CoordType>::value,
-                 "CoordType must be integral" );
+  AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
+                          "CoordType must be integral" );
+
+#if defined(AXOM_USE_CXX11)
   typedef std::unordered_map<GridPt, BroodDataType,
                              primal::PointHash<int> > MapType;
-      #elif defined(AXOM_USE_BOOST)
-  BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
+#elif defined(AXOM_USE_BOOST)
   typedef boost::unordered_map<GridPt, BroodDataType,
                                primal::PointHash<int> > MapType;
-      #endif
+#endif
 
   typedef Brood<GridPt, GridPt> BroodType;
 

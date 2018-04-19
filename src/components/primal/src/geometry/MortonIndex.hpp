@@ -31,6 +31,7 @@
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
 #include "axom/Types.hpp"
+#include "axom/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 
 #include "primal/Point.hpp"
 #include "primal/Vector.hpp"
@@ -88,14 +89,13 @@ namespace primal
 template < typename CoordType, typename MortonIndexType, typename Derived >
 struct MortonBase
 {
-  // static assert to ensure that this class is only instantiated on integral
-  // types
-#ifdef AXOM_USE_CXX11
-  static_assert( std::is_integral< CoordType >::value,
-                 "Coordtype must be integral for Morton indexing" );
-  static_assert( std::is_integral< MortonIndexType >::value,
-                 "MortonIndexType must be integral for Morton indexing" );
-#endif
+  // static assert to ensure we only instantiate on integral types
+  AXOM_STATIC_ASSERT_MSG(
+    std::is_integral< CoordType >::value,
+    "Coordtype must be integral for Morton indexing" );
+  AXOM_STATIC_ASSERT_MSG(
+    std::is_integral< MortonIndexType >::value,
+    "MortonIndexType must be integral for Morton indexing" );
 
 private:
   // Magic numbers for efficient base-2 log-like function -- maxSetBit()
