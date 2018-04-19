@@ -35,10 +35,7 @@ axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME slam DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-
-if ( BOOST_FOUND )
-    axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-endif()
+axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
 
 
 ## Add dependency for each enabled component on the copy_axom_includes target
