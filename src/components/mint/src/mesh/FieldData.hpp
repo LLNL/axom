@@ -130,7 +130,7 @@ public:
    * \post this->getAssociation() == association
    * \post this->hasSidreGroup() == true
    */
-  FieldData( int association, sidre::Group* field_group, const std::string& topo);
+  FieldData( int association, sidre::Group* field_group, const std::string& topo );
 #endif
 
 /// @}
@@ -168,11 +168,23 @@ public:
 
   /*!
    * \brief Returns the number of fields of this FieldData instance.
-   * \return N the number of fiels in this instance.
+   * \return N the number of fields in this instance.
    * \post N == 0 \iff this->empty() == true.
    */
   inline int getNumFields( ) const
   { return static_cast< int >( m_name2idx.size() ); }
+
+  /*!
+   * \brief Returns the number of tuples in this FieldData instance.
+   * \return N the number of tuples.
+   */
+  IndexType getNumTuples() const;
+
+  /*!
+   * \brief Returns the tuple capacity of this FieldData instance.
+   * \return N the tuple capacity.
+   */
+  IndexType getCapacity() const;
 
   /*!
     * \brief Checks if a Sidre Group is associated with this FieldData instance.
@@ -217,11 +229,9 @@ public:
    *
    */
   template < typename T >
-  inline T* createField( const std::string& name,
-                         IndexType num_tuples,
-                         IndexType num_components=1,
-                         bool storeInSidre=true,
-                         IndexType capacity=USE_DEFAULT );
+  inline T* createField( const std::string& name, IndexType num_tuples,
+                         IndexType num_components=1, IndexType capacity=USE_DEFAULT,
+                         bool storeInSidre=true, double ratio=2.0 );
 
   /*!
    * \brief Creates a new field from a supplied external buffer which consists
@@ -254,9 +264,9 @@ public:
    */
   template < typename T >
   inline T* createField( const std::string& name,
-                         T* data,
-                         IndexType num_tuples,
-                         IndexType num_components=1 );
+                         T* data, IndexType num_tuples, 
+                         IndexType num_components=1, 
+                         IndexType capacity=USE_DEFAULT );
 /// @}
 
 /// \name Methods to remove Fields
@@ -403,7 +413,8 @@ public:
 /// @{
 
   /*!
-   * \brief Changes the num-tuples of all fields in this FieldData instance.
+   * \brief Changes the num-tuples of all fields in this FieldData instance by
+   *  creating
    *
    * \param [in] newNumTuples the new number of tuples.
    *
@@ -414,6 +425,19 @@ public:
    * \see FieldVariable
    */
   void resize( IndexType newNumTuples );
+
+  /*!
+   * \brief Makes space for an insert of length n_tuples at the given position.
+   *
+   * \param [in] pos the position of the insert.
+   * \param [in] n_tuples the number of tuples to insert.
+   *
+   * \note The values at pos and above are shifted up and the new tuples
+   *  have undefined values.
+   *
+   * \see FieldVariable
+   */
+  void reserveForInsert( IndexType pos, IndexType n_tuples );
 
   /*!
    * \brief Changes the tuple capacity of all fields in this FieldData instance.
@@ -440,6 +464,8 @@ public:
    */
   void shrink( );
 
+  void setResizeRatio( double ratio );
+
 /// @}
 
 private:
@@ -447,6 +473,28 @@ private:
 
 /// \name Private helper methods
 /// @{
+
+  template < typename LAMBDA >
+  void for_all_fields( LAMBDA f ) const
+  {
+    for ( auto it = m_name2idx.begin(); it != m_name2idx.end(); ++it )
+    {
+      const Field* field = m_fields[ it->second ];
+      SLIC_ASSERT( field != AXOM_NULLPTR );
+      f( field );
+    }
+  }
+
+  template < typename LAMBDA >
+  void for_all_fields( LAMBDA f )
+  {
+    for ( auto it = m_name2idx.begin(); it != m_name2idx.end(); ++it )
+    {
+      Field* field = m_fields[ it->second ];
+      SLIC_ASSERT( field != AXOM_NULLPTR );
+      f( field );
+    }
+  }
 
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
@@ -548,7 +596,7 @@ inline int FieldData::getNewFieldIndex( )
   {
     // no empty slots, append to the vector
     m_fields.push_back( AXOM_NULLPTR );
-    nextIdx = m_fields.size( )-1;
+    nextIdx = m_fields.size() - 1;
   } // END if
   else
   {
@@ -674,13 +722,16 @@ inline const T* FieldData::getFieldPtr( const std::string& name,
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline T* FieldData::createField( const std::string& name,
-                                  IndexType num_tuples,
-                                  IndexType num_components,
-                                  bool storeInSidre,
-                                  IndexType capacity )
+inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
+                                  IndexType num_components, IndexType capacity,
+                                  bool storeInSidre, double ratio )
 {
   SLIC_ERROR_IF( hasField( name ), "Field [" << name << "] already exists!");
+
+  if ( capacity == USE_DEFAULT )
+  {
+    capacity = num_tuples;
+  }
 
   int fldIdx = getNewFieldIndex( );
   SLIC_ASSERT( ( fldIdx >= 0 ) &&
@@ -688,12 +739,6 @@ inline T* FieldData::createField( const std::string& name,
   SLIC_ASSERT( m_fields[ fldIdx ] == AXOM_NULLPTR );
 
   m_name2idx[ name ] = fldIdx;
-
-  if ( capacity == USE_DEFAULT )
-  {
-    // by default, the total capacity is the total number of tuples specified.
-    capacity = num_tuples;
-  }
 
   mint::Field* newField = AXOM_NULLPTR;
 #ifdef MINT_USE_SIDRE
@@ -725,6 +770,7 @@ inline T* FieldData::createField( const std::string& name,
 #endif
 
   SLIC_ASSERT( newField != AXOM_NULLPTR );
+  newField->setResizeRatio( ratio );
   m_fields[ fldIdx ] = newField;
 
   return ( mint::Field::getDataPtr< T >( m_fields[ fldIdx ] ) );
@@ -732,13 +778,17 @@ inline T* FieldData::createField( const std::string& name,
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline T* FieldData::createField( const std::string& name,
-                                  T* data,
-                                  IndexType num_tuples,
-                                  IndexType num_components )
+inline T* FieldData::createField( const std::string& name, T* data, 
+                                  IndexType num_tuples, IndexType num_components, 
+                                  IndexType capacity )
 {
   SLIC_ERROR_IF( data==AXOM_NULLPTR, "supplied buffer is NULL" );
   SLIC_ERROR_IF( hasField( name ), "Field [" << name << "] already exists!" );
+
+  if ( capacity == USE_DEFAULT )
+  {
+    capacity = num_tuples;
+  }
 
   int fldIdx = getNewFieldIndex( );
   SLIC_ASSERT( ( fldIdx >= 0 ) &&
@@ -747,7 +797,7 @@ inline T* FieldData::createField( const std::string& name,
 
   m_name2idx[ name ] = fldIdx;
   m_fields[ fldIdx ] =
-    new mint::FieldVariable< T >( name, data, num_tuples, num_components );
+    new mint::FieldVariable< T >( name, data, num_tuples, num_components, capacity );
 
   return ( mint::Field::getDataPtr< T >( m_fields[ fldIdx ] ) );
 }

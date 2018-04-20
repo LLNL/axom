@@ -140,6 +140,8 @@ public:
    */
   virtual void resize( IndexType newNumTuples ) = 0;
 
+  virtual void reserveForInsert( IndexType pos, IndexType n_tuples ) = 0;
+
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.
    * \param [in] newCapacity number of tuples to reserve memory for.

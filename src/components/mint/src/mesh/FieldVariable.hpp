@@ -164,7 +164,8 @@ public:
   FieldVariable( const std::string& name,
                  T* data,
                  IndexType num_tuples,
-                 IndexType num_components=1 );
+                 IndexType num_components=1,
+                 IndexType capacity=USE_DEFAULT );
 
 /// @}
 
@@ -267,11 +268,12 @@ public:
    */
   virtual void resize( IndexType newNumTuples ) final override
   {
-    SLIC_ERROR_IF( m_field->isExternal(),
-        "field [" << getName() << "] is pointing to an external buffer!"
-        << "resize() is not allowed!" );
     m_field->resize( newNumTuples );
   }
+
+  virtual void reserveForInsert( IndexType pos, IndexType num_tuples ) final override
+  { m_field->reserveForInsert( num_tuples, pos ); }
+
 
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.
@@ -280,12 +282,7 @@ public:
    * \see Field::reserve()
    */
   virtual void reserve( IndexType newCapacity ) final override
-  {
-    SLIC_ERROR_IF( m_field->isExternal(),
-        "field [" << getName() << "] is pointing to an external buffer!"
-        << "reserve() is not allowed!" );
-    m_field->reserve( newCapacity );
-  }
+  { m_field->reserve( newCapacity ); }
 
   /*!
    * \brief Shrinks the field capacity to be equal to the number of tuples.
@@ -293,12 +290,7 @@ public:
    * \see Field::shrink()
    */
   virtual void shrink( ) final override
-  {
-    SLIC_ERROR_IF( m_field->isExternal(),
-        "field [" << getName() << "] is pointing to an external buffer!"
-        << "shrink() is not allowed!" );
-    m_field->shrink();
-  }
+  { m_field->shrink(); }
 
   /*!
    * \brief Return the resize ratio of this field.
@@ -363,10 +355,11 @@ template < typename T >
 FieldVariable< T >::FieldVariable( const std::string& name,
                                    T* data,
                                    IndexType num_tuples,
-                                   IndexType num_components ) :
+                                   IndexType num_components,
+                                   IndexType capacity ) :
                                    Field( name, field_traits< T >::type() )
 {
-  m_field = new mint::Array< T >( data, num_tuples, num_components );
+  m_field = new mint::Array< T >( data, num_tuples, num_components, capacity );
   SLIC_ASSERT( m_field != AXOM_NULLPTR );
   SLIC_ASSERT( m_field->isExternal()==true );
   SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );

@@ -147,10 +147,8 @@ void check_create_and_access_data( mint::FieldData& field_data,
   std::fill( f1, f1+NUM_TUPLES, MAGIC_INT );
 
   // create a real-valued vector field, f2, and fill it with MAGIC_DOUBLE
-  double* f2 = field_data.createField< double >( "f2",
-                                                   NUM_TUPLES,
-                                                   NUM_COMPONENTS);
-   std::fill( f2, f2+(NUM_TUPLES*NUM_COMPONENTS), MAGIC_DOUBLE );
+  double* f2 = field_data.createField< double >( "f2", NUM_TUPLES, NUM_COMPONENTS );
+  std::fill( f2, f2+(NUM_TUPLES*NUM_COMPONENTS), MAGIC_DOUBLE );
 
    // check f1 pointer access and parameters
    int N = 0;
@@ -276,27 +274,25 @@ TEST( mint_mesh_field_data_DeathTest, invalid_construction )
   sidre::DataStore ds;
   sidre::Group* gp = ds.getRoot( );
 
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( 42, gp, "" ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED(
-      mint::FieldData( mint::NODE_CENTERED, AXOM_NULLPTR, ""),
-      IGNORE_OUTPUT
-      );
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( 42, gp, "topo" ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( mint::NODE_CENTERED, AXOM_NULLPTR, "topo" ),
+                             IGNORE_OUTPUT );
 
   // create sidre data that does not conform to the blue-print
   sidre::Group* f1 = gp->createGroup("f1");
 
   // should fail-- data does not conform to the blueprint
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp, ""),
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp, "topo" ),
                              IGNORE_OUTPUT );
 
   // should still fail -- doesn't have volume_dependent view
   f1->createView("association")->setString("vertex");
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp,""),
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp,"topo" ),
                              IGNORE_OUTPUT );
 
   // should still fail -- doesn't have values view
   f1->createView("volume_dependent")->setString("true");
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp,""),
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp,"topo" ),
                              IGNORE_OUTPUT );
 
   // should still fail -- association is foo/bar
@@ -305,7 +301,7 @@ TEST( mint_mesh_field_data_DeathTest, invalid_construction )
   data.fill( 42 );
 
   f1->getView("association")->setString( "foobar" );
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp,""),
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(mint::NODE_CENTERED,gp,"topo" ),
                              IGNORE_OUTPUT );
 #endif
 }
@@ -322,23 +318,20 @@ TEST( mint_mesh_field_data_DeathTest, invalid_operations )
   field_data.createField< int >( "test", data, 4 );
 
   // creating a duplicate field (field has the same name) should fail
-  EXPECT_DEATH_IF_SUPPORTED( field_data.createField< int >( "test", data, 4),
+  EXPECT_DEATH_IF_SUPPORTED( field_data.createField< int >( "test", data, 4 ),
                              IGNORE_OUTPUT );
 
   // reserve() and resize() operations are not allowed on fields that point
   // to external buffers.
   EXPECT_DEATH_IF_SUPPORTED( field_data.reserve( 10 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( field_data.resize( 10 ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( field_data.shrink(), IGNORE_OUTPUT );
 
   // creating an external field with a null pointer should fail
-  EXPECT_DEATH_IF_SUPPORTED(
-      field_data.createField<int>( "foo", AXOM_NULLPTR, 4),
-      IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>( "foo", AXOM_NULLPTR, 4 ),
+                             IGNORE_OUTPUT );
 
   // add a field with an empty name should fail
-  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>("",data,4),
-                             IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>("", data, 4 ), IGNORE_OUTPUT );
 
   // remove filed that does not exist should fail
   EXPECT_DEATH_IF_SUPPORTED( field_data.removeField( "foo" ), IGNORE_OUTPUT );
@@ -357,7 +350,7 @@ TEST( mint_mesh_field_data, empty_constructor )
   sidre::DataStore ds;
   sidre::Group* gp = ds.getRoot( );
 
-  mint::FieldData fd2( mint::CELL_CENTERED, gp, "dummy" );
+  mint::FieldData fd2( mint::CELL_CENTERED, gp, "topo" );
   check_empty_field_data< mint::CELL_CENTERED >( fd2 );
   EXPECT_TRUE( fd2.hasSidreGroup() );
 #endif
@@ -492,7 +485,7 @@ TEST( mint_mesh_field_data, create_and_access_fields )
 
     // create a temp field and don't push to Sidre
     const bool putInSidre = false;
-    sidre_data.createField< int >( "foo", NUM_TUPLES, 1, putInSidre );
+    sidre_data.createField< int >( "foo", NUM_TUPLES, 1, NUM_TUPLES, putInSidre );
     EXPECT_TRUE( sidre_data.hasField("foo") );
     EXPECT_FALSE( fields_group->hasChildGroup( "foo" ) );
 
