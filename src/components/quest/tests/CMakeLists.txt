@@ -30,7 +30,7 @@ set(quest_tests_depends
    )
 
 if (BOOST_FOUND)
-    list(APPEND quest_tests_depends boost
+    list(APPEND quest_tests
         quest_implicit_grid.cpp        
     )
     
