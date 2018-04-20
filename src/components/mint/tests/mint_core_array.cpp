@@ -646,7 +646,6 @@ void check_external( Array< T >& v )
   EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( v.shrink(), IGNORE_OUTPUT );
 }
 
 }   /* end namespace internal */
@@ -665,7 +664,7 @@ TEST( mint_core_array, checkStorage )
 
   constexpr IndexType ZERO = 0;
 
-  for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+  for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
     {
@@ -698,7 +697,7 @@ TEST( mint_core_array, checkFill )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+  for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     IndexType size = capacity / 2;  
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
@@ -732,7 +731,7 @@ TEST( mint_core_array, checkSet )
   sidre::Group* root = ds.getRoot();
 #endif
 
-  for ( IndexType capacity = 2 ; capacity < 1024 ; capacity *= 2 )
+  for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     IndexType size = capacity / 2;  
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
@@ -773,9 +772,9 @@ TEST( mint_core_array, checkResize )
   v_int.setResizeRatio( 0.99 );
   EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 
-  for ( double ratio = 1.0; ratio <= 3.0; ratio += 0.5 )
+  for ( double ratio = 1.0; ratio <= 2.0; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
       for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
       {
@@ -824,11 +823,11 @@ TEST( mint_core_array, checkInsert )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512; capacity *= 2 )
     {
-      for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+      for ( IndexType n_components = 1 ; n_components <= 3; n_components++ )
       {
         Array< int > v_int( ZERO, n_components, capacity );
         v_int.setResizeRatio( ratio );
@@ -867,11 +866,11 @@ TEST( mint_core_array, checkSidre )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+      for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
         Array< int > v_int( root->createView("int"), ZERO, n_components,
                             capacity );
@@ -901,11 +900,11 @@ TEST( mint_core_array, checkSidrePermanence)
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0 ; ratio <= 3.0 ; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity <= 1024 ; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+      for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
         const double * array_data_ptr;
         IndexType num_values;
@@ -955,8 +954,8 @@ TEST( mint_core_array, checkSidrePermanence)
 TEST( mint_core_array_DeathTest, checkExternal )
 {
   constexpr double MAGIC_NUM = 5683578.8;
-  constexpr IndexType MAX_SIZE = 1024;
-  constexpr IndexType MAX_COMPONENTS = 4;
+  constexpr IndexType MAX_SIZE = 512;
+  constexpr IndexType MAX_COMPONENTS = 3;
   constexpr IndexType MAX_VALUES = MAX_SIZE * MAX_COMPONENTS;
   union DataBuffer
   {

@@ -352,6 +352,15 @@ public:
    */
   inline void insert( const T& value, IndexType pos );
 
+  /*!
+   * \brief Make space for a subsequent insertion into the array.
+   * \param [in] n the number of tuples to insert.
+   * \param [in] pos the position at which to begin the insertion.
+   * \return a pointer to the beginning of the insertion space.
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  inline T* reserveForInsert( IndexType n, IndexType pos );
+
 /// @}
 
 /// \name Array methods to query and set attributes
@@ -463,14 +472,7 @@ private:
    */
   inline void dynamicRealloc( IndexType new_num_tuples );
 
-  /*!
-   * \brief Make space for a subsequent insertion into the array.
-   * \param [in] n the number of tuples to insert.
-   * \param [in] pos the position at which to begin the insertion.
-   * \return a pointer to the beginning of the insertion space.
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  inline T* reserveForInsert( IndexType n, IndexType pos );
+
 
 #ifdef MINT_USE_SIDRE
 
@@ -570,7 +572,11 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
   setCapacity( capacity );
 
   // sanity checks
-  SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  SLIC_ASSERT( capacity >= 0 );
+  if ( capacity > 0 )
+  {
+    SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  }
   SLIC_ASSERT( m_num_tuples >= 0 );
   SLIC_ASSERT( m_num_components >= 1 );
 }
@@ -657,8 +663,8 @@ Array< T >::Array( sidre::View* view ) :
                  "differs from this Array type (" << T_type << ")." );
 
   m_data = static_cast< T* >( m_view->getVoidPtr() );
-  SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_num_tuples > 0, 
-                 "View returned a null pointer when the number of tuples " <<
+  SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0, 
+                 "View returned a null pointer when the capacity " <<
                  "is greater than zero." );
 }
 
@@ -694,6 +700,15 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
                  "(" << capacity << ")." );
 
   setCapacity( capacity );
+
+  // sanity checks
+  SLIC_ASSERT( capacity >= 0 );
+  if ( capacity > 0 )
+  {
+    SLIC_ASSERT( m_data != AXOM_NULLPTR );
+  }
+  SLIC_ASSERT( m_num_tuples >= 0 );
+  SLIC_ASSERT( m_num_components >= 1 );
 }
 #endif
 
@@ -765,6 +780,7 @@ inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 template< typename T >
 inline void Array< T >::insert( const T* tuples, IndexType n, IndexType pos )
 {
+  SLIC_ASSERT( tuples != AXOM_NULLPTR );
   T* insert_pos = reserveForInsert( n, pos );
   std::memcpy( insert_pos, tuples, n * m_num_components * sizeof(T) );
 }
@@ -780,13 +796,43 @@ inline void Array< T >::insert( const T& value, IndexType pos )
 
 //------------------------------------------------------------------------------
 template< typename T >
+inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
+{
+  SLIC_ASSERT( n >= 0 );
+  SLIC_ASSERT( pos >= 0 );
+  SLIC_ASSERT( pos <= m_num_tuples );
+
+  if ( n == 0 )
+  {
+    return m_data + pos * m_num_components;
+  }
+
+  IndexType new_size = m_num_tuples + n;
+  if ( new_size > m_capacity )
+  {
+    dynamicRealloc( new_size );
+  }
+
+  T* const insert_pos = m_data + pos * m_num_components;
+  T* cur_pos = m_data + (m_num_tuples * m_num_components) - 1;
+  for ( ; cur_pos >= insert_pos ; --cur_pos )
+  {
+    *(cur_pos + n * m_num_components) = *cur_pos;
+  }
+
+  updateNumTuples( new_size );
+  return insert_pos;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
 inline void Array< T >::resize( IndexType new_num_tuples )
 {
   SLIC_ASSERT( new_num_tuples >= 0 );
 
   if ( new_num_tuples > m_capacity )
   {
-    setCapacity( m_resize_ratio * new_num_tuples );
+    dynamicRealloc( new_num_tuples );
   }
 
   updateNumTuples( new_num_tuples );
@@ -813,6 +859,12 @@ template< typename T >
 inline void Array< T >::setCapacity( IndexType new_capacity )
 {
   SLIC_ASSERT( new_capacity >= 0 );
+
+  if ( m_is_external && new_capacity <= m_capacity )
+  {
+    return;
+  }
+
   SLIC_ERROR_IF( m_is_external, "Cannot change the capacity of external data.");
 
   m_capacity = new_capacity;
@@ -852,31 +904,6 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
   m_data = utilities::realloc( m_data, m_capacity * m_num_components );
   SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                  "Array reallocation failed." );
-}
-
-//------------------------------------------------------------------------------
-template< typename T >
-inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
-{
-  SLIC_ASSERT( n > 0 );
-  SLIC_ASSERT( pos >= 0 );
-  SLIC_ASSERT( pos <= m_num_tuples );
-
-  IndexType new_size = m_num_tuples + n;
-  if ( new_size > m_capacity )
-  {
-    dynamicRealloc( new_size );
-  }
-
-  T* const insert_pos = m_data + pos * m_num_components;
-  T* cur_pos = m_data + (m_num_tuples * m_num_components) - 1;
-  for ( ; cur_pos >= insert_pos ; --cur_pos )
-  {
-    *(cur_pos + n * m_num_components) = *cur_pos;
-  }
-
-  updateNumTuples( new_size );
-  return insert_pos;
 }
 
 #ifdef MINT_USE_SIDRE
