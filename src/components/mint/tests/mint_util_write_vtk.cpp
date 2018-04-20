@@ -87,7 +87,6 @@ double randomD(double min, double max)
  */
 void create_scalar_data( Mesh* mesh )
 {
-  const int mesh_dim = mesh->getDimension();
   const IndexType mesh_num_nodes = mesh->getNumberOfNodes();
   const IndexType mesh_num_cells = mesh->getNumberOfCells();
 
@@ -99,17 +98,14 @@ void create_scalar_data( Mesh* mesh )
   int_ptr = mesh->createField< int >( "node_scalars_int",
                                       mint::NODE_CENTERED );
 
-  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
-  const double* yy = ( mesh_dim > 1 ) ?
-        mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
-  const double* zz = ( mesh_dim > 2 ) ?
-        mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
-
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
-    double x = xx[ idx ];
-    double y = ( mesh_dim > 1 ) ? yy[ idx ] : 0.0;
-    double z = ( mesh_dim > 2 ) ? zz[ idx ] : 0.0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
+    
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -139,7 +135,6 @@ void create_scalar_data( Mesh* mesh )
  */
 void create_vector_data( Mesh* mesh )
 {
-  const int mesh_dim = mesh->getDimension();
   const IndexType num_nodes = mesh->getNumberOfNodes();
   const IndexType num_cells = mesh->getNumberOfCells();
 
@@ -157,17 +152,14 @@ void create_vector_data( Mesh* mesh )
   int_ptr2    =  mesh->createField< int >( "node_vectors_2int",
                                            mint::NODE_CENTERED, 2 );
 
-  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
-  const double* yy = ( mesh_dim > 1 ) ?
-        mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
-  const double* zz = ( mesh_dim > 2 ) ?
-        mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
-
   for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = xx[ idx ];
-    double y = ( mesh_dim > 1 ) ? yy[ idx ] : 0.0;
-    double z = ( mesh_dim > 2 ) ? zz[ idx ] : 0.0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
+    
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -225,7 +217,6 @@ void create_vector_data( Mesh* mesh )
  */
 void create_multidim_data( Mesh* mesh )
 {
-  const int mesh_dim = mesh->getDimension();
   const IndexType num_nodes = mesh->getNumberOfNodes();
   const IndexType num_cells = mesh->getNumberOfCells();
 
@@ -237,17 +228,14 @@ void create_multidim_data( Mesh* mesh )
   int_ptr    = mesh->createField< int >( "node_multidim_int",
                                          mint::NODE_CENTERED, 4 );
 
-  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
-  const double* yy = ( mesh_dim > 1 ) ?
-      mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
-  const double* zz = ( mesh_dim > 2 ) ?
-      mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
-
   for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = xx[ idx ];
-    double y = ( mesh_dim > 1 ) ? yy[ idx ] : 0.0;
-    double z = ( mesh_dim > 2 ) ? zz[ idx ] : 0.0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
+    
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -429,7 +417,8 @@ void check_multidim_data( const Field* field, std::ifstream& file )
     EXPECT_EQ( type, "SCALARS" );
 
     std::stringstream temp;
-    temp << field->getName() << "[" << comp << "]";
+    temp << field->getName() << "_";
+    temp << std::setfill('0') << std::setw(3) << comp;
     EXPECT_EQ( name, temp.str() );
 
     if ( d_type == "double" )
@@ -496,10 +485,9 @@ void check_fieldData( const FieldData* field_data, std::ifstream& file )
     }
     else
     {
-      size_t bracket_pos = name.find('[');
-      ASSERT_NE( bracket_pos, std::string::npos) << name;
-      std::string true_name = name.substr( 0, bracket_pos );
-      EXPECT_EQ( name.substr(bracket_pos), "[0]" );
+      size_t underscore_pos = name.size() - 4;
+      std::string true_name = name.substr( 0, underscore_pos );
+      EXPECT_EQ( name.substr(underscore_pos), "_000" );
       ASSERT_TRUE( field_data->hasField( true_name ) ) << true_name;
       fields_read.insert( true_name );
 
@@ -522,7 +510,7 @@ void check_fieldData( const FieldData* field_data, std::ifstream& file )
       check_multidim_data( field, file );
     }
 
-    cur_pos = static_cast<int>(file.tellg());
+    cur_pos = file.tellg();
     file >> type;
     file.seekg( cur_pos );
     if ( type == "CELL_DATA" || type == "POINT_DATA" )
@@ -682,7 +670,6 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
 void check_points( const Mesh* mesh, std::ifstream& file )
 {
   const IndexType num_nodes = mesh->getNumberOfNodes();
-  const int mesh_dim = mesh->getDimension();
 
   std::string extracted_name, extracted_type;
   IndexType extracted_size;
@@ -691,18 +678,15 @@ void check_points( const Mesh* mesh, std::ifstream& file )
   EXPECT_EQ(  extracted_size, num_nodes );
   EXPECT_EQ(  extracted_type, "double" );
 
-  const double* xx = mesh->getCoordinateArray( X_COORDINATE );
-  const double* yy = ( mesh_dim > 1 ) ?
-          mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
-  const double* zz = ( mesh_dim > 2 ) ?
-          mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
-
   double extracted_coord = 0.0;
-  for ( IndexType nodeIdx = 0 ; nodeIdx < num_nodes ; ++nodeIdx )
+  for ( IndexType idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = xx[ nodeIdx ];
-    double y = ( mesh_dim > 1 ) ? yy[ nodeIdx ] : 0.0;
-    double z = ( mesh_dim > 2 ) ? zz[ nodeIdx ] : 0.0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
+    
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     file >> extracted_coord;
     EXPECT_EQ( extracted_coord, x );
@@ -724,61 +708,59 @@ void check_points( const Mesh* mesh, std::ifstream& file )
  */
 void check_cells( const Mesh* mesh, std::ifstream& file )
 {
-  // TODO: Need to refactor this after the UnstructuredMesh changes
-  EXPECT_TRUE ( false );
-//  const IndexType num_cells = mesh->getNumberOfCells();
-//
-//  /* First need to get total size of the connectivity array. */
-//  /* If the mesh only has one cell type we can calculate this directly. */
-//  int max_cell_nodes = mesh->getMeshNumberOfCellNodes( 0 );
-//  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
-//
-//  /* If the mesh has mixed cells then we need to loop over the elements. */
-//  if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
-//  {
-//    total_size = num_cells;
-//    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-//    {
-//      const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-//      max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
-//      total_size += num_cell_nodes;
-//    }
-//  }
-//
-//  std::string type;
-//  IndexType extracted_cells, extracted_size;
-//  file >> type >> extracted_cells >> extracted_size;
-//  EXPECT_EQ( type, "CELLS" );
-//  EXPECT_EQ( extracted_cells, num_cells );
-//  EXPECT_EQ( extracted_size, total_size );
-//
-//  /* Write out the mesh cell connectivity. */
-//  IndexType temp;
-//  IndexType cell_nodes[ max_cell_nodes ];
-//  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-//  {
-//    const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-//    mesh->getMeshCell( cellIdx, cell_nodes );
-//
-//    file >> temp;
-//    EXPECT_EQ( temp, num_cell_nodes );
-//    for ( int i = 0 ; i < num_cell_nodes ; ++i )
-//    {
-//      file >> temp;
-//      EXPECT_EQ( temp, cell_nodes[ i ] );
-//    }
-//  }
-//
-//  /* Write out the mesh cell types. */
-//  file >> type >> extracted_cells;
-//  EXPECT_EQ( type, "CELL_TYPES" );
-//  EXPECT_EQ( extracted_cells,  num_cells );
-//  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
-//  {
-//    int cell_type = mesh->getMeshCellType( cellIdx );
-//    file >> temp;
-//    EXPECT_EQ( temp, cell::vtk_types[ cell_type ] );
-//  }
+  const IndexType num_cells = mesh->getNumberOfCells();
+
+  /* First need to get total size of the connectivity array. */
+  /* If the mesh only has one cell type we can calculate this directly. */
+  int max_cell_nodes = mesh->getNumberOfCellNodes( 0 );
+  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
+
+  /* If the mesh has mixed cells then we need to loop over the elements. */
+  if ( mesh->hasMixedCellTypes() )
+  {
+    total_size = num_cells;
+    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+    {
+      const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
+      max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
+      total_size += num_cell_nodes;
+    }
+  }
+
+  std::string type;
+  IndexType extracted_cells, extracted_size;
+  file >> type >> extracted_cells >> extracted_size;
+  EXPECT_EQ( type, "CELLS" );
+  EXPECT_EQ( extracted_cells, num_cells );
+  EXPECT_EQ( extracted_size, total_size );
+
+  /* Write out the mesh cell connectivity. */
+  IndexType temp;
+  IndexType cell_nodes[ max_cell_nodes ];
+  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+  {
+    const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
+    mesh->getCell( cellIdx, cell_nodes );
+
+    file >> temp;
+    EXPECT_EQ( temp, num_cell_nodes );
+    for ( int i = 0 ; i < num_cell_nodes ; ++i )
+    {
+      file >> temp;
+      EXPECT_EQ( temp, cell_nodes[ i ] );
+    }
+  }
+
+  /* Write out the mesh cell types. */
+  file >> type >> extracted_cells;
+  EXPECT_EQ( type, "CELL_TYPES" );
+  EXPECT_EQ( extracted_cells,  num_cells );
+  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+  {
+    int cell_type = mesh->getCellType( cellIdx );
+    file >> temp;
+    EXPECT_EQ( temp, cell_info[ cell_type ].vtk_type );
+  }
 }
 
 /*!
@@ -1135,8 +1117,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
   const IndexType nz = 13;
   const IndexType nNodes = nx * ny * nz;
   const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-  UnstructuredMesh< mint::HEX >* u_mesh =
-    new UnstructuredMesh< mint::HEX >( 3, nNodes, nCells );
+  UnstructuredMesh< Topology::SINGLE >* u_mesh =
+    new UnstructuredMesh< Topology::SINGLE >( 3, HEX, nNodes, nCells );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1147,7 +1129,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
         double x = idx + internal::randomD( -0.45, 0.45 );
         double y = idy + internal::randomD( -0.45, 0.45 );
         double z = idz + internal::randomD( -0.45, 0.45 );
-        u_mesh->addNode( x, y, z );
+        u_mesh->appendNode( x, y, z );
       }
     }
   }
@@ -1169,7 +1151,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
         cell[6] = cell[2] + 1;
         cell[7] = cell[3] + 1;
 
-        u_mesh->addCell( cell, mint::HEX );
+        u_mesh->appendCell( cell );
       }
     }
   }
@@ -1199,8 +1181,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
   const IndexType ny = 12;
   const IndexType nNodes = nx * ny;
   const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< mint::QUAD >* u_mesh =
-    new UnstructuredMesh< mint::QUAD >( 2, nNodes, nCells );
+  UnstructuredMesh< Topology::SINGLE >* u_mesh =
+    new UnstructuredMesh< Topology::SINGLE >( 2, QUAD, nNodes, nCells );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1208,7 +1190,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
     {
       double x = idx + internal::randomD( -0.45, 0.45 );
       double y = idy + internal::randomD( -0.45, 0.45 );
-      u_mesh->addNode( x, y );
+      u_mesh->appendNode( x, y );
     }
   }
 
@@ -1223,7 +1205,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
       cell[2] = index + ny + 1;
       cell[3] = index + 1;
 
-      u_mesh->addCell( cell, mint::QUAD );
+      u_mesh->appendCell( cell );
     }
   }
 
@@ -1249,13 +1231,13 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
 {
   const std::string path = "unstructuredMesh1D.vtk";
   const IndexType nx = 11;
-  UnstructuredMesh< mint::SEGMENT >* u_mesh =
-    new UnstructuredMesh< mint::SEGMENT >( 1, nx, nx-1 );
+  UnstructuredMesh< Topology::SINGLE >* u_mesh =
+    new UnstructuredMesh< Topology::SINGLE >( 1, SEGMENT, nx, nx - 1 );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
     double x = idx + internal::randomD( 0.45, 0.45 );
-    u_mesh->addNode( x );
+    u_mesh->appendNode( x );
   }
 
   IndexType cell[2];
@@ -1263,7 +1245,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
   {
     cell[0] = idx;
     cell[1] = idx + 1;
-    u_mesh->addCell( cell, mint::SEGMENT );
+    u_mesh->appendCell( cell, mint::SEGMENT );
   }
 
   internal::populate_and_write( u_mesh, path );
@@ -1276,7 +1258,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
   file.close();
   delete u_mesh;
 #if DELETE_VTK_FILES
-  // std::remove( path.c_str() );
+  std::remove( path.c_str() );
 #endif
 }
 
@@ -1294,107 +1276,106 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
   const IndexType nz = 2;
   const IndexType nNodes = nx * ny * nz;
   const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-  EXPECT_TRUE( false );
-// TODO: fix this
-//  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh =
-//    new UnstructuredMesh< MINT_MIXED_CELL >( 3, nNodes, nCells );
-//
-//  /* Create the nodes for the hexahedron. */
-//  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-//  {
-//    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-//    {
-//      for ( IndexType idz = 0 ; idz < nz ; ++idz )
-//      {
-//        double x = idx + internal::randomD( -0.45, 0.45 );
-//        double y = idy + internal::randomD( -0.45, 0.45 );
-//        double z = idz + internal::randomD( -0.45, 0.45 );
-//        u_mesh->addNode( x, y, z );
-//      }
-//    }
-//  }
-//
-//  /* Create the nodes for the pyramids. */
-//  u_mesh->addNode( -1.0, 0.5, 0.5 );
-//  u_mesh->addNode( 2.0, 0.5, 0.5 );
-//  u_mesh->addNode( 0.5, -1.0, 0.5 );
-//  u_mesh->addNode( 0.5, 2.0, 0.5 );
-//  u_mesh->addNode( 0.5, 0.5, -1.0 );
-//  u_mesh->addNode( 0.5, 0.5, 2.0 );
-//
-//  /* Create the hexahedron. */
-//  IndexType hex[8];
-//  hex[0] = 0;
-//  hex[1] = 4;
-//  hex[2] = 6;
-//  hex[3] = 2;
-//  hex[4] = 1;
-//  hex[5] = 5;
-//  hex[6] = 7;
-//  hex[7] = 3;
-//  u_mesh->addCell( hex, MINT_HEX );
-//
-//  /* Create the pyramid for the -x face. */
-//  IndexType pyramid[5];
-//  pyramid[0] = hex[0];
-//  pyramid[1] = hex[4];
-//  pyramid[2] = hex[7];
-//  pyramid[3] = hex[3];
-//  pyramid[4] = 8;
-//  u_mesh->addCell( pyramid, MINT_PYRAMID );
-//
-//  /* Create the pyramid for the +x face. */
-//  pyramid[0] = hex[1];
-//  pyramid[1] = hex[2];
-//  pyramid[2] = hex[6];
-//  pyramid[3] = hex[5];
-//  pyramid[4] = 9;
-//  u_mesh->addCell( pyramid, MINT_PYRAMID );
-//
-//  /* Create the pyramid for the -y face. */
-//  pyramid[0] = hex[0];
-//  pyramid[1] = hex[1];
-//  pyramid[2] = hex[5];
-//  pyramid[3] = hex[4];
-//  pyramid[4] = 10;
-//  u_mesh->addCell( pyramid, MINT_PYRAMID );
-//
-//  /* Create the pyramid for the +x face. */
-//  pyramid[0] = hex[2];
-//  pyramid[1] = hex[3];
-//  pyramid[2] = hex[7];
-//  pyramid[3] = hex[6];
-//  pyramid[4] = 11;
-//  u_mesh->addCell( pyramid, MINT_PYRAMID );
-//
-//  /* Create the pyramid for the -z face. */
-//  pyramid[0] = hex[3];
-//  pyramid[1] = hex[2];
-//  pyramid[2] = hex[1];
-//  pyramid[3] = hex[0];
-//  pyramid[4] = 12;
-//  u_mesh->addCell( pyramid, MINT_PYRAMID );
-//
-//  /* Create the pyramid for the +z face. */
-//  pyramid[0] = hex[4];
-//  pyramid[1] = hex[5];
-//  pyramid[2] = hex[6];
-//  pyramid[3] = hex[7];
-//  pyramid[4] = 13;
-//  u_mesh->addCell( pyramid, MINT_PYRAMID );
-//
-//  internal::populate_and_write( u_mesh, path );
-//  std::ifstream file( path.c_str() );
-//  ASSERT_TRUE( file );
-//  internal::check_header( file );
-//  internal::check_unstructured_mesh( u_mesh, file );
-//  internal::check_data( u_mesh, file );
-//
-//  file.close();
-//  delete u_mesh;
-//#if DELETE_VTK_FILES
-//  std::remove( path.c_str() );
-//#endif
+
+  UnstructuredMesh< Topology::MIXED >* u_mesh =
+    new UnstructuredMesh< Topology::MIXED >( 3, nNodes, nCells );
+
+  /* Create the nodes for the hexahedron. */
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
+  {
+    for ( IndexType idy = 0 ; idy < ny ; ++idy )
+    {
+      for ( IndexType idz = 0 ; idz < nz ; ++idz )
+      {
+        double x = idx + internal::randomD( -0.45, 0.45 );
+        double y = idy + internal::randomD( -0.45, 0.45 );
+        double z = idz + internal::randomD( -0.45, 0.45 );
+        u_mesh->appendNode( x, y, z );
+      }
+    }
+  }
+
+  /* Create the nodes for the pyramids. */
+  u_mesh->appendNode( -1.0, 0.5, 0.5 );
+  u_mesh->appendNode( 2.0, 0.5, 0.5 );
+  u_mesh->appendNode( 0.5, -1.0, 0.5 );
+  u_mesh->appendNode( 0.5, 2.0, 0.5 );
+  u_mesh->appendNode( 0.5, 0.5, -1.0 );
+  u_mesh->appendNode( 0.5, 0.5, 2.0 );
+
+  /* Create the hexahedron. */
+  IndexType hex[8];
+  hex[0] = 0;
+  hex[1] = 4;
+  hex[2] = 6;
+  hex[3] = 2;
+  hex[4] = 1;
+  hex[5] = 5;
+  hex[6] = 7;
+  hex[7] = 3;
+  u_mesh->appendCell( hex, HEX );
+
+  /* Create the pyramid for the -x face. */
+  IndexType pyramid[5];
+  pyramid[0] = hex[0];
+  pyramid[1] = hex[4];
+  pyramid[2] = hex[7];
+  pyramid[3] = hex[3];
+  pyramid[4] = 8;
+  u_mesh->appendCell( pyramid, PYRAMID );
+
+  /* Create the pyramid for the +x face. */
+  pyramid[0] = hex[1];
+  pyramid[1] = hex[2];
+  pyramid[2] = hex[6];
+  pyramid[3] = hex[5];
+  pyramid[4] = 9;
+  u_mesh->appendCell( pyramid, PYRAMID );
+
+  /* Create the pyramid for the -y face. */
+  pyramid[0] = hex[0];
+  pyramid[1] = hex[1];
+  pyramid[2] = hex[5];
+  pyramid[3] = hex[4];
+  pyramid[4] = 10;
+  u_mesh->appendCell( pyramid, PYRAMID );
+
+  /* Create the pyramid for the +x face. */
+  pyramid[0] = hex[2];
+  pyramid[1] = hex[3];
+  pyramid[2] = hex[7];
+  pyramid[3] = hex[6];
+  pyramid[4] = 11;
+  u_mesh->appendCell( pyramid, PYRAMID );
+
+  /* Create the pyramid for the -z face. */
+  pyramid[0] = hex[3];
+  pyramid[1] = hex[2];
+  pyramid[2] = hex[1];
+  pyramid[3] = hex[0];
+  pyramid[4] = 12;
+  u_mesh->appendCell( pyramid, PYRAMID );
+
+  /* Create the pyramid for the +z face. */
+  pyramid[0] = hex[4];
+  pyramid[1] = hex[5];
+  pyramid[2] = hex[6];
+  pyramid[3] = hex[7];
+  pyramid[4] = 13;
+  u_mesh->appendCell( pyramid, PYRAMID );
+
+  internal::populate_and_write( u_mesh, path );
+  std::ifstream file( path.c_str() );
+  ASSERT_TRUE( file );
+  internal::check_header( file );
+  internal::check_unstructured_mesh( u_mesh, file );
+  internal::check_data( u_mesh, file );
+
+  file.close();
+  delete u_mesh;
+#if DELETE_VTK_FILES
+  std::remove( path.c_str() );
+#endif
 }
 
 /*!
@@ -1405,79 +1386,76 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
  */
 TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
 {
-  EXPECT_TRUE( false );
+  const std::string path = "unstructuredMixedMesh2D.vtk";
+  const IndexType nx = 2;
+  const IndexType ny = 2;
+  const IndexType nNodes = nx * ny;
+  const IndexType nCells = (nx-1) * (ny-1);
+  UnstructuredMesh< Topology::MIXED >* u_mesh =
+    new UnstructuredMesh< Topology::MIXED >( 2, nNodes, nCells );
 
-// TODO: fix this
-//  const std::string path = "unstructuredMixedMesh2D.vtk";
-//  const IndexType nx = 2;
-//  const IndexType ny = 2;
-//  const IndexType nNodes = nx * ny;
-//  const IndexType nCells = (nx-1) * (ny-1);
-//  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh =
-//    new UnstructuredMesh< MINT_MIXED_CELL >( 2, nNodes, nCells );
-//
-//  /* Create the nodes for the quad. */
-//  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-//  {
-//    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-//    {
-//      double x = idx + internal::randomD( -0.45, 0.45 );
-//      double y = idy + internal::randomD( -0.45, 0.45 );
-//      u_mesh->addNode( x, y );
-//    }
-//  }
-//
-//  /* Create the nodes for the triangles. */
-//  u_mesh->addNode( -1.0, 0.5 );
-//  u_mesh->addNode( 2.0, 0.5 );
-//  u_mesh->addNode( 0.5, -1.0 );
-//  u_mesh->addNode( 0.5, 2.0 );
-//
-//  /* Create the quad. */
-//  IndexType quad[4];
-//  quad[0] = 0;
-//  quad[1] = 2;
-//  quad[2] = 3;
-//  quad[3] = 1;
-//  u_mesh->addCell( quad, MINT_QUAD );
-//
-//  /* Create the triangle for the -x face. */
-//  IndexType triangle[3];
-//  triangle[0] = quad[0];
-//  triangle[1] = quad[3];
-//  triangle[2] = 4;
-//  u_mesh->addCell( triangle, MINT_TRIANGLE );
-//
-//  /* Create the triangle for the +x face. */
-//  triangle[0] = quad[2];
-//  triangle[1] = quad[1];
-//  triangle[2] = 5;
-//  u_mesh->addCell( triangle, MINT_TRIANGLE );
-//
-//  /* Create the triangle for the -y face. */
-//  triangle[0] = quad[1];
-//  triangle[1] = quad[0];
-//  triangle[2] = 6;
-//  u_mesh->addCell( triangle, MINT_TRIANGLE );
-//
-//  /* Create the triangle for the +y face. */
-//  triangle[0] = quad[3];
-//  triangle[1] = quad[2];
-//  triangle[2] = 7;
-//  u_mesh->addCell( triangle, MINT_TRIANGLE );
-//
-//  internal::populate_and_write( u_mesh, path );
-//  std::ifstream file( path.c_str() );
-//  ASSERT_TRUE( file );
-//  internal::check_header( file );
-//  internal::check_unstructured_mesh( u_mesh, file );
-//  internal::check_data( u_mesh, file );
-//
-//  file.close();
-//  delete u_mesh;
-//#if DELETE_VTK_FILES
-//  std::remove( path.c_str() );
-//#endif
+  /* Create the nodes for the quad. */
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
+  {
+    for ( IndexType idy = 0 ; idy < ny ; ++idy )
+    {
+      double x = idx + internal::randomD( -0.45, 0.45 );
+      double y = idy + internal::randomD( -0.45, 0.45 );
+      u_mesh->appendNode( x, y );
+    }
+  }
+
+  /* Create the nodes for the triangles. */
+  u_mesh->appendNode( -1.0, 0.5 );
+  u_mesh->appendNode( 2.0, 0.5 );
+  u_mesh->appendNode( 0.5, -1.0 );
+  u_mesh->appendNode( 0.5, 2.0 );
+
+  /* Create the quad. */
+  IndexType quad[4];
+  quad[0] = 0;
+  quad[1] = 2;
+  quad[2] = 3;
+  quad[3] = 1;
+  u_mesh->appendCell( quad, QUAD );
+
+  /* Create the triangle for the -x face. */
+  IndexType triangle[3];
+  triangle[0] = quad[0];
+  triangle[1] = quad[3];
+  triangle[2] = 4;
+  u_mesh->appendCell( triangle, TRIANGLE );
+
+  /* Create the triangle for the +x face. */
+  triangle[0] = quad[2];
+  triangle[1] = quad[1];
+  triangle[2] = 5;
+  u_mesh->appendCell( triangle, TRIANGLE );
+
+  /* Create the triangle for the -y face. */
+  triangle[0] = quad[1];
+  triangle[1] = quad[0];
+  triangle[2] = 6;
+  u_mesh->appendCell( triangle, TRIANGLE );
+
+  /* Create the triangle for the +y face. */
+  triangle[0] = quad[3];
+  triangle[1] = quad[2];
+  triangle[2] = 7;
+  u_mesh->appendCell( triangle, TRIANGLE );
+
+  internal::populate_and_write( u_mesh, path );
+  std::ifstream file( path.c_str() );
+  ASSERT_TRUE( file );
+  internal::check_header( file );
+  internal::check_unstructured_mesh( u_mesh, file );
+  internal::check_data( u_mesh, file );
+
+  file.close();
+  delete u_mesh;
+#if DELETE_VTK_FILES
+  std::remove( path.c_str() );
+#endif
 }
 
 /*!

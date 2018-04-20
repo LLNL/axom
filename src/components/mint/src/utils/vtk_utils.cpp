@@ -62,7 +62,7 @@ namespace internal
  * \pre mesh != AXOM_NULLPTR
  * \post max_cell_nodes >= 1
  */
-int get_max_cell_nodes( const Mesh* mesh )
+IndexType get_max_cell_nodes( const Mesh* mesh, IndexType& total_cell_nodes  )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -71,15 +71,18 @@ int get_max_cell_nodes( const Mesh* mesh )
   if( !mesh->hasMixedCellTypes( ) )
   {
     // short-circuit
-    max_cell_nodes = mint::cell_info[ mesh->getMeshCellType() ].num_nodes;
+    max_cell_nodes = mesh->getNumberOfCellNodes();
+    total_cell_nodes = max_cell_nodes * mesh->getNumberOfCells();
     return max_cell_nodes;
   }
 
+  total_cell_nodes = 0;
   const mint::IndexType numCells = mesh->getNumberOfCells();
   for ( mint::IndexType icell=0; icell < numCells; ++icell )
   {
-    CellType cell_type  = mesh->getMeshCellType( icell );
+    CellType cell_type  = mesh->getCellType( icell );
     const int num_nodes = mint::cell_info[ cell_type ].num_nodes;
+    total_cell_nodes += num_nodes;
     if ( num_nodes > max_cell_nodes )
     {
       max_cell_nodes = num_nodes;
@@ -87,7 +90,7 @@ int get_max_cell_nodes( const Mesh* mesh )
 
   }
 
-  return ( max_cell_nodes );
+  return max_cell_nodes;
 }
 
 /*!
@@ -134,9 +137,9 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   const IndexType num_cells = mesh->getNumberOfCells();
 
   /* First need to get total size of the connectivity array. */
-  /* If the mesh only has one cell type we can calculate this directly. */
-  int max_cell_nodes = get_max_cell_nodes( mesh );
-  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
+  IndexType total_size;
+  int max_cell_nodes = get_max_cell_nodes( mesh, total_size );
+  total_size += num_cells;
 
   file << "CELLS " << num_cells << " " << total_size << std::endl;
 
@@ -144,11 +147,11 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   IndexType cell_nodes[ max_cell_nodes ];
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
-    int num_nodes = mint::cell_info[mesh->getMeshCellType(cellIdx)].num_nodes;
-    mesh->getMeshCell( cellIdx, cell_nodes );
+    const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
+    mesh->getCell( cellIdx, cell_nodes );
 
-    file << num_nodes;
-    for ( int i = 0 ; i < num_nodes ; ++i )
+    file << num_cell_nodes;
+    for ( int i = 0 ; i < num_cell_nodes ; ++i )
     {
       file << " " << cell_nodes[ i ];
     }
@@ -159,10 +162,9 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   file << "CELL_TYPES " << num_cells << std::endl;
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
-    CellType cell_type = mesh->getMeshCellType( cellIdx );
-    file << mint::cell_info[ cell_type ].vtk_type << std::endl;
+    int cell_type = mesh->getCellType( cellIdx );
+    file << cell_info[ cell_type ].vtk_type << std::endl;
   }
-
 }
 
 /*!
@@ -304,7 +306,6 @@ void write_vector_data( const Field* field, std::ofstream& file )
   {
     file << "double\n";
 
-//    const double* data_ptr = field->getDoublePtr();
     const double* data_ptr = Field::getDataPtr< double >( field );
     SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
@@ -370,7 +371,6 @@ void write_multidim_data( const Field* field, std::ofstream& file )
       file << " double\n";
       file << "LOOKUP_TABLE default\n";
 
-//      const double* data_ptr = field->getDoublePtr();
       const double* data_ptr = Field::getDataPtr< double >( field );
       SLIC_ASSERT( data_ptr != AXOM_NULLPTR );
 
