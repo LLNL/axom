@@ -13,7 +13,6 @@
 #------------------------------------------------------------------------------
 
 set(quest_tests
-    quest_implicit_grid.cpp
     quest_inout_octree.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
@@ -31,6 +30,10 @@ set(quest_tests_depends
    )
 
 if (BOOST_FOUND)
+    list(APPEND quest_tests
+        quest_implicit_grid.cpp        
+    )
+    
     list(APPEND quest_tests_depends boost)
 endif()
 
@@ -58,7 +61,7 @@ foreach(test ${quest_tests})
 endforeach()
 
 
-if(MFEM_FOUND)
+if(MFEM_FOUND AND BOOST_FOUND)
     set(test_name quest_point_in_cell_mfem)
     blt_add_executable(
         NAME ${test_name}

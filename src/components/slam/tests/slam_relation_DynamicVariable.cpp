@@ -27,7 +27,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"        // for AXOM_USE_BOOST
+#include "axom/config.hpp"        // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"
 
@@ -176,7 +176,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   }
 
   SLIC_INFO(".. access via iterators.");
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   {
     typedef RangeSet::iterator SetIter;
     typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
@@ -225,7 +225,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
     }
   }
 #else
-  SLIC_WARNING("Must compile with boost enabled to test iterators");
+  SLIC_INFO("Skipping iterator tests when not using C++11");
 #endif
 }
 

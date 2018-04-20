@@ -27,8 +27,8 @@
 #include <iterator>                 // for std::ostream_iterator
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"        // for AXOM_USE_BOOST
-#include "axom/Types.hpp"   // for AXOM_NULLPTR
+#include "axom/config.hpp"          // for AXOM_USE_CXX11
+#include "axom/Types.hpp"           // for AXOM_NULLPTR
 
 #include "slic/slic.hpp"
 
@@ -156,7 +156,7 @@ TEST(slam_set_indirectionset,iterate)
     SLIC_INFO("Data using operator[]:\t" << sstr.str());
   }
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterator interface");
   {
     std::stringstream sstr;

@@ -17,7 +17,7 @@
 ##################################################################################
 
 ### Some additional flags that might be useful
-# To avoid warnings from boost: -Wno-missing-braces  
+# To avoid warnings: -Wno-missing-braces  
 # Other: -fno-strict-aliasing -Wextra
 
 blt_append_custom_compiler_flag(

@@ -19,8 +19,8 @@ if(NOT CONDUIT_FOUND)
   message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of a Conduit install.")
 endif()
 
-# Note: sidre depends on boost OR C++11 b/c USE_UNORDERED_MAP is defined in DataGroup.hpp
-
+# Note: Sidre's unordered_map is either sparsehash OR C++11's unordered_map
+#       Default to std::map and warn if neither is available
 if(NOT SPARSEHASH_FOUND)
   if(NOT CMAKE_CXX_STANDARD EQUAL 11)
     if(NOT CMAKE_CXX_STANDARD EQUAL 14)

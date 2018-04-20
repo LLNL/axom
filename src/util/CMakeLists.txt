@@ -39,11 +39,6 @@ if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
       list(APPEND datastore_converter_depends lumberjack)
     endif()
 
-
-    if(BOOST_FOUND)
-      list(APPEND datastore_converter_depends boost)
-    endif()
-
     if(SCR_FOUND)
       list(APPEND datastore_converter_depends scr)
     endif()
