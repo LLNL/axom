@@ -41,16 +41,6 @@ public:
   CurvilinearMesh( int dimension, const int64 ext[6] );
 
   /*!
-   * \brief Constructs a curvilinear mesh instance.
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the logical extent of this mesh instance.
-   * \param [in] blockId the block ID of this mesh
-   * \param [in] partId the partition ID of this mesh
-   */
-  CurvilinearMesh( int dimension, const int64 ext[6], int blockId,
-                   int partId );
-
-  /*!
    * \brief Destructor.
    */
   virtual ~CurvilinearMesh()
@@ -150,7 +140,6 @@ inline void CurvilinearMesh::setNode( IndexType i, IndexType j, IndexType k,
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y )
 {
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < m_num_nodes );
   SLIC_ASSERT(  getDimension() == 2 );
 
   m_coordinates.set( nodeIdx, x, y );
@@ -169,7 +158,6 @@ inline void CurvilinearMesh::setNode( IndexType i, IndexType j, double x,
 //------------------------------------------------------------------------------
 inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x )
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < m_num_nodes );
   SLIC_ASSERT( getDimension() == 1 );
 
   m_coordinates.set( nodeIdx, x );

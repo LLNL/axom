@@ -110,26 +110,6 @@ public:
                 IndexType numParticles,
                 IndexType capacity=USE_DEFAULT );
 
-  /*!
-   * \brief Constructs a ParticleMesh instance of specified dimension that
-   *  consists the specified number of particles.
-   *
-   * \param [in] dimension the ambient dimension of the particle mesh.
-   * \param [in] blockId the block ID.
-   * \param [in] partId the partition ID.
-   * \param [in] numParticles the number of particles in this
-   * \param [in] capacity max particle capacity (optional)
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre numParticles >= 0
-   *
-   * \post getNumParticles() == numParticles
-   * \post getNumParticles() <= capacity()
-   * \post hasSidreGroup() == false
-   */
-  ParticleMesh( int dimension, int blockId, int partId,
-                IndexType numParticles,
-                IndexType capacity=USE_DEFAULT );
 /// @}
 
 /// \name External Storage Constructors
@@ -165,38 +145,6 @@ public:
                 double* y=AXOM_NULLPTR,
                 double* z=AXOM_NULLPTR    );
 
-  /*!
-   * \brief Creates a ParticleMesh instance that points to the supplied external
-   *  particle position buffers.
-   *
-   * \param [in] blockId the block ID of this mesh instance.
-   * \param [in] partId the partition ID of this mesh instance.
-   * \param [in] numParticles the number of particles in the supplied buffers.
-   * \param [in] x pointer to the particle x-coordinate positions
-   * \param [in] y pointer to the particle y-coordinate positions (optional)
-   * \param [in] z pointer to the particle z-coordinate positions (optional)
-   *
-   * \note This constructor wraps the supplied particle posision buffers.
-   *  Consequently, the resulting ParticleMesh object does not own the memory
-   *  associated with the particle positions.
-   *
-   * \warning All calls to shrink(), append(), resize() and reserve will fail
-   *  on a ParticleMesh instance that is constructed using this external
-   * \note The supplied buffers must have sufficient storage f`numParticles`
-   *
-   * \pre x != AXOM_NULLPTR
-   * \pre y != AXOM_NULLPTR, if dimension==2 || dimension==3
-   * \pre z != AXOM_NULLPTR, if dimension==3
-   * \pre numParticles >= 1
-   *
-   * \post 1 <= getDimension() <= 3
-   * \post getNumParticles() == numParticles
-   */
-  ParticleMesh( int blockId, int partId,
-                IndexType numParticles,
-                double* x,
-                double* y=AXOM_NULLPTR,
-                double* z=AXOM_NULLPTR    );
 /// @}
 
 /// \name Sidre Storage Constructors
@@ -237,8 +185,6 @@ public:
    * \brief Creates a ParticleMesh object on the specified Sidre group.
    *
    * \param [in] dimension the ambient dimension of the particle mesh.
-   * \param [in] blockId the block ID of this mesh instance (optional).
-   * \param [in] partId the partition ID of this mesh instance (optional).
    * \param [in] numParticles the number of particles this instance holds
    * \param [in] group pointer to a group in Sidre where
    * \param [in] topo the name of the associated topology (optional)
@@ -261,23 +207,11 @@ public:
    */
   /// @{
 
-  ParticleMesh( int dimension, int blockId, int partId,
-                IndexType numParticles,
-                sidre::Group* group,
-                const std::string& topo,
-                const std::string& coordset,
-                IndexType capacity=USE_DEFAULT );
-
   ParticleMesh( int dimension,
                 IndexType numParticles,
                 sidre::Group* group,
                 const std::string& topo,
                 const std::string& coordset,
-                IndexType capacity=USE_DEFAULT );
-
-  ParticleMesh( int dimension, int blockId, int partId,
-                IndexType numParticles,
-                sidre::Group* group,
                 IndexType capacity=USE_DEFAULT );
 
   ParticleMesh( int dimension,

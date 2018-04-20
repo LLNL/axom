@@ -38,17 +38,5 @@ CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6] ) :
 //  m_coordinates.setSize( m_extent.getNumNodes() );
 }
 
-//------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6],
-                                  int blockId, int partId ) :
-  StructuredMesh( STRUCTURED_MESH, ndims, ext, blockId,
-                  partId),
-  m_coordinates( ndims, m_extent.getNumNodes() )
-{
-// TODO: ???
-//  m_coordinates.setSize( m_extent.getNumNodes() );
-}
-
-
 } /* namespace mint */
 } /* namespace axom */

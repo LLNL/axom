@@ -180,18 +180,7 @@ protected:
    * \param [in] ext the structured mesh extent.
    */
   StructuredMesh( int meshType, int ndims, const int64 ext[6] );
-
-  /*!
-   * \brief Constructs a structured mesh instance from the given extent that is
-   *  identified by the given blockId and partitionId pair.
-   * \param [in] meshType the structured mesh type.
-   * \param [in] ext the structured mesh extent.
-   * \param [in] blockId the block ID of the mesh.
-   * \param [in] partId the partition ID of the mesh.
-   */
-  StructuredMesh( int meshType, int ndims, const int64 ext[6],
-                  int blockId,
-                  int partId );
+  
 
   Extent m_extent; /*!< grid extent */
 

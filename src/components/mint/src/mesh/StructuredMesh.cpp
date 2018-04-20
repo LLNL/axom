@@ -29,17 +29,14 @@ namespace mint
 //------------------------------------------------------------------------------
 StructuredMesh::StructuredMesh( int meshType, int ndims,
                                 const int64 ext[ 6 ]) :
-  Mesh( ndims, meshType, 0, 0 ),
+  Mesh( ndims, meshType ),
   m_extent( ndims, ext )
-{}
-
-//------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int ndims,
-                                const int64 ext[ 6 ], int blockId,
-                                int partId) :
-  Mesh( ndims, meshType, blockId, partId ),
-  m_extent( ndims, ext )
-{}
+{
+  m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ NODE_CENTERED ]->resize( m_extent.getNumNodes() );
+  m_mesh_fields[ CELL_CENTERED ]->resize( m_extent.getNumCells() );
+}
 
 }   /* end namespace mint */
 }   /* end namespace axom */

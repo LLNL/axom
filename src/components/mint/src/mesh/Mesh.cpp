@@ -22,6 +22,7 @@
 
 #include "mint/FieldData.hpp"
 #include "mint/ParticleMesh.hpp"
+#include "mint/UnstructuredMesh.hpp"
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"
@@ -39,15 +40,11 @@ namespace mint
 
 
 //------------------------------------------------------------------------------
-Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
+Mesh::Mesh( int ndims, int type ) :
   m_ndims( ndims ),
   m_type( type ),
-  m_block_idx( blockId ),
-  m_part_idx( partId ),
-  m_num_cells( 0 ),
-  m_num_faces( 0 ),
-  m_num_edges( 0 ),
-  m_num_nodes( 0 ),
+  m_block_idx( -1 ),
+  m_part_idx( -1 ),      
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
@@ -67,12 +64,8 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId ) :
 Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   m_ndims( -1 ),
   m_type( UNDEFINED_MESH ),
-  m_block_idx( 0 ),
-  m_part_idx( 0 ),
-  m_num_cells( 0 ),
-  m_num_faces( 0 ),
-  m_num_edges( 0 ),
-  m_num_nodes( 0 ),
+  m_block_idx( -1 ),
+  m_part_idx( -1 ),     
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
@@ -106,25 +99,15 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   allocateFieldData();
 }
 
-//------------------------------------------------------------------------------
 Mesh::Mesh( sidre::Group* group ) : Mesh( group, "" )
-{
+{}
 
-}
-
-//------------------------------------------------------------------------------
-Mesh::Mesh( int ndims, int type, int blockId, int partId,
-             sidre::Group* group,
-             const std::string& topo,
-             const std::string& coordset ) :
+Mesh::Mesh( sidre::Group* group, const std::string& topo, 
+            const std::string& coordset, int ndims, int type ) :
   m_ndims( ndims ),
   m_type( type ),
-  m_block_idx( blockId ),
-  m_part_idx( partId ),
-  m_num_cells( 0 ),
-  m_num_faces( 0),
-  m_num_edges( 0 ),
-  m_num_nodes( 0 ),
+  m_block_idx( -1 ),
+  m_part_idx( -1 ),
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
@@ -141,7 +124,6 @@ Mesh::Mesh( int ndims, int type, int blockId, int partId,
   m_topology = ( topo.empty() )? "t1" : topo;
   std::string coordset_name = ( coordset.empty() )? "c1" : coordset;
 
-  // create state group for this mesh
   sidre::Group* state_group = m_group->createGroup( "state" );
   state_group->createView( "block_id" )->setScalar( m_block_idx );
   state_group->createView( "partition_id" )->setScalar( m_part_idx );
@@ -239,148 +221,389 @@ const double* Mesh::getCoordinateArray( int dim ) const
 }
 
 //------------------------------------------------------------------------------
-void Mesh::getMeshNode( IndexType nodeIdx, double* node ) const
+IndexType Mesh::getNumberOfNodes() const
 {
-  // sanity checks
-  SLIC_ASSERT( node != AXOM_NULLPTR );
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < m_num_nodes );
-
-  switch ( m_type )
+  switch (getMeshType())
   {
-  case PARTICLE_MESH:
-    {
-      const ParticleMesh* pm = static_cast< const ParticleMesh* >( this );
-      SLIC_ASSERT( pm != AXOM_NULLPTR );
-
-      for ( int i=0; i < m_ndims; ++i )
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
       {
-        node[ i ] = pm->getParticlePositions( i )[ nodeIdx ];
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                          ->getNumberOfNodes();
       }
-
-    }
-    break;
-  case UNIFORM_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case STRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case RECTILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case UNSTRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  default:
-    SLIC_ERROR( "Undefined MeshType!" );
-  } // END switch
-
-}
-
-//------------------------------------------------------------------------------
-void Mesh::getMeshCell( IndexType cellIdx, IndexType* cell ) const
-{
-  // sanity checks
-  SLIC_ASSERT( cell != AXOM_NULLPTR );
-  SLIC_ASSERT( cellIdx >= 0 && cellIdx < m_num_cells );
-
-  switch ( m_type )
-  {
-  case PARTICLE_MESH:
-    cell[ 0 ] = cellIdx;
-    break;
-  case UNIFORM_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case STRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case RECTILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case UNSTRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  default:
-    SLIC_ERROR( "Undefined MeshType!" );
-  } // END switch
-
-}
-
-//------------------------------------------------------------------------------
-CellType Mesh::getMeshCellType( IndexType cellIdx ) const
-{
-  CellType type = UNDEFINED_CELL;
-
-  switch ( m_type )
-  {
-  case PARTICLE_MESH:
-    type = VERTEX;
-    break;
-  case UNIFORM_MESH:       /* intentional fall-through */
-  case STRUCTURED_MESH:    /* intentional fall-through */
-  case RECTILINEAR_MESH:
-    type = (getDimension()==3)? HEX : ( (getDimension()==2)? QUAD:SEGMENT );
-    break;
-  case UNSTRUCTURED_MESH:
-    {
-      // TODO: implement this
-      SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    }
-    break;
-  default:
-    SLIC_ERROR( "Undefined MeshType!" );
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                          ->getNumberOfNodes();
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return -1;
   }
+>>>>>>> e69ecff... Mesh changes
+}
 
-  return type;
+//------------------------------------------------------------------------------
+IndexType Mesh::getNumberOfCells() const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                          ->getNumberOfCells();
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                          ->getNumberOfCells();
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return -1;
+  }
+}
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getNumberOfFaces() const
+{
+  SLIC_ERROR( "NOT IMPLIMENTED" );
+  return -1;
+}
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getNumberOfEdges() const
+{
+  SLIC_ERROR( "NOT IMPLIMENTED" );
+  return -1;
+}
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getNodeCapacity() const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                            ->getNodeCapacity();
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                            ->getNodeCapacity();
+      }
+    default:
+      return getNumberOfNodes();
+  }
+}
+
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getCellCapacity() const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                            ->getCellCapacity();
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                            ->getCellCapacity();
+      }
+    default:
+      return getNumberOfCells();
+  }
+}
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getFaceCapacity() const
+{ return getNumberOfFaces(); }
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getEdgeCapacity() const
+{ return getNumberOfEdges(); }
+
+//------------------------------------------------------------------------------
+double Mesh::getNodeResizeRatio() const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                        ->getNodeResizeRatio();
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                        ->getNodeResizeRatio();
+      }
+    default:
+      return -1.0;
+  }
+}
+
+//------------------------------------------------------------------------------
+double Mesh::getCellResizeRatio() const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                        ->getCellResizeRatio();
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                        ->getCellResizeRatio();
+      }
+    default:
+      return -1.0;
+  }
+}
+
+//------------------------------------------------------------------------------
+double Mesh::getFaceResizeRatio() const
+{ return -1.0; }
+
+//------------------------------------------------------------------------------
+double Mesh::getEdgeResizeRatio() const
+{ return -1.0; }
+
+//------------------------------------------------------------------------------
+void Mesh::setBlockId( int ID )
+{
+  m_block_idx = ID;
+#ifdef MINT_USE_SIDRE
+  if ( hasSidreGroup() )
+  {
+    sidre::Group* state_group = m_group->getGroup( "state" );
+    SLIC_ASSERT( state_group != AXOM_NULLPTR );
+    sidre::View* block_view = state_group->getView( "block_id" );
+    SLIC_ASSERT( block_view != AXOM_NULLPTR );
+    block_view->setScalar( m_block_idx );
+  }
+#endif
+}
+ 
+//------------------------------------------------------------------------------
+void Mesh::setPartitionId( int ID )
+{ 
+  m_part_idx = ID;
+#ifdef MINT_USE_SIDRE
+  if ( hasSidreGroup() )
+  {
+    sidre::Group* state_group = m_group->getGroup( "state" );
+    SLIC_ASSERT( state_group != AXOM_NULLPTR );
+    sidre::View* partition_view = state_group->getView( "partition_id" );
+    SLIC_ASSERT( partition_view != AXOM_NULLPTR );
+    partition_view->setScalar( m_part_idx );
+  }
+#endif 
+}
+
+//------------------------------------------------------------------------------
+double* Mesh::getCoordinateArray( int dim )
+{
+  SLIC_ERROR_IF( !hasExplicitCoordinates(),
+        "mesh of type [" << m_type << "] does not have explicit coordinates" );
+  SLIC_ERROR_IF( ( (dim < 0) || ( dim >= getDimension() ) ),
+    "requested coordinate array dim=[" << dim << "] on a mesh of dimension [" <<
+  getDimension() << "]" );
+
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< UnstructuredMesh< Topology::MIXED >* >( this )
+                                                    ->getCoordinateArray( dim );
+      }
+      else
+      {
+        return dynamic_cast< UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                    ->getCoordinateArray( dim );
+      }
+    default:
+      return AXOM_NULLPTR;
+  }
+}
+
+//------------------------------------------------------------------------------
+const double* Mesh::getCoordinateArray( int dim ) const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                    ->getCoordinateArray( dim );
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                    ->getCoordinateArray( dim );
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return AXOM_NULLPTR;
+  }
+}
+
+//------------------------------------------------------------------------------
+void Mesh::getNode( IndexType nodeIdx, double* node ) const
+{
+  SLIC_ASSERT( node != AXOM_NULLPTR );
+
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                    ->getNode( nodeIdx, node );
+        break;
+      }
+      else
+      {
+        dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                    ->getNode( nodeIdx, node );
+        break;
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+  }
+}
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getCell( IndexType cellIdx, IndexType* cell ) const
+{
+  SLIC_ASSERT( cell != AXOM_NULLPTR );
+  
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                          ->getCell( cellIdx, cell );
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                          ->getCell( cellIdx, cell );
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return -1;
+  }
+}
+
+//------------------------------------------------------------------------------
+CellType Mesh::getCellType() const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                                                ->getCellType();
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                                                ->getCellType();
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return UNDEFINED_CELL;
+  }
+}
+
+//------------------------------------------------------------------------------
+CellType Mesh::getCellType( IndexType cellIdx ) const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                          ->getCellType( cellIdx );
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                          ->getCellType( cellIdx );
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return UNDEFINED_CELL;
+  }
+}
+
+//------------------------------------------------------------------------------
+IndexType Mesh::getNumberOfCellNodes( IndexType cellIdx ) const
+{
+  switch (getMeshType())
+  {
+    case UNSTRUCTURED_MESH:
+      if ( hasMixedCellTypes() )
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( this )
+                                          ->getNumberOfCellNodes( cellIdx );
+      }
+      else
+      {
+        return dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( this )
+                                          ->getNumberOfCellNodes( cellIdx );
+      }
+    default:
+      SLIC_ERROR( "NOT IMPLIMENTED" );
+      return -1;
+  }
 }
 
 //------------------------------------------------------------------------------
 void Mesh::allocateFieldData( )
 {
 #ifdef MINT_USE_SIDRE
-
   if ( hasSidreGroup() )
   {
     sidre::Group* fields_group = m_group->getGroup( "fields");
     SLIC_ASSERT( fields_group != AXOM_NULLPTR );
 
-    for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
+    for ( int assoc=0; assoc < NUM_FIELD_ASSOCIATIONS; ++assoc )
     {
-      m_mesh_fields[ i ] = new FieldData( i, fields_group, m_topology );
+      m_mesh_fields[ assoc ] = new FieldData( assoc, fields_group, m_topology );
     }
-  }
-  else
-  {
-    for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
-    {
-       m_mesh_fields[ i ] = new FieldData( i );
-    }
-  }
 
-#else
-
-  for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
-  {
-    m_mesh_fields[ i ] = new FieldData( i );
+    return;
   }
-
 #endif
+
+  for ( int assoc=0; assoc < NUM_FIELD_ASSOCIATIONS; ++assoc )
+  {
+    m_mesh_fields[ assoc ] = new FieldData( assoc );
+  }
 
 }
 
 //------------------------------------------------------------------------------
 void Mesh::deallocateFieldData( )
 {
-
   for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
   {
     SLIC_ASSERT( m_mesh_fields[ i ] != AXOM_NULLPTR );
@@ -388,7 +611,6 @@ void Mesh::deallocateFieldData( )
     delete m_mesh_fields[ i ];
     m_mesh_fields[ i ] = AXOM_NULLPTR;
   }
-
 }
 
 //------------------------------------------------------------------------------

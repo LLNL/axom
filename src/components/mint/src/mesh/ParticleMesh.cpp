@@ -42,22 +42,10 @@ inline int dim( const double* AXOM_NOT_USED(x),
 } /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
-//  PARTICLE MESH IMPLEMENTATION
-//------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension,
-                            IndexType numParticles,
+ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
                             IndexType capacity ) :
-          ParticleMesh( dimension, 0, 0, numParticles, capacity )
-{
-
-}
-
-//------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, int blockId, int partId,
-                            IndexType numParticles,
-                            IndexType capacity ) :
-            Mesh( dimension, PARTICLE_MESH, blockId, partId ),
-            m_positions( new MeshCoordinates(dimension,numParticles,capacity) )
+  Mesh( dimension, PARTICLE_MESH ),
+  m_positions( new MeshCoordinates(dimension, numParticles, capacity) )
 {
   initialize( );
 }
@@ -65,18 +53,8 @@ ParticleMesh::ParticleMesh( int dimension, int blockId, int partId,
 //------------------------------------------------------------------------------
 ParticleMesh::ParticleMesh( IndexType numParticles,
                             double* x, double* y, double* z ) :
-      Mesh( dim(x,y,z), PARTICLE_MESH, 0, 0 ),
-      m_positions( new MeshCoordinates( numParticles, numParticles, x, y, z ) )
-{
-  initialize( );
-}
-
-//------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int blockId, int partId,
-                            IndexType numParticles,
-                            double* x, double* y, double* z ) :
-      Mesh( dim(x,y,z), PARTICLE_MESH, blockId, partId ),
-      m_positions( new MeshCoordinates( numParticles, numParticles, x, y, z ) )
+  Mesh( dim( x, y, z ), PARTICLE_MESH ),
+  m_positions( new MeshCoordinates( numParticles, numParticles, x, y, z ) )
 {
   initialize( );
 }
@@ -97,18 +75,15 @@ ParticleMesh::ParticleMesh( sidre::Group* group,
 
 //------------------------------------------------------------------------------
 ParticleMesh::ParticleMesh( sidre::Group* group ) : ParticleMesh( group, "" )
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, int blockId, int partId,
-                            IndexType numParticles,
+ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
                             sidre::Group* group,
                             const std::string& topo,
                             const std::string& coordset,
                             IndexType capacity ) :
-    Mesh( dimension, PARTICLE_MESH, blockId, partId, group, topo, coordset )
+    Mesh( dimension, PARTICLE_MESH, group, topo, coordset )
 
 {
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
@@ -123,36 +98,10 @@ ParticleMesh::ParticleMesh( int dimension, int blockId, int partId,
 }
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension,
-                            IndexType numParticles,
-                            sidre::Group* group,
-                            const std::string& topo,
-                            const std::string& coordset,
-                            IndexType capacity ) :
- ParticleMesh( dimension, 0, 0, numParticles, group, topo, coordset, capacity )
-{
-
-}
-
-//------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, int blockId, int partId,
-                            IndexType numParticles,
-                            sidre::Group* group,
-                            IndexType capacity ) :
-  ParticleMesh(dimension,blockId,partId, numParticles, group, "", "",capacity )
-{
-
-}
-
-//------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension,
-                            IndexType numParticles,
-                            sidre::Group* group,
-                            IndexType capacity ) :
-    ParticleMesh( dimension, 0, 0, numParticles, group, "", "",capacity )
-{
-
-}
+ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
+                            sidre::Group* group, IndexType capacity ) :
+  ParticleMesh(dimension, numParticles, group, "", "",capacity )
+{}
 
 #endif
 

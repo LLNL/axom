@@ -46,16 +46,6 @@ public:
   RectilinearMesh( int dimension, int64 ext[6] );
 
   /*!
-   * \brief Constructs a rectilinear mesh instance.
-   * \param [in] dimension the dimension of the mesh.
-   * \param [in] ext the mesh extent.
-   * \param [in] blockId the block ID.
-   * \param [in] partitionId the partition ID.
-   */
-  RectilinearMesh( int dimension, int64 ext[6], int blockId,
-                   int partitionId );
-
-  /*!
    * \brief Destructor.
    */
   virtual ~RectilinearMesh();

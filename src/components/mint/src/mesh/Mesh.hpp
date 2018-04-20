@@ -204,11 +204,29 @@ public:
   { return m_block_idx; }
 
   /*!
+   * \brief set the block ID of this mesh instance.
+   * 
+   * \param [in] ID the new block ID.
+   *
+   * \post getBlockId() == ID
+   */
+  void setBlockId( int ID );
+
+  /*!
    * \brief Returns the partition ID of this mesh instance.
    * \return partitionId the partition ID of the mesh.
    */
   inline int getPartitionId() const
   { return m_part_idx; }
+
+  /*!
+   * \brief set the partition ID of this mesh instance.
+   * 
+   * \param [in] ID the new partition ID.
+   *
+   * \post getPartitionId() == ID
+   */
+  void setPartitionId( int ID );
 
   /*!
    * \brief Returns the mesh type of this mesh instance.
@@ -223,32 +241,104 @@ public:
    * \return N the number of nodes
    * \post N >= 0
    */
-  inline IndexType getNumberOfNodes() const
-  { return m_num_nodes; }
+  IndexType getNumberOfNodes() const;
 
   /*!
    * \brief Returns the number of cells in this mesh instance.
    * \return N the number of cells
    * \post N >= 0
    */
-  inline IndexType getNumberOfCells() const
-  { return m_num_cells; }
+  IndexType getNumberOfCells() const;
 
   /*!
    * \brief Returns the number of faces in this mesh instance.
    * \return N the number of faces
    * \post N >= 0
    */
-  inline IndexType getNumberOfFaces() const
-  { return m_num_faces; }
+  IndexType getNumberOfFaces() const;
 
   /*!
    * \brief Returns the number of edges in this mesh instance.
    * \return N the number of edges
    * \post N >= 0
    */
-  inline IndexType getNumberOfEdges() const
-  { return m_num_edges; }
+  IndexType getNumberOfEdges() const;
+
+  /*!
+   * \brief Returns the number of tuples for the given mesh field association.
+   * \param [in] association the mesh field association, e.g., NODE_CENTERED
+   * \return N the number of tuples
+   * \post N >= 0
+   */
+  inline IndexType getNumTuples( int association ) const;
+
+  /*!
+   * \brief Returns the capacity for number of nodes in this mesh instance.
+   * \return N the node capacity
+   * \post N >= 0
+   */
+  IndexType getNodeCapacity() const;
+
+  /*!
+   * \brief Returns the capacity for number of cell in this mesh instance.
+   * \return N the cell capacity
+   * \post N >= 0
+   */
+  IndexType getCellCapacity() const;
+
+  /*!
+   * \brief Returns the capacity for number of faces in this mesh instance.
+   * \return N the face capacity
+   * \post N >= 0
+   */
+  IndexType getFaceCapacity() const;
+
+  /*!
+   * \brief Returns the capacity for number of edges in this mesh instance.
+   * \return N the edge capacity
+   * \post N >= 0
+   */
+  IndexType getEdgeCapacity() const;
+
+  /*!
+   * \brief Returns the capacity for the given mesh field association.
+   * \param [in] association the mesh field association, e.g., NODE_CENTERED
+   * \return N the capacity
+   * \post N >= 0
+   */
+  inline IndexType getCapacity( int association ) const;
+
+  /*!
+   * \brief Returns the node resize ratio for this mesh instance.
+   * \return R the node resize ratio
+   */
+  double getNodeResizeRatio() const;
+
+  /*!
+   * \brief Returns the cell resize ratio for this mesh instance.
+   * \return R the cell resize ratio
+   */
+  double getCellResizeRatio() const;
+
+  /*!
+   * \brief Returns the face resize ratio for this mesh instance.
+   * \return R the face resize ratio
+   */
+  double getFaceResizeRatio() const;
+
+  /*!
+   * \brief Returns the edge resize ratio for this mesh instance.
+   * \return R the edge resize ratio
+   */
+  double getEdgeResizeRatio() const;
+
+  /*!
+   * \brief Returns the resize ratio for the given mesh field association.
+   * \param [in] association the mesh field association, e.g., NODE_CENTERED
+   * \return R the resize ratio
+   * \post N >= 0
+   */
+  inline double getResizeRatio( int association ) const;
 
   /*!
    * \brief Checks if this mesh instance has explicit coordinates.
@@ -302,40 +392,57 @@ public:
   /// @}
 
   /*!
-   * \brief Returns the coordinates of the node at the specified index.
+   * \brief Copy the coordinates of the given node into the provided buffer.
    *
-   * \param [in] nodeIdx the index of the requested node.
-   * \param [out] node user-supplied buffer to store the node coordinates.
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
    *
-   * \pre node != AXOM_NULLPTR
-   * \pre nodeIdx >= 0 && nodeIdx < getNumberOfNodes( )
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
    */
-  void getMeshNode( IndexType nodeIdx, double* node ) const;
+  void getNode( IndexType nodeID, double* node ) const;
 
   /*!
-   * \brief Returns the cell node-connectivity information for the cell at
-   *  the corresponding cell index.
+   * \brief Return the number of nodes associated with the given cell.
    *
-   * \param [in] cellIdx the index of the requested cell.
-   * \param [out] cell user-supplied buffer to store the cell node-connectivity
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored unless hasMixedCellTypes() == true.
    *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  IndexType getNumberOfCellNodes( IndexType cellID=0 ) const;
+
+  /*!
+   * \brief Copy the connectivity of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [out] cell the buffer into which the connectivity is copied.
+   *
+   * \return The number of nodes for the given cell.
+   * 
    * \pre cell != AXOM_NULLPTR
-   * \pre cellIdx >= 0 && cellIdx < getNumberOfCells( )
+   * \pre 0 <= cellID < getNumberOfCells()
    */
-  void getMeshCell( IndexType cellIdx, IndexType* cell ) const;
+  IndexType getCell( IndexType cellID, IndexType* cell ) const;
 
   /*!
-   * \brief Returns the cell type of the requested cell
-   *
-   * \param [in] cellIdx the index of the requested cell (optional).
-   * \return cellType the cellType at the requested cell index.
-   *
-   * \note If a cell index is not specified, this method will return the
-   *  cell type of the cell at the zero location.
-   *
-   * \see CellTypes.hpp
+   * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
+   *  hasMixedCellTypes() == true.
    */
-  CellType getMeshCellType( IndexType cellIdx=0 ) const;
+  CellType getCellType() const;
+
+  /*!
+   * \brief Return the type of the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored if hasMixedCellTypes() == false.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  CellType getCellType( IndexType cellID ) const;
+>>>>>>> e69ecff... Mesh changes
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
 /// @{
@@ -395,8 +502,7 @@ public:
   inline T* createField( const std::string& name,
                          int association,
                          IndexType num_components=1,
-                         bool storeInSidre=true,
-                         IndexType capacity=USE_DEFAULT );
+                         bool storeInSidre=true );
 
   /*!
    * \brief Creates a new field from an external buffer that has the given name
@@ -424,7 +530,8 @@ public:
   inline T* createField( const std::string& name,
                          int association,
                          T* data,
-                         IndexType num_components=1 );
+                         IndexType num_components=1,
+                         IndexType capacity=USE_DEFAULT );
 
   /*!
    * \brief Removes the field with the given name and specified association.
@@ -528,12 +635,6 @@ protected:
   int m_block_idx;                /*! the Block ID of the mesh */
   int m_part_idx;                 /*! the partition ID of the mesh */
 
-
-  IndexType m_num_cells;          /*! The number of cells in the mesh */
-  IndexType m_num_faces;          /*! The number of faces in the mesh */
-  IndexType m_num_edges;          /*! The number of edges in the mesh */
-  IndexType m_num_nodes;          /*! The number of nodes in the mesh */
-
   bool m_explicit_coords;
   bool m_explicit_connectivity;
   bool m_has_mixed_topology;
@@ -558,7 +659,7 @@ protected:
    * \param [in] blockId the block ID for this mesh instance.
    * \param [in] partId the partition ID for this mesh instance.
    */
-  Mesh( int ndims, int type, int blockId, int partId );
+  Mesh( int ndims, int type );
 
 #ifdef MINT_USE_SIDRE
   /*!
@@ -625,6 +726,9 @@ protected:
    */
   sidre::Group* getCoordsetGroup( );
 
+  Mesh( sidre::Group* group, const std::string& topo, const std::string& coordset,
+        int ndims, int type );
+
   /*!
    * \brief Helper method to return the associated topology group.
    * \return topology the associated topology group.
@@ -654,14 +758,6 @@ private:
    */
   inline bool validDimension( ) const
   { return ( m_ndims >= 1 && m_ndims <= 3 ); }
-
-  /*!
-   * \brief Returns the number of tuples for the given mesh field association.
-   * \param [in] association the mesh field association, e.g., NODE_CENTERED
-   * \return N the number of tuples
-   * \post N >= 0
-   */
-  inline IndexType getNumTuples( int association ) const;
 
   /*!
    * \brief Allocates the FieldData internal data-structures.
@@ -696,25 +792,52 @@ inline bool Mesh::hasSidreGroup( ) const
 //------------------------------------------------------------------------------
 inline IndexType Mesh::getNumTuples( int association ) const
 {
-  IndexType num_tuples = 0;
-
   switch ( association )
   {
   case NODE_CENTERED:
-    num_tuples = m_num_nodes;
-    break;
+    return getNumberOfNodes();
   case CELL_CENTERED:
-    num_tuples = m_num_cells;
-    break;
+    return getNumberOfCells();
   case FACE_CENTERED:
-    num_tuples = m_num_faces;
-    break;
+    return getNumberOfFaces();
   default:
     SLIC_ASSERT( association==EDGE_CENTERED );
-    num_tuples = m_num_edges;
+    return getNumberOfEdges();
   } // END switch
+}
 
-  return ( num_tuples );
+//------------------------------------------------------------------------------
+inline IndexType Mesh::getCapacity( int association ) const
+{
+  switch ( association )
+  {
+  case NODE_CENTERED:
+    return getNodeCapacity();
+  case CELL_CENTERED:
+    return getCellCapacity();
+  case FACE_CENTERED:
+    return getFaceCapacity();
+  default:
+    SLIC_ASSERT( association == EDGE_CENTERED );
+    return getEdgeCapacity();
+  } // END switch
+}
+
+//------------------------------------------------------------------------------
+inline double Mesh::getResizeRatio( int association ) const
+{
+  switch ( association )
+  {
+  case NODE_CENTERED:
+    return getNodeResizeRatio();
+  case CELL_CENTERED:
+    return getCellResizeRatio();
+  case FACE_CENTERED:
+    return getFaceResizeRatio();
+  default:
+    SLIC_ASSERT( association == EDGE_CENTERED );
+    return getEdgeResizeRatio();
+  } // END switch
 }
 
 //------------------------------------------------------------------------------
@@ -743,16 +866,20 @@ template < typename T >
 inline T* Mesh::createField( const std::string& name,
                              int association,
                              IndexType num_components,
-                             bool storeInSidre,
-                             IndexType capacity )
+                             bool storeInSidre )
 {
   FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
   IndexType num_tuples = getNumTuples( association );
-  T* ptr = fd->createField< T >( name, num_tuples, num_components,
-                                 storeInSidre, capacity );
-  SLIC_ASSERT( ptr != AXOM_NULLPTR );
+  IndexType capacity = getCapacity( association );
+  double ratio = getResizeRatio( association );
+  T* ptr = fd->createField< T >( name, num_tuples, num_components, capacity, 
+                                                          storeInSidre, ratio );
+  if ( num_tuples > 0 ) 
+  {
+    SLIC_ASSERT( ptr != AXOM_NULLPTR );
+  }
 
   return ( ptr );
 }
@@ -762,7 +889,8 @@ template < typename T >
 inline T* Mesh::createField( const std::string& name,
                              int association,
                              T* data,
-                             IndexType num_components )
+                             IndexType num_components,
+                             IndexType capacity )
 {
   SLIC_ASSERT( data != AXOM_NULLPTR );
 
@@ -770,8 +898,8 @@ inline T* Mesh::createField( const std::string& name,
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
   IndexType num_tuples = getNumTuples( association );
-  T* ptr = fd->createField< T >( name, data, num_tuples, num_components );
-  SLIC_ASSERT( ptr != AXOM_NULLPTR );
+  T* ptr = fd->createField< T >( name, data, num_tuples, num_components, capacity );
+  SLIC_ASSERT( ptr == data );
 
   return ( ptr );
 }

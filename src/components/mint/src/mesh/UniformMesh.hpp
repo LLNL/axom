@@ -56,33 +56,6 @@ public:
                const double lower_bound[3], const double upper_bound[3] );
 
   /*!
-   * \brief Constructs a uniform mesh defined by the origin, spacing and extent.
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] origin the origin coordinates of the mesh
-   * \param [in] h the spacing in each dimension.
-   * \param [in] ext the extent of this mesh instance.
-   * \param [in] blockId the block ID of this mesh.
-   * \param [in] partitionId the partition ID of this mesh.
-   */
-  UniformMesh( int dimension, const double origin[3], const double h[3],
-               const int64 ext[6], int blockId, int partitionId );
-
-  /*!
-   * \brief Constructs a uniform mesh defined by the extent of the mesh in each
-   *  direction and an axis aligned bounding box.
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the extent of this mesh instance.
-   * \param [in] lower_bound a corner of the bounding box.
-   * \param [in] upper_bound the corner opposite lower_bound of the bounding
-   * box.
-   * \param [in] blockId the block ID of this mesh.
-   * \param [in] partitionId the partition ID of this mesh.
-   */
-  UniformMesh( int dimension, const int64 ext[6],
-               const double lower_bound[3], const double upper_bound[3],
-               int blockId, int partitionId );
-
-  /*!
    * \brief Destructor.
    */
   virtual ~UniformMesh()
