@@ -32,11 +32,7 @@ set(example_sources
 
 set(slam_tests_depends_on slic slam)
 
-# Slam works without boost, but we need to add the header dependency when boost is available
 set(slam_tests_extra_depends)
-if(BOOST_FOUND)
-  list(APPEND slam_tests_extra_depends boost)
-endif()
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
@@ -62,9 +58,9 @@ add_subdirectory(tinyHydro)
 
 
 #
-# An example that use the Slam iterators and therefore depends on boost
+# An example that use the Slam iterators and therefore depends on C++11
 #
-if(BOOST_FOUND)
+if( NOT BLT_CXX_STD STREQUAL c++98 ) 
     list(APPEND slam_tests_extra_depends fmt)
 
     # Unstructured hexahedral mesh

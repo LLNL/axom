@@ -30,7 +30,7 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for AXOM_USE_BOOST
+#include "axom/config.hpp"  // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"
 
@@ -198,7 +198,7 @@ TEST(slam_range_set,iterate)
     SLIC_INFO(sstr.str());
   }
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   SLIC_INFO("Testing iterator access");
   {
     std::stringstream sstr;

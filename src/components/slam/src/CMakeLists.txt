@@ -74,9 +74,6 @@ set(slam_sources
 ####################################
 
 set(slam_depends_on axom_utils slic)
-if (BOOST_FOUND)
-    list(APPEND slam_depends_on boost)
-endif()
 
 blt_add_library(
     NAME        slam

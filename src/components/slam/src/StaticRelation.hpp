@@ -80,13 +80,13 @@ public:
   typedef typename
     IndicesIndirectionPolicy::IndirectionBufferType IndirectionBufferType;
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   typedef typename RelationSet::iterator RelationIterator;
   typedef typename RelationSet::iterator_pair RelationIteratorPair;
 
   typedef typename RelationSet::const_iterator RelationConstIterator;
   typedef typename RelationSet::const_iterator_pair RelationConstIteratorPair;
-#endif // AXOM_USE_BOOST
+#endif // AXOM_USE_CXX11
 
 public:
   struct RelationBuilder;
@@ -193,7 +193,7 @@ public:
   bool              isValid(bool verboseOutput = false) const;
 
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   RelationIterator  begin(SetPosition fromSetInd )
   {
     return (*this)[fromSetInd].begin();
@@ -224,7 +224,7 @@ public:
   {
     return (*this)[fromSetInd].range();
   }
-#endif // AXOM_USE_BOOST
+#endif // AXOM_USE_CXX11
 
 
   bool                hasFromSet() const

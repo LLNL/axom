@@ -35,10 +35,6 @@ set(tinyHydro_lib_sources
 
 
 set(slam_tiny_hydro_lib_depends_on axom_utils slam slic fmt)
-if (BOOST_FOUND)
-    list(APPEND slam_tiny_hydro_lib_depends_on boost)
-endif()
-
 
 #
 # Build the tinyHydro library

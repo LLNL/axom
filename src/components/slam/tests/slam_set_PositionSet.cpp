@@ -27,7 +27,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"    // for AXOM_USE_BOOST
+#include "axom/config.hpp"      // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"        // for SLIC_INFO
 
@@ -176,7 +176,7 @@ TEST(slam_set_positionset,iterate)
     SLIC_INFO("Element of slam set using at():\n" << sstr.str());
   }
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterators begin/end");
   {
     std::stringstream sstr;
