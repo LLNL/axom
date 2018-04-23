@@ -76,38 +76,78 @@ set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
 
 ############################################################
-# Create SparseHash variables to be used later
-# Note: Do not register or add this library because
-#   it is a internal header only library
+# Register the built-in sparse hash library
 ############################################################
 
 if (ENABLE_SPARSEHASH)
 
   include(CheckIncludeFileCXX)
 
-  check_include_file_cxx(tr1/functional FOUND_TR1_FUNCTIONAL)
-  if(FOUND_TR1_FUNCTIONAL)
-    set(SPARSEHASH_COMPILER_DEFS
-           SPARSEHASH_HASHFUN_HEADER=<tr1/functional>
-           SPARSEHASH_HASHFUN_NAMESPACE=std::tr1
-        CACHE INTERNAL "")
-    set(FOUND_FUNCTIONAL TRUE)
+  check_include_file_cxx(functional FOUND_STD_FUNCTIONAL)
+  if (FOUND_STD_FUNCTIONAL)
+      set(SPARSEHASH_HASHFUN_HEADER "<functional>" CACHE INTERNAL "")
+      set(SPARSEHASH_HASHFUN_NAMESPACE "std" CACHE INTERNAL "")
+      set(FOUND_FUNCTIONAL TRUE)
   else()
-    check_include_file_cxx(functional FOUND_STD_FUNCTIONAL)
-    if (FOUND_STD_FUNCTIONAL)
-       set(SPARSEHASH_COMPILER_DEFS
-              SPARSEHASH_HASHFUN_HEADER=<functional>
-              SPARSEHASH_HASHFUN_NAMESPACE=std
-           CACHE INTERNAL "")
-       set(FOUND_FUNCTIONAL TRUE)
+    check_include_file_cxx(tr1/functional FOUND_TR1_FUNCTIONAL)
+    if(FOUND_TR1_FUNCTIONAL)
+      set(SPARSEHASH_HASHFUN_HEADER "<tr1/functional>" CACHE INTERNAL "")
+      set(SPARSEHASH_HASHFUN_NAMESPACE "std::tr1"  CACHE INTERNAL "")
+      set(FOUND_FUNCTIONAL TRUE)
     endif()
   endif()
-
+  
   if(FOUND_FUNCTIONAL)
-     set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
-     mark_as_advanced(SPARSEHASH_FOUND)
-  endif()
+    set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
 
+    mark_as_advanced(
+      SPARSEHASH_FOUND 
+      SPARSEHASH_HASHFUN_HEADER 
+      SPARSEHASH_HASHFUN_NAMESPACE
+    )
+    
+    # Explicitly list sparsehash files for copy-headers,
+    # Separate into two lists to maintain sparsehash's hierarchy
+    set(sparsehash_headers
+      sparsehash/README
+      sparsehash/dense_hash_map
+      sparsehash/dense_hash_set
+      sparsehash/sparse_hash_map
+      sparsehash/sparse_hash_set
+      sparsehash/sparsetable
+      sparsehash/template_util.h
+      sparsehash/type_traits.h     
+     )
+
+    set(sparsehash_headers_internal
+      sparsehash/internal/densehashtable.h
+      sparsehash/internal/hashtable-common.h
+      sparsehash/internal/libc_allocator_with_realloc.h
+      sparsehash/internal/sparseconfig.h
+      sparsehash/internal/sparsehashtable.h
+     )
+     
+    blt_add_library(NAME sparsehash
+            HEADERS ${sparsehash_headers}
+            HEADERS_OUTPUT_SUBDIR sparsehash)
+     
+    install(TARGETS              sparsehash
+            EXPORT               sparsehash-targets
+            INCLUDES DESTINATION include)
+
+    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/src/thirdparty/sparsehash
+            DESTINATION include)
+
+    install(EXPORT sparsehash-targets DESTINATION lib/cmake)
+
+    # Manually copy the souce files for the internal headers to the build directory
+    blt_copy_headers_target(
+            NAME        sparsehash-internal-headers-sources
+            HEADERS     ${sparsehash_headers_internal}
+            DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/sparsehash/internal)
+    add_dependencies(blt_copy_headers_sparsehash blt_copy_headers_sparsehash-internal-headers-sources)
+     
+  endif()
 endif()
 
 ################################

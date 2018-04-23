@@ -3,6 +3,9 @@
  *       Do not use these #defines in your own program!
  */
 
+/* Brings in SPARSEHASH_HASHFUN_* defines */
+#include "axom/config.hpp"  
+
 /* Namespace for Google classes */
 #define GOOGLE_NAMESPACE ::google
 
