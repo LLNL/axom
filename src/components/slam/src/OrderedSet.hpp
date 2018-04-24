@@ -254,6 +254,11 @@ public:
       return !operator==(other);
     }
 
+    bool operator<(const iter& other) const
+    {
+        return m_pos < other.m_pos;
+    }
+
     iter& operator++()    { advance(1); return *this; }
     iter operator++(int) { iter ret = *this; advance(1); return ret; }
     iter& operator--()    { advance(-1); return *this; }
