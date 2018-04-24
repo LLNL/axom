@@ -157,6 +157,7 @@ macro(axom_check_code_compiles)
     try_compile(${arg_CODE_COMPILES}
                 ${CMAKE_CURRENT_BINARY_DIR}/CMakeTmp      
                 SOURCES ${_fname}
+                CXX_STANDARD ${CMAKE_CXX_STANDARD}
                 OUTPUT_VARIABLE _res)
     file(REMOVE ${_fname})
 
