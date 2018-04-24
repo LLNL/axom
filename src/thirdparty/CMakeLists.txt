@@ -83,21 +83,30 @@ if (ENABLE_SPARSEHASH)
 
   include(CheckIncludeFileCXX)
 
-  check_include_file_cxx(functional FOUND_STD_FUNCTIONAL)
-  if (FOUND_STD_FUNCTIONAL)
-      set(SPARSEHASH_HASHFUN_HEADER "<functional>" CACHE INTERNAL "")
-      set(SPARSEHASH_HASHFUN_NAMESPACE "std" CACHE INTERNAL "")
-      set(FOUND_FUNCTIONAL TRUE)
-  else()
-    check_include_file_cxx(tr1/functional FOUND_TR1_FUNCTIONAL)
-    if(FOUND_TR1_FUNCTIONAL)
-      set(SPARSEHASH_HASHFUN_HEADER "<tr1/functional>" CACHE INTERNAL "")
-      set(SPARSEHASH_HASHFUN_NAMESPACE "std::tr1"  CACHE INTERNAL "")
-      set(FOUND_FUNCTIONAL TRUE)
-    endif()
-  endif()
+  # Try to find the necessary include and namespace for hash functions
+  # This depends on the compiler and C++ standard library version
   
-  if(FOUND_FUNCTIONAL)
+  set(_found_hash FALSE)
+
+  set(_hdr <functional>)
+  set(_ns  std)
+  set(_src "#include ${_hdr} \n int main() { int h = ${_ns}::hash<int>()(5)\; return 0\;}")
+  axom_check_code_compiles(SOURCE_STRING "${_src}" CODE_COMPILES _found_hash)
+ 
+  if(NOT ${_found_hash})
+    set(_hdr <tr1/functional>)
+    set(_ns  std::tr1)
+    set(_src "#include ${_hdr} \n int main() { int h = ${_ns}::hash<int>()(5)\; return 0\;}")
+    axom_check_code_compiles(SOURCE_STRING "${_src}" CODE_COMPILES _found_hash)
+
+  endif()
+    
+  # Set up sparsehash, if we've found it
+  if(${_found_hash})
+    message(STATUS "Sparsehash configured with '${_hdr}' header")
+    
+    set(SPARSEHASH_HASHFUN_HEADER ${_hdr} CACHE INTERNAL "")
+    set(SPARSEHASH_HASHFUN_NAMESPACE ${_ns} CACHE INTERNAL "")
     set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
 
     mark_as_advanced(
@@ -146,7 +155,8 @@ if (ENABLE_SPARSEHASH)
             HEADERS     ${sparsehash_headers_internal}
             DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/sparsehash/internal)
     add_dependencies(blt_copy_headers_sparsehash blt_copy_headers_sparsehash-internal-headers-sources)
-     
+  else()
+    message(STATUS "Could not configure sparsehash")
   endif()
 endif()
 

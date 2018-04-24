@@ -116,3 +116,54 @@ macro(convert_to_native_escaped_file_path path output)
     file(TO_NATIVE_PATH ${path} ${output})
     string(REPLACE "\\" "\\\\"  ${output} "${${output}}")
 endmacro()
+
+
+
+##------------------------------------------------------------------------------
+## axom_check_code_compiles
+## 
+## This macro checks if a snippet of C++ code with a main function compiles.
+##
+## SOURCE_STRING The source snippet to compile. 
+## Must be a valid C++ program with a main() function.
+##
+## CODE_COMPILES A boolean variable the contains the compilation result
+##------------------------------------------------------------------------------
+macro(axom_check_code_compiles)
+
+    set(options)
+    set(singleValueArgs CODE_COMPILES)
+    set(multiValueArgs SOURCE_STRING )
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+
+    # Check the arguments
+    if(NOT DEFINED arg_SOURCE_STRING)
+        message(FATAL_ERROR "SOURCE_STRING is a required parameter for axom_check_code_compiles macro")
+    endif()
+    if(NOT DEFINED arg_CODE_COMPILES)
+        message(FATAL_ERROR "CODE_COMPILES is a required parameter for axom_check_code_compiles macro")
+    endif()    
+
+    # message(STATUS "axom_check_code_compiles source string: ${arg_SOURCE_STRING}")
+
+    # Write string as file, try to compile and then remove file
+    string(RANDOM LENGTH 5 _rand)
+    set(_fname ${CMAKE_CURRENT_BINARY_DIR}/_axomCheckCompiles${_rand}.cpp)
+    file(WRITE ${_fname} "${arg_SOURCE_STRING}")
+    try_compile(${arg_CODE_COMPILES}
+                ${CMAKE_CURRENT_BINARY_DIR}/CMakeTmp      
+                SOURCES ${_fname}
+                OUTPUT_VARIABLE _res)
+    file(REMOVE ${_fname})
+
+    # message(STATUS "Output of axom_check_code_compiles: \n ${_res}")
+
+    # clear the variables set within the macro
+    set(_fname)
+    set(_res)
+
+endmacro(axom_check_code_compiles)
