@@ -82,9 +82,21 @@ blt_add_executable(
 blt_add_test(NAME fmt_smoke 
              COMMAND fmt_smoke_test)
 
+##############################################
+# Smoke test for sparsehash thirdparty library
+##############################################
 
+if (SPARSEHASH_FOUND)
+  blt_add_executable(
+    NAME sparsehash_smoke_test
+    SOURCES sparsehash_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON sparsehash gtest
+    FOLDER axom/thirdparty/tests )
 
-
+  blt_add_test(NAME sparsehash_smoke 
+             COMMAND sparsehash_smoke_test)
+endif()
 
 ################################################################################
 # Add compiler flag tests.
