@@ -122,35 +122,45 @@ endmacro()
 ##------------------------------------------------------------------------------
 ## axom_check_code_compiles
 ## 
-## This macro checks if a snippet of C++ code with a main function compiles.
+## This macro checks if a snippet of C++ code compiles.
 ##
 ## SOURCE_STRING The source snippet to compile. 
 ## Must be a valid C++ program with a main() function.
+## Note: This parameter should be passed in as a quoted string variable. Otherwise, 
+## cmake will convert the string into a list and lose the semicolons.  
+## E.g. axom_check_code_compiles(SOURCE_STRING "${str_var}" ...)
 ##
-## CODE_COMPILES A boolean variable the contains the compilation result
+## CODE_COMPILES A boolean variable the contains the compilation result.
+##
+## VERBOSE_OUTPUT Optional parameter to output debug information (Default: off)
 ##------------------------------------------------------------------------------
 macro(axom_check_code_compiles)
 
     set(options)
-    set(singleValueArgs CODE_COMPILES)
-    set(multiValueArgs SOURCE_STRING )
+    set(singleValueArgs CODE_COMPILES VERBOSE_OUTPUT)
+    set(multiValueArgs SOURCE_STRING)
 
     # Parse the arguments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-
     # Check the arguments
     if(NOT DEFINED arg_SOURCE_STRING)
-        message(FATAL_ERROR "SOURCE_STRING is a required parameter for axom_check_code_compiles macro")
+        message(FATAL_ERROR "[axom_check_code_compiles] 'SOURCE_STRING' is a required parameter")
     endif()
     if(NOT DEFINED arg_CODE_COMPILES)
-        message(FATAL_ERROR "CODE_COMPILES is a required parameter for axom_check_code_compiles macro")
+        message(FATAL_ERROR "[axom_check_code_compiles] 'CODE_COMPILES' is a required parameter")
     endif()    
 
-    # message(STATUS "axom_check_code_compiles source string: ${arg_SOURCE_STRING}")
+    if(NOT DEFINED arg_VERBOSE_OUTPUT)
+        set(arg_VERBOSE_OUTPUT FALSE)
+    endif()    
 
-    # Write string as file, try to compile and then remove file
+    if(${arg_VERBOSE_OUTPUT})
+        message(STATUS "[axom_check_code_compiles] Attempting to compile source string: \n${arg_SOURCE_STRING}")
+    endif()
+
+    # Write string as temp file, try to compile it and then remove file
     string(RANDOM LENGTH 5 _rand)
     set(_fname ${CMAKE_CURRENT_BINARY_DIR}/_axomCheckCompiles${_rand}.cpp)
     file(WRITE ${_fname} "${arg_SOURCE_STRING}")
@@ -161,10 +171,18 @@ macro(axom_check_code_compiles)
                 OUTPUT_VARIABLE _res)
     file(REMOVE ${_fname})
 
-    # message(STATUS "Output of axom_check_code_compiles: \n ${_res}")
+    if(${arg_VERBOSE_OUTPUT})
+        message(STATUS "[axom_check_code_compiles] Compiler output: \n${_res}\n")
+
+        if(${arg_CODE_COMPILES})        
+            message(STATUS "[axom_check_code_compiles] The code snippet successfully compiled")
+        else()
+            message(STATUS "[axom_check_code_compiles] The code snippet failed to compile")
+        endif()        
+    endif()
 
     # clear the variables set within the macro
-    set(_fname)
-    set(_res)
+    unset(_fname)
+    unset(_res)
 
 endmacro(axom_check_code_compiles)
