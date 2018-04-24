@@ -65,7 +65,6 @@
 #include <limits>   // numeric_limits traits
 #include <sstream>
 
-
 #define DEBUG_VERT_IDX  -2  // 1160
 #define DEBUG_TRI_IDX   -2 // 1654
 
@@ -538,7 +537,6 @@ private:
   friend class detail::InOutOctreeMeshDumper<DIM>;
 
 public:
-
   typedef OctreeBase<DIM, InOutBlockData> OctreeBaseType;
   typedef SpatialOctree<DIM, InOutBlockData> SpatialOctreeType;
 
@@ -2342,11 +2340,12 @@ public:
 
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
-#if defined(AXOM_USE_CXX11)
-  typedef std::unordered_map<GridPt, int, primal::PointHash<int> > GridIntMap;
-#else
-  typedef boost::unordered_map<GridPt, int, primal::PointHash<int> > GridIntMap;
-#endif
+  typedef
+    typename InOutOctreeType::OctreeBaseType::SparsePtOctLevType::MapType
+    GridIntMap;
+  typedef
+    typename InOutOctreeType::OctreeBaseType::SparsePtOctLevType::BroodTraits
+    GridIntTraits;
   typedef typename GridIntMap::iterator GridIntIter;
 
 public:
@@ -2383,6 +2382,8 @@ public:
     // different labelings
     for(int lev=m_octree.maxLeafLevel()-1 ; lev >= 0 ; --lev)
     {
+      GridIntTraits::initializeMap(diffBlocks[lev]);
+
       const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
       for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
           it != itEnd ; ++it)

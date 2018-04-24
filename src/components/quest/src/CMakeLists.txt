@@ -95,6 +95,12 @@ if (SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
+# Add sparsehash when available
+if(SPARSEHASH_FOUND)
+    list(APPEND quest_depends_on sparsehash)
+endif()
+
+
 if (ENABLE_FORTRAN)
     ## append shroud generated headers/sources to corresponding lists
     list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
@@ -110,6 +116,7 @@ blt_add_library(
     DEPENDS_ON  ${quest_depends_on}
     FOLDER      axom/quest
     )
+
 install(TARGETS              quest
         EXPORT               quest-targets
         DESTINATION          lib
