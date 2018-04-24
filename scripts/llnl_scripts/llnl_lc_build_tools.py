@@ -79,6 +79,7 @@ def build_info(job_name):
     res["built_from_branch"] = "unknown"
     res["built_from_sha1"]   = "unknown"
     res["job_name"] = job_name
+    res["platform"] = get_platform()
     rc, out = sexe('git branch -a | grep \"*\"',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
@@ -103,6 +104,7 @@ def log_success(prefix, msg, timestamp=""):
     """
     info = {}
     info["prefix"] = prefix
+    info["platform"] = get_platform()
     info["status"] = "success"
     info["message"] = msg
     if timestamp == "":
@@ -117,6 +119,7 @@ def log_failure(prefix, msg, timestamp=""):
     """
     info = {}
     info["prefix"] = prefix
+    info["platform"] = get_platform()
     info["status"] = "failed"
     info["message"] = msg
     if timestamp == "":
@@ -537,6 +540,8 @@ def get_machine_name():
 def get_system_type():
     return os.environ["SYS_TYPE"]
 
+def get_platform():
+    return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
 
 def get_username():
     return getpass.getuser()
