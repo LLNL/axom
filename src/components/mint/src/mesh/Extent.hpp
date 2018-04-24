@@ -195,6 +195,13 @@ public:
   inline void getGridIndex( IndexType linearIdx,
                             IndexType& i, IndexType& j, IndexType& k ) const;
 
+
+  inline void getCellGridIndex( IndexType linearIdx, IndexType& i,
+                                IndexType& j ) const;
+
+  inline void getCellGridIndex( IndexType linearIdx, IndexType& i, 
+                                IndexType& j, IndexType& k ) const;
+
 private:
 
   /*!
@@ -203,10 +210,10 @@ private:
    */
   inline void buildCellOffsets();
 
-  int m_ndims;                    /* dimension of this extent    */
+  int m_ndims;                   /* dimension of this extent    */
   IndexType m_jp;                /* stride to the 2nd dimension */
   IndexType m_kp;                /* stride to the 3rd dimension */
-  int64 m_extent[6];        /* extent of this instance     */
+  int64 m_extent[6];             /* extent of this instance     */
   IndexType m_cell_offsets[8];   /* cell offsets                */
 
   /*!
@@ -262,26 +269,21 @@ inline IndexType Extent::getNumCells() const
 //------------------------------------------------------------------------------
 inline IndexType Extent::getLinearIndex( IndexType i, IndexType j,
                                           IndexType k ) const
-{
-  IndexType index = i + j * m_jp + k * m_kp;
-  return index;
-}
+{ return i + j * m_jp + k * m_kp; }
 
 //------------------------------------------------------------------------------
 inline IndexType Extent::getLinearIndex( IndexType i, IndexType j ) const
-{
-  IndexType index = i + j * m_jp;
-  return index;
-}
+{ return i + j * m_jp; }
 
 //------------------------------------------------------------------------------
 inline IndexType Extent::getCellLinearIndex( IndexType i, IndexType j,
                                               IndexType k) const
 {
-  IndexType cell_jp = (size(0)-1);
-  IndexType cell_kp = getDimension() == 3 ? cell_jp * (size(1)-1) : 0;
-  IndexType index = i + j * cell_jp  + k * cell_kp;
-  return index;
+  const IndexType jp_minus_1 = jp() - 1;
+  const IndexType kp_minus_1 = kp() - 1;
+  const IndexType cell_jp = jp_minus_1;
+  const IndexType cell_kp = getDimension() == 3 ? cell_jp * kp_minus_1 : 0;
+  return i + j * cell_jp  + k * cell_kp;
 }
 
 //------------------------------------------------------------------------------
@@ -306,9 +308,32 @@ inline void Extent::getGridIndex( IndexType linearIdx, IndexType& i,
 inline void Extent::getGridIndex( IndexType linearIdx, IndexType& i,
                                   IndexType& j, IndexType& k) const
 {
-  k = (m_kp > 0) ? (linearIdx / m_kp) : 0;
-  j = (m_jp > 0) ? (linearIdx - k*m_kp) / m_jp : 0;
-  i = linearIdx - k*m_kp - j*m_jp;
+  k = (kp() > 0) ? (linearIdx / kp()) : 0;
+  j = (jp() > 0) ? (linearIdx - k*kp()) / jp() : 0;
+  i = linearIdx - k*kp() - j*jp();
+}
+
+//------------------------------------------------------------------------------
+inline void Extent::getCellGridIndex( IndexType linearIdx, IndexType& i,
+                                      IndexType& j ) const
+{
+  SLIC_ASSERT( m_ndims == 2 );
+  const IndexType jp_minus_1 = jp() - 1;
+  i = linearIdx % jp_minus_1;
+  j = linearIdx / jp_minus_1;
+}
+
+//------------------------------------------------------------------------------
+inline void Extent::getCellGridIndex( IndexType linearIdx, IndexType& i, 
+                                      IndexType& j, IndexType& k ) const
+{ 
+  const IndexType jp_minus_1 = jp() - 1;
+  const IndexType kp_minus_1 = kp() - 1;
+  k = (kp() > 0) ? linearIdx / ( jp_minus_1 * kp_minus_1 ) : 0;
+  linearIdx -= k * kp_minus_1;
+  j = (jp() > 0) ? linearIdx / jp_minus_1 : 0;
+  linearIdx -= j * jp_minus_1;
+  i = linearIdx;
 }
 
 
