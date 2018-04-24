@@ -1,4 +1,5 @@
-#!/usr/local/bin/python
+#!/bin/sh
+"exec" "python" "-u" "-B" "$0" "$@"
 
 ###############################################################################
 # Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
@@ -43,7 +44,7 @@ import sys
 
 from os.path import join as pjoin
 
-from llnl_lc_build_tools import sexe, timestamp
+from llnl_lc_build_tools import sexe, get_timestamp
 
 
 def unique(lst):
@@ -65,7 +66,7 @@ def clone_axom():
     Creates a fresh clone of axom
     """
     cwd = os.getcwd()
-    tmp_dir = os.path.abspath("_tmp_clone_%s" % (timestamp()))
+    tmp_dir = os.path.abspath("_tmp_clone_%s" % (get_timestamp()))
     if os.path.isdir(tmp_dir):
         shutil.rmdir(tmp_dir)
     os.mkdir(tmp_dir)
