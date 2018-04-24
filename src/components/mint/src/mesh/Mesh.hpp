@@ -320,7 +320,7 @@ public:
    * \brief Checks if this mesh instance has explicit coordinates.
    * \return status true iff the mesh defines coordinates explicitly.
    */
-  inline bool hasExplicitCoordinates() const;
+  inline bool hasExplicitCoordinates() const
   { return m_explicit_coords; }
 
   /*!
@@ -394,7 +394,8 @@ public:
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied.
+   * \param [out] cell the buffer into which the connectivity is copied, must
+   *  be of length at least getNumberOfCellNodes( cellID ).
    *
    * \return The number of nodes for the given cell.
    * 
@@ -592,8 +593,8 @@ public:
    * \post m != AXOM_NULLPTR
    */
   /// @{
-  static Mesh* getMesh( const sidre::Group* group, const std::string& topo );
-  static Mesh* getMesh( const sidre::Group* group );
+  static Mesh* getMesh( sidre::Group* group, const std::string& topo );
+  static Mesh* getMesh( sidre::Group* group );
   /// @}
 
 #endif
@@ -683,12 +684,10 @@ protected:
    */
   /// @{
 
-  Mesh( int ndims, int type, int blockId, int partId,
-        sidre::Group* group,
-        const std::string& topo,
+  Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,  
         const std::string& coordset );
 
-  Mesh( int ndims, int type, int blockId, int partId, sidre::Group* group );
+  Mesh( int ndims, int type, sidre::Group* group );
   /// @}
 
   /*!
@@ -699,10 +698,7 @@ protected:
    * \pre  blueprint::validRootGroup( m_group )
    * \post blueprint::validCoordsetGroup( coordset )
    */
-  sidre::Group* getCoordsetGroup( );
-
-  Mesh( sidre::Group* group, const std::string& topo, const std::string& coordset,
-        int ndims, int type );
+  sidre::Group* getCoordsetGroup();
 
   /*!
    * \brief Helper method to return the associated topology group.
@@ -776,57 +772,6 @@ inline bool Mesh::hasSidreGroup( ) const
 }
 
 //------------------------------------------------------------------------------
-inline IndexType Mesh::getNumTuples( int association ) const
-{
-  switch ( association )
-  {
-  case NODE_CENTERED:
-    return getNumberOfNodes();
-  case CELL_CENTERED:
-    return getNumberOfCells();
-  case FACE_CENTERED:
-    return getNumberOfFaces();
-  default:
-    SLIC_ASSERT( association==EDGE_CENTERED );
-    return getNumberOfEdges();
-  } // END switch
-}
-
-//------------------------------------------------------------------------------
-inline IndexType Mesh::getCapacity( int association ) const
-{
-  switch ( association )
-  {
-  case NODE_CENTERED:
-    return getNodeCapacity();
-  case CELL_CENTERED:
-    return getCellCapacity();
-  case FACE_CENTERED:
-    return getFaceCapacity();
-  default:
-    SLIC_ASSERT( association == EDGE_CENTERED );
-    return getEdgeCapacity();
-  } // END switch
-}
-
-//------------------------------------------------------------------------------
-inline double Mesh::getResizeRatio( int association ) const
-{
-  switch ( association )
-  {
-  case NODE_CENTERED:
-    return getNodeResizeRatio();
-  case CELL_CENTERED:
-    return getCellResizeRatio();
-  case FACE_CENTERED:
-    return getFaceResizeRatio();
-  default:
-    SLIC_ASSERT( association == EDGE_CENTERED );
-    return getEdgeResizeRatio();
-  } // END switch
-}
-
-//------------------------------------------------------------------------------
 inline const FieldData* Mesh::getFieldData( int association ) const
 {
   SLIC_ERROR_IF( association < 0 || association >= NUM_FIELD_ASSOCIATIONS,
@@ -857,9 +802,9 @@ inline T* Mesh::createField( const std::string& name,
   FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
-  IndexType num_tuples = getNumTuples( association );
-  IndexType capacity = getCapacity( association );
-  double ratio = getResizeRatio( association );
+  IndexType num_tuples, capacity;
+  double ratio;
+  getFieldInfo( association, num_tuples, capacity, ratio );
   T* ptr = fd->createField< T >( name, num_tuples, num_components, capacity, 
                                                           storeInSidre, ratio );
   if ( num_tuples > 0 ) 
@@ -883,7 +828,9 @@ inline T* Mesh::createField( const std::string& name,
   FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
-  IndexType num_tuples = getNumTuples( association );
+  IndexType num_tuples, dummy1;
+  double dummy2;
+  getFieldInfo( association, num_tuples, dummy1, dummy2 );
   T* ptr = fd->createField< T >( name, data, num_tuples, num_components, capacity );
   SLIC_ASSERT( ptr == data );
 
@@ -950,6 +897,36 @@ inline const T* Mesh::getFieldPtr( const std::string& name,
   SLIC_ASSERT( ptr != AXOM_NULLPTR );
 
   return ( ptr );
+}
+
+//------------------------------------------------------------------------------
+inline void Mesh::getFieldInfo( int association, IndexType& num_tuples, 
+                                IndexType& capacity, double& ratio ) const
+{
+  switch ( association )
+  {
+  case NODE_CENTERED:
+    num_tuples = getNumberOfNodes();
+    capacity = getNodeCapacity();
+    ratio = getNodeResizeRatio();
+    break;
+  case CELL_CENTERED:
+    num_tuples = getNumberOfCells();
+    capacity = getCellCapacity();
+    ratio = getCellResizeRatio();
+    break;
+  case FACE_CENTERED:
+    num_tuples = getNumberOfFaces();
+    capacity = getFaceCapacity();
+    ratio = getFaceResizeRatio();
+    break;
+  default:
+    SLIC_ASSERT( association == EDGE_CENTERED );
+    num_tuples = getNumberOfEdges();
+    capacity = getEdgeCapacity();  
+    ratio = getEdgeResizeRatio();
+    break;
+  } // END switch
 }
 
 } /* namespace mint */

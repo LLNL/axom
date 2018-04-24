@@ -102,8 +102,8 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
 Mesh::Mesh( sidre::Group* group ) : Mesh( group, "" )
 {}
 
-Mesh::Mesh( sidre::Group* group, const std::string& topo, 
-            const std::string& coordset, int ndims, int type ) :
+Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo, 
+            const std::string& coordset ) :
   m_ndims( ndims ),
   m_type( type ),
   m_block_idx( -1 ),
@@ -144,12 +144,9 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo,
 }
 
 //------------------------------------------------------------------------------
-Mesh::Mesh( int ndims, int type,
-            int blockId, int partId, sidre::Group* group) :
-                Mesh( ndims, type, blockId, partId, group, "", "" )
-{
-
-}
+Mesh::Mesh( int ndims, int type, sidre::Group* group ) :
+  Mesh( ndims, type, group, "", "" )
+{}
 
 //------------------------------------------------------------------------------
 sidre::Group* Mesh::getCoordsetGroup( )
@@ -252,7 +249,7 @@ void Mesh::deallocateFieldData( )
 }
 
 //------------------------------------------------------------------------------
-Mesh* Mesh::getMesh( const sidre::Group* group, const std::string& topo )
+Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
 {
   SLIC_ERROR_IF( group==AXOM_NULLPTR, "supplied group is null" );
 
@@ -291,7 +288,7 @@ Mesh* Mesh::getMesh( const sidre::Group* group, const std::string& topo )
 }
 
 //------------------------------------------------------------------------------
-Mesh* Mesh::getMesh( const sidre::Group* group )
+Mesh* Mesh::getMesh( sidre::Group* group )
 {
   return ( Mesh::getMesh( group, "" ) );
 }
