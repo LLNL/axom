@@ -19,6 +19,19 @@
 #         -T "Intel C++ Compiler 18.0"                       \
 #         -C ..\host-configs\other\sqa-uno-MSVC-intel.cmake  \
 #         <path-to-axom>
+#
+# Build the code from the command line as follows (/m for parallel build in msbuild):
+#   cmake --build . --config {Release, Debug, RelWithDebInfo} [-- /m:8]
+#
+# Test the code as follows (j for parallel testing):
+#   ctest -j8 -C {Release,Debug,RelWithDebInfo}
+# 
+# Install the come from the command line as follows:
+#   cmake --build . --config Release --target install
+#
+# Note: MPI in this configuration requires an initial login.
+# If the MPI tests hang, try to run the blt_mpi_smoke test manually and enter 
+# your credentials. They should work automatically (e.g. through ctest) after that.
 #------------------------------------------------------------------------------
 
 ### Setup Axom components
