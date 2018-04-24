@@ -914,24 +914,25 @@ private:
   /*! Compute the norm of the point under class's metric */
   double norm(const SpacePt& pt) const
   {
+    double ret = 0.;
     switch(METRIC)
     {
     case L_1_METRIC:
-    {
-      double ret = 0.;
       for(int i=0 ; i < DIM ; ++i)
       {
         ret += axom::utilities::abs( pt[i] );
       }
-      return ret;
-    }
-
+      break;
     case L_2_METRIC:
-      return SpaceVec(pt).norm();
+      ret = SpaceVec(pt).norm();
+      break;
 
     case L_INF_METRIC:
-      return axom::primal::abs( pt.array() ).max();
+      ret = axom::primal::abs( pt.array() ).max();
+      break;
     }
+    
+    return ret;
   }
 
 private:
@@ -1337,9 +1338,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
         // Check that we were able to reverse the xform
         EXPECT_TRUE(found);
-        for(int i=0 ; i< DIM ; ++i)
+        for(int d=0 ; d< DIM ; ++d)
         {
-          EXPECT_NEAR(origIsoPt[i],isoPt[i], ::EPS);
+          EXPECT_NEAR(origIsoPt[d],isoPt[d], ::EPS);
         }
 
         int idx = cmesh.getCellLinearIndex(i,j);
