@@ -156,7 +156,7 @@ public:
    * \return status true if empty, else, false.
    */
   inline bool empty() const
-  { return ( m_name2idx.empty() ); }
+  { return ( m_fields.empty() ); }
 
   /*!
    * \brief Checks if the field with the given name exists.
@@ -164,7 +164,7 @@ public:
    * \return status true if the field exists, else, false.
    */
   inline bool hasField( const std::string& name ) const
-  { return ( m_name2idx.find( name ) != m_name2idx.end() ); }
+  { return ( m_fields.find( name ) != m_fields.end() ); }
 
   /*!
    * \brief Returns the number of fields of this FieldData instance.
@@ -172,7 +172,7 @@ public:
    * \post N == 0 \iff this->empty() == true.
    */
   inline int getNumFields( ) const
-  { return static_cast< int >( m_name2idx.size() ); }
+  { return static_cast< int >( m_fields.size() ); }
 
   /*!
    * \brief Returns the number of tuples in this FieldData instance.
@@ -310,16 +310,18 @@ public:
 
   inline Field* getField( int i )
   {
-    auto it = m_name2idx.begin( );
-    std::advance( it, i );
-    return getField( it->first );
+    const FieldData* const_this = this;
+    return const_cast< Field* >( const_this->getField( i ) );
   }
 
   inline const Field* getField( int i ) const
   {
-    auto it = m_name2idx.begin( );
+    SLIC_ASSERT( i < static_cast< int >( m_fields.size() ) );
+    std::map< std::string, Field*>::const_iterator it = m_fields.begin( );
     std::advance( it, i );
-    return getField( it->first );
+    SLIC_ASSERT( it != m_fields.end() );
+    SLIC_ASSERT( it->second != AXOM_NULLPTR );
+    return it->second;
   }
 
   /// @}
@@ -330,23 +332,28 @@ public:
    * \param [in] name the name of the field in query.
    * \return f pointer to the field in query.
    *
-   * \pre this->hasField( name )==true.
    * \post f == AXOM_NULLPTR \iff this->hasField( name )==false.
    */
   /// @{
 
   inline Field* getField( const std::string& name )
   {
-    SLIC_ASSERT( hasField( name ) );
-    const int fldId = getFieldIndex( name );
-    return (fldId != INVALID_FIELD_INDEX) ? getFieldAt(fldId) : AXOM_NULLPTR;
+    const FieldData* const_this = this;
+    return const_cast< Field* >( const_this->getField( name ) );
   }
 
   inline const Field* getField( const std::string& name ) const
   {
-    SLIC_ASSERT( hasField( name ) );
-    const int fldId = getFieldIndex( name );
-    return (fldId != INVALID_FIELD_INDEX) ? getFieldAt(fldId) : AXOM_NULLPTR;
+    std::map< std::string, Field*>::const_iterator it = m_fields.find( name );
+    if ( it == m_fields.end() )
+    {
+      return AXOM_NULLPTR;
+    }
+    else
+    {
+      SLIC_ASSERT( it->second != AXOM_NULLPTR );
+      return it->second;
+    }
   }
 
   /// @}
@@ -474,28 +481,6 @@ private:
 /// \name Private helper methods
 /// @{
 
-  template < typename LAMBDA >
-  void for_all_fields( LAMBDA f ) const
-  {
-    for ( auto it = m_name2idx.begin(); it != m_name2idx.end(); ++it )
-    {
-      const Field* field = m_fields[ it->second ];
-      SLIC_ASSERT( field != AXOM_NULLPTR );
-      f( field );
-    }
-  }
-
-  template < typename LAMBDA >
-  void for_all_fields( LAMBDA f )
-  {
-    for ( auto it = m_name2idx.begin(); it != m_name2idx.end(); ++it )
-    {
-      Field* field = m_fields[ it->second ];
-      SLIC_ASSERT( field != AXOM_NULLPTR );
-      f( field );
-    }
-  }
-
   /*!
    * \brief Deletes all fields associated with this FieldData instance.
    *
@@ -507,54 +492,12 @@ private:
   void clear();
 
   /*!
-   * \brief Returns the internal index of the field with the given name.
-   *
-   * \param [in] name the name of the field in query.
-   * \return index the corresponding field index
-   *
-   * \warning INVALID_FIELD_INDEX will be returned if a field with the supplied
-   *  name does not exit in this container instance.
-   *
-   * \pre hasField( name ) == true
-   * \post index >= 0 && index < m_fields.size()
-   * \post m_fields[ index ] != AXOM_NULLPTR
-   */
-  inline int getFieldIndex( const std::string& name ) const
-  { return ( hasField( name ) ? m_name2idx.at(name) : INVALID_FIELD_INDEX ); }
-
-  /*!
-   * \brief Returns the Field object at the given index.
-   *
-   * \param [in] fieldIndex the index of the field in query.
-   * \return f pointer to the field object at the given index.
-   *
-   * \pre fieldIndex >= 0 && fieldIndex < m_fields.size()
-   * \post f != AXOM_NULLPTR
-   */
-  inline Field* getFieldAt( int fieldIndex ) const
-  {
-    // sanity checks
-    SLIC_ASSERT( (fieldIndex >= 0) &&
-                 (fieldIndex < static_cast< int >( m_fields.size() ) ) );
-    SLIC_ASSERT( m_fields[ fieldIndex ] != AXOM_NULLPTR );
-    return ( m_fields[ fieldIndex ] );
-  }
-
-  /*!
-   * \brief Returns the index at which a new field can be stored.
-   *
-   * \return index the location at which a new field may be stored.
-   * \post m_fields[ index ] == AXOM_NULLPTR
-   */
-  inline int getNewFieldIndex( );
-
-  /*!
    * \brief Returns a string representation of the association name.
    *
    * \return name the string association name.
    * \post name.empty() == false
    */
-  inline std::string getAssociationName( );
+  inline std::string getAssociationName();
 
   /*!
    * \brief Removes the field at the given field index.
@@ -569,9 +512,7 @@ private:
 /// @}
 
   int m_association;
-  std::vector< Field* > m_fields;
-  std::vector< int > m_nextidx;
-  std::map< std::string, int > m_name2idx;
+  std::map< std::string, Field* > m_fields;
 
 #ifdef MINT_USE_SIDRE
   sidre::Group* m_fields_group;
@@ -586,30 +527,6 @@ private:
 //------------------------------------------------------------------------------
 //  IMPLEMENTATION OF TEMPLATE & IN-LINE METHODS
 //------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-inline int FieldData::getNewFieldIndex( )
-{
-  int nextIdx = INVALID_FIELD_INDEX;
-
-  if ( m_nextidx.empty() )
-  {
-    // no empty slots, append to the vector
-    m_fields.push_back( AXOM_NULLPTR );
-    nextIdx = m_fields.size() - 1;
-  } // END if
-  else
-  {
-    // use an empty slot
-    nextIdx = m_nextidx.back();
-    m_nextidx.pop_back();
-
-    // ensure the object on that slot is NULL
-    SLIC_ASSERT( m_fields[ nextIdx ] == AXOM_NULLPTR );
-  } // END else
-
-  return nextIdx;
-}
 
 //------------------------------------------------------------------------------
 inline std::string FieldData::getAssociationName( )
@@ -672,16 +589,9 @@ inline T* FieldData::getFieldPtr( const std::string& name,
                                   IndexType& num_tuples,
                                   IndexType& num_components )
 {
-  SLIC_ERROR_IF( !hasField(name), "field [" << name << "] does not exist!" );
-
-  mint::Field* f = getField( name );
-  SLIC_ASSERT( f != AXOM_NULLPTR );
-
-  num_tuples     = f->getNumTuples();
-  num_components = f->getNumComponents( );
-  SLIC_ASSERT( num_components >= 1 );
-
-  return mint::Field::getDataPtr< T >( f );
+  const FieldData * const_this = this;
+  return const_cast< T* >( const_this->getFieldPtr< T >( name, num_tuples, 
+                                                         num_components ) );
 }
 
 //------------------------------------------------------------------------------
@@ -733,13 +643,6 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
     capacity = num_tuples;
   }
 
-  int fldIdx = getNewFieldIndex( );
-  SLIC_ASSERT( ( fldIdx >= 0 ) &&
-               ( fldIdx < static_cast< int >( m_fields.size() ) ) );
-  SLIC_ASSERT( m_fields[ fldIdx ] == AXOM_NULLPTR );
-
-  m_name2idx[ name ] = fldIdx;
-
   mint::Field* newField = AXOM_NULLPTR;
 #ifdef MINT_USE_SIDRE
   // create the field on sidre
@@ -771,9 +674,9 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
 
   SLIC_ASSERT( newField != AXOM_NULLPTR );
   newField->setResizeRatio( ratio );
-  m_fields[ fldIdx ] = newField;
+  m_fields[ name ] = newField;
 
-  return ( mint::Field::getDataPtr< T >( m_fields[ fldIdx ] ) );
+  return ( mint::Field::getDataPtr< T >( newField ) );
 }
 
 //------------------------------------------------------------------------------
@@ -790,16 +693,11 @@ inline T* FieldData::createField( const std::string& name, T* data,
     capacity = num_tuples;
   }
 
-  int fldIdx = getNewFieldIndex( );
-  SLIC_ASSERT( ( fldIdx >= 0 ) &&
-               ( fldIdx < static_cast< int >( m_fields.size() ) ) );
-  SLIC_ASSERT( m_fields[ fldIdx ] == AXOM_NULLPTR );
+  Field* field =  new mint::FieldVariable< T >( name, data, num_tuples, 
+                                                num_components, capacity );
+  m_fields[ name ] = field;
 
-  m_name2idx[ name ] = fldIdx;
-  m_fields[ fldIdx ] =
-    new mint::FieldVariable< T >( name, data, num_tuples, num_components, capacity );
-
-  return ( mint::Field::getDataPtr< T >( m_fields[ fldIdx ] ) );
+  return ( mint::Field::getDataPtr< T >( field ) );
 }
 
 } /* namespace mint */

@@ -65,7 +65,7 @@ mint::Field* getFieldFromView( const std::string& name, sidre::View* view )
     SLIC_ERROR( "Encountered unsupported type [" << view->getTypeID() << "]" );
   } // END switch
 
-  SLIC_ERROR_IF( (f==AXOM_NULLPTR), "null field!" );
+  SLIC_ERROR_IF( f == AXOM_NULLPTR, "null field!" );
   return ( f );
 }
 
@@ -89,9 +89,7 @@ void removeFromSidre( sidre::Group* grp, const std::string& name )
 //------------------------------------------------------------------------------
 FieldData::FieldData( int association ) :
     m_association( association ),
-    m_fields(),
-    m_nextidx(),
-    m_name2idx()
+    m_fields()
 {
 #ifdef MINT_USE_SIDRE
   m_fields_group = AXOM_NULLPTR;
@@ -107,8 +105,6 @@ FieldData::FieldData( int association ) :
 FieldData::FieldData( int association, sidre::Group* fields_group, const std::string& topo ) :
     m_association( association ),
     m_fields(),
-    m_nextidx(),
-    m_name2idx(),
     m_fields_group( fields_group ),
     m_topology( topo )
 {
@@ -167,10 +163,6 @@ FieldData::FieldData( int association, sidre::Group* fields_group, const std::st
       SLIC_ERROR_IF( hasField( name ), "Encountered a duplicate field!" );
 
       sidre::View* view = gp->getView( "values" );
-      const int fldIdx = getNewFieldIndex();
-      SLIC_ASSERT( ( fldIdx >= 0 ) &&
-                  ( fldIdx < static_cast< int >( m_fields.size() ) ) );
-
       Field* field = internal::getFieldFromView( name, view );
       if ( num_tuples == -1 )
       {
@@ -179,8 +171,7 @@ FieldData::FieldData( int association, sidre::Group* fields_group, const std::st
 
       SLIC_ERROR_IF( field->getNumTuples() != num_tuples, "Inconsistent number of tuples" );
 
-      m_fields[ fldIdx ] = field;
-      m_name2idx[ name ] = fldIdx;
+      m_fields[ name ] = field;
     } // END if centering
   } // END for all fields
 }
@@ -189,123 +180,120 @@ FieldData::FieldData( int association, sidre::Group* fields_group, const std::st
 //------------------------------------------------------------------------------
 IndexType FieldData::getNumTuples() const
 {
-  const int numFields = getNumFields( );
+  const int numFields = getNumFields();
   if ( numFields == 0 )
   {
     return 0;
   }
 
-  const Field* first_field = m_fields[ m_name2idx.begin()->second ];
-  SLIC_ASSERT( first_field != AXOM_NULLPTR );
-  IndexType num_tuples = first_field->getNumTuples();
-  
-  for_all_fields( [num_tuples]( const Field* field )
-  {
-    SLIC_ERROR_IF( field->getNumTuples() != num_tuples, "Inconsistent number of tuples" );
-  });
+  IndexType num_tuples = getField(0)->getNumTuples();
+  bool status = true;
 
-  return num_tuples;
+  for ( int i = 1; i < numFields; ++i )
+  {
+    const Field* f = getField( i );
+    status &= f->getNumTuples() == num_tuples; 
+  }
+
+  SLIC_WARNING_IF( !status, "Inconsistent number of tuples." ); 
+  return status ? num_tuples : -1;
 }
 
 //------------------------------------------------------------------------------
 IndexType FieldData::getCapacity() const
 {
-  IndexType min_capacity = std::numeric_limits< IndexType >::max(); 
-  for_all_fields( [&min_capacity]( const Field* field )
+  const int numFields = getNumFields();
+  if ( numFields == 0 )
   {
-    if ( field->getCapacity() < min_capacity )
-    {
-      min_capacity = field->getCapacity();
-    }
-  });
+    return 0;
+  }
+
+  IndexType min_capacity = std::numeric_limits< IndexType >::max(); 
+  for ( int i = 0; i < numFields; ++i )
+  {
+    const Field* f = getField( i );
+    const IndexType f_capacity = f->getCapacity();
+    min_capacity = (f_capacity < min_capacity) ? f_capacity : min_capacity;
+  }
 
   return min_capacity;
 }
 
-
 //------------------------------------------------------------------------------
 void FieldData::clear()
 {
-  for ( size_t i=0; i < m_fields.size(); ++i )
+  const int numFields = getNumFields();
+  for ( int i = 0; i < numFields; ++i )
   {
-     if ( m_fields[ i ] != AXOM_NULLPTR )
-     {
-       delete m_fields[ i ] ;
-       m_fields[ i ] = AXOM_NULLPTR;
-     }
-
-  } // END for all fields
+    delete getField( i );
+  }
 
   m_fields.clear( );
-  m_nextidx.clear( );
-  m_name2idx.clear( );
 }
 
 //------------------------------------------------------------------------------
 void FieldData::resize( IndexType newNumTuples )
 {
-  for_all_fields( [ newNumTuples ]( Field* field )
+  const IndexType numFields = getNumFields();
+  for ( int i = 0; i < numFields; ++i )
   {
-    field->resize( newNumTuples );
-  });
+    getField( i )->resize( newNumTuples );
+  };
 }
 
 //------------------------------------------------------------------------------
 void FieldData::reserveForInsert( IndexType pos, IndexType num_tuples )
 {
-  for_all_fields( [ pos, num_tuples ]( Field* field )
+  const IndexType numFields = getNumFields();
+  for ( int i = 0; i < numFields; ++i )
   {
-    field->reserveForInsert( pos, num_tuples );
-  });
+    getField( i )->reserveForInsert( pos, num_tuples );
+  };
 }
 
 //------------------------------------------------------------------------------
 void FieldData::reserve( IndexType newCapacity )
 {
-  for_all_fields( [ newCapacity ]( Field* field )
+  const IndexType numFields = getNumFields();
+  for ( int i = 0; i < numFields; ++i )
   {
-    field->reserve( newCapacity );
-  });
+    getField( i )->reserve( newCapacity );
+  };
 }
 
 //------------------------------------------------------------------------------
 void FieldData::shrink()
 {
-  for_all_fields( []( Field* field )
+  const IndexType numFields = getNumFields();
+  for ( int i = 0; i < numFields; ++i )
   {
-    field->shrink();
-  });
+    getField( i )->shrink();
+  };
 }
 
 //------------------------------------------------------------------------------
 void FieldData::setResizeRatio( double ratio )
 {
-  for_all_fields( [ ratio ]( Field* field )
+  const IndexType numFields = getNumFields();
+  for ( int i = 0; i < numFields; ++i )
   {
-    field->setResizeRatio( ratio );
-  });
+    getField( i )->setResizeRatio( ratio );
+  };
 }
-
 
 //------------------------------------------------------------------------------
 void FieldData::removeField( const std::string& name )
 {
-  SLIC_ERROR_IF( name.empty(), "field name cannot be empty!" );
-  SLIC_ERROR_IF( !hasField( name ),
-                "cannot remove field [" << name << "]; field does not exist!");
-
-  const int fldIdx = this->getFieldIndex( name );
-  SLIC_ERROR_IF( fldIdx==INVALID_FIELD_INDEX,
-                "cannot remove field [" << name << "]; invalid field index!");
-
-  removeFieldAt( fldIdx );
-  m_name2idx.erase( name );
+  mint::Field* f = getField( name );
+  SLIC_ASSERT( f != AXOM_NULLPTR );
+  m_fields.erase( name );
+  delete f;
 
 #ifdef MINT_USE_SIDRE
   if ( hasSidreGroup() && m_fields_group->hasChildGroup(name) )
   {
     internal::removeFromSidre( m_fields_group, name );
-    SLIC_ASSERT( ! m_fields_group->hasChildGroup( name ) );
+    SLIC_ASSERT( !m_fields_group->hasChildGroup( name ) );
   }
 #endif
 }
@@ -313,25 +301,9 @@ void FieldData::removeField( const std::string& name )
 //------------------------------------------------------------------------------
 void FieldData::removeField( int i )
 {
-  SLIC_ERROR_IF( (i < 0) && (i >= getNumFields() ),
-                "specified field index is out-of-bounds!" );
-
   mint::Field* f = getField( i );
-  SLIC_ASSERT( f != AXOM_NULLPTR );
-
   removeField( f->getName() );
   f = AXOM_NULLPTR;
-}
-
-//------------------------------------------------------------------------------
-void FieldData::removeFieldAt( int i )
-{
-  SLIC_ASSERT( ( i >= 0 ) && ( i < static_cast< int >(m_fields.size() ) ) );
-  SLIC_ASSERT( m_fields[ i ] != AXOM_NULLPTR );
-
-  delete m_fields[ i ];
-  m_fields[ i ] = AXOM_NULLPTR;
-  m_nextidx.push_back( i );
 }
 
 } /* namespace mint */
