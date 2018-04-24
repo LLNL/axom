@@ -114,6 +114,12 @@ void create_scalar_data( Mesh* mesh )
     int_ptr[ idx ] = static_cast<int>(temp);
   }
 
+  /* Particle meshes can only have node centered fields. */
+  if ( mesh->getMeshType() == PARTICLE_MESH )
+  {
+    return;
+  }
+
   double_ptr = mesh->createField< double >( "cell_scalars_double",
                                             mint::CELL_CENTERED  );
 
@@ -180,6 +186,12 @@ void create_vector_data( Mesh* mesh )
 
     int_ptr2[ 2 * idx ] = static_cast<int>(v1);
     int_ptr2[ 2 * idx + 1 ] = static_cast<int>(v2);
+  }
+
+  /* Particle meshes can only have node centered fields. */
+  if ( mesh->getMeshType() == PARTICLE_MESH )
+  {
+    return;
   }
 
   double_ptr3 = mesh->createField< double >( "cell_vectors_3double",
@@ -253,6 +265,12 @@ void create_multidim_data( Mesh* mesh )
     int_ptr[4 * idx + 1] = static_cast<int>(v2);
     int_ptr[4 * idx + 2] = static_cast<int>(v3);
     int_ptr[4 * idx + 3] = static_cast<int>(v4);
+  }
+
+  /* Particle meshes can only have node centered fields. */
+  if ( mesh->getMeshType() == PARTICLE_MESH )
+  {
+    return;
   }
 
   double_ptr = mesh->createField< double >( "cell_multidim_double",
@@ -1468,9 +1486,9 @@ TEST( mint_util_write_vtk, ParticleMesh3D )
   const IndexType nParticles = 1000;
   ParticleMesh* p_mesh = new ParticleMesh( 3, nParticles );
 
-  double* x = p_mesh->getParticlePositions( X_COORDINATE );
-  double* y = p_mesh->getParticlePositions( Y_COORDINATE );
-  double* z = p_mesh->getParticlePositions( Z_COORDINATE );
+  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
+  double* y = p_mesh->getCoordinateArray( Y_COORDINATE );
+  double* z = p_mesh->getCoordinateArray( Z_COORDINATE );
 
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
@@ -1503,8 +1521,8 @@ TEST( mint_util_write_vtk, ParticleMesh2D )
   const IndexType nParticles = 1000;
   ParticleMesh* p_mesh = new ParticleMesh( 2, nParticles );
 
-  double* x = p_mesh->getParticlePositions( X_COORDINATE );
-  double* y = p_mesh->getParticlePositions( Y_COORDINATE );
+  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
+  double* y = p_mesh->getCoordinateArray( Y_COORDINATE );
 
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
@@ -1536,7 +1554,7 @@ TEST( mint_util_write_vtk, ParticleMesh1D )
   const IndexType nParticles = 1000;
   ParticleMesh* p_mesh = new ParticleMesh( 1, nParticles );
 
-  double* x = p_mesh->getParticlePositions( X_COORDINATE );
+  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
 
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {

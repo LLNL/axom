@@ -110,8 +110,8 @@ void ParticleMesh::initialize( )
 {
   SLIC_ASSERT( m_positions != AXOM_NULLPTR );
 
-  m_num_nodes             = m_positions->numNodes();
-  m_num_cells             = m_num_nodes;
+  m_mesh_fields[ CELL_CENTERED ]->reserve( getNodeCapacity() );
+  m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfNodes() );
   m_explicit_coords       = true;
   m_explicit_connectivity = false;
   m_has_mixed_topology    = false;
@@ -126,20 +126,7 @@ ParticleMesh::~ParticleMesh()
 
 //------------------------------------------------------------------------------
 bool ParticleMesh::checkConsistency()
-{
-  bool status = ( m_num_cells==m_num_nodes );
-  status = status && (m_positions->numNodes()==m_num_nodes);
-
-  const int numFields = m_mesh_fields[ NODE_CENTERED ]->getNumFields();
-  for ( int i=0; status && (i < numFields); ++i )
-  {
-    mint::Field* f = m_mesh_fields[ NODE_CENTERED ]->getField( i );
-    status = status && ( f != AXOM_NULLPTR );
-    status = status && ( f->getNumTuples()==m_num_nodes );
-  }
-
-  return status;
-}
+{ return getNumberOfNodes() == m_mesh_fields[ NODE_CENTERED ]->getNumTuples(); }
 
 } /* namespace mint */
 } /* namespace axom */

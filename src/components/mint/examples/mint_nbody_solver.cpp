@@ -79,11 +79,11 @@ int main ( int argc, char** argv )
 
   initialize( particles );
 
-  double* px = particles.getParticlePositions( mint::X_COORDINATE );
-  double* py = particles.getParticlePositions( mint::Y_COORDINATE );
-  double* pz = particles.getParticlePositions( mint::Z_COORDINATE );
+  double* px = particles.getCoordinateArray( mint::X_COORDINATE );
+  double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
+  double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
-  const mint::IndexType numParticles = particles.getNumParticles();
+  const mint::IndexType numParticles = particles.getNumberOfNodes();
 
   // STEP 2: time march
   const double& dt = Arguments.dt;
@@ -122,14 +122,14 @@ void apply_forces( mint::ParticleMesh& particles, double dt )
 {
   const double ptiny = 1.e-9;
 
-  const mint::IndexType numParticles = particles.getNumParticles();
+  const mint::IndexType numParticles = particles.getNumberOfNodes();
 
   double* vx = particles.getFieldPtr< double >( "vx", mint::NODE_CENTERED );
   double* vy = particles.getFieldPtr< double >( "vy", mint::NODE_CENTERED );
   double* vz = particles.getFieldPtr< double >( "vz", mint::NODE_CENTERED );
-  double* px = particles.getParticlePositions( mint::X_COORDINATE );
-  double* py = particles.getParticlePositions( mint::Y_COORDINATE );
-  double* pz = particles.getParticlePositions( mint::Z_COORDINATE );
+  double* px = particles.getCoordinateArray( mint::X_COORDINATE );
+  double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
+  double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
   for ( mint::IndexType i=0; i < numParticles; ++i )
   {
@@ -166,14 +166,14 @@ void initialize( mint::ParticleMesh& particles )
   const double LO = Arguments.domain_min;
   const double HI = Arguments.domain_max;
 
-  mint::IndexType numParticles = particles.getNumParticles();
+  mint::IndexType numParticles = particles.getNumberOfNodes();
 
   double* vx = particles.getFieldPtr< double >( "vx", mint::NODE_CENTERED );
   double* vy = particles.getFieldPtr< double >( "vy", mint::NODE_CENTERED );
   double* vz = particles.getFieldPtr< double >( "vz", mint::NODE_CENTERED );
-  double* px = particles.getParticlePositions( mint::X_COORDINATE );
-  double* py = particles.getParticlePositions( mint::Y_COORDINATE );
-  double* pz = particles.getParticlePositions( mint::Z_COORDINATE );
+  double* px = particles.getCoordinateArray( mint::X_COORDINATE );
+  double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
+  double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
   for ( mint::IndexType i=0; i < numParticles; ++i )
   {

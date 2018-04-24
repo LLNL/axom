@@ -68,6 +68,27 @@ public:
    */
   inline double getCoordinate( int dim, IndexType i ) const;
 
+
+  virtual double* getCoordinateArray( int dim ) final override;
+
+  virtual const double* getCoordinateArray( int dim ) const final override;
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \note provided only for convenience, do not use inside a loop. Instead use
+   *  getCoordinate() or getCoordinateArray() methods to calculate the nodal 
+   *  coordinates.
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* node ) const override final;
+
 private:
 
   Array< double >* m_coordinates[3];
@@ -97,6 +118,52 @@ inline double RectilinearMesh::getCoordinate( int dim, IndexType i ) const
   SLIC_ASSERT( i >= 0 && i < m_coordinates[ dim ]->size() );
 
   return (*m_coordinates[ dim ])( i );
+}
+
+//------------------------------------------------------------------------------
+inline double* RectilinearMesh::getCoordinateArray( int dim )
+{
+  SLIC_ASSERT( 0 <= dim && dim < getDimension() );
+  SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
+  return m_coordinates[ dim ]->getData();
+}
+
+//------------------------------------------------------------------------------
+inline const double* RectilinearMesh::getCoordinateArray( int dim ) const
+{
+  SLIC_ASSERT( 0 <= dim && dim < getDimension() );
+  SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
+  return m_coordinates[ dim ]->getData();
+}
+
+//------------------------------------------------------------------------------
+inline void RectilinearMesh::getNode( IndexType nodeID, double* node ) const
+{
+  SLIC_ASSERT( 0 <= nodeID && nodeID < getNumberOfNodes() );
+  SLIC_ASSERT( node != AXOM_NULLPTR );
+
+  const int n_dims = getDimension();
+  IndexType gridIndices[3];
+
+  if ( n_dims == 1 )
+  {
+    node[ 0 ] = getCoordinate( 0, nodeID );
+    return;
+  }
+  else if ( n_dims == 2 )
+  {
+    m_extent.getGridIndex( nodeID, gridIndices[0], gridIndices[1] );
+  }
+  else
+  {
+    SLIC_ASSERT( n_dims == 3 );
+    m_extent.getGridIndex( nodeID, gridIndices[0], gridIndices[1], gridIndices[2] );
+  }
+
+  for ( int dim = 0; dim < n_dims; ++dim )
+  {
+    node[ dim ] = getCoordinate( dim, gridIndices[ dim ] );
+  }
 }
 
 } /* namespace mint */

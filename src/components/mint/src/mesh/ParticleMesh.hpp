@@ -147,6 +147,7 @@ public:
 
 /// @}
 
+#ifdef MINT_USE_SIDRE
 /// \name Sidre Storage Constructors
 /// @{
 
@@ -222,24 +223,129 @@ public:
 
 /// @}
 
+#endif  /* MINT_USE_SIDRE */
+
+
   /*!
    * \brief Destructor.
    */
   virtual ~ParticleMesh();
 
-  /*!
-   * \brief Returns the total number of particles in this mesh instance.
-   * \return N the total number of particles.
-   */
-  inline IndexType getNumParticles() const
-  { return m_num_nodes; }
+/// \name Attribute Querying Methods
+/// @{
+
+/// \name Cells
+/// @{
 
   /*!
-   * \brief The max particle capacity that this ParticleMesh instance can hold
-   * \return N the particle capacity
+   * \brief Return the number of cells in the mesh.
    */
-  inline IndexType capacity( ) const
-  { return m_positions->capacity(); };
+  virtual IndexType getNumberOfCells() const final override
+  { return getNumberOfNodes(); }
+
+  /*!
+   * \brief Return the capacity for cells.
+   */
+  virtual IndexType getCellCapacity() const final override
+  { return getNodeCapacity(); }
+
+  /*!
+   * \brief Return the cell resize ratio.
+   */
+  virtual double getCellResizeRatio() const final override
+  { return getNodeResizeRatio(); }
+
+/// @}
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the number of nodes in the mesh.
+   */
+  virtual IndexType getNumberOfNodes() const final override
+  { return m_positions->numNodes(); }
+
+  /*!
+   * \brief Return the capacity for nodes.
+   */
+  virtual IndexType getNodeCapacity() const final override
+  { return m_positions->capacity(); }
+
+  /*!
+   * \brief Return the node resize ratio.
+   */
+  virtual double getNodeResizeRatio() const final override
+  { return m_positions->getResizeRatio(); }
+
+/// @}
+
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Return the number of faces in the mesh.
+   */
+  virtual IndexType getNumberOfFaces() const final override
+  { return 0; }
+
+  /*!
+   * \brief Return the capacity for faces.
+   */
+  virtual IndexType getFaceCapacity() const final override
+  { return 0; }
+
+  /*!
+   * \brief Return the face resize ratio.
+   */
+  virtual double getFaceResizeRatio() const final override
+  { return 0; }
+
+/// @}
+
+/// \name Edges
+/// @{
+
+  /*!
+   * \brief Return the number of edges in the mesh.
+   */
+  virtual IndexType getNumberOfEdges() const final override
+  { return 0; }
+
+  /*!
+   * \brief Return the capacity for edges.
+   */
+  virtual IndexType getEdgeCapacity() const final override
+  { return 0; }
+
+  /*!
+   * \brief Return the edge resize ratio.
+   */
+  virtual double getEdgeResizeRatio() const final override
+  { return 0.0; }
+
+/// @}
+
+  /*!
+   * \brief Return true iff the mesh holds no particles.
+   */
+  bool empty() const
+  { return m_positions->empty(); }
+
+  /*!
+   * \brief Return true iff both the particle positions are stored in
+   *  external arrays.
+   */
+  bool isExternal() const
+  { return m_positions->isExternal(); }
+
+  /*!
+   * \brief Return true iff the particle positions are stored in sidre.
+   */
+  bool isInSidre() const
+  { return m_positions->isInSidre(); }
+
+/// @}
 
   /*!
    * \brief Returns pointer to the particle positions in the specified dimension
@@ -252,13 +358,37 @@ public:
    */
   /// @{
 
-  inline double* getParticlePositions( int dim )
+  virtual double* getCoordinateArray( int dim ) final override
   { return m_positions->getCoordinateArray( dim ); }
 
-  inline const double* getParticlePositions( int dim ) const
+  virtual const double* getCoordinateArray( int dim ) const final override
   { return m_positions->getCoordinateArray( dim ); }
 
   /// @}
+
+/// \name Data Accessor Methods
+/// @{
+
+  virtual void getNode( IndexType nodeID, double* node ) const override final
+  { m_positions->getCoordinates( nodeID, node ); }
+
+  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
+                                                          const override final
+  { return 1; }
+
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
+                                                          const override final;
+
+  virtual CellType getCellType() const override final
+  { return VERTEX; }
+
+  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
+                                                            const override final
+  { return VERTEX; }
+  
+
+/// @}
+
 
 /// \name Append Methods
 /// @{
@@ -274,9 +404,9 @@ public:
    */
   /// @{
 
-  inline void append( double x );
-  inline void append( double x, double y );
-  inline void append( double x, double y, double z );
+  void append( double x );
+  void append( double x, double y );
+  void append( double x, double y, double z );
 
   /// @}
 
@@ -290,13 +420,13 @@ public:
    * \param [in] newSize the number of particles this instance will now hold
    * \post getNumParticles() == newSize
    */
-  inline void resize( IndexType newSize );
+  void resize( IndexType newSize );
 
   /*!
    * \brief Increase the max particle capacity of this ParticleMesh instance
    * \param [in] newCapacity
    */
-  inline void reserve( IndexType newCapacity );
+  void reserve( IndexType newCapacity );
 
   /*!
    * \brief Shrinks the max particle capacity to the actual number of particles.
@@ -304,7 +434,7 @@ public:
    * \post getNumParticles() == capacity()
    * \post f->getCapacity()==getNumParticles() for all particle fields.
    */
-  inline void shrink( );
+  void shrink( );
 
 /// @}
 
@@ -331,6 +461,17 @@ private:
 //------------------------------------------------------------------------------
 // IN-LINE METHOD IMPLEMENTATION
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+inline IndexType ParticleMesh::getCell( IndexType cellID, IndexType* cell ) const
+{
+  SLIC_ASSERT( cell != AXOM_NULLPTR );
+  SLIC_ASSERT( 0 <= cellID && cellID <= getNumberOfCells() );
+  cell[0] = cellID;
+  return 1;
+}
+
+//------------------------------------------------------------------------------
 inline void ParticleMesh::append( double x )
 {
   SLIC_ASSERT( m_positions != AXOM_NULLPTR );
@@ -339,7 +480,6 @@ inline void ParticleMesh::append( double x )
 
   m_positions->append( x );
   m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
-  m_num_nodes = m_num_cells = m_positions->numNodes( );
 
   SLIC_ASSERT( checkConsistency() );
 }
@@ -353,7 +493,6 @@ inline void ParticleMesh::append( double x, double y )
 
   m_positions->append( x, y );
   m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
-  m_num_nodes = m_num_cells = m_positions->numNodes( );
 
   SLIC_ASSERT( checkConsistency() );
 }
@@ -367,7 +506,6 @@ inline void ParticleMesh::append( double x, double y, double z )
 
   m_positions->append( x, y, z );
   m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
-  m_num_nodes = m_num_cells = m_positions->numNodes( );
 
   SLIC_ASSERT( checkConsistency() );
 }
@@ -378,7 +516,6 @@ inline void ParticleMesh::resize( IndexType newSize )
   SLIC_ASSERT( m_positions != AXOM_NULLPTR );
   m_positions->resize( newSize );
   m_mesh_fields[ NODE_CENTERED ]->resize( newSize );
-  m_num_nodes = m_num_cells = m_positions->numNodes();
   SLIC_ASSERT( checkConsistency() );
 }
 

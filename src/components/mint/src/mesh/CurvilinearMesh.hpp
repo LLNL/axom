@@ -102,6 +102,40 @@ public:
 
   /// @}
 
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* coords ) const override final
+  { m_coordinates.getCoordinates( nodeID, coords ); }
+
+  /*!
+   * \brief Return a pointer to the array of nodal coordinates of the
+   *  given dimension.
+   *
+   * \param [in] dim the dimension to return.
+   *
+   * \pre 0 <= dim < getDimension()
+   */
+  virtual double* getCoordinateArray( int dim ) final override
+  { return m_coordinates.getCoordinateArray( dim ); }
+
+  /*!
+   * \brief Return a constant pointer to the array of nodal coordinates of the
+   *  given dimension.
+   *
+   * \param [in] dim the dimension to return.
+   *
+   * \pre 0 <= dim < getDimension()
+   */
+  virtual const double* getCoordinateArray( int dim ) const final override
+  { return m_coordinates.getCoordinateArray( dim ); }
 
 private:
 

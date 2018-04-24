@@ -142,7 +142,7 @@ public:
    * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
    *  TOPO == Topology::MIXED.
    */
-  CellType getCellType() const
+  virtual CellType getCellType() const override final
   { return m_cell_connectivity->getIDType(); }
 
   /*!
@@ -153,7 +153,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  CellType getCellType( IndexType cellID ) const
+  virtual CellType getCellType( IndexType cellID ) const override final
   { return m_cell_connectivity->getIDType( cellID ); }
 
   /*!
@@ -164,7 +164,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  int getNumberOfCellNodes( IndexType cellID=0 ) const
+  virtual int getNumberOfCellNodes( IndexType cellID=0 ) const override final
   { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!
@@ -191,7 +191,7 @@ public:
    * \pre cell != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  IndexType getCell( IndexType cellID, IndexType* cell ) const
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const override final
   {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     const IndexType n_cells = getNumberOfCellNodes( cellID );
@@ -249,7 +249,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != AXOM_NULLPTR
    */
-  void getNode( IndexType nodeID, double* coords ) const
+  virtual void getNode( IndexType nodeID, double* coords ) const override final
   { m_coordinates->getCoordinates( nodeID, coords ); }
 
   /*!
@@ -260,7 +260,7 @@ public:
    *
    * \pre 0 <= dim < getDimension()
    */
-  const double* getCoordinateArray( int dim ) const
+  virtual const double* getCoordinateArray( int dim ) const final override
   { return m_coordinates->getCoordinateArray( dim ); } 
 
 /// @}
@@ -296,9 +296,10 @@ public:
    *
    * \pre connec != AXOM_NULLPTR
    */
-  void appendCell( const IndexType* connec, IndexType n_values=-1,
-                   CellType type=UNDEFINED_CELL )
+  void appendCell( const IndexType* connec, CellType type=UNDEFINED_CELL )
   { 
+    IndexType n_values = (type == UNDEFINED_CELL) ? 
+                                                0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->append( connec, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
   }
@@ -337,9 +338,11 @@ public:
    * \pre connec != AXOM_NULLPTR
    * \pre 0 <= ID <= getNumberOfCells()
    */
-  void insertCell( const IndexType* connec, IndexType ID, IndexType n_values=-1,
-                    CellType type=UNDEFINED_CELL ) 
+  void insertCell( const IndexType* connec, IndexType ID,
+                   CellType type=UNDEFINED_CELL ) 
   { 
+    IndexType n_values = (type == UNDEFINED_CELL) ? 
+                                                0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->insert( connec, ID, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->reserveForInsert( ID, 1 );
   }
@@ -635,7 +638,7 @@ public:
    *
    * \pre 0 <= dim < getDimension()
    */
-  double* getCoordinateArray( int dim )
+  virtual double* getCoordinateArray( int dim ) final override
   { return m_coordinates->getCoordinateArray( dim ); }
 
 /// @}
@@ -651,19 +654,19 @@ public:
   /*!
    * \brief Return the number of cells in the mesh.
    */
-  IndexType getNumberOfCells() const
+  virtual IndexType getNumberOfCells() const final override
   { return m_cell_connectivity->getNumberOfIDs(); }
 
   /*!
    * \brief Return the capacity for cells.
    */
-  IndexType getCellCapacity() const
+  virtual IndexType getCellCapacity() const final override
   { return m_cell_connectivity->getIDCapacity(); }
 
   /*!
    * \brief Return the cell resize ratio.
    */
-  double getCellResizeRatio() const
+  virtual double getCellResizeRatio() const final override
   { return m_cell_connectivity->getResizeRatio(); }
 
   /*!
@@ -686,20 +689,84 @@ public:
   /*!
    * \brief Return the number of nodes in the mesh.
    */
-  IndexType getNumberOfNodes() const
+  virtual IndexType getNumberOfNodes() const final override
   { return m_coordinates->numNodes(); }
 
   /*!
    * \brief Return the capacity for nodes.
    */
-  IndexType getNodeCapacity() const
-  { return m_coordinates->capacity(); };
+  virtual IndexType getNodeCapacity() const final override
+  { return m_coordinates->capacity(); }
 
   /*!
    * \brief Return the node resize ratio.
    */
-  double getNodeResizeRatio() const
+  virtual double getNodeResizeRatio() const final override
   { return m_coordinates->getResizeRatio(); }
+
+/// @}
+
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Return the number of faces in the mesh.
+   */
+  virtual IndexType getNumberOfFaces() const final override
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the capacity for faces.
+   */
+  virtual IndexType getFaceCapacity() const final override
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the face resize ratio.
+   */
+  virtual double getFaceResizeRatio() const final override
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0.0;
+  }
+
+/// @}
+
+/// \name Edges
+/// @{
+
+  /*!
+   * \brief Return the number of edges in the mesh.
+   */
+  virtual IndexType getNumberOfEdges() const final override
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the capacity for edges.
+   */
+  virtual IndexType getEdgeCapacity() const final override
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the edge resize ratio.
+   */
+  virtual double getEdgeResizeRatio() const final override
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0.0;
+  }
 
 /// @}
 

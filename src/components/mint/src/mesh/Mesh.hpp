@@ -241,110 +241,86 @@ public:
    * \return N the number of nodes
    * \post N >= 0
    */
-  IndexType getNumberOfNodes() const;
+  virtual IndexType getNumberOfNodes() const = 0;
 
   /*!
    * \brief Returns the number of cells in this mesh instance.
    * \return N the number of cells
    * \post N >= 0
    */
-  IndexType getNumberOfCells() const;
+  virtual IndexType getNumberOfCells() const = 0;
 
   /*!
    * \brief Returns the number of faces in this mesh instance.
    * \return N the number of faces
    * \post N >= 0
    */
-  IndexType getNumberOfFaces() const;
+  virtual IndexType getNumberOfFaces() const = 0;
 
   /*!
    * \brief Returns the number of edges in this mesh instance.
    * \return N the number of edges
    * \post N >= 0
    */
-  IndexType getNumberOfEdges() const;
-
-  /*!
-   * \brief Returns the number of tuples for the given mesh field association.
-   * \param [in] association the mesh field association, e.g., NODE_CENTERED
-   * \return N the number of tuples
-   * \post N >= 0
-   */
-  inline IndexType getNumTuples( int association ) const;
+  virtual IndexType getNumberOfEdges() const = 0;
 
   /*!
    * \brief Returns the capacity for number of nodes in this mesh instance.
    * \return N the node capacity
    * \post N >= 0
    */
-  IndexType getNodeCapacity() const;
+  virtual IndexType getNodeCapacity() const = 0;
 
   /*!
    * \brief Returns the capacity for number of cell in this mesh instance.
    * \return N the cell capacity
    * \post N >= 0
    */
-  IndexType getCellCapacity() const;
+  virtual IndexType getCellCapacity() const = 0;
 
   /*!
    * \brief Returns the capacity for number of faces in this mesh instance.
    * \return N the face capacity
    * \post N >= 0
    */
-  IndexType getFaceCapacity() const;
+  virtual IndexType getFaceCapacity() const = 0;
 
   /*!
    * \brief Returns the capacity for number of edges in this mesh instance.
    * \return N the edge capacity
    * \post N >= 0
    */
-  IndexType getEdgeCapacity() const;
-
-  /*!
-   * \brief Returns the capacity for the given mesh field association.
-   * \param [in] association the mesh field association, e.g., NODE_CENTERED
-   * \return N the capacity
-   * \post N >= 0
-   */
-  inline IndexType getCapacity( int association ) const;
+  virtual IndexType getEdgeCapacity() const = 0;
 
   /*!
    * \brief Returns the node resize ratio for this mesh instance.
    * \return R the node resize ratio
    */
-  double getNodeResizeRatio() const;
+  virtual double getNodeResizeRatio() const = 0;
 
   /*!
    * \brief Returns the cell resize ratio for this mesh instance.
    * \return R the cell resize ratio
    */
-  double getCellResizeRatio() const;
+  virtual double getCellResizeRatio() const = 0;
 
   /*!
    * \brief Returns the face resize ratio for this mesh instance.
    * \return R the face resize ratio
    */
-  double getFaceResizeRatio() const;
+  virtual double getFaceResizeRatio() const = 0;
 
   /*!
    * \brief Returns the edge resize ratio for this mesh instance.
    * \return R the edge resize ratio
    */
-  double getEdgeResizeRatio() const;
-
-  /*!
-   * \brief Returns the resize ratio for the given mesh field association.
-   * \param [in] association the mesh field association, e.g., NODE_CENTERED
-   * \return R the resize ratio
-   * \post N >= 0
-   */
-  inline double getResizeRatio( int association ) const;
+  virtual double getEdgeResizeRatio() const = 0;
 
   /*!
    * \brief Checks if this mesh instance has explicit coordinates.
    * \return status true iff the mesh defines coordinates explicitly.
    */
-  inline bool hasExplicitCoordinates() const
+  inline bool hasExplicitCoordinates() const;
   { return m_explicit_coords; }
 
   /*!
@@ -367,7 +343,7 @@ public:
    * \return status true if the Mesh is associated with a group in a Sidre
    *  hierarchy, else, false.
    */
-  inline bool hasSidreGroup( ) const;
+  inline bool hasSidreGroup() const;
 
 /// @}
 
@@ -386,8 +362,8 @@ public:
    */
   /// @{
 
-  double* getCoordinateArray( int dim );
-  const double* getCoordinateArray( int dim ) const;
+  virtual double* getCoordinateArray( int dim ) = 0;
+  virtual const double* getCoordinateArray( int dim ) const = 0;
 
   /// @}
 
@@ -401,7 +377,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != AXOM_NULLPTR
    */
-  void getNode( IndexType nodeID, double* node ) const;
+  virtual void getNode( IndexType nodeID, double* node ) const = 0;
 
   /*!
    * \brief Return the number of nodes associated with the given cell.
@@ -411,7 +387,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  IndexType getNumberOfCellNodes( IndexType cellID=0 ) const;
+  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -425,13 +401,13 @@ public:
    * \pre cell != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  IndexType getCell( IndexType cellID, IndexType* cell ) const;
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const = 0;
 
   /*!
    * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
    *  hasMixedCellTypes() == true.
    */
-  CellType getCellType() const;
+  virtual CellType getCellType() const = 0;
 
   /*!
    * \brief Return the type of the given cell.
@@ -441,8 +417,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  CellType getCellType( IndexType cellID ) const;
->>>>>>> e69ecff... Mesh changes
+  virtual CellType getCellType( IndexType cellID ) const = 0;
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
 /// @{
@@ -737,13 +712,24 @@ protected:
    * \pre  blueprint::validRootGroup( m_group )
    * \post blueprint::validTopologyGroup( topology )
    */
-  sidre::Group* getTopologyGroup( );
+  sidre::Group* getTopologyGroup();
 
 #endif
 
 /// @}
 
 private:
+
+  /*!
+   * \brief Get the info corresponding to the given mesh field association.
+   *
+   * \param [in] association the mesh field association, e.g., NODE_CENTERED.
+   * \param [out] num_tuples the number of tuples in the associated FieldData.
+   * \param [out] capacity the capacity of the associated FieldData.
+   * \param [out] ratio the resize ratio of the associated FieldData.
+   */
+  void getFieldInfo( int association, IndexType& num_tuples, 
+                     IndexType& capacity, double& ratio ) const;
 
   /*!
    * \brief Helper method to check if the mesh type is valid.

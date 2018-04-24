@@ -47,31 +47,31 @@ void check_constructor( mint::ParticleMesh* particles,
 {
   EXPECT_TRUE( particles != AXOM_NULLPTR );
   EXPECT_EQ( particles->getDimension(), expected_dimension );
-  EXPECT_EQ( particles->getNumParticles(), expected_num_particles );
+  EXPECT_EQ( particles->getNumberOfNodes(), expected_num_particles );
   EXPECT_EQ( particles->getNumberOfCells(), expected_num_particles );
-  EXPECT_TRUE( particles->getNumParticles() <= particles->capacity() );
+  EXPECT_TRUE( particles->getNumberOfNodes() <= particles->getNodeCapacity() );
   EXPECT_EQ( particles->getMeshType(), mint::PARTICLE_MESH );
   EXPECT_TRUE( particles->hasExplicitCoordinates() );
   EXPECT_FALSE( particles->hasExplicitConnectivity() );
   EXPECT_FALSE( particles->hasMixedCellTypes() );
-  EXPECT_EQ( particles->getMeshCellType(), mint::VERTEX );
+  EXPECT_EQ( particles->getCellType(), mint::VERTEX );
 
   mint::IndexType ncells = particles->getNumberOfCells();
   mint::IndexType cell[ 1 ];
   for ( mint::IndexType icell=0; icell < ncells; ++icell )
   {
-    EXPECT_EQ( particles->getMeshCellType( icell ), mint::VERTEX );
+    EXPECT_EQ( particles->getCellType( icell ), mint::VERTEX );
 
-    particles->getMeshCell( icell, cell );
+    particles->getCell( icell, cell );
     EXPECT_EQ( cell[0], icell );
   }
 
   const int ndims = particles->getDimension();
   for ( int idim=0; idim < ndims; ++idim )
   {
-    const mint::IndexType numParticles = particles->getNumParticles();
+    const mint::IndexType numParticles = particles->getNumberOfNodes();
     const mint::IndexType lastParticle = numParticles-1;
-    double* pos = particles->getParticlePositions( idim );
+    double* pos = particles->getCoordinateArray( idim );
     EXPECT_TRUE( pos != AXOM_NULLPTR );
 
     pos[ 0 ] = pos[ lastParticle ] = 42.0;
@@ -87,8 +87,8 @@ void check_resize( mint::ParticleMesh* particles )
   constexpr mint::IndexType NEW_SIZE = 512;
 
   particles->resize( NEW_SIZE );
-  EXPECT_EQ( particles->getNumParticles(), NEW_SIZE );
-  EXPECT_TRUE( particles->getNumParticles() <= particles->capacity() );
+  EXPECT_EQ( particles->getNumberOfNodes(), NEW_SIZE );
+  EXPECT_TRUE( particles->getNumberOfNodes() <= particles->getNodeCapacity() );
 
   // ensure all fiels are resized as well
   const mint::FieldData* fd = particles->getFieldData( mint::NODE_CENTERED );
@@ -96,7 +96,7 @@ void check_resize( mint::ParticleMesh* particles )
   for ( int ifield=0; ifield < fd->getNumFields(); ++ifield )
   {
     const mint::Field* f = fd->getField( ifield );
-    EXPECT_EQ( f->getNumTuples(), particles->getNumParticles() );
+    EXPECT_EQ( f->getNumTuples(), particles->getNumberOfNodes() );
   }
 }
 
@@ -107,8 +107,8 @@ void check_reserve( mint::ParticleMesh* particles )
   constexpr mint::IndexType NEW_CAPACITY = 512;
 
   particles->reserve( NEW_CAPACITY );
-  EXPECT_EQ( particles->capacity(), NEW_CAPACITY );
-  EXPECT_TRUE( particles->getNumParticles() <= particles->capacity() );
+  EXPECT_EQ( particles->getNodeCapacity(), NEW_CAPACITY );
+  EXPECT_TRUE( particles->getNumberOfNodes() <= particles->getNodeCapacity() );
 
   // ensure all fiels are resized as well
   const mint::FieldData* fd = particles->getFieldData( mint::NODE_CENTERED );
@@ -116,7 +116,7 @@ void check_reserve( mint::ParticleMesh* particles )
   for ( int ifield=0; ifield < fd->getNumFields(); ++ifield )
   {
     const mint::Field* f = fd->getField( ifield );
-    EXPECT_EQ( f->getCapacity(), particles->capacity() );
+    EXPECT_EQ( f->getCapacity(), particles->getNodeCapacity() );
   }
 }
 
@@ -127,8 +127,8 @@ void check_shrink( mint::ParticleMesh* particles,
 {
   EXPECT_TRUE( particles != AXOM_NULLPTR );
   EXPECT_TRUE( NUM_PARTICLES > 0 );
-  EXPECT_EQ( particles->getNumParticles(), NUM_PARTICLES );
-  EXPECT_EQ( particles->capacity(), CAPACITY );
+  EXPECT_EQ( particles->getNumberOfNodes(), NUM_PARTICLES );
+  EXPECT_EQ( particles->getNodeCapacity(), CAPACITY );
 
   // ensure all fields have the specified capacity
   const mint::FieldData* fd = particles->getFieldData( mint::NODE_CENTERED );
@@ -136,21 +136,21 @@ void check_shrink( mint::ParticleMesh* particles,
   for ( int ifield=0; ifield < fd->getNumFields(); ++ifield )
   {
     const mint::Field* f = fd->getField( ifield );
-    EXPECT_EQ( f->getCapacity(), particles->capacity() );
-    EXPECT_EQ( f->getNumTuples(), particles->getNumParticles() );
+    EXPECT_EQ( f->getCapacity(), particles->getNodeCapacity() );
+    EXPECT_EQ( f->getNumTuples(), particles->getNumberOfNodes() );
   }
 
   // call shrink
   particles->shrink( );
 
   // check particles
-  EXPECT_EQ( particles->capacity(), particles->getNumParticles() );
+  EXPECT_EQ( particles->getNodeCapacity(), particles->getNumberOfNodes() );
 
   for ( int ifield=0; ifield < fd->getNumFields(); ++ifield )
   {
     const mint::Field* f = fd->getField( ifield );
     EXPECT_EQ( f->getCapacity(), f->getNumTuples() );
-    EXPECT_EQ( f->getNumTuples(), particles->getNumParticles() );
+    EXPECT_EQ( f->getNumTuples(), particles->getNumberOfNodes() );
   }
 
 }
@@ -175,37 +175,37 @@ void check_append( mint::ParticleMesh* particles )
 
   for ( int iter=0; iter < NUM_APPENDS; ++iter )
   {
-    mint::IndexType current_num_particles = particles->getNumParticles();
+    mint::IndexType current_num_particles = particles->getNumberOfNodes();
 
     switch ( dimension )
     {
     case 1:
       particles->append( MAGIC_NUMBER );
-      x    = particles->getParticlePositions( mint::X_COORDINATE );
-      lidx = particles->getNumParticles()-1;
+      x    = particles->getCoordinateArray( mint::X_COORDINATE );
+      lidx = particles->getNumberOfNodes()-1;
       EXPECT_EQ( x[ lidx ], MAGIC_NUMBER );
       break;
     case 2:
       particles->append( MAGIC_NUMBER, MAGIC_NUMBER );
-      lidx = particles->getNumParticles()-1;
-      x    = particles->getParticlePositions( mint::X_COORDINATE );
-      y    = particles->getParticlePositions( mint::Y_COORDINATE );
+      lidx = particles->getNumberOfNodes()-1;
+      x    = particles->getCoordinateArray( mint::X_COORDINATE );
+      y    = particles->getCoordinateArray( mint::Y_COORDINATE );
       EXPECT_EQ( x[ lidx ], MAGIC_NUMBER );
       EXPECT_EQ( y[ lidx ], MAGIC_NUMBER );
       break;
     default:
       EXPECT_TRUE( dimension==3 );
       particles->append( MAGIC_NUMBER, MAGIC_NUMBER, MAGIC_NUMBER );
-      lidx = particles->getNumParticles()-1;
-      x    = particles->getParticlePositions( mint::X_COORDINATE );
-      y    = particles->getParticlePositions( mint::Y_COORDINATE );
-      z    = particles->getParticlePositions( mint::Z_COORDINATE );
+      lidx = particles->getNumberOfNodes()-1;
+      x    = particles->getCoordinateArray( mint::X_COORDINATE );
+      y    = particles->getCoordinateArray( mint::Y_COORDINATE );
+      z    = particles->getCoordinateArray( mint::Z_COORDINATE );
       EXPECT_EQ( x[ lidx ], MAGIC_NUMBER );
       EXPECT_EQ( y[ lidx ], MAGIC_NUMBER );
       EXPECT_EQ( z[ lidx ], MAGIC_NUMBER );
     } // END switch
 
-    EXPECT_EQ( particles->getNumParticles(), current_num_particles+1 );
+    EXPECT_EQ( particles->getNumberOfNodes(), current_num_particles+1 );
 
     // ensure the fields are also resized accordingly when a new particle
     // is appended
@@ -213,15 +213,15 @@ void check_append( mint::ParticleMesh* particles )
     {
       const mint::Field* f = fd->getField( ifield );
       EXPECT_TRUE( f != AXOM_NULLPTR );
-      EXPECT_EQ( f->getNumTuples(), particles->getNumParticles( ) );
+      EXPECT_EQ( f->getNumTuples(), particles->getNumberOfNodes( ) );
     }
 
     // check invariant
-    EXPECT_TRUE( particles->getNumParticles() <= particles->capacity() );
+    EXPECT_TRUE( particles->getNumberOfNodes() <= particles->getNodeCapacity() );
 
     // shrink so that next append triggers a realloc
     particles->shrink();
-    EXPECT_EQ( particles->getNumParticles(), particles->capacity() );
+    EXPECT_EQ( particles->getNumberOfNodes(), particles->getNodeCapacity() );
   }
 
 }
@@ -240,7 +240,7 @@ void check_create_field( mint::ParticleMesh* particles,
   EXPECT_TRUE( particles->hasField( name, assoc) );
 
   f = particles->getFieldData( mint::NODE_CENTERED )->getField( name );
-  EXPECT_EQ( particles->getNumParticles(), f->getNumTuples() );
+  EXPECT_EQ( particles->getNumberOfNodes(), f->getNumTuples() );
   EXPECT_EQ( f->getNumComponents(), numComponents );
   EXPECT_EQ( vel, mint::Field::getDataPtr< double >( f ) );
 }
@@ -281,7 +281,7 @@ TEST( mint_mesh_particle_mesh_DeathTest, invalid_operations )
 {
   const mint::IndexType numParticles = 10;
   mint::ParticleMesh particles( 2, numParticles );
-  EXPECT_DEATH_IF_SUPPORTED(particles.getParticlePositions( mint::Z_COORDINATE),
+  EXPECT_DEATH_IF_SUPPORTED(particles.getCoordinateArray( mint::Z_COORDINATE),
                             IGNORE_OUTPUT );
 
   // creating/accessing anything other than node-centered fields on a particle
@@ -301,21 +301,15 @@ TEST( mint_mesh_particle_mesh_DeathTest, invalid_operations )
   EXPECT_DEATH_IF_SUPPORTED( particles_external.append( 2 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( particles_external.resize( 10 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( particles_external.reserve( 20 ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( particles_external.shrink(), IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_particle_mesh, native_constructor )
 {
   const mint::IndexType numParticles = 10;
-  const int blockId = 42;
-  const int partId  = 42;
-
   for ( int dim=1; dim <= 3; ++dim )
   {
-    mint::ParticleMesh particles( dim, blockId, partId, numParticles );
-    EXPECT_EQ( particles.getBlockId(), blockId );
-    EXPECT_EQ( particles.getPartitionId(), partId );
+    mint::ParticleMesh particles( dim, numParticles );
     check_constructor( &particles, dim, numParticles );
     check_create_field( &particles, "foo", 3 );
     check_create_field( &particles, "bar", 1 );
@@ -336,20 +330,20 @@ TEST( mint_mesh_particle_mesh, external_constructor )
     mint::ParticleMesh particles1d( numParticles, x );
     check_constructor( &particles1d, 1, numParticles );
     check_create_field( &particles1d, "foobar", 4 );
-    EXPECT_EQ( particles1d.getParticlePositions( mint::X_COORDINATE), x );
+    EXPECT_EQ( particles1d.getCoordinateArray( mint::X_COORDINATE), x );
 
     mint::ParticleMesh particles2d( numParticles, x, y );
     check_constructor( &particles2d, 2, numParticles );
     check_create_field( &particles2d, "foobar", 5 );
-    EXPECT_EQ( particles2d.getParticlePositions( mint::X_COORDINATE), x );
-    EXPECT_EQ( particles2d.getParticlePositions( mint::Y_COORDINATE), y );
+    EXPECT_EQ( particles2d.getCoordinateArray( mint::X_COORDINATE), x );
+    EXPECT_EQ( particles2d.getCoordinateArray( mint::Y_COORDINATE), y );
 
     mint::ParticleMesh particles3d( numParticles, x, y, z );
     check_constructor( &particles3d, 3, numParticles );
     check_create_field( &particles3d, "foobar", 1 );
-    EXPECT_EQ( particles3d.getParticlePositions( mint::X_COORDINATE ), x );
-    EXPECT_EQ( particles3d.getParticlePositions( mint::Y_COORDINATE ), y );
-    EXPECT_EQ( particles3d.getParticlePositions( mint::Z_COORDINATE ), z );
+    EXPECT_EQ( particles3d.getCoordinateArray( mint::X_COORDINATE ), x );
+    EXPECT_EQ( particles3d.getCoordinateArray( mint::Y_COORDINATE ), y );
+    EXPECT_EQ( particles3d.getCoordinateArray( mint::Z_COORDINATE ), z );
   }
   // END SCOPE
 
@@ -382,6 +376,8 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
   double z[ ]               = { 1.0, 2.0, 3.0, 4.0 };
   double* data[ 3 ]         = { x, y, z };
   const double MAGIC_NUMBER = 42.0;
+  const int BLOCK_ID = 9;
+  const int PART_ID = 10;
 
   for ( int dim=1; dim <= 3; ++dim )
   {
@@ -392,16 +388,18 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
     // BEGIN SCOPE
     {
       // create a particle mesh on sidre
-      mint::ParticleMesh particles( dim, 9, 9, numParticles, root );
+      mint::ParticleMesh particles( dim, numParticles, root );
+      particles.setBlockId( BLOCK_ID );
+      particles.setPartitionId( PART_ID );
       check_constructor( &particles, dim, numParticles );
       check_create_field( &particles, "foo", 3 );
       EXPECT_TRUE( particles.hasSidreGroup() );
-      EXPECT_EQ( particles.getBlockId(), 9 );
-      EXPECT_EQ( particles.getPartitionId(), 9 );
+      EXPECT_EQ( particles.getBlockId(), BLOCK_ID );
+      EXPECT_EQ( particles.getPartitionId(), PART_ID );
 
       for ( int idim=0; idim < dim; ++idim )
       {
-        double* pos = particles.getParticlePositions( idim );
+        double* pos = particles.getCoordinateArray( idim );
         memcpy( pos, data[ idim ], numParticles*sizeof( double ) );
       }
 
@@ -425,8 +423,8 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
       check_constructor( &particles, dim, numParticles );
       EXPECT_TRUE( particles.hasSidreGroup() );
       EXPECT_TRUE( particles.hasField("foo", mint::NODE_CENTERED ) );
-      EXPECT_EQ( particles.getBlockId(), 9 );
-      EXPECT_EQ( particles.getPartitionId(), 9 );
+      EXPECT_EQ( particles.getBlockId(), BLOCK_ID );
+      EXPECT_EQ( particles.getPartitionId(), PART_ID );
 
       mint::IndexType numComp = -1;
       const double* foo =
@@ -444,7 +442,7 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
       for ( int idim=0; idim < dim; ++idim )
       {
 
-        double* pos = particles.getParticlePositions( idim );
+        double* pos = particles.getCoordinateArray( idim );
         EXPECT_TRUE( pos != AXOM_NULLPTR );
 
         for ( mint::IndexType i=0; i < numParticles; ++i )
@@ -561,8 +559,8 @@ TEST( mint_mesh_particle_mesh, shrink )
   constexpr mint::IndexType NUM_PARTICLES = 10;
   constexpr mint::IndexType CAPACITY      = 512;
   mint::ParticleMesh p1 ( NDIMS, NUM_PARTICLES, CAPACITY );
-  p1.createField< double >( "vel", mint::NODE_CENTERED, 3, true, CAPACITY );
-  p1.createField< int >( "id", mint::NODE_CENTERED, 1, true, CAPACITY  );
+  p1.createField< double >( "vel", mint::NODE_CENTERED, 3, true );
+  p1.createField< int >( "id", mint::NODE_CENTERED, 1, true );
   check_shrink( &p1, NUM_PARTICLES, CAPACITY );
 
 #ifdef MINT_USE_SIDRE
@@ -572,8 +570,8 @@ TEST( mint_mesh_particle_mesh, shrink )
   sidre::Group* root = ds.getRoot();
 
   mint::ParticleMesh p2( NDIMS, NUM_PARTICLES, root, CAPACITY );
-  p2.createField< double >( "vel", mint::NODE_CENTERED, 3, true, CAPACITY );
-  p2.createField< int >( "id", mint::NODE_CENTERED, 1, true, CAPACITY );
+  p2.createField< double >( "vel", mint::NODE_CENTERED, 3, true );
+  p2.createField< int >( "id", mint::NODE_CENTERED, 1, true );
   check_shrink( &p2, NUM_PARTICLES, CAPACITY );
 
 #endif

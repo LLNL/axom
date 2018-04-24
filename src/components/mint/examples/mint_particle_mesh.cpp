@@ -42,7 +42,7 @@ inline double random_double( double min, double max )
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
   using int64 = mint::IndexType;
   const mint::IndexType NUM_PARTICLES = 100;
@@ -65,12 +65,12 @@ int main( int argc, char** argv )
   int64* id  = particles.createField< int64 >( "id", mint::NODE_CENTERED );
 
   // STEP 2: grab handle to the particle position arrays
-  double* px = particles.getParticlePositions( mint::X_COORDINATE );
-  double* py = particles.getParticlePositions( mint::Y_COORDINATE );
-  double* pz = particles.getParticlePositions( mint::Z_COORDINATE );
+  double* px = particles.getCoordinateArray( mint::X_COORDINATE );
+  double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
+  double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
   // STEP 3: loop over the particle data
-  const int64 numParticles = particles.getNumParticles();
+  const int64 numParticles = particles.getNumberOfNodes();
   for ( int64 i=0; i < numParticles; ++i )
   {
 

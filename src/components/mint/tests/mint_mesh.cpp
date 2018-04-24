@@ -40,16 +40,20 @@ TEST( mint_mesh, get_particle_mesh_from_sidre )
   constexpr int DIMENSION = 3;
   constexpr mint::IndexType NUM_PARTICLES = 10;
   constexpr double MAGIC_NUMBER = 42.0;
+  constexpr int BLOCKID = 9;
+  constexpr int PARTID = 10;
 
   // STEP 0: get empty Sidre group where to store the mesh
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
   // STEP 1: populate the group with a particle mesh (positions + fields)
-  mint::ParticleMesh particles( DIMENSION, 9, 9, NUM_PARTICLES, root );
-  double* x = particles.getParticlePositions( mint::X_COORDINATE );
-  double* y = particles.getParticlePositions( mint::Y_COORDINATE );
-  double* z = particles.getParticlePositions( mint::Z_COORDINATE );
+  mint::ParticleMesh particles( DIMENSION, NUM_PARTICLES, root );
+  particles.setBlockId( BLOCKID );
+  particles.setPartitionId( PARTID );
+  double* x = particles.getCoordinateArray( mint::X_COORDINATE );
+  double* y = particles.getCoordinateArray( mint::Y_COORDINATE );
+  double* z = particles.getCoordinateArray( mint::Z_COORDINATE );
 
   double* phi = particles.createField< double >( "phi", mint::NODE_CENTERED );
   mint::IndexType* id =
@@ -68,8 +72,8 @@ TEST( mint_mesh, get_particle_mesh_from_sidre )
 
   // STEP 3: test the object
   EXPECT_EQ( m->getMeshType(), mint::PARTICLE_MESH );
-  EXPECT_EQ( m->getBlockId(), 9 );
-  EXPECT_EQ( m->getPartitionId(), 9 );
+  EXPECT_EQ( m->getBlockId(), BLOCKID );
+  EXPECT_EQ( m->getPartitionId(), PARTID );
   EXPECT_EQ( m->getDimension(), DIMENSION );
   EXPECT_EQ( m->getNumberOfNodes(), NUM_PARTICLES );
   EXPECT_TRUE( m->hasField( "phi", mint::NODE_CENTERED ) );

@@ -42,9 +42,6 @@ public:
    */
   virtual ~StructuredMesh() { }
 
-  /// \name Structured Mesh API
-  /// @{
-
   /*!
    * \brief Returns the dimensions of this mesh instance.
    * \param [in] ndims 3-tuple holding the number of nodes in each dimension.
@@ -74,21 +71,6 @@ public:
    */
   inline IndexType kp() const
   { return m_extent.kp(); }
-
-
-  /*!
-   * \brief Returns the number of cell nodes.
-   * \return N the number of nodes per cell.
-   * \post N=4 if 2-D, else N=8.
-   */
-  inline int getNumberOfCellNodes() const;
-
-  /*!
-   * \brief Returns the cell type.
-   * \return ctype the cell type
-   * \see CellType.hpp
-   */
-  inline int getCellType( ) const;
 
   /*!
    * \brief Returns the linear index corresponding to the given logical indices.
@@ -135,21 +117,165 @@ public:
   inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const
   { return m_extent.getCellLinearIndex( i, j ); };
 
+
+
+
+/// \name Attribute Querying Methods
+/// @{
+
+/// \name Cells
+/// @{
+
   /*!
-   * \brief Returns the cell connectivity for the given cell.
-   * \param [in] cellIdx the index of the cell in query.
-   * \param [out] cell pointer to buffer to populate with the cell connectivity.
-   * \pre cellIdx >= 0 && cellIdx < getNumberOfCells()
-   * \pre the user-supplied cell buffer must be of getNumberOfCellNodes() size.
+   * \brief Return the number of cells in the mesh.
    */
-  inline void getCell( IndexType cellIdx, IndexType* cell ) const;
+  virtual IndexType getNumberOfCells() const final override
+  { return m_extent.getNumCells(); }
+
+  /*!
+   * \brief Return the capacity for cells.
+   */
+  virtual IndexType getCellCapacity() const final override
+  { return getNumberOfCells(); }
+
+  /*!
+   * \brief Return the cell resize ratio.
+   */
+  virtual double getCellResizeRatio() const final override
+  { return 1.0; }
+
+/// @}
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the number of nodes in the mesh.
+   */
+  virtual IndexType getNumberOfNodes() const final override
+  { return m_extent.getNumNodes(); }
+
+  /*!
+   * \brief Return the capacity for nodes.
+   */
+  virtual IndexType getNodeCapacity() const final override
+  { return getNumberOfNodes(); }
+
+  /*!
+   * \brief Return the node resize ratio.
+   */
+  virtual double getNodeResizeRatio() const final override
+  { return 1.0; }
+
+/// @}
+
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Return the number of faces in the mesh.
+   */
+  virtual IndexType getNumberOfFaces() const final override
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the capacity for faces.
+   */
+  virtual IndexType getFaceCapacity() const final override
+  { return getNumberOfFaces(); }
+
+  /*!
+   * \brief Return the face resize ratio.
+   */
+  virtual double getFaceResizeRatio() const final override
+  { return 1.0; }
+
+/// @}
+
+/// \name Edges
+/// @{
+
+  /*!
+   * \brief Return the number of edges in the mesh.
+   */
+  virtual IndexType getNumberOfEdges() const final override
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the capacity for edges.
+   */
+  virtual IndexType getEdgeCapacity() const final override
+  { return getNumberOfEdges(); }
+
+  /*!
+   * \brief Return the edge resize ratio.
+   */
+  virtual double getEdgeResizeRatio() const final override
+  { return 1.0; }
+
+/// @}
+
+  /*!
+   * \brief Return true iff the mesh holds no particles.
+   */
+  bool empty() const
+  { return getNumberOfNodes() == 0; }
+
+/// @}
+
+  /*!
+   * \brief Returns pointer to the nodal positions in the specified dimension
+   *
+   * \param[in] dim the specified dimension
+   * \return coord pointer
+   *
+   * \pre 1 <= dim <= 3
+   * \post coord != AXOM_NULLPTR
+   */
+  /// @{
+
+  virtual double* getCoordinateArray( int dim ) override = 0;
+
+  virtual const double* getCoordinateArray( int dim ) const override = 0;
+
+  /// @}
+
+/// \name Data Accessor Methods
+/// @{
+
+  virtual void getNode( IndexType nodeID, double* node ) const override = 0;
+
+  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID)=0 )
+                                                          const override final;
+
+  /*!
+   * \brief Copy the connectivity of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [out] cell the buffer into which the connectivity is copied, must
+   *  be of length at least getNumberOfCellNodes().
+   *
+   * \return The number of nodes for the given cell.
+   * 
+   * \pre cell != AXOM_NULLPTR
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
+                                                          const override final;
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j)
    * \param [in] i logical index of the cell along the first dimension.
    * \param [in] j logical index of the cell along the second dimension.
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
-   * \pre this->getDimension() == 2.
+   * \pre getDimension() == 2.
    */
   inline void getCell( IndexType i, IndexType j, IndexType* cell ) const;
 
@@ -159,13 +285,18 @@ public:
    * \param [in] j logical index of the cell along the second dimension.
    * \param [in] k logical index of the cell along the third dimension.
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
-   * \pre this->getDimension() == 3.
+   * \pre getDimension() == 3.
    */
   inline void getCell( IndexType i, IndexType j, IndexType k,
                        IndexType* cell) const;
 
+  virtual CellType getCellType() const override final;
 
-  /// @}
+  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
+                                                            const override final
+  { return getCellType(); }
+  
+/// @}
 
 protected:
 
@@ -194,72 +325,42 @@ private:
 //      In-lined Method Implementations
 //------------------------------------------------------------------------------
 
-inline int StructuredMesh::getCellType( ) const
-{
-  return ( (m_ndims==3)? mint::HEX :
-             ( (m_ndims==2)? mint::QUAD : mint::SEGMENT ) );
-}
-
 //------------------------------------------------------------------------------
-inline int StructuredMesh::getNumberOfCellNodes( ) const
+inline int StructuredMesh::getNumberOfCellNodes( 
+                                        IndexType AXOM_NOT_USED(cellID) ) const
 {
-  const int cell_type = getCellType( );
+  const int cell_type = getCellType();
   return cell_info[ cell_type ].num_nodes;
 }
 
 //------------------------------------------------------------------------------
-inline void StructuredMesh::getCell( IndexType cellIdx,
-                                     IndexType* cell ) const
+inline
+IndexType StructuredMesh::getCell( IndexType cellID, IndexType* cell ) const
 {
   SLIC_ASSERT( cell != AXOM_NULLPTR );
-  SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < getNumberOfCells() ) );
+  SLIC_ASSERT( 0 <= cellID && cellID < getNumberOfCells() );
 
   const IndexType* offsets_table = m_extent.getCellOffSets();
   const IndexType num_cell_nodes = getNumberOfCellNodes();
 
-  // STEP 0: calculate logical indices of the cell's first corner node.
-  const IndexType jp_minus_1 = jp() - 1;
-  IndexType ii = 0, jj = 0, kk = 0;
-
-  if  ( this->getDimension() == 1 )
-  {
-    SLIC_ASSERT( num_cell_nodes == 2 );
-    ii = cellIdx;
-  }
-  else if ( this->getDimension() == 2 )
-  {
-    SLIC_ASSERT( num_cell_nodes == 4 );
-
-    ii = cellIdx % jp_minus_1;
-    jj = cellIdx / jp_minus_1;
-  }
-  else
-  {
-    SLIC_ASSERT(  this->getDimension() == 3 );
-    SLIC_ASSERT(  num_cell_nodes == 8 );
-
-    IndexType kp_minus_1 = m_extent.size(1)-1;
-    ii = cellIdx % jp_minus_1;
-    jj = cellIdx / jp_minus_1 % kp_minus_1;
-    kk = cellIdx / ( jp_minus_1 * kp_minus_1 );
-  }
-
-  // STEP 1: calculate linear index of corner node from (ii,jj,kk)
-  const IndexType n0  = ii + jj*m_extent.jp() + kk*m_extent.kp();
-
-  // STEP 2: Last, use the offsets table to get the all the cell nodes.
-  for ( IndexType i=0 ; i < num_cell_nodes ; ++i )
+  // Calculate logical indices of the cell's first corner node.
+  IndexType ii, jj, kk;
+  m_extent.getCellGridIndex( cellID, ii, jj, kk );
+  
+  // Use the offsets table to get the all the cell nodes.
+  const IndexType n0 = getLinearIndex( ii, jj, kk );
+  for ( IndexType i = 0 ; i < num_cell_nodes; ++i )
   {
     cell[ i ] = n0 + offsets_table[ i ];
-  } // END for all cell nodes
-
+  }
+  return num_cell_nodes;
 }
 
 //------------------------------------------------------------------------------
 inline void StructuredMesh::getCell( IndexType i, IndexType j,
                                      IndexType* cell ) const
 {
-  SLIC_ASSERT( this->getDimension() == 2 );
+  SLIC_ASSERT( getDimension() == 2 );
   SLIC_ASSERT( cell != AXOM_NULLPTR );
 
   const IndexType* offsets_table = m_extent.getCellOffSets();
@@ -276,7 +377,7 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j,
 inline void StructuredMesh::getCell( IndexType i, IndexType j, IndexType k,
                                      IndexType* cell ) const
 {
-  SLIC_ASSERT( this->getDimension() == 3 );
+  SLIC_ASSERT( getDimension() == 3 );
   SLIC_ASSERT( cell != AXOM_NULLPTR );
 
   const IndexType* offsets_table = m_extent.getCellOffSets();
@@ -288,6 +389,12 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j, IndexType k,
   }
 }
 
+//------------------------------------------------------------------------------
+inline CellType StructuredMesh::getCellType() const
+{
+  return ( (m_ndims==3)? mint::HEX :
+             ( (m_ndims==2)? mint::QUAD : mint::SEGMENT ) );
+}
 
 } /* namespace mint */
 } /* namespace axom */
