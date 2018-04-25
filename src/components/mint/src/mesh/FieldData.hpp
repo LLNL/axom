@@ -231,7 +231,7 @@ public:
   template < typename T >
   inline T* createField( const std::string& name, IndexType num_tuples,
                          IndexType num_components=1, IndexType capacity=USE_DEFAULT,
-                         bool storeInSidre=true, double ratio=2.0 );
+                         bool storeInSidre=true );
 
   /*!
    * \brief Creates a new field from a supplied external buffer which consists
@@ -512,6 +512,7 @@ private:
 /// @}
 
   int m_association;
+  double m_resize_ratio;
   std::map< std::string, Field* > m_fields;
 
 #ifdef MINT_USE_SIDRE
@@ -634,7 +635,7 @@ inline const T* FieldData::getFieldPtr( const std::string& name,
 template < typename T >
 inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
                                   IndexType num_components, IndexType capacity,
-                                  bool storeInSidre, double ratio )
+                                  bool storeInSidre )
 {
   SLIC_ERROR_IF( hasField( name ), "Field [" << name << "] already exists!");
 
@@ -673,7 +674,7 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
 #endif
 
   SLIC_ASSERT( newField != AXOM_NULLPTR );
-  newField->setResizeRatio( ratio );
+  newField->setResizeRatio( m_resize_ratio );
   m_fields[ name ] = newField;
 
   return ( mint::Field::getDataPtr< T >( newField ) );

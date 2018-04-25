@@ -32,10 +32,10 @@ StructuredMesh::StructuredMesh( int meshType, int ndims,
   Mesh( ndims, meshType ),
   m_extent( ndims, ext )
 {
-  m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
-  m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
-  m_mesh_fields[ FACE_CENTERED ]->setResizeRatio( getFaceResizeRatio() );
-  m_mesh_fields[ EDGE_CENTERED ]->setResizeRatio( getEdgeResizeRatio() );
+  m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ FACE_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ EDGE_CENTERED ]->setResizeRatio( 1.0 );
 
   m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
   m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );

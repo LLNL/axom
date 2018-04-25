@@ -293,30 +293,6 @@ public:
   virtual IndexType getEdgeCapacity() const = 0;
 
   /*!
-   * \brief Returns the node resize ratio for this mesh instance.
-   * \return R the node resize ratio
-   */
-  virtual double getNodeResizeRatio() const = 0;
-
-  /*!
-   * \brief Returns the cell resize ratio for this mesh instance.
-   * \return R the cell resize ratio
-   */
-  virtual double getCellResizeRatio() const = 0;
-
-  /*!
-   * \brief Returns the face resize ratio for this mesh instance.
-   * \return R the face resize ratio
-   */
-  virtual double getFaceResizeRatio() const = 0;
-
-  /*!
-   * \brief Returns the edge resize ratio for this mesh instance.
-   * \return R the edge resize ratio
-   */
-  virtual double getEdgeResizeRatio() const = 0;
-
-  /*!
    * \brief Checks if this mesh instance has explicit coordinates.
    * \return status true iff the mesh defines coordinates explicitly.
    */
@@ -722,10 +698,9 @@ private:
    * \param [in] association the mesh field association, e.g., NODE_CENTERED.
    * \param [out] num_tuples the number of tuples in the associated FieldData.
    * \param [out] capacity the capacity of the associated FieldData.
-   * \param [out] ratio the resize ratio of the associated FieldData.
    */
   void getFieldInfo( int association, IndexType& num_tuples, 
-                     IndexType& capacity, double& ratio ) const;
+                     IndexType& capacity ) const;
 
   /*!
    * \brief Helper method to check if the mesh type is valid.
@@ -803,10 +778,9 @@ inline T* Mesh::createField( const std::string& name,
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
   IndexType num_tuples, capacity;
-  double ratio;
-  getFieldInfo( association, num_tuples, capacity, ratio );
+  getFieldInfo( association, num_tuples, capacity );
   T* ptr = fd->createField< T >( name, num_tuples, num_components, capacity, 
-                                                          storeInSidre, ratio );
+                                 storeInSidre );
   if ( num_tuples > 0 ) 
   {
     SLIC_ASSERT( ptr != AXOM_NULLPTR );
@@ -829,9 +803,9 @@ inline T* Mesh::createField( const std::string& name,
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
   IndexType num_tuples, dummy1;
-  double dummy2;
-  getFieldInfo( association, num_tuples, dummy1, dummy2 );
-  T* ptr = fd->createField< T >( name, data, num_tuples, num_components, capacity );
+  getFieldInfo( association, num_tuples, dummy1 );
+  T* ptr = fd->createField< T >( name, data, num_tuples, num_components, 
+                                 capacity );
   SLIC_ASSERT( ptr == data );
 
   return ( ptr );
@@ -901,30 +875,26 @@ inline const T* Mesh::getFieldPtr( const std::string& name,
 
 //------------------------------------------------------------------------------
 inline void Mesh::getFieldInfo( int association, IndexType& num_tuples, 
-                                IndexType& capacity, double& ratio ) const
+                                IndexType& capacity ) const
 {
   switch ( association )
   {
   case NODE_CENTERED:
     num_tuples = getNumberOfNodes();
     capacity = getNodeCapacity();
-    ratio = getNodeResizeRatio();
     break;
   case CELL_CENTERED:
     num_tuples = getNumberOfCells();
     capacity = getCellCapacity();
-    ratio = getCellResizeRatio();
     break;
   case FACE_CENTERED:
     num_tuples = getNumberOfFaces();
     capacity = getFaceCapacity();
-    ratio = getFaceResizeRatio();
     break;
   default:
     SLIC_ASSERT( association == EDGE_CENTERED );
     num_tuples = getNumberOfEdges();
     capacity = getEdgeCapacity();  
-    ratio = getEdgeResizeRatio();
     break;
   } // END switch
 }

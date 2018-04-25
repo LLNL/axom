@@ -75,6 +75,8 @@ public:
   {
     m_explicit_coords = true;
     m_explicit_connectivity = true;
+    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
+    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
     m_mesh_fields[ CELL_CENTERED ]->reserve( 
                                          m_cell_connectivity->getIDCapacity() );
@@ -108,6 +110,8 @@ public:
     m_explicit_coords = true;
     m_explicit_connectivity = true;
     m_has_mixed_topology = true;
+    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
+    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
     m_mesh_fields[ CELL_CENTERED ]->reserve( 
                                          m_cell_connectivity->getIDCapacity() );
@@ -666,7 +670,7 @@ public:
   /*!
    * \brief Return the cell resize ratio.
    */
-  virtual double getCellResizeRatio() const final override
+  double getCellResizeRatio() const
   { return m_cell_connectivity->getResizeRatio(); }
 
   /*!
@@ -701,7 +705,7 @@ public:
   /*!
    * \brief Return the node resize ratio.
    */
-  virtual double getNodeResizeRatio() const final override
+  double getNodeResizeRatio() const
   { return m_coordinates->getResizeRatio(); }
 
 /// @}
@@ -730,7 +734,7 @@ public:
   /*!
    * \brief Return the face resize ratio.
    */
-  virtual double getFaceResizeRatio() const final override
+  double getFaceResizeRatio() const
   { 
     SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
     return 0.0;
@@ -762,7 +766,7 @@ public:
   /*!
    * \brief Return the edge resize ratio.
    */
-  virtual double getEdgeResizeRatio() const final override
+  double getEdgeResizeRatio() const
   { 
     SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
     return 0.0;

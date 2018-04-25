@@ -138,12 +138,6 @@ public:
   virtual IndexType getCellCapacity() const final override
   { return getNumberOfCells(); }
 
-  /*!
-   * \brief Return the cell resize ratio.
-   */
-  virtual double getCellResizeRatio() const final override
-  { return 1.0; }
-
 /// @}
 
 /// \name Nodes
@@ -160,12 +154,6 @@ public:
    */
   virtual IndexType getNodeCapacity() const final override
   { return getNumberOfNodes(); }
-
-  /*!
-   * \brief Return the node resize ratio.
-   */
-  virtual double getNodeResizeRatio() const final override
-  { return 1.0; }
 
 /// @}
 
@@ -187,12 +175,6 @@ public:
   virtual IndexType getFaceCapacity() const final override
   { return getNumberOfFaces(); }
 
-  /*!
-   * \brief Return the face resize ratio.
-   */
-  virtual double getFaceResizeRatio() const final override
-  { return 1.0; }
-
 /// @}
 
 /// \name Edges
@@ -212,12 +194,6 @@ public:
    */
   virtual IndexType getEdgeCapacity() const final override
   { return getNumberOfEdges(); }
-
-  /*!
-   * \brief Return the edge resize ratio.
-   */
-  virtual double getEdgeResizeRatio() const final override
-  { return 1.0; }
 
 /// @}
 
