@@ -574,8 +574,8 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
 
   if ( capacity == USE_DEFAULT )
   { 
-    IndexType temp = m_num_tuples * m_resize_ratio + 0.5;
-    capacity = ( temp > MIN_DEFAULT_CAPACITY ) ? temp : MIN_DEFAULT_CAPACITY;
+    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ? 
+                                            m_num_tuples : MIN_DEFAULT_CAPACITY;
   }
   setCapacity( capacity );
 
@@ -699,8 +699,8 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
 
   if ( capacity == USE_DEFAULT )
   {
-    IndexType temp = m_num_tuples * m_resize_ratio + 0.5;
-    capacity = ( temp > MIN_DEFAULT_CAPACITY ) ? temp : MIN_DEFAULT_CAPACITY;
+    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ? 
+                                            m_num_tuples : MIN_DEFAULT_CAPACITY;
   }
   SLIC_ERROR_IF( m_num_tuples > capacity,
                  "Number of tuples (" << m_num_tuples << ") " <<
