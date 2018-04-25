@@ -440,11 +440,11 @@ public:
    * \param [in] n_tuples the number of tuples to insert.
    *
    * \note The values at pos and above are shifted up and the new tuples
-   *  have undefined values.
+   *  have the default values.
    *
    * \see FieldVariable
    */
-  void reserveForInsert( IndexType pos, IndexType n_tuples );
+  void emplace( IndexType pos, IndexType n_tuples );
 
   /*!
    * \brief Changes the tuple capacity of all fields in this FieldData instance.

@@ -971,7 +971,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, const double* coords,
   for ( int dim = 0; dim < m_ndims; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
-    m_coordinates[ dim ]->reserveForInsert( n, nodeID );
+    m_coordinates[ dim ]->emplace( n, nodeID );
     coord_arrays[ dim ] = getCoordinateArray( dim );
   }
 

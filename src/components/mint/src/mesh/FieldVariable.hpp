@@ -271,8 +271,8 @@ public:
     m_field->resize( newNumTuples );
   }
 
-  virtual void reserveForInsert( IndexType pos, IndexType num_tuples ) final override
-  { m_field->reserveForInsert( num_tuples, pos ); }
+  virtual void emplace( IndexType pos, IndexType num_tuples ) final override
+  { m_field->emplace( num_tuples, pos ); }
 
 
   /*!

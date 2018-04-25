@@ -242,12 +242,12 @@ void FieldData::resize( IndexType newNumTuples )
 }
 
 //------------------------------------------------------------------------------
-void FieldData::reserveForInsert( IndexType pos, IndexType num_tuples )
+void FieldData::emplace( IndexType pos, IndexType num_tuples )
 {
   const IndexType numFields = getNumFields();
   for ( int i = 0; i < numFields; ++i )
   {
-    getField( i )->reserveForInsert( pos, num_tuples );
+    getField( i )->emplace( pos, num_tuples );
   };
 }
 

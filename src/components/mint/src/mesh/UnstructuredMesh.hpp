@@ -275,7 +275,7 @@ public:
 
   /*!
    * \brief Return a pointer to the connectivity of the given cell. The
-   *  buffer is guarenteed to be of length at least 
+   *  buffer is guaranteed to be of length at least 
    *  getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
@@ -344,7 +344,7 @@ public:
     IndexType n_values = (type == UNDEFINED_CELL) ? 
                                                 0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->insert( connec, ID, n_values, type );
-    m_mesh_fields[ CELL_CENTERED ]->reserveForInsert( ID, 1 );
+    m_mesh_fields[ CELL_CENTERED ]->emplace( ID, 1 );
   }
 
   /*!
@@ -367,7 +367,7 @@ public:
                     const CellType* types=AXOM_NULLPTR )
   {
     m_cell_connectivity->insertM( connec, start_ID, n_cells, offsets, types );
-    m_mesh_fields[ CELL_CENTERED ]->reserveForInsert( start_ID, n_cells );
+    m_mesh_fields[ CELL_CENTERED ]->emplace( start_ID, n_cells );
   }
 
 /// @}
@@ -493,7 +493,7 @@ public:
   void insertNode( IndexType nodeID, double x, bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x );
-    m_mesh_fields[ NODE_CENTERED ]->reserveForInsert( nodeID, 1 );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
     if ( update_connectivity )
     {
       connectivityUpdateInsert( nodeID, 1 );
@@ -516,7 +516,7 @@ public:
                    bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y );
-    m_mesh_fields[ NODE_CENTERED ]->reserveForInsert( nodeID, 1 );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
     if ( update_connectivity )
     {
       connectivityUpdateInsert( nodeID, 1 );
@@ -540,7 +540,7 @@ public:
                    bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, z );
-    m_mesh_fields[ NODE_CENTERED ]->reserveForInsert( nodeID, 1 );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
     if ( update_connectivity )
     {
       connectivityUpdateInsert( nodeID, 1 );
@@ -567,7 +567,7 @@ public:
                     bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, coords, n );
-    m_mesh_fields[ NODE_CENTERED ]->reserveForInsert( nodeID, n );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
     if ( update_connectivity )
     {
       connectivityUpdateInsert( nodeID, n );
@@ -594,7 +594,7 @@ public:
                     IndexType n, bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, n );
-    m_mesh_fields[ NODE_CENTERED ]->reserveForInsert( nodeID, n );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
     if ( update_connectivity )
     {
       connectivityUpdateInsert( nodeID, n );
@@ -623,7 +623,7 @@ public:
                     const double* z, IndexType n, bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, z, n );
-    m_mesh_fields[ NODE_CENTERED ]->reserveForInsert( nodeID, n );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
     if ( update_connectivity )
     {
       connectivityUpdateInsert( nodeID, n );

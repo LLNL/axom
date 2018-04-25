@@ -140,7 +140,18 @@ public:
    */
   virtual void resize( IndexType newNumTuples ) = 0;
 
-  virtual void reserveForInsert( IndexType pos, IndexType n_tuples ) = 0;
+  /*!
+   * \brief Makes space for an insert of length n_tuples at the given position.
+   *
+   * \param [in] pos the position of the insert.
+   * \param [in] n_tuples the number of tuples to insert.
+   *
+   * \note The values at pos and above are shifted up and the new tuples
+   *  have the default values.
+   *
+   * \see FieldVariable
+   */
+  virtual void emplace( IndexType pos, IndexType n_tuples ) = 0;
 
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.

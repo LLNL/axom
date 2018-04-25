@@ -335,6 +335,14 @@ public:
   inline void set( const T* tuples, IndexType n, IndexType pos );
 
   /*!
+   * \brief Insert a value into the array at the given position.
+   * \param [in] value the value to insert.
+   * \param [in] pos the position at which to insert.
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  inline void insert( const T& value, IndexType pos );
+
+  /*!
    * \brief Insert tuples into the array at the given position.
    * \param [in] tuples the tuples to insert.
    * \param [in] n the number of tuples to insert.
@@ -345,21 +353,12 @@ public:
   inline void insert( const T* tuples, IndexType n, IndexType pos );
 
   /*!
-   * \brief Insert a value into the array at the given position.
-   * \param [in] value the value to insert.
-   * \param [in] pos the position at which to insert.
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  inline void insert( const T& value, IndexType pos );
-
-  /*!
-   * \brief Make space for a subsequent insertion into the array.
-   * \param [in] n the number of tuples to insert.
-   * \param [in] pos the position at which to begin the insertion.
-   * \return a pointer to the beginning of the insertion space.
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  inline T* reserveForInsert( IndexType n, IndexType pos );
+  * \brief Insert multiple values at the given position.
+  * \param [in] n the number of values to insert.
+  * \param [in] pos the position to insert at.
+  * \param [in] value the value to insert.
+  */
+  inline void emplace( IndexType n, IndexType pos, const T& value=T() );
 
 /// @}
 
@@ -452,6 +451,15 @@ public:
 /// @}
 
 private:
+
+  /*!
+   * \brief Make space for a subsequent insertion into the array.
+   * \param [in] n the number of tuples to insert.
+   * \param [in] pos the position at which to begin the insertion.
+   * \return a pointer to the beginning of the insertion space.
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  inline T* reserveForInsert( IndexType n, IndexType pos );
 
   /*!
    * \brief Update the number of tuples.
@@ -778,6 +786,15 @@ inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 
 //------------------------------------------------------------------------------
 template< typename T >
+inline void Array< T >::insert( const T& value, IndexType pos )
+{
+  SLIC_ASSERT_MSG( m_num_components != 1, "Number of components must be 1." );
+  reserveForInsert( 1, pos );
+  m_data[ pos ] = value;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
 inline void Array< T >::insert( const T* tuples, IndexType n, IndexType pos )
 {
   SLIC_ASSERT( tuples != AXOM_NULLPTR );
@@ -787,11 +804,25 @@ inline void Array< T >::insert( const T* tuples, IndexType n, IndexType pos )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::insert( const T& value, IndexType pos )
+inline void Array< T >::emplace( IndexType n, IndexType pos, const T& value )
 {
-  SLIC_ASSERT_MSG( m_num_components != 1, "Number of components must be 1." );
-  reserveForInsert( 1, pos );
-  m_data[ pos ] = value;
+  T* insert_pos = reserveForInsert( n, pos );
+  std::fill_n( insert_pos, n * numComponents(), value );
+}
+
+
+//------------------------------------------------------------------------------
+template< typename T >
+inline void Array< T >::resize( IndexType new_num_tuples )
+{
+  SLIC_ASSERT( new_num_tuples >= 0 );
+
+  if ( new_num_tuples > m_capacity )
+  {
+    dynamicRealloc( new_num_tuples );
+  }
+
+  updateNumTuples( new_num_tuples );
 }
 
 //------------------------------------------------------------------------------
@@ -822,20 +853,6 @@ inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
 
   updateNumTuples( new_size );
   return insert_pos;
-}
-
-//------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::resize( IndexType new_num_tuples )
-{
-  SLIC_ASSERT( new_num_tuples >= 0 );
-
-  if ( new_num_tuples > m_capacity )
-  {
-    dynamicRealloc( new_num_tuples );
-  }
-
-  updateNumTuples( new_num_tuples );
 }
 
 //------------------------------------------------------------------------------

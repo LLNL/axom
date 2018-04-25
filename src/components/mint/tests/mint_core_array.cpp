@@ -574,7 +574,186 @@ void check_insert( Array< T >& v )
       EXPECT_EQ( v( i, j ), i * num_components + j );
     }
   }
+}
 
+/*!
+ * \brief Check that the emplace method is working properly.
+ * \param [in] v the Array to check.
+ */
+template < typename T >
+void check_emplace( Array< T >& v )
+{
+  constexpr T MAGIC_NUM = 52706;
+
+  /* Resize the array up to the capacity */
+  IndexType capacity = v.capacity();
+  v.resize( capacity );
+  IndexType size = capacity;
+  IndexType num_components = v.numComponents();
+
+  EXPECT_EQ( v.size(), v.capacity() );
+
+  /* Set the existing data in v */
+  for ( IndexType i = 0; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      v( i, j ) = i * num_components + j;
+    }
+  }
+
+  /* Emplace 10 tuples at the end of the array, should resize. */
+  capacity = calc_new_capacity( v, 1 );
+  v.emplace( 1, v.size() );
+  capacity = calc_new_capacity( v, 9 );
+  v.emplace( 9, v.size(), MAGIC_NUM );
+  size += 10;
+
+  /* Check that it resized properly */
+  EXPECT_EQ( v.capacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+
+  /* Check the data */
+  for ( IndexType i = 0 ; i < size - 10 ; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), i * num_components + j );
+    }
+  }
+
+  for ( IndexType j = 0; j < num_components; ++j )
+  {
+    EXPECT_EQ( v( size - 10, j ), T() );
+  }
+
+  for ( IndexType i = size - 9; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM );
+    }
+  }
+
+  /* Emplace 10 tuples at the beginning of the array. */
+  capacity = calc_new_capacity( v, 9 );
+  v.emplace( 9, 0, MAGIC_NUM );
+  capacity = calc_new_capacity( v, 1 );
+  v.emplace( 1, 0 );
+  size += 10;
+
+  /* Check that it resized properly */
+  EXPECT_EQ( v.capacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+
+  /* Check the beginning */
+  for ( IndexType j = 0; j < num_components; ++j )
+  {
+    EXPECT_EQ( v( 0, j ), T() );
+  }
+
+  for ( IndexType i = 1; i < 10; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM );
+    }
+  }
+
+  /* Check the middle */
+  for ( IndexType i = 10; i < size - 10; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), (i - 10) * num_components + j );
+    }
+  }
+
+  /* Check the end */
+  for ( IndexType j = 0; j < num_components; ++j )
+  {
+    EXPECT_EQ( v( size - 10, j ), T() );
+  }
+
+  for ( IndexType i = size - 9; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM );
+    }
+  }
+
+  /* Emplace 10 tuples in the middle of the array. */
+  IndexType middle = size / 2;
+  capacity = calc_new_capacity( v, 9 );
+  v.emplace( 9, middle, MAGIC_NUM );
+  capacity = calc_new_capacity( v, 1 );
+  v.emplace( 1, middle );
+  size += 10;
+
+  /* Check that it resized properly */
+  EXPECT_EQ( v.capacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+
+  /* Check the beginning */
+  for ( IndexType j = 0; j < num_components; ++j )
+  {
+    EXPECT_EQ( v( 0, j ), T() );
+  }
+
+  for ( IndexType i = 1; i < 10; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM );
+    }
+  }
+
+  /* Check the first section */
+  for ( IndexType i = 10; i < middle; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), (i - 10) * num_components + j );
+    }
+  }
+
+  /* Check the middle */
+  for ( IndexType j = 0; j < num_components; ++j )
+  {
+    EXPECT_EQ( v( middle, j ), T() );
+  }
+
+  for ( IndexType i = middle + 1; i < middle + 10; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM );
+    }
+  }
+
+  /* Check the second section */
+  for ( IndexType i = middle + 10; i < size - 10; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), (i - 20) * num_components + j );
+    }
+  }
+
+  /* Check the end */
+  for ( IndexType j = 0; j < num_components; ++j )
+  {
+    EXPECT_EQ( v( size - 10, j ), T() );
+  }
+
+  for ( IndexType i = size - 9; i < size; ++i )
+  {
+    for ( IndexType j = 0; j < num_components; ++j )
+    {
+      EXPECT_EQ( v( i, j ), MAGIC_NUM );
+    }
+  }
 }
 
 /*!
@@ -855,6 +1034,48 @@ TEST( mint_core_array, checkInsert )
   }
 }
 
+//------------------------------------------------------------------------------
+TEST( mint_core_array, checkEmplace )
+{
+#ifdef MINT_USE_SIDRE
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+#endif
+
+  constexpr IndexType ZERO = 0;
+
+  for ( double ratio = 1.0; ratio <= 2.0; ratio += 0.5 )
+  {
+    for ( IndexType capacity = 2; capacity <= 512; capacity *= 2 )
+    {
+      for ( IndexType n_components = 1 ; n_components <= 3; n_components++ )
+      {
+        Array< int > v_int( ZERO, n_components, capacity );
+        v_int.setResizeRatio( ratio );
+        internal::check_emplace( v_int );
+
+        Array< double > v_double( ZERO, n_components, capacity );
+        v_double.setResizeRatio( ratio );
+        internal::check_emplace( v_double );
+
+#ifdef MINT_USE_SIDRE
+        Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
+                                  capacity );
+        v_int_sidre.setResizeRatio( ratio );
+        internal::check_emplace( v_int_sidre );
+
+        Array< double > v_double_sidre( root->createView("double"), ZERO,
+                                        n_components, capacity );
+        v_double_sidre.setResizeRatio( ratio );
+        internal::check_emplace( v_double_sidre );
+
+        root->destroyViewsAndData();
+#endif
+      }
+    }
+  }
+}
+
 /* Sidre specific tests */
 #ifdef MINT_USE_SIDRE
 
@@ -866,9 +1087,9 @@ TEST( mint_core_array, checkSidre )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
+  for ( double ratio = 1.0; ratio <= 2.0; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
+    for ( IndexType capacity = 2; capacity <= 512; capacity *= 2 )
     {
       for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
@@ -954,7 +1175,7 @@ TEST( mint_core_array, checkSidrePermanence)
 TEST( mint_core_array_DeathTest, checkExternal )
 {
   constexpr double MAGIC_NUM = 5683578.8;
-  constexpr IndexType MAX_SIZE = 512;
+  constexpr IndexType MAX_SIZE = 256;
   constexpr IndexType MAX_COMPONENTS = 3;
   constexpr IndexType MAX_VALUES = MAX_SIZE * MAX_COMPONENTS;
   union DataBuffer
@@ -967,7 +1188,7 @@ TEST( mint_core_array_DeathTest, checkExternal )
   DataBuffer buffer;
   std::fill_n( buffer.doubles, MAX_VALUES, MAGIC_NUM );
 
-  for ( IndexType size = 2 ; size <= MAX_SIZE ; size *= 2 )
+  for ( IndexType size = 16; size <= MAX_SIZE ; size *= 2 )
   {
     for ( IndexType n_comp = 1 ; n_comp <= MAX_COMPONENTS ; n_comp++ )
     {
