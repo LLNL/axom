@@ -221,28 +221,32 @@ public:
    * \return N the node capacity
    * \post N >= 0
    */
-  virtual IndexType getNodeCapacity() const = 0;
+  virtual IndexType getNodeCapacity() const
+  { return getNumberOfNodes(); }
 
   /*!
    * \brief Returns the capacity for number of cell in this mesh instance.
    * \return N the cell capacity
    * \post N >= 0
    */
-  virtual IndexType getCellCapacity() const = 0;
+  virtual IndexType getCellCapacity() const
+  { return getNumberOfCells(); }
 
   /*!
    * \brief Returns the capacity for number of faces in this mesh instance.
    * \return N the face capacity
    * \post N >= 0
    */
-  virtual IndexType getFaceCapacity() const = 0;
+  virtual IndexType getFaceCapacity() const
+  { return getNumberOfFaces(); }
 
   /*!
    * \brief Returns the capacity for number of edges in this mesh instance.
    * \return N the edge capacity
    * \post N >= 0
    */
-  virtual IndexType getEdgeCapacity() const = 0;
+  virtual IndexType getEdgeCapacity() const
+  { return getNumberOfEdges(); }
 
   /*!
    * \brief Returns pointer to the requested mesh coordinate buffer.

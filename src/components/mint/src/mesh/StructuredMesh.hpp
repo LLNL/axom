@@ -127,9 +127,6 @@ public:
   inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const
   { return m_extent.getCellLinearIndex( i, j ); };
 
-
-
-
 /// \name Attribute Querying Methods
 /// @{
 
@@ -142,11 +139,6 @@ public:
   virtual IndexType getNumberOfCells() const final override
   { return m_extent.getNumCells(); }
 
-  /*!
-   * \brief Return the capacity for cells.
-   */
-  virtual IndexType getCellCapacity() const final override
-  { return getNumberOfCells(); }
 
 /// @}
 
@@ -158,12 +150,6 @@ public:
    */
   virtual IndexType getNumberOfNodes() const final override
   { return m_extent.getNumNodes(); }
-
-  /*!
-   * \brief Return the capacity for nodes.
-   */
-  virtual IndexType getNodeCapacity() const final override
-  { return getNumberOfNodes(); }
 
 /// @}
 
@@ -179,12 +165,6 @@ public:
     return 0; 
   }
 
-  /*!
-   * \brief Return the capacity for faces.
-   */
-  virtual IndexType getFaceCapacity() const final override
-  { return getNumberOfFaces(); }
-
 /// @}
 
 /// \name Edges
@@ -198,12 +178,6 @@ public:
     SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
     return 0; 
   }
-
-  /*!
-   * \brief Return the capacity for edges.
-   */
-  virtual IndexType getEdgeCapacity() const final override
-  { return getNumberOfEdges(); }
 
 /// @}
 
