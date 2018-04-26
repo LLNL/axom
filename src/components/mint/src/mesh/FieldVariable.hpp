@@ -267,9 +267,7 @@ public:
    * \see Field::resize()
    */
   virtual void resize( IndexType newNumTuples ) final override
-  {
-    m_field->resize( newNumTuples );
-  }
+  { m_field->resize( newNumTuples ); }
 
   virtual void emplace( IndexType pos, IndexType num_tuples ) final override
   { m_field->emplace( num_tuples, pos ); }
@@ -296,9 +294,7 @@ public:
    * \brief Return the resize ratio of this field.
    */
   virtual double getResizeRatio() const final override
-  {
-    return m_field->getResizeRatio();
-  }
+  { return m_field->getResizeRatio(); }
 
   /*!
    * \brief Set the resize ratio of this field.
@@ -306,9 +302,19 @@ public:
    * \post getResizeRatio() == ratio
    */
   virtual void setResizeRatio( double ratio ) final override
-  {
-    m_field->setResizeRatio( ratio );
-  }
+  { m_field->setResizeRatio( ratio ); }
+
+  /*!
+   * \brief Return true iff the field is stored in an external buffer.
+   */
+  virtual bool isExternal() const final override
+  { return m_field->isExternal(); }
+
+  /*!
+   * \brief Return true iff the field is stored in sidre.
+   */
+  virtual bool isInSidre() const final override
+  { return m_field->isInSidre(); }
 
 /// @}
 

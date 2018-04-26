@@ -175,18 +175,6 @@ public:
   { return static_cast< int >( m_fields.size() ); }
 
   /*!
-   * \brief Returns the number of tuples in this FieldData instance.
-   * \return N the number of tuples.
-   */
-  IndexType getNumTuples() const;
-
-  /*!
-   * \brief Returns the tuple capacity of this FieldData instance.
-   * \return N the tuple capacity.
-   */
-  IndexType getCapacity() const;
-
-  /*!
     * \brief Checks if a Sidre Group is associated with this FieldData instance.
     * \return status true if the FieldData is associated with Sidre, else, false.
     */
@@ -472,6 +460,8 @@ public:
   void shrink( );
 
   void setResizeRatio( double ratio );
+
+  bool checkConsistency( IndexType num_tuples, IndexType capacity ) const;
 
 /// @}
 

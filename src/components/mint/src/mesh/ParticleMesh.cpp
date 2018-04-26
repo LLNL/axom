@@ -126,7 +126,10 @@ ParticleMesh::~ParticleMesh()
 
 //------------------------------------------------------------------------------
 bool ParticleMesh::checkConsistency()
-{ return getNumberOfNodes() == m_mesh_fields[ NODE_CENTERED ]->getNumTuples(); }
+{ 
+  return m_mesh_fields[ NODE_CENTERED ]->checkConsistency( getNumberOfNodes(), 
+                                                           getNodeCapacity() ); 
+}
 
 } /* namespace mint */
 } /* namespace axom */

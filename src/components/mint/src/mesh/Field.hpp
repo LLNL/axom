@@ -178,6 +178,15 @@ public:
    */
   virtual void setResizeRatio( double ratio ) = 0;
 
+  /*!
+   * \brief Return true iff the field is stored in an external buffer.
+   */
+  virtual bool isExternal() const = 0;
+
+  /*!
+   * \brief Return true iff the field is stored in sidre.
+   */
+  virtual bool isInSidre() const = 0;
 
 /// @}
 

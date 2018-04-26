@@ -180,48 +180,6 @@ FieldData::FieldData( int association, sidre::Group* fields_group, const std::st
 #endif
 
 //------------------------------------------------------------------------------
-IndexType FieldData::getNumTuples() const
-{
-  const int numFields = getNumFields();
-  if ( numFields == 0 )
-  {
-    return 0;
-  }
-
-  IndexType num_tuples = getField(0)->getNumTuples();
-  bool status = true;
-
-  for ( int i = 1; i < numFields; ++i )
-  {
-    const Field* f = getField( i );
-    status &= f->getNumTuples() == num_tuples; 
-  }
-
-  SLIC_WARNING_IF( !status, "Inconsistent number of tuples." ); 
-  return status ? num_tuples : -1;
-}
-
-//------------------------------------------------------------------------------
-IndexType FieldData::getCapacity() const
-{
-  const int numFields = getNumFields();
-  if ( numFields == 0 )
-  {
-    return 0;
-  }
-
-  IndexType min_capacity = std::numeric_limits< IndexType >::max(); 
-  for ( int i = 0; i < numFields; ++i )
-  {
-    const Field* f = getField( i );
-    const IndexType f_capacity = f->getCapacity();
-    min_capacity = (f_capacity < min_capacity) ? f_capacity : min_capacity;
-  }
-
-  return min_capacity;
-}
-
-//------------------------------------------------------------------------------
 void FieldData::clear()
 {
   const int numFields = getNumFields();
@@ -282,6 +240,37 @@ void FieldData::setResizeRatio( double ratio )
   {
     getField( i )->setResizeRatio( ratio );
   };
+}
+
+//------------------------------------------------------------------------------
+bool FieldData::checkConsistency( IndexType num_tuples, 
+                                  IndexType capacity ) const
+{
+  const int numFields = getNumFields();
+  if ( numFields == 0 )
+  {
+    return true;
+  }
+
+  bool tuple_status = true;
+  bool capacity_status = true;
+  bool resize_status = true;
+  for ( int i = 1; i < numFields; ++i )
+  {
+    const Field* f = getField( i );
+    tuple_status &= f->getNumTuples() == num_tuples;
+    capacity_status &= f->getCapacity() >= f->getNumTuples();
+    if ( !f->isExternal() )
+    {
+      capacity_status &= f->getCapacity() == capacity;
+      resize_status &= f->getResizeRatio() == m_resize_ratio;
+    }
+  }
+
+  SLIC_WARNING_IF( !tuple_status, "Inconsistent number of tuples." ); 
+  SLIC_WARNING_IF( !capacity, "Inconsistent capacity." ); 
+  SLIC_WARNING_IF( !resize_status, "Inconsistent resize ratio." ); 
+  return tuple_status && capacity_status && resize_status;
 }
 
 //------------------------------------------------------------------------------
