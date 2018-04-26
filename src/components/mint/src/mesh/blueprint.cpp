@@ -20,10 +20,11 @@
 #include "axom/Types.hpp"      // for AXOM_NULLPTR
 
 // Mint includes
+#include "mint/Array.hpp"      // for mint::Array
 #include "mint/config.hpp"     // for MINT_USE_SIDRE compile-time definition
 #include "mint/Extent.hpp"     // for mint::Extent
 #include "mint/MeshTypes.hpp"  // for mesh types
-#include "mint/CellTypes.hpp"   // for Topology
+#include "mint/CellTypes.hpp"  // for Topology
 
 // Slic includes
 #include "slic/slic.hpp"    // for SLIC macros
@@ -443,10 +444,11 @@ void getCurvilinearMeshExtent( int dim,
 
   for ( int i=0; i < dim; ++i )
   {
-    const int Ni    = t->getView( dim_names[ i ] )->getScalar();
-    const int i0    = t->getView( origin_names[ i ] )->getScalar();
-    extent[ i*2 ]   = i0;
-    extent[ i*2+1 ] = i0 + Ni;
+    const int Ni       = t->getView( dim_names[ i ] )->getScalar();
+    const int i0       = t->getView( origin_names[ i ] )->getScalar();
+    const int offset   = i*2;
+    extent[ offset ]   = i0;
+    extent[ offset+1 ] = i0 + Ni;
   } // END for all dimensions
 
 }
@@ -476,6 +478,68 @@ void setCurvilinearMeshExtent( int dim,
     // FIXME: cannot set int64 values in sidre
     int min = static_cast< int >( extent->min( i ) );
     topology->createView( origin_names[ i ] )->setScalar( min );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+void getRectilinearMeshExtent( int dim,
+                               const sidre::Group* coordset,
+                               const sidre::Group* topology,
+                               int64* extent )
+{
+  SLIC_ERROR_IF( (dim < 1) && ( dim > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( coordset ),
+                 "invalid coordset group!" );
+  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+                 "invalid topology group!" );
+  SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied null pointer for extent!" );
+
+  sidre::Group* c = const_cast< sidre::Group* >( coordset );
+  sidre::Group* t = const_cast< sidre::Group* >( topology );
+
+  const char* coords[] = { "values/x",
+                           "values/y",
+                           "values/z"  };
+
+  const char* origin_names[] = { "elements/origin/i0",
+                                 "elements/origin/j0",
+                                 "elements/origin/k0"   };
+
+  for ( int i=0; i < dim; ++i )
+  {
+    mint::Array< double > coord( c->getView( coords[ i ] ) );
+    const IndexType Ni = coord.size();
+    const int i0       = t->getView( origin_names[ i ] )->getScalar( );
+
+    const int offset   = i*2;
+    extent[ offset ]   = i0;
+    extent[ offset+1 ] = i0 + ( Ni-1 );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+void setRectilinearMeshExtent( int dim,
+                               const mint::Extent* extent,
+                               sidre::Group* topology )
+{
+  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null" );
+  SLIC_ERROR_IF( extent->getDimension() != dim ,
+                 "extent dimension does not match specified dimension!" );
+
+  // NOTE: For rectilinear meshes, we only store the lower corner extent
+  // indices. The upper corner is specified implicitly by thhe
+  const char* origin_names[] = { "elements/origin/i0",
+                                 "elements/origin/j0",
+                                 "elements/origin/k0"   };
+
+  for ( int i=0; i < dim; ++i )
+  {
+    // FIXME: cannot set int64 values in sidre
+    int i0 = static_cast< int >( extent->min( i ) );
+    topology->createView( origin_names[ i ] )->setScalar( i0 );
   }
 
 }

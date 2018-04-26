@@ -908,9 +908,10 @@ TEST( mint_util_write_vtk, RectilinearMesh3D )
   r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 3 ; ++dim )
   {
+    double* x = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
-      r_mesh->setCoordinate( dim, i, i * i / 10.0);
+      x[ i ] = i * i / 10.0;
     }
   }
 
@@ -942,9 +943,10 @@ TEST( mint_util_write_vtk, RectilinearMesh2D )
   r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 2 ; ++dim )
   {
+    double* x = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
-      r_mesh->setCoordinate( dim, i, i * i / 10.0);
+      x[ i ] = i * i / 10.0;
     }
   }
 
@@ -976,9 +978,10 @@ TEST( mint_util_write_vtk, RectilinearMesh1D )
   r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 1 ; ++dim )
   {
+    double* x = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
-      r_mesh->setCoordinate( dim, i, i * i / 10.0);
+      x[ i ] = i * i / 10.0;
     }
   }
 

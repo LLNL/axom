@@ -19,7 +19,7 @@
 #define MINT_MESH_BLUEPRINT_HPP_
 
 // mint includes
-#include "mint/config.hpp"  // for compile-time definitions
+#include "mint/config.hpp"      // for compile-time definitions
 #include "mint/CellTypes.hpp"   // for Topology
 
 // C/C++ includes
@@ -312,6 +312,43 @@ void getCurvilinearMeshExtent( int dim,
  * \pre extent->getDimension()==dim
  */
 void setCurvilinearMeshExtent( int dim,
+                               const mint::Extent* extent,
+                               sidre::Group* topology );
+
+/*!
+ * \brief Gets the extent of a rectilinear mesh
+ *
+ * \param [in] dim the dimension of the mesh.
+ * \param [in] coordset pointer to the coordset group associated with the mesh
+ * \param [in] topology pointer to the topology group associated with the mesh
+ * \param [out] extent pointer to buffer where to store the mesh extent.
+ *
+ * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
+ *  entries, such that `extetn[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
+ *  values of the extent along the ith dimension respectively.
+ *
+ *  \pre 1 <= dim <= 3
+ *  \pre blueprint::validCoordsetGroup( coordset )
+ *  \pre blueprint::validTopologyGroup( topology )
+ *  \pre extent != AXOM_NULLPTR
+ */
+void getRectilinearMeshExtent( int dim,
+                               const sidre::Group* coordset,
+                               const sidre::Group* topology,
+                               int64* extent );
+
+/*!
+ * \brief Sets the extent of a rectilinear mesh.
+ *
+ * \param [in] dim the mesh dimension.
+ * \param [in] extent pointer to the extent object associated with the mesh.
+ * \param [in] topology pointer to the topology group associated with the mesh.
+ *
+ * \pre extent != AXOM_NULLPTR
+ * \pre topology != AXOM_NULLPTR
+ * \pre extent->getDimension()==dim
+ */
+void setRectilinearMeshExtent( int dim,
                                const mint::Extent* extent,
                                sidre::Group* topology );
 
