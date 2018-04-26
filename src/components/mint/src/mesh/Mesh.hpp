@@ -178,7 +178,7 @@ public:
   /*!
    * \brief Default constructor. Disabled.
    */
-  Mesh( ) = delete;
+  Mesh() = delete;
 
 /// \name Virtual methods
 /// @{
@@ -188,41 +188,15 @@ public:
    */
   virtual ~Mesh();
 
-  /*!
-   * \brief Returns the number of nodes in this mesh instance.
-   * \return N the number of nodes
-   * \post N >= 0
-   */
-  virtual IndexType getNumberOfNodes() const = 0;
-
+/// \name Cells
+/// @{
+  
   /*!
    * \brief Returns the number of cells in this mesh instance.
    * \return N the number of cells
    * \post N >= 0
    */
   virtual IndexType getNumberOfCells() const = 0;
-
-  /*!
-   * \brief Returns the number of faces in this mesh instance.
-   * \return N the number of faces
-   * \post N >= 0
-   */
-  virtual IndexType getNumberOfFaces() const = 0;
-
-  /*!
-   * \brief Returns the number of edges in this mesh instance.
-   * \return N the number of edges
-   * \post N >= 0
-   */
-  virtual IndexType getNumberOfEdges() const = 0;
-
-  /*!
-   * \brief Returns the capacity for number of nodes in this mesh instance.
-   * \return N the node capacity
-   * \post N >= 0
-   */
-  virtual IndexType getNodeCapacity() const
-  { return getNumberOfNodes(); }
 
   /*!
    * \brief Returns the capacity for number of cell in this mesh instance.
@@ -232,57 +206,7 @@ public:
   virtual IndexType getCellCapacity() const
   { return getNumberOfCells(); }
 
-  /*!
-   * \brief Returns the capacity for number of faces in this mesh instance.
-   * \return N the face capacity
-   * \post N >= 0
-   */
-  virtual IndexType getFaceCapacity() const
-  { return getNumberOfFaces(); }
-
-  /*!
-   * \brief Returns the capacity for number of edges in this mesh instance.
-   * \return N the edge capacity
-   * \post N >= 0
-   */
-  virtual IndexType getEdgeCapacity() const
-  { return getNumberOfEdges(); }
-
-  /*!
-   * \brief Returns pointer to the requested mesh coordinate buffer.
-   *
-   * \param [in] dim the dimension of the requested coordinate buffer
-   * \return ptr pointer to the coordinate buffer.
-   *
-   * \note if hasExplicitCoordinates() == true then the length of the returned
-   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns 
-   *  AXOM_NULLPTR and the RectilinearMesh returns a pointer to the associated
-   *  dimension scale which is of length 
-   *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim().
-   *
-   * \pre dim >= 0 && dim < dimension()
-   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
-   */
-  /// @{
-
-  virtual double* getCoordinateArray( int dim ) = 0;
-  virtual const double* getCoordinateArray( int dim ) const = 0;
-
-  /// @}
-
-  /*!
-   * \brief Copy the coordinates of the given node into the provided buffer.
-   *
-   * \param [in] nodeID the ID of the node in question.
-   * \param [in] coords the buffer to copy the coordinates into, of length at
-   *  least getDimension().
-   *
-   * \pre 0 <= nodeID < getNumberOfNodes()
-   * \pre coords != AXOM_NULLPTR
-   */
-  virtual void getNode( IndexType nodeID, double* node ) const = 0;
-
-  /*!
+    /*!
    * \brief Return the number of nodes associated with the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -322,6 +246,102 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType getCell( IndexType cellID, IndexType* cell ) const = 0;
+
+/// @}
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Returns the number of nodes in this mesh instance.
+   * \return N the number of nodes
+   * \post N >= 0
+   */
+  virtual IndexType getNumberOfNodes() const = 0;
+
+  /*!
+   * \brief Returns the capacity for number of nodes in this mesh instance.
+   * \return N the node capacity
+   * \post N >= 0
+   */
+  virtual IndexType getNodeCapacity() const
+  { return getNumberOfNodes(); }
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* node ) const = 0;
+
+  /*!
+   * \brief Returns pointer to the requested mesh coordinate buffer.
+   *
+   * \param [in] dim the dimension of the requested coordinate buffer
+   * \return ptr pointer to the coordinate buffer.
+   *
+   * \note if hasExplicitCoordinates() == true then the length of the returned
+   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns 
+   *  AXOM_NULLPTR and the RectilinearMesh returns a pointer to the associated
+   *  dimension scale which is of length 
+   *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim().
+   *
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
+   */
+  /// @{
+
+  virtual double* getCoordinateArray( int dim ) = 0;
+  virtual const double* getCoordinateArray( int dim ) const = 0;
+
+  /// @}
+
+/// @}
+
+/// \name Faces
+/// @{  
+
+  /*!
+   * \brief Returns the number of faces in this mesh instance.
+   * \return N the number of faces
+   * \post N >= 0
+   */
+  virtual IndexType getNumberOfFaces() const = 0;
+
+  /*!
+   * \brief Returns the capacity for number of faces in this mesh instance.
+   * \return N the face capacity
+   * \post N >= 0
+   */
+  virtual IndexType getFaceCapacity() const
+  { return getNumberOfFaces(); }
+
+/// @}
+
+/// \name Edges
+/// @{
+
+  /*!
+   * \brief Returns the number of edges in this mesh instance.
+   * \return N the number of edges
+   * \post N >= 0
+   */
+  virtual IndexType getNumberOfEdges() const = 0;
+
+  /*!
+   * \brief Returns the capacity for number of edges in this mesh instance.
+   * \return N the edge capacity
+   * \post N >= 0
+   */
+  virtual IndexType getEdgeCapacity() const
+  { return getNumberOfEdges(); }
+
+/// @}
 
 /// @}
 

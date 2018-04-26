@@ -32,6 +32,11 @@ namespace mint
 class UniformMesh : public StructuredMesh
 {
 public:
+ 
+  /*!
+   * \brief Default constructor. Disabled.
+   */
+  UniformMesh();
 
   /*!
    * \brief Constructs a uniform mesh defined by the origin, spacing and extent.
@@ -55,23 +60,17 @@ public:
   UniformMesh( int dimension, const int64 ext[6],
                const double lower_bound[3], const double upper_bound[3] );
 
+/// \name Virtual methods
+/// @{
+
   /*!
    * \brief Destructor.
    */
   virtual ~UniformMesh()
   {}
 
-  /*!
-   * \brief Returns the origin of the Uniform Mesh
-   * \param [out] origin user-supplied buffer to store the mesh origin.
-   */
-  void getOrigin( double origin[3] ) const;
-
-  /*!
-   * \brief Returns the spacing of the Uniform Mesh.
-   * \param [out] h user-supplied buffer to store the spacing of the mesh.
-   */
-  void getSpacing( double h[3] ) const;
+/// \name Nodes
+/// @{
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -88,19 +87,43 @@ public:
    */
   virtual void getNode( IndexType nodeID, double* node ) const override final;
 
+  /*!
+   * \brief Return a pointer to the nodal positions in the specified dimension.
+   *  Since the UniformMesh holds no such array it return AXOM_NULLPTR.
+   */
+  /// @{
+
   virtual double* getCoordinateArray( int AXOM_NOT_USED(dim) ) final override
   { return AXOM_NULLPTR; }
 
-  virtual const double* getCoordinateArray( int AXOM_NOT_USED(dim) ) const final override
+  virtual const double* getCoordinateArray( int AXOM_NOT_USED(dim) ) 
+                                                            const final override
   { return AXOM_NULLPTR; }
 
-private:
+  /// @}
+
+/// @}
+
+/// @}
+
+/// \name Attribute Querying Methods
+/// @{
 
   /*!
-   * \brief Default constructor.
-   * \note Made private to prevent users from calling it.
+   * \brief Returns the origin of the Uniform Mesh
+   * \param [out] origin user-supplied buffer to store the mesh origin.
    */
-  UniformMesh();
+  void getOrigin( double origin[3] ) const;
+
+  /*!
+   * \brief Returns the spacing of the Uniform Mesh.
+   * \param [out] h user-supplied buffer to store the spacing of the mesh.
+   */
+  void getSpacing( double h[3] ) const;
+
+/// @}
+
+private:
 
   double m_origin[3];
   double m_h[3];

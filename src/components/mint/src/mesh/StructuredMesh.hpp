@@ -38,97 +38,17 @@ class StructuredMesh : public Mesh
 public:
 
   /*!
+   * \brief Default constructor. Disabled.
+   */
+  StructuredMesh() = delete;
+
+/// \name Virtual methods
+/// @{
+
+  /*!
    * \brief Destructor.
    */
-  virtual ~StructuredMesh() { }
-
-  /*!
-   * \brief Returns the dimensions of this mesh instance.
-   * \param [in] ndims 3-tuple holding the number of nodes in each dimension.
-   * \post ndims[ i ] >= 1, \$ \forall i \in [0,2] \$
-   */
-  inline void getExtentSize( IndexType ndims[ 3 ] ) const
-  {
-    for ( int i=0 ; i < 3 ; ++i )
-    {
-      ndims[ i ] = m_extent.size( i );
-    } // END for
-  }
-
-  /*!
-   * \brief Returns the number of nodes along the given dimension.
-   * \param [in] dim the dimension to querry.
-   * \pre 0 <= dim < 3
-   */
-  inline IndexType getNumberOfNodesAlongDim( IndexType dim ) const
-  {
-    SLIC_ASSERT( 0 <= dim && dim < 3 );
-    return m_extent.size( dim );
-  }
-
-  /*!
-   * \brief Returns stride to the second dimension.
-   * \return jp stride to the second dimension.
-   * \post jp >= 0.
-   */
-  inline IndexType jp() const
-  { return m_extent.jp(); }
-
-  /*!
-   * \brief Returns stride to the third dimension.
-   * \return kp stride to the third dimension.
-   * \post kp >= 0.
-   */
-  inline IndexType kp() const
-  { return m_extent.kp(); }
-
-  /*!
-   * \brief Returns the linear index corresponding to the given logical indices.
-   * \param [in] i logical index of the first dimension.
-   * \param [in] j logical index of the second dimension.
-   * \param [in] k logical index of the third dimension (optional)
-   * \return idx the corresponding linear index.
-   */
-  inline IndexType getLinearIndex( IndexType i, IndexType j,
-                                    IndexType k  ) const
-  { return m_extent.getLinearIndex( i, j, k ); };
-
-  /*!
-   * \brief Returns the linear index corresponding to the given logical indices.
-   * \param [in] i logical index of the first dimension.
-   * \param [in] j logical index of the second dimension.
-   * \return idx the corresponding linear index.
-   */
-  inline IndexType getLinearIndex( IndexType i, IndexType j ) const
-  { return m_extent.getLinearIndex( i, j ); };
-
-  /*!
-   * \brief Returns the linear index corresponding to the given logical grid
-   * cell
-   * indices.
-   * \param [in] i logical cell index of the first dimension.
-   * \param [in] j logical cell index of the second dimension.
-   * \param [in] k logical cell index of the third dimension (optional)
-   * \return idx the corresponding linear index of the cell.
-   */
-  inline IndexType getCellLinearIndex( IndexType i, IndexType j,
-                                        IndexType k ) const
-  { return m_extent.getCellLinearIndex( i, j, k); };
-
-  /*!
-   * \brief Returns the linear index corresponding to the given logical grid
-   * cell
-   * indices.
-   * \param [in] i logical cell index of the first dimension.
-   * \param [in] j logical cell index of the second dimension.
-   * \param [in] k logical cell index of the third dimension (optional)
-   * \return idx the corresponding linear index of the cell.
-   */
-  inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const
-  { return m_extent.getCellLinearIndex( i, j ); };
-
-/// \name Attribute Querying Methods
-/// @{
+  virtual ~StructuredMesh() {}
 
 /// \name Cells
 /// @{
@@ -139,6 +59,49 @@ public:
   virtual IndexType getNumberOfCells() const final override
   { return m_extent.getNumCells(); }
 
+  /*!
+   * \brief Return the number of nodes associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID)=0 )
+                                                          const override final;
+
+  /*!
+   * \brief Return the type of cell this mesh holds. SEGMENT, QUAD, or HEX
+   *  depending on the dimension.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is 
+   *  ignored.
+   */
+  /// @{
+
+  virtual CellType getCellType() const override final;
+
+  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
+                                                            const override final
+  { return getCellType(); }
+  
+  /// @}
+  
+  /*!
+   * \brief Copy the connectivity of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [out] cell the buffer into which the connectivity is copied, must
+   *  be of length at least getNumberOfCellNodes().
+   *
+   * \return The number of nodes for the given cell.
+   * 
+   * \pre cell != AXOM_NULLPTR
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
+                                                          const override final;
 
 /// @}
 
@@ -150,6 +113,41 @@ public:
    */
   virtual IndexType getNumberOfNodes() const final override
   { return m_extent.getNumNodes(); }
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* node ) const override = 0;
+
+  /*!
+   * \brief Returns pointer to the requested mesh coordinate buffer.
+   *
+   * \param [in] dim the dimension of the requested coordinate buffer
+   * \return ptr pointer to the coordinate buffer.
+   *
+   * \note if hasExplicitCoordinates() == true then the length of the returned
+   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns 
+   *  AXOM_NULLPTR and the RectilinearMesh returns a pointer to the associated
+   *  dimension scale which is of length 
+   *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim( dim ).
+   *
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
+   */
+  /// @{
+
+  virtual double* getCoordinateArray( int dim ) override = 0;
+
+  virtual const double* getCoordinateArray( int dim ) const override = 0;
+
+  /// @}
 
 /// @}
 
@@ -181,6 +179,35 @@ public:
 
 /// @}
 
+/// @}
+
+/// \name Attribute Querying Methods
+/// @{
+
+  /*!
+   * \brief Returns the dimensions of this mesh instance.
+   * \param [in] ndims 3-tuple holding the number of nodes in each dimension.
+   * \post ndims[ i ] >= 1, \$ \forall i \in [0,2] \$
+   */
+  inline void getExtentSize( IndexType ndims[ 3 ] ) const
+  {
+    for ( int i=0 ; i < 3 ; ++i )
+    {
+      ndims[ i ] = m_extent.size( i );
+    } // END for
+  }
+
+  /*!
+   * \brief Returns the number of nodes along the given dimension.
+   * \param [in] dim the dimension to querry.
+   * \pre 0 <= dim < 3
+   */
+  inline IndexType getNumberOfNodesAlongDim( IndexType dim ) const
+  {
+    SLIC_ASSERT( 0 <= dim && dim < 3 );
+    return m_extent.size( dim );
+  }
+
   /*!
    * \brief Return true iff the mesh holds no particles.
    */
@@ -189,46 +216,74 @@ public:
 
 /// @}
 
+/// \name Indexing Helper Methods
+/// @{
+  
   /*!
-   * \brief Returns pointer to the nodal positions in the specified dimension
+   * \brief Returns stride to the second dimension.
+   * \return jp stride to the second dimension.
+   * \post jp >= 0.
+   */
+  inline IndexType jp() const
+  { return m_extent.jp(); }
+
+  /*!
+   * \brief Returns stride to the third dimension.
+   * \return kp stride to the third dimension.
+   * \post kp >= 0.
+   */
+  inline IndexType kp() const
+  { return m_extent.kp(); }
+
+  /*!
+   * \brief Returns the linear index corresponding to the given logical node
+   *  indices.
+   * \param [in] i logical node index of the first dimension.
+   * \param [in] j logical node index of the second dimension.
+   * \param [in] k logical node index of the third dimension (optional)
+   * \return idx the corresponding linear index of the node.
    *
-   * \param[in] dim the specified dimension
-   * \return coord pointer
-   *
-   * \pre 1 <= dim <= 3
-   * \post coord != AXOM_NULLPTR
+   * \note Each method is valid only for the appropriate dimension of the mesh.
    */
   /// @{
 
-  virtual double* getCoordinateArray( int dim ) override = 0;
+  inline IndexType getLinearIndex( IndexType i, IndexType j,
+                                    IndexType k  ) const
+  { return m_extent.getLinearIndex( i, j, k ); };
 
-  virtual const double* getCoordinateArray( int dim ) const override = 0;
+  inline IndexType getLinearIndex( IndexType i, IndexType j ) const
+  { return m_extent.getLinearIndex( i, j ); };
 
   /// @}
+
+  /*!
+   * \brief Returns the linear index corresponding to the given logical grid
+   * cell indices.
+   * \param [in] i logical cell index of the first dimension.
+   * \param [in] j logical cell index of the second dimension.
+   * \param [in] k logical cell index of the third dimension (optional)
+   * \return idx the corresponding linear index of the cell.
+   *
+   * \note Each method is valid only for the appropriate dimension of the mesh.
+   */
+  /// @{
+
+  inline IndexType getCellLinearIndex( IndexType i, IndexType j,
+                                        IndexType k ) const
+  { return m_extent.getCellLinearIndex( i, j, k); };
+
+  inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const
+  { return m_extent.getCellLinearIndex( i, j ); };
+
+  /// @}
+
+/// @}
 
 /// \name Data Accessor Methods
 /// @{
 
-  virtual void getNode( IndexType nodeID, double* node ) const override = 0;
-
-  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID)=0 )
-                                                          const override final;
-
-  /*!
-   * \brief Copy the connectivity of the given cell into the provided buffer.
-   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
-   *
-   * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied, must
-   *  be of length at least getNumberOfCellNodes().
-   *
-   * \return The number of nodes for the given cell.
-   * 
-   * \pre cell != AXOM_NULLPTR
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
-                                                          const override final;
+/// \name Cells
+/// @{  
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j)
@@ -250,21 +305,11 @@ public:
   inline void getCell( IndexType i, IndexType j, IndexType k,
                        IndexType* cell) const;
 
-  virtual CellType getCellType() const override final;
-
-  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
-                                                            const override final
-  { return getCellType(); }
+/// @}
   
 /// @}
 
 protected:
-
-  /*!
-   * \brief Default constructor.
-   * \note Made private to prevent users from calling it.
-   */
-  StructuredMesh();
 
   /*!
    * \brief Constructs a structured mesh instance from the given extent.

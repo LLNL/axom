@@ -82,10 +82,6 @@ class ParticleMesh : public Mesh
 {
 
 public:
-
-  /*!
-   * \brief Default constructor. Disabled.
-   */
   ParticleMesh( ) = delete;
 
 /// \name Native Storage Constructors
@@ -225,14 +221,14 @@ public:
 
 #endif  /* MINT_USE_SIDRE */
 
+/// \name Virtual methods
+/// @{
 
   /*!
    * \brief Destructor.
    */
   virtual ~ParticleMesh();
 
-/// \name Attribute Querying Methods
-/// @{
 
 /// \name Cells
 /// @{
@@ -248,6 +244,20 @@ public:
    */
   virtual IndexType getCellCapacity() const final override
   { return getNodeCapacity(); }
+
+  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
+                                                          const override final
+  { return 1; }
+
+  virtual CellType getCellType() const override final
+  { return VERTEX; }
+
+  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
+                                                            const override final
+  { return VERTEX; }
+
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
+                                                          const override final;
 
 /// @}
 
@@ -267,10 +277,36 @@ public:
   { return m_positions->capacity(); }
 
   /*!
-   * \brief Return the node resize ratio.
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
    */
-  double getNodeResizeRatio() const 
-  { return m_positions->getResizeRatio(); }
+  virtual void getNode( IndexType nodeID, double* node ) const override final
+  { m_positions->getCoordinates( nodeID, node ); }
+
+  /*!
+   * \brief Returns pointer to the particle positions in the specified dimension
+   *
+   * \param[in] dim the specified dimension
+   * \return coord pointer
+   *
+   * \pre 1 <= dim <= 3
+   * \post coord != AXOM_NULLPTR
+   */
+  /// @{
+
+  virtual double* getCoordinateArray( int dim ) final override
+  { return m_positions->getCoordinateArray( dim ); }
+
+  virtual const double* getCoordinateArray( int dim ) const final override
+  { return m_positions->getCoordinateArray( dim ); }
+
+  /// @}
 
 /// @}
 
@@ -308,6 +344,43 @@ public:
 
 /// @}
 
+/// @}
+
+/// \name Attribute get/set Methods
+/// @{
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the node resize ratio.
+   */
+  double getNodeResizeRatio() const 
+  { return m_positions->getResizeRatio(); }
+
+  /*!
+   * \brief Increase the number of particles this ParticleMesh instance can hold
+   * \param [in] newSize the number of particles this instance will now hold
+   * \post getNumParticles() == newSize
+   */
+  void resize( IndexType newSize );
+
+  /*!
+   * \brief Increase the max particle capacity of this ParticleMesh instance
+   * \param [in] newCapacity
+   */
+  void reserve( IndexType newCapacity );
+
+  /*!
+   * \brief Shrinks the max particle capacity to the actual number of particles.
+   *
+   * \post getNumberOfNodes() == capacity()
+   * \post f->getCapacity() == getNumberOfNodes() for all particle fields.
+   */
+  void shrink();
+
+/// @}
+
   /*!
    * \brief Return true iff the mesh holds no particles.
    */
@@ -329,50 +402,7 @@ public:
 
 /// @}
 
-  /*!
-   * \brief Returns pointer to the particle positions in the specified dimension
-   *
-   * \param[in] dim the specified dimension
-   * \return coord pointer
-   *
-   * \pre 1 <= dim <= 3
-   * \post coord != AXOM_NULLPTR
-   */
-  /// @{
-
-  virtual double* getCoordinateArray( int dim ) final override
-  { return m_positions->getCoordinateArray( dim ); }
-
-  virtual const double* getCoordinateArray( int dim ) const final override
-  { return m_positions->getCoordinateArray( dim ); }
-
-  /// @}
-
-/// \name Data Accessor Methods
-/// @{
-
-  virtual void getNode( IndexType nodeID, double* node ) const override final
-  { m_positions->getCoordinates( nodeID, node ); }
-
-  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
-                                                          const override final
-  { return 1; }
-
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
-                                                          const override final;
-
-  virtual CellType getCellType() const override final
-  { return VERTEX; }
-
-  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
-                                                            const override final
-  { return VERTEX; }
-  
-
-/// @}
-
-
-/// \name Append Methods
+/// \name Data Access Methods
 /// @{
 
   /*!
@@ -394,45 +424,19 @@ public:
 
 /// @}
 
-/// \name Size/Capacity Modifiers
-/// @{
-
-  /*!
-   * \brief Increase the number of particles this ParticleMesh instance can hold
-   * \param [in] newSize the number of particles this instance will now hold
-   * \post getNumParticles() == newSize
-   */
-  void resize( IndexType newSize );
-
-  /*!
-   * \brief Increase the max particle capacity of this ParticleMesh instance
-   * \param [in] newCapacity
-   */
-  void reserve( IndexType newCapacity );
-
-  /*!
-   * \brief Shrinks the max particle capacity to the actual number of particles.
-   *
-   * \post getNumParticles() == capacity()
-   * \post f->getCapacity()==getNumParticles() for all particle fields.
-   */
-  void shrink( );
-
-/// @}
-
 private:
 
   /*!
    * \brief Helper method to initialize a ParticleMesh instance.
    * \note Called from the constructor.
    */
-  void initialize( );
+  void initialize();
 
   /*!
    * \brief Helper method to check if the particle data is consistent
    * \return status true if the consistency checks pass, else, false.
    */
-  bool checkConsistency( );
+  bool checkConsistency();
 
   MeshCoordinates* m_positions;
 

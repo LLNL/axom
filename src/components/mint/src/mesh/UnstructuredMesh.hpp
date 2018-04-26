@@ -45,6 +45,10 @@ class UnstructuredMesh : public Mesh
 AXOM_STATIC_ASSERT( TOPO == Topology::SINGLE || TOPO == Topology::MIXED );
 
 public:
+
+  /*!
+   * \brief Default constructor. Disabled.
+   */
   UnstructuredMesh() = delete;
 
 /// \name Native Storage UnstructuredMesh Constructors

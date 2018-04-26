@@ -35,7 +35,9 @@ class RectilinearMesh : public StructuredMesh
 {
 public:
 
-
+  /*!
+   * \brief Default constructor. Disabled.
+   */
   RectilinearMesh() = delete;
 
   /*!
@@ -45,10 +47,55 @@ public:
    */
   RectilinearMesh( int dimension, int64 ext[6] );
 
+/// \name Virtual methods
+/// @{
+
   /*!
    * \brief Destructor.
    */
   virtual ~RectilinearMesh();
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \note provided only for convenience, do not use inside a loop. Instead use
+   *  getCoordinate() or getCoordinateArray() methods to calculate the nodal 
+   *  coordinates.
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* node ) const override final;
+
+  /*!
+   * \brief Returns pointer to the nodal positions in the specified dimension.
+   *
+   * \param[in] dim the specified dimension
+   *
+   * \note the returned buffer is of length getNumberOfNodesAlongDim( dim ).
+   *
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
+   */
+  /// @{
+  
+  virtual double* getCoordinateArray( int dim ) final override;
+
+  virtual const double* getCoordinateArray( int dim ) const final override;
+
+  /// @}
+
+/// @}
+
+/// \name Data Accessor Methods
+/// @{
+
+/// \name Nodes
+/// @{  
 
   /*!
    * \brief Sets the coordinate along the given dimension.
@@ -68,26 +115,9 @@ public:
    */
   inline double getCoordinate( int dim, IndexType i ) const;
 
+/// @}
 
-  virtual double* getCoordinateArray( int dim ) final override;
-
-  virtual const double* getCoordinateArray( int dim ) const final override;
-
-  /*!
-   * \brief Copy the coordinates of the given node into the provided buffer.
-   *
-   * \param [in] nodeID the ID of the node in question.
-   * \param [in] coords the buffer to copy the coordinates into, of length at
-   *  least getDimension().
-   *
-   * \note provided only for convenience, do not use inside a loop. Instead use
-   *  getCoordinate() or getCoordinateArray() methods to calculate the nodal 
-   *  coordinates.
-   *
-   * \pre 0 <= nodeID < getNumberOfNodes()
-   * \pre coords != AXOM_NULLPTR
-   */
-  virtual void getNode( IndexType nodeID, double* node ) const override final;
+/// @}
 
 private:
 

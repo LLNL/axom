@@ -30,7 +30,10 @@ namespace mint
 class CurvilinearMesh : public StructuredMesh
 {
 public:
-
+  
+  /*!
+   * \brief Default constructor. Disabled.
+   */
   CurvilinearMesh() = delete;
 
   /*!
@@ -40,67 +43,17 @@ public:
    */
   CurvilinearMesh( int dimension, const int64 ext[6] );
 
+/// \name Virtual methods
+/// @{
+
   /*!
    * \brief Destructor.
    */
   virtual ~CurvilinearMesh()
   {}
 
-  /// \name SetNode() methods
-  /// @{
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \param [in] z the z--coordinate to set at the given node.
-   * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
-   * \pre this->getDimension() == 3
-   */
-  void setNode( IndexType nodeIdx, double x, double y, double z );
-
-  /*!
-   * \brief Sets the coordinates of the node at (i,j,k).
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] k logical index of the node along the third dimension.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \param [in] z the z--coordinate to set at the given node.
-   * \pre this->getDimension() == 3
-   */
-  void setNode( IndexType i, IndexType j, IndexType k, double x, double y,
-                double z );
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \pre this->getDimension() == 2
-   */
-  void setNode( IndexType nodeIdx, double x, double y );
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \pre this->getDimension() == 2
-   */
-  void setNode( IndexType i, IndexType j, double x, double y );
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \pre this->getDimension() == 1
-   */
-  void setNode( IndexType nodeIdx, double x );
-
-  /// @}
+/// \name Nodes
+/// @{
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -116,13 +69,18 @@ public:
   { m_coordinates.getCoordinates( nodeID, coords ); }
 
   /*!
-   * \brief Return a pointer to the array of nodal coordinates of the
-   *  given dimension.
+   * \brief Returns pointer to the requested mesh coordinate buffer.
    *
-   * \param [in] dim the dimension to return.
+   * \param [in] dim the dimension of the requested coordinate buffer
+   * \return ptr pointer to the coordinate buffer.
    *
-   * \pre 0 <= dim < getDimension()
+   * \note The length of the returned buffer is getNumberOfNodes().
+   *
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
    */
+  /// @{
+
   virtual double* getCoordinateArray( int dim ) final override
   { return m_coordinates.getCoordinateArray( dim ); }
 
@@ -137,10 +95,70 @@ public:
   virtual const double* getCoordinateArray( int dim ) const final override
   { return m_coordinates.getCoordinateArray( dim ); }
 
+  /// @}
+
+/// @}
+
+/// @}
+
+/// \name Data Accessor Methods
+/// @{
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Sets the coordinates of the node at the given index.
+   * 
+   * \param [in] nodeIdx the index of the node in query.
+   * \param [in] x the x-coordinate to set at the given node.
+   * \param [in] y the y-coordinate to set at the given node.
+   * \param [in] z the z-coordinate to set at the given node.
+   *
+   * \note Each method is valid only for the appropriate dimension of the mesh.
+   *
+   * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
+   */
+  /// @{
+
+  // void setNode( IndexType nodeIdx, double x );
+
+  // void setNode( IndexType nodeIdx, double x, double y );
+
+  // void setNode( IndexType nodeIdx, double x, double y, double z );
+
+  /// @}
+
+  /*!
+   * \brief Sets the coordinates of the node at (i,j,k).
+   *
+   * \param [in] i logical index of the node along the first dimension.
+   * \param [in] j logical index of the node along the second dimension.
+   * \param [in] k logical index of the node along the third dimension.
+   * \param [in] x the x-coordinate to set at the given node.
+   * \param [in] y the y-coordinate to set at the given node.
+   * \param [in] z the z-coordinate to set at the given node.
+   *
+   * \note Each method is valid only for the appropriate dimension of the mesh.
+   */
+  /// @{
+
+  void setNode( IndexType i, double x );
+
+  void setNode( IndexType i, IndexType j, double x, double y );
+
+  void setNode( IndexType i, IndexType j, IndexType k, double x, double y,
+                double z );
+  
+  /// @}
+
+/// @}
+
+/// @}
+
 private:
 
   MeshCoordinates m_coordinates;
-
 
   CurvilinearMesh(const CurvilinearMesh&); // Not implemented
   CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented
@@ -152,31 +170,11 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y,
-                                      double z)
+inline void CurvilinearMesh::setNode( IndexType i, double x )
 {
-  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < getNumberOfNodes() );
-  SLIC_ASSERT( getDimension() == 3 );
+  SLIC_ASSERT( getDimension() == 1 );
 
-  m_coordinates.set( nodeIdx, x, y, z );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( IndexType i, IndexType j, IndexType k,
-                                      double x, double y, double z )
-{
-  SLIC_ASSERT( getDimension() == 3 );
-
-  IndexType nodeIdx = m_extent.getLinearIndex( i, j, k );
-  setNode( nodeIdx, x, y, z );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x, double y )
-{
-  SLIC_ASSERT(  getDimension() == 2 );
-
-  m_coordinates.set( nodeIdx, x, y );
+  m_coordinates.set( i, x );
 }
 
 //------------------------------------------------------------------------------
@@ -186,15 +184,17 @@ inline void CurvilinearMesh::setNode( IndexType i, IndexType j, double x,
   SLIC_ASSERT( getDimension() == 2 );
 
   IndexType nodeIdx = m_extent.getLinearIndex( i, j );
-  setNode( nodeIdx, x, y );
+  m_coordinates.set( nodeIdx, x, y );
 }
 
 //------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( IndexType nodeIdx, double x )
+inline void CurvilinearMesh::setNode( IndexType i, IndexType j, IndexType k,
+                                      double x, double y, double z )
 {
-  SLIC_ASSERT( getDimension() == 1 );
+  SLIC_ASSERT( getDimension() == 3 );
 
-  m_coordinates.set( nodeIdx, x );
+  IndexType nodeIdx = m_extent.getLinearIndex( i, j, k );
+  m_coordinates.set( nodeIdx, x, y, z );
 }
 
 } /* namespace mint */
