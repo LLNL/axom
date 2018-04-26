@@ -119,6 +119,9 @@ public:
 
 /// @}
 
+/// \name Virtual methods
+/// @{
+
   /*!
    * \brief Destructor, deletes the MeshCoordinates and ConnectivityArray.
    */
@@ -136,11 +139,31 @@ public:
     }
   }
 
-/// \name Data Accessor Methods
-/// @{
-
 /// \name Cells
 /// @{
+
+  /*!
+   * \brief Return the number of cells in the mesh.
+   */
+  virtual IndexType getNumberOfCells() const final override
+  { return m_cell_connectivity->getNumberOfIDs(); }
+
+  /*!
+   * \brief Return the capacity for cells.
+   */
+  virtual IndexType getCellCapacity() const final override
+  { return m_cell_connectivity->getIDCapacity(); }
+
+  /*!
+   * \brief Return the number of nodes associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored if TOPO == Topology::SINGLE.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual int getNumberOfCellNodes( IndexType cellID=0 ) const override final
+  { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!
    * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
@@ -161,29 +184,6 @@ public:
   { return m_cell_connectivity->getIDType( cellID ); }
 
   /*!
-   * \brief Return the number of nodes associated with the given cell.
-   *
-   * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored if TOPO == Topology::SINGLE.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual int getNumberOfCellNodes( IndexType cellID=0 ) const override final
-  { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
-
-  /*!
-   * \brief Return a const pointer to the connectivity of the given cell. The
-   *  buffer is guarenteed to be of length at least 
-   *  getNumberOfCellNodes( cellID ).
-   *
-   * \param [in] cellID the ID of the cell in question.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  const IndexType* getCell( IndexType cellID ) const
-  { return (*m_cell_connectivity)[ cellID ]; }
-
-  /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
    *
@@ -202,6 +202,315 @@ public:
     std::memcpy( cell, getCell( cellID ), n_cells * sizeof( IndexType ) );
     return n_cells;
   }
+
+/// @}
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the number of nodes in the mesh.
+   */
+  virtual IndexType getNumberOfNodes() const final override
+  { return m_coordinates->numNodes(); }
+
+  /*!
+   * \brief Return the capacity for nodes.
+   */
+  virtual IndexType getNodeCapacity() const final override
+  { return m_coordinates->capacity(); }
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* coords ) const override final
+  { m_coordinates->getCoordinates( nodeID, coords ); }
+
+  /*!
+   * \brief Return a pointer to the array of nodal coordinates of the
+   *  given dimension.
+   *
+   * \param [in] dim the dimension to return.
+   *
+   * \pre 0 <= dim < getDimension()
+   */
+  /// @{
+
+  virtual double* getCoordinateArray( int dim ) final override
+  { return m_coordinates->getCoordinateArray( dim ); }
+
+  virtual const double* getCoordinateArray( int dim ) const final override
+  { return m_coordinates->getCoordinateArray( dim ); }
+  
+  /// @}
+
+/// @}
+
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Return the number of faces in the mesh.
+   */
+  virtual IndexType getNumberOfFaces() const final override
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the capacity for faces.
+   */
+  virtual IndexType getFaceCapacity() const final override
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+/// @}
+
+/// \name Edges
+/// @{
+
+  /*!
+   * \brief Return the number of edges in the mesh.
+   */
+  virtual IndexType getNumberOfEdges() const final override
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+  /*!
+   * \brief Return the capacity for edges.
+   */
+  virtual IndexType getEdgeCapacity() const final override
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0; 
+  }
+
+/// @}
+
+/// @}
+
+/// \name Attribute get/set Methods
+/// @{
+
+/// \name Cells
+/// @{
+
+  /*!
+   * \brief Return the cell resize ratio.
+   */
+  double getCellResizeRatio() const
+  { return m_cell_connectivity->getResizeRatio(); }
+
+  /*!
+   * \brief Set the cell resize ratio.
+   *
+   * \param [in] ratio the new cell resize ratio.
+   *
+   * \post getCellResizeRatio() == ratio
+   */
+  void setCellResizeRatio( double ratio )
+  { 
+    m_cell_connectivity->setResizeRatio( ratio );
+    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( ratio );
+  }
+
+  /*!
+   * \brief Return the size of the connectivity array.
+   */
+  IndexType getConnectivitySize() const
+  { return m_cell_connectivity->getNumberOfValues(); }
+
+  /*!
+   * \brief Return the capacity of the connectivity array.
+   */
+  IndexType getCellConnectivityCapacity() const
+  { return m_cell_connectivity->getValueCapacity(); }
+
+  /*!
+   * \brief Reserve space for the given number of cells.
+   *
+   * \param [in] cell_capacity the number of cells to reserve space for.
+   * \param [in] connectivity_capacity the ammount of space to reserve in the
+   *  connectivity array. Ignored if TOPO == Topology::SINGLE.
+   *
+   * \post getCellCapacity() >= cell_capacity
+   */
+  void reserveCells( IndexType cell_capacity,
+                     IndexType connectivity_capacity=USE_DEFAULT )
+  { 
+    m_cell_connectivity->reserve( cell_capacity, connectivity_capacity );
+    m_mesh_fields[ CELL_CENTERED ]->reserve( cell_capacity );
+  }
+
+  /*!
+   * \brief Shrink the cell capacity to be equal to the number of cells.
+   *
+   * \post getCellCapacity() == getNumberOfCells()
+   */
+  void shrinkCells()
+  { 
+    m_cell_connectivity->shrink(); 
+    m_mesh_fields[ CELL_CENTERED ]->shrink();
+  }
+
+/// @}
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the node resize ratio.
+   */
+  double getNodeResizeRatio() const
+  { return m_coordinates->getResizeRatio(); }
+
+  /*!
+   * \brief Set the node resize ratio.
+   *
+   * \param [in] ratio the new node resize ratio.
+   *
+   * \post getNodeResizeRatio() == ratio
+   */
+  void setNodeResizeRatio( double ratio )
+  {
+    m_coordinates->setResizeRatio( ratio );
+    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( ratio );
+  }
+
+  /*!
+   * \brief Reserve space for the given number of nodes.
+   *
+   * \param [in] node_capacity the number of nodes to reserve space for.
+   *
+   * \post getNodeCapacity() >= node_capacity
+   */
+  void reserveNodes( IndexType node_capacity )
+  {
+    m_coordinates->reserve( node_capacity );
+    m_mesh_fields[ NODE_CENTERED ]->reserve( node_capacity );
+  }
+
+  /*!
+   * \brief Shrink the node capacity to be equal to the number of nodes.
+   *
+   * \post getNodeCapacity() == getNumberOfNodes()
+   */
+  void shrinkNodes()
+  { 
+    m_coordinates->shrink();
+    m_mesh_fields[ NODE_CENTERED ]->shrink();
+  }
+
+/// @}
+
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Return the face resize ratio.
+   */
+  double getFaceResizeRatio() const
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0.0;
+  }
+
+/// @}
+
+/// \name Edges
+/// @{
+
+  /*!
+   * \brief Return the edge resize ratio.
+   */
+  double getEdgeResizeRatio() const
+  { 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+    return 0.0;
+  }
+
+/// @}
+
+  /*!
+   * \brief Return true iff the mesh holds no nodes and no cells.
+   */
+  bool empty() const
+  { return m_coordinates->empty() && m_cell_connectivity->empty(); }
+
+  /*!
+   * \brief Return true iff both the connectivity and coordinates are stored in
+   *  external arrays.
+   */
+  bool isExternal() const
+  {
+    bool connec_external = m_cell_connectivity->isExternal();
+    bool coords_external = m_coordinates->isExternal();
+
+    if ( connec_external != coords_external )
+    {
+      SLIC_WARNING( "External state not consistent." );
+      return false;
+    }
+
+    return connec_external;
+  }
+
+  /*!
+   * \brief Return true iff both the connectivity and coordinates are stored in
+   *  sidre.
+   */
+  bool isInSidre() const
+  {
+    bool connec_sidre = m_cell_connectivity->isInSidre();
+    bool coords_sidre = m_coordinates->isInSidre();
+
+    if ( connec_sidre != coords_sidre )
+    {
+      SLIC_WARNING( "Sidre state not consistent." );
+      return false;
+    }
+
+    return connec_sidre;
+  }
+
+/// @}
+
+/// \name Data Access Methods
+/// @{
+
+/// \name Cells
+/// @{
+
+  /*!
+   * \brief Return a pointer to the connectivity of the given cell. The
+   *  buffer is guarenteed to be of length at least 
+   *  getNumberOfCellNodes( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  /// @{
+  
+  IndexType* getCell( IndexType cellID )
+  { return (*m_cell_connectivity)[ cellID ]; }
+
+  const IndexType* getCell( IndexType cellID ) const
+  { return (*m_cell_connectivity)[ cellID ]; }
+
+  /// @}
 
   /*!
    * \brief Return a constant pointer to the connectivity array, of length
@@ -225,69 +534,6 @@ public:
    */
   const CellType* getTypePtr() const
   { return m_cell_connectivity->getTypePtr(); }
-
-/// @}
-
-/// \name Nodes
-/// @{
-
-  /*!
-   * \brief Return the coordinate of the given dimension of the given node.
-   *
-   * \param [in] nodeID the ID of the node in question.
-   * \param [in] dim the dimension to return.
-   *
-   * \pre 0 <= nodeID < getNumberOfNodes()
-   * \pre 0 <= dim < getDimension()
-   */
-  double getNodeCoordinate( IndexType nodeID, int dim ) const
-  { return m_coordinates->getCoordinate( nodeID, dim ); }
-
-  /*!
-   * \brief Copy the coordinates of the given node into the provided buffer.
-   *
-   * \param [in] nodeID the ID of the node in question.
-   * \param [in] coords the buffer to copy the coordinates into, of length at
-   *  least getDimension().
-   *
-   * \pre 0 <= nodeID < getNumberOfNodes()
-   * \pre coords != AXOM_NULLPTR
-   */
-  virtual void getNode( IndexType nodeID, double* coords ) const override final
-  { m_coordinates->getCoordinates( nodeID, coords ); }
-
-  /*!
-   * \brief Return a constant pointer to the array of nodal coordinates of the
-   *  given dimension.
-   *
-   * \param [in] dim the dimension to return.
-   *
-   * \pre 0 <= dim < getDimension()
-   */
-  virtual const double* getCoordinateArray( int dim ) const final override
-  { return m_coordinates->getCoordinateArray( dim ); } 
-
-/// @}
-
-/// @}
-
-/// \name Data Modification Methods
-/// @{
-
-/// \name Cells
-/// @{
-
-  /*!
-   * \brief Return a pointer to the connectivity of the given cell. The
-   *  buffer is guaranteed to be of length at least 
-   *  getNumberOfCellNodes( cellID ).
-   *
-   * \param [in] cellID the ID of the cell in question.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  IndexType* getCell( IndexType cellID )
-  { return (*m_cell_connectivity)[ cellID ]; }
 
   /*!
    * \brief Append a cell to the mesh.
@@ -380,33 +626,16 @@ public:
 /// @{
   
   /*!
-   * \brief Append a node to the mesh.
+   * \brief Return the coordinate of the given dimension of the given node.
    *
-   * \param [in] x the value of the coordinate to append.
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] dim the dimension to return.
    *
-   * \pre getDimension() == 1
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre 0 <= dim < getDimension()
    */
-  IndexType appendNode( double x )
-  { 
-    IndexType n_index = m_coordinates->append( x );
-    m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
-    return n_index;
-  }
-
-  /*!
-   * \brief Appends a new node to the MeshCoordinates instance
-   *
-   * \param [in] x the first coordinate to append.
-   * \param [in] y the second coordinate to append.
-   *
-   * \pre dimension() == 2
-   */
-  IndexType appendNode( double x, double y )
-  { 
-    IndexType n_index = m_coordinates->append( x, y );
-    m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
-    return n_index;
-  }
+  double getNodeCoordinate( IndexType nodeID, int dim ) const
+  { return m_coordinates->getCoordinate( nodeID, dim ); }
 
   /*!
    * \brief Appends a new node to the MeshCoordinates instance
@@ -415,14 +644,33 @@ public:
    * \param [in] y the second coordinate to append.
    * \param [in] z the third coordinate to append.
    *
-   * \pre dimension() == 3
+   * \note Each method is valid only for the appropriate dimension of the mesh.
    */
+  /// @{
+
+  IndexType appendNode( double x )
+  { 
+    IndexType n_index = m_coordinates->append( x );
+    m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
+    return n_index;
+  }
+
+  IndexType appendNode( double x, double y )
+  { 
+    IndexType n_index = m_coordinates->append( x, y );
+    m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
+    return n_index;
+  }
+
+  
   IndexType appendNode( double x, double y, double z )
   { 
     IndexType n_index = m_coordinates->append( x, y, z );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
     return n_index;
   }
+
+  /// @}
 
   /*!
    * \brief Appends multiple nodes to the MeshCoordinates instance
@@ -448,84 +696,33 @@ public:
    *
    * \param [in] x array of the first coordinates to append, of length n.
    * \param [in] y array of the second coordinates to append, of length n.
+   * \param [in] z array of the third coordinates to append, of length n.
    * \param [in] n the number of coordinates to append.
    *
-   * \pre dimension() == 2
+   * \note The first method is only valid for 2D meshes while the second 
+   *  is only for 3D.
    * \pre x != AXOM_NULLPTR
    * \pre y != AXOM_NULLPTR
    * \pre z != AXOM_NULLPTR
    * \pre n >= 0
    */
+  /// @{
+
   void appendNodes( const double* x, const double* y, IndexType n )
   {
     m_coordinates->append( x, y, n );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
   }
 
-  /*!
-   * \brief Appends new nodes to the MeshCoordinates instance
-   *
-   * \param [in] x array of the first coordinates to append, of length n.
-   * \param [in] y array of the second coordinates to append, of length n.
-   * \param [in] z array of the third coordinates to append, of length n.
-   * \param [in] n the number of coordinates to append.
-   *
-   * \pre dimension() == 3
-   * \pre x != AXOM_NULLPTR
-   * \pre y != AXOM_NULLPTR
-   * \pre z != AXOM_NULLPTR
-   * \pre n >= 0
-   */
   void appendNodes( const double* x, const double* y, const double* z,
                     IndexType n )
   {
     m_coordinates->append( x, y, z, n );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
   }
+  
+  /// @}
 
-  /*!
-   * \brief Insert a node to the MeshCoordinates instance.
-   *
-   * \param [in] nodeID the position to insert at.
-   * \param [in] x the value of the coordinate to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
-   *
-   * \pre getDimension() == 1
-   * \pre 0 <= nodeID <= getNumberOfNodes
-   */
-  void insertNode( IndexType nodeID, double x, bool update_connectivity=true )
-  {
-    m_coordinates->insert( nodeID, x );
-    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
-    if ( update_connectivity )
-    {
-      connectivityUpdateInsert( nodeID, 1 );
-    }
-  }
-
-  /*!
-   * \brief Insert a node to the MeshCoordinates instance.
-   *
-   * \param [in] nodeID the position to insert at.
-   * \param [in] x the value of the first coordinate to insert.
-   * \param [in] y the value of the second coordinate to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
-   *
-   * \pre getDimension() == 2
-   * \pre 0 <= nodeID <= getNumberOfNodes
-   */
-  void insertNode( IndexType nodeID, double x, double y, 
-                   bool update_connectivity=true )
-  {
-    m_coordinates->insert( nodeID, x, y );
-    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
-    if ( update_connectivity )
-    {
-      connectivityUpdateInsert( nodeID, 1 );
-    }
-  }
 
   /*!
    * \brief Insert a node to the MeshCoordinates instance.
@@ -537,9 +734,32 @@ public:
    * \param [in] update_connectivity if true will update the connectivity so
    *  that all elements remain connected to the same coordinates as before.
    *
-   * \pre getDimension() == 3
+   * \note Each method is valid only for the appropriate dimension of the mesh.
    * \pre 0 <= nodeID <= getNumberOfNodes
    */
+  /// @{
+
+  void insertNode( IndexType nodeID, double x, bool update_connectivity=true )
+  {
+    m_coordinates->insert( nodeID, x );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
+    if ( update_connectivity )
+    {
+      connectivityUpdateInsert( nodeID, 1 );
+    }
+  }
+
+  void insertNode( IndexType nodeID, double x, double y, 
+                   bool update_connectivity=true )
+  {
+    m_coordinates->insert( nodeID, x, y );
+    m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
+    if ( update_connectivity )
+    {
+      connectivityUpdateInsert( nodeID, 1 );
+    }
+  }
+
   void insertNode( IndexType nodeID, double x, double y, double z, 
                    bool update_connectivity=true )
   {
@@ -550,6 +770,8 @@ public:
       connectivityUpdateInsert( nodeID, 1 );
     }
   }
+
+  /// @}
 
   /*!
    * \brief Inserts multiple nodes to the MeshCoordinates instance
@@ -584,16 +806,21 @@ public:
    * \param [in] nodeID the position to insert at.
    * \param [in] x the array of the first coordinates to insert.
    * \param [in] y the array of the second coordinates to insert.
+   * \param [in] z the array of the third coordinates to insert.
    * \param [in] n the number of nodes to insert.
    * \param [in] update_connectivity if true will update the connectivity so
    *  that all elements remain connected to the same coordinates as before.
    *
-   * \pre getDimension() == 2
+   * \note The first method is only valid for 2D meshes while the second 
+   *  is only for 3D.
    * \pre 0 <= nodeID <= getNumberOfNodes
    * x != AXOM_NULLPTR
    * y != AXOM_NULLPTR
+   * z != AXOM_NULLPTR
    * \pre n >= 0
    */
+  /// @{
+
   void insertNodes( IndexType nodeID, const double* x, const double* y, 
                     IndexType n, bool update_connectivity=true )
   {
@@ -605,24 +832,7 @@ public:
     }
   }
 
-  /*!
-   * \brief Insert multiple nodes to the MeshCoordinates instance.
-   *
-   * \param [in] nodeID the position to insert at.
-   * \param [in] x the array of the first coordinates to insert.
-   * \param [in] y the array of the second coordinates to insert.
-   * \param [in] z the array of the third coordinates to insert.
-   * \param [in] n the number of nodes to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
-   *
-   * \pre getDimension() == 3
-   * \pre 0 <= nodeID <= getNumberOfNodes
-   * x != AXOM_NULLPTR
-   * y != AXOM_NULLPTR
-   * z != AXOM_NULLPTR
-   * \pre n >= 0
-   */
+  
   void insertNodes( IndexType nodeID, const double* x, const double* y, 
                     const double* z, IndexType n, bool update_connectivity=true )
   {
@@ -634,277 +844,7 @@ public:
     }
   }
 
-  /*!
-   * \brief Return a pointer to the array of nodal coordinates of the
-   *  given dimension.
-   *
-   * \param [in] dim the dimension to return.
-   *
-   * \pre 0 <= dim < getDimension()
-   */
-  virtual double* getCoordinateArray( int dim ) final override
-  { return m_coordinates->getCoordinateArray( dim ); }
-
-/// @}
-
-/// @}
-
-/// \name Attribute Querying Methods
-/// @{
-
-/// \name Cells
-/// @{
-
-  /*!
-   * \brief Return the number of cells in the mesh.
-   */
-  virtual IndexType getNumberOfCells() const final override
-  { return m_cell_connectivity->getNumberOfIDs(); }
-
-  /*!
-   * \brief Return the capacity for cells.
-   */
-  virtual IndexType getCellCapacity() const final override
-  { return m_cell_connectivity->getIDCapacity(); }
-
-  /*!
-   * \brief Return the cell resize ratio.
-   */
-  double getCellResizeRatio() const
-  { return m_cell_connectivity->getResizeRatio(); }
-
-  /*!
-   * \brief Return the size of the connectivity array.
-   */
-  IndexType getConnectivitySize() const
-  { return m_cell_connectivity->getNumberOfValues(); }
-
-  /*!
-   * \brief Return the capacity of the connectivity array.
-   */
-  IndexType getCellConnectivityCapacity() const
-  { return m_cell_connectivity->getValueCapacity(); }
-
-/// @}
-
-/// \name Nodes
-/// @{
-
-  /*!
-   * \brief Return the number of nodes in the mesh.
-   */
-  virtual IndexType getNumberOfNodes() const final override
-  { return m_coordinates->numNodes(); }
-
-  /*!
-   * \brief Return the capacity for nodes.
-   */
-  virtual IndexType getNodeCapacity() const final override
-  { return m_coordinates->capacity(); }
-
-  /*!
-   * \brief Return the node resize ratio.
-   */
-  double getNodeResizeRatio() const
-  { return m_coordinates->getResizeRatio(); }
-
-/// @}
-
-/// \name Faces
-/// @{
-
-  /*!
-   * \brief Return the number of faces in the mesh.
-   */
-  virtual IndexType getNumberOfFaces() const final override
-  {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
-  }
-
-  /*!
-   * \brief Return the capacity for faces.
-   */
-  virtual IndexType getFaceCapacity() const final override
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
-  }
-
-  /*!
-   * \brief Return the face resize ratio.
-   */
-  double getFaceResizeRatio() const
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0.0;
-  }
-
-/// @}
-
-/// \name Edges
-/// @{
-
-  /*!
-   * \brief Return the number of edges in the mesh.
-   */
-  virtual IndexType getNumberOfEdges() const final override
-  {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
-  }
-
-  /*!
-   * \brief Return the capacity for edges.
-   */
-  virtual IndexType getEdgeCapacity() const final override
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
-  }
-
-  /*!
-   * \brief Return the edge resize ratio.
-   */
-  double getEdgeResizeRatio() const
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0.0;
-  }
-
-/// @}
-
-  /*!
-   * \brief Return true iff the mesh holds no nodes and no cells.
-   */
-  bool empty() const
-  { return m_coordinates->empty() && m_cell_connectivity->empty(); }
-
-  /*!
-   * \brief Return true iff both the connectivity and coordinates are stored in
-   *  external arrays.
-   */
-  bool isExternal() const
-  {
-    bool connec_external = m_cell_connectivity->isExternal();
-    bool coords_external = m_coordinates->isExternal();
-
-    if ( connec_external != coords_external )
-    {
-      SLIC_WARNING( "External state not consistent." );
-      return false;
-    }
-
-    return connec_external;
-  }
-
-  /*!
-   * \brief Return true iff both the connectivity and coordinates are stored in
-   *  sidre.
-   */
-  bool isInSidre() const
-  {
-    bool connec_sidre = m_cell_connectivity->isInSidre();
-    bool coords_sidre = m_coordinates->isInSidre();
-
-    if ( connec_sidre != coords_sidre )
-    {
-      SLIC_WARNING( "Sidre state not consistent." );
-      return false;
-    }
-
-    return connec_sidre;
-  }
-
-/// @}
-
-/// \name Attribute Modification Methods
-/// @{
-
-/// \name Cells
-/// @{
-
-  /*!
-   * \brief Reserve space for the given number of cells.
-   *
-   * \param [in] cell_capacity the number of cells to reserve space for.
-   * \param [in] connectivity_capacity the ammount of space to reserve in the
-   *  connectivity array. Ignored if TOPO == Topology::SINGLE.
-   *
-   * \post getCellCapacity() >= cell_capacity
-   */
-  void reserveCells( IndexType cell_capacity,
-                     IndexType connectivity_capacity=USE_DEFAULT )
-  { 
-    m_cell_connectivity->reserve( cell_capacity, connectivity_capacity );
-    m_mesh_fields[ CELL_CENTERED ]->reserve( cell_capacity );
-  }
-
-  /*!
-   * \brief Shrink the cell capacity to be equal to the number of cells.
-   *
-   * \post getCellCapacity() == getNumberOfCells()
-   */
-  void shrinkCells()
-  { 
-    m_cell_connectivity->shrink(); 
-    m_mesh_fields[ CELL_CENTERED ]->shrink();
-  }
-
-  /*!
-   * \brief Set the cell resize ratio.
-   *
-   * \param [in] ratio the new cell resize ratio.
-   *
-   * \post getCellResizeRatio() == ratio
-   */
-  void setCellResizeRatio( double ratio )
-  { 
-    m_cell_connectivity->setResizeRatio( ratio );
-    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( ratio );
-  }
-
-/// @}
-
-/// \name Nodes
-/// @{
-
-  /*!
-   * \brief Reserve space for the given number of nodes.
-   *
-   * \param [in] node_capacity the number of nodes to reserve space for.
-   *
-   * \post getNodeCapacity() >= node_capacity
-   */
-  void reserveNodes( IndexType node_capacity )
-  {
-    m_coordinates->reserve( node_capacity );
-    m_mesh_fields[ NODE_CENTERED ]->reserve( node_capacity );
-  }
-
-  /*!
-   * \brief Shrink the node capacity to be equal to the number of nodes.
-   *
-   * \post getNodeCapacity() == getNumberOfNodes()
-   */
-  void shrinkNodes()
-  { 
-    m_coordinates->shrink();
-    m_mesh_fields[ NODE_CENTERED ]->shrink();
-  }
-
-  /*!
-   * \brief Set the node resize ratio.
-   *
-   * \param [in] ratio the new node resize ratio.
-   *
-   * \post getNodeResizeRatio() == ratio
-   */
-  void setNodeResizeRatio( double ratio )
-  {
-    m_coordinates->setResizeRatio( ratio );
-    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( ratio );
-  }
+  /// @}
 
 /// @}
 
@@ -944,7 +884,6 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT( UnstructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
 };
-
 
 } /* namespace mint */
 } /* namespace axom */

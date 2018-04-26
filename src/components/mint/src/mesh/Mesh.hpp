@@ -180,61 +180,13 @@ public:
    */
   Mesh( ) = delete;
 
+/// \name Virtual methods
+/// @{
+
   /*!
    * \brief Destructor.
    */
   virtual ~Mesh();
-
-/// \name Mesh Attribute Query Methods
-/// @{
-
-  /*!
-   * \brief Returns the dimension for this mesh instance.
-   * \return ndims the dimension of this mesh instance.
-   * \post ndims >= 1 && ndims <= 3
-   */
-  inline int getDimension() const
-  { return m_ndims; }
-
-  /*!
-   * \brief Returns the ID of this mesh instance.
-   * \return Id the ID of the mesh.
-   */
-  inline int getBlockId() const
-  { return m_block_idx; }
-
-  /*!
-   * \brief set the block ID of this mesh instance.
-   * 
-   * \param [in] ID the new block ID.
-   *
-   * \post getBlockId() == ID
-   */
-  void setBlockId( int ID );
-
-  /*!
-   * \brief Returns the partition ID of this mesh instance.
-   * \return partitionId the partition ID of the mesh.
-   */
-  inline int getPartitionId() const
-  { return m_part_idx; }
-
-  /*!
-   * \brief set the partition ID of this mesh instance.
-   * 
-   * \param [in] ID the new partition ID.
-   *
-   * \post getPartitionId() == ID
-   */
-  void setPartitionId( int ID );
-
-  /*!
-   * \brief Returns the mesh type of this mesh instance.
-   * \return meshType the mesh type
-   * \see MeshType
-   */
-  inline int getMeshType() const
-  { return m_type; }
 
   /*!
    * \brief Returns the number of nodes in this mesh instance.
@@ -293,48 +245,19 @@ public:
   virtual IndexType getEdgeCapacity() const = 0;
 
   /*!
-   * \brief Checks if this mesh instance has explicit coordinates.
-   * \return status true iff the mesh defines coordinates explicitly.
-   */
-  inline bool hasExplicitCoordinates() const
-  { return m_explicit_coords; }
-
-  /*!
-   * \brief Checks if this mesh instance has explicit connectivity.
-   * \return status true iff the mesh defines cell connectivity explicitly.
-   */
-  inline bool hasExplicitConnectivity() const
-  { return m_explicit_connectivity; }
-
-  /*!
-   * \brief Checks if the mesh has mixed cell types, e.g., consisting of both
-   *  triangle and quad elements or hex,pyramid,prisms and tets in 3-D.
-   * \return status true iff the mesh has mixed cell types.
-   */
-  inline bool hasMixedCellTypes() const
-  { return m_has_mixed_topology; }
-
-  /*!
-   * \brief Checks if this Mesh instance is associated with a Sidre Group.
-   * \return status true if the Mesh is associated with a group in a Sidre
-   *  hierarchy, else, false.
-   */
-  inline bool hasSidreGroup() const;
-
-/// @}
-
-  /*!
    * \brief Returns pointer to the requested mesh coordinate buffer.
    *
    * \param [in] dim the dimension of the requested coordinate buffer
    * \return ptr pointer to the coordinate buffer.
    *
-   * \pre hasExplicitCoordinates()==true
-   * \pre dim >= 0 && dim < dimension()
-   * \pre dim==X_COORDINATE || dim==Y_COORDINATE || dim==Z_COORDINATE
-   * \post ptr != AXOM_NULLPTR
+   * \note if hasExplicitCoordinates() == true then the length of the returned
+   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns 
+   *  AXOM_NULLPTR and the RectilinearMesh returns a pointer to the associated
+   *  dimension scale which is of length 
+   *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim().
    *
-   * \see MeshCoordinates
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
    */
   /// @{
 
@@ -366,21 +289,6 @@ public:
   virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
 
   /*!
-   * \brief Copy the connectivity of the given cell into the provided buffer.
-   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
-   *
-   * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied, must
-   *  be of length at least getNumberOfCellNodes( cellID ).
-   *
-   * \return The number of nodes for the given cell.
-   * 
-   * \pre cell != AXOM_NULLPTR
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const = 0;
-
-  /*!
    * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
    *  hasMixedCellTypes() == true.
    */
@@ -395,6 +303,105 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual CellType getCellType( IndexType cellID ) const = 0;
+
+  /*!
+   * \brief Copy the connectivity of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [out] cell the buffer into which the connectivity is copied, must
+   *  be of length at least getNumberOfCellNodes( cellID ).
+   *
+   * \return The number of nodes for the given cell.
+   * 
+   * \pre cell != AXOM_NULLPTR
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const = 0;
+
+/// @}
+
+/// \name Mesh Attribute get/set Methods
+/// @{
+
+  /*!
+   * \brief Returns the dimension for this mesh instance.
+   * \return ndims the dimension of this mesh instance.
+   * \post ndims >= 1 && ndims <= 3
+   */
+  inline int getDimension() const
+  { return m_ndims; }
+
+  /*!
+   * \brief Returns the ID of this mesh instance.
+   * \return Id the ID of the mesh.
+   */
+  inline int getBlockId() const
+  { return m_block_idx; }
+
+  /*!
+   * \brief set the block ID of this mesh instance.
+   * 
+   * \param [in] ID the new block ID.
+   *
+   * \post getBlockId() == ID
+   */
+  void setBlockId( int ID );
+
+  /*!
+   * \brief Returns the partition ID of this mesh instance.
+   * \return partitionId the partition ID of the mesh.
+   */
+  inline int getPartitionId() const
+  { return m_part_idx; }
+
+  /*!
+   * \brief set the partition ID of this mesh instance.
+   * 
+   * \param [in] ID the new partition ID.
+   *
+   * \post getPartitionId() == ID
+   */
+  void setPartitionId( int ID );
+
+  /*!
+   * \brief Returns the mesh type of this mesh instance.
+   * \return meshType the mesh type
+   * \see MeshType
+   */
+  inline int getMeshType() const
+  { return m_type; }
+
+  /*!
+   * \brief Checks if this mesh instance has explicit coordinates.
+   * \return status true iff the mesh defines coordinates explicitly.
+   */
+  inline bool hasExplicitCoordinates() const
+  { return m_explicit_coords; }
+
+  /*!
+   * \brief Checks if this mesh instance has explicit connectivity.
+   * \return status true iff the mesh defines cell connectivity explicitly.
+   */
+  inline bool hasExplicitConnectivity() const
+  { return m_explicit_connectivity; }
+
+  /*!
+   * \brief Checks if the mesh has mixed cell types, e.g., consisting of both
+   *  triangle and quad elements or hex,pyramid,prisms and tets in 3-D.
+   * \return status true iff the mesh has mixed cell types.
+   */
+  inline bool hasMixedCellTypes() const
+  { return m_has_mixed_topology; }
+
+  /*!
+   * \brief Checks if this Mesh instance is associated with a Sidre Group.
+   * \return status true if the Mesh is associated with a group in a Sidre
+   *  hierarchy, else, false.
+   */
+  inline bool hasSidreGroup() const;
+
+/// @}
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
 /// @{
