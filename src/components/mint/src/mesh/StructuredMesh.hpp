@@ -53,7 +53,17 @@ public:
     {
       ndims[ i ] = m_extent.size( i );
     } // END for
+  }
 
+  /*!
+   * \brief Returns the number of nodes along the given dimension.
+   * \param [in] dim the dimension to querry.
+   * \pre 0 <= dim < 3
+   */
+  inline IndexType getNumberOfNodesAlongDim( IndexType dim ) const
+  {
+    SLIC_ASSERT( 0 <= dim && dim < 3 );
+    return m_extent.size( dim );
   }
 
   /*!
