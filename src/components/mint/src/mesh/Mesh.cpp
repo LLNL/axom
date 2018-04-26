@@ -44,7 +44,7 @@ Mesh::Mesh( int ndims, int type ) :
   m_ndims( ndims ),
   m_type( type ),
   m_block_idx( -1 ),
-  m_part_idx( -1 ),      
+  m_part_idx( -1 ),
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
@@ -65,7 +65,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   m_ndims( -1 ),
   m_type( UNDEFINED_MESH ),
   m_block_idx( -1 ),
-  m_part_idx( -1 ),     
+  m_part_idx( -1 ),
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
@@ -102,7 +102,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
 Mesh::Mesh( sidre::Group* group ) : Mesh( group, "" )
 {}
 
-Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo, 
+Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
             const std::string& coordset ) :
   m_ndims( ndims ),
   m_type( type ),
@@ -186,10 +186,10 @@ void Mesh::setBlockId( int ID )
   }
 #endif
 }
- 
+
 //------------------------------------------------------------------------------
 void Mesh::setPartitionId( int ID )
-{ 
+{
   m_part_idx = ID;
 #ifdef MINT_USE_SIDRE
   if ( hasSidreGroup() )
@@ -200,7 +200,7 @@ void Mesh::setPartitionId( int ID )
     SLIC_ASSERT( partition_view != AXOM_NULLPTR );
     partition_view->setScalar( m_part_idx );
   }
-#endif 
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -252,15 +252,15 @@ Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
   Mesh* m = AXOM_NULLPTR;
   switch ( mesh_type )
   {
-  case STRUCTURED_MESH:
+  case STRUCTURED_CURVILINEAR_MESH:
     SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
     // TODO: implement this
     break;
-  case RECTILINEAR_MESH:
+  case STRUCTURED_RECTILINEAR_MESH:
     SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
     // TODO: implement this
     break;
-  case UNIFORM_MESH:
+  case STRUCTURED_UNIFORM_MESH:
     SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
     // TODO: implement this
     break;

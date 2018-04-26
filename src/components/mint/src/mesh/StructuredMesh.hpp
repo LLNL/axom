@@ -15,14 +15,14 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef STRUCTUREDMESH_HXX_
-#define STRUCTUREDMESH_HXX_
+#ifndef MINT_STRUCTUREDMESH_HPP_
+#define MINT_STRUCTUREDMESH_HPP_
 
-#include "axom/Types.hpp"
-#include "axom/Macros.hpp"
+#include "axom/Types.hpp"       // for axom types
+#include "axom/Macros.hpp"      // for axom macros
 
-#include "mint/CellTypes.hpp"
-#include "mint/config.hpp"
+#include "mint/config.hpp"      // for compile-time definitions
+#include "mint/CellTypes.hpp"   // for
 #include "mint/Extent.hpp"
 #include "mint/Mesh.hpp"
 
@@ -33,6 +33,20 @@ namespace axom
 namespace mint
 {
 
+/*!
+ * \class StructuredMesh
+ *
+ * \brief Base class that defines the core API common for structured mesh types.
+ *
+ *  The StructuredMesh class derives from the abstract Mesh base class and
+ *  implements the core API for Structured meshes. Specifically, the
+ *  StrucrturedMesh  defines and implements all the extent-based operations.
+ *
+ * \see UniformMesh
+ * \see RectilinearMesh
+ * \see CurvilinearMesh
+ * \see Mesh
+ */
 class StructuredMesh : public Mesh
 {
 public:
@@ -48,7 +62,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  virtual ~StructuredMesh() {}
+  virtual ~StructuredMesh();
 
 /// \name Cells
 /// @{
@@ -57,7 +71,7 @@ public:
    * \brief Return the number of cells in the mesh.
    */
   virtual IndexType getNumberOfCells() const final override
-  { return m_extent.getNumCells(); }
+  { return m_extent->getNumCells(); }
 
   /*!
    * \brief Return the number of nodes associated with the given cell.
@@ -67,8 +81,8 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID)=0 )
-                                                          const override final;
+  virtual IndexType
+  getNumberOfCellNodes(IndexType AXOM_NOT_USED(cellID)=0 ) const override final;
 
   /*!
    * \brief Return the type of cell this mesh holds. SEGMENT, QUAD, or HEX
@@ -96,8 +110,8 @@ public:
    * \pre cell != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell )
-                                                          const override final;
+  virtual IndexType
+  getCell( IndexType cellID, IndexType* cell ) const override final;
 
 /// @}
 
@@ -108,7 +122,7 @@ public:
    * \brief Return the number of nodes in the mesh.
    */
   virtual IndexType getNumberOfNodes() const final override
-  { return m_extent.getNumNodes(); }
+  { return m_extent->getNumNodes(); }
 
   /*!
    * \brief Copy the coordinates of the given node into the provided buffer.
@@ -189,7 +203,7 @@ public:
   {
     for ( int i=0 ; i < 3 ; ++i )
     {
-      ndims[ i ] = m_extent.size( i );
+      ndims[ i ] = m_extent->size( i );
     } // END for
   }
 
@@ -201,14 +215,8 @@ public:
   inline IndexType getNumberOfNodesAlongDim( IndexType dim ) const
   {
     SLIC_ASSERT( 0 <= dim && dim < 3 );
-    return m_extent.size( dim );
+    return m_extent->size( dim );
   }
-
-  /*!
-   * \brief Return true iff the mesh holds no particles.
-   */
-  bool empty() const
-  { return getNumberOfNodes() == 0; }
 
 /// @}
 
@@ -221,7 +229,7 @@ public:
    * \post jp >= 0.
    */
   inline IndexType jp() const
-  { return m_extent.jp(); }
+  { return m_extent->jp(); }
 
   /*!
    * \brief Returns stride to the third dimension.
@@ -229,7 +237,17 @@ public:
    * \post kp >= 0.
    */
   inline IndexType kp() const
-  { return m_extent.kp(); }
+  { return m_extent->kp(); }
+
+  /*!
+   * \brief Gets a const reference to the Extent object of this StructuredMesh
+   * \return ext const reference to the Extent object
+   *
+   * \post ext != AXOM_NULLPTR
+   * \see Extent
+   */
+  inline const Extent* getExtent() const
+  { return m_extent; };
 
   /*!
    * \brief Returns the linear index corresponding to the given logical node
@@ -243,12 +261,12 @@ public:
    */
   /// @{
 
-  inline IndexType getLinearIndex( IndexType i, IndexType j,
-                                    IndexType k  ) const
-  { return m_extent.getLinearIndex( i, j, k ); };
+  inline IndexType
+  getLinearIndex( IndexType i, IndexType j, IndexType k  ) const
+  { return m_extent->getLinearIndex( i, j, k ); };
 
   inline IndexType getLinearIndex( IndexType i, IndexType j ) const
-  { return m_extent.getLinearIndex( i, j ); };
+  { return m_extent->getLinearIndex( i, j ); };
 
   /// @}
 
@@ -264,12 +282,12 @@ public:
    */
   /// @{
 
-  inline IndexType getCellLinearIndex( IndexType i, IndexType j,
-                                        IndexType k ) const
-  { return m_extent.getCellLinearIndex( i, j, k); };
+  inline IndexType
+  getCellLinearIndex( IndexType i, IndexType j, IndexType k ) const
+  { return m_extent->getCellLinearIndex( i, j, k); };
 
   inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const
-  { return m_extent.getCellLinearIndex( i, j ); };
+  { return m_extent->getCellLinearIndex( i, j ); };
 
   /// @}
 
@@ -298,8 +316,8 @@ public:
    * \param [out] cell pointer to buffer to populate with the cell connectivity.
    * \pre getDimension() == 3.
    */
-  inline void getCell( IndexType i, IndexType j, IndexType k,
-                       IndexType* cell) const;
+  inline void
+  getCell( IndexType i, IndexType j, IndexType k, IndexType* cell) const;
 
 /// @}
 
@@ -309,12 +327,30 @@ protected:
 
   /*!
    * \brief Constructs a structured mesh instance from the given extent.
+   * \param [in] meshType the mesh type
+   * \param [in] dimension the mesh dimension
    * \param [in] ext the structured mesh extent.
    */
-  StructuredMesh( int meshType, int ndims, const int64 ext[6] );
+  StructuredMesh( int meshType, int dimension, const int64* ext );
 
+  /*!
+   * \brief Creates a structured mesh of specified type and dimension
+   * \param [in] meshType the mesh type
+   * \param [in] dimension the mesh dimension
+   */
+  StructuredMesh( int meshType, int dimension );
 
-  Extent m_extent; /*!< grid extent */
+  /*!
+   * \brief Initializes members of the mesh class.
+   */
+  void init( );
+
+  /*!
+   * \brief Helper method to allocate FieldData on the mesh.
+   */
+  void allocateFields( );
+
+  Extent* m_extent; /*!< grid extent */
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh );
@@ -327,8 +363,8 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline int StructuredMesh::getNumberOfCellNodes(
-                                        IndexType AXOM_NOT_USED(cellID) ) const
+inline int
+StructuredMesh::getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) ) const
 {
   const int cell_type = getCellType();
   return cell_info[ cell_type ].num_nodes;
@@ -341,12 +377,12 @@ IndexType StructuredMesh::getCell( IndexType cellID, IndexType* cell ) const
   SLIC_ASSERT( cell != AXOM_NULLPTR );
   SLIC_ASSERT( 0 <= cellID && cellID < getNumberOfCells() );
 
-  const IndexType* offsets_table = m_extent.getCellOffSets();
+  const IndexType* offsets_table = m_extent->getCellOffSets();
   const IndexType num_cell_nodes = getNumberOfCellNodes();
 
   // Calculate logical indices of the cell's first corner node.
   IndexType ii, jj, kk;
-  m_extent.getCellGridIndex( cellID, ii, jj, kk );
+  m_extent->getCellGridIndex( cellID, ii, jj, kk );
 
   // Use the offsets table to get the all the cell nodes.
   const IndexType n0 = getLinearIndex( ii, jj, kk );
@@ -364,8 +400,8 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j,
   SLIC_ASSERT( getDimension() == 2 );
   SLIC_ASSERT( cell != AXOM_NULLPTR );
 
-  const IndexType* offsets_table = m_extent.getCellOffSets();
-  const IndexType n0 = m_extent.getLinearIndex(i, j);
+  const IndexType* offsets_table = m_extent->getCellOffSets();
+  const IndexType n0 = m_extent->getLinearIndex(i, j);
 
   for ( IndexType i = 0 ; i < 4 ; ++i )
   {
@@ -381,8 +417,8 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j, IndexType k,
   SLIC_ASSERT( getDimension() == 3 );
   SLIC_ASSERT( cell != AXOM_NULLPTR );
 
-  const IndexType* offsets_table = m_extent.getCellOffSets();
-  const IndexType n0 = m_extent.getLinearIndex(i, j, k);
+  const IndexType* offsets_table = m_extent->getCellOffSets();
+  const IndexType n0 = m_extent->getLinearIndex(i, j, k);
 
   for ( IndexType i = 0 ; i < 8 ; ++i )
   {

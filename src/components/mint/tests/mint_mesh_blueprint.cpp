@@ -317,7 +317,7 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
     createUniformMeshOnSidre( uniform_mesh_group, dim );
     mint::blueprint::getMeshTypeAndDimension( mesh_type, dimension,
                                               uniform_mesh_group );
-    EXPECT_EQ( mesh_type, mint::UNIFORM_MESH );
+    EXPECT_EQ( mesh_type, mint::STRUCTURED_UNIFORM_MESH );
     EXPECT_EQ( dimension, dim );
 
     // STEP 2: check structured mesh
@@ -326,7 +326,7 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
     createStructuredMeshOnSidre( structured_mesh_group, dim );
     mint::blueprint::getMeshTypeAndDimension( mesh_type, dimension,
                                               structured_mesh_group );
-    EXPECT_EQ( mesh_type, mint::STRUCTURED_MESH );
+    EXPECT_EQ( mesh_type, mint::STRUCTURED_CURVILINEAR_MESH );
     EXPECT_EQ( dimension, dim );
 
     // STEP 3: check rectilinear mesh
@@ -335,7 +335,7 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
     createRectilinearMeshOnSidre( rectilinear_mesh_group, dim );
     mint::blueprint::getMeshTypeAndDimension( mesh_type, dimension,
                                               rectilinear_mesh_group );
-    EXPECT_EQ( mesh_type, mint::RECTILINEAR_MESH );
+    EXPECT_EQ( mesh_type, mint::STRUCTURED_RECTILINEAR_MESH );
     EXPECT_EQ( dimension, dim );
 
     // STEP 4: check unstructured mesh

@@ -477,7 +477,7 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
     internal::write_points( mesh, file );
     internal::write_cells( mesh, file );
   }
-  else if ( mesh_type == mint::STRUCTURED_MESH )
+  else if ( mesh_type == mint::STRUCTURED_CURVILINEAR_MESH )
   {
     file << "DATASET STRUCTURED_GRID\n";
     const StructuredMesh* struc_mesh =
@@ -485,14 +485,14 @@ int write_vtk( const Mesh* mesh, const std::string& file_path )
     internal::write_dimensions( struc_mesh, file );
     internal::write_points( struc_mesh, file );
   }
-  else if ( mesh_type == mint::RECTILINEAR_MESH )
+  else if ( mesh_type == mint::STRUCTURED_RECTILINEAR_MESH )
   {
     file << "DATASET RECTILINEAR_GRID\n";
     const RectilinearMesh* rect_mesh =
       dynamic_cast< const RectilinearMesh* >( mesh );
     internal::write_rectilinear_mesh( rect_mesh, file );
   }
-  else if ( mesh_type == mint::UNIFORM_MESH )
+  else if ( mesh_type == mint::STRUCTURED_UNIFORM_MESH )
   {
     file << "DATASET STRUCTURED_POINTS\n";
     const UniformMesh* uniform_mesh =

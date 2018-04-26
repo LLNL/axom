@@ -14,12 +14,9 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 #include "mint/StructuredMesh.hpp"
-#include "mint/Mesh.hpp"                    /* For Mesh */
-#include "mint/config.hpp"               /* For IndexType */
-#include "axom/Types.hpp"                   /* For AXOM_NULLPTR */
-#include "mint/Extent.hpp"                  /* For Extent */
+
+#include "mint/MeshTypes.hpp"
 
 namespace axom
 {
@@ -27,11 +24,55 @@ namespace mint
 {
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int ndims,
-                                const int64 ext[ 6 ]) :
-  Mesh( ndims, meshType ),
-  m_extent( ndims, ext )
+// HELPER METHODS
+//------------------------------------------------------------------------------
+namespace
 {
+
+bool validStructuredMeshType( int type )
+{
+  return ( (type==STRUCTURED_CURVILINEAR_MESH) ||
+           (type==STRUCTURED_RECTILINEAR_MESH) ||
+           (type==STRUCTURED_UNIFORM_MESH)
+           );
+}
+
+} /* end anonymous namespace */
+
+//------------------------------------------------------------------------------
+// IMPLEMENTATION
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( int meshType, int dimension, const int64* ext) :
+  Mesh( dimension, meshType ),
+  m_extent( new Extent(dimension, ext) )
+{
+  SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
+                 "invalid structured mesh type!" );
+
+  allocateFields( );
+}
+
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( int meshType, int dimension ) :
+  Mesh( dimension, meshType ),
+  m_extent( AXOM_NULLPTR )
+{
+  SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
+                 "invalid structured mesh type!" );
+}
+
+//------------------------------------------------------------------------------
+StructuredMesh::~StructuredMesh( )
+{
+  delete m_extent;
+  m_extent = AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+void StructuredMesh::allocateFields()
+{
+  SLIC_ERROR_IF( m_extent==AXOM_NULLPTR, "null extent for mesh!" );
+
   m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( 1.0 );
   m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( 1.0 );
   m_mesh_fields[ FACE_CENTERED ]->setResizeRatio( 1.0 );

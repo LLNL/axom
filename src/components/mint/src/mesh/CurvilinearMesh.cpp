@@ -31,8 +31,8 @@ namespace mint
 
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6] ) :
-  StructuredMesh( STRUCTURED_MESH, ndims, ext ),
-  m_coordinates( ndims, m_extent.getNumNodes() )
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
+  m_coordinates( ndims, m_extent->getNumNodes() )
 {
 //  TODO: ???
 //  m_coordinates.setSize( m_extent.getNumNodes() );

@@ -63,7 +63,7 @@ public:
    *  least getDimension().
    *
    * \note provided only for convenience, do not use inside a loop. Instead use
-   *  getCoordinate() or getCoordinateArray() methods to calculate the nodal 
+   *  getCoordinate() or getCoordinateArray() methods to calculate the nodal
    *  coordinates.
    *
    * \pre 0 <= nodeID < getNumberOfNodes()
@@ -82,7 +82,7 @@ public:
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
    */
   /// @{
-  
+
   virtual double* getCoordinateArray( int dim ) final override;
 
   virtual const double* getCoordinateArray( int dim ) const final override;
@@ -95,7 +95,7 @@ public:
 /// @{
 
 /// \name Nodes
-/// @{  
+/// @{
 
   /*!
    * \brief Sets the coordinate along the given dimension.
@@ -182,12 +182,12 @@ inline void RectilinearMesh::getNode( IndexType nodeID, double* node ) const
   }
   else if ( n_dims == 2 )
   {
-    m_extent.getGridIndex( nodeID, gridIndices[0], gridIndices[1] );
+    m_extent->getGridIndex( nodeID, gridIndices[0], gridIndices[1] );
   }
   else
   {
     SLIC_ASSERT( n_dims == 3 );
-    m_extent.getGridIndex( nodeID, gridIndices[0], gridIndices[1], gridIndices[2] );
+    m_extent->getGridIndex( nodeID, gridIndices[0], gridIndices[1], gridIndices[2] );
   }
 
   for ( int dim = 0; dim < n_dims; ++dim )

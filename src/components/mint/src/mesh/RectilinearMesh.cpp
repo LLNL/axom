@@ -26,7 +26,7 @@ namespace mint
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( int dimension, int64 ext[6] ) :
-  StructuredMesh( mint::RECTILINEAR_MESH, dimension, ext )
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext )
 {
   IndexType ext_size[3];
   this->getExtentSize( ext_size );

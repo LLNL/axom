@@ -32,7 +32,7 @@ namespace mint
 UniformMesh::UniformMesh( int dimension, const double origin[3],
                           const double h[3],
                           const int64 ext[6] ) :
-  StructuredMesh( mint::UNIFORM_MESH, dimension, ext )
+  StructuredMesh( mint::STRUCTURED_UNIFORM_MESH, dimension, ext )
 {
   std::fill( m_origin, m_origin + 3, 0.0 );
   std::fill( m_h,      m_h + 3,      1.0 );
@@ -45,7 +45,7 @@ UniformMesh::UniformMesh( int dimension, const double origin[3],
 UniformMesh::UniformMesh( int dimension, const int64 ext[6],
                           const double lower_bound[3],
                           const double upper_bound[3] ) :
-  StructuredMesh( mint::UNIFORM_MESH, dimension, ext )
+  StructuredMesh( mint::STRUCTURED_UNIFORM_MESH, dimension, ext )
 
 {
   std::fill( m_origin, m_origin + 3, 0.0 );
@@ -56,7 +56,7 @@ UniformMesh::UniformMesh( int dimension, const int64 ext[6],
   for ( int dim = 0 ; dim < dimension ; ++dim )
   {
     dim_length = utilities::abs( lower_bound[ dim ] - upper_bound[ dim ] );
-    h[ dim ] = dim_length / ( m_extent.size( dim ) - 1.0 );
+    h[ dim ] = dim_length / ( m_extent->size( dim ) - 1.0 );
   }
 
   memcpy( m_origin, lower_bound,  dimension * sizeof( double ) );

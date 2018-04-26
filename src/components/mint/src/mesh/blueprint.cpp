@@ -203,7 +203,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
             "missing [origin] group from [" << coords->getPathName() <<
             "], required for a uniform mesh" );
 
-    mesh_type = UNIFORM_MESH;
+    mesh_type = STRUCTURED_UNIFORM_MESH;
     dimension = coords->getGroup("origin")->getNumViews();
 
   } // END if UNIFORM MESH
@@ -213,7 +213,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                 "missing [values] group from [" << coords->getPathName() <<
                 "], required for a rectilinear mesh" );
 
-    mesh_type = RECTILINEAR_MESH;
+    mesh_type = STRUCTURED_RECTILINEAR_MESH;
     dimension = coords->getGroup( "values" )->getNumViews();
 
   } // END if RECTILINEAR_MESH
@@ -224,7 +224,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                    "missing [values] group from [" << coords->getPathName() <<
                    "], required for a structured mesh" );
 
-    mesh_type = STRUCTURED_MESH;
+    mesh_type = STRUCTURED_CURVILINEAR_MESH;
     dimension = coords->getGroup( "values" )->getNumViews();
 
   } // END if STRUCTURED_MESH

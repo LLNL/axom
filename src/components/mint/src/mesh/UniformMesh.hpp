@@ -32,7 +32,7 @@ namespace mint
 class UniformMesh : public StructuredMesh
 {
 public:
- 
+
   /*!
    * \brief Default constructor. Disabled.
    */
@@ -96,7 +96,7 @@ public:
   virtual double* getCoordinateArray( int AXOM_NOT_USED(dim) ) final override
   { return AXOM_NULLPTR; }
 
-  virtual const double* getCoordinateArray( int AXOM_NOT_USED(dim) ) 
+  virtual const double* getCoordinateArray( int AXOM_NOT_USED(dim) )
                                                             const final override
   { return AXOM_NULLPTR; }
 
@@ -163,7 +163,7 @@ inline void UniformMesh::getNode( IndexType nodeID, double* node ) const
   else if ( getDimension() == 2 )
   {
     IndexType i, j;
-    m_extent.getGridIndex( nodeID, i, j );
+    m_extent->getGridIndex( nodeID, i, j );
     node[0] = m_origin[0] + i * m_h[0];
     node[1] = m_origin[1] + j * m_h[1];
   }
@@ -171,7 +171,7 @@ inline void UniformMesh::getNode( IndexType nodeID, double* node ) const
   {
     SLIC_ASSERT( getDimension() == 3 );
     IndexType i, j, k;
-    m_extent.getGridIndex( nodeID, i, j, k );
+    m_extent->getGridIndex( nodeID, i, j, k );
     node[0] = m_origin[0] + i * m_h[0];
     node[1] = m_origin[1] + j * m_h[1];
     node[2] = m_origin[2] + k * m_h[2];
