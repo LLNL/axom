@@ -14,12 +14,15 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
-#include "mint/Array.hpp"
 #include "mint/blueprint.hpp"
-#include "mint/config.hpp"
-#include "mint/MeshTypes.hpp"
 
+// Mint includes
+#include "mint/Array.hpp"           // for mint::Array
+#include "mint/config.hpp"          // for compile-time definitions
+#include "mint/MeshTypes.hpp"       // for MeshTypes enum
+#include "mint/Extent.hpp"          // for mint::Extent
+
+// gtest includes
 #include "gtest/gtest.h"
 
 #ifdef MINT_USE_SIDRE
@@ -334,6 +337,84 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
     EXPECT_EQ( dimension, dim );
 
   } // END for all dimensions
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_blueprint, get_set_uniform_mesh )
+{
+  constexpr int NDIMS        = 3;
+  constexpr double MAGIC_VAL = 42.0;
+  constexpr double DX        = 0.5;
+  const double X0[ ]         = { MAGIC_VAL, MAGIC_VAL, MAGIC_VAL };
+  const double H[ ]          = { DX, DX, DX };
+  const mint::int64 EXTENT[] = { -2,2, -2,2, -2,2 };
+
+  for ( int idim=1; idim <= NDIMS; ++idim )
+  {
+     sidre::DataStore ds;
+     sidre::Group* root = ds.getRoot();
+     sidre::Group* coordset = root->createGroup( "coordsets/c1" );
+     sidre::Group* topo     = root->createGroup( "topologies/t1" );
+     mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "uniform" );
+
+     mint::Extent mesh_extent( idim, EXTENT );
+
+     mint::blueprint::setUniformMesh( idim,X0,H,&mesh_extent,coordset,topo );
+
+     double* origin      = new double[ idim ];
+     double* h           = new double[ idim ];
+     mint::int64* extent = new mint::int64[ idim*2 ];
+
+     mint::blueprint::getUniformMesh( idim, coordset, topo, origin, h, extent);
+
+    for ( int i=0; i < idim; ++i )
+    {
+      EXPECT_DOUBLE_EQ( origin[ i ], X0[ i ] );
+      EXPECT_DOUBLE_EQ( h[ i ], H[ i ] );
+
+      const int offset = i*2;
+      EXPECT_EQ( extent[ offset ], EXTENT[ offset ] );
+      EXPECT_EQ( extent[ offset+1 ], EXTENT[ offset+1 ] );
+    }
+
+    delete [] origin;
+    delete [] h;
+    delete [] extent;
+  }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_blueprint, get_set_curvilinear_mesh_extent )
+{
+  constexpr int NDIMS        = 3;
+  const mint::int64 EXTENT[] = { -2,2, -2,2, -2,2 };
+
+  for ( int idim=1; idim <= NDIMS; ++idim )
+  {
+    sidre::DataStore ds;
+    sidre::Group* root     = ds.getRoot();
+    root->createGroup( "coordsets/c1" );
+
+    sidre::Group* topo     = root->createGroup( "topologies/t1" );
+    mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "structured" );
+
+    mint::Extent mesh_extent( idim, EXTENT );
+    mint::blueprint::setCurvilinearMeshExtent( idim, &mesh_extent, topo );
+
+    mint::int64* extent = new mint::int64[ idim*2 ];
+    mint::blueprint::getCurvilinearMeshExtent( idim, topo, extent );
+
+    for ( int i=0; i < idim; ++i )
+    {
+      const int offset = i*2;
+      EXPECT_EQ( extent[ offset ], EXTENT[ offset ] );
+      EXPECT_EQ( extent[ offset+1 ], EXTENT[ offset+1 ] );
+    }
+
+    delete [] extent;
+  } // END for all dimensions
+
 }
 
 #endif /* MINT_USE_SIDRE */

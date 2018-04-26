@@ -202,14 +202,14 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
 /*
  * \brief Return the Topology type given a root group that conforms to the
  *  computational mesh blueprint and a topology name.
- *  
+ *
  * \param [in] group pointer to the root group.
  * \param [in] topo optional argument corresponding to the mesh topology.
  *
  * \note If a topology is not specified, the code assumes that the first group
  *  under the 'topologies' group corresponds to the mesh topology.
  */
-Topology getMeshTopologyType( const sidre::Group* group, 
+Topology getMeshTopologyType( const sidre::Group* group,
                               const std::string& topo="" );
 
 /*!
@@ -239,9 +239,12 @@ Topology getMeshTopologyType( const sidre::Group* group,
  *
  * \see setUniformMesh()
  */
-void getUniformMesh( int dim, const sidre::Group* coordset,
-                     const sidre::Group* topology, double* origin,
-                     double* spacing, int64* extent );
+void getUniformMesh( int dim,
+                     const sidre::Group* coordset,
+                     const sidre::Group* topology,
+                     double* origin,
+                     double* spacing,
+                     int64* extent );
 
 /*!
  * \brief Populates the specified Coordset & Topology groups with the metadata
@@ -270,9 +273,47 @@ void getUniformMesh( int dim, const sidre::Group* coordset,
  *
  * \see getUniformMesh()
  */
-void setUniformMesh( int dim, const double* origin, const double* spacing,
-                     const mint::Extent* extent, sidre::Group* coordset,
+void setUniformMesh( int dim,
+                     const double* origin,
+                     const double* spacing,
+                     const mint::Extent* extent,
+                     sidre::Group* coordset,
                      sidre::Group* topology );
+
+/*!
+ * \brief Gets the extent of a curvilinear structured mesh.
+ *
+ * \param [in] dim the dimension of the mesh.
+ * \param [in] topology pointer to the topology group of the mesh.
+ * \param [out] extent buffer where the mesh extent will be stored.
+ *
+ * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
+ *  entries, such that `extetn[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
+ *  values of the extent along the ith dimension respectively.
+ *
+ * \pre 1 <= dim <= 3
+ * \pre blueprint::validTopologyGroup( topology )
+ * \pre extent != AXOM_NULLPTR
+ */
+void getCurvilinearMeshExtent( int dim,
+                               const sidre::Group* topology,
+                               int64* extent );
+
+/*!
+ * \brief Sets the extent of a curvilinear structured mesh
+ *
+ * \param [in] dim the dimension of the mesh.
+ * \param [in] extent pointer to an extent object.
+ * \param [in] topology pointer to the topology group of the mesh.
+ *
+ * \pre 1 <= dim <= 3
+ * \pre extent != AXOM_NULLPTR
+ * \pre topology != AXOM_NULLPTR
+ * \pre extent->getDimension()==dim
+ */
+void setCurvilinearMeshExtent( int dim,
+                               const mint::Extent* extent,
+                               sidre::Group* topology );
 
 #endif /* MINT_USE_SIDRE */
 

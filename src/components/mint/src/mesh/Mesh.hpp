@@ -335,7 +335,10 @@ public:
   virtual IndexType getEdgeCapacity() const
   { return getNumberOfEdges(); }
 
-
+  /*!
+   * \brief Returns true iff the mesh was constructed with external arrays.
+   * \return status true if the mesh points to external buffers, else, false.
+   */
   virtual bool isExternal() const = 0;
 
 /// @}
@@ -663,7 +666,7 @@ protected:
   Mesh( int ndims, int type );
 
 #ifdef MINT_USE_SIDRE
-  
+
   /*!
    * \brief Constructor for use with a group that already has data.
    *

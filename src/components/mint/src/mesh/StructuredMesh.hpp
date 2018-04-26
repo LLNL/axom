@@ -154,7 +154,6 @@ public:
   /// @{
 
   virtual double* getCoordinateArray( int dim ) override = 0;
-
   virtual const double* getCoordinateArray( int dim ) const override = 0;
 
   /// @}
@@ -189,7 +188,11 @@ public:
 
 /// @}
 
-  virtual bool isExternal() const final override
+  /*!
+   * \brief Returns true iff the mesh was constructed with external arrays.
+   * \return status true if the mesh points to external buffers, else, false.
+   */
+  virtual bool isExternal() const override
   { return false; }
 
 /// @}

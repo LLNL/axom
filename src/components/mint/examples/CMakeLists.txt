@@ -13,6 +13,7 @@
 #------------------------------------------------------------------------------
 
 set( mint_examples
+     mint_curvilinear_mesh.cpp
      mint_heat_equation.cpp
      mint_nbody_solver.cpp
      mint_particle_mesh.cpp

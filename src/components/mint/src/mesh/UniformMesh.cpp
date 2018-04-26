@@ -158,7 +158,7 @@ UniformMesh::UniformMesh( sidre::Group* group,
      StructuredMesh( group, topo )
 {
   SLIC_ERROR_IF( m_type != STRUCTURED_UNIFORM_MESH,
-                 "supplied Sidre group does not corresond to a UniformMesh!" );
+                "supplied Sidre group does not correspond to a UniformMesh!" );
 
   int64 extent[ 6 ];
   blueprint::getUniformMesh( m_ndims,

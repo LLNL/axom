@@ -14,15 +14,15 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+#include "mint/CurvilinearMesh.hpp"
 
-#include "CurvilinearMesh.hpp"
-#include "MeshTypes.hpp"
+// mint includes
+#include "mint/blueprint.hpp"        // for blueprint functions
+#include "mint/MeshTypes.hpp"        // for STRUCTURED_CURVILINEAR_MESH
+#include "mint/MeshCoordinates.hpp"  // for MeshCoordinates class definition
 
-// axom includes
-#include "slic/slic.hpp"
-
-// C/C++ includes
-#include <cstddef> // for definition of AXOM_NULLPTR
+// slic includes
+#include "slic/slic.hpp"             // for SLIC macros
 
 namespace axom
 {
@@ -30,12 +30,192 @@ namespace mint
 {
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( int ndims, const int64 ext[6] ) :
-  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
-  m_coordinates( ndims, m_extent->getNumNodes() )
+// HELPER METHODS
+//------------------------------------------------------------------------------
+namespace
 {
-//  TODO: ???
-//  m_coordinates.setSize( m_extent.getNumNodes() );
+
+inline int dim( const double* AXOM_NOT_USED(x),
+                const double* y,
+                const double* z )
+{
+  return ( ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) );
+}
+
+//------------------------------------------------------------------------------
+inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
+                 const IndexType& Nj,
+                 const IndexType& Nk  )
+{
+  return ( (Nk >= 1)? 3 : ( (Nj >= 1) ? 2 : 1 ) );
+}
+
+} /* anonymous namespace */
+
+//------------------------------------------------------------------------------
+// CURVILINEAR MESH IMPLEMENTATION
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( int ndims, const int64* ext ) :
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, ndims, ext ),
+  m_coordinates( new mint::MeshCoordinates( ndims, m_extent->getNumNodes() ) )
+{
+  initialize( );
+
+  // sanity checks
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent->getNumNodes()==m_coordinates->numNodes() );
+}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( IndexType Ni,
+                                  IndexType Nj,
+                                  IndexType Nk ) :
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dim( Ni,Nj,Nk ) )
+{
+  int64 extent[ ] = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
+  m_extent        = new mint::Extent( m_ndims, extent );
+  m_coordinates   = new mint::MeshCoordinates( m_ndims,getNumberOfNodes() );
+
+  initialize( );
+
+  // sanity checks
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent->getNumNodes()==m_coordinates->numNodes() );
+}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( const int64* ext,
+                                  double* x,
+                                  double* y,
+                                  double* z ) :
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dim(x,y,z), ext ),
+  m_coordinates( new mint::MeshCoordinates( m_extent->getNumNodes(), x,y,z ) )
+{
+  initialize( );
+
+  // sanity checks
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent->getNumNodes()==m_coordinates->numNodes() );
+}
+
+#ifdef MINT_USE_SIDRE
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
+                                  const std::string& topo ) :
+     StructuredMesh( group, topo ),
+     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) )
+{
+  SLIC_ERROR_IF( m_type != STRUCTURED_CURVILINEAR_MESH,
+            "supplied Sidre group does not correspond to a CurvilinearMesh" );
+
+  int64 extent[ 6 ];
+  blueprint::getCurvilinearMeshExtent( m_ndims, getTopologyGroup(), extent );
+
+  m_extent = new mint::Extent( m_ndims, extent );
+
+  initialize( );
+
+  // sanity checks
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent->getNumNodes()==m_coordinates->numNodes() );
+  SLIC_ASSERT( m_coordinates->dimension()==m_ndims );
+}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( int dimension,
+                                  const int64* ext,
+                                  sidre::Group* group,
+                                  const std::string& topo,
+                                  const std::string& coordset ) :
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dimension,group,topo,coordset)
+{
+
+  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
+                                      "structured" );
+  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+                 "invalid topology group!" );
+
+  m_extent        = new mint::Extent( m_ndims, ext );
+  m_coordinates   = new mint::MeshCoordinates( getCoordsetGroup(),
+                                               m_ndims,
+                                               getNumberOfNodes(),
+                                               getNumberOfNodes() );
+
+  blueprint::setCurvilinearMeshExtent( m_ndims, m_extent, getTopologyGroup() );
+
+  initialize( );
+
+  // sanity checks
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent->getNumNodes()==m_coordinates->numNodes() );
+  SLIC_ASSERT( m_coordinates->dimension()==m_ndims );
+}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
+                                  const std::string& topo,
+                                  const std::string& coordset,
+                                  IndexType Ni,
+                                  IndexType Nj,
+                                  IndexType Nk  ) :
+  StructuredMesh(STRUCTURED_CURVILINEAR_MESH,dim(Ni,Nj,Nk),group,topo,coordset)
+{
+  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
+                                      "structured" );
+  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+                 "invalid topology group!" );
+
+  int64 extent[ ] = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
+  m_extent        = new mint::Extent( m_ndims, extent );
+  m_coordinates   = new mint::MeshCoordinates( getCoordsetGroup(),
+                                               m_ndims,
+                                               getNumberOfNodes(),
+                                               getNumberOfNodes() );
+
+  blueprint::setCurvilinearMeshExtent( m_ndims, m_extent, getTopologyGroup() );
+
+  initialize( );
+
+  // sanity checks
+  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent != AXOM_NULLPTR );
+  SLIC_ASSERT( m_extent->getNumNodes()==m_coordinates->numNodes() );
+  SLIC_ASSERT( m_coordinates->dimension()==m_ndims );
+}
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
+                                  IndexType Ni,
+                                  IndexType Nj,
+                                  IndexType Nk  ) :
+       CurvilinearMesh( group, "", "", Ni, Nj, Nk )
+{ }
+
+#endif
+
+//------------------------------------------------------------------------------
+CurvilinearMesh::~CurvilinearMesh()
+{
+  delete m_coordinates;
+  m_coordinates = AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+void CurvilinearMesh::initialize()
+{
+  m_explicit_coords       = true;
+  m_explicit_connectivity = false;
+  m_has_mixed_topology    = false;
+
+  initializeFields( );
 }
 
 } /* namespace mint */

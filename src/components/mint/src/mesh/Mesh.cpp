@@ -83,7 +83,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   m_coordset = blueprint::getCoordsetGroup( m_group, getTopologyGroup() )
                                                                     ->getName();
 
-  SLIC_ERROR_IF( !m_group->hasChildGroup( "state" ), 
+  SLIC_ERROR_IF( !m_group->hasChildGroup( "state" ),
                  "root group does not have a state group." );
 
   sidre::Group* state_group = m_group->getGroup( "state" );
@@ -191,7 +191,8 @@ void Mesh::setBlockId( int ID )
 #ifdef MINT_USE_SIDRE
   if ( hasSidreGroup() )
   {
-    sidre::Group* state_group = m_group->getGroup( "state" )->getGroup( m_topology );
+    sidre::Group* state_group =
+        m_group->getGroup( "state" )->getGroup( m_topology );
     SLIC_ASSERT( state_group != AXOM_NULLPTR );
     sidre::View* block_view = state_group->getView( "block_id" );
     SLIC_ASSERT( block_view != AXOM_NULLPTR );
@@ -207,7 +208,8 @@ void Mesh::setPartitionId( int ID )
 #ifdef MINT_USE_SIDRE
   if ( hasSidreGroup() )
   {
-    sidre::Group* state_group = m_group->getGroup( "state" )->getGroup( m_topology );
+    sidre::Group* state_group =
+        m_group->getGroup( "state" )->getGroup( m_topology );
     SLIC_ASSERT( state_group != AXOM_NULLPTR );
     sidre::View* partition_view = state_group->getView( "partition_id" );
     SLIC_ASSERT( partition_view != AXOM_NULLPTR );

@@ -119,6 +119,7 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
                  "supplied topology group does not conform to the blueprint!" );
 
+
   const sidre::Group* coordsets  = group->getGroup( "coordsets" );
 
   const char* coordset_name = topology->getView( "coordset" )->getString();
@@ -416,6 +417,66 @@ void setUniformMesh( int dim,
 //    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
 
   } // END for
+
+}
+
+//------------------------------------------------------------------------------
+void getCurvilinearMeshExtent( int dim,
+                               const sidre::Group* topology,
+                               int64* extent )
+{
+  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null" );
+  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+                 "invalid topology group!" );
+
+  sidre::Group* t = const_cast< sidre::Group* >( topology );
+  SLIC_ASSERT( t != AXOM_NULLPTR );
+
+  const char* dim_names[] = { "elements/dims/i",
+                              "elements/dims/j",
+                              "elements/dims/k"   };
+
+  const char* origin_names[] = { "elements/origin/i0",
+                                 "elements/origin/j0",
+                                 "elements/origin/k0"   };
+
+  for ( int i=0; i < dim; ++i )
+  {
+    const int Ni    = t->getView( dim_names[ i ] )->getScalar();
+    const int i0    = t->getView( origin_names[ i ] )->getScalar();
+    extent[ i*2 ]   = i0;
+    extent[ i*2+1 ] = i0 + Ni;
+  } // END for all dimensions
+
+}
+
+//------------------------------------------------------------------------------
+void setCurvilinearMeshExtent( int dim,
+                               const mint::Extent* extent,
+                               sidre::Group* topology )
+{
+  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null" );
+  SLIC_ERROR_IF( extent->getDimension() != dim ,
+                 "extent dimension does not match specified dimension!" );
+
+  const char* dim_names[] = { "elements/dims/i",
+                                "elements/dims/j",
+                                "elements/dims/k"   };
+
+  const char* origin_names[] = { "elements/origin/i0",
+                                   "elements/origin/j0",
+                                   "elements/origin/k0"   };
+
+  for ( int i=0; i < dim; ++i )
+  {
+    topology->createView( dim_names[ i ] )->setScalar( extent->size( i )-1 );
+
+    // FIXME: cannot set int64 values in sidre
+    int min = static_cast< int >( extent->min( i ) );
+    topology->createView( origin_names[ i ] )->setScalar( min );
+  }
 
 }
 
