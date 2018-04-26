@@ -18,8 +18,11 @@
 #ifndef MINT_MESH_BLUEPRINT_HPP_
 #define MINT_MESH_BLUEPRINT_HPP_
 
+// mint includes
+#include "mint/config.hpp"  // for compile-time definitions
+
 // C/C++ includes
-#include <string> // for std::string
+#include <string>           // for std::string
 
 /*!
  * \file
@@ -41,6 +44,9 @@ class Group;
 
 namespace mint
 {
+
+// Mint Forward Declarations;
+class Extent;
 
 namespace blueprint
 {
@@ -180,6 +186,74 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                 const sidre::Group* group );
 
 /// @}
+
+/*!
+ * \brief Returns the origin, spacing and extent of a uniform mesh from the
+ *  corresponding coordset and topology groups associated with the mesh.
+ *
+ * \param [in] dim the expected dimension of the mesh
+ * \param [in] coordset pointer to the associated coordset group
+ * \param [in] topology pointer to the associated topology group
+ * \param [out] origin  buffer to store the origin of the uniform mesh
+ * \param [out] spacing buffer to store the spacing of the uniform mesh
+ * \param [out] extent buffer to store the extent of the uniform mesh
+ *
+ * \note The `origin` and `spacing` pointers must point to buffers that have
+ *  at least `dim` entries.
+ *
+ * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
+ *  entries, such that `extetn[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
+ *  values of the extent along the ith dimension respectively.
+ *
+ * \pre 1 <= dim <= 3
+ * \pre validCoordsetGroup( coordset )
+ * \pre validTopologyGroup( topology )
+ * \pre origin != AXOM_NULLPTR
+ * \pre spacing != AXOM_NULLPTR
+ * \pre extent != AXOM_NULLPTR
+ *
+ * \see setUniformMesh()
+ */
+void getUniformMesh( int dim,
+                     const sidre::Group* coordset,
+                     const sidre::Group* topology,
+                     double* origin,
+                     double* spacing,
+                     int64* extent );
+
+/*!
+ * \brief Populates the specified Coordset & Topology groups with the metadata
+ *  for a uniform mesh
+ *
+ * \param [in] dim the mesh dimesion
+ * \param [in] origin pointer to array with the origin's coordinates
+ * \param [in] spacing pointer to array with the spacing along each dimension
+ * \param [in] extent pointer to the associated Extent object
+ * \param [in] coordset pointer to the coordset group
+ * \param [in] topology pointer to the topology group
+ *
+ * \note The `origin` and `spacing` pointers must point to buffers that have
+ *  at least `dim` entries.
+ *
+ * \pre 1 <= dim <= 3
+ * \pre origin != AXOM_NULLPTR
+ * \pre spacing != AXOM_NULLPTR
+ * \pre extent != AXOM_NULLPTR
+ * \pre coordset != AXOM_NULLPTR
+ * \pre topology != AXOM_NULLPTR
+ * \pre extent->getDimesion() == dim
+ *
+ * \post validCoordsetGroup( coordset )
+ * \post validTopologyGroup( topology
+ *
+ * \see getUniformMesh()
+ */
+void setUniformMesh( int dim,
+                     const double* origin,
+                     const double* spacing,
+                     const mint::Extent* extent,
+                     sidre::Group* coordset,
+                     sidre::Group* topology );
 
 } /* namespace blueprint */
 

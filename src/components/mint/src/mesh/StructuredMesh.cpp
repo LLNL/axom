@@ -82,5 +82,28 @@ void StructuredMesh::allocateFields()
   m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
 }
 
+#ifdef MINT_USE_SIDRE
+
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( sidre::Group* group, const std::string& topo ):
+    Mesh( group, topo ),
+    m_extent( AXOM_NULLPTR )
+{
+
+}
+
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( int meshType, int dimension,
+                                sidre::Group* group,
+                                const std::string& topo,
+                                const std::string& coordset ) :
+   Mesh( dimension, meshType, group, topo, coordset ),
+   m_extent( AXOM_NULLPTR )
+{
+
+}
+
+#endif
+
 }   /* end namespace mint */
 }   /* end namespace axom */

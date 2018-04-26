@@ -22,11 +22,11 @@
 #include "axom/Macros.hpp"      // for axom macros
 
 #include "mint/config.hpp"      // for compile-time definitions
-#include "mint/CellTypes.hpp"   // for
-#include "mint/Extent.hpp"
-#include "mint/Mesh.hpp"
+#include "mint/CellTypes.hpp"   // for the CellTypes enum and definitions
+#include "mint/Extent.hpp"      // for mint::Extent
+#include "mint/Mesh.hpp"        // for mint::Mesh base class
 
-#include "slic/slic.hpp"
+#include "slic/slic.hpp"        // for SLIC macros
 
 namespace axom
 {
@@ -339,6 +339,60 @@ protected:
    * \param [in] dimension the mesh dimension
    */
   StructuredMesh( int meshType, int dimension );
+
+#ifdef MINT_USE_SIDRE
+
+  /*!
+   * \brief Constructs a structured mesh instance from the given group.
+   *
+   * \param [in] group pointer to the sidre::Group
+   * \param [in] topo the topology name to use, an empty string may be supplied.
+   *
+   * \note If an empty string is supplied for the topology name, the code will
+   *  use the 1st topology group under the parent "topologies" group.
+   *
+   * \pre group !=  AXOM_NULLPTR
+   * \pre blueprint::validRootGroup( group ) == true
+   *
+   * \note This constructor forwards this call to the parent Mesh class.
+   *
+   * \see Mesh( sidre::Group* group, const std::string& topo )
+   */
+
+  StructuredMesh( sidre::Group* group, const std::string& topo );
+
+  /*!
+   * \brief Constructs a structured mesh instance on the specified group.
+   *
+   * \param [in] meshType the mesh type
+   * \param [in] dimension the dimension of the mesh
+   * \param [in] group pointer to the group in the Sidre hierarchy.
+   * \param [in] topo the topology name to use, may be an empty string.
+   * \param [in] coordset the coordset name to use, may be an empty string.
+   *
+   * \note If an empty string is supplied for the topology and coordset name
+   *  respectively, an internal default name will be provided by the
+   *  implementation.
+   *
+   * \pre 1 <= dimension <= 3
+   * \pre group != AXOM_NULLPTR
+   * \pre group->getNumGroups() == 0
+   * \pre group->getNumViews() == 0
+   *
+   * \post blueprint::validRootGroup( group )
+   *
+   * \note This constructor forwards this call to the parent Mesh class.
+   *
+   * \see Mesh( int ndims, int type, sidre::Group*,
+   *            const std::string& topo, const std::string& coordset );
+   */
+  StructuredMesh( int meshType, int dimension,
+                  sidre::Group* group,
+                  const std::string& topo,
+                  const std::string& coordset );
+
+
+#endif
 
   /*!
    * \brief Initializes members of the mesh class.

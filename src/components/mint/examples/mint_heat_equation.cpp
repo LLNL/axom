@@ -165,8 +165,7 @@ public:
    */
   void initialize( const Gaussian2D& pulse )
   {
-    double origin[3];
-    m_mesh->getOrigin( origin );
+    const double* origin = m_mesh->getOrigin( );
     IndexType size[3];
     m_mesh->getExtentSize( size );
     double* t = m_mesh->getFieldPtr< double >( "temperature",

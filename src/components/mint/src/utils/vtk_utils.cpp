@@ -233,12 +233,11 @@ void write_uniform_mesh( const UniformMesh* mesh, std::ofstream& file )
 
   write_dimensions( mesh, file );
 
-  double temp[3];
-  mesh->getOrigin(temp);
+  const double* temp = mesh->getOrigin();
   file << "ORIGIN ";
   file << temp[ 0 ] << " " << temp[ 1 ] << " " << temp[ 2 ] << std::endl;
 
-  mesh->getSpacing(temp);
+  temp = mesh->getSpacing( );
   file << "SPACING ";
   file << temp[ 0 ] << " " << temp[ 1 ] << " " << temp[ 2 ] << std::endl;
 }

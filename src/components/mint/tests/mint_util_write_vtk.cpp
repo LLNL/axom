@@ -102,7 +102,7 @@ void create_scalar_data( Mesh* mesh )
   {
     double coords[] = { 0, 0, 0 };
     mesh->getNode( idx, coords );
-    
+
     const double x = coords[0];
     const double y = coords[1];
     const double z = coords[2];
@@ -162,7 +162,7 @@ void create_vector_data( Mesh* mesh )
   {
     double coords[] = { 0, 0, 0 };
     mesh->getNode( idx, coords );
-    
+
     const double x = coords[0];
     const double y = coords[1];
     const double z = coords[2];
@@ -244,7 +244,7 @@ void create_multidim_data( Mesh* mesh )
   {
     double coords[] = { 0, 0, 0 };
     mesh->getNode( idx, coords );
-    
+
     const double x = coords[0];
     const double y = coords[1];
     const double z = coords[2];
@@ -599,8 +599,7 @@ void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
     EXPECT_EQ( temp, ext_size[ i ] );
   }
 
-  double origin[3];
-  u_mesh->getOrigin( origin );
+  const double* origin = u_mesh->getOrigin( );
   file >> buffer;
   EXPECT_EQ( buffer, "ORIGIN" );
   for ( int i = 0 ; i < 3 ; ++i )
@@ -610,8 +609,7 @@ void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
     EXPECT_DOUBLE_EQ( temp, origin[ i ] );
   }
 
-  double spacing[3];
-  u_mesh->getSpacing( spacing );
+  const double* spacing = u_mesh->getSpacing( );
   file >> buffer;
   EXPECT_EQ( buffer, "SPACING" );
   for ( int i = 0 ; i < 3 ; ++i )
@@ -701,7 +699,7 @@ void check_points( const Mesh* mesh, std::ifstream& file )
   {
     double coords[] = { 0, 0, 0 };
     mesh->getNode( idx, coords );
-    
+
     const double x = coords[0];
     const double y = coords[1];
     const double z = coords[2];

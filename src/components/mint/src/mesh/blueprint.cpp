@@ -16,11 +16,15 @@
  */
 #include "mint/blueprint.hpp"
 
-#include "axom/Types.hpp"   // for AXOM_NULLPTR
+// Axom includes
+#include "axom/Types.hpp"      // for AXOM_NULLPTR
 
+// Mint includes
 #include "mint/config.hpp"     // for MINT_USE_SIDRE compile-time definition
-#include "mint/MeshTypes.hpp"  // for
+#include "mint/Extent.hpp"     // for mint::Extent
+#include "mint/MeshTypes.hpp"  // for mesh types
 
+// Slic includes
 #include "slic/slic.hpp"    // for SLIC macros
 
 #ifdef MINT_USE_SIDRE
@@ -185,7 +189,7 @@ void initializeTopologyGroup( sidre::Group* group,
   SLIC_ASSERT( topo_group != AXOM_NULLPTR );
   sidre::Group* cur_topo = topo_group->getGroup( topo );
   SLIC_ASSERT( cur_topo != AXOM_NULLPTR );
-  
+
   cur_topo->createView( "type" )->setString( type );
   cur_topo->createView( "coordset" )->setString( coordset );
 }
@@ -283,6 +287,85 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                               const sidre::Group* group )
 {
   blueprint::getMeshTypeAndDimension( mesh_type, dimension, group, "" );
+}
+
+//------------------------------------------------------------------------------
+void getUniformMesh( int dimension,
+                     const sidre::Group* coordset,
+                     const sidre::Group* topology,
+                     double* origin,
+                     double* spacing,
+                     int64* extent )
+{
+  SLIC_ERROR_IF( (dimension < 1) && ( dimension > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( coordset ),
+                 "invalid coordset group!" );
+  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+                 "invalid topology group!" );
+  SLIC_ERROR_IF( origin==AXOM_NULLPTR, "supplied null pointer for origin!");
+  SLIC_ERROR_IF( spacing==AXOM_NULLPTR, "supplied null pointer for spacing!" );
+  SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied null pointer for extent!" );
+
+  sidre::Group* c = const_cast< sidre::Group* >( coordset );
+  sidre::Group* t = const_cast< sidre::Group* >( topology );
+
+  const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
+  const char* origin_names[]  = { "origin/x" , "origin/y", "origin/z" };
+  const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
+  const char* topo_names[]    = { "elements/origin/i0",
+                                  "elements/origin/j0",
+                                  "elements/origin/k0"   };
+
+  for ( int i=0; i < dimension; ++i )
+  {
+    origin [ i ] = c->getView( origin_names[ i ] )->getScalar();
+    spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
+
+    const int idx    = i*2;
+    const int N      = c->getView( dim_names[ i ] )->getScalar();
+    const int offset = t->getView( topo_names[ i ] )->getScalar();
+    extent[ idx ]    = offset;
+    extent[ idx+1 ]  = offset + N - 1;
+  }
+
+}
+
+//------------------------------------------------------------------------------
+void setUniformMesh( int dim,
+                     const double* origin,
+                     const double* spacing,
+                     const mint::Extent* extent,
+                     sidre::Group* coordset,
+                     sidre::Group* topology )
+{
+  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( origin==AXOM_NULLPTR, "supplied null pointer for origin!" );
+  SLIC_ERROR_IF( spacing==AXOM_NULLPTR, "supplied null pointer for spacing!" );
+  SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null!" );
+  SLIC_ERROR_IF( coordset==AXOM_NULLPTR, "supplied coordset group is null!" );
+  SLIC_ERROR_IF( topology==AXOM_NULLPTR, "supplied topology group is null!" );
+  SLIC_ERROR_IF( dim != extent->getDimension(),
+                 "supplied extent does not match specified dimension!" );
+
+  const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
+  const char* origin_names[]  = { "origin/x" , "origin/y", "origin/z" };
+  const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
+  const char* topo_names[]    = { "elements/origin/i0",
+                                  "elements/origin/j0",
+                                  "elements/origin/k0"   };
+
+  coordset->createView( "type" )->setString( "uniform" );
+  for ( int i=0; i < dim; ++i )
+  {
+    coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
+    coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );
+    coordset->createView( spacing_names[ i ] )->setScalar( spacing[ i ] );
+
+    // FIXME: cannot set int64 values in sidre
+    int min = static_cast< int >( extent->min( i ) );
+    topology->createView( topo_names[ i ] )->setScalar( min );
+  } // END for
+
 }
 
 #else

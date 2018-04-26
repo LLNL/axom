@@ -29,6 +29,7 @@ set( mint_tests
      mint_mesh_field_types.cpp
      mint_mesh_field_variable.cpp
      mint_mesh_particle_mesh.cpp
+     mint_mesh_uniform_mesh.cpp
 
      ## fem tests
      mint_fem_shape_functions.cpp
