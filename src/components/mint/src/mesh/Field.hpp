@@ -67,50 +67,13 @@ public:
    */
   Field( ) = delete;
 
+/// \name Virtual methods
+/// @{
+
   /*!
    * \brief Destructor.
    */
-  virtual ~Field() { }
-
-  /*!
-   * \brief Returns the type of the field.
-   * \return t the type of the field.
-   * \post t < NUMBER_OF_FIELD_TYPES
-   * \see FieldTypes
-   */
-  int getType() const { return m_type; }
-
-  /*!
-   * \brief Returns the name of the field.
-   * \return name the name of the field.
-   */
-  const std::string& getName() const { return m_name; }
-
-  /*!
-   * \brief Sets the finite element basis associated with this field.
-   * \param [in] fe_basis the finite element basis
-   *
-   * \note A field is not associated with basis type by default. The caller
-   *  must explicitly associate a field with a basis by calling `setBasis()`
-   *
-   * \pre fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES
-   * \see FEBasisTypes for a list of supported basis.
-   */
-  void setBasis( int fe_basis )
-  {
-    SLIC_ASSERT( fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES  );
-    m_basis = fe_basis;
-  }
-
-  /*!
-   * \brief Returns the basis associated with this field.
-   * \return basis the basis associated with this field.
-   * \pre fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES
-   */
-  int getBasis( ) const { return m_basis; };
-
-/// \name Virtual Methods implemented by FieldVariable.
-/// @{
+  virtual ~Field() {}
 
   /*!
    * \brief Returns the number of tuples associated with this field.
@@ -141,7 +104,7 @@ public:
   virtual void resize( IndexType newNumTuples ) = 0;
 
   /*!
-   * \brief Makes space for an insert of length n_tuples at the given position.
+   * \brief Inserts n_tuples with the default value at the given position.
    *
    * \param [in] pos the position of the insert.
    * \param [in] n_tuples the number of tuples to insert.
@@ -187,6 +150,49 @@ public:
    * \brief Return true iff the field is stored in sidre.
    */
   virtual bool isInSidre() const = 0;
+
+/// @}
+
+/// \name Attribute get/set Methods
+/// @{
+
+  /*!
+   * \brief Returns the type of the field.
+   * \return t the type of the field.
+   * \post t < NUMBER_OF_FIELD_TYPES
+   * \see FieldTypes
+   */
+  int getType() const { return m_type; }
+
+  /*!
+   * \brief Returns the name of the field.
+   * \return name the name of the field.
+   */
+  const std::string& getName() const { return m_name; }
+
+  /*!
+   * \brief Returns the basis associated with this field.
+   * \return basis the basis associated with this field.
+   * \pre fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES
+   */
+  int getBasis() const 
+  { return m_basis; };
+
+  /*!
+   * \brief Sets the finite element basis associated with this field.
+   * \param [in] fe_basis the finite element basis
+   *
+   * \note A field is not associated with basis type by default. The caller
+   *  must explicitly associate a field with a basis by calling `setBasis()`
+   *
+   * \pre fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES
+   * \see FEBasisTypes for a list of supported basis.
+   */
+  void setBasis( int fe_basis )
+  {
+    SLIC_ASSERT( fe_basis >= 0 && fe_basis < MINT_NUM_BASIS_TYPES  );
+    m_basis = fe_basis;
+  }
 
 /// @}
 
