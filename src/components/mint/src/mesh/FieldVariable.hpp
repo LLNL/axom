@@ -223,15 +223,15 @@ public:
                  IndexType capacity=USE_DEFAULT );
 #endif
 
-  /*!
-   * \brief Destructor.
-   */
-  virtual ~FieldVariable( ) { delete m_field; }
-
 /// @}
 
 /// \name Virtual Methods
 /// @{
+
+  /*!
+   * \brief Destructor.
+   */
+  virtual ~FieldVariable( ) { delete m_field; }
 
   /*!
    * \brief Returns the number of tuples of this FieldVariable instance.
@@ -269,9 +269,17 @@ public:
   virtual void resize( IndexType newNumTuples ) final override
   { m_field->resize( newNumTuples ); }
 
+  /*!
+   * \brief Inserts n_tuples with the default value at the given position.
+   *
+   * \param [in] pos the position of the insert.
+   * \param [in] n_tuples the number of tuples to insert.
+   *
+   * \note The values at pos and above are shifted up and the new tuples
+   *  have the default values.
+   */
   virtual void emplace( IndexType pos, IndexType num_tuples ) final override
   { m_field->emplace( num_tuples, pos ); }
-
 
   /*!
    * \brief Increase the Field capacity to hold the given number of tuples.
@@ -318,6 +326,9 @@ public:
 
 /// @}
 
+/// \name Data Access Methods
+/// @{
+
   /*!
    * \brief Returns pointer to the FieldVariable data.
    * \return ptr pointer to the data associated with this field variable.
@@ -328,10 +339,13 @@ public:
   inline T* getFieldVariablePtr( )
   { return m_field->getData(); }
 
-  inline const T* getFieldVariablePtr( ) const
+  inline const T* getFieldVariablePtr() const
   { return m_field->getData(); }
 
   /// @}
+
+/// @}
+
 private:
 
   mint::Array< T >* m_field;
