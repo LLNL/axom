@@ -1297,14 +1297,18 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   // Set the positions of the nodes of the diagnostic mesh
   const double denom = res;
-  for(axom::mint::IndexType i=0 ; i <= res ; ++i)
+  double* x_coords = cmesh.getCoordinateArray( axom::mint::X_COORDINATE );
+  double* y_coords = cmesh.getCoordinateArray( axom::mint::Y_COORDINATE );
+    for(axom::mint::IndexType i=0 ; i <= res ; ++i)
   {
     for(axom::mint::IndexType j=0 ; j<= res ; ++j)
     {
       SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
       SpacePt spacePt;
       spatialIndex1.reconstructPoint(0, isoparPt.data(), spacePt.data() );
-      cmesh.setNode(i,j,spacePt[0],spacePt[1]);
+      axom::mint::IndexType idx = cmesh.getLinearIndex( i, j );
+      x_coords[ idx ] = spacePt[0];
+      y_coords[ idx ] = spacePt[1];
     }
   }
 

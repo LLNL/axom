@@ -1026,16 +1026,22 @@ TEST( mint_util_write_vtk, CurvilinearMesh3D )
 
   IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
-  for ( IndexType idx = 0 ; idx < ext_size[0] ; ++idx )
+  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
+  double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
+  double* z_coords = c_mesh->getCoordinateArray( Z_COORDINATE );
+  for ( IndexType i = 0 ; i < ext_size[0] ; ++i )
   {
-    for ( IndexType idy = 0 ; idy < ext_size[1] ; ++idy )
+    for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
     {
-      for ( IndexType idz = 0 ; idz < ext_size[2] ; ++idz )
+      for ( IndexType k = 0 ; k < ext_size[2] ; ++k )
       {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
-        c_mesh->setNode( idx, idy, idz, x, y, z );
+        IndexType idx = c_mesh->getLinearIndex( i, j, k );
+        double x = i + internal::randomD( -0.45, 0.45 );
+        double y = j + internal::randomD( -0.45, 0.45 );
+        double z = k + internal::randomD( -0.45, 0.45 );
+        x_coords[ idx ] = x;
+        y_coords[ idx ] = y;
+        z_coords[ idx ] = z;
       }
     }
   }
@@ -1066,13 +1072,17 @@ TEST( mint_util_write_vtk, CurvilinearMesh2D )
 
   IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
-  for ( IndexType idx = 0 ; idx < ext_size[0] ; ++idx )
+  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
+  double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
+  for ( IndexType i = 0 ; i < ext_size[0] ; ++i )
   {
-    for ( IndexType idy = 0 ; idy < ext_size[1] ; ++idy )
+    for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
     {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
-      c_mesh->setNode( idx, idy, x, y );
+      IndexType idx = c_mesh->getLinearIndex( i, j );
+      double x = i + internal::randomD( -0.45, 0.45 );
+      double y = j + internal::randomD( -0.45, 0.45 );
+      x_coords[ idx ] = x;
+      y_coords[ idx ] = y;
     }
   }
 
@@ -1103,10 +1113,11 @@ TEST( mint_util_write_vtk, CurvilinearMesh1D )
 
   IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
+  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   for ( IndexType idx = 0 ; idx < ext_size[0] ; ++idx )
   {
     double x = idx + internal::randomD( -0.45, 0.45 );
-    c_mesh->setNode( idx, x );
+    x_coords[ idx ] = x;
   }
 
   internal::populate_and_write( c_mesh, path );
