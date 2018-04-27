@@ -59,6 +59,11 @@ class ConnectivityArray< ConnectivityType::INDIRECTION >
 {
 public:
 
+  /*!
+   * \brief Default constructor. Disabled.
+   */
+  ConnectivityArray() = delete;
+
 /// \name Native Storage ConnectivityArray Constructors
 /// @{
 
@@ -255,7 +260,145 @@ public:
     m_offsets = AXOM_NULLPTR;
   }
 
-/// \name Data Accessor Methods
+/// \name Attribute get/set Methods
+/// @{
+
+  /*!
+   * \brief Returns the total number of IDs.
+   */
+  IndexType getNumberOfIDs() const
+  { return m_offsets->size() - 1; }
+
+  /*!
+   * \brief Return the number of IDs available for storage without resizing.
+   */
+  IndexType getIDCapacity() const
+  { return m_offsets->capacity() - 1; }
+
+  /*!
+   * \brief Returns the number of values in this ConnectivityArray instance.
+   */
+  IndexType getNumberOfValues() const
+  { return m_values->size(); }
+
+  /*!
+   * \brief Return the number of values available for storage without resizing.
+   */
+  IndexType getValueCapacity() const
+  { return m_values->capacity(); }
+
+  /*!
+   * \brief Reserve space for IDs and values.
+   * 
+   * \param [in] ID_capacity the number of IDs to reserve space for.
+   * \param [in] value_capacity the number of values to reserve space for.
+   *
+   * \note if value_capacity is not specified then if this ConnectivityArray is
+   *  empty then MAX_NUM_NODES values are reserved for each ID. Otherwise the
+   *  average number of values per ID are reserved for each ID.
+   *
+   * \post getKeyCapacity() >= ID_capacity
+   */
+  void reserve( IndexType ID_capacity, IndexType value_capacity=USE_DEFAULT )
+  {
+    m_offsets->reserve( ID_capacity + 1 );
+    IndexType new_value_capacity = 
+                internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
+                                          getNumberOfValues(), value_capacity );
+    m_values->reserve( new_value_capacity );
+  }
+
+  /*!
+   * \brief Shrink the offsets and values arrays so that there is no extra 
+   *  capacity.
+   *
+   * \post getIDCapacity() == getNumberOfIDs()
+   * \post getValueCapacity() == getNumberOfValues()
+   */
+  void shrink()
+  { 
+    m_values->shrink();
+    m_offsets->shrink();
+  }
+
+  /*!
+   * \brief Get the resize ratio.
+   */
+  double getResizeRatio() const
+  { return m_values->getResizeRatio(); }
+
+  /*!
+   * \brief Set the resize ratio.
+   *
+   * \param [in] ratio the new resize ratio.
+   *
+   * \post getResizeRatio() == ratio
+   */
+  void setResizeRatio( double ratio )
+  { 
+    m_values->setResizeRatio( ratio );
+    m_offsets->setResizeRatio( ratio );
+  }
+
+  /*!
+   * \brief Checks if this CellConnecitivity instance has a variable number of
+   *  values per ID.
+   * \return true.
+   */
+  bool hasVariableValuesPerID() const
+  { return true; }
+
+  /*!
+   * \brief Checks if this ConnectivityArray instance is empty.
+   */
+  bool empty() const
+  { return m_values->empty(); }
+
+  /*!
+   * \brief Return true iff constructed via the external constructor.
+   */
+  bool isExternal() const
+  {  
+    bool consistent = true;
+    bool is_external = m_values->isExternal();
+    consistent &= is_external == m_offsets->isExternal();
+
+    SLIC_WARNING_IF( !consistent, "External state not consistent." );
+    return is_external;
+  }
+
+  /*!
+   * \brief Return true iff constructed via the sidre constructors.
+   */
+  bool isInSidre() const
+  {
+    bool consistent = true;
+    bool is_in_sidre = m_values->isInSidre();
+    consistent &= is_in_sidre == m_offsets->isInSidre();
+
+    SLIC_WARNING_IF( !consistent, "External state not consistent." );
+    return is_in_sidre;
+  }
+
+  /*
+   * \brief Return a const pointer to the sidre::Group that holds the data
+   *  or AXOM_NULLPTR if the data is not in sidre.
+   */
+#ifdef MINT_USE_SIDRE
+  const sidre::Group* getGroup() const
+  { 
+    if ( !isInSidre() )
+    {
+      return AXOM_NULLPTR;
+    }
+
+    return m_values->getView()->getOwningGroup()->getParent();
+  }
+#endif
+
+/// @}
+
+/// \name Data Access Methods
 /// @{
 
   /*!
@@ -287,35 +430,62 @@ public:
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \post cell_ptr != AXOM_NULLPTR.
    */
+  /// @{
+
+  IndexType* operator[]( IndexType ID )
+  {
+    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
+    return m_values->getData() + (*m_offsets)[ ID ];
+  }
+
   const IndexType* operator[]( IndexType ID ) const 
   {
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
     return m_values->getData() + (*m_offsets)[ ID ];
   }
 
+  /// @}
+
   /*!
    * \brief Returns a pointer to the values array, of length getNumberOfValues().
    */
+  /// @{
+
+  IndexType* getValuePtr()
+  { return m_values->getData(); }
+
   const IndexType* getValuePtr() const
   { return m_values->getData(); }
+
+  /// @}
 
   /*!
    * \brief Returns a pointer to the offsets array, of length 
    *  getNumberOfIDs() + 1.
    */
+  /// @{
+
+  IndexType* getOffsetPtr()
+  { return m_offsets->getData(); }
+
   const IndexType* getOffsetPtr() const
   { return m_offsets->getData(); }
 
+  /// @}
+
   /*!
-   * \brief Returns a pointer to the types array, of length getNumberOfIDs().
+   * \brief Returns a pointer to the types array, in this case AXOM_NULLPTR.
    */
+  /// @{
+
+  CellType* getTypePtr()
+  { return AXOM_NULLPTR; }
+
   const CellType* getTypePtr() const
   { return AXOM_NULLPTR; }
 
-/// @}
+  /// @}
 
-/// \name Data Modification Methods
-/// @{
 
   /*!
    * \brief Append a ID.
@@ -424,184 +594,6 @@ public:
   { 
     internal::insert( start_ID, n_IDs, values, offsets, m_values, 
                           m_offsets );
-  }
-
-  /*!
-   * \brief Access operator for the values of the given ID.
-   *
-   * \param [in] ID the ID in question.
-   *
-   * \return pointer to the values of the given ID.
-   *
-   * \pre ID >= 0 && ID < getNumberOfIDs()
-   * \post cell_ptr != AXOM_NULLPTR.
-   */
-  IndexType* operator[]( IndexType ID )
-  {
-    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return m_values->getData() + (*m_offsets)[ ID ];
-  }
-
-  /*!
-   * \brief Returns a pointer to the values array, of length getNumberOfValues().
-   */
-  IndexType* getValuePtr()
-  { return m_values->getData(); }
-
-  /*!
-   * \brief Returns a pointer to the offsets array, of length 
-   *  getNumberOfIDs() + 1.
-   */
-  IndexType* getOffsetPtr()
-  { return m_offsets->getData(); }
-
-  /*!
-   * \brief Returns a pointer to the types array, in this case AXOM_NULLPTR.
-   */
-  CellType* getTypePtr()
-  { return AXOM_NULLPTR; }
-
-/// @}
-
-/// \name Constant Attribute Querying Methods
-/// @{
-
-  /*!
-   * \brief Checks if this CellConnecitivity instance has a variable number of
-   *  values per ID.
-   * \return true.
-   */
-  bool hasVariableValuesPerID() const
-  { return true; }
-
-  /*!
-   * \brief Checks if this ConnectivityArray instance is empty.
-   */
-  bool empty() const
-  { return m_values->empty(); }
-
-  /*!
-   * \brief Returns the total number of IDs.
-   */
-  IndexType getNumberOfIDs() const
-  { return m_offsets->size() - 1; }
-
-  /*!
-   * \brief Returns the number of values in this ConnectivityArray instance.
-   */
-  IndexType getNumberOfValues() const
-  { return m_values->size(); }
-
-  /*!
-   * \brief Return the number of IDs available for storage without resizing.
-   */
-  IndexType getIDCapacity() const
-  { return m_offsets->capacity() - 1; }
-
-  /*!
-   * \brief Return the number of values available for storage without resizing.
-   */
-  IndexType getValueCapacity() const
-  { return m_values->capacity(); }
-
-  /*!
-   * \brief Get the resize ratio.
-   */
-  double getResizeRatio() const
-  { return m_values->getResizeRatio(); }
-
-  /*!
-   * \brief Return true iff constructed via the external constructor.
-   */
-  bool isExternal() const
-  {  
-    bool consistent = true;
-    bool is_external = m_values->isExternal();
-    consistent &= is_external == m_offsets->isExternal();
-
-    SLIC_WARNING_IF( !consistent, "External state not consistent." );
-    return is_external;
-  }
-
-  /*!
-   * \brief Return true iff constructed via the sidre constructors.
-   */
-  bool isInSidre() const
-  {
-    bool consistent = true;
-    bool is_in_sidre = m_values->isInSidre();
-    consistent &= is_in_sidre == m_offsets->isInSidre();
-
-    SLIC_WARNING_IF( !consistent, "External state not consistent." );
-    return is_in_sidre;
-  }
-
-  /*
-   * \brief Return a const pointer to the sidre::Group that holds the data
-   *  or AXOM_NULLPTR if the data is not in sidre.
-   */
-#ifdef MINT_USE_SIDRE
-  const sidre::Group* getGroup() const
-  { 
-    if ( !isInSidre() )
-    {
-      return AXOM_NULLPTR;
-    }
-
-    return m_values->getView()->getOwningGroup()->getParent();
-  }
-#endif
-
-/// @}
-
-/// \name Attribute Modification Methods
-/// @{
-
-  /*!
-   * \brief Reserve space for IDs and values.
-   * 
-   * \param [in] ID_capacity the number of IDs to reserve space for.
-   * \param [in] value_capacity the number of values to reserve space for.
-   *
-   * \note if value_capacity is not specified then if this ConnectivityArray is
-   *  empty then MAX_NUM_NODES values are reserved for each ID. Otherwise the
-   *  average number of values per ID are reserved for each ID.
-   *
-   * \post getKeyCapacity() >= ID_capacity
-   */
-  void reserve( IndexType ID_capacity, IndexType value_capacity=USE_DEFAULT )
-  {
-    m_offsets->reserve( ID_capacity + 1 );
-    IndexType new_value_capacity = 
-                internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
-                                          getNumberOfValues(), value_capacity );
-    m_values->reserve( new_value_capacity );
-  }
-
-  /*!
-   * \brief Shrink the offsets and values arrays so that there is no extra 
-   *  capacity.
-   *
-   * \post getIDCapacity() == getNumberOfIDs()
-   * \post getValueCapacity() == getNumberOfValues()
-   */
-  void shrink()
-  { 
-    m_values->shrink();
-    m_offsets->shrink();
-  }
-
-  /*!
-   * \brief Set the resize ratio.
-   *
-   * \param [in] ratio the new resize ratio.
-   *
-   * \post getResizeRatio() == ratio
-   */
-  void setResizeRatio( double ratio )
-  { 
-    m_values->setResizeRatio( ratio );
-    m_offsets->setResizeRatio( ratio );
   }
 
 /// @}

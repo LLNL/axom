@@ -131,6 +131,11 @@ class ConnectivityArray
 
 public:
 
+  /*!
+   * \brief Default constructor. Disabled.
+   */
+  ConnectivityArray() = delete;
+
 /// \name Native Storage ConnectivityArray Constructors
 /// @{
 
@@ -281,7 +286,114 @@ public:
     m_values = AXOM_NULLPTR;
   }
 
-/// \name Data Accessor Methods
+/// \name Attribute get/set Methods
+/// @{
+
+  /*!
+   * \brief Returns the total number of IDs.
+   */
+  IndexType getNumberOfIDs() const
+  { return m_values->size(); }
+
+  /*!
+   * \brief Return the number of IDs available for storage without resizing.
+   */
+  IndexType getIDCapacity() const
+  { return m_values->capacity(); }
+
+  /*!
+   * \brief Returns the number of values in this ConnectivityArray instance.
+   */
+  IndexType getNumberOfValues() const
+  { return m_values->size() * m_stride; }
+
+  /*!
+   * \brief Return the number of values available for storage without resizing.
+   */
+  IndexType getValueCapacity() const
+  { return getIDCapacity() * m_stride; }
+
+  /*!
+   * \brief Reserve space for IDs and values.
+   * 
+   * \param [in] ID_capacity the number of IDs to reserve space for.
+   * \param [in] value_capacity not used, does not need to be specified.
+   *
+   * \post getIDCapacity() >= n_IDs
+   */
+  void reserve( IndexType ID_capacity, 
+                IndexType AXOM_NOT_USED(value_capacity)=0 )
+  { m_values->reserve( ID_capacity ); }
+
+  /*!
+   * \brief Shrink the array so that there is no extra capacity.
+   *
+   * \post getIDCapacity() == getNumberOfIDs()
+   */
+  void shrink()
+  { m_values->shrink(); }
+
+  /*!
+   * \brief Get the resize ratio.
+   */
+  double getResizeRatio() const
+  { return m_values->getResizeRatio(); }
+
+  /*!
+   * \brief Set the resize ratio.
+   *
+   * \param [in] ratio the new resize ratio.
+   *
+   * \post getResizeRatio() == ratio
+   */
+  void setResizeRatio( double ratio )
+  { m_values->setResizeRatio( ratio ); }
+
+  /*!
+   * \brief Checks if this CellConnecitivity instance has a variable number of
+   *  values per ID.
+   * \return false.
+   */
+  bool hasVariableValuesPerID() const
+  { return false; }
+
+  /*!
+   * \brief Checks if this ConnectivityArray instance is empty.
+   */
+  bool empty() const
+  { return m_values->empty(); }
+  
+  /*!
+   * \brief Return true iff constructed via the external constructor.
+   */
+  bool isExternal() const
+  { return m_values->isExternal(); }
+
+  /*!
+   * \brief Return true iff constructed via the sidre constructors.
+   */
+  bool isInSidre() const
+  { return m_values->isInSidre(); }
+
+  /*
+   * \brief Return a const pointer to the sidre::Group that holds the data
+   *  or AXOM_NULLPTR if the data is not in sidre.
+   */
+#ifdef MINT_USE_SIDRE
+  const sidre::Group* getGroup() const
+  { 
+    if ( !isInSidre() )
+    {
+      return AXOM_NULLPTR;
+    }
+
+    return m_values->getView()->getOwningGroup()->getParent();
+  }
+#endif
+
+/// @}
+
+/// \name Data Access Methods
 /// @{
 
   /*!
@@ -310,36 +422,61 @@ public:
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \post cell_ptr != AXOM_NULLPTR.
    */
+  /// @{
+
+  IndexType* operator[]( IndexType ID )
+  {
+    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
+    return m_values->getData() + ID * m_stride;
+  }
+
   const IndexType* operator[]( IndexType ID ) const 
   {
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
     return m_values->getData() + ID * m_stride;
   }
 
+  /// @}
+
   /*!
    * \brief Returns a pointer to the values array, of length getNumberOfValues().
    */
+  /// @{
+
+  IndexType* getValuePtr()
+  { return m_values->getData(); }
+
   const IndexType* getValuePtr() const
   { return m_values->getData(); }
+
+  /// @}
 
   /*!
    * \brief Returns a pointer to the offsets array, of length 
    *  getNumberOfIDs() + 1.
    */
+  /// @{
+
+  IndexType* getOffsetPtr()
+  { return AXOM_NULLPTR; }
+
   const IndexType* getOffsetPtr() const
   { return AXOM_NULLPTR; }
+
+  /// @}
 
   /*!
    * \brief Returns a pointer to the types array, of length getNumberOfIDs().
    */
+  /// @{
+
+  CellType* getTypePtr()
+  { return AXOM_NULLPTR; }
+
   const CellType* getTypePtr() const
   { return AXOM_NULLPTR; }
 
-
-/// @}
-
-/// \name Data Modification Methods
-/// @{
+  /// @}
 
   /*!
    * \brief Adds a ID.
@@ -451,152 +588,6 @@ public:
     SLIC_ASSERT( values != AXOM_NULLPTR );
     m_values->insert( values, n_IDs, start_ID );
   }
-
-    /*!
-   * \brief Access operator for the values of the given ID.
-   *
-   * \param [in] ID the ID in question.
-   *
-   * \return pointer to the values of the given ID.
-   *
-   * \pre ID >= 0 && ID < getNumberOfIDs()
-   * \post cell_ptr != AXOM_NULLPTR.
-   */
-  IndexType* operator[]( IndexType ID )
-  {
-    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return m_values->getData() + ID * m_stride;
-  }
-
-  /*!
-   * \brief Returns a pointer to the values array, of length getNumberOfValues().
-   */
-  IndexType* getValuePtr()
-  { return m_values->getData(); }
-
-  /*!
-   * \brief Returns a pointer to the offsets array, in this case AXOM_NULLPTR.
-   */
-  IndexType* getOffsetPtr()
-  { return AXOM_NULLPTR; }
-
-  /*!
-   * \brief Returns a pointer to the types array, in this case AXOM_NULLPTR.
-   */
-  CellType* getTypePtr()
-  { return AXOM_NULLPTR; }
-
-/// @}
-
-/// \name Attribute Querying Methods
-/// @{
-
-  /*!
-   * \brief Checks if this CellConnecitivity instance has a variable number of
-   *  values per ID.
-   * \return false.
-   */
-  bool hasVariableValuesPerID() const
-  { return false; }
-
-  /*!
-   * \brief Checks if this ConnectivityArray instance is empty.
-   */
-  bool empty() const
-  { return m_values->empty(); }
-
-  /*!
-   * \brief Returns the total number of IDs.
-   */
-  IndexType getNumberOfIDs() const
-  { return m_values->size(); }
-
-  /*!
-   * \brief Returns the number of values in this ConnectivityArray instance.
-   */
-  IndexType getNumberOfValues() const
-  { return m_values->size() * m_stride; }
-
-  /*!
-   * \brief Return the number of IDs available for storage without resizing.
-   */
-  IndexType getIDCapacity() const
-  { return m_values->capacity(); }
-
-  /*!
-   * \brief Return the number of values available for storage without resizing.
-   */
-  IndexType getValueCapacity() const
-  { return getIDCapacity() * m_stride; }
-
-  /*!
-   * \brief Get the resize ratio.
-   */
-  double getResizeRatio() const
-  { return m_values->getResizeRatio(); }
-  
-  /*!
-   * \brief Return true iff constructed via the external constructor.
-   */
-  bool isExternal() const
-  { return m_values->isExternal(); }
-
-  /*!
-   * \brief Return true iff constructed via the sidre constructors.
-   */
-  bool isInSidre() const
-  { return m_values->isInSidre(); }
-
-  /*
-   * \brief Return a const pointer to the sidre::Group that holds the data
-   *  or AXOM_NULLPTR if the data is not in sidre.
-   */
-#ifdef MINT_USE_SIDRE
-  const sidre::Group* getGroup() const
-  { 
-    if ( !isInSidre() )
-    {
-      return AXOM_NULLPTR;
-    }
-
-    return m_values->getView()->getOwningGroup()->getParent();
-  }
-#endif
-
-/// @}
-
-/// \name Attribute Modification Methods
-/// @{
-
-  /*!
-   * \brief Reserve space for IDs and values.
-   * 
-   * \param [in] ID_capacity the number of IDs to reserve space for.
-   * \param [in] value_capacity not used, does not need to be specified.
-   *
-   * \post getIDCapacity() >= n_IDs
-   */
-  void reserve( IndexType ID_capacity, 
-                IndexType AXOM_NOT_USED(value_capacity)=0 )
-  { m_values->reserve( ID_capacity ); }
-
-  /*!
-   * \brief Shrink the array so that there is no extra capacity.
-   *
-   * \post getIDCapacity() == getNumberOfIDs()
-   */
-  void shrink()
-  { m_values->shrink(); }
-
-  /*!
-   * \brief Set the resize ratio.
-   *
-   * \param [in] ratio the new resize ratio.
-   *
-   * \post getResizeRatio() == ratio
-   */
-  void setResizeRatio( double ratio )
-  { m_values->setResizeRatio( ratio ); }
 
 /// @}
 
