@@ -517,11 +517,18 @@ public:
   /// @}
 
   /*!
-   * \brief Return a constant pointer to the connectivity array, of length
+   * \brief Return a pointer to the connectivity array, of length
    *  getConnectivitySize().
    */
+  /// @{
+
+  IndexType* getConnectivityArray()
+  { return m_cell_connectivity->getValuePtr(); }
+
   const IndexType* getConnectivityArray() const
   { return m_cell_connectivity->getValuePtr(); }
+
+  /// @}
 
   /*!
    * \brief Return a constant pointer to the offset array, of length
@@ -642,7 +649,7 @@ public:
   { return m_coordinates->getCoordinate( nodeID, dim ); }
 
   /*!
-   * \brief Appends a new node to the MeshCoordinates instance
+   * \brief Appends a new node to the mesh.
    *
    * \param [in] x the first coordinate to append.
    * \param [in] y the second coordinate to append.
@@ -677,7 +684,7 @@ public:
   /// @}
 
   /*!
-   * \brief Appends multiple nodes to the MeshCoordinates instance
+   * \brief Appends multiple nodes to the mesh.
    *
    * \param [in] coords pointer to the nodes to append, of length 
    *  n * getDimension().
@@ -696,7 +703,7 @@ public:
   }
 
   /*!
-   * \brief Appends new nodes to the MeshCoordinates instance
+   * \brief Appends new nodes to the mesh.
    *
    * \param [in] x array of the first coordinates to append, of length n.
    * \param [in] y array of the second coordinates to append, of length n.
@@ -729,7 +736,7 @@ public:
 
 
   /*!
-   * \brief Insert a node to the MeshCoordinates instance.
+   * \brief Insert a node to the mesh.
    *
    * \param [in] nodeID the position to insert at.
    * \param [in] x the value of the first coordinate to insert.
@@ -778,7 +785,7 @@ public:
   /// @}
 
   /*!
-   * \brief Inserts multiple nodes to the MeshCoordinates instance
+   * \brief Inserts multiple nodes to the mesh.
    *
    * \param [in] coords pointer to the nodes to insert, of length 
    *  n * getDimension().
@@ -805,7 +812,7 @@ public:
   }
 
   /*!
-   * \brief Insert multiple nodes to the MeshCoordinates instance.
+   * \brief Insert multiple nodes to the mesh.
    *
    * \param [in] nodeID the position to insert at.
    * \param [in] x the array of the first coordinates to insert.
