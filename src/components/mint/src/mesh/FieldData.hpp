@@ -140,7 +140,7 @@ public:
    */
   ~FieldData() { clear(); }
 
-/// \name Query Methods
+/// \name Attribute get/set Methods
 /// @{
 
   /*!
@@ -159,6 +159,14 @@ public:
   { return ( m_fields.empty() ); }
 
   /*!
+   * \brief Returns the number of fields of this FieldData instance.
+   * \return N the number of fields in this instance.
+   * \post N == 0 \iff this->empty() == true.
+   */
+  inline int getNumFields() const
+  { return static_cast< int >( m_fields.size() ); }
+
+  /*!
    * \brief Checks if the field with the given name exists.
    * \param [in] name the name of the field to check.
    * \return status true if the field exists, else, false.
@@ -167,22 +175,20 @@ public:
   { return ( m_fields.find( name ) != m_fields.end() ); }
 
   /*!
-   * \brief Returns the number of fields of this FieldData instance.
-   * \return N the number of fields in this instance.
-   * \post N == 0 \iff this->empty() == true.
-   */
-  inline int getNumFields( ) const
-  { return static_cast< int >( m_fields.size() ); }
-
-  /*!
     * \brief Checks if a Sidre Group is associated with this FieldData instance.
     * \return status true if the FieldData is associated with Sidre, else, false.
     */
-  inline bool hasSidreGroup( ) const;
+  inline bool hasSidreGroup() const;
+
+  /*!
+   *  \brief Return the resize ratio of this FieldData.
+   */
+  inline double getResizeRatio() const
+  { return m_resize_ratio; }
 
 /// @}
 
-/// \name Methods to create new Fields
+/// \name Methods acting on a single field
 /// @{
 
   /*!
@@ -192,9 +198,9 @@ public:
    * \param [in] name the user-supplied name to identify this field.
    * \param [in] num_tuples the number of tuples in the field.
    * \param [in] num_components number of components per tuple (optional)
+   * \param [in] capacity initial max capacity for the field (optional).
    * \param [in] storeInSidre indicates whether to store the field in the
    *  associated Sidre group of this FieldData instance (optional).
-   * \param [in] capacity initial max capacity for the field (optional).
    *
    * \tparam T the underlying data type of the field, e.g., double, int, etc.
    *
@@ -229,6 +235,8 @@ public:
    * \param [in] data supplied external buffer
    * \param [in] num_tuples the number of tuples in the field.
    * \param [in] num_components the numbere of components per tuple (optional).
+   * \param [in] capacity max capacity for the field (optional). If not
+   *  specified the capacity defaults to num_tuples.
    *
    * \tparam T the underlying data type of the field, e.g., double, int, etc.
    *
@@ -255,10 +263,6 @@ public:
                          T* data, IndexType num_tuples, 
                          IndexType num_components=1, 
                          IndexType capacity=USE_DEFAULT );
-/// @}
-
-/// \name Methods to remove Fields
-/// @{
 
   /*!
    * \brief Removes the field with the given name.
@@ -279,11 +283,6 @@ public:
    * \pre i >= 0 && i < getNumFields()
    */
   void removeField( int i );
-
-/// @}
-
-/// \name Field Object access methods
-/// @{
 
   /*!
    * \brief Returns the ith field of this FieldData instance.
@@ -346,11 +345,6 @@ public:
 
   /// @}
 
-/// @}
-
-/// \name Field pointer access methods
-/// @{
-
   /*!
    * \brief Returns pointer to the buffer of the field with the given name.
    *
@@ -404,7 +398,7 @@ public:
 
 /// @}
 
-/// \name Size/Capacity Modifiers
+/// \name Methods acting on all fields
 /// @{
 
   /*!
@@ -422,7 +416,7 @@ public:
   void resize( IndexType newNumTuples );
 
   /*!
-   * \brief Makes space for an insert of length n_tuples at the given position.
+   * \brief Inserts n_tuples with the default value at the given position.
    *
    * \param [in] pos the position of the insert.
    * \param [in] n_tuples the number of tuples to insert.
@@ -451,16 +445,23 @@ public:
    * \brief Shrinks the tuple capacity of all fields in this FieldData instance
    *  to be equal to the actual number of tuples in the field.
    *
-   * \warning If the FieldData instance contains a FieldVariable that cannot be
-   *  re-sized, e.g., it points to an external buffer, this method will abort
-   *  with an error.
-   *
    * \see FieldVariable
    */
-  void shrink( );
+  void shrink();
 
+  /*!
+   *  \brief Set the resize ratio of this FieldData and all associated Fields.
+   */
   void setResizeRatio( double ratio );
 
+  /*
+   * \brief Return true iff all fields have the given number of tuples, all
+   *  non-external fields have the given capacity and the same resize ratio as
+   *  this FieldData instance.
+   *
+   * \param [in] num_tuples the expected number of tuples for each field.
+   * \param [in] capacity the expected capacity of the non-external fields.
+   */
   bool checkConsistency( IndexType num_tuples, IndexType capacity ) const;
 
 /// @}
