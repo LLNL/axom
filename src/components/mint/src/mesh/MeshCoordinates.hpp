@@ -250,7 +250,7 @@ public:
    */
   ~MeshCoordinates();
 
-/// \name Attribute Query Methods
+/// \name Attribute get/set Methods
 /// @{
 
   /*!
@@ -261,6 +261,20 @@ public:
   int dimension() const { return m_ndims; };
 
   /*!
+   * \brief Returns the number of nodes in this MeshCoordinates instance.
+   * \return N the number of nodes in this MeshCoordinates instance.
+   */
+  IndexType numNodes() const { return m_coordinates[0]->size(); }
+
+  /*!
+   * \brief Changes the number of nodes to the specified size.
+   *
+   * \post numNodes()==size
+   * \post numNodes() <= capacity()
+   */
+  void resize( IndexType size );
+
+  /*!
    * \brief Get the maximum number of points that can currently be held.
    * \return N the capacity of m_coordinates.
    * \post N >= numNodes()
@@ -268,31 +282,29 @@ public:
   IndexType capacity() const { return m_coordinates[0]->capacity(); }
 
   /*!
-   * \brief Returns the number of nodes in this MeshCoordinates instance.
-   * \return N the number of nodes in this MeshCoordinates instance.
+   * \brief Changes the max capacity to the specified capacity.
+   *
+   * \warning The reserve() operation is invalid when a MeshCoordinates object
+   *  is constructed using external buffers. Since, in this case the object does
+   *  not own the associated memory, dynamic resizing is not allowed.
+   *
+   * \param [in] capacity the new max node capacity.
+   *
+   * \post capacity() == capacity
+   * \post numNodes() <= capacity()
    */
-  IndexType numNodes() const { return m_coordinates[0]->size(); }
-
-  /*
-   * \brief Checks if this MeshCoordinates instance is empty.
-   * \return status true if numNodes()==0, else, false.
-   */
-  bool empty() const { return (numNodes() == 0); }
+  void reserve( IndexType capacity );
 
   /*!
-   * \brief Return true iff constructed via the external constructor.
+   * \brief Returns all extra memory to the system.
+   *
+   * \warning The shrink() operation is invalid when a MeshCoordinates object
+   *  is constructed using external buffers. Since, in this case the object does
+   *  not own the associated memory, dynamic resizing is not allowed.
+   *
+   * \post numNodes() == capacity()
    */
-  bool isExternal() const;
-
-  /*!
-   * \brief Return true iff constructed via the sidre constructors.
-   */
-  bool isInSidre() const;
-
-/// @}
-
-/// \name Resize Ratio Get/Set Methods
-/// @{
+  void shrink();
 
   /*!
    * \brief Returns the resize ratio by which the capacity will increase.
@@ -311,31 +323,27 @@ public:
    */
   void setResizeRatio( double ratio );
 
+  /*
+   * \brief Checks if this MeshCoordinates instance is empty.
+   * \return status true if numNodes()==0, else, false.
+   */
+  bool empty() const 
+  { return numNodes() == 0; }
+
+  /*!
+   * \brief Return true iff constructed via the external constructor.
+   */
+  bool isExternal() const;
+
+  /*!
+   * \brief Return true iff constructed via the sidre constructors.
+   */
+  bool isInSidre() const;
+
 /// @}
 
-/// \name Modify Methods
+/// \name Data Access Methods
 /// @{
-
-  /*!
-   * \brief Appends a new node to the MeshCoordinates instance
-   *
-   * \param [in] x the coordinate to append.
-   *
-   * \pre dimension() == 1
-   * \post the number of nodes is incremented by one.
-   */
-  IndexType append( double x );
-
-  /*!
-   * \brief Appends a new node to the MeshCoordinates instance
-   *
-   * \param [in] x the first coordinate to append.
-   * \param [in] y the second coordinate to append.
-   *
-   * \pre dimension() == 2
-   * \post the number of nodes is incremented by one.
-   */
-  IndexType append( double x, double y );
 
   /*!
    * \brief Appends a new node to the MeshCoordinates instance
@@ -344,10 +352,16 @@ public:
    * \param [in] y the second coordinate to append.
    * \param [in] z the third coordinate to append.
    *
-   * \pre dimension() == 3
+   * \note Each method is valid only for the appropriate dimension of the mesh.
    * \post the number of nodes is incremented by one.
    */
+  /// @{
+
+  IndexType append( double x );
+  IndexType append( double x, double y );
   IndexType append( double x, double y, double z );
+
+  /// @}
 
   /*!
    * \brief Appends multiple nodes to the MeshCoordinates instance
@@ -369,57 +383,25 @@ public:
    *
    * \param [in] x array of the first coordinates to append, of length n.
    * \param [in] y array of the second coordinates to append, of length n.
-   * \param [in] n the number of coordinates to append.
-   *
-   * \pre dimension() == 2
-   * \pre x != AXOM_NULLPTR
-   * \pre y != AXOM_NULLPTR
-   * \pre z != AXOM_NULLPTR
-   * \pre n >= 0
-   * \post the number of nodes is incremented by n
-   */
-  void append( const double* x, const double* y, IndexType n );
-
-  /*!
-   * \brief Appends new nodes to the MeshCoordinates instance
-   *
-   * \param [in] x array of the first coordinates to append, of length n.
-   * \param [in] y array of the second coordinates to append, of length n.
    * \param [in] z array of the third coordinates to append, of length n.
    * \param [in] n the number of coordinates to append.
    *
-   * \pre dimension() == 3
+   * \note The first method is only valid for 2D meshes while the second 
+   *  is only for 3D.
+   *
    * \pre x != AXOM_NULLPTR
    * \pre y != AXOM_NULLPTR
    * \pre z != AXOM_NULLPTR
    * \pre n >= 0
    * \post the number of nodes is incremented by n
    */
+  /// @{
+
+  void append( const double* x, const double* y, IndexType n );
   void append( const double* x, const double* y, const double* z, IndexType n );
 
-  /*!
-   * \brief Sets the coordinates for the given node.
-   *
-   * \param [in] nodeID the index of the node whose coordinates to set.
-   * \param [in] x the new value of the first coordinate.
-   *
-   * \pre dimension() == 1
-   * \post idx >=0 && idx == numNodes()-1
-   */
-  void set( IndexType nodeID, double x );
-
-  /*!
-   * \brief Sets the coordinates for the given node.
-   *
-   * \param [in] nodeID the index of the node whose coordinates to set.
-   * \param [in] x the new value of the first coordinate.
-   * \param [in] y the new value of the second coordinate.
-   *
-   * \pre dimension() == 2
-   * \post idx >=0 && idx == numNodes()-1
-   */
-  void set( IndexType nodeID, double x, double y );
-
+  /// @}
+  
   /*!
    * \brief Sets the coordinates for the given node.
    *
@@ -428,40 +410,17 @@ public:
    * \param [in] y the new value of the second coordinate.
    * \param [in] z the new value of the third coordinate.
    *
-   * \pre dimension() == 3
+   * \note Each method is valid only for the appropriate dimension of the mesh.
    * \post idx >=0 && idx == numNodes()-1
    */
+  /// @{
+
+  void set( IndexType nodeID, double x );
+  void set( IndexType nodeID, double x, double y );
   void set( IndexType nodeID, double x, double y, double z );
 
-  /*!
-   * \brief Insert a node to the MeshCoordinates instance.
-   *
-   * \param [in] nodeID the position to insert at.
-   * \param [in] x the value of the coordinate to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
-   *
-   * \pre getDimension() == 1
-   * \pre 0 <= nodeID <= getNumberOfNodes
-   * \post the number of nodes is incremented by 1
-   */
-  void insert( IndexType nodeID, double x );
-
-  /*!
-   * \brief Insert a node to the MeshCoordinates instance.
-   *
-   * \param [in] nodeID the position to insert at.
-   * \param [in] x the value of the first coordinate to insert.
-   * \param [in] y the value of the second coordinate to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
-   *
-   * \pre getDimension() == 2
-   * \pre 0 <= nodeID <= getNumberOfNodes
-   * \post the number of nodes is incremented by 1
-   */
-  void insert( IndexType nodeID, double x, double y );
-
+  /// @}
+  
   /*!
    * \brief Insert a node to the MeshCoordinates instance.
    *
@@ -469,23 +428,25 @@ public:
    * \param [in] x the value of the first coordinate to insert.
    * \param [in] y the value of the second coordinate to insert.
    * \param [in] z the value of the third coordinate to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
    *
-   * \pre getDimension() == 3
+   * \note Each method is valid only for the appropriate dimension of the mesh.
    * \pre 0 <= nodeID <= getNumberOfNodes
    * \post the number of nodes is incremented by 1
    */
+  /// @{
+
+  void insert( IndexType nodeID, double x );
+  void insert( IndexType nodeID, double x, double y );
   void insert( IndexType nodeID, double x, double y, double z );
 
+  /// @}
+  
   /*!
    * \brief Inserts multiple nodes to the MeshCoordinates instance
    *
    * \param [in] coords pointer to the nodes to insert, of length 
    *  n * getDimension().
    * \param [in] n the number of nodes to append.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
    *
    * \note coords is assumed to be in the array of structs format, ie
    *  coords = {x0, y0, z0, x1, y1, z1, ..., xn, yn, zn}.
@@ -503,29 +464,8 @@ public:
    * \param [in] nodeID the position to insert at.
    * \param [in] x the array of the first coordinates to insert.
    * \param [in] y the array of the second coordinates to insert.
-   * \param [in] n the number of nodes to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
-   *
-   * \pre getDimension() == 2
-   * \pre 0 <= nodeID <= getNumberOfNodes
-   * x != AXOM_NULLPTR
-   * y != AXOM_NULLPTR
-   * \pre n >= 0
-   * \post the number of nodes is incremented by n
-   */
-  void insert( IndexType nodeID, const double* x, const double* y, IndexType n );
-
-  /*!
-   * \brief Insert multiple nodes to the MeshCoordinates instance.
-   *
-   * \param [in] nodeID the position to insert at.
-   * \param [in] x the array of the first coordinates to insert.
-   * \param [in] y the array of the second coordinates to insert.
    * \param [in] z the array of the third coordinates to insert.
    * \param [in] n the number of nodes to insert.
-   * \param [in] update_connectivity if true will update the connectivity so
-   *  that all elements remain connected to the same coordinates as before.
    *
    * \pre getDimension() == 3
    * \pre 0 <= nodeID <= getNumberOfNodes
@@ -535,16 +475,15 @@ public:
    * \pre n >= 0
    * \post the number of nodes is incremented by n
    */
+  /// @{
+
+  void insert( IndexType nodeID, const double* x, const double* y, IndexType n );
   void insert( IndexType nodeID, const double* x, const double* y, 
                const double* z, IndexType n );
 
+  /// @}
 
-/// @}
-
-/// \name Access Methods
-/// @{
-
-  /*!
+    /*!
    * \brief Returns the coordinate of a point at the given dimension.
    *
    * \param [in] nodeID the index of the point in query.
@@ -594,48 +533,6 @@ public:
   }
 
   /// @}
-
-/// @}
-
-/// \name Size/Capacity Modifiers
-/// @{
-
-  /*!
-   * \brief Changes the max capacity to the specified capacity.
-   *
-   * \warning The reserve() operation is invalid when a MeshCoordinates object
-   *  is constructed using external buffers. Since, in this case the object does
-   *  not own the associated memory, dynamic resizing is not allowed.
-   *
-   * \param [in] capacity the new max node capacity.
-   *
-   * \post capacity() == capacity
-   * \post numNodes() <= capacity()
-   */
-  void reserve( IndexType capacity );
-
-  /*!
-   * \brief Changes the number of nodes to the specified size.
-   *
-   * \warning The resize() operation is invalid when a MeshCoordinates object
-   *  is constructed using external buffers. Since, in this case the object does
-   *  not own the associated memory, dynamic resizing is not allowed.
-   *
-   * \post numNodes()==size
-   * \post numNodes() <= capacity()
-   */
-  void resize( IndexType size );
-
-  /*!
-   * \brief Returns all extra memory to the system.
-   *
-   * \warning The shrink() operation is invalid when a MeshCoordinates object
-   *  is constructed using external buffers. Since, in this case the object does
-   *  not own the associated memory, dynamic resizing is not allowed.
-   *
-   * \post numNodes() == capacity()
-   */
-  void shrink( );
 
 /// @}
 
