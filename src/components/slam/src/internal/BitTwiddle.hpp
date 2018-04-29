@@ -51,14 +51,23 @@ int trailingZeros(axom::common::uint64 word)
 /** Counts the number of set bits in a word */
 int popCount(axom::common::uint64 word)
 {
+    // 64 bit popcount implementation from: 
+    // http://chessprogramming.wikispaces.com/Population+Count#SWARPopcount
+
     typedef axom::common::uint64 Word;
-    int cnt = 0;
-    for (int i = 0; i < 64; ++i)
-    {
-        if ( (word & (Word(1) << i)) != 0)
-            ++cnt;
-    }
-    return cnt;
+
+    const Word masks[] = {
+        0x5555555555555555,              //  0 --  -1/3
+        0x3333333333333333,              //  1 --  -1/5
+        0x0F0F0F0F0F0F0F0F,              //  2 --  -1/17
+        0x0101010101010101,              //  3 --  -1/255
+    };
+
+    // aggregate counts of 2-,4-,8- and 16-bits
+    word = word - ((word >> 1)  & masks[0]);
+    word = (word & masks[1]) + ((word >> 2)  & masks[1]);
+    word = (word + (word >> 4)) & masks[2];
+    return static_cast<int>((word * masks[3]) >> 56);
 }
 
 } // end namespace internal
