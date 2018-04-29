@@ -414,8 +414,13 @@ TEST(slam_set_bitset, settingOutOfRange)
         SLIC_INFO("** Expecting error ** ");
         EXPECT_DEATH_IF_SUPPORTED(bitset.set(200), "");
 #else
-        bitset.set(200);
+        bitset.set(NBITS);
         EXPECT_FALSE(bitset.isValid());
+
+        // Note: The following will cause the program to access memory 
+        // that is out-of-bounds, and will cause an assert in debug runs
+        // but will not fail the isValid() test
+        //bitset.set(200);
 #endif
     }
 }

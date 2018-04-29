@@ -283,8 +283,10 @@ bool BitSet::isValid() const
 
     if (m_numBits == 0)
     {
-        if (m_numWords != 1 && m_data[0] != Word(0))
+        if (m_numWords != 1 || m_data[0] != Word(0))
+        {
             valid = false;
+        }
     }
     else
     {
@@ -307,7 +309,6 @@ bool BitSet::isValid() const
     }
 
     return valid;
-
 }
 
 BitSet::Index BitSet::find_first() const
