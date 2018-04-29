@@ -198,6 +198,7 @@ private:
 
     void checkValidIndex(Index idx) const
     {
+        AXOM_DEBUG_VAR(idx);
         SLIC_ASSERT_MSG(
             idx >= 0 && idx < m_numBits,
             "slam::Bitset attempted to out of range bit "
