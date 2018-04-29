@@ -38,14 +38,22 @@ namespace internal
 /** Counts the number of trailing zeros in a word */
 int trailingZeros(axom::common::uint64 word)
 {
+    // adapted from bit twiddling hacks, modified for 64 bits:
+    // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
+
     typedef axom::common::uint64 Word;
 
-    for (int i = 0; i < 64; ++i)
-    {
-        if ( (word & (Word(1) << i)) != 0)
-            return i;
-    }
-    return 0;
+    int cnt = 64;   // cnt tracks the number of zero bits on the right
+    word &= -static_cast<axom::common::int64>(word);
+    if (word) cnt--;
+    if (word & 0x00000000FFFFFFFF) cnt -= 32;
+    if (word & 0x0000FFFF0000FFFF) cnt -= 16;
+    if (word & 0x00FF00FF00FF00FF) cnt -= 8;
+    if (word & 0x0F0F0F0F0F0F0F0F) cnt -= 4;
+    if (word & 0x3333333333333333) cnt -= 2;
+    if (word & 0x5555555555555555) cnt -= 1;
+
+    return cnt;
 }
 
 /** Counts the number of set bits in a word */
