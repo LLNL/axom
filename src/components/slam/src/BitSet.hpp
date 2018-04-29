@@ -81,7 +81,8 @@ private:
 
     enum
     {
-        BITS_PER_WORD = sizeof(Word) << 3
+        BITS_PER_WORD = sizeof(Word) << 3,
+        LG_BITS_PER_WORD = 6
     };
 
 public:
@@ -206,7 +207,8 @@ private:
 
     bool isLastWordFull() const 
     { 
-        return m_numBits == m_numWords * BITS_PER_WORD;
+        const int lg = (1 << (LG_BITS_PER_WORD))-1;
+        return (m_numBits & lg) == 0;
     }
 
 private:
@@ -229,6 +231,8 @@ void BitSet::clear()
 
 void BitSet::set()
 {
+    if (m_numBits == 0) { return; }
+
     const Word ones = ~Word(0);
     for (int i = 0; i < m_numWords - 1; ++i)
     {
@@ -244,6 +248,8 @@ void BitSet::set()
 
 void BitSet::flip()
 {
+    if (m_numBits == 0) { return; }
+
     const Word ones = ~Word(0);
     for (int i = 0; i < m_numWords - 1; ++i)
     {
