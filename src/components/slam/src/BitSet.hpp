@@ -87,7 +87,7 @@ private:
 
 public:
 
-    explicit BitSet(int numBits)
+    explicit BitSet(int numBits = 0)
     {
         SLIC_ASSERT_MSG(numBits >= 0,
             "slam::BitSet must be initialized with a non-zero number of bits");

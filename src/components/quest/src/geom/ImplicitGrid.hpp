@@ -32,14 +32,9 @@
 #include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
+#include "slam/BitSet.hpp"
 
 #include <vector>
-
-#ifdef AXOM_USE_BOOST
-#  include <boost/dynamic_bitset.hpp>
-#else
-#  error quest::ImplicitGrid uses boost headers.
-#endif
 
 namespace axom
 {
@@ -92,7 +87,7 @@ public:
   typedef slam::OrderedSet< SizePolicy > BinSet;
 
 
-  typedef boost::dynamic_bitset<>  BitsetType;
+  typedef slam::BitSet             BitsetType;
   typedef slam::Map<BitsetType>    BinBitMap;
 
   /*!
@@ -313,7 +308,7 @@ public:
 
     BitsetType candidateBits = getCandidates(pt);
     candidatesVec.reserve( candidateBits.count() );
-    for(std::size_t eltIdx = candidateBits.find_first() ;
+    for(IndexType eltIdx = candidateBits.find_first() ;
         eltIdx != BitsetType::npos ;
         eltIdx = candidateBits.find_next( eltIdx) )
     {

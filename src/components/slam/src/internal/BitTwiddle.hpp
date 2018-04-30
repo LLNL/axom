@@ -91,7 +91,7 @@ inline int intrinsicTrailingZeros(axom::common::uint64 word)
 inline int intrinsicPopCount(axom::common::uint64 word)
 {
 #ifdef _M_X64
-    return __popcnt64(word);
+    return static_cast<int>(__popcnt64(word));
 #else
     typedef union
     {
@@ -101,7 +101,7 @@ inline int intrinsicPopCount(axom::common::uint64 word)
 
     UnsignedUnionType val = { word };
 
-    return __popcnt(val.i_type[0]) + __popcnt(val.i_type[1]);
+    return static_cast<int>(__popcnt(val.i_type[0]) + __popcnt(val.i_type[1]));
 #endif
 }
 
