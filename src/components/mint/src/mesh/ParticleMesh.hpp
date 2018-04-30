@@ -82,6 +82,10 @@ class ParticleMesh : public Mesh
 {
 
 public:
+
+  /*!
+   * \brief Default constructor. Disabled.
+   */
   ParticleMesh( ) = delete;
 
 /// \name Native Storage Constructors
@@ -252,11 +256,11 @@ public:
   virtual CellType getCellType() const override final
   { return VERTEX; }
 
-  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
+  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) )
                                                             const override final
   { return VERTEX; }
 
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
+  virtual IndexType getCell( IndexType cellID, IndexType* cell )
                                                           const override final;
 
 /// @}
@@ -355,7 +359,7 @@ public:
   /*!
    * \brief Return the node resize ratio.
    */
-  double getNodeResizeRatio() const 
+  double getNodeResizeRatio() const
   { return m_positions->getResizeRatio(); }
 
   /*!
