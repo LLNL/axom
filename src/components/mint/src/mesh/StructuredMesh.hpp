@@ -74,19 +74,15 @@ public:
    * \brief Return the type of cell this mesh holds. SEGMENT, QUAD, or HEX
    *  depending on the dimension.
    *
-   * \param [in] cellID the ID of the cell in question, this parameter is 
+   * \param [in] cellID the ID of the cell in question, this parameter is
    *  ignored.
    */
   /// @{
 
-  virtual CellType getCellType() const override final;
+  virtual CellType getCellType( IndexType cellID=0 ) const override final;
 
-  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) ) 
-                                                            const override final
-  { return getCellType(); }
-  
   /// @}
-  
+
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
@@ -96,11 +92,11 @@ public:
    *  be of length at least getNumberOfCellNodes().
    *
    * \return The number of nodes for the given cell.
-   * 
+   *
    * \pre cell != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) 
+  virtual IndexType getCell( IndexType cellID, IndexType* cell )
                                                           const override final;
 
 /// @}
@@ -133,9 +129,9 @@ public:
    * \return ptr pointer to the coordinate buffer.
    *
    * \note if hasExplicitCoordinates() == true then the length of the returned
-   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns 
+   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  AXOM_NULLPTR and the RectilinearMesh returns a pointer to the associated
-   *  dimension scale which is of length 
+   *  dimension scale which is of length
    *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim( dim ).
    *
    * \pre dim >= 0 && dim < dimension()
@@ -159,8 +155,8 @@ public:
    */
   virtual IndexType getNumberOfFaces() const final override
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
+    return 0;
   }
 
 /// @}
@@ -173,8 +169,8 @@ public:
    */
   virtual IndexType getNumberOfEdges() const final override
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
+    return 0;
   }
 
 /// @}
@@ -218,7 +214,7 @@ public:
 
 /// \name Indexing Helper Methods
 /// @{
-  
+
   /*!
    * \brief Returns stride to the second dimension.
    * \return jp stride to the second dimension.
@@ -283,7 +279,7 @@ public:
 /// @{
 
 /// \name Cells
-/// @{  
+/// @{
 
   /*!
    * \brief Returns the cell connectivity of the cell at (i,j)
@@ -306,7 +302,7 @@ public:
                        IndexType* cell) const;
 
 /// @}
-  
+
 /// @}
 
 protected:
@@ -316,7 +312,7 @@ protected:
    * \param [in] ext the structured mesh extent.
    */
   StructuredMesh( int meshType, int ndims, const int64 ext[6] );
-  
+
 
   Extent m_extent; /*!< grid extent */
 
@@ -331,7 +327,7 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline int StructuredMesh::getNumberOfCellNodes( 
+inline int StructuredMesh::getNumberOfCellNodes(
                                         IndexType AXOM_NOT_USED(cellID) ) const
 {
   const int cell_type = getCellType();
@@ -351,7 +347,7 @@ IndexType StructuredMesh::getCell( IndexType cellID, IndexType* cell ) const
   // Calculate logical indices of the cell's first corner node.
   IndexType ii, jj, kk;
   m_extent.getCellGridIndex( cellID, ii, jj, kk );
-  
+
   // Use the offsets table to get the all the cell nodes.
   const IndexType n0 = getLinearIndex( ii, jj, kk );
   for ( IndexType i = 0 ; i < num_cell_nodes; ++i )
@@ -395,7 +391,8 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j, IndexType k,
 }
 
 //------------------------------------------------------------------------------
-inline CellType StructuredMesh::getCellType() const
+inline
+CellType StructuredMesh::getCellType( IndexType AXOM_NOT_USED(cellID) ) const
 {
   return ( (m_ndims==3)? mint::HEX :
              ( (m_ndims==2)? mint::QUAD : mint::SEGMENT ) );

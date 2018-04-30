@@ -69,7 +69,7 @@ public:
    * \post getNumberOfCells() == 0
    */
   template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE,
                     int >::type ndims, CellType cell_type,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT ) :
@@ -82,7 +82,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
-    m_mesh_fields[ CELL_CENTERED ]->reserve( 
+    m_mesh_fields[ CELL_CENTERED ]->reserve(
                                          m_cell_connectivity->getIDCapacity() );
   }
 
@@ -92,7 +92,7 @@ public:
    * \param [in] ndims the number of dimensions.
    * \param [in] node_capacity the number of nodes to allocate space for.
    * \param [in] cell_capacity the number of cells to allocate space for.
-   * \param [in] connectivity_capacity the space to allocate for the 
+   * \param [in] connectivity_capacity the space to allocate for the
    *  connectivity array.
    *
    * \note This constructor is only active when TOPO == Topology::MIXED.
@@ -102,13 +102,13 @@ public:
    * \post getNumberOfCells() == 0
    */
   template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED,
                     int >::type ndims, IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT,
                     IndexType connectivity_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( cell_capacity, 
+    m_cell_connectivity( new CellConnectivity( cell_capacity,
                                                connectivity_capacity ) )
   {
     m_explicit_coords = true;
@@ -117,7 +117,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
-    m_mesh_fields[ CELL_CENTERED ]->reserve( 
+    m_mesh_fields[ CELL_CENTERED ]->reserve(
                                          m_cell_connectivity->getIDCapacity() );
   }
 
@@ -129,13 +129,13 @@ public:
   /*!
    * \brief Destructor, deletes the MeshCoordinates and ConnectivityArray.
    */
-  virtual ~UnstructuredMesh() 
+  virtual ~UnstructuredMesh()
   {
     if ( m_coordinates != AXOM_NULLPTR )
     {
       delete m_coordinates;
       m_coordinates = AXOM_NULLPTR;
-    } 
+    }
     if ( m_cell_connectivity != AXOM_NULLPTR )
     {
       delete m_cell_connectivity;
@@ -170,13 +170,6 @@ public:
   { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!
-   * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
-   *  TOPO == Topology::MIXED.
-   */
-  virtual CellType getCellType() const override final
-  { return m_cell_connectivity->getIDType(); }
-
-  /*!
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -184,7 +177,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual CellType getCellType( IndexType cellID ) const override final
+  virtual CellType getCellType( IndexType cellID=0 ) const override final
   { return m_cell_connectivity->getIDType( cellID ); }
 
   /*!
@@ -195,11 +188,12 @@ public:
    * \param [out] cell the buffer into which the connectivity is copied.
    *
    * \return The number of nodes for the given cell.
-   * 
+   *
    * \pre cell != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const override final
+  virtual
+  IndexType getCell( IndexType cellID, IndexType* cell ) const override final
   {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     const IndexType n_cells = getNumberOfCellNodes( cellID );
@@ -252,7 +246,7 @@ public:
 
   virtual const double* getCoordinateArray( int dim ) const final override
   { return m_coordinates->getCoordinateArray( dim ); }
-  
+
   /// @}
 
 /// @}
@@ -265,17 +259,17 @@ public:
    */
   virtual IndexType getNumberOfFaces() const final override
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
+    return 0;
   }
 
   /*!
    * \brief Return the capacity for faces.
    */
   virtual IndexType getFaceCapacity() const final override
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
+    return 0;
   }
 
 /// @}
@@ -288,17 +282,17 @@ public:
    */
   virtual IndexType getNumberOfEdges() const final override
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
+    return 0;
   }
 
   /*!
    * \brief Return the capacity for edges.
    */
   virtual IndexType getEdgeCapacity() const final override
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
-    return 0; 
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
+    return 0;
   }
 
 /// @}
@@ -325,7 +319,7 @@ public:
    * \post getCellResizeRatio() == ratio
    */
   void setCellResizeRatio( double ratio )
-  { 
+  {
     m_cell_connectivity->setResizeRatio( ratio );
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( ratio );
   }
@@ -353,7 +347,7 @@ public:
    */
   void reserveCells( IndexType cell_capacity,
                      IndexType connectivity_capacity=USE_DEFAULT )
-  { 
+  {
     m_cell_connectivity->reserve( cell_capacity, connectivity_capacity );
     m_mesh_fields[ CELL_CENTERED ]->reserve( cell_capacity );
   }
@@ -364,8 +358,8 @@ public:
    * \post getCellCapacity() == getNumberOfCells()
    */
   void shrinkCells()
-  { 
-    m_cell_connectivity->shrink(); 
+  {
+    m_cell_connectivity->shrink();
     m_mesh_fields[ CELL_CENTERED ]->shrink();
   }
 
@@ -412,7 +406,7 @@ public:
    * \post getNodeCapacity() == getNumberOfNodes()
    */
   void shrinkNodes()
-  { 
+  {
     m_coordinates->shrink();
     m_mesh_fields[ NODE_CENTERED ]->shrink();
   }
@@ -426,8 +420,8 @@ public:
    * \brief Return the face resize ratio.
    */
   double getFaceResizeRatio() const
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
     return 0.0;
   }
 
@@ -440,8 +434,8 @@ public:
    * \brief Return the edge resize ratio.
    */
   double getEdgeResizeRatio() const
-  { 
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" ); 
+  {
+    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
     return 0.0;
   }
 
@@ -499,7 +493,7 @@ public:
 
   /*!
    * \brief Return a pointer to the connectivity of the given cell. The
-   *  buffer is guarenteed to be of length at least 
+   *  buffer is guarenteed to be of length at least
    *  getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
@@ -507,7 +501,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   /// @{
-  
+
   IndexType* getCell( IndexType cellID )
   { return (*m_cell_connectivity)[ cellID ]; }
 
@@ -532,7 +526,7 @@ public:
 
   /*!
    * \brief Return a constant pointer to the offset array, of length
-   *  getNumberOfCells() + 1. Returns AXOM_NULLPTR if 
+   *  getNumberOfCells() + 1. Returns AXOM_NULLPTR if
    *  TOPO == Topology::SINGLE.
    */
   const IndexType* getOffsetPtr() const
@@ -540,7 +534,7 @@ public:
 
   /*!
    * \brief Return a constant pointer to the cell types array, of length
-   *  getNumberOfCells(). Returns AXOM_NULLPTR if 
+   *  getNumberOfCells(). Returns AXOM_NULLPTR if
    *  TOPO == Topology::SINGLE.
    */
   const CellType* getTypePtr() const
@@ -552,14 +546,14 @@ public:
    * \param [in] connec the connectivity of the new cell.
    * \param [in] n_values the number of values in the connectivity, ignored
    *  if TOPO == Topology::SINGLE.
-   * \param [in] type the type of the new cell, ignored if 
+   * \param [in] type the type of the new cell, ignored if
    *  TOPO == Topology::SINGLE.
    *
    * \pre connec != AXOM_NULLPTR
    */
   void appendCell( const IndexType* connec, CellType type=UNDEFINED_CELL )
-  { 
-    IndexType n_values = (type == UNDEFINED_CELL) ? 
+  {
+    IndexType n_values = (type == UNDEFINED_CELL) ?
                                                 0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->append( connec, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
@@ -572,7 +566,7 @@ public:
    * \param [in] n_cells the number of cells to append.
    * \param [in] offsets the offsets array of the cells to append, ignored
    *  if TOPO == Topology::SINGLE.
-   * \param [in] types the types array of the new cells, ignored if 
+   * \param [in] types the types array of the new cells, ignored if
    *  TOPO == Topology::SINGLE.
    *
    * \pre connec != AXOM_NULLPTR
@@ -581,7 +575,7 @@ public:
   void appendCells( const IndexType* connec, IndexType n_cells,
                     const IndexType* offsets=AXOM_NULLPTR,
                     const CellType* types=AXOM_NULLPTR )
-  { 
+  {
     m_cell_connectivity->appendM( connec, n_cells, offsets, types );
     m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
   }
@@ -593,16 +587,16 @@ public:
    * \param [in] ID the position to insert at.
    * \param [in] n_values the number of values in the connectivity, ignored
    *  if TOPO == Topology::SINGLE.
-   * \param [in] type the type of the new cells, ignored if 
+   * \param [in] type the type of the new cells, ignored if
    *  TOPO == Topology::SINGLE.
    *
    * \pre connec != AXOM_NULLPTR
    * \pre 0 <= ID <= getNumberOfCells()
    */
   void insertCell( const IndexType* connec, IndexType ID,
-                   CellType type=UNDEFINED_CELL ) 
-  { 
-    IndexType n_values = (type == UNDEFINED_CELL) ? 
+                   CellType type=UNDEFINED_CELL )
+  {
+    IndexType n_values = (type == UNDEFINED_CELL) ?
                                                 0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->insert( connec, ID, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->emplace( ID, 1 );
@@ -616,7 +610,7 @@ public:
    * \param [in] n_cells the number of cells to insert
    * \param [in] offsets the offsets array of the cells to append, ignored
    *  if TOPO == Topology::SINGLE.
-   * \param [in] types the types array of the new cells, ignored if 
+   * \param [in] types the types array of the new cells, ignored if
    *  TOPO == Topology::SINGLE.
    *
    * \pre connec != AXOM_NULLPTR
@@ -624,7 +618,7 @@ public:
    */
   void insertCells( const IndexType* connec, IndexType start_ID,
                     IndexType n_cells,
-                    const IndexType* offsets=AXOM_NULLPTR, 
+                    const IndexType* offsets=AXOM_NULLPTR,
                     const CellType* types=AXOM_NULLPTR )
   {
     m_cell_connectivity->insertM( connec, start_ID, n_cells, offsets, types );
@@ -635,7 +629,7 @@ public:
 
 /// \name Nodes
 /// @{
-  
+
   /*!
    * \brief Return the coordinate of the given dimension of the given node.
    *
@@ -660,22 +654,22 @@ public:
   /// @{
 
   IndexType appendNode( double x )
-  { 
+  {
     IndexType n_index = m_coordinates->append( x );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
     return n_index;
   }
 
   IndexType appendNode( double x, double y )
-  { 
+  {
     IndexType n_index = m_coordinates->append( x, y );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
     return n_index;
   }
 
-  
+
   IndexType appendNode( double x, double y, double z )
-  { 
+  {
     IndexType n_index = m_coordinates->append( x, y, z );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
     return n_index;
@@ -686,7 +680,7 @@ public:
   /*!
    * \brief Appends multiple nodes to the mesh.
    *
-   * \param [in] coords pointer to the nodes to append, of length 
+   * \param [in] coords pointer to the nodes to append, of length
    *  n * getDimension().
    * \param [in] n the number of nodes to append.
    *
@@ -710,7 +704,7 @@ public:
    * \param [in] z array of the third coordinates to append, of length n.
    * \param [in] n the number of coordinates to append.
    *
-   * \note The first method is only valid for 2D meshes while the second 
+   * \note The first method is only valid for 2D meshes while the second
    *  is only for 3D.
    * \pre x != AXOM_NULLPTR
    * \pre y != AXOM_NULLPTR
@@ -731,7 +725,7 @@ public:
     m_coordinates->append( x, y, z, n );
     m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
   }
-  
+
   /// @}
 
 
@@ -760,7 +754,7 @@ public:
     }
   }
 
-  void insertNode( IndexType nodeID, double x, double y, 
+  void insertNode( IndexType nodeID, double x, double y,
                    bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y );
@@ -771,7 +765,7 @@ public:
     }
   }
 
-  void insertNode( IndexType nodeID, double x, double y, double z, 
+  void insertNode( IndexType nodeID, double x, double y, double z,
                    bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, z );
@@ -787,7 +781,7 @@ public:
   /*!
    * \brief Inserts multiple nodes to the mesh.
    *
-   * \param [in] coords pointer to the nodes to insert, of length 
+   * \param [in] coords pointer to the nodes to insert, of length
    *  n * getDimension().
    * \param [in] n the number of nodes to append.
    * \param [in] update_connectivity if true will update the connectivity so
@@ -800,7 +794,7 @@ public:
    * \pre coords != AXOM_NULLPTR
    * \pre n >= 0
    */
-  void insertNodes( IndexType nodeID, const double* coords, IndexType n=1, 
+  void insertNodes( IndexType nodeID, const double* coords, IndexType n=1,
                     bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, coords, n );
@@ -822,7 +816,7 @@ public:
    * \param [in] update_connectivity if true will update the connectivity so
    *  that all elements remain connected to the same coordinates as before.
    *
-   * \note The first method is only valid for 2D meshes while the second 
+   * \note The first method is only valid for 2D meshes while the second
    *  is only for 3D.
    * \pre 0 <= nodeID <= getNumberOfNodes
    * x != AXOM_NULLPTR
@@ -832,7 +826,7 @@ public:
    */
   /// @{
 
-  void insertNodes( IndexType nodeID, const double* x, const double* y, 
+  void insertNodes( IndexType nodeID, const double* x, const double* y,
                     IndexType n, bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, n );
@@ -843,8 +837,8 @@ public:
     }
   }
 
-  
-  void insertNodes( IndexType nodeID, const double* x, const double* y, 
+
+  void insertNodes( IndexType nodeID, const double* x, const double* y,
                     const double* z, IndexType n, bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, z, n );
@@ -886,7 +880,7 @@ private:
     }
   }
 
-  using CellConnectivity = 
+  using CellConnectivity =
                       ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
   MeshCoordinates* m_coordinates;

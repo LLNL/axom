@@ -190,7 +190,7 @@ public:
 
 /// \name Cells
 /// @{
-  
+
   /*!
    * \brief Returns the number of cells in this mesh instance.
    * \return N the number of cells
@@ -217,12 +217,6 @@ public:
   virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
 
   /*!
-   * \brief Return the type of cell this mesh holds. Returns UNDEFINED_CELL if
-   *  hasMixedCellTypes() == true.
-   */
-  virtual CellType getCellType() const = 0;
-
-  /*!
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -230,7 +224,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual CellType getCellType( IndexType cellID ) const = 0;
+  virtual CellType getCellType( IndexType cellID=0 ) const = 0;
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -241,7 +235,7 @@ public:
    *  be of length at least getNumberOfCellNodes( cellID ).
    *
    * \return The number of nodes for the given cell.
-   * 
+   *
    * \pre cell != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
@@ -286,9 +280,9 @@ public:
    * \return ptr pointer to the coordinate buffer.
    *
    * \note if hasExplicitCoordinates() == true then the length of the returned
-   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns 
+   *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  AXOM_NULLPTR and the RectilinearMesh returns a pointer to the associated
-   *  dimension scale which is of length 
+   *  dimension scale which is of length
    *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim().
    *
    * \pre dim >= 0 && dim < dimension()
@@ -304,7 +298,7 @@ public:
 /// @}
 
 /// \name Faces
-/// @{  
+/// @{
 
   /*!
    * \brief Returns the number of faces in this mesh instance.
@@ -365,7 +359,7 @@ public:
 
   /*!
    * \brief set the block ID of this mesh instance.
-   * 
+   *
    * \param [in] ID the new block ID.
    *
    * \post getBlockId() == ID
@@ -381,7 +375,7 @@ public:
 
   /*!
    * \brief set the partition ID of this mesh instance.
-   * 
+   *
    * \param [in] ID the new partition ID.
    *
    * \post getPartitionId() == ID
@@ -691,7 +685,7 @@ protected:
    */
   /// @{
 
-  Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,  
+  Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
         const std::string& coordset );
 
   Mesh( int ndims, int type, sidre::Group* group );
@@ -730,7 +724,7 @@ private:
    * \param [out] num_tuples the number of tuples in the associated FieldData.
    * \param [out] capacity the capacity of the associated FieldData.
    */
-  void getFieldInfo( int association, IndexType& num_tuples, 
+  void getFieldInfo( int association, IndexType& num_tuples,
                      IndexType& capacity ) const;
 
   /*!
@@ -810,9 +804,9 @@ inline T* Mesh::createField( const std::string& name,
 
   IndexType num_tuples, capacity;
   getFieldInfo( association, num_tuples, capacity );
-  T* ptr = fd->createField< T >( name, num_tuples, num_components, capacity, 
+  T* ptr = fd->createField< T >( name, num_tuples, num_components, capacity,
                                  storeInSidre );
-  if ( num_tuples > 0 ) 
+  if ( num_tuples > 0 )
   {
     SLIC_ASSERT( ptr != AXOM_NULLPTR );
   }
@@ -835,7 +829,7 @@ inline T* Mesh::createField( const std::string& name,
 
   IndexType num_tuples, dummy1;
   getFieldInfo( association, num_tuples, dummy1 );
-  T* ptr = fd->createField< T >( name, data, num_tuples, num_components, 
+  T* ptr = fd->createField< T >( name, data, num_tuples, num_components,
                                  capacity );
   SLIC_ASSERT( ptr == data );
 
@@ -905,7 +899,7 @@ inline const T* Mesh::getFieldPtr( const std::string& name,
 }
 
 //------------------------------------------------------------------------------
-inline void Mesh::getFieldInfo( int association, IndexType& num_tuples, 
+inline void Mesh::getFieldInfo( int association, IndexType& num_tuples,
                                 IndexType& capacity ) const
 {
   switch ( association )
@@ -925,7 +919,7 @@ inline void Mesh::getFieldInfo( int association, IndexType& num_tuples,
   default:
     SLIC_ASSERT( association == EDGE_CENTERED );
     num_tuples = getNumberOfEdges();
-    capacity = getEdgeCapacity();  
+    capacity = getEdgeCapacity();
     break;
   } // END switch
 }

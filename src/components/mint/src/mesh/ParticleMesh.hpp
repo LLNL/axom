@@ -249,19 +249,17 @@ public:
   virtual IndexType getCellCapacity() const final override
   { return getNodeCapacity(); }
 
-  virtual IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
-                                                          const override final
+  virtual
+  IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
+  const override final
   { return 1; }
 
-  virtual CellType getCellType() const override final
+  virtual
+  CellType getCellType( IndexType AXOM_NOT_USED(cellID)=0 ) const override final
   { return VERTEX; }
 
-  virtual CellType getCellType( IndexType AXOM_NOT_USED(cellID) )
-                                                            const override final
-  { return VERTEX; }
-
-  virtual IndexType getCell( IndexType cellID, IndexType* cell )
-                                                          const override final;
+  virtual
+  IndexType getCell( IndexType cellID, IndexType* cell ) const override final;
 
 /// @}
 
