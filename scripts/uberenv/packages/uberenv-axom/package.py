@@ -228,14 +228,14 @@ class UberenvAxom(Package):
 
         if "py-sphinx" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# sphinx from uberenv\n")
+            cfg.write("# sphinx {} from uberenv\n".format(spec["py-sphinx"].version))
             cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", pjoin(python_bin_dir, "sphinx-build")))
         else:
             cfg.write("# sphinx not built by uberenv\n\n")
 
         if "py-shroud" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# shroud from uberenv\n")
+            cfg.write("# shroud {} from uberenv\n".format(spec["py-shroud"].version))
             cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE", pjoin(python_bin_dir, "shroud")))
         else:
             cfg.write("# shroud not built by uberenv\n\n")
