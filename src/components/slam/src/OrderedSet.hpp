@@ -256,7 +256,7 @@ public:
 
     bool operator<(const iter& other) const
     {
-        return m_pos < other.m_pos;
+      return m_pos < other.m_pos;
     }
 
     iter& operator++()    { advance(1); return *this; }

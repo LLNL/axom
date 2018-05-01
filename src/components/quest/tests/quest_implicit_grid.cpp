@@ -349,7 +349,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
       // Test getCandidates() which returns a bitset
       CandidateBitset candidateBits = grid.getCandidates(queryPt);
       EXPECT_EQ( expSize, candidateBits.count());
-      EXPECT_TRUE( candidateBits[expIdx] );
+      EXPECT_TRUE( candidateBits.test(expIdx) );
 
       // Test getCandidatesAsArray() which returns a vector
       CandidateVector candidateVec = grid.getCandidatesAsArray(queryPt);
@@ -391,9 +391,9 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
 
     CandidateBitset candidateBits = grid.getCandidates(queryPt);
     EXPECT_EQ( expSize, candidateBits.count());
-    EXPECT_FALSE( candidateBits[1] );
-    EXPECT_TRUE( candidateBits[2] );
-    EXPECT_FALSE( candidateBits[3] );
+    EXPECT_FALSE( candidateBits.test(1) );
+    EXPECT_TRUE( candidateBits.test(2) );
+    EXPECT_FALSE( candidateBits.test(3) );
 
     CandidateVector candidateVec = grid.getCandidatesAsArray(queryPt);
     EXPECT_EQ( expSize, candidateVec.size() );
@@ -407,9 +407,9 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
 
     CandidateBitset candidateBits = grid.getCandidates(queryPt);
     EXPECT_EQ( expSize, candidateBits.count());
-    EXPECT_FALSE( candidateBits[1] );
-    EXPECT_FALSE( candidateBits[2] );
-    EXPECT_TRUE( candidateBits[3] );
+    EXPECT_FALSE( candidateBits.test(1) );
+    EXPECT_FALSE( candidateBits.test(2) );
+    EXPECT_TRUE( candidateBits.test(3) );
 
     CandidateVector candidateVec = grid.getCandidatesAsArray(queryPt);
     EXPECT_EQ( expSize, candidateVec.size() );
@@ -423,9 +423,9 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
 
     CandidateBitset candidateBits = grid.getCandidates(queryPt);
     EXPECT_EQ( expSize, candidateBits.count());
-    EXPECT_FALSE( candidateBits[1] );
-    EXPECT_TRUE( candidateBits[2] );
-    EXPECT_TRUE( candidateBits[3] );
+    EXPECT_FALSE( candidateBits.test(1) );
+    EXPECT_TRUE( candidateBits.test(2) );
+    EXPECT_TRUE( candidateBits.test(3) );
 
     CandidateVector candidateVec = grid.getCandidatesAsArray(queryPt);
     EXPECT_EQ( expSize, candidateVec.size() );

@@ -20,6 +20,7 @@ set(quest_tests
     quest_meshtester.cpp
     quest_all_nearest_neighbors.cpp
     quest_vertex_weld.cpp
+    quest_implicit_grid.cpp        
    )
 
 set(quest_tests_depends
@@ -29,18 +30,9 @@ set(quest_tests_depends
     gtest
    )
 
-if (BOOST_FOUND)
-    list(APPEND quest_tests
-        quest_implicit_grid.cpp        
-    )
-    
-    list(APPEND quest_tests_depends boost)
-endif()
-
 if (ENABLE_OPENMP)
     list(APPEND quest_tests_depends openmp)
 endif()
-
 
 set(quest_vertex_weld_extra_depends mint)
 
@@ -61,7 +53,7 @@ foreach(test ${quest_tests})
 endforeach()
 
 
-if(MFEM_FOUND AND BOOST_FOUND)
+if(MFEM_FOUND)
     set(test_name quest_point_in_cell_mfem)
     blt_add_executable(
         NAME ${test_name}

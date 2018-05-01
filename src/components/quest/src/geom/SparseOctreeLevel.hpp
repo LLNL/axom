@@ -122,7 +122,6 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
   typedef google::dense_hash_map<GridPt, BroodDataType,PointHashType> MapType;
 #elif defined(AXOM_USE_CXX11)
   typedef std::unordered_map<GridPt, BroodDataType,PointHashType > MapType;
-#elif defined(AXOM_USE_BOOST)
 #endif
 
   typedef Brood<GridPt, GridPt> BroodType;
