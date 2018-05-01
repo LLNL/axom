@@ -87,7 +87,7 @@ public:
   typedef slam::OrderedSet< SizePolicy > BinSet;
 
 
-  typedef slam::BitSet             BitsetType;
+  typedef slam::BitSet BitsetType;
   typedef slam::Map<BitsetType>    BinBitMap;
 
   /*!
