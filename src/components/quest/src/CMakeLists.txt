@@ -32,6 +32,11 @@ set( quest_headers
 
     # Mesh tester headers
     MeshTester.hpp
+
+    # PointInCell headers
+    PointInCell.hpp
+    detail/PointFinder.hpp
+    detail/PointInCellMeshWrapper_mfem.hpp
     
     ## STL library headers
     stl/STLReader.hpp
@@ -39,9 +44,6 @@ set( quest_headers
     ## quest interface headers
     interface/quest.hpp
 
-    # PointInCell headers
-    PointInCell.hpp
-    detail/PointFinder.hpp
    )
 
 set( quest_sources
@@ -67,10 +69,6 @@ set( quest_depends_on
      slam
      primal
      )
-
-if(MFEM_FOUND)
-    list(APPEND quest_headers detail/PointInCellMeshWrapper_mfem.hpp)
-endif()
 
 if (ENABLE_OPENMP)
     list(APPEND quest_depends_on openmp)
