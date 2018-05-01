@@ -48,7 +48,6 @@ class UberenvAxom(Package):
 
     variant("python",  default=True, description="Build python")
     variant("lua",     default=True, description="Build lua")
-    variant("boost",   default=True, description="Build boost headers")
 
     variant("mfem",   default=True, description="Build mfem")
 
@@ -77,9 +76,6 @@ class UberenvAxom(Package):
 
     depends_on("python",   when="+python")
     depends_on("lua@5.1.5",when="+lua")
-
-    # boost, header only
-    depends_on("boost-headers", when="+boost")
 
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-breathe",when="+devtools")
@@ -193,13 +189,6 @@ class UberenvAxom(Package):
         mfem_dir = get_spec_path(spec, "mfem", path_replacements)
         cfg.write("# mfem from uberenv\n")
         cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
-
-        if "boost-headers" in spec:
-            boost_headers_dir = get_spec_path(spec, "boost-headers", path_replacements)
-            cfg.write("# boost headers from uberenv\n")
-            cfg.write(cmake_cache_entry("BOOST_DIR",boost_headers_dir))
-        else:
-            cfg.write("# boost headers not installed by uberenv\n\n")
 
         # optional tpls
 
