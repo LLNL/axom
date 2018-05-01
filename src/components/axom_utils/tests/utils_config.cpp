@@ -23,10 +23,6 @@
   #include <omp.h>
 #endif
 
-#ifdef AXOM_USE_BOOST
-  #include "boost/version.hpp"
-#endif
-
 #ifdef AXOM_USE_MFEM
   #include "mfem.hpp"
 #endif
@@ -70,10 +66,6 @@ TEST(axom_utils_config,config_libraries)
   std::cout << "Available libraries: " << std::endl;
 
   std::vector<std::string> libs;
-
-#ifdef AXOM_USE_BOOST
-  libs.push_back("boost");
-#endif
 
 #ifdef AXOM_USE_CONDUIT
   libs.push_back("conduit");
@@ -215,17 +207,6 @@ TEST(axom_utils_config,config_openmp)
   std::cout << "Sum of first " << N << " numbers is: " << sum << std::endl;
 
 }
-
-#ifdef AXOM_USE_BOOST
-TEST(axom_utils_config,boost_version)
-{
-  std::cout << "Using boost version "
-            << BOOST_VERSION / 100000     << "."// major version
-            << BOOST_VERSION / 100 % 1000 << "." // minor version
-            << BOOST_VERSION % 100              // patch level
-            << std::endl;
-}
-#endif // AXOM_USE_BOOST
 
 #ifdef AXOM_USE_MFEM
 TEST(axom_utils_config,mfem_configuration)
