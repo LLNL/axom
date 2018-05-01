@@ -161,14 +161,27 @@ public:
     m_data = ArrayType(m_numWords);
   }
 
-  /** Copy constructor for BitSet class */
+  /** \brief Copy constructor for BitSet class */
   BitSet(const BitSet& other) :
     m_data(other.m_data),
     m_numBits(other.m_numBits),
     m_numWords(other.m_numWords)
   {}
 
-  /** Assignment operator for BitSet class */
+  /** \brief Equality operator for two bitsets */
+  bool operator==(const BitSet & other) const;
+
+  /** \brief Inequality operator for two bitsets */
+  bool operator!=(const BitSet & other) const
+  {
+    return !(operator==(other));
+  }
+
+public:
+  /// \name Bitset bitwise assignment operators
+  /// @{
+
+  /** \brief Assignment operator for BitSet class */
   BitSet& operator=(const BitSet& other)
   {
     if (this != &other)
@@ -181,7 +194,7 @@ public:
   }
 
   /**
-   * BitSet union-assignment operator
+   * \brief BitSet union-assignment operator
    *
    * \param other The other bitset
    * \pre other.size() == size()
@@ -193,7 +206,7 @@ public:
   BitSet& operator|=(const BitSet& other);
 
   /**
-   * BitSet intersection-assignment operator
+   * \brief BitSet intersection-assignment operator
    *
    * \param other The other bitset
    * \pre other.size() == size()
@@ -205,7 +218,7 @@ public:
   BitSet& operator&=(const BitSet& other);
 
   /**
-   * BitSet exclusive-or-assignment operator
+   * \brief BitSet exclusive-or-assignment operator
    *
    * \param other The other bitset
    * \pre other.size() == size()
@@ -218,7 +231,7 @@ public:
   BitSet& operator^=(const BitSet& other);
 
   /**
-   * BitSet difference-assignment operator
+   * \brief BitSet difference-assignment operator
    *
    * \param other The other bitset
    * \pre other.size() == size()
@@ -229,21 +242,14 @@ public:
    */
   BitSet& operator-=(const BitSet& other);
 
-  /** Equality operator for two bit sets */
-  bool operator==(const BitSet & other) const;
-
-  /** Inequality operator for two bit sets */
-  bool operator!=(const BitSet & other) const
-  {
-    return !(operator==(other));
-  }
+  /// @}
 
 public:
   /// \name Bitset iteration interface
   /// @{
 
   /**
-   * Finds the index of the first bit that is set in the bitset
+   * \brief Finds the index of the first bit that is set in the bitset
    *
    * \return The index of the first set bit,
    * or BitSet::npos if no bits are set
@@ -251,7 +257,7 @@ public:
   Index find_first() const;
 
   /**
-   * Finds the index of the next bit that is set in the bitset after \a idx
+   * \brief Finds the index of the next set bit in the bitset after \a idx
    *
    * \param idx The starting index
    * \return The index of the first set bit after index \a idx
@@ -266,23 +272,23 @@ public:
   /// \name Operations that affect all bits in the bitset
   /// @{
 
-  /** Returns the cardinality of the bitset */
+  /** \brief Returns the cardinality of the bitset */
   int size() const { return m_numBits; }
 
-  /** Returns the number of bits that are set */
+  /** \brief Returns the number of bits that are set */
   int count() const;
 
-  /** Clears all bits in the bitset */
+  /** \brief Clears all bits in the bitset */
   void clear();
 
-  /** Sets all bits in the bitset */
+  /** \brief Sets all bits in the bitset */
   void set();
 
-  /** Toggles all bits in the bitset */
+  /** \brief Toggles all bits in the bitset */
   void flip();
 
   /**
-   * Checks if the bitset instance is valid
+   * \brief Checks if the bitset instance is valid
    *
    * \return True if the bitset is valid, false otherwise
    *
@@ -299,28 +305,28 @@ public:
   /// @{
 
   /**
-   * Clears bit at index \a idx
+   * \brief Clears bit at index \a idx
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
   void clear(Index idx) { getWord(idx) &= ~mask(idx); }
 
   /**
-   * Sets bit at index \a idx
+   * \brief Sets bit at index \a idx
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
   void set(Index idx)   { getWord(idx) |= mask(idx);  }
 
   /**
-   * Toggles bit at index \a idx
+   * \brief Toggles bit at index \a idx
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
   void flip(Index idx)  { getWord(idx) ^= mask(idx);  }
 
   /**
-   * Tests the bit at index \a idx
+   * \brief Tests the bit at index \a idx
    *
    * \return True if bit \idx is set, false otherwise
    * \pre \a idx must be between 0 and bitset.size()
@@ -333,7 +339,7 @@ public:
   /// @}
 private:
   /**
-   * Gets the index of the word containing bit at index \a idx
+   * \brief Gets the index of the word containing bit at index \a idx
    *
    * \param idx The index of the word containing the desired bit
    * \param checkIndexValid Option to enable bounds checking to ensure
@@ -349,7 +355,7 @@ private:
   }
 
   /**
-   * Const implementation of getWord()
+   * \brief Const implementation of getWord()
    * \sa getWord()
    */
   const Word& getWord(Index idx, bool checkIndexValid = true) const
@@ -362,7 +368,9 @@ private:
   }
 
   /**
-   * Returns a bitmask for the desired bit within the word containing \a idx
+   * \brief Returns a bitmask for the desired bit within the word
+   * containing \a idx
+   *
    * \param idx The index of the desired bit
    */
   Word mask(Index idx) const
@@ -372,7 +380,7 @@ private:
   }
 
   /**
-   * Returns a bitmask for the bits in the last word of the bitset.
+   * \brief Returns a bitmask for the bits in the last word of the bitset.
    *
    * This function is only valid when isLasteWordFull() is false
    * \sa isLastWordFull()
@@ -383,7 +391,7 @@ private:
   }
 
   /**
-   * Checks if index \idx corresponds to a valid index
+   * \brief Checks if index \idx corresponds to a valid index
    *
    * \note This function is a no-op in Release builds
    */
@@ -398,7 +406,7 @@ private:
   }
 
   /**
-   * Predicate to determine if we need special processing
+   * \brief Predicate to determine if we need special processing
    * for the final word of the bitset
    *
    * The last word is full when the bitset has exactly
