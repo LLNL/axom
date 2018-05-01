@@ -50,7 +50,6 @@
 /*
  * Compiler defines for libraries (built-in and third party)
  */
-#cmakedefine AXOM_USE_BOOST
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CXX11
 #cmakedefine AXOM_USE_FMT

@@ -30,7 +30,7 @@ endif()
 ## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
 ##       that are configured with MPI and OPENMP, respectively.
 
-set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT BOOST MPI MFEM SCR)  # vars of the form DEP_FOUND
+set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT MPI MFEM SCR)  # vars of the form DEP_FOUND
 foreach(dep in ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
