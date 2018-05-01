@@ -18,7 +18,7 @@
 
 /*
  *  This file tests the BitSet class of slam
- *  Most tests are parametrized by the values in the testSizes() function
+ *  Most tests are parameterized by the values in the testSizes() function
  */
 
 #include "axom/config.hpp"
@@ -29,6 +29,8 @@
 namespace {
     // Utility function to initialize a bitset of size \a size
     // where every stride^th bit is set, starting with offset \a offset
+    // Note: Use only after establishing that the constructor and set(idx)
+    //       functions work properly
     axom::slam::BitSet generateBitset(int size, int stride = 1, int offset = 0)
     {
         typedef axom::slam::BitSet::Index Index;
@@ -427,7 +429,7 @@ TEST(slam_set_bitset, settingOutOfRange)
 
 TEST(slam_set_bitset, moreIterators)
 {
-    SLIC_INFO("More testing of iteration interface (first_bit(), next_bit()) for bitset class");
+    SLIC_INFO("More testing of BitSet iteration interface (first_bit(), next_bit())");
 
     typedef axom::slam::BitSet::Index Index;
 

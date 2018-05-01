@@ -34,14 +34,72 @@ namespace slam
 namespace internal
 {
 
-/** Counts the number of trailing zeros in a word */
+/**
+ * Helper traits template for determining the number of bits and bytes
+ * required to represent a given type \a T.
+ */
+template<typename T> struct BitTraits;
+
+template<>
+struct BitTraits<axom::common::uint64>
+{
+  enum
+  {
+    NUM_BYTES = 8,
+    BITS_PER_WORD = NUM_BYTES << 3,
+    LG_BITS_PER_WORD = 6
+  };
+};
+
+template<>
+struct BitTraits<axom::common::uint32>
+{
+  enum
+  {
+    NUM_BYTES = 4,
+    BITS_PER_WORD = NUM_BYTES << 3,
+    LG_BITS_PER_WORD = 5
+  };
+};
+
+template<>
+struct BitTraits<axom::common::uint16>
+{
+  enum
+  {
+    NUM_BYTES = 2,
+    BITS_PER_WORD = NUM_BYTES << 3,
+    LG_BITS_PER_WORD = 4
+  };
+};
+
+template<>
+struct BitTraits<axom::common::uint8>
+{
+  enum
+  {
+    NUM_BYTES = 1,
+    BITS_PER_WORD = NUM_BYTES << 3,
+    LG_BITS_PER_WORD = 3
+  };
+};
+
+
+/**
+ * Counts the number of trailing zeros in \a word
+ *
+ * \return The number of zeros to the right of the first set bit in \word,
+ * starting with the least significant bit, or 64 if \a word == 0.
+ */
 inline int trailingZeros(axom::common::uint64 word)
 {
     // Explicit implementation adapted from bit twiddling hacks
     // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
     // and modified for 64 bits:
 
-    int cnt = 64;   // cnt tracks the number of zero bits on the right
+    // cnt tracks the number of zero bits on the right of the first set bit
+    int cnt = BitTraits<axom::common::uint64>::BITS_PER_WORD;
+
     word &= -static_cast<axom::common::int64>(word);
     if (word) cnt--;
     if (word & 0x00000000FFFFFFFF) cnt -= 32;
@@ -54,7 +112,7 @@ inline int trailingZeros(axom::common::uint64 word)
     return cnt;
 }
 
-/** Counts the number of set bits in a word */
+/** Counts the number of set bits in \a word */
 inline int popCount(axom::common::uint64 word)
 {
     // 64 bit popcount implementation from: 
