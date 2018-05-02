@@ -49,14 +49,6 @@ if (MFEM_DIR)
                         LIBRARIES ${MFEM_LIBRARY} )
 endif()
 
-################################
-# Find boost headers
-################################
-if (BOOST_DIR)
-    include(cmake/thirdparty/SetupBoost.cmake)
-    blt_register_library(NAME boost
-                         INCLUDES ${Boost_INCLUDE_DIR})
-endif()
 
 ################################
 # Setup toolkit generate targets

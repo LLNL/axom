@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_04_05_10_50_22/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258/cmake-3.8.2-2esy2nq3rdz3fpan6scsvrxibu3sfag4/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_05_01_15_58_02/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258/cmake-3.8.2-2esy2nq3rdz3fpan6scsvrxibu3sfag4/bin/cmake
 
 #######
 # using intel@16.0.258 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-16.0.258/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_04_05_10_50_22/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_05_01_15_58_02/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-zvfopdsqd7w4vjwfswxp5utura6sr3cv" CACHE PATH "")
@@ -38,9 +38,6 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-ntg24c3vkjzzj4r7nops66iy6edpzcu5" CAC
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-xbfzoiwzyh5kxekrxd2r4mmcimhg245t" CACHE PATH "")
 
-# boost headers from uberenv
-set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-yiarrlaedsp4aidnxesdu2iqougxt365" CACHE PATH "")
-
 # python from uberenv
 set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-t4izxxjuwjf2ryyv65vddraz6guolocp/bin/python" CACHE PATH "")
 
@@ -50,10 +47,10 @@ set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-slj6twcch6tvfdomhkqdknjjxiwswmzf" CACHE PATH 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-jqhrxckf2kswxfogk73qrgc2cru3dulc/bin/doxygen" CACHE PATH "")
 
-# sphinx from uberenv
+# sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-t4izxxjuwjf2ryyv65vddraz6guolocp/bin/sphinx-build" CACHE PATH "")
 
-# shroud from uberenv
+# shroud 0.9.0 from uberenv
 set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-t4izxxjuwjf2ryyv65vddraz6guolocp/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv

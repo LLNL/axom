@@ -57,14 +57,8 @@ endforeach()
 
 #
 # Add a test to query properties of the configuration
-# Depends on boost to get its version
 #
-
 set(utils_config_test_depends ${utils_tests_depends})
-
-if(BOOST_FOUND)
-    list(APPEND utils_config_test_depends boost)
-endif()
 
 if(MFEM_FOUND)
     list(APPEND utils_config_test_depends mfem)    

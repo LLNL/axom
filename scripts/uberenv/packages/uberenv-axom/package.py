@@ -48,7 +48,6 @@ class UberenvAxom(Package):
 
     variant("python",  default=True, description="Build python")
     variant("lua",     default=True, description="Build lua")
-    variant("boost",   default=True, description="Build boost headers")
 
     variant("mfem",   default=True, description="Build mfem")
 
@@ -77,9 +76,6 @@ class UberenvAxom(Package):
 
     depends_on("python",   when="+python")
     depends_on("lua@5.1.5",when="+lua")
-
-    # boost, header only
-    depends_on("boost-headers", when="+boost")
 
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-breathe",when="+devtools")
@@ -194,13 +190,6 @@ class UberenvAxom(Package):
         cfg.write("# mfem from uberenv\n")
         cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
 
-        if "boost-headers" in spec:
-            boost_headers_dir = get_spec_path(spec, "boost-headers", path_replacements)
-            cfg.write("# boost headers from uberenv\n")
-            cfg.write(cmake_cache_entry("BOOST_DIR",boost_headers_dir))
-        else:
-            cfg.write("# boost headers not installed by uberenv\n\n")
-
         # optional tpls
 
         if "python" in spec or "devtools" in spec:
@@ -228,14 +217,14 @@ class UberenvAxom(Package):
 
         if "py-sphinx" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# sphinx from uberenv\n")
+            cfg.write("# sphinx {} from uberenv\n".format(spec["py-sphinx"].version))
             cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", pjoin(python_bin_dir, "sphinx-build")))
         else:
             cfg.write("# sphinx not built by uberenv\n\n")
 
         if "py-shroud" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# shroud from uberenv\n")
+            cfg.write("# shroud {} from uberenv\n".format(spec["py-shroud"].version))
             cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE", pjoin(python_bin_dir, "shroud")))
         else:
             cfg.write("# shroud not built by uberenv\n\n")
