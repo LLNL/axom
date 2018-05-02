@@ -35,10 +35,6 @@ Extent::Extent( int ndims, const int64* ext ) :
   SLIC_ERROR_IF( !(m_ndims >= 1 && m_ndims <= 3),
                  "provided dimension is invalid!"  );
 
-  // zero out extent information
-  memset(m_sizes, 0, 3 * sizeof(IndexType) );
-  memset(m_extent, 0, 6 * sizeof( int64 ) );
-
   // copy in the user-supplied extent
   memcpy(m_extent, ext, 2 * ndims * sizeof( int64 )  );
 

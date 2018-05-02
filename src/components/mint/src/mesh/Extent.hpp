@@ -309,14 +309,14 @@ private:
    */
   inline void buildCellOffsets();
 
-  int m_ndims;                      /* dimension of this extent              */
-  IndexType m_numnodes;             /* the number of nodes                   */
-  IndexType m_numcells;             /* the number of cells                   */
-  IndexType m_jp;                   /* stride to the 2nd dimension           */
-  IndexType m_kp;                   /* stride to the 3rd dimension           */
-  IndexType m_sizes[ 3 ];           /* size information along each dimension */
-  int64 m_extent[ 6 ];              /* extent of this instance               */
-  IndexType m_cell_offsets[ 8 ];    /* cell offsets                          */
+  int m_ndims;                         /*!< dimension of this extent         */
+  IndexType m_numnodes;                /*!< the number of nodes              */
+  IndexType m_numcells;                /*!< the number of cells              */
+  IndexType m_jp;                      /*!< stride to the 2nd dimension      */
+  IndexType m_kp;                      /*!< stride to the 3rd dimension      */
+  IndexType m_sizes[3] = {1, 1, 1};    /*!< size along each dimension        */
+  int64 m_extent[6] = {0,0, 0,0, 0,0}; /*!< extent of this instance          */
+  IndexType m_cell_offsets[ 8 ];       /*!< cell offsets                     */
 };
 
 

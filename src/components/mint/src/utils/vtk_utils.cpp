@@ -178,7 +178,7 @@ void write_dimensions( const StructuredMesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-  IndexType ext[ 3 ];
+  IndexType ext[ 3 ] = { 1, 1, 1};
   mesh->getExtentSize( ext );
   file << "DIMENSIONS ";
   file << ext[ 0 ] << " " << ext[ 1 ] << " " << ext[ 2 ] << std::endl;
