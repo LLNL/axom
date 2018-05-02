@@ -14,7 +14,7 @@
 ## For details about use and distribution, please read axom/LICENSE.
 ##
 
-#SBATCH -N 4
+#SBATCH -N 1
 #SBATCH -J axom_uberenv_rz_chaos5
 #SBATCH -t 8:00:00
 #SBATCH -p pdebug
