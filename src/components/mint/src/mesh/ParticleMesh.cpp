@@ -83,13 +83,14 @@ ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
                             const std::string& topo,
                             const std::string& coordset,
                             IndexType capacity ) :
-    Mesh( dimension, PARTICLE_MESH, group, topo, coordset )
-
+  Mesh( dimension, PARTICLE_MESH, group, topo, coordset ),
+  m_positions( AXOM_NULLPTR )
 {
+  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset, 
+                                      "particle" );
+
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
-
-  getTopologyGroup()->getView( "type" )->setString( "particle" );
 
   m_positions = new MeshCoordinates( getCoordsetGroup(), dimension,
                                      numParticles, capacity );

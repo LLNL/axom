@@ -621,6 +621,7 @@ protected:
 #ifdef MINT_USE_SIDRE
   sidre::Group* m_group;
   std::string m_topology;
+  std::string m_coordset;
 #endif
 
 /// @}
@@ -639,6 +640,7 @@ protected:
   Mesh( int ndims, int type );
 
 #ifdef MINT_USE_SIDRE
+  
   /*!
    * \brief Constructor for use with a group that already has data.
    *
@@ -667,8 +669,6 @@ protected:
    *
    * \param [in] ndims the number of dimensions
    * \param [in] type the mesh type.
-   * \param [in] blockId the block ID for this mesh instance.
-   * \param [in] partId the partition ID for this mesh instance.
    * \param [in] group the sidre::Group to use.
    * \param [in] topo the name of the associated topology group.
    * \param [in] coordset the name of the associated coordset group.

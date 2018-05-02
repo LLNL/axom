@@ -116,11 +116,26 @@ bool validCoordsetGroup( const sidre::Group* coordset );
  *
  * \pre group != AXOM_NULLPTR
  * \post topo != AXOM_NULLPTR
- * \post blueprint::validTopologyGrou( topo ) == true
+ * \post blueprint::validTopologyGroup( topo ) == true
  *
  */
 const sidre::Group* getTopologyGroup( const sidre::Group* group,
-                                      const std::string& topo="" );
+                    const std::string& topo="" );
+
+/*!
+ * \brief Initialize the topology group.
+ *
+ * \param [in] group the blueprint mesh root group.
+ * \param [in] topo the name of the topology to initialize.
+ * \param [in] coordset the coordset to associate with the given topology.
+ * \param [in] type the type of the given topology.
+ *
+ * \pre group != AXOM_NULLPTR
+ */
+void initializeTopologyGroup( sidre::Group* group,
+                              const std::string& topo,
+                              const std::string& coordset,
+                              const std::string& type );
 
 /*!
  * \brief Returns the coordset group associated with the given topology group.
@@ -137,7 +152,7 @@ const sidre::Group* getTopologyGroup( const sidre::Group* group,
  * \post blueprint::validCoordsetGroup( coordset )
  */
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
-                                      const sidre::Group* topology );
+                    const sidre::Group* topology );
 
 /*!
  * \brief Returns the mesh type and dimension given a root group that conforms
@@ -158,11 +173,11 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
 /// @{
 
 void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                              const sidre::Group* group,
-                              const std::string& topology );
+                const sidre::Group* group,
+                const std::string& topology );
 
 void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                              const sidre::Group* group );
+                const sidre::Group* group );
 
 /// @}
 

@@ -51,7 +51,7 @@ public:
    */
   UnstructuredMesh() = delete;
 
-/// \name Native Storage UnstructuredMesh Constructors
+/// \name Native Storage Constructors
 /// @{
 
   /*!
@@ -76,15 +76,7 @@ public:
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) )
-  {
-    m_explicit_coords = true;
-    m_explicit_connectivity = true;
-    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
-    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
-    m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
-    m_mesh_fields[ CELL_CENTERED ]->reserve(
-                                         m_cell_connectivity->getIDCapacity() );
-  }
+  { initialize(); }
 
   /*!
    * \brief Constructs an Unstructured mixed topology mesh.
@@ -111,15 +103,264 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_capacity,
                                                connectivity_capacity ) )
   {
-    m_explicit_coords = true;
-    m_explicit_connectivity = true;
     m_has_mixed_topology = true;
-    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
-    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
-    m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
-    m_mesh_fields[ CELL_CENTERED ]->reserve(
-                                         m_cell_connectivity->getIDCapacity() );
+    initialize();
   }
+
+/// @}
+
+/// \name External Storage Constructors
+/// @{
+
+  /*!
+   * \brief Constructs an Unstructured single topology mesh.
+   *
+   * \param [in] ndims the number of dimensions.
+   * \param [in] cell_type the cell type of the mesh.
+   * \param [in] n_cells the number of cells in the mesh.
+   * \param [in] cell_capacity the number of cells able to be stored in the
+   *  provided connectivity array.
+   * \param [in] connectivity the connectivity array. Of length 
+   *  cell_capacity * cell_info[ cell_type ].num_nodes.
+   * \param [in] n_nodes the number of nodes in the mesh.
+   * \param [in] node_capacity the number of nodes able to be stored in the
+   *  provided coordinate arrays.
+   * \param [in] x pointer to the x-coordinates.
+   * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D.
+   * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
+   * 
+   * \note the provided coordinate arrays are to be of length node_capacity.
+   * \note This constructor is only active when TOPO == Topology::SINGLE.
+   *
+   * \post getCellType() == cell_type
+   * \post getNumberOfCells() == n_cells
+   * \post getCellCapacity == cell_capacity
+   * \post getNumberOfNodes() == n_nodes
+   * \post getNodeCapacity() == node_capacity
+   * \post isExternal() == true
+   */
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
+                    int >::type ndims, CellType cell_type,
+                    IndexType n_cells, IndexType cell_capacity, 
+                    IndexType* connectivity, IndexType n_nodes, 
+                    IndexType node_capacity, double* x, double* y=AXOM_NULLPTR, 
+                    double* z=AXOM_NULLPTR ) :
+    Mesh( ndims, UNSTRUCTURED_MESH ),
+    m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
+    m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
+                                               cell_capacity ) )
+  { 
+    SLIC_ASSERT( x != AXOM_NULLPTR );
+    SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
+    SLIC_ASSERT( m_ndims < 3 || z != AXOM_NULLPTR );
+    
+    initialize(); 
+  }
+
+  /*!
+   * \brief Constructs an Unstructured single topology mesh.
+   *
+   * \param [in] ndims the number of dimensions.
+   * \param [in] n_cells the number of cells in the mesh.
+   * \param [in] cell_capacity the number of cells able to be stored in the
+   *  provided connectivity array.
+   * \param [in] connectivity_capacity the number of vertices able to be stored
+   *  in the provided connectivity array.
+   * \param [in] connectivity the connectivity array. Of length 
+   *  cell_capacity * cell_info[ cell_type ].num_nodes.
+   * \param [in] offsets the offsets of each ID, of length cell_capacity + 1.
+   * \param [in] types the array of ID types, of length cell_capacity.
+   * \param [in] n_nodes the number of nodes in the mesh.
+   * \param [in] node_capacity the number of nodes able to be stored in the
+   *  provided coordinate arrays.
+   * \param [in] x pointer to the x-coordinates.
+   * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D.
+   * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
+   * 
+   * \note the provided coordinate arrays are to be of length node_capacity.
+   * \note This constructor is only active when TOPO == Topology::SINGLE.
+   *
+   * \post getCellType() == UNDEFINED_CELL
+   * \post getNumberOfCells() == n_cells
+   * \post getCellCapacity == cell_capacity
+   * \post getNumberOfNodes() == n_nodes
+   * \post getNodeCapacity() == node_capacity
+   * \post isExternal() == true
+   */
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
+                    int >::type ndims, IndexType n_cells, IndexType cell_capacity,
+                    IndexType connectivity_capacity, IndexType* connectivity, 
+                    IndexType* offsets, CellType* types, IndexType n_nodes,
+                    IndexType node_capacity, double* x, double* y=AXOM_NULLPTR,
+                    double* z=AXOM_NULLPTR ) :
+    Mesh( ndims, UNSTRUCTURED_MESH ),
+    m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
+    m_cell_connectivity( new CellConnectivity( n_cells, connectivity, offsets, 
+                                               types, cell_capacity,  
+                                               connectivity_capacity ) )
+  {
+    SLIC_ASSERT( x != AXOM_NULLPTR );
+    SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
+    SLIC_ASSERT( m_ndims < 3 || z != AXOM_NULLPTR );
+
+    m_has_mixed_topology = true;
+    initialize();
+  }
+
+/// @}
+
+/// \name Sidre Storage Constructors
+/// @{
+
+#ifdef MINT_USE_SIDRE
+
+  /*!
+   * \brief Constructor for use with a group that already has data.
+   *
+   * \param [in] group the sidre::Group to use.
+   * \param [in] topo optional argument specifying the name of the topology
+   *  associated with this Mesh instance.
+   *
+   * \note If a topology name is not provided, the implementation will construct
+   *  a mesh based on the 1st topology group under the parent "topologies"
+   *  group.
+   * \note The first two constructors are only active when 
+   *  TOPO == Topology::SINGLE and the last two are active only when
+   *  TOPO == Topology::MIXED.
+   *
+   * \pre group != AXOM_NULLPTR.
+   * \pre blueprint::validRootGroup( group ) == true
+   * \post isInSidre() == true
+   */
+  /// @{
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
+                    sidre::Group* >::type group, const std::string& topo ) :
+    Mesh( group, topo ),
+    m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
+    m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
+  {
+    SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH, 
+            "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
+
+    initialize();
+  }
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
+                    sidre::Group* >::type group ) :
+    UnstructuredMesh( group, "" )
+  {}
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
+                    sidre::Group* >::type group, const std::string& topo ) :
+    Mesh( group, topo ),
+    m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
+    m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
+  {
+    SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH, 
+            "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
+
+    m_has_mixed_topology = true;
+    initialize();
+  }
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
+                    sidre::Group* >::type group ) :
+    UnstructuredMesh( group, "" )
+  {}
+
+  /// @}
+
+  /*!
+   * \brief Constructor for use with an empty group.
+   *
+   * \param [in] ndims the number of dimensions.
+   * \param [in] cell_type the cell type of the mesh.
+   * \param [in] group the sidre::Group to use.
+   * \param [in] topo the name of the associated topology group.
+   * \param [in] coordset the name of the associated coordset group.
+   * \param [in] node_capacity the number of nodes to allocate space for.
+   * \param [in] cell_capacity the number of cells to allocate space for.
+   * \param [in] connectivity_capacity the space to allocate for the 
+   *  connectivity array.
+   *
+   * \note If a topology and coordset name is not provided a default name is
+   *  used by the implementation.
+   * \note The first two constructors are only active when 
+   *  TOPO == Topology::SINGLE and the last two are active only when
+   *  TOPO == Topology::MIXED.
+   *
+   * \pre group != AXOM_NULLPTR.
+   * \pre group->getNumGroups() == 0
+   * \pre group->getNumViews() == 0
+   * \post blueprint::validRootGroup( group )
+   * \post getNumberOfNodes() == 0
+   * \post getNumberOfCells() == 0
+   * \post isInSidre() == true
+   */
+  /// @{
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
+                    int >::type ndims, CellType cell_type, sidre::Group* group,
+                    const std::string& topo, const std::string& coordset,
+                    IndexType node_capacity=USE_DEFAULT,
+                    IndexType cell_capacity=USE_DEFAULT ) :
+    Mesh( ndims, UNSTRUCTURED_MESH, group, topo, coordset ),
+    m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0, 
+                                        node_capacity ) ),
+    m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(), 
+                                               m_coordset, cell_capacity ) )
+  {
+    initialize();
+  }
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
+                    int >::type ndims, CellType cell_type, sidre::Group* group,
+                    IndexType node_capacity=USE_DEFAULT,
+                    IndexType cell_capacity=USE_DEFAULT ) :
+    UnstructuredMesh( ndims, cell_type, group, "", "", node_capacity, 
+                      cell_capacity )
+  {}
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
+                    int >::type ndims, sidre::Group* group,
+                    const std::string& topo, const std::string& coordset,
+                    IndexType node_capacity=USE_DEFAULT,
+                    IndexType cell_capacity=USE_DEFAULT,
+                    IndexType connectivity_capacity=USE_DEFAULT ) :
+    Mesh( ndims, UNSTRUCTURED_MESH, group, topo, coordset ),
+    m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0, 
+                                        node_capacity ) ),
+    m_cell_connectivity( new CellConnectivity( getTopologyGroup(), m_coordset, 
+                                               cell_capacity,
+                                               connectivity_capacity ) )
+  {
+    m_has_mixed_topology = true;
+    initialize();
+  }
+
+  template < Topology DUMMY = TOPO >
+  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
+                    int >::type ndims, sidre::Group* group,
+                    IndexType node_capacity=USE_DEFAULT,
+                    IndexType cell_capacity=USE_DEFAULT,
+                    IndexType connectivity_capacity=USE_DEFAULT ) :
+    UnstructuredMesh( ndims, group, "", "", node_capacity, cell_capacity, 
+                      connectivity_capacity )
+  {}
+
+  /// @}
+
+#endif /* MINT_USE_SIDRE */
 
 /// @}
 
@@ -173,12 +414,15 @@ public:
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored if TOPO == Topology::SINGLE.
+   *  ignored if TOPO == Topology::SINGLE. If TOPO == Topology::MIXED and no
+   *  cellID is provided the returned type is UNDEFINED_CELL.
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual CellType getCellType( IndexType cellID=0 ) const override final
-  { return m_cell_connectivity->getIDType( cellID ); }
+  virtual CellType getCellType( IndexType cellID=-1 ) const override final
+  { 
+    return m_cell_connectivity->getIDType( cellID ); 
+  }
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -880,7 +1124,21 @@ private:
     }
   }
 
-  using CellConnectivity =
+  /*!
+   * \breif Performs common initialization.
+   */
+  void initialize()
+  {
+    m_explicit_coords = true;
+    m_explicit_connectivity = true;
+    m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
+    m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
+    m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
+    m_mesh_fields[ CELL_CENTERED ]->reserve( 
+                                         m_cell_connectivity->getIDCapacity() );
+  }
+
+  using CellConnectivity = 
                       ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
   MeshCoordinates* m_coordinates;

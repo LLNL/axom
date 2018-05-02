@@ -175,6 +175,22 @@ const sidre::Group* getTopologyGroup( const sidre::Group* group,
 }
 
 //------------------------------------------------------------------------------
+void initializeTopologyGroup( sidre::Group* group,
+                              const std::string& topo,
+                              const std::string& coordset,
+                              const std::string& type )
+{
+  SLIC_ASSERT( group != AXOM_NULLPTR );
+  sidre::Group* topo_group = group->getGroup( "topologies" );
+  SLIC_ASSERT( topo_group != AXOM_NULLPTR );
+  sidre::Group* cur_topo = topo_group->getGroup( topo );
+  SLIC_ASSERT( cur_topo != AXOM_NULLPTR );
+  
+  cur_topo->createView( "type" )->setString( type );
+  cur_topo->createView( "coordset" )->setString( coordset );
+}
+
+//------------------------------------------------------------------------------
 void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                                const sidre::Group* group,
                                const std::string& topo )

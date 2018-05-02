@@ -226,7 +226,7 @@ public:
     SLIC_ASSERT( m_values != AXOM_NULLPTR );
   }
 
-#endif
+#endif /* MINT_USE_SIDRE */
 
 /// @}
 
@@ -410,20 +410,15 @@ public:
   }
 
   /*!
-   * \brief Returns the cell type of the mesh, in this case UNDEFINED_CELL.
-   */
-  CellType getIDType() const
-  { return UNDEFINED_CELL; }
-
-  /*!
-   * \brief Returns the cell type of the given ID.
+   * \brief Returns the cell type of the given ID. If no ID is provided returns
+   *  UNDEFINED_CELL.
    *
    * \param ID the ID in question.
    */
-  CellType getIDType( IndexType ID ) const
+  CellType getIDType( IndexType ID=-1 ) const
   { 
-    SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return (*m_types)[ ID ]; 
+    SLIC_ASSERT( ID < getNumberOfIDs() );
+    return ID < 0 ? UNDEFINED_CELL : (*m_types)[ ID ]; 
   }
 
   /*!

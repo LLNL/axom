@@ -50,7 +50,8 @@ Mesh::Mesh( int ndims, int type ) :
   m_has_mixed_topology( false ),
 #ifdef MINT_USE_SIDRE
   m_group( AXOM_NULLPTR ),
-  m_topology()
+  m_topology(),
+  m_coordset()
 #endif
 {
   SLIC_ERROR_IF( !validMeshType(), "invalid mesh type=" << m_type );
@@ -70,7 +71,8 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
   m_group( group ),
-  m_topology( topo )
+  m_topology( topo ),
+  m_coordset()
 {
   SLIC_ERROR_IF( m_group==AXOM_NULLPTR, "NULL sidre group" );
   SLIC_ERROR_IF( ! blueprint::validRootGroup( m_group ),
@@ -91,7 +93,8 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   }
 
   blueprint::getMeshTypeAndDimension( m_type, m_ndims, m_group, m_topology );
-  m_topology = getTopologyGroup( )->getName( );
+  m_topology = getTopologyGroup()->getName();
+  m_coordset = getCoordsetGroup()->getName();
 
   SLIC_ERROR_IF( !validMeshType(), "invalid mesh type=" << m_type );
   SLIC_ERROR_IF( !validDimension(), "invalid mesh dimension=" << m_ndims );
@@ -112,7 +115,8 @@ Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false ),
   m_group( group ),
-  m_topology( topo )
+  m_topology( topo ),
+  m_coordset()
 {
   SLIC_ERROR_IF( !validMeshType(), "invalid mesh type=" << m_type );
   SLIC_ERROR_IF( !validDimension(), "invalid mesh dimension=" << m_ndims );
@@ -122,20 +126,17 @@ Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
 
   // provide default names if not specified
   m_topology = ( topo.empty() )? "t1" : topo;
-  std::string coordset_name = ( coordset.empty() )? "c1" : coordset;
+  m_coordset = ( coordset.empty() )? "c1" : coordset;
 
   sidre::Group* state_group = m_group->createGroup( "state" );
   state_group->createView( "block_id" )->setScalar( m_block_idx );
   state_group->createView( "partition_id" )->setScalar( m_part_idx );
 
   // create the coordset group
-  m_group->createGroup( "coordsets" )->createGroup( coordset_name );
+  m_group->createGroup( "coordsets" )->createGroup( m_coordset );
 
-  // create the topology group for this mesh and link to the coordset
-  sidre::Group* t =
-      m_group->createGroup( "topologies" )->createGroup( m_topology);
-  t->createView( "coordset" )->setString( coordset_name );
-  t->createView( "type" )->setString( "undefined" );
+  // create the topology group for this mesh
+  m_group->createGroup( "topologies" )->createGroup( m_topology );
 
   // create the fields group  for this mesh
   m_group->createGroup( "fields" );
@@ -269,7 +270,7 @@ Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
     // TODO: implement this
     break;
   case PARTICLE_MESH:
-    m = new ParticleMesh( const_cast< sidre::Group* >( group ), topo );
+    m = new ParticleMesh( group, topo );
     break;
   default:
     SLIC_ERROR( "undefined mesh_type [" << mesh_type << "]\n" );
