@@ -102,6 +102,8 @@ TEST(sidre_group,get_path_name)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
   EXPECT_EQ(root->getParent(), root);
+  const Group * croot = ds->getRoot();
+  EXPECT_EQ(croot, root);
   EXPECT_EQ(root->getName(), "");
   Group* group = root->createGroup("test/a/b/c");
   Group* grp2 = root->getGroup("test/a");
@@ -422,7 +424,7 @@ TEST(sidre_group,get_view_names_and_indicies)
 
   // check error conditions
   IndexType idx3 = parent->getViewIndex("view3");
-  EXPECT_TRUE(idx3 == InvalidIndex);
+  EXPECT_FALSE(indexIsValid(idx3));
 
   const std::string& name3 = parent->getViewName(idx3);
   EXPECT_TRUE(name3.empty());
@@ -461,8 +463,43 @@ TEST(sidre_group,get_first_and_next_group_index)
   IndexType badidx1 = emptyGroup->getFirstValidGroupIndex();
   IndexType badidx2 = emptyGroup->getNextValidGroupIndex(badidx1);
 
-  EXPECT_TRUE(badidx1 == InvalidIndex);
-  EXPECT_TRUE(badidx2 == InvalidIndex);
+  EXPECT_FALSE(indexIsValid(badidx1));
+  EXPECT_FALSE(indexIsValid(badidx2));
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Iterate Views with getFirstValidViewIndex, getNextValidViewIndex
+//------------------------------------------------------------------------------
+TEST(sidre_group, iterate_groups)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  Group* parent = root->createGroup("parent");
+  (void) parent->createView("view1");
+  (void) parent->createView("view2");
+  (void) parent->createView("view3");
+  (void) parent->createGroup("g1");
+  (void) parent->createView("view4");
+  (void) parent->createView("view5");
+  (void) parent->createView("view6");
+  (void) parent->createGroup("g2");
+  (void) parent->createGroup("g3");
+  (void) parent->createView("view7");
+  (void) parent->createView("view8");
+  (void) parent->createView("view9");
+  (void) parent->createGroup("g4");
+
+  int groupcount = 0;
+  for (IndexType idx = parent->getFirstValidGroupIndex();
+       indexIsValid(idx);
+       idx = parent->getNextValidGroupIndex(idx))
+  {
+    groupcount += 1;
+  }
+  EXPECT_EQ(4, groupcount);
 
   delete ds;
 }
@@ -497,8 +534,44 @@ TEST(sidre_group,get_first_and_next_view_index)
   IndexType badidx1 = emptyGroup->getFirstValidViewIndex();
   IndexType badidx2 = emptyGroup->getNextValidViewIndex(badidx1);
 
-  EXPECT_TRUE(badidx1 == InvalidIndex);
-  EXPECT_TRUE(badidx2 == InvalidIndex);
+  EXPECT_FALSE(indexIsValid(badidx1));
+  EXPECT_FALSE(indexIsValid(badidx2));
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Iterate Views with getFirstValidViewIndex, getNextValidViewIndex
+//------------------------------------------------------------------------------
+TEST(sidre_group, iterate_views)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  Group* parent = root->createGroup("parent");
+  (void) parent->createView("view1");
+  (void) parent->createView("view2");
+  (void) parent->createView("view3");
+  (void) parent->createGroup("g1");
+  (void) parent->createView("view4");
+  (void) parent->createView("view5");
+  (void) parent->createView("view6");
+  (void) parent->createGroup("g2");
+  (void) parent->createGroup("g3");
+  (void) parent->createView("view7");
+  (void) parent->createView("view8");
+  (void) parent->createView("view9");
+  (void) parent->createGroup("g4");
+
+  int viewcount = 0;
+  IndexType idx = parent->getFirstValidViewIndex();
+  while (indexIsValid(idx))
+  {
+    viewcount += 1;
+
+    idx = parent->getNextValidViewIndex(idx);
+  }
+  EXPECT_EQ(9, viewcount);
 
   delete ds;
 }
@@ -533,7 +606,7 @@ TEST(sidre_group,get_group_name_index)
 
   // check error conditions
   IndexType idx3 = parent->getGroupIndex("group3");
-  EXPECT_TRUE(idx3 == InvalidIndex);
+  EXPECT_FALSE(indexIsValid(idx3));
 
   const std::string& name3 = parent->getGroupName(idx3);
   EXPECT_TRUE(name3.empty());
@@ -671,7 +744,7 @@ TEST(sidre_group,group_name_collisions)
   ds->getRoot()->createGroup("../group/..");
 
   IndexType idx = ds->getRoot()->getFirstValidGroupIndex();
-  while (idx != InvalidIndex)
+  while (indexIsValid(idx))
   {
     std::cout << ds->getRoot()->getGroup(idx)->getName() << std::endl;
     idx = ds->getRoot()->getNextValidGroupIndex(idx);
@@ -1247,11 +1320,11 @@ TEST(sidre_group,rename_group)
   EXPECT_EQ( "g_c", child3->getName() );
 
   // Rename root group
-  EXPECT_EQ(InvalidIndex, root->getIndex());
+  EXPECT_FALSE(indexIsValid(root->getIndex()));
   EXPECT_EQ(root, root->getParent());
   EXPECT_EQ("", root->getName());
   root->rename("newroot");
-  EXPECT_EQ(InvalidIndex, root->getIndex());
+  EXPECT_FALSE(indexIsValid(root->getIndex()));
   EXPECT_EQ(root, root->getParent());
   EXPECT_EQ("newroot", root->getName());
 

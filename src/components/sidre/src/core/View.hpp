@@ -313,15 +313,15 @@ public:
    *  this View object.
    *
    * \warning The code currently assumes that offsets into a view are given in
-   *  terms of whole elements. And it is an assertion error if this is not the
-   *  case. If you have a different use case, please talk to the Sidre team
+   *  terms of whole elements.  It is an assertion error if this is not the
+   *  case.  If you have a different use case, please talk to the Sidre team.
    *
-   * \note View::getData() and View::getArray() already account for the offset,
+   * \note View::getData() and View::getArray() already account for the offset
    *        and return a pointer to the first element in the array:
    *        View::getVoidPtr() does not account for the offset.
    *
-   * IMPORTANT: This function is based on the view description, it does not
-   * imply that the data is allocated
+   * IMPORTANT: This function is based on the view description.  It does not
+   * imply that the data is allocated.
    *
    * \return The offset, in terms of the number of elements, from the described
    *  array to the first element.
@@ -333,11 +333,11 @@ public:
    *  this View object.
    *
    * \warning The code currently assumes that strides into a view are given in
-   *  terms of whole elements. And it is an assertion error if this is not the
-   *  case. If you have a different use case, please talk to the Sidre team
+   *  terms of whole elements.  It is an assertion error if this is not the
+   *  case.  If you have a different use case, please talk to the Sidre team.
    *
-   * IMPORTANT: This function is based on the view description, it does not
-   * imply that the data is allocated
+   * IMPORTANT: This function is based on the view description.  It does not
+   * imply that the data is allocated.
    *
    * \return The stride, in terms of the number of elements, between elements in
    *  the described array.
@@ -345,7 +345,7 @@ public:
   SidreLength getStride() const;
 
   /*!
-   * \brief Return number of dimensions in data view.
+   * \brief Return number of dimensions in this View.
    */
   int getNumDimensions() const
   {
@@ -416,10 +416,9 @@ public:
   /*!
    * \brief Allocate data for view given type and number of elements.
    *
-   * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true, or given
-   *       a type of NO_TYPE_ID or number of elements is < 0,
-   *       this method does nothing.
+   * NOTE: The allocate() method (above) describes conditions where View
+   *       allocation is allowed.  If the conditions are not met,
+   *       type is NO_TYPE_ID, or num_elems < 0, this method does nothing.
    *
    * \return pointer to this View object.
    */
@@ -429,7 +428,7 @@ public:
    * \brief Allocate data for view described by a Conduit data type object.
    *
    * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true,
+   *       allocation is allowed. If the conditions are not met,
    *       this method does nothing.
    *
    * \return pointer to this View object.
@@ -441,8 +440,8 @@ public:
    *         stays the same).
    *
    * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       for the allocate() method. If none of those is true,
-   *       or given number of elements is < 0, this method does nothing.
+   *       for the allocate() method. If the conditions are not met
+   *       or num_elems < 0 this method does nothing.
    *
    * \return pointer to this View object.
    */
@@ -451,9 +450,9 @@ public:
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
    *
-   * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method. If none of those is true,
-   *       or data type is undefined, this method does nothing.
+   * NOTE: Reallocation from a view is allowed under the conditions
+   *       described by the allocate() method. If the conditions are not met
+   *       or dtype is undefined, this method does nothing.
    *
    * NOTE: The given data type object must match the view type, if it is
    *       defined. If not, the method does nothing.
@@ -465,9 +464,9 @@ public:
   /*!
    * \brief  Deallocate data for view.
    *
-   * NOTE: Deallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method. If none of those is true,
-   *       or a Buffer is not attached, this method does nothing.
+   * NOTE: Deallocation from a view is only allowed under the conditions
+   *       described by the allocate() method. If the conditions are not met
+   *       or a Buffer is not attached this method does nothing.
    *
    * \return pointer to this View object.
    */
@@ -558,9 +557,10 @@ public:
    * NOTE: The units for offset and stride are in number of elements, which
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
-     //
-     // RDH -- will this be changed for consistency?
-     //
+   *
+   * \internal
+   *       RDH -- will this be changed for consistency?
+   * \endinternal
    *
    * IMPORTANT: If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
@@ -807,10 +807,8 @@ public:
    * Return value depends on variable type caller assigns it to. For example,
    * if view holds an integer array, the following usage is possible:
    *
-   * \verbatim
-   *    int* a = view->getArray();      // Get array as int pointer
-   *    int_array a = view->getArray(); // Get array as Conduit array struct.
-   * \endverbatim
+   *      int* a = view->getArray();      // Get array as int pointer
+   *      int_array a = view->getArray(); // Get array as Conduit array struct.
    *
    * \note The returned pointer accounts for the View's offset, so getArray()[0]
    *       always points to the first element in the array.
@@ -826,11 +824,12 @@ public:
    * \brief Returns a pointer to the string contained in the view.
    *
    *  If the view is not a STRING, then AXOM_NULLPTR is returned.
-     //
-     // RDH -- Should we also provide an overload that returns a const char *?
-     //        It seems excessive to create copies of strings for most usage.
-     //        Conduit also provides a as_string() method.
-     //
+   *
+   * \internal
+   *    RDH -- Should we also provide an overload that returns a const char *?
+   *           It seems excessive to create copies of strings for most usage.
+   *           Conduit also provides a as_string() method.
+   * \endinternal
    */
   const char* getString()
   {
@@ -901,10 +900,10 @@ public:
    * To access the first data element, you will need to cast to the appropriate
    * type and add the offset.  E.g. if the underlying data is an array of
    * integers you can access the first element as follows:
-   * \verbatim
-   *    void* vptr = view->getVoidPtr();
-   *    int*  iptr = static_cast<int*>(vptr) + view->getOffset();
-   * \endverbatim
+   *
+   *      void* vptr = view->getVoidPtr();
+   *      int*  iptr = static_cast<int*>(vptr) + view->getOffset();
+   *
    *
    * \sa getData(), getArray()
    */

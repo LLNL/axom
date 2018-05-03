@@ -105,16 +105,12 @@ template <typename TYPE> class MapCollection;
  * string is passed to a method that accepts path syntax, the last item in
  * the path indicates the item to be created, accessed, etc.  For example,
  *
- * \verbatim
+ *      View* view = group->createView("foo/bar/baz");
  *
- *    View* view = group->createView("foo/bar/baz");
+ * is equivalent to
  *
- *    is equivalent to:
- *
- *    View* view =
- *      group->createGroup("foo")->createGroup("bar")->createView("baz");
- *
- * \endverbatim
+ *      View* view =
+ *        group->createGroup("foo")->createGroup("bar")->createView("baz");
  *
  * In particular, intermediate Groups "foo" and "bar" will be created in
  * this case if they don't already exist.
@@ -207,7 +203,7 @@ public:
    * Note that if this method is called on the root Group in a
    * DataStore, a pointer to itself is returned.
    * This allows root->getParent()->getParent() to always work similar
-   * to how the filesystem's `cd /;cd ../..` works.
+   * to how the filesystem's `cd /; cd ../..` works.
    */
   Group* getParent()
   {
@@ -218,7 +214,9 @@ public:
    * \brief Return pointer to const parent Group of a Group.
    *
    * Note that if this method is called on the root Group in a
-   * DataStore, AXOM_NULLPTR is returned.
+   * DataStore, a pointer to itself is returned.
+   * This allows root->getParent()->getParent() to always work similar
+   * to how the filesystem's `cd /; cd ../..` works.
    */
   const Group* getParent() const
   {
@@ -302,7 +300,7 @@ public:
 
 
 //@{
-//!  @name View access and iteration methods.
+//!  @name View access methods.
 
   /*!
 
@@ -337,11 +335,34 @@ public:
    */
   const View* getView( IndexType idx ) const;
 
+//@}
+
+
+//@{
+//!  @name View iteration methods.
+//!
+//! Using these methods, a code can get the first View index and each
+//! succeeding index.  This allows View iteration using the same
+//! constructs in C++, C, and Fortran.  Example:
+//!
+//!      sidre::IndexType idx = grp->getFirstValidViewIndex();
+//!      while( sidre::indexIsValid(idx) )
+//!      {
+//!          View* view = grp->getView(idx);
+//!
+//!          /// code here using view
+//!
+//!          idx = grp -> getNextValidViewIndex(idx);
+//!      }
+
   /*!
    * \brief Return first valid View index in Group object
    *        (i.e., smallest index over all Views).
    *
    * sidre::InvalidIndex is returned if Group has no Views.
+   *
+   * \sa sidre::IndexType
+   * \sa sidre::indexIsValid()
    */
   IndexType getFirstValidViewIndex() const;
 
@@ -351,6 +372,9 @@ public:
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
+   * 
+   * \sa sidre::IndexType
+   * \sa sidre::indexIsValid()
    */
   IndexType getNextValidViewIndex(IndexType idx) const;
 
@@ -447,7 +471,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::attachBuffer
+   * \sa View::attachBuffer()
    */
   View* createView( const std::string& path,
                     Buffer* buff );
@@ -466,7 +490,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::attachBuffer
+   * \sa View::attachBuffer()
    */
   View* createView( const std::string& path,
                     TypeID type,
@@ -487,7 +511,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::attachBuffer
+   * \sa View::attachBuffer()
    */
   View* createView( const std::string& path,
                     TypeID type,
@@ -505,7 +529,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::attachBuffer
+   * \sa View::attachBuffer()
    */
   View* createView( const std::string& path,
                     const DataType& dtype,
@@ -540,7 +564,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::setExternalDataPtr
+   * \sa View::setExternalDataPtr()
    */
   View* createView( const std::string& path,
                     void* external_ptr );
@@ -560,7 +584,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::setExternalDataPtr
+   * \sa View::setExternalDataPtr()
    */
   View* createView( const std::string& path,
                     TypeID type,
@@ -584,7 +608,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::setExternalDataPtr
+   * \sa View::setExternalDataPtr()
    */
   View* createView( const std::string& path,
                     TypeID type,
@@ -602,7 +626,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::attachBuffer
+   * \sa View::attachBuffer()
    */
   View* createView( const std::string& path,
                     const DataType& dtype,
@@ -633,7 +657,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::allocate
+   * \sa View::allocate()
    */
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
@@ -652,7 +676,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::allocate
+   * \sa View::allocate()
    */
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
@@ -671,7 +695,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::allocate
+   * \sa View::allocate()
    */
   View* createViewAndAllocate( const std::string& path,
                                const DataType& dtype);
@@ -686,7 +710,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::setScalar
+   * \sa View::setScalar()
    */
   template<typename ScalarType>
   View* createViewScalar( const std::string& path, ScalarType value)
@@ -710,7 +734,7 @@ public:
    *
    * \return pointer to new View object or AXOM_NULLPTR if one is not created.
    *
-   * \sa View::setString
+   * \sa View::setString()
    */
   View* createViewString( const std::string& path,
                           const std::string& value);
@@ -869,11 +893,31 @@ public:
    */
   const Group* getGroup( IndexType idx ) const;
 
+//@}
+
+
+//@{
+//!  @name Group iteration methods.
+//!
+//! Using these methods, a code can get the first Group index and each
+//! succeeding index.  This allows Group iteration using the same
+//! constructs in C++, C, and Fortran.  Example:
+//!      for (sidre::IndexType idx = grp->getFirstValidGroupIndex();
+//!           sidre::indexIsValid(idx);
+//!           idx = grp->getNextValidGroupIndex(idx))
+//!      {
+//!          Group * group = grp->getGroup(idx);
+//!
+//!          /// code here using group
+//!      }
+
   /*!
    * \brief Return first valid child Group index (i.e., smallest
    *        index over all child Groups).
    *
    * sidre::InvalidIndex is returned if Group has no child Groups.
+   *
+   * \sa axom::sidre::indexIsValid()
    */
   IndexType getFirstValidGroupIndex() const;
 
@@ -884,6 +928,8 @@ public:
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
+   *
+   * \sa axom::sidre::indexIsValid()
    */
   IndexType getNextValidGroupIndex(IndexType idx) const;
 
@@ -1043,7 +1089,7 @@ public:
    * Group hierarchy structures with the same names for all Views and
    * Groups in the hierarchy, and the Views are also equivalent.
    *
-   * \sa View::isEquivalentTo
+   * \sa View::isEquivalentTo()
    */
   bool isEquivalentTo(const Group* other) const;
 

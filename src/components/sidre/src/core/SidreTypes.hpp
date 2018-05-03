@@ -63,7 +63,13 @@ typedef long int SidreLength;
  * \brief Common invalid index identifier used in sidre.
  */
 const IndexType InvalidIndex = -1;
-///
+
+/*!
+ * \brief Tests if an index is valid.
+ *
+ * More specifically, used for the loop test when iterating over the
+ * Buffers or Attributes in a DataStore or the Views or Groups in a Group.
+ */
 inline bool indexIsValid(IndexType idx)
 {
   return idx != InvalidIndex;
@@ -73,7 +79,10 @@ inline bool indexIsValid(IndexType idx)
  * \brief Common invalid name (string) identifier used in sidre.
  */
 const std::string InvalidName;
-///
+
+/*!
+ * \brief Tests if a name is valid.
+ */
 inline bool nameIsValid(const std::string& name)
 {
   return name != InvalidName;
@@ -108,6 +117,8 @@ enum DataTypeId
   FLOAT_ID = SIDRE_FLOAT_ID,
   DOUBLE_ID = SIDRE_DOUBLE_ID
 };
+
+/// @cond INCLUDE_DETAIL
 
 /*!
  * \brief The detail namespace contains code that is either used internally by
@@ -178,7 +189,8 @@ template<> struct SidreTT<sidre_float64>
 {
   static const DataTypeId id = FLOAT64_ID;
 };
-}
+} /* end namespace detail */
+/// @endcond
 
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
