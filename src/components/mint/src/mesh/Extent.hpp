@@ -61,9 +61,9 @@ public:
    * \param [in] ndims the number of dimensions.
    * \param [in] ext pointer to buffer consisting of the extent information.
    *
-   * \note The supplied ext pointer must point to a buffer that has at least
-   *  \f$ 2 \times ndims \f$ entries. For each dimension the extent stores the
-   *  min and max values of the extent. Specifically, given a pointer to the
+   * \note The supplied `ext` pointer must point to a buffer that has at least
+   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
+   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
    *
    * \pre ndims >= 1 && ndims <= 3
    * \pre ext != AXOM_NULLPTR
