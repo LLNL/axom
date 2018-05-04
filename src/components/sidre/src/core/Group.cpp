@@ -2357,7 +2357,7 @@ IndexType Group::getFirstValidViewIndex() const
   return m_view_coll->getFirstValidIndex();
 }
 
-/*!
+/*
  *************************************************************************
  *
  * Return next valid View index in Group object after given index
