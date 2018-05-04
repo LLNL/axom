@@ -86,7 +86,7 @@ ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
   Mesh( dimension, PARTICLE_MESH, group, topo, coordset ),
   m_positions( AXOM_NULLPTR )
 {
-  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset, 
+  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "particle" );
 
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
@@ -111,8 +111,8 @@ void ParticleMesh::initialize( )
 {
   SLIC_ASSERT( m_positions != AXOM_NULLPTR );
 
-  m_mesh_fields[ CELL_CENTERED ]->reserve( getNodeCapacity() );
-  m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfNodes() );
+  m_mesh_fields[ NODE_CENTERED ]->reserve( getNodeCapacity() );
+  m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
   m_explicit_coords       = true;
   m_explicit_connectivity = false;
   m_has_mixed_topology    = false;
@@ -127,9 +127,9 @@ ParticleMesh::~ParticleMesh()
 
 //------------------------------------------------------------------------------
 bool ParticleMesh::checkConsistency()
-{ 
-  return m_mesh_fields[ NODE_CENTERED ]->checkConsistency( getNumberOfNodes(), 
-                                                           getNodeCapacity() ); 
+{
+  return m_mesh_fields[ NODE_CENTERED ]->checkConsistency( getNumberOfNodes(),
+                                                           getNodeCapacity() );
 }
 
 } /* namespace mint */
