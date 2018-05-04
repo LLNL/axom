@@ -278,7 +278,7 @@ public:
   /*!
    * \brief Return total number of bytes associated with this View object.
    *
-   * IMPORTANT: This is the total bytes described by the view; they may not
+   * \attention This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
   SidreLength getTotalBytes() const
@@ -289,7 +289,7 @@ public:
   /*!
    * \brief Return total number of elements described by this View object.
    *
-   * IMPORTANT: This is the number of elements described by the view;
+   * \attention This is the number of elements described by the view;
    *            they may not yet be allocated.
    */
   SidreLength getNumElements() const
@@ -300,7 +300,7 @@ public:
   /*!
    * \brief Return number of bytes per element in the described view.
    *
-   * IMPORTANT: This is the number of bytes per element described by the view
+   * \attention This is the number of bytes per element described by the view
    *            which may not yet be allocated.
    */
   SidreLength getBytesPerElement() const
@@ -320,7 +320,7 @@ public:
    *        and return a pointer to the first element in the array:
    *        View::getVoidPtr() does not account for the offset.
    *
-   * IMPORTANT: This function is based on the view description.  It does not
+   * \attention This function is based on the view description.  It does not
    * imply that the data is allocated.
    *
    * \return The offset, in terms of the number of elements, from the described
@@ -336,7 +336,7 @@ public:
    *  terms of whole elements.  It is an assertion error if this is not the
    *  case.  If you have a different use case, please talk to the Sidre team.
    *
-   * IMPORTANT: This function is based on the view description.  It does not
+   * \attention This function is based on the view description.  It does not
    * imply that the data is allocated.
    *
    * \return The stride, in terms of the number of elements, between elements in
@@ -346,6 +346,8 @@ public:
 
   /*!
    * \brief Return number of dimensions in this View.
+   *
+   * \sa getShape()
    */
   int getNumDimensions() const
   {
@@ -404,7 +406,7 @@ public:
   /*!
    * \brief Allocate data for a view, previously described.
    *
-   * NOTE: Allocation from a view is allowed only if it is the only
+   * \note Allocation from a view is allowed only if it is the only
    *       view associated with its buffer (when it has one), or the view
    *       is not external, not a string view, or not a scalar view.
    *       If none of these condition is true, this method does nothing.
@@ -416,7 +418,7 @@ public:
   /*!
    * \brief Allocate data for view given type and number of elements.
    *
-   * NOTE: The allocate() method (above) describes conditions where View
+   * \note The allocate() method (above) describes conditions where View
    *       allocation is allowed.  If the conditions are not met,
    *       type is NO_TYPE_ID, or num_elems < 0, this method does nothing.
    *
@@ -427,7 +429,7 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
    *
-   * NOTE: The allocate() method describes conditions where view
+   * \note The allocate() method describes conditions where view
    *       allocation is allowed. If the conditions are not met,
    *       this method does nothing.
    *
@@ -439,7 +441,7 @@ public:
    * \brief  Reallocate data for view to given number of elements (type
    *         stays the same).
    *
-   * NOTE: Reallocation from a view is only allowed under that same conditions
+   * \note Reallocation from a view is only allowed under that same conditions
    *       for the allocate() method. If the conditions are not met
    *       or num_elems < 0 this method does nothing.
    *
@@ -450,11 +452,11 @@ public:
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
    *
-   * NOTE: Reallocation from a view is allowed under the conditions
+   * \note Reallocation from a view is allowed under the conditions
    *       described by the allocate() method. If the conditions are not met
    *       or dtype is undefined, this method does nothing.
    *
-   * NOTE: The given data type object must match the view type, if it is
+   * \note The given data type object must match the view type, if it is
    *       defined. If not, the method does nothing.
    *
    * \return pointer to this View object.
@@ -464,7 +466,7 @@ public:
   /*!
    * \brief  Deallocate data for view.
    *
-   * NOTE: Deallocation from a view is only allowed under the conditions
+   * \note Deallocation from a view is only allowed under the conditions
    *       described by the allocate() method. If the conditions are not met
    *       or a Buffer is not attached this method does nothing.
    *
@@ -554,15 +556,11 @@ public:
    * \brief Apply data description defined by number of elements, and
    *        optionally offset and stride to data view (type remains the same).
    *
-   * NOTE: The units for offset and stride are in number of elements, which
+   * \note The units for offset and stride are in number of elements, which
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
    *
-   * \internal
-   *       RDH -- will this be changed for consistency?
-   * \endinternal
-   *
-   * IMPORTANT: If view has been previously described (or applied), this
+   * \attention If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, is external and does not have a
@@ -579,11 +577,11 @@ public:
    * \brief Apply data description defined by type and number of elements, and
    *        optionally offset and stride to data view.
    *
-   * NOTE: The units for offset and stride are in number of elements, which
+   * \note The units for offset and stride are in number of elements, which
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
    *
-   * IMPORTANT: If view has been previously described (or applied), this
+   * \attention If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or type is NO_TYPE_ID,
@@ -599,9 +597,9 @@ public:
    * \brief Apply data description defined by type and shape information
    *        to data view.
    *
-   * NOTE: The units for the shape are in number of elements.
+   * \note The units for the shape are in number of elements.
    *
-   * IMPORTANT: If view has been previously described (or applied), this
+   * \attention If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or type is NO_TYPE_ID,
@@ -824,12 +822,6 @@ public:
    * \brief Returns a pointer to the string contained in the view.
    *
    *  If the view is not a STRING, then AXOM_NULLPTR is returned.
-   *
-   * \internal
-   *    RDH -- Should we also provide an overload that returns a const char *?
-   *           It seems excessive to create copies of strings for most usage.
-   *           Conduit also provides a as_string() method.
-   * \endinternal
    */
   const char* getString()
   {
@@ -1329,7 +1321,7 @@ private:
    * \brief Describe a data view with given type and number of elements.
    *
    *
-   * IMPORTANT: If view has been previously described, this operation will
+   * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
@@ -1344,7 +1336,7 @@ private:
    *        number of elements per dimension.
    *
    *
-   * IMPORTANT: If view has been previously described, this operation will
+   * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
@@ -1358,7 +1350,7 @@ private:
   /*!
    * \brief Declare a data view with a Conduit data type object.
    *
-   * IMPORTANT: If view has been previously described, this operation will
+   * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *

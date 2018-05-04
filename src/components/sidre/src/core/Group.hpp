@@ -119,7 +119,7 @@ template <typename TYPE> class MapCollection;
  * children of the current Group because an index has no meaning outside
  * of the indexed group.  None of these methods is marked with "Child".
  *
- * IMPORTANT: when Views or Groups are created, destroyed, copied, or moved,
+ * \attention when Views or Groups are created, destroyed, copied, or moved,
  * indices of other Views and Groups in associated Group objects may
  * become invalid. This is analogous to iterator invalidation for STL
  * containers when the container contents change.
@@ -384,7 +384,7 @@ public:
 //@{
 //!  @name Methods to create a View that has no associated data.
 //!
-//! IMPORTANT: These methods do not allocate data or associate a View
+//! \attention These methods do not allocate data or associate a View
 //! with data. Thus, to do anything useful with a View created by one
 //! of these methods, the View should be allocated, attached to a Buffer
 //! or attached to externally-owned data.
@@ -445,7 +445,7 @@ public:
 //@{
 //!  @name Methods to create a View with a Buffer attached.
 //!
-//! IMPORTANT: The Buffer passed to each of these methods may or may not
+//! \attention The Buffer passed to each of these methods may or may not
 //! be allocated. Thus, to do anything useful with a View created by one
 //! of these methods, the Buffer must be allocated and it must be compatible
 //! with the View data description.
@@ -463,7 +463,7 @@ public:
    * \brief Create an undescribed View object with given name or path in
    * this Group and attach given Buffer to it.
    *
-   * IMPORTANT: The View cannot be used to access data in Buffer until it
+   * \attention The View cannot be used to access data in Buffer until it
    * is described by calling a View::apply() method.
    *
    * This method is equivalent to:
@@ -541,7 +541,7 @@ public:
 //@{
 //!  @name Methods to create a View with externally-owned data attached.
 //!
-//! IMPORTANT: To do anything useful with a View created by one of these
+//! \attention To do anything useful with a View created by one of these
 //! methods, the external data must be allocated and compatible with the
 //! View description.
 //!
@@ -555,7 +555,7 @@ public:
    * \brief Create View object with given name with given name or path in
    * this Group and attach external data ptr to it.
    *
-   * IMPORTANT: Note that the View is "opaque" (it has no knowledge of
+   * \attention Note that the View is "opaque" (it has no knowledge of
    * the type or structure of the data) until a View::apply() method
    * is called.
    *
@@ -1311,7 +1311,7 @@ private:
    * Data will not be destroyed as long as a View still exists that
    * references it.
    *
-   * IMPORTANT: this method assumes View is owned by this Group.
+   * \attention this method assumes View is owned by this Group.
    */
   void destroyViewAndData( View* view );
 

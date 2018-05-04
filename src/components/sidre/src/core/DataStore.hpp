@@ -265,8 +265,8 @@ public:
    * \brief Remove Attribute from the DataStore and destroy it and
    *        its data.
    *
-   * XXX    Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAttribute( const std::string & name );
 
@@ -274,8 +274,8 @@ public:
    * \brief Remove Attribute with given index from the DataStore and
    *        destroy it and its data.
    *
-   *        Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAttribute( IndexType idx );
 
@@ -283,8 +283,8 @@ public:
    * \brief Remove Attribute from the DataStore and destroy it and
    *        its data.
    *
-   * XXX    Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAttribute( Attribute* attr );
 
@@ -292,8 +292,8 @@ public:
    * \brief Remove all Attributes from the DataStore and destroy them
    *        and their data.
    *
-   * XXX    Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAllAttributes();
 

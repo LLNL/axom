@@ -65,9 +65,9 @@ typedef long int SidreLength;
 const IndexType InvalidIndex = -1;
 
 /*!
- * \brief Tests if an index is valid.
+ * \brief Returns true if idx is valid, else false.
  *
- * More specifically, used for the loop test when iterating over the
+ * Used for the loop test when iterating over the
  * Buffers or Attributes in a DataStore or the Views or Groups in a Group.
  */
 inline bool indexIsValid(IndexType idx)
@@ -81,7 +81,7 @@ inline bool indexIsValid(IndexType idx)
 const std::string InvalidName;
 
 /*!
- * \brief Tests if a name is valid.
+ * \brief Returns true if name is valid, else false.
  */
 inline bool nameIsValid(const std::string& name)
 {
