@@ -420,9 +420,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual CellType getCellType( IndexType cellID=-1 ) const override final
-  { 
-    return m_cell_connectivity->getIDType( cellID ); 
-  }
+  { return m_cell_connectivity->getIDType( cellID ); }
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -571,7 +569,7 @@ public:
   /*!
    * \brief Return the size of the connectivity array.
    */
-  IndexType getConnectivitySize() const
+  IndexType getCellConnectivitySize() const
   { return m_cell_connectivity->getNumberOfValues(); }
 
   /*!
@@ -760,10 +758,10 @@ public:
    */
   /// @{
 
-  IndexType* getConnectivityArray()
+  IndexType* getCellConnectivityArray()
   { return m_cell_connectivity->getValuePtr(); }
 
-  const IndexType* getConnectivityArray() const
+  const IndexType* getCellConnectivityArray() const
   { return m_cell_connectivity->getValuePtr(); }
 
   /// @}
@@ -773,7 +771,7 @@ public:
    *  getNumberOfCells() + 1. Returns AXOM_NULLPTR if
    *  TOPO == Topology::SINGLE.
    */
-  const IndexType* getOffsetPtr() const
+  const IndexType* getOffsetsArray() const
   { return m_cell_connectivity->getOffsetPtr(); }
 
   /*!
@@ -781,7 +779,7 @@ public:
    *  getNumberOfCells(). Returns AXOM_NULLPTR if
    *  TOPO == Topology::SINGLE.
    */
-  const CellType* getTypePtr() const
+  const CellType* getTypesArray() const
   { return m_cell_connectivity->getTypePtr(); }
 
   /*!
@@ -972,7 +970,6 @@ public:
 
   /// @}
 
-
   /*!
    * \brief Insert a node to the mesh.
    *
@@ -994,7 +991,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
     if ( update_connectivity )
     {
-      connectivityUpdateInsert( nodeID, 1 );
+      cellConnectivityUpdateInsert( nodeID, 1 );
     }
   }
 
@@ -1005,7 +1002,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
     if ( update_connectivity )
     {
-      connectivityUpdateInsert( nodeID, 1 );
+      cellConnectivityUpdateInsert( nodeID, 1 );
     }
   }
 
@@ -1016,7 +1013,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, 1 );
     if ( update_connectivity )
     {
-      connectivityUpdateInsert( nodeID, 1 );
+      cellConnectivityUpdateInsert( nodeID, 1 );
     }
   }
 
@@ -1045,7 +1042,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
     if ( update_connectivity )
     {
-      connectivityUpdateInsert( nodeID, n );
+      cellConnectivityUpdateInsert( nodeID, n );
     }
   }
 
@@ -1077,7 +1074,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
     if ( update_connectivity )
     {
-      connectivityUpdateInsert( nodeID, n );
+      cellConnectivityUpdateInsert( nodeID, n );
     }
   }
 
@@ -1089,7 +1086,7 @@ public:
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
     if ( update_connectivity )
     {
-      connectivityUpdateInsert( nodeID, n );
+      cellConnectivityUpdateInsert( nodeID, n );
     }
   }
 
@@ -1107,12 +1104,12 @@ private:
    * \param [in] pos the position of the insert.
    * \param [in] n the length of the insert.
    */
-  void connectivityUpdateInsert( IndexType pos, IndexType n )
+  void cellConnectivityUpdateInsert( IndexType pos, IndexType n )
   {
-    IndexType n_values = getConnectivitySize();
+    IndexType n_values = getCellConnectivitySize();
     SLIC_ASSERT( 0 <= pos && pos <= n_values );
 
-    IndexType* values = getConnectivityArray();
+    IndexType* values = getCellConnectivityArray();
     SLIC_ASSERT( n_values == 0 || values != AXOM_NULLPTR );
 
     for ( IndexType i = 0; i < n_values; ++i )

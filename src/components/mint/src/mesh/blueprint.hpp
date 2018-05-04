@@ -161,6 +161,22 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
                     const sidre::Group* topology );
 
 /*!
+ * \brief Returns the coordset group associated with the given topology group.
+ *
+ * \param [in] group the mesh blueprint root group.
+ * \param [in] coords option argument to specify the coordset name.
+ *
+ * \return coordset pointer to the coordset associated with given topology,
+ *  else false.
+ *
+ * \pre blueprint::validRootGroup( group )
+ * \pre blueprint::validTopologyGroup( topology )
+ * \post blueprint::validCoordsetGroup( coordset )
+ */
+const sidre::Group* getCoordsetGroup( const sidre::Group* group,
+                    const std::string& coords="" );
+
+/*!
  * \brief Returns the mesh type and dimension given a root group that conforms
  *  to the computational mesh blueprint.
  *

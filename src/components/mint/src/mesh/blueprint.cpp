@@ -128,11 +128,9 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
                  "supplied topology group does not conform to the blueprint!" );
 
-
   const sidre::Group* coordsets  = group->getGroup( "coordsets" );
 
-  const char* coordset_name =
-  const_cast< sidre::View* >( topology->getView( "coordset" ) )->getString();
+  const char* coordset_name = topology->getView( "coordset" )->getString();
   SLIC_WARNING_IF( ! coordsets->hasChildGroup( coordset_name ),
                    "cannot find coordset [" << coordset_name << "] in " <<
                     coordsets->getPathName() );
@@ -142,6 +140,37 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
     "null coordset [" << coordset_name << "] in " <<coordsets->getPathName() );
 
   return coords;
+}
+
+//------------------------------------------------------------------------------
+const sidre::Group* getCoordsetGroup( const sidre::Group* group,
+                                      const std::string& coords )
+{
+  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+                 "supplied group does not conform to the blueprint!" );
+
+  const sidre::Group* coordsets  = group->getGroup( "coordsets" );
+  const std::string path         = coordsets->getPathName();
+
+  // get coordset group
+  const sidre::Group* coordset = AXOM_NULLPTR;
+  if ( coords.empty() )
+  {
+    SLIC_ERROR_IF( coordsets->getNumGroups()==0,
+                  "[" << coordsets->getPathName() << "] is empty!" );
+    SLIC_WARNING_IF( coordsets->getNumGroups() > 1,
+                     "multiple coordsets found!  " );
+    coordset = coordsets->getGroup( 0 );
+  }
+  else
+  {
+    SLIC_ERROR_IF( !coordsets->hasChildGroup( coords ),
+      "[" << path << "] is missing requested coordset group [" << coords << "]" );
+
+    coordset = coordsets->getGroup( coords );
+  }
+
+  return( coordset );
 }
 
 //------------------------------------------------------------------------------
@@ -171,9 +200,6 @@ const sidre::Group* getTopologyGroup( const sidre::Group* group,
 
     topology = topologies->getGroup( topo );
   }
-
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
-        "[" << topology->getPathName() << "] has invalid topology info" );
 
   return( topology );
 }
@@ -211,8 +237,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                  "mesh coordset does not conform to the blueprint!" );
 
   // get topology type
-  const char* topo_type =
-    const_cast< sidre::View* >( topology->getView( "type" ) )->getString();
+  const char* topo_type = topology->getView( "type" )->getString();
   SLIC_ASSERT( topo_type != AXOM_NULLPTR );
 
   // detect mesh type based on the topology type
@@ -267,8 +292,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                    "], required for a unstructured mesh" );
 
     // check if this is a particle mesh stored as an unstructured mesh
-    const char* shape =
-     const_cast<sidre::View*>(topology->getView("elements/shape"))->getString();
+    const char* shape = topology->getView( "elements/shape" )->getString();
     mesh_type = (strcmp(shape, "point")==0) ? PARTICLE_MESH : UNSTRUCTURED_MESH;
     dimension = coords->getGroup( "values" )->getNumViews();
 

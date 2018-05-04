@@ -419,6 +419,29 @@ public:
    */
   inline bool hasSidreGroup() const;
 
+#ifdef MINT_USE_SIDRE
+  /*!
+   * \brief Return a pointer to the sidre::Group associated with this Mesh
+   *  instance or AXOM_NULLPTR if none exists.
+   */
+  inline sidre::Group* getSidreGroup()
+  { return m_group; }
+
+  /*!
+   * \brief Return the name of the topology associated with this Mesh instance,
+   *  the return value is undefined if the mesh is not in sidre.
+   */
+  inline const std::string& getTopologyName() const
+  { return m_topology; }
+
+  /*!
+   * \brief Return the name of the coordset associated with this Mesh instance,
+   *  the return value is undefined if the mesh is not in sidre.
+   */
+  inline const std::string& getCoordsetName() const
+  { return m_coordset; }
+#endif
+
 /// @}
 
 /// \name Methods to Create, Access & Remove Fields from a Mesh
