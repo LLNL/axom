@@ -345,7 +345,7 @@ public:
   SidreLength getStride() const;
 
   /*!
-   * \brief Return number of dimensions in this View.
+   * \brief Return dimensionality of this View's data.
    *
    * \sa getShape()
    */
