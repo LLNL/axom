@@ -35,15 +35,15 @@ Operations
 ----------
 
 Primal implements geometric operations with functions, listed below:
-- ``closest_point`` takes a primitive P and a query point Q, and returns the point P
-  closest to Q.
-- ``intersect`` predicate tests if two primitives intersect.  Some of the combinations
-  also indicate the point of intersection of a 1D and a 2D primitive.
-- ``clip`` finds the polygon resulting from a bounding box clipping a triangle.
-- ``orientation`` finds the side of a line segment or triangle where a query point lies.
+- ``closest_point`` takes a primitive P and a query point Q, and returns the point
+   on P that is closest to Q.
 - ``squared_distance`` computes the squared distance from a point to another point,
   bounding box, line segment, or triangle.
+- ``orientation`` finds the side of a line segment or triangle where a query point lies.
+- ``clip`` finds the polygon resulting from a bounding box clipping a triangle.
 - ``compute_bounding_box`` finds the bounding box for a given primitive.
+- ``intersect`` predicate tests if two primitives intersect.  Some of the combinations
+  also indicate the point of intersection of a 1D and a 2D primitive.
 
 File elsewhere:
 - Morton functions (list with Morton spatial index)

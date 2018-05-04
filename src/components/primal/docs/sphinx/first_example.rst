@@ -1,7 +1,8 @@
 ******************************************************
-An introductory example
+Introductory examples
 ******************************************************
 
-Here is an introductory example to show the central concepts implemented in Primal.
-We'll construct the triangle mesh shown in the following figure, then use the
-Primal spatial indexes to 
+Here is a collection of introductory examples showing Primal primitives and
+operations.  
+
+
