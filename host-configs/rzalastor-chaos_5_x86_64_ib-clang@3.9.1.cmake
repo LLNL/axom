@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_21_02_22/spack/opt/spack/chaos_5_x86_64_ib/clang-3.9.1/cmake-3.8.2-xgnatlshgwhr6pkeoi6fvnfblz3prh5h/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_04_12_22_49/spack/opt/spack/chaos_5_x86_64_ib/clang-3.9.1/cmake-3.8.2-xgnatlshgwhr6pkeoi6fvnfblz3prh5h/bin/cmake
 
 #######
 # using clang@3.9.1 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_21_02_22/spack/opt/spack/chaos_5_x86_64_ib/clang-3.9.1" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_04_12_22_49/spack/opt/spack/chaos_5_x86_64_ib/clang-3.9.1" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-gcsba5lbtjzskhtolq7d3ciksvog5mmz" CACHE PATH "")
@@ -60,9 +60,6 @@ set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-uiojma7mwdeu5rxko54iy7id5
 set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-r4v3ugaleai3raxqkrrcoyjtycy36ako/usr/bin/lcov" CACHE PATH "")
 
 set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-r4v3ugaleai3raxqkrrcoyjtycy36ako/usr/bin/genhtml" CACHE PATH "")
-
-# Disable CXX11 on chaos5 intel/clang builds
-set(BLT_CXX_STD "c++98" CACHE PATH "")
 
 ##################################
 # end uberenv host-config

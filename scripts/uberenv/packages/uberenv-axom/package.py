@@ -258,11 +258,6 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",mpif90))
             cfg.write(cmake_cache_entry("MPIEXEC",mpiexec))
 
-        # Note: We are disabling CXX11 for default configurations on chaos5 intel/clang builds, machine is being retired
-        if "chaos_5_x86_64_ib" in sys_type and (("intel" in spec.compiler.name) or ("clang" in spec.compiler.name)):
-            cfg.write("# Disable CXX11 on chaos5 intel/clang builds\n")
-            cfg.write(cmake_cache_entry("BLT_CXX_STD","c++98"))
-
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")
         cfg.write("##################################\n")

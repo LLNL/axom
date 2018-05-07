@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_21_02_22/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258/cmake-3.8.2-2esy2nq3rdz3fpan6scsvrxibu3sfag4/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_04_12_22_49/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258/cmake-3.8.2-2esy2nq3rdz3fpan6scsvrxibu3sfag4/bin/cmake
 
 #######
 # using intel@16.0.258 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-16.0.258/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_21_02_22/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_04_12_22_49/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.258" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-zvfopdsqd7w4vjwfswxp5utura6sr3cv" CACHE PATH "")
@@ -61,9 +61,6 @@ set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-hwb6f57wogxsdgial7urrqaijbh6ufjz/usr/bin/lc
 
 set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-hwb6f57wogxsdgial7urrqaijbh6ufjz/usr/bin/genhtml" CACHE PATH "")
 
-# Disable CXX11 on chaos5 intel/clang builds
-set(BLT_CXX_STD "c++98" CACHE PATH "")
-
 ##################################
 # end uberenv host-config
 ##################################
@@ -90,6 +87,13 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 ##############################################################################
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+# Set flags for intel to use a gcc standard library with C++11
+set(GNU_PREFIX           "/usr/apps/gnu/4.9.3")
+set(BLT_C_FLAGS          "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_CXX_FLAGS        "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_FORTRAN_FLAGS    "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,${GNU_PREFIX}/lib64" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
