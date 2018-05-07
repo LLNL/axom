@@ -48,8 +48,7 @@ StructuredMesh::StructuredMesh( int meshType, int dimension, const int64* ext) :
 {
   SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
                  "invalid structured mesh type!" );
-
-  allocateFields( );
+  initializeFields();
 }
 
 //------------------------------------------------------------------------------
@@ -69,7 +68,7 @@ StructuredMesh::~StructuredMesh( )
 }
 
 //------------------------------------------------------------------------------
-void StructuredMesh::allocateFields()
+void StructuredMesh::initializeFields()
 {
   SLIC_ERROR_IF( m_extent==AXOM_NULLPTR, "null extent for mesh!" );
 

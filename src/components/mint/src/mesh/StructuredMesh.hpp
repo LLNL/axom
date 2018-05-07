@@ -398,14 +398,9 @@ protected:
 #endif
 
   /*!
-   * \brief Initializes members of the mesh class.
-   */
-  void init( );
-
-  /*!
    * \brief Helper method to allocate FieldData on the mesh.
    */
-  void allocateFields( );
+  void initializeFields( );
 
   Extent* m_extent; /*!< grid extent */
 

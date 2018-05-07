@@ -117,6 +117,8 @@ UniformMesh::UniformMesh( int dimension,
   m_extent        = new mint::Extent( dimension, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );
+
+  initializeFields();
 }
 
 //------------------------------------------------------------------------------
@@ -166,6 +168,8 @@ UniformMesh::UniformMesh( sidre::Group* group,
                              extent );
 
   m_extent = new mint::Extent( m_ndims, extent );
+
+  initializeFields();
 }
 
 //------------------------------------------------------------------------------
@@ -186,6 +190,8 @@ UniformMesh::UniformMesh( int dimension,
   m_extent = new mint::Extent( dimension, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                             lower_bound, upper_bound, m_h, m_origin );
+
+  initializeFields();
 
   // STEP 1: populate sidre
   blueprint::initializeTopologyGroup(  m_group, m_topology, m_coordset,
@@ -221,6 +227,8 @@ UniformMesh::UniformMesh( int dimension,
   m_extent        = new mint::Extent( dimension, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );
+
+  initializeFields();
 
   // STEP 1: populate sidre
   blueprint::initializeTopologyGroup(  m_group, m_topology, m_coordset,
