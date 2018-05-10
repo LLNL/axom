@@ -121,24 +121,6 @@ public:
 /// @{
 
   /*!
-   * \brief Creates an empty MeshCoordinates instance of specified dimension.
-   *
-   * \param [in] dimension the mesh dimension, i.e., 1, 2 or 3
-   *
-   * \note The resulting MeshCoordinates object is empty, but, it has initial
-   *  default capacity based on an internal settings.
-   *
-   * \pre 1 <= dimension <= 3
-   *
-   * \post numNodes() == 0
-   * \post empty() == true
-   * \post capacity() > 0
-   * \post getCoordinateArray( i ) != AXOM_NULLPTR \f$ \forall i \in [0,N-1]\f$
-   *  where N is the dimension of the MeshCoordinates object.
-   */
-  explicit MeshCoordinates( int dimension );
-
-  /*!
    * \brief Creates a MeshCoordinates instance of specified dimension and
    *  given number of nodes. Optionally, an initial max capacity may be
    *  specified in the constructor to reserve additional space for storing
@@ -155,7 +137,7 @@ public:
    * \post if capacity == USE_DEFAULT then
    *  capacity() == max(DEFAULT_CAPACITY, numNodes()*DEFAULT_RESIZE_RATIO)
    */
-  MeshCoordinates( int dimension, IndexType numNodes,
+  MeshCoordinates( int dimension, IndexType numNodes = 0,
                    IndexType capacity=USE_DEFAULT );
 
 /// @}
@@ -238,7 +220,7 @@ public:
    */
   MeshCoordinates( sidre::Group* group,
                    int dimension,
-                   IndexType numNodes,
+                   IndexType numNodes=0,
                    IndexType capacity=USE_DEFAULT );
 
 #endif
@@ -339,6 +321,15 @@ public:
    * \brief Return true iff constructed via the sidre constructors.
    */
   bool isInSidre() const;
+
+#ifdef MINT_USE_SIDRE
+  /*!
+   * \brief Return the sidre group associated with this instance or AXOM_NULLPTR
+   *  if none exits.
+   */
+  sidre::Group* getSidreGroup()
+  { return m_group; }
+#endif
 
 /// @}
 
@@ -585,6 +576,9 @@ private:
 
 /// @}
 
+#ifdef MINT_USE_SIDRE
+  sidre::Group* m_group;
+#endif
   int m_ndims;
   Array< double >* m_coordinates[3] = {AXOM_NULLPTR, AXOM_NULLPTR, AXOM_NULLPTR};
 
@@ -613,9 +607,9 @@ inline bool MeshCoordinates::isExternal() const
 //------------------------------------------------------------------------------
 inline bool MeshCoordinates::isInSidre() const
 { 
-  bool is_in_sidre = m_coordinates[0]->isInSidre();
+  bool is_in_sidre = m_group != AXOM_NULLPTR;
   bool consistent = true;
-  for ( int i = 1; i < m_ndims; ++i )
+  for ( int i = 0; i < m_ndims; ++i )
   {
     consistent &= m_coordinates[ i ]->isInSidre() == is_in_sidre;
   }

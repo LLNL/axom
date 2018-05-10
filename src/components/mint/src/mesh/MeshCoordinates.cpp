@@ -38,17 +38,12 @@ namespace mint
 constexpr IndexType DEFAULT_CAPACITY = 100;
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( int dimension ) :
-  m_ndims( dimension )
-{
-  SLIC_ERROR_IF( this->invalidDimension(), "invalid dimension" );
-  this->initialize( 0, DEFAULT_CAPACITY );
-}
-
-//------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( int dimension,
                                   IndexType numNodes,
                                   IndexType capacity ) :
+#ifdef MINT_USE_SIDRE
+  m_group( AXOM_NULLPTR ),
+#endif
   m_ndims( dimension )
 {
   SLIC_ERROR_IF( this->invalidDimension(), "invalid dimension" );
@@ -71,7 +66,11 @@ MeshCoordinates::MeshCoordinates( int dimension,
 
 //------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( IndexType numNodes, IndexType capacity, 
-                                  double* x, double* y, double* z )
+                                  double* x, double* y, double* z ) :
+#ifdef MINT_USE_SIDRE
+  m_group( AXOM_NULLPTR ),
+#endif
+  m_ndims( 0 )
 {
 
   m_ndims = ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) ;
@@ -96,24 +95,26 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes, IndexType capacity,
 
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( sidre::Group* group )
+MeshCoordinates::MeshCoordinates( sidre::Group* group ) :
+  m_group( group ),
+  m_ndims( 0 )
 {
-  SLIC_ERROR_IF( group == AXOM_NULLPTR, "null sidre::Group" );
-  SLIC_ERROR_IF( !group->hasChildView( "type" ),
+  SLIC_ERROR_IF( m_group == AXOM_NULLPTR, "null sidre::Group" );
+  SLIC_ERROR_IF( !m_group->hasChildView( "type" ),
                  "sidre::Group does not conform to mesh blueprint" );
 
-  sidre::View* type_view = group->getView( "type" );
+  sidre::View* type_view = m_group->getView( "type" );
   SLIC_ERROR_IF( !type_view->isString(),
                  "sidre::Group does not conform to mesh blueprint" );
 
   SLIC_ERROR_IF( std::strcmp( type_view->getString(), "explicit") != 0,
                 "sidre::Group does not conform to mesh blueprint" );
 
-  SLIC_ERROR_IF( !group->hasChildGroup("values"),
+  SLIC_ERROR_IF( !m_group->hasChildGroup("values"),
                  "sidre::Group does not conform to mesh blueprint" );
 
   // NOTE: here we should support cylindrical and spherical coordinates
-  sidre::Group* values_group = group->getGroup( "values" );
+  sidre::Group* values_group = m_group->getGroup( "values" );
   SLIC_ERROR_IF( !values_group->hasChildView( "x" ),
                  "sidre::Group does not conform to mesh blueprint" );
 
@@ -147,17 +148,18 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group )
 //------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
                                   IndexType numNodes, IndexType capacity ) :
+  m_group( group ),
   m_ndims( dimension )
 {
-  SLIC_ERROR_IF( group==AXOM_NULLPTR, "null sidre::Group" );
-  SLIC_ERROR_IF( group->getNumGroups() != 0, "sidre::Group is not empty!" );
-  SLIC_ERROR_IF( group->getNumViews() !=0, "sidre::Group is not empty!" );
+  SLIC_ERROR_IF( m_group==AXOM_NULLPTR, "null sidre::Group" );
+  SLIC_ERROR_IF( m_group->getNumGroups() != 0, "sidre::Group is not empty!" );
+  SLIC_ERROR_IF( m_group->getNumViews() !=0, "sidre::Group is not empty!" );
   SLIC_ERROR_IF( (capacity != USE_DEFAULT) && (numNodes > capacity),
                 "numNodes < capacity pre-condition violated!" );
 
-  group->createView( "type" )->setString( "explicit" );
+  m_group->createView( "type" )->setString( "explicit" );
 
-  sidre::Group* values = group->createGroup( "values" );
+  sidre::Group* values = m_group->createGroup( "values" );
   SLIC_ASSERT( values != AXOM_NULLPTR );
 
   const char* coord_names[3] = { "x", "y", "z" };
