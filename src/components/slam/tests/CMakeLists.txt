@@ -27,9 +27,10 @@ set(gtest_slam_tests
     slam_set_DynamicSet.cpp
 
     # test relations
-    slam_relation_DynamicVariable.cpp
     slam_relation_StaticVariable.cpp
     slam_relation_StaticConstant.cpp
+    slam_relation_DynamicVariable.cpp
+    slam_relation_DynamicConstant.cpp
 
     # test maps
     slam_Map.cpp

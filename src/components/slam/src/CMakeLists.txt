@@ -45,6 +45,7 @@ set(slam_headers
     Relation.hpp
     StaticRelation.hpp
     DynamicVariableRelation.hpp
+    DynamicConstantRelation.hpp
 
     # SRM Map headers
     Map.hpp
