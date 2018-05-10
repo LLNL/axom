@@ -270,7 +270,7 @@ public:
       return false;
     }
 
-    Point< T,3 > bC= physToBarycentric(p);
+    Point< double,3 > bC= physToBarycentric(p);
     return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
             (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }

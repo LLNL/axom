@@ -27,6 +27,7 @@ set( primal_headers
      geometry/RectangularLattice.hpp
      geometry/Segment.hpp
      geometry/Sphere.hpp
+     geometry/Tetrahedron.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp
 

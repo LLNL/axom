@@ -30,6 +30,7 @@ set( primal_tests
     primal_sphere.cpp
     primal_squared_distance.cpp
     primal_triangle.cpp
+    primal_tetrahedron.cpp
     primal_vector.cpp
     primal_uniform_grid.cpp
    )
