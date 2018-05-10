@@ -788,7 +788,7 @@ inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 template< typename T >
 inline void Array< T >::insert( const T& value, IndexType pos )
 {
-  SLIC_ASSERT_MSG( m_num_components != 1, "Number of components must be 1." );
+  SLIC_ASSERT_MSG( m_num_components == 1, "Number of components must be 1." );
   reserveForInsert( 1, pos );
   m_data[ pos ] = value;
 }
