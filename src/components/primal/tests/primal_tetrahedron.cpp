@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,6 +17,8 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
+
 #include "primal/Point.hpp"
 #include "primal/Tetrahedron.hpp"
 
@@ -29,10 +31,40 @@ using namespace axom;
 
 
 //------------------------------------------------------------------------------
+TEST( primal_tetrahedron, basic)
+{
+  const int DIM = 3;
+
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > QPoint;
+  typedef primal::Tetrahedron< CoordType, DIM > QTet;
+
+  const QPoint pt[4] = {
+    QPoint::make_point( 0,0,0),
+    QPoint::make_point( 1,0,0),
+    QPoint::make_point( 1,1,0),
+    QPoint::make_point( 1,1,1)
+  };
+
+  // Test tetrahedron construction
+  QTet tet(pt[0],pt[1],pt[2],pt[3]);
+
+  // Test ostream operator
+  SLIC_INFO("Tetrahedron coordinates: " << tet);
+
+  // Check indirection operator
+  EXPECT_EQ(pt[0],tet[0]);
+  EXPECT_EQ(pt[1],tet[1]);
+  EXPECT_EQ(pt[2],tet[2]);
+  EXPECT_EQ(pt[3],tet[3]);
+}
+
+
 TEST( primal_tetrahedron, tetrahedron_barycentric)
 {
-  static const int DIM = 3;
-  static const double EPS = 1e-12;
+  const int DIM = 3;
+  const double EPS = 1e-12;
+
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
   typedef primal::Point< CoordType, 4 > RPoint;
@@ -102,6 +134,7 @@ TEST( primal_tetrahedron, tetrahedron_barycentric)
     SLIC_DEBUG(fmt::format(
                  "Computed barycentric coordinates for tetrahedron {} and point {} are {}",
                  tet, query, bary));
+
     EXPECT_NEAR(bary[0],  expBary[0], EPS );
     EXPECT_NEAR(bary[1],  expBary[1], EPS );
     EXPECT_NEAR(bary[2],  expBary[2], EPS );
@@ -118,15 +151,11 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
+  int result = RUN_ALL_TESTS();
   return result;
 }

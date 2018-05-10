@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -26,12 +26,20 @@
 
 #include "slic/slic.hpp"
 
+#include <ostream> // for std::ostream
 
 namespace axom
 {
 namespace primal
 {
 
+/*!
+ * \class Tetrahedron
+ *
+ * \brief Represents a tetrahedral geometric shape defined by four points.
+ * \tparam T the coordinate type, e.g., double, float, etc.
+ * \tparam NDIMS the number of dimensions
+ */
 template < typename T,int NDIMS >
 class Tetrahedron
 {

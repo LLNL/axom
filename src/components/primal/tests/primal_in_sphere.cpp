@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,15 +17,18 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
+
 #include "slic/slic.hpp"
 
+#include "primal/Point.hpp"
 #include "primal/in_sphere.hpp"
 
 using namespace axom;
 
 TEST(primal_in_sphere, test_in_sphere_2d)
 {
-  static int const DIM = 2;
+  const int DIM = 2;
   typedef primal::Point< double,DIM >     PointType;
   PointType p0 = PointType::make_point(0,0);
   PointType p1 = PointType::make_point(1,0);
@@ -38,13 +41,12 @@ TEST(primal_in_sphere, test_in_sphere_2d)
   EXPECT_TRUE( in_sphere( q_inside, p0, p1, p2) );
   EXPECT_FALSE( in_sphere( q_on_circle, p0, p1, p2) );
   EXPECT_FALSE( in_sphere( q_outside, p0, p1, p2) );
-
 }
 
 
 TEST(primal_in_sphere, test_in_sphere_3d)
 {
-  static int const DIM = 3;
+  const int DIM = 3;
   typedef primal::Point< double,DIM >     PointType;
   PointType p0 = PointType::make_point(-1,-1,1);
   PointType p1 = PointType::make_point(1,-1,-1);
@@ -62,13 +64,11 @@ TEST(primal_in_sphere, test_in_sphere_3d)
   EXPECT_FALSE( in_sphere( q_on_circle, p0, p1, p2, p3) );
   EXPECT_FALSE( in_sphere( q_outside, p0, p1, p2, p3) );
   EXPECT_FALSE( in_sphere( q_outside2, p0, p1, p2, p3) );
-
 }
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 

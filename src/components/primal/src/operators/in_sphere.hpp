@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -16,12 +16,12 @@
  */
 
 /*!
- * \file
+ * \file in_sphere.hpp
  *
- * \brief Consists of methods that tests whether a point is inside a sphere
+ * \brief Consists of methods that test whether a point is inside a sphere
  * defined by points.
  *
- * This is a well known computational geometry technique, and can be found in
+ * This is a well known computational geometry primitive, and can be found in
  * Section 3.1.6.4 in "Real-time collision detection" by C. Ericson
  *
  */
@@ -38,7 +38,7 @@ namespace primal
 {
 
 /*!
- * \brief Computes whether a query point is inside a circle or not.
+ * \brief Tests whether a query point is inside a 2D sphere (circle)
  *
  * \param [in] q the query point
  * \param [in] p0 first point that defines a circle
@@ -63,7 +63,7 @@ inline bool in_sphere( const Point< T, 2 >& q,
 
 
 /*!
- * \brief Computes whether a query point is inside a sphere or not.
+ * \brief Tests whether a query point is inside a 3D sphere
  *
  * \param [in] q the query point
  * \param [in] p0 first point that defines a sphere
