@@ -24,6 +24,7 @@ set(gtest_slam_tests
     slam_set_RangeSet.cpp
     slam_set_IndirectionSet.cpp
     slam_set_BitSet.cpp
+    slam_set_DynamicSet.cpp
 
     # test relations
     slam_relation_DynamicVariable.cpp

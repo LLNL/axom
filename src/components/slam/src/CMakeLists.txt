@@ -36,6 +36,7 @@ set(slam_headers
     OrderedSet.hpp
     RangeSet.hpp
     #ProductSet.hpp
+    DynamicSet.hpp
     Set.hpp
     BitSet.hpp
     internal/BitTwiddle.hpp
