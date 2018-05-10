@@ -38,7 +38,7 @@ namespace primal
  *
  * \brief Represents a tetrahedral geometric shape defined by four points.
  * \tparam T the coordinate type, e.g., double, float, etc.
- * \tparam NDIMS the number of dimensions
+ * \tparam NDIMS the number of spatial dimensions
  */
 template < typename T,int NDIMS >
 class Tetrahedron
@@ -105,6 +105,15 @@ public:
 
 
   /*!
+   * \brief Returns whether the tetrahedron is degenerate
+   * \return true iff the tetrahedron is degenerate (has near zero volume)
+   */
+  bool degenerate(double eps = 1.0e-12) const
+  {
+    return axom::utilities::isNearlyEqual(ppedVolume(),  0.0, eps);
+  }
+
+  /*!
    * \brief Returns the barycentric coordinates of a point within a tetrahedron
    * \return The barycentric coordinates of the tetrahedron
    * \post The barycentric coordinates sum to 1.
@@ -118,11 +127,7 @@ public:
     const PointType& p2 = m_points[2];
     const PointType& p3 = m_points[3];
 
-    const double det0 = axom::numerics::determinant(
-      p0[0], p0[1], p0[2], 1.0,
-      p1[0], p1[1], p1[2], 1.0,
-      p2[0], p2[1], p2[2], 1.0,
-      p3[0], p3[1], p3[2], 1.0 );
+    double det0 = ppedVolume();
 
     SLIC_CHECK_MSG(
       !axom::utilities::isNearlyEqual(det0,0.),
@@ -130,35 +135,38 @@ public:
 
     const double detScale = 1. / det0;
 
-
     const double det1 = axom::numerics::determinant(
-      p[0],  p[1],  p[2], 1.0,
-      p1[0], p1[1], p1[2], 1.0,
-      p2[0], p2[1], p2[2], 1.0,
-      p3[0], p3[1], p3[2], 1.0 );
+      1.0,  p[0],  p[1],  p[2],
+      1.0, p1[0], p1[1], p1[2],
+      1.0, p2[0], p2[1], p2[2],
+      1.0, p3[0], p3[1], p3[2]);
     const double det2 = axom::numerics::determinant(
-      p0[0], p0[1], p0[2], 1.0,
-      p[0],  p[1],  p[2], 1.0,
-      p2[0], p2[1], p2[2], 1.0,
-      p3[0], p3[1], p3[2], 1.0 );
+      1.0, p0[0], p0[1], p0[2],
+      1.0,  p[0],  p[1],  p[2],
+      1.0, p2[0], p2[1], p2[2],
+      1.0, p3[0], p3[1], p3[2]);
     const double det3 = axom::numerics::determinant(
-      p0[0], p0[1], p0[2], 1.0,
-      p1[0], p1[1], p1[2], 1.0,
-      p[0],  p[1],  p[2], 1.0,
-      p3[0], p3[1], p3[2], 1.0 );
+      1.0, p0[0], p0[1], p0[2],
+      1.0, p1[0], p1[1], p1[2],
+      1.0,  p[0],  p[1],  p[2],
+      1.0, p3[0], p3[1], p3[2]);
     const double det4 = axom::numerics::determinant(
-      p0[0], p0[1], p0[2], 1.0,
-      p1[0], p1[1], p1[2], 1.0,
-      p2[0], p2[1], p2[2], 1.0,
-      p[0],  p[1],  p[2], 1.0 );
+      1.0, p0[0], p0[1], p0[2],
+      1.0, p1[0], p1[1], p1[2],
+      1.0, p2[0], p2[1], p2[2],
+      1.0,  p[0],  p[1],  p[2]);
 
     bary[0] = det1 * detScale;
     bary[1] = det2 * detScale;
     bary[2] = det3 * detScale;
     bary[3] = det4 * detScale;
 
-    return bary;
+    SLIC_CHECK_MSG(
+      axom::utilities::isNearlyEqual(bary[0] + bary[1] + bary[2] + bary[3], 1.),
+      "Barycentric coordinates should sum to 1. rather than "
+      << (bary[0] + bary[1] + bary[2] + bary[3]) );
 
+    return bary;
   }
 
   /*!
@@ -175,6 +183,55 @@ public:
        << m_points[3] <<"}";
 
     return os;
+  }
+
+  /*!
+   * \brief Returns the signed volume of the tetrahedron
+   * \sa volume()
+   */
+  double signedVolume() const
+  {
+    const double scale = 1./6.;
+    return scale * ppedVolume();
+  }
+
+  /*!
+   * \brief Returns the signed volume of the tetrahedron
+   * \sa signedVolume()
+   */
+  double volume() const
+  {
+    return axom::utilities::abs(signedVolume());
+  }
+
+private:
+  /*!
+   * \brief Computes the signed volume of a parallelepiped defined by the
+   * three edges of the tetrahedron incident to its first vertex
+   *
+   * \note The ppedVolume is a factor of 6 greater than that of the tetrahedron
+   * \return The signed parallelepiped volume
+   * \sa signedVolume(), volume()
+   */
+  double ppedVolume() const
+  {
+    if(NDIMS != 3)
+    {
+      return 0.;
+    }
+    else
+    {
+      const PointType& p0 = m_points[0];
+      const PointType& p1 = m_points[1];
+      const PointType& p2 = m_points[2];
+      const PointType& p3 = m_points[3];
+
+      return axom::numerics::determinant<double>(
+        1.0, p0[0], p0[1], p0[2],
+        1.0, p1[0], p1[1], p1[2],
+        1.0, p2[0], p2[1], p2[2],
+        1.0, p3[0], p3[1], p3[2]);
+    }
   }
 
 private:
