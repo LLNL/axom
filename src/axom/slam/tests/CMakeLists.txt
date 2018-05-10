@@ -38,6 +38,9 @@ set(gtest_slam_tests
 
     # aux tests
     slam_ModularInt.cpp
+    
+    #mesh structure test
+    slam_IA.cpp
     )
 
 

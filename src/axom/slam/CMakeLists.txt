@@ -62,6 +62,10 @@ set(slam_headers
     BivariateMap.hpp
     SubMap.hpp
     DynamicMap.hpp
+
+    # Topological mesh headers
+    mesh_struct/IA.hpp
+    mesh_struct/IA_impl.hpp
     )
 
 set(slam_sources
