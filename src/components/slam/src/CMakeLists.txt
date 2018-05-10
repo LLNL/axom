@@ -49,6 +49,7 @@ set(slam_headers
 
     # SRM Map headers
     Map.hpp
+    DynamicMap.hpp
     )
 
 set(slam_sources

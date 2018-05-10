@@ -34,6 +34,7 @@ set(gtest_slam_tests
 
     # test maps
     slam_Map.cpp
+    slam_map_DynamicMap.cpp
 
     # test integration of sets, relations and maps
     slam_AccessingRelationDataInMap.cpp
