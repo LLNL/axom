@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,15 +18,14 @@
 /**
  * \file DynamicSet.hpp
  *
- * \brief Contains DynamicSet class.
- *
+ * \brief Contains a DynamicSet class, whose size can change dynamically
+ * at runtime
  */
 
 #ifndef SLAM_DYNAMIC_SET_H_
 #define SLAM_DYNAMIC_SET_H_
 
 #include "slam/OrderedSet.hpp"
-
 
 namespace axom
 {
@@ -36,7 +35,7 @@ namespace slam
 
 /**
  * \class DynamicSet
- * \brief A Set class that support dynamically adding/removing set items
+ * \brief A Set class that supports dynamically adding and removing set items
  *
  * \detail An entry in the set is valid if it is not equal to INVALID_ENTRY.
  * Set entries should be positive integers or INVALID_ENTRY.
@@ -45,7 +44,7 @@ namespace slam
  * \code
  * DynamicSet<> some_set;
  * const int N = some_set.size()
- * for(IndexType i=0; i< N; i++)
+ * for(IndexType i=0; i< N; ++i)
  * {
  *   if( some_set.isValidEntry(i) )
  *   {
@@ -63,16 +62,11 @@ template<
   typename SizePolicy    = policies::DynamicRuntimeSize<Set::PositionType>,
   typename OffsetPolicy  = policies::ZeroOffset<Set::PositionType>,
   typename StridePolicy  = policies::StrideOne<Set::PositionType> >
-//, typename IndirectionPolicy
-//      = policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
-//, typename SubsetPolicy          = policies::NoSubset
 class DynamicSet
   : public Set,
            SizePolicy,
            OffsetPolicy,
            StridePolicy
-  // IndirectionPolicy,
-  // SubsetPolicy
 {
 
 public:
@@ -101,9 +95,7 @@ public:
   DynamicSet(const SetBuilder & builder) :
     SizePolicy(builder.m_size),
     OffsetPolicy(builder.m_offset),
-    StridePolicy(builder.m_stride)        //,
-    //IndirectionPolicy(builder.m_data),
-    //SubsetPolicy(builder.m_parent)
+    StridePolicy(builder.m_stride)
   {
     fill_array_default( builder.m_size.size() );
   }
@@ -115,15 +107,10 @@ public:
   /**
    * \class SetBuilder
    * \brief Helper class for constructing a dynamic set.
-   *
-   * Mostly copied from Ordered Set's set builder
    */
   struct SetBuilder
   {
     friend class DynamicSet;
-
-    //typedef typename IndirectionPolicy::IndirectionBufferType   DataType;
-    //typedef typename SubsetPolicy::ParentSetType                ParentSetType;
 
     SetBuilder& size(PositionType sz)
     {
@@ -143,19 +130,10 @@ public:
       return *this;
     }
 
-    //SetBuilder& data(DataType* bufPtr)
-    //{ /*m_data   = IndirectionPolicy(bufPtr);*/ return *this; }
-
-    //SetBuilder& parent(ParentSetType* parSet)
-    //{ m_parent = SubsetPolicy(parSet); return *this; }
-
 private:
     SizePolicy m_size;
     OffsetPolicy m_offset;
     StridePolicy m_stride;
-    //IndirectionPolicy m_data;
-    //SubsetPolicy m_parent;
-
   };
 
 
@@ -179,24 +157,24 @@ private:
   bool isValidEntry(IndexType i) const
   {
     return i >= 0
-        && i < static_cast<IndexType>(m_data.size())
-        && m_data[i] != INVALID_ENTRY;
+           && i < static_cast<IndexType>(m_data.size())
+           && m_data[i] != INVALID_ENTRY;
   };
 
   /**
    * \brief return the number of valid entries in the set.
    *
    * \detail This is an O(n) operation, because the class makes no assumption
-   * that data was not changed by user
+   * that data was not changed by the user
    */
   PositionType numberOfValidEntries() const
   {
     PositionType nvalid = 0;
 
-    int sz = static_cast<int>(m_data.size());
-    for( int i=0 ; i< sz; i++)
+    const int sz = static_cast<int>(m_data.size());
+    for( int i=0 ; i< sz ; ++i)
     {
-      nvalid += (m_data[i] != INVALID_ENTRY)? 1 : 0;
+      nvalid += (m_data[i] != INVALID_ENTRY) ? 1 : 0;
     }
     return nvalid;
   }
@@ -204,25 +182,17 @@ private:
   PositionType size() const
   {
     return m_data.size();
-    //return SizePolicy::size();
   };
 
   bool empty() const { return SizePolicy::empty(); };
 
-  bool isSubset() const { return false; /*SubsetPolicy::isSubset();*/ };
+  bool isSubset() const { return false; };
 
   bool isValid(bool verboseOutput = false)  const
   {
     bool bValid =  SizePolicy::isValid(verboseOutput)
                   && OffsetPolicy::isValid(verboseOutput)
-                  && StridePolicy::isValid(verboseOutput)
-                  //&& IndirectionPolicy::isValid(size(),
-                  // OffsetPolicy::offset(), StridePolicy::stride(),
-                  // verboseOutput)
-//#ifdef AXOM_USE_BOOST
-                  //&& SubsetPolicy::isValid(begin(), end(), verboseOutput)
-//#endif
-    ;
+                  && StridePolicy::isValid(verboseOutput);
 
     return bValid;
   };
@@ -244,31 +214,31 @@ public:
    * \brief insert an entry at the end of the set with the given value.
    * \param val the value of the inserted entry
    */
-  IndexType insert(ElementType val) {
+  IndexType insert(ElementType val)
+  {
     m_data.push_back(val);
-    //SizePolicy::add(1);
     return m_data.size()-1;
   };
 
   /**
-   * \brief Mark the corresponding entry to be invalid
+   * \brief Mark the corresponding entry as invalid
    */
-  void remove(IndexType idx){
+  void remove(IndexType idx)
+  {
     verifyPosition(idx);
 
     if(m_data[idx] != INVALID_ENTRY)
     {
       m_data[idx] = INVALID_ENTRY;
-      //SizePolicy::subtract(1);
     }
   };
 
   /**
-   * \brief Given a value, find  index of the first entry containing it
+   * \brief Given a value, find the index of the first entry containing it
    */
   IndexType findIndex(ElementType e)
   {
-    for(unsigned int i=0 ; i<m_data.size() ; i++)
+    for(unsigned int i=0 ; i<m_data.size() ; ++i)
     {
       if( m_data[i] == e)
         return i;
@@ -292,7 +262,7 @@ private:
     if(size<0) return;
 
     m_data.resize(size);
-    for(int i=0 ; i<size ; i++)
+    for(int i=0 ; i<size ; ++i)
     {
       m_data[i] = i;
     }

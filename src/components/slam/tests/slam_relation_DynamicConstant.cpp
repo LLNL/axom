@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,8 +18,7 @@
 /**
  * \file slam_relation_DynamicConstant.cpp
  *
- * \brief ...
- *
+ * \brief Unit tests for Slam's DynamicConstantRelation class
  */
 
 
@@ -28,7 +27,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for AXOM_USE_BOOST
+#include "axom/config.hpp"        // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"
 
@@ -78,7 +77,7 @@ typedef slam::DynamicConstantRelation<ConstantCardinalityCT>        RelationType
 } //end anonymous namespace
 
 
-TEST(gtest_slam_relation_dynamic_constant,construct_empty)
+TEST(slam_relation_dynamic_constant,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be false.");
 
@@ -87,14 +86,16 @@ TEST(gtest_slam_relation_dynamic_constant,construct_empty)
 }
 
 
-TEST(gtest_slam_relation_dynamic_constant, assignment)
+TEST(slam_relation_dynamic_constant, assignment)
 {
-  SLIC_INFO("Testing assignment of relation");
+  SLIC_INFO("Testing assignment of values to relation");
+
   slam::DynamicSet<> fromSet(FROMSET_SIZE);
   slam::DynamicSet<> toSet(TOSET_SIZE);
 
   RelationType rel;
 
+  // Modify the relation values
   {
     RelationType rel_t( &fromSet, &toSet);
 
@@ -110,9 +111,9 @@ TEST(gtest_slam_relation_dynamic_constant, assignment)
   }
 
   EXPECT_TRUE( rel.isValid(true) );
-
   EXPECT_EQ( FROMSET_SIZE, rel.size() );
 
+  // Check that accessed relation values are as expected
   for(int i=0 ; i<rel.size() ; i++)
   {
     EXPECT_EQ( ELEM_STRIDE, (int)rel[i].size() );
@@ -125,8 +126,6 @@ TEST(gtest_slam_relation_dynamic_constant, assignment)
 }
 
 
-
-
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
@@ -134,16 +133,13 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
   UnitTestLogger logger;
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
-  // axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
-
-  result = RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
 
   return result;
 }

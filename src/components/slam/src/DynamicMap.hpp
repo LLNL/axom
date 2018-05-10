@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -35,8 +35,8 @@ namespace slam
 {
 
 
-/*
- * \brief map that supports adding/removing entries.
+/**
+ * \brief A map that supports adding and removing entries.
  *
  * \detail An entry in the map is considered valid if
  * its corresponding set's entry is valid
@@ -164,7 +164,7 @@ bool DynamicMap<T>::isValid(bool verboseOutput) const
       bValid = false;
     }
   }
-  else //m_set != AXOM_NULLPTR
+  else
   {
 
     // Check the data array and set data have equal size
@@ -182,11 +182,18 @@ bool DynamicMap<T>::isValid(bool verboseOutput) const
       bValid = false;
     }
 
-  } //END else
+  }
 
-  if(!bValid && verboseOutput)
+  if(verboseOutput)
   {
-    SLIC_DEBUG( errStr.str() );
+    if(bValid)
+    {
+      SLIC_DEBUG( "Map was valid." );
+    }
+    else
+    {
+      SLIC_DEBUG( "Map was not valid. " << errStr.str() );
+    }
   }
 
   return bValid;

@@ -96,20 +96,17 @@ public:
 
   inline void setSize(IntType s)
   {
-    if(s>= 0)
-      RuntimeSize<IntType>::m_sz = s;
+    if(s>= 0) { RuntimeSize<IntType>::m_sz = s; }
   }
 
   inline void add(IntType s)
   {
-    if(s>= 0)
-      RuntimeSize<IntType>::m_sz += s;
+    if(s>= 0) { RuntimeSize<IntType>::m_sz += s; }
   }
 
   inline void subtract(IntType s)
   {
-    if(s>= 0)
-      RuntimeSize<IntType>::m_sz -= s;
+    if(s>= 0) { RuntimeSize<IntType>::m_sz -= s; }
   }
 };
 

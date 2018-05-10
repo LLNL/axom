@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -18,15 +18,16 @@
 /**
  * \file DynamicConstantRelation.hpp
  *
- * \brief Contains the class DynamicConstantRelation
- *
+ * \brief API for a topological relation between two sets in which entities from
+ * the first set can be related to a constant number of entities from the
+ * second set. This relation is dynamic; the related entities can change at
+ * runtime.
  */
 
 #ifndef SLAM_DYNAMIC_CONSTANT_RELATION_HPP_
 #define SLAM_DYNAMIC_CONSTANT_RELATION_HPP_
 
-#include <vector>
-
+#include "axom/config.hpp"
 
 #include "slic/slic.hpp"
 #include "slam/Set.hpp"
@@ -34,6 +35,8 @@
 #include "slam/OrderedSet.hpp"
 #include "slam/DynamicSet.hpp"
 #include "slam/CardinalityPolicies.hpp"
+
+#include <vector>
 
 namespace axom
 {
@@ -43,10 +46,14 @@ namespace slam
 /**
  * \class DynamicConstantRelation
  * \brief  A relation class with constant cardinality that supports
- * adding/removing set relation.
+ * adding/removing set relations.
  *
  * \detail An entry is considered valid if its set's entry is valid
  * and at least one of its relation is valid (ie. not equal to INVALID_INDEX).
+ *
+ * \note The current implementation fixes the value of INVALID_INDEX to -1.
+ * A future update will allow users to set the value of INVALID_INDEX to a
+ * more convenient value, when necessary.
  */
 template<typename CardinalityPolicy>
 class DynamicConstantRelation : public /*Relation,*/ CardinalityPolicy
@@ -58,8 +65,7 @@ public:
   };
 
   typedef Relation::SetPosition SetPosition;
-  typedef std::vector<SetPosition>
-    RelationVec;
+  typedef std::vector<SetPosition>                  RelationVec;
 
   typedef DynamicSet<>                              FromSetType;
   typedef DynamicSet<>                              ToSetType;
@@ -75,18 +81,17 @@ public:
       policies::StrideOne<SetPosition>,
       STLIndirection >                              RelationSet;
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   typedef typename RelationSet::iterator RelationIterator;
   typedef typename RelationSet::iterator_pair RelationIteratorPair;
 
   typedef typename RelationSet::const_iterator RelationConstIterator;
   typedef typename RelationSet::const_iterator_pair RelationConstIteratorPair;
-#endif // AXOM_USE_BOOST
-
+#endif // AXOM_USE_CXX11
 
 public:
 
-  /*
+  /**
    * \brief Default constructor with empty set for toSet and fromSet
    */
   DynamicConstantRelation () :
@@ -96,7 +101,7 @@ public:
     m_relationCardinality = CardinalityPolicy::size( 0 );
   }
 
-  /*
+  /**
    * \brief construct a DynamicConstantRelation from the given fromSet to toSet
    */
   DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
@@ -112,8 +117,11 @@ public:
   ~DynamicConstantRelation(){};
 
 
-// Iterators
-#ifdef AXOM_USE_BOOST
+public:
+#ifdef AXOM_USE_CXX11
+  /// \name DynamicConstantRelation iterator interface
+  /// @{
+
   RelationIterator          begin(SetPosition fromSetInd)
   {
     return (*this)[fromSetInd].begin();
@@ -143,8 +151,12 @@ public:
   {
     return (*this)[fromSetInd].range();
   }
-#endif // AXOM_USE_BOOST
 
+  /// @}
+
+#endif // AXOM_USE_CXX11
+
+public:
 
   RelationSet const at(SetPosition fromSetIndex) const
   {
@@ -177,14 +189,15 @@ public:
   SetPosition numberOfValidEntries() const
   {
     SetPosition nvalid = 0;
-    for( int i=0 ; i<(int)size() ; i++)
+    const int N = size();
+    for( int i=0 ; i< N ; ++i)
     {
       nvalid += isValidEntry(i);
     }
     return nvalid;
   }
 
-  /*
+  /**
    * \brief return if an entry is valid or not.
    * \detailed an entry is considered valid if it has at least one valid value
    */
@@ -192,7 +205,7 @@ public:
   {
     if( idx >= 0 && idx < (int)m_relationsVec.size()/m_relationCardinality )
     {
-      for (int i = 0 ; i < m_relationCardinality ; i++)
+      for (int i = 0 ; i < m_relationCardinality ; ++i)
       {
         if (m_relationsVec[idx * m_relationCardinality + i] != INVALID_INDEX)
           return true;
@@ -212,7 +225,7 @@ public:   // Modifying functions
     verifyPosition( fromSetIndex );
 
     //find the first invalid place to put it
-    for(int i=0 ; i<m_relationCardinality ; i++)
+    for(int i=0 ; i<m_relationCardinality ; ++i)
     {
       SetPosition idx = m_relationCardinality*fromSetIndex + i;
       if( m_relationsVec[idx] == INVALID_INDEX )
@@ -230,10 +243,13 @@ public:   // Modifying functions
   }
 
   /**
-   * \brief Temporary modification function because currently operation[]
-   *  doesn't allow modification.
+   * \brief Function to modify the value at offset \a offset of the
+   * fromSet index \fromSetIndex to the value \a toSetIndex
    *
-   * \detail this should be replaced with operation[] that returns non-const
+   * \note This is a temporary stopgap function until operator[]
+   *  allows us to modify values.
+   *
+   * \detail This should be replaced with operator[] which returns a non-const
    * RelationSet so users can do relation[fromSetIndex][offset] = toSetIndex;
    */
   void modify(SetPosition fromSetIndex,
@@ -245,14 +261,14 @@ public:   // Modifying functions
   }
 
   /**
-   * \brief Mark all relations in this entry as invalid.
+   * \brief Mark all values in entry \a fromSetIndex as invalid.
    */
   void remove(SetPosition fromSetIndex)
   {
     if(!isValidEntry(fromSetIndex))
       return;
 
-    for(int i=0 ; i<m_relationCardinality ; i++)
+    for(int i=0 ; i<m_relationCardinality ; ++i)
     {
       m_relationsVec[m_relationCardinality*fromSetIndex + i] = INVALID_INDEX;
     }

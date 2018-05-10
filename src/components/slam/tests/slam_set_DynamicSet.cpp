@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -15,20 +15,14 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-/*
+/**
  * \file slam_set_DynamicSet.cpp
- *
- * \brief ...
  */
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"    // for AXOM_USE_BOOST
-
-#include "slic/slic.hpp"        // for SLIC_INFO
-
+#include "slic/slic.hpp"
 #include "slam/DynamicSet.hpp"
-#include "slam/Utilities.hpp"
 
 
 typedef axom::slam::DynamicSet<> SetType;
@@ -38,9 +32,9 @@ typedef SetType::ElementType SetElement;
 static const SetPosition MAX_SET_SIZE = 10;
 static const SetPosition ADDITIONAL_ADD_SIZE = 5;
 
-TEST(gtest_slam_set_dynamicset,construct)
+TEST(slam_set_dynamicset,construct)
 {
-  SLIC_INFO("Testing constructing a DynamicSet");
+  SLIC_INFO("Testing construction of a DynamicSet");
 
   //Empty set
   SetType s0;
@@ -61,27 +55,28 @@ TEST(gtest_slam_set_dynamicset,construct)
   EXPECT_TRUE(s2.isValid() );
   EXPECT_FALSE(s2.empty() );
   EXPECT_EQ(MAX_SET_SIZE, s2.size() );
-
 }
 
 
 
-TEST(gtest_slam_set_dynamicset,construct_strictly_positive)
+TEST(slam_set_dynamicset,construct_strictly_positive)
 {
   SLIC_INFO("Testing that DynamicSet with negative size are invalid");
 
   const int NEGATIVE_NUMBER = -2;
+
   SetType s(NEGATIVE_NUMBER);
   EXPECT_FALSE( s.isValid());
 }
 
 
-TEST(gtest_slam_set_dynamicset,construct_set_builder)
+TEST(slam_set_dynamicset,construct_set_builder)
 {
   SLIC_INFO("Testing construction of DynamicSet using SetBuilders");
 
   typedef SetType::SetBuilder SetBuilder;
 
+  // Construct a first set using only size
   SetBuilder builder = SetBuilder()
                        .size( MAX_SET_SIZE );
 
@@ -89,6 +84,7 @@ TEST(gtest_slam_set_dynamicset,construct_set_builder)
   EXPECT_TRUE( s.isValid());
   EXPECT_EQ( MAX_SET_SIZE, s.size());
 
+  // Construct a first set using size, offset and stride
   const int ZERO_OFFSET = 0;
   const int DEFAULT_STRIDE = 1;
   SetBuilder ok_builder = SetBuilder()
@@ -105,19 +101,16 @@ TEST(gtest_slam_set_dynamicset,construct_set_builder)
 #ifdef AXOM_DEBUG
   // Using inappropriate SetBuilder features generates an assert failure
   SLIC_INFO("Cannot construct a DynamicSet with an invalid SetBuilder");
-
-  // add this line to avoid a warning in the output about thread safety
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
   const int NON_ZERO_OFFSET = 3;
-  EXPECT_DEATH_IF_SUPPORTED( SetType(SetBuilder()
-                                     .size(MAX_SET_SIZE)
-                                     .offset(NON_ZERO_OFFSET)), "" );
+  EXPECT_DEATH_IF_SUPPORTED(
+    SetType(SetBuilder()
+            .size(MAX_SET_SIZE)
+            .offset(NON_ZERO_OFFSET)), "" );
 #endif
 }
 
 
-TEST(gtest_slam_set_dynamicset,construct_runtime)
+TEST(slam_set_dynamicset,construct_runtime)
 {
   SLIC_INFO("Testing that DynamicSet can be constructed with runtime sizes");
 
@@ -133,9 +126,7 @@ TEST(gtest_slam_set_dynamicset,construct_runtime)
 }
 
 
-
-
-TEST(gtest_slam_set_dynamicset,out_of_bounds_at)
+TEST(slam_set_dynamicset,out_of_bounds_at)
 {
   SLIC_INFO(
     "Testing out of bounds access using at() "
@@ -146,14 +137,10 @@ TEST(gtest_slam_set_dynamicset,out_of_bounds_at)
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
 
-  // add this line to avoid a warning in the output about thread safety
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(s.at(MAX_SET_SIZE),"");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
-
-  SLIC_INFO("done.");
 }
 
 TEST(gtest_slam_set_dynamicset,out_of_bounds_bracket)
@@ -167,18 +154,14 @@ TEST(gtest_slam_set_dynamicset,out_of_bounds_bracket)
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
-
-  SLIC_INFO("done.");
 }
 
 
-
-TEST(gtest_slam_set_dynamicset,adding_elements)
+TEST(slam_set_dynamicset,adding_elements)
 {
   SLIC_INFO("Testing adding new elements in the set");
 
@@ -191,12 +174,10 @@ TEST(gtest_slam_set_dynamicset,adding_elements)
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE + ADDITIONAL_ADD_SIZE);
   EXPECT_TRUE(s.isValid());
-
-  SLIC_INFO("done.");
 }
 
 
-TEST(gtest_slam_set_dynamicset,removing_elements)
+TEST(slam_set_dynamicset,removing_elements)
 {
   SLIC_INFO("Testing removing elements in the set");
 
@@ -222,12 +203,10 @@ TEST(gtest_slam_set_dynamicset,removing_elements)
     EXPECT_EQ( s[i], (int)SetType::INVALID_ENTRY );
     EXPECT_FALSE( s.isValidEntry(i) );
   }
-
-  SLIC_INFO("done.");
 }
 
 
-TEST(gtest_slam_set_dynamicset, copy_assignment)
+TEST(slam_set_dynamicset, copy_assignment)
 {
   SLIC_INFO("Testing the assignment operator");
 
@@ -260,14 +239,10 @@ TEST(gtest_slam_set_dynamicset, copy_assignment)
     EXPECT_EQ( s[i], (int)SetType::INVALID_ENTRY );
     EXPECT_FALSE( s.isValidEntry(i) );
   }
-
-  SLIC_INFO("done.");
 }
 
 
-
-
-TEST(gtest_slam_set_dynamicset,out_of_bounds_remove)
+TEST(slam_set_dynamicset,out_of_bounds_remove)
 {
   SLIC_INFO(
     "Testing out of bounds access using remove() "
@@ -278,18 +253,14 @@ TEST(gtest_slam_set_dynamicset,out_of_bounds_remove)
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( s.remove(MAX_SET_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
-
-  SLIC_INFO("done.");
 }
 
 
-
-TEST(gtest_slam_set_dynamicset,find_index)
+TEST(slam_set_dynamicset,find_index)
 {
   SLIC_INFO("Testing finding index of an element");
 
@@ -299,8 +270,6 @@ TEST(gtest_slam_set_dynamicset,find_index)
   {
     EXPECT_EQ( s.findIndex(i), i );
   }
-
-  SLIC_INFO("done.");
 }
 
 
@@ -311,14 +280,17 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
+
+#ifdef AXOM_DEBUG
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+#endif
 
   // create & initialize test logger. finalized when exiting main scope
   UnitTestLogger logger;
 
-  result = RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
 
   return result;
 }
