@@ -34,7 +34,12 @@ namespace axom
 namespace mint
 {
 
+#ifdef MINT_USE_SIDRE
+sidre::DataStore* ds = AXOM_NULLPTR;
+#endif
+
 // constants used in tests
+constexpr double PI = 3.14159265358979323846;
 constexpr IndexType DEFAULT_CAPACITY    = 100;
 constexpr IndexType ZERO_NUM_NODES      = 0;
 constexpr IndexType SMALL_NUM_NODES     = 4;
@@ -216,61 +221,405 @@ void check_constructor( int dimension,
 }
 
 /*!
- * \brief Checks the append() method on the MeshCoordinates object
- * \param [in,out] mc the MeshCoordinates object to test with
- * \pre mc != AXOM_NULLPTR
+ * \brief Return the value of the nodal coordinate of the given node
+ *  and dimension.
+ *
+ * \param [in] ndims the number of dimensions.
+ * \param [in] i the nodal index.
+ * \param [in] dim the dimension index.
  */
-void check_append( MeshCoordinates* mc )
+double getCoordValue( IndexType ndims, IndexType i, int dim )
+{ return (ndims * i + dim) * PI; }
+
+/*!
+ * \brief Check that the nodal coordinates are correct.
+ *
+ * \param [in] mesh_coords the MeshCoordinates to check.
+ */
+void check_append( const MeshCoordinates* mesh_coords )
 {
-  EXPECT_TRUE( mc != AXOM_NULLPTR );
+  IndexType n_nodes = mesh_coords->numNodes();
+  
+  const int ndims = mesh_coords->dimension();
+  const double* x = mesh_coords->getCoordinateArray( X_COORDINATE );
 
-  constexpr int NUM_APPENDS   = 2;
-  constexpr double TEST_VALUE = 7;
-
-  // Construct a test node to append
-  const int ndims = mc->dimension();
-  constexpr double x = TEST_VALUE;
-  constexpr double y = TEST_VALUE + 1;
-  constexpr double z = TEST_VALUE + 2;
-
-  for ( int iter=0; iter < NUM_APPENDS; ++iter )
+  /* Check using pointers */
+  for ( IndexType i = 0; i < n_nodes; ++i )
   {
-    // Append a new node
-    IndexType currentNumNodes = mc->numNodes();
-    IndexType idx;
-    if ( ndims == 1 )
+    EXPECT_EQ( x[ i ], getCoordValue( ndims, i, 0 ) );
+  }
+  if ( ndims > 1 )
+  {
+    const double* y = mesh_coords->getCoordinateArray( Y_COORDINATE );
+    for ( IndexType i = 0; i < n_nodes; ++i )
     {
-      idx = mc->append( x );
+      EXPECT_EQ( y[ i ], getCoordValue( ndims, i, 1 ) );
     }
-    else if ( ndims == 2 )
+  }
+  if ( ndims > 2 )
+  {
+    const double* z = mesh_coords->getCoordinateArray( Z_COORDINATE );
+    for ( IndexType i = 0; i < n_nodes; ++i )
     {
-      idx = mc->append( x, y );
+      EXPECT_EQ( z[ i ], getCoordValue( ndims, i, 2 ) );
     }
-    else
-    {
-      idx = mc->append( x, y , z );
-    }
-
-    EXPECT_EQ( idx, currentNumNodes );
-    EXPECT_EQ( mc->numNodes(), currentNumNodes+1 );
-
-    // Ensure the data on the new node is what we expect
-    for ( int i=0; i < ndims; ++i )
-    {
-      EXPECT_DOUBLE_EQ( TEST_VALUE + i, mc->getCoordinate( idx, i ) );
-    }
-
-    // Ensure invariant holds after the append
-    EXPECT_TRUE( mc->numNodes() <= mc->capacity() );
-
-    // shrink the buffer so that the next append will trigger a realloc
-    mc->shrink();
-    currentNumNodes = mc->numNodes();
-    IndexType currentCapacity = mc->capacity();
-    EXPECT_EQ( currentNumNodes, currentCapacity);
   }
 
+  /* Check using getCoordinates */
+  double coords[3];
+  for ( IndexType i = 0; i < n_nodes; ++i )
+  {
+    mesh_coords->getCoordinates( i, coords );
+    for ( int dim = 0; dim < ndims; ++dim )
+    {
+      EXPECT_EQ( coords[ dim ], getCoordValue( ndims, i, dim ) );
+    }
+  }
+
+  /* Check using getCoordinate */
+  for ( IndexType i = 0; i < n_nodes; ++i )
+  {
+    for ( int dim = 0; dim < ndims; ++dim )
+    {
+      EXPECT_EQ( mesh_coords->getCoordinate( i, dim ), 
+                 getCoordValue( ndims, i, dim ) );
+    }
+  }
 }
+
+/*!
+ * \brief Append a single node multiple times in a row.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to append to.
+ * \param [in] n_nodes the number of nodes to append.
+ */
+void append_node_single( MeshCoordinates* mesh_coords, IndexType n_nodes )
+{
+  const int ndims = mesh_coords->dimension();
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+
+  if ( ndims == 1 )
+  {
+    for ( IndexType i = 0; i < n_nodes; ++i )
+    {
+      mesh_coords->append( getCoordValue( ndims, cur_n_nodes, 0 ) );
+      EXPECT_EQ( ++cur_n_nodes, mesh_coords->numNodes() );
+    }
+  }
+  else if ( ndims == 2 )
+  {
+    for ( IndexType i = 0; i < n_nodes; ++i )
+    {
+      mesh_coords->append( getCoordValue( ndims, cur_n_nodes, 0 ), 
+                           getCoordValue( ndims, cur_n_nodes, 1 ) );
+      EXPECT_EQ( ++cur_n_nodes, mesh_coords->numNodes() );
+    }
+  }
+  else
+  {
+    for ( IndexType i = 0; i < n_nodes; ++i )
+    {
+      mesh_coords->append( getCoordValue( ndims, cur_n_nodes, 0 ), 
+                           getCoordValue( ndims, cur_n_nodes, 1 ),
+                           getCoordValue( ndims, cur_n_nodes, 2 ) );
+      EXPECT_EQ( ++cur_n_nodes, mesh_coords->numNodes() );
+    }
+  }
+}
+
+/*!
+ * \brief Append multiple nodes at once using the array of structs layout.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to append to.
+ * \param [in] n_nodes the number of nodes to append.
+ */
+void append_node_structs( MeshCoordinates* mesh_coords, IndexType n_nodes )
+{
+  const int ndims = mesh_coords->dimension();
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+  double* coords = new double[ ndims * n_nodes ];
+
+  for ( IndexType i = 0; i < n_nodes; ++i )
+  {
+    for ( IndexType dim = 0; dim < ndims; ++dim )
+    {
+      coords[ ndims * i + dim ] = getCoordValue( ndims, i + cur_n_nodes, dim );
+    }
+  }
+
+  mesh_coords->append( coords, n_nodes );
+  cur_n_nodes += n_nodes;
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  delete[] coords;
+}
+
+/*!
+ * \brief Append multiple nodes at once using the struct of arrays layout.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to append to.
+ * \param [in] n_nodes the number of nodes to append.
+ */
+void append_node_arrays( MeshCoordinates* mesh_coords, IndexType n_nodes )
+{
+  const int ndims = mesh_coords->dimension();
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+  double* coords = new double[ ndims * n_nodes ];
+
+  for ( IndexType dim = 0; dim < ndims; ++dim )
+  {
+    for ( IndexType i = 0; i < n_nodes; ++i )
+    {
+      coords[ dim * n_nodes + i ] = getCoordValue( ndims, i + cur_n_nodes, dim );
+    }
+  }
+
+  if ( ndims == 1 )
+  {
+    mesh_coords->append( coords, n_nodes );
+    cur_n_nodes += n_nodes;
+    EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+  }
+  else if ( ndims == 2 )
+  {
+    const double* x = coords;
+    const double* y = coords + n_nodes;
+    mesh_coords->append( x, y, n_nodes );
+    cur_n_nodes += n_nodes;
+    EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+  }
+  else
+  {
+    const double* x = coords;
+    const double* y = coords + n_nodes;
+    const double* z = coords + 2 * n_nodes;
+    mesh_coords->append( x, y, z, n_nodes );
+    cur_n_nodes += n_nodes;
+    EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+  }
+
+  delete[] coords;
+}
+
+/*!
+ * \brief Append nodes using all the various methods.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to append to.
+ * \param [in] n_nodes the number of nodes to append.
+ */
+void append_nodes( MeshCoordinates* mesh_coords, IndexType n_nodes )
+{
+  ASSERT_EQ( n_nodes % 3, 0 );
+
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+  ASSERT_EQ( cur_n_nodes, 0 );
+  EXPECT_TRUE( mesh_coords->empty() );
+
+  /* Append one node at a time */
+  append_node_single( mesh_coords, n_nodes / 3 );
+  cur_n_nodes += n_nodes / 3;
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+  
+  /* Append multiple nodes at once using the array of structs layout. */
+  append_node_structs( mesh_coords, n_nodes / 3 );
+  cur_n_nodes += n_nodes / 3;
+  EXPECT_EQ( cur_n_nodes, 2 * n_nodes / 3 );
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  /* Append multiple nodes at once using the struct of arrays layout. */
+  append_node_arrays( mesh_coords, n_nodes / 3 );
+  cur_n_nodes += n_nodes / 3;
+  EXPECT_EQ( cur_n_nodes, n_nodes );
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  check_append( mesh_coords );
+}
+
+/*!
+ * \brief Insert a single node.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates in question.
+ * \param [in] pos the insertion position.
+ * \param [in] final_pos the expected final position of this node after all
+ *  insertions have taken place.
+ */
+void insert_single( MeshCoordinates* mesh_coords, IndexType pos, 
+                         IndexType final_pos )
+{
+  const int ndims = mesh_coords->dimension();
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+
+  if ( ndims == 1 )
+  {
+    mesh_coords->insert( pos, getCoordValue( ndims, final_pos, 0 ) );
+  }
+  else if ( ndims == 2 )
+  {
+    mesh_coords->insert( pos, getCoordValue( ndims, final_pos, 0 ), 
+                         getCoordValue( ndims, final_pos, 1 ) );
+  }
+  else
+  {
+    mesh_coords->insert( pos, getCoordValue( ndims, final_pos, 0 ), 
+                         getCoordValue( ndims, final_pos, 1 ),
+                         getCoordValue( ndims, final_pos, 2 ) );
+  }
+
+  EXPECT_EQ( ++cur_n_nodes, mesh_coords->numNodes() );
+}
+
+/*!
+ * \brief Insert multiple nodes using the array of structs layout.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates in question.
+ * \param [in] n_nodes the number of nodes to insert.
+ * \param [in] pos the insertion position.
+ * \param [in] final_pos the expected final position of this node after all
+ *  insertions have taken place.
+ */
+void insert_structs( MeshCoordinates* mesh_coords, IndexType n_nodes,
+                          IndexType pos, IndexType final_pos )
+{
+  const int ndims = mesh_coords->dimension();
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+  double* coords = new double[ ndims * n_nodes ];
+
+  for ( IndexType i = 0; i < n_nodes; ++i )
+  {
+    for ( IndexType dim = 0; dim < ndims; ++dim )
+    {
+      coords[ ndims * i + dim ] = getCoordValue( ndims, final_pos + i, dim );
+    }
+  }
+
+  mesh_coords->insert( pos, coords, n_nodes );
+  cur_n_nodes += n_nodes;
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  delete[] coords;
+}
+
+/*!
+ * \brief Insert multiple nodes using the struct of arrays layout.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates in question.
+ * \param [in] n_nodes the number of nodes to insert.
+ * \param [in] pos the insertion position.
+ * \param [in] final_pos the expected final position of this node after all
+ *  insertions have taken place.
+ */
+void insert_arrays( MeshCoordinates* mesh_coords, IndexType n_nodes,
+                         IndexType pos, IndexType final_pos )
+{
+  const int ndims = mesh_coords->dimension();
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+  double* coords = new double[ ndims * n_nodes ];
+
+  for ( IndexType dim = 0; dim < ndims; ++dim )
+  {
+    for ( IndexType i = 0; i < n_nodes; ++i )
+    {
+      coords[ dim * n_nodes + i ] = getCoordValue( ndims, final_pos + i, dim );
+    }
+  }
+
+  if ( ndims == 1 )
+  {
+    mesh_coords->insert( pos, coords, n_nodes );
+    
+  }
+  else if ( ndims == 2 )
+  {
+    const double* x = coords;
+    const double* y = coords + n_nodes;
+    mesh_coords->insert( pos, x, y, n_nodes );
+  }
+  else
+  {
+    const double* x = coords;
+    const double* y = coords + n_nodes;
+    const double* z = coords + 2 * n_nodes;
+    mesh_coords->insert( pos, x, y, z, n_nodes );
+  }
+
+  cur_n_nodes += n_nodes;
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  delete[] coords;
+}
+
+/*!
+ * \brief Insert nodes into the MeshCoordinates.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates in question.
+ * \param [in] n_nodes the number of nodes to insert.
+ */
+void insert_nodes( MeshCoordinates* mesh_coords, IndexType n_nodes )
+{
+  ASSERT_EQ( n_nodes % 9, 0 );
+
+  IndexType cur_n_nodes = mesh_coords->numNodes();
+  ASSERT_EQ( cur_n_nodes, 0 );
+  EXPECT_TRUE( mesh_coords->empty() );
+
+  const IndexType ninth_n_nodes = n_nodes / 9;
+  const IndexType third_n_nodes = n_nodes / 3;
+
+  /* The final positions of the nodes to insert. */
+  IndexType final_pos[3] = { third_n_nodes - 1, third_n_nodes, 
+                             2 * third_n_nodes };
+
+  /* The inital position of the nodes to insert. */
+  IndexType insert_positions[3] = { 0, 1, 2 };
+
+  /* Insert one node at a time */
+  for ( IndexType round = 0; round < ninth_n_nodes; ++round )
+  {
+    for ( IndexType i = 0; i < 3; ++i )
+    {
+      insert_single( mesh_coords, insert_positions[ i ], final_pos[ i ] );
+      cur_n_nodes++;
+      EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+    }
+
+    /* The middle insertion increases by two, the back by three. */
+    insert_positions[1] += 2;
+    insert_positions[2] += 3;
+
+    /* The final position of the front decreases by one while the final position
+    *  of the middle and back both increase by one. */
+    final_pos[0]--;
+    final_pos[1]++;
+    final_pos[2]++;
+  }
+  EXPECT_EQ( cur_n_nodes, third_n_nodes );
+  
+  /* Insert multiple nodes at once using the array of structs layout. */
+  insert_structs( mesh_coords, ninth_n_nodes, 0, ninth_n_nodes );
+  cur_n_nodes += ninth_n_nodes;
+  insert_structs( mesh_coords, ninth_n_nodes, third_n_nodes, 4 * ninth_n_nodes );
+  cur_n_nodes += ninth_n_nodes;
+  insert_structs( mesh_coords, ninth_n_nodes, 5 * ninth_n_nodes, 
+                                                            7 * ninth_n_nodes );
+  cur_n_nodes += ninth_n_nodes;
+  EXPECT_EQ( cur_n_nodes, 2 * third_n_nodes );
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  /* Insert multiple nodes at once using the struct of arrays layout. */
+  insert_arrays( mesh_coords, ninth_n_nodes, 0, 0 );
+  cur_n_nodes += ninth_n_nodes;
+  insert_arrays( mesh_coords, ninth_n_nodes, 5 * ninth_n_nodes, 
+                                                            5 * ninth_n_nodes );
+  cur_n_nodes += ninth_n_nodes;
+  insert_arrays( mesh_coords, ninth_n_nodes, 8 * ninth_n_nodes, 
+                                                            8 * ninth_n_nodes );
+  cur_n_nodes += ninth_n_nodes;
+  EXPECT_EQ( cur_n_nodes, n_nodes );
+  EXPECT_EQ( cur_n_nodes, mesh_coords->numNodes() );
+
+  check_append( mesh_coords );
+}
+
 
 /*!
  * \brief Test set/get a node from the given MeshCoordinates object.
@@ -307,7 +656,219 @@ void check_set_and_get( MeshCoordinates* mc )
   {
     EXPECT_DOUBLE_EQ( mc->getCoordinate( targetIdx, i ), set_value );
   }
+}
 
+/*!
+ * \brief Return a pointer to a new MeshCoordinates.
+ *
+ * \param [in] ndims the dimension of the mesh to create.
+ * \param [in] n_nodes space to allocate for nodes.
+ */
+MeshCoordinates* createExternal( int dim, IndexType n_nodes )
+{
+  double* x = new double[ n_nodes ];
+  double* y = AXOM_NULLPTR;
+  double* z = AXOM_NULLPTR;
+
+  if ( dim > 1 )
+  {
+    y = new double[ n_nodes ];
+  }
+  if ( dim > 2 )
+  {
+    z = new double[ n_nodes ];
+  }
+
+  return new MeshCoordinates( 0, n_nodes, x, y, z );
+}
+
+/*!
+ * \brief Fill the given array with MeshCoordinates.
+ *
+ * \param [in/out] mesh_coords the array to fill.
+ * \param [in] n_nodes the nodal capacity for the external meshes.
+ *
+ * \note if using sidre 9 meshes are created otherwise only 6.
+ */
+void createCoords( MeshCoordinates** mesh_coords, IndexType n_nodes )
+{
+#ifdef MINT_USE_SIDRE
+  SLIC_ERROR_IF( ds != AXOM_NULLPTR, "Did not free DataStore." );
+  ds = new sidre::DataStore();
+  sidre::Group* root = ds->getRoot();
+#endif
+
+  int cur_coords = 0;
+  for ( int dim = 1; dim <= 3; ++dim )
+  {
+    mesh_coords[ cur_coords++ ] = new MeshCoordinates( dim );
+
+    mesh_coords[ cur_coords++ ] = createExternal( dim, n_nodes );
+
+#ifdef MINT_USE_SIDRE
+    const std::string coordset_name = "c" + std::to_string( dim );
+    sidre::Group* group = root->createGroup( coordset_name );
+    mesh_coords[ cur_coords++ ] = new MeshCoordinates( group, dim );
+#endif
+  }
+}
+
+/*!
+ * \brief Delete the given external MeshCoordinates and its associated arrays.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to delete.
+ */
+void deleteExternal( MeshCoordinates*& mesh_coords )
+{
+  const int ndims = mesh_coords->dimension();
+  const double* x = mesh_coords->getCoordinateArray( X_COORDINATE );
+  const double* y = AXOM_NULLPTR;
+  const double* z = AXOM_NULLPTR;
+
+  if ( ndims > 1 )
+  {
+    y = mesh_coords->getCoordinateArray( Y_COORDINATE );
+  }
+  if ( ndims > 2 )
+  {
+    z = mesh_coords->getCoordinateArray( Z_COORDINATE );
+  }
+
+  delete mesh_coords;
+  mesh_coords = AXOM_NULLPTR;
+
+  delete[] x;
+  delete[] y;
+  delete[] z;
+}
+
+/*!
+ * \brief Free the given array of MeshCoordinates.
+ *
+ * \param [in/out] mesh_coords the array of MeshCoordinates.
+ * \param [in] n_coords the nuber of MeshCoordinates in the array.
+ */
+void deleteCoords( MeshCoordinates** mesh_coords, int n_coords )
+{
+  for ( int i = 0; i < n_coords; ++i )
+  {
+    if ( mesh_coords[ i ]->isExternal() )
+    {
+      internal::deleteExternal( mesh_coords[ i ] );
+    }
+    else
+    {
+      delete mesh_coords[ i ];
+      mesh_coords[ i ] = AXOM_NULLPTR; 
+    }
+  }
+
+#ifdef MINT_USE_SIDRE
+  delete ds;
+  ds = AXOM_NULLPTR;
+#endif
+}
+
+/*!
+ * \brief Delete the given external MeshCoordinates and create a copy from it's 
+ *  external arrays.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to delete, it is replaced 
+ *  with the copy.
+ */
+void deleteAndDuplicateExternal( MeshCoordinates*& mesh_coords )
+{
+  ASSERT_TRUE( mesh_coords->isExternal() );
+  const int ndims = mesh_coords->dimension();
+  const int n_nodes = mesh_coords->numNodes();
+  const int capacity = mesh_coords->capacity();
+  double* x = mesh_coords->getCoordinateArray( X_COORDINATE );
+  double* y = AXOM_NULLPTR;
+  double* z = AXOM_NULLPTR;
+
+  if ( ndims > 1 )
+  {
+    y = mesh_coords->getCoordinateArray( Y_COORDINATE );
+  }
+  if ( ndims > 2 )
+  {
+    z = mesh_coords->getCoordinateArray( Z_COORDINATE );
+  }
+
+  delete mesh_coords;
+
+  mesh_coords = new MeshCoordinates( n_nodes, capacity, x, y, z );
+  EXPECT_EQ( ndims, mesh_coords->dimension() );
+  EXPECT_EQ( n_nodes, mesh_coords->numNodes() );
+  EXPECT_EQ( capacity, mesh_coords->capacity() );
+  EXPECT_EQ( x, mesh_coords->getCoordinateArray( X_COORDINATE ) ); 
+  if ( ndims > 1 )
+  {
+    EXPECT_EQ( y, mesh_coords->getCoordinateArray( Y_COORDINATE ) ); 
+  }
+  if ( ndims > 2 )
+  {
+    EXPECT_EQ( z, mesh_coords->getCoordinateArray( Z_COORDINATE ) ); 
+  }
+}
+
+#ifdef MINT_USE_SIDRE
+
+/*!
+ * \brief Delete the given sidre MeshCoordinates and create a copy from 
+ *  it's group.
+ *
+ * \param [in/out] mesh_coords the MeshCoordinates to delete, it is replaced 
+ *  with the copy.
+ */
+void deleteAndDuplicateSidre( MeshCoordinates*& mesh_coords )
+{
+  ASSERT_TRUE( mesh_coords->isInSidre() );
+
+  const int ndims = mesh_coords->dimension();
+  const int n_nodes = mesh_coords->numNodes();
+  const int capacity = mesh_coords->capacity();
+
+  sidre::Group* group = mesh_coords->getSidreGroup();
+
+  delete mesh_coords;
+  mesh_coords = new MeshCoordinates( group );
+
+  EXPECT_EQ( ndims, mesh_coords->dimension() );
+  EXPECT_EQ( n_nodes, mesh_coords->numNodes() );
+  EXPECT_EQ( capacity, mesh_coords->capacity() );
+}
+
+#endif
+
+/*!
+ * \brief Check that meshes restored from sidre or external buffers are
+ *  equivalent to the original mesh.
+ *
+ * \param [in/out] meshes the array of meshes.
+ * \param [in] n_coords the number of meshes.
+ */
+void check_restoration( MeshCoordinates** mesh_coords, int n_coords )
+{
+  for ( int i = 0; i < n_coords; ++i )
+  {
+    if ( mesh_coords[ i ]->isExternal() )
+    {
+      deleteAndDuplicateExternal( mesh_coords[ i ] );
+    }
+#ifdef MINT_USE_SIDRE
+    else if ( mesh_coords[ i ]->isInSidre() )
+    {
+      deleteAndDuplicateSidre( mesh_coords[ i ] );
+    }
+#endif
+    else
+    {
+      continue;
+    }
+
+    check_append( mesh_coords[ i ] );
+  }
 }
 
 } /* end internal namespace*/
@@ -316,29 +877,56 @@ void check_set_and_get( MeshCoordinates* mc )
 // UNIT TESTS
 //------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
 TEST( mint_mesh_coordinates, append )
 {
-  constexpr int NDIMS = 3;
-
-  for ( int dim=1; dim <= NDIMS; ++dim )
-  {
-    // Construct an empty MeshCoordinates object
-    MeshCoordinates mc1( dim );
-    internal::check_coordinate_arrays( &mc1 );
-    internal::check_append( &mc1 );
-
 #ifdef MINT_USE_SIDRE
-    // Construct a MeshCoordinates object from sidre
-    sidre::DataStore ds;
-    internal::create_sidre_data( ds, dim );
-    sidre::Group* coords_group = ds.getRoot();
-    EXPECT_TRUE( coords_group != AXOM_NULLPTR );
-
-    MeshCoordinates mc2( coords_group );
-    internal::check_coordinate_arrays( &mc2 );
-    internal::check_append( &mc2 );
+  constexpr int STRIDE = 3;
+#else
+  constexpr int STRIDE = 2;
 #endif
+
+  constexpr IndexType N_NODES = 1200;
+
+  constexpr int N_COORDS = STRIDE * 3;
+  MeshCoordinates* mesh_coords[ N_COORDS ];
+
+  internal::createCoords( mesh_coords, N_NODES );
+
+  for ( int i = 0; i < N_COORDS; ++i )
+  {
+    internal::append_nodes( mesh_coords[ i ], N_NODES );
   }
+
+  internal::check_restoration( mesh_coords, N_COORDS );
+
+  internal::deleteCoords( mesh_coords, N_COORDS );
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_coordinates, insert )
+{
+#ifdef MINT_USE_SIDRE
+  constexpr int STRIDE = 3;
+#else
+  constexpr int STRIDE = 2;
+#endif
+
+  constexpr IndexType N_NODES = 900;
+
+  constexpr int N_COORDS = STRIDE * 3;
+  MeshCoordinates* mesh_coords[ N_COORDS ];
+
+  internal::createCoords( mesh_coords, N_NODES );
+
+  for ( int i = 0; i < N_COORDS; ++i )
+  {
+    internal::insert_nodes( mesh_coords[ i ], N_NODES );
+  }
+
+  internal::check_restoration( mesh_coords, N_COORDS );
+
+  internal::deleteCoords( mesh_coords, N_COORDS );
 }
 
 //------------------------------------------------------------------------------
