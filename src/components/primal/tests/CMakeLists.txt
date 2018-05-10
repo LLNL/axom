@@ -18,6 +18,7 @@ set( primal_tests
     primal_bvhtree.cpp
     primal_clip.cpp
     primal_closest_point.cpp
+    primal_in_sphere.cpp
     primal_intersect_impl.cpp
     primal_intersect.cpp
     primal_morton.cpp

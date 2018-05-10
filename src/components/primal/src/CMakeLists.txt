@@ -38,6 +38,7 @@ set( primal_headers
      operators/orientation.hpp
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
+     operators/in_sphere.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
