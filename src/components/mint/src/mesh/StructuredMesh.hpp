@@ -189,6 +189,9 @@ public:
 
 /// @}
 
+  virtual bool isExternal() const final override
+  { return false; }
+
 /// @}
 
 /// \name Attribute Querying Methods

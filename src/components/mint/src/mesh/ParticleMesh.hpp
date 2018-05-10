@@ -346,6 +346,13 @@ public:
 
 /// @}
 
+  /*!
+   * \brief Return true iff both the particle positions are stored in
+   *  external arrays.
+   */
+  virtual bool isExternal() const final override
+  { return m_positions->isExternal(); }
+
 /// @}
 
 /// \name Attribute get/set Methods
@@ -388,13 +395,6 @@ public:
    */
   bool empty() const
   { return m_positions->empty(); }
-
-  /*!
-   * \brief Return true iff both the particle positions are stored in
-   *  external arrays.
-   */
-  bool isExternal() const
-  { return m_positions->isExternal(); }
 
   /*!
    * \brief Return true iff the particle positions are stored in sidre.

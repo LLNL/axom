@@ -335,6 +335,9 @@ public:
   virtual IndexType getEdgeCapacity() const
   { return getNumberOfEdges(); }
 
+
+  virtual bool isExternal() const = 0;
+
 /// @}
 
 /// @}

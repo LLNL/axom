@@ -539,6 +539,24 @@ public:
 
 /// @}
 
+  /*!
+   * \brief Return true iff both the connectivity and coordinates are stored in
+   *  external arrays.
+   */
+  virtual bool isExternal() const final override
+  {
+    bool connec_external = m_cell_connectivity->isExternal();
+    bool coords_external = m_coordinates->isExternal();
+
+    if ( connec_external != coords_external )
+    {
+      SLIC_WARNING( "External state not consistent." );
+      return false;
+    }
+
+    return connec_external;
+  }
+
 /// @}
 
 /// \name Attribute get/set Methods
@@ -688,24 +706,6 @@ public:
    */
   bool empty() const
   { return m_coordinates->empty() && m_cell_connectivity->empty(); }
-
-  /*!
-   * \brief Return true iff both the connectivity and coordinates are stored in
-   *  external arrays.
-   */
-  bool isExternal() const
-  {
-    bool connec_external = m_cell_connectivity->isExternal();
-    bool coords_external = m_coordinates->isExternal();
-
-    if ( connec_external != coords_external )
-    {
-      SLIC_WARNING( "External state not consistent." );
-      return false;
-    }
-
-    return connec_external;
-  }
 
   /*!
    * \brief Return true iff both the connectivity and coordinates are stored in
@@ -1099,16 +1099,17 @@ public:
 private:
 
   /*!
-   * \brief Update the connectivity given an insert at position pos of length n.
+   * \brief Update the connectivity given an nodal insert at position pos of 
+   *  length n.
    *
    * \param [in] pos the position of the insert.
    * \param [in] n the length of the insert.
    */
   void cellConnectivityUpdateInsert( IndexType pos, IndexType n )
   {
-    IndexType n_values = getCellConnectivitySize();
-    SLIC_ASSERT( 0 <= pos && pos <= n_values );
+    SLIC_ASSERT( 0 <= pos && pos < getNumberOfNodes() );
 
+    const IndexType n_values = getCellConnectivitySize();
     IndexType* values = getCellConnectivityArray();
     SLIC_ASSERT( n_values == 0 || values != AXOM_NULLPTR );
 
