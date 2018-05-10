@@ -433,8 +433,8 @@ TEST(sidre_buffer, buffer_iterate)
   ds->destroyBuffer(buf3);
 
   int bufcount = 0;
-  for (IndexType idx = ds->getFirstValidBufferIndex();
-       indexIsValid(idx);
+  for (IndexType idx = ds->getFirstValidBufferIndex() ;
+       indexIsValid(idx) ;
        idx = ds->getNextValidBufferIndex(idx))
   {
     bufcount += 1;
@@ -445,8 +445,8 @@ TEST(sidre_buffer, buffer_iterate)
   ds->destroyBuffer(buf2);
 
   bufcount = 0;
-  for (IndexType idx = ds->getFirstValidBufferIndex();
-       indexIsValid(idx);
+  for (IndexType idx = ds->getFirstValidBufferIndex() ;
+       indexIsValid(idx) ;
        idx = ds->getNextValidBufferIndex(idx))
   {
     bufcount += 1;
