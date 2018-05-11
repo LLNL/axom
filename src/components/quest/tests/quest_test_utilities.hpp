@@ -209,7 +209,7 @@ axom::mint::Mesh* make_tetrahedron_mesh()
   surface_mesh->appendNode(-18.213671,  4.880339, -6.666668);
   surface_mesh->appendNode(  4.880339,-18.213671, -6.666668);
   surface_mesh->appendNode( 13.333334, 13.333334, -6.666663);
-  int cell[3];
+  axom::mint::IndexType cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
   surface_mesh->appendCell(cell);
   cell[0] = 0;    cell[1] = 3;    cell[2] = 1;

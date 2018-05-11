@@ -420,7 +420,7 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline int
+inline IndexType
 StructuredMesh::getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) ) const
 {
   const int cell_type = getCellType();

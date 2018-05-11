@@ -151,10 +151,10 @@ TEST( mint_mesh_field_variable_DeathTest, invalid_construction )
   EXPECT_EQ( mint::field_traits< invalid_type >::type(),
              mint::UNDEFINED_FIELD_TYPE );
 
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< invalid_type >( "foo", 0, 0),
-                             IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< double >( EMPTY_STRING,0, 0 ),
-                             IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< invalid_type >( "foo", 
+     axom::mint::internal::ZERO, axom::mint::internal::ZERO ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< double >( EMPTY_STRING, 
+     axom::mint::internal::ZERO, axom::mint::internal::ZERO ), IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------

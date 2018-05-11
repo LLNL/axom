@@ -378,7 +378,8 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual int getNumberOfCellNodes( IndexType cellID=0 ) const override final
+  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) 
+                                                            const override final
   { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!

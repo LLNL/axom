@@ -158,7 +158,7 @@ public:
     SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
 
     m_stride = cell_info[ cell_type ].num_nodes;
-    m_values = new Array< IndexType >( 0, m_stride, ID_capacity );
+    m_values = new Array< IndexType >( internal::ZERO, m_stride, ID_capacity );
   }
 
 /// @}

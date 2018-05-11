@@ -77,13 +77,13 @@ public:
   ConnectivityArray( IndexType ID_capacity=USE_DEFAULT,  
                      IndexType value_capacity=USE_DEFAULT ):
     m_values( AXOM_NULLPTR ),
-    m_offsets( new Array< IndexType >( 0, 1, 
-               (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 ) ),
-    m_types( new Array< CellType >( 0, 1, ID_capacity ) )
+    m_types( new Array< CellType >( internal::ZERO, 1, ID_capacity ) ),
+    m_offsets( new Array< IndexType >( internal::ZERO, 1, 
+                                       m_types->capacity() + 1 ) )
   {
     IndexType new_value_capacity = 
            internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
-    m_values = new Array< IndexType >( 0, 1, new_value_capacity );
+    m_values = new Array< IndexType >( internal::ZERO, 1, new_value_capacity );
 
     m_offsets->append(0);
   }
@@ -124,14 +124,13 @@ public:
                      CellType* types, IndexType ID_capacity=USE_DEFAULT, 
                      IndexType value_capacity=USE_DEFAULT ):
     m_values( AXOM_NULLPTR ),
-    m_offsets( AXOM_NULLPTR ),
-    m_types( new Array< CellType >( types, n_IDs, 1, ID_capacity ) )
+    m_types( new Array< CellType >( types, n_IDs, 1, ID_capacity ) ),
+    m_offsets( new Array< IndexType >( offsets, n_IDs + 1, 1, 
+                                       m_types->capacity() + 1 ) )
   {
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs 
                                                                        << "." );
 
-    m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1, 
-                 (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 );
     if ( n_IDs == 0 )
     {
       (*m_offsets)[0] = 0;
@@ -165,6 +164,7 @@ public:
    */
   ConnectivityArray( sidre::Group* group ):
     m_values( AXOM_NULLPTR ),
+    m_types( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
     CellType cell_type = internal::initializeFromGroup( group, &m_values, 
@@ -199,6 +199,7 @@ public:
                      IndexType ID_capacity=USE_DEFAULT, 
                      IndexType value_capacity=USE_DEFAULT ):
     m_values( AXOM_NULLPTR ),
+    m_types( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
     bool create_offsets = true;
@@ -608,8 +609,8 @@ public:
 
 private:
   Array< IndexType >* m_values;
-  Array< IndexType >* m_offsets;
   Array< CellType >* m_types;
+  Array< IndexType >* m_offsets;
 
   DISABLE_COPY_AND_ASSIGNMENT( ConnectivityArray );
   DISABLE_MOVE_AND_ASSIGNMENT( ConnectivityArray );

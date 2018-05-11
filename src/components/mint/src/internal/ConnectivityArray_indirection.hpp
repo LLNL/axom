@@ -83,7 +83,7 @@ public:
                      IndexType value_capacity=USE_DEFAULT ):
     m_cell_type( cell_type ),
     m_values( AXOM_NULLPTR ),
-    m_offsets( new Array< IndexType >( 0, 1, 
+    m_offsets( new Array< IndexType >( internal::ZERO, 1, 
                 (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 ) )
   {
     SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
@@ -91,7 +91,7 @@ public:
 
     IndexType new_value_capacity = 
            internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
-    m_values = new Array< IndexType >( 0, 1, new_value_capacity );
+    m_values = new Array< IndexType >( internal::ZERO, 1, new_value_capacity );
 
     m_offsets->append(0);
   }

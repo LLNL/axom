@@ -24,22 +24,9 @@
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"
-#else
-
-namespace axom
-{
-namespace sidre
-{
-struct Group { };
-}
-}
-
-#endif
 
 namespace mint  = axom::mint;
 namespace sidre = axom::sidre;
-
-#ifdef MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -348,39 +335,9 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
     EXPECT_EQ( dimension, dim );
 
   } // END for all dimensions
-
-}
-#else
-
-TEST( mint_mesh_blueprint_DeathTest, blueprint_calls_fail_without_sidre )
-{
-  const char* IGNORE_OUTPUT= ".*";
-  sidre::Group foobar;
-
-  EXPECT_DEATH_IF_SUPPORTED( mint::blueprint::validRootGroup( &foobar ),
-                             IGNORE_OUTPUT );
-
-  EXPECT_DEATH_IF_SUPPORTED( mint::blueprint::validTopologyGroup( &foobar ),
-                             IGNORE_OUTPUT );
-
-  EXPECT_DEATH_IF_SUPPORTED( mint::blueprint::validCoordsetGroup( &foobar ),
-                             IGNORE_OUTPUT );
-
-  EXPECT_DEATH_IF_SUPPORTED( mint::blueprint::getTopologyGroup( &foobar, ""),
-                             IGNORE_OUTPUT );
-
-  EXPECT_DEATH_IF_SUPPORTED( mint::blueprint::getCoordsetGroup( &foobar, "" ),
-                             IGNORE_OUTPUT );
-
-  int m = -1;
-  int d = -1;
-  EXPECT_DEATH_IF_SUPPORTED(
-      mint::blueprint::getMeshTypeAndDimension( m, d, &foobar, "" ),
-      IGNORE_OUTPUT );
-
 }
 
-#endif
+#endif /* MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"

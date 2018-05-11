@@ -47,9 +47,9 @@ Mesh::Mesh( int ndims, int type ) :
   m_part_idx( -1 ),
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
-  m_has_mixed_topology( false ),
+  m_has_mixed_topology( false )
 #ifdef MINT_USE_SIDRE
-  m_group( AXOM_NULLPTR ),
+  , m_group( AXOM_NULLPTR ),
   m_topology(),
   m_coordset()
 #endif
@@ -253,6 +253,8 @@ void Mesh::deallocateFieldData( )
   }
 }
 
+#ifdef MINT_USE_SIDRE
+
 //------------------------------------------------------------------------------
 Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
 {
@@ -300,6 +302,8 @@ Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
   SLIC_ASSERT( m != AXOM_NULLPTR );
   return m;
 }
+
+#endif /* MINT_USE_SIDRE */
 
 } /* namespace mint */
 } /* namespace axom */

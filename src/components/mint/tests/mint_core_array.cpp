@@ -760,10 +760,10 @@ void check_emplace( Array< T >& v )
  * \brief Make a copy of an Array through sidre and check it for defects.
  * \param [in] v the Array to copy.
  */
+#ifdef MINT_USE_SIDRE
 template< typename T >
 void check_sidre( Array< T >& v )
 {
-#ifdef MINT_USE_SIDRE
   Array< T > cpy( const_cast< sidre::View* >( v.getView() ) );
   cpy.setResizeRatio( v.getResizeRatio() );
 
@@ -771,8 +771,8 @@ void check_sidre( Array< T >& v )
   cpy.resize(0);
   check_storage( cpy );
   check_insert( cpy );
-#endif
 }
+#endif
 
 /*!
  * \brief Check an external array for defects.
@@ -987,7 +987,7 @@ TEST( mint_core_array, checkResize )
 TEST( mint_core_array_DeathTest, checkResize )
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array< int > v_int( 0, 1, 100 );
+  Array< int > v_int( internal::ZERO, 1, 100 );
   v_int.setResizeRatio( 0.99 );
   EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 }

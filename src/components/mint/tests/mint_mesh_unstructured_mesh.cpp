@@ -72,12 +72,12 @@ std::string getFieldName( const Mesh* mesh, int association )
     field_name = "f2";
   }
 
-#ifdef MINT_USE_SIDRE
   if ( mesh->hasSidreGroup() ) 
   {
+#ifdef MINT_USE_SIDRE
     field_name = mesh->getTopologyName() + "_" + field_name;
-  }
 #endif
+  }
 
   return field_name;
 }

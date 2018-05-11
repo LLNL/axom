@@ -169,10 +169,6 @@ UniformMesh::UniformMesh( sidre::Group* group,
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( sidre::Group* group ) : UniformMesh( group, "" )
-{ }
-
-//------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension,
                           const double* lower_bound,
                           const double* upper_bound,
@@ -199,15 +195,6 @@ UniformMesh::UniformMesh( int dimension,
                              getCoordsetGroup(),
                              getTopologyGroup() );
 }
-
-//------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const double* lower_bound,
-                          const double* upper_bound,
-                          const int64* extent,
-                          sidre::Group* group ) :
-  UniformMesh( dimension, lower_bound, upper_bound, extent, group, "", "" )
-{ }
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension,
@@ -253,7 +240,7 @@ UniformMesh::UniformMesh( int dimension,
                           IndexType Nj,
                           IndexType Nk ) :
   UniformMesh( dimension, lower_bound, upper_bound, group, "", "", Ni, Nj, Nk )
-{ }
+{}
 
 #endif
 

@@ -636,10 +636,11 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
   }
 
   mint::Field* newField = AXOM_NULLPTR;
-#ifdef MINT_USE_SIDRE
   // create the field on sidre
   if ( hasSidreGroup() && storeInSidre )
   {
+#ifdef MINT_USE_SIDRE
+
     SLIC_ERROR_IF( m_fields_group->hasGroup( name ),
              "Field [" << name << "] already exists in the Sidre tree!" );
 
@@ -653,16 +654,13 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
     sidre::View* values = field->createView( "values" );
     newField = new mint::FieldVariable< T >( name, values, num_tuples,
                                              num_components, capacity );
+#endif
   } // END if
   else
   {
     newField = new mint::FieldVariable< T >( name, num_tuples, num_components,
                                              capacity );
   } // END else
-#else
-  newField = new mint::FieldVariable< T >( name, num_tuples, num_components,
-                                           capacity );
-#endif
 
   SLIC_ASSERT( newField != AXOM_NULLPTR );
   newField->setResizeRatio( m_resize_ratio );

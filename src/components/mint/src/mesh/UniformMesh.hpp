@@ -206,13 +206,9 @@ public:
    * \pre blueprint::validRootGroup( group )
    * \post hasSidreGroup() == true
    */
-  /// @{
-
   UniformMesh( sidre::Group* group,
-               const std::string& topo );
+               const std::string& topo="" );
 
-  explicit UniformMesh( sidre::Group* group );
-  /// @}
 
 
   /*!
@@ -257,21 +253,13 @@ public:
    * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
    * \post hasSidreGroup() == true
    */
-  /// @{
   UniformMesh( int dimension,
                const double* lower_bound,
                const double* upper_bound,
                const int64* extent,
                sidre::Group* group,
-               const std::string& topo,
-               const std::string& coordset );
-
-  UniformMesh( int dimension,
-               const double* lower_bound,
-               const double* upper_bound,
-               const int64* extent,
-               sidre::Group* group );
-  /// @}
+               const std::string& topo="",
+               const std::string& coordset="" );
 
   /*!
    * \brief Constructs a uniform mesh object on the specified Sidre group, that

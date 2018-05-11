@@ -151,9 +151,9 @@ void check_create_and_access_data( mint::FieldData& field_data,
   std::fill( f2, f2+(NUM_TUPLES*NUM_COMPONENTS), MAGIC_DOUBLE );
 
    // check f1 pointer access and parameters
-   int N = 0;
-   int M = 0;
-   int* f1ptr    = field_data.getFieldPtr< int >( "f1", N, M );
+   mint::IndexType N = 0;
+   mint::IndexType M = 0;
+   int* f1ptr = field_data.getFieldPtr< int >( "f1", N, M );
    EXPECT_TRUE( f1ptr != AXOM_NULLPTR );
    EXPECT_EQ( N, NUM_TUPLES );
    EXPECT_EQ( M, 1 );

@@ -52,6 +52,8 @@ class Extent;
 namespace blueprint
 {
 
+#ifdef MINT_USE_SIDRE
+
 /*!
  * \brief Checks if the given root group conforms to the mesh blueprint.
  *
@@ -271,6 +273,8 @@ void getUniformMesh( int dim, const sidre::Group* coordset,
 void setUniformMesh( int dim, const double* origin, const double* spacing,
                      const mint::Extent* extent, sidre::Group* coordset,
                      sidre::Group* topology );
+
+#endif /* MINT_USE_SIDRE */
 
 } /* namespace blueprint */
 

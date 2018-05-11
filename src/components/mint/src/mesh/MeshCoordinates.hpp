@@ -606,7 +606,8 @@ inline bool MeshCoordinates::isExternal() const
 
 //------------------------------------------------------------------------------
 inline bool MeshCoordinates::isInSidre() const
-{ 
+{
+#ifdef MINT_USE_SIDRE
   bool is_in_sidre = m_group != AXOM_NULLPTR;
   bool consistent = true;
   for ( int i = 0; i < m_ndims; ++i )
@@ -616,6 +617,9 @@ inline bool MeshCoordinates::isInSidre() const
 
   SLIC_WARNING_IF( !consistent, "Sidre state not consistent." );
   return m_coordinates[0]->isInSidre();
+#else
+  return false;
+#endif
 }
 
 //------------------------------------------------------------------------------

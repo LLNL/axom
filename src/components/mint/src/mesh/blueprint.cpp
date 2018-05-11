@@ -31,16 +31,6 @@
 #ifdef MINT_USE_SIDRE
 #include "sidre/Group.hpp"  // for sidre::Group
 #include "sidre/View.hpp"   // for sidre::View
-#else
-
-namespace axom
-{
-namespace sidre
-{
-struct Group { };
-}
-}
-
 #endif
 
 namespace axom
@@ -377,8 +367,8 @@ void getUniformMesh( int dimension,
     spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
 
     const int idx    = i*2;
-    const int N      = c->getView( dim_names[ i ] )->getScalar();
-    const int offset = t->getView( topo_names[ i ] )->getScalar();
+    const int64 N      = c->getView( dim_names[ i ] )->getScalar();
+    const int64 offset = t->getView( topo_names[ i ] )->getScalar();
     extent[ idx ]    = offset;
     extent[ idx+1 ]  = offset + N - 1;
   }
@@ -415,66 +405,9 @@ void setUniformMesh( int dim,
     coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
     coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );
     coordset->createView( spacing_names[ i ] )->setScalar( spacing[ i ] );
-
-    // FIXME: cannot set int64 values in sidre
-    int min = static_cast< int >( extent->min( i ) );
-    topology->createView( topo_names[ i ] )->setScalar( min );
+    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
   } // END for
 
-}
-
-#else
-
-static const char* msg = "mint::blueprint requires building with Sidre!";
-
-bool validRootGroup( const sidre::Group* )
-{
-  SLIC_ERROR( msg );
-  return ( false );
-}
-
-//------------------------------------------------------------------------------
-bool validTopologyGroup( const sidre::Group* )
-{
-  SLIC_ERROR( msg );
-  return ( false );
-}
-
-//------------------------------------------------------------------------------
-bool validCoordsetGroup( const sidre::Group* )
-{
-  SLIC_ERROR( msg );
-  return ( false );
-}
-
-//------------------------------------------------------------------------------
-const sidre::Group* getTopologyGroup( const sidre::Group*, const std::string& )
-{
-  SLIC_ERROR( msg );
-  return ( AXOM_NULLPTR );
-}
-
-//------------------------------------------------------------------------------
-const sidre::Group* getCoordsetGroup( const sidre::Group*,
-                                      const sidre::Group*  )
-{
-  SLIC_ERROR( msg );
-  return ( AXOM_NULLPTR );
-}
-
-//------------------------------------------------------------------------------
-void getMeshTypeAndDimension( int& , int& ,
-                              sidre::Group* ,
-                              const std::string&  )
-{
-  SLIC_ERROR( msg );
-}
-
-//------------------------------------------------------------------------------
-void getMeshTypeAndDimension( int& , int& ,
-                              const sidre::Group* )
-{
-  SLIC_ERROR( msg );
 }
 
 #endif
