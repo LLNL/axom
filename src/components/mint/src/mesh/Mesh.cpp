@@ -107,9 +107,6 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   allocateFieldData();
 }
 
-Mesh::Mesh( sidre::Group* group ) : Mesh( group, "" )
-{}
-
 Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
             const std::string& coordset ) :
   m_ndims( ndims ),
@@ -163,11 +160,6 @@ Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
 
   allocateFieldData();
 }
-
-//------------------------------------------------------------------------------
-Mesh::Mesh( int ndims, int type, sidre::Group* group ) :
-  Mesh( ndims, type, group, "", "" )
-{}
 
 //------------------------------------------------------------------------------
 sidre::Group* Mesh::getCoordsetGroup( )
@@ -271,6 +263,7 @@ Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
   blueprint::getMeshTypeAndDimension( mesh_type, dimension, group, topo );
 
   Mesh* m = AXOM_NULLPTR;
+  Topology topo_type;
   switch ( mesh_type )
   {
   case STRUCTURED_CURVILINEAR_MESH:
@@ -286,8 +279,16 @@ Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
     // TODO: implement this
     break;
   case UNSTRUCTURED_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    topo_type = blueprint::getMeshTopologyType( group, topo );
+    if ( topo_type == Topology::SINGLE )
+    {
+      m = new UnstructuredMesh< Topology::SINGLE >( group, topo );
+    }
+    else
+    {
+      SLIC_ASSERT( topo_type == Topology::MIXED );
+      m = new UnstructuredMesh< Topology::MIXED >( group, topo );
+    }
     break;
   case PARTICLE_MESH:
     m = new ParticleMesh( group, topo );
@@ -297,13 +298,7 @@ Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
   } // END switch
 
   SLIC_ASSERT( m != AXOM_NULLPTR );
-  return ( m );
-}
-
-//------------------------------------------------------------------------------
-Mesh* Mesh::getMesh( sidre::Group* group )
-{
-  return ( Mesh::getMesh( group, "" ) );
+  return m;
 }
 
 } /* namespace mint */

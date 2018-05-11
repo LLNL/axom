@@ -619,10 +619,7 @@ public:
    * \pre  blueprint::validRootGroup( group ) == true
    * \post m != AXOM_NULLPTR
    */
-  /// @{
-  static Mesh* getMesh( sidre::Group* group, const std::string& topo );
-  static Mesh* getMesh( sidre::Group* group );
-  /// @}
+  static Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
 
 #endif
 
@@ -683,12 +680,7 @@ protected:
    *
    * \see sidre::Group
    */
-  /// @{
-
-  Mesh( sidre::Group* group, const std::string& topo );
-  explicit Mesh( sidre::Group* group );
-
-  /// @}
+  Mesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
    * \brief Constructor for use with an empty group.
@@ -709,13 +701,8 @@ protected:
    *
    * \see sidre::Group
    */
-  /// @{
-
   Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
         const std::string& coordset );
-
-  Mesh( int ndims, int type, sidre::Group* group );
-  /// @}
 
   /*!
    * \brief Helper method to return the associated coordset group.
