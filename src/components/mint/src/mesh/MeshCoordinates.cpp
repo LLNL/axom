@@ -38,6 +38,14 @@ namespace mint
 constexpr IndexType DEFAULT_CAPACITY = 100;
 
 //------------------------------------------------------------------------------
+MeshCoordinates::MeshCoordinates( int dimension ) :
+  m_ndims( dimension )
+{
+  SLIC_ERROR_IF( this->invalidDimension(), "invalid dimension" );
+  this->initialize( 0, DEFAULT_CAPACITY );
+}
+
+//------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( int dimension,
                                   IndexType numNodes,
                                   IndexType capacity ) :
@@ -65,7 +73,8 @@ MeshCoordinates::MeshCoordinates( int dimension,
 }
 
 //------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( IndexType numNodes, IndexType capacity, 
+MeshCoordinates::MeshCoordinates( IndexType numNodes,
+                                  IndexType capacity,
                                   double* x, double* y, double* z ) :
 #ifdef MINT_USE_SIDRE
   m_group( AXOM_NULLPTR ),
@@ -92,6 +101,12 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes, IndexType capacity,
 
   SLIC_ASSERT( consistencyCheck() );
 }
+
+//------------------------------------------------------------------------------
+MeshCoordinates::MeshCoordinates( IndexType numNodes,
+                                  double* x, double* y, double* z ) :
+    MeshCoordinates( numNodes, numNodes, x, y, z )
+{ }
 
 #ifdef MINT_USE_SIDRE
 //------------------------------------------------------------------------------
@@ -218,7 +233,7 @@ bool MeshCoordinates::consistencyCheck() const
         !utilities::isNearlyEqual( actual_resize_ratio, expected_resize_ratio );
 
     SLIC_WARNING_IF( size_mismatch, "coordinate array size mismatch!" );
-    SLIC_WARNING_IF( component_mismatch, 
+    SLIC_WARNING_IF( component_mismatch,
                                  "coordinate array number of components != 1" );
     SLIC_WARNING_IF( capacity_mismatch, "coordinate array capacity mismatch!" );
     SLIC_WARNING_IF( ratio_mismatch, "coordinate array ratio mismatch!" );

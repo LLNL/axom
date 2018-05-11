@@ -121,6 +121,24 @@ public:
 /// @{
 
   /*!
+   * \brief Creates an empty MeshCoordinates instance of specified dimension.
+   *
+   * \param [in] dimension the mesh dimension, i.e., 1, 2 or 3
+   *
+   * \note The resulting MeshCoordinates object is empty, but, it has initial
+   *  default capacity based on an internal settings.
+   *
+   * \pre 1 <= dimension <= 3
+   *
+   * \post numNodes() == 0
+   * \post empty() == true
+   * \post capacity() > 0
+   * \post getCoordinateArray( i ) != AXOM_NULLPTR \f$ \forall i \in [0,N-1]\f$
+   *  where N is the dimension of the MeshCoordinates object.
+   */
+  explicit MeshCoordinates( int dimension );
+
+  /*!
    * \brief Creates a MeshCoordinates instance of specified dimension and
    *  given number of nodes. Optionally, an initial max capacity may be
    *  specified in the constructor to reserve additional space for storing
@@ -170,8 +188,19 @@ public:
    * \post numNodes() == numNodes
    * \post numNodes() <= capacity()
    */
-  MeshCoordinates( IndexType numNodes, IndexType capacity, double* x,
-                   double* y=AXOM_NULLPTR, double* z=AXOM_NULLPTR );
+  /// @{
+  MeshCoordinates( IndexType numNodes,
+                   IndexType capacity,
+                   double* x,
+                   double* y=AXOM_NULLPTR,
+                   double* z=AXOM_NULLPTR );
+
+  MeshCoordinates( IndexType numNodes,
+                   double* x,
+                   double* y=AXOM_NULLPTR,
+                   double* z=AXOM_NULLPTR  );
+  /// @}
+
 /// @}
 
 /// \name Sidre Constructors
@@ -309,7 +338,7 @@ public:
    * \brief Checks if this MeshCoordinates instance is empty.
    * \return status true if numNodes()==0, else, false.
    */
-  bool empty() const 
+  bool empty() const
   { return numNodes() == 0; }
 
   /*!
@@ -357,7 +386,7 @@ public:
   /*!
    * \brief Appends multiple nodes to the MeshCoordinates instance
    *
-   * \param [in] coords pointer to the nodes to append, of length 
+   * \param [in] coords pointer to the nodes to append, of length
    *  n * getDimension().
    * \param [in] n the number of nodes to append.
    *
@@ -377,7 +406,7 @@ public:
    * \param [in] z array of the third coordinates to append, of length n.
    * \param [in] n the number of coordinates to append.
    *
-   * \note The first method is only valid for 2D meshes while the second 
+   * \note The first method is only valid for 2D meshes while the second
    *  is only for 3D.
    *
    * \pre x != AXOM_NULLPTR
@@ -392,7 +421,7 @@ public:
   void append( const double* x, const double* y, const double* z, IndexType n );
 
   /// @}
-  
+
   /*!
    * \brief Sets the coordinates for the given node.
    *
@@ -411,7 +440,7 @@ public:
   void set( IndexType nodeID, double x, double y, double z );
 
   /// @}
-  
+
   /*!
    * \brief Insert a node to the MeshCoordinates instance.
    *
@@ -431,11 +460,11 @@ public:
   void insert( IndexType nodeID, double x, double y, double z );
 
   /// @}
-  
+
   /*!
    * \brief Inserts multiple nodes to the MeshCoordinates instance
    *
-   * \param [in] coords pointer to the nodes to insert, of length 
+   * \param [in] coords pointer to the nodes to insert, of length
    *  n * getDimension().
    * \param [in] n the number of nodes to append.
    *
@@ -469,7 +498,7 @@ public:
   /// @{
 
   void insert( IndexType nodeID, const double* x, const double* y, IndexType n );
-  void insert( IndexType nodeID, const double* x, const double* y, 
+  void insert( IndexType nodeID, const double* x, const double* y,
                const double* z, IndexType n );
 
   /// @}
@@ -592,7 +621,7 @@ private:
 
 //------------------------------------------------------------------------------
 inline bool MeshCoordinates::isExternal() const
-{ 
+{
   bool is_external = m_coordinates[0]->isExternal();
   bool consistent = true;
   for ( int i = 1; i < m_ndims; ++i )
@@ -601,7 +630,7 @@ inline bool MeshCoordinates::isExternal() const
   }
 
   SLIC_WARNING_IF( !consistent, "External state not consistent." );
-  return is_external; 
+  return is_external;
 }
 
 //------------------------------------------------------------------------------
@@ -688,7 +717,7 @@ inline void MeshCoordinates::append( const double* coords, IndexType n )
     m_coordinates[0]->append( coords, n );
     return;
   }
-  
+
   IndexType original_size = numNodes();
   double* coord_arrays[3];
   for ( int dim = 0; dim < m_ndims; ++dim )
@@ -710,7 +739,7 @@ inline void MeshCoordinates::append( const double* coords, IndexType n )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::append( const double* x, const double* y, 
+inline void MeshCoordinates::append( const double* x, const double* y,
                                      IndexType n )
 {
   SLIC_ASSERT( m_ndims == 2 );
@@ -722,12 +751,12 @@ inline void MeshCoordinates::append( const double* x, const double* y,
 
   m_coordinates[0]->append( x, n );
   m_coordinates[1]->append( y, n );
-  
+
   SLIC_ASSERT( consistencyCheck() );
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::append( const double* x, const double* y, 
+inline void MeshCoordinates::append( const double* x, const double* y,
                                      const double* z, IndexType n )
 {
   SLIC_ASSERT( m_ndims == 3 );
@@ -780,7 +809,7 @@ inline void MeshCoordinates::set( IndexType nodeID, double x, double y )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::set( IndexType nodeID, double x, double y, 
+inline void MeshCoordinates::set( IndexType nodeID, double x, double y,
                                   double z )
 {
   SLIC_ASSERT( dimension() == 3 );
@@ -810,7 +839,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, double x )
   SLIC_ASSERT( dimension() == 1 );
   SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
   SLIC_ASSERT( 0 <= nodeID && nodeID <= numNodes() );
-  
+
   m_coordinates[0]->insert( x, nodeID );
 
   SLIC_ASSERT( consistencyCheck() );
@@ -823,7 +852,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, double x, double y )
   SLIC_ASSERT( m_coordinates[0] != AXOM_NULLPTR );
   SLIC_ASSERT( m_coordinates[1] != AXOM_NULLPTR );
   SLIC_ASSERT( 0 <= nodeID && nodeID <= numNodes() );
-  
+
   m_coordinates[0]->insert( x, nodeID );
   m_coordinates[1]->insert( y, nodeID );
 
@@ -831,7 +860,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, double x, double y )
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::insert( IndexType nodeID, double x, double y, 
+inline void MeshCoordinates::insert( IndexType nodeID, double x, double y,
                                      double z )
 {
   SLIC_ASSERT( dimension() == 3 );
@@ -839,7 +868,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, double x, double y,
   SLIC_ASSERT( m_coordinates[1] != AXOM_NULLPTR );
   SLIC_ASSERT( m_coordinates[2] != AXOM_NULLPTR );
   SLIC_ASSERT( 0 <= nodeID && nodeID <= numNodes() );
-  
+
   m_coordinates[0]->insert( x, nodeID );
   m_coordinates[1]->insert( y, nodeID );
   m_coordinates[2]->insert( z, nodeID );
@@ -848,7 +877,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, double x, double y,
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::insert( IndexType nodeID, const double* coords, 
+inline void MeshCoordinates::insert( IndexType nodeID, const double* coords,
                                      IndexType n )
 {
   SLIC_ASSERT( coords != AXOM_NULLPTR );
@@ -861,7 +890,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, const double* coords,
     m_coordinates[0]->insert( coords, n, nodeID );
     return;
   }
-  
+
   double* coord_arrays[3];
   for ( int dim = 0; dim < m_ndims; ++dim )
   {
@@ -882,7 +911,7 @@ inline void MeshCoordinates::insert( IndexType nodeID, const double* coords,
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::insert( IndexType nodeID, const double* x, 
+inline void MeshCoordinates::insert( IndexType nodeID, const double* x,
                                      const double* y, IndexType n )
 {
   SLIC_ASSERT( m_ndims == 2 );
@@ -895,13 +924,13 @@ inline void MeshCoordinates::insert( IndexType nodeID, const double* x,
 
   m_coordinates[0]->insert( x, n, nodeID );
   m_coordinates[1]->insert( y, n, nodeID );
-  
+
   SLIC_ASSERT( consistencyCheck() );
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::insert( IndexType nodeID, const double* x, 
-                                     const double* y, const double* z, 
+inline void MeshCoordinates::insert( IndexType nodeID, const double* x,
+                                     const double* y, const double* z,
                                      IndexType n )
 {
   SLIC_ASSERT( m_ndims == 3 );
@@ -932,7 +961,7 @@ inline double MeshCoordinates::getCoordinate( IndexType nodeID, int dim ) const
 }
 
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::getCoordinates( IndexType nodeID, 
+inline void MeshCoordinates::getCoordinates( IndexType nodeID,
                                              double* coords ) const
 {
   SLIC_ASSERT( coords != AXOM_NULLPTR );
@@ -997,7 +1026,7 @@ inline void MeshCoordinates::shrink( )
 //------------------------------------------------------------------------------
 // in-line  private method implementations
 //------------------------------------------------------------------------------
-inline void MeshCoordinates::initialize( IndexType numNodes, 
+inline void MeshCoordinates::initialize( IndexType numNodes,
                                          IndexType maxCapacity )
 {
   SLIC_ASSERT( numNodes <= maxCapacity );
