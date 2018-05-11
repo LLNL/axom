@@ -22,9 +22,6 @@
  */
 
 
-#include <iostream>
-#include <iterator>
-
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"        // for AXOM_USE_CXX11
@@ -77,6 +74,28 @@ typedef slam::DynamicConstantRelation<ConstantCardinalityCT>        RelationType
 } //end anonymous namespace
 
 
+/** \brief Utility function to set the value at rel[i][j] to i */
+template<typename DynamicSetType>
+RelationType generateRelation(DynamicSetType& fromSet,
+                              DynamicSetType& toSet)
+{
+  RelationType rel( &fromSet, &toSet);
+
+  const int fromSize = fromSet.size();
+  const int toSize = toSet.size();
+
+  for(int i=0 ; i< fromSize ; ++i)
+  {
+    for(int j=0 ; j< toSize ; ++j)
+    {
+      rel.modify(i,j,i);
+    }
+  }
+
+  return rel;
+}
+
+
 TEST(slam_relation_dynamic_constant,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be false.");
@@ -93,38 +112,146 @@ TEST(slam_relation_dynamic_constant, assignment)
   slam::DynamicSet<> fromSet(FROMSET_SIZE);
   slam::DynamicSet<> toSet(TOSET_SIZE);
 
-  RelationType rel;
+  RelationType rel = generateRelation(fromSet,toSet);
 
-  // Modify the relation values
+  EXPECT_TRUE( rel.isValid(true) );
+
+  const int fromSize = rel.size();
+  EXPECT_EQ( FROMSET_SIZE, fromSize);
+
+  // Check that accessed relation values are as expected
+  for(int i=0 ; i< fromSize ; ++i)
   {
-    RelationType rel_t( &fromSet, &toSet);
+    EXPECT_EQ( rel[i].size(), rel.size(i));
 
-    for(int i=0 ; i<FROMSET_SIZE ; i++)
+    // Test double indirection
     {
-      for(int j=0 ; j<ELEM_STRIDE ; j++)
+      const int relSize = rel.size(i);
+      EXPECT_EQ( ELEM_STRIDE, relSize );
+      for(int j=0 ; j < relSize ; j++)
       {
-        rel_t.modify(i,j,i);
+        EXPECT_EQ( i, rel[i][j]);
       }
     }
 
-    rel = rel_t;
-  }
-
-  EXPECT_TRUE( rel.isValid(true) );
-  EXPECT_EQ( FROMSET_SIZE, rel.size() );
-
-  // Check that accessed relation values are as expected
-  for(int i=0 ; i<rel.size() ; i++)
-  {
-    EXPECT_EQ( ELEM_STRIDE, (int)rel[i].size() );
-    for(int j=0 ; j < (int)rel[i].size() ; j++)
+    // Test RelationSet
     {
-      EXPECT_EQ( i, rel[i][j]);
+      RelationType::RelationSet set = rel[i];
+      const int relSize = set.size();
+      for(int j=0 ; j < relSize ; ++j)
+      {
+        EXPECT_EQ( i, set[j]);
+      }
+
+      EXPECT_EQ(set, rel.at(i));
     }
   }
 
 }
 
+#ifdef AXOM_USE_CXX11
+TEST(slam_relation_dynamic_constant, iterators)
+{
+  SLIC_INFO("Testing iterator interface");
+
+  // Add tests for relation iterators
+  slam::DynamicSet<> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<> toSet(TOSET_SIZE);
+
+  {
+    RelationType rel = generateRelation(fromSet,toSet);
+    const int fromSize = rel.size();
+
+    for(int i=0 ; i< fromSize ; ++i)
+    {
+      ElementType val = i;
+      for(RelationType::RelationIterator it = rel.begin(i), itEnd = rel.end(i) ;
+          it != itEnd ;
+          ++it)
+      {
+        EXPECT_EQ(val, *it);
+      }
+
+      for(RelationType::RelationIteratorPair itPair = rel.range(i) ;
+          itPair.first != itPair.second ;
+          ++itPair.first)
+      {
+        EXPECT_EQ(val, *itPair.first);
+      }
+    }
+  }
+}
+
+TEST(slam_relation_dynamic_constant, const_iterators)
+{
+  SLIC_INFO("Testing iterator interface");
+
+  // Add tests for relation iterators
+  slam::DynamicSet<> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<> toSet(TOSET_SIZE);
+
+  {
+    const RelationType rel = generateRelation(fromSet,toSet);
+    const int fromSize = rel.size();
+
+    for(int i=0 ; i< fromSize ; ++i)
+    {
+      const ElementType val = i;
+      for(RelationType::RelationConstIterator it = rel.begin(i),
+          itEnd = rel.end(i) ;
+          it != itEnd ;
+          ++it)
+      {
+        EXPECT_EQ(val, *it);
+      }
+
+      for(RelationType::RelationConstIteratorPair itPair = rel.range(i) ;
+          itPair.first != itPair.second ;
+          ++itPair.first)
+      {
+        EXPECT_EQ(val, *itPair.first);
+      }
+    }
+  }
+}
+#endif // AXOM_USE_CXX11
+
+TEST(slam_relation_dynamic_constant, remove)
+{
+  SLIC_INFO("Testing ability to remove relations");
+
+  slam::DynamicSet<> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<> toSet(TOSET_SIZE);
+
+  RelationType rel = generateRelation(fromSet,toSet);
+  EXPECT_EQ(rel.size(), rel.numberOfValidEntries());
+
+  const int fromSize = rel.size();
+  int removeCount = 0;
+  for(int i=1 ; i< fromSize ; i+=2)
+  {
+    rel.remove(i);
+    ++removeCount;
+  }
+
+  // Check counts
+  EXPECT_TRUE(rel.isValid());
+  EXPECT_EQ(rel.size() - removeCount, rel.numberOfValidEntries());
+
+  // Test individual relations
+  for(int i=0 ; i< fromSize ; i+=2)
+  {
+    EXPECT_TRUE(rel.isValidEntry(i));
+  }
+
+  for(int i=1 ; i< fromSize ; i+=2)
+  {
+    EXPECT_FALSE(rel.isValidEntry(i));
+  }
+
+
+
+}
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

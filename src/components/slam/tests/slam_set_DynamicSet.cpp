@@ -45,8 +45,8 @@ TEST(slam_set_dynamicset,construct)
   //Set of size 0
   SetType s1(0);
   EXPECT_TRUE(s1.isValid());
-  EXPECT_EQ(0, s1.size());
   EXPECT_TRUE(s1.empty());
+  EXPECT_EQ(0, s1.size());
 
   EXPECT_EQ(s1,s0);
 
@@ -84,19 +84,21 @@ TEST(slam_set_dynamicset,construct_set_builder)
   EXPECT_TRUE( s.isValid());
   EXPECT_EQ( MAX_SET_SIZE, s.size());
 
-  // Construct a first set using size, offset and stride
-  const int ZERO_OFFSET = 0;
-  const int DEFAULT_STRIDE = 1;
-  SetBuilder ok_builder = SetBuilder()
-                          .size(MAX_SET_SIZE)
-                          .offset(ZERO_OFFSET)
-                          .stride(DEFAULT_STRIDE);
-  SetType s2(ok_builder);
-  EXPECT_TRUE( s2.isValid() );
-  EXPECT_EQ(  MAX_SET_SIZE, s2.size());
+  // Construct a set using size, offset and stride
+  {
+    const int ZERO_OFFSET = 0;
+    const int DEFAULT_STRIDE = 1;
+    SetBuilder ok_builder = SetBuilder()
+                            .size(MAX_SET_SIZE)
+                            .offset(ZERO_OFFSET)
+                            .stride(DEFAULT_STRIDE);
+    SetType s2(ok_builder);
+    EXPECT_TRUE(s2.isValid());
+    EXPECT_EQ(MAX_SET_SIZE, s2.size());
 
-  // The two sets should be equal
-  EXPECT_EQ( s, s2);
+    // The two sets should be equal
+    EXPECT_EQ( s, s2);
+  }
 
 #ifdef AXOM_DEBUG
   // Using inappropriate SetBuilder features generates an assert failure
@@ -167,13 +169,15 @@ TEST(slam_set_dynamicset,adding_elements)
 
   SetType s(MAX_SET_SIZE);
 
-  for(SetPosition i = 0 ; i < ADDITIONAL_ADD_SIZE ; i++)
+  for(SetPosition i = 0 ; i < ADDITIONAL_ADD_SIZE ; ++i)
   {
     s.insert();
+    EXPECT_TRUE(s.isValid());
+    EXPECT_EQ((MAX_SET_SIZE + 1) + i, s.size());
   }
 
-  EXPECT_EQ(s.size(), MAX_SET_SIZE + ADDITIONAL_ADD_SIZE);
   EXPECT_TRUE(s.isValid());
+  EXPECT_EQ(MAX_SET_SIZE + ADDITIONAL_ADD_SIZE, s.size());
 }
 
 
@@ -183,25 +187,45 @@ TEST(slam_set_dynamicset,removing_elements)
 
   SetType s(MAX_SET_SIZE);
 
-  for(SetPosition i = 0 ; i < MAX_SET_SIZE ; i+=2) //remove every other entry
+  EXPECT_EQ(MAX_SET_SIZE, s.size());
+  EXPECT_EQ(s.size(), s.numberOfValidEntries());
+
+  //remove every other entry
+  for(SetPosition i = 0 ; i < MAX_SET_SIZE ; i+=2)
   {
     s.remove(i);
   }
 
+  // check size and numberOfValidEntries
   EXPECT_EQ(MAX_SET_SIZE, s.size());
-  EXPECT_EQ(MAX_SET_SIZE / 2, s.numberOfValidEntries() );
+  EXPECT_EQ(MAX_SET_SIZE / 2,  s.numberOfValidEntries());
   EXPECT_TRUE(s.isValid());
 
+  // check valid elements
   for(SetPosition i = 1 ; i < MAX_SET_SIZE ; i+=2)
   {
     EXPECT_EQ( s[i], i );
     EXPECT_TRUE( s.isValidEntry(i) );
   }
 
+  // check removed elements
   for(SetPosition i = 0 ; i < MAX_SET_SIZE ; i+=2)
   {
     EXPECT_EQ( s[i], (int)SetType::INVALID_ENTRY );
     EXPECT_FALSE( s.isValidEntry(i) );
+  }
+
+  // check deletion and restoration of deleted elements
+  {
+    const int setIndex = 2;
+    EXPECT_FALSE( s.isValidEntry(setIndex) );
+    s.remove(setIndex);
+    EXPECT_FALSE( s.isValidEntry(setIndex) );
+
+    SetType::ElementType val = 5;
+    s[setIndex] = val;
+    EXPECT_TRUE( s.isValidEntry(setIndex) );
+    EXPECT_EQ(val, s[setIndex]);
   }
 }
 
@@ -220,6 +244,7 @@ TEST(slam_set_dynamicset, copy_assignment)
       s_cp.remove(i);
     }
 
+    // Assign s_cp into s
     s = s_cp;
     EXPECT_TRUE(s.isValid());
   }
@@ -246,7 +271,7 @@ TEST(slam_set_dynamicset,out_of_bounds_remove)
 {
   SLIC_INFO(
     "Testing out of bounds access using remove() "
-    << "-- code is expected to assert and die.");
+    << "-- code is expected to assert in debug builds.");
 
   SetType s(MAX_SET_SIZE);
 

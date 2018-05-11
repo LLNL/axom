@@ -18,10 +18,12 @@
 /**
  * \file DynamicConstantRelation.hpp
  *
- * \brief API for a topological relation between two sets in which entities from
- * the first set can be related to a constant number of entities from the
- * second set. This relation is dynamic; the related entities can change at
- * runtime.
+ * \brief API for a topological relation between two sets in which entities
+ * from the first set can be related to a constant number of entities from
+ * the second set. For example, in a triangle mesh, each triangle is
+ * incident to three vertices.
+ *
+ * This relation is dynamic; the related entities can change at runtime.
  */
 
 #ifndef SLAM_DYNAMIC_CONSTANT_RELATION_HPP_
@@ -46,12 +48,20 @@ namespace slam
 /**
  * \class DynamicConstantRelation
  * \brief  A relation class with constant cardinality that supports
- * adding/removing set relations.
+ * adding, removing and modifying set relations.
  *
- * \detail An entry is considered valid if its set's entry is valid
- * and at least one of its relation is valid (ie. not equal to INVALID_INDEX).
+ * A DynamicConstantRelation encodes the relation between two sets,
+ * A FromSet and a ToSet, where the cardinality of the relation from
+ * each element of the FromSet to the ToSet is fixed to a constant value.
+ * For example, each triangle in the triangle set of a triangle mesh
+ * has three incident vertices from set of vertices.
  *
- * \note The current implementation fixes the value of INVALID_INDEX to -1.
+ * The relation from an element of the FromSet to an element
+ * of the ToSet is considered to be valid if its entry in the FromSet
+ * is valid and at least one of its relation entities in the ToSet is valid
+ * (i.e. not equal to INVALID_INDEX).
+ *
+ * \note The current implementation fixes the value of INVALID_INDEX.
  * A future update will allow users to set the value of INVALID_INDEX to a
  * more convenient value, when necessary.
  */
@@ -61,7 +71,7 @@ class DynamicConstantRelation : public /*Relation,*/ CardinalityPolicy
 public:
   enum
   {
-    INVALID_INDEX = -1
+    INVALID_INDEX = ~0  ///< value to mark indices of deleted elements
   };
 
   typedef Relation::SetPosition SetPosition;
@@ -102,7 +112,8 @@ public:
   }
 
   /**
-   * \brief construct a DynamicConstantRelation from the given fromSet to toSet
+   * \brief Construct a DynamicConstantRelation from the given \a fromSet
+   * to \a toSet
    */
   DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
     : CardinalityPolicy(
@@ -122,31 +133,79 @@ public:
   /// \name DynamicConstantRelation iterator interface
   /// @{
 
+  /**
+   * \brief Returns a begin iterator to the set of entities in the ToSet
+   * that are related to the element with index \a fromSetInd in the FromSet
+   *
+   * \param fromSetInd The index of the element in the FromSet
+   * \return A begin iterator to the set of related elements in ToSet
+   */
   RelationIterator          begin(SetPosition fromSetInd)
   {
+    verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
   }
 
+  /**
+   * \brief Returns a const begin iterator to the set of entities in the ToSet
+   * that are related to the element with index \a fromSetInd in the FromSet
+   *
+   * \param fromSetInd The index of the element in the FromSet
+   * \return A const begin iterator to the set of related elements in ToSet
+   */
   RelationConstIterator     begin(SetPosition fromSetInd ) const
   {
+    verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
   }
 
+  /**
+   * \brief Returns an end iterator to the set of entities in the ToSet
+   * that are related to the element with index \a fromSetInd in the FromSet
+   *
+   * \param fromSetInd The index of the element in the FromSet
+   * \return An end iterator to the set of related elements in ToSet
+   */
   RelationIterator          end(SetPosition fromSetInd)
   {
+    verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
   }
 
+  /**
+   * \brief Returns a const end iterator to the set of entities in the ToSet
+   * that are related to the element with index \a fromSetInd in the FromSet
+   *
+   * \param fromSetInd The index of the element in the FromSet
+   * \return A const end iterator to the set of related elements in ToSet
+   */
   RelationConstIterator     end(SetPosition fromSetInd)    const
   {
+    verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
   }
 
+  /**
+   * \brief Returns an iterator range to the set of entities in the ToSet
+   * that are related to the element with index \a fromSetInd in the FromSet
+   *
+   * \param fromSetInd The index of the element in the FromSet
+   * \return An iterator range (begin/end pair) to the set of related
+   * elements in ToSet
+   */
   RelationIteratorPair      range(SetPosition fromSetInd)
   {
     return (*this)[fromSetInd].range();
   }
 
+  /**
+   * \brief Returns a const iterator range to the set of entities in the ToSet
+   * that are related to the element with index \a fromSetInd in the FromSet
+   *
+   * \param fromSetInd The index of the element in the FromSet
+   * \return A const iterator range (begin/end pair) to the set of related
+   * elements in ToSet
+   */
   RelationConstIteratorPair range(SetPosition fromSetInd)  const
   {
     return (*this)[fromSetInd].range();
@@ -158,14 +217,29 @@ public:
 
 public:
 
+  /// \name DynamicConstantRelation per-element relation access functions
+  /// @{
+  ///
+
+  /**
+   * \brief Returns the const set of entities in the ToSet related to the
+   * element with index \a fromSetIndex in the FromSet
+   * \param fromSetIndex The index of an element in the FromSet
+   */
   RelationSet const at(SetPosition fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return operator[](fromSetIndex);
   }
 
+  /**
+   * \brief Returns the const set of entities in the ToSet related to the
+   * element with index \a fromSetIndex in the FromSet
+   * \param fromSetIndex The index of an element in the FromSet
+   */
   RelationSet const operator[](SetPosition fromSetIndex) const
   {
+    verifyPosition(fromSetIndex);
     typedef typename RelationSet::SetBuilder SetBuilder;
     return SetBuilder()
            //.size( CardinalityPolicy::size(fromSetIndex) )
@@ -175,17 +249,41 @@ public:
            .data( &m_relationsVec);
   }
 
+  /**
+   * \brief Returns the cardinality of the set of entities in the ToSet
+   * related to the element with index \a fromSetIndex in the FromSet
+   * \param fromSetIndex The index of an element in the FromSet
+   */
   SetPosition size(SetPosition fromSetIndex ) const
   {
     verifyPosition(fromSetIndex);
     return m_relationCardinality;
   }
 
+  /// @}
+
+  /**
+   * \brief Returns the cardinality of the FromSet
+   */
   SetPosition size() const
   {
     return m_relationsVec.size() / m_relationCardinality;
   }
 
+public:
+
+  /// \name DynamicConstantRelation validity check functions
+  /// @{
+  ///
+
+  /**
+   * \brief Returns the number of valid entries in the FromSet
+   *
+   * An element of the FromSet is considered valid with respect to a
+   * DynamicConstantRelation when it is valid in the FromSet and when
+   * its relation set is not marked as invalid.
+   * \sa isValidEntry()
+   */
   SetPosition numberOfValidEntries() const
   {
     SetPosition nvalid = 0;
@@ -214,10 +312,26 @@ public:
     return false;
   }
 
+  /**
+   * \brief Predicate to check if the DynamicConstantRelation instance is valid
+   */
   bool isValid(bool verboseOutput = false) const;
 
-public:   // Modifying functions
+  /// @}
 
+public:
+
+  /// \name DynamicConstantRelation functions that modify the relation
+  /// @{
+  ///
+
+  /**
+   * \brief Inserts a new entry into the relation at the first
+   * invalid index
+   * \param fromSetIndex The index of the element in the FromSet
+   * \param toSetIndex The index of the element in the ToSet
+   * to associate with \a fromSetIndex
+   */
   void insert(SetPosition fromSetIndex, SetPosition toSetIndex)
   {
     expandSizeIfNeeded(fromSetIndex+1);
@@ -244,13 +358,14 @@ public:   // Modifying functions
 
   /**
    * \brief Function to modify the value at offset \a offset of the
-   * fromSet index \fromSetIndex to the value \a toSetIndex
+   * FromSet index \fromSetIndex to the value \a toSetIndex
    *
-   * \note This is a temporary stopgap function until operator[]
+   * \note This is a temporary function until operator[]
    *  allows us to modify values.
    *
-   * \detail This should be replaced with operator[] which returns a non-const
-   * RelationSet so users can do relation[fromSetIndex][offset] = toSetIndex;
+   * This should be replaced with operator[] which returns a non-const
+   * RelationSet so users can more naturally update the relation.
+   * E.g. relation[fromSetIndex][offset] = toSetIndex;
    */
   void modify(SetPosition fromSetIndex,
               SetPosition offset,
@@ -274,27 +389,21 @@ public:   // Modifying functions
     }
   }
 
+  /// @}
+
 public:
-  /**
-   * \brief Access the set of positions in the 'toSet'
-   * associated with the given position in 'fromSet'
-   *
-   * \param fromSetPos The position within the 'fromSet' whose relation data
-   * (in the 'toSet') we are requesting
-   */
+  /** \brief Direct access to the relation data  */
   RelationVec &       data()       { return m_relationsVec; }
 
-  /**
-   * \brief Access the set of positions in the 'toSet' associated with the given
-   * position in 'fromSet'
-   *
-   * \param fromSetPos The position within the 'fromSet' whose relation data
-   * (in the 'toSet') we are requesting
-   */
+  /** \brief Direct const access to the relation data  */
   const RelationVec & data() const { return m_relationsVec; }
 
 private:
 
+  /**
+   * \brief Helper function to expand the relation data storage
+   * \param s The requested size
+   */
   void expandSizeIfNeeded(SetPosition s)
   {
     if(s > (int)m_relationsVec.size()/m_relationCardinality)
@@ -303,6 +412,10 @@ private:
     }
   }
 
+  /**
+   * \brief Debug check that an index in the FromSet is not out-of-range
+   * \param fromSetIndex An (alleged) index in the FromSet
+   */
   inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex))
   const
   {
@@ -312,7 +425,6 @@ private:
       "Index " << fromSetIndex
                << " out of range [0," << m_fromSet->size() <<  ")");
   }
-
 
 private:
 
@@ -324,9 +436,7 @@ private:
 };
 
 
-/**
- * \brief Checks whether the relation is valid.
- */
+/* Checks whether the relation is valid.  */
 template<typename CardinalityPolicy>
 bool DynamicConstantRelation<CardinalityPolicy>::isValid(bool verboseOutput)
 const

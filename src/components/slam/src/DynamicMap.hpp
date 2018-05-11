@@ -20,7 +20,6 @@
 
 #include <vector>
 #include <sstream>
-#include <iostream>
 
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
@@ -34,15 +33,15 @@ namespace axom
 namespace slam
 {
 
-
 /**
- * \brief A map that supports adding and removing entries.
+ * \class DynamicMap
+ * \brief A slam map class that supports adding and removing entries.
  *
  * \detail An entry in the map is considered valid if
  * its corresponding set's entry is valid
  */
 template<typename DataType>
-class DynamicMap : public Map<DataType>
+class DynamicMap
 {
 
 public:
@@ -52,55 +51,115 @@ public:
   typedef std::vector<DataType> OrderedMap;
 
 public:
+  /** \brief Default constructor   */
   DynamicMap() : m_set(AXOM_NULLPTR){}
 
+  /**
+   * \brief Constructor from a set pointer
+   *
+   * \param theSet A pointer to the map's set
+
+   * The map will be allocated with theSet->size() entries.
+   * There is no guarantee that the values will be initialized
+   */
   DynamicMap(DynamicSet<>* theSet ) : m_set(theSet)
   {
-    m_data.resize( m_set->size());
+    if(m_set != AXOM_NULLPTR)
+    {
+      m_data.resize( m_set->size());
+    }
   }
 
+  /**
+   * \brief Constructor from a set pointer
+   *
+   * \param theSet A pointer to the map's set
+   * \param defaultValue The value that each entry in the map will
+   * be initialized
+   *
+   * The map will be allocated with \a theSet->size() entries.
+   * Each entry will have value \a defaultValue
+   */
   DynamicMap(DynamicSet<>* theSet, DataType defaultValue) : m_set(theSet)
   {
-    m_data.resize( m_set->size(), defaultValue );
+    if(m_set != AXOM_NULLPTR)
+    {
+      m_data.resize( m_set->size(), defaultValue );
+    }
   }
 
   ~DynamicMap(){}
 
+public:
+
+  /** \brief Returns a pointer to the map's underlying set */
+  const Set* set() const { return m_set; }
+
+  /// \name DynamicMap individual access functions
+  /// @{
+  ///
+
+  /** \brief Return the value at set index \a setIndex   */
   const DataType & operator[](SetPosition setIndex) const
   {
     verifyPosition(setIndex);
     return m_data[setIndex];
   }
 
-  SetPosition numberOfValidEntries() const
-  {
-    return m_set->numberOfValidEntries();
-  }
+  /// @}
 
-  bool isValidEntry(SetPosition pos) const
-  {
-    if( m_set == AXOM_NULLPTR )
-      return false;
-
-    return m_set->isValidEntry( pos );
-  }
-
-  SetPosition size() const {
-    return m_data.size();
-  }
-
+  /** \brief Access to underlying data */
   OrderedMap & data(){
     return m_data;
   }
 
+  /** \brief Const access to underlying data */
   const OrderedMap & data() const {
     return m_data;
   }
 
+
+  /// \name DynamicMap cardinality functions
+  /// @{
+
+  /** \brief Returns the size of map's set */
+  SetPosition size() const {
+    return m_data.size();
+  }
+
+  /**
+   * \brief Return the number of valid entries
+   *
+   * An entry at a given index is considered valid if corresponding
+   * set element is valid.
+   */
+  SetPosition numberOfValidEntries() const
+  {
+    return (m_set != AXOM_NULLPTR)
+           ? m_set->numberOfValidEntries()
+           : 0;
+  }
+
+  /// @}
+
+  /// \name DynamicMap validity check functions
+  /// @{
+
+  bool isValidEntry(SetPosition pos) const
+  {
+    return (m_set != AXOM_NULLPTR )
+           ? m_set->isValidEntry( pos )
+           : false;
+  }
+
+  /** \brief Predicate to check if this DynamicMap instance if valid */
   bool isValid(bool verboseOutput = false) const;
+
+  /// @}
 
 private:
 
+  /** \brief Debug check that the index is not out of range    */
   inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIndex))       const
   {
     SLIC_ASSERT_MSG(
@@ -109,16 +168,22 @@ private:
       << setIndex << " but map's set has size " << m_data.size() );
 
     SLIC_ASSERT_MSG(
-      m_set != AXOM_NULLPTR && m_set->isValidEntry( setIndex),
-      "Attempted to access entry "
-      << setIndex << " but the set entry is invalid" );
+      isValidEntry( setIndex),
+      "Attempted to access invalid set entry " << setIndex  );
   }
 
 public:
-  /* Modifying functions */
+  /// \name Functions that modify the map's cardinality
+  /// @{
+
+  /**
+   * \brief Get the value at position \a position
+   *
+   * \note Increases the map size if position is out of range
+   */
   DataType & operator[](SetPosition position)
   {
-    if((int)m_data.size() < position+1 )
+    if( size() < position+1 )
     {
       resize( position + 1 );
     }
@@ -126,15 +191,36 @@ public:
     return m_data[position];
   }
 
+  /**
+   * \brief Insert vale \a value into position \a position in the map
+   *
+   * \note Increases the map size if position is out of range
+   */
   void insert(SetPosition position, DataType value){
     operator[]( position ) = value;
   }
 
-  void resize(SetPosition s){
-    SLIC_ASSERT_MSG( s >= 0,
-                     "Attempted to resize vector with a negative size " << s );
+  /**
+   * \brief Resizes the map to have at least \a s positions
+   * \param s The minimum necessary capacity for resizing
+   * \pre s >= 0
+   */
+  void resize(SetPosition s)
+  {
+    // Note (KW): For this to be a valid DynamicMap operation,
+    // we would need to also increase the size of the map's set!
+
+    // Note (KW): Do we want this to shrink the size of the map
+    // when s < size() ?
+
+    SLIC_ASSERT_MSG(
+      s >= 0,
+      "Attempted to resize vector with a negative size " << s );
+
     m_data.resize(s);
   }
+
+  /// @}
 
 private:
   DynamicSet<>* m_set;
