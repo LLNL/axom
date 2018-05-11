@@ -18,12 +18,11 @@
 /*!
  * \file in_sphere.hpp
  *
- * \brief Consists of methods that test whether a point is inside a sphere
- * defined by points.
+ * \brief Consists of methods that test whether a given query point is
+ * inside the unique sphere circumscribing a 2D triangle or a 3D tetrahehdron.
  *
- * This is a well known computational geometry primitive, and can be found in
- * Section 3.1.6.4 in "Real-time collision detection" by C. Ericson
- *
+ * This is a well known computational geometry primitive.  For reference,
+ * see Section 3.1.6.4 in "Real-time collision detection" by C. Ericson.
  */
 
 #ifndef IN_SPHERE_H_
@@ -38,16 +37,20 @@ namespace primal
 {
 
 /*!
- * \brief Tests whether a query point is inside a 2D sphere (circle)
+ * \brief Tests whether a query point lies inside a 2D triangle's circumcircle
+ *
+ * A triangle's circumscircle is the unique circle (i.e. a 2-sphere) that
+ * passes through each of its three vertices.
  *
  * \param [in] q the query point
- * \param [in] p0 first point that defines a circle
- * \param [in] p1 second point that defines a circle
- * \param [in] p2 third point that defines a circle
- * \return true if the point is inside the circle, false otherwise
+ * \param [in] p0 the first vertex of the triangle
+ * \param [in] p1 the second vertex of the triangle
+ * \param [in] p2 the third vertex of the triangle
+ * \return true if the point is inside the circumcircle, false if it is on
+ * the circle's boundary or outside the circle
  */
 template < typename T >
-inline bool in_sphere( const Point< T, 2 >& q,
+inline bool in_sphere( const Point< T, 2 >&  q,
                        const Point< T, 2 >& p0,
                        const Point< T, 2 >& p1,
                        const Point< T, 2 >& p2)
@@ -63,17 +66,22 @@ inline bool in_sphere( const Point< T, 2 >& q,
 
 
 /*!
- * \brief Tests whether a query point is inside a 3D sphere
+ * \brief Tests whether a query point lies inside a 3D tetrahedron's
+ * circumsphere
+ *
+ * A tetrahedron's circumsphere is the unique sphere that passes through each
+ * of its four vertices.
  *
  * \param [in] q the query point
- * \param [in] p0 first point that defines a sphere
- * \param [in] p1 second point that defines a sphere
- * \param [in] p2 third point that defines a sphere
- * \param [in] p3 fourth point that defines a sphere
- * \return true if the point is inside the sphere, false otherwise
+ * \param [in] p0 the first vertex of the tetrahedron
+ * \param [in] p1 the second vertex of the tetrahedron
+ * \param [in] p2 the third vertex of the tetrahedron
+ * \param [in] p3 the fourth vertex of the tetrahedron
+ * \return true if the point is inside the circumsphere, false if it is on
+ * the sphere's boundary or outside the sphere
  */
 template < typename T >
-inline bool in_sphere( const Point< T, 3 >& q,
+inline bool in_sphere( const Point< T, 3 >&  q,
                        const Point< T, 3 >& p0,
                        const Point< T, 3 >& p1,
                        const Point< T, 3 >& p2,
