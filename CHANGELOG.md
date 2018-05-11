@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Axom now exports [sparsehash version 2.0.3](https://github.com/sparsehash/sparsehash).
   Previously, it was only used internally.
 - Added a BitSet class to Slam.
+- Added a Tetrahedron primitive to Primal.
+- Added an in_sphere operator to Primal.  in_sphere is a predicate that
+  is used extensively for Delaunay triangulations.
 
 ### Changed
 - Refactored and cleaned up Primal's Sphere class.
