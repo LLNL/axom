@@ -372,7 +372,7 @@ public:
    *
    * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
-   * 
+   *
    * \sa sidre::IndexType
    * \sa sidre::indexIsValid()
    */

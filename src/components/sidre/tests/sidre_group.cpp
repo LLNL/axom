@@ -102,7 +102,7 @@ TEST(sidre_group,get_path_name)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
   EXPECT_EQ(root->getParent(), root);
-  const Group * croot = ds->getRoot();
+  const Group* croot = ds->getRoot();
   EXPECT_EQ(croot, root);
   EXPECT_EQ(root->getName(), "");
   Group* group = root->createGroup("test/a/b/c");
@@ -493,8 +493,8 @@ TEST(sidre_group, iterate_groups)
   (void) parent->createGroup("g4");
 
   int groupcount = 0;
-  for (IndexType idx = parent->getFirstValidGroupIndex();
-       indexIsValid(idx);
+  for (IndexType idx = parent->getFirstValidGroupIndex() ;
+       indexIsValid(idx) ;
        idx = parent->getNextValidGroupIndex(idx))
   {
     groupcount += 1;

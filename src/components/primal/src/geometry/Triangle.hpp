@@ -45,7 +45,7 @@ template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os, const Triangle< T,NDIMS > & tri);
 
 /*!
- * \class
+ * \class Triangle
  *
  * \brief Represents a triangular geometric shape defined by three points.
  * \tparam T the coordinate type, e.g., double, float, etc.
@@ -270,7 +270,7 @@ public:
       return false;
     }
 
-    Point< T,3 > bC= physToBarycentric(p);
+    Point< double,3 > bC= physToBarycentric(p);
     return ((bC[0]>=(0.0-eps)) && (bC[1] >= (0.0-eps)) && (bC[2]>=(0.0-eps)) &&
             (bC[0]<=(1.0+eps)) && (bC[1] <= (1.0+eps)) && (bC[2]<=(1.0+eps)));
   }
