@@ -76,7 +76,9 @@ public:
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) )
-  { initialize(); }
+  { 
+    initialize(); 
+  }
 
   /*!
    * \brief Constructs an Unstructured mixed topology mesh.
@@ -139,9 +141,7 @@ public:
    * \post getNodeCapacity() == node_capacity
    * \post isExternal() == true
    */
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
-                    int >::type ndims, CellType cell_type,
+  UnstructuredMesh( int ndims, CellType cell_type,
                     IndexType n_cells, IndexType cell_capacity, 
                     IndexType* connectivity, IndexType n_nodes, 
                     IndexType node_capacity, double* x, double* y=AXOM_NULLPTR, 
@@ -151,6 +151,9 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
                                                cell_capacity ) )
   { 
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE, 
+                "This constructor is only active for single topology meshes." );
+
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 3 || z != AXOM_NULLPTR );
@@ -188,9 +191,7 @@ public:
    * \post getNodeCapacity() == node_capacity
    * \post isExternal() == true
    */
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
-                    int >::type ndims, IndexType n_cells, IndexType cell_capacity,
+  UnstructuredMesh( int ndims, IndexType n_cells, IndexType cell_capacity,
                     IndexType connectivity_capacity, IndexType* connectivity, 
                     IndexType* offsets, CellType* types, IndexType n_nodes,
                     IndexType node_capacity, double* x, double* y=AXOM_NULLPTR,
@@ -201,6 +202,9 @@ public:
                                                types, cell_capacity,  
                                                connectivity_capacity ) )
   {
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED, 
+                "This constructor is only active for mixed topology meshes." );
+
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 3 || z != AXOM_NULLPTR );
@@ -226,19 +230,12 @@ public:
    * \note If a topology name is not provided, the implementation will construct
    *  a mesh based on the 1st topology group under the parent "topologies"
    *  group.
-   * \note The first two constructors are only active when 
-   *  TOPO == Topology::SINGLE and the last two are active only when
-   *  TOPO == Topology::MIXED.
    *
    * \pre group != AXOM_NULLPTR.
    * \pre blueprint::validRootGroup( group ) == true
    * \post isInSidre() == true
    */
-  /// @{
-
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
-                    sidre::Group* >::type group, const std::string& topo ) :
+  UnstructuredMesh( sidre::Group* group, const std::string& topo="" ) :
     Mesh( group, topo ),
     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
     m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
@@ -246,36 +243,13 @@ public:
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH, 
             "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
+    if ( TOPO == Topology::MIXED )
+    {
+      m_has_mixed_topology = true;
+    }
+
     initialize();
   }
-
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
-                    sidre::Group* >::type group ) :
-    UnstructuredMesh( group, "" )
-  {}
-
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
-                    sidre::Group* >::type group, const std::string& topo ) :
-    Mesh( group, topo ),
-    m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
-    m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
-  {
-    SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH, 
-            "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
-
-    m_has_mixed_topology = true;
-    initialize();
-  }
-
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
-                    sidre::Group* >::type group ) :
-    UnstructuredMesh( group, "" )
-  {}
-
-  /// @}
 
   /*!
    * \brief Constructor for use with an empty group.
@@ -306,9 +280,7 @@ public:
    */
   /// @{
 
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
-                    int >::type ndims, CellType cell_type, sidre::Group* group,
+  UnstructuredMesh( int ndims, CellType cell_type, sidre::Group* group,
                     const std::string& topo, const std::string& coordset,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT ) :
@@ -318,21 +290,19 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(), 
                                                m_coordset, cell_capacity ) )
   {
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE, 
+                "This constructor is only active for single topology meshes." );
     initialize();
   }
 
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE, 
-                    int >::type ndims, CellType cell_type, sidre::Group* group,
+  UnstructuredMesh( int ndims, CellType cell_type, sidre::Group* group,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT ) :
     UnstructuredMesh( ndims, cell_type, group, "", "", node_capacity, 
                       cell_capacity )
   {}
 
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
-                    int >::type ndims, sidre::Group* group,
+  UnstructuredMesh( int ndims, sidre::Group* group,
                     const std::string& topo, const std::string& coordset,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT,
@@ -344,13 +314,14 @@ public:
                                                cell_capacity,
                                                connectivity_capacity ) )
   {
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED, 
+                "This constructor is only active for mixed topology meshes." );
+
     m_has_mixed_topology = true;
     initialize();
   }
 
-  template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED, 
-                    int >::type ndims, sidre::Group* group,
+  UnstructuredMesh( int ndims, sidre::Group* group,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT,
                     IndexType connectivity_capacity=USE_DEFAULT ) :
