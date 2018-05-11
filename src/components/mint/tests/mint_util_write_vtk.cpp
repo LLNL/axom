@@ -30,6 +30,7 @@
 #include "mint/UniformMesh.hpp"         /* for UniformMesh */
 #include "mint/UnstructuredMesh.hpp"    /* for UnstructuredMesh */
 #include "mint/vtk_utils.hpp"           /* for write_vtk */
+#include "mint/utils.hpp"               /* for random_double */
 #include "slic/slic.hpp"                /* for slic macros */
 #include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
@@ -40,12 +41,6 @@
 #include <string>                       /* for std::string */
 #include <sstream>                      /* for std::stringstream */
 #include <set>                          /* for std::set */
-
-#if __cplusplus >= 201103L
-#include <random>                       /* for random number generator */
-#else
-#include <cstdlib>                      /* for rand */
-#endif
 
 #ifndef DELETE_VTK_FILES
   #define DELETE_VTK_FILES 1
@@ -61,24 +56,6 @@ namespace mint
 //------------------------------------------------------------------------------
 namespace internal
 {
-
-/*!
- * \brief Return a random double between min and max.
- * \param [in] min the lower bound.
- * \param [in] max the upper bound.
- */
-double randomD(double min, double max)
-{
-#if __cplusplus >= 201103L
-  static std::random_device rd;
-  static std::mt19937_64 mt( rd() );
-  static std::uniform_real_distribution< double > dist(0.0, 1.0);
-  double temp = dist(mt);
-#else
-  double temp = ( double( rand() ) / RAND_MAX );
-#endif
-  return temp * (max - min) + min;
-}
 
 /*!
  * \brief Creates artificial 1 dimensional mesh data.
@@ -1034,9 +1011,9 @@ TEST( mint_util_write_vtk, CurvilinearMesh3D )
       for ( IndexType k = 0 ; k < ext_size[2] ; ++k )
       {
         IndexType idx = c_mesh->getLinearIndex( i, j, k );
-        double x = i + internal::randomD( -0.45, 0.45 );
-        double y = j + internal::randomD( -0.45, 0.45 );
-        double z = k + internal::randomD( -0.45, 0.45 );
+        double x = i + mint::random_double( -0.45, 0.45 );
+        double y = j + mint::random_double( -0.45, 0.45 );
+        double z = k + mint::random_double( -0.45, 0.45 );
         x_coords[ idx ] = x;
         y_coords[ idx ] = y;
         z_coords[ idx ] = z;
@@ -1077,8 +1054,8 @@ TEST( mint_util_write_vtk, CurvilinearMesh2D )
     for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
     {
       IndexType idx = c_mesh->getLinearIndex( i, j );
-      double x = i + internal::randomD( -0.45, 0.45 );
-      double y = j + internal::randomD( -0.45, 0.45 );
+      double x = i + mint::random_double( -0.45, 0.45 );
+      double y = j + mint::random_double( -0.45, 0.45 );
       x_coords[ idx ] = x;
       y_coords[ idx ] = y;
     }
@@ -1114,7 +1091,7 @@ TEST( mint_util_write_vtk, CurvilinearMesh1D )
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   for ( IndexType idx = 0 ; idx < ext_size[0] ; ++idx )
   {
-    double x = idx + internal::randomD( -0.45, 0.45 );
+    double x = idx + mint::random_double( -0.45, 0.45 );
     x_coords[ idx ] = x;
   }
 
@@ -1153,9 +1130,9 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
     {
       for ( IndexType idz = 0 ; idz < nz ; ++idz )
       {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
+        double x = idx + mint::random_double( -0.45, 0.45 );
+        double y = idy + mint::random_double( -0.45, 0.45 );
+        double z = idz + mint::random_double( -0.45, 0.45 );
         u_mesh->appendNode( x, y, z );
       }
     }
@@ -1215,8 +1192,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
   {
     for ( IndexType idy = 0 ; idy < ny ; ++idy )
     {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
+      double x = idx + mint::random_double( -0.45, 0.45 );
+      double y = idy + mint::random_double( -0.45, 0.45 );
       u_mesh->appendNode( x, y );
     }
   }
@@ -1263,7 +1240,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    double x = idx + internal::randomD( 0.45, 0.45 );
+    double x = idx + mint::random_double( 0.45, 0.45 );
     u_mesh->appendNode( x );
   }
 
@@ -1314,9 +1291,9 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
     {
       for ( IndexType idz = 0 ; idz < nz ; ++idz )
       {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
+        double x = idx + mint::random_double( -0.45, 0.45 );
+        double y = idy + mint::random_double( -0.45, 0.45 );
+        double z = idz + mint::random_double( -0.45, 0.45 );
         u_mesh->appendNode( x, y, z );
       }
     }
@@ -1426,8 +1403,8 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
   {
     for ( IndexType idy = 0 ; idy < ny ; ++idy )
     {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
+      double x = idx + mint::random_double( -0.45, 0.45 );
+      double y = idy + mint::random_double( -0.45, 0.45 );
       u_mesh->appendNode( x, y );
     }
   }
@@ -1501,9 +1478,9 @@ TEST( mint_util_write_vtk, ParticleMesh3D )
 
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    x[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
-    y[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
-    z[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
+    x[ i ] = 10.0 * mint::random_double( 0.0, 1.0 );
+    y[ i ] = 10.0 * mint::random_double( 0.0, 1.0 );
+    z[ i ] = 10.0 * mint::random_double( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1535,8 +1512,8 @@ TEST( mint_util_write_vtk, ParticleMesh2D )
 
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    x[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
-    y[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
+    x[ i ] = 10.0 * mint::random_double( 0.0, 1.0 );
+    y[ i ] = 10.0 * mint::random_double( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1567,7 +1544,7 @@ TEST( mint_util_write_vtk, ParticleMesh1D )
 
   for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    x[ i ] = 10.0 * internal::randomD( 0.0, 1.0 );
+    x[ i ] = 10.0 * mint::random_double( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
