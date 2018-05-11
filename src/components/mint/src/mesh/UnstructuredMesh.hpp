@@ -742,7 +742,7 @@ public:
    *  getNumberOfCells() + 1. Returns AXOM_NULLPTR if
    *  TOPO == Topology::SINGLE.
    */
-  const IndexType* getOffsetsArray() const
+  const IndexType* getCellOffsetsArray() const
   { return m_cell_connectivity->getOffsetPtr(); }
 
   /*!
@@ -750,7 +750,7 @@ public:
    *  getNumberOfCells(). Returns AXOM_NULLPTR if
    *  TOPO == Topology::SINGLE.
    */
-  const CellType* getTypesArray() const
+  const CellType* getCellTypesArray() const
   { return m_cell_connectivity->getTypePtr(); }
 
   /*!

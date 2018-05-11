@@ -340,8 +340,8 @@ void deleteExternalMesh( UnstructuredMesh< TOPO >*& mesh )
   }
 
   const IndexType* connectivity = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getOffsetsArray();
-  const CellType* types = mesh->getTypesArray();
+  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const CellType* types = mesh->getCellTypesArray();
 
   double* f1 = AXOM_NULLPTR;
   double* f2 = AXOM_NULLPTR;
@@ -472,8 +472,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< Topology::MIXED >*& mesh 
   const IndexType cell_capacity = mesh->getCellCapacity();
   const IndexType connec_capacity = mesh->getCellConnectivityCapacity();
   IndexType* connectivity = mesh->getCellConnectivityArray();
-  IndexType* offsets = const_cast< IndexType* >( mesh->getOffsetsArray() );
-  CellType* types = const_cast< CellType* >( mesh->getTypesArray() );
+  IndexType* offsets = const_cast< IndexType* >( mesh->getCellOffsetsArray() );
+  CellType* types = const_cast< CellType* >( mesh->getCellTypesArray() );
   const IndexType n_nodes = mesh->getNumberOfNodes();
   const IndexType node_capacity = mesh->getNodeCapacity();
   double* x = mesh->getCoordinateArray( X_COORDINATE );
@@ -523,8 +523,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< Topology::MIXED >*& mesh 
   EXPECT_EQ( n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cell_capacity, mesh->getCellCapacity() );
   EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
-  EXPECT_EQ( offsets, mesh->getOffsetsArray() );
-  EXPECT_EQ( types, mesh->getTypesArray() );
+  EXPECT_EQ( offsets, mesh->getCellOffsetsArray() );
+  EXPECT_EQ( types, mesh->getCellTypesArray() );
   EXPECT_EQ( n_nodes, mesh->getNumberOfNodes() );
   EXPECT_EQ( node_capacity, mesh->getNodeCapacity() );
   EXPECT_EQ( x, mesh->getCoordinateArray( X_COORDINATE ) );
@@ -1214,8 +1214,8 @@ void check_append_cells( const UnstructuredMesh< Topology::MIXED >* mesh,
 
   /* Check using pointers */
   const IndexType* connectivity = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getOffsetsArray();
-  const CellType* types = mesh->getTypesArray();
+  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const CellType* types = mesh->getCellTypesArray();
   for ( IndexType i = 0; i < n_cells; ++i )
   {
     CellType expected_type = getCellType( i );
@@ -2115,16 +2115,16 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   IndexType connec_capacity = mesh->getCellConnectivityCapacity();
   double resize_ratio = mesh->getCellResizeRatio();
   const IndexType* connectivity = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getOffsetsArray();
-  const CellType* types = mesh->getTypesArray();
+  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const CellType* types = mesh->getCellTypesArray();
 
   /* Fill up the array */
   append_cell_multiple( mesh, cell_capacity - n_cells );
   n_cells = cell_capacity;
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
-  EXPECT_EQ( offsets, mesh->getOffsetsArray() );
-  EXPECT_EQ( types, mesh->getTypesArray() );
+  EXPECT_EQ( offsets, mesh->getCellOffsetsArray() );
+  EXPECT_EQ( types, mesh->getCellTypesArray() );
   if ( connec_capacity == mesh->getCellConnectivityCapacity() )
   {
     EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
@@ -2163,14 +2163,14 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   mesh->reserveCells( cell_capacity );
   connec_capacity = mesh->getCellConnectivityCapacity();
   connectivity = mesh->getCellConnectivityArray();
-  offsets = mesh->getOffsetsArray();
-  types = mesh->getTypesArray();
+  offsets = mesh->getCellOffsetsArray();
+  types = mesh->getCellTypesArray();
   append_cell_multiple( mesh, cell_capacity - n_cells );
   n_cells = cell_capacity;
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
-  EXPECT_EQ( offsets, mesh->getOffsetsArray() );
-  EXPECT_EQ( types, mesh->getTypesArray() );
+  EXPECT_EQ( offsets, mesh->getCellOffsetsArray() );
+  EXPECT_EQ( types, mesh->getCellTypesArray() );
   if ( connec_capacity == mesh->getCellConnectivityCapacity() )
   {
     EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
