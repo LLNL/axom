@@ -20,6 +20,7 @@
 
 // mint includes
 #include "mint/config.hpp"  // for compile-time definitions
+#include "mint/CellTypes.hpp"   // for Topology
 
 // C/C++ includes
 #include <string>           // for std::string
@@ -126,7 +127,7 @@ bool validCoordsetGroup( const sidre::Group* coordset );
  *
  */
 const sidre::Group* getTopologyGroup( const sidre::Group* group,
-                    const std::string& topo="" );
+                                      const std::string& topo="" );
 
 /*!
  * \brief Initialize the topology group.
@@ -158,7 +159,7 @@ void initializeTopologyGroup( sidre::Group* group,
  * \post blueprint::validCoordsetGroup( coordset )
  */
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
-                    const sidre::Group* topology );
+                                      const sidre::Group* topology );
 
 /*!
  * \brief Returns the coordset group associated with the given topology group.
@@ -174,7 +175,7 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
  * \post blueprint::validCoordsetGroup( coordset )
  */
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
-                    const std::string& coords="" );
+                                      const std::string& coords="" );
 
 /*!
  * \brief Returns the mesh type and dimension given a root group that conforms
@@ -192,16 +193,22 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
  *
  * \see MeshTypes
  */
-/// @{
-
 void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                const sidre::Group* group,
-                const std::string& topology );
+                              const sidre::Group* group,
+                              const std::string& topology="" );
 
-void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                const sidre::Group* group );
-
-/// @}
+/*
+ * \brief Return the Topology type given a root group that conforms to the
+ *  computational mesh blueprint and a topology name.
+ *  
+ * \param [in] group pointer to the root group.
+ * \param [in] topo optional argument corresponding to the mesh topology.
+ *
+ * \note If a topology is not specified, the code assumes that the first group
+ *  under the 'topologies' group corresponds to the mesh topology.
+ */
+Topology getMeshTopologyType( const sidre::Group* group, 
+                              const std::string& topo="" );
 
 /*!
  * \brief Returns the origin, spacing and extent of a uniform mesh from the
@@ -230,12 +237,9 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
  *
  * \see setUniformMesh()
  */
-void getUniformMesh( int dim,
-                     const sidre::Group* coordset,
-                     const sidre::Group* topology,
-                     double* origin,
-                     double* spacing,
-                     int64* extent );
+void getUniformMesh( int dim, const sidre::Group* coordset,
+                     const sidre::Group* topology, double* origin,
+                     double* spacing, int64* extent );
 
 /*!
  * \brief Populates the specified Coordset & Topology groups with the metadata
@@ -264,11 +268,8 @@ void getUniformMesh( int dim,
  *
  * \see getUniformMesh()
  */
-void setUniformMesh( int dim,
-                     const double* origin,
-                     const double* spacing,
-                     const mint::Extent* extent,
-                     sidre::Group* coordset,
+void setUniformMesh( int dim, const double* origin, const double* spacing,
+                     const mint::Extent* extent, sidre::Group* coordset,
                      sidre::Group* topology );
 
 } /* namespace blueprint */

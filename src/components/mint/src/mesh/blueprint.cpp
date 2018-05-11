@@ -23,6 +23,7 @@
 #include "mint/config.hpp"     // for MINT_USE_SIDRE compile-time definition
 #include "mint/Extent.hpp"     // for mint::Extent
 #include "mint/MeshTypes.hpp"  // for mesh types
+#include "mint/CellTypes.hpp"   // for Topology
 
 // Slic includes
 #include "slic/slic.hpp"    // for SLIC macros
@@ -307,10 +308,40 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
 }
 
 //------------------------------------------------------------------------------
-void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                              const sidre::Group* group )
+Topology getMeshTopologyType( const sidre::Group* group, 
+                              const std::string& topo )
 {
-  blueprint::getMeshTypeAndDimension( mesh_type, dimension, group, "" );
+  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+                 "supplied group does not conform to the blueprint!" );
+
+  const sidre::Group* topology = blueprint::getTopologyGroup( group, topo );
+  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+                 "mesh topology does not conform to the blueprint!" );
+
+  if ( topology->getView( "type" )->getString() != std::string("unstructured") )
+  {
+    return Topology::SINGLE;
+  }
+
+  SLIC_ERROR_IF( !topology->hasChildGroup( "elements" ), 
+                             "Unstructured topology has no 'elements' group." );
+  
+  const sidre::Group* elems_group = topology->getGroup( "elements" );
+
+  SLIC_ERROR_IF( !elems_group->hasChildView( "shape" ), 
+                                        "elements group has no 'shape' view." );
+
+  const sidre::View* shape_view = elems_group->getView( "shape" );
+  SLIC_ERROR_IF( !shape_view->isString(), "'shape' view must hold a string." );
+
+  if ( shape_view->getString() == std::string("mixed") )
+  {
+    return Topology::MIXED;
+  }
+  else
+  {
+    return Topology::SINGLE; 
+  }
 }
 
 //------------------------------------------------------------------------------
