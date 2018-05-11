@@ -235,6 +235,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
+    hid_t bad_id = H5Fopen("Nonefile.root", H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    SLIC_ASSERT(bad_id != 371);
+
     std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
     h5_group_id = H5Gcreate(h5_file_id,
                             group_name.c_str(),
@@ -531,7 +535,7 @@ void IOManager::createRootFile(const std::string& file_base,
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
 
-    root_file_name = file_base + "." + relay_protocol + ".root";
+    root_file_name = file_base + ".root";
   }
 
 #ifdef AXOM_USE_SCR
@@ -593,25 +597,24 @@ std::string IOManager::getProtocol(
                  "The root file name should always end in 'root'."
                  << " File name was '"<< root_name <<"'");
 
-  // Attempt to find a secondary extension
-  std::string extension2;
-  std::string base2;
-  conduit::utils::rsplit_string(base, dot, extension2, base2);
+  std::string relay_protocol = "json";
+#ifdef AXOM_USE_HDF5
+  // Suppress error output for H5Fopen, since failure is acceptable here.
+  herr_t (*error_func)(hid_t, void*);
+  void *old_client_data;
+  hid_t error_stack = H5Eget_current_stack();
+  H5Eget_auto(error_stack, &error_func, &old_client_data);
+  H5Eset_auto(error_stack, NULL, NULL);
 
-  // sidre_hdf5 protocol is ".root" others are "*.<relay protocol>.root"
-  std::string relay_protocol = "hdf5";
-  if (extension2 == "json"
-      || extension2 == "conduit_json"
-      || extension2 == "hdf5")
-  {
-    relay_protocol = extension2;
+  hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+  if (file_id > 0) {
+     relay_protocol = "hdf5";
+     herr_t errv = H5Fclose(file_id);
+     SLIC_ASSERT(errv >= 0);
   }
 
-#ifndef AXOM_USE_HDF5
-  SLIC_WARNING_IF(
-    relay_protocol == "hdf5",
-    "IOManager::getProtocol() -- Attempting to open an 'hdf5'-based "
-    << "root file but axom is not configured with hdf5");
+  // Restore error output
+  H5Eset_auto(error_stack, error_func, old_client_data);
 #endif
 
   std::string protocol;
