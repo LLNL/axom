@@ -20,6 +20,7 @@
 #include "axom/config.hpp"   // for AXOM_USE_HDF5
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
+#include <list>
 
 #include "mpi.h"
 
@@ -33,11 +34,10 @@ namespace
 {
 #ifdef AXOM_USE_HDF5
 const std::string PROTOCOL = "sidre_hdf5";
-const std::string ROOT_EXT = ".root";
 #else
 const std::string PROTOCOL = "sidre_json";
-const std::string ROOT_EXT = ".json.root";
 #endif
+const std::string ROOT_EXT = ".root";
 }
 
 //------------------------------------------------------------------------------
@@ -89,6 +89,73 @@ TEST(spio_serial, basic_writeread)
 
   delete ds1;
   delete ds2;
+}
+
+//------------------------------------------------------------------------------
+
+TEST(spio_serial, basic_writeread_protocols)
+{
+  std::list<std::string> protocols;
+#ifdef AXOM_USE_HDF5
+  protocols.push_back("conduit_hdf5");
+#endif
+  protocols.push_back("conduit_bin");
+  protocols.push_back("conduit_json");
+  protocols.push_back("json");
+  protocols.push_back("sidre_conduit_json");
+  protocols.push_back("sidre_json");
+
+  for (std::list<std::string>::const_iterator itr = protocols.begin() ;
+       itr != protocols.end() ; ++itr)
+  {
+    const std::string& protocol = *itr;
+
+    DataStore* ds1 = new DataStore();
+
+    Group* root1 = ds1->getRoot();
+
+    Group* flds1 = root1->createGroup("fields");
+    Group* flds2 = root1->createGroup("fields2");
+
+    Group* ga = flds1->createGroup("a");
+    Group* gb = flds2->createGroup("b");
+
+    // Note: use 64-bit integers since that is the native type for json
+    ga->createViewScalar<sidre_int64>("i0", 101);
+    gb->createViewScalar<sidre_int64>("i1", 404);
+
+    int num_files = 1;
+    IOManager writer(MPI_COMM_WORLD);
+
+    const std::string file_name = "out_spio_basic_write_read" + protocol;
+
+    writer.write(root1, num_files, file_name, protocol);
+
+    DataStore* ds2 = new DataStore();
+
+    IOManager reader(MPI_COMM_WORLD);
+
+    reader.read(ds2->getRoot(), file_name + ROOT_EXT);
+
+    EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
+
+    sidre_int64 testvalue1 =
+      ds1->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
+    sidre_int64 testvalue2 =
+      ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
+
+    EXPECT_EQ(testvalue1,testvalue2);
+
+    testvalue1 =
+      ds1->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1")->getData();
+    testvalue2 =
+      ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1")->getData();
+
+    EXPECT_EQ(testvalue1,testvalue2);
+
+    delete ds1;
+    delete ds2;
+  }
 }
 
 //------------------------------------------------------------------------------
