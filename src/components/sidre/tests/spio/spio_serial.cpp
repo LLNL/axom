@@ -105,8 +105,8 @@ TEST(spio_serial, basic_writeread_protocols)
   protocols.push_back("sidre_conduit_json");
   protocols.push_back("sidre_json");
 
-  for (std::list<std::string>::const_iterator itr = protocols.begin();
-       itr != protocols.end(); ++itr) 
+  for (std::list<std::string>::const_iterator itr = protocols.begin() ;
+       itr != protocols.end() ; ++itr)
   {
     const std::string& protocol = *itr;
 

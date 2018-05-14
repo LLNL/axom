@@ -601,15 +601,16 @@ std::string IOManager::getProtocol(
   //
   // Suppress error output for H5Fopen, since failure is acceptable here.
   H5E_auto2_t herr_func;
-  void *old_client_data;
+  void* old_client_data;
   H5Eget_auto(H5E_DEFAULT, &herr_func, &old_client_data);
   H5Eset_auto(H5E_DEFAULT, NULL, NULL);
 
   hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-  if (file_id > 0) {
-     relay_protocol = "hdf5";
-     herr_t errv = H5Fclose(file_id);
-     SLIC_ASSERT(errv >= 0);
+  if (file_id > 0)
+  {
+    relay_protocol = "hdf5";
+    herr_t errv = H5Fclose(file_id);
+    SLIC_ASSERT(errv >= 0);
   }
 
   // Restore error output
@@ -635,15 +636,17 @@ std::string IOManager::getProtocol(
       protocol = n["protocol/name"].as_string();
     }
 
-    if (protocol.empty()) {
+    if (protocol.empty())
+    {
       // Did not find protocol name, issue warning and assign a default guess.
 
       SLIC_WARNING(
-        "'" << root_name 
-        << "/protocol/name' does not contain a valid Sidre protocol name.  "
-        << "Will attempt to use a default protocol.");
+        "'" << root_name
+            << "/protocol/name' does not contain a valid Sidre protocol name.  "
+            << "Will attempt to use a default protocol.");
 
-      if (relay_protocol == "hdf5") { 
+      if (relay_protocol == "hdf5")
+      {
         protocol = "sidre_hdf5";
       }
       else
