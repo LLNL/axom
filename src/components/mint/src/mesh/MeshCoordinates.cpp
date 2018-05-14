@@ -37,15 +37,7 @@ namespace mint
 
 constexpr IndexType DEFAULT_CAPACITY = 100;
 
-//------------------------------------------------------------------------------
-MeshCoordinates::MeshCoordinates( int dimension ) :
-  m_ndims( dimension )
-{
-  SLIC_ERROR_IF( this->invalidDimension(), "invalid dimension" );
-  this->initialize( 0, DEFAULT_CAPACITY );
-}
 
-//------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( int dimension,
                                   IndexType numNodes,
                                   IndexType capacity ) :

@@ -120,23 +120,6 @@ public:
 /// \name Native Storage Constructors
 /// @{
 
-  /*!
-   * \brief Creates an empty MeshCoordinates instance of specified dimension.
-   *
-   * \param [in] dimension the mesh dimension, i.e., 1, 2 or 3
-   *
-   * \note The resulting MeshCoordinates object is empty, but, it has initial
-   *  default capacity based on an internal settings.
-   *
-   * \pre 1 <= dimension <= 3
-   *
-   * \post numNodes() == 0
-   * \post empty() == true
-   * \post capacity() > 0
-   * \post getCoordinateArray( i ) != AXOM_NULLPTR \f$ \forall i \in [0,N-1]\f$
-   *  where N is the dimension of the MeshCoordinates object.
-   */
-  explicit MeshCoordinates( int dimension );
 
   /*!
    * \brief Creates a MeshCoordinates instance of specified dimension and
@@ -155,8 +138,9 @@ public:
    * \post if capacity == USE_DEFAULT then
    *  capacity() == max(DEFAULT_CAPACITY, numNodes()*DEFAULT_RESIZE_RATIO)
    */
-  MeshCoordinates( int dimension, IndexType numNodes = 0,
-                   IndexType capacity=USE_DEFAULT );
+  explicit MeshCoordinates( int dimension,
+                            IndexType numNodes = 0,
+                            IndexType capacity=USE_DEFAULT );
 
 /// @}
 
