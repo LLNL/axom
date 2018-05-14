@@ -150,7 +150,8 @@ std::string IOManager::correspondingRelayProtocol(
   {
     return "json";
   }
-  else if(sidre_protocol == "sidre_conduit_json")
+  else if(sidre_protocol == "sidre_conduit_json"
+          || sidre_protocol == "conduit_json")
   {
     return "conduit_json";
   }
@@ -234,10 +235,6 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
         conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
     }
     SLIC_ASSERT(h5_file_id >= 0);
-
-    hid_t bad_id = H5Fopen("Nonefile.root", H5F_ACC_RDONLY, H5P_DEFAULT);
-
-    SLIC_ASSERT(bad_id != 371);
 
     std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
     h5_group_id = H5Gcreate(h5_file_id,
@@ -599,12 +596,14 @@ std::string IOManager::getProtocol(
 
   std::string relay_protocol = "json";
 #ifdef AXOM_USE_HDF5
+  // Attempt to open the root file using HDF5.  If it succeeds, set
+  // relay_protocol to "hdf5", otherwise we assume a json protocol.
+  //
   // Suppress error output for H5Fopen, since failure is acceptable here.
-  herr_t (*error_func)(hid_t, void*);
+  H5E_auto2_t herr_func;
   void *old_client_data;
-  hid_t error_stack = H5Eget_current_stack();
-  H5Eget_auto(error_stack, &error_func, &old_client_data);
-  H5Eset_auto(error_stack, NULL, NULL);
+  H5Eget_auto(H5E_DEFAULT, &herr_func, &old_client_data);
+  H5Eset_auto(H5E_DEFAULT, NULL, NULL);
 
   hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
   if (file_id > 0) {
@@ -614,7 +613,7 @@ std::string IOManager::getProtocol(
   }
 
   // Restore error output
-  H5Eset_auto(error_stack, error_func, old_client_data);
+  H5Eset_auto(H5E_DEFAULT, herr_func, old_client_data);
 #endif
 
   std::string protocol;
@@ -623,8 +622,37 @@ std::string IOManager::getProtocol(
     conduit::Node n;
     conduit::relay::io::load(root_name, relay_protocol, n);
 
-    protocol = n["protocol/name"].as_string();
+    conduit::Node& pnode = n["protocol/name"];
+    if (pnode.dtype().is_string())
+    {
+      protocol = n["protocol/name"].as_string();
+    }
+    else if (relay_protocol == "json")
+    {
+      //If relay_protocol "json" didn't work, try "conduit_json"
+      n.reset();
+      conduit::relay::io::load(root_name, "conduit_json", n);
+      protocol = n["protocol/name"].as_string();
+    }
+
+    if (protocol.empty()) {
+      // Did not find protocol name, issue warning and assign a default guess.
+
+      SLIC_WARNING(
+        "'" << root_name 
+        << "/protocol/name' does not contain a valid Sidre protocol name.  "
+        << "Will attempt to use a default protocol.");
+
+      if (relay_protocol == "hdf5") { 
+        protocol = "sidre_hdf5";
+      }
+      else
+      {
+        protocol = "sidre_json";
+      }
+    }
   }
+
   protocol = broadcastString(protocol, m_mpi_comm, m_my_rank);
   return protocol;
 }
