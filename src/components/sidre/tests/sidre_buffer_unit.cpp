@@ -26,6 +26,7 @@ using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
+using axom::sidre::indexIsValid;
 using axom::sidre::DataTypeId;
 
 using axom::sidre::getTypeID;
@@ -416,6 +417,43 @@ TEST(sidre_buffer,buffer_delete_view_detach)
   delete ds;
 }
 
+// Tests iteration over a DataStore's buffers
+TEST(sidre_buffer, buffer_iterate)
+{
+  DataStore* ds = new DataStore();
+
+  Buffer* buf1 = ds->createBuffer();
+  (void) ds->createBuffer();
+  (void) ds->createBuffer();
+  Buffer* buf2 = ds->createBuffer();
+  (void) ds->createBuffer();
+  Buffer* buf3 = ds->createBuffer();
+
+  ds->destroyBuffer(buf1);
+  ds->destroyBuffer(buf3);
+
+  int bufcount = 0;
+  for (IndexType idx = ds->getFirstValidBufferIndex() ;
+       indexIsValid(idx) ;
+       idx = ds->getNextValidBufferIndex(idx))
+  {
+    bufcount += 1;
+  }
+  int expbufcount = 4;
+  EXPECT_EQ(expbufcount, bufcount);
+
+  ds->destroyBuffer(buf2);
+
+  bufcount = 0;
+  for (IndexType idx = ds->getFirstValidBufferIndex() ;
+       indexIsValid(idx) ;
+       idx = ds->getNextValidBufferIndex(idx))
+  {
+    bufcount += 1;
+  }
+  expbufcount = 3;
+  EXPECT_EQ(expbufcount, bufcount);
+}
 
 // Tests that alloc(0) and realloc(0) are valid and have same behavior
 TEST(sidre_buffer,buffer_alloc_realloc_0)
