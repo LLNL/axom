@@ -298,7 +298,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
 }
 
 //------------------------------------------------------------------------------
-Topology getMeshTopologyType( const sidre::Group* group, 
+Topology getMeshTopologyType( const sidre::Group* group,
                               const std::string& topo )
 {
   SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
@@ -313,12 +313,12 @@ Topology getMeshTopologyType( const sidre::Group* group,
     return Topology::SINGLE;
   }
 
-  SLIC_ERROR_IF( !topology->hasChildGroup( "elements" ), 
+  SLIC_ERROR_IF( !topology->hasChildGroup( "elements" ),
                              "Unstructured topology has no 'elements' group." );
-  
+
   const sidre::Group* elems_group = topology->getGroup( "elements" );
 
-  SLIC_ERROR_IF( !elems_group->hasChildView( "shape" ), 
+  SLIC_ERROR_IF( !elems_group->hasChildView( "shape" ),
                                         "elements group has no 'shape' view." );
 
   const sidre::View* shape_view = elems_group->getView( "shape" );
@@ -330,7 +330,7 @@ Topology getMeshTopologyType( const sidre::Group* group,
   }
   else
   {
-    return Topology::SINGLE; 
+    return Topology::SINGLE;
   }
 }
 
@@ -367,8 +367,13 @@ void getUniformMesh( int dimension,
     spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
 
     const int idx    = i*2;
-    const int64 N      = c->getView( dim_names[ i ] )->getScalar();
-    const int64 offset = t->getView( topo_names[ i ] )->getScalar();
+    const int N      = c->getView( dim_names[ i ] )->getScalar();
+    const int offset = t->getView( topo_names[ i ] )->getScalar();
+
+// FIXME: the following leads to ambiguous type conversion
+//    const int64 N      = c->getView( dim_names[ i ] )->getScalar();
+//    const int64 offset = t->getView( topo_names[ i ] )->getScalar();
+
     extent[ idx ]    = offset;
     extent[ idx+1 ]  = offset + N - 1;
   }
@@ -405,7 +410,13 @@ void setUniformMesh( int dim,
     coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
     coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );
     coordset->createView( spacing_names[ i ] )->setScalar( spacing[ i ] );
-    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
+
+    const int min = extent->min( i );
+    topology->createView( topo_names[ i ] )->setScalar( min );
+
+// FIXME: the following leads to ambigous type conversion
+//    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
+
   } // END for
 
 }
