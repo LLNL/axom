@@ -33,10 +33,10 @@ add_subdirectory(include)
 add_subdirectory(components)
 
 ################################
-# Adds directory for utility code
-# that uses or supports axom
+# Adds directory for tools code
+# that uses axom
 ################################
-add_subdirectory(util)
+add_subdirectory(tools)
 
 ################################
 # Add docs

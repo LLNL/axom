@@ -27,8 +27,6 @@
 
 using axom::sidre::IOManager;
 
-using axom::sidre::detail::sidre_int64;
-
 
 //------------------------------------------------------------------------------
 

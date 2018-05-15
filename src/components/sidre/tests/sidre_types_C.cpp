@@ -67,21 +67,23 @@ void testTypesForEquality()
 TEST(sidre_types,compare_common_types)
 {
   namespace com = axom::common;
-  namespace sid = axom::sidre::detail;
 
-  testTypesForEquality<com::int8, sid::sidre_int8>();
-  testTypesForEquality<com::uint8, sid::sidre_uint8>();
+  testTypesForEquality<com::int8, conduit_int8>();
+  testTypesForEquality<com::uint8, conduit_uint8>();
 
-  testTypesForEquality<com::int16,sid::sidre_int16>();
-  testTypesForEquality<com::uint16,sid::sidre_uint16>();
+  testTypesForEquality<com::int16, conduit_int16>();
+  testTypesForEquality<com::uint16, conduit_uint16>();
 
-  testTypesForEquality<com::int32,sid::sidre_int32>();
-  testTypesForEquality<com::uint32,sid::sidre_uint32>();
+  testTypesForEquality<com::int32, conduit_int32>();
+  testTypesForEquality<com::uint32, conduit_uint32>();
 
   #ifndef AXOM_NO_INT64_T
-  testTypesForEquality<com::int64,sid::sidre_int64>();
-  testTypesForEquality<com::uint64,sid::sidre_uint64>();
+  testTypesForEquality<com::int64, conduit_int64>();
+  testTypesForEquality<com::uint64, conduit_uint64>();
   #endif
+
+  testTypesForEquality<com::float32, conduit_float32>();
+  testTypesForEquality<com::float64, conduit_float64>();
 }
 
 //------------------------------------------------------------------------------

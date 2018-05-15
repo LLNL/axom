@@ -44,6 +44,7 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
+#include "axom/Types.hpp"
 #include "fmt/format.h"
 #include "slic/slic.hpp"
 #include "slic/LogStream.hpp"
@@ -363,34 +364,34 @@ void modifyFinalValues(View* view, int origSize)
   switch(view->getTypeID())
   {
   case sidre::INT8_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_int8>(view, origSize);
+    modifyFinalValuesImpl<common::int8>(view, origSize);
     break;
   case sidre::INT16_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_int16>(view, origSize);
+    modifyFinalValuesImpl<common::int16>(view, origSize);
     break;
   case sidre::INT32_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_int32>(view, origSize);
+    modifyFinalValuesImpl<common::int32>(view, origSize);
     break;
   case sidre::INT64_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_int64>(view, origSize);
+    modifyFinalValuesImpl<common::int64>(view, origSize);
     break;
   case sidre::UINT8_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_uint8>(view, origSize);
+    modifyFinalValuesImpl<common::uint8>(view, origSize);
     break;
   case sidre::UINT16_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_uint16>(view, origSize);
+    modifyFinalValuesImpl<common::uint16>(view, origSize);
     break;
   case sidre::UINT32_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_uint32>(view, origSize);
+    modifyFinalValuesImpl<common::uint32>(view, origSize);
     break;
   case sidre::UINT64_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_uint64>(view, origSize);
+    modifyFinalValuesImpl<common::uint64>(view, origSize);
     break;
   case sidre::FLOAT32_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_float32>(view, origSize);
+    modifyFinalValuesImpl<common::float32>(view, origSize);
     break;
   case sidre::FLOAT64_ID:
-    modifyFinalValuesImpl<sidre::detail::sidre_float64>(view, origSize);
+    modifyFinalValuesImpl<common::float64>(view, origSize);
     break;
   default:
     break;
