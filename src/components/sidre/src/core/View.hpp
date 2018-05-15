@@ -1327,7 +1327,6 @@ private:
    *
    * If given type of NO_TYPE_ID, or number of elements < 0, or view is opaque,
    * method does nothing.
-   *
    */
   void describe( TypeID type, SidreLength num_elems);
 
@@ -1342,8 +1341,6 @@ private:
    *
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
-   *
-   * \return pointer to this View object.
    */
   void describe(TypeID type, int ndims, SidreLength* shape);
 
@@ -1355,8 +1352,6 @@ private:
    *            the apply() method must be called.
    *
    * If view is opaque, the method does nothing.
-   *
-   * \return pointer to this View object.
    */
   void describe(const DataType& dtype);
 
