@@ -106,14 +106,11 @@ public:
     return m_data[setIndex];
   }
 
-
-  Set const* set() const { return m_set; }
-
+  const Set* set() const { return m_set; }
 
   SetPosition size() const { return m_set->size(); }
 
   bool        isValid(bool verboseOutput = false) const;
-
 
   void        clear() { fill(); }
 

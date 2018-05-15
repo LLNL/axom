@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-/*
+/**
  * \file slam_set_rangeset.cpp
  *
  * \brief Unit tests for Slam's RangeSet
@@ -227,16 +227,11 @@ TEST(slam_range_set,out_of_range)
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
-
-  // add this line to avoid a warning in the output about thread safety
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(  s.at(upperIndex),   "");
   EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SET_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
-
-  SLIC_INFO("done.");
 }
 
 TEST(slam_generic_range_set,virtual_parent_set)
@@ -340,7 +335,6 @@ TEST(slam_generic_range_set,concrete_parent_set)
   //-- it does not differentiate based on whether a set is a subset of another
   // set
   EXPECT_EQ(childSet, nonChildSet);
-
 }
 
 //----------------------------------------------------------------------
@@ -353,6 +347,10 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
+#ifdef AXOM_DEBUG
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+#endif
 
   UnitTestLogger logger;  // create & initialize test logger,
 

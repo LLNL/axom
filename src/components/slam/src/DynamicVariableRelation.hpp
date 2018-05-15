@@ -19,23 +19,22 @@
  * \file DynamicVariableRelation.hpp
  *
  * \brief API for a topological relation between two sets in which entities from
- * the first set
- *        can be related to an arbitrary number of entities from the second set
- *        This relation is dynamic, so it cannot
- *
+ * the first set can be related to an arbitrary number of entities from the
+ * second set. This relation is dynamic; the related entities can change
+ * at runtime.
  */
 
 #ifndef SLAM_DYNAMIC_VARIABLE_RELATION_HPP_
 #define SLAM_DYNAMIC_VARIABLE_RELATION_HPP_
 
-#include <vector>
-
-//#include <iostream>
+#include "axom/config.hpp"
 
 #include "slic/slic.hpp"
 #include "slam/Set.hpp"
 #include "slam/Relation.hpp"
 
+#include <vector>
+//#include <iostream>
 
 namespace axom
 {
@@ -67,6 +66,10 @@ public:
                            Set* toSet = &s_nullSet);
   ~DynamicVariableRelation(){}
 
+public:
+#ifdef AXOM_USE_CXX11
+  /// \name DynamicVariableRelation iterator interface
+  /// @{
   RelationVecConstIterator begin(SetPosition fromSetIndex)       const
   {
     verifyPosition(fromSetIndex);
@@ -83,6 +86,9 @@ public:
   {
     return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
   }
+  /// @}
+
+#endif // AXOM_USE_CXX11
 
 
   RelationVec const& operator[](SetPosition fromSetIndex) const
