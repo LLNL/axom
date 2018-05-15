@@ -206,10 +206,7 @@ public:
    * \pre blueprint::validRootGroup( group )
    * \post hasSidreGroup() == true
    */
-  UniformMesh( sidre::Group* group,
-               const std::string& topo="" );
-
-
+  explicit UniformMesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
    * \brief Constructs a uniform mesh object on the specified Sidre group, that
