@@ -19,6 +19,8 @@
 
 #include "sidre/sidre.hpp"
 
+#include "axom/Types.hpp"
+
 using axom::sidre::Buffer;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
@@ -1190,16 +1192,22 @@ TEST(sidre_view,view_offset_and_stride)
 
   typedef std::vector<View*> ViewVec;
   ViewVec views;
-  axom::sidre::detail::sidre_uint8 ui8  = 3;
-  axom::sidre::detail::sidre_uint16 ui16 = 4;
-  axom::sidre::detail::sidre_uint32 ui32 = 5;
-  axom::sidre::detail::sidre_uint64 ui64 = 6;
-  axom::sidre::detail::sidre_int8 i8   = -3;
-  axom::sidre::detail::sidre_int16 i16   = -4;
-  axom::sidre::detail::sidre_int32 i32   = -5;
-  axom::sidre::detail::sidre_int64 i64   = -6;
-  axom::sidre::detail::sidre_float32 f32 = 7.7f;
-  axom::sidre::detail::sidre_float64 f64 = 8.8;
+  axom::common::uint8 ui8  = 3;
+  axom::common::uint16 ui16 = 4;
+  axom::common::uint32 ui32 = 5;
+#ifndef AXOM_NO_INT46_T
+  axom::common::uint64 ui64 = 6;
+#endif
+
+  axom::common::int8 i8   = -3;
+  axom::common::int16 i16   = -4;
+  axom::common::int32 i32   = -5;
+#ifndef AXOM_NO_INT46_T
+  axom::common::int64 i64   = -6;
+#endif
+
+  axom::common::float32 f32 = 7.7f;
+  axom::common::float64 f64 = 8.8;
 
 
   views.push_back( othersGroup->createView("key_empty"));
@@ -1210,12 +1218,16 @@ TEST(sidre_view,view_offset_and_stride)
   views.push_back( othersGroup->createViewScalar("key_uint8",   ui8));
   views.push_back( othersGroup->createViewScalar("key_uint16",  ui16));
   views.push_back( othersGroup->createViewScalar("key_uint32",  ui32));
+#ifndef AXOM_NO_INT46_T
   views.push_back( othersGroup->createViewScalar("key_uint64",  ui64));
+#endif
 
   views.push_back( othersGroup->createViewScalar("key_int8",    i8));
   views.push_back( othersGroup->createViewScalar("key_int16",   i16));
   views.push_back( othersGroup->createViewScalar("key_int32",   i32));
+#ifndef AXOM_NO_INT46_T
   views.push_back( othersGroup->createViewScalar("key_int64",   i64));
+#endif
 
   views.push_back( othersGroup->createViewScalar("key_float32", f32));
   views.push_back( othersGroup->createViewScalar("key_float64", f64));
@@ -1227,11 +1239,15 @@ TEST(sidre_view,view_offset_and_stride)
   sizeMap["key_uint8"] = sizeof(ui8);
   sizeMap["key_uint16"] = sizeof(ui16);
   sizeMap["key_uint32"] = sizeof(ui32);
+#ifndef AXOM_NO_INT46_T
   sizeMap["key_uint64"] = sizeof(ui64);
+#endif
   sizeMap["key_int8"] = sizeof(i8);
   sizeMap["key_int16"] = sizeof(i16);
   sizeMap["key_int32"] = sizeof(i32);
+#ifndef AXOM_NO_INT46_T
   sizeMap["key_int64"] = sizeof(i64);
+#endif
   sizeMap["key_float32"] = sizeof(f32);
   sizeMap["key_float64"] = sizeof(f64);
 

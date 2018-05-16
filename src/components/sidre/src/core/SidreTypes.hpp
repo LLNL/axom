@@ -28,6 +28,7 @@
 
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
+#include "axom/Types.hpp"
 
 namespace axom
 {
@@ -126,66 +127,51 @@ enum DataTypeId
  */
 namespace detail
 {
-/*!
- * \brief Typedefs for sidre types.
- */
-typedef conduit_int8 sidre_int8;
-typedef conduit_int16 sidre_int16;
-typedef conduit_int32 sidre_int32;
-typedef conduit_int64 sidre_int64;
-
-typedef conduit_uint8 sidre_uint8;
-typedef conduit_uint16 sidre_uint16;
-typedef conduit_uint32 sidre_uint32;
-typedef conduit_uint64 sidre_uint64;
-
-typedef conduit_float32 sidre_float32;
-typedef conduit_float64 sidre_float64;
 
 /*!
  * \brief Type traits to assist in converting compiler types to the appropriate
  *  data type ids.
  */
 template<typename T> struct SidreTT {};
-template<> struct SidreTT<sidre_int8>
+template<> struct SidreTT<common::int8>
 {
   static const DataTypeId id = INT8_ID;
 };
-template<> struct SidreTT<sidre_int16>
+template<> struct SidreTT<common::int16>
 {
   static const DataTypeId id = INT16_ID;
 };
-template<> struct SidreTT<sidre_int32>
+template<> struct SidreTT<common::int32>
 {
   static const DataTypeId id = INT32_ID;
 };
-template<> struct SidreTT<sidre_int64>
+template<> struct SidreTT<common::int64>
 {
   static const DataTypeId id = INT64_ID;
 };
 
-template<> struct SidreTT<sidre_uint8>
+template<> struct SidreTT<common::uint8>
 {
   static const DataTypeId id = UINT8_ID;
 };
-template<> struct SidreTT<sidre_uint16>
+template<> struct SidreTT<common::uint16>
 {
   static const DataTypeId id = UINT16_ID;
 };
-template<> struct SidreTT<sidre_uint32>
+template<> struct SidreTT<common::uint32>
 {
   static const DataTypeId id = UINT32_ID;
 };
-template<> struct SidreTT<sidre_uint64>
+template<> struct SidreTT<common::uint64>
 {
   static const DataTypeId id = UINT64_ID;
 };
 
-template<> struct SidreTT<sidre_float32>
+template<> struct SidreTT<common::float32>
 {
   static const DataTypeId id = FLOAT32_ID;
 };
-template<> struct SidreTT<sidre_float64>
+template<> struct SidreTT<common::float64>
 {
   static const DataTypeId id = FLOAT64_ID;
 };

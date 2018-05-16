@@ -51,8 +51,6 @@ using axom::sidre::DataType;
 using axom::sidre::View;
 using axom::sidre::IOManager;
 
-using axom::sidre::detail::sidre_int64;
-
 namespace
 {
 #ifdef AXOM_USE_HDF5

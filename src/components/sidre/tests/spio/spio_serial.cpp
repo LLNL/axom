@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"   // for AXOM_USE_HDF5
+#include "axom/Types.hpp"    // for common::int64
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
 #include <list>
@@ -28,7 +29,7 @@ using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::IOManager;
 
-using axom::sidre::detail::sidre_int64;
+using axom::common::int64;
 
 namespace
 {
@@ -55,8 +56,8 @@ TEST(spio_serial, basic_writeread)
   Group* gb = flds2->createGroup("b");
 
   // Note: use 64-bit integers since that is the native type for json
-  ga->createViewScalar<sidre_int64>("i0", 101);
-  gb->createViewScalar<sidre_int64>("i1", 404);
+  ga->createViewScalar<int64>("i0", 101);
+  gb->createViewScalar<int64>("i1", 404);
 
   int num_files = 1;
   IOManager writer(MPI_COMM_WORLD);
@@ -73,9 +74,9 @@ TEST(spio_serial, basic_writeread)
 
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-  sidre_int64 testvalue1 =
+  int64 testvalue1 =
     ds1->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-  sidre_int64 testvalue2 =
+  int64 testvalue2 =
     ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
   EXPECT_EQ(testvalue1,testvalue2);

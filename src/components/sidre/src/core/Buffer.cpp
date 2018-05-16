@@ -26,6 +26,8 @@
 #include "Group.hpp"
 #include "View.hpp"
 
+#include "axom/Types.hpp" // for common::int8
+
 namespace axom
 {
 namespace sidre
@@ -362,7 +364,7 @@ void Buffer::detachFromAllViews()
  */
 void* Buffer::allocateBytes(std::size_t num_bytes)
 {
-  return new(std::nothrow) detail::sidre_int8[num_bytes];
+  return new(std::nothrow) common::int8[num_bytes];
 }
 
 /*
@@ -387,7 +389,7 @@ void Buffer::copyBytes( const void* src, void* dst, size_t num_bytes )
 void Buffer::releaseBytes( void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  delete[] static_cast<detail::sidre_int8*>(ptr);
+  delete[] static_cast<common::int8*>(ptr);
 }
 
 /*
