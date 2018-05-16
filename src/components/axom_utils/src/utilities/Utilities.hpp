@@ -26,18 +26,17 @@
 #ifndef AXOM_UTILITIES_HPP_
 #define AXOM_UTILITIES_HPP_
 
-#include "axom/config.hpp"
-#include "axom/Types.hpp"
-#include "axom/Macros.hpp"
+#include "axom/config.hpp" // for AXOM_USE_CXX11
+#include "axom/Types.hpp"  // for AXOM_NULLPTR
+#include "axom/Macros.hpp" // for AXOM_STATIC_ASSERT
 
-#include <algorithm>
 #include <cassert>         // for assert()
 #include <cmath>           // for log2()
 #include <cstdlib>         // for std::malloc, std::realloc, std::free
 
 #ifdef AXOM_USE_CXX11
   #include <random>        // for random  number generator
-  #include <type_traits>
+  #include <type_traits>   // for std::is_floating_point()
 #endif
 
 
