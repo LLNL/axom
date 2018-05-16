@@ -74,10 +74,6 @@ ParticleMesh::ParticleMesh( sidre::Group* group,
 }
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( sidre::Group* group ) : ParticleMesh( group, "" )
-{}
-
-//------------------------------------------------------------------------------
 ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
                             sidre::Group* group,
                             const std::string& topo,

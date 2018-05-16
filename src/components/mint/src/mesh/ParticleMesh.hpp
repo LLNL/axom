@@ -173,14 +173,7 @@ public:
    * \pre blueprint::validRootGroup( group )
    * \post hasSidreGroup() == true
    */
-  /// @{
-
-  ParticleMesh( sidre::Group* group,
-                const std::string& topo );
-
-  explicit ParticleMesh( sidre::Group* group );
-
-  /// @}
+  explicit ParticleMesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
    * \brief Creates a ParticleMesh object on the specified Sidre group.
@@ -232,7 +225,6 @@ public:
    * \brief Destructor.
    */
   virtual ~ParticleMesh();
-
 
 /// \name Cells
 /// @{
