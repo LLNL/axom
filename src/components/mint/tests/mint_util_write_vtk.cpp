@@ -1247,7 +1247,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    double x = idx + utilities::random_real( 0.45, 0.45 );
+    double x = idx + utilities::random_real( -0.45, 0.45 );
     u_mesh->appendNode( x );
   }
 
