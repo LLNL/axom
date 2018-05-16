@@ -62,7 +62,6 @@ set( mint_headers
 
     ## utils
     utils/vtk_utils.hpp
-    utils/utils.hpp
 
     ## Internal implementation
     internal/ConnectivityArray_indirection.hpp

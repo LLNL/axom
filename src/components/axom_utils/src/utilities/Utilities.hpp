@@ -31,11 +31,12 @@
 #include "axom/Macros.hpp"
 
 #include <algorithm>
-#include <cmath>
-#include <cstdlib>                    // for std::malloc, std::realloc, st::free
-
+#include <cassert>         // for assert()
+#include <cmath>           // for log2()
+#include <cstdlib>         // for std::malloc, std::realloc, std::free
 
 #ifdef AXOM_USE_CXX11
+  #include <random>        // for random  number generator
   #include <type_traits>
 #endif
 
@@ -201,6 +202,32 @@ template < typename T >
 inline T clampLower(T val, T lower)
 {
   return val < lower ? lower : val;
+}
+
+/*!
+ * \brief Returns a random real number within the specified interval
+ *
+ * \param [in] a the interval's lower bound
+ * \param [in] b the interval's upper bound
+ * \return r the random real number
+ *
+ * \tparam T a built-in floating point type, e.g., double, float, long double.
+ *
+ * \pre a < b
+ * \post a <= r <= b
+ */
+template < typename T >
+inline T random_real( const T& a, const T& b )
+{
+  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
+  assert( (a < b) && "invalid bounds, a < b" );
+
+  static std::random_device rd;
+  static std::mt19937_64 mt( rd() );
+  static std::uniform_real_distribution< T > dist(0.0, 1.0);
+
+  double temp = dist(mt);
+  return temp * ( b - a ) + a;
 }
 
 /*!

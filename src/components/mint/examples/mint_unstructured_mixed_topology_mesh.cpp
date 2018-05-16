@@ -18,7 +18,7 @@
 /*!
  * \file
  *
- * \brief Illustrates how to construct and use a mixed topology 
+ * \brief Illustrates how to construct and use a mixed topology
  *  UnstructuredMesh by creating a 2D structured grid with both quads
  *  and triangles.
  */
@@ -27,7 +27,6 @@
 #include "mint/config.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/vtk_utils.hpp"
-#include "mint/utils.hpp"
 #include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
 // C/C++ includes
@@ -47,7 +46,7 @@ inline bool appendQuad( mint::IndexType i, mint::IndexType j )
 int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
   UnitTestLogger logger;  // create & initialize test logger,
- 
+
   constexpr int DIMENSION = 2;
   constexpr mint::IndexType X_EXTENT = 11;
   constexpr mint::IndexType Y_EXTENT = 11;
@@ -61,10 +60,10 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   constexpr double PHI = 1.0;
 
   /* STEP 0: create the UnstructuredMesh */
-  mint::UnstructuredMesh< mint::Topology::MIXED > mesh( DIMENSION, NUM_NODES, 
+  mint::UnstructuredMesh< mint::Topology::MIXED > mesh( DIMENSION, NUM_NODES,
                                                         NUM_CELLS );
 
-  /* STEP 1: Add fields to the nodes and cells. 
+  /* STEP 1: Add fields to the nodes and cells.
    * Note that we can only use the pointers below because we specified
    * the node and cell capacities in the constructor. In general calling
    * append or insert can invalidate any associated pointers. */
@@ -72,9 +71,9 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* vy = mesh.createField< double >( "vy", mint::NODE_CENTERED );
   double* vz = mesh.createField< double >( "vz", mint::NODE_CENTERED );
   double* p = mesh.createField< double > ( "pressure", mint::CELL_CENTERED );
-  double* p_avg = mesh.createField< double >( "average_pressure", 
+  double* p_avg = mesh.createField< double >( "average_pressure",
                                               mint::NODE_CENTERED );
-  int* cells_per_node = mesh.createField< int >( "cells_per_node", 
+  int* cells_per_node = mesh.createField< int >( "cells_per_node",
                                               mint::NODE_CENTERED );
 
   /* STEP 3: Add the nodes */
@@ -84,10 +83,10 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
     for ( mint::IndexType i = 0; i < X_EXTENT; ++i )
     {
       mesh.appendNode( i * SPACING, j * SPACING );
-      
-      vx[ node_ID ] = mint::random_double( LO, HI );
-      vy[ node_ID ] = mint::random_double( LO, HI );
-      vz[ node_ID ] = mint::random_double( LO, HI );
+
+      vx[ node_ID ] = utilities::random_real( LO, HI );
+      vy[ node_ID ] = utilities::random_real( LO, HI );
+      vz[ node_ID ] = utilities::random_real( LO, HI );
       p_avg[ node_ID ] = 0.0;
       cells_per_node[ node_ID ] = 0.0;
       node_ID++;
@@ -106,28 +105,28 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
       const mint::IndexType top_left = bottom_left + X_EXTENT;
 
       if ( appendQuad( i, j ) )
-      { 
+      {
         /* Append a quad. */
-        const mint::IndexType quad[4] = 
+        const mint::IndexType quad[4] =
                             { bottom_left, bottom_right, top_right, top_left };
         mesh.appendCell( quad, mint::QUAD);
-        
-        p[ cell_ID ] = mint::random_double( PLO, PHI );
+
+        p[ cell_ID ] = utilities::random_real( PLO, PHI );
         cell_ID++;
       }
       else
       {
         /* Append two triangles. */
-        const mint::IndexType tri0[3] = 
+        const mint::IndexType tri0[3] =
                                       { bottom_left, bottom_right, top_right };
         mesh.appendCell( tri0, mint::TRIANGLE );
-        p[ cell_ID ] = mint::random_double( PLO, PHI );
+        p[ cell_ID ] = utilities::random_real( PLO, PHI );
         cell_ID++;
 
-        const mint::IndexType tri1[3] = 
+        const mint::IndexType tri1[3] =
                                       { top_right, top_left, bottom_left };
         mesh.appendCell( tri1, mint::TRIANGLE );
-        p[ cell_ID ] = mint::random_double( PLO, PHI );
+        p[ cell_ID ] = utilities::random_real( PLO, PHI );
         cell_ID++;
       }
     }
