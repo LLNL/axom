@@ -23,21 +23,24 @@
  *
  */
 
-// Axom includes
-#include "mint/ParticleMesh.hpp"   // for mint::ParticleMesh
-#include "mint/vtk_utils.hpp"      // for mint::write_vtk()
+// axom_utiles
+#include "axom_utils/Utilities.hpp"  // for random_real()
 
-#include "slic/slic.hpp"           // for SLIC macros
-#include "slic/UnitTestLogger.hpp" // for slic logger
+// Mint includes
+#include "mint/ParticleMesh.hpp"     // for mint::ParticleMesh
+#include "mint/vtk_utils.hpp"        // for mint::write_vtk()
+
+// Slic includes
+#include "slic/slic.hpp"            // for SLIC macros
+#include "slic/UnitTestLogger.hpp"  // for slic logger
 
 // Axom namespace aliases
-namespace mint = axom::mint;
-namespace slic = axom::slic;
+namespace mint      = axom::mint;
+namespace slic      = axom::slic;
+namespace utilities = axom::utilities;
 
 // C/C++ includes
-#include <cstdlib>  // for srand()/rand()
 #include <cstring>  // for strcmp()
-#include <ctime>    // for time()
 #include <fstream>  // for std::ofstream
 #include <sstream>  // for std::ostringstream
 
@@ -61,13 +64,11 @@ void showHelp();
 void parse_arguments( int argc, char** argv );
 void initialize( mint::ParticleMesh& particles );
 void apply_forces( mint::ParticleMesh& particles, double dt );
-inline double random_double( double min, double max );
 
 //------------------------------------------------------------------------------
 int main ( int argc, char** argv )
 {
   // STEP 0: initialize logger & parse arguments
-  srand( time(0) );
   slic::UnitTestLogger logger;
   parse_arguments( argc, argv );
 
@@ -177,23 +178,15 @@ void initialize( mint::ParticleMesh& particles )
 
   for ( mint::IndexType i=0; i < numParticles; ++i )
   {
-     px[ i ] = random_double( LO, HI );
-     py[ i ] = random_double( LO, HI );
-     pz[ i ] = random_double( LO, HI );
+     px[ i ] = utilities::random_real( LO, HI );
+     py[ i ] = utilities::random_real( LO, HI );
+     pz[ i ] = utilities::random_real( LO, HI );
 
-     vx[ i ] = random_double( LO, HI );
-     vy[ i ] = random_double( LO, HI );
-     vz[ i ] = random_double( LO, HI );
+     vx[ i ] = utilities::random_real( LO, HI );
+     vy[ i ] = utilities::random_real( LO, HI );
+     vz[ i ] = utilities::random_real( LO, HI );
   }
 
-}
-
-//------------------------------------------------------------------------------
-inline double random_double( double min, double max )
-{
-  const double t  = ( double( rand() ) / RAND_MAX );
-  const double dx = max-min;
-  return (min + t*dx );
 }
 
 //------------------------------------------------------------------------------

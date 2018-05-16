@@ -22,24 +22,18 @@
  *  operations on a set of particles.
  */
 
+// Axom utilities
+#include "axom_utils/Utilities.hpp" // for random_real()
+
 // Mint includes
 #include "mint/config.hpp"
 #include "mint/ParticleMesh.hpp"
 #include "mint/vtk_utils.hpp"
 
-// C/C++ includes
-#include <cstdlib>               // for rand()
-#include <ctime>                 // for time()
-
 // namespace aliases
-namespace mint = axom::mint;
+namespace mint      = axom::mint;
+namespace utilities = axom::utilities;
 
-inline double random_double( double min, double max )
-{
-  const double t  = ( double( rand() ) / RAND_MAX );
-  const double dx = max-min;
-  return (min + t*dx );
-}
 
 //------------------------------------------------------------------------------
 int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
@@ -48,8 +42,8 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   const mint::IndexType NUM_PARTICLES = 100;
   const int DIMENSION = 3;
 
-  const double HI  = -10.0;
-  const double LO  = 10.0;
+  const double HI  = 10.0;
+  const double LO  = -10.0;
   const double VLO = 0.0;
   const double VHI = 1.0;
 
@@ -74,13 +68,13 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   for ( int64 i=0; i < numParticles; ++i )
   {
 
-    px[ i ] = random_double( LO, HI );
-    py[ i ] = random_double( LO, HI );
-    pz[ i ] = random_double( LO, HI );
+    px[ i ] = utilities::random_real( LO, HI );
+    py[ i ] = utilities::random_real( LO, HI );
+    pz[ i ] = utilities::random_real( LO, HI );
 
-    vx[ i ] = random_double( VLO, VHI );
-    vy[ i ] = random_double( VLO, VHI );
-    vz[ i ] = random_double( VLO, VHI );
+    vx[ i ] = utilities::random_real( VLO, VHI );
+    vy[ i ] = utilities::random_real( VLO, VHI );
+    vz[ i ] = utilities::random_real( VLO, VHI );
 
     id[ i ] = i;
 
