@@ -264,10 +264,8 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
     dimension = coords->getGroup( "values" )->getNumViews();
 
   } // END if STRUCTURED_MESH
-  else if ( strcmp( topo_type, "particle" )==0 )
+  else if ( strcmp( topo_type, "points" )==0 )
   {
-    // NOTE: currently the blueprint doesn't provide a topology type
-    // that indicates particles
     SLIC_ERROR_IF( !coords->hasChildGroup("values"),
                    "missing [values] group from [" << coords->getPathName() <<
                    "], required for a particle mesh" );

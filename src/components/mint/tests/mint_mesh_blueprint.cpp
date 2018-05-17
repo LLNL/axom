@@ -70,8 +70,7 @@ void createParticleMeshOnSidre( sidre::Group* root, int dimension )
 
   sidre::Group* t1 = topologies->createGroup( "t1"  );
 
-  // NOTE: blueprint currently does not support a "particle" topology type.
-  t1->createView( "type" )->setString( "particle" );
+  t1->createView( "type" )->setString( "points" );
   t1->createView( "coordset" )->setString( "c1" );
 
   // NOTE: the generated Sidre hierarchy is not complete, it only consists of
@@ -283,7 +282,7 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
   {
     sidre::DataStore ds;
     sidre::Group* root = ds.getRoot();
-    sidre::Group* particle_mesh_group     = root->createGroup("particle");
+    sidre::Group* particle_mesh_group     = root->createGroup("points");
     sidre::Group* uniform_mesh_group      = root->createGroup("uniform");
     sidre::Group* structured_mesh_group   = root->createGroup("structured");
     sidre::Group* rectilinear_mesh_group  = root->createGroup("rectilinear");
