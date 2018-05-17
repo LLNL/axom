@@ -38,7 +38,6 @@ typedef SetType::PositionType SetPosition;
 typedef SetType::ElementType SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
-static const SetPosition ADDITIONAL_ADD_SIZE = 5;
 
 typedef axom::slam::DynamicMap<int>    IntMap;
 typedef axom::slam::DynamicMap<double> RealMap;

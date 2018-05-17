@@ -122,8 +122,8 @@ TEST(spio_serial, basic_writeread_protocols)
     Group* gb = flds2->createGroup("b");
 
     // Note: use 64-bit integers since that is the native type for json
-    ga->createViewScalar<sidre_int64>("i0", 101);
-    gb->createViewScalar<sidre_int64>("i1", 404);
+    ga->createViewScalar<int64>("i0", 101);
+    gb->createViewScalar<int64>("i1", 404);
 
     int num_files = 1;
     IOManager writer(MPI_COMM_WORLD);
@@ -140,9 +140,9 @@ TEST(spio_serial, basic_writeread_protocols)
 
     EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-    sidre_int64 testvalue1 =
+    int64 testvalue1 =
       ds1->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-    sidre_int64 testvalue2 =
+    int64 testvalue2 =
       ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
     EXPECT_EQ(testvalue1,testvalue2);
