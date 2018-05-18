@@ -41,6 +41,11 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Mesh data-model
+    ## Internal implementation
+    mesh/internal/ConnectivityArray_indirection.hpp
+    mesh/internal/ConnectivityArray_typed_indirection.hpp
+    mesh/internal/ConnectivityArray_internal.hpp
+
     mesh/blueprint.hpp
     mesh/CellTypes.hpp
     mesh/ConnectivityArray.hpp
@@ -62,11 +67,6 @@ set( mint_headers
 
     ## utils
     utils/vtk_utils.hpp
-
-    ## Internal implementation
-    internal/ConnectivityArray_indirection.hpp
-    internal/ConnectivityArray_typed_indirection.hpp
-    internal/ConnectivityArray_internal.hpp
    )
 
 ## mint sources
