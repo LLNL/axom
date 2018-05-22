@@ -66,7 +66,7 @@ namespace numerics
  */
 template < typename T >
 int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas,
-                int numIterations=125);
+                int numIterations=160);
 
 } /* end namespace numerics */
 } /* end namespace axom */

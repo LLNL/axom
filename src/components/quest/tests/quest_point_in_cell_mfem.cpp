@@ -931,7 +931,7 @@ private:
       ret = axom::primal::abs( pt.array() ).max();
       break;
     }
-    
+
     return ret;
   }
 

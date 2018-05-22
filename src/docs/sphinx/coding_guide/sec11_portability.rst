@@ -146,7 +146,7 @@ and everything we necessarily depend on will become a dependency for our
 user.  
 
       **Before introducing any significant TPL dependency on Axom
-      (e.g., Boost), it must be agreed on by the development team and vetted
+      (e.g., hdf5), it must be agreed on by the development team and vetted
       with our main users.**
 
 11.8 Unless absolutely necessary, any TPL we depend on **must not** be 

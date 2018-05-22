@@ -23,6 +23,7 @@ set( quest_headers
     ## Geometry Headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
+    geom/ImplicitGrid.hpp
     geom/InOutOctree.hpp
     geom/OctreeBase.hpp
     geom/OctreeLevel.hpp
@@ -31,6 +32,11 @@ set( quest_headers
 
     # Mesh tester headers
     MeshTester.hpp
+
+    # PointInCell headers
+    PointInCell.hpp
+    detail/PointFinder.hpp
+    detail/PointInCellMeshWrapper_mfem.hpp
     
     ## STL library headers
     stl/STLReader.hpp
@@ -63,20 +69,6 @@ set( quest_depends_on
      slam
      primal
      )
-
-if (BOOST_FOUND)
-    list(APPEND quest_headers
-        # Geometry headers
-        geom/ImplicitGrid.hpp
-        
-        # PointInCell headers
-        PointInCell.hpp
-        detail/PointFinder.hpp
-        detail/PointInCellMeshWrapper_mfem.hpp
-        )
-
-    list(APPEND quest_depends_on boost)
-endif()
 
 if (ENABLE_OPENMP)
     list(APPEND quest_depends_on openmp)

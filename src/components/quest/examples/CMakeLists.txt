@@ -20,10 +20,6 @@ set(quest_example_depends
         quest
         )
 
-if (BOOST_FOUND)
-    list(APPEND quest_example_depends boost)
-endif()
-
 if (ENABLE_OPENMP)
     list(APPEND quest_example_depends openmp)
 endif()

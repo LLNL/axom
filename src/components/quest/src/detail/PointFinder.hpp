@@ -134,7 +134,7 @@ public:
     BitsetType candidates = m_grid.getCandidates(pt);
 
     bool foundContainingCell = false;
-    for(std::size_t cellIdx = candidates.find_first() ;
+    for(IndexType cellIdx = candidates.find_first() ;
         !foundContainingCell && cellIdx != BitsetType::npos ;
         cellIdx = candidates.find_next( cellIdx) )
     {

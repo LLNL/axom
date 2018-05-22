@@ -37,6 +37,8 @@ set(slam_headers
     RangeSet.hpp
     #ProductSet.hpp
     Set.hpp
+    BitSet.hpp
+    internal/BitTwiddle.hpp
 
     # SRM Relation headers
     Relation.hpp
