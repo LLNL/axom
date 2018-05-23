@@ -130,7 +130,8 @@ public:
    * \post this->getAssociation() == association
    * \post this->hasSidreGroup() == true
    */
-  FieldData( int association, sidre::Group* field_group, const std::string& topo );
+  FieldData( int association, sidre::Group* field_group,
+             const std::string& topo );
 #endif
 
 /// @}
@@ -175,9 +176,9 @@ public:
   { return ( m_fields.find( name ) != m_fields.end() ); }
 
   /*!
-    * \brief Checks if a Sidre Group is associated with this FieldData instance.
-    * \return status true if the FieldData is associated with Sidre, else, false.
-    */
+   * \brief Checks if a Sidre Group is associated with this FieldData instance.
+   * \return status true if the FieldData is associated with Sidre, else, false.
+   */
   inline bool hasSidreGroup() const;
 
   /*!
@@ -224,7 +225,8 @@ public:
    */
   template < typename T >
   inline T* createField( const std::string& name, IndexType num_tuples,
-                         IndexType num_components=1, IndexType capacity=USE_DEFAULT,
+                         IndexType num_components=1,
+                         IndexType capacity=USE_DEFAULT,
                          bool storeInSidre=true );
 
   /*!
@@ -260,8 +262,8 @@ public:
    */
   template < typename T >
   inline T* createField( const std::string& name,
-                         T* data, IndexType num_tuples, 
-                         IndexType num_components=1, 
+                         T* data, IndexType num_tuples,
+                         IndexType num_components=1,
                          IndexType capacity=USE_DEFAULT );
 
   /*!
@@ -371,7 +373,8 @@ public:
   /// @}
 
   /*!
-   * \brief Returns const pointer to the buffer of the field with the given name.
+   * \brief Returns const pointer to the buffer of the field with the given
+   *name.
    *
    * \param [in] name the name of the field in query.
    * \param [out] num_tuples the number of tuples in the field (optional)
@@ -581,8 +584,8 @@ inline T* FieldData::getFieldPtr( const std::string& name,
                                   IndexType& num_tuples,
                                   IndexType& num_components )
 {
-  const FieldData * const_this = this;
-  return const_cast< T* >( const_this->getFieldPtr< T >( name, num_tuples, 
+  const FieldData* const_this = this;
+  return const_cast< T* >( const_this->getFieldPtr< T >( name, num_tuples,
                                                          num_components ) );
 }
 
@@ -642,9 +645,9 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
 #ifdef MINT_USE_SIDRE
 
     SLIC_ERROR_IF( m_fields_group->hasGroup( name ),
-             "Field [" << name << "] already exists in the Sidre tree!" );
+                   "Field [" << name << "] already exists in the Sidre tree!" );
 
-    sidre::Group *field = m_fields_group->createGroup( name );
+    sidre::Group* field = m_fields_group->createGroup( name );
     field->createView( "association" )->setString( getAssociationName() );
     field->createView( "volume_dependent" )->setString( "true" );
 
@@ -671,8 +674,9 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline T* FieldData::createField( const std::string& name, T* data, 
-                                  IndexType num_tuples, IndexType num_components, 
+inline T* FieldData::createField( const std::string& name, T* data,
+                                  IndexType num_tuples,
+                                  IndexType num_components,
                                   IndexType capacity )
 {
   SLIC_ERROR_IF( data==AXOM_NULLPTR, "supplied buffer is NULL" );
@@ -683,7 +687,7 @@ inline T* FieldData::createField( const std::string& name, T* data,
     capacity = num_tuples;
   }
 
-  Field* field =  new mint::FieldVariable< T >( name, data, num_tuples, 
+  Field* field =  new mint::FieldVariable< T >( name, data, num_tuples,
                                                 num_components, capacity );
   m_fields[ name ] = field;
 

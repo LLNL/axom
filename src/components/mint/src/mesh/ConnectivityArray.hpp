@@ -148,7 +148,7 @@ public:
    * \post getNumberOfIDs() == 0
    * \post getIDType() == TYPE
    */
-  ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT ):
+  ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
     m_stride( -1 ),
     m_values( AXOM_NULLPTR )
@@ -183,7 +183,7 @@ public:
    * \post getIDType() == TYPE
    */
   ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values,
-                     IndexType ID_capacity=USE_DEFAULT ):
+                     IndexType ID_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
     m_stride( -1 ),
     m_values( AXOM_NULLPTR )
@@ -216,7 +216,7 @@ public:
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getIDType() == TYPE
    */
-  ConnectivityArray( sidre::Group* group ):
+  ConnectivityArray( sidre::Group* group ) :
     m_cell_type( UNDEFINED_CELL ),
     m_stride( -1 ),
     m_values( AXOM_NULLPTR )
@@ -229,8 +229,9 @@ public:
 
     m_stride = cell_info[ static_cast< int >( m_cell_type ) ].num_nodes;
 
-    SLIC_ERROR_IF( m_values->numComponents() != m_stride,
-                   "values array must have " << m_stride << " components, is " <<
+    SLIC_ERROR_IF(
+      m_values->numComponents() != m_stride,
+      "values array must have " << m_stride << " components, is " <<
                    m_values->numComponents() << "." );
   }
 
@@ -251,7 +252,7 @@ public:
    */
   ConnectivityArray( CellType cell_type, sidre::Group* group,
                      const std::string& coordset,
-                     IndexType ID_capacity=USE_DEFAULT ):
+                     IndexType ID_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
     m_stride( cell_info[ static_cast< int >( m_cell_type ) ].num_nodes ),
     m_values( AXOM_NULLPTR )
@@ -277,7 +278,7 @@ public:
   /*!
    * \brief Destructor, free's the allocated vector.
    */
-   ~ConnectivityArray()
+  ~ConnectivityArray()
   {
     if ( m_values != AXOM_NULLPTR )
     {
@@ -439,7 +440,8 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the values array, of length getNumberOfValues().
+   * \brief Returns a pointer to the values array, of length
+   *getNumberOfValues().
    */
   /// @{
 

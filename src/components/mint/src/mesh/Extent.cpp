@@ -27,9 +27,9 @@ namespace mint
 
 //------------------------------------------------------------------------------
 Extent::Extent( int ndims, const int64* ext ) :
-    m_ndims( ndims ),
-    m_numnodes( 1 ),
-    m_numcells( 1 )
+  m_ndims( ndims ),
+  m_numnodes( 1 ),
+  m_numcells( 1 )
 {
   SLIC_ERROR_IF( ext==AXOM_NULLPTR, "provided extent is null!" );
   SLIC_ERROR_IF( !(m_ndims >= 1 && m_ndims <= 3),
@@ -38,7 +38,7 @@ Extent::Extent( int ndims, const int64* ext ) :
   // copy in the user-supplied extent
   memcpy(m_extent, ext, 2 * ndims * sizeof( int64 )  );
 
-  for ( int i=0; i < m_ndims; ++i )
+  for ( int i=0 ; i < m_ndims ; ++i )
   {
     const int64 ilo = ext[ i*2   ];
     const int64 ihi = ext[ i*2+1 ];
@@ -46,7 +46,7 @@ Extent::Extent( int ndims, const int64* ext ) :
 
     m_sizes[ i ]  = ihi - ilo + 1;
     m_numnodes   *= m_sizes[ i ];
-    m_numcells   *= ( ( m_sizes[ i ] > 1 )? m_sizes[ i ] - 1 : 1 );
+    m_numcells   *= ( ( m_sizes[ i ] > 1 ) ? m_sizes[ i ] - 1 : 1 );
   }
 
   // compute strides

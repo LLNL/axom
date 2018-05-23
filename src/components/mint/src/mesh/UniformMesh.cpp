@@ -49,7 +49,7 @@ void set_spacing_and_origin( int ndims,
   SLIC_ASSERT( h != AXOM_NULLPTR );
   SLIC_ASSERT( origin != AXOM_NULLPTR );
 
-  for ( int i=0; i < ndims; ++i )
+  for ( int i=0 ; i < ndims ; ++i )
   {
     origin[ i ] = lo[ i ];
     double dx   = hi[ i ] - lo[ i ];
@@ -103,7 +103,7 @@ UniformMesh::UniformMesh( int dimension,
                           IndexType Ni,
                           IndexType Nj,
                           IndexType Nk ) :
-       StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension )
+  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension )
 {
   SLIC_ERROR_IF( lower_bound==AXOM_NULLPTR, "supplied null for lower_bound" );
   SLIC_ERROR_IF( upper_bound==AXOM_NULLPTR, "supplied null for upper_bound" );
@@ -111,9 +111,9 @@ UniformMesh::UniformMesh( int dimension,
   SLIC_ERROR_IF( (dimension >= 2 ) && (Nj <= 0),
                  "Nj must be greater or equal to 1" );
   SLIC_ERROR_IF( (dimension==3) && (Nk <= 0), ""
-                 "Nk must be greater or equal to 1" );
+                                              "Nk must be greater or equal to 1" );
 
-  int64 extent[ ] = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
+  int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
   m_extent        = new mint::Extent( dimension, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );
@@ -155,10 +155,10 @@ void UniformMesh::getNode( IndexType nodeID, double* node ) const
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( sidre::Group* group,
                           const std::string& topo ) :
-     StructuredMesh( group, topo )
+  StructuredMesh( group, topo )
 {
   SLIC_ERROR_IF( m_type != STRUCTURED_UNIFORM_MESH,
-                "supplied Sidre group does not correspond to a UniformMesh!" );
+                 "supplied Sidre group does not correspond to a UniformMesh!" );
 
   int64 extent[ 6 ];
   blueprint::getUniformMesh( m_ndims,
@@ -180,7 +180,7 @@ UniformMesh::UniformMesh( int dimension,
                           sidre::Group* group,
                           const std::string& topo,
                           const std::string& coordset ) :
-   StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, group, topo, coordset )
+  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, group, topo, coordset )
 {
   SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent buffer is null" );
   SLIC_ERROR_IF( lower_bound==AXOM_NULLPTR, "supplied null for lower_bound" );
@@ -189,7 +189,7 @@ UniformMesh::UniformMesh( int dimension,
   // STEP 0: initialize mesh
   m_extent = new mint::Extent( dimension, extent );
   set_spacing_and_origin( m_ndims, m_extent,
-                            lower_bound, upper_bound, m_h, m_origin );
+                          lower_bound, upper_bound, m_h, m_origin );
 
   initializeFields();
 
@@ -220,10 +220,10 @@ UniformMesh::UniformMesh( int dimension,
   SLIC_ERROR_IF( (dimension >= 2 ) && (Nj <= 0),
                  "Nj must be greater or equal to 1" );
   SLIC_ERROR_IF( (dimension==3) && (Nk <= 0), ""
-                 "Nk must be greater or equal to 1" );
+                                              "Nk must be greater or equal to 1" );
 
   // STEP 0: initialize mesh
-  int64 extent[ ] = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
+  int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
   m_extent        = new mint::Extent( dimension, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );

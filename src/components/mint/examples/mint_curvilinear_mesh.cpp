@@ -44,7 +44,7 @@ constexpr double M  = ( 2*PI ) / 50.0;
 int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
 
-  constexpr int    N = 100;
+  constexpr int N = 100;
   constexpr double h = 0.5;
 
   // STEP 0: construct a N x N curvilinear mesh
@@ -58,10 +58,10 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* dy = mesh.createField< double >( "dy", mint::NODE_CENTERED );
 
   // STEP 2: fill in the coordinates
-  for ( IndexType j=0; j < N; ++j )
+  for ( IndexType j=0 ; j < N ; ++j )
   {
     const IndexType offset = j * jp;
-    for ( IndexType i=0; i < N; ++i )
+    for ( IndexType i=0 ; i < N ; ++i )
     {
       const IndexType idx = i + offset;
       const double xx     = h*i;
@@ -82,4 +82,3 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   return 0;
 }
-

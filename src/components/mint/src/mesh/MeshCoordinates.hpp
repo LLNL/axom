@@ -481,13 +481,14 @@ public:
    */
   /// @{
 
-  void insert( IndexType nodeID, const double* x, const double* y, IndexType n );
+  void insert( IndexType nodeID, const double* x, const double* y,
+               IndexType n );
   void insert( IndexType nodeID, const double* x, const double* y,
                const double* z, IndexType n );
 
   /// @}
 
-    /*!
+  /*!
    * \brief Returns the coordinate of a point at the given dimension.
    *
    * \param [in] nodeID the index of the point in query.
@@ -593,7 +594,8 @@ private:
   sidre::Group* m_group;
 #endif
   int m_ndims;
-  Array< double >* m_coordinates[3] = {AXOM_NULLPTR, AXOM_NULLPTR, AXOM_NULLPTR};
+  Array< double >* m_coordinates[3] =
+  {AXOM_NULLPTR, AXOM_NULLPTR, AXOM_NULLPTR};
 
   DISABLE_COPY_AND_ASSIGNMENT( MeshCoordinates );
   DISABLE_MOVE_AND_ASSIGNMENT( MeshCoordinates );
@@ -608,7 +610,7 @@ inline bool MeshCoordinates::isExternal() const
 {
   bool is_external = m_coordinates[0]->isExternal();
   bool consistent = true;
-  for ( int i = 1; i < m_ndims; ++i )
+  for ( int i = 1 ; i < m_ndims ; ++i )
   {
     consistent &= m_coordinates[ i ]->isExternal() == is_external;
   }
@@ -623,7 +625,7 @@ inline bool MeshCoordinates::isInSidre() const
 #ifdef MINT_USE_SIDRE
   bool is_in_sidre = m_group != AXOM_NULLPTR;
   bool consistent = true;
-  for ( int i = 0; i < m_ndims; ++i )
+  for ( int i = 0 ; i < m_ndims ; ++i )
   {
     consistent &= m_coordinates[ i ]->isInSidre() == is_in_sidre;
   }
@@ -645,7 +647,7 @@ inline IndexType MeshCoordinates::append( double x )
   m_coordinates[0]->append( x );
 
   SLIC_ASSERT( idx == numNodes() - 1 );
-  SLIC_ASSERT( validIndex( idx ) ) ;
+  SLIC_ASSERT( validIndex( idx ) );
   SLIC_ASSERT( consistencyCheck() );
 
   return idx;
@@ -663,7 +665,7 @@ inline IndexType MeshCoordinates::append( double x, double y )
   m_coordinates[1]->append( y );
 
   SLIC_ASSERT( idx == numNodes() - 1 );
-  SLIC_ASSERT( validIndex( idx ) ) ;
+  SLIC_ASSERT( validIndex( idx ) );
   SLIC_ASSERT( consistencyCheck() );
 
   return idx;
@@ -683,7 +685,7 @@ inline IndexType MeshCoordinates::append( double x, double y, double z )
   m_coordinates[2]->append( z );
 
   SLIC_ASSERT( idx == numNodes() - 1 );
-  SLIC_ASSERT( validIndex( idx ) ) ;
+  SLIC_ASSERT( validIndex( idx ) );
   SLIC_ASSERT( consistencyCheck() );
 
   return idx;
@@ -704,16 +706,16 @@ inline void MeshCoordinates::append( const double* coords, IndexType n )
 
   IndexType original_size = numNodes();
   double* coord_arrays[3];
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
     m_coordinates[ dim ]->resize( original_size + n );
     coord_arrays[ dim ] = getCoordinateArray( dim );
   }
 
-  for ( IndexType i = 0; i < n; ++i )
+  for ( IndexType i = 0 ; i < n ; ++i )
   {
-    for ( int dim = 0; dim < m_ndims; ++dim )
+    for ( int dim = 0 ; dim < m_ndims ; ++dim )
     {
       coord_arrays[dim][ original_size + i ] = coords[ m_ndims * i + dim ];
     }
@@ -876,16 +878,16 @@ inline void MeshCoordinates::insert( IndexType nodeID, const double* coords,
   }
 
   double* coord_arrays[3];
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
     m_coordinates[ dim ]->emplace( n, nodeID );
     coord_arrays[ dim ] = getCoordinateArray( dim );
   }
 
-  for ( IndexType i = 0; i < n; ++i )
+  for ( IndexType i = 0 ; i < n ; ++i )
   {
-    for ( int dim = 0; dim < m_ndims; ++dim )
+    for ( int dim = 0 ; dim < m_ndims ; ++dim )
     {
       coord_arrays[dim][ nodeID + i ] = coords[ m_ndims * i + dim ];
     }
@@ -949,7 +951,7 @@ inline void MeshCoordinates::getCoordinates( IndexType nodeID,
                                              double* coords ) const
 {
   SLIC_ASSERT( coords != AXOM_NULLPTR );
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     coords[ dim ] = getCoordinate( nodeID, dim );
   }
@@ -998,7 +1000,7 @@ inline void MeshCoordinates::setResizeRatio( double ratio )
 inline void MeshCoordinates::shrink( )
 {
 
-  for ( int dim = 0; dim < m_ndims ; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != AXOM_NULLPTR );
     m_coordinates[ dim ]->shrink();
@@ -1016,7 +1018,7 @@ inline void MeshCoordinates::initialize( IndexType numNodes,
   SLIC_ASSERT( numNodes <= maxCapacity );
   SLIC_ASSERT( !invalidDimension() );
 
-  for ( int i=0; i < m_ndims; ++i )
+  for ( int i=0 ; i < m_ndims ; ++i )
   {
     m_coordinates[ i ] = new Array< double >( numNodes, 1, maxCapacity );
   }

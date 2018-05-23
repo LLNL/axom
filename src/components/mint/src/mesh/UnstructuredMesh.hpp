@@ -113,7 +113,7 @@ template < Topology TOPO >
 class UnstructuredMesh : public Mesh
 {
 
-AXOM_STATIC_ASSERT( TOPO == Topology::SINGLE || TOPO == Topology::MIXED );
+  AXOM_STATIC_ASSERT( TOPO == Topology::SINGLE || TOPO == Topology::MIXED );
 
 public:
 
@@ -141,7 +141,8 @@ public:
    */
   template < Topology DUMMY = TOPO >
   UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE,
-                    int >::type ndims, CellType cell_type,
+                                             int >::type ndims,
+                    CellType cell_type,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
@@ -168,7 +169,8 @@ public:
    */
   template < Topology DUMMY = TOPO >
   UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED,
-                    int >::type ndims, IndexType node_capacity=USE_DEFAULT,
+                                             int >::type ndims,
+                    IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT,
                     IndexType connectivity_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
@@ -223,7 +225,7 @@ public:
                                                cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE,
-                "This constructor is only active for single topology meshes." );
+                            "This constructor is only active for single topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
@@ -274,7 +276,7 @@ public:
                                                connectivity_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED,
-                "This constructor is only active for mixed topology meshes." );
+                            "This constructor is only active for mixed topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
@@ -312,7 +314,7 @@ public:
     m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
-           "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
+                   "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
     if ( TOPO == Topology::MIXED )
     {
@@ -362,7 +364,7 @@ public:
                                                m_coordset, cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE,
-                "This constructor is only active for single topology meshes." );
+                            "This constructor is only active for single topology meshes." );
     initialize();
   }
 
@@ -386,7 +388,7 @@ public:
                                                connectivity_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED,
-                "This constructor is only active for mixed topology meshes." );
+                            "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
     initialize();
@@ -450,7 +452,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType getNumberOfCellNodes( IndexType cellID=0 )
-                                                            const override final
+  const override final
   { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!
@@ -839,7 +841,7 @@ public:
   void appendCell( const IndexType* connec, CellType type=UNDEFINED_CELL )
   {
     IndexType n_values = (type == UNDEFINED_CELL) ?
-                                                0 : cell_info[ type ].num_nodes;
+                         0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->append( connec, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
   }
@@ -882,7 +884,7 @@ public:
                    CellType type=UNDEFINED_CELL )
   {
     IndexType n_values = (type == UNDEFINED_CELL) ?
-                                                0 : cell_info[ type ].num_nodes;
+                         0 : cell_info[ type ].num_nodes;
     m_cell_connectivity->insert( connec, ID, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->emplace( ID, 1 );
   }
@@ -1123,7 +1125,8 @@ public:
 
 
   void insertNodes( IndexType nodeID, const double* x, const double* y,
-                    const double* z, IndexType n, bool update_connectivity=true )
+                    const double* z, IndexType n,
+                    bool update_connectivity=true )
   {
     m_coordinates->insert( nodeID, x, y, z, n );
     m_mesh_fields[ NODE_CENTERED ]->emplace( nodeID, n );
@@ -1156,7 +1159,7 @@ private:
     IndexType* values = getCellConnectivityArray();
     SLIC_ASSERT( n_values == 0 || values != AXOM_NULLPTR );
 
-    for ( IndexType i = 0; i < n_values; ++i )
+    for ( IndexType i = 0 ; i < n_values ; ++i )
     {
       if ( values[ i ] >= pos )
       {
@@ -1176,11 +1179,11 @@ private:
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
     m_mesh_fields[ CELL_CENTERED ]->reserve(
-                                         m_cell_connectivity->getIDCapacity() );
+      m_cell_connectivity->getIDCapacity() );
   }
 
   using CellConnectivity =
-                      ConnectivityArray< topology_traits< TOPO >::cell_connec >;
+          ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
   MeshCoordinates* m_coordinates;
   CellConnectivity* m_cell_connectivity;

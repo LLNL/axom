@@ -196,9 +196,9 @@ void check_fill( Array< T >& v )
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
-  for ( IndexType i = 0; i < size; ++i )
+  for ( IndexType i = 0 ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM_0 );
     }
@@ -211,9 +211,9 @@ void check_fill( Array< T >& v )
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
-  for ( IndexType i = 0; i < size; ++i )
+  for ( IndexType i = 0 ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM_1 );
     }
@@ -235,11 +235,11 @@ void check_set( Array< T >& v )
   const T* const data_ptr = v.getData();
 
   const IndexType buffer_size = size / 2;
-  T * buffer = new T[ buffer_size * num_components ];
+  T* buffer = new T[ buffer_size * num_components ];
 
-  for ( IndexType i = 0; i < buffer_size * num_components; ++i )
+  for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
-    buffer[ i ] = i; 
+    buffer[ i ] = i;
   }
 
   v.fill( ZERO );
@@ -250,24 +250,24 @@ void check_set( Array< T >& v )
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
-  for ( IndexType i = 0; i < buffer_size; ++i )
+  for ( IndexType i = 0 ; i < buffer_size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), i * num_components + j );
     }
   }
-  for ( IndexType i = buffer_size; i < size; ++i )
+  for ( IndexType i = buffer_size ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), ZERO );
     }
   }
 
-  for ( IndexType i = 0; i < buffer_size * num_components; ++i )
+  for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
-    buffer[ i ] = i + buffer_size * num_components; 
+    buffer[ i ] = i + buffer_size * num_components;
   }
 
   v.set( buffer, buffer_size, buffer_size );
@@ -277,16 +277,16 @@ void check_set( Array< T >& v )
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
-  for ( IndexType i = 0; i < 2 * buffer_size; ++i )
+  for ( IndexType i = 0 ; i < 2 * buffer_size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), i * num_components + j );
     }
   }
-  for ( IndexType i = 2 * buffer_size; i < size; ++i )
+  for ( IndexType i = 2 * buffer_size ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), ZERO );
     }
@@ -594,9 +594,9 @@ void check_emplace( Array< T >& v )
   EXPECT_EQ( v.size(), v.capacity() );
 
   /* Set the existing data in v */
-  for ( IndexType i = 0; i < size; ++i )
+  for ( IndexType i = 0 ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       v( i, j ) = i * num_components + j;
     }
@@ -616,20 +616,20 @@ void check_emplace( Array< T >& v )
   /* Check the data */
   for ( IndexType i = 0 ; i < size - 10 ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), i * num_components + j );
     }
   }
 
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     EXPECT_EQ( v( size - 10, j ), T() );
   }
 
-  for ( IndexType i = size - 9; i < size; ++i )
+  for ( IndexType i = size - 9 ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM );
     }
@@ -647,37 +647,37 @@ void check_emplace( Array< T >& v )
   EXPECT_EQ( v.size(), size );
 
   /* Check the beginning */
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     EXPECT_EQ( v( 0, j ), T() );
   }
 
-  for ( IndexType i = 1; i < 10; ++i )
+  for ( IndexType i = 1 ; i < 10 ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM );
     }
   }
 
   /* Check the middle */
-  for ( IndexType i = 10; i < size - 10; ++i )
+  for ( IndexType i = 10 ; i < size - 10 ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), (i - 10) * num_components + j );
     }
   }
 
   /* Check the end */
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     EXPECT_EQ( v( size - 10, j ), T() );
   }
 
-  for ( IndexType i = size - 9; i < size; ++i )
+  for ( IndexType i = size - 9 ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM );
     }
@@ -696,60 +696,60 @@ void check_emplace( Array< T >& v )
   EXPECT_EQ( v.size(), size );
 
   /* Check the beginning */
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     EXPECT_EQ( v( 0, j ), T() );
   }
 
-  for ( IndexType i = 1; i < 10; ++i )
+  for ( IndexType i = 1 ; i < 10 ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM );
     }
   }
 
   /* Check the first section */
-  for ( IndexType i = 10; i < middle; ++i )
+  for ( IndexType i = 10 ; i < middle ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), (i - 10) * num_components + j );
     }
   }
 
   /* Check the middle */
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     EXPECT_EQ( v( middle, j ), T() );
   }
 
-  for ( IndexType i = middle + 1; i < middle + 10; ++i )
+  for ( IndexType i = middle + 1 ; i < middle + 10 ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM );
     }
   }
 
   /* Check the second section */
-  for ( IndexType i = middle + 10; i < size - 10; ++i )
+  for ( IndexType i = middle + 10 ; i < size - 10 ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), (i - 20) * num_components + j );
     }
   }
 
   /* Check the end */
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     EXPECT_EQ( v( size - 10, j ), T() );
   }
 
-  for ( IndexType i = size - 9; i < size; ++i )
+  for ( IndexType i = size - 9 ; i < size ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), MAGIC_NUM );
     }
@@ -878,7 +878,7 @@ TEST( mint_core_array, checkFill )
 
   for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
-    IndexType size = capacity / 2;  
+    IndexType size = capacity / 2;
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
     {
       Array< int > v_int( size, n_components, capacity );
@@ -912,7 +912,7 @@ TEST( mint_core_array, checkSet )
 
   for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
-    IndexType size = capacity / 2;  
+    IndexType size = capacity / 2;
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
     {
       Array< int > v_int( size, n_components, capacity );
@@ -951,7 +951,7 @@ TEST( mint_core_array, checkResize )
   v_int.setResizeRatio( 0.99 );
   EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 
-  for ( double ratio = 1.0; ratio <= 2.0; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
     for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
@@ -1002,11 +1002,11 @@ TEST( mint_core_array, checkInsert )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0 ; ratio <= 2.0; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2 ; capacity <= 512; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( IndexType n_components = 1 ; n_components <= 3; n_components++ )
+      for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
         Array< int > v_int( ZERO, n_components, capacity );
         v_int.setResizeRatio( ratio );
@@ -1044,11 +1044,11 @@ TEST( mint_core_array, checkEmplace )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0; ratio <= 2.0; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2; capacity <= 512; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( IndexType n_components = 1 ; n_components <= 3; n_components++ )
+      for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
         Array< int > v_int( ZERO, n_components, capacity );
         v_int.setResizeRatio( ratio );
@@ -1087,9 +1087,9 @@ TEST( mint_core_array, checkSidre )
 
   constexpr IndexType ZERO = 0;
 
-  for ( double ratio = 1.0; ratio <= 2.0; ratio += 0.5 )
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
-    for ( IndexType capacity = 2; capacity <= 512; capacity *= 2 )
+    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
       for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
@@ -1099,7 +1099,8 @@ TEST( mint_core_array, checkSidre )
         internal::check_storage( v_int );
         internal::check_sidre( v_int );
 
-        Array< double > v_double( root->createView("double"), ZERO, n_components,
+        Array< double > v_double( root->createView(
+                                    "double"), ZERO, n_components,
                                   capacity );
         v_double.setResizeRatio( ratio );
         internal::check_storage( v_double );
@@ -1127,20 +1128,20 @@ TEST( mint_core_array, checkSidrePermanence)
     {
       for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
-        const double * array_data_ptr;
+        const double* array_data_ptr;
         IndexType num_values;
         { /* Begin scope */
           Array< double > v( root->createView("double"), ZERO, n_components,
-                                    capacity );
+                             capacity );
           array_data_ptr = v.getData();
           num_values = v.size() * v.numComponents();
           v.setResizeRatio( ratio );
           internal::check_storage( v );
 
           /* Set v's data to MAGIC_NUM */
-          for ( IndexType i = 0; i < v.size(); ++i )
+          for ( IndexType i = 0 ; i < v.size() ; ++i )
           {
-            for ( IndexType j = 0; j < v.numComponents(); ++j )
+            for ( IndexType j = 0 ; j < v.numComponents() ; ++j )
             {
               v( i, j ) = MAGIC_NUM;
             }
@@ -1148,9 +1149,9 @@ TEST( mint_core_array, checkSidrePermanence)
         } /* End scope, v has been deallocated. */
 
         /* Check that the data still exists in sidre */
-        sidre::View * view = root->getView( "double" );
-        const double * view_data_ptr = static_cast< const double * >(
-                                                           view->getVoidPtr() );
+        sidre::View* view = root->getView( "double" );
+        const double* view_data_ptr = static_cast< const double* >(
+          view->getVoidPtr() );
         EXPECT_EQ( view_data_ptr, array_data_ptr );
         EXPECT_EQ( view->getNumDimensions(), 2 );
 
@@ -1159,7 +1160,8 @@ TEST( mint_core_array, checkSidrePermanence)
         EXPECT_EQ( dims[0], capacity );
         EXPECT_EQ( dims[1], n_components );
 
-        for ( IndexType i = 0; i < num_values; ++i ) {
+        for ( IndexType i = 0 ; i < num_values ; ++i )
+        {
           EXPECT_EQ( view_data_ptr[ i ], MAGIC_NUM );
         }
 
@@ -1188,7 +1190,7 @@ TEST( mint_core_array_DeathTest, checkExternal )
   DataBuffer buffer;
   std::fill_n( buffer.doubles, MAX_VALUES, MAGIC_NUM );
 
-  for ( IndexType size = 16; size <= MAX_SIZE ; size *= 2 )
+  for ( IndexType size = 16 ; size <= MAX_SIZE ; size *= 2 )
   {
     for ( IndexType n_comp = 1 ; n_comp <= MAX_COMPONENTS ; n_comp++ )
     {
@@ -1206,7 +1208,7 @@ TEST( mint_core_array_DeathTest, checkExternal )
     }
 
     /* Check that the data still exists in the buffer */
-    for ( IndexType i = 0; i < MAX_VALUES; ++i )
+    for ( IndexType i = 0 ; i < MAX_VALUES ; ++i )
     {
       EXPECT_EQ( buffer.doubles[ i ], MAGIC_NUM );
     }

@@ -36,7 +36,7 @@ namespace axom
 namespace mint
 {
 
-/* Provided so that 0 doesn't convert to nullptr and lead to ambiguous 
+/* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
 namespace internal
 {
@@ -170,7 +170,7 @@ public:
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
-  Array( T* data, IndexType num_tuples, IndexType num_components, 
+  Array( T* data, IndexType num_tuples, IndexType num_components,
          IndexType capacity=USE_DEFAULT );
 
 /// @}
@@ -258,12 +258,12 @@ public:
    * \pre 0 <= component < numComponents()
    */
   inline T & operator()( IndexType pos, IndexType component=0 )
-  { 
+  {
     SLIC_ASSERT( pos >= 0 );
     SLIC_ASSERT( pos < m_num_tuples );
     SLIC_ASSERT( component >= 0 );
     SLIC_ASSERT( component < m_num_components );
-    return m_data[ pos * m_num_components + component ]; 
+    return m_data[ pos * m_num_components + component ];
   }
 
   /*!
@@ -275,10 +275,10 @@ public:
    * \pre 0 <= idx < m_num_tuples * m_num_components
    */
   inline T & operator[]( IndexType idx )
-  { 
+  {
     SLIC_ASSERT( idx >= 0 );
     SLIC_ASSERT( idx < m_num_tuples * m_num_components );
-    return m_data[ idx ]; 
+    return m_data[ idx ];
   }
 
   /*!
@@ -360,11 +360,11 @@ public:
   inline void insert( const T* tuples, IndexType n, IndexType pos );
 
   /*!
-  * \brief Insert multiple values at the given position.
-  * \param [in] n the number of values to insert.
-  * \param [in] pos the position to insert at.
-  * \param [in] value the value to insert.
-  */
+   * \brief Insert multiple values at the given position.
+   * \param [in] n the number of values to insert.
+   * \param [in] pos the position to insert at.
+   * \param [in] value the value to insert.
+   */
   inline void emplace( IndexType n, IndexType pos, const T& value=T() );
 
 /// @}
@@ -438,13 +438,13 @@ public:
    * \brief Checks if this array instance is in sidre.
    * \return status true iff a sidre constructor was called.
    */
-  inline bool isInSidre() const 
-  { 
+  inline bool isInSidre() const
+  {
     #ifdef MINT_USE_SIDRE
     return m_view != AXOM_NULLPTR;
     #else
     return false;
-    #endif 
+    #endif
   }
 
 #ifdef MINT_USE_SIDRE
@@ -496,7 +496,7 @@ private:
    *  handles when T is not an enum.
    */
   template < typename U = T >
-  static constexpr 
+  static constexpr
   typename std::enable_if< !std::is_enum< U >::value, sidre::TypeID >::type
   sidreTypeId()
   { return sidre::detail::SidreTT< U >::id; }
@@ -506,14 +506,16 @@ private:
    *  when T is an enum.
    */
   template < typename U = T >
-  static constexpr 
+  static constexpr
   typename std::enable_if< std::is_enum< U >::value, sidre::TypeID >::type
   sidreTypeId()
-  { return sidre::detail::SidreTT< 
-                               typename std::underlying_type< U >::type >::id; }
+  {
+    return sidre::detail::SidreTT<
+      typename std::underlying_type< U >::type >::id;
+  }
 
   /*!
-   * \brief Describes m_view as having dimensions 
+   * \brief Describes m_view as having dimensions
    * (m_num_tuples, m_num_components).
    */
   inline void describeView();
@@ -580,9 +582,9 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
                  "(" << capacity << ")." );
 
   if ( capacity == USE_DEFAULT )
-  { 
-    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ? 
-                                            m_num_tuples : MIN_DEFAULT_CAPACITY;
+  {
+    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ?
+               m_num_tuples : MIN_DEFAULT_CAPACITY;
   }
   setCapacity( capacity );
 
@@ -678,7 +680,7 @@ Array< T >::Array( sidre::View* view ) :
                  "differs from this Array type (" << T_type << ")." );
 
   m_data = static_cast< T* >( m_view->getVoidPtr() );
-  SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0, 
+  SLIC_ERROR_IF( m_data == AXOM_NULLPTR && m_capacity > 0,
                  "View returned a null pointer when the capacity " <<
                  "is greater than zero." );
 }
@@ -706,8 +708,8 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
 
   if ( capacity == USE_DEFAULT )
   {
-    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ? 
-                                            m_num_tuples : MIN_DEFAULT_CAPACITY;
+    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ?
+               m_num_tuples : MIN_DEFAULT_CAPACITY;
   }
   SLIC_ERROR_IF( m_num_tuples > capacity,
                  "Number of tuples (" << m_num_tuples << ") " <<
@@ -872,7 +874,7 @@ inline void Array< T >::updateNumTuples( IndexType new_num_tuples )
 
 #ifdef MINT_USE_SIDRE
   if ( m_view != AXOM_NULLPTR )
-  {    
+  {
     describeView();
   }
 #endif

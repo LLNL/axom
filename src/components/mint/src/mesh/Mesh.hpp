@@ -242,7 +242,7 @@ public:
   virtual IndexType getCellCapacity() const
   { return getNumberOfCells(); }
 
-    /*!
+  /*!
    * \brief Return the number of nodes associated with the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -793,11 +793,12 @@ inline bool Mesh::hasSidreGroup( ) const
 inline const FieldData* Mesh::getFieldData( int association ) const
 {
   SLIC_ERROR_IF( association < 0 || association >= NUM_FIELD_ASSOCIATIONS,
-                  "invalid field association [" << association << "]" );
+                 "invalid field association [" << association << "]" );
   SLIC_ERROR_IF( m_mesh_fields[ association ]==AXOM_NULLPTR,
-              "null field data object w/association [" << association << "]" );
+                 "null field data object w/association [" << association <<
+      "]" );
   SLIC_ERROR_IF( m_type==PARTICLE_MESH && association != NODE_CENTERED,
-              "a particle mesh may only store node-centered fields" );
+                 "a particle mesh may only store node-centered fields" );
 
   return m_mesh_fields[ association ];
 }
@@ -903,8 +904,8 @@ inline const T* Mesh::getFieldPtr( const std::string& name,
 //------------------------------------------------------------------------------
 template < typename T >
 inline const T* Mesh::getFieldPtr( const std::string& name,
-                             int association,
-                             IndexType& num_components ) const
+                                   int association,
+                                   IndexType& num_components ) const
 {
   const FieldData* fd = getFieldData( association );
   SLIC_ASSERT( fd != AXOM_NULLPTR );

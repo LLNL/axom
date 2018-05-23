@@ -137,7 +137,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   blueprint::getMeshTypeAndDimension( m_type, m_ndims, m_group, m_topology );
   m_topology = getTopologyGroup()->getName();
   m_coordset = blueprint::getCoordsetGroup( m_group, getTopologyGroup() )
-                                                                    ->getName();
+               ->getName();
 
   SLIC_ERROR_IF( !m_group->hasChildGroup( "state" ),
                  "root group does not have a state group." );
@@ -181,8 +181,8 @@ Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
   SLIC_ERROR_IF( m_group==AXOM_NULLPTR, "NULL sidre group" );
 
   // provide default names if not specified
-  m_topology = ( topo.empty() )? "t1" : topo;
-  m_coordset = ( coordset.empty() )? "c1" : coordset;
+  m_topology = ( topo.empty() ) ? "t1" : topo;
+  m_coordset = ( coordset.empty() ) ? "c1" : coordset;
 
   if ( !m_group->hasChildGroup( "state" ) )
   {
@@ -190,7 +190,7 @@ Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
   }
 
   sidre::Group* state_group = m_group->getGroup( "state" )
-                                                    ->createGroup( m_topology );
+                              ->createGroup( m_topology );
   state_group->createView( "block_id" )->setScalar( m_block_idx );
   state_group->createView( "partition_id" )->setScalar( m_part_idx );
 
@@ -221,7 +221,7 @@ Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
 sidre::Group* Mesh::getCoordsetGroup( )
 {
   const sidre::Group* g =
-      blueprint::getCoordsetGroup( m_group, m_coordset );
+    blueprint::getCoordsetGroup( m_group, m_coordset );
   return (  const_cast< sidre::Group* >( g ) );
 }
 
@@ -248,7 +248,7 @@ void Mesh::setBlockId( int ID )
   if ( hasSidreGroup() )
   {
     sidre::Group* state_group =
-        m_group->getGroup( "state" )->getGroup( m_topology );
+      m_group->getGroup( "state" )->getGroup( m_topology );
     SLIC_ASSERT( state_group != AXOM_NULLPTR );
     sidre::View* block_view = state_group->getView( "block_id" );
     SLIC_ASSERT( block_view != AXOM_NULLPTR );
@@ -265,7 +265,7 @@ void Mesh::setPartitionId( int ID )
   if ( hasSidreGroup() )
   {
     sidre::Group* state_group =
-        m_group->getGroup( "state" )->getGroup( m_topology );
+      m_group->getGroup( "state" )->getGroup( m_topology );
     SLIC_ASSERT( state_group != AXOM_NULLPTR );
     sidre::View* partition_view = state_group->getView( "partition_id" );
     SLIC_ASSERT( partition_view != AXOM_NULLPTR );
@@ -283,7 +283,7 @@ void Mesh::allocateFieldData( )
     sidre::Group* fields_group = m_group->getGroup( "fields");
     SLIC_ASSERT( fields_group != AXOM_NULLPTR );
 
-    for ( int assoc=0; assoc < NUM_FIELD_ASSOCIATIONS; ++assoc )
+    for ( int assoc=0 ; assoc < NUM_FIELD_ASSOCIATIONS ; ++assoc )
     {
       m_mesh_fields[ assoc ] = new FieldData( assoc, fields_group, m_topology );
     }
@@ -292,7 +292,7 @@ void Mesh::allocateFieldData( )
   }
 #endif
 
-  for ( int assoc=0; assoc < NUM_FIELD_ASSOCIATIONS; ++assoc )
+  for ( int assoc=0 ; assoc < NUM_FIELD_ASSOCIATIONS ; ++assoc )
   {
     m_mesh_fields[ assoc ] = new FieldData( assoc );
   }
@@ -302,7 +302,7 @@ void Mesh::allocateFieldData( )
 //------------------------------------------------------------------------------
 void Mesh::deallocateFieldData( )
 {
-  for ( int i=0; i < NUM_FIELD_ASSOCIATIONS; ++i )
+  for ( int i=0 ; i < NUM_FIELD_ASSOCIATIONS ; ++i )
   {
     SLIC_ASSERT( m_mesh_fields[ i ] != AXOM_NULLPTR );
 

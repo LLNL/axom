@@ -35,26 +35,26 @@ namespace mint = axom::mint;
 TEST( mint_mesh_cell_types, check_cell_types )
 {
   const int num_nodes[ mint::NUM_CELL_TYPES ] = {
-      1,  // VERTEX
-      2,  // SEGMENT
-      3,  // TRIANGLE
-      4,  // QUAD
-      4,  // TET
-      8,  // HEX
-      6,  // PRISM
-      5,  // PYRAMID
-      9,  // QUAD9
-      27, // HEX27
+    1,    // VERTEX
+    2,    // SEGMENT
+    3,    // TRIANGLE
+    4,    // QUAD
+    4,    // TET
+    8,    // HEX
+    6,    // PRISM
+    5,    // PYRAMID
+    9,    // QUAD9
+    27,   // HEX27
   };
 
-  for ( int i=0; i < mint::NUM_CELL_TYPES; ++i )
+  for ( int i=0 ; i < mint::NUM_CELL_TYPES ; ++i )
   {
     SLIC_INFO( "[" << mint::cell_info[ i ].name << "] =>" <<
-      "type=" << mint::cell_info[ i ].cell_type << " " <<
-      "blueprint_name=(" << mint::cell_info[ i ].blueprint_name << ") " <<
-      "vtk_type=" << mint::cell_info[ i ].vtk_type << " " <<
-      "num_nodes=" << mint::cell_info[ i ].num_nodes
-      );
+               "type=" << mint::cell_info[ i ].cell_type << " " <<
+               "blueprint_name=(" << mint::cell_info[ i ].blueprint_name << ") " <<
+               "vtk_type=" << mint::cell_info[ i ].vtk_type << " " <<
+               "num_nodes=" << mint::cell_info[ i ].num_nodes
+               );
 
     EXPECT_EQ( mint::cell_info[ i ].cell_type, i );
     EXPECT_TRUE( strlen( mint::cell_info[ i ].name ) > 0 );

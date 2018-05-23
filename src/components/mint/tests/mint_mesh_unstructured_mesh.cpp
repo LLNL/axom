@@ -72,7 +72,7 @@ std::string getFieldName( const Mesh* mesh, int association )
     field_name = "f2";
   }
 
-  if ( mesh->hasSidreGroup() ) 
+  if ( mesh->hasSidreGroup() )
   {
 #ifdef MINT_USE_SIDRE
     field_name = mesh->getTopologyName() + "_" + field_name;
@@ -136,11 +136,11 @@ void createExternalField( Mesh* mesh, int association, IndexType capacity )
  * \pre association == NODE_CENTERED or association == CELL_CENTERED
  */
 FieldVariable< double >* getFieldVar( Mesh* mesh, int association )
-{  
+{
   const std::string field_name = getFieldName( mesh, association );
-  Field* f = const_cast< Field* >( 
-                    mesh->getFieldData( association )->getField( field_name ) ); 
-  return dynamic_cast< FieldVariable< double >* >( f ); 
+  Field* f = const_cast< Field* >(
+    mesh->getFieldData( association )->getField( field_name ) );
+  return dynamic_cast< FieldVariable< double >* >( f );
 }
 
 /*!
@@ -150,7 +150,9 @@ FieldVariable< double >* getFieldVar( Mesh* mesh, int association )
  * \param [in] j the component index.
  */
 double getFieldValue( IndexType i, IndexType j )
-{ return PI * i + E * j; }
+{
+  return PI * i + E * j;
+}
 
 /*!
  * \brief Return the new value of the field for the given tuple and component.
@@ -159,7 +161,9 @@ double getFieldValue( IndexType i, IndexType j )
  * \param [in] j the component index.
  */
 double getNewFieldValue( IndexType i, IndexType j )
-{ return E * i + PI * j; }
+{
+  return E * i + PI * j;
+}
 
 /*!
  * \brief Set the given tuple of the given FieldVariable.
@@ -169,7 +173,8 @@ double getNewFieldValue( IndexType i, IndexType j )
  * \param [in] final_i the index of the tuple in question once check_fields is
  *  called. Only needs to be specified when doing insertions.
  */
-void setFieldTuple( FieldVariable< double >* fv, IndexType n_tuples, IndexType i, 
+void setFieldTuple( FieldVariable< double >* fv, IndexType n_tuples,
+                    IndexType i,
                     IndexType final_i=USE_DEFAULT )
 {
   if ( final_i == USE_DEFAULT )
@@ -181,7 +186,7 @@ void setFieldTuple( FieldVariable< double >* fv, IndexType n_tuples, IndexType i
 
   double* data = fv->getFieldVariablePtr();
   const IndexType num_components = fv->getNumComponents();
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     data[ i * num_components + j ] = getFieldValue( final_i, j );
   }
@@ -200,7 +205,7 @@ void setNewFieldTuple( FieldVariable< double >* fv, IndexType n_tuples,
 
   double* data = fv->getFieldVariablePtr();
   const IndexType num_components = fv->getNumComponents();
-  for ( IndexType j = 0; j < num_components; ++j )
+  for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     data[ i * num_components + j ] = getNewFieldValue( i, j );
   }
@@ -215,7 +220,7 @@ void setNewFieldTuple( FieldVariable< double >* fv, IndexType n_tuples,
  */
 void check_fields( const Mesh* mesh, int assoc, bool newValues=false )
 {
-  double ( *fieldValue )( IndexType, IndexType ) = &getFieldValue;
+  double ( * fieldValue )( IndexType, IndexType ) = &getFieldValue;
   if ( newValues )
   {
     fieldValue = &getNewFieldValue;
@@ -237,13 +242,13 @@ void check_fields( const Mesh* mesh, int assoc, bool newValues=false )
 
   IndexType num_tuples = -1;
   IndexType num_components = -1;
-  const double* data = fd->getFieldPtr< double >( field_name, num_tuples, 
+  const double* data = fd->getFieldPtr< double >( field_name, num_tuples,
                                                   num_components );
 
   ASSERT_EQ( num_tuples, expected_n_tuples );
-  for ( IndexType i = 0; i < num_tuples; ++i )
+  for ( IndexType i = 0 ; i < num_tuples ; ++i )
   {
-    for ( IndexType j = 0; j < num_components; ++j )
+    for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( data[ i * num_components + j ], fieldValue( i, j ) );
     }
@@ -258,8 +263,8 @@ void check_fields( const Mesh* mesh, int assoc, bool newValues=false )
  * \param [in] cell_capacity space to allocate for cells.
  * \param [in] node_capacity space to allocate for nodes.
  */
-UnstructuredMesh< Topology::SINGLE >* 
-createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity, 
+UnstructuredMesh< Topology::SINGLE >*
+createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
                       IndexType node_capacity )
 {
   double* x = new double[ node_capacity ];
@@ -277,8 +282,8 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
   IndexType connec_capacity = cell_info[ cell_type ].num_nodes * cell_capacity;
   IndexType* connectivity = new IndexType[ connec_capacity ];
 
-  return new UnstructuredMesh< Topology::SINGLE >( ndims, cell_type, 0, 
-                                                   cell_capacity, connectivity, 
+  return new UnstructuredMesh< Topology::SINGLE >( ndims, cell_type, 0,
+                                                   cell_capacity, connectivity,
                                                    0, node_capacity, x, y, z );
 }
 
@@ -290,8 +295,9 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
  * \param [in] node_capacity space to allocate for nodes.
  * \param [in] connec_capacity space to allocate for the connectivity array.
  */
-UnstructuredMesh< Topology::MIXED >* 
-createExternalMixed( int ndims, IndexType cell_capacity, IndexType node_capacity,
+UnstructuredMesh< Topology::MIXED >*
+createExternalMixed( int ndims, IndexType cell_capacity,
+                     IndexType node_capacity,
                      IndexType connec_capacity )
 {
   double* x = new double[ node_capacity ];
@@ -310,9 +316,9 @@ createExternalMixed( int ndims, IndexType cell_capacity, IndexType node_capacity
   IndexType* offsets = new IndexType[ cell_capacity + 1 ];
   CellType* types = new CellType[ cell_capacity ];
 
-  return new UnstructuredMesh< Topology::MIXED >( ndims, 0, cell_capacity, 
+  return new UnstructuredMesh< Topology::MIXED >( ndims, 0, cell_capacity,
                                                   connec_capacity, connectivity,
-                                                  offsets, types, 0, 
+                                                  offsets, types, 0,
                                                   node_capacity, x, y, z );
 }
 
@@ -424,7 +430,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< Topology::SINGLE >*& mesh
   }
   if ( mesh->hasField( cell_field_name, CELL_CENTERED ) )
   {
-     f2 = mesh->getFieldPtr< double >( cell_field_name, CELL_CENTERED );
+    f2 = mesh->getFieldPtr< double >( cell_field_name, CELL_CENTERED );
   }
 
   delete mesh;
@@ -435,13 +441,13 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< Topology::SINGLE >*& mesh
 
   if ( f1 != AXOM_NULLPTR )
   {
-    mesh->createField< double >( node_field_name, NODE_CENTERED, f1, 2, 
-                                                                node_capacity );
+    mesh->createField< double >( node_field_name, NODE_CENTERED, f1, 2,
+                                 node_capacity );
   }
   if ( f2 != AXOM_NULLPTR )
   {
-    mesh->createField< double >( cell_field_name, CELL_CENTERED, f2, 2, 
-                                                                cell_capacity );
+    mesh->createField< double >( cell_field_name, CELL_CENTERED, f2, 2,
+                                 cell_capacity );
   }
 
   EXPECT_EQ( ndims, mesh->getDimension() );
@@ -498,24 +504,24 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< Topology::MIXED >*& mesh 
   }
   if ( mesh->hasField( cell_field_name, CELL_CENTERED ) )
   {
-     f2 = mesh->getFieldPtr< double >( cell_field_name, CELL_CENTERED );
+    f2 = mesh->getFieldPtr< double >( cell_field_name, CELL_CENTERED );
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< Topology::MIXED >( ndims, n_cells, cell_capacity, 
+  mesh = new UnstructuredMesh< Topology::MIXED >( ndims, n_cells, cell_capacity,
                                                   connec_capacity, connectivity,
-                                                  offsets, types, n_nodes, 
+                                                  offsets, types, n_nodes,
                                                   node_capacity, x, y, z );
 
   if ( f1 != AXOM_NULLPTR )
   {
-    mesh->createField< double >( node_field_name, NODE_CENTERED, f1, 2, 
-                                                                node_capacity );
+    mesh->createField< double >( node_field_name, NODE_CENTERED, f1, 2,
+                                 node_capacity );
   }
   if ( f2 != AXOM_NULLPTR )
   {
-    mesh->createField< double >( cell_field_name, CELL_CENTERED, f2, 2, 
-                                                                cell_capacity );
+    mesh->createField< double >( cell_field_name, CELL_CENTERED, f2, 2,
+                                 cell_capacity );
   }
 
   EXPECT_EQ( ndims, mesh->getDimension() );
@@ -588,7 +594,7 @@ void deleteAndDuplicateSidreMesh( UnstructuredMesh< TOPO >*& mesh )
  */
 /// @{
 
-void createMeshes( UnstructuredMesh< Topology::SINGLE >** meshes, 
+void createMeshes( UnstructuredMesh< Topology::SINGLE >** meshes,
                    IndexType n_nodes, IndexType n_cells, bool node_field,
                    bool cell_field )
 {
@@ -599,7 +605,7 @@ void createMeshes( UnstructuredMesh< Topology::SINGLE >** meshes,
 #endif
 
   int cur_mesh = 0;
-  for ( int dim = 1; dim <= 3; ++dim )
+  for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
     meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD );
     if ( node_field )
@@ -612,24 +618,24 @@ void createMeshes( UnstructuredMesh< Topology::SINGLE >** meshes,
     }
     cur_mesh++;
 
-    meshes[ cur_mesh ] = internal::createExternalSingle( dim, QUAD, n_cells, 
+    meshes[ cur_mesh ] = internal::createExternalSingle( dim, QUAD, n_cells,
                                                          n_nodes );
     if ( node_field )
     {
-      internal::createExternalField( meshes[ cur_mesh ], NODE_CENTERED, 
-                                                                      n_nodes );
+      internal::createExternalField( meshes[ cur_mesh ], NODE_CENTERED,
+                                     n_nodes );
     }
     if ( cell_field )
     {
-      internal::createExternalField( meshes[ cur_mesh ], CELL_CENTERED, 
-                                                                      n_cells );
+      internal::createExternalField( meshes[ cur_mesh ], CELL_CENTERED,
+                                     n_cells );
     }
     cur_mesh++;
 
 #ifdef MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
-    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD, 
+    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD,
                                                                    root, topo,
                                                                    coordset );
     if ( node_field )
@@ -645,7 +651,7 @@ void createMeshes( UnstructuredMesh< Topology::SINGLE >** meshes,
   }
 }
 
-void createMeshes( UnstructuredMesh< Topology::MIXED >** meshes, 
+void createMeshes( UnstructuredMesh< Topology::MIXED >** meshes,
                    IndexType n_nodes, IndexType n_cells, IndexType connec_size,
                    bool node_field, bool cell_field )
 {
@@ -656,7 +662,7 @@ void createMeshes( UnstructuredMesh< Topology::MIXED >** meshes,
 #endif
 
   int cur_mesh = 0;
-  for ( int dim = 1; dim <= 3; ++dim )
+  for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
     meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim );
     if ( node_field )
@@ -669,24 +675,24 @@ void createMeshes( UnstructuredMesh< Topology::MIXED >** meshes,
     }
     cur_mesh++;
 
-    meshes[ cur_mesh ] = internal::createExternalMixed( dim, n_cells, n_nodes, 
-                                                         connec_size );
+    meshes[ cur_mesh ] = internal::createExternalMixed( dim, n_cells, n_nodes,
+                                                        connec_size );
     if ( node_field )
     {
-      internal::createExternalField( meshes[ cur_mesh ], NODE_CENTERED, 
-                                                                      n_nodes );
+      internal::createExternalField( meshes[ cur_mesh ], NODE_CENTERED,
+                                     n_nodes );
     }
     if ( cell_field )
     {
-      internal::createExternalField( meshes[ cur_mesh ], CELL_CENTERED, 
-                                                                      n_cells );
+      internal::createExternalField( meshes[ cur_mesh ], CELL_CENTERED,
+                                     n_cells );
     }
     cur_mesh++;
 
 #ifdef MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
-    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim, root, 
+    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim, root,
                                                                   topo,
                                                                   coordset );
     if ( node_field )
@@ -719,8 +725,8 @@ void createMeshes( UnstructuredMesh< Topology::MIXED >** meshes,
  */
 /// @{
 
-void createMeshesForResize( UnstructuredMesh< Topology::SINGLE >** meshes, 
-                            IndexType n_nodes, IndexType n_cells, 
+void createMeshesForResize( UnstructuredMesh< Topology::SINGLE >** meshes,
+                            IndexType n_nodes, IndexType n_cells,
                             bool node_field, bool cell_field )
 {
 #ifdef MINT_USE_SIDRE
@@ -730,10 +736,10 @@ void createMeshesForResize( UnstructuredMesh< Topology::SINGLE >** meshes,
 #endif
 
   int cur_mesh = 0;
-  for ( int dim = 1; dim <= 3; ++dim )
+  for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
-    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD, 
-                                                                   n_nodes, 
+    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD,
+                                                                   n_nodes,
                                                                    n_cells );
     if ( node_field )
     {
@@ -748,7 +754,7 @@ void createMeshesForResize( UnstructuredMesh< Topology::SINGLE >** meshes,
 #ifdef MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
-    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD, 
+    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::SINGLE >( dim, QUAD,
                                                                    root, topo,
                                                                    coordset,
                                                                    n_nodes,
@@ -766,8 +772,8 @@ void createMeshesForResize( UnstructuredMesh< Topology::SINGLE >** meshes,
   }
 }
 
-void createMeshesForResize( UnstructuredMesh< Topology::MIXED >** meshes, 
-                            IndexType n_nodes, IndexType n_cells, 
+void createMeshesForResize( UnstructuredMesh< Topology::MIXED >** meshes,
+                            IndexType n_nodes, IndexType n_cells,
                             bool node_field, bool cell_field )
 {
 #ifdef MINT_USE_SIDRE
@@ -777,9 +783,9 @@ void createMeshesForResize( UnstructuredMesh< Topology::MIXED >** meshes,
 #endif
 
   int cur_mesh = 0;
-  for ( int dim = 1; dim <= 3; ++dim )
+  for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
-    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim, n_nodes, 
+    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim, n_nodes,
                                                                   n_cells );
     if ( node_field )
     {
@@ -794,10 +800,10 @@ void createMeshesForResize( UnstructuredMesh< Topology::MIXED >** meshes,
 #ifdef MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
-    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim, root, 
+    meshes[ cur_mesh ] = new UnstructuredMesh< Topology::MIXED >( dim, root,
                                                                   topo,
-                                                                  coordset, 
-                                                                  n_nodes, 
+                                                                  coordset,
+                                                                  n_nodes,
                                                                   n_cells );
     if ( node_field )
     {
@@ -823,7 +829,7 @@ void createMeshesForResize( UnstructuredMesh< Topology::MIXED >** meshes,
 template < Topology TOPO >
 void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
 {
-  for ( int i = 0; i < n_meshes; ++i )
+  for ( int i = 0 ; i < n_meshes ; ++i )
   {
     if ( meshes[ i ]->isExternal() )
     {
@@ -832,7 +838,7 @@ void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
     else
     {
       delete meshes[ i ];
-      meshes[ i ] = AXOM_NULLPTR; 
+      meshes[ i ] = AXOM_NULLPTR;
     }
   }
 
@@ -851,7 +857,9 @@ void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
  * \param [in] dim the dimension index.
  */
 double getCoordValue( IndexType ndims, IndexType i, int dim )
-{ return (ndims * i + dim) * PI; }
+{
+  return (ndims * i + dim) * PI;
+}
 
 /*!
  * \brief Return the value of a new nodal coordinate of the given node
@@ -862,7 +870,9 @@ double getCoordValue( IndexType ndims, IndexType i, int dim )
  * \param [in] dim the dimension index.
  */
 double getNewCoordValue( IndexType ndims, IndexType i, int dim )
-{ return (ndims * i + dim) * E; }
+{
+  return (ndims * i + dim) * E;
+}
 
 /*!
  * \brief Check that the nodal coordinates are correct.
@@ -872,29 +882,29 @@ double getNewCoordValue( IndexType ndims, IndexType i, int dim )
  *  getNewCoordValue.
  */
 template < Topology TOPO >
-void check_append_nodes( const UnstructuredMesh< TOPO >* mesh, 
+void check_append_nodes( const UnstructuredMesh< TOPO >* mesh,
                          bool newValues=false )
 {
   IndexType n_nodes = mesh->getNumberOfNodes();
-  
+
   const int ndims = mesh->getDimension();
   const double* x = mesh->getCoordinateArray( X_COORDINATE );
 
-  double (*coordValue)( IndexType, IndexType, int ) = &getCoordValue;
+  double (* coordValue)( IndexType, IndexType, int ) = &getCoordValue;
   if ( newValues )
   {
     coordValue = &getNewCoordValue;
   }
 
   /* Check using pointers */
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     EXPECT_EQ( x[ i ], coordValue( ndims, i, 0 ) );
   }
   if ( ndims > 1 )
   {
     const double* y = mesh->getCoordinateArray( Y_COORDINATE );
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
       EXPECT_EQ( y[ i ], coordValue( ndims, i, 1 ) );
     }
@@ -902,7 +912,7 @@ void check_append_nodes( const UnstructuredMesh< TOPO >* mesh,
   if ( ndims > 2 )
   {
     const double* z = mesh->getCoordinateArray( Z_COORDINATE );
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
       EXPECT_EQ( z[ i ], coordValue( ndims, i, 2 ) );
     }
@@ -910,21 +920,21 @@ void check_append_nodes( const UnstructuredMesh< TOPO >* mesh,
 
   /* Check using getNode */
   double coords[3];
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     mesh->getNode( i, coords );
-    for ( int dim = 0; dim < ndims; ++dim )
+    for ( int dim = 0 ; dim < ndims ; ++dim )
     {
       EXPECT_EQ( coords[ dim ], coordValue( ndims, i, dim ) );
     }
   }
 
   /* Check using getNodeCoordinate */
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
-    for ( int dim = 0; dim < ndims; ++dim )
+    for ( int dim = 0 ; dim < ndims ; ++dim )
     {
-      EXPECT_EQ( mesh->getNodeCoordinate( i, dim ), 
+      EXPECT_EQ( mesh->getNodeCoordinate( i, dim ),
                  coordValue( ndims, i, dim ) );
     }
   }
@@ -945,7 +955,7 @@ void append_node_single( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
 
   if ( ndims == 1 )
   {
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
       mesh->appendNode( getCoordValue( ndims, cur_n_nodes, 0 ) );
       EXPECT_EQ( ++cur_n_nodes, mesh->getNumberOfNodes() );
@@ -954,9 +964,9 @@ void append_node_single( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   }
   else if ( ndims == 2 )
   {
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
-      mesh->appendNode( getCoordValue( ndims, cur_n_nodes, 0 ), 
+      mesh->appendNode( getCoordValue( ndims, cur_n_nodes, 0 ),
                         getCoordValue( ndims, cur_n_nodes, 1 ) );
       EXPECT_EQ( ++cur_n_nodes, mesh->getNumberOfNodes() );
       setFieldTuple( fv, cur_n_nodes, cur_n_nodes - 1 );
@@ -964,9 +974,9 @@ void append_node_single( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   }
   else
   {
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
-      mesh->appendNode( getCoordValue( ndims, cur_n_nodes, 0 ), 
+      mesh->appendNode( getCoordValue( ndims, cur_n_nodes, 0 ),
                         getCoordValue( ndims, cur_n_nodes, 1 ),
                         getCoordValue( ndims, cur_n_nodes, 2 ) );
       EXPECT_EQ( ++cur_n_nodes, mesh->getNumberOfNodes() );
@@ -989,9 +999,9 @@ void append_node_structs( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   FieldVariable< double >* fv = getFieldVar( mesh, NODE_CENTERED );
   double* coords = new double[ ndims * n_nodes ];
 
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
-    for ( IndexType dim = 0; dim < ndims; ++dim )
+    for ( IndexType dim = 0 ; dim < ndims ; ++dim )
     {
       coords[ ndims * i + dim ] = getCoordValue( ndims, i + cur_n_nodes, dim );
     }
@@ -1001,7 +1011,7 @@ void append_node_structs( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   cur_n_nodes += n_nodes;
   EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
 
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     setFieldTuple( fv, cur_n_nodes, cur_n_nodes - 1 - i );
   }
@@ -1023,11 +1033,12 @@ void append_node_arrays( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   FieldVariable< double >* fv = getFieldVar( mesh, NODE_CENTERED );
   double* coords = new double[ ndims * n_nodes ];
 
-  for ( IndexType dim = 0; dim < ndims; ++dim )
+  for ( IndexType dim = 0 ; dim < ndims ; ++dim )
   {
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
-      coords[ dim * n_nodes + i ] = getCoordValue( ndims, i + cur_n_nodes, dim );
+      coords[ dim * n_nodes +
+              i ] = getCoordValue( ndims, i + cur_n_nodes, dim );
     }
   }
 
@@ -1055,7 +1066,7 @@ void append_node_arrays( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
     EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
   }
 
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     setFieldTuple( fv, cur_n_nodes, cur_n_nodes - 1 - i );
   }
@@ -1082,7 +1093,7 @@ void append_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   append_node_single( mesh, n_nodes / 3 );
   cur_n_nodes += n_nodes / 3;
   EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
-  
+
   /* Append multiple nodes at once using the array of structs layout. */
   append_node_structs( mesh, n_nodes / 3 );
   cur_n_nodes += n_nodes / 3;
@@ -1106,7 +1117,9 @@ void append_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
  * \param [in] vertex the vertex in question.
  */
 IndexType getCellConnecValue( IndexType cur_cell, IndexType vertex )
-{ return cur_cell * MAX_NUM_NODES + vertex; }
+{
+  return cur_cell * MAX_NUM_NODES + vertex;
+}
 
 /*!
  * \brief Return a new node index of the given cell and vertex.
@@ -1114,9 +1127,11 @@ IndexType getCellConnecValue( IndexType cur_cell, IndexType vertex )
  * \param [in] cur_cell cell in question.
  * \param [in] vertex the vertex in question.
  */
-IndexType getNewCellConnecValue( IndexType cur_n_cells, 
-                                        IndexType vertex )
-{ return (cur_n_cells * MAX_NUM_NODES + vertex) * vertex; }
+IndexType getNewCellConnecValue( IndexType cur_n_cells,
+                                 IndexType vertex )
+{
+  return (cur_n_cells * MAX_NUM_NODES + vertex) * vertex;
+}
 
 /*!
  * \brief Return the type of the given cell, only valid for mixed topology.
@@ -1140,21 +1155,23 @@ CellType getCellType( IndexType cur_cell )
  * \param [in] n_cells the total number of cells.
  */
 constexpr IndexType getConnectivitySize( IndexType n_cells )
-{ return ( n_cells * ( 4 + 3 ) ) / 2; }
+{
+  return ( n_cells * ( 4 + 3 ) ) / 2;
+}
 
 /*!
  * \brief Check that the cell connectivity is as expected.
  *
  * \param [in] mesh the mesh to check.
- * \param [in] newValues if true the expected values are those given by 
+ * \param [in] newValues if true the expected values are those given by
  *  getNewCellConnecValue.
  */
 /// @{
 
-void check_append_cells( const UnstructuredMesh< Topology::SINGLE >* mesh, 
+void check_append_cells( const UnstructuredMesh< Topology::SINGLE >* mesh,
                          bool newValues=false )
 {
-  IndexType ( *connecValue )( IndexType, IndexType ) = &getCellConnecValue;
+  IndexType ( * connecValue )( IndexType, IndexType ) = &getCellConnecValue;
   if ( newValues )
   {
     connecValue = &getNewCellConnecValue;
@@ -1167,34 +1184,34 @@ void check_append_cells( const UnstructuredMesh< Topology::SINGLE >* mesh,
 
   /* Check using pointers */
   const IndexType* connectivity = mesh->getCellConnectivityArray();
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     EXPECT_EQ( type, mesh->getCellType( i ) );
     EXPECT_EQ( nodes_per_cell, mesh->getNumberOfCellNodes( i ) );
 
-    for ( IndexType j = 0; j < nodes_per_cell; ++j )
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
-      EXPECT_EQ( connectivity[ i * nodes_per_cell + j ], 
+      EXPECT_EQ( connectivity[ i * nodes_per_cell + j ],
                  connecValue( i, j ) );
     }
   }
 
   /* Check using getCell */
   IndexType cell[ nodes_per_cell ];
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     mesh->getCell( i, cell );
-    for ( IndexType j = 0; j < nodes_per_cell; ++j )
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], connecValue( i, j ) );
     }
   }
 
   /* Check using the other getCell */
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     const IndexType* cell = mesh->getCell( i );
-    for ( IndexType j = 0; j < nodes_per_cell; ++j )
+    for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], connecValue( i, j ) );
     }
@@ -1204,7 +1221,7 @@ void check_append_cells( const UnstructuredMesh< Topology::SINGLE >* mesh,
 void check_append_cells( const UnstructuredMesh< Topology::MIXED >* mesh,
                          bool newValues=false )
 {
-  IndexType ( *connecValue )( IndexType, IndexType ) = &getCellConnecValue;
+  IndexType ( * connecValue )( IndexType, IndexType ) = &getCellConnecValue;
   if ( newValues )
   {
     connecValue = &getNewCellConnecValue;
@@ -1216,7 +1233,7 @@ void check_append_cells( const UnstructuredMesh< Topology::MIXED >* mesh,
   const IndexType* connectivity = mesh->getCellConnectivityArray();
   const IndexType* offsets = mesh->getCellOffsetsArray();
   const CellType* types = mesh->getCellTypesArray();
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     CellType expected_type = getCellType( i );
     IndexType expected_n_nodes = cell_info[ expected_type ].num_nodes;
@@ -1226,31 +1243,31 @@ void check_append_cells( const UnstructuredMesh< Topology::MIXED >* mesh,
     ASSERT_EQ( expected_n_nodes, mesh->getNumberOfCellNodes( i ) );
 
     IndexType offset = offsets[ i ];
-    for ( IndexType j = 0; j < expected_n_nodes; ++j )
+    for ( IndexType j = 0 ; j < expected_n_nodes ; ++j )
     {
-      EXPECT_EQ( connectivity[ offset + j ], 
+      EXPECT_EQ( connectivity[ offset + j ],
                  connecValue( i, j ) );
     }
   }
 
   /* Check using getCell */
   IndexType cell[ MAX_NUM_NODES ];
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     mesh->getCell( i, cell );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
-    for ( IndexType j = 0; j < num_nodes; ++j )
+    for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
       EXPECT_EQ( cell[ j ], connecValue( i, j ) );
     }
   }
 
   /* Check using the other getCell */
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     const IndexType* cell = mesh->getCell( i );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
-    for ( IndexType j = 0; j < num_nodes; ++j )
+    for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
       EXPECT_EQ( cell[ j ], connecValue( i, j ) );
     }
@@ -1266,10 +1283,10 @@ void check_append_cells( const UnstructuredMesh< Topology::MIXED >* mesh,
  * \param [in] nodes_per_cell the number of nodes in this cell.
  * \param [out] connec the buffer to copy into.
  */
-void getCellConnec( IndexType cur_cell, IndexType nodes_per_cell, 
+void getCellConnec( IndexType cur_cell, IndexType nodes_per_cell,
                     IndexType* connec )
 {
-  for ( IndexType i = 0; i < nodes_per_cell; ++i )
+  for ( IndexType i = 0 ; i < nodes_per_cell ; ++i )
   {
     connec[ i ] = getCellConnecValue( cur_cell, i);
   }
@@ -1287,7 +1304,7 @@ CellType getCellConnec( IndexType cur_cell, IndexType* connec )
 {
   CellType type = getCellType( cur_cell );
   const IndexType nodes_per_cell = cell_info[ type ].num_nodes;
-  for ( IndexType i = 0; i < nodes_per_cell; ++i )
+  for ( IndexType i = 0 ; i < nodes_per_cell ; ++i )
   {
     connec[ i ] = getCellConnecValue( cur_cell, i);
   }
@@ -1298,12 +1315,12 @@ CellType getCellConnec( IndexType cur_cell, IndexType* connec )
 /*!
  * \brief Append a single cell to the mesh multiple times.
  *
- * \param [in/out] mesh the mesh to append to. 
+ * \param [in/out] mesh the mesh to append to.
  * \param [in] n_cells the number of cells to append.
  */
 /// @{
 
-void append_cell_single( UnstructuredMesh< Topology::SINGLE >* mesh, 
+void append_cell_single( UnstructuredMesh< Topology::SINGLE >* mesh,
                          IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1311,18 +1328,18 @@ void append_cell_single( UnstructuredMesh< Topology::SINGLE >* mesh,
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
   IndexType connec[ nodes_per_cell ];
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     getCellConnec( cur_n_cells, nodes_per_cell, connec );
     mesh->appendCell( connec );
     EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
-    EXPECT_EQ( cur_n_cells * nodes_per_cell, 
+    EXPECT_EQ( cur_n_cells * nodes_per_cell,
                mesh->getCellConnectivitySize() );
     setFieldTuple( fv, cur_n_cells, cur_n_cells - 1 );
   }
 }
 
-void append_cell_single( UnstructuredMesh< Topology::MIXED >* mesh, 
+void append_cell_single( UnstructuredMesh< Topology::MIXED >* mesh,
                          IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1331,7 +1348,7 @@ void append_cell_single( UnstructuredMesh< Topology::MIXED >* mesh,
 
   IndexType connec[ MAX_NUM_NODES ];
   CellType type;
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     type = getCellConnec( cur_n_cells, connec );
     cur_connec_size += cell_info[ type ].num_nodes;
@@ -1347,12 +1364,12 @@ void append_cell_single( UnstructuredMesh< Topology::MIXED >* mesh,
 /*!
  * \brief Append a multiple cells at once to the mesh.
  *
- * \param [in/out] mesh the mesh to append to. 
+ * \param [in/out] mesh the mesh to append to.
  * \param [in] n_cells the number of cells to append.
  */
 /// @{
 
-void append_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh, 
+void append_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
                            IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1361,7 +1378,7 @@ void append_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
   IndexType* connectivity = new IndexType[ nodes_per_cell * n_cells ];
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     IndexType* cur_connec = connectivity + i * nodes_per_cell;
     getCellConnec( cur_n_cells + i, nodes_per_cell, cur_connec );
@@ -1373,7 +1390,7 @@ void append_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     setFieldTuple( fv, cur_n_cells, cur_n_cells - 1 - i );
   }
@@ -1382,7 +1399,7 @@ void append_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
 }
 
 
-void append_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh, 
+void append_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
                            IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1393,7 +1410,7 @@ void append_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
   offsets[0] = 0;
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     IndexType* cur_connec = connectivity + offsets[ i ];
     types[ i ] = getCellConnec( cur_n_cells + i, cur_connec );
@@ -1406,7 +1423,7 @@ void append_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     setFieldTuple( fv, cur_n_cells, cur_n_cells - 1 - i );
   }
@@ -1421,7 +1438,7 @@ void append_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
 /*!
  * \brief Append cells to the mesh.
  *
- * \param [in/out] mesh the mesh to append to. 
+ * \param [in/out] mesh the mesh to append to.
  * \param [in] n_cells the number of cells to append.
  */
 template < Topology TOPO >
@@ -1460,7 +1477,7 @@ void set_nodes( UnstructuredMesh< TOPO >* mesh )
   FieldVariable< double >* fv = getFieldVar( mesh, NODE_CENTERED );
 
   double* x = mesh->getCoordinateArray( X_COORDINATE );
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     x[ i ] = getNewCoordValue( ndims, i, 0 );
     setNewFieldTuple( fv, n_nodes, i );
@@ -1469,7 +1486,7 @@ void set_nodes( UnstructuredMesh< TOPO >* mesh )
   if ( ndims > 1 )
   {
     double* y = mesh->getCoordinateArray( Y_COORDINATE );
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
       y[ i ] = getNewCoordValue( ndims, i, 1 );
       setNewFieldTuple( fv, n_nodes, i );
@@ -1478,7 +1495,7 @@ void set_nodes( UnstructuredMesh< TOPO >* mesh )
   if ( ndims > 2 )
   {
     double* z = mesh->getCoordinateArray( Z_COORDINATE );
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
       z[ i ] = getNewCoordValue( ndims, i, 2 );
       setNewFieldTuple( fv, n_nodes, i );
@@ -1501,11 +1518,11 @@ void set_cells( UnstructuredMesh< TOPO >* mesh )
   const IndexType n_cells = mesh->getNumberOfCells();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     IndexType* cur_cell = mesh->getCell( i );
     const IndexType n_nodes = mesh->getNumberOfCellNodes( i );
-    for ( IndexType j = 0; j < n_nodes; ++j )
+    for ( IndexType j = 0 ; j < n_nodes ; ++j )
     {
       cur_cell[ j ] = getNewCellConnecValue( i, j );
     }
@@ -1527,7 +1544,7 @@ void set_cells( UnstructuredMesh< TOPO >* mesh )
  * \param [in] update iff true will update the cell connectivity.
  */
 template < Topology TOPO >
-void insert_node_single( UnstructuredMesh< TOPO >* mesh, IndexType pos, 
+void insert_node_single( UnstructuredMesh< TOPO >* mesh, IndexType pos,
                          IndexType final_pos, bool update=true )
 {
   const int ndims = mesh->getDimension();
@@ -1540,12 +1557,12 @@ void insert_node_single( UnstructuredMesh< TOPO >* mesh, IndexType pos,
   }
   else if ( ndims == 2 )
   {
-    mesh->insertNode( pos, getCoordValue( ndims, final_pos, 0 ), 
+    mesh->insertNode( pos, getCoordValue( ndims, final_pos, 0 ),
                       getCoordValue( ndims, final_pos, 1 ), update );
   }
   else
   {
-    mesh->insertNode( pos, getCoordValue( ndims, final_pos, 0 ), 
+    mesh->insertNode( pos, getCoordValue( ndims, final_pos, 0 ),
                       getCoordValue( ndims, final_pos, 1 ),
                       getCoordValue( ndims, final_pos, 2 ), update );
   }
@@ -1573,9 +1590,9 @@ void insert_node_structs( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes,
   FieldVariable< double >* fv = getFieldVar( mesh, NODE_CENTERED );
   double* coords = new double[ ndims * n_nodes ];
 
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
-    for ( IndexType dim = 0; dim < ndims; ++dim )
+    for ( IndexType dim = 0 ; dim < ndims ; ++dim )
     {
       coords[ ndims * i + dim ] = getCoordValue( ndims, final_pos + i, dim );
     }
@@ -1585,7 +1602,7 @@ void insert_node_structs( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes,
   cur_n_nodes += n_nodes;
   EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
 
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     setFieldTuple( fv, cur_n_nodes, pos + i, final_pos + i );
   }
@@ -1612,9 +1629,9 @@ void insert_node_arrays( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes,
   FieldVariable< double >* fv = getFieldVar( mesh, NODE_CENTERED );
   double* coords = new double[ ndims * n_nodes ];
 
-  for ( IndexType dim = 0; dim < ndims; ++dim )
+  for ( IndexType dim = 0 ; dim < ndims ; ++dim )
   {
-    for ( IndexType i = 0; i < n_nodes; ++i )
+    for ( IndexType i = 0 ; i < n_nodes ; ++i )
     {
       coords[ dim * n_nodes + i ] = getCoordValue( ndims, final_pos + i, dim );
     }
@@ -1623,7 +1640,7 @@ void insert_node_arrays( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes,
   if ( ndims == 1 )
   {
     mesh->insertNodes( pos, coords, n_nodes, update );
-    
+
   }
   else if ( ndims == 2 )
   {
@@ -1642,7 +1659,7 @@ void insert_node_arrays( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes,
   cur_n_nodes += n_nodes;
   EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
 
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     setFieldTuple( fv, cur_n_nodes, pos + i, final_pos + i );
   }
@@ -1669,16 +1686,16 @@ void insert_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   const IndexType third_n_nodes = n_nodes / 3;
 
   /* The final positions of the nodes to insert. */
-  IndexType final_pos[3] = { third_n_nodes - 1, third_n_nodes, 
+  IndexType final_pos[3] = { third_n_nodes - 1, third_n_nodes,
                              2 * third_n_nodes };
 
   /* The inital position of the nodes to insert. */
   IndexType insert_positions[3] = { 0, 1, 2 };
 
   /* Insert one node at a time */
-  for ( IndexType round = 0; round < ninth_n_nodes; ++round )
+  for ( IndexType round = 0 ; round < ninth_n_nodes ; ++round )
   {
-    for ( IndexType i = 0; i < 3; ++i )
+    for ( IndexType i = 0 ; i < 3 ; ++i )
     {
       insert_node_single( mesh, insert_positions[ i ], final_pos[ i ] );
       cur_n_nodes++;
@@ -1690,20 +1707,20 @@ void insert_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
     insert_positions[2] += 3;
 
     /* The final position of the front decreases by one while the final position
-    *  of the middle and back both increase by one. */
+     *  of the middle and back both increase by one. */
     final_pos[0]--;
     final_pos[1]++;
     final_pos[2]++;
   }
   EXPECT_EQ( cur_n_nodes, third_n_nodes );
-  
+
   /* Insert multiple nodes at once using the array of structs layout. */
   insert_node_structs( mesh, ninth_n_nodes, 0, ninth_n_nodes );
   cur_n_nodes += ninth_n_nodes;
   insert_node_structs( mesh, ninth_n_nodes, third_n_nodes, 4 * ninth_n_nodes );
   cur_n_nodes += ninth_n_nodes;
-  insert_node_structs( mesh, ninth_n_nodes, 5 * ninth_n_nodes, 
-                                                            7 * ninth_n_nodes );
+  insert_node_structs( mesh, ninth_n_nodes, 5 * ninth_n_nodes,
+                       7 * ninth_n_nodes );
   cur_n_nodes += ninth_n_nodes;
   EXPECT_EQ( cur_n_nodes, 2 * third_n_nodes );
   EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
@@ -1711,11 +1728,11 @@ void insert_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   /* Insert multiple nodes at once using the struct of arrays layout. */
   insert_node_arrays( mesh, ninth_n_nodes, 0, 0 );
   cur_n_nodes += ninth_n_nodes;
-  insert_node_arrays( mesh, ninth_n_nodes, 5 * ninth_n_nodes, 
-                                                            5 * ninth_n_nodes );
+  insert_node_arrays( mesh, ninth_n_nodes, 5 * ninth_n_nodes,
+                      5 * ninth_n_nodes );
   cur_n_nodes += ninth_n_nodes;
-  insert_node_arrays( mesh, ninth_n_nodes, 8 * ninth_n_nodes, 
-                                                            8 * ninth_n_nodes );
+  insert_node_arrays( mesh, ninth_n_nodes, 8 * ninth_n_nodes,
+                      8 * ninth_n_nodes );
   cur_n_nodes += ninth_n_nodes;
   EXPECT_EQ( cur_n_nodes, n_nodes );
   EXPECT_EQ( cur_n_nodes, mesh->getNumberOfNodes() );
@@ -1734,7 +1751,7 @@ void insert_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
  */
 /// @{
 
-void insert_cell_single( UnstructuredMesh< Topology::SINGLE >* mesh, 
+void insert_cell_single( UnstructuredMesh< Topology::SINGLE >* mesh,
                          IndexType pos, IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1743,15 +1760,15 @@ void insert_cell_single( UnstructuredMesh< Topology::SINGLE >* mesh,
 
   IndexType connec[ nodes_per_cell ];
   getCellConnec( final_pos, nodes_per_cell, connec );
-  
+
   mesh->insertCell( connec, pos );
   EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
-  EXPECT_EQ( cur_n_cells * nodes_per_cell, 
+  EXPECT_EQ( cur_n_cells * nodes_per_cell,
              mesh->getCellConnectivitySize() );
   setFieldTuple( fv, cur_n_cells, pos, final_pos );
 }
 
-void insert_cell_single( UnstructuredMesh< Topology::MIXED >* mesh, 
+void insert_cell_single( UnstructuredMesh< Topology::MIXED >* mesh,
                          IndexType pos, IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1761,7 +1778,7 @@ void insert_cell_single( UnstructuredMesh< Topology::MIXED >* mesh,
   IndexType connec[ MAX_NUM_NODES ];
   CellType type = getCellConnec( final_pos, connec );
   cur_connec_size += cell_info[ type ].num_nodes;
-  
+
   mesh->insertCell( connec, pos, type );
   EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
@@ -1781,8 +1798,8 @@ void insert_cell_single( UnstructuredMesh< Topology::MIXED >* mesh,
  */
 /// @{
 
-void insert_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh, 
-                           IndexType n_cells, IndexType pos, 
+void insert_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
+                           IndexType n_cells, IndexType pos,
                            IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1791,7 +1808,7 @@ void insert_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
   IndexType* connectivity = new IndexType[ nodes_per_cell * n_cells ];
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     IndexType* cur_connec = connectivity + i * nodes_per_cell;
     getCellConnec( final_pos + i, nodes_per_cell, cur_connec );
@@ -1803,7 +1820,7 @@ void insert_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     setFieldTuple( fv, cur_n_cells, pos + i, final_pos + i );
   }
@@ -1811,8 +1828,8 @@ void insert_cell_multiple( UnstructuredMesh< Topology::SINGLE >* mesh,
   delete[] connectivity;
 }
 
-void insert_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh, 
-                           IndexType n_cells, IndexType pos, 
+void insert_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
+                           IndexType n_cells, IndexType pos,
                            IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
@@ -1823,7 +1840,7 @@ void insert_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
   offsets[0] = 0;
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     IndexType* cur_connec = connectivity + offsets[ i ];
     types[ i ] = getCellConnec( final_pos + i, cur_connec );
@@ -1836,7 +1853,7 @@ void insert_cell_multiple( UnstructuredMesh< Topology::MIXED >* mesh,
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
 
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     setFieldTuple( fv, cur_n_cells, pos + i, final_pos + i );
   }
@@ -1867,16 +1884,16 @@ void insert_cells( UnstructuredMesh< TOPO >* mesh, IndexType n_cells )
   const IndexType half_n_cells = n_cells / 2;
 
   /* The final positions of the cells to insert. */
-  IndexType final_pos[3] = { third_n_cells - 1, third_n_cells, 
-                                                            2 * third_n_cells };
+  IndexType final_pos[3] = { third_n_cells - 1, third_n_cells,
+                             2 * third_n_cells };
 
   /* The inital position of the cells to insert. */
   IndexType insert_positions[3] = { 0, 1, 2 };
 
   /* Insert one cell at a time */
-  for ( IndexType round = 0; round < sixth_n_cells; ++round )
+  for ( IndexType round = 0 ; round < sixth_n_cells ; ++round )
   {
-    for ( IndexType i = 0; i < 3; ++i )
+    for ( IndexType i = 0 ; i < 3 ; ++i )
     {
       insert_cell_single( mesh, insert_positions[ i ], final_pos[ i ] );
       cur_n_cells++;
@@ -1888,7 +1905,7 @@ void insert_cells( UnstructuredMesh< TOPO >* mesh, IndexType n_cells )
     insert_positions[2] += 3;
 
     /* The final position of the front decreases by one while the final position
-    *  of the middle and back both increase by one. */
+     *  of the middle and back both increase by one. */
     final_pos[0]--;
     final_pos[1]++;
     final_pos[2]++;
@@ -1900,8 +1917,8 @@ void insert_cells( UnstructuredMesh< TOPO >* mesh, IndexType n_cells )
   cur_n_cells += sixth_n_cells;
   insert_cell_multiple( mesh, sixth_n_cells, half_n_cells, half_n_cells );
   cur_n_cells += sixth_n_cells;
-  insert_cell_multiple( mesh, sixth_n_cells, 5 * sixth_n_cells, 
-                                                            5 * sixth_n_cells );
+  insert_cell_multiple( mesh, sixth_n_cells, 5 * sixth_n_cells,
+                        5 * sixth_n_cells );
   cur_n_cells += sixth_n_cells;
   EXPECT_EQ( cur_n_cells, n_cells );
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
@@ -1960,11 +1977,11 @@ void insert_nodes_update( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   insert_node_single( mesh, 0, 0 );
 
   /* Check that the connectivity of each cell is incremented by one. */
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     const IndexType* cell = mesh->getCell( i );
     const IndexType num_nodes = mesh->getNumberOfCellNodes( i );
-    for ( IndexType j = 0; j < num_nodes; ++j )
+    for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
       const IndexType normal_value = getCellConnecValue( i, j );
       EXPECT_EQ( cell[ j ], normal_value + 1 );
@@ -1975,11 +1992,11 @@ void insert_nodes_update( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   insert_node_arrays( mesh, n_nodes - 1, half_way, half_way );
 
   /* check that the connectivity of each cell is changed appropriately. */
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     const IndexType* cell = mesh->getCell( i );
     const IndexType num_nodes = mesh->getNumberOfCellNodes( i );
-    for ( IndexType j = 0; j < num_nodes; ++j )
+    for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
       const IndexType normal_value = getCellConnecValue( i, j );
       if ( normal_value < half_way - 1 )
@@ -2018,7 +2035,7 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   if ( ndims > 1 )
   {
     y_coords = mesh->getCoordinateArray( Y_COORDINATE );
-  } 
+  }
   if ( ndims > 2 )
   {
     z_coords = mesh->getCoordinateArray( Z_COORDINATE );
@@ -2033,12 +2050,12 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   if ( ndims > 1 )
   {
     EXPECT_EQ( y_coords, mesh->getCoordinateArray( Y_COORDINATE ) );
-  } 
+  }
   if ( ndims > 2 )
   {
     EXPECT_EQ( z_coords, mesh->getCoordinateArray( Z_COORDINATE ) );
   }
-  
+
   /* Append one more, should trigger a resize. */
   append_node_single( mesh, 1 );
   n_nodes++;
@@ -2068,7 +2085,7 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   if ( ndims > 1 )
   {
     y_coords = mesh->getCoordinateArray( Y_COORDINATE );
-  } 
+  }
   if ( ndims > 2 )
   {
     z_coords = mesh->getCoordinateArray( Z_COORDINATE );
@@ -2081,13 +2098,14 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   if ( ndims > 1 )
   {
     EXPECT_EQ( y_coords, mesh->getCoordinateArray( Y_COORDINATE ) );
-  } 
+  }
   if ( ndims > 2 )
   {
     EXPECT_EQ( z_coords, mesh->getCoordinateArray( Z_COORDINATE ) );
   }
 
-  /* Set the resize ratio to 1 and append ten values, should trigger a resize. */
+  /* Set the resize ratio to 1 and append ten values, should trigger a resize.
+     */
   resize_ratio = 1.0;
   mesh->setNodeResizeRatio( resize_ratio );
   append_node_structs( mesh, 10 );
@@ -2133,7 +2151,7 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   {
     connec_capacity = mesh->getCellConnectivityCapacity();
   }
-  
+
   /* Append one more, should trigger a resize. */
   append_cell_single( mesh, 1 );
   n_cells++;
@@ -2202,10 +2220,10 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
  * \param [in] cellOpt the check to apply on the cells.
  */
 template < Topology TOPO >
-void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes, 
+void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
                         CheckOption nodeOpt, CheckOption cellOpt )
 {
-  for ( int i = 0; i < n_meshes; ++i )
+  for ( int i = 0 ; i < n_meshes ; ++i )
   {
     if ( meshes[ i ]->isExternal() )
     {
@@ -2233,7 +2251,7 @@ void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
       check_fields( meshes[ i ], NODE_CENTERED, true );
     }
 
-    if ( cellOpt == CheckOption::APPEND ) 
+    if ( cellOpt == CheckOption::APPEND )
     {
       check_append_cells( meshes[ i ] );
       check_fields( meshes[ i ], CELL_CENTERED );
@@ -2269,12 +2287,12 @@ TEST( mint_mesh_unstructured_mesh, appendNodesSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, false );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2298,12 +2316,12 @@ TEST( mint_mesh_unstructured_mesh, appendNodesMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, false );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2326,13 +2344,13 @@ TEST( mint_mesh_unstructured_mesh, appendCellsSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::append_cells( meshes[ i ], N_CELLS );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2356,13 +2374,13 @@ TEST( mint_mesh_unstructured_mesh, appendCellsMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::append_cells( meshes[ i ], N_CELLS );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2389,13 +2407,13 @@ TEST( mint_mesh_unstructured_mesh, setNodesSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, false );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::set_nodes( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::SET, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::SET,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2418,14 +2436,14 @@ TEST( mint_mesh_unstructured_mesh, setNodesMixed )
   UnstructuredMesh< Topology::MIXED >* meshes[ N_MESHES ];
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, false );
-  
-  for ( int i = 0; i < N_MESHES; ++i )
+
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::set_nodes( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::SET, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::SET,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2448,14 +2466,14 @@ TEST( mint_mesh_unstructured_mesh, setCellsSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::append_cells( meshes[ i ], N_CELLS );
     internal::set_cells( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::SET );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2479,14 +2497,14 @@ TEST( mint_mesh_unstructured_mesh, setCellsMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::append_cells( meshes[ i ], N_CELLS );
     internal::set_cells( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::SET );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2514,12 +2532,12 @@ TEST( mint_mesh_unstructured_mesh, insertNodesSingle )
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, false );
 
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::insert_nodes( meshes[ i ], N_NODES );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2543,12 +2561,12 @@ TEST( mint_mesh_unstructured_mesh, insertNodesMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, false );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::insert_nodes( meshes[ i ], N_NODES );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2571,13 +2589,13 @@ TEST( mint_mesh_unstructured_mesh, insertCellsSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::insert_cells( meshes[ i ], N_CELLS );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2601,13 +2619,13 @@ TEST( mint_mesh_unstructured_mesh, insertCellsMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES );
     internal::insert_cells( meshes[ i ], N_CELLS );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2635,7 +2653,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES - N_NODES_INSERT );
     internal::append_cells( meshes[ i ], N_CELLS );
@@ -2664,7 +2682,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES - N_NODES_INSERT );
     internal::append_cells( meshes[ i ], N_CELLS );
@@ -2692,7 +2710,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesUpdateSingle )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES - N_NODES_INSERT );
     internal::append_cells( meshes[ i ], N_CELLS );
@@ -2721,7 +2739,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesUpdateMixed )
 
   internal::createMeshes( meshes, N_NODES, N_CELLS, CONNEC_SIZE, true, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::append_nodes( meshes[ i ], N_NODES - N_NODES_INSERT );
     internal::append_cells( meshes[ i ], N_CELLS );
@@ -2752,12 +2770,12 @@ TEST( mint_mesh_unstructured_mesh, resizeNodesSingle )
 
   internal::createMeshesForResize( meshes, N_NODES, N_CELLS, true, false );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::resize_nodes( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2780,12 +2798,12 @@ TEST( mint_mesh_unstructured_mesh, resizeNodesMixed )
 
   internal::createMeshesForResize( meshes, N_NODES, N_CELLS, true, false );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::resize_nodes( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::APPEND,
                                CheckOption::NONE );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2808,12 +2826,12 @@ TEST( mint_mesh_unstructured_mesh, resizeCellsSingle )
 
   internal::createMeshesForResize( meshes, N_NODES, N_CELLS, false, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::resize_cells( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::NONE, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::NONE,
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2836,12 +2854,12 @@ TEST( mint_mesh_unstructured_mesh, resizeCellsMixed )
 
   internal::createMeshesForResize( meshes, N_NODES, N_CELLS, false, true );
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     internal::resize_cells( meshes[ i ] );
   }
 
-  internal::check_restoration( meshes, N_MESHES, CheckOption::NONE, 
+  internal::check_restoration( meshes, N_MESHES, CheckOption::NONE,
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2860,10 +2878,10 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsSingle )
   UnstructuredMesh< Topology::SINGLE >* meshes[ N_MESHES ];
 
   int cur_mesh = 0;
-  for ( int dim = 1; dim <= 3; ++dim )
+  for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
-    meshes[ cur_mesh ] = internal::createExternalSingle( dim, QUAD, N_NODES, 
-                                                                      N_CELLS );
+    meshes[ cur_mesh ] = internal::createExternalSingle( dim, QUAD, N_NODES,
+                                                         N_CELLS );
     internal::createExternalField( meshes[ cur_mesh ], NODE_CENTERED, N_NODES );
     internal::createExternalField( meshes[ cur_mesh ], CELL_CENTERED, N_CELLS );
 
@@ -2872,7 +2890,7 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsSingle )
     cur_mesh++;
   }
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     /* These are all valid operations. */
     meshes[ i ]->shrinkNodes();
@@ -2881,14 +2899,14 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsSingle )
     meshes[ i ]->reserveCells( N_CELLS );
 
     /* These are invalid */
-    EXPECT_DEATH_IF_SUPPORTED( internal::append_node_single( meshes[ i ], 1 ), 
-                                                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( internal::append_cell_single( meshes[ i ], 1 ), 
-                                                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveNodes( N_NODES * 2 ), 
-                                                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveCells( N_NODES * 2 ), 
-                                                                IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( internal::append_node_single( meshes[ i ], 1 ),
+                               IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( internal::append_cell_single( meshes[ i ], 1 ),
+                               IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveNodes( N_NODES * 2 ),
+                               IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveCells( N_NODES * 2 ),
+                               IGNORE_OUTPUT );
   }
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2904,10 +2922,10 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsMixed )
   UnstructuredMesh< Topology::MIXED >* meshes[ N_MESHES ];
 
   int cur_mesh = 0;
-  for ( int dim = 1; dim <= 3; ++dim )
+  for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
-    meshes[ cur_mesh ] = internal::createExternalMixed( dim, N_NODES, N_CELLS, 
-                                                                  CONNEC_SIZE );
+    meshes[ cur_mesh ] = internal::createExternalMixed( dim, N_NODES, N_CELLS,
+                                                        CONNEC_SIZE );
     internal::createExternalField( meshes[ cur_mesh ], NODE_CENTERED, N_NODES );
     internal::createExternalField( meshes[ cur_mesh ], CELL_CENTERED, N_CELLS );
 
@@ -2916,7 +2934,7 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsMixed )
     cur_mesh++;
   }
 
-  for ( int i = 0; i < N_MESHES; ++i )
+  for ( int i = 0 ; i < N_MESHES ; ++i )
   {
     /* These are all valid operations. */
     meshes[ i ]->shrinkNodes();
@@ -2925,14 +2943,14 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsMixed )
     meshes[ i ]->reserveCells( N_CELLS );
 
     /* These are invalid */
-    EXPECT_DEATH_IF_SUPPORTED( internal::append_node_single( meshes[ i ], 1 ), 
-                                                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( internal::append_cell_single( meshes[ i ], 1 ), 
-                                                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveNodes( N_NODES * 2 ), 
-                                                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveCells( N_NODES * 2 ), 
-                                                                IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( internal::append_node_single( meshes[ i ], 1 ),
+                               IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( internal::append_cell_single( meshes[ i ], 1 ),
+                               IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveNodes( N_NODES * 2 ),
+                               IGNORE_OUTPUT );
+    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveCells( N_NODES * 2 ),
+                               IGNORE_OUTPUT );
   }
 
   internal::deleteMeshes( meshes, N_MESHES );
@@ -2955,4 +2973,3 @@ int main(int argc, char* argv[])
 
   return RUN_ALL_TESTS();
 }
-

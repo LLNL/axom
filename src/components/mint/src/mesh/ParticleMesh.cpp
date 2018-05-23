@@ -64,11 +64,11 @@ ParticleMesh::ParticleMesh( IndexType numParticles,
 
 ParticleMesh::ParticleMesh( sidre::Group* group,
                             const std::string& topo ) :
-    Mesh( group, topo ),
-    m_positions( new MeshCoordinates( getCoordsetGroup() ) )
+  Mesh( group, topo ),
+  m_positions( new MeshCoordinates( getCoordsetGroup() ) )
 {
   SLIC_ERROR_IF( m_type != PARTICLE_MESH,
-      "supplied Sidre group does not correspond to a ParticleMesh" );
+                 "supplied Sidre group does not correspond to a ParticleMesh" );
 
   initialize( );
 }

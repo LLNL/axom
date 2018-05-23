@@ -46,7 +46,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   constexpr double SPACING = 1.0;
   constexpr mint::CellType CELL_TYPE = mint::QUAD;
   constexpr mint::IndexType NODES_PER_CELL =
-                                        mint::cell_info[ CELL_TYPE ].num_nodes;
+    mint::cell_info[ CELL_TYPE ].num_nodes;
   constexpr mint::IndexType NUM_NODES = X_EXTENT * Y_EXTENT;
   constexpr mint::IndexType NUM_CELLS = (X_EXTENT - 1) * (Y_EXTENT - 1);
 
@@ -74,9 +74,9 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 3: Add the nodes. */
   mint::IndexType node_ID = 0;
-  for ( mint::IndexType j = 0; j < Y_EXTENT; ++j )
+  for ( mint::IndexType j = 0 ; j < Y_EXTENT ; ++j )
   {
-    for ( mint::IndexType i = 0; i < X_EXTENT; ++i )
+    for ( mint::IndexType i = 0 ; i < X_EXTENT ; ++i )
     {
       mesh.appendNode( i * SPACING, j * SPACING );
 
@@ -91,16 +91,16 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 4: Add the cells. */
   mint::IndexType cell_ID = 0;
-  for ( mint::IndexType j = 0; j < Y_EXTENT - 1; ++j )
+  for ( mint::IndexType j = 0 ; j < Y_EXTENT - 1 ; ++j )
   {
-    for ( mint::IndexType i = 0; i < X_EXTENT - 1; ++i )
+    for ( mint::IndexType i = 0 ; i < X_EXTENT - 1 ; ++i )
     {
       const mint::IndexType bottom_left = j * X_EXTENT + i;
       const mint::IndexType bottom_right = bottom_left + 1;
       const mint::IndexType top_right = bottom_right + X_EXTENT;
       const mint::IndexType top_left = bottom_left + X_EXTENT;
       const mint::IndexType cell[ NODES_PER_CELL ] =
-                            { bottom_left, bottom_right, top_right, top_left };
+      { bottom_left, bottom_right, top_right, top_left };
       mesh.appendCell( cell );
 
       p[ cell_ID ] = utilities::random_real( PLO, PHI );
@@ -110,11 +110,11 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 5: Calculate the average pressure at each of the nodes. */
   const mint::IndexType n_cells = mesh.getNumberOfCells();
-  for ( cell_ID = 0; cell_ID < n_cells; ++cell_ID )
+  for ( cell_ID = 0 ; cell_ID < n_cells ; ++cell_ID )
   {
     const double cell_pressure = p[ cell_ID ];
     const mint::IndexType* connec = mesh.getCell( cell_ID );
-    for ( int i = 0; i < NODES_PER_CELL; ++i )
+    for ( int i = 0 ; i < NODES_PER_CELL ; ++i )
     {
       node_ID = connec[ i ];
       p_avg[ node_ID ] += cell_pressure;
@@ -123,7 +123,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   }
 
   const mint::IndexType n_nodes = mesh.getNumberOfNodes();
-  for ( node_ID = 0; node_ID < n_nodes; ++node_ID )
+  for ( node_ID = 0 ; node_ID < n_nodes ; ++node_ID )
   {
     p_avg[ node_ID ] /= cells_per_node[ node_ID ];
   }

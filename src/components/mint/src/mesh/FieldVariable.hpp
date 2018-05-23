@@ -363,7 +363,7 @@ FieldVariable< T >::FieldVariable( const std::string& name,
                                    IndexType num_tuples,
                                    IndexType num_components,
                                    IndexType capacity ) :
-                                   Field( name, field_traits< T >::type() )
+  Field( name, field_traits< T >::type() )
 {
   m_field = new mint::Array< T >( num_tuples, num_components, capacity );
   SLIC_ASSERT( m_field != AXOM_NULLPTR );
@@ -377,7 +377,7 @@ FieldVariable< T >::FieldVariable( const std::string& name,
                                    IndexType num_tuples,
                                    IndexType num_components,
                                    IndexType capacity ) :
-                                   Field( name, field_traits< T >::type() )
+  Field( name, field_traits< T >::type() )
 {
   m_field = new mint::Array< T >( data, num_tuples, num_components, capacity );
   SLIC_ASSERT( m_field != AXOM_NULLPTR );
@@ -391,7 +391,7 @@ FieldVariable< T >::FieldVariable( const std::string& name,
 template < typename T >
 FieldVariable< T >::FieldVariable( const std::string& name,
                                    sidre::View* field_view ) :
-                                   Field( name, field_traits< T >::type() )
+  Field( name, field_traits< T >::type() )
 {
   m_field = new mint::Array< T >( field_view );
   SLIC_ASSERT( m_field != AXOM_NULLPTR );
@@ -405,7 +405,7 @@ FieldVariable< T >::FieldVariable( const std::string& name,
                                    IndexType num_tuples,
                                    IndexType num_components,
                                    IndexType capacity ) :
-                                   Field( name, field_traits< T >::type() )
+  Field( name, field_traits< T >::type() )
 {
   m_field = new mint::Array< T >( field_view, num_tuples,
                                   num_components, capacity );

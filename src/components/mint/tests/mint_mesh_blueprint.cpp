@@ -265,23 +265,23 @@ TEST( mint_mesh_blueprint, get_topology_and_coordset_group )
 
   createUnstructuredMeshOnSidre( root, 3 );
   const sidre::Group* topology =
-      mint::blueprint::getTopologyGroup( root );
+    mint::blueprint::getTopologyGroup( root );
   EXPECT_TRUE( mint::blueprint::validTopologyGroup( topology ) );
   EXPECT_EQ( topology->getName(), "t1" );
 
   const sidre::Group* coordset =
-      mint::blueprint::getCoordsetGroup( root, topology );
+    mint::blueprint::getCoordsetGroup( root, topology );
   EXPECT_TRUE( mint::blueprint::validCoordsetGroup( coordset ) );
   EXPECT_EQ( coordset->getName(), "c1");
   std::string coordset_name (
-   const_cast< sidre::View* >( topology->getView("coordset") )->getString() );
+    const_cast< sidre::View* >( topology->getView("coordset") )->getString() );
   EXPECT_EQ( coordset_name, "c1" );
 }
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
 {
-  for ( int dim=1; dim <= 3; ++dim )
+  for ( int dim=1 ; dim <= 3 ; ++dim )
   {
     sidre::DataStore ds;
     sidre::Group* root = ds.getRoot();
@@ -345,29 +345,29 @@ TEST( mint_mesh_blueprint, get_set_uniform_mesh )
   constexpr int NDIMS        = 3;
   constexpr double MAGIC_VAL = 42.0;
   constexpr double DX        = 0.5;
-  const double X0[ ]         = { MAGIC_VAL, MAGIC_VAL, MAGIC_VAL };
-  const double H[ ]          = { DX, DX, DX };
+  const double X0[]          = { MAGIC_VAL, MAGIC_VAL, MAGIC_VAL };
+  const double H[]           = { DX, DX, DX };
   const mint::int64 EXTENT[] = { -2,2, -2,2, -2,2 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
-     sidre::DataStore ds;
-     sidre::Group* root = ds.getRoot();
-     sidre::Group* coordset = root->createGroup( "coordsets/c1" );
-     sidre::Group* topo     = root->createGroup( "topologies/t1" );
-     mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "uniform" );
+    sidre::DataStore ds;
+    sidre::Group* root = ds.getRoot();
+    sidre::Group* coordset = root->createGroup( "coordsets/c1" );
+    sidre::Group* topo     = root->createGroup( "topologies/t1" );
+    mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "uniform" );
 
-     mint::Extent mesh_extent( idim, EXTENT );
+    mint::Extent mesh_extent( idim, EXTENT );
 
-     mint::blueprint::setUniformMesh( idim,X0,H,&mesh_extent,coordset,topo );
+    mint::blueprint::setUniformMesh( idim,X0,H,&mesh_extent,coordset,topo );
 
-     double* origin      = new double[ idim ];
-     double* h           = new double[ idim ];
-     mint::int64* extent = new mint::int64[ idim*2 ];
+    double* origin      = new double[ idim ];
+    double* h           = new double[ idim ];
+    mint::int64* extent = new mint::int64[ idim*2 ];
 
-     mint::blueprint::getUniformMesh( idim, coordset, topo, origin, h, extent);
+    mint::blueprint::getUniformMesh( idim, coordset, topo, origin, h, extent);
 
-    for ( int i=0; i < idim; ++i )
+    for ( int i=0 ; i < idim ; ++i )
     {
       EXPECT_DOUBLE_EQ( origin[ i ], X0[ i ] );
       EXPECT_DOUBLE_EQ( h[ i ], H[ i ] );
@@ -390,7 +390,7 @@ TEST( mint_mesh_blueprint, get_set_curvilinear_mesh_extent )
   constexpr int NDIMS        = 3;
   const mint::int64 EXTENT[] = { -2,2, -2,2, -2,2 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
     sidre::DataStore ds;
     sidre::Group* root     = ds.getRoot();
@@ -405,7 +405,7 @@ TEST( mint_mesh_blueprint, get_set_curvilinear_mesh_extent )
     mint::int64* extent = new mint::int64[ idim*2 ];
     mint::blueprint::getCurvilinearMeshExtent( idim, topo, extent );
 
-    for ( int i=0; i < idim; ++i )
+    for ( int i=0 ; i < idim ; ++i )
     {
       const int offset = i*2;
       EXPECT_EQ( extent[ offset ], EXTENT[ offset ] );

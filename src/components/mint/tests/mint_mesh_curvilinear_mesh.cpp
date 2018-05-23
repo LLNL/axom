@@ -59,7 +59,7 @@ void delete_array( T* ptr )
 {
   if ( ptr != AXOM_NULLPTR )
   {
-    delete [ ] ptr;
+    delete []  ptr;
     ptr = AXOM_NULLPTR;
   }
 }
@@ -79,66 +79,66 @@ void check_coordinates( const UniformMesh* m,
   switch( mesh_dimension )
   {
   case 1:
+  {
+    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    EXPECT_EQ( Ni, m->getNumberOfNodes() );
+    EXPECT_EQ( Ni, m->getNumberOfNodes() );
+    for ( IndexType i=0 ; i < Ni ; ++i )
     {
-      const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-      EXPECT_EQ( Ni, m->getNumberOfNodes() );
-      EXPECT_EQ( Ni, m->getNumberOfNodes() );
-      for ( IndexType i=0; i < Ni; ++i )
-      {
-        EXPECT_DOUBLE_EQ( x[ i ],  m->evaluateCoordinate( i, I_DIRECTION ) );
-      } // END for all i
-    } // END 1D
-    break;
+      EXPECT_DOUBLE_EQ( x[ i ],  m->evaluateCoordinate( i, I_DIRECTION ) );
+    }   // END for all i
+  }   // END 1D
+  break;
   case 2:
+  {
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+
+    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
+    for ( IndexType j=0 ; j < Nj ; ++j )
     {
-      EXPECT_TRUE( y != AXOM_NULLPTR );
-
-      const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-      const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
-      for ( IndexType j=0; j < Nj; ++j )
+      for ( IndexType i=0 ; i < Ni ; ++i )
       {
-        for ( IndexType i=0; i < Ni; ++i )
-        {
 
-          const IndexType nodeIdx = m->getLinearIndex( i,j );
+        const IndexType nodeIdx = m->getLinearIndex( i,j );
+        const double xx = m->evaluateCoordinate( i, I_DIRECTION );
+        const double yy = m->evaluateCoordinate( j, J_DIRECTION );
+        EXPECT_DOUBLE_EQ( x[ nodeIdx ], xx );
+        EXPECT_DOUBLE_EQ( y[ nodeIdx ], yy );
+
+      }   // END for all i
+    }   // END for all j
+
+  }   // END 2D
+  break;
+  default:
+  {
+    EXPECT_TRUE( mesh_dimension==3 );
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( z != AXOM_NULLPTR );
+
+    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
+    const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
+
+    for ( IndexType k=0 ; k < Nk ; ++k )
+    {
+      for ( IndexType j=0 ; j < Nj ; ++j )
+      {
+        for ( IndexType i=0 ; i < Ni ; ++i )
+        {
+          const IndexType nodeIdx = m->getLinearIndex( i, j, k );
           const double xx = m->evaluateCoordinate( i, I_DIRECTION );
           const double yy = m->evaluateCoordinate( j, J_DIRECTION );
+          const double zz = m->evaluateCoordinate( k, K_DIRECTION );
           EXPECT_DOUBLE_EQ( x[ nodeIdx ], xx );
           EXPECT_DOUBLE_EQ( y[ nodeIdx ], yy );
+          EXPECT_DOUBLE_EQ( z[ nodeIdx ], zz );
 
-        } // END for all i
-      } // END for all j
-
-    } // END 2D
-    break;
-  default:
-    {
-      EXPECT_TRUE( mesh_dimension==3 );
-      EXPECT_TRUE( y != AXOM_NULLPTR );
-      EXPECT_TRUE( z != AXOM_NULLPTR );
-
-      const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-      const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
-      const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
-
-      for ( IndexType k=0; k < Nk; ++k )
-      {
-        for ( IndexType j=0; j < Nj; ++j )
-        {
-          for ( IndexType i=0; i < Ni; ++i )
-          {
-            const IndexType nodeIdx = m->getLinearIndex( i, j, k );
-            const double xx = m->evaluateCoordinate( i, I_DIRECTION );
-            const double yy = m->evaluateCoordinate( j, J_DIRECTION );
-            const double zz = m->evaluateCoordinate( k, K_DIRECTION );
-            EXPECT_DOUBLE_EQ( x[ nodeIdx ], xx );
-            EXPECT_DOUBLE_EQ( y[ nodeIdx ], yy );
-            EXPECT_DOUBLE_EQ( z[ nodeIdx ], zz );
-
-          } // END for all i
-        } // END for all j
-      } // END for all k
-    } // END 3D
+        }   // END for all i
+      }   // END for all j
+    }   // END for all k
+  }   // END 3D
 
   } // END switch
 }
@@ -146,7 +146,7 @@ void check_coordinates( const UniformMesh* m,
 //------------------------------------------------------------------------------
 void get_coordinates( const UniformMesh* m,
                       double* x,
-                      double* y=AXOM_NULLPTR ,
+                      double* y=AXOM_NULLPTR,
                       double* z=AXOM_NULLPTR    )
 {
   EXPECT_TRUE( m != AXOM_NULLPTR );
@@ -157,57 +157,57 @@ void get_coordinates( const UniformMesh* m,
   switch( mesh_dimension )
   {
   case 1:
+  {
+    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    EXPECT_EQ( Ni, m->getNumberOfNodes() );
+    for ( IndexType i=0 ; i < Ni ; ++i )
     {
-      const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-      EXPECT_EQ( Ni, m->getNumberOfNodes() );
-      for ( IndexType i=0; i < Ni; ++i )
-      {
-        x[ i ] = m->evaluateCoordinate( i, I_DIRECTION );
-      } // END for all i
+      x[ i ] = m->evaluateCoordinate( i, I_DIRECTION );
+    }   // END for all i
 
-    } // END 1D
-    break;
+  }   // END 1D
+  break;
   case 2:
+  {
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
+    for ( IndexType j=0 ; j < Nj ; ++j )
     {
-      EXPECT_TRUE( y != AXOM_NULLPTR );
-      const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-      const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
-      for ( IndexType j=0; j < Nj; ++j )
+      for ( IndexType i=0 ; i < Ni ; ++i )
       {
-        for ( IndexType i=0; i < Ni; ++i )
+        const IndexType nodeIdx = m->getLinearIndex( i,j );
+        x[ nodeIdx ] = m->evaluateCoordinate( i, I_DIRECTION );
+        y[ nodeIdx ] = m->evaluateCoordinate( j, J_DIRECTION );
+      }   // END for all i
+    }   // END for all j
+
+  }   // END 2D
+  break;
+  default:
+  {
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( z != AXOM_NULLPTR );
+    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
+    const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
+
+    for ( IndexType k=0 ; k < Nk ; ++k )
+    {
+      for ( IndexType j=0 ; j < Nj ; ++j )
+      {
+        for ( IndexType i=0 ; i < Ni ; ++i )
         {
-          const IndexType nodeIdx = m->getLinearIndex( i,j );
+          const IndexType nodeIdx = m->getLinearIndex( i, j, k );
           x[ nodeIdx ] = m->evaluateCoordinate( i, I_DIRECTION );
           y[ nodeIdx ] = m->evaluateCoordinate( j, J_DIRECTION );
-        } // END for all i
-      } // END for all j
+          z[ nodeIdx ] = m->evaluateCoordinate( k, K_DIRECTION );
 
-    } // END 2D
-    break;
-  default:
-    {
-      EXPECT_TRUE( y != AXOM_NULLPTR );
-      EXPECT_TRUE( z != AXOM_NULLPTR );
-      const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-      const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
-      const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
+        }   // END for all i
+      }   // END for all j
+    }   // END for all k
 
-      for ( IndexType k=0; k < Nk; ++k )
-      {
-        for ( IndexType j=0; j < Nj; ++j )
-        {
-          for ( IndexType i=0; i < Ni; ++i )
-          {
-            const IndexType nodeIdx = m->getLinearIndex( i, j, k );
-            x[ nodeIdx ] = m->evaluateCoordinate( i, I_DIRECTION );
-            y[ nodeIdx ] = m->evaluateCoordinate( j, J_DIRECTION );
-            z[ nodeIdx ] = m->evaluateCoordinate( k, K_DIRECTION );
-
-          } // END for all i
-        } // END for all j
-      } // END for all k
-
-    } // END 3D
+  }   // END 3D
 
   } // END switch
 }
@@ -229,7 +229,7 @@ void check_create_field( CurvilinearMesh* m,
   EXPECT_TRUE( m->hasField( name, association ) );
 
   IndexType expected_num_tuples = ( association==NODE_CENTERED ) ?
-        m->getNumberOfNodes() : m->getNumberOfCells() ;
+                                  m->getNumberOfNodes() : m->getNumberOfCells();
 
   const Field* field = m->getFieldData( association )->getField( name );
   EXPECT_TRUE( field != AXOM_NULLPTR );
@@ -249,48 +249,48 @@ void check_fill_coords( CurvilinearMesh* m, double MAGIC_VAL=42.0 )
   switch( mesh_dimension )
   {
   case 1:
+  {
+    double* x = m->getCoordinateArray( X_COORDINATE );
+    EXPECT_TRUE( x != AXOM_NULLPTR );
+
+    for ( IndexType i=0 ; i < numNodes ; ++i )
     {
-      double* x = m->getCoordinateArray( X_COORDINATE );
-      EXPECT_TRUE( x != AXOM_NULLPTR );
+      x[ i ] = MAGIC_VAL;
+    }   // END for
 
-      for ( IndexType i=0; i < numNodes; ++i )
-      {
-        x[ i ] = MAGIC_VAL;
-      } // END for
-
-    } // END if 1D
-    break;
+  }   // END if 1D
+  break;
   case 2:
+  {
+    double* x = m->getCoordinateArray( X_COORDINATE );
+    double* y = m->getCoordinateArray( Y_COORDINATE );
+    EXPECT_TRUE( x != AXOM_NULLPTR );
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+
+    for ( IndexType i=0 ; i < numNodes ; ++i )
     {
-      double* x = m->getCoordinateArray( X_COORDINATE );
-      double* y = m->getCoordinateArray( Y_COORDINATE );
-      EXPECT_TRUE( x != AXOM_NULLPTR );
-      EXPECT_TRUE( y != AXOM_NULLPTR );
+      x[ i ] = y[ i ] = MAGIC_VAL;
+    }   // END for
 
-      for ( IndexType i=0; i < numNodes; ++i )
-      {
-        x[ i ] = y[ i ] = MAGIC_VAL;
-      } // END for
-
-    } // END if 2D
-    break;
+  }   // END if 2D
+  break;
   default:
+  {
+    EXPECT_TRUE( mesh_dimension==3 );
+
+    double* x = m->getCoordinateArray( X_COORDINATE );
+    double* y = m->getCoordinateArray( Y_COORDINATE );
+    double* z = m->getCoordinateArray( Z_COORDINATE );
+    EXPECT_TRUE( x != AXOM_NULLPTR );
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( z != AXOM_NULLPTR );
+
+    for ( IndexType i=0 ; i < numNodes ; ++i )
     {
-      EXPECT_TRUE( mesh_dimension==3 );
+      x[ i ] = y[ i ] = z[ i ] = MAGIC_VAL;
+    }   // END for
 
-      double* x = m->getCoordinateArray( X_COORDINATE );
-      double* y = m->getCoordinateArray( Y_COORDINATE );
-      double* z = m->getCoordinateArray( Z_COORDINATE );
-      EXPECT_TRUE( x != AXOM_NULLPTR );
-      EXPECT_TRUE( y != AXOM_NULLPTR );
-      EXPECT_TRUE( z != AXOM_NULLPTR );
-
-      for ( IndexType i=0; i < numNodes; ++i )
-      {
-        x[ i ] = y[ i ] = z[ i ] = MAGIC_VAL;
-      } // END for
-
-    } // END 3D
+  }   // END 3D
 
   } // END switch
 
@@ -315,13 +315,13 @@ void check_constructor( const CurvilinearMesh* m,
   EXPECT_TRUE( m->hasExplicitCoordinates() );
 
   CellType expected_cell_type =
-      ( mesh_dimension==3 ) ? HEX : ( ( mesh_dimension==2 ) ? QUAD : SEGMENT );
+    ( mesh_dimension==3 ) ? HEX : ( ( mesh_dimension==2 ) ? QUAD : SEGMENT );
   EXPECT_EQ( m->getCellType(), expected_cell_type );
 
   const Extent* ext = m->getExtent();
   EXPECT_TRUE( ext != AXOM_NULLPTR );
 
-  for ( int i=0; i < mesh_dimension; ++i )
+  for ( int i=0 ; i < mesh_dimension ; ++i )
   {
     const int offset = i*2;
     EXPECT_EQ( ext->min( i ), expected_extent[ offset ] );
@@ -343,9 +343,9 @@ void check_constructor( const CurvilinearMesh* m,
 //------------------------------------------------------------------------------
 TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
 {
-  const int64 ext[ ]   = { 0,4, 0,4, 0,4 };
-  const IndexType N[ ] = {   5,   5,   5 };
-  double x[ ]          = { 0, 1, 2, 3, 4, 5 };
+  const int64 ext[]    = { 0,4, 0,4, 0,4 };
+  const IndexType N[]  = {   5,   5,   5 };
+  double x[]           = { 0, 1, 2, 3, 4, 5 };
 
   // check 1st native constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(42,ext), IGNORE_OUTPUT );
@@ -403,10 +403,10 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 {
   constexpr int NDIMS  = 3;
   constexpr double MAGIC_NUM = 42.0;
-  const int64 ext[ ]   = { 0,4, 0,4, 0,4 };
-  const IndexType N[ ] = {   5,   5,   5 };
+  const int64 ext[]    = { 0,4, 0,4, 0,4 };
+  const IndexType N[]  = {   5,   5,   5 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
 
     CurvilinearMesh m1( idim, ext );
@@ -418,7 +418,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
     check_create_field( &m1, NODE_CENTERED, "n1" );
     check_create_field( &m1, CELL_CENTERED, "c1", 3 );
 
-    CurvilinearMesh *m2 = AXOM_NULLPTR;
+    CurvilinearMesh* m2 = AXOM_NULLPTR;
     switch( idim )
     {
     case 1:
@@ -450,12 +450,12 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 TEST( mint_mesh_curvilinear_mesh, external_constructor )
 {
   constexpr int NDIMS = 3;
-  const int64  ext[]  = { 0,10, 0,10, 0,10  };
+  const int64 ext[]  = { 0,10, 0,10, 0,10  };
   const IndexType N[] = {   11,   11,   11  };
   const double lo[]   = { 0.0, 0.0, 0.0 };
   const double hi[]   = { 5.0, 5.0, 5.0 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
     UniformMesh um( idim, ext, lo, hi );
     const IndexType numNodes = um.getNumberOfNodes();
@@ -469,46 +469,46 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     switch( idim )
     {
     case 1:
-      {
-        x = new double[ numNodes ];
-        get_coordinates( &um, x );
+    {
+      x = new double[ numNodes ];
+      get_coordinates( &um, x );
 
-        m = new CurvilinearMesh( ext, x );
-        EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-        check_coordinates( &um, m->getCoordinateArray( X_COORDINATE ) );
-      } // END 1D
-      break;
+      m = new CurvilinearMesh( ext, x );
+      EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
+      check_coordinates( &um, m->getCoordinateArray( X_COORDINATE ) );
+    }   // END 1D
+    break;
     case 2:
-      {
-        x = new double[ numNodes ];
-        y = new double[ numNodes ];
-        get_coordinates( &um, x, y );
+    {
+      x = new double[ numNodes ];
+      y = new double[ numNodes ];
+      get_coordinates( &um, x, y );
 
-        m = new CurvilinearMesh( ext, x, y );
-        EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-        EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
-        check_coordinates( &um,
-                           m->getCoordinateArray( X_COORDINATE ),
-                           m->getCoordinateArray( Y_COORDINATE )   );
-      } // END 2D
-      break;
+      m = new CurvilinearMesh( ext, x, y );
+      EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
+      EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
+      check_coordinates( &um,
+                         m->getCoordinateArray( X_COORDINATE ),
+                         m->getCoordinateArray( Y_COORDINATE )   );
+    }   // END 2D
+    break;
     default:
-      {
-        x = new double[ numNodes ];
-        y = new double[ numNodes ];
-        z = new double[ numNodes ];
-        get_coordinates( &um, x, y, z );
+    {
+      x = new double[ numNodes ];
+      y = new double[ numNodes ];
+      z = new double[ numNodes ];
+      get_coordinates( &um, x, y, z );
 
-        m = new CurvilinearMesh( ext, x, y, z );
-        EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-        EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
-        EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
-        check_coordinates( &um,
-                           m->getCoordinateArray( X_COORDINATE ),
-                           m->getCoordinateArray( Y_COORDINATE ),
-                           m->getCoordinateArray( Z_COORDINATE ) );
+      m = new CurvilinearMesh( ext, x, y, z );
+      EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
+      EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
+      EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
+      check_coordinates( &um,
+                         m->getCoordinateArray( X_COORDINATE ),
+                         m->getCoordinateArray( Y_COORDINATE ),
+                         m->getCoordinateArray( Z_COORDINATE ) );
 
-      } // END 3D
+    }   // END 3D
 
     } // END switch
 
@@ -540,10 +540,10 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 {
   constexpr int NDIMS  = 3;
   constexpr double MAGIC_NUM = 42.0;
-  const int64 ext[ ]   = { 0,4, 0,4, 0,4 };
-  const IndexType N[ ] = {   5,   5,   5 };
+  const int64 ext[]    = { 0,4, 0,4, 0,4 };
+  const IndexType N[]  = {   5,   5,   5 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
     // STEP 0: create a data-store with two (empty) groups
     sidre::DataStore ds;
@@ -573,13 +573,13 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
         break;
       case 2:
         m2 = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
-                                         N[ J_DIRECTION ] );
+                                  N[ J_DIRECTION ] );
         break;
       default:
         EXPECT_EQ( idim, 3 );
         m2 = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
-                                         N[ J_DIRECTION ],
-                                         N[ K_DIRECTION ] );
+                                  N[ J_DIRECTION ],
+                                  N[ K_DIRECTION ] );
 
       } // END switch
 
@@ -660,15 +660,15 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       const int ndims          = m1->getDimension();
       EXPECT_EQ( idim, ndims );
 
-      for ( int i=0; i < ndims; ++i )
+      for ( int i=0 ; i < ndims ; ++i )
       {
-        const double *x1 = m1->getCoordinateArray( i );
+        const double* x1 = m1->getCoordinateArray( i );
         EXPECT_TRUE( x1 != AXOM_NULLPTR );
 
         const double* x2 = m2->getCoordinateArray( i );
         EXPECT_TRUE( x2 != AXOM_NULLPTR );
 
-        for ( IndexType inode=0; inode < numNodes; ++inode )
+        for ( IndexType inode=0 ; inode < numNodes ; ++inode )
         {
           EXPECT_DOUBLE_EQ( x1[ inode ], MAGIC_NUM );
           EXPECT_DOUBLE_EQ( x2[ inode ], MAGIC_NUM );

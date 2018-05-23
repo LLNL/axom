@@ -211,7 +211,8 @@ public:
   /// @}
 
   /*!
-   * \brief Converts the given cell grid index to a one-dimensional linear index.
+   * \brief Converts the given cell grid index to a one-dimensional linear
+   *index.
    *
    * \param [in] i the grid cell index along the I_DIRECTION.
    * \param [in] j the grid cell index along the J_DIRECTION.
@@ -345,7 +346,7 @@ inline void Extent::shiftToLocal( const int64* gijk, IndexType* lijk ) const
   SLIC_ASSERT( lijk != AXOM_NULLPTR );
 
   const int N = getDimension( );
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     lijk[ i ] = gijk[ i ] - min( i );
   }
@@ -359,7 +360,7 @@ inline void Extent::shiftToGlobal( const IndexType* lijk, int64* gijk ) const
   SLIC_ASSERT( gijk != AXOM_NULLPTR );
 
   const int N = getDimension();
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     gijk[ i ] = lijk[ i ] + min( i );
   }

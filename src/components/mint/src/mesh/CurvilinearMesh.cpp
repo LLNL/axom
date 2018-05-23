@@ -47,7 +47,7 @@ inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
                  const IndexType& Nj,
                  const IndexType& Nk  )
 {
-  return ( (Nk >= 1)? 3 : ( (Nj >= 1) ? 2 : 1 ) );
+  return ( (Nk >= 1) ? 3 : ( (Nj >= 1) ? 2 : 1 ) );
 }
 
 } /* anonymous namespace */
@@ -75,7 +75,7 @@ CurvilinearMesh::CurvilinearMesh( IndexType Ni,
                                   IndexType Nk ) :
   StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dim( Ni,Nj,Nk ) )
 {
-  int64 extent[ ] = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
+  int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
   m_extent        = new mint::Extent( m_ndims, extent );
   m_coordinates   = new mint::MeshCoordinates( m_ndims,getNumberOfNodes() );
 
@@ -108,11 +108,11 @@ CurvilinearMesh::CurvilinearMesh( const int64* ext,
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
                                   const std::string& topo ) :
-     StructuredMesh( group, topo ),
-     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) )
+  StructuredMesh( group, topo ),
+  m_coordinates( new MeshCoordinates( getCoordsetGroup() ) )
 {
   SLIC_ERROR_IF( m_type != STRUCTURED_CURVILINEAR_MESH,
-            "supplied Sidre group does not correspond to a CurvilinearMesh" );
+                 "supplied Sidre group does not correspond to a CurvilinearMesh" );
 
   int64 extent[ 6 ];
   blueprint::getCurvilinearMeshExtent( m_ndims, getTopologyGroup(), extent );
@@ -173,7 +173,7 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
-  int64 extent[ ] = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
+  int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
   m_extent        = new mint::Extent( m_ndims, extent );
   m_coordinates   = new mint::MeshCoordinates( getCoordsetGroup(),
                                                m_ndims,
@@ -196,7 +196,7 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
                                   IndexType Ni,
                                   IndexType Nj,
                                   IndexType Nk  ) :
-       CurvilinearMesh( group, "", "", Ni, Nj, Nk )
+  CurvilinearMesh( group, "", "", Ni, Nj, Nk )
 { }
 
 #endif

@@ -39,9 +39,9 @@ namespace internal
 #ifdef MINT_USE_SIDRE
 
 /*!
- * \brief Initializes the members of a  a ConnectivityArray instance from a 
+ * \brief Initializes the members of a  a ConnectivityArray instance from a
  *  sidre::Group which already has data.
- * 
+ *
  * \param [in] group the sidre::Group to create the ConnectivityArray from.
  * \param [out] m_values a pointer to a pointer to the values array.
  * \param [out] m_offsets a pointer to a pointer to the offsets array.
@@ -54,52 +54,52 @@ namespace internal
  * \pre group != AXOM_NULLPTR
  * \pre m_values != AXOM_NULLPTR
  */
-inline CellType initializeFromGroup( sidre::Group* group, 
-                                     Array< IndexType >** m_values, 
+inline CellType initializeFromGroup( sidre::Group* group,
+                                     Array< IndexType >** m_values,
                                      Array< IndexType >** m_offsets=AXOM_NULLPTR,
                                      Array< CellType >** m_types=AXOM_NULLPTR )
 {
-  SLIC_ERROR_IF( group == AXOM_NULLPTR, 
-                   "sidre::Group pointer must not be null." );
+  SLIC_ERROR_IF( group == AXOM_NULLPTR,
+                 "sidre::Group pointer must not be null." );
   SLIC_ERROR_IF( m_values == AXOM_NULLPTR,
-                   "Pointer values array must not be null." );
-  
-  SLIC_ERROR_IF( !group->hasView( "coordset" ), 
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. No child view 'coordset'." );
-  SLIC_ERROR_IF( !group->getView( "coordset" )->isString(), 
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. Child view 'coordset' " <<
-                  "does not hold a string." );
+                 "Pointer values array must not be null." );
 
-  SLIC_ERROR_IF( !group->hasView( "type" ), 
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. No child view 'type'." );
+  SLIC_ERROR_IF( !group->hasView( "coordset" ),
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. No child view 'coordset'." );
+  SLIC_ERROR_IF( !group->getView( "coordset" )->isString(),
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. Child view 'coordset' " <<
+                 "does not hold a string." );
+
+  SLIC_ERROR_IF( !group->hasView( "type" ),
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. No child view 'type'." );
   sidre::View* type_view = group->getView( "type" );
-  SLIC_ERROR_IF( !type_view->isString(), 
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. Child view 'type' " <<
-                  "does not hold a string." );
-  SLIC_ERROR_IF( std::strcmp( type_view->getString(), "unstructured" ) != 0, 
-                  "Incorrect type found. Expected 'unstructured' but got '" <<
-                  type_view->getString() << "'.");
+  SLIC_ERROR_IF( !type_view->isString(),
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. Child view 'type' " <<
+                 "does not hold a string." );
+  SLIC_ERROR_IF( std::strcmp( type_view->getString(), "unstructured" ) != 0,
+                 "Incorrect type found. Expected 'unstructured' but got '" <<
+                 type_view->getString() << "'.");
 
   SLIC_ERROR_IF( !group->hasGroup( "elements" ),
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. No 'elements' group " <<
-                  "found." );
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. No 'elements' group " <<
+                 "found." );
   sidre::Group* elems_group = group->getGroup( "elements" );
 
-  SLIC_ERROR_IF( !elems_group->hasView( "shape" ), 
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. The elements group " <<
-                  "does not have a child view 'shape'." );
-  
+  SLIC_ERROR_IF( !elems_group->hasView( "shape" ),
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. The elements group " <<
+                 "does not have a child view 'shape'." );
+
   sidre::View* shape_view = elems_group->getView( "shape" );
   std::string bp_name = shape_view->getString();
   CellType cell_type = UNDEFINED_CELL;
 
-  for ( IndexType i = 0; i < NUM_CELL_TYPES; ++i )
+  for ( IndexType i = 0 ; i < NUM_CELL_TYPES ; ++i )
   {
     if ( cell_info[i].blueprint_name == bp_name )
     {
@@ -109,9 +109,9 @@ inline CellType initializeFromGroup( sidre::Group* group,
   }
 
   SLIC_ERROR_IF( !elems_group->hasView( "connectivity" ),
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint. The elements group " <<
-                  "does not have a child view 'connectivity'."  );
+                 "sidre::Group " << group->getPathName() <<
+                 " does not conform to mesh blueprint. The elements group " <<
+                 "does not have a child view 'connectivity'."  );
 
   sidre::View* connec_view = elems_group->getView( "connectivity" );
   *m_values = new Array< IndexType >( connec_view );
@@ -119,37 +119,37 @@ inline CellType initializeFromGroup( sidre::Group* group,
 
   if ( m_offsets != AXOM_NULLPTR )
   {
-    SLIC_ERROR_IF( !elems_group->hasView( "offsets" ), 
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint." );
+    SLIC_ERROR_IF( !elems_group->hasView( "offsets" ),
+                   "sidre::Group " << group->getPathName() <<
+                   " does not conform to mesh blueprint." );
 
     sidre::View* offsets_view = elems_group->getView( "offsets" );
     *m_offsets = new Array< IndexType >( offsets_view );
-    
+
     SLIC_ERROR_IF( *m_offsets == AXOM_NULLPTR, "Error in Array allocation." );
-    SLIC_ERROR_IF( (*m_offsets)->numComponents() != 1, 
+    SLIC_ERROR_IF( (*m_offsets)->numComponents() != 1,
                    "offsets array must have only 1 component not " <<
                    (*m_offsets)->numComponents() << "." );
-    
+
     if ( (*m_offsets)->size() == 0 )
     {
-     (*m_offsets)->append(0);
+      (*m_offsets)->append(0);
     }
     SLIC_ERROR_IF( (**m_offsets)[0] != 0, "The offset of ID 0 must be 0 not " <<
-                                         (**m_offsets)[0] << "." );
+                   (**m_offsets)[0] << "." );
   }
 
   if ( m_types != AXOM_NULLPTR )
   {
     SLIC_ERROR_IF( !elems_group->hasView( "types" ),
-                  "sidre::Group " << group->getPathName() << 
-                  " does not conform to mesh blueprint." );
-    
+                   "sidre::Group " << group->getPathName() <<
+                   " does not conform to mesh blueprint." );
+
     sidre::View* type_view = elems_group->getView( "types" );
     *m_types = new Array< CellType >( type_view );
 
     SLIC_ERROR_IF( *m_types == AXOM_NULLPTR, "Error in Array allocation." );
-    SLIC_ERROR_IF( (*m_types)->numComponents() != 1, 
+    SLIC_ERROR_IF( (*m_types)->numComponents() != 1,
                    "Types array must have only 1 component not " <<
                    (*m_types)->numComponents() << "." );
   }
@@ -159,7 +159,7 @@ inline CellType initializeFromGroup( sidre::Group* group,
 
 /*!
  * \brief Initializees an empty sidre::Group to hold a ConnectivityArray.
- * 
+ *
  * \param [out] group the empty sidre::Group.
  * \param [in] coordset the name of the Blueprint coordinate set to associate
  *  this ConnectivityArray with.
@@ -169,32 +169,32 @@ inline CellType initializeFromGroup( sidre::Group* group,
  * \pre group != AXOM_NULLPTR
  * \pre group->getNumGroups() == group->getNumViews() == 0
  */
-inline void initializeGroup( sidre::Group* group, const std::string& coordset, 
+inline void initializeGroup( sidre::Group* group, const std::string& coordset,
                              CellType cell_type, bool create_offsets=false,
                              bool create_types=false )
 {
-  SLIC_ERROR_IF( group == AXOM_NULLPTR, 
-                   "sidre::Group pointer must not be null." );
+  SLIC_ERROR_IF( group == AXOM_NULLPTR,
+                 "sidre::Group pointer must not be null." );
   SLIC_ERROR_IF( group->getNumGroups() != 0, "sidre::Group is not empty." );
   SLIC_ERROR_IF( group->getNumViews() != 0, "sidre::Group is not empty." );
 
   group->createView( "coordset" )->setString( coordset );
   group->createView( "type" )->setString( "unstructured" );
 
-  const std::string bp_name = ( cell_type==UNDEFINED_CELL )? "mixed" : 
-                                          cell_info[ cell_type ].blueprint_name;
+  const std::string bp_name = ( cell_type==UNDEFINED_CELL ) ? "mixed" :
+                              cell_info[ cell_type ].blueprint_name;
 
   sidre::Group* elems_group = group->createGroup( "elements" );
   elems_group->createView( "shape" )->setString( bp_name );
 
   elems_group->createView( "connectivity" );
-  
-  if ( create_offsets ) 
+
+  if ( create_offsets )
   {
     elems_group->createView( "offsets" );
   }
 
-  if ( create_types ) 
+  if ( create_types )
   {
     elems_group->createView( "types" );
   }
@@ -206,7 +206,7 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
  * \brief Append multiple IDs to the members of a ConnectivityArray.
  *
  * \param [in] n_IDs the number of IDs to append.
- * \param [in] values pointer to the values to set, of length at least 
+ * \param [in] values pointer to the values to set, of length at least
  *  n_values
  * \param [in] the offsets array of length n_IDs + 1.
  * \param [in/out] a pointer to the values array.
@@ -218,7 +218,7 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
  * \pre m_values != AXOM_NULLPTR
  * \pre m_offsets != AXOM_NULLPTR
  */
-inline void append( IndexType n_IDs, const IndexType* values, 
+inline void append( IndexType n_IDs, const IndexType* values,
                     const IndexType* offsets, Array< IndexType >* m_values,
                     Array< IndexType >* m_offsets )
 {
@@ -237,9 +237,9 @@ inline void append( IndexType n_IDs, const IndexType* values,
   /* Correct the appended offsets. */
   IndexType* m_offsets_ptr = m_offsets->getData();
   const IndexType correction = old_n_values - offsets[0];
-  for ( IndexType i = 0; i < n_IDs; ++i )
+  for ( IndexType i = 0 ; i < n_IDs ; ++i )
   {
-    m_offsets_ptr[ old_n_offsets + i ] += correction; 
+    m_offsets_ptr[ old_n_offsets + i ] += correction;
   }
 }
 
@@ -247,18 +247,18 @@ inline void append( IndexType n_IDs, const IndexType* values,
  * \brief Sets the values of multiple IDs starting with the given ID.
  *
  * \param [in] start_ID the ID to start at.
- * \param [in] values pointer to the values to set, of length at least 
+ * \param [in] values pointer to the values to set, of length at least
  *  the sum of the number of values of each ID to set.
  * \param [in] n_IDs the number of IDs to set.
  * \param [in/out] a pointer to the values array.
  * \param [in] m_offsets a pointer to the offsets Array.
- * 
+ *
  * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
  * \pre values != AXOM_NULLPTR
  * \pre m_values != AXOM_NULLPTR
  */
 inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
-                 Array< IndexType >* m_values, Array< IndexType >* m_offsets ) 
+                 Array< IndexType >* m_values, Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( start_ID >= 0 );
   SLIC_ASSERT( start_ID + n_IDs <= m_offsets->size() - 1 );
@@ -275,7 +275,7 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  *
  * \param [in] start_ID the ID to start at.
  * \param [in] n_IDs the number of IDs to insert.
- * \param [in] values pointer to the values to set, of length at least 
+ * \param [in] values pointer to the values to set, of length at least
  *  n_values
  * \param [in] offsets the offsets array of length n_IDs + 1.
  * \param [in/out] m_values a pointer to the values Array.
@@ -288,9 +288,9 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  * \pre m_values != AXOM_NULLPTR
  * \pre m_offsets != AXOM_NULLPTR
  */
-inline void insert( IndexType start_ID, IndexType n_IDs, 
+inline void insert( IndexType start_ID, IndexType n_IDs,
                     const IndexType* values, const IndexType* offsets,
-                    Array< IndexType >* m_values, 
+                    Array< IndexType >* m_values,
                     Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( start_ID >= 0 );
@@ -307,9 +307,9 @@ inline void insert( IndexType start_ID, IndexType n_IDs,
 
   /* Increment the offsets after the insertion position. */
   IndexType n_offsets = m_offsets->size();
-  for ( IndexType i = start_ID + 1; i < n_offsets; ++i )
+  for ( IndexType i = start_ID + 1 ; i < n_offsets ; ++i )
   {
-    m_offsets_ptr[ i ] += n_values; 
+    m_offsets_ptr[ i ] += n_values;
   }
 
   m_offsets->insert( offsets + 1, n_IDs, start_ID + 1 );
@@ -318,9 +318,9 @@ inline void insert( IndexType start_ID, IndexType n_IDs,
   /* Correct the inserted offsets. */
   m_offsets_ptr = m_offsets->getData();
   const IndexType correction = insert_pos - offsets[0];
-  for ( IndexType i = 0; i < n_IDs; ++i )
+  for ( IndexType i = 0 ; i < n_IDs ; ++i )
   {
-    m_offsets_ptr[ start_ID + 1 + i ] += correction; 
+    m_offsets_ptr[ start_ID + 1 + i ] += correction;
   }
 }
 
@@ -333,10 +333,11 @@ inline void insert( IndexType start_ID, IndexType n_IDs,
  * \param [in] n_values the number of values in the ConnectivityArray.
  * \param [in] value_capacity the value capacity of the ConnectivityArray.
  *  If this is not USE_DEFAULT it simply returns the given capacity, otherwise
- *  it calculates the capacity given the other three parameters. 
+ *  it calculates the capacity given the other three parameters.
  */
-inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity, 
-                                    IndexType n_values, IndexType value_capacity )
+inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity,
+                                    IndexType n_values,
+                                    IndexType value_capacity )
 {
   if ( value_capacity == USE_DEFAULT )
   {
@@ -346,7 +347,7 @@ inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity,
     }
     else
     {
-      const double avg_n_vals =  double( n_values ) / n_IDs; 
+      const double avg_n_vals =  double( n_values ) / n_IDs;
       value_capacity = std::ceil( avg_n_vals * n_IDs );
     }
   }

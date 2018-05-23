@@ -47,7 +47,7 @@ void exponential_distribution( double origin, IndexType N, double* x )
   const double invf     = 1 / ( expbeta - 1.0 );
 
   x[ 0 ] = origin;
-  for ( int i=1; i < N; ++i )
+  for ( int i=1 ; i < N ; ++i )
   {
     const double prev = x[ i-1 ];
     const double dx   = ( exp( i*beta ) - 1.0 ) * invf;
@@ -73,7 +73,7 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // STEP 2: compute a fiducial field
   const IndexType numNodes = mesh.getNumberOfNodes();
-  for ( IndexType inode=0; inode < numNodes; ++inode )
+  for ( IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     phi[ inode ] = utilities::random_real( -10.0, 10.0 );
   } // END for all nodes

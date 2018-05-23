@@ -54,7 +54,7 @@ void check_resize( mint::FieldData& field_data, int NEW_NUM_TUPLES )
   const int numFields = field_data.getNumFields();
 
   // ensure current number of tuples is smaller the NEW_NUM_TUPLES
-  for ( int i=0; i < numFields; ++i )
+  for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
     EXPECT_TRUE( f != AXOM_NULLPTR );
@@ -65,11 +65,11 @@ void check_resize( mint::FieldData& field_data, int NEW_NUM_TUPLES )
   field_data.resize( NEW_NUM_TUPLES );
 
   // check new size
-  for ( int i=0; i < numFields; ++i )
+  for ( int i=0 ; i < numFields ; ++i )
   {
-     mint::Field* f = field_data.getField( i );
-     EXPECT_TRUE( f != AXOM_NULLPTR );
-     EXPECT_EQ( f->getNumTuples(), NEW_NUM_TUPLES );
+    mint::Field* f = field_data.getField( i );
+    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_EQ( f->getNumTuples(), NEW_NUM_TUPLES );
   }
 
 }
@@ -82,7 +82,7 @@ void check_reserve( mint::FieldData& field_data, int NEW_CAPACITY )
   const int numFields = field_data.getNumFields();
 
   // ensure current number of tuples is smaller the NEW_NUM_TUPLES
-  for ( int i=0; i < numFields; ++i )
+  for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
     EXPECT_TRUE( f != AXOM_NULLPTR );
@@ -93,11 +93,11 @@ void check_reserve( mint::FieldData& field_data, int NEW_CAPACITY )
   field_data.reserve( NEW_CAPACITY );
 
   // check new size
-  for ( int i=0; i < numFields; ++i )
+  for ( int i=0 ; i < numFields ; ++i )
   {
-     mint::Field* f = field_data.getField( i );
-     EXPECT_TRUE( f != AXOM_NULLPTR );
-     EXPECT_EQ( f->getCapacity(), NEW_CAPACITY );
+    mint::Field* f = field_data.getField( i );
+    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_EQ( f->getCapacity(), NEW_CAPACITY );
   }
 
 }
@@ -112,7 +112,7 @@ void check_shrink( mint::FieldData& field_data )
   // ensure the current capacity is larger than num_tuples
   mint::IndexType num_tuples = field_data.getField( 0 )->getNumTuples();
   field_data.reserve( num_tuples*10 );
-  for ( int i=0; i < numFields; ++i )
+  for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
     EXPECT_TRUE( f != AXOM_NULLPTR );
@@ -124,7 +124,7 @@ void check_shrink( mint::FieldData& field_data )
   field_data.shrink( );
 
   // check that max capacity is num_tuples
-  for ( int i=0; i < numFields; ++i )
+  for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
     EXPECT_TRUE( f != AXOM_NULLPTR );
@@ -147,65 +147,66 @@ void check_create_and_access_data( mint::FieldData& field_data,
   std::fill( f1, f1+NUM_TUPLES, MAGIC_INT );
 
   // create a real-valued vector field, f2, and fill it with MAGIC_DOUBLE
-  double* f2 = field_data.createField< double >( "f2", NUM_TUPLES, NUM_COMPONENTS );
+  double* f2 = field_data.createField< double >( "f2", NUM_TUPLES,
+                                                 NUM_COMPONENTS );
   std::fill( f2, f2+(NUM_TUPLES*NUM_COMPONENTS), MAGIC_DOUBLE );
 
-   // check f1 pointer access and parameters
-   mint::IndexType N = 0;
-   mint::IndexType M = 0;
-   int* f1ptr = field_data.getFieldPtr< int >( "f1", N, M );
-   EXPECT_TRUE( f1ptr != AXOM_NULLPTR );
-   EXPECT_EQ( N, NUM_TUPLES );
-   EXPECT_EQ( M, 1 );
-   EXPECT_EQ( f1ptr, f1 );
+  // check f1 pointer access and parameters
+  mint::IndexType N = 0;
+  mint::IndexType M = 0;
+  int* f1ptr = field_data.getFieldPtr< int >( "f1", N, M );
+  EXPECT_TRUE( f1ptr != AXOM_NULLPTR );
+  EXPECT_EQ( N, NUM_TUPLES );
+  EXPECT_EQ( M, 1 );
+  EXPECT_EQ( f1ptr, f1 );
 
-   // check f1 field object access by name
-   mint::Field* field_by_name = field_data.getField( "f1" );
-   EXPECT_TRUE( field_by_name != AXOM_NULLPTR );
-   EXPECT_EQ( field_by_name->getName(), "f1" );
-   EXPECT_EQ( field_by_name->getType(), mint::INT32_FIELD_TYPE );
-   EXPECT_EQ( mint::Field::getDataPtr< int >( field_by_name ), f1 );
-   EXPECT_EQ( field_by_name->getNumTuples(), NUM_TUPLES );
-   EXPECT_EQ( field_by_name->getNumComponents(), 1 );
+  // check f1 field object access by name
+  mint::Field* field_by_name = field_data.getField( "f1" );
+  EXPECT_TRUE( field_by_name != AXOM_NULLPTR );
+  EXPECT_EQ( field_by_name->getName(), "f1" );
+  EXPECT_EQ( field_by_name->getType(), mint::INT32_FIELD_TYPE );
+  EXPECT_EQ( mint::Field::getDataPtr< int >( field_by_name ), f1 );
+  EXPECT_EQ( field_by_name->getNumTuples(), NUM_TUPLES );
+  EXPECT_EQ( field_by_name->getNumComponents(), 1 );
 
-   // check f1 field object access by index
-   mint::Field* field_by_index = field_data.getField( 0 );
-   EXPECT_TRUE( field_by_index != AXOM_NULLPTR );
-   EXPECT_EQ( field_by_index, field_by_name );
-   EXPECT_EQ( field_by_index->getName(), "f1" );
+  // check f1 field object access by index
+  mint::Field* field_by_index = field_data.getField( 0 );
+  EXPECT_TRUE( field_by_index != AXOM_NULLPTR );
+  EXPECT_EQ( field_by_index, field_by_name );
+  EXPECT_EQ( field_by_index->getName(), "f1" );
 
-   // check f2 pointer access and parameters
-   double* f2ptr = field_data.getFieldPtr< double >( "f2", N, M );
-   EXPECT_TRUE( f2ptr != AXOM_NULLPTR );
-   EXPECT_EQ( N, NUM_TUPLES );
-   EXPECT_EQ( M, NUM_COMPONENTS );
-   EXPECT_EQ( f2ptr, f2 );
+  // check f2 pointer access and parameters
+  double* f2ptr = field_data.getFieldPtr< double >( "f2", N, M );
+  EXPECT_TRUE( f2ptr != AXOM_NULLPTR );
+  EXPECT_EQ( N, NUM_TUPLES );
+  EXPECT_EQ( M, NUM_COMPONENTS );
+  EXPECT_EQ( f2ptr, f2 );
 
-   // check f2 field object access by name
-   mint::Field* field2_by_name = field_data.getField( "f2" );
-   EXPECT_TRUE( field2_by_name != AXOM_NULLPTR );
-   EXPECT_EQ( field2_by_name->getName(), "f2" );
-   EXPECT_EQ( field2_by_name->getType(), mint::DOUBLE_FIELD_TYPE );
-   EXPECT_EQ( mint::Field::getDataPtr< double >( field2_by_name ), f2 );
-   EXPECT_EQ( field2_by_name->getNumTuples(), NUM_TUPLES );
-   EXPECT_EQ( field2_by_name->getNumComponents(), NUM_COMPONENTS );
+  // check f2 field object access by name
+  mint::Field* field2_by_name = field_data.getField( "f2" );
+  EXPECT_TRUE( field2_by_name != AXOM_NULLPTR );
+  EXPECT_EQ( field2_by_name->getName(), "f2" );
+  EXPECT_EQ( field2_by_name->getType(), mint::DOUBLE_FIELD_TYPE );
+  EXPECT_EQ( mint::Field::getDataPtr< double >( field2_by_name ), f2 );
+  EXPECT_EQ( field2_by_name->getNumTuples(), NUM_TUPLES );
+  EXPECT_EQ( field2_by_name->getNumComponents(), NUM_COMPONENTS );
 
-   // check f2 field object access by index
-   mint::Field* field2_by_index = field_data.getField( 1 );
-   EXPECT_TRUE( field2_by_index != AXOM_NULLPTR );
-   EXPECT_EQ( field2_by_index, field2_by_name );
-   EXPECT_EQ( field2_by_index->getName(), "f2" );
+  // check f2 field object access by index
+  mint::Field* field2_by_index = field_data.getField( 1 );
+  EXPECT_TRUE( field2_by_index != AXOM_NULLPTR );
+  EXPECT_EQ( field2_by_index, field2_by_name );
+  EXPECT_EQ( field2_by_index->getName(), "f2" );
 
-   // check the data
-   for ( int i=0; i < NUM_TUPLES; ++i )
-   {
-     EXPECT_EQ( f1ptr[ i ], MAGIC_INT );
+  // check the data
+  for ( int i=0 ; i < NUM_TUPLES ; ++i )
+  {
+    EXPECT_EQ( f1ptr[ i ], MAGIC_INT );
 
-     const int offset = i*NUM_COMPONENTS;
-     EXPECT_EQ( f2ptr[ offset   ], MAGIC_DOUBLE );
-     EXPECT_EQ( f2ptr[ offset+1 ], MAGIC_DOUBLE );
-     EXPECT_EQ( f2ptr[ offset+2 ], MAGIC_DOUBLE );
-   } // END for
+    const int offset = i*NUM_COMPONENTS;
+    EXPECT_EQ( f2ptr[ offset   ], MAGIC_DOUBLE );
+    EXPECT_EQ( f2ptr[ offset+1 ], MAGIC_DOUBLE );
+    EXPECT_EQ( f2ptr[ offset+2 ], MAGIC_DOUBLE );
+  }  // END for
 }
 
 #ifdef MINT_USE_SIDRE
@@ -213,11 +214,11 @@ void check_create_and_access_data( mint::FieldData& field_data,
 //------------------------------------------------------------------------------
 template < typename T >
 void add_field_to_group( sidre::Group* gp,
-                               const std::string& name,
-                               int numTuples,
-                               int numComponents,
-                               int centering,
-                               T fill_value=T() )
+                         const std::string& name,
+                         int numTuples,
+                         int numComponents,
+                         int centering,
+                         T fill_value=T() )
 {
   SLIC_ASSERT( centering==mint::NODE_CENTERED ||
                centering==mint::CELL_CENTERED );
@@ -226,7 +227,7 @@ void add_field_to_group( sidre::Group* gp,
   sidre::Group* fg = gp->createGroup( name );
 
   const std::string association =
-      ( centering==mint::NODE_CENTERED ) ? "vertex" : "element";
+    ( centering==mint::NODE_CENTERED ) ? "vertex" : "element";
 
   fg->createView( "volume_dependent" )->setString ("true");
   fg->createView( "association" )->setString( association );
@@ -275,7 +276,8 @@ TEST( mint_mesh_field_data_DeathTest, invalid_construction )
   sidre::Group* gp = ds.getRoot( );
 
   EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( 42, gp, "topo" ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( mint::NODE_CENTERED, AXOM_NULLPTR, "topo" ),
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( mint::NODE_CENTERED, AXOM_NULLPTR,
+                                              "topo" ),
                              IGNORE_OUTPUT );
 
   // create sidre data that does not conform to the blue-print
@@ -327,11 +329,13 @@ TEST( mint_mesh_field_data_DeathTest, invalid_operations )
   EXPECT_DEATH_IF_SUPPORTED( field_data.resize( 10 ), IGNORE_OUTPUT );
 
   // creating an external field with a null pointer should fail
-  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>( "foo", AXOM_NULLPTR, 4 ),
+  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>( "foo", AXOM_NULLPTR,
+                                                          4 ),
                              IGNORE_OUTPUT );
 
   // add a field with an empty name should fail
-  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>("", data, 4 ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>("", data,
+                                                         4 ), IGNORE_OUTPUT );
 
   // remove filed that does not exist should fail
   EXPECT_DEATH_IF_SUPPORTED( field_data.removeField( "foo" ), IGNORE_OUTPUT );
@@ -396,7 +400,7 @@ TEST( mint_mesh_field_data, sidre_constructor )
   EXPECT_EQ( cell_data.getNumFields(), NUM_CELL_FIELDS );
 
   // check nodal fields
-  for ( int i=0; i < NUM_NODE_FIELDS; ++i )
+  for ( int i=0 ; i < NUM_NODE_FIELDS ; ++i )
   {
     std::ostringstream oss;
     oss << "n" << (i+1);
@@ -413,35 +417,35 @@ TEST( mint_mesh_field_data, sidre_constructor )
 
     if ( f->getName()=="n3" )
     {
-       EXPECT_EQ( f->getType(), mint::INT32_FIELD_TYPE );
+      EXPECT_EQ( f->getType(), mint::INT32_FIELD_TYPE );
 
-       const int* field_data = mint::Field::getDataPtr< int > ( f );
-       EXPECT_TRUE( field_data != AXOM_NULLPTR );
+      const int* field_data = mint::Field::getDataPtr< int > ( f );
+      EXPECT_TRUE( field_data != AXOM_NULLPTR );
 
-       for ( int i=0; i < NTOTAL; ++i )
-       {
-         EXPECT_EQ( field_data[ i ], INT_MAGIC_NUM );
-       }
+      for ( int i=0 ; i < NTOTAL ; ++i )
+      {
+        EXPECT_EQ( field_data[ i ], INT_MAGIC_NUM );
+      }
 
     } // END if
     else
     {
-       EXPECT_EQ( f->getType(), mint::DOUBLE_FIELD_TYPE );
+      EXPECT_EQ( f->getType(), mint::DOUBLE_FIELD_TYPE );
 
-       const double* field_data = mint::Field::getDataPtr< double >( f );
-       EXPECT_TRUE( field_data != AXOM_NULLPTR );
+      const double* field_data = mint::Field::getDataPtr< double >( f );
+      EXPECT_TRUE( field_data != AXOM_NULLPTR );
 
-       for ( int i=0; i < NTOTAL; ++i )
-       {
-          EXPECT_EQ( field_data[ i ], DOUBLE_MAGIC_NUM );
-       }
+      for ( int i=0 ; i < NTOTAL ; ++i )
+      {
+        EXPECT_EQ( field_data[ i ], DOUBLE_MAGIC_NUM );
+      }
 
     } // END else
 
   } // END for
 
   // check cell-centered fields
-  for ( int i=0; i < NUM_CELL_FIELDS; ++i )
+  for ( int i=0 ; i < NUM_CELL_FIELDS ; ++i )
   {
     std::ostringstream oss;
     oss << "c" << (i+1);
@@ -485,7 +489,8 @@ TEST( mint_mesh_field_data, create_and_access_fields )
 
     // create a temp field and don't push to Sidre
     const bool putInSidre = false;
-    sidre_data.createField< int >( "foo", NUM_TUPLES, 1, NUM_TUPLES, putInSidre );
+    sidre_data.createField< int >( "foo", NUM_TUPLES, 1, NUM_TUPLES,
+                                   putInSidre );
     EXPECT_TRUE( sidre_data.hasField("foo") );
     EXPECT_FALSE( fields_group->hasChildGroup( "foo" ) );
 
@@ -522,7 +527,7 @@ TEST( mint_mesh_field_data, create_and_access_fields )
   EXPECT_EQ( f2_array.numComponents(), NUM_COMPONENTS );
 
   // check data
-  for ( int i=0; i < NUM_TUPLES; ++i )
+  for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_EQ( f1_array( i ), MAGIC_INT );
 
@@ -543,7 +548,7 @@ TEST( mint_mesh_field_data, remove_field )
   constexpr int MAGIC_INT       = 42;
   constexpr double MAGIC_DOUBLE = 3.14;
 
-  int foo [ ] = { 7, 7, 7, 7 };
+  int foo []  = { 7, 7, 7, 7 };
 
   mint::FieldData native_data( mint::NODE_CENTERED );
   check_create_and_access_data( native_data, NUM_TUPLES, NUM_COMPONENTS,
@@ -569,7 +574,7 @@ TEST( mint_mesh_field_data, remove_field )
 
 
   // ensure foo is still there
-  for ( int i=0; i < NUM_TUPLES; ++i )
+  for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_EQ( foo[ i ], 7 );
   }

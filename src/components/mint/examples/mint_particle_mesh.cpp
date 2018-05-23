@@ -65,7 +65,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // STEP 3: loop over the particle data
   const int64 numParticles = particles.getNumberOfNodes();
-  for ( int64 i=0; i < numParticles; ++i )
+  for ( int64 i=0 ; i < numParticles ; ++i )
   {
 
     px[ i ] = utilities::random_real( LO, HI );

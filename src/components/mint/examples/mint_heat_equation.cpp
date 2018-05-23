@@ -169,7 +169,7 @@ public:
     IndexType size[3];
     m_mesh->getExtentSize( size );
     double* t = m_mesh->getFieldPtr< double >( "temperature",
-                                                mint::NODE_CENTERED );
+                                               mint::NODE_CENTERED );
 
     IndexType idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
@@ -199,7 +199,7 @@ public:
     const IndexType num_nodes = m_mesh->getNumberOfNodes();
     double* new_temp  = new double[num_nodes];
     double* prev_temp = m_mesh->getFieldPtr< double >( "temperature",
-                                                        mint::NODE_CENTERED );
+                                                       mint::NODE_CENTERED );
 
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */

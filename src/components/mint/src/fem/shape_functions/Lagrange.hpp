@@ -219,7 +219,7 @@ private:
   {
     if ( (CellType >= 0) && ( CellType < mint::NUM_CELL_TYPES ) )
     {
-      SLIC_ERROR( "Lagrange shape functions for ["  <<
+      SLIC_ERROR( "Lagrange shape functions for [" <<
                   cell_info[ CellType ].name  << "] are not defined!" );
     }
     else

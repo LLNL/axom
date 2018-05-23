@@ -58,9 +58,9 @@ template < Topology TOPO >
 void append_nodes( UnstructuredMesh< TOPO >* mesh, IndexType x_extent,
                    IndexType y_extent, double spacing )
 {
-  for ( IndexType j = 0; j < y_extent; ++j )
+  for ( IndexType j = 0 ; j < y_extent ; ++j )
   {
-    for ( IndexType i = 0; i < x_extent; ++i )
+    for ( IndexType i = 0 ; i < x_extent ; ++i )
     {
       mesh->appendNode( i * spacing, j * spacing );
     }
@@ -83,9 +83,9 @@ void check_append_nodes( const Mesh* mesh, IndexType x_extent,
 
   IndexType node_ID = 0;
   double node[2];
-  for ( IndexType j = 0; j < y_extent; ++j )
+  for ( IndexType j = 0 ; j < y_extent ; ++j )
   {
-    for ( IndexType i = 0; i < x_extent; ++i )
+    for ( IndexType i = 0 ; i < x_extent ; ++i )
     {
       mesh->getNode( node_ID++, node );
       EXPECT_EQ( node[0], i * spacing );
@@ -104,16 +104,16 @@ void check_append_nodes( const Mesh* mesh, IndexType x_extent,
 void append_cells( UnstructuredMesh< Topology::SINGLE >* mesh,
                    IndexType x_extent, IndexType y_extent )
 {
-  for ( IndexType j = 0; j < y_extent - 1; ++j )
+  for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
   {
-    for ( IndexType i = 0; i < x_extent - 1; ++i )
+    for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
       const IndexType top_right = bottom_right + x_extent;
       const IndexType top_left = bottom_left + x_extent;
       const IndexType cell[4] =
-                            { bottom_left, bottom_right, top_right, top_left };
+      { bottom_left, bottom_right, top_right, top_left };
       mesh->appendCell( cell );
     }
   }
@@ -135,9 +135,9 @@ void check_append_cells_single( const Mesh* mesh, IndexType x_extent,
 
   IndexType cell_ID = 0;
   IndexType cell[4];
-  for ( IndexType j = 0; j < y_extent - 1; ++j )
+  for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
   {
-    for ( IndexType i = 0; i < x_extent - 1; ++i )
+    for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       mesh->getCell( cell_ID++, cell );
 
@@ -173,9 +173,9 @@ inline bool appendQuad( mint::IndexType i, mint::IndexType j )
 void append_cells( UnstructuredMesh< Topology::MIXED >* mesh,
                    IndexType x_extent, IndexType y_extent )
 {
-  for ( IndexType j = 0; j < y_extent - 1; ++j )
+  for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
   {
-    for ( IndexType i = 0; i < x_extent - 1; ++i )
+    for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -186,7 +186,7 @@ void append_cells( UnstructuredMesh< Topology::MIXED >* mesh,
       {
         /* Append a quad. */
         const IndexType quad[4] =
-                            { bottom_left, bottom_right, top_right, top_left };
+        { bottom_left, bottom_right, top_right, top_left };
         mesh->appendCell( quad, QUAD);
       }
       else
@@ -216,9 +216,9 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
 
   IndexType cell_ID = 0;
   IndexType cell[ MAX_NUM_NODES ];
-  for ( IndexType j = 0; j < y_extent - 1; ++j )
+  for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
   {
-    for ( IndexType i = 0; i < x_extent - 1; ++i )
+    for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       CellType type = mesh->getCellType( cell_ID );
       IndexType n_nodes = mesh->getCell( cell_ID++, cell );
@@ -267,7 +267,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
  */
 void set_node_fields( IndexType n_nodes, double* vx, double* vy )
 {
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     vx[ i ] = std::cos( E * i );
     vy[ i ] = std::sin( E * E * i );
@@ -283,7 +283,7 @@ void set_node_fields( IndexType n_nodes, double* vx, double* vy )
  */
 void check_node_fields( IndexType n_nodes, const double* vx, const double* vy )
 {
-  for ( IndexType i = 0; i < n_nodes; ++i )
+  for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
     EXPECT_EQ( vx[ i ], std::cos( E * i ) );
     EXPECT_EQ( vy[ i ], std::sin( E * E * i ) );
@@ -298,7 +298,7 @@ void check_node_fields( IndexType n_nodes, const double* vx, const double* vy )
  */
 void set_cell_fields( IndexType n_cells, double* p )
 {
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     p[ i ] = std::cosh( E * i );
   }
@@ -312,7 +312,7 @@ void set_cell_fields( IndexType n_cells, double* p )
  */
 void check_cell_fields( IndexType n_cells, const double* p )
 {
-  for ( IndexType i = 0; i < n_cells; ++i )
+  for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     EXPECT_EQ( p[ i ], std::cosh( E * i ) );
   }
@@ -334,7 +334,7 @@ TEST( mint_mesh_DeathTest, get_mesh_null_group )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
 {
-  const int64  ext[]      = { -10,10, -10,10, -10,10  };
+  const int64 ext[]      = { -10,10, -10,10, -10,10  };
   constexpr int DIMENSION = 3;
   constexpr int BLOCKID   = 9;
   constexpr int PARTID    = 10;
@@ -383,7 +383,7 @@ TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
 {
-  const int64  ext[]      = { -10,10, -10,10, -10,10  };
+  const int64 ext[]      = { -10,10, -10,10, -10,10  };
   constexpr int DIMENSION = 3;
   constexpr int BLOCKID   = 9;
   constexpr int PARTID    = 10;
@@ -432,7 +432,7 @@ TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_uniform_mesh_from_sidre )
 {
-  const int64  ext[]      = { -10,10, -10,10, -10,10  };
+  const int64 ext[]      = { -10,10, -10,10, -10,10  };
   const double LO[]       = { -2.0, -2.0, -2.0 };
   const double HI[]       = {  2.0,  2.0,  2.0 };
   constexpr int DIMENSION = 3;
@@ -478,7 +478,7 @@ TEST( mint_mesh, get_uniform_mesh_from_sidre )
 
   const double* h  = M->getSpacing();
   const double* lo = M->getOrigin();
-  for ( int idim=0; idim < DIMENSION; ++idim )
+  for ( int idim=0 ; idim < DIMENSION ; ++idim )
   {
     EXPECT_DOUBLE_EQ( SPACING[ idim ], h[ idim ] );
     EXPECT_DOUBLE_EQ( LO[ idim ], lo[ idim ] );
@@ -510,9 +510,9 @@ TEST( mint_mesh, get_particle_mesh_from_sidre )
 
   double* phi = particles->createField< double >( "phi", NODE_CENTERED );
   IndexType* id =
-      particles->createField< IndexType >( "id", NODE_CENTERED );
+    particles->createField< IndexType >( "id", NODE_CENTERED );
 
-  for ( IndexType ipart=0; ipart < NUM_PARTICLES; ++ipart )
+  for ( IndexType ipart=0 ; ipart < NUM_PARTICLES ; ++ipart )
   {
     const double val = ipart + 1;
     x[ ipart ]       = y[ ipart ] = z[ ipart ] = val*val;
@@ -564,7 +564,7 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
 
   /* STEP 1: create the UnstructuredMesh */
   UnstructuredMesh< Topology::SINGLE >* mesh =
-        new UnstructuredMesh< Topology::SINGLE >( DIMENSION, CELL_TYPE, root );
+    new UnstructuredMesh< Topology::SINGLE >( DIMENSION, CELL_TYPE, root );
   mesh->setBlockId( BLOCKID );
   mesh->setPartitionId( PARTID );
 
@@ -626,7 +626,7 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
 
   /* STEP 7: down-cast and test the UnstructuredMesh object. */
   const UnstructuredMesh< Topology::SINGLE >* M =
-              dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( m );
+    dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( m );
   EXPECT_EQ( M->getCellConnectivityArray(), connec );
 
   /* STEP 8: de-allocate. */
@@ -649,7 +649,7 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
 
   /* STEP 1: create the UnstructuredMesh */
   UnstructuredMesh< Topology::MIXED >* mesh =
-        new UnstructuredMesh< Topology::MIXED >( DIMENSION, root );
+    new UnstructuredMesh< Topology::MIXED >( DIMENSION, root );
   mesh->setBlockId( BLOCKID );
   mesh->setPartitionId( PARTID );
 
@@ -715,7 +715,7 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
 
   /* STEP 7: down-cast and test the UnstructuredMesh object. */
   const UnstructuredMesh< Topology::MIXED >* M =
-              dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( m );
+    dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( m );
   EXPECT_EQ( M->getCellConnectivitySize(), connec_size );
   EXPECT_EQ( M->getCellConnectivityCapacity(), connec_capacity );
   EXPECT_EQ( M->getCellConnectivityArray(), connec );
@@ -749,5 +749,3 @@ int main(int argc, char* argv[])
 
   return result;
 }
-
-

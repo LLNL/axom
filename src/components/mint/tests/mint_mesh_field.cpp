@@ -42,7 +42,7 @@ void check_field_instantiation( )
 
 
   mint::Field* f =
-      new mint::FieldVariable< T >( "f", NUM_TUPLES, NUM_COMPONENTS );
+    new mint::FieldVariable< T >( "f", NUM_TUPLES, NUM_COMPONENTS );
 
   EXPECT_TRUE( f != AXOM_NULLPTR );
   EXPECT_EQ( f->getName(), "f" );
@@ -90,16 +90,16 @@ TEST( mint_mesh_field, set_basis )
   constexpr mint::IndexType NUM_TUPLES     = 4;
   constexpr mint::IndexType NUM_COMPONENTS = 1;
 
-   mint::Field* f =
-       new mint::FieldVariable< double >( "f", NUM_TUPLES, NUM_COMPONENTS );
-   EXPECT_TRUE( f != AXOM_NULLPTR );
-   EXPECT_EQ( f->getBasis(), MINT_UNDEFINED_BASIS );
+  mint::Field* f =
+    new mint::FieldVariable< double >( "f", NUM_TUPLES, NUM_COMPONENTS );
+  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_EQ( f->getBasis(), MINT_UNDEFINED_BASIS );
 
-   f->setBasis( MINT_LAGRANGE_BASIS );
-   EXPECT_EQ( f->getBasis(), MINT_LAGRANGE_BASIS );
+  f->setBasis( MINT_LAGRANGE_BASIS );
+  EXPECT_EQ( f->getBasis(), MINT_LAGRANGE_BASIS );
 
-   delete f;
-   f = AXOM_NULLPTR;
+  delete f;
+  f = AXOM_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
@@ -108,15 +108,15 @@ TEST( mint_mesh_field, get_dataptr )
   constexpr mint::IndexType NUM_TUPLES     = 4;
   constexpr mint::IndexType NUM_COMPONENTS = 1;
 
-  double f[ ] = { 1.0, 2.0, 3.0, 4.0 };
+  double f[]  = { 1.0, 2.0, 3.0, 4.0 };
   mint::Field* field =
-      new mint::FieldVariable< double >( "f", f, NUM_TUPLES, NUM_COMPONENTS );
+    new mint::FieldVariable< double >( "f", f, NUM_TUPLES, NUM_COMPONENTS );
 
   const double* data = mint::Field::getDataPtr< double >( field );
   EXPECT_TRUE( data != AXOM_NULLPTR );
   EXPECT_EQ( data, f );
 
-  for ( int i=0; i < NUM_TUPLES; ++i )
+  for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_DOUBLE_EQ( data[ i ], f[ i ] );
   }
@@ -125,7 +125,7 @@ TEST( mint_mesh_field, get_dataptr )
   field = AXOM_NULLPTR;
 
   EXPECT_TRUE( f != AXOM_NULLPTR );
-  for ( int i=0; i < NUM_TUPLES; ++i )
+  for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_DOUBLE_EQ( f[ i ], static_cast< double >( i+1 ) );
   }

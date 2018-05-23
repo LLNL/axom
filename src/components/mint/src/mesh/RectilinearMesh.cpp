@@ -44,7 +44,7 @@ inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
                  const IndexType& Nj,
                  const IndexType& Nk  )
 {
-  return ( (Nk >= 1)? 3 : ( (Nj >= 1) ? 2 : 1 ) );
+  return ( (Nk >= 1) ? 3 : ( (Nj >= 1) ? 2 : 1 ) );
 }
 
 } /* anonymous namespace */
@@ -65,7 +65,7 @@ RectilinearMesh::RectilinearMesh( int dimension, const int64* ext ) :
 RectilinearMesh::RectilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
   StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dim(Ni,Nj,Nk) )
 {
-  int64 extent[ ] = { 0, Ni-1, 0, Nj-1, 0, Nk-1 };
+  int64 extent[]  = { 0, Ni-1, 0, Nj-1, 0, Nk-1 };
   m_extent        = new mint::Extent( m_ndims, extent );
 
   initialize( );
@@ -86,10 +86,10 @@ RectilinearMesh::RectilinearMesh( const int64* ext,
   ptrs[ 1 ] = y;
   ptrs[ 2 ] = z;
 
-  for ( int i=0; i < m_ndims; ++i )
+  for ( int i=0 ; i < m_ndims ; ++i )
   {
     SLIC_ERROR_IF( ptrs[ i ]==AXOM_NULLPTR,
-                  "encountered null coordinate array for i=" << i );
+                   "encountered null coordinate array for i=" << i );
     const IndexType N  = m_extent->size( i );
     m_coordinates[ i ] = new Array< double >( ptrs[i], N, 1, N );
   }
@@ -104,11 +104,11 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   StructuredMesh( group, topo )
 {
   SLIC_ERROR_IF( m_type != STRUCTURED_RECTILINEAR_MESH,
-          "supplied Sidre group does not correspond to a RectilinearMesh" );
+                 "supplied Sidre group does not correspond to a RectilinearMesh" );
 
   int64 extent[ 6 ];
   blueprint::getRectilinearMeshExtent(
-      m_ndims, getCoordsetGroup(), getTopologyGroup(), extent );
+    m_ndims, getCoordsetGroup(), getTopologyGroup(), extent );
   m_extent = new mint::Extent( m_ndims, extent );
 
   initialize( );
@@ -119,11 +119,11 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   const char* coords[] = { "values/x", "values/y", "values/z" };
 
   // initialize coordinates
-  for ( int i=0; i < m_ndims; ++i )
+  for ( int i=0 ; i < m_ndims ; ++i )
   {
     m_coordinates[ i ] = new Array< double >( c->getView( coords[ i ] ) );
     SLIC_ERROR_IF( m_extent->size( i ) != m_coordinates[ i ]->size(),
-        "coordinates size does not match rectilinear mesh extent" );
+                   "coordinates size does not match rectilinear mesh extent" );
   }
 
 }
@@ -137,9 +137,9 @@ RectilinearMesh::RectilinearMesh( int dimension,
   StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension,group,topo,coordset )
 {
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
-                                     "rectilinear" );
+                                      "rectilinear" );
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
-                "invalid topology group!" );
+                 "invalid topology group!" );
 
   m_extent = new mint::Extent( m_ndims, ext );
   blueprint::setRectilinearMeshExtent( m_ndims, m_extent, getTopologyGroup() );
@@ -163,7 +163,7 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
-  int64 extent[ ] = { 0, Ni-1, 0, Nj-1, 0, Nk-1 };
+  int64 extent[]  = { 0, Ni-1, 0, Nj-1, 0, Nk-1 };
   m_extent        = new mint::Extent( m_ndims, extent );
   blueprint::setRectilinearMeshExtent( m_ndims, m_extent, getTopologyGroup() );
 
@@ -194,7 +194,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
 
   const char* coords[] = { "values/x", "values/y", "values/z" };
 
-  for ( int idim=0; idim < m_ndims; ++idim )
+  for ( int idim=0 ; idim < m_ndims ; ++idim )
   {
     IndexType N           = m_extent->size( idim );
     sidre::View* view     = coordsgrp->createView( coords[ idim ] );
@@ -240,7 +240,7 @@ void RectilinearMesh::allocateCoords()
   SLIC_ASSERT( (m_ndims >= 1) && (m_ndims <= 3) );
   SLIC_ASSERT( m_extent->getDimension() == m_ndims );
 
-  for ( int idim=0; idim < m_ndims; ++idim )
+  for ( int idim=0 ; idim < m_ndims ; ++idim )
   {
     const IndexType N     = m_extent->size( idim );
     m_coordinates[ idim ] = new Array< double >( N, 1, N );

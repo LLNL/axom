@@ -46,15 +46,17 @@ template < Topology TOPO >
 struct topology_traits {};
 
 template <>
-struct topology_traits< Topology::SINGLE > 
+struct topology_traits< Topology::SINGLE >
 {
-  constexpr static ConnectivityType cell_connec = ConnectivityType::NO_INDIRECTION;
+  constexpr static ConnectivityType cell_connec =
+    ConnectivityType::NO_INDIRECTION;
 };
 
 template <>
-struct topology_traits< Topology::MIXED > 
+struct topology_traits< Topology::MIXED >
 {
-  constexpr static ConnectivityType cell_connec = ConnectivityType::TYPED_INDIRECTION;
+  constexpr static ConnectivityType cell_connec =
+    ConnectivityType::TYPED_INDIRECTION;
 };
 
 
@@ -96,14 +98,14 @@ enum CellTypes : CellType
 #define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N ) \
   namespace internal                                                          \
   {                                                                           \
-    static constexpr CellInfo MINT_CELL_TYPE##_INFO =                         \
-    {                                                                         \
-      MINT_CELL_TYPE,                                                         \
-      MINT_NAME,                                                              \
-      BP_NAME,                                                                \
-      VTK_TYPE,                                                               \
-      N                                                                       \
-    };                                                                        \
+  static constexpr CellInfo MINT_CELL_TYPE ## _INFO =                         \
+  {                                                                         \
+    MINT_CELL_TYPE,                                                         \
+    MINT_NAME,                                                              \
+    BP_NAME,                                                                \
+    VTK_TYPE,                                                               \
+    N                                                                       \
+  };                                                                        \
   }
 
 /*!
@@ -114,7 +116,7 @@ enum CellTypes : CellType
  *
  * \param MINT_CELL_TYPE the mint cell type, e.g., mint::QUAD, mint::HEX, etc.
  */
-#define CELL_INFO( MINT_CELL_TYPE ) internal::MINT_CELL_TYPE##_INFO
+#define CELL_INFO( MINT_CELL_TYPE ) internal::MINT_CELL_TYPE ## _INFO
 
 /*!
  * \struct CellInfo
@@ -123,11 +125,11 @@ enum CellTypes : CellType
  */
 typedef struct
 {
-   CellType cell_type;          /*!< cell type, .e.g, mint::QUAD, mint::HEX */
-   const char* name;            /*!< the name associated with the cell */
-   const char* blueprint_name;  /*!< corresponding mesh blueprint name */
-   int vtk_type;                /*!< corresponding vtk_type */
-   int num_nodes;               /*!< number of nodes for the given cell */
+  CellType cell_type;           /*!< cell type, .e.g, mint::QUAD, mint::HEX */
+  const char* name;             /*!< the name associated with the cell */
+  const char* blueprint_name;   /*!< corresponding mesh blueprint name */
+  int vtk_type;                 /*!< corresponding vtk_type */
+  int num_nodes;                /*!< number of nodes for the given cell */
 } CellInfo;
 
 // Cell Info registration

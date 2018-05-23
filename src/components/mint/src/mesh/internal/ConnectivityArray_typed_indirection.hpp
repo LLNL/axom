@@ -65,7 +65,7 @@ public:
 
   /*!
    * \brief Constructs an empty ConnectivityArray instance.
-   * 
+   *
    * \param [in] ID_capacity the number of IDs to allocate space for.
    * \param [in] value_capacity the number of values to allocate space for.
    *
@@ -74,15 +74,15 @@ public:
    * \post getNumberOfIDs() == 0
    * \post getNumberOfValues() == 0
    */
-  ConnectivityArray( IndexType ID_capacity=USE_DEFAULT,  
-                     IndexType value_capacity=USE_DEFAULT ):
+  ConnectivityArray( IndexType ID_capacity=USE_DEFAULT,
+                     IndexType value_capacity=USE_DEFAULT ) :
     m_values( AXOM_NULLPTR ),
     m_types( new Array< CellType >( internal::ZERO, 1, ID_capacity ) ),
-    m_offsets( new Array< IndexType >( internal::ZERO, 1, 
+    m_offsets( new Array< IndexType >( internal::ZERO, 1,
                                        m_types->capacity() + 1 ) )
   {
-    IndexType new_value_capacity = 
-           internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
+    IndexType new_value_capacity =
+      internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
     m_values = new Array< IndexType >( internal::ZERO, 1, new_value_capacity );
 
     m_offsets->append(0);
@@ -95,8 +95,8 @@ public:
 
   /*!
    * \brief External constructor which creates a ConnectivityArray instance to
-   *  wrap the given pointers. 
-   * 
+   *  wrap the given pointers.
+   *
    * \param [in] n_IDs the number of IDs.
    * \param [in] values the array of values, of length value_capacity.
    * \param [in] offsets the offsets of each ID, of length ID_capacity + 1.
@@ -120,24 +120,24 @@ public:
    * \post getNumberOfIDs() == n_IDs
    * \post getNumberOfValues() == offsets[ n_IDs ]
    */
-  ConnectivityArray( IndexType n_IDs, IndexType* values, IndexType* offsets, 
-                     CellType* types, IndexType ID_capacity=USE_DEFAULT, 
-                     IndexType value_capacity=USE_DEFAULT ):
+  ConnectivityArray( IndexType n_IDs, IndexType* values, IndexType* offsets,
+                     CellType* types, IndexType ID_capacity=USE_DEFAULT,
+                     IndexType value_capacity=USE_DEFAULT ) :
     m_values( AXOM_NULLPTR ),
     m_types( new Array< CellType >( types, n_IDs, 1, ID_capacity ) ),
-    m_offsets( new Array< IndexType >( offsets, n_IDs + 1, 1, 
+    m_offsets( new Array< IndexType >( offsets, n_IDs + 1, 1,
                                        m_types->capacity() + 1 ) )
   {
-    SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs 
-                                                                       << "." );
+    SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs
+                                                                     << "." );
 
     if ( n_IDs == 0 )
     {
       (*m_offsets)[0] = 0;
     }
     SLIC_ERROR_IF( (*m_offsets)[0] != 0, "Invalid offsets array. " <<
-                     "Expected item 0 to be 0 not " << (*m_offsets)[0] << "." );
-    
+                   "Expected item 0 to be 0 not " << (*m_offsets)[0] << "." );
+
     IndexType n_values = (*m_offsets)[ n_IDs ];
     m_values = new Array< IndexType >( values, n_values, 1, value_capacity );
   }
@@ -152,7 +152,7 @@ public:
   /*!
    * \brief Creates a ConnectivityArray instance from a sidre::Group which
    *  already has data.
-   * 
+   *
    * \param [in] group the sidre::Group to create the ConnectivityArray from.
    *
    * \note the given Group must conform to a single Blueprint topology.
@@ -162,26 +162,26 @@ public:
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
    */
-  ConnectivityArray( sidre::Group* group ):
+  ConnectivityArray( sidre::Group* group ) :
     m_values( AXOM_NULLPTR ),
     m_types( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
-    CellType cell_type = internal::initializeFromGroup( group, &m_values, 
-                                                         &m_offsets, &m_types );
-    SLIC_ERROR_IF( cell_type != UNDEFINED_CELL, 
-                          "Mixed topology requires UNDEFINED_CELL cell type." );
+    CellType cell_type = internal::initializeFromGroup( group, &m_values,
+                                                        &m_offsets, &m_types );
+    SLIC_ERROR_IF( cell_type != UNDEFINED_CELL,
+                   "Mixed topology requires UNDEFINED_CELL cell type." );
 
     IndexType num_IDs = getNumberOfIDs();
-    SLIC_ERROR_IF( m_types->size() != num_IDs, 
+    SLIC_ERROR_IF( m_types->size() != num_IDs,
                    "Types array not of correct size. Expected" <<
                    num_IDs << " was " << m_types->size() << "." );
   }
 
   /*!
-   * \brief Creates an empty ConnectivityArray instance from an empty 
+   * \brief Creates an empty ConnectivityArray instance from an empty
    *  sidre::Group.
-   * 
+   *
    * \param [in] group the sidre::Group to create the ConnectivityArray from.
    * \param [in] coordset the name of the Blueprint coordinate set to associate
    *  this ConnectivityArray with.
@@ -193,26 +193,28 @@ public:
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
-   * \post getIDType() == TYPE 
+   * \post getIDType() == TYPE
    */
   ConnectivityArray( sidre::Group* group, const std::string& coordset,
-                     IndexType ID_capacity=USE_DEFAULT, 
-                     IndexType value_capacity=USE_DEFAULT ):
+                     IndexType ID_capacity=USE_DEFAULT,
+                     IndexType value_capacity=USE_DEFAULT ) :
     m_values( AXOM_NULLPTR ),
     m_types( AXOM_NULLPTR ),
     m_offsets( AXOM_NULLPTR )
   {
     bool create_offsets = true;
     bool create_types = true;
-    internal::initializeGroup( group, coordset, UNDEFINED_CELL, create_offsets, 
+    internal::initializeGroup( group, coordset, UNDEFINED_CELL, create_offsets,
                                create_types );
 
     sidre::Group* elems_group = group->getGroup( "elements" );
     SLIC_ASSERT( elems_group != AXOM_NULLPTR );
 
     sidre::View* offsets_view = elems_group->getView( "offsets" );
-    m_offsets = new Array< IndexType >( offsets_view, 1, 1, 
-                 (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1 );
+    m_offsets = new Array< IndexType >( offsets_view, 1, 1,
+                                        (ID_capacity ==
+                                         USE_DEFAULT) ? USE_DEFAULT : ID_capacity +
+                                        1 );
     SLIC_ASSERT( m_offsets != AXOM_NULLPTR );
     (*m_offsets)[0] = 0;
 
@@ -220,8 +222,8 @@ public:
     m_types = new Array< CellType >( types_view, 0, 1, ID_capacity );
     SLIC_ASSERT( m_types != AXOM_NULLPTR );
 
-    IndexType new_value_capacity = 
-          internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
+    IndexType new_value_capacity =
+      internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
     sidre::View* connec_view = elems_group->getView( "connectivity" );
     m_values = new Array< IndexType >( connec_view, 0, 1, new_value_capacity );
     SLIC_ASSERT( m_values != AXOM_NULLPTR );
@@ -251,7 +253,7 @@ public:
     m_values = AXOM_NULLPTR;
     m_offsets = AXOM_NULLPTR;
     m_types = AXOM_NULLPTR;
-  } 
+  }
 
 /// \name Attribute get/set Methods
 /// @{
@@ -282,11 +284,11 @@ public:
 
   /*!
    * \brief Reserve space for IDs and values.
-   * 
+   *
    * \param [in] ID_capacity the number of IDs to reserve space for.
    * \param [in] value_capacity the number of values to reserve space for.
    *
-   * \note if value_capacity is not specified then if this ConnectivityArray is 
+   * \note if value_capacity is not specified then if this ConnectivityArray is
    *  empty then MAX_NUM_NODES values are reserved for each ID. Otherwise the
    *  average number of values per ID are reserved for each ID.
    *
@@ -296,21 +298,21 @@ public:
   {
     m_offsets->reserve( ID_capacity + 1 );
     m_types->reserve( ID_capacity );
-    IndexType new_value_capacity = 
-                internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(), 
-                                          getNumberOfValues(), value_capacity );
+    IndexType new_value_capacity =
+      internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
+                                   getNumberOfValues(), value_capacity );
     m_values->reserve( new_value_capacity );
   }
 
   /*!
-   * \brief Shrink the offsets and values arrays so that there is no extra 
+   * \brief Shrink the offsets and values arrays so that there is no extra
    *  capacity.
    *
    * \post getIDCapacity() == getNumberOfIDs()
    * \post getValueCapacity() == getNumberOfValues()
    */
   void shrink()
-  { 
+  {
     m_values->shrink();
     m_offsets->shrink();
     m_types->shrink();
@@ -330,7 +332,7 @@ public:
    * \post getResizeRatio() == ratio
    */
   void setResizeRatio( double ratio )
-  { 
+  {
     m_values->setResizeRatio( ratio );
     m_offsets->setResizeRatio( ratio );
     m_types->setResizeRatio( ratio );
@@ -354,7 +356,7 @@ public:
    * \brief Return true iff constructed via the external constructor.
    */
   bool isExternal() const
-  {  
+  {
     bool consistent = true;
     bool is_external = m_values->isExternal();
     consistent &= is_external == m_offsets->isExternal();
@@ -384,7 +386,7 @@ public:
    */
 #ifdef MINT_USE_SIDRE
   const sidre::Group* getGroup() const
-  { 
+  {
     if ( !isInSidre() )
     {
       return AXOM_NULLPTR;
@@ -405,9 +407,9 @@ public:
    * \param [in] ID the ID in question.
    */
   IndexType getNumberOfValuesForID( IndexType ID ) const
-  { 
+  {
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
-    return (*m_offsets)[ ID + 1 ] - (*m_offsets)[ ID ]; 
+    return (*m_offsets)[ ID + 1 ] - (*m_offsets)[ ID ];
   }
 
   /*!
@@ -417,9 +419,9 @@ public:
    * \param ID the ID in question.
    */
   CellType getIDType( IndexType ID=-1 ) const
-  { 
+  {
     SLIC_ASSERT( ID < getNumberOfIDs() );
-    return ID < 0 ? UNDEFINED_CELL : (*m_types)[ ID ]; 
+    return ID < 0 ? UNDEFINED_CELL : (*m_types)[ ID ];
   }
 
   /*!
@@ -440,7 +442,7 @@ public:
     return m_values->getData() + (*m_offsets)[ ID ];
   }
 
-  const IndexType* operator[]( IndexType ID ) const 
+  const IndexType* operator[]( IndexType ID ) const
   {
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
     return m_values->getData() + (*m_offsets)[ ID ];
@@ -449,7 +451,8 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the values array, of length getNumberOfValues().
+   * \brief Returns a pointer to the values array, of length
+   *getNumberOfValues().
    */
   /// @{
 
@@ -462,7 +465,7 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the offsets array, of length 
+   * \brief Returns a pointer to the offsets array, of length
    *  getNumberOfIDs() + 1.
    */
   /// @{
@@ -491,7 +494,7 @@ public:
   /*!
    * \brief Append a ID.
    *
-   * \param [in] values pointer to the values to add, of length at least 
+   * \param [in] values pointer to the values to add, of length at least
    *  n_values.
    * \param [in] n_values the number of values corresponding to the new ID.
    * \param [in] type the type of the ID to append.
@@ -510,7 +513,7 @@ public:
   /*!
    * \brief Append multiple IDs.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  n_values
    * \param [in] n_IDs the number of IDs to append.
    * \param [in] offsets the offsets array of length n_IDs + 1.
@@ -520,7 +523,7 @@ public:
    * \pre values != AXOM_NULLPTR
    * \pre offsets != AXOM_NULLPTR
    */
-  void appendM( const IndexType* values, IndexType n_IDs, 
+  void appendM( const IndexType* values, IndexType n_IDs,
                 const IndexType* offsets, const CellType* types )
   {
     internal::append( n_IDs, values, offsets, m_values, m_offsets );
@@ -530,10 +533,10 @@ public:
   /*!
    * \brief Sets the values of the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  getNumberOfValuesForID( ID ).
    * \param [in] ID the ID of the values to set.
-   * 
+   *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
@@ -543,21 +546,21 @@ public:
   /*!
    * \brief Sets the values of multiple IDs starting with the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  the sum of the number of values of each ID to set.
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
-   * 
+   *
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
-  void setM( const IndexType* values, IndexType start_ID, IndexType n_IDs ) 
+  void setM( const IndexType* values, IndexType start_ID, IndexType n_IDs )
   { internal::set( start_ID, values, n_IDs, m_values, m_offsets ); }
 
   /*!
    * \brief Insert the values of a new ID before the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  n_values
    * \param [in] start_ID the ID to start at.
    * \param [in] n_values the number of values the new ID has.
@@ -567,7 +570,7 @@ public:
    * \pre n_values >= 0
    * \pre values != AXOM_NULLPTR
    */
-  void insert( const IndexType* values, IndexType start_ID, IndexType n_values, 
+  void insert( const IndexType* values, IndexType start_ID, IndexType n_values,
                CellType type )
   {
     SLIC_ASSERT( start_ID >= 0 );
@@ -586,10 +589,10 @@ public:
    *
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to insert.
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  n_values
    * \param [in] the offsets array of length n_IDs + 1.
-   * \param [in] types the array of ID types to insert, of length at least 
+   * \param [in] types the array of ID types to insert, of length at least
    *  n_IDs.
    *
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
@@ -597,11 +600,11 @@ public:
    * \pre values != AXOM_NULLPTR
    * \pre offsets != AXOM_NULLPTR
    */
-  void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs, 
+  void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs,
                 const IndexType* offsets, const CellType* types )
-  { 
-    internal::insert( start_ID, n_IDs, values, offsets, m_values, 
-                          m_offsets );
+  {
+    internal::insert( start_ID, n_IDs, values, offsets, m_values,
+                      m_offsets );
     m_types->insert( types, n_IDs, start_ID );
   }
 

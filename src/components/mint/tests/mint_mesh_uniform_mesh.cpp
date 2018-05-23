@@ -59,7 +59,7 @@ void check_sidre_group( sidre::Group* root_group,
   EXPECT_EQ( topology->getParent()->getNumViews(), 0 );
 
   const sidre::Group* coordset =
-      blueprint::getCoordsetGroup( root_group, topology );
+    blueprint::getCoordsetGroup( root_group, topology );
   EXPECT_TRUE( blueprint::validCoordsetGroup( coordset ) );
   EXPECT_EQ( coordset->getParent()->getNumGroups(), 1 );
   EXPECT_EQ( coordset->getParent()->getNumViews(), 0 );
@@ -72,13 +72,13 @@ void check_sidre_group( sidre::Group* root_group,
 
   double mesh_origin[ 3 ];
   double mesh_spacing[ 3 ];
-  int64  mesh_extent[ 6 ];
+  int64 mesh_extent[ 6 ];
   blueprint::getUniformMesh( dimension, coordset, topology,
                              mesh_origin,
                              mesh_spacing,
                              mesh_extent );
 
-  for ( int i=0; i < dimension; ++i )
+  for ( int i=0 ; i < dimension ; ++i )
   {
     EXPECT_DOUBLE_EQ( expected_origin[ i ], mesh_origin[ i ] );
     EXPECT_DOUBLE_EQ( expected_spacing[ i ], mesh_spacing[ i ] );
@@ -109,7 +109,7 @@ void check_create_field( UniformMesh* m,
   field = m->getFieldData( association )->getField( name );
 
   IndexType expected_num_tuples = ( association==NODE_CENTERED ) ?
-      m->getNumberOfNodes() : m->getNumberOfCells() ;
+                                  m->getNumberOfNodes() : m->getNumberOfCells();
 
   EXPECT_EQ( expected_num_tuples, field->getNumTuples( ) );
   EXPECT_EQ( numComponents, field->getNumComponents() );
@@ -121,7 +121,7 @@ void check_constructor( UniformMesh* m,
                         int expected_dimension,
                         const double* expected_origin,
                         const double* expected_spacing,
-                        const int64*  expected_extent,
+                        const int64* expected_extent,
                         const IndexType* expected_dimensions )
 {
   EXPECT_TRUE( m != AXOM_NULLPTR );
@@ -136,7 +136,7 @@ void check_constructor( UniformMesh* m,
 
   const int mesh_dimension = m->getDimension();
   CellType expected_cell_type = ( mesh_dimension==3 ) ? HEX :
-      ( ( mesh_dimension==2 ) ? QUAD : SEGMENT );
+                                ( ( mesh_dimension==2 ) ? QUAD : SEGMENT );
   EXPECT_EQ( m->getCellType(), expected_cell_type );
 
   const Extent* extent = m->getExtent();
@@ -150,7 +150,7 @@ void check_constructor( UniformMesh* m,
   const double* spacing = m->getSpacing();
   EXPECT_TRUE( spacing != AXOM_NULLPTR );
 
-  for ( int i=0; i < mesh_dimension; ++i )
+  for ( int i=0 ; i < mesh_dimension ; ++i )
   {
     EXPECT_DOUBLE_EQ( expected_origin[ i ], origin[ i ] );
     EXPECT_DOUBLE_EQ( expected_spacing[ i ], spacing[ i ] );
@@ -169,11 +169,11 @@ void check_constructor( UniformMesh* m,
 //------------------------------------------------------------------------------
 TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
 {
-  const double origin[ ] = { 0.0, 0.0, 0.0 };
-  const double h[ ]      = { 0.5, 0.5, 0.5 };
-  const int64 ext[ ]     = { 0,4, 0,4, 0,4 };
-  const double lo[ ]     = { 0.0, 0.0, 0.0 };
-  const double hi[ ]     = { 2.0, 2.0, 2.0 };
+  const double origin[]  = { 0.0, 0.0, 0.0 };
+  const double h[]       = { 0.5, 0.5, 0.5 };
+  const int64 ext[]      = { 0,4, 0,4, 0,4 };
+  const double lo[]      = { 0.0, 0.0, 0.0 };
+  const double hi[]      = { 2.0, 2.0, 2.0 };
   const IndexType Ni     = 5;
   const IndexType Nj     = 5;
   const IndexType Nk     = 5;
@@ -266,43 +266,43 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,AXOM_NULLPTR, Ni, Nj, Nk),
-                              IGNORE_OUTPUT );
+                             IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      UniformMesh(3,lo,AXOM_NULLPTR,valid_group,Ni,Nj,Nk),
-      IGNORE_OUTPUT );
+    UniformMesh(3,lo,AXOM_NULLPTR,valid_group,Ni,Nj,Nk),
+    IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      UniformMesh(3,AXOM_NULLPTR,hi,valid_group,Ni,Nj,Nk),
-      IGNORE_OUTPUT );
+    UniformMesh(3,AXOM_NULLPTR,hi,valid_group,Ni,Nj,Nk),
+    IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      UniformMesh(42,lo,hi,valid_group,Ni,Nj,Nk),
-      IGNORE_OUTPUT );
+    UniformMesh(42,lo,hi,valid_group,Ni,Nj,Nk),
+    IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      UniformMesh(3,lo,hi,valid_group,Ni,Nj,-1),
-      IGNORE_OUTPUT );
+    UniformMesh(3,lo,hi,valid_group,Ni,Nj,-1),
+    IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      UniformMesh(3,lo,hi,valid_group,Ni,-1,Nk),
-      IGNORE_OUTPUT );
+    UniformMesh(3,lo,hi,valid_group,Ni,-1,Nk),
+    IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      UniformMesh(3,lo,hi,valid_group,-1,Nj,Nk),
-      IGNORE_OUTPUT );
+    UniformMesh(3,lo,hi,valid_group,-1,Nj,Nk),
+    IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
@@ -312,9 +312,9 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_uniform_mesh, invalid_operations )
 {
-  const double origin[ ] = {0.0, 0.0, 0.0};
-  const double h[ ]      = { 0.5, 0.5, 0.5 };
-  const int64 ext[ ]     = { 0,4, 0,4, 0,4 };
+  const double origin[]  = {0.0, 0.0, 0.0};
+  const double h[]       = { 0.5, 0.5, 0.5 };
+  const int64 ext[]      = { 0,4, 0,4, 0,4 };
 
   UniformMesh m( 3, origin, h, ext );
   EXPECT_DEATH_IF_SUPPORTED( m.getCoordinateArray( 0 ), IGNORE_OUTPUT );
@@ -327,13 +327,13 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 {
   constexpr int NDIMS = 3;
 
-  const double lo[ ]    = { 0.0, 0.0, 0.0 };
-  const double hi[ ]    = { 2.0, 2.0, 2.0 };
-  const double h[ ]     = { 0.5, 0.5, 0.5 };
-  const int64 ext[ ]    = { 0,4, 0,4, 0,4 };
-  const IndexType N[ ]  = {   5,   5,   5 };
+  const double lo[]     = { 0.0, 0.0, 0.0 };
+  const double hi[]     = { 2.0, 2.0, 2.0 };
+  const double h[]      = { 0.5, 0.5, 0.5 };
+  const int64 ext[]     = { 0,4, 0,4, 0,4 };
+  const IndexType N[]   = {   5,   5,   5 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
     UniformMesh* m1 = new UniformMesh( idim, lo, h, ext );
     check_constructor( m1, idim, lo, h, ext, N );
@@ -382,13 +382,13 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 TEST( mint_mesh_uniform_mesh, sidre_constructor )
 {
   constexpr int NDIMS = 3;
-  const double lo[ ]    = { 0.0, 0.0, 0.0 };
-  const double hi[ ]    = { 2.0, 2.0, 2.0 };
-  const double h[ ]     = { 0.5, 0.5, 0.5 };
-  const int64 ext[ ]    = { 0,4, 0,4, 0,4 };
-  const IndexType N[ ]  = {   5,   5,   5 };
+  const double lo[]     = { 0.0, 0.0, 0.0 };
+  const double hi[]     = { 2.0, 2.0, 2.0 };
+  const double h[]      = { 0.5, 0.5, 0.5 };
+  const int64 ext[]     = { 0,4, 0,4, 0,4 };
+  const IndexType N[]   = {   5,   5,   5 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
 
     // STEP 0: create a datastore to store two meshes
@@ -480,13 +480,13 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
 TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
 {
   constexpr int NDIMS   = 3;
-  const double lo[ ]    = { 0.0, 0.0, 0.0 };
-  const double hi[ ]    = { 2.0, 2.0, 2.0 };
-  const double h[ ]     = { 0.5, 0.5, 0.5 };
-  const int64 ext[ ]    = { -2,2, -2,2, -2,2 };
-  const IndexType N[ ]  = {   5,   5,   5 };
+  const double lo[]     = { 0.0, 0.0, 0.0 };
+  const double hi[]     = { 2.0, 2.0, 2.0 };
+  const double h[]      = { 0.5, 0.5, 0.5 };
+  const int64 ext[]     = { -2,2, -2,2, -2,2 };
+  const IndexType N[]   = {   5,   5,   5 };
 
-  for ( int idim=1; idim <= NDIMS; ++idim )
+  for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
     UniformMesh m( idim, ext, lo, hi );
     check_constructor( &m, idim, lo, h, ext, N );
@@ -495,30 +495,30 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
     switch ( idim )
     {
     case 1:
-      {
+    {
       const IndexType Ni = m.getNumberOfNodesAlongDim( I_DIRECTION );
       EXPECT_EQ( Ni, N[ I_DIRECTION ] );
 
-      for ( IndexType i=0; i < Ni; ++i )
+      for ( IndexType i=0 ; i < Ni ; ++i )
       {
         const double expected_x = lo[ X_COORDINATE ] + i * h[ X_COORDINATE ];
         const double x = m.evaluateCoordinate( i, I_DIRECTION );
         EXPECT_DOUBLE_EQ( expected_x, x );
       } // END for all i
 
-      } // END 1D
-      break;
+    }   // END 1D
+    break;
     case 2:
-      {
+    {
 
       const IndexType Ni = m.getNumberOfNodesAlongDim( I_DIRECTION );
       const IndexType Nj = m.getNumberOfNodesAlongDim( J_DIRECTION );
       EXPECT_EQ( Ni, N[ I_DIRECTION ] );
       EXPECT_EQ( Nj, N[ J_DIRECTION ] );
 
-      for ( IndexType j=0; j < Nj; ++j )
+      for ( IndexType j=0 ; j < Nj ; ++j )
       {
-        for ( IndexType i=0; i < Ni; ++i )
+        for ( IndexType i=0 ; i < Ni ; ++i )
         {
           const double expected_x = lo[ X_COORDINATE ] + i * h[ X_COORDINATE ];
           const double expected_y = lo[ Y_COORDINATE ] + j * h[ Y_COORDINATE ];
@@ -531,39 +531,42 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
         } // END for all i
       } // END for all j
 
-      } // END 2D
-      break;
+    }   // END 2D
+    break;
     default:
       EXPECT_EQ( idim, 3 );
       {
 
-      const IndexType Ni = m.getNumberOfNodesAlongDim( I_DIRECTION );
-      const IndexType Nj = m.getNumberOfNodesAlongDim( J_DIRECTION );
-      const IndexType Nk = m.getNumberOfNodesAlongDim( K_DIRECTION );
-      EXPECT_EQ( Ni, N[ I_DIRECTION ] );
-      EXPECT_EQ( Nj, N[ J_DIRECTION ] );
-      EXPECT_EQ( Nk, N[ K_DIRECTION ] );
+        const IndexType Ni = m.getNumberOfNodesAlongDim( I_DIRECTION );
+        const IndexType Nj = m.getNumberOfNodesAlongDim( J_DIRECTION );
+        const IndexType Nk = m.getNumberOfNodesAlongDim( K_DIRECTION );
+        EXPECT_EQ( Ni, N[ I_DIRECTION ] );
+        EXPECT_EQ( Nj, N[ J_DIRECTION ] );
+        EXPECT_EQ( Nk, N[ K_DIRECTION ] );
 
-      for ( IndexType k=0; k < Nk; ++k )
-      {
-        for ( IndexType j=0; j < Nj; ++j )
+        for ( IndexType k=0 ; k < Nk ; ++k )
         {
-          for ( IndexType i=0; i < Ni; ++i )
+          for ( IndexType j=0 ; j < Nj ; ++j )
           {
-            const double expected_x = lo[ X_COORDINATE ] + i*h[ X_COORDINATE ];
-            const double expected_y = lo[ Y_COORDINATE ] + j*h[ Y_COORDINATE ];
-            const double expected_z = lo[ Z_COORDINATE ] + k*h[ Z_COORDINATE ];
+            for ( IndexType i=0 ; i < Ni ; ++i )
+            {
+              const double expected_x = lo[ X_COORDINATE ] + i*
+                                        h[ X_COORDINATE ];
+              const double expected_y = lo[ Y_COORDINATE ] + j*
+                                        h[ Y_COORDINATE ];
+              const double expected_z = lo[ Z_COORDINATE ] + k*
+                                        h[ Z_COORDINATE ];
 
-            const double x = m.evaluateCoordinate( i, I_DIRECTION );
-            const double y = m.evaluateCoordinate( j, J_DIRECTION );
-            const double z = m.evaluateCoordinate( k, K_DIRECTION );
+              const double x = m.evaluateCoordinate( i, I_DIRECTION );
+              const double y = m.evaluateCoordinate( j, J_DIRECTION );
+              const double z = m.evaluateCoordinate( k, K_DIRECTION );
 
-            EXPECT_DOUBLE_EQ( expected_x, x );
-            EXPECT_DOUBLE_EQ( expected_y, y );
-            EXPECT_DOUBLE_EQ( expected_z, z );
-          } // END for all i
-        } // END for all j
-      } // END for all k
+              EXPECT_DOUBLE_EQ( expected_x, x );
+              EXPECT_DOUBLE_EQ( expected_y, y );
+              EXPECT_DOUBLE_EQ( expected_z, z );
+            } // END for all i
+          } // END for all j
+        } // END for all k
 
       } // END 3D
 

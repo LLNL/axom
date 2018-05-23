@@ -78,7 +78,7 @@ IndexType get_max_cell_nodes( const Mesh* mesh, IndexType& total_cell_nodes  )
 
   total_cell_nodes = 0;
   const mint::IndexType numCells = mesh->getNumberOfCells();
-  for ( mint::IndexType icell=0; icell < numCells; ++icell )
+  for ( mint::IndexType icell=0 ; icell < numCells ; ++icell )
   {
     CellType cell_type  = mesh->getCellType( icell );
     const int num_nodes = mint::cell_info[ cell_type ].num_nodes;
@@ -109,9 +109,9 @@ void write_points( const Mesh* mesh, std::ofstream& file )
   SLIC_ASSERT( x != AXOM_NULLPTR );
 
   const double* y = ( mesh_dim > 1 ) ?
-      mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
+                    mesh->getCoordinateArray( Y_COORDINATE ) : AXOM_NULLPTR;
   const double* z = ( mesh_dim > 2 ) ?
-      mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
+                    mesh->getCoordinateArray( Z_COORDINATE ) : AXOM_NULLPTR;
 
   file << "POINTS " << num_nodes << " double\n";
   for ( IndexType nodeIdx = 0 ; nodeIdx < num_nodes ; ++nodeIdx )
@@ -569,7 +569,7 @@ int write_vtk( mint::FiniteElement& fe, const std::string& file_path )
   ofs << "POINTS " << nnodes << " double\n";
 
   // write the cell coordinates
-  for ( int i=0; i < nnodes; ++i )
+  for ( int i=0 ; i < nnodes ; ++i )
   {
     const double* pt = nodes.getColumn( i );
     const double x   = pt[ 0 ];
@@ -583,7 +583,8 @@ int write_vtk( mint::FiniteElement& fe, const std::string& file_path )
   // write cell connectivity
   ofs << "CELLS 1 " << nnodes+1 << std::endl;
   ofs << nnodes << " ";
-  for ( int i=0; i < nnodes; ++i ) {
+  for ( int i=0 ; i < nnodes ; ++i )
+  {
     ofs << i << " ";
   }
   ofs << std::endl;

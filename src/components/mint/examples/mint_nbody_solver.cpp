@@ -89,14 +89,14 @@ int main ( int argc, char** argv )
   // STEP 2: time march
   const double& dt = Arguments.dt;
   double t=0.0;
-  for ( int cycle=0; cycle < Arguments.ncycles; ++cycle, t+=dt )
+  for ( int cycle=0 ; cycle < Arguments.ncycles ; ++cycle, t+=dt )
   {
     SLIC_INFO( "cycle=" << cycle << " t=" << t );
 
     apply_forces( particles, dt );
 
     // integrate positions
-    for ( mint::IndexType i=0; i < numParticles; ++i )
+    for ( mint::IndexType i=0 ; i < numParticles ; ++i )
     {
       px[ i ] += vx[ i ]*dt;
       py[ i ] += vy[ i ]*dt;
@@ -132,13 +132,13 @@ void apply_forces( mint::ParticleMesh& particles, double dt )
   double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
   double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
-  for ( mint::IndexType i=0; i < numParticles; ++i )
+  for ( mint::IndexType i=0 ; i < numParticles ; ++i )
   {
     double fx = 0.0;
     double fy = 0.0;
     double fz = 0.0;
 
-    for ( mint::IndexType j=0; j < numParticles; ++j )
+    for ( mint::IndexType j=0 ; j < numParticles ; ++j )
     {
       const double dx       = px[ j ] - px[ i ];
       const double dy       = py[ j ] - py[ i ];
@@ -176,15 +176,15 @@ void initialize( mint::ParticleMesh& particles )
   double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
   double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
-  for ( mint::IndexType i=0; i < numParticles; ++i )
+  for ( mint::IndexType i=0 ; i < numParticles ; ++i )
   {
-     px[ i ] = utilities::random_real( LO, HI );
-     py[ i ] = utilities::random_real( LO, HI );
-     pz[ i ] = utilities::random_real( LO, HI );
+    px[ i ] = utilities::random_real( LO, HI );
+    py[ i ] = utilities::random_real( LO, HI );
+    pz[ i ] = utilities::random_real( LO, HI );
 
-     vx[ i ] = utilities::random_real( LO, HI );
-     vy[ i ] = utilities::random_real( LO, HI );
-     vz[ i ] = utilities::random_real( LO, HI );
+    vx[ i ] = utilities::random_real( LO, HI );
+    vy[ i ] = utilities::random_real( LO, HI );
+    vz[ i ] = utilities::random_real( LO, HI );
   }
 
 }
@@ -209,7 +209,7 @@ void parse_arguments( int argc, char** argv )
   Arguments.domain_min    = -10;
   Arguments.dumpFrequency = 2;
 
-  for ( int i=1; i < argc; ++i )
+  for ( int i=1 ; i < argc ; ++i )
   {
 
     if ( strcmp( argv[i], "--dt")==0 )
@@ -237,4 +237,3 @@ void parse_arguments( int argc, char** argv )
   }
 
 }
-

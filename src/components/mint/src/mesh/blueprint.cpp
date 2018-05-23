@@ -73,7 +73,7 @@ bool validTopologyGroup( const sidre::Group* topo )
   SLIC_WARNING_IF( !hasTypeView, "[" << path << "] is missing 'type' view!" );
 
   const bool isTypeAString =
-      (hasTypeView) ? topo->getView( "type" )->isString() : false;
+    (hasTypeView) ? topo->getView( "type" )->isString() : false;
   SLIC_WARNING_IF( !isTypeAString,
                    "'type' view in [" << path << "] is not a string" );
 
@@ -82,7 +82,7 @@ bool validTopologyGroup( const sidre::Group* topo )
                    "[" << path << "] is missing 'coordset' view!" );
 
   const bool isCoordsetAString =
-      (hasCoordset) ? topo->getView( "coordset" )->isString() : false;
+    (hasCoordset) ? topo->getView( "coordset" )->isString() : false;
   SLIC_WARNING_IF( !isCoordsetAString,
                    "'coordset' view in [" << path << "] is not a string" );
 
@@ -103,7 +103,7 @@ bool validCoordsetGroup( const sidre::Group* coordset )
   SLIC_WARNING_IF( !hasTypeView, "[" << path << "] is missing 'type' view!" );
 
   const bool isTypeAString =
-      (hasTypeView) ? coordset->getView("type")->isString() : false;
+    (hasTypeView) ? coordset->getView("type")->isString() : false;
   SLIC_WARNING_IF( !isTypeAString,
                    "'type' view in [" << path << "] is not a string" );
 
@@ -124,13 +124,14 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
   const sidre::Group* coordsets  = group->getGroup( "coordsets" );
 
   const char* coordset_name = topology->getView( "coordset" )->getString();
-  SLIC_WARNING_IF( ! coordsets->hasChildGroup( coordset_name ),
+  SLIC_WARNING_IF( !coordsets->hasChildGroup( coordset_name ),
                    "cannot find coordset [" << coordset_name << "] in " <<
-                    coordsets->getPathName() );
+                   coordsets->getPathName() );
 
   const sidre::Group* coords = coordsets->getGroup( coordset_name );
   SLIC_WARNING_IF( coords==AXOM_NULLPTR,
-    "null coordset [" << coordset_name << "] in " <<coordsets->getPathName() );
+                   "null coordset [" << coordset_name << "] in " <<
+        coordsets->getPathName() );
 
   return coords;
 }
@@ -150,15 +151,17 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
   if ( coords.empty() )
   {
     SLIC_ERROR_IF( coordsets->getNumGroups()==0,
-                  "[" << coordsets->getPathName() << "] is empty!" );
+                   "[" << coordsets->getPathName() << "] is empty!" );
     SLIC_WARNING_IF( coordsets->getNumGroups() > 1,
                      "multiple coordsets found!  " );
     coordset = coordsets->getGroup( 0 );
   }
   else
   {
-    SLIC_ERROR_IF( !coordsets->hasChildGroup( coords ),
-      "[" << path << "] is missing requested coordset group [" << coords << "]" );
+    SLIC_ERROR_IF( !coordsets->hasChildGroup(
+                     coords ),
+                   "[" << path << "] is missing requested coordset group [" << coords <<
+          "]" );
 
     coordset = coordsets->getGroup( coords );
   }
@@ -181,15 +184,17 @@ const sidre::Group* getTopologyGroup( const sidre::Group* group,
   if ( topo.empty() )
   {
     SLIC_ERROR_IF( topologies->getNumGroups()==0,
-                  "[" << topologies->getPathName() << "] is empty!" );
+                   "[" << topologies->getPathName() << "] is empty!" );
     SLIC_WARNING_IF( topologies->getNumGroups() > 1,
                      "multiple topologies found!  " );
     topology = topologies->getGroup( 0 );
   }
   else
   {
-    SLIC_ERROR_IF( !topologies->hasChildGroup( topo ),
-      "[" << path << "] is missing requested topology group [" << topo << "]" );
+    SLIC_ERROR_IF( !topologies->hasChildGroup(
+                     topo ),
+                   "[" << path << "] is missing requested topology group [" << topo <<
+          "]" );
 
     topology = topologies->getGroup( topo );
   }
@@ -215,8 +220,8 @@ void initializeTopologyGroup( sidre::Group* group,
 
 //------------------------------------------------------------------------------
 void getMeshTypeAndDimension( int& mesh_type, int& dimension,
-                               const sidre::Group* group,
-                               const std::string& topo )
+                              const sidre::Group* group,
+                              const std::string& topo )
 {
   SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
@@ -238,8 +243,8 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
   {
 
     SLIC_ERROR_IF( !coords->hasChildGroup("origin"),
-            "missing [origin] group from [" << coords->getPathName() <<
-            "], required for a uniform mesh" );
+                   "missing [origin] group from [" << coords->getPathName() <<
+                   "], required for a uniform mesh" );
 
     mesh_type = STRUCTURED_UNIFORM_MESH;
     dimension = coords->getGroup("origin")->getNumViews();
@@ -248,8 +253,8 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
   else if ( strcmp( topo_type, "rectilinear" )== 0 )
   {
     SLIC_ERROR_IF( !coords->hasChildGroup("values"),
-                "missing [values] group from [" << coords->getPathName() <<
-                "], required for a rectilinear mesh" );
+                   "missing [values] group from [" << coords->getPathName() <<
+                   "], required for a rectilinear mesh" );
 
     mesh_type = STRUCTURED_RECTILINEAR_MESH;
     dimension = coords->getGroup( "values" )->getNumViews();
@@ -314,12 +319,12 @@ Topology getMeshTopologyType( const sidre::Group* group,
   }
 
   SLIC_ERROR_IF( !topology->hasChildGroup( "elements" ),
-                             "Unstructured topology has no 'elements' group." );
+                 "Unstructured topology has no 'elements' group." );
 
   const sidre::Group* elems_group = topology->getGroup( "elements" );
 
   SLIC_ERROR_IF( !elems_group->hasChildView( "shape" ),
-                                        "elements group has no 'shape' view." );
+                 "elements group has no 'shape' view." );
 
   const sidre::View* shape_view = elems_group->getView( "shape" );
   SLIC_ERROR_IF( !shape_view->isString(), "'shape' view must hold a string." );
@@ -355,13 +360,13 @@ void getUniformMesh( int dimension,
   sidre::Group* t = const_cast< sidre::Group* >( topology );
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
-  const char* origin_names[]  = { "origin/x" , "origin/y", "origin/z" };
+  const char* origin_names[]  = { "origin/x", "origin/y", "origin/z" };
   const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
   const char* topo_names[]    = { "elements/origin/i0",
                                   "elements/origin/j0",
                                   "elements/origin/k0"   };
 
-  for ( int i=0; i < dimension; ++i )
+  for ( int i=0 ; i < dimension ; ++i )
   {
     origin [ i ] = c->getView( origin_names[ i ] )->getScalar();
     spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
@@ -398,14 +403,14 @@ void setUniformMesh( int dim,
                  "supplied extent does not match specified dimension!" );
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
-  const char* origin_names[]  = { "origin/x" , "origin/y", "origin/z" };
+  const char* origin_names[]  = { "origin/x", "origin/y", "origin/z" };
   const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
   const char* topo_names[]    = { "elements/origin/i0",
                                   "elements/origin/j0",
                                   "elements/origin/k0"   };
 
   coordset->createView( "type" )->setString( "uniform" );
-  for ( int i=0; i < dim; ++i )
+  for ( int i=0 ; i < dim ; ++i )
   {
     coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
     coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );
@@ -442,7 +447,7 @@ void getCurvilinearMeshExtent( int dim,
                                  "elements/origin/j0",
                                  "elements/origin/k0"   };
 
-  for ( int i=0; i < dim; ++i )
+  for ( int i=0 ; i < dim ; ++i )
   {
     const int Ni       = t->getView( dim_names[ i ] )->getScalar();
     const int i0       = t->getView( origin_names[ i ] )->getScalar();
@@ -460,18 +465,18 @@ void setCurvilinearMeshExtent( int dim,
 {
   SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
   SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null" );
-  SLIC_ERROR_IF( extent->getDimension() != dim ,
+  SLIC_ERROR_IF( extent->getDimension() != dim,
                  "extent dimension does not match specified dimension!" );
 
   const char* dim_names[] = { "elements/dims/i",
-                                "elements/dims/j",
-                                "elements/dims/k"   };
+                              "elements/dims/j",
+                              "elements/dims/k"   };
 
   const char* origin_names[] = { "elements/origin/i0",
-                                   "elements/origin/j0",
-                                   "elements/origin/k0"   };
+                                 "elements/origin/j0",
+                                 "elements/origin/k0"   };
 
-  for ( int i=0; i < dim; ++i )
+  for ( int i=0 ; i < dim ; ++i )
   {
     topology->createView( dim_names[ i ] )->setScalar( extent->size( i )-1 );
 
@@ -506,7 +511,7 @@ void getRectilinearMeshExtent( int dim,
                                  "elements/origin/j0",
                                  "elements/origin/k0"   };
 
-  for ( int i=0; i < dim; ++i )
+  for ( int i=0 ; i < dim ; ++i )
   {
     mint::Array< double > coord( c->getView( coords[ i ] ) );
     const IndexType Ni = coord.size();
@@ -526,7 +531,7 @@ void setRectilinearMeshExtent( int dim,
 {
   SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
   SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null" );
-  SLIC_ERROR_IF( extent->getDimension() != dim ,
+  SLIC_ERROR_IF( extent->getDimension() != dim,
                  "extent dimension does not match specified dimension!" );
 
   // NOTE: For rectilinear meshes, we only store the lower corner extent
@@ -535,7 +540,7 @@ void setRectilinearMeshExtent( int dim,
                                  "elements/origin/j0",
                                  "elements/origin/k0"   };
 
-  for ( int i=0; i < dim; ++i )
+  for ( int i=0 ; i < dim ; ++i )
   {
     // FIXME: cannot set int64 values in sidre
     int i0 = static_cast< int >( extent->min( i ) );

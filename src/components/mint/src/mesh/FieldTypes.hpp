@@ -46,7 +46,7 @@ enum FieldType
 template < typename FieldType >
 struct field_traits
 {
-  static constexpr int type() { return  UNDEFINED_FIELD_TYPE; };
+  static constexpr int type() { return UNDEFINED_FIELD_TYPE; };
 };
 
 /// \name Specialization of field_traits

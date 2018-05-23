@@ -445,7 +445,8 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline IndexType ParticleMesh::getCell( IndexType cellID, IndexType* cell ) const
+inline IndexType ParticleMesh::getCell( IndexType cellID,
+                                        IndexType* cell ) const
 {
   SLIC_ASSERT( cell != AXOM_NULLPTR );
   SLIC_ASSERT( 0 <= cellID && cellID <= getNumberOfCells() );
@@ -471,7 +472,7 @@ inline void ParticleMesh::append( double x, double y )
 {
   SLIC_ASSERT( m_positions != AXOM_NULLPTR );
   SLIC_ERROR_IF( m_ndims != 2,
-                "ParticleMesh::append(x,y) is only valid in 2-D" );
+                 "ParticleMesh::append(x,y) is only valid in 2-D" );
 
   m_positions->append( x, y );
   m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
@@ -484,7 +485,7 @@ inline void ParticleMesh::append( double x, double y, double z )
 {
   SLIC_ASSERT( m_positions != AXOM_NULLPTR );
   SLIC_ERROR_IF( m_ndims != 3,
-                "ParticleMesh::append(x,y,z) is only valid in 3-D" );
+                 "ParticleMesh::append(x,y,z) is only valid in 3-D" );
 
   m_positions->append( x, y, z );
   m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );

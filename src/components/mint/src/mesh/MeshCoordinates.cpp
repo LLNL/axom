@@ -53,7 +53,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
   {
     const double ratio = mint::Array< double >::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(
-             DEFAULT_CAPACITY, static_cast< IndexType >( numNodes*ratio+0.5 ) );
+      DEFAULT_CAPACITY, static_cast< IndexType >( numNodes*ratio+0.5 ) );
   }
   else
   {
@@ -74,7 +74,7 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes,
   m_ndims( 0 )
 {
 
-  m_ndims = ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) ;
+  m_ndims = ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 );
   SLIC_ERROR_IF( invalidDimension(), "invalid dimension" );
   SLIC_ERROR_IF( capacity < 1, "capacity < 1" );
 
@@ -83,10 +83,10 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes,
   ptrs[ 1 ] = y;
   ptrs[ 2 ] = z;
 
-  for ( int i=0; i < m_ndims; ++i )
+  for ( int i=0 ; i < m_ndims ; ++i )
   {
     SLIC_ERROR_IF( ptrs[ i ]==AXOM_NULLPTR,
-                  "encountered null coordinate array for i=" << i );
+                   "encountered null coordinate array for i=" << i );
 
     m_coordinates[ i ] = new Array< double >( ptrs[i], numNodes, 1, capacity );
   }
@@ -97,7 +97,7 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes,
 //------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( IndexType numNodes,
                                   double* x, double* y, double* z ) :
-    MeshCoordinates( numNodes, numNodes, x, y, z )
+  MeshCoordinates( numNodes, numNodes, x, y, z )
 { }
 
 #ifdef MINT_USE_SIDRE
@@ -115,7 +115,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group ) :
                  "sidre::Group does not conform to mesh blueprint" );
 
   SLIC_ERROR_IF( std::strcmp( type_view->getString(), "explicit") != 0,
-                "sidre::Group does not conform to mesh blueprint" );
+                 "sidre::Group does not conform to mesh blueprint" );
 
   SLIC_ERROR_IF( !m_group->hasChildGroup("values"),
                  "sidre::Group does not conform to mesh blueprint" );
@@ -162,7 +162,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
   SLIC_ERROR_IF( m_group->getNumGroups() != 0, "sidre::Group is not empty!" );
   SLIC_ERROR_IF( m_group->getNumViews() !=0, "sidre::Group is not empty!" );
   SLIC_ERROR_IF( (capacity != USE_DEFAULT) && (numNodes > capacity),
-                "numNodes < capacity pre-condition violated!" );
+                 "numNodes < capacity pre-condition violated!" );
 
   m_group->createView( "type" )->setString( "explicit" );
 
@@ -176,7 +176,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
     const char* coord_name = coord_names[ dim ];
     sidre::View* coord_view = values->createView( coord_name );
     m_coordinates[ dim ] =
-        new Array< double > ( coord_view, numNodes, 1, capacity );
+      new Array< double > ( coord_view, numNodes, 1, capacity );
   }
 
 }
@@ -211,7 +211,7 @@ bool MeshCoordinates::consistencyCheck() const
   const double expected_resize_ratio = m_coordinates[ 0 ]->getResizeRatio();
   const bool expected_is_external    = m_coordinates[ 0 ]->isExternal();
 
-  for ( int i = 1; i < m_ndims; ++i )
+  for ( int i = 1 ; i < m_ndims ; ++i )
   {
     const IndexType actual_size       = m_coordinates[ i ]->size();
     const IndexType actual_components = m_coordinates[ i ]->numComponents();
@@ -222,11 +222,11 @@ bool MeshCoordinates::consistencyCheck() const
     const bool component_mismatch = ( actual_components != NUM_COMPONENTS );
     const bool capacity_mismatch  = ( actual_capacity != expected_capacity );
     const bool ratio_mismatch     =
-        !utilities::isNearlyEqual( actual_resize_ratio, expected_resize_ratio );
+      !utilities::isNearlyEqual( actual_resize_ratio, expected_resize_ratio );
 
     SLIC_WARNING_IF( size_mismatch, "coordinate array size mismatch!" );
     SLIC_WARNING_IF( component_mismatch,
-                                 "coordinate array number of components != 1" );
+                     "coordinate array number of components != 1" );
     SLIC_WARNING_IF( capacity_mismatch, "coordinate array capacity mismatch!" );
     SLIC_WARNING_IF( ratio_mismatch, "coordinate array ratio mismatch!" );
 

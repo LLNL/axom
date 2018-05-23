@@ -74,13 +74,13 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* p_avg = mesh.createField< double >( "average_pressure",
                                               mint::NODE_CENTERED );
   int* cells_per_node = mesh.createField< int >( "cells_per_node",
-                                              mint::NODE_CENTERED );
+                                                 mint::NODE_CENTERED );
 
   /* STEP 3: Add the nodes */
   mint::IndexType node_ID = 0;
-  for ( mint::IndexType j = 0; j < Y_EXTENT; ++j )
+  for ( mint::IndexType j = 0 ; j < Y_EXTENT ; ++j )
   {
-    for ( mint::IndexType i = 0; i < X_EXTENT; ++i )
+    for ( mint::IndexType i = 0 ; i < X_EXTENT ; ++i )
     {
       mesh.appendNode( i * SPACING, j * SPACING );
 
@@ -95,9 +95,9 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 4: Add the cells */
   mint::IndexType cell_ID = 0;
-  for ( mint::IndexType j = 0; j < Y_EXTENT - 1; ++j )
+  for ( mint::IndexType j = 0 ; j < Y_EXTENT - 1 ; ++j )
   {
-    for ( mint::IndexType i = 0; i < X_EXTENT - 1; ++i )
+    for ( mint::IndexType i = 0 ; i < X_EXTENT - 1 ; ++i )
     {
       const mint::IndexType bottom_left = j * X_EXTENT + i;
       const mint::IndexType bottom_right = bottom_left + 1;
@@ -108,7 +108,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
       {
         /* Append a quad. */
         const mint::IndexType quad[4] =
-                            { bottom_left, bottom_right, top_right, top_left };
+        { bottom_left, bottom_right, top_right, top_left };
         mesh.appendCell( quad, mint::QUAD);
 
         p[ cell_ID ] = utilities::random_real( PLO, PHI );
@@ -118,13 +118,13 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
       {
         /* Append two triangles. */
         const mint::IndexType tri0[3] =
-                                      { bottom_left, bottom_right, top_right };
+        { bottom_left, bottom_right, top_right };
         mesh.appendCell( tri0, mint::TRIANGLE );
         p[ cell_ID ] = utilities::random_real( PLO, PHI );
         cell_ID++;
 
         const mint::IndexType tri1[3] =
-                                      { top_right, top_left, bottom_left };
+        { top_right, top_left, bottom_left };
         mesh.appendCell( tri1, mint::TRIANGLE );
         p[ cell_ID ] = utilities::random_real( PLO, PHI );
         cell_ID++;
@@ -134,12 +134,12 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 5: Calculate the average pressure at each of the nodes. */
   const mint::IndexType n_cells = mesh.getNumberOfCells();
-  for ( cell_ID = 0; cell_ID < n_cells; ++cell_ID )
+  for ( cell_ID = 0 ; cell_ID < n_cells ; ++cell_ID )
   {
     const double cell_pressure = p[ cell_ID ];
     const int n_cell_nodes = mesh.getNumberOfCellNodes( cell_ID );
     const mint::IndexType* connec = mesh.getCell( cell_ID );
-    for ( int i = 0; i < n_cell_nodes; ++i )
+    for ( int i = 0 ; i < n_cell_nodes ; ++i )
     {
       node_ID = connec[ i ];
       p_avg[ node_ID ] += cell_pressure;
@@ -148,7 +148,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   }
 
   const mint::IndexType n_nodes = mesh.getNumberOfNodes();
-  for ( node_ID = 0; node_ID < n_nodes; ++node_ID )
+  for ( node_ID = 0 ; node_ID < n_nodes ; ++node_ID )
   {
     p_avg[ node_ID ] /= cells_per_node[ node_ID ];
   }

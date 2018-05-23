@@ -75,7 +75,7 @@ void create_scalar_data( Mesh* mesh )
   const IndexType mesh_num_cells = mesh->getNumberOfCells();
 
   double* double_ptr = AXOM_NULLPTR;
-  int*    int_ptr    = AXOM_NULLPTR;
+  int* int_ptr    = AXOM_NULLPTR;
 
   double_ptr = mesh->createField< double >( "node_scalars_double",
                                             mint::NODE_CENTERED );
@@ -130,8 +130,8 @@ void create_vector_data( Mesh* mesh )
 
   double* double_ptr3 = AXOM_NULLPTR;
   double* double_ptr2 = AXOM_NULLPTR;
-  int*    int_ptr3    = AXOM_NULLPTR;
-  int*    int_ptr2    = AXOM_NULLPTR;
+  int* int_ptr3    = AXOM_NULLPTR;
+  int* int_ptr2    = AXOM_NULLPTR;
 
   double_ptr3 = mesh->createField< double >( "node_vectors_3double",
                                              mint::NODE_CENTERED, 3 );
@@ -179,7 +179,7 @@ void create_vector_data( Mesh* mesh )
   }
 
   double_ptr3 = mesh->createField< double >( "cell_vectors_3double",
-                                              mint::CELL_CENTERED,3 );
+                                             mint::CELL_CENTERED,3 );
   int_ptr3    = mesh->createField< int >( "cell_vectors_3int",
                                           mint::CELL_CENTERED, 3 );
   double_ptr2 = mesh->createField< double >( "cell_vectors_2double",
@@ -217,7 +217,7 @@ void create_multidim_data( Mesh* mesh )
   const IndexType num_cells = mesh->getNumberOfCells();
 
   double* double_ptr = AXOM_NULLPTR;
-  int*    int_ptr    = AXOM_NULLPTR;
+  int* int_ptr    = AXOM_NULLPTR;
 
   double_ptr = mesh->createField< double >( "node_multidim_double",
                                             mint::NODE_CENTERED, 4 );

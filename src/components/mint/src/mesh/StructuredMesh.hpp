@@ -82,7 +82,8 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType
-  getNumberOfCellNodes(IndexType AXOM_NOT_USED(cellID)=0 ) const override final;
+    getNumberOfCellNodes(IndexType AXOM_NOT_USED(cellID)=
+                           0 ) const override final;
 
   /*!
    * \brief Return the type of cell this mesh holds. SEGMENT, QUAD, or HEX
@@ -441,7 +442,7 @@ IndexType StructuredMesh::getCell( IndexType cellID, IndexType* cell ) const
 
   // Use the offsets table to get the all the cell nodes.
   const IndexType n0 = getLinearIndex( ii, jj, kk );
-  for ( IndexType i = 0 ; i < num_cell_nodes; ++i )
+  for ( IndexType i = 0 ; i < num_cell_nodes ; ++i )
   {
     cell[ i ] = n0 + offsets_table[ i ];
   }
@@ -485,8 +486,8 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j, IndexType k,
 inline
 CellType StructuredMesh::getCellType( IndexType AXOM_NOT_USED(cellID) ) const
 {
-  return ( (m_ndims==3)? mint::HEX :
-             ( (m_ndims==2)? mint::QUAD : mint::SEGMENT ) );
+  return ( (m_ndims==3) ? mint::HEX :
+           ( (m_ndims==2) ? mint::QUAD : mint::SEGMENT ) );
 }
 
 } /* namespace mint */

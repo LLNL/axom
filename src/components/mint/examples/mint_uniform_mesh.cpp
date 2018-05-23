@@ -48,8 +48,8 @@ double himmelblaus_function( double x, double y )
 int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
   const int dimension = 2;
-  const double lo[ ]  = { -5.0, -5.0 };
-  const double hi[ ]  = {  5.0,  5.0 };
+  const double lo[]   = { -5.0, -5.0 };
+  const double hi[]   = {  5.0,  5.0 };
 
   // STEP 0: construct a 100 x 100 grid
   mint::UniformMesh mesh( dimension, lo, hi, 100, 100 );
@@ -62,10 +62,10 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   const IndexType Nj = mesh.getNumberOfNodesAlongDim( mint::J_DIRECTION );
   const IndexType jp = mesh.jp();
 
-  for ( IndexType j=0; j < Nj; ++j )
+  for ( IndexType j=0 ; j < Nj ; ++j )
   {
     const IndexType offset = j*jp;
-    for ( IndexType i=0; i < Ni; ++i )
+    for ( IndexType i=0 ; i < Ni ; ++i )
     {
       const IndexType idx = i + offset;
       const double x = mesh.evaluateCoordinate( i, mint::I_DIRECTION );
@@ -80,6 +80,3 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   return 0;
 }
-
-
-
