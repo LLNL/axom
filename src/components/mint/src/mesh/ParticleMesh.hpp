@@ -41,6 +41,8 @@ namespace mint
 class MeshCoordinates;
 
 /*!
+ * \class ParticleMesh
+ *
  * \brief Provides the ability to store and operate on a set of particles.
  *
  *  The ParticleMesh class derives from the top-level Mesh base class and

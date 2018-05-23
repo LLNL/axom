@@ -15,9 +15,10 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef UNSTRUCTUREDMESH_HXX_
-#define UNSTRUCTUREDMESH_HXX_
+#ifndef MINT_UNSTRUCTUREDMESH_HPP_
+#define MINT_UNSTRUCTUREDMESH_HPP_
 
+// Axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 
@@ -41,6 +42,73 @@ namespace axom
 namespace mint
 {
 
+/*!
+ * \class UnstructuredMesh
+ *
+ * \brief Provides the ability to store and operate on Unstructured meshes.
+ *
+ *  An <em> unstructured mesh </em> stores both node and topology information
+ *  explicitly. This allows the flexibility of discretizing the solution
+ *  domain using a variety of cell types not just quadrilateral (in 2D) or
+ *  hexahedral (in 3D) cells. Due to this added flexibility, the use of
+ *  <em> unstructured meshes </em> is more common when dealing with complex
+ *  geometries. However, <em> unstructured meshes </em> require additional
+ *  storage and generally incur some performance penalty to store, create and
+ *  access mesh topology information respectively.
+ *
+ *  Mint classifies <em> unstructured meshes </em> in two basic types based on
+ *  the underlying mesh topology:
+ *
+ *  * <b> Single Shape Topology </b>
+ *
+ *   In this case, the <em> unstructured mesh </em> consists of a single cell
+ *   type, e.g., a quad or triangle mesh in 2D, or, a hex or tet mesh in 3D.
+ *   In this case  the underlying implementation is optimized for the
+ *   specified cell type (specified in the constructor).
+ *
+ *  * <b> Mixed Shape Topology </b>
+ *
+ *    When <em> mixed cell topology </em> is specified, the <em> unstructured
+ *    mesh </em> can be composed of any of the supported cell types, e.g.,
+ *    a mesh consisting of both quads and triangles. This mode incurs
+ *    additional overhead for storage and access to mesh topology information,
+ *    since it requires indirection.
+ *
+ *  The list of supported cell types for an <em> unstructured mesh </em> is
+ *  available in CellTypes.hpp
+ *
+ * An UnstructuredMesh object may be constructed using (a) native storage,
+ * (b) external storage, or, (c) with Sidre storage when Mint is compiled
+ *  with Sidre support:
+ *
+ *  * <b> Native Storage </b> <br />
+ *
+ *    When using native storage, the Unstructured object owns all memory
+ *    associated with the particle data. The storage can grow dynamically as
+ *    needed by the application, i.e., adding more nodes/cells. Once the
+ *    mesh object goes out-of-scope, all memory associated with it is
+ *    returned to the system.
+ *
+ *  * <b> External Storage </b> <br />
+ *
+ *    An UnstructuredMesh may also be constructed from external, user-supplied
+ *    buffers. In this case, all memory associated with the mesh data
+ *    is owned by the caller. Consequently, the mesh cannot grow dynamically.
+ *    All calls to resize(), append(), etc. will fail with an error.
+ *
+ *  * <b> Sidre </b> <br />
+ *
+ *    An UnstructuredMesh may also be constructed using Sidre as the back-end
+ *    data-store manager. The mesh data is laid out in Sidre according to the
+ *    <a href="http://llnl-conduit.readthedocs.io/en/latest/"> computational
+ *    mesh blueprint </a> conventions. In this case, all operations are
+ *    supported, including dynamically resizing the mesh and growing the
+ *    associated storage as needed. However, Sidre owns all the memory. Once the
+ *    mesh object goes out-of-scope, the data remains persistent in Sidre.
+ *
+ * \see mint::Mesh
+ * \see mint::CellTypes
+ */
 template < Topology TOPO >
 class UnstructuredMesh : public Mesh
 {
@@ -244,7 +312,7 @@ public:
     m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
-            "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
+           "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
     if ( TOPO == Topology::MIXED )
     {

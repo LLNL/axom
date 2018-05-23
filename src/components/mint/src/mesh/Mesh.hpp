@@ -100,7 +100,7 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
  *
  * There are a variety of mesh types. Mint supports the following mesh types:
  *
- *  * <b> Structured Mesh </b> <br />
+ *  * <b> Structured (Curvilinear) Mesh </b> <br />
  *
  *    A <em> structured mesh </em> divides the solution domain according to a
  *    logical grid where each node/cell of the mesh can be uniquely identified
