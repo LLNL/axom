@@ -20,8 +20,12 @@
 // axom includes
 #include "axom/Types.hpp"
 
+// mint includes
+#include "mint/CurvilinearMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/ParticleMesh.hpp"
+#include "mint/RectilinearMesh.hpp"
+#include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
 #ifdef MINT_USE_SIDRE
@@ -56,16 +60,13 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo )
   switch ( mesh_type )
   {
   case STRUCTURED_CURVILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    m = new CurvilinearMesh( group, topo );
     break;
   case STRUCTURED_RECTILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    m = new RectilinearMesh( group, topo );
     break;
   case STRUCTURED_UNIFORM_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
+    m = new UniformMesh( group, topo );
     break;
   case UNSTRUCTURED_MESH:
     topo_type = blueprint::getMeshTopologyType( group, topo );

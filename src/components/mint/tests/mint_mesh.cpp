@@ -14,10 +14,14 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"
+#include "mint/config.hpp"           // for compile-time type definitions
 
+// Mint includes
+#include "mint/CurvilinearMesh.hpp"   // for CurvilinearMesh
 #include "mint/Mesh.hpp"              // for Mesh base class
 #include "mint/ParticleMesh.hpp"      // for ParticleMesh definition
+#include "mint/RectilinearMesh.hpp"   // for RectilinearMesh
+#include "mint/UniformMesh.hpp"       // for UniformMesh
 #include "mint/UnstructuredMesh.hpp"  // for UnstructuredMesh
 
 // Sidre includes
@@ -28,7 +32,9 @@ namespace sidre = axom::sidre;
 
 #include "gtest/gtest.h"        // for gtest macros
 
-#include <cmath>
+// C/C++ includes
+#include <cmath>   // for cosh, etc.
+#include <cstring> // for memcpy
 
 namespace axom
 {
@@ -319,6 +325,169 @@ void check_cell_fields( IndexType n_cells, const double* p )
 //------------------------------------------------------------------------------
 #ifdef MINT_USE_SIDRE
 
+TEST( mint_mesh_DeathTest, get_mesh_null_group )
+{
+  const char* IGNORE_OUTPUT = ".*";
+  EXPECT_DEATH_IF_SUPPORTED( mint::getMesh( AXOM_NULLPTR ), IGNORE_OUTPUT );
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
+{
+  const int64  ext[]      = { -10,10, -10,10, -10,10  };
+  constexpr int DIMENSION = 3;
+  constexpr int BLOCKID   = 9;
+  constexpr int PARTID    = 10;
+
+  /* STEP 0: get empty Sidre group where to store the mesh. */
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
+  /* STEP 1: populate group with a CurvilinearMesh */
+  CurvilinearMesh* cm = new CurvilinearMesh( DIMENSION, ext, root );
+  cm->setBlockId( BLOCKID );
+  cm->setPartitionId( PARTID );
+  double* foo              = cm->createField< double >( "foo", NODE_CENTERED );
+  double* x                = cm->getCoordinateArray( X_COORDINATE );
+  double* y                = cm->getCoordinateArray( Y_COORDINATE );
+  double* z                = cm->getCoordinateArray( Z_COORDINATE );
+  const IndexType numNodes = cm->getNumberOfNodes();
+  const IndexType numCells = cm->getNumberOfCells();
+
+  delete cm;
+
+  /* STEP 2: get a mesh object from the group */
+  Mesh* m = mint::getMesh( root );
+
+  /* STEP 3: check mesh */
+  EXPECT_EQ( m->getMeshType(), STRUCTURED_CURVILINEAR_MESH );
+  EXPECT_EQ( m->getBlockId(), BLOCKID );
+  EXPECT_EQ( m->getPartitionId(), PARTID );
+  EXPECT_EQ( m->getDimension(), DIMENSION );
+  EXPECT_EQ( m->getNumberOfNodes(), numNodes );
+  EXPECT_EQ( m->getNumberOfCells(), numCells );
+  EXPECT_TRUE( m->hasField( "foo", NODE_CENTERED ) );
+  EXPECT_EQ( m->getCoordinateArray( X_COORDINATE), x );
+  EXPECT_EQ( m->getCoordinateArray( Y_COORDINATE), y );
+  EXPECT_EQ( m->getCoordinateArray( Z_COORDINATE), z );
+
+  double* foo_test = m->getFieldPtr< double >( "foo", NODE_CENTERED );
+  EXPECT_EQ( foo, foo_test );
+
+  const CurvilinearMesh* M = dynamic_cast< const CurvilinearMesh* >( m );
+  EXPECT_TRUE( M != AXOM_NULLPTR );
+
+  delete m;
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
+{
+  const int64  ext[]      = { -10,10, -10,10, -10,10  };
+  constexpr int DIMENSION = 3;
+  constexpr int BLOCKID   = 9;
+  constexpr int PARTID    = 10;
+
+  /* STEP 0: get empty Sidre group where to store the mesh. */
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
+  /* STEP 1: populate group with a RectilinearMesh */
+  RectilinearMesh* rm = new RectilinearMesh( DIMENSION, ext, root );
+  rm->setBlockId( BLOCKID );
+  rm->setPartitionId( PARTID );
+  double* foo              = rm->createField< double >( "foo", NODE_CENTERED );
+  double* x                = rm->getCoordinateArray( X_COORDINATE );
+  double* y                = rm->getCoordinateArray( Y_COORDINATE );
+  double* z                = rm->getCoordinateArray( Z_COORDINATE );
+  const IndexType numNodes = rm->getNumberOfNodes();
+  const IndexType numCells = rm->getNumberOfCells();
+
+  delete rm;
+
+  /* STEP 2: get a mesh object from the group */
+  Mesh* m = mint::getMesh( root );
+
+  /* STEP 3: check mesh */
+  EXPECT_EQ( m->getMeshType(), STRUCTURED_RECTILINEAR_MESH );
+  EXPECT_EQ( m->getBlockId(), BLOCKID );
+  EXPECT_EQ( m->getPartitionId(), PARTID );
+  EXPECT_EQ( m->getDimension(), DIMENSION );
+  EXPECT_EQ( m->getNumberOfNodes(), numNodes );
+  EXPECT_EQ( m->getNumberOfCells(), numCells );
+  EXPECT_TRUE( m->hasField( "foo", NODE_CENTERED ) );
+  EXPECT_EQ( m->getCoordinateArray( X_COORDINATE), x );
+  EXPECT_EQ( m->getCoordinateArray( Y_COORDINATE), y );
+  EXPECT_EQ( m->getCoordinateArray( Z_COORDINATE), z );
+
+  double* foo_test = m->getFieldPtr< double >( "foo", NODE_CENTERED );
+  EXPECT_EQ( foo, foo_test );
+
+  const RectilinearMesh* M = dynamic_cast< const RectilinearMesh* >( m );
+  EXPECT_TRUE( M != AXOM_NULLPTR );
+
+  delete m;
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh, get_uniform_mesh_from_sidre )
+{
+  const int64  ext[]      = { -10,10, -10,10, -10,10  };
+  const double LO[]       = { -2.0, -2.0, -2.0 };
+  const double HI[]       = {  2.0,  2.0,  2.0 };
+  constexpr int DIMENSION = 3;
+  constexpr int BLOCKID   = 9;
+  constexpr int PARTID    = 10;
+
+  /* STEP 0: get empty Sidre group where to store the mesh. */
+  sidre::DataStore ds;
+  sidre::Group* root = ds.getRoot();
+
+  /* STEP 1: populate group with a UniformMesh */
+  UniformMesh* um = new UniformMesh( DIMENSION, LO, HI, ext, root );
+  um->setBlockId( BLOCKID );
+  um->setPartitionId( PARTID );
+  double* foo              = um->createField< double >( "foo", NODE_CENTERED );
+
+  double SPACING[ 3 ];
+  memcpy( SPACING, um->getSpacing(), 3*sizeof(double) );
+
+  const IndexType numNodes = um->getNumberOfNodes();
+  const IndexType numCells = um->getNumberOfCells();
+
+  delete um;
+
+  /* STEP 2: get a mesh object from the group */
+  Mesh* m = mint::getMesh( root );
+
+  /* STEP 3: check mesh */
+  EXPECT_EQ( m->getMeshType(), STRUCTURED_UNIFORM_MESH );
+  EXPECT_EQ( m->getBlockId(), BLOCKID );
+  EXPECT_EQ( m->getPartitionId(), PARTID );
+  EXPECT_EQ( m->getDimension(), DIMENSION );
+  EXPECT_EQ( m->getNumberOfNodes(), numNodes );
+  EXPECT_EQ( m->getNumberOfCells(), numCells );
+  EXPECT_TRUE( m->hasField( "foo", NODE_CENTERED ) );
+
+  double* foo_test = m->getFieldPtr< double >( "foo", NODE_CENTERED );
+  EXPECT_EQ( foo, foo_test );
+
+  /* STEP 4: down-cast and test the UniformMesh object. */
+  const UniformMesh* M = dynamic_cast< const UniformMesh* >( m );
+  EXPECT_TRUE( M != AXOM_NULLPTR );
+
+  const double* h  = M->getSpacing();
+  const double* lo = M->getOrigin();
+  for ( int idim=0; idim < DIMENSION; ++idim )
+  {
+    EXPECT_DOUBLE_EQ( SPACING[ idim ], h[ idim ] );
+    EXPECT_DOUBLE_EQ( LO[ idim ], lo[ idim ] );
+  }
+
+  delete m;
+}
+
+//------------------------------------------------------------------------------
 TEST( mint_mesh, get_particle_mesh_from_sidre )
 {
   constexpr int DIMENSION = 3;
@@ -371,8 +540,7 @@ TEST( mint_mesh, get_particle_mesh_from_sidre )
   double* phi_test = m->getFieldPtr< double >( "phi", NODE_CENTERED );
   EXPECT_EQ( phi, phi_test );
 
-  IndexType* id_test  =
-      m->getFieldPtr< IndexType >( "id", NODE_CENTERED );
+  IndexType* id_test  = m->getFieldPtr< IndexType >( "id", NODE_CENTERED );
   EXPECT_EQ( id, id_test );
 
   /* STEP 4: de-allocate. */
