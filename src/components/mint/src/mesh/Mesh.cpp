@@ -38,7 +38,62 @@ namespace axom
 namespace mint
 {
 
+#ifdef MINT_USE_SIDRE
 
+//------------------------------------------------------------------------------
+// IMPLEMENTATION OF FREE METHODS
+//------------------------------------------------------------------------------
+Mesh* getMesh( sidre::Group* group, const std::string& topo )
+{
+  SLIC_ERROR_IF( group==AXOM_NULLPTR, "supplied group is null" );
+
+  int mesh_type = UNDEFINED_MESH;
+  int dimension = -1;
+  blueprint::getMeshTypeAndDimension( mesh_type, dimension, group, topo );
+
+  Mesh* m = AXOM_NULLPTR;
+  Topology topo_type;
+  switch ( mesh_type )
+  {
+  case STRUCTURED_CURVILINEAR_MESH:
+    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
+    // TODO: implement this
+    break;
+  case STRUCTURED_RECTILINEAR_MESH:
+    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
+    // TODO: implement this
+    break;
+  case STRUCTURED_UNIFORM_MESH:
+    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
+    // TODO: implement this
+    break;
+  case UNSTRUCTURED_MESH:
+    topo_type = blueprint::getMeshTopologyType( group, topo );
+    if ( topo_type == Topology::SINGLE )
+    {
+      m = new UnstructuredMesh< Topology::SINGLE >( group, topo );
+    }
+    else
+    {
+      SLIC_ASSERT( topo_type == Topology::MIXED );
+      m = new UnstructuredMesh< Topology::MIXED >( group, topo );
+    }
+    break;
+  case PARTICLE_MESH:
+    m = new ParticleMesh( group, topo );
+    break;
+  default:
+    SLIC_ERROR( "undefined mesh_type [" << mesh_type << "]\n" );
+  } // END switch
+
+  SLIC_ASSERT( m != AXOM_NULLPTR );
+  return m;
+}
+
+#endif /* MINT_USE_SIDRE */
+
+//------------------------------------------------------------------------------
+// MESH IMPLEMENTATION
 //------------------------------------------------------------------------------
 Mesh::Mesh( int ndims, int type ) :
   m_ndims( ndims ),
@@ -254,58 +309,6 @@ void Mesh::deallocateFieldData( )
     m_mesh_fields[ i ] = AXOM_NULLPTR;
   }
 }
-
-#ifdef MINT_USE_SIDRE
-
-//------------------------------------------------------------------------------
-Mesh* Mesh::getMesh( sidre::Group* group, const std::string& topo )
-{
-  SLIC_ERROR_IF( group==AXOM_NULLPTR, "supplied group is null" );
-
-  int mesh_type = UNDEFINED_MESH;
-  int dimension = -1;
-  blueprint::getMeshTypeAndDimension( mesh_type, dimension, group, topo );
-
-  Mesh* m = AXOM_NULLPTR;
-  Topology topo_type;
-  switch ( mesh_type )
-  {
-  case STRUCTURED_CURVILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case STRUCTURED_RECTILINEAR_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case STRUCTURED_UNIFORM_MESH:
-    SLIC_ERROR( "!!! NOT IMPLEMENTED YET !!!" );
-    // TODO: implement this
-    break;
-  case UNSTRUCTURED_MESH:
-    topo_type = blueprint::getMeshTopologyType( group, topo );
-    if ( topo_type == Topology::SINGLE )
-    {
-      m = new UnstructuredMesh< Topology::SINGLE >( group, topo );
-    }
-    else
-    {
-      SLIC_ASSERT( topo_type == Topology::MIXED );
-      m = new UnstructuredMesh< Topology::MIXED >( group, topo );
-    }
-    break;
-  case PARTICLE_MESH:
-    m = new ParticleMesh( group, topo );
-    break;
-  default:
-    SLIC_ERROR( "undefined mesh_type [" << mesh_type << "]\n" );
-  } // END switch
-
-  SLIC_ASSERT( m != AXOM_NULLPTR );
-  return m;
-}
-
-#endif /* MINT_USE_SIDRE */
 
 } /* namespace mint */
 } /* namespace axom */

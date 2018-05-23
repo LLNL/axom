@@ -46,6 +46,42 @@ namespace mint
 
 /* Forward declarations */
 class Field;
+class Mesh;
+
+/// \name Free Methods
+/// @{
+
+#ifdef MINT_USE_SIDRE
+
+/*!
+ * \brief Creates a mesh instance from the given Sidre group.
+ *
+ * \param [in] group pointer to the root group of the mesh in Sidre.
+ * \param [in] topo topology associated with the requested mesh (optional)
+ *
+ * \return m pointer to a mesh instance corresponding to the specified group.
+ *
+ * \note If a topology name is not provided, the implementation will construct
+ *  a mesh based on the 1st topology group under the parent "topologies"
+ *  group.
+ *
+ * \note Ownership of the resulting mesh object is passed to the caller.
+ *
+ * \note When using Mint with Sidre, Sidre maintains ownership of the data.
+ *  Although the data can be modified via calls to Mint, groups and views
+ *  cannot be deleted. The data remains persistent in Sidre once the mesh
+ *  object goes out-of-scope.
+ *
+ * \pre  group != AXOM_NULLPTR
+ * \pre  blueprint::validRootGroup( group ) == true
+ * \post m != AXOM_NULLPTR
+ */
+Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
+
+#endif
+
+/// @}
+
 
 /*!
  * \class Mesh
@@ -591,40 +627,6 @@ public:
                                int association ) const;
 
   /// @}
-
-/// @}
-
-/// \name Static Methods
-/// @{
-
-#ifdef MINT_USE_SIDRE
-
-  /*!
-   * \brief Creates a mesh instance from the given Sidre group.
-   *
-   * \param [in] group pointer to the root group of the mesh in Sidre.
-   * \param [in] topo topology associated with the requested mesh (optional)
-   *
-   * \return m pointer to a mesh instance corresponding to the specified group.
-   *
-   * \note If a topology name is not provided, the implementation will construct
-   *  a mesh based on the 1st topology group under the parent "topologies"
-   *  group.
-   *
-   * \note Ownership of the resulting mesh object is passed to the caller.
-   *
-   * \note When using Mint with Sidre, Sidre maintains ownership of the data.
-   *  Although the data can be modified via calls to Mint, groups and views
-   *  cannot be deleted. The data remains persistent in Sidre once the mesh
-   *  object goes out-of-scope.
-   *
-   * \pre  group != AXOM_NULLPTR
-   * \pre  blueprint::validRootGroup( group ) == true
-   * \post m != AXOM_NULLPTR
-   */
-  static Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
-
-#endif
 
 /// @}
 
