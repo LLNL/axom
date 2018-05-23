@@ -18,22 +18,22 @@
 #ifndef MINT_ConnectivityArray_HXX_
 #define MINT_ConnectivityArray_HXX_
 
-#include <iostream>
-
+// Axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
-#include "axom_utils/Utilities.hpp"
-#include "mint/CellTypes.hpp"
+
+// Mint includes
 #include "mint/Array.hpp"
-#include "mint/config.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/ConnectivityArray_internal.hpp"
+#include "mint/config.hpp"
+
+// Slic includes
 #include "slic/slic.hpp"
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"
 #endif
-
-#include <cstring>
 
 namespace axom
 {
@@ -45,10 +45,10 @@ namespace mint
  * \class ConnectivityArray
  *
  * \brief Provides an interface for general mesh connectivity.
- *  
+ *
  *  The ConnectivityArray is a map between IDs and values where each
  *  ID can be a different type and have a different number of values.
- *  A ConnectivityArray with  N IDs has IDs from [0, N-1] whereas the values 
+ *  A ConnectivityArray with  N IDs has IDs from [0, N-1] whereas the values
  *  for each ID can be anything within the range of IndexType.
  *
  *  The ConnectivityArray object may be constructed using (a) native storage,
@@ -56,12 +56,12 @@ namespace mint
  *
  *  * <b> Native Storage </b> <br />
  *
- *    When using native storage, the ConnectivityArray object owns all 
- *    associated memory. The storage can dynamically grow as needed, e.g., when 
- *    adding more cells. Typically, extra space is allocated to minimize the 
- *    number of re-allocations. At any given instance, the total ID/value 
+ *    When using native storage, the ConnectivityArray object owns all
+ *    associated memory. The storage can dynamically grow as needed, e.g., when
+ *    adding more cells. Typically, extra space is allocated to minimize the
+ *    number of re-allocations. At any given instance, the total ID/value
  *    capacity can be queried by calling the getIDCapacity()/getValueCapacity()
- *    functions. The extra memory can be returned to the system by calling the 
+ *    functions. The extra memory can be returned to the system by calling the
  *    shrink() method.
  *
  *    When all extra memory is exhausted, appending a new ID triggers a
@@ -83,19 +83,19 @@ namespace mint
  *    \warning Since the memory is not owned by the ConnectivityArray object
  *     when external buffers are supplied, the ConnectivityArray object cannot
  *     dynamically grow the storage. Consequently, the number of IDs/values the
- *     ConnectivityArray instance can hold is fixed. All calls to `shrink()` and 
+ *     ConnectivityArray instance can hold is fixed. All calls to `shrink()` and
  *     `reserve()` will fail.
  *
- *    \warning Moreover, when the ConnectivityArray object goes out-of-scope, 
+ *    \warning Moreover, when the ConnectivityArray object goes out-of-scope,
  *     the associated buffers are not deleted. The caller owns the external data
  *     and has the responsibility of properly de-allocating the associated
  *     memory.
  *
  *  * <b> Sidre </b> <br />
  *
- *    A ConnectivityArray object may also be constructed from a sidre::Group 
- *    which conforms to a topology of the 
- *    <a href="http://llnl-conduit.readthedocs.io/en/latest/"> 
+ *    A ConnectivityArray object may also be constructed from a sidre::Group
+ *    which conforms to a topology of the
+ *    <a href="http://llnl-conduit.readthedocs.io/en/latest/">
  *    mesh blueprint </a>.
  *
  *    A ConnectivityArray object that is bound to a particular sidre::Group
@@ -116,7 +116,7 @@ namespace mint
  *  deal with the case where the number of values per ID differ but the type
  *  remains the same and the case where both differ.
  *
- * \tparam TYPE the type of the ConnectivityArray this class deals with the 
+ * \tparam TYPE the type of the ConnectivityArray this class deals with the
  *  case of TYPE == ConnectivityType::NO_INDIRECTION.
  *
  * \see ConnectivityArray_indirection.hpp
@@ -126,7 +126,7 @@ namespace mint
 template < ConnectivityType TYPE >
 class ConnectivityArray
 {
-  AXOM_STATIC_ASSERT_MSG( TYPE == ConnectivityType::NO_INDIRECTION, 
+  AXOM_STATIC_ASSERT_MSG( TYPE == ConnectivityType::NO_INDIRECTION,
                           "pre: TYPE == NO_INDIRECTION" );
 
 public:
@@ -141,7 +141,7 @@ public:
 
   /*!
    * \brief Constructs an empty ConnectivityArray instance.
-   * 
+   *
    * \param [in] ID_capacity the number of IDs to allocate space for.
    *
    * \post getIDCapacity() >= getNumberOfIDs()
@@ -153,7 +153,7 @@ public:
     m_stride( -1 ),
     m_values( AXOM_NULLPTR )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
     SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
 
@@ -168,8 +168,8 @@ public:
 
   /*!
    * \brief External constructor which creates a ConnectivityArray instance to
-   *  wrap the given pointer. 
-   * 
+   *  wrap the given pointer.
+   *
    * \param [in] n_IDs the number of IDs.
    * \param [in] values the array of values of length ID_capacity * STRIDE.
    * \param [in] ID_capacity the capacity of the values array in terms of IDs.
@@ -180,7 +180,7 @@ public:
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getNumberOfIDs() == n_IDs
-   * \post getIDType() == TYPE 
+   * \post getIDType() == TYPE
    */
   ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values,
                      IndexType ID_capacity=USE_DEFAULT ):
@@ -188,7 +188,7 @@ public:
     m_stride( -1 ),
     m_values( AXOM_NULLPTR )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
     SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
 
@@ -206,7 +206,7 @@ public:
   /*!
    * \brief Creates a ConnectivityArray instance from a sidre::Group which
    *  already has data.
-   * 
+   *
    * \param [in] group the sidre::Group to create the ConnectivityArray from.
    *
    * \note the given Group must conform to a single Blueprint topology.
@@ -214,7 +214,7 @@ public:
    * \pre group != AXOM_NULLPTR
    *
    * \post getIDCapacity() >= getNumberOfIDs()
-   * \post getIDType() == TYPE 
+   * \post getIDType() == TYPE
    */
   ConnectivityArray( sidre::Group* group ):
     m_cell_type( UNDEFINED_CELL ),
@@ -222,22 +222,22 @@ public:
     m_values( AXOM_NULLPTR )
   {
     m_cell_type = internal::initializeFromGroup( group, &m_values );
-    
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
 
 
     m_stride = cell_info[ static_cast< int >( m_cell_type ) ].num_nodes;
 
-    SLIC_ERROR_IF( m_values->numComponents() != m_stride, 
+    SLIC_ERROR_IF( m_values->numComponents() != m_stride,
                    "values array must have " << m_stride << " components, is " <<
                    m_values->numComponents() << "." );
   }
 
   /*!
-   * \brief Creates an empty ConnectivityArray instance from an empty 
+   * \brief Creates an empty ConnectivityArray instance from an empty
    *  sidre::Group.
-   * 
+   *
    * \param [in] group the sidre::Group to create the ConnectivityArray from.
    * \param [in] coordset the name of the Blueprint coordinate set to associate
    *  this ConnectivityArray with.
@@ -247,16 +247,16 @@ public:
    * \pre group->getNumGroups() == group->getNumViews() == 0
    *
    * \post getIDCapacity() >= getNumberOfIDs()
-   * \post getIDType() == TYPE 
+   * \post getIDType() == TYPE
    */
-  ConnectivityArray( CellType cell_type, sidre::Group* group, 
-                     const std::string& coordset, 
+  ConnectivityArray( CellType cell_type, sidre::Group* group,
+                     const std::string& coordset,
                      IndexType ID_capacity=USE_DEFAULT ):
     m_cell_type( cell_type ),
     m_stride( cell_info[ static_cast< int >( m_cell_type ) ].num_nodes ),
     m_values( AXOM_NULLPTR )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
 
 
@@ -315,13 +315,13 @@ public:
 
   /*!
    * \brief Reserve space for IDs and values.
-   * 
+   *
    * \param [in] ID_capacity the number of IDs to reserve space for.
    * \param [in] value_capacity not used, does not need to be specified.
    *
    * \post getIDCapacity() >= n_IDs
    */
-  void reserve( IndexType ID_capacity, 
+  void reserve( IndexType ID_capacity,
                 IndexType AXOM_NOT_USED(value_capacity)=0 )
   { m_values->reserve( ID_capacity ); }
 
@@ -362,7 +362,7 @@ public:
    */
   bool empty() const
   { return m_values->empty(); }
-  
+
   /*!
    * \brief Return true iff constructed via the external constructor.
    */
@@ -381,7 +381,7 @@ public:
    */
 #ifdef MINT_USE_SIDRE
   const sidre::Group* getGroup() const
-  { 
+  {
     if ( !isInSidre() )
     {
       return AXOM_NULLPTR;
@@ -430,7 +430,7 @@ public:
     return m_values->getData() + ID * m_stride;
   }
 
-  const IndexType* operator[]( IndexType ID ) const 
+  const IndexType* operator[]( IndexType ID ) const
   {
     SLIC_ASSERT( ( ID >= 0 ) && ( ID < getNumberOfIDs() ) );
     return m_values->getData() + ID * m_stride;
@@ -452,7 +452,7 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the offsets array, of length 
+   * \brief Returns a pointer to the offsets array, of length
    *  getNumberOfIDs() + 1.
    */
   /// @{
@@ -488,13 +488,13 @@ public:
    * \pre values != AXOM_NULLPTR
    */
   void append( const IndexType* values, IndexType AXOM_NOT_USED(n_values)=0,
-               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL ) 
+               CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
   { appendM( values, 1 ); }
 
   /*!
    * \brief Adds multiple IDs.
    *
-   * \param [in] values pointer to the values to add, of length at least 
+   * \param [in] values pointer to the values to add, of length at least
    *  n_IDs * STRIDE.
    * \param [in] n_IDs the number of IDs to append.
    * \param [in] offsets not used, does not need to be specified.
@@ -503,9 +503,9 @@ public:
    * \pre values != AXOM_NULLPTR
    * \pre n_IDs >= 0
    */
-  void appendM( const IndexType* values, IndexType n_IDs, 
+  void appendM( const IndexType* values, IndexType n_IDs,
                 const IndexType* AXOM_NOT_USED(offsets)=AXOM_NULLPTR,
-                const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR ) 
+                const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR )
   {
     SLIC_ASSERT( values != AXOM_NULLPTR );
     SLIC_ASSERT( n_IDs >= 0 );
@@ -517,22 +517,22 @@ public:
    *
    * \param [in] values pointer to the values to set, of length at least STRIDE.
    * \param [in] ID the ID of the values to set.
-   * 
+   *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
-  void set( const IndexType* values, IndexType ID ) 
-  { 
+  void set( const IndexType* values, IndexType ID )
+  {
     SLIC_ASSERT( ID >= 0 );
     SLIC_ASSERT( ID < getNumberOfIDs() );
     SLIC_ASSERT( values != AXOM_NULLPTR );
-    m_values->set( values, 1, ID ); 
+    m_values->set( values, 1, ID );
   }
 
   /*!
    * \brief Sets the values of multiple IDs starting with the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  n_IDs * STRIDE.
    * \param [in] start_ID the ID to start at.``
    * \param [in] n_IDs the number of IDs to set.
@@ -551,36 +551,36 @@ public:
   /*!
    * \brief Insert the values of a new ID before the given ID.
    *
-   * \param [in] values pointer to the values to insert, of length at least 
+   * \param [in] values pointer to the values to insert, of length at least
    *  STRIDE.
    * \param [in] start_ID the ID to start at.
    * \param [in] n_values not used, does not need to be specified.
    * \param [in] type not used, does not need to be specified.
-   * 
+   *
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
-  void insert( const IndexType* values, IndexType ID, 
-               IndexType AXOM_NOT_USED(n_values)=0, 
+  void insert( const IndexType* values, IndexType ID,
+               IndexType AXOM_NOT_USED(n_values)=0,
                CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
   { insertM( values, ID, 1 ); }
 
   /*!
    * \brief Insert the values of multiple IDs before the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  n_IDs * STRIDE.
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
    * \param [in] offsets not used, does not need to be specified.
    * \param [in] types not used, does not need to be specified.
-   * 
+   *
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre n_IDs >= 0
    * \pre values != AXOM_NULLPTR
    */
   void insertM( const IndexType* values, IndexType start_ID, IndexType n_IDs,
-                const IndexType* AXOM_NOT_USED(offsets)=AXOM_NULLPTR, 
+                const IndexType* AXOM_NOT_USED(offsets)=AXOM_NULLPTR,
                 const CellType* AXOM_NOT_USED(types)=AXOM_NULLPTR )
   {
     SLIC_ASSERT( start_ID >= 0 );

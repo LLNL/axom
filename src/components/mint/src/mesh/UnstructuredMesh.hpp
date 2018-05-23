@@ -18,19 +18,22 @@
 #ifndef UNSTRUCTUREDMESH_HXX_
 #define UNSTRUCTUREDMESH_HXX_
 
-#include "mint/Mesh.hpp"
-#include "mint/MeshTypes.hpp"
-#include "mint/CellTypes.hpp"
-#include "mint/ConnectivityArray.hpp"
-#include "mint/MeshCoordinates.hpp"
-#include "mint/Array.hpp"
-#include "mint/config.hpp"
-
-#include "slic/slic.hpp"
-
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 
+// Mint includes
+#include "mint/Array.hpp"
+#include "mint/CellTypes.hpp"
+#include "mint/ConnectivityArray.hpp"
+#include "mint/Mesh.hpp"
+#include "mint/MeshCoordinates.hpp"
+#include "mint/MeshTypes.hpp"
+#include "mint/config.hpp"
+
+// Slic includes
+#include "slic/slic.hpp"
+
+// C/C++ includes
 #include <cstring> // for std::memcpy
 
 namespace axom
@@ -76,8 +79,8 @@ public:
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) )
-  { 
-    initialize(); 
+  {
+    initialize();
   }
 
   /*!
@@ -122,7 +125,7 @@ public:
    * \param [in] n_cells the number of cells in the mesh.
    * \param [in] cell_capacity the number of cells able to be stored in the
    *  provided connectivity array.
-   * \param [in] connectivity the connectivity array. Of length 
+   * \param [in] connectivity the connectivity array. Of length
    *  cell_capacity * cell_info[ cell_type ].num_nodes.
    * \param [in] n_nodes the number of nodes in the mesh.
    * \param [in] node_capacity the number of nodes able to be stored in the
@@ -130,7 +133,7 @@ public:
    * \param [in] x pointer to the x-coordinates.
    * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D.
    * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
-   * 
+   *
    * \note the provided coordinate arrays are to be of length node_capacity.
    * \note This constructor is only active when TOPO == Topology::SINGLE.
    *
@@ -142,23 +145,23 @@ public:
    * \post isExternal() == true
    */
   UnstructuredMesh( int ndims, CellType cell_type,
-                    IndexType n_cells, IndexType cell_capacity, 
-                    IndexType* connectivity, IndexType n_nodes, 
-                    IndexType node_capacity, double* x, double* y=AXOM_NULLPTR, 
+                    IndexType n_cells, IndexType cell_capacity,
+                    IndexType* connectivity, IndexType n_nodes,
+                    IndexType node_capacity, double* x, double* y=AXOM_NULLPTR,
                     double* z=AXOM_NULLPTR ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
                                                cell_capacity ) )
-  { 
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE, 
+  {
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE,
                 "This constructor is only active for single topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 3 || z != AXOM_NULLPTR );
-    
-    initialize(); 
+
+    initialize();
   }
 
   /*!
@@ -170,7 +173,7 @@ public:
    *  provided connectivity array.
    * \param [in] connectivity_capacity the number of vertices able to be stored
    *  in the provided connectivity array.
-   * \param [in] connectivity the connectivity array. Of length 
+   * \param [in] connectivity the connectivity array. Of length
    *  cell_capacity * cell_info[ cell_type ].num_nodes.
    * \param [in] offsets the offsets of each ID, of length cell_capacity + 1.
    * \param [in] types the array of ID types, of length cell_capacity.
@@ -180,7 +183,7 @@ public:
    * \param [in] x pointer to the x-coordinates.
    * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D.
    * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
-   * 
+   *
    * \note the provided coordinate arrays are to be of length node_capacity.
    * \note This constructor is only active when TOPO == Topology::SINGLE.
    *
@@ -192,17 +195,17 @@ public:
    * \post isExternal() == true
    */
   UnstructuredMesh( int ndims, IndexType n_cells, IndexType cell_capacity,
-                    IndexType connectivity_capacity, IndexType* connectivity, 
+                    IndexType connectivity_capacity, IndexType* connectivity,
                     IndexType* offsets, CellType* types, IndexType n_nodes,
                     IndexType node_capacity, double* x, double* y=AXOM_NULLPTR,
                     double* z=AXOM_NULLPTR ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
-    m_cell_connectivity( new CellConnectivity( n_cells, connectivity, offsets, 
-                                               types, cell_capacity,  
+    m_cell_connectivity( new CellConnectivity( n_cells, connectivity, offsets,
+                                               types, cell_capacity,
                                                connectivity_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED, 
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED,
                 "This constructor is only active for mixed topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
@@ -240,7 +243,7 @@ public:
     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
     m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
   {
-    SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH, 
+    SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
             "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
     if ( TOPO == Topology::MIXED )
@@ -261,12 +264,12 @@ public:
    * \param [in] coordset the name of the associated coordset group.
    * \param [in] node_capacity the number of nodes to allocate space for.
    * \param [in] cell_capacity the number of cells to allocate space for.
-   * \param [in] connectivity_capacity the space to allocate for the 
+   * \param [in] connectivity_capacity the space to allocate for the
    *  connectivity array.
    *
    * \note If a topology and coordset name is not provided a default name is
    *  used by the implementation.
-   * \note The first two constructors are only active when 
+   * \note The first two constructors are only active when
    *  TOPO == Topology::SINGLE and the last two are active only when
    *  TOPO == Topology::MIXED.
    *
@@ -285,12 +288,12 @@ public:
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH, group, topo, coordset ),
-    m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0, 
+    m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0,
                                         node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(), 
+    m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(),
                                                m_coordset, cell_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE, 
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE,
                 "This constructor is only active for single topology meshes." );
     initialize();
   }
@@ -298,7 +301,7 @@ public:
   UnstructuredMesh( int ndims, CellType cell_type, sidre::Group* group,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT ) :
-    UnstructuredMesh( ndims, cell_type, group, "", "", node_capacity, 
+    UnstructuredMesh( ndims, cell_type, group, "", "", node_capacity,
                       cell_capacity )
   {}
 
@@ -308,13 +311,13 @@ public:
                     IndexType cell_capacity=USE_DEFAULT,
                     IndexType connectivity_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH, group, topo, coordset ),
-    m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0, 
+    m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0,
                                         node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( getTopologyGroup(), m_coordset, 
+    m_cell_connectivity( new CellConnectivity( getTopologyGroup(), m_coordset,
                                                cell_capacity,
                                                connectivity_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED, 
+    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED,
                 "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
@@ -325,7 +328,7 @@ public:
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT,
                     IndexType connectivity_capacity=USE_DEFAULT ) :
-    UnstructuredMesh( ndims, group, "", "", node_capacity, cell_capacity, 
+    UnstructuredMesh( ndims, group, "", "", node_capacity, cell_capacity,
                       connectivity_capacity )
   {}
 
@@ -378,7 +381,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) 
+  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 )
                                                             const override final
   { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
@@ -1071,7 +1074,7 @@ public:
 private:
 
   /*!
-   * \brief Update the connectivity given an nodal insert at position pos of 
+   * \brief Update the connectivity given an nodal insert at position pos of
    *  length n.
    *
    * \param [in] pos the position of the insert.
@@ -1104,11 +1107,11 @@ private:
     m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
-    m_mesh_fields[ CELL_CENTERED ]->reserve( 
+    m_mesh_fields[ CELL_CENTERED ]->reserve(
                                          m_cell_connectivity->getIDCapacity() );
   }
 
-  using CellConnectivity = 
+  using CellConnectivity =
                       ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
   MeshCoordinates* m_coordinates;
