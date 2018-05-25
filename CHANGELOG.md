@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
+- Tight integration of Mint and Sidre. Mint can now operate on meshes stored in
+  Sidre and conform to the [computation mesh blueprint conventions](http://llnl-conduit.readthedocs.io/en/latest/).
 - Added a sphere-sphere intersection test to Primal.
-- Added a utility function to Quest to *weld* vertices in a triangle mesh that are within 
-  a given tolerance. After welding, all triangles incident in a vertex have the same 
+- Added a utility function to Quest to *weld* vertices in a triangle mesh that are within
+  a given tolerance. After welding, all triangles incident in a vertex have the same
   index for that vertex. This function has been integrated into the ``mesh_tester`` utility.
 - Adds a bounded All-Nearest-Neighbor query to Quest.  This query takes a list
-  of point locations and associated regions, and for each point reports the nearest 
+  of point locations and associated regions, and for each point reports the nearest
   point in a different region that is no farther than a max search radius.
 - Axom now exports [sparsehash version 2.0.3](https://github.com/sparsehash/sparsehash).
   Previously, it was only used internally.
@@ -23,7 +25,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Refactored and cleaned up Primal's Sphere class.
--  
+- Refactored Mint and removed all STL usage in preparation for GPUs.
+
 ### Removed
 - Axom no longer depends on the Boost library.
 
@@ -40,21 +43,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   hdf5 or Fortran on Windows.
 - A geometric Plane primitive in Primal. The Plane defines an oriented
   plane in 2D and 3D and provides support for operations such as projection of
-  a point to a plane, signed distance and orientation. 
-- Adds ability to configure Axom (in particular Sidre and Spio) without hdf5. 
+  a point to a plane, signed distance and orientation.
+- Adds ability to configure Axom (in particular Sidre and Spio) without hdf5.
 - Improved testing of [Scalable Checkpoint Restart (SCR)] library in Sidre.
 - Adds a Point-In-Cell query to Quest. The Point In Cell query finds the cell
   in a computational mesh that contains an arbitrary point in space.
-  If such a cell exists, it also finds the isoparametric coordinates of the 
+  If such a cell exists, it also finds the isoparametric coordinates of the
   point with respect to the cell. The query supports higher order
   [mfem](http://mfem.org) meshes.
 - Added cross-product and linspace operators to the vector utilities in ``numerics``
-  
+
 ### Changed
-- The root cmake file for Axom is now located in ``<axom>``'s root directory, 
+- The root cmake file for Axom is now located in ``<axom>``'s root directory,
   rather than in ``<axom>/src``
 - ``primal`` is no longer a header-only library.
-- Modified ``quest`` API to allow using a ``mint`` mesh that is already 
+- Modified ``quest`` API to allow using a ``mint`` mesh that is already
   resident in memory.
 
 ### Fixed
