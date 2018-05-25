@@ -28,6 +28,35 @@
 #define AXOM_MACROS_HPP_
 
 /*!
+ * \def AXOM_DEVICE
+ * \def AXOM_HOST_DEVICE
+ *
+ * \brief CUDA host/device macros for decorating functions/lambdas
+ *
+ * \note These will expand to the corresponding CUDA decorations when
+ *  compiled with -DAXOM_USE_CUDA
+ */
+#ifdef AXOM_USE_CUDA
+#define AXOM_DEVICE __device__
+#define AXOM_HOST_DEVICE __host__ __device__
+#else
+#define AXOM_DEVICE
+#define AXOM_HOST_DEVICE
+#endif
+
+/*!
+ * \def AXOM_LAMBDA
+ *
+ * \brief Convenience macro used for lambda capture by value.
+ * \note When CUDA is used, the macro always expands to a device lambda.
+ */
+#ifdef AXOM_USE_CUDA
+#define AXOM_LAMBDA [=] AXOM_DEVICE
+#else
+#define AXOM_LAMBDA [=]
+#endif
+
+/*!
  *
  * \def AXOM_NOT_USED(x)
  * \brief Macro used to silence compiler warnings in methods with unused
