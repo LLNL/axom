@@ -55,8 +55,8 @@ set(ENABLE_SIDRE OFF CACHE BOOL "")
 
 # Setup MPI
 set(ENABLE_MPI OFF CACHE BOOL "")
-set(MPI_HOME  "C:/Program Files/Microsoft HPC Pack 2008 R2" CACHE PATH "")
-set(MPI_GUESS_LIBRARY_NAME "MSMPI" CACHE STRING "")
+#set(MPI_HOME  "C:/Program Files/Microsoft HPC Pack 2008 R2" CACHE PATH "")
+#set(MPI_GUESS_LIBRARY_NAME "MSMPI" CACHE STRING "")
 
 
 ### Set some additional options
