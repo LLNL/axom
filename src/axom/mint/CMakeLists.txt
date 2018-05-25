@@ -38,6 +38,13 @@ set( mint_headers
     ## core
     core/Array.hpp
 
+    ## exec
+    execution/xargs.hpp
+    execution/interface.hpp
+    execution/policy.hpp
+    execution/internal/for_all_cells.hpp
+    execution/internal/for_all_nodes.hpp
+
     ## FEM classes
     fem/FEBasis.hpp
     fem/FEBasisTypes.hpp
@@ -115,6 +122,14 @@ set( mint_dependencies
 
 if ( ${AXOM_MINT_USE_SIDRE} )
     list(APPEND mint_dependencies sidre conduit)
+endif()
+
+if ( ${RAJA_FOUND} )
+    list(APPEND mint_dependencies raja)
+endif()
+
+if ( ${ENABLE_OPENMP} )
+    list(APPEND mint_dependencies openmp)
 endif()
 
 blt_add_library(
