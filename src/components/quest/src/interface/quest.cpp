@@ -55,7 +55,7 @@ namespace
 
 namespace slic = axom::slic;
 
-typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };

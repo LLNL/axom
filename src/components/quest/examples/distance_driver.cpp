@@ -59,7 +59,7 @@ using axom::primal::Vector;
 
 using quest::SignedDistance;
 
-typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
 static struct
 {

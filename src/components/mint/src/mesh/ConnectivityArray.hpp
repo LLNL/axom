@@ -41,6 +41,13 @@ namespace axom
 namespace mint
 {
 
+enum ConnectivityType
+{
+  NO_INDIRECTION,
+  INDIRECTION,
+  TYPED_INDIRECTION
+};
+
 /*!
  * \class ConnectivityArray
  *
@@ -117,7 +124,7 @@ namespace mint
  *  remains the same and the case where both differ.
  *
  * \tparam TYPE the type of the ConnectivityArray this class deals with the
- *  case of TYPE == ConnectivityType::NO_INDIRECTION.
+ *  case of TYPE == NO_INDIRECTION.
  *
  * \see ConnectivityArray_indirection.hpp
  * \see ConnectivityArray_typed_indirection.hpp
@@ -126,8 +133,7 @@ namespace mint
 template < ConnectivityType TYPE >
 class ConnectivityArray
 {
-  AXOM_STATIC_ASSERT_MSG( TYPE == ConnectivityType::NO_INDIRECTION,
-                          "pre: TYPE == NO_INDIRECTION" );
+  AXOM_STATIC_ASSERT( TYPE == NO_INDIRECTION );
 
 public:
 
@@ -607,7 +613,7 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#include "ConnectivityArray_indirection.hpp"
-#include "ConnectivityArray_typed_indirection.hpp"
+#include "mint/ConnectivityArray_indirection.hpp"
+#include "mint/ConnectivityArray_typed_indirection.hpp"
 
 #endif /* MINT_ConnectivityArray_HXX_ */

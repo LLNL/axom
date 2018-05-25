@@ -59,7 +59,7 @@ namespace quest
  * based on the cube root of the number of cells in the mesh.
  */
 void findTriMeshIntersections(
-  mint::UnstructuredMesh< mint::Topology::SINGLE >* surface_mesh,
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution = 0);
@@ -98,7 +98,7 @@ void findTriMeshIntersections(
  * \note The distance metric in this function uses the "max" norm (l_inf).
  */
 void weldTriMeshVertices(
-  mint::UnstructuredMesh< mint::Topology::SINGLE >** surface_mesh,
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >** surface_mesh,
   double eps);
 
 } // end namespace quest

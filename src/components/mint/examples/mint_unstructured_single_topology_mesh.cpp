@@ -56,7 +56,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   constexpr double PHI = 1.0;
 
   /* STEP 0: create the UnstructuredMesh */
-  mint::UnstructuredMesh< mint::Topology::SINGLE > mesh( DIMENSION, CELL_TYPE,
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE > mesh( DIMENSION, CELL_TYPE,
                                                          NUM_NODES, NUM_CELLS );
 
   /* STEP 1: Add fields to the nodes and cells.

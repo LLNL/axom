@@ -24,7 +24,6 @@
 #include "mint/config.hpp"     // for MINT_USE_SIDRE compile-time definition
 #include "mint/Extent.hpp"     // for mint::Extent
 #include "mint/MeshTypes.hpp"  // for mesh types
-#include "mint/CellTypes.hpp"  // for Topology
 
 // Slic includes
 #include "slic/slic.hpp"    // for SLIC macros
@@ -303,8 +302,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
 }
 
 //------------------------------------------------------------------------------
-Topology getMeshTopologyType( const sidre::Group* group,
-                              const std::string& topo )
+bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo )
 {
   SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
@@ -315,7 +313,7 @@ Topology getMeshTopologyType( const sidre::Group* group,
 
   if ( topology->getView( "type" )->getString() != std::string("unstructured") )
   {
-    return Topology::SINGLE;
+    return false;
   }
 
   SLIC_ERROR_IF( !topology->hasChildGroup( "elements" ),
@@ -331,11 +329,11 @@ Topology getMeshTopologyType( const sidre::Group* group,
 
   if ( shape_view->getString() == std::string("mixed") )
   {
-    return Topology::MIXED;
+    return true;
   }
   else
   {
-    return Topology::SINGLE;
+    return false;
   }
 }
 
@@ -366,21 +364,16 @@ void getUniformMesh( int dimension,
                                   "elements/origin/j0",
                                   "elements/origin/k0"   };
 
-  for ( int i=0 ; i < dimension ; ++i )
+  for ( int i=0; i < dimension; ++i )
   {
     origin [ i ] = c->getView( origin_names[ i ] )->getScalar();
     spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
 
-    const int idx    = i*2;
-    const int N      = c->getView( dim_names[ i ] )->getScalar();
-    const int offset = t->getView( topo_names[ i ] )->getScalar();
-
-// FIXME: the following leads to ambiguous type conversion
-//    const int64 N      = c->getView( dim_names[ i ] )->getScalar();
-//    const int64 offset = t->getView( topo_names[ i ] )->getScalar();
-
-    extent[ idx ]    = offset;
-    extent[ idx+1 ]  = offset + N - 1;
+    const int idx      = i*2;
+    const IndexType N  = c->getView( dim_names[ i ] )->getScalar();
+    const int64 offset = t->getView( topo_names[ i ] )->getScalar();
+    extent[ idx ]      = offset;
+    extent[ idx+1 ]    = offset + N - 1;
   }
 
 }
@@ -410,20 +403,13 @@ void setUniformMesh( int dim,
                                   "elements/origin/k0"   };
 
   coordset->createView( "type" )->setString( "uniform" );
-  for ( int i=0 ; i < dim ; ++i )
+  for ( int i=0; i < dim; ++i )
   {
     coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
     coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );
     coordset->createView( spacing_names[ i ] )->setScalar( spacing[ i ] );
-
-    const int min = extent->min( i );
-    topology->createView( topo_names[ i ] )->setScalar( min );
-
-// FIXME: the following leads to ambigous type conversion
-//    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
-
+    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
   } // END for
-
 }
 
 //------------------------------------------------------------------------------
@@ -449,8 +435,8 @@ void getCurvilinearMeshExtent( int dim,
 
   for ( int i=0 ; i < dim ; ++i )
   {
-    const int Ni       = t->getView( dim_names[ i ] )->getScalar();
-    const int i0       = t->getView( origin_names[ i ] )->getScalar();
+    const IndexType Ni = t->getView( dim_names[ i ] )->getScalar();
+    const int64 i0     = t->getView( origin_names[ i ] )->getScalar();
     const int offset   = i*2;
     extent[ offset ]   = i0;
     extent[ offset+1 ] = i0 + Ni;
@@ -478,11 +464,8 @@ void setCurvilinearMeshExtent( int dim,
 
   for ( int i=0 ; i < dim ; ++i )
   {
-    topology->createView( dim_names[ i ] )->setScalar( extent->size( i )-1 );
-
-    // FIXME: cannot set int64 values in sidre
-    int min = static_cast< int >( extent->min( i ) );
-    topology->createView( origin_names[ i ] )->setScalar( min );
+    topology->createView( dim_names[ i ] )->setScalar( extent->size( i ) - 1 );
+    topology->createView( origin_names[ i ] )->setScalar( extent->min( i ) );
   }
 
 }
@@ -515,13 +498,12 @@ void getRectilinearMeshExtent( int dim,
   {
     mint::Array< double > coord( c->getView( coords[ i ] ) );
     const IndexType Ni = coord.size();
-    const int i0       = t->getView( origin_names[ i ] )->getScalar( );
+    const int64 i0     = t->getView( origin_names[ i ] )->getScalar( );
 
     const int offset   = i*2;
     extent[ offset ]   = i0;
     extent[ offset+1 ] = i0 + ( Ni-1 );
   }
-
 }
 
 //------------------------------------------------------------------------------
@@ -542,11 +524,8 @@ void setRectilinearMeshExtent( int dim,
 
   for ( int i=0 ; i < dim ; ++i )
   {
-    // FIXME: cannot set int64 values in sidre
-    int i0 = static_cast< int >( extent->min( i ) );
-    topology->createView( origin_names[ i ] )->setScalar( i0 );
+    topology->createView( origin_names[ i ] )->setScalar( extent->min( i ) );
   }
-
 }
 
 #endif

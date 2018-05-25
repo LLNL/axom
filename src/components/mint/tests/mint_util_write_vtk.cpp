@@ -1131,8 +1131,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh3D )
   const IndexType nz = 13;
   const IndexType nNodes = nx * ny * nz;
   const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-  UnstructuredMesh< Topology::SINGLE >* u_mesh =
-    new UnstructuredMesh< Topology::SINGLE >( 3, HEX, nNodes, nCells );
+  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( 3, HEX, nNodes, nCells );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1195,8 +1195,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh2D )
   const IndexType ny = 12;
   const IndexType nNodes = nx * ny;
   const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< Topology::SINGLE >* u_mesh =
-    new UnstructuredMesh< Topology::SINGLE >( 2, QUAD, nNodes, nCells );
+  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( 2, QUAD, nNodes, nCells );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1245,8 +1245,8 @@ TEST( mint_util_write_vtk, UnstructuredMesh1D )
 {
   const std::string path = "unstructuredMesh1D.vtk";
   const IndexType nx = 11;
-  UnstructuredMesh< Topology::SINGLE >* u_mesh =
-    new UnstructuredMesh< Topology::SINGLE >( 1, SEGMENT, nx, nx - 1 );
+  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( 1, SEGMENT, nx, nx - 1 );
 
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
@@ -1291,8 +1291,8 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
   const IndexType nNodes = nx * ny * nz;
   const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
 
-  UnstructuredMesh< Topology::MIXED >* u_mesh =
-    new UnstructuredMesh< Topology::MIXED >( 3, nNodes, nCells );
+  UnstructuredMesh< MIXED_SHAPE >* u_mesh =
+    new UnstructuredMesh< MIXED_SHAPE >( 3, nNodes, nCells );
 
   /* Create the nodes for the hexahedron. */
   for ( IndexType idx = 0 ; idx < nx ; ++idx )
@@ -1405,8 +1405,8 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
   const IndexType ny = 2;
   const IndexType nNodes = nx * ny;
   const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< Topology::MIXED >* u_mesh =
-    new UnstructuredMesh< Topology::MIXED >( 2, nNodes, nCells );
+  UnstructuredMesh< MIXED_SHAPE >* u_mesh =
+    new UnstructuredMesh< MIXED_SHAPE >( 2, nNodes, nCells );
 
   /* Create the nodes for the quad. */
   for ( IndexType idx = 0 ; idx < nx ; ++idx )

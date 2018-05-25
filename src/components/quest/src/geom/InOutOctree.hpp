@@ -878,7 +878,7 @@ public:
       for(mint::IndexType i=0 ; i< numOrigTris ; ++i)
       {
         // Grab relation from mesh
-        using UMesh = mint::UnstructuredMesh< mint::Topology::SINGLE >;
+        using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
         mint::IndexType* vertIds =
             static_cast< UMesh* >(m_surfaceMesh)->getCell( i );
 
@@ -921,7 +921,7 @@ public:
         m_surfaceMesh = AXOM_NULLPTR;
       }
 
-      typedef mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+      typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
       UMesh * triMesh =
           new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size() );
 
@@ -2357,7 +2357,7 @@ public:
   typedef axom::slam::Map<int> LeafIntMap;
   typedef axom::slam::Map<GridPt> LeafGridPtMap;
 
-  typedef mint::UnstructuredMesh< mint::Topology::MIXED > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::MIXED_SHAPE > DebugMesh;
 
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 

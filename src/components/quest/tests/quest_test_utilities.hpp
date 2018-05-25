@@ -173,7 +173,7 @@ axom::mint::Mesh * make_octahedron_mesh()
   }
 
   // Now create an unstructured triangle mesh from the two arrays
-  typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+  typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
   UMesh * triMesh = new UMesh(3, mint::TRIANGLE);
 
   // insert verts
@@ -202,7 +202,7 @@ axom::mint::Mesh * make_octahedron_mesh()
  */
 axom::mint::Mesh* make_tetrahedron_mesh()
 {
-  typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+  typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
   UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
   surface_mesh->appendNode( -0.000003, -0.000003, 19.999999);

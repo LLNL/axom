@@ -56,7 +56,7 @@ namespace mint
  */
 
 template <>
-class ConnectivityArray< ConnectivityType::TYPED_INDIRECTION >
+class ConnectivityArray< TYPED_INDIRECTION >
 {
 public:
 

@@ -66,7 +66,7 @@
 
 using namespace axom;
 
-typedef mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
@@ -126,7 +126,7 @@ void testIntersectionOnRegularGrid()
 
   TriangleType unitTri( ptX, ptY, ptZ );
 
-  typedef mint::UnstructuredMesh< mint::Topology::MIXED > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::MIXED_SHAPE > DebugMesh;
   DebugMesh * debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh

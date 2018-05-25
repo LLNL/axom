@@ -101,7 +101,7 @@ void check_append_nodes( const Mesh* mesh, IndexType x_extent,
  * \param [in] x_extent the number of nodes in the x direction.
  * \param [in] y_extent the number of nodes in the y direction.
  */
-void append_cells( UnstructuredMesh< Topology::SINGLE >* mesh,
+void append_cells( UnstructuredMesh< SINGLE_SHAPE >* mesh,
                    IndexType x_extent, IndexType y_extent )
 {
   for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
@@ -170,7 +170,7 @@ inline bool appendQuad( mint::IndexType i, mint::IndexType j )
  * \param [in] x_extent the number of nodes in the x direction.
  * \param [in] y_extent the number of nodes in the y direction.
  */
-void append_cells( UnstructuredMesh< Topology::MIXED >* mesh,
+void append_cells( UnstructuredMesh< MIXED_SHAPE >* mesh,
                    IndexType x_extent, IndexType y_extent )
 {
   for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
@@ -563,8 +563,8 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
   sidre::Group* root = ds.getRoot();
 
   /* STEP 1: create the UnstructuredMesh */
-  UnstructuredMesh< Topology::SINGLE >* mesh =
-    new UnstructuredMesh< Topology::SINGLE >( DIMENSION, CELL_TYPE, root );
+  UnstructuredMesh< SINGLE_SHAPE >* mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( DIMENSION, CELL_TYPE, root );
   mesh->setBlockId( BLOCKID );
   mesh->setPartitionId( PARTID );
 
@@ -625,8 +625,8 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
   internal::check_cell_fields( n_cells, p_cpy );
 
   /* STEP 7: down-cast and test the UnstructuredMesh object. */
-  const UnstructuredMesh< Topology::SINGLE >* M =
-    dynamic_cast< const UnstructuredMesh< Topology::SINGLE >* >( m );
+  const UnstructuredMesh< SINGLE_SHAPE >* M =
+    dynamic_cast< const UnstructuredMesh< SINGLE_SHAPE >* >( m );
   EXPECT_EQ( M->getCellConnectivityArray(), connec );
 
   /* STEP 8: de-allocate. */
@@ -648,8 +648,8 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   sidre::Group* root = ds.getRoot();
 
   /* STEP 1: create the UnstructuredMesh */
-  UnstructuredMesh< Topology::MIXED >* mesh =
-    new UnstructuredMesh< Topology::MIXED >( DIMENSION, root );
+  UnstructuredMesh< MIXED_SHAPE >* mesh =
+    new UnstructuredMesh< MIXED_SHAPE >( DIMENSION, root );
   mesh->setBlockId( BLOCKID );
   mesh->setPartitionId( PARTID );
 
@@ -714,8 +714,8 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   internal::check_cell_fields( n_cells, p_cpy );
 
   /* STEP 7: down-cast and test the UnstructuredMesh object. */
-  const UnstructuredMesh< Topology::MIXED >* M =
-    dynamic_cast< const UnstructuredMesh< Topology::MIXED >* >( m );
+  const UnstructuredMesh< MIXED_SHAPE >* M =
+    dynamic_cast< const UnstructuredMesh< MIXED_SHAPE >* >( m );
   EXPECT_EQ( M->getCellConnectivitySize(), connec_size );
   EXPECT_EQ( M->getCellConnectivityCapacity(), connec_capacity );
   EXPECT_EQ( M->getCellConnectivityArray(), connec );

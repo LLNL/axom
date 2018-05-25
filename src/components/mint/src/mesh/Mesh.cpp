@@ -56,7 +56,6 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo )
   blueprint::getMeshTypeAndDimension( mesh_type, dimension, group, topo );
 
   Mesh* m = AXOM_NULLPTR;
-  Topology topo_type;
   switch ( mesh_type )
   {
   case STRUCTURED_CURVILINEAR_MESH:
@@ -69,15 +68,13 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo )
     m = new UniformMesh( group, topo );
     break;
   case UNSTRUCTURED_MESH:
-    topo_type = blueprint::getMeshTopologyType( group, topo );
-    if ( topo_type == Topology::SINGLE )
+    if ( blueprint::hasMixedCellTypes( group, topo ) )
     {
-      m = new UnstructuredMesh< Topology::SINGLE >( group, topo );
+      m = new UnstructuredMesh< MIXED_SHAPE >( group, topo );
     }
     else
     {
-      SLIC_ASSERT( topo_type == Topology::MIXED );
-      m = new UnstructuredMesh< Topology::MIXED >( group, topo );
+      m = new UnstructuredMesh< SINGLE_SHAPE >( group, topo );
     }
     break;
   case PARTICLE_MESH:

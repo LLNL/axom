@@ -35,7 +35,7 @@
 #include <fstream>
 #include <sstream>
 
-typedef axom::mint::UnstructuredMesh< axom::mint::Topology::SINGLE > UMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE > UMesh;
 
 std::string vecToString(const std::vector<int> & v)
 {

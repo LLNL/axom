@@ -44,7 +44,7 @@ namespace axom
 namespace quest
 {
 
-typedef mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;

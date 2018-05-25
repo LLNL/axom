@@ -37,7 +37,7 @@ using axom::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef axom::mint::UnstructuredMesh< axom::mint::Topology::SINGLE > UMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE > UMesh;
 typedef axom::mint::UniformMesh UniformMesh;
 
 using axom::primal::BoundingBox;

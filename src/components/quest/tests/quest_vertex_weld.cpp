@@ -30,7 +30,7 @@ namespace
 static const int DIM = 3;
 static const double EPS = 1e-6;
 
-typedef axom::mint::UnstructuredMesh< axom::mint::Topology::SINGLE > UMesh;
+typedef axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE > UMesh;
 typedef axom::primal::Point<double, 3> Point3;
 
 /*! Insert a vertex with coordinates (x,y,z) into \a mesh  */

@@ -27,44 +27,10 @@ namespace mint
 
 constexpr int MAX_NUM_NODES = 27;
 
-enum class Topology : unsigned char
-{
-  SINGLE,
-  MIXED
-};
-
-
-enum class ConnectivityType : unsigned char
-{
-  NO_INDIRECTION,
-  INDIRECTION,
-  TYPED_INDIRECTION
-};
-
-
-template < Topology TOPO >
-struct topology_traits {};
-
-template <>
-struct topology_traits< Topology::SINGLE >
-{
-  constexpr static ConnectivityType cell_connec =
-    ConnectivityType::NO_INDIRECTION;
-};
-
-template <>
-struct topology_traits< Topology::MIXED >
-{
-  constexpr static ConnectivityType cell_connec =
-    ConnectivityType::TYPED_INDIRECTION;
-};
-
-
 /*!
  * \brief Enumerates all cell types supported by Mint
  */
-using CellType = signed char;
-enum CellTypes : CellType
+enum CellType : signed char
 {
   UNDEFINED_CELL = -1,    ///< UNDEFINED
 

@@ -209,7 +209,7 @@ void STLReader::read()
 
 //------------------------------------------------------------------------------
 void STLReader::getMesh(
-  axom::mint::UnstructuredMesh< mint::Topology::SINGLE >* mesh )
+  axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh )
 {
   /* Sanity checks */
   SLIC_ASSERT( mesh != AXOM_NULLPTR );

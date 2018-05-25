@@ -42,6 +42,27 @@ namespace axom
 namespace mint
 {
 
+enum Topology
+{
+  SINGLE_SHAPE,
+  MIXED_SHAPE
+};
+
+template < int TOPO >
+struct topology_traits {};
+
+template <>
+struct topology_traits< SINGLE_SHAPE >
+{
+  constexpr static ConnectivityType cell_connec = NO_INDIRECTION;
+};
+
+template <>
+struct topology_traits< MIXED_SHAPE >
+{
+  constexpr static ConnectivityType cell_connec = TYPED_INDIRECTION;
+};
+
 /*!
  * \class UnstructuredMesh
  *
@@ -113,7 +134,7 @@ template < Topology TOPO >
 class UnstructuredMesh : public Mesh
 {
 
-  AXOM_STATIC_ASSERT( TOPO == Topology::SINGLE || TOPO == Topology::MIXED );
+  AXOM_STATIC_ASSERT( TOPO == SINGLE_SHAPE || TOPO == MIXED_SHAPE );
 
 public:
 
@@ -133,14 +154,14 @@ public:
    * \param [in] node_capacity the number of nodes to allocate space for.
    * \param [in] cell_capacity the number of cells to allocate space for.
    *
-   * \note This constructor is only active when TOPO == Topology::SINGLE.
+   * \note This constructor is only active when TOPO == SINGLE_SHAPE.
    *
    * \post getCellType() == cell_type
    * \post getNumberOfNodes() == 0
    * \post getNumberOfCells() == 0
    */
   template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::SINGLE,
+  UnstructuredMesh( typename std::enable_if< DUMMY == SINGLE_SHAPE,
                                              int >::type ndims,
                     CellType cell_type,
                     IndexType node_capacity=USE_DEFAULT,
@@ -161,14 +182,14 @@ public:
    * \param [in] connectivity_capacity the space to allocate for the
    *  connectivity array.
    *
-   * \note This constructor is only active when TOPO == Topology::MIXED.
+   * \note This constructor is only active when TOPO == MIXED_SHAPE.
    *
    * \post getCellType() == UNDEFINED_CELL
    * \post getNumberOfNodes() == 0
    * \post getNumberOfCells() == 0
    */
   template < Topology DUMMY = TOPO >
-  UnstructuredMesh( typename std::enable_if< DUMMY == Topology::MIXED,
+  UnstructuredMesh( typename std::enable_if< DUMMY == MIXED_SHAPE,
                                              int >::type ndims,
                     IndexType node_capacity=USE_DEFAULT,
                     IndexType cell_capacity=USE_DEFAULT,
@@ -205,7 +226,7 @@ public:
    * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
    *
    * \note the provided coordinate arrays are to be of length node_capacity.
-   * \note This constructor is only active when TOPO == Topology::SINGLE.
+   * \note This constructor is only active when TOPO == SINGLE_SHAPE.
    *
    * \post getCellType() == cell_type
    * \post getNumberOfCells() == n_cells
@@ -224,7 +245,7 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
                                                cell_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE,
+    AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
@@ -255,7 +276,7 @@ public:
    * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
    *
    * \note the provided coordinate arrays are to be of length node_capacity.
-   * \note This constructor is only active when TOPO == Topology::SINGLE.
+   * \note This constructor is only active when TOPO == SINGLE_SHAPE.
    *
    * \post getCellType() == UNDEFINED_CELL
    * \post getNumberOfCells() == n_cells
@@ -275,7 +296,7 @@ public:
                                                types, cell_capacity,
                                                connectivity_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED,
+    AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
@@ -316,7 +337,7 @@ public:
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
                    "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
-    if ( TOPO == Topology::MIXED )
+    if ( TOPO == MIXED_SHAPE )
     {
       m_has_mixed_topology = true;
     }
@@ -340,8 +361,8 @@ public:
    * \note If a topology and coordset name is not provided a default name is
    *  used by the implementation.
    * \note The first two constructors are only active when
-   *  TOPO == Topology::SINGLE and the last two are active only when
-   *  TOPO == Topology::MIXED.
+   *  TOPO == SINGLE_SHAPE and the last two are active only when
+   *  TOPO == MIXED_SHAPE.
    *
    * \pre group != AXOM_NULLPTR.
    * \pre group->getNumGroups() == 0
@@ -363,7 +384,7 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(),
                                                m_coordset, cell_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::SINGLE,
+    AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
     initialize();
   }
@@ -387,7 +408,7 @@ public:
                                                cell_capacity,
                                                connectivity_capacity ) )
   {
-    AXOM_STATIC_ASSERT_MSG( TOPO == Topology::MIXED,
+    AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
@@ -447,7 +468,7 @@ public:
    * \brief Return the number of nodes associated with the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored if TOPO == Topology::SINGLE.
+   *  ignored if TOPO == SINGLE_SHAPE.
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
@@ -459,7 +480,7 @@ public:
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored if TOPO == Topology::SINGLE. If TOPO == Topology::MIXED and no
+   *  ignored if TOPO == SINGLE_SHAPE. If TOPO == MIXED_SHAPE and no
    *  cellID is provided the returned type is UNDEFINED_CELL.
    *
    * \pre 0 <= cellID < getNumberOfCells()
@@ -646,7 +667,7 @@ public:
    *
    * \param [in] cell_capacity the number of cells to reserve space for.
    * \param [in] connectivity_capacity the ammount of space to reserve in the
-   *  connectivity array. Ignored if TOPO == Topology::SINGLE.
+   *  connectivity array. Ignored if TOPO == SINGLE_SHAPE.
    *
    * \post getCellCapacity() >= cell_capacity
    */
@@ -814,7 +835,7 @@ public:
   /*!
    * \brief Return a constant pointer to the offset array, of length
    *  getNumberOfCells() + 1. Returns AXOM_NULLPTR if
-   *  TOPO == Topology::SINGLE.
+   *  TOPO == SINGLE_SHAPE.
    */
   const IndexType* getCellOffsetsArray() const
   { return m_cell_connectivity->getOffsetPtr(); }
@@ -822,7 +843,7 @@ public:
   /*!
    * \brief Return a constant pointer to the cell types array, of length
    *  getNumberOfCells(). Returns AXOM_NULLPTR if
-   *  TOPO == Topology::SINGLE.
+   *  TOPO == SINGLE_SHAPE.
    */
   const CellType* getCellTypesArray() const
   { return m_cell_connectivity->getTypePtr(); }
@@ -832,9 +853,9 @@ public:
    *
    * \param [in] connec the connectivity of the new cell.
    * \param [in] n_values the number of values in the connectivity, ignored
-   *  if TOPO == Topology::SINGLE.
+   *  if TOPO == SINGLE_SHAPE.
    * \param [in] type the type of the new cell, ignored if
-   *  TOPO == Topology::SINGLE.
+   *  TOPO == SINGLE_SHAPE.
    *
    * \pre connec != AXOM_NULLPTR
    */
@@ -852,9 +873,9 @@ public:
    * \param [in] connec the connectivity of the new cells.
    * \param [in] n_cells the number of cells to append.
    * \param [in] offsets the offsets array of the cells to append, ignored
-   *  if TOPO == Topology::SINGLE.
+   *  if TOPO == SINGLE_SHAPE.
    * \param [in] types the types array of the new cells, ignored if
-   *  TOPO == Topology::SINGLE.
+   *  TOPO == SINGLE_SHAPE.
    *
    * \pre connec != AXOM_NULLPTR
    * \pre n_cells >= 0
@@ -873,9 +894,9 @@ public:
    * \param [in] connec the connectivity of the new cell.
    * \param [in] ID the position to insert at.
    * \param [in] n_values the number of values in the connectivity, ignored
-   *  if TOPO == Topology::SINGLE.
+   *  if TOPO == SINGLE_SHAPE.
    * \param [in] type the type of the new cells, ignored if
-   *  TOPO == Topology::SINGLE.
+   *  TOPO == SINGLE_SHAPE.
    *
    * \pre connec != AXOM_NULLPTR
    * \pre 0 <= ID <= getNumberOfCells()
@@ -896,9 +917,9 @@ public:
    * \param [in] start_ID the position to insert at.
    * \param [in] n_cells the number of cells to insert
    * \param [in] offsets the offsets array of the cells to append, ignored
-   *  if TOPO == Topology::SINGLE.
+   *  if TOPO == SINGLE_SHAPE.
    * \param [in] types the types array of the new cells, ignored if
-   *  TOPO == Topology::SINGLE.
+   *  TOPO == SINGLE_SHAPE.
    *
    * \pre connec != AXOM_NULLPTR
    * \pre 0 <= start_ID <= getNumberOfCells()

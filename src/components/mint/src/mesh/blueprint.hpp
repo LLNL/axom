@@ -200,8 +200,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                               const std::string& topology="" );
 
 /*
- * \brief Return the Topology type given a root group that conforms to the
- *  computational mesh blueprint and a topology name.
+ * \brief Return the whether the mesh has mixed cell types.
  *
  * \param [in] group pointer to the root group.
  * \param [in] topo optional argument corresponding to the mesh topology.
@@ -209,8 +208,7 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
  * \note If a topology is not specified, the code assumes that the first group
  *  under the 'topologies' group corresponds to the mesh topology.
  */
-Topology getMeshTopologyType( const sidre::Group* group,
-                              const std::string& topo="" );
+bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
 
 /*!
  * \brief Returns the origin, spacing and extent of a uniform mesh from the

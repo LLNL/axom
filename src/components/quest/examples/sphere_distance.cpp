@@ -67,7 +67,7 @@ using axom::primal::Sphere;
 
 
 static const int NDIMS = 3;
-typedef axom::mint::UnstructuredMesh< mint::Topology::SINGLE > UMesh;
+typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
 static struct
 {
