@@ -562,6 +562,24 @@ public:
   { return m_has_mixed_topology; }
 
   /*!
+   * \brief Returns true if the mesh type is structured.
+   * \return status true if the mesh type is structured, else, false.
+   */
+  inline bool isStructured() const
+  {
+    return ( (m_type==STRUCTURED_CURVILINEAR_MESH) ||
+             (m_type==STRUCTURED_RECTILINEAR_MESH) ||
+             (m_type==STRUCTURED_UNIFORM_MESH) );
+  }
+
+  /*!
+   * \brief Returns true if the mesh type is unstructured.
+   * \return status true if the mesh type is unstructured, else, false.
+   */
+  inline bool isUnstructured() const
+  { return ( m_type==UNSTRUCTURED_MESH); }
+
+  /*!
    * \brief Checks if this Mesh instance is associated with a Sidre Group.
    * \return status true if the Mesh is associated with a group in a Sidre
    *  hierarchy, else, false.
