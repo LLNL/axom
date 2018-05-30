@@ -67,7 +67,7 @@ IndexType calc_new_capacity( Array< T > & v, IndexType increase )
  * \return the new capacity.
  */
 template< typename T >
-void check_equality( const Array< T >& lhs, const Array< T >& rhs )
+void check_copy( const Array< T >& lhs, const Array< T >& rhs )
 {
   EXPECT_EQ( lhs.size(), rhs.size() );
   EXPECT_EQ( lhs.numComponents(), rhs.numComponents() );
@@ -767,7 +767,7 @@ void check_sidre( Array< T >& v )
   Array< T > cpy( const_cast< sidre::View* >( v.getView() ) );
   cpy.setResizeRatio( v.getResizeRatio() );
 
-  check_equality( v, cpy );
+  check_copy( v, cpy );
   cpy.resize(0);
   check_storage( cpy );
   check_insert( cpy );
