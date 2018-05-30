@@ -254,11 +254,11 @@ private:
 
     /* Copy the -y side, which is contiguous. */
     const IndexType memcpy_size = size[0] * sizeof(double);
-    std:: memcpy( new_temp, prev_temp, memcpy_size );
+    std::memcpy( new_temp, prev_temp, memcpy_size );
 
     /* Copy the +y side, which is contiguous. */
     const IndexType offset = (size[1] - 1) * size[0];
-    std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
+    std::memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
     for ( IndexType idx = size[0] ; idx < offset ; idx += size[0] )
@@ -362,30 +362,30 @@ private:
 } /* end namespace axom */
 
 const std::string help_string =
-  "\nUsage: ./mint_heat_equation_ex [options]\n"                                 \
-  "-h, -help\n"                                                                  \
-  "\tPrint out this message then exit.\n"                                        \
-  "-p -path PATH\n"                                                              \
-  "\tThe base bath of the dump files. The files will be written to\n"            \
-  "path_#.vtk where # is the dump number.\n"                                     \
-  "-s, -spacing FLOAT\n"                                                         \
-  "\tSet the mesh spacing, must be greater than 0.\n."                           \
-  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                      \
-  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n"   \
-  "\tand y1 < y2.\n"                                                             \
-  "-a FLOAT, -amplitude FLOAT\n"                                                 \
-  "\tSet the amplitude of the gaussian pulse.\n"                                 \
-  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                          \
-  "\tSet the mean of the gaussian pulse. Format is x y.\n"                       \
-  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                        \
-  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"        \
-  "-alpha FLOAT\n"                                                               \
-  "\tThe conductivity.\n"                                                        \
-  "-dt FLOAT\n"                                                                  \
-  "\tThe time step, must be greater than zero.\n"                                \
-  "-t FLOAT\n"                                                                   \
-  "\tThe time to run the simulation, must be greater than zero.\n"               \
-  "-d INT, -dumpPeriod INT\n"                                                    \
+  "\nUsage: ./mint_heat_equation_ex [options]\n"                               \
+  "-h, -help\n"                                                                \
+  "\tPrint out this message then exit.\n"                                      \
+  "-p -path PATH\n"                                                            \
+  "\tThe base bath of the dump files. The files will be written to\n"          \
+  "\tpath_#.vtk where # is the dump number.\n"                                 \
+  "-s, -spacing FLOAT\n"                                                       \
+  "\tSet the mesh spacing, must be greater than 0.\n."                         \
+  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT FLOAT\n"              \
+  "\tSet the bounding box for the mesh. Format is lower_x lower_y upper_x\n"   \
+  "\tupper_y.\n"                                                               \
+  "-a FLOAT, -amplitude FLOAT\n"                                               \
+  "\tSet the amplitude of the gaussian pulse.\n"                               \
+  "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                        \
+  "\tSet the mean of the gaussian pulse. Format is x y.\n"                     \
+  "-c FLOAT FLOAT FLOAT, -covariance FLOAT FLOAT FLOAT\n"                      \
+  "\tSet the covariance of the gaussian. Format is var_x var_y var_xy.\n"      \
+  "-alpha FLOAT\n"                                                             \
+  "\tThe conductivity.\n"                                                      \
+  "-dt FLOAT\n"                                                                \
+  "\tThe time step, must be greater than zero.\n"                              \
+  "-t FLOAT\n"                                                                 \
+  "\tThe time to run the simulation, must be greater than zero.\n"             \
+  "-d INT, -dumpPeriod INT\n"                                                  \
   "\tThe number of cycles to wait between writing a dump file.\n";
 
 /*!
