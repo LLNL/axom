@@ -11,8 +11,8 @@ using namespace std;
 using namespace axom::multimat;
 
 
-MultiMatArray::MultiMatArray(std::string name, FieldMapping f)
-  :m_arrayName(name),  m_fieldMapping(f)
+MultiMatArray::MultiMatArray(MultiMat* m, std::string name, FieldMapping f)
+  :m_arrayName(name),  m_fieldMapping(f), mm(m)
 { }
 
 //axom::multimat::MultiMatArray::MultiMatArray(MultiMat * m, std::string name, SetType * s, FieldMapping f)
