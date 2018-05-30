@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_ARRAY_HXX_
-#define MINT_ARRAY_HXX_
+#ifndef MINT_ARRAY_HPP_
+#define MINT_ARRAY_HPP_
 
 #include "axom/Macros.hpp"           // for disable copy/assignment macro
 #include "axom_utils/Utilities.hpp"  // for memory allocation functions
@@ -988,4 +988,4 @@ inline void Array< T >::reallocViewData()
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* MINT_UTILS_ARRAY_HXX_ */
+#endif /* MINT_ARRAY_HPP_ */
