@@ -9,7 +9,7 @@
 using namespace std;
 using namespace axom::multimat;
 
-using MM_doubleArrType = MultiMatTypedArray<double>;
+//using MM_doubleArrType = MultiMatTypedArray<double>;
 
 #define ITERMAX 10  //define how many iterations to run test code
 
@@ -634,12 +634,12 @@ void test_code() {
 
   //Set-up
   MultiMat mm;
-  int nmats = 50;
-  int ncells = 2000;
+  int nmats = 100;
+  int ncells = 20000;
   int nfilled = 0;
   std::vector<bool> cellMatRel(nmats * ncells, false);
   for (int i = 0; i < nmats*ncells; i++) {
-    if (i % 9 == 1) {
+    if (i % 3 == 1) {
       cellMatRel[i] = true;
       nfilled++;
     }
@@ -703,22 +703,112 @@ void test_code() {
   assert(x_sum == sum);
 
     
-  // ------------ return index set --------------
-  for (int i = 0; i < mm.m_ncells; i++)
+  // ------- Accessing using MMArray typed----------
+  printf("\nAccess through MMTypedArray (dense access)\n");
+  sum = 0;
+  start_timer();
   {
-    MultiMat::RelationSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
-  //  RangeSet indexSet = arr5->getIndexingSet(i); //the indices into the maps
-  //  for (int j = 0; j < OrderedSet.size(); j++)
-  //  {
-  //    int mat_id = setOfMaterialsInThisCell(j);
-  //    double val = arr5->getValue(i, indexSet(j));
-  //    sum += val;
-  //  }
+    MultiMatTypedArray<double>* cellarr = mm.getFieldArray<double>("Cell Array");
+    for (int i = 0; i < mm.m_ncells; i++) {
+      sum += cellarr->getValue(i);                  //<----
+    }
   }
+  cout << end_timer() << "\t";
+  assert(c_sum == sum);
+
+  sum = 0;
+  start_timer();
+  {
+    MultiMatTypedArray<double>* cellmatArr = mm.getFieldArray<double>("CellMat Array");
+    for (int i = 0; i < mm.m_ncells; i++) {
+      for (int m = 0; m < mm.m_nmats; m++) {
+        sum += cellmatArr->getValue(i, m);          //<---- warning: extra for-loop in the call!
+      }
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(x_sum == sum);
+
+  
+  // --------- returning SLAM map -----------
+  printf("\nAccess from SLAM map\n");
+  sum = 0;
+  start_timer();
+  {
+    //get it from MultiMai with array name
+    //const MultiMat::MapType<double>& map = mm.getMap<double>("Cell Array");
+   
+    //MultiMatArray* cellarr = mm.getFieldArray("Cell Array");
+
+    //Get a MapBaseType and cast it
+    //const MultiMatArray::MapBaseType* map1 = cellarr->getMap();
+    //const MultiMatArray::MapType<double>& map = *dynamic_cast<const MultiMatArray::MapType<double>*>(map1);
+
+    //from MMArray
+    //const MultiMatArray::MapType<double>& map = cellarr->getMap<double>();
+
+    MultiMatTypedArray<double>* cellarr = mm.getFieldArray<double>("Cell Array");
+    const MultiMatArray::MapType<double>& map = cellarr->getMap();
+    
+    for (int i = 0; i < mm.m_ncells; i++) {
+      sum += map[i];                               //<----
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(c_sum == sum);
+  
+  //don't have a way to access cell-mat relation through map type
+  
+
+  // ------------ return index set --------------
+  printf("\nAccess by Map with indexing set\n-\t");
+  sum = 0;
+  start_timer();
+  {
+    MultiMatTypedArray<double>* cellmatarr = mm.getFieldArray<double>("CellMat Array");
+    auto map = cellmatarr->getMap();
+    for (int i = 0; i < mm.m_ncells; i++)
+    {
+      MultiMat::RelationSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
+      MultiMat::RangeSetType indexSet = cellmatarr->getIndexingSetOfCell(i); //the indices into the maps
+      assert(setOfMaterialsInThisCell.size() == indexSet.size());
+      for (int j = 0; j < indexSet.size(); j++)
+      {
+        int mat_id = setOfMaterialsInThisCell[j];
+        double val = map[indexSet.at(j)];
+        sum += val;
+      }
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(x_sum == sum);
+
+
+  // -------------- return subuset map for typed--------------
+
+  printf("\nGet subset map from TypedArray\n-\t");
+  sum = 0;
+  start_timer();
+  {
+    MultiMatTypedArray<double>* cellmatarr = mm.getFieldArray<double>("CellMat Array");
+    for (int i = 0; i < mm.m_ncells; i++)
+    {
+      MultiMat::RelationSet setOfMaterialsInThisCell = mm.getMatInCell(i);
+      const MultiMatArray::MapType<double>& ValueMap = cellmatarr->getSubsetMap(i); //a map (basically std::vector) of the field for all the materials present in this cell
+      assert(setOfMaterialsInThisCell.size() == ValueMap.size());
+      for (int j = 0; j < ValueMap.size(); j++)
+      {
+        int mat_id = setOfMaterialsInThisCell[j];
+        sum += ValueMap[j];
+      }
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(x_sum == sum);
 
 
   // -------------- return subuset map --------------
-  
+
   printf("\nGet subset map\n-\t");
   sum = 0;
   start_timer();
@@ -738,32 +828,6 @@ void test_code() {
   }
   cout << end_timer() << "\t";
   assert(x_sum == sum);
-  
-
-  // --------- returning SLAM map -----------
-  printf("\nAccess from SLAM map\n");
-  sum = 0;
-  start_timer();
-  {
-    //get it from MultiMai with array name
-    //const MultiMat::MapType<double>& map = mm.getMap<double>("Cell Array");
-
-    //Get a MapBaseType and cast it
-    //const MultiMatArray::MapBaseType* map1 = MMarr_cell->getMap();
-    //const MultiMatArray::MapType<double>& map = *dynamic_cast<const MultiMatArray::MapType<double>*>(map1);
-
-    //alternative
-    const MultiMatArray::MapType<double>& map = MMarr_cell->getMap<double>(); 
-    
-    for (int i = 0; i < mm.m_ncells; i++) {
-      sum += map[i];                               //<----
-    }
-  }
-  cout << end_timer() << "\t";
-  assert(c_sum == sum);
-  
-  //don't have a way to access cell-mat relation through map type
-  
 
 
   // ---------- using iterator -------------
@@ -774,6 +838,33 @@ void test_code() {
   {
     MultiMatArray* mm_cellarr = mm.getFieldArray("Cell Array");
     for (MultiMatArray::iterator<double> a = mm_cellarr->begin<double>(); a != mm_cellarr->end<double>(); a++) {
+      sum += *a;              //<----
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(c_sum == sum);
+
+  sum = 0;
+  start_timer();
+  {
+    MultiMatArray* mm_matcellarr = mm.getFieldArray("CellMat Array");
+    for (MultiMatArray::iterator<double> a = mm_matcellarr->begin<double>(); a != mm_matcellarr->end<double>(); a++) {
+      sum += *a;            //<----
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(x_sum == sum);
+
+
+
+  // ---------- using iterator with MultiMatTypedArray -------------
+  //template for all the iterator functions, which can be clunky
+  printf("\nWith MultiMatTypedArray iterators\n");
+  sum = 0;
+  start_timer();
+  {
+    MultiMatTypedArray<double>* cellarr = mm.getFieldArray<double>("Cell Array");
+    for (MultiMatTypedArray<double>::iterator a = cellarr->begin(); a != cellarr->end(); a++) {
       sum += *a;              //<----
     }
   }

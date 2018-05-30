@@ -52,6 +52,7 @@ public:
   //using IntMapType = MapType<int>;
   //using doubleMapType = MapType<double>;
 
+  
   MultiMat();
 
   //Set-up functions
@@ -62,14 +63,12 @@ public:
   RelationSet getMatInCell(int c); //Should change it so there's no assumption of the layout
 
   //functions related to the field arrays
-  template<typename T>
-  void addFieldArray(std::string arr_name, FieldMapping, T*); 
-  //template<class T>
-  //MultiMatArray<T>* newFieldArray(std::string arr_name, FieldMapping); //get the array
   template<class T>
-  MultiMatArray* newFieldArray(std::string arr_name, FieldMapping, T* arr); //get the array
+  MultiMatTypedArray<T>* newFieldArray(std::string arr_name, FieldMapping, T* arr); //get the array
  
   MultiMatArray* getFieldArray(std::string arr_name); //get the array
+  template<typename T>
+  MultiMatTypedArray<T>* getFieldArray(std::string arr_name); //get the array
   MultiMatArray* getFieldArray(int arr_idx); //get the array
   
   //accessing functions
@@ -81,6 +80,7 @@ public:
   template<typename T>
   const MapType<T>& getMap(std::string field_name);
 
+  SetType* get_mapped_set(FieldMapping fm);
 
   //Data modification functions
   //...
@@ -95,9 +95,6 @@ public:
   void printSelf();
   bool isValid();
   
-protected:
-  SetType* get_mapped_set(FieldMapping fm);
-
 public: //private:
   int m_nmats, m_ncells;
   bool m_modifiedSinceLastBuild;
@@ -115,7 +112,7 @@ public: //private:
   std::vector<MultiMatArray*> m_fieldArrayVec; //list of MM-Arrays
 
   friend class MultiMatArray;
-
+  
 }; //end MultiMat class
 
 
@@ -123,16 +120,17 @@ class MultiMatArray
 {
 public:
   using SetType = MultiMat::SetType;
+  using RangeSetType = MultiMat::RangeSetType;
   using MapBaseType = axom::slam::MapBase;
   template<typename T>
   using MapType = axom::slam::Map<T>;
 
   MultiMatArray() {}
-  MultiMatArray(std::string name, FieldMapping f);
+  MultiMatArray(MultiMat* m, std::string name, FieldMapping f);
 
   //MultiMatAbstractArray(MultiMat* m, std::string name, SetType* s, FieldMapping f);
   template<typename T>
-  MultiMatArray(MultiMat* m, std::string name, SetType* s, FieldMapping f, T* data_arr);
+  MultiMatArray(MultiMat* m, std::string name, FieldMapping f, T* data_arr);
 
   ~MultiMatArray() {};
   
@@ -179,7 +177,7 @@ protected:
 
   MapBaseType* m_mapPtr;
   
-  MapBaseType* m_subsetmap; //placeholder for a MapBuilder class
+  MapBaseType* m_subsetmapPtr; //placeholder for a MapBuilder class
   MultiMat::RelationSet m_retSubset; // a temporary set for returning subset map.
 
   //SetType* m_set; //storing the set in order to index into the elemXmat map. 
@@ -198,7 +196,7 @@ public:
   using SetType = MultiMat::SetType;
   using MapType = axom::slam::Map<T>;
 
-  MultiMatTypedArray(MultiMat* m, std::string name, SetType* s, FieldMapping f);
+  //MultiMatTypedArray(MultiMat* m, std::string name, SetType* s, FieldMapping f);
   MultiMatTypedArray(MultiMat* m, std::string name, SetType* s, FieldMapping f, T* arr);
   ~MultiMatTypedArray() {}
 
@@ -211,27 +209,45 @@ public:
   const MapType& getMap() { return m_map; }
   const MapType& getSubsetMap(int c);
 
+  RangeSetType getIndexingSetOfCell(int c);
 
-  //class iterator  ....
+  class iterator : public std::iterator<std::input_iterator_tag, T>
+  {
+    MapType* m_mapPtr;
+    int m_i;
 
-  //private:
+  public:
+    iterator(MapType* m) :m_mapPtr(m), m_i(0) {}
+    iterator(MapType* m, int n) : m_mapPtr(m), m_i(n) {}
+    iterator& operator++() { ++m_i; return *this; }
+    iterator operator++(int) { iterator tmp(*this); operator++(); return tmp; }
+    bool operator==(const iterator& rhs) { return m_mapPtr == rhs.m_mapPtr && m_i == rhs.m_i; }
+    bool operator!=(const iterator& rhs) { return m_mapPtr != rhs.m_mapPtr || m_i != rhs.m_i; }
+    T operator*() { return m_mapPtr->operator[](m_i); }
+  };
+  iterator begin() { return iterator(&m_map); }
+  iterator end() { return iterator(&m_map, m_map.size()); }
+
+protected:
   MapType m_map;
   MapType m_subsetmap; //placeholder for a MapBuilder class
-  MultiMat::RelationSet m_retSubset; // a temporary set for returning subset map.
+  //MultiMat::RelationSet m_retSubset; // a temporary set for returning subset map. //moved to base class'
 
-  MultiMat* mm;
-};
+  //MultiMat* mm; //moved to base class'
+
+}; //end MultiMatTypedArray
 
 
 //------------ MultiMatArray Template function definitions --------------//
 //
 template<typename T>
-inline MultiMatArray::MultiMatArray(MultiMat * m, std::string name, SetType * ss, FieldMapping f, T * data_arr):
-  mm(m), m_arrayName(name), /*m_set(s), */ m_fieldMapping(f), m_mapPtr(nullptr), m_subsetmap(nullptr)
+inline MultiMatArray::MultiMatArray(MultiMat * m, std::string name, FieldMapping f, T * data_arr):
+  mm(m), m_arrayName(name), m_fieldMapping(f), m_mapPtr(nullptr), m_subsetmap(nullptr)
 {
   MultiMat::SetType* s = m->get_mapped_set(f);
   auto mapPtr = new MapType<T>(s);
   m_mapPtr = mapPtr;
+
   //copy data
   for (int i = 0; i < mapPtr->size(); i++) {
     (*mapPtr)[i] = data_arr[i];
@@ -277,42 +293,44 @@ const MultiMatArray::MapType<T>& MultiMatArray::getSubsetMap(int c)
 
   auto mapPtr = dynamic_cast<MapType<T>*>(m_mapPtr);
 
-  delete(dynamic_cast<MapType<T>*>(m_subsetmap));
-  m_subsetmap = nullptr;
+  //delete(dynamic_cast<MapType<T>*>(m_subsetmap));
+  //m_subsetmap = nullptr;
   
-  auto subsetmap = new MapType<T>(&m_retSubset);
+  MapType<T>& subsetmap = * static_cast<MapType<T>*>(m_subsetmapPtr);
+  subsetmap = MapType<T>(&m_retSubset);
   
+  //copy the map
   int j = 0;
   for (int i = offset; i < offset + csetsize; i++)
   {
-    (*subsetmap)[j++] = (*mapPtr)[i];
+    subsetmap[j++] = (*mapPtr)[i];
   }
 
   assert(j == csetsize);
 
-  m_subsetmap = subsetmap;
-
-  //copy the map
-  return *subsetmap;
+  return subsetmap;
 }
 
 
 //------------ MultiMatTypedArray Template function definitions --------------//
 
+//template<class T>
+//inline MultiMatTypedArray<T>::MultiMatTypedArray(MultiMat* m, std::string name, SetType* s, FieldMapping f)
+//  :MultiMatArray(name, f), m_map(s), mm(m)
+//{
+//}
 
 template<class T>
-inline MultiMatTypedArray<T>::MultiMatTypedArray(MultiMat* m, std::string name, SetType * s, FieldMapping f)
-  :MultiMatArray(name, f), m_map(s), mm(m)
+inline MultiMatTypedArray<T>::MultiMatTypedArray(MultiMat* m, std::string name, SetType* s, FieldMapping f, T * data_arr)
+  : MultiMatArray(m, name, f), m_map(s)//, mm(m)
 {
-}
+  //base class variables
+  m_mapPtr = &m_map;
+  m_subsetmapPtr = &m_subsetmap;
 
-template<class T>
-inline MultiMatTypedArray<T>::MultiMatTypedArray(MultiMat* m, std::string name, SetType * s, FieldMapping f, T * data_arr)
-  : MultiMatArray(name, f), m_map(s), mm(m)
-{
   //copy the array
   for (int i = 0; i < m_map.size(); i++) {
-    setValue(i, data_arr[i]);
+    m_map[i] = data_arr[i];
   }
 }
 
@@ -362,10 +380,12 @@ const typename MultiMatTypedArray<T>::MapType& MultiMatTypedArray<T>::getSubsetM
   //A better way to do this is to use a MapBuilder to build a subset-map of the original map
   // like how SetBuilder can build a subset of the map.
   //Since that's unavailable, the placeholder is having a copy of the subset map inside the array class.
+  assert(m_fieldMapping == PER_CELL_MAT);
 
-  this->m_retSubset = mm->m_cell2matRel[c];
+  m_retSubset = mm->m_cell2matRel[c];
   auto csetsize = m_retSubset.size();
   auto offset = m_retSubset.offset();
+
   m_subsetmap = MapType(&m_retSubset);
   
   //copy the map
@@ -377,7 +397,13 @@ const typename MultiMatTypedArray<T>::MapType& MultiMatTypedArray<T>::getSubsetM
   return m_subsetmap;
 }
 
-
+template<typename T>
+typename MultiMatTypedArray<T>::RangeSetType MultiMatTypedArray<T>::getIndexingSetOfCell(int c) {
+  assert(0 <= c && c < mm->m_ncells);
+  int start_idx = mm->m_cell2matRel_beginsVec[c];
+  int end_idx = mm->m_cell2matRel_beginsVec[c + 1];
+  return RangeSetType::SetBuilder().range(start_idx, end_idx);
+}
 
 
 //--------------- MultiMat template function definitions -----------------//
@@ -399,13 +425,23 @@ const typename MultiMatTypedArray<T>::MapType& MultiMatTypedArray<T>::getSubsetM
 //}
 
 template<class T>
-MultiMatArray* axom::multimat::MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* data_arr)
+MultiMatTypedArray<T>* MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* data_arr)
 {
-  SetType* map_set = get_mapped_set(arr_mapping);
-  MultiMatArray* new_arr = new MultiMatArray(this, arr_name, map_set, arr_mapping, data_arr);
-  m_fieldArrayVec.push_back(new_arr);
+  //SetType* map_set = get_mapped_set(arr_mapping);
+  auto new_arr_ptr = new MultiMatTypedArray<T>(this, arr_name, get_mapped_set(arr_mapping), arr_mapping, data_arr);
+  //MultiMatArray* new_arr = new MultiMatArray(this, arr_name, arr_mapping, data_arr);
+  m_fieldArrayVec.push_back(new_arr_ptr);
   
-  return new_arr;
+  return new_arr_ptr;
+}
+
+
+template<typename T>
+MultiMatTypedArray<T>* MultiMat::getFieldArray(std::string arr_name)
+{
+  MultiMatArray* arr = getFieldArray(arr_name);
+  MultiMatTypedArray<T>* typed_arr = static_cast<MultiMatTypedArray<T>*>(arr);
+  return typed_arr;
 }
 
 template<class T>
