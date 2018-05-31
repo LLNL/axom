@@ -633,9 +633,9 @@ int main(int argc, char** argv)
 void test_code() {
 
   //Set-up
-  MultiMat mm;
-  int nmats = 100;
-  int ncells = 20000;
+  MultiMat mm(LAYOUT_CELL_DOM, LAYOUT_SPARSE);
+  int nmats = 50;
+  int ncells = 2000;
   int nfilled = 0;
   std::vector<bool> cellMatRel(nmats * ncells, false);
   for (int i = 0; i < nmats*ncells; i++) {
@@ -670,6 +670,9 @@ void test_code() {
   //c_sum += 123;
 
   auto MMarr_cellmat = mm.newFieldArray<>("CellMat Array", PER_CELL_MAT, &cellmat_arr[0]);
+
+
+
 
   double sum = 0;
 
@@ -822,6 +825,7 @@ void test_code() {
       for (int j = 0; j < ValueMap.size(); j++)
       {
         int mat_id = setOfMaterialsInThisCell[j];
+        //int id = ValueMap.id[j]; //TODO
         sum += ValueMap[j];
       }
     }
@@ -874,8 +878,8 @@ void test_code() {
   sum = 0;
   start_timer();
   {
-    MultiMatArray* mm_matcellarr = mm.getFieldArray("CellMat Array");
-    for (MultiMatArray::iterator<double> a = mm_matcellarr->begin<double>(); a != mm_matcellarr->end<double>(); a++) {
+    MultiMatTypedArray<double>* mm_matcellarr = mm.getFieldArray<double>("CellMat Array");
+    for (auto a = mm_matcellarr->begin(); a != mm_matcellarr->end(); a++) {
       sum += *a;            //<----
     }
   }
