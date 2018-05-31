@@ -92,6 +92,7 @@ void check_storage( Array< T >& v )
   IndexType num_components = v.numComponents();
   const T* data_ptr = v.getData();
 
+  /* Append up to half the capacity. */
   if ( num_components == 1 )
   {
     for ( T i = 0 ; i < capacity / 2 ; ++i )
@@ -112,11 +113,13 @@ void check_storage( Array< T >& v )
     }
   }
 
+  /* Check the array metadata. */
   EXPECT_TRUE( !v.empty() );
   EXPECT_EQ( v.size(), capacity / 2 );
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_ptr );
 
+  /* Append up to the full capacity. */
   if ( num_components == 1 )
   {
     for ( T i = capacity / 2 ; i < capacity ; ++i )
@@ -137,20 +140,24 @@ void check_storage( Array< T >& v )
     }
   }
 
+  /* Check the array metadata. */
   EXPECT_TRUE( !v.empty() );
   EXPECT_EQ( v.size(), capacity );
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_ptr );
 
+  /* Check the array data using the () and [] operators and the raw pointer. */
   for ( IndexType i = 0 ; i < capacity ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), i * num_components + j );
+      EXPECT_EQ( v[ i * num_components + j], i * num_components + j );
       EXPECT_EQ( data_ptr[ i * num_components + j ], i * num_components + j );
     }
   }
 
+  /* Set the array data to new values using the () operator. */
   for ( IndexType i = 0 ; i < capacity ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -159,15 +166,18 @@ void check_storage( Array< T >& v )
     }
   }
 
+  /* Check the array data using the () and [] operators and the raw pointer. */
   for ( IndexType i = 0 ; i < capacity ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), i * j - 5 * i + 7 * j );
+      EXPECT_EQ( v[ i * num_components + j], i * j - 5 * i + 7 * j );
       EXPECT_EQ( data_ptr[ i * num_components + j ], i * j - 5 * i + 7 * j );
     }
   }
 
+  /* Check the array metadata. */
   EXPECT_TRUE( !v.empty() );
   EXPECT_EQ( v.size(), capacity );
   EXPECT_EQ( v.capacity(), capacity );
@@ -189,13 +199,17 @@ void check_fill( Array< T >& v )
   const double ratio = v.getResizeRatio();
   const T* const data_ptr = v.getData();
 
+  /* Fill the Array with MAGIC_NUM_0. */
   v.fill( MAGIC_NUM_0 );
 
+  /* Check the meta data. */
   EXPECT_EQ( capacity, v.capacity() );
   EXPECT_EQ( size, v.size() );
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
+
+  /* Check that the entries are all MAGIC_NUM_0. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -204,13 +218,17 @@ void check_fill( Array< T >& v )
     }
   }
 
+  /* Fill the Array with MAGIC_NUM_1. */
   v.fill( MAGIC_NUM_1 );
 
+  /* Check the meta data. */
   EXPECT_EQ( capacity, v.capacity() );
   EXPECT_EQ( size, v.size() );
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
+
+  /* Check that the entries are all MAGIC_NUM_1. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -234,29 +252,40 @@ void check_set( Array< T >& v )
   const double ratio = v.getResizeRatio();
   const T* const data_ptr = v.getData();
 
+  /* Allocate a buffer half the size of the array. Fill it up with sequential
+   * values. */
   const IndexType buffer_size = size / 2;
   T* buffer = new T[ buffer_size * num_components ];
-
   for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
     buffer[ i ] = i;
   }
 
+  /* Set all the values in the array to zero. */
   v.fill( ZERO );
+
+  /* Set the first half of the tuples in the array to the sequential values in 
+   * buffer. */
   v.set( buffer, buffer_size, 0 );
 
+  /* Check the array metadata. */
   EXPECT_EQ( capacity, v.capacity() );
   EXPECT_EQ( size, v.size() );
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
+
+  /* Check that the first half of the tuples in the array are equivalent to
+   * those in buffer. */
   for ( IndexType i = 0 ; i < buffer_size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
     {
-      EXPECT_EQ( v( i, j ), i * num_components + j );
+      EXPECT_EQ( v( i, j ), buffer[ i * num_components + j ] );
     }
   }
+
+  /* Check that the second half of the tuples in the array are all zero. */
   for ( IndexType i = buffer_size ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -265,30 +294,29 @@ void check_set( Array< T >& v )
     }
   }
 
+  /* Reset the values in buffer to the next sequential values. */
   for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
     buffer[ i ] = i + buffer_size * num_components;
   }
 
+  /* Set the second half of the tuples in the array to the new sequential values 
+   * in buffer. */
   v.set( buffer, buffer_size, buffer_size );
 
+  /* Check the array metadata. */
   EXPECT_EQ( capacity, v.capacity() );
   EXPECT_EQ( size, v.size() );
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
+  
+  /* Check that all the tuples in the array now hold sequential values. */
   for ( IndexType i = 0 ; i < 2 * buffer_size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
     {
       EXPECT_EQ( v( i, j ), i * num_components + j );
-    }
-  }
-  for ( IndexType i = 2 * buffer_size ; i < size ; ++i )
-  {
-    for ( IndexType j = 0 ; j < num_components ; ++j )
-    {
-      EXPECT_EQ( v( i, j ), ZERO );
     }
   }
 }
@@ -306,6 +334,7 @@ void check_resize( Array< T >& v )
   IndexType size = capacity;
   IndexType num_components = v.numComponents();
 
+  /* Check that the size equals the capacity. */
   EXPECT_EQ( v.size(), v.capacity() );
 
   /* Set the existing data in v */
@@ -332,6 +361,8 @@ void check_resize( Array< T >& v )
   EXPECT_GT( capacity, old_capacity );
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
+
+  /* Check that the data is still intact. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -340,7 +371,7 @@ void check_resize( Array< T >& v )
     }
   }
 
-  /* Append 1000 tuples */
+  /* Prepare 1000 tuples to be appended. */
   const IndexType n_tuples = 1000;
   T values[ n_tuples * num_components ];
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
@@ -352,13 +383,16 @@ void check_resize( Array< T >& v )
     }
   }
 
+  /* Append the new tuples. */
   capacity = calc_new_capacity( v, n_tuples );
   v.append( values, n_tuples );
   size += n_tuples;
 
-  /* Check that it resize properly */
+  /* Check that size and capacity are as expected. */
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
+
+  /* Check that the data is still intact. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -371,9 +405,13 @@ void check_resize( Array< T >& v )
   T* data_address = v.getData();
   size = 500;
   v.resize(size);
+
+  /* Check the metadata. */
   EXPECT_EQ( v.size(), size );
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.getData(), data_address );
+
+  /* Check the data. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -386,8 +424,11 @@ void check_resize( Array< T >& v )
   capacity = size;
   v.shrink();
 
+  /* Check that the capacity and size are as expected. */
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
+
+  /* Check that the data is intact. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -406,10 +447,12 @@ void check_resize( Array< T >& v )
   v.append( tuple, 1 );
   size++;
 
-  /* Check that it resized properly */
+  /* Check the new size and capacity. */
   EXPECT_GT( capacity, old_capacity );
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
+
+  /* Check that the data is intact. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -426,9 +469,8 @@ void check_resize( Array< T >& v )
   }
 
   /* Append a bunch of tuples to fill in up to the capacity. Resize should
-     not occur. */
+   * not occur. */
   old_capacity = capacity;
-  capacity = calc_new_capacity( v, old_capacity - size + 1 );
   for ( IndexType i = size ; i < old_capacity ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -450,13 +492,17 @@ void check_resize( Array< T >& v )
   {
     tuple[ j ] = size * num_components + j;
   }
-
+  
+  capacity = calc_new_capacity( v, old_capacity - size + 1 );
   v.append( tuple, 1 );
   size++;
+
+  /* Check the new capacity and size. */
   EXPECT_GT( capacity, old_capacity );
   EXPECT_EQ( v.capacity(), capacity );
   EXPECT_EQ( v.size(), size );
 
+  /* Check the data. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -589,7 +635,7 @@ void check_emplace( Array< T >& v )
   IndexType capacity = v.capacity();
   v.resize( capacity );
   IndexType size = capacity;
-  IndexType num_components = v.numComponents();
+  const IndexType num_components = v.numComponents();
 
   EXPECT_EQ( v.size(), v.capacity() );
 
@@ -602,9 +648,12 @@ void check_emplace( Array< T >& v )
     }
   }
 
-  /* Emplace 10 tuples at the end of the array, should resize. */
+  /* Emplace 1 tuple at the end of the array with the default value, 
+   * should resize. */
   capacity = calc_new_capacity( v, 1 );
   v.emplace( 1, v.size() );
+
+  /* Emplace 9 tuples at the end of the array with MAGIC_NUM. */
   capacity = calc_new_capacity( v, 9 );
   v.emplace( 9, v.size(), MAGIC_NUM );
   size += 10;
@@ -635,9 +684,11 @@ void check_emplace( Array< T >& v )
     }
   }
 
-  /* Emplace 10 tuples at the beginning of the array. */
+  /* Emplace 10 tuples at the beginning of the array with MAGIC_NUM. */
   capacity = calc_new_capacity( v, 9 );
   v.emplace( 9, 0, MAGIC_NUM );
+
+  /* Emplace 1 tuple at the beginning of the array with the default value. */
   capacity = calc_new_capacity( v, 1 );
   v.emplace( 1, 0 );
   size += 10;
@@ -683,10 +734,12 @@ void check_emplace( Array< T >& v )
     }
   }
 
-  /* Emplace 10 tuples in the middle of the array. */
+  /* Emplace 9 tuples in the middle of the array with MAGIC_NUM. */
   IndexType middle = size / 2;
   capacity = calc_new_capacity( v, 9 );
   v.emplace( 9, middle, MAGIC_NUM );
+
+  /* Emplace 1 tuple in the middle of the array with the default value. */
   capacity = calc_new_capacity( v, 1 );
   v.emplace( 1, middle );
   size += 10;
@@ -764,10 +817,15 @@ void check_emplace( Array< T >& v )
 template< typename T >
 void check_sidre( Array< T >& v )
 {
+  ASSERT_TRUE( v.isInSidre() );
+  /* Create a copy. */
   Array< T > cpy( const_cast< sidre::View* >( v.getView() ) );
   cpy.setResizeRatio( v.getResizeRatio() );
-
+  
+  /* Check that the copy holds the same data. */
   check_copy( v, cpy );
+
+  /* Resize the copy and check that it functions correctly. */
   cpy.resize(0);
   check_storage( cpy );
   check_insert( cpy );
@@ -781,14 +839,17 @@ void check_sidre( Array< T >& v )
 template< typename T >
 void check_external( Array< T >& v )
 {
-  EXPECT_TRUE( v.isExternal() );
-  EXPECT_EQ( v.size(), v.capacity() );
+  ASSERT_TRUE( v.isExternal() );
+
+  /* Check that the array is full. */
+  ASSERT_EQ( v.size(), v.capacity() );
 
   const IndexType size = v.size();
   const IndexType num_components = v.numComponents();
   const IndexType num_values = size * num_components;
   T* const data_ptr = v.getData();
 
+  /* Set the tuples in the array. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -797,11 +858,13 @@ void check_external( Array< T >& v )
     }
   }
 
+  /* Check the tuples using the raw pointer. */
   for (IndexType i = 0 ; i < num_values ; ++i )
   {
     EXPECT_EQ( data_ptr[ i ], i );
   }
 
+  /* Set the tuples using the raw pointer. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -810,6 +873,7 @@ void check_external( Array< T >& v )
     }
   }
 
+  /* Check the tuples using the () operator. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -819,8 +883,11 @@ void check_external( Array< T >& v )
   }
 
   EXPECT_EQ( size, v.size() );
+  EXPECT_EQ( size, v.capacity() );
   EXPECT_EQ( data_ptr, v.getData() );
 
+  /* Since the array is full all of the following calls should require a
+   * reallocation and cause a fatal error. */
   T tuple[ num_components ];
   EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
