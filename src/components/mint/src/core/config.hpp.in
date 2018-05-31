@@ -17,10 +17,14 @@
 #ifndef MINT_CONFIG_HPP_
 #define MINT_CONFIG_HPP_
 
+#include "axom/config.hpp"// for compile-time definitions
 #include "axom/Types.hpp" // for fixed-width types
 
 #cmakedefine MINT_USE_SIDRE
+
+#ifndef AXOM_NO_INT64_T
 #cmakedefine MINT_USE_64BIT_INDEXTYPE
+#endif
 
 namespace axom
 {
