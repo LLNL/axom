@@ -205,7 +205,7 @@ public:
    *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
    *
    * \pre group != AXOM_NULLPTR
-   * \pre blueprint::validRootGroup( group )
+   * \pre blueprint::isValidRootGroup( group )
    * \post hasSidreGroup() == true
    */
   explicit UniformMesh( sidre::Group* group, const std::string& topo="" );

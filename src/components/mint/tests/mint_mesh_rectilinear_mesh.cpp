@@ -474,8 +474,8 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
     // ENDE SCOPE
 
     // STEP 3: ensure data is persistent in Sidre
-    EXPECT_TRUE( blueprint::validRootGroup( m1grp ) );
-    EXPECT_TRUE( blueprint::validRootGroup( m2grp ) );
+    EXPECT_TRUE( blueprint::isValidRootGroup( m1grp ) );
+    EXPECT_TRUE( blueprint::isValidRootGroup( m2grp ) );
 
   } // END for all dimensions
 

@@ -128,7 +128,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   m_coordset()
 {
   SLIC_ERROR_IF( m_group==AXOM_NULLPTR, "NULL sidre group" );
-  SLIC_ERROR_IF( !blueprint::validRootGroup( m_group ),
+  SLIC_ERROR_IF( !blueprint::isValidRootGroup( m_group ),
                  "root group does not conform to blueprint" );
 
   blueprint::getMeshTypeAndDimension( m_type, m_ndims, m_group, m_topology );

@@ -85,7 +85,7 @@ ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "points" );
 
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
   m_positions = new MeshCoordinates( getCoordsetGroup(), dimension,

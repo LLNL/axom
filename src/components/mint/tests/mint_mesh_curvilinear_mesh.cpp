@@ -685,8 +685,8 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
     }
     // END SCOPE
 
-    EXPECT_TRUE( blueprint::validRootGroup( m1grp ) );
-    EXPECT_TRUE( blueprint::validRootGroup( m2grp ) );
+    EXPECT_TRUE( blueprint::isValidRootGroup( m1grp ) );
+    EXPECT_TRUE( blueprint::isValidRootGroup( m2grp ) );
 
   } // END for all dimensions
 

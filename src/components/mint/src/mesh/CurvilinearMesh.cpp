@@ -139,7 +139,7 @@ CurvilinearMesh::CurvilinearMesh( int dimension,
 
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "structured" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
   m_extent        = new mint::Extent( m_ndims, ext );
@@ -170,7 +170,7 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
 {
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "structured" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
   int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };

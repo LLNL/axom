@@ -189,7 +189,7 @@ public:
    *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
    *
    * \pre group != AXOM_NULLPTR
-   * \pre blueprint::validRootGroup( group )
+   * \pre blueprint::isValidRootGroup( group )
    *
    * \post hasSidreGroup() == true
    * \post isExternal() == false

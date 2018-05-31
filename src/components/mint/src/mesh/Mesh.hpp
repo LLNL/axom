@@ -73,7 +73,7 @@ class Mesh;
  *  object goes out-of-scope.
  *
  * \pre  group != AXOM_NULLPTR
- * \pre  blueprint::validRootGroup( group ) == true
+ * \pre  blueprint::isValidRootGroup( group ) == true
  * \post m != AXOM_NULLPTR
  */
 Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
@@ -699,7 +699,7 @@ protected:
    *  group.
    *
    * \pre group != AXOM_NULLPTR.
-   * \pre blueprint::validRootGroup( group ) == true
+   * \pre blueprint::isValidRootGroup( group ) == true
    *
    * \see sidre::Group
    */
@@ -720,7 +720,7 @@ protected:
    * \pre group != AXOM_NULLPTR.
    * \pre group->getNumGroups() == 0
    * \pre group->getNumViews() == 0
-   * \post blueprint::validRootGroup( group )
+   * \post blueprint::isValidRootGroup( group )
    *
    * \see sidre::Group
    */
@@ -732,8 +732,8 @@ protected:
    * \return coordset the associated coordset group.
    *
    * \pre  m_group != AXOM_NULLPTR
-   * \pre  blueprint::validRootGroup( m_group )
-   * \post blueprint::validCoordsetGroup( coordset )
+   * \pre  blueprint::isValidRootGroup( m_group )
+   * \post blueprint::isValidCoordsetGroup( coordset )
    */
   sidre::Group* getCoordsetGroup();
 
@@ -742,8 +742,8 @@ protected:
    * \return topology the associated topology group.
    *
    * \pre  m_group != AXOM_NULLPTR
-   * \pre  blueprint::validRootGroup( m_group )
-   * \post blueprint::validTopologyGroup( topology )
+   * \pre  blueprint::isValidRootGroup( m_group )
+   * \post blueprint::isValidTopologyGroup( topology )
    */
   sidre::Group* getTopologyGroup();
 

@@ -328,7 +328,7 @@ public:
    *  group.
    *
    * \pre group != AXOM_NULLPTR.
-   * \pre blueprint::validRootGroup( group ) == true
+   * \pre blueprint::isValidRootGroup( group ) == true
    * \post isInSidre() == true
    */
   UnstructuredMesh( sidre::Group* group, const std::string& topo="" ) :
@@ -369,7 +369,7 @@ public:
    * \pre group != AXOM_NULLPTR.
    * \pre group->getNumGroups() == 0
    * \pre group->getNumViews() == 0
-   * \post blueprint::validRootGroup( group )
+   * \post blueprint::isValidRootGroup( group )
    * \post getNumberOfNodes() == 0
    * \post getNumberOfCells() == 0
    * \post isInSidre() == true

@@ -359,7 +359,7 @@ protected:
    *  use the 1st topology group under the parent "topologies" group.
    *
    * \pre group !=  AXOM_NULLPTR
-   * \pre blueprint::validRootGroup( group ) == true
+   * \pre blueprint::isValidRootGroup( group ) == true
    *
    * \note This constructor forwards this call to the parent Mesh class.
    *
@@ -386,7 +386,7 @@ protected:
    * \pre group->getNumGroups() == 0
    * \pre group->getNumViews() == 0
    *
-   * \post blueprint::validRootGroup( group )
+   * \post blueprint::isValidRootGroup( group )
    *
    * \note This constructor forwards this call to the parent Mesh class.
    *

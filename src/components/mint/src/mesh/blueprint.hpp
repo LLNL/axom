@@ -70,7 +70,7 @@ namespace blueprint
  *
  * \pre group != AXOM_NULLPTR
  */
-bool validRootGroup( const sidre::Group* group );
+bool isValidRootGroup( const sidre::Group* group );
 
 /*!
  * \brief Checks if the given topology group conforms to the blueprint.
@@ -90,7 +90,7 @@ bool validRootGroup( const sidre::Group* group );
  *
  * \pre topo != AXOM_NULLPTR
  */
-bool validTopologyGroup( const sidre::Group* topo );
+bool isValidTopologyGroup( const sidre::Group* topo );
 
 /*!
  * \brief Checks if the given coordset group conforms to the blueprint.
@@ -109,7 +109,7 @@ bool validTopologyGroup( const sidre::Group* topo );
  *
  * \pre coordset != AXOM_NULLPTR
  */
-bool validCoordsetGroup( const sidre::Group* coordset );
+bool isValidCoordsetGroup( const sidre::Group* coordset );
 
 /*!
  * \brief Returns the requested mesh topology group.
@@ -125,7 +125,7 @@ bool validCoordsetGroup( const sidre::Group* coordset );
  *
  * \pre group != AXOM_NULLPTR
  * \post topo != AXOM_NULLPTR
- * \post blueprint::validTopologyGroup( topo ) == true
+ * \post blueprint::isValidTopologyGroup( topo ) == true
  *
  */
 const sidre::Group* getTopologyGroup( const sidre::Group* group,
@@ -156,9 +156,9 @@ void initializeTopologyGroup( sidre::Group* group,
  * \return coordset pointer to the coordset associated with given topology,
  *  else false.
  *
- * \pre blueprint::validRootGroup( group )
- * \pre blueprint::validTopologyGroup( topology )
- * \post blueprint::validCoordsetGroup( coordset )
+ * \pre blueprint::isValidRootGroup( group )
+ * \pre blueprint::isValidTopologyGroup( topology )
+ * \post blueprint::isValidCoordsetGroup( coordset )
  */
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
                                       const sidre::Group* topology );
@@ -172,9 +172,9 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
  * \return coordset pointer to the coordset associated with given topology,
  *  else false.
  *
- * \pre blueprint::validRootGroup( group )
- * \pre blueprint::validTopologyGroup( topology )
- * \post blueprint::validCoordsetGroup( coordset )
+ * \pre blueprint::isValidRootGroup( group )
+ * \pre blueprint::isValidTopologyGroup( topology )
+ * \post blueprint::isValidCoordsetGroup( coordset )
  */
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
                                       const std::string& coords="" );
@@ -229,8 +229,8 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
  *  values of the extent along the ith dimension respectively.
  *
  * \pre 1 <= dim <= 3
- * \pre validCoordsetGroup( coordset )
- * \pre validTopologyGroup( topology )
+ * \pre isValidCoordsetGroup( coordset )
+ * \pre isValidTopologyGroup( topology )
  * \pre origin != AXOM_NULLPTR
  * \pre spacing != AXOM_NULLPTR
  * \pre extent != AXOM_NULLPTR
@@ -266,8 +266,8 @@ void getUniformMesh( int dim,
  * \pre topology != AXOM_NULLPTR
  * \pre extent->getDimesion() == dim
  *
- * \post validCoordsetGroup( coordset )
- * \post validTopologyGroup( topology
+ * \post isValidCoordsetGroup( coordset )
+ * \post isValidTopologyGroup( topology
  *
  * \see getUniformMesh()
  */
@@ -290,7 +290,7 @@ void setUniformMesh( int dim,
  *  values of the extent along the ith dimension respectively.
  *
  * \pre 1 <= dim <= 3
- * \pre blueprint::validTopologyGroup( topology )
+ * \pre blueprint::isValidTopologyGroup( topology )
  * \pre extent != AXOM_NULLPTR
  */
 void getCurvilinearMeshExtent( int dim,
@@ -326,8 +326,8 @@ void setCurvilinearMeshExtent( int dim,
  *  values of the extent along the ith dimension respectively.
  *
  *  \pre 1 <= dim <= 3
- *  \pre blueprint::validCoordsetGroup( coordset )
- *  \pre blueprint::validTopologyGroup( topology )
+ *  \pre blueprint::isValidCoordsetGroup( coordset )
+ *  \pre blueprint::isValidTopologyGroup( topology )
  *  \pre extent != AXOM_NULLPTR
  */
 void getRectilinearMeshExtent( int dim,

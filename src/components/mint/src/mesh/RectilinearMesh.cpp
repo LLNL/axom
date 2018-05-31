@@ -114,7 +114,7 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   initialize( );
 
   sidre::Group* c = getCoordsetGroup();
-  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( c ), "invalid coordset!" );
+  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( c ), "invalid coordset!" );
 
   const char* coords[] = { "values/x", "values/y", "values/z" };
 
@@ -138,7 +138,7 @@ RectilinearMesh::RectilinearMesh( int dimension,
 {
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "rectilinear" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
   m_extent = new mint::Extent( m_ndims, ext );
@@ -160,7 +160,7 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
 {
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "rectilinear" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( getTopologyGroup() ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
   int64 extent[]  = { 0, Ni-1, 0, Nj-1, 0, Nk-1 };
@@ -202,7 +202,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
     m_coordinates[ idim ]->setResizeRatio( 0.0 );
   }
 
-  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( getCoordsetGroup() ),
+  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( getCoordsetGroup() ),
                  "invalid coordset group!" );
 }
 

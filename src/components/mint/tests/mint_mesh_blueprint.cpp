@@ -205,22 +205,22 @@ TEST( mint_mesh_blueprint, check_valid_root_group )
   sidre::Group* root = ds.getRoot( );
 
   // an empty group is an invalid blueprint root group
-  EXPECT_FALSE( mint::blueprint::validRootGroup( root ) );
+  EXPECT_FALSE( mint::blueprint::isValidRootGroup( root ) );
 
   // populate the group to make it a valid blueprint root group
   root->createGroup( "coordsets" );
   root->createGroup( "topologies" );
   root->createGroup( "fields" );
 
-  EXPECT_TRUE( mint::blueprint::validRootGroup( root ) );
+  EXPECT_TRUE( mint::blueprint::isValidRootGroup( root ) );
 
   // create an invalid root group
   root->destroyGroups( );
-  EXPECT_FALSE( mint::blueprint::validRootGroup( root ) );
+  EXPECT_FALSE( mint::blueprint::isValidRootGroup( root ) );
 
   root->createGroup( "foo" );
   root->createGroup( "bar" );
-  EXPECT_FALSE( mint::blueprint::validRootGroup( root ) );
+  EXPECT_FALSE( mint::blueprint::isValidRootGroup( root ) );
 }
 
 //------------------------------------------------------------------------------
@@ -230,17 +230,17 @@ TEST( mint_mesh_blueprint, check_valid_topology_group )
   sidre::Group* root = ds.getRoot( );
 
   // an empty group is an invalid blueprint group
-  EXPECT_FALSE( mint::blueprint::validTopologyGroup( root ) );
+  EXPECT_FALSE( mint::blueprint::isValidTopologyGroup( root ) );
 
   // populate the topology group
   root->createView("type")->setString("uniform");
   root->createView("coordset")->setString( "c1" );
-  EXPECT_TRUE( mint::blueprint::validTopologyGroup( root ) );
+  EXPECT_TRUE( mint::blueprint::isValidTopologyGroup( root ) );
 
   // create an invalid root group
   root->destroyViews();
   root->createView( "foo" )->setString( "bar" );
-  EXPECT_FALSE( mint::blueprint::validTopologyGroup( root ) );
+  EXPECT_FALSE( mint::blueprint::isValidTopologyGroup( root ) );
 }
 
 //------------------------------------------------------------------------------
@@ -250,11 +250,11 @@ TEST( mint_mesh_blueprint, check_valid_coordset_group )
   sidre::Group* root = ds.getRoot();
 
   // an empty group is an invalid coordset group
-  EXPECT_FALSE( mint::blueprint::validCoordsetGroup( root ) );
+  EXPECT_FALSE( mint::blueprint::isValidCoordsetGroup( root ) );
 
   // populate the coordset group
   root->createView( "type" )->setString( "explicit" );
-  EXPECT_TRUE( mint::blueprint::validCoordsetGroup( root ) );
+  EXPECT_TRUE( mint::blueprint::isValidCoordsetGroup( root ) );
 }
 
 //------------------------------------------------------------------------------
@@ -266,12 +266,12 @@ TEST( mint_mesh_blueprint, get_topology_and_coordset_group )
   createUnstructuredMeshOnSidre( root, 3 );
   const sidre::Group* topology =
     mint::blueprint::getTopologyGroup( root );
-  EXPECT_TRUE( mint::blueprint::validTopologyGroup( topology ) );
+  EXPECT_TRUE( mint::blueprint::isValidTopologyGroup( topology ) );
   EXPECT_EQ( topology->getName(), "t1" );
 
   const sidre::Group* coordset =
     mint::blueprint::getCoordsetGroup( root, topology );
-  EXPECT_TRUE( mint::blueprint::validCoordsetGroup( coordset ) );
+  EXPECT_TRUE( mint::blueprint::isValidCoordsetGroup( coordset ) );
   EXPECT_EQ( coordset->getName(), "c1");
   std::string coordset_name (
     const_cast< sidre::View* >( topology->getView("coordset") )->getString() );

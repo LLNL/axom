@@ -43,9 +43,13 @@ namespace blueprint
 #ifdef MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-bool validRootGroup( const sidre::Group* group )
+bool isValidRootGroup( const sidre::Group* group )
 {
-  SLIC_ERROR_IF( group==AXOM_NULLPTR, "supplied group is NULL!" );
+  if ( group == AXOM_NULLPTR )
+  {
+    SLIC_WARNING( "supplied group is NULL!" );
+    return false;
+  }
 
   const bool hasCoordsets  = group->hasChildGroup( "coordsets" );
   const bool hasTopologies = group->hasChildGroup( "topologies" );
@@ -62,9 +66,13 @@ bool validRootGroup( const sidre::Group* group )
 }
 
 //------------------------------------------------------------------------------
-bool validTopologyGroup( const sidre::Group* topo )
+bool isValidTopologyGroup( const sidre::Group* topo )
 {
-  SLIC_ERROR_IF( topo==AXOM_NULLPTR, "supplied topology group is NULL!" );
+  if ( topo == AXOM_NULLPTR )
+  {
+    SLIC_WARNING( "supplied topology group is NULL!" );
+    return false;
+  }
 
   const std::string path = topo->getPathName();
 
@@ -92,9 +100,13 @@ bool validTopologyGroup( const sidre::Group* topo )
 }
 
 //------------------------------------------------------------------------------
-bool validCoordsetGroup( const sidre::Group* coordset )
+bool isValidCoordsetGroup( const sidre::Group* coordset )
 {
-  SLIC_ERROR_IF( coordset==AXOM_NULLPTR, "supplied coordset group is NULL!" );
+  if ( coordset == AXOM_NULLPTR )
+  {
+    SLIC_WARNING( "supplied coordset group is NULL!" );
+    return false;
+  }
 
   const std::string path   = coordset->getPathName();
 
@@ -113,10 +125,10 @@ bool validCoordsetGroup( const sidre::Group* coordset )
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
                                       const sidre::Group* topology )
 {
-  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+  SLIC_ERROR_IF( !blueprint::isValidRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
   SLIC_ERROR_IF( topology==AXOM_NULLPTR, "supplied topology group is null!" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
                  "supplied topology group does not conform to the blueprint!" );
 
 
@@ -139,7 +151,7 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
 const sidre::Group* getCoordsetGroup( const sidre::Group* group,
                                       const std::string& coords )
 {
-  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+  SLIC_ERROR_IF( !blueprint::isValidRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
 
   const sidre::Group* coordsets  = group->getGroup( "coordsets" );
@@ -172,7 +184,7 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
 const sidre::Group* getTopologyGroup( const sidre::Group* group,
                                       const std::string& topo )
 {
-  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+  SLIC_ERROR_IF( !blueprint::isValidRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
 
   const sidre::Group* topologies = group->getGroup( "topologies" );
@@ -222,15 +234,15 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
                               const sidre::Group* group,
                               const std::string& topo )
 {
-  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+  SLIC_ERROR_IF( !blueprint::isValidRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
 
   const sidre::Group* topology = blueprint::getTopologyGroup( group, topo );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
                  "mesh topology does not conform to the blueprint!" );
 
   const sidre::Group* coords = blueprint::getCoordsetGroup( group, topology );
-  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( coords ),
+  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coords ),
                  "mesh coordset does not conform to the blueprint!" );
 
   // get topology type
@@ -304,11 +316,11 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
 //------------------------------------------------------------------------------
 bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo )
 {
-  SLIC_ERROR_IF( !blueprint::validRootGroup( group ),
+  SLIC_ERROR_IF( !blueprint::isValidRootGroup( group ),
                  "supplied group does not conform to the blueprint!" );
 
   const sidre::Group* topology = blueprint::getTopologyGroup( group, topo );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
                  "mesh topology does not conform to the blueprint!" );
 
   if ( topology->getView( "type" )->getString() != std::string("unstructured") )
@@ -346,9 +358,9 @@ void getUniformMesh( int dimension,
                      int64* extent )
 {
   SLIC_ERROR_IF( (dimension < 1) && ( dimension > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( coordset ),
+  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
                  "invalid topology group!" );
   SLIC_ERROR_IF( origin==AXOM_NULLPTR, "supplied null pointer for origin!");
   SLIC_ERROR_IF( spacing==AXOM_NULLPTR, "supplied null pointer for spacing!" );
@@ -419,7 +431,7 @@ void getCurvilinearMeshExtent( int dim,
 {
   SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
   SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied extent is null" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
                  "invalid topology group!" );
 
   sidre::Group* t = const_cast< sidre::Group* >( topology );
@@ -477,9 +489,9 @@ void getRectilinearMeshExtent( int dim,
                                int64* extent )
 {
   SLIC_ERROR_IF( (dim < 1) && ( dim > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( !blueprint::validCoordsetGroup( coordset ),
+  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
-  SLIC_ERROR_IF( !blueprint::validTopologyGroup( topology ),
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
                  "invalid topology group!" );
   SLIC_ERROR_IF( extent==AXOM_NULLPTR, "supplied null pointer for extent!" );
 

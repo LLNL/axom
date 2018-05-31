@@ -175,7 +175,7 @@ public:
    *  Sidre.
    *
    * \pre group != AXOM_NULLPTR
-   * \pre blueprint::validRootGroup( group )
+   * \pre blueprint::isValidRootGroup( group )
    * \post hasSidreGroup() == true
    */
   explicit ParticleMesh( sidre::Group* group, const std::string& topo="" );

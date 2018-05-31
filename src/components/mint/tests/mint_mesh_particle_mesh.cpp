@@ -459,7 +459,7 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
     // END SCOPE
 
     // ensure data is persistent in sidre
-    EXPECT_TRUE( mint::blueprint::validRootGroup(root) );
+    EXPECT_TRUE( mint::blueprint::isValidRootGroup(root) );
 
     sidre::Group* coordsets  = root->getGroup( "coordsets" );
     sidre::Group* topologies = root->getGroup( "topologies" );

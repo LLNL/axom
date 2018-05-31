@@ -51,16 +51,16 @@ void check_sidre_group( sidre::Group* root_group,
                         const double* expected_spacing,
                         const int64* expected_extent )
 {
-  EXPECT_TRUE( blueprint::validRootGroup( root_group ) );
+  EXPECT_TRUE( blueprint::isValidRootGroup( root_group ) );
 
   const sidre::Group* topology = blueprint::getTopologyGroup( root_group );
-  EXPECT_TRUE( blueprint::validTopologyGroup( topology ) );
+  EXPECT_TRUE( blueprint::isValidTopologyGroup( topology ) );
   EXPECT_EQ( topology->getParent()->getNumGroups(), 1 );
   EXPECT_EQ( topology->getParent()->getNumViews(), 0 );
 
   const sidre::Group* coordset =
     blueprint::getCoordsetGroup( root_group, topology );
-  EXPECT_TRUE( blueprint::validCoordsetGroup( coordset ) );
+  EXPECT_TRUE( blueprint::isValidCoordsetGroup( coordset ) );
   EXPECT_EQ( coordset->getParent()->getNumGroups(), 1 );
   EXPECT_EQ( coordset->getParent()->getNumViews(), 0 );
 
