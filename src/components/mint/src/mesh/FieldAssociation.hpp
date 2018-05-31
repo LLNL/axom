@@ -29,7 +29,7 @@ namespace mint
  */
 enum FieldAssociation
 {
-  NODE_CENTERED,          //!< used for fields computed at mesh nodes
+  NODE_CENTERED = 0,      //!< used for fields computed at mesh nodes
   CELL_CENTERED,          //!< used for fields computed at cell centers
   FACE_CENTERED,          //!< used for fields computed at face centers
   EDGE_CENTERED,          //!< used for fields computed at edge centers
