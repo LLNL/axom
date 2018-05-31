@@ -35,13 +35,12 @@ public:
   using RangeSetType   = slam::RangeSet;
   using SetPosType  = SetType::PositionType;
   using SetElemType = SetType::ElementType;
-  // SLAM Relation typedef (static variable relation)
+  // SLAM Relation typedef (static variable-cardinality relation)
   using STLIndirection             = policies::STLVectorIndirection<SetPosType, SetPosType>;
-  using VariableCardinality        = policies::VariableCardinality<SetPosType, STLIndirection>;
+  using VariableCardinality = policies::VariableCardinality<SetPosType, STLIndirection>;
   using StaticVariableRelationType = slam::StaticRelation<VariableCardinality, STLIndirection,
     RangeSetType, RangeSetType>;
-  
-  using RelationSet = StaticVariableRelationType::RelationSet;
+  using RelationSet = StaticVariableRelationType::RelationSet; 
   // SLAM MappedRelationSet for the set of non-zero cell to mat variables
   using MappedRelationSetType = slam::MappedRelationSet<StaticVariableRelationType>;
 
@@ -54,7 +53,8 @@ public:
 
   
   MultiMat();
-
+  MultiMat(DataLayout, SparcityLayout);
+  
   //Set-up functions
   void setNumberOfMat(int); 
   void setNumberOfCell(int);
@@ -86,10 +86,10 @@ public:
   //...
 
   //Layout modification functions
-  void convertLayoutToCellDominant() { convertLayout(LAYOUT_CELL_DOM); }
-  void convertLayoutToMaterialDominant() { convertLayout(LAYOUT_MAT_DOM); }
-  void convertLayout(DataLayout/*, Sparcity*/);
-  DataLayout getLayout();
+  void convertLayoutToCellDominant() { convertLayout(LAYOUT_CELL_DOM, m_sparcityLayout); }
+  void convertLayoutToMaterialDominant() { convertLayout(LAYOUT_MAT_DOM, m_sparcityLayout); }
+  void convertLayout(DataLayout, SparcityLayout);
+  DataLayout getDataLayout();
   std::string getLayoutAsString();
 
   void printSelf();
@@ -97,7 +97,6 @@ public:
   
 public: //private:
   int m_nmats, m_ncells;
-  bool m_modifiedSinceLastBuild;
   DataLayout m_dataLayout;
   SparcityLayout m_sparcityLayout;
 
@@ -287,7 +286,7 @@ const MultiMatArray::MapType<T>& MultiMatArray::getSubsetMap(int c)
   //Since that's unavailable, the placeholder is having a copy of the subset map inside the array class.
   assert(m_fieldMapping == PER_CELL_MAT);
 
-  m_retSubset = mm->m_cell2matRel[c];
+  m_retSubset = mm->getMatInCell(c); // m_cell2matRel[c];
   auto csetsize = m_retSubset.size();
   auto offset = m_retSubset.offset();
 
@@ -382,7 +381,7 @@ const typename MultiMatTypedArray<T>::MapType& MultiMatTypedArray<T>::getSubsetM
   //Since that's unavailable, the placeholder is having a copy of the subset map inside the array class.
   assert(m_fieldMapping == PER_CELL_MAT);
 
-  m_retSubset = mm->m_cell2matRel[c];
+  m_retSubset = mm->getMatInCell(c); // m_cell2matRel[c];
   auto csetsize = m_retSubset.size();
   auto offset = m_retSubset.offset();
 

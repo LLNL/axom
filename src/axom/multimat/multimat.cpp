@@ -24,13 +24,17 @@ MultiMatArray::MultiMatArray(MultiMat* m, std::string name, FieldMapping f)
 MultiMat::MultiMat() {
   m_ncells = m_nmats = 0;
   m_dataLayout = LAYOUT_CELL_DOM;
-  m_modifiedSinceLastBuild = false;
+  m_sparcityLayout = LAYOUT_SPARSE;
+}
+
+MultiMat::MultiMat(DataLayout d, SparcityLayout s): MultiMat() {
+  m_dataLayout = d;
+  m_sparcityLayout = s;
 }
 
 void MultiMat::setNumberOfMat(int n){
   assert(n > 0);
   m_nmats = n;
-  m_modifiedSinceLastBuild = true;
 
   m_matSet = SetType(0, m_nmats);
   assert(m_matSet.isValid());
@@ -40,7 +44,6 @@ void MultiMat::setNumberOfCell(int c)
 {
   assert(c > 0);
   m_ncells = c;
-  m_modifiedSinceLastBuild = true;
 
   m_cellSet = SetType(0, m_ncells);
   assert(m_cellSet.isValid());
@@ -48,46 +51,58 @@ void MultiMat::setNumberOfCell(int c)
 
 void MultiMat::setCellMatRel(vector<bool>& vecarr)
 {
-  
-  m_modifiedSinceLastBuild = true;
-
   //Setup the SLAM cell to mat relation
-  assert(vecarr.size() == m_ncells*m_nmats);
-  m_cell2matRel_beginsVec.resize(m_cellSet.size() + 1, -1);
 
-  SetPosType curIdx = SetPosType();
-  for (SetPosType i = 0; i < m_ncells; ++i)
+  assert(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
+
+  assert(m_dataLayout == LAYOUT_CELL_DOM); //for now assumes cell dominant
+
+  if (m_sparcityLayout == LAYOUT_SPARSE)
   {
-    m_cell2matRel_beginsVec[i] = curIdx;
-    for (SetPosType j = 0; j < m_nmats; ++j)
+    //Set-up the variable cardinality relation
+    m_cell2matRel_beginsVec.resize(m_cellSet.size() + 1, -1);
+
+    SetPosType curIdx = SetPosType();
+    for (SetPosType i = 0; i < m_ncells; ++i)
     {
-      if (vecarr[i*m_nmats + j]) {
-        m_cell2matRel_indicesVec.push_back(j);
-        ++curIdx;
+      m_cell2matRel_beginsVec[i] = curIdx;
+      for (SetPosType j = 0; j < m_nmats; ++j)
+      {
+        if (vecarr[i*m_nmats + j]) {
+          m_cell2matRel_indicesVec.push_back(j);
+          ++curIdx;
+        }
       }
     }
+    m_cell2matRel_beginsVec[m_ncells] = curIdx;
+
+    m_cell2matRel = StaticVariableRelationType(&m_cellSet, &m_matSet);
+    m_cell2matRel.bindBeginOffsets(m_cellSet.size(), &m_cell2matRel_beginsVec);
+    m_cell2matRel.bindIndices(m_cell2matRel_indicesVec.size(), &m_cell2matRel_indicesVec);
+
+    assert(m_cell2matRel.isValid());
+
+    cout << "indice total size: " << m_cell2matRel_indicesVec.size() << endl;
+    cout << "cellmatrel total size: " << m_cell2matRel.totalSize() << endl;
+    cout << "fromset size: " << m_cellSet.size() << endl;
+
+    //a set of mapped relation, which is a subset of the cartesian of cell & mat
+    m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
   }
-  m_cell2matRel_beginsVec[m_ncells] = curIdx;
+  else if (m_sparcityLayout == LAYOUT_DENSE) {
+    assert(false); //TODO
+  }
+  else assert(false);
 
-  m_cell2matRel = StaticVariableRelationType(&m_cellSet, &m_matSet);
-  m_cell2matRel.bindBeginOffsets(m_cellSet.size(), &m_cell2matRel_beginsVec);
-  m_cell2matRel.bindIndices(m_cell2matRel_indicesVec.size(), &m_cell2matRel_indicesVec);
-
-  assert(m_cell2matRel.isValid());
-
-  cout << "indice total size: " << m_cell2matRel_indicesVec.size() << endl;
-  cout << "cellmatrel total size: " << m_cell2matRel.totalSize() << endl;
-  cout << "fromset size: " << m_cellSet.size() << endl;
-
-  //Setup the cartesian set (a hack right now) of cell x mat
-
-  m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
-  
 }
 
 MultiMat::RelationSet MultiMat::getMatInCell(int c)
 {
-  return m_cell2matRel[c];
+  if (m_dataLayout == LAYOUT_SPARSE)
+    return m_cell2matRel[c];
+  else if (m_dataLayout == LAYOUT_DENSE)
+    assert(false); //TODO
+  else assert(false);
 }
 
 MultiMatArray * axom::multimat::MultiMat::getFieldArray(std::string arr_name)
@@ -106,7 +121,7 @@ MultiMatArray* MultiMat::getFieldArray(int arr_idx)
 }
 
 
-void axom::multimat::MultiMat::convertLayout(DataLayout new_layout)
+void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 {
   if (new_layout == m_dataLayout)
     return;
@@ -114,7 +129,7 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout)
   //TODO
 }
 
-axom::multimat::DataLayout axom::multimat::MultiMat::getLayout()
+axom::multimat::DataLayout axom::multimat::MultiMat::getDataLayout()
 {
   return m_dataLayout;
 }
