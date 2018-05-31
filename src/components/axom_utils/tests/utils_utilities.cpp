@@ -84,6 +84,34 @@ TEST(axom_utils_Utilities,log2)
   }
 }
 
+TEST(axom_utils_Utilities,random_real)
+{
+  std::cout<<"Testing random_real functions."<< std::endl;
+
+  int min = 0;
+  int max = 1;
+  for (int offset = 0; offset < 10; ++offset)
+  {
+    int cur_min = min - offset;
+    int cur_max = max + offset;
+    for (int i = 0; i < 100; ++i)
+    {
+      float f_val = axom::utilities::random_real<float>(cur_min, cur_max);
+      EXPECT_GE(f_val, cur_min);
+      EXPECT_LT(f_val, cur_max);
+
+      double d_val = axom::utilities::random_real<double>(cur_min, cur_max);
+      EXPECT_GE(d_val, cur_min);
+      EXPECT_LT(d_val, cur_max);
+
+      long double ld_val = axom::utilities::random_real<long double>(cur_min, 
+                                                                    cur_max);
+      EXPECT_GE(ld_val, cur_min);
+      EXPECT_LT(ld_val, cur_max);
+    }
+  }
+}
+
 TEST(axom_utils_Utilities,minmax)
 {
   std::cout<<"Testing min and max functions."<< std::endl;

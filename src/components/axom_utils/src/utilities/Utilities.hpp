@@ -203,7 +203,7 @@ inline T clampLower(T val, T lower)
  * \tparam T a built-in floating point type, e.g., double, float, long double.
  *
  * \pre a < b
- * \post a <= r <= b
+ * \post a <= r < b
  */
 template < typename T >
 inline T random_real( const T& a, const T& b )
