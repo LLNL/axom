@@ -32,9 +32,8 @@ namespace mint      = axom::mint;
 namespace utilities = axom::utilities;
 using IndexType     = mint::IndexType;
 
-constexpr double PI = 3.14159265358979323846264338327950288419716939937510582;
 constexpr double R  = 2.5;
-constexpr double M  = ( 2*PI ) / 50.0;
+constexpr double M  = (2* M_PI) / 50.0;
 /*!
  * \file
  *
