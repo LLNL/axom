@@ -19,8 +19,9 @@
  * \file
  *
  * \brief A simple, naive, N-Body solver to illustrate the use of the
- *  ParticleMesh class
- *
+ *  ParticleMesh class. The N-Body solver simulates a collection of N particles
+ *  where the force on each particle is a sum of the forces resulting from each
+ *  pairwise interaction involving that particle.
  */
 
 // axom_utiles
@@ -153,7 +154,7 @@ void apply_forces( mint::ParticleMesh& particles, double dt )
       fz += dz*invdist3;
     }
 
-    // udpate velocities
+    // update velocities
     vx[ i ] += dt*fx;
     vy[ i ] += dt*fy;
     vz[ i ] += dt*fz;
