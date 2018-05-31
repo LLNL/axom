@@ -664,25 +664,10 @@ public:
       }
       else
       {
-        int mesh_dim = m_surfaceMesh->getDimension();
-        SLIC_ASSERT( mesh_dim==SpacePt::dimension() );
-
-        double* x = m_surfaceMesh->getCoordinateArray(mint::X_COORDINATE);
+        SLIC_ASSERT( m_surfaceMesh->getDimension()==SpacePt::dimension() );
 
         SpacePt pt;
-        pt[ 0 ] = x[ idx ];
-
-        if ( mesh_dim > 1 )
-        {
-          double* y = m_surfaceMesh->getCoordinateArray(mint::Y_COORDINATE);
-          pt[ 1 ]   = y[ idx ];
-        }
-
-        if ( mesh_dim > 2 )
-        {
-          double* z = m_surfaceMesh->getCoordinateArray(mint::Z_COORDINATE);
-          pt[ 2 ]   = z[ idx ];
-        }
+        m_surfaceMesh->getNode( idx, pt.data() );
 
         return pt;
       }
