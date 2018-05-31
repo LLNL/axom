@@ -18,6 +18,7 @@
 #ifndef QUEST_TEST_UTILITIES_HPP_
 #define QUEST_TEST_UTILITIES_HPP_
 
+#include "axom_utils/Utilities.hpp" // for random_real
 
 #include "slic/slic.hpp"
 
@@ -49,24 +50,6 @@ namespace quest
 namespace utilities
 {
 
-
-/**
- * \brief Simple utility function to generate a random double in the range of beg to end
- * \param beg The lower value of the range (default 0.)
- * \param end The upper value of the range (default 1.)
- * \pre If the range is zero, we set it to 1
- * \return A double in the range [beg,end]
- */
-double randomDouble(double beg = 0., double end = 1.)
-{
-  double range = end-beg;
-
-  if(range == 0)
-    range = 1.;
-
-  return beg + (rand() / ( RAND_MAX / range ) );
-}
-
 /**
  * \brief Simple utility to generate a Point whose entries
  * are random values in the range [beg, end]
@@ -76,7 +59,7 @@ Point<double,DIM> randomSpacePt(double beg, double end)
 {
   Point<double,DIM> pt;
   for(int i=0 ; i< DIM ; ++i)
-    pt[i] = randomDouble(beg,end);
+    pt[i] = axom::utilities::random_real( beg, end );
 
   return pt;
 }
