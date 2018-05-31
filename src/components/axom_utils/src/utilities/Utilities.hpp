@@ -26,7 +26,6 @@
 #ifndef AXOM_UTILITIES_HPP_
 #define AXOM_UTILITIES_HPP_
 
-#include "axom/config.hpp" // for AXOM_USE_CXX11
 #include "axom/Types.hpp"  // for AXOM_NULLPTR
 #include "axom/Macros.hpp" // for AXOM_STATIC_ASSERT
 
@@ -34,10 +33,8 @@
 #include <cmath>           // for log2()
 #include <cstdlib>         // for std::malloc, std::realloc, std::free
 
-#ifdef AXOM_USE_CXX11
-  #include <random>        // for random  number generator
-  #include <type_traits>   // for std::is_floating_point()
-#endif
+#include <random>        // for random  number generator
+#include <type_traits>   // for std::is_floating_point()
 
 
 namespace axom
@@ -148,15 +145,8 @@ inline void swap( T& a, T& b )
 template < typename T >
 inline T log2( T& val)
 {
-  #ifdef AXOM_USE_CXX11
   return std::log2(val);
-  #else
-  static const double lg2 = std::log(2.);
-  const double lgv = std::log( static_cast<double>(val) );
-  return static_cast<T>( lgv / lg2 );
-  #endif
 }
-
 
 /*!
  * \brief Clamps an input value to a given range.
@@ -272,10 +262,8 @@ T swapEndian(T val)
     NBYTES == 2 || NBYTES == 4 || NBYTES == 8,
     "swapEndian only valid for types of size 2, 4 or 8 bytes.");
 
-  #ifdef AXOM_USE_CXX11
   AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
                           "swapEndian only valid for native arithmetic types");
-  #endif
 
   union
   {
