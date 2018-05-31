@@ -170,7 +170,9 @@ public:
 /// @{
 
   /*!
-   * \brief Create a curvilinear mesh instance from the given Sidre group.
+   * \brief Create a curvilinear mesh instance from the given Sidre group that
+   *  holds mesh data for a structured curvilinear mesh according to the
+   *  computational mesh blueprint conventions.
    *
    * \param [in] group pointe to the root group within a Sidre hierarchy.
    * \param [in] topo the name of the topology for this mesh (optional).
@@ -198,9 +200,8 @@ public:
   /// @}
 
   /*!
-   * \brief Create a curvilinear mesh instance, given the ambient dimension
-   *  of the mesh and associated logical extent, that is bound to the supplied
-   *  Sidre group.
+   * \brief Create a curvilinear mesh instance, on an empty sidre::Group,
+   *  that has the specified dimension and extent.
    *
    * \param [in] dimension the dimension of the mesh
    * \param [in] ext pointer to buffer with the logical extent of the mesh.
@@ -229,8 +230,8 @@ public:
                    const std::string& coordset="" );
 
   /*!
-   * \brief Construct a CurvilinearMesh with the specified dimensions that is
-   *  bound to the the given Sidre group.
+   * \brief Create a curvilinear mesh instance, on an empty sidre::Group, with
+   *  specified dimensions,  \f$ N_i, N_j, N_k f\$
    *
    * \param [in] group pointer to the Sidre group where to store the mesh
    * \param [in] topo the name of the associated topology (optional)

@@ -190,6 +190,16 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo="" );
  *    in literature methods using a particle discretization are also referred
  *    to as <em> meshless </em> or <em> meshfree </em> methods.
  *
+ * The Mesh class provides the means to create, access and remove fields on
+ * a mesh given the field name and its association. The field association
+ * designates the corresponding mesh entity at which the field is stored, e.g.
+ * whether the field is stored at the nodes or cell centers. A Field may be a
+ * scalar quantity, e.g., pressure, or a vector field, such as, velocity.
+ *
+ * \warning When using Sidre, field names have to be unique. For example, if
+ *  there exists a "pressure" node-centered field, there cannot be a
+ *  corresponding cell-centered field.
+ *
  * \note Mesh is a base class and cannot be instantiated directly
  *
  * \note Typically, the computational mesh can be defined across one or more
@@ -532,9 +542,13 @@ public:
    *
    * \return ptr raw pointer to the data buffer of the new field.
    *
+   * \note This method throws an error and aborts if any of the pre-conditions
+   *  is not satisfied.
+   *
    * \pre name.empty() == false
    * \pre hasField( name ) == false
    * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   *
    * \post ptr != AXOM_NULLPTR
    * \post hasField( name ) == true
    *
@@ -558,10 +572,14 @@ public:
    *
    * \return ptr raw pointer to the data buffer of the new field.
    *
+   * \note This method throws an error and aborts if any of the pre-conditions
+   *  is not satisfied.
+   *
    * \pre name.empty() == false
    * \pre hasField( name ) == false
    * \pre data != AXOM_NULLPTR
    * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
+   *
    * \post ptr != AXOM_NULLPTR
    * \post ptr == data
    * \post hasField( name ) == true

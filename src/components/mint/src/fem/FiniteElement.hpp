@@ -99,8 +99,8 @@ enum
  *     numeric::Matrix< double > m( 2, 4, coords, zero_copy );
  *
  *     // construct finite element and bind to basis
- *     mint::FiniteElement fe( m, MINT_QUAD, zero_copy );
- *     mint::bind_basis< MINT_LAGRANGE, MINT_QUAD >( fe );
+ *     mint::FiniteElement fe( m, mint::QUAD, zero_copy );
+ *     mint::bind_basis< MINT_LAGRANGE_BASIS, mint::QUAD >( fe );
  *
  *     // compute reference coordinates
  *     int status = fe.computeReferenceCoords( xp, xr );

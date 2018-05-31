@@ -173,7 +173,9 @@ public:
 /// @{
 
   /*!
-   * \brief Creates a RectilinearMesh from the supplied Sidre group.
+   * \brief Creates a RectilinearMesh from a given Sidre group that holds
+   *  mesh data for a rectilinear mesh, according to the conventions described
+   *  by the computational mesh blueprint.
    *
    * \param [in] group pointer to the Sidre group associated with the mesh
    * \param [in] topo the name of the topology for this mesh (optional).
@@ -199,8 +201,9 @@ public:
                             const std::string& topo="" );
 
   /*!
-   * \brief Creates a RectilinearMesh with the specified logical extent that is
-   *  bound to the supplied Sidre group.
+   * \brief Creates a RectilinearMesh, on a empty Sidre group, given
+   *  a supplied mesh extent that specifies the number of nodes and cells
+   *  along each dimension.
    *
    * \param [in] dimension the dimension of the mesh
    * \param [in] ext array that holds the logical extent of the mesh
@@ -233,8 +236,8 @@ public:
                    const std::string& coordset="" );
 
   /*!
-   * \brief Creates a RectilinearMesh instance of specified dimensions that is
-   *  bound to the supplied Sidre group.
+   * \brief Creates a RectilinearMesh, on an empty Sidre group, given the
+   *  desired mesh dimensions, \f$ N_i, N_j, N_k f\$
    *
    * \param [in] group pointer to the Sidre group where to store the mesh.
    * \param [in] topo the name of the associated topology (optional)

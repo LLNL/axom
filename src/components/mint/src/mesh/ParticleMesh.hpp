@@ -95,7 +95,7 @@ public:
 
   /*!
    * \brief Constructs a ParticleMesh instance of specified dimension that
-   *  consists the specified number of particles.
+   *  holds the specified number of particles.
    *
    * \param [in] dimension the ambient dimension of the particle mesh.
    * \param [in] numParticles the number of particles in this
@@ -126,13 +126,14 @@ public:
    * \param [in] y pointer to the particle y-coordinate positions (optional)
    * \param [in] z pointer to the particle z-coordinate positions (optional)
    *
-   * \note This constructor wraps the supplied particle posision buffers.
+   * \note This constructor wraps the supplied particle position buffers.
    *  Consequently, the resulting ParticleMesh object does not own the memory
    *  associated with the particle positions.
    *
    * \warning All calls to shrink(), append(), resize() and reserve will fail
-   *  on a ParticleMesh instance that is constructed using this external
-   * \note The supplied buffers must have sufficient storage f`numParticles`
+   *  on a ParticleMesh instance that is constructed using this constructor.
+   *
+   * \note The supplied buffers must have sufficient storage for numParticles
    *
    * \pre x != AXOM_NULLPTR
    * \pre y != AXOM_NULLPTR, if dimension==2 || dimension==3
@@ -154,7 +155,9 @@ public:
 /// @{
 
   /*!
-   * \brief Creates a ParticleMesh instance from a Sidre group.
+   * \brief Creates a ParticleMesh instance from a given Sidre group that holds
+   *  particle mesh data that according to the conventions of the computational
+   *  mesh blueprint.
    *
    * \param [in] group pointer to the blueprint root group in Sidre
    * \param [in] topo the name of the associated topology (optional)
@@ -178,7 +181,7 @@ public:
   explicit ParticleMesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
-   * \brief Creates a ParticleMesh object on the specified Sidre group.
+   * \brief Creates a ParticleMesh object on an empty Sidre group.
    *
    * \param [in] dimension the ambient dimension of the particle mesh.
    * \param [in] numParticles the number of particles this instance holds
@@ -341,8 +344,8 @@ public:
 /// @}
 
   /*!
-   * \brief Return true iff both the particle positions are stored in
-   *  external arrays.
+   * \brief Return true iff particle positions are stored in external arrays.
+   * \return status true iff the particle positions point to external buffers.
    */
   virtual bool isExternal() const final override
   { return m_positions->isExternal(); }
@@ -396,8 +399,6 @@ public:
   bool isInSidre() const
   { return m_positions->isInSidre(); }
 
-/// @}
-
 /// \name Data Access Methods
 /// @{
 
@@ -405,8 +406,8 @@ public:
    * \brief Appends a new particle to the ParticleMesh
    *
    * \param [in] x the x-coordinate of the particle position
-   * \param [in] y the y-coordinate of the particle position (valid in 2-D,3-D)
-   * \param [in] z the z-coordinate of the particle position (valid in 3-D only)
+   * \param [in] y the y-coordinate of the particle position (valid in 2-D)
+   * \param [in] z the z-coordinate of the particle position (valid in 3-D)
    *
    * \post increments the number of particles by one.
    */
@@ -429,7 +430,7 @@ private:
   void initialize();
 
   /*!
-   * \brief Helper method to check if the particle data is consistent
+   * \brief Checks if the internal data array are consistent.
    * \return status true if the consistency checks pass, else, false.
    */
   bool checkConsistency();

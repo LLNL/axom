@@ -315,7 +315,9 @@ public:
 #ifdef MINT_USE_SIDRE
 
   /*!
-   * \brief Constructor for use with a group that already has data.
+   * \brief Creates an UnstructuredMesh instance from a given Sidre group that
+   *  holds mesh data for an unstructured mesh according to the conventions
+   *  described in the computational mesh blueprint.
    *
    * \param [in] group the sidre::Group to use.
    * \param [in] topo optional argument specifying the name of the topology
@@ -346,7 +348,7 @@ public:
   }
 
   /*!
-   * \brief Constructor for use with an empty group.
+   * \brief Creates an UnstructuredMesh instance on an empty Sidre group.
    *
    * \param [in] ndims the number of dimensions.
    * \param [in] cell_type the cell type of the mesh.

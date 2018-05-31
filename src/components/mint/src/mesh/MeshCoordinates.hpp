@@ -154,7 +154,7 @@ public:
    * \param [in] capacity the actual node capacity on the supplied buffers.
    * \param [in] x pointer to the x-coordinates
    * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D
-   * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D
+   * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D or 1D
    *
    * \warning This constructor wraps the given coordinate buffers and does not
    *  own the data. Consequently, new nodes cannot be added to this
@@ -193,7 +193,9 @@ public:
 #ifdef MINT_USE_SIDRE
 
   /*!
-   * \brief Creates a MeshCoordinates object from the given sidre::Group.
+   * \brief Creates a MeshCoordinates object from the given sidre::Group that
+   *  holds mesh coordinate data according to the computational mesh blueprint
+   *  conventions.
    *
    * \param [in] group the sidre::Group instance that holds mesh coordinates.
    *
@@ -208,7 +210,7 @@ public:
   MeshCoordinates( sidre::Group* group );
 
   /*!
-   * \brief Creates a MeshCoordinates object on the given sidre::Group
+   * \brief Creates a MeshCoordinates object on an empty sidre::Group
    *
    * \param [in,out] group the sidre::Group to hold the mesh coordinates
    * \param [in] dimension the mesh dimension

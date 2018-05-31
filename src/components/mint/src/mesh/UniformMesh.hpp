@@ -186,7 +186,9 @@ public:
 /// @{
 
   /*!
-   * \brief Creates a uniform mesh instance from the given Sidre group.
+   * \brief Creates a uniform mesh instance from the given Sidre group that
+   *  holds uniform mesh data according to the computational mesh blueprint
+   *  conventions.
    *
    * \param [in] group pointer to the root group within a Sidre hierarchy.
    * \param [in] topo the name of the topology for this mesh (optional).
@@ -209,10 +211,10 @@ public:
   explicit UniformMesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
-   * \brief Constructs a uniform mesh object on the specified Sidre group, that
-   *  covers a rectangular region, given the lower and upper corner points of
-   *  the rectangular region and mesh extent, which specifies the number of
-   *  nodes and cells along each dimension.
+   * \brief Constructs a uniform mesh object, on an empty Sidre group, that
+   *  covers a rectangular region, defined by its lower and upper corner points
+   *  and the desired mesh extent, which specifies the number of nodes and cells
+   *  along each dimension.
    *
    * \param [in] dimension the dimension of the mesh
    * \param [in] lower_bound lower corner coordinates of rectangular region
@@ -259,9 +261,9 @@ public:
                const std::string& coordset="" );
 
   /*!
-   * \brief Constructs a uniform mesh object on the specified Sidre group, that
-   *  covers a rectangular region, given the lower and upper corner points of
-   *  the rectangular region and desired mesh dimensions, \f$ N_i, N_j, N_k f\$
+   * \brief Constructs a uniform mesh object, on an empty Sidre group, that
+   *  covers a rectangular region, defined by its lower and upper corner points,
+   *  and desired mesh dimensions, \f$ N_i, N_j, N_k f\$
    *
    * \param [in] dimension the dimension of the mesh
    * \param [in] lower_bound lower corner coordinates of rectangular region

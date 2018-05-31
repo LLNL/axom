@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Tight integration of Mint and Sidre. Mint can now operate on meshes stored in
-  Sidre and conform to the [computation mesh blueprint conventions](http://llnl-conduit.readthedocs.io/en/latest/).
+  Sidre and conform to the [computational mesh blueprint conventions](http://llnl-conduit.readthedocs.io/en/latest/blueprint.html).
 - Added a sphere-sphere intersection test to Primal.
 - Added a utility function to Quest to *weld* vertices in a triangle mesh that are within
   a given tolerance. After welding, all triangles incident in a vertex have the same

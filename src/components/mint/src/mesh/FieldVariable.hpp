@@ -193,7 +193,7 @@ public:
 
   /*!
    * \brief Creates a FieldVariable with the given name, number of tuples and
-   *  number of components per tuple, on the supplied sidre::View.
+   *  number of components per tuple, on the supplied, empty, sidre::View.
    *
    * \param [in] field_view pointer to the sidre::View that will hold the field
    * \param [in] name the name associated with this field instance.

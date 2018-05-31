@@ -51,7 +51,7 @@ public:
   /*!
    * \brief Returns the cell type of this instance.
    * \return c the cell type, e.g., MINT_QUAD etc.
-   * \see CellType.hpp
+   * \see CellTypes.hpp
    *
    * \note This method is implemented in specialized instances.
    */
