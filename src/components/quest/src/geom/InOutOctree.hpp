@@ -2814,23 +2814,18 @@ private:
 
     mint::IndexType vStart = mesh->getNumberOfNodes();
 
-    mesh->appendNode(blockBB.getMin()[0], blockBB.getMin()[1],
-                  blockBB.getMin()[2]);
-    mesh->appendNode(blockBB.getMax()[0], blockBB.getMin()[1],
-                  blockBB.getMin()[2]);
-    mesh->appendNode(blockBB.getMax()[0], blockBB.getMax()[1],
-                  blockBB.getMin()[2]);
-    mesh->appendNode(blockBB.getMin()[0], blockBB.getMax()[1],
-                  blockBB.getMin()[2]);
+    const SpacePt& bMin = blockBB.getMin();
+    const SpacePt& bMax = blockBB.getMax();
 
-    mesh->appendNode(blockBB.getMin()[0], blockBB.getMin()[1],
-                  blockBB.getMax()[2]);
-    mesh->appendNode(blockBB.getMax()[0], blockBB.getMin()[1],
-                  blockBB.getMax()[2]);
-    mesh->appendNode(blockBB.getMax()[0], blockBB.getMax()[1],
-                  blockBB.getMax()[2]);
-    mesh->appendNode(blockBB.getMin()[0], blockBB.getMax()[1],
-                  blockBB.getMax()[2]);
+    mesh->appendNode( bMin[0], bMin[1], bMin[2] );
+    mesh->appendNode( bMax[0], bMin[1], bMin[2] );
+    mesh->appendNode( bMax[0], bMax[1], bMin[2] );
+    mesh->appendNode( bMin[0], bMax[1], bMin[2] );
+
+    mesh->appendNode( bMin[0], bMin[1], bMax[2] );
+    mesh->appendNode( bMax[0], bMin[1], bMax[2] );
+    mesh->appendNode( bMax[0], bMax[1], bMax[2] );
+    mesh->appendNode( bMin[0], bMax[1], bMax[2] );
 
     mint::IndexType data[8];
     for(int i=0 ; i< 8 ; ++i)
@@ -2845,8 +2840,8 @@ private:
       SLIC_INFO("// Block index " << block);
       SLIC_INFO(
         "BoundingBoxType box"
-        << ++counter <<"(PointType::make_point" << blockBB.getMin() << ","
-        << "PointType::make_point" << blockBB.getMax()<<  ");" );
+        << ++counter <<"(PointType::make_point" << bMin << ","
+        << "PointType::make_point" << bMax<<  ");" );
     }
   }
 

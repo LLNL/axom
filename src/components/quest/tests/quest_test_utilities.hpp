@@ -102,12 +102,12 @@ axom::mint::Mesh * make_octahedron_mesh()
   // The six vertices of the octahedron
   const int NUM_VERTS = 6;
   SpacePt verts[NUM_VERTS]
-    =  { SpacePt::make_point( 1., 0., 0.)
-         , SpacePt::make_point(-1., 0., 0.)
-         , SpacePt::make_point( 0,  1., 0.)
-         , SpacePt::make_point( 0, -1., 0.)
-         , SpacePt::make_point( 0,  0,  1.)
-         , SpacePt::make_point( 0,  0, -1.)  };
+    =  { SpacePt::make_point( 1., 0., 0.),
+         SpacePt::make_point(-1., 0., 0.),
+         SpacePt::make_point( 0,  1., 0.),
+         SpacePt::make_point( 0, -1., 0.),
+         SpacePt::make_point( 0,  0,  1.),
+         SpacePt::make_point( 0,  0, -1.)  };
 
   // The eight triangles of the octahedron
   // Explicit representation of triangle-vertex incidence relation
@@ -115,14 +115,14 @@ axom::mint::Mesh * make_octahedron_mesh()
   const int NUM_TRIS = 8;
   const int VERTS_PER_TRI = 3;
   VertexIndex tvRelation[NUM_TRIS*VERTS_PER_TRI]
-    = { POS_Z, POS_X, POS_Y
-        , POS_Z, POS_Y, NEG_X
-        , POS_Z, NEG_X, NEG_Y
-        , POS_Z, NEG_Y, POS_X
-        , NEG_Z, POS_Y, POS_X
-        , NEG_Z, NEG_X, POS_Y
-        , NEG_Z, NEG_Y, NEG_X
-        , NEG_Z, POS_X, NEG_Y };
+    = { POS_Z, POS_X, POS_Y,
+        POS_Z, POS_Y, NEG_X,
+        POS_Z, NEG_X, NEG_Y,
+        POS_Z, NEG_Y, POS_X,
+        NEG_Z, POS_Y, POS_X,
+        NEG_Z, NEG_X, POS_Y,
+        NEG_Z, NEG_Y, NEG_X,
+        NEG_Z, POS_X, NEG_Y };
 
   // Note (KW 3/2016) -- We are not currently using this
   // Explicit representation of edge-vertex incidence relation
