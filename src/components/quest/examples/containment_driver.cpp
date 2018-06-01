@@ -158,59 +158,28 @@ void testIntersectionOnRegularGrid()
 
         if( axom::primal::intersect( unitTri, blockBB))
         {
-          for(int k=0 ; k< 1<<lev ; ++k)
-          {
-            SpaceOctree::BlockIndex block( axom::primal::Point<int,3>::make_point(
-                                             i,j,
-                                             k), lev );
-            SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(
-              block);
+          // Add to debug mesh
+          int vStart = debugMesh->getNumberOfNodes();
+          const SpacePt& bMin = blockBB.getMin();
+          const SpacePt& bMax = blockBB.getMax();
 
-            if( axom::primal::intersect( unitTri, blockBB))
-            {
-              SpaceOctree::BlockIndex block( primal::Point<int,3>::make_point(i,
-                                                                              j,
-                                                                              k),
-                                             lev );
-              SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(
-                block);
+          debugMesh->appendNode( bMin[0], bMin[1], bMin[2]);
+          debugMesh->appendNode( bMax[0], bMin[1], bMin[2]);
+          debugMesh->appendNode( bMax[0], bMax[1], bMin[2]);
+          debugMesh->appendNode( bMin[0], bMax[1], bMin[2]);
 
-              if( primal::intersect( unitTri, blockBB))
-              {
-                // Add to debug mesh
-                mint::IndexType vStart = debugMesh->getNumberOfNodes();
+          debugMesh->appendNode( bMin[0], bMin[1], bMax[2]);
+          debugMesh->appendNode( bMax[0], bMin[1], bMax[2]);
+          debugMesh->appendNode( bMax[0], bMax[1], bMax[2]);
+          debugMesh->appendNode( bMin[0], bMax[1], bMax[2]);
 
-                debugMesh->appendNode( blockBB.getMin()[0],
-                                    blockBB.getMin()[1], blockBB.getMin()[2]);
-                debugMesh->appendNode( blockBB.getMax()[0],
-                                    blockBB.getMin()[1], blockBB.getMin()[2]);
-                debugMesh->appendNode( blockBB.getMax()[0],
-                                    blockBB.getMax()[1], blockBB.getMin()[2]);
-                debugMesh->appendNode( blockBB.getMin()[0],
-                                    blockBB.getMax()[1], blockBB.getMin()[2]);
+          int data[8];
+          for(int x=0 ; x< 8 ; ++x)
+            data[x] = vStart + x;
 
-                debugMesh->appendNode( blockBB.getMin()[0],
-                                    blockBB.getMin()[1], blockBB.getMax()[2]);
-                debugMesh->appendNode( blockBB.getMax()[0],
-                                    blockBB.getMin()[1], blockBB.getMax()[2]);
-                debugMesh->appendNode( blockBB.getMax()[0],
-                                    blockBB.getMax()[1], blockBB.getMax()[2]);
-                debugMesh->appendNode( blockBB.getMin()[0],
-                                    blockBB.getMax()[1], blockBB.getMax()[2]);
-
-                mint::IndexType data[8];
-                for(int i=0 ; i< 8 ; ++i)
-                {
-                  data[i] = vStart + i;
-                }
-
-                debugMesh->appendCell(data, mint::HEX);
-              }
-
-            }
-
-          }
+          debugMesh->appendCell( data, mint::HEX );
         }
+
       }
     }
   }
@@ -359,16 +328,6 @@ void print_surface_stats( mint::Mesh * mesh)
         }
       }
 
-      // Compute triangle area stats
-      double area = tri.area();
-      if( utilities::isNearlyEqual(area, 0.))
-      {
-        LengthType edgeLen(len);
-        meshEdgeLenRange.addPoint( edgeLen );
-        std::frexp (len, &expBase2);
-        edgeLenHist[expBase2]++;
-        edgeLenRangeMap[expBase2].addPoint( edgeLen );
-      }
     }
 
     // Compute triangle area stats
