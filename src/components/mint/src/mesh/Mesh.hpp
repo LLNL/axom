@@ -518,16 +518,20 @@ public:
    * \brief Check if a field with the given name and association exists.
    *
    * \param [in] name the name of the field in query.
-   * \param [in] association the field association, e.g., NODE_CENTERED, etc.
+   * \param [in] association the field association (optional)
    *
    * \return status true if the field exists, else, false.
+   *
+   * \note If an association is not explicitly specified, the code will check
+   *  if a field by the given name exists in any available centeering.
    *
    * \pre name.empty()==false
    * \pre association >= 0 && association < NUM_FIELD_ASSOCIATION
    *
    * \see FieldAssociation
    */
-  inline bool hasField( const std::string& name, int association ) const;
+  inline bool hasField( const std::string& name,
+                        int association=ANY_CENTERING ) const;
 
   /*!
    * \brief Creates a new field with the given name and specified mesh field
@@ -822,11 +826,31 @@ inline const FieldData* Mesh::getFieldData( int association ) const
 }
 
 //------------------------------------------------------------------------------
-inline bool Mesh::hasField( const std::string& name, int association ) const
+inline bool Mesh::hasField( const std::string& name,
+                            int association ) const
 {
-  const FieldData* fd = getFieldData( association );
-  SLIC_ASSERT( fd != AXOM_NULLPTR );
-  return fd->hasField( name );
+  bool found = false;
+
+  if ( association == mint::ANY_CENTERING )
+  {
+
+    int N = ( m_type==mint::PARTICLE_MESH ) ? 1 : mint::NUM_FIELD_ASSOCIATIONS;
+    for ( int i=0; !found && i < N; ++i )
+    {
+      const FieldData* fd = getFieldData( i );
+      SLIC_ASSERT( fd != AXOM_NULLPTR );
+      found = fd->hasField( name );
+    }
+
+  }
+  else
+  {
+    const FieldData* fd = getFieldData( association );
+    SLIC_ASSERT( fd != AXOM_NULLPTR );
+    found = fd->hasField( name );
+  }
+
+  return ( found );
 }
 
 //------------------------------------------------------------------------------
@@ -836,6 +860,9 @@ inline T* Mesh::createField( const std::string& name,
                              IndexType num_components,
                              bool storeInSidre )
 {
+  SLIC_ERROR_IF( hasField( name ),
+                 "a field with the same name already exists!" );
+
   FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );
   SLIC_ASSERT( fd != AXOM_NULLPTR );
 
@@ -859,6 +886,9 @@ inline T* Mesh::createField( const std::string& name,
                              IndexType num_components,
                              IndexType capacity )
 {
+  SLIC_ERROR_IF( hasField( name ),
+                 "a field with the same name already exists!" );
+
   SLIC_ASSERT( data != AXOM_NULLPTR );
 
   FieldData* fd = const_cast< FieldData* >( getFieldData( association ) );

@@ -29,6 +29,7 @@ namespace mint
  */
 enum FieldAssociation
 {
+  ANY_CENTERING = -1,     //!< wild-card used to indicate any centering
   NODE_CENTERED = 0,      //!< used for fields computed at mesh nodes
   CELL_CENTERED,          //!< used for fields computed at cell centers
   FACE_CENTERED,          //!< used for fields computed at face centers

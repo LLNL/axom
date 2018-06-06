@@ -42,6 +42,7 @@ namespace mint
 {
 
 constexpr double E =  2.71828182845904523536;
+const char* IGNORE_OUTPUT = ".*";
 
 namespace internal
 {
@@ -323,11 +324,21 @@ void check_cell_fields( IndexType n_cells, const double* p )
 //------------------------------------------------------------------------------
 //  UNIT TESTS
 //------------------------------------------------------------------------------
+TEST( mint_mesh_DeathTest, enforce_unique_field_names )
+{
+  mint::CurvilinearMesh m( 5, 5 );
+  m.createField< double >( "foo", mint::NODE_CENTERED );
+
+  EXPECT_DEATH_IF_SUPPORTED(
+      m.createField< double >( "foo", mint::CELL_CENTERED ),
+      IGNORE_OUTPUT );
+}
+
+//------------------------------------------------------------------------------
 #ifdef MINT_USE_SIDRE
 
 TEST( mint_mesh_DeathTest, get_mesh_null_group )
 {
-  const char* IGNORE_OUTPUT = ".*";
   EXPECT_DEATH_IF_SUPPORTED( mint::getMesh( AXOM_NULLPTR ), IGNORE_OUTPUT );
 }
 
