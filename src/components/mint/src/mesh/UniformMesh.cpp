@@ -185,17 +185,17 @@ UniformMesh::UniformMesh( int dimension,
   SLIC_ERROR_IF( upper_bound==AXOM_NULLPTR, "supplied null for upper_bound" );
 
   // STEP 0: initialize mesh
-  m_extent = new mint::Extent( dimension, extent );
+  m_extent = new mint::Extent( m_ndims, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );
 
   initializeFields();
 
   // STEP 1: populate sidre
-  blueprint::initializeTopologyGroup(  m_group, m_topology, m_coordset,
-                                       "uniform" );
+  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
+                                      "uniform" );
 
-  blueprint::setUniformMesh( dimension, m_origin, m_h, m_extent,
+  blueprint::setUniformMesh( m_ndims, m_origin, m_h, m_extent,
                              getCoordsetGroup(),
                              getTopologyGroup() );
 }
@@ -228,7 +228,7 @@ UniformMesh::UniformMesh( const double* lower_bound,
   blueprint::initializeTopologyGroup(  m_group, m_topology, m_coordset,
                                        "uniform" );
 
-  blueprint::setUniformMesh( dimension, m_origin, m_h, m_extent,
+  blueprint::setUniformMesh( m_ndims, m_origin, m_h, m_extent,
                              getCoordsetGroup(),
                              getTopologyGroup() );
 }

@@ -374,7 +374,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
     // flavors of the Sidre constructor
     // BEGIN SCOPE
     {
-      UniformMesh m1( lo, hi, ext, mesh1grp );
+      UniformMesh m1( idim, lo, hi, ext, mesh1grp );
       check_constructor( &m1, idim, lo, h, ext, N );
       check_create_field( &m1, NODE_CENTERED, "n1", 3 );
       check_create_field( &m1, CELL_CENTERED, "c1", 1 );
