@@ -21,33 +21,13 @@
 #include "mint/config.hpp"         // for compile-time definitions
 #include "mint/MeshTypes.hpp"      // for STRUCTURED_RECTILINEAR_MESH
 
+#include "mint/MeshHelpers.hpp"    // for internal helper methods
+
 namespace axom
 {
 namespace mint
 {
 
-//------------------------------------------------------------------------------
-// HELPER METHODS
-//------------------------------------------------------------------------------
-namespace
-{
-
-inline int dim( const double* AXOM_NOT_USED(x),
-                const double* y,
-                const double* z )
-{
-  return ( ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) );
-}
-
-//------------------------------------------------------------------------------
-inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
-                 const IndexType& Nj,
-                 const IndexType& Nk  )
-{
-  return ( (Nk >= 1) ? 3 : ( (Nj >= 1) ? 2 : 1 ) );
-}
-
-} /* anonymous namespace */
 
 //------------------------------------------------------------------------------
 // RECTILINEAR MESH IMPLEMENTATION
@@ -63,7 +43,7 @@ RectilinearMesh::RectilinearMesh( int dimension, const int64* ext ) :
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dim(Ni,Nj,Nk) )
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, internal::dim(Ni,Nj,Nk) )
 {
   int64 extent[]  = { 0, Ni-1, 0, Nj-1, 0, Nk-1 };
   m_extent        = new mint::Extent( m_ndims, extent );
@@ -77,7 +57,7 @@ RectilinearMesh::RectilinearMesh( const int64* ext,
                                   double* x,
                                   double* y,
                                   double* z ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dim(x,y,z), ext )
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, internal::dim(x,y,z), ext )
 {
   initialize( );
 
@@ -156,7 +136,8 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
                                   IndexType Ni,
                                   IndexType Nj,
                                   IndexType Nk ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH,dim(Ni,Nj,Nk),group,topo,coordset)
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH,internal::dim(Ni,Nj,Nk),
+                  group,topo,coordset)
 {
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "rectilinear" );

@@ -219,8 +219,8 @@ UniformMesh::UniformMesh( int dimension,
   SLIC_ERROR_IF( Ni <= 0, "Ni must be greater or equal to 1" );
   SLIC_ERROR_IF( (dimension >= 2 ) && (Nj <= 0),
                  "Nj must be greater or equal to 1" );
-  SLIC_ERROR_IF( (dimension==3) && (Nk <= 0), ""
-                                              "Nk must be greater or equal to 1" );
+  SLIC_ERROR_IF( (dimension==3) && (Nk <= 0),
+                 "Nk must be greater or equal to 1" );
 
   // STEP 0: initialize mesh
   int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };

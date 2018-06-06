@@ -45,6 +45,7 @@ set( mint_headers
     mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArray_internal.hpp
+    mesh/internal/MeshHelpers.hpp
 
     mesh/blueprint.hpp
     mesh/CellTypes.hpp

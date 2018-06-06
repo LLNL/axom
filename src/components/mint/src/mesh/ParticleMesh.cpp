@@ -22,24 +22,12 @@
 #include "mint/MeshCoordinates.hpp" // for mint::MeshCoordinates class
 #include "mint/blueprint.hpp"       // for mint::blueprint() functions
 
+#include "mint/MeshHelpers.hpp"     // for internal helper methods
+
 namespace axom
 {
 namespace mint
 {
-
-//------------------------------------------------------------------------------
-//  HELPER METHODS
-//------------------------------------------------------------------------------
-namespace
-{
-
-inline int dim( const double* AXOM_NOT_USED(x),
-                const double* y, const double* z )
-{
-  return ( ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) );
-}
-
-} /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
 ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
@@ -53,7 +41,7 @@ ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
 //------------------------------------------------------------------------------
 ParticleMesh::ParticleMesh( IndexType numParticles,
                             double* x, double* y, double* z ) :
-  Mesh( dim( x, y, z ), PARTICLE_MESH ),
+  Mesh( internal::dim( x, y, z ), PARTICLE_MESH ),
   m_positions( new MeshCoordinates( numParticles, numParticles, x, y, z ) )
 {
   initialize( );

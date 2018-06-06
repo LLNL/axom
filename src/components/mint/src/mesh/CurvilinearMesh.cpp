@@ -21,6 +21,8 @@
 #include "mint/MeshTypes.hpp"        // for STRUCTURED_CURVILINEAR_MESH
 #include "mint/MeshCoordinates.hpp"  // for MeshCoordinates class definition
 
+#include "mint/MeshHelpers.hpp"      // for internal helper methods
+
 // slic includes
 #include "slic/slic.hpp"             // for SLIC macros
 
@@ -28,29 +30,6 @@ namespace axom
 {
 namespace mint
 {
-
-//------------------------------------------------------------------------------
-// HELPER METHODS
-//------------------------------------------------------------------------------
-namespace
-{
-
-inline int dim( const double* AXOM_NOT_USED(x),
-                const double* y,
-                const double* z )
-{
-  return ( ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) );
-}
-
-//------------------------------------------------------------------------------
-inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
-                 const IndexType& Nj,
-                 const IndexType& Nk  )
-{
-  return ( (Nk >= 1) ? 3 : ( (Nj >= 1) ? 2 : 1 ) );
-}
-
-} /* anonymous namespace */
 
 //------------------------------------------------------------------------------
 // CURVILINEAR MESH IMPLEMENTATION
@@ -73,7 +52,7 @@ CurvilinearMesh::CurvilinearMesh( int ndims, const int64* ext ) :
 CurvilinearMesh::CurvilinearMesh( IndexType Ni,
                                   IndexType Nj,
                                   IndexType Nk ) :
-  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dim( Ni,Nj,Nk ) )
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, internal::dim( Ni,Nj,Nk ) )
 {
   int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
   m_extent        = new mint::Extent( m_ndims, extent );
@@ -92,7 +71,7 @@ CurvilinearMesh::CurvilinearMesh( const int64* ext,
                                   double* x,
                                   double* y,
                                   double* z ) :
-  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dim(x,y,z), ext ),
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, internal::dim(x,y,z), ext ),
   m_coordinates( new mint::MeshCoordinates( m_extent->getNumNodes(), x,y,z ) )
 {
   initialize( );
@@ -166,7 +145,8 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
                                   IndexType Ni,
                                   IndexType Nj,
                                   IndexType Nk  ) :
-  StructuredMesh(STRUCTURED_CURVILINEAR_MESH,dim(Ni,Nj,Nk),group,topo,coordset)
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, internal::dim(Ni,Nj,Nk),
+                  group,topo,coordset)
 {
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       "structured" );
