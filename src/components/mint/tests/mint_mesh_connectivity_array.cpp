@@ -29,8 +29,8 @@ namespace mint
 
 const char IGNORE_OUTPUT[] = ".*";
 
-constexpr IndexType vertex_stride = cell_info[ VERTEX ].num_nodes;
-constexpr IndexType hex_stride = cell_info[ HEX ].num_nodes;
+constexpr IndexType vertex_stride = getCellInfo( VERTEX ).num_nodes;
+constexpr IndexType hex_stride = getCellInfo( HEX ).num_nodes;
 
 namespace internal
 {
@@ -106,7 +106,7 @@ IndexType calc_ID_capacity( const ConnectivityArray< TYPED_INDIRECTION >& connec
 IndexType calc_value_capacity( const ConnectivityArray< NO_INDIRECTION >& connec,
                                IndexType increase )
 {
-  IndexType stride = cell_info[ connec.getIDType() ].num_nodes;
+  IndexType stride = getCellInfo( connec.getIDType() ).num_nodes;
   return calc_ID_capacity( connec, increase / stride ) * stride;
 }
 
@@ -318,7 +318,7 @@ void checkAppend( const ConnectivityArray< TYPE >& connec, IndexType n_IDs,
 {
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
-                           cell_info[ cell_type ].num_nodes;
+                           getCellInfo( cell_type ).num_nodes;
 
   for ( IndexType ID = 0 ; ID < n_IDs ; ++ID )
   {
@@ -349,7 +349,7 @@ void append( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
 {
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
-                           cell_info[ cell_type ].num_nodes;
+                           getCellInfo( cell_type ).num_nodes;
   const IndexType initial_n_IDs = connec.getNumberOfIDs();
 
   IndexType half_n_IDs = n_IDs / 2;
@@ -427,7 +427,7 @@ void set( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
 {
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
-                           cell_info[ cell_type ].num_nodes;
+                           getCellInfo( cell_type ).num_nodes;
   const IndexType initial_n_IDs = connec.getNumberOfIDs();
 
   /* Append the initial values. */
@@ -516,7 +516,7 @@ void testInsert( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
 
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
-                           cell_info[ cell_type ].num_nodes;
+                           getCellInfo( cell_type ).num_nodes;
 
   const IndexType half_n_IDs = n_IDs / 2;
   const IndexType third_n_IDs = n_IDs / 3;
@@ -619,7 +619,7 @@ void testCapacity( ConnectivityArray< TYPE >& connec,
                  "Insertion test requires an empty ConnectivityArray." );
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
-                           cell_info[ cell_type ].num_nodes;
+                           getCellInfo( cell_type ).num_nodes;
   const IndexType half_n_IDs = n_IDs / 2;
   const IndexType n_values = get_n_values( 0, n_IDs, stride, offsets );
   const IndexType first_half_n_values = get_n_values( 0, half_n_IDs, stride,

@@ -56,7 +56,7 @@ class Lagrange< mint::PRISM > :
 {
 public:
 
-  static int getCellType() { return mint::PRISM; }
+  static CellType getCellType() { return mint::PRISM; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

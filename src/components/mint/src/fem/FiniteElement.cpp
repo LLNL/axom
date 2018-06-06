@@ -66,8 +66,7 @@ bool diverged( const double* xi, int N )
 //------------------------------------------------------------------------------
 
 FiniteElement::FiniteElement( numerics::Matrix< double >& M,
-                              int cellType,
-                              bool useExternal ) :
+                              CellType cellType, bool useExternal ) :
   m_dim( M.getNumRows() ),
   m_ctype( cellType ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),

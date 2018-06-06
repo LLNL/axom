@@ -279,7 +279,7 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
     z = new double[ node_capacity ];
   }
 
-  IndexType connec_capacity = cell_info[ cell_type ].num_nodes * cell_capacity;
+  IndexType connec_capacity = getCellInfo( cell_type ).num_nodes * cell_capacity;
   IndexType* connectivity = new IndexType[ connec_capacity ];
 
   return new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, 0,
@@ -1180,7 +1180,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   IndexType n_cells = mesh->getNumberOfCells();
 
   const CellType type = mesh->getCellType();
-  const int nodes_per_cell = cell_info[ type ].num_nodes;
+  const int nodes_per_cell = getCellInfo( type ).num_nodes;
 
   /* Check using pointers */
   const IndexType* connectivity = mesh->getCellConnectivityArray();
@@ -1236,7 +1236,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     CellType expected_type = getCellType( i );
-    IndexType expected_n_nodes = cell_info[ expected_type ].num_nodes;
+    IndexType expected_n_nodes = getCellInfo( expected_type ).num_nodes;
     ASSERT_EQ( expected_type, types[ i ] );
     ASSERT_EQ( expected_type, mesh->getCellType( i ) );
     ASSERT_EQ( expected_n_nodes, offsets[ i + 1 ] - offsets [ i ] );
@@ -1303,7 +1303,7 @@ void getCellConnec( IndexType cur_cell, IndexType nodes_per_cell,
 CellType getCellConnec( IndexType cur_cell, IndexType* connec )
 {
   CellType type = getCellType( cur_cell );
-  const IndexType nodes_per_cell = cell_info[ type ].num_nodes;
+  const IndexType nodes_per_cell = getCellInfo( type ).num_nodes;
   for ( IndexType i = 0 ; i < nodes_per_cell ; ++i )
   {
     connec[ i ] = getCellConnecValue( cur_cell, i);
@@ -1324,7 +1324,7 @@ void append_cell_single( UnstructuredMesh< SINGLE_SHAPE >* mesh,
                          IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  const IndexType nodes_per_cell = cell_info[ mesh->getCellType() ].num_nodes;
+  const IndexType nodes_per_cell = getCellInfo( mesh->getCellType() ).num_nodes;
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
   IndexType connec[ nodes_per_cell ];
@@ -1351,7 +1351,7 @@ void append_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     type = getCellConnec( cur_n_cells, connec );
-    cur_connec_size += cell_info[ type ].num_nodes;
+    cur_connec_size += getCellInfo( type ).num_nodes;
     mesh->appendCell( connec, type );
     EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
     EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
@@ -1414,7 +1414,7 @@ void append_cell_multiple( UnstructuredMesh< MIXED_SHAPE >* mesh,
   {
     IndexType* cur_connec = connectivity + offsets[ i ];
     types[ i ] = getCellConnec( cur_n_cells + i, cur_connec );
-    offsets[ i + 1 ] = offsets[ i ] + cell_info[ types[ i ] ].num_nodes;
+    offsets[ i + 1 ] = offsets[ i ] + getCellInfo( types[ i ] ).num_nodes;
   }
 
   mesh->appendCells( connectivity, n_cells, offsets, types );
@@ -1777,7 +1777,7 @@ void insert_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
 
   IndexType connec[ MAX_NUM_NODES ];
   CellType type = getCellConnec( final_pos, connec );
-  cur_connec_size += cell_info[ type ].num_nodes;
+  cur_connec_size += getCellInfo( type ).num_nodes;
 
   mesh->insertCell( connec, pos, type );
   EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
@@ -1844,7 +1844,7 @@ void insert_cell_multiple( UnstructuredMesh< MIXED_SHAPE >* mesh,
   {
     IndexType* cur_connec = connectivity + offsets[ i ];
     types[ i ] = getCellConnec( final_pos + i, cur_connec );
-    offsets[ i + 1 ] = offsets[ i ] + cell_info[ types[ i ] ].num_nodes;
+    offsets[ i + 1 ] = offsets[ i ] + getCellInfo( types[ i ] ).num_nodes;
   }
 
   mesh->insertCells( connectivity, pos, n_cells, offsets, types );

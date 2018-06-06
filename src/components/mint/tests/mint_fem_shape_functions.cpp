@@ -42,20 +42,21 @@ namespace
  * \brief Tests basic attributes of the shape function
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
 {
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
-  const int ctype = sf.cellType();
-  EXPECT_TRUE(  (ctype >= 0) && (ctype < mint::NUM_CELL_TYPES) );
+  const mint::CellType ctype = sf.cellType();
+  int ctype_val = mint::cellTypeToInt( ctype );
+  EXPECT_TRUE(  (ctype_val >= 0) && (ctype_val < mint::NUM_CELL_TYPES) );
 
   const int type = sf.type();
   EXPECT_TRUE(  (type >= 0) && ( type < MINT_NUM_BASIS_TYPES ) );
@@ -94,15 +95,15 @@ void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
 /*!
  * \brief Ensures shape functions satisfy the kronecker delta property.
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void kronecker_delta( )
 {
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   int ndims = sf.dimension();
   int ndofs = sf.numDofs();
@@ -133,15 +134,15 @@ void kronecker_delta( )
 /*!
  * \brief Ensures shape functions satisfy the partition of unity property.
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void partition_of_unity()
 {
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   int ndims      = sf.dimension();
   int ndofs      = sf.numDofs();

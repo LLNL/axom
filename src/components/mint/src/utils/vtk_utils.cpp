@@ -81,7 +81,7 @@ IndexType get_max_cell_nodes( const Mesh* mesh, IndexType& total_cell_nodes  )
   for ( mint::IndexType icell=0 ; icell < numCells ; ++icell )
   {
     CellType cell_type  = mesh->getCellType( icell );
-    const int num_nodes = mint::cell_info[ cell_type ].num_nodes;
+    const int num_nodes = mint::getCellInfo( cell_type ).num_nodes;
     total_cell_nodes += num_nodes;
     if ( num_nodes > max_cell_nodes )
     {
@@ -162,8 +162,8 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   file << "CELL_TYPES " << num_cells << std::endl;
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
-    int cell_type = mesh->getCellType( cellIdx );
-    file << cell_info[ cell_type ].vtk_type << std::endl;
+    CellType cell_type = mesh->getCellType( cellIdx );
+    file << getCellInfo( cell_type ).vtk_type << std::endl;
   }
 }
 
@@ -555,7 +555,7 @@ int write_vtk( mint::FiniteElement& fe, const std::string& file_path )
 #endif
 
   const bool zero_copy = true;
-  const int cell_type  = fe.getCellType( );
+  const CellType cell_type  = fe.getCellType( );
   const int ndims      = fe.getPhysicalDimension( );
   const int nnodes     = fe.getNumNodes( );
   numerics::Matrix< double > nodes( ndims, nnodes, fe.getPhysicalNodes(),
@@ -591,7 +591,7 @@ int write_vtk( mint::FiniteElement& fe, const std::string& file_path )
 
   // write cell type information
   ofs << "CELL_TYPES 1\n";
-  ofs << mint::cell_info[ cell_type ].vtk_type << std::endl;
+  ofs << mint::getCellInfo( cell_type ).vtk_type << std::endl;
 
   // close the file
   ofs.close();

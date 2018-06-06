@@ -60,7 +60,7 @@ class Lagrange< mint::TET > : public ShapeFunction< Lagrange< mint::TET > >
 {
 public:
 
-  static int getCellType() { return mint::TET; }
+  static CellType getCellType() { return mint::TET; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

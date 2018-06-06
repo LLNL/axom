@@ -30,7 +30,7 @@ constexpr int MAX_NUM_NODES = 27;
 /*!
  * \brief Enumerates all cell types supported by Mint
  */
-enum CellType : signed char
+enum class CellType : signed char
 {
   UNDEFINED_CELL = -1,    ///< UNDEFINED
 
@@ -49,6 +49,19 @@ enum CellType : signed char
 
   NUM_CELL_TYPES          ///<  total number of cell types
 };
+
+constexpr CellType UNDEFINED_CELL = CellType::UNDEFINED_CELL;
+constexpr CellType VERTEX = CellType::VERTEX;
+constexpr CellType SEGMENT = CellType::SEGMENT;
+constexpr CellType TRIANGLE = CellType::TRIANGLE;
+constexpr CellType QUAD = CellType::QUAD;
+constexpr CellType TET = CellType::TET;
+constexpr CellType HEX = CellType::HEX;
+constexpr CellType PRISM = CellType::PRISM;
+constexpr CellType PYRAMID = CellType::PYRAMID;
+constexpr CellType QUAD9 = CellType::QUAD9;
+constexpr CellType HEX27 = CellType::HEX27;
+constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
 
 /*!
  * \def REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N )
@@ -129,6 +142,22 @@ static constexpr CellInfo cell_info[ NUM_CELL_TYPES ] = {
   CELL_INFO( QUAD9 ),
   CELL_INFO( HEX27 )
 };
+
+/*!
+ * \brief Return the underlying integer associated with the given CellType.
+ *
+ * \param [in] type the CellType in question.
+ */
+inline constexpr int cellTypeToInt( CellType type )
+{ return static_cast< int >( type ); }
+
+/*!
+ * \brief Return the CellInfo struct associated with the given type.
+ *
+ * \param [in] type the CellType in question.
+ */
+inline constexpr const CellInfo& getCellInfo( CellType type )
+{ return cell_info[ cellTypeToInt( type ) ]; }
 
 
 } /* namespace mint */

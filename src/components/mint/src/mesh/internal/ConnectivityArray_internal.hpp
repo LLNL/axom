@@ -181,8 +181,8 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
   group->createView( "coordset" )->setString( coordset );
   group->createView( "type" )->setString( "unstructured" );
 
-  const std::string bp_name = ( cell_type==UNDEFINED_CELL ) ? "mixed" :
-                              cell_info[ cell_type ].blueprint_name;
+  const std::string bp_name = ( cell_type == UNDEFINED_CELL ) ? "mixed" :
+                              getCellInfo( cell_type ).blueprint_name;
 
   sidre::Group* elems_group = group->createGroup( "elements" );
   elems_group->createView( "shape" )->setString( bp_name );

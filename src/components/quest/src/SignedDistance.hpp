@@ -612,11 +612,11 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
 
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
-  const int cellType = m_surfaceMesh->getCellType( icell );
+  const mint::CellType cellType = m_surfaceMesh->getCellType( icell );
   SLIC_ASSERT( cellType == mint::TRIANGLE ||
                cellType == mint::QUAD ||
                cellType == mint::SEGMENT );
-  const int nnodes = axom::mint::cell_info[ cellType ].num_nodes;
+  const int nnodes = axom::mint::getCellInfo( cellType ).num_nodes;
 
   // Get the cell node IDs that make up the cell
   axom::mint::IndexType * cellIds = new axom::mint::IndexType[ nnodes ];
@@ -628,10 +628,8 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
 
   for ( int i=0 ; i < nnodes ; ++i )
   {
-
     m_surfaceMesh->getNode( cellIds[ i ], pt.data() );
     bb.addPoint( pt );
-
   } // END for all cell nodes
 
   // clean up all dynamically allocated memory

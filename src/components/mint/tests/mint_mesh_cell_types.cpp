@@ -49,14 +49,15 @@ TEST( mint_mesh_cell_types, check_cell_types )
 
   for ( int i=0 ; i < mint::NUM_CELL_TYPES ; ++i )
   {
+    const int cell_id = cellTypeToInt( mint::cell_info[ i ].cell_type );
     SLIC_INFO( "[" << mint::cell_info[ i ].name << "] =>" <<
-               "type=" << mint::cell_info[ i ].cell_type << " " <<
+               "type=" << cell_id << " " <<
                "blueprint_name=(" << mint::cell_info[ i ].blueprint_name << ") " <<
                "vtk_type=" << mint::cell_info[ i ].vtk_type << " " <<
                "num_nodes=" << mint::cell_info[ i ].num_nodes
                );
 
-    EXPECT_EQ( mint::cell_info[ i ].cell_type, i );
+    EXPECT_EQ( cell_id, i );
     EXPECT_TRUE( strlen( mint::cell_info[ i ].name ) > 0 );
     EXPECT_TRUE( strlen( mint::cell_info[ i ].blueprint_name ) > 0 );
     EXPECT_TRUE( mint::cell_info[ i ].vtk_type > 0 );

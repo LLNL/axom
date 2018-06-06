@@ -112,22 +112,19 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
  * \note Constructs the mesh element by scaling and rotating the reference
  *  element.
  *
- * \tparam BasisType the FEM basis of the element, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the cell type of the element, e.g., MINT_QUAD
- *
  * \note Ownership of the returned pointer is propagated to the caller. The
  *  calling method is therefore responsible for managing and properly
  *  deallocating the returned mesh object.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void get_single_fe( mint::FiniteElement*& fe )
 {
   EXPECT_TRUE( fe==AXOM_NULLPTR );
 
-  typedef typename mint::FEBasis< BasisType,CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType,CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
 
   const bool zero_copy = true;
@@ -166,14 +163,14 @@ void get_single_fe( mint::FiniteElement*& fe )
       node[ 2 ] *= SCALE;
     }
 
-    if ( CellType==mint::PYRAMID && i < 4 )
+    if ( CELLTYPE==mint::PYRAMID && i < 4 )
     {
       centroid[ 0 ] += node[ 0 ];
       centroid[ 1 ] += node[ 1 ];
       centroid[ 2 ] += node[ 2 ];
     }
 
-    if ( CellType==mint::PYRAMID && i==4 )
+    if ( CELLTYPE==mint::PYRAMID && i==4 )
     {
       // generate right pyramid, ensure the apex is prependicular to the
       // base of the pyramid to facilitate testing.
@@ -185,12 +182,12 @@ void get_single_fe( mint::FiniteElement*& fe )
   }
 
   numerics::Matrix< double > m( ndims, ndofs, nodes, zero_copy );
-  fe = new mint::FiniteElement( m, CellType );
-  mint::bind_basis< BasisType, CellType >( *fe );
+  fe = new mint::FiniteElement( m, CELLTYPE );
+  mint::bind_basis< BasisType, CELLTYPE >( *fe );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 
 #ifdef MINT_FEM_DEBUG
-  std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
+  std::string vtkFile = std::string( mint::getCellInfo( CELLTYPE ).name ) + ".vtk";
   mint::write_vtk(  *fe, vtkFile );
 #endif
 
@@ -424,24 +421,25 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
  *
  * \see check_reference_element()
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_shape( )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
 
   // STEP 0: construct finite element mesh
   mint::FiniteElement* fe = AXOM_NULLPTR;
-  get_single_fe< BasisType, CellType >( fe );
+  get_single_fe< BasisType, CELLTYPE >( fe );
 
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell_info[ CellType ].num_nodes,  fe->getNumNodes() );
+  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_EQ( mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: test FE instance
   check_reference_element< ShapeFunctionType >( fe );
@@ -458,26 +456,27 @@ void check_shape( )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_jacobian( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
   EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   const double LTOL = 0.0-TOL;
   double det = 0.0;
 
   // STEP 0: construct a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
-  get_single_fe< BasisType, CellType >( fe );
+  get_single_fe< BasisType, CELLTYPE >( fe );
 
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell_info[ CellType ].num_nodes, fe->getNumNodes() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes, fe->getNumNodes() );
 
   // STEP 1: construct a Matrix object to store the jacobian
   const int ndims = fe->getPhysicalDimension();
@@ -530,25 +529,26 @@ void check_jacobian( double TOL=1.e-9 )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  *
  * \see test_forward_map()
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_forward_map( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_single_fe< BasisType, CellType >( fe );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell_info[ CellType ].num_nodes,  fe->getNumNodes() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: check forward mapping
   test_forward_map( fe, TOL );
@@ -563,25 +563,26 @@ void check_forward_map( double TOL=1.e-9 )
  * \param [in] TOL optional user-supplied tolerange. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  *
  * \see test_inverse_map()
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_inverse_map( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_single_fe< BasisType, CellType >( fe );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell_info[ CellType ].num_nodes,  fe->getNumNodes() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: check inverse map
   test_inverse_map( fe, TOL );
@@ -596,23 +597,24 @@ void check_inverse_map( double TOL=1.e-9 )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void point_in_cell( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_single_fe< BasisType, CellType >( fe );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell_info[ CellType ].num_nodes,  fe->getNumNodes() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 0: test variables
   const int nnodes = fe->getNumNodes();
@@ -760,23 +762,24 @@ double interp( const double* f, const double* wgts, int N )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_interp( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < mint::NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell_info[ CellType ].name );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_single_fe< BasisType, CellType >( fe );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE( fe != AXOM_NULLPTR );
-  EXPECT_EQ( mint::cell_info[ CellType ].num_nodes, fe->getNumNodes() );
+  EXPECT_EQ( mint::getCellInfo( CELLTYPE ).num_nodes, fe->getNumNodes() );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();

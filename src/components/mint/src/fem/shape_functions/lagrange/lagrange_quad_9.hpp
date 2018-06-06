@@ -59,7 +59,7 @@ class Lagrange< mint::QUAD9 > :
 {
 public:
 
-  static int getCellType() { return mint::QUAD9; }
+  static CellType getCellType() { return mint::QUAD9; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

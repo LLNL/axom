@@ -46,7 +46,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   constexpr double SPACING = 1.0;
   constexpr mint::CellType CELL_TYPE = mint::QUAD;
   constexpr mint::IndexType NODES_PER_CELL =
-    mint::cell_info[ CELL_TYPE ].num_nodes;
+                                      mint::getCellInfo( CELL_TYPE ).num_nodes;
   constexpr mint::IndexType NUM_NODES = X_EXTENT * Y_EXTENT;
   constexpr mint::IndexType NUM_CELLS = (X_EXTENT - 1) * (Y_EXTENT - 1);
 

@@ -422,8 +422,8 @@ private:
 inline IndexType
 StructuredMesh::getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) ) const
 {
-  const int cell_type = getCellType();
-  return cell_info[ cell_type ].num_nodes;
+  const CellType cell_type = getCellType();
+  return getCellInfo( cell_type ).num_nodes;
 }
 
 //------------------------------------------------------------------------------

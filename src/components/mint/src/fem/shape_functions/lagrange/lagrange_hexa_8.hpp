@@ -58,7 +58,7 @@ class Lagrange< mint::HEX > :
 {
 public:
 
-  static int getCellType() { return mint::HEX; }
+  static CellType getCellType() { return mint::HEX; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

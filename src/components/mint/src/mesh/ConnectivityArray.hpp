@@ -161,9 +161,10 @@ public:
   {
     SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
-    SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
+    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES, 
+                   "Unknown cell type." );
 
-    m_stride = cell_info[ cell_type ].num_nodes;
+    m_stride = getCellInfo( cell_type ).num_nodes;
     m_values = new Array< IndexType >( internal::ZERO, m_stride, ID_capacity );
   }
 
@@ -196,9 +197,9 @@ public:
   {
     SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
-    SLIC_ERROR_IF( m_cell_type >= NUM_CELL_TYPES, "Unknown cell type." );
+    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES, "Unknown cell type." );
 
-    m_stride = cell_info[ cell_type ].num_nodes;
+    m_stride = getCellInfo( cell_type ).num_nodes;
     m_values = new Array< IndexType >( values, n_IDs, m_stride, ID_capacity );
   }
 

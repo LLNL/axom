@@ -52,7 +52,7 @@ namespace mint
  * \see ShapeFunction
  * \see FEBasisTypes
  */
-template < int BasisType, int CellType >
+template < int BasisType, CellType CELLTYPE >
 struct FEBasis { };
 
 // Lagrange Basis

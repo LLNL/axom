@@ -757,9 +757,9 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
   EXPECT_EQ( extracted_cells,  num_cells );
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
-    int cell_type = mesh->getCellType( cellIdx );
+    CellType cell_type = mesh->getCellType( cellIdx );
     file >> temp;
-    EXPECT_EQ( temp, cell_info[ cell_type ].vtk_type );
+    EXPECT_EQ( temp, getCellInfo( cell_type ).vtk_type );
   }
 }
 

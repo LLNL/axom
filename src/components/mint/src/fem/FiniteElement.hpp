@@ -125,6 +125,11 @@ class FiniteElement
 public:
 
   /*!
+   * \brief Default constructor. Disabled.
+   */
+  FiniteElement() = delete;
+  
+  /*!
    * \brief Constructs a FiniteElement instance from a matrix consisting of the
    *  element coordinates and a cell type.
    *
@@ -138,7 +143,7 @@ public:
    *  that the number of rows corresponds to the dimension of the element and
    *  number of columns corresponds to the number of nodes.
    */
-  FiniteElement( numerics::Matrix< double >& M, int cellType,
+  FiniteElement( numerics::Matrix< double >& M, CellType cellType,
                  bool useExternal=false );
 
   /*!
@@ -183,7 +188,7 @@ public:
    * \post (ctype != MINT_UNDEFINED_CELL) && (ctype < MINT_NUM_CELL_TYPES)
    * \see CellType.hpp for a list of possible return values.
    */
-  int getCellType() const { return m_ctype; };
+  CellType getCellType() const { return m_ctype; };
 
   /*!
    * \brief Returns the Basis associated with this FiniteElement instance.
@@ -437,7 +442,7 @@ public:
    *
    * \post fe.getBasisType() != MINT_UNDEFINED_BASIS
    */
-  template < int BasisType, int CellType >
+  template < int BasisType, CellType CellType >
   friend void bind_basis( FiniteElement& fe );
 
   /// @}
@@ -486,35 +491,11 @@ private:
 
   /// @}
 
-  /*!
-   * \brief Default Constructor. Does nothing.
-   * \note Made private to prevent host-code from calling this.
-   */
-  FiniteElement() : m_dim( -1 ),
-    m_ctype( -1 ),
-    m_shape_func_type( -1 ),
-    m_maxNewtonIterations( -1 ),
-    m_numnodes( 0 ),
-    m_jac( AXOM_NULLPTR ),
-    m_xyz( AXOM_NULLPTR ),
-    m_phi( AXOM_NULLPTR ),
-    m_phidot( AXOM_NULLPTR ),
-    m_usingExternal( false ),
-    m_shapeFunction( AXOM_NULLPTR ),
-    m_shapeFunctionDerivatives( AXOM_NULLPTR ),
-    m_reference_min( -1 ),
-    m_reference_max( -1 ),
-    m_reference_dim( -1 ),
-    m_numdofs( 0 ),
-    m_reference_coords( AXOM_NULLPTR ),
-    m_reference_center( AXOM_NULLPTR )
-  { }
-
   /// \name Private Data Members
   /// @{
 
   int m_dim;                   /*!< physical dimension */
-  int m_ctype;                 /*!< cell type, e.g., MINT_QUAD, etc. */
+  CellType m_ctype;            /*!< cell type, e.g., MINT_QUAD, etc. */
   int m_shape_func_type;       /*!< basis type, e.g., MINT_LAGRANGE */
   int m_maxNewtonIterations;   /*!< max newton iterations for inverse map */
   int m_numnodes;              /*!< number of nodes of the element */
@@ -524,8 +505,8 @@ private:
   double* m_phi;                /*!< stores shape functions at some point */
   double* m_phidot;             /*!< stores shape function derivatives */
 
-  bool m_usingExternal;        /*!< indicates whether the element coordinates
-                                    are pointing to an external buffer. */
+  bool m_usingExternal;         /*!< indicates whether the element coordinates
+                                     are pointing to an external buffer. */
   /// @}
 
   /// \name Reference Element Attributes
@@ -560,17 +541,17 @@ namespace axom
 namespace mint
 {
 
-template < int BasisType, int CellType >
+template < int BasisType, CellType CELLTYPE >
 void bind_basis( FiniteElement& fe )
 {
-  SLIC_ASSERT(  CellType==fe.getCellType() );
+  SLIC_ASSERT(  CELLTYPE == fe.getCellType() );
   SLIC_ASSERT(  fe.m_reference_center != AXOM_NULLPTR );
   SLIC_ASSERT(  fe.m_reference_coords != AXOM_NULLPTR );
 
-  typedef mint::FEBasis< BasisType, CellType > FEBasisType;
+  typedef mint::FEBasis< BasisType, CELLTYPE > FEBasisType;
   typedef typename FEBasisType::ShapeFunctionType ShapeType;
 
-  if ( CellType != fe.getCellType() )
+  if ( CELLTYPE != fe.getCellType() )
   {
     SLIC_WARNING( "Inconsistent celltype, cannot bind FEBasis!" );
     return;

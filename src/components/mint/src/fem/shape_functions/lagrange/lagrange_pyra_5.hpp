@@ -60,7 +60,7 @@ class Lagrange< mint::PYRAMID > :
 {
 public:
 
-  static int getCellType() { return mint::PYRAMID; }
+  static CellType getCellType() { return mint::PYRAMID; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 
