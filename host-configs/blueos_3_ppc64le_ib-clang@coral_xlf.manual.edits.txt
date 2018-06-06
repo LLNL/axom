@@ -25,7 +25,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
 
 # Adds a missing rpath for libraries associated with the fortran compiler
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib" CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
