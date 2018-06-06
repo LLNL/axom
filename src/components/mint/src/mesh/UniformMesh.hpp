@@ -153,27 +153,23 @@ public:
    *  defined by its lower and upper corner points, and mesh dimensions, Ni,
    *  Nj, Nk.
    *
-   * \param [in] dimension the dimension of this mesh instance.
    * \param [in] lower_bound lower corner coordinates of rectangular region.
-   * \param [in] upper_bound upper cordner coordinates of rectangular region.
+   * \param [in] upper_bound upper corner coordinates of rectangular region.
    * \param [in] Ni the number of nodes in the i-direction
    * \param [in] Nj the number of nodes in the j-direction (if dimension >= 2)
    * \param [in] Nk the number of nodes in the k-direction (if dimension == 3)
    *
-   * \pre 1 <= dimension <= 3
    * \pre lower_bound != AXOM_NULLPTR
    * \pre upper_bound != AXOM_NULLPTR
    * \pre Ni >= 1
    * \pre Nj >= 1 iff dimension >= 2
    * \pre Nk >= 1 iff dimension == 3
    *
-   * \post getDimension() == dimension
    * \post getOrigin() != AXOM_NULLPTR
    * \post getSpacing() != AXOM_NULLPTR
    * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
    */
-  UniformMesh( int dimension,
-               const double* lower_bound,
+  UniformMesh( const double* lower_bound,
                const double* upper_bound,
                IndexType Ni,
                IndexType Nj=-1,
@@ -265,7 +261,6 @@ public:
    *  covers a rectangular region, defined by its lower and upper corner points,
    *  and desired mesh dimensions, \f$ N_i, N_j, N_k f\$
    *
-   * \param [in] dimension the dimension of the mesh
    * \param [in] lower_bound lower corner coordinates of rectangular region
    * \param [in] upper_bound upper corner coordinates of rectangular region
    * \param [in] group pointer to the Sidre group
@@ -285,7 +280,6 @@ public:
    * \note If a topology and/or coordset name are not provided by the caller,
    *  internal defaults will be used by the implementation.
    *
-   * \pre 1 <= dimension <= 3
    * \pre lower_bound != AXOM_NULLPTR
    * \pre upper_bound != AXOM_NULLPTR
    * \pre Ni >= 1
@@ -295,15 +289,13 @@ public:
    * \pre group->getNumViews()==0
    * \pre group->getNumGroups()==0
    *
-   * \post getDimension() == dimension
    * \post getOrigin() != AXOM_NULLPTR
    * \post getSpacing() != AXOM_NULLPTR
    * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
    * \post hasSidreGroup() == true
    */
   /// @{
-  UniformMesh( int dimension,
-               const double* lower_bound,
+  UniformMesh( const double* lower_bound,
                const double* upper_bound,
                sidre::Group* group,
                const std::string& topo,
@@ -312,8 +304,7 @@ public:
                IndexType Nj=-1,
                IndexType Nk=-1 );
 
-  UniformMesh( int dimension,
-               const double* lower_bound,
+  UniformMesh( const double* lower_bound,
                const double* upper_bound,
                sidre::Group* group,
                IndexType Ni,

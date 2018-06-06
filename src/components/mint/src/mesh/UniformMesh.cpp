@@ -21,6 +21,8 @@
 #include "mint/config.hpp"          // for compile-time definitions
 #include "mint/MeshTypes.hpp"       // for STRUCTURED_UNIFORM_MESH
 
+#include "mint/MeshHelpers.hpp"     // for internal helper methods
+
 // axom_utils includes
 #include "axom_utils/Utilities.hpp" // for utilities::isNearlyEqual
 
@@ -97,24 +99,20 @@ UniformMesh::UniformMesh( int dimension,
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const double* lower_bound,
+UniformMesh::UniformMesh( const double* lower_bound,
                           const double* upper_bound,
                           IndexType Ni,
                           IndexType Nj,
                           IndexType Nk ) :
-  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension )
+  StructuredMesh( STRUCTURED_UNIFORM_MESH, internal::dim(Ni,Nj,Nk) )
 {
   SLIC_ERROR_IF( lower_bound==AXOM_NULLPTR, "supplied null for lower_bound" );
   SLIC_ERROR_IF( upper_bound==AXOM_NULLPTR, "supplied null for upper_bound" );
   SLIC_ERROR_IF( Ni <= 0, "Ni must be greater or equal to 1" );
-  SLIC_ERROR_IF( (dimension >= 2 ) && (Nj <= 0),
-                 "Nj must be greater or equal to 1" );
-  SLIC_ERROR_IF( (dimension==3) && (Nk <= 0), ""
-                                              "Nk must be greater or equal to 1" );
+
 
   int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
-  m_extent        = new mint::Extent( dimension, extent );
+  m_extent        = new mint::Extent( m_ndims, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );
 
@@ -203,8 +201,7 @@ UniformMesh::UniformMesh( int dimension,
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const double* lower_bound,
+UniformMesh::UniformMesh( const double* lower_bound,
                           const double* upper_bound,
                           sidre::Group* group,
                           const std::string& topo,
@@ -212,19 +209,16 @@ UniformMesh::UniformMesh( int dimension,
                           IndexType Ni,
                           IndexType Nj,
                           IndexType Nk ) :
-  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, group, topo, coordset )
+  StructuredMesh( STRUCTURED_UNIFORM_MESH, internal::dim(Ni,Nj,Nk),
+                  group, topo, coordset )
 {
   SLIC_ERROR_IF( lower_bound==AXOM_NULLPTR, "supplied null for lower_bound" );
   SLIC_ERROR_IF( upper_bound==AXOM_NULLPTR, "supplied null for upper_bound" );
   SLIC_ERROR_IF( Ni <= 0, "Ni must be greater or equal to 1" );
-  SLIC_ERROR_IF( (dimension >= 2 ) && (Nj <= 0),
-                 "Nj must be greater or equal to 1" );
-  SLIC_ERROR_IF( (dimension==3) && (Nk <= 0),
-                 "Nk must be greater or equal to 1" );
 
   // STEP 0: initialize mesh
   int64 extent[]  = { 0,Ni-1, 0, Nj-1, 0,Nk-1 };
-  m_extent        = new mint::Extent( dimension, extent );
+  m_extent        = new mint::Extent( m_ndims, extent );
   set_spacing_and_origin( m_ndims, m_extent,
                           lower_bound, upper_bound, m_h, m_origin );
 
@@ -240,14 +234,13 @@ UniformMesh::UniformMesh( int dimension,
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const double* lower_bound,
+UniformMesh::UniformMesh( const double* lower_bound,
                           const double* upper_bound,
                           sidre::Group* group,
                           IndexType Ni,
                           IndexType Nj,
                           IndexType Nk ) :
-  UniformMesh( dimension, lower_bound, upper_bound, group, "", "", Ni, Nj, Nk )
+  UniformMesh( lower_bound, upper_bound, group, "", "", Ni, Nj, Nk )
 {}
 
 #endif

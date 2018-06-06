@@ -205,22 +205,13 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
 
   // check 3rd native constructor
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(4,lo,hi,Ni,Nj,Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(AXOM_NULLPTR,hi,Ni,Nj,Nk),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(0,lo,hi,Ni,Nj,Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,AXOM_NULLPTR,Ni,Nj,Nk),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,AXOM_NULLPTR,hi,Ni,Nj,Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo, hi,-1),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,AXOM_NULLPTR,Ni,Nj,Nk),
-                             IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,hi,lo,Ni,Nj,Nk),
-                             IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(1,hi,lo,-1),
-                             IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(2,hi,lo, Ni,-1),
-                             IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,hi,lo,Ni,Nj,-1),
-                             IGNORE_OUTPUT );
+
 
 #ifdef MINT_USE_SIDRE
 
@@ -262,46 +253,28 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   // check 2nd sidre constructor
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,particle_mesh, Ni, Nj, Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,hi,particle_mesh, Ni, Nj, Nk),
                              IGNORE_OUTPUT );
 
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,AXOM_NULLPTR, Ni, Nj, Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,hi,AXOM_NULLPTR, Ni, Nj, Nk),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(3,lo,AXOM_NULLPTR,valid_group,Ni,Nj,Nk),
+    UniformMesh(lo,AXOM_NULLPTR,valid_group,Ni,Nj,Nk),
     IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(3,AXOM_NULLPTR,hi,valid_group,Ni,Nj,Nk),
+    UniformMesh(AXOM_NULLPTR,hi,valid_group,Ni,Nj,Nk),
     IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(42,lo,hi,valid_group,Ni,Nj,Nk),
-    IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(3,lo,hi,valid_group,Ni,Nj,-1),
-    IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(3,lo,hi,valid_group,Ni,-1,Nk),
-    IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(3,lo,hi,valid_group,-1,Nj,Nk),
+    UniformMesh(lo,hi,valid_group,-1),
     IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -353,14 +326,14 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
     switch ( idim )
     {
     case 1:
-      m3 = new UniformMesh( idim, lo, hi, N[0] );
+      m3 = new UniformMesh( lo, hi, N[0] );
       break;
     case 2:
-      m3 = new UniformMesh( idim, lo, hi, N[0], N[1] );
+      m3 = new UniformMesh( lo, hi, N[0], N[1] );
       break;
     default:
       EXPECT_TRUE( idim==3 );
-      m3 = new UniformMesh( idim, lo, hi, N[0], N[1], N[2] );
+      m3 = new UniformMesh( lo, hi, N[0], N[1], N[2] );
     }
     check_constructor( m3, idim, lo, h, ext, N );
     EXPECT_FALSE( m3->hasSidreGroup() );
@@ -401,7 +374,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
     // flavors of the Sidre constructor
     // BEGIN SCOPE
     {
-      UniformMesh m1( idim, lo, hi, ext, mesh1grp );
+      UniformMesh m1( lo, hi, ext, mesh1grp );
       check_constructor( &m1, idim, lo, h, ext, N );
       check_create_field( &m1, NODE_CENTERED, "n1", 3 );
       check_create_field( &m1, CELL_CENTERED, "c1", 1 );
@@ -411,14 +384,14 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       switch ( idim )
       {
       case 1:
-        m2 = new UniformMesh( idim, lo, hi, mesh2grp, N[0] );
+        m2 = new UniformMesh( lo, hi, mesh2grp, N[0] );
         break;
       case 2:
-        m2 = new UniformMesh( idim, lo, hi, mesh2grp, N[0], N[1] );
+        m2 = new UniformMesh( lo, hi, mesh2grp, N[0], N[1] );
         break;
       default:
         EXPECT_TRUE( idim==3 );
-        m2 = new UniformMesh( idim, lo, hi, mesh2grp, N[0], N[1], N[2] );
+        m2 = new UniformMesh( lo, hi, mesh2grp, N[0], N[1], N[2] );
       } // END switch
 
       EXPECT_TRUE( m2->hasSidreGroup( ) );

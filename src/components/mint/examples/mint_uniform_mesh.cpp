@@ -47,12 +47,11 @@ double himmelblaus_function( double x, double y )
 //------------------------------------------------------------------------------
 int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
-  const int dimension = 2;
   const double lo[]   = { -5.0, -5.0 };
   const double hi[]   = {  5.0,  5.0 };
 
   // STEP 0: construct a 100 x 100 grid
-  mint::UniformMesh mesh( dimension, lo, hi, 100, 100 );
+  mint::UniformMesh mesh( lo, hi, 100, 100 );
 
   // STEP 1: add a cell-centered and a node-centered field
   double* phi = mesh.createField< double >( "phi", mint::NODE_CENTERED );
