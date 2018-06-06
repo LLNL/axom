@@ -18,7 +18,7 @@
 /*!
  * \file
  *
- * \brief Illustrates how to construt and operate on a rectilinear mesh.
+ * \brief Illustrates how to construct and operate on a rectilinear mesh.
  */
 
 // Axom includes
