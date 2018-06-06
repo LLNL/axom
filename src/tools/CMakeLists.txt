@@ -36,11 +36,11 @@ if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         )
 
     if(ENABLE_LUMBERJACK)
-      list(APPEND datastore_converter_depends lumberjack)
+        list(APPEND datastore_converter_depends lumberjack)
     endif()
 
     if(SCR_FOUND)
-      list(APPEND datastore_converter_depends scr)
+        list(APPEND datastore_converter_depends scr)
     endif()
 
     blt_add_executable(
@@ -65,6 +65,9 @@ set(mesh_tester_sources
 set(mesh_tester_depends 
     axom_utils slic mint slam quest primal
     )
+if(ENABLE_LUMBERJACK)
+    list(APPEND mesh_tester_depends lumberjack mpi)
+endif()
 
 
 if(ENABLE_QUEST)
@@ -83,4 +86,4 @@ endif()
 ################################
 # Add code checks
 ################################
-axom_add_code_checks(PREFIX util)
+axom_add_code_checks(PREFIX tools)
