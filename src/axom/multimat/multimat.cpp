@@ -11,16 +11,6 @@ using namespace std;
 using namespace axom::multimat;
 
 
-MultiMatArray::MultiMatArray(MultiMat* m, std::string name, FieldMapping f)
-  :m_arrayName(name),  m_fieldMapping(f), mm(m)
-{ }
-
-//axom::multimat::MultiMatArray::MultiMatArray(MultiMat * m, std::string name, SetType * s, FieldMapping f)
-//{
-//  assert(false);
-//
-//}
-
 MultiMat::MultiMat() {
   m_ncells = m_nmats = 0;
   m_dataLayout = LAYOUT_CELL_DOM;
@@ -105,21 +95,14 @@ MultiMat::RelationSet MultiMat::getMatInCell(int c)
   else assert(false);
 }
 
-MultiMatArray * axom::multimat::MultiMat::getFieldArray(std::string arr_name)
+MultiMat::RangeSetType axom::multimat::MultiMat::getIndexingSetOfCell(int c)
 {
-  for (auto arr : m_fieldArrayVec)
-    if (arr->getName() == arr_name)
-      return arr;
+  assert(0 <= c && c < m_ncells);
+  int start_idx = m_cell2matRel_beginsVec[c];
+  int end_idx = m_cell2matRel_beginsVec[c + 1];
 
-  return nullptr;
+  return RangeSetType::SetBuilder().range(start_idx, end_idx);
 }
-
-MultiMatArray* MultiMat::getFieldArray(int arr_idx)
-{
-  assert(arr_idx >= 0 && arr_idx < m_fieldArrayVec.size());
-  return m_fieldArrayVec[arr_idx];
-}
-
 
 void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 {
@@ -154,17 +137,16 @@ void axom::multimat::MultiMat::printSelf()
   printf("Number of cells:     %d\n", m_ncells);
 
   printf("\nFields:\n");
-  for (int i = 0; i < m_fieldArrayVec.size(); i++)
+  for (int i = 0; i < m_mapVec.size(); i++)
   {
-    printf("Field %d - %s\n", i, m_fieldArrayVec[i]->getName().c_str());
-    printf("  Type: %d\n", m_fieldArrayVec[i]->getFieldMapping());
+    printf("Field %d - %s\n", i, m_arrNameVec[i].c_str());
+    printf("  Mapping type: %d\n", m_fieldMappingVec[i]);
   }
-
 }
 
 bool axom::multimat::MultiMat::isValid()
 {
-
+  //TODO
   return true;
 }
 
@@ -183,6 +165,7 @@ axom::multimat::MultiMat::SetType* axom::multimat::MultiMat::get_mapped_set(Fiel
     map_set = &m_cellMatNZSet;
     break;
   default:
+    assert(false);
     return nullptr;
   }
   return map_set;
