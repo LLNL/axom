@@ -250,6 +250,15 @@ void STLReader::getMesh(
   mesh->reserveNodes( m_num_nodes );
   mesh->reserveCells( m_num_faces );
 
+  SLIC_ERROR_IF( mesh->getDimension() != 3,
+                 "STL reader expects a 3D mesh!" );
+  SLIC_ERROR_IF( mesh->getCellType() != axom::mint::TRIANGLE,
+                 "STL reader expects a triangle mesh!" );
+
+  // pre-allocate space to store the mesh
+  mesh->reserveNodes( m_num_nodes );
+  mesh->reserveCells( m_num_faces );
+
   // Load the vertices into the mesh
   for ( mint::IndexType i=0 ; i < m_num_nodes ; ++i )
   {

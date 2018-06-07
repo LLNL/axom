@@ -15,10 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "PSTLReader.hpp"
-
-#include "axom/Types.hpp"
-#include "slic/slic.hpp"
+#include "quest/PSTLReader.hpp"
 
 namespace axom
 {

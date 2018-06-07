@@ -18,12 +18,15 @@
 #ifndef STLREADER_HPP_
 #define STLREADER_HPP_
 
-#include <string>
-#include <vector>
+// Axom includes
+#include "axom/Macros.hpp"  // for axom macros
 
-#include "axom/Macros.hpp"
-#include "mint/config.hpp"
+// Mint includes
 #include "mint/UnstructuredMesh.hpp"
+
+// C/C++ includes
+#include <string>  // for std::string
+#include <vector>  // for std::vector
 
 namespace axom
 {
