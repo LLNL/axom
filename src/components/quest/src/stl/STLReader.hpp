@@ -79,7 +79,7 @@ public:
    * \param [in,out] mesh pointer to the unstructured mesh.
    * \pre mesh != AXOM_NULLPTR.
    */
-  void getMesh( axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
+  void getMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
 
 private:
   /*!
