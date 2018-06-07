@@ -44,7 +44,7 @@ set( mint_headers
     ## Internal implementation
     mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
-    mesh/internal/ConnectivityArray_internal.hpp
+    mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
 
     mesh/blueprint.hpp

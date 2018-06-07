@@ -25,7 +25,7 @@
 // Mint includes
 #include "mint/Array.hpp"
 #include "mint/CellTypes.hpp"
-#include "mint/ConnectivityArray_internal.hpp"
+#include "mint/ConnectivityArrayHelpers.hpp"
 #include "mint/config.hpp"
 
 // Slic includes
@@ -161,7 +161,7 @@ public:
   {
     SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
-    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES, 
+    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES,
                    "Unknown cell type." );
 
     m_stride = getCellInfo( cell_type ).num_nodes;

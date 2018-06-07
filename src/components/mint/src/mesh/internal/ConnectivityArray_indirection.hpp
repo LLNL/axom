@@ -25,7 +25,7 @@
 #include "mint/CellTypes.hpp"
 #include "mint/Array.hpp"
 #include "mint/config.hpp"
-#include "mint/ConnectivityArray_internal.hpp"
+#include "mint/ConnectivityArrayHelpers.hpp"
 #include "slic/slic.hpp"
 
 #ifdef MINT_USE_SIDRE
