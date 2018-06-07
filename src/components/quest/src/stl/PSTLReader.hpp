@@ -49,7 +49,7 @@ public:
    *  of the ranks.
    * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual int read();
+  virtual int read() final override;
 
 private:
 
