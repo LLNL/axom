@@ -48,27 +48,34 @@ int PSTLReader::read()
 
   int rc = -1; // return code
 
-  if( m_my_rank == 0) {
+  if( m_my_rank == 0)
+  {
 
     // Rank 0 reads the mesh and broadcasts vertex positions to the others
     rc = STLReader::read();
-    if ( rc == 0 ) {
+    if ( rc == 0 )
+    {
       MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
-      MPI_Bcast( & m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
+      MPI_Bcast( &m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
 
-    } else {
+    }
+    else
+    {
 
       MPI_Bcast( &rc, 1, MPI_INT, 0, m_comm );
 
     }
 
-  } else {
+  }
+  else
+  {
 
     // Other ranks receive the mesh vertices from rank 0
     MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
-    if ( m_num_nodes !=-1 ) {
+    if ( m_num_nodes !=-1 )
+    {
       m_nodes.resize( m_num_nodes * 3);
-      MPI_Bcast( & m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
+      MPI_Bcast( &m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
       m_num_faces = m_num_nodes / 3;
       rc = 0;
     }
