@@ -475,7 +475,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType getNumberOfCellNodes( IndexType cellID=0 )
-  const override final
+  const final override
   { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!
@@ -487,7 +487,7 @@ public:
    *
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual CellType getCellType( IndexType cellID=-1 ) const override final
+  virtual CellType getCellType( IndexType cellID=-1 ) const final override
   { return m_cell_connectivity->getIDType( cellID ); }
 
   /*!
@@ -503,7 +503,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual
-  IndexType getCell( IndexType cellID, IndexType* cell ) const override final
+  IndexType getCell( IndexType cellID, IndexType* cell ) const final override
   {
     SLIC_ASSERT( cell != AXOM_NULLPTR );
     const IndexType n_cells = getNumberOfCellNodes( cellID );
@@ -538,7 +538,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != AXOM_NULLPTR
    */
-  virtual void getNode( IndexType nodeID, double* coords ) const override final
+  virtual void getNode( IndexType nodeID, double* coords ) const final override
   { m_coordinates->getCoordinates( nodeID, coords ); }
 
   /*!

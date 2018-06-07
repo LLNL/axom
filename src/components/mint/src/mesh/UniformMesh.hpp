@@ -339,7 +339,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != AXOM_NULLPTR
    */
-  virtual void getNode( IndexType nodeID, double* node ) const override final;
+  virtual void getNode( IndexType nodeID, double* node ) const final override;
 
   /*!
    * \brief Return a pointer to the nodal positions in the specified dimension.

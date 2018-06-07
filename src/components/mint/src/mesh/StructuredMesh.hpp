@@ -83,7 +83,7 @@ public:
    */
   virtual IndexType
     getNumberOfCellNodes(IndexType AXOM_NOT_USED(cellID)=
-                           0 ) const override final;
+                           0 ) const final override;
 
   /*!
    * \brief Return the type of cell this mesh holds. SEGMENT, QUAD, or HEX
@@ -94,7 +94,7 @@ public:
    */
   /// @{
 
-  virtual CellType getCellType( IndexType cellID=0 ) const override final;
+  virtual CellType getCellType( IndexType cellID=0 ) const final override;
 
   /// @}
 
@@ -112,7 +112,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType
-  getCell( IndexType cellID, IndexType* cell ) const override final;
+  getCell( IndexType cellID, IndexType* cell ) const final override;
 
 /// @}
 

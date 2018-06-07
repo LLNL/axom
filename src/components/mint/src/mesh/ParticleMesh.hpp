@@ -248,15 +248,15 @@ public:
 
   virtual
   IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
-  const override final
+  const final override
   { return 1; }
 
   virtual
-  CellType getCellType( IndexType AXOM_NOT_USED(cellID)=0 ) const override final
+  CellType getCellType( IndexType AXOM_NOT_USED(cellID)=0 ) const final override
   { return VERTEX; }
 
   virtual
-  IndexType getCell( IndexType cellID, IndexType* cell ) const override final;
+  IndexType getCell( IndexType cellID, IndexType* cell ) const final override;
 
 /// @}
 
@@ -285,7 +285,7 @@ public:
    * \pre 0 <= nodeID < getNumberOfNodes()
    * \pre coords != AXOM_NULLPTR
    */
-  virtual void getNode( IndexType nodeID, double* node ) const override final
+  virtual void getNode( IndexType nodeID, double* node ) const final override
   { m_positions->getCoordinates( nodeID, node ); }
 
   /*!
