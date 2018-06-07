@@ -1218,4 +1218,4 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* UNSTRUCTUREDMESH_HXX_ */
+#endif /* MINT_UNSTRUCTUREDMESH_HPP_ */

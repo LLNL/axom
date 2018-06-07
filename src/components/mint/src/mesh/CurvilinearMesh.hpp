@@ -348,4 +348,4 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* CURVILINEARMESH_HXX_ */
+#endif /* MINT_CURVILINEARMESH_HPP_ */

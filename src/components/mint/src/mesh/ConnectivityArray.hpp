@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_ConnectivityArray_HXX_
-#define MINT_ConnectivityArray_HXX_
+#ifndef MINT_ConnectivityArray_HPP_
+#define MINT_ConnectivityArray_HPP_
 
 // Axom includes
 #include "axom/Macros.hpp"
@@ -617,4 +617,4 @@ private:
 #include "mint/ConnectivityArray_indirection.hpp"
 #include "mint/ConnectivityArray_typed_indirection.hpp"
 
-#endif /* MINT_ConnectivityArray_HXX_ */
+#endif /* MINT_ConnectivityArray_HPP_ */

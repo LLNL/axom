@@ -420,4 +420,4 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* UNIFORMMESH_HXX_ */
+#endif /* MINT_UNIFORMMESH_HPP_ */

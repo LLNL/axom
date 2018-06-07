@@ -493,4 +493,4 @@ CellType StructuredMesh::getCellType( IndexType AXOM_NOT_USED(cellID) ) const
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* STRUCTUREDMESH_HXX_ */
+#endif /* MINT_STRUCTUREDMESH_HPP_ */

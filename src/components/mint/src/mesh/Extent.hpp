@@ -462,6 +462,6 @@ inline void Extent::getCellGridIndex( const IndexType& linearIdx,
 
 
 } /* namespace mint */
-} /* namespae axom */
+} /* namespace axom */
 
-#endif /* EXTENT_HXX_ */
+#endif /* MINT_EXTENT_HPP_ */

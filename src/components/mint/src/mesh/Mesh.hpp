@@ -994,4 +994,4 @@ inline void Mesh::getFieldInfo( int association, IndexType& num_tuples,
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* MESH_HXX_ */
+#endif /* MINT_MESH_HPP_ */

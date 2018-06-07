@@ -368,4 +368,4 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* RECTILINEARMESH_HXX_ */
+#endif /* MINT_RECTILINEARMESH_HPP_ */

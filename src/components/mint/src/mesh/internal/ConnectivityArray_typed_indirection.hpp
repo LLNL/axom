@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_ConnectivityArray_indirection_and_types_HXX_
-#define MINT_ConnectivityArray_indirection_and_types_HXX_
+#ifndef MINT_ConnectivityArray_indirection_and_types_HPP_
+#define MINT_ConnectivityArray_indirection_and_types_HPP_
 
 #include <iostream>
 
@@ -623,4 +623,4 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* MINT_ConnectivityArray_indirection_and_types_HXX_ */
+#endif /* MINT_ConnectivityArray_indirection_and_types_HPP_ */

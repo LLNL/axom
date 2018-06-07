@@ -163,4 +163,4 @@ inline constexpr const CellInfo& getCellInfo( CellType type )
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* MINT_CellTypes_HXX_ */
+#endif /* MINT_CellTypes_HPP_ */

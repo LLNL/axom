@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_ConnectivityArray_internal_HXX_
-#define MINT_ConnectivityArray_internal_HXX_
+#ifndef MINT_ConnectivityArray_internal_HPP_
+#define MINT_ConnectivityArray_internal_HPP_
 
 #include "mint/config.hpp"
 #include "mint/Array.hpp"
@@ -360,4 +360,4 @@ inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity,
 } /* namespace mint */
 } /* namespace axom */
 
-#endif  /* MINT_ConnectivityArray_internal_HXX_ */
+#endif  /* MINT_ConnectivityArray_internal_HPP_ */

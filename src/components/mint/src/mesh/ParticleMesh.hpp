@@ -522,4 +522,4 @@ inline void ParticleMesh::shrink( )
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* PARTICLEMESH_HXX_ */
+#endif /* MINT_PARTICLEMESH_HPP_ */
