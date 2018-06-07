@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef MINT_ConnectivityArray_indirection_and_types_HPP_
-#define MINT_ConnectivityArray_indirection_and_types_HPP_
+#ifndef MINT_ConnectivityArray_typed_indirection_HPP_
+#define MINT_ConnectivityArray_typed_indirection_HPP_
 
 #include <iostream>
 
@@ -51,7 +51,7 @@ namespace mint
  *  ID as well as a type array to store the type of each ID.
  *
  * \see ConnectivityArray_indirection.hpp
- * \see ConnectivityArray_indirection_and_types.hpp
+ * \see ConnectivityArray_typed_indirection.hpp
  * \see ConnectivityArray_internal.hpp
  */
 
@@ -623,4 +623,4 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* MINT_ConnectivityArray_indirection_and_types_HPP_ */
+#endif /* MINT_ConnectivityArray_typed_indirection_HPP_ */
