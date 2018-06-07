@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef STLREADER_HPP_
-#define STLREADER_HPP_
+#ifndef QUEST_STLREADER_HPP_
+#define QUEST_STLREADER_HPP_
 
 // Axom includes
 #include "axom/Macros.hpp"  // for axom macros
@@ -124,4 +124,4 @@ private:
 } // end namespace quest
 } // end namespace axom
 
-#endif /* STLREADER_HPP_ */
+#endif /* QUEST_STLREADER_HPP_ */

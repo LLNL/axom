@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef PSTLREADER_HPP_
-#define PSTLREADER_HPP_
+#ifndef QUEST_PSTLREADER_HPP_
+#define QUEST_PSTLREADER_HPP_
 
 #include "axom/Macros.hpp"
 #include "quest/STLReader.hpp" // base class
@@ -69,4 +69,4 @@ private:
 } // end namespace quest
 } // end namespace axom
 
-#endif /* PSTLREADER_HPP_ */
+#endif /* QUEST_PSTLREADER_HPP_ */
