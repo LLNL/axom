@@ -13,14 +13,15 @@
 #------------------------------------------------------------------------------
 
 set(quest_tests
+    quest_all_nearest_neighbors.cpp
+    quest_implicit_grid.cpp
     quest_inout_octree.cpp
+    quest_meshtester.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
-    quest_meshtester.cpp
-    quest_all_nearest_neighbors.cpp
+    quest_stl_reader.cpp
     quest_vertex_weld.cpp
-    quest_implicit_grid.cpp        
    )
 
 set(quest_tests_depends
@@ -44,7 +45,7 @@ foreach(test ${quest_tests})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends} ${${test_name}_extra_depends}
-		FOLDER axom/quest/tests
+    FOLDER axom/quest/tests
     )
     blt_add_test(
         NAME ${test_name}
@@ -115,15 +116,15 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
     if (SCR_FOUND)
        list(APPEND quest_regression_depends scr)
     endif()
-   
+
     set(test_name quest_regression_test)
-    
+
     blt_add_executable(
         NAME ${test_name}
         SOURCES quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_regression_depends}
-		FOLDER axom/quest/tests
+    FOLDER axom/quest/tests
     )
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
@@ -143,18 +144,18 @@ if (ENABLE_MPI AND ENABLE_SIDRE)
 
 
     # Note: By default we only run a small subset of the quest regression tests.
-    #       To run additional regression tests, configure the code 
+    #       To run additional regression tests, configure the code
     #       with ENABLE_QUEST_EXTRA_REGRESSION_TESTS set to True.
-    
+
     # set(ENABLE_QUEST_EXTRA_REGRESSION_TESTS True)
-    
+
     set(quest_regression_datasets
-        sphere        
+        sphere
     )
     set(quest_regression_resolutions
         16
     )
-        
+
     if( ${ENABLE_QUEST_EXTRA_REGRESSION_TESTS} )
        list(APPEND quest_regression_datasets
            naca0012
