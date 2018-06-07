@@ -225,7 +225,7 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
  *  at least `dim` entries.
  *
  * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
- *  entries, such that `extetn[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
+ *  entries, such that `extent[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
  *  values of the extent along the ith dimension respectively.
  *
  * \pre 1 <= dim <= 3
@@ -286,7 +286,7 @@ void setUniformMesh( int dim,
  * \param [out] extent buffer where the mesh extent will be stored.
  *
  * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
- *  entries, such that `extetn[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
+ *  entries, such that `extent[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
  *  values of the extent along the ith dimension respectively.
  *
  * \pre 1 <= dim <= 3
@@ -322,7 +322,7 @@ void setCurvilinearMeshExtent( int dim,
  * \param [out] extent pointer to buffer where to store the mesh extent.
  *
  * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
- *  entries, such that `extetn[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
+ *  entries, such that `extent[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
  *  values of the extent along the ith dimension respectively.
  *
  *  \pre 1 <= dim <= 3
