@@ -43,7 +43,6 @@ PSTLReader::~PSTLReader()
 //------------------------------------------------------------------------------
 int PSTLReader::read()
 {
-  SLIC_ASSERT( m_fileName != "" );
   SLIC_ASSERT( m_comm != MPI_COMM_NULL );
 
   // Clear internal data-structures

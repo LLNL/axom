@@ -19,6 +19,7 @@ set(quest_tests
     quest_meshtester.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
+    quest_signed_distance_interface.cpp
     quest_spatial_octree.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp

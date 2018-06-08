@@ -51,6 +51,14 @@ blt_add_executable(
 ## Quest interface examples
 
 blt_add_executable(
+    NAME       quest_signed_distance_interface_ex
+    SOURCES    signed_distance_interface.cpp
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON ${quest_example_depends} ${quest_interface_extra_depends}
+    FOLDER      axom/quest/examples
+    )
+
+blt_add_executable(
     NAME        quest_interface_ex
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
