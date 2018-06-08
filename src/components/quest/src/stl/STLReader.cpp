@@ -238,26 +238,17 @@ void STLReader::getMesh(
   axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh )
 {
   /* Sanity checks */
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( static_cast< mint::IndexType >( m_nodes.size() ) == 3* m_num_nodes );
-
+  SLIC_ERROR_IF( mesh == AXOM_NULLPTR,
+                 "supplied mesh is null!" );
+  SLIC_ERROR_IF( static_cast< mint::IndexType >(m_nodes.size()) != 3*m_num_nodes,
+                 "nodes vector size doesn't match expected size!" );
   SLIC_ERROR_IF( mesh->getDimension() != 3,
                  "STL reader expects a 3D mesh!" );
   SLIC_ERROR_IF( mesh->getCellType() != mint::TRIANGLE,
                  "STL reader expects a triangle mesh!" );
 
   // pre-allocate space to store the mesh
-  mesh->reserveNodes( m_num_nodes );
-  mesh->reserveCells( m_num_faces );
-
-  SLIC_ERROR_IF( mesh->getDimension() != 3,
-                 "STL reader expects a 3D mesh!" );
-  SLIC_ERROR_IF( mesh->getCellType() != axom::mint::TRIANGLE,
-                 "STL reader expects a triangle mesh!" );
-
-  // pre-allocate space to store the mesh
-  mesh->reserveNodes( m_num_nodes );
-  mesh->reserveCells( m_num_faces );
+  mesh->reserve( m_num_nodes, m_num_faces );
 
   // Load the vertices into the mesh
   for ( mint::IndexType i=0 ; i < m_num_nodes ; ++i )
