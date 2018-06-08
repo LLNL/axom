@@ -684,6 +684,7 @@ public:
    * \brief Shrink the cell capacity to be equal to the number of cells.
    *
    * \post getCellCapacity() == getNumberOfCells()
+   * \post getCellConnectivityCapacity() == getCellConnectivitySize()
    */
   void shrinkCells()
   {
@@ -770,6 +771,38 @@ public:
 /// @}
 
   /*!
+   * \brief Reserve space for the given number of nodes and cells.
+   *
+   * \param [in] node_capacity the number of nodes to reserve space for.
+   * \param [in] cell_capacity the number of cells to reserve space for.
+   * \param [in] connectivity_capacity the ammount of space to reserve in the
+   *  connectivity array. Ignored if TOPO == SINGLE_SHAPE.
+   *
+   * \post getNodeCapacity() >= node_capacity
+   * \post getCellCapacity() >= cell_capacity
+   */
+  void reserve( IndexType node_capacity, IndexType cell_capacity, 
+                IndexType connectivity_capacity=USE_DEFAULT )
+  {
+    reserveNodes( node_capacity );
+    reserveCells( cell_capacity, connectivity_capacity );
+  }
+
+  /*!
+   * \brief Shrink the node capacity to be equal to the number of nodes and the
+   *  cell capacity to be equal to the number of cells.
+   *
+   * \post getNodeCapacity() == getNumberOfNodes()
+   * \post getCellCapacity() == getNumberOfCells()
+   * \post getCellConnectivityCapacity() == getCellConnectivitySize()
+   */
+  void shrink()
+  {
+    shrinkNodes();
+    shrinkCells();
+  }
+
+  /*!
    * \brief Return true iff the mesh holds no nodes and no cells.
    */
   bool empty() const
@@ -822,7 +855,7 @@ public:
 
   /*!
    * \brief Return a pointer to the connectivity array, of length
-   *  getConnectivitySize().
+   *  getCellConnectivitySize().
    */
   /// @{
 
