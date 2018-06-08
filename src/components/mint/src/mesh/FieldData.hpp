@@ -90,6 +90,12 @@ public:
    *
    * \param [in] association the mesh topology association, e.g., NODE_CENTERED
    *
+   * \note The FieldAssociation enum provides a convenient way to specify
+   *  values for the association parameter used in this constructor.
+   *
+   * \warning ANY_CENTERING, albeit defined in the FieldAssociation enum, it is
+   *  used as wild-card and is not a valid value for this constructor.
+   *
    * \pre association >= NODE_CENTERED && association < NUM_FIELD_ASSOCIATIONS
    * \post this->getAssociation() == association
    * \post this->empty() == true
@@ -230,8 +236,8 @@ public:
                          bool storeInSidre=true );
 
   /*!
-   * \brief Creates a new field from a supplied external buffer which consists
-   *  of the specified number of tuples and components.
+   * \brief Creates a new field which will use the supplied external buffer as
+   *  storage, consisting of the specified number of tuples and components.
    *
    * \param [in] name the user-supplied name of this field
    * \param [in] data supplied external buffer
