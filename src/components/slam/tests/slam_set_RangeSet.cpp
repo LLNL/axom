@@ -223,7 +223,7 @@ TEST(slam_range_set,iterate)
     //iter+n access
     {
       SetIterator beginIter = s.begin();
-      for (int idx = 0; idx < s.size(); idx++)
+      for (int idx = 0; idx < s.size(); ++idx)
       {
         SetIterator iter = beginIter + idx;
 
@@ -236,9 +236,25 @@ TEST(slam_range_set,iterate)
       }
     }
 
+    //iter-n access
+    {
+      SetIterator endIter = s.end();
+      for (int idx = 1; idx <= s.size(); ++idx)
+      {
+        SetIterator iter = endIter - idx;
+
+        //SetPosition position = std::distance(s.begin(), iter);
+        SetElement expected = upperIndex - idx;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
     //iter+=n access
     {
-      for (int idx = 0; idx < s.size(); idx++)
+      for (int idx = 0; idx < s.size(); ++idx)
       {
         SetIterator iter = s.begin();
         iter += idx;
@@ -250,10 +266,24 @@ TEST(slam_range_set,iterate)
       }
     }
 
+    //iter-=n access
+    {
+      for (int idx = 1; idx <= s.size(); ++idx)
+      {
+        SetIterator iter = s.end();
+        iter -= idx;
+        SetElement expected = upperIndex - idx;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
     //iter[n] access
     {
       SetIterator beginIter = s.begin();
-      for (int idx = 0; idx < s.size(); idx++)
+      for (int idx = 0; idx < s.size(); ++idx)
       {
         SetElement expected = idx + lowerIndex;
         EXPECT_EQ(expected, beginIter[idx])
