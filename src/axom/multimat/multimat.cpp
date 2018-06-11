@@ -81,18 +81,16 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   cout << "cellmatrel total size: " << m_cell2matRel.totalSize() << endl;
   cout << "fromset size: " << m_cellSet.size() << endl;
 
-  if (m_sparcityLayout == LAYOUT_SPARSE)
-  {
-    //a set of mapped relation, which is a subset of the cartesian of cell & mat
-    m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
-  }
-  else if (m_sparcityLayout == LAYOUT_DENSE) {
-    if(m_dataLayout == LAYOUT_CELL_DOM)
-      m_cellMatProdSet = ProductSetType(&m_cellSet, &m_matSet);
-    else if(m_dataLayout==LAYOUT_MAT_DOM)
-      m_cellMatProdSet = ProductSetType(&m_matSet, &m_cellSet);
-    else assert(false);
-  }
+  //Set-up both dense and sparse sets, since they don't take any memory...
+
+  //a set of mapped relation
+  m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
+
+  // a cartesian set of cell x mat
+  if(m_dataLayout == LAYOUT_CELL_DOM)
+    m_cellMatProdSet = ProductSetType(&m_cellSet, &m_matSet);
+  else if(m_dataLayout==LAYOUT_MAT_DOM)
+    m_cellMatProdSet = ProductSetType(&m_matSet, &m_cellSet);
   else assert(false);
 
 }
@@ -129,7 +127,25 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayo
   if (new_layout == m_dataLayout && new_sparcity == m_sparcityLayout)
     return;
 
-  //TODO
+  //assumes cell dom stays cell dom
+  assert(new_layout == LAYOUT_CELL_DOM);
+
+  if (m_sparcityLayout == LAYOUT_DENSE && new_sparcity == LAYOUT_SPARSE)
+  { //convert from dense to sparse
+
+    //go through each field, for every matXcell field, create a new map of sparse mat
+    for (int i = 0; i < m_fieldMappingVec.size(); i++)
+    {
+      if (m_fieldMappingVec[i] != PER_CELL_MAT) 
+        continue;
+
+      //TODO
+    }
+  }
+  else {
+    assert(false);
+    //TODO
+  }
 }
 
 axom::multimat::DataLayout axom::multimat::MultiMat::getDataLayout()
