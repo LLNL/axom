@@ -23,6 +23,7 @@ namespace policies = slam::policies;
 enum FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
 enum DataLayout { LAYOUT_CELL_DOM, LAYOUT_MAT_DOM };
 enum SparcityLayout { LAYOUT_SPARSE, LAYOUT_DENSE };
+enum DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeUnsignChar };
 
 class MultiMat
 {
@@ -116,7 +117,8 @@ public:
   
 private: //private functions
   SetType* get_mapped_set(FieldMapping fm);
-
+  template<typename DataType>
+  void convertToSparse_helper(int map_i);
 
 private:
   int m_nmats, m_ncells;
@@ -135,7 +137,7 @@ private:
   std::vector<std::string> m_arrNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
   std::vector<MapBaseType*> m_mapVec; 
-
+  std::vector<DataTypeSupported> m_dataTypeVec;
   friend class MultiMatArray;
   
 }; //end MultiMat class
@@ -179,6 +181,15 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
   m_fieldMappingVec.push_back(arr_mapping);
   assert(m_arrNameVec.size() == m_mapVec.size() && m_mapVec.size() == m_fieldMappingVec.size());
 
+  if (is_same<T, int>::value)
+    m_dataTypeVec.push_back(TypeInt);
+  else if (is_same<T, double>::value)
+    m_dataTypeVec.push_back(TypeDouble);
+  else if (is_same<T, unsigned char>::value)
+    m_dataTypeVec.push_back(TypeUnsignChar);
+  else 
+    m_dataTypeVec.push_back(TypeUnknown);
+
   return index_val;
 }
 
@@ -207,6 +218,29 @@ inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
       return *dynamic_cast<Field2D<T>*>(m_mapVec[i]);
     }
   }
+}
+
+
+template<typename DataType>
+void MultiMat::convertToSparse_helper(int map_i)
+{
+  vector<DataType> arr_data(m_cellMatNZSet.totalSize());
+  auto& old_ptr = *dynamic_cast<Field2D<DataType>*>(m_mapVec[map_i]);
+  
+  int idx = 0;
+  for (int i = 0; i < m_cell2matRel.fromSetSize(); ++i) {
+    auto relset = m_cell2matRel[i];
+    auto submap = old_ptr[i];
+    for (int j = 0; j < relset.size(); ++j) {
+
+      arr_data[idx++] = submap[relset[j]];
+    }
+  }
+  assert(idx == m_cellMatNZSet.totalSize());
+
+  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatNZSet, &arr_data[0]);
+  delete m_mapVec[map_i];
+  m_mapVec[map_i] = new_field;
 }
 
 } //end namespace multimat
