@@ -665,7 +665,10 @@ int main(int argc, char** argv)
 void test_code() {
 
   //Set-up
-  MultiMat mm(LAYOUT_CELL_DOM, LAYOUT_SPARSE);
+  bool use_sparse = false;
+
+  MultiMat mm(LAYOUT_CELL_DOM, use_sparse ? LAYOUT_SPARSE : LAYOUT_DENSE);
+  
   int nmats = 50;
   int ncells = 2000;
   int nfilled = 0;
@@ -689,16 +692,23 @@ void test_code() {
     c_sum += cell_arr1[i];
   }
     
-  std::vector<double> cellmat_arr(nfilled);
+  std::vector<double> cellmat_arr;
+
+  cellmat_arr.resize(use_sparse ? nfilled : nmats * ncells);
   double x_sum = 0;
   for (int i = 0; i < cellmat_arr.size(); i++) {
-    cellmat_arr[i] = (double)i * 1.1;
-    x_sum += cellmat_arr[i];
+    if (use_sparse || cellMatRel[i]) {
+      cellmat_arr[i] = (double)i * 1.1;
+      x_sum += cellmat_arr[i];
+    }
   }
 
 
   mm.newFieldArray<>("Cell Array"   , PER_CELL    , &cell_arr1[0]);
   mm.newFieldArray<>("CellMat Array", PER_CELL_MAT, &cellmat_arr[0]);
+
+  //convert layout
+  mm.convertLayoutToSparse();
 
   double sum = 0;
 

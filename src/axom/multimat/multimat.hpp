@@ -104,6 +104,8 @@ public:
   //Layout modification functions
   void convertLayoutToCellDominant() { convertLayout(LAYOUT_CELL_DOM, m_sparcityLayout); }
   void convertLayoutToMaterialDominant() { convertLayout(LAYOUT_MAT_DOM, m_sparcityLayout); }
+  void convertLayoutToSparse() { convertLayout(m_dataLayout, LAYOUT_SPARSE); }
+  void convertLayoutToDense() { convertLayout(m_dataLayout, LAYOUT_DENSE); }
   void convertLayout(DataLayout, SparcityLayout);
   DataLayout getDataLayout();
   std::string getLayoutAsString();
