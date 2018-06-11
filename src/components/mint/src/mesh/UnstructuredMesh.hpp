@@ -179,8 +179,8 @@ public:
    * \param [in] ndims the number of dimensions.
    * \param [in] node_capacity the number of nodes to allocate space for.
    * \param [in] cell_capacity the number of cells to allocate space for.
-   * \param [in] connectivity_capacity the space to allocate for the
-   *  connectivity array.
+   * \param [in] connectivity_capacity the number of vertices to allocate space
+   *  for in the cell connectivity array.
    *
    * \note This constructor is only active when TOPO == MIXED_SHAPE.
    *
@@ -209,23 +209,25 @@ public:
 /// @{
 
   /*!
-   * \brief Constructs an Unstructured single topology mesh.
+   * \brief Constructs an Unstructured single topology mesh using the provided
+   *  external buffers.
    *
    * \param [in] ndims the number of dimensions.
    * \param [in] cell_type the cell type of the mesh.
    * \param [in] n_cells the number of cells in the mesh.
    * \param [in] cell_capacity the number of cells able to be stored in the
    *  provided connectivity array.
-   * \param [in] connectivity the connectivity array. Of length
+   * \param [in] connectivity the connectivity array. Must be of length at least
    *  cell_capacity * getCellInfo( cell_type ).num_nodes.
    * \param [in] n_nodes the number of nodes in the mesh.
    * \param [in] node_capacity the number of nodes able to be stored in the
    *  provided coordinate arrays.
-   * \param [in] x pointer to the x-coordinates.
-   * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D.
-   * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
+   * \param [in] x pointer to the x-coordinates
+   * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
+   * \param [in] z pointer to the z-coordinates (required only 3D)
    *
-   * \note the provided coordinate arrays are to be of length node_capacity.
+   * \note the provided coordinate arrays are to be of length at least 
+   *  node_capacity.
    * \note This constructor is only active when TOPO == SINGLE_SHAPE.
    *
    * \post getCellType() == cell_type
@@ -256,7 +258,8 @@ public:
   }
 
   /*!
-   * \brief Constructs an Unstructured single topology mesh.
+   * \brief Constructs an Unstructured mixed topology mesh using the provided
+   *  external buffers.
    *
    * \param [in] ndims the number of dimensions.
    * \param [in] n_cells the number of cells in the mesh.
@@ -264,19 +267,22 @@ public:
    *  provided connectivity array.
    * \param [in] connectivity_capacity the number of vertices able to be stored
    *  in the provided connectivity array.
-   * \param [in] connectivity the connectivity array. Of length
-   *  cell_capacity * getCellInfo( cell_type ).num_nodes.
-   * \param [in] offsets the offsets of each ID, of length cell_capacity + 1.
-   * \param [in] types the array of ID types, of length cell_capacity.
+   * \param [in] connectivity the connectivity array. Must be Of length at least
+   *  connectivity_capacity.
+   * \param [in] offsets the offsets of each ID, of length at lesat 
+   *  cell_capacity + 1.
+   * \param [in] types the array of cell types. Must be of length at least 
+   *  cell_capacity.
    * \param [in] n_nodes the number of nodes in the mesh.
    * \param [in] node_capacity the number of nodes able to be stored in the
    *  provided coordinate arrays.
-   * \param [in] x pointer to the x-coordinates.
-   * \param [in] y pointer to the y-coordinates, may be AXOM_NULLPTR if 1D.
-   * \param [in] z pointer to the z-coordinates, may be AXOM_NULLPTR if 2D.
+   * \param [in] x pointer to the x-coordinates
+   * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
+   * \param [in] z pointer to the z-coordinates (required only 3D)
    *
-   * \note the provided coordinate arrays are to be of length node_capacity.
-   * \note This constructor is only active when TOPO == SINGLE_SHAPE.
+   * \note the provided coordinate arrays are to be of length at least 
+   *  node_capacity.
+   * \note This constructor is only active when TOPO == MIXED_SHAPE.
    *
    * \post getCellType() == UNDEFINED_CELL
    * \post getNumberOfCells() == n_cells
@@ -357,10 +363,10 @@ public:
    * \param [in] coordset the name of the associated coordset group.
    * \param [in] node_capacity the number of nodes to allocate space for.
    * \param [in] cell_capacity the number of cells to allocate space for.
-   * \param [in] connectivity_capacity the space to allocate for the
-   *  connectivity array.
+   * \param [in] connectivity_capacity the number of vertices to allocate space
+   *  for in the cell connectivity array.
    *
-   * \note If a topology and coordset name is not provided a default name is
+   * \note If a topology and coordset name are not provided a default name is
    *  used by the implementation.
    * \note The first two constructors are only active when
    *  TOPO == SINGLE_SHAPE and the last two are active only when
