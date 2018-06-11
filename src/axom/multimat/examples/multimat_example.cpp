@@ -723,14 +723,14 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array"); //get1dField
-    for (int i = 0; i < map.size(); i++) 
+    for (int i = 0; i < map.set1Size(); i++)
     {
-      MultiMat::IdSet rel_set = map.getSubset(i);
+      //MultiMat::IdSubSet rel_set = map.getSubset(i);
       MultiMat::SubField<double>& submap = map[i];
       for (int j = 0; j < submap.size(); j++)
       {
         int idx = submap.index(j);  //mat id
-          idx = rel_set[j]; //another way to get mat id
+        //  idx = rel_set[j]; //another way to get mat id
         sum += submap.value(j);        //<----------
         //sum += submap[j];            //another way to get value
       }
@@ -759,26 +759,26 @@ void test_code() {
     
 
   //// ------------ return index set --------------
-  printf("\nAccess by Map with indexing set\n-\t");
-  sum = 0;
-  start_timer();
-  {
-    MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
-    for (int i = 0; i < mm.getNumberOfCells(); i++)
-    {
-      MultiMat::IdSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
-      MultiMat::IndexSet indexSet = mm.getIndexingSetOfCell(i); //the indices into the maps
-      assert(setOfMaterialsInThisCell.size() == indexSet.size());
-      for (int j = 0; j < indexSet.size(); j++)
-      {
-        int mat_id = setOfMaterialsInThisCell[j];
-        double val = map[indexSet.at(j)];
-        sum += val;
-      }
-    }
-  }
-  cout << end_timer() << "\t";
-  assert(x_sum == sum);
+  //printf("\nAccess by Map with indexing set\n-\t");
+  //sum = 0;
+  //start_timer();
+  //{
+  //  MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
+  //  for (int i = 0; i < mm.getNumberOfCells(); i++)
+  //  {
+  //    MultiMat::IdSubSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
+  //    MultiMat::IndexSet indexSet = mm.getIndexingSetOfCell(i); //the indices into the maps
+  //    assert(setOfMaterialsInThisCell.size() == indexSet.size());
+  //    for (int j = 0; j < indexSet.size(); j++)
+  //    {
+  //      int mat_id = setOfMaterialsInThisCell.at(j);
+  //      double val = map[indexSet.at(j)];
+  //      sum += val;
+  //    }
+  //  }
+  //}
+  //cout << end_timer() << "\t";
+  //assert(x_sum == sum);
 
 
 
@@ -800,7 +800,7 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
-    for (int i = 0; i < map.size(); i++) 
+    for (int i = 0; i < map.set1Size(); i++) 
     {
       MultiMat::SubField<double>& submap = map[i];
       for (auto iter = submap.begin(); iter != submap.end(); iter++) 
@@ -821,7 +821,7 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
-    for (int i = 0; i < map.size(); i++)
+    for (int i = 0; i < map.set1Size(); i++)
     {
       for (auto iter = map.begin(i); iter != map.end(i); iter++)
       {

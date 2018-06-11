@@ -7,7 +7,8 @@
 #include "slam/StaticRelation.hpp"
 #include "slam/Map.hpp"
 #include "slam/MappedRelationSet.hpp"
-#include "slam/RelationMap.hpp"
+#include "slam/ProductSet.hpp"
+#include "slam/BivariateMap.hpp"
 #include <vector>
 #include <cassert>
 
@@ -29,7 +30,7 @@ class MultiMat
   /**  private type def **/
 private: 
   // SLAM Set type definitions
-  using SetType = slam::RangeSet;
+  using SetType = slam::Set;
   using RangeSetType   = slam::RangeSet;
   using SetPosType  = SetType::PositionType;
   using SetElemType = SetType::ElementType;
@@ -38,7 +39,15 @@ private:
   using VariableCardinality = policies::VariableCardinality<SetPosType, STLIndirection>;
   using StaticVariableRelationType = slam::StaticRelation<VariableCardinality, STLIndirection,
     RangeSetType, RangeSetType>;
-  using RelationSet = StaticVariableRelationType::RelationSet; 
+  using IndicesSet = StaticVariableRelationType::IndicesSet;
+  using RelationSet = StaticVariableRelationType::RelationSet;
+  using OrderedSetType = slam::OrderedSet<
+                policies::RuntimeSize<SetType::PositionType>,
+                policies::ZeroOffset<SetType::PositionType>,
+                policies::StrideOne<SetType::PositionType>,
+                policies::STLVectorIndirection<SetType::PositionType, SetType::ElementType>,
+                policies::NoSubset>;
+  using ProductSetType = slam::ProductSet;
   // SLAM MappedRelationSet for the set of non-zero cell to mat variables
   using MappedRelationSetType = slam::MappedRelationSet<StaticVariableRelationType>;
   
@@ -47,25 +56,28 @@ private:
   template <typename T>
   using MapType = slam::Map<T>;
   template <typename T>
-  using RelationMapType = slam::RelationMap<T, StaticVariableRelationType>;
+  using BivariateMapType = slam::BivariateMap<T>;
+
   template<typename T>
   using SubsetMap = slam::SubsetMap<T>;
 
-  /** Public type def **/
+/** Public type def **/
 public:
   template <typename T>
   using Field1D = MapType<T>;
   template <typename T>
-  using Field2D = RelationMapType<T>;
+  using Field2D = BivariateMapType<T>;
   template <typename T>
   using SubField = SubsetMap<T>;
   using IndexSet = RangeSetType;
-  using IdSet = RelationSet;
+  using IdSet = OrderedSetType;
+  using IdSubSet = RelationSet;
   
-  /** Public functions **/
+/** Public functions **/
   MultiMat();
   MultiMat(DataLayout, SparcityLayout);
-  
+  ~MultiMat();
+
   //Set-up functions
   void setNumberOfMat(int); 
   void setNumberOfCell(int);
@@ -80,7 +92,7 @@ public:
   template<typename T>
   Field2D<T>& get2dField(std::string field_name);
 
-  IdSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
+  IdSubSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
   IndexSet getIndexingSetOfCell(int c);
 
   int getNumberOfMaterials() { return m_nmats; };
@@ -95,6 +107,7 @@ public:
   void convertLayout(DataLayout, SparcityLayout);
   DataLayout getDataLayout();
   std::string getLayoutAsString();
+  SparcityLayout getSparcityLayout();
 
   void printSelf();
   bool isValid();
@@ -109,13 +122,14 @@ private:
   SparcityLayout m_sparcityLayout;
 
   //slam variables
-  SetType m_cellSet;
-  SetType m_matSet;
+  RangeSetType m_cellSet;
+  RangeSetType m_matSet;
   StaticVariableRelationType m_cell2matRel;
   std::vector<SetPosType> m_cell2matRel_beginsVec; //to store the cell2mat relation
   std::vector<SetPosType> m_cell2matRel_indicesVec; //to store the cell2mat relation
   MappedRelationSetType m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
-  
+  ProductSetType m_cellMatProdSet;
+
   std::vector<std::string> m_arrNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
   std::vector<MapBaseType*> m_mapVec; 
@@ -134,9 +148,17 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
   int index_val = m_mapVec.size();
   
   if (arr_mapping == PER_CELL_MAT) {
-    MappedRelationSetType* s = &m_cellMatNZSet;
     
-    RelationMapType<T>* newMapPtr = new RelationMapType<T>(s, data_arr);
+    Field2D<T>* newMapPtr;
+    if (m_sparcityLayout == LAYOUT_SPARSE) {
+      MappedRelationSetType* s = &m_cellMatNZSet;
+      newMapPtr = new Field2D<T>(s, data_arr);
+    }
+    else if (m_sparcityLayout == LAYOUT_DENSE) {
+      ProductSetType* s = &m_cellMatProdSet;
+      newMapPtr = new Field2D<T>(s, data_arr);
+    }
+    else assert(false);
 
     m_mapVec.push_back(newMapPtr);
   }
@@ -165,7 +187,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
   {
     if (m_arrNameVec[i] == field_name)
     {
-      //assert(m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT);
+      assert(m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT);
       return *dynamic_cast<Field1D<T>*>(m_mapVec[i]);
     }
   }
@@ -173,14 +195,14 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
 }
 
 template<typename T>
-inline MultiMat::RelationMapType<T>& MultiMat::get2dField(std::string field_name)
+inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
 {
   for (int i = 0; i < m_arrNameVec.size(); i++)
   {
     if (m_arrNameVec[i] == field_name)
     {
       assert(m_fieldMappingVec[i] == PER_CELL_MAT);
-      return *dynamic_cast<RelationMapType<T>*>(m_mapVec[i]);
+      return *dynamic_cast<Field2D<T>*>(m_mapVec[i]);
     }
   }
 }
