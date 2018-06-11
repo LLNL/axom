@@ -122,6 +122,7 @@ MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
   else assert(false);
 }
 
+
 void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 {
   if (new_layout == m_dataLayout && new_sparcity == m_sparcityLayout)
@@ -134,13 +135,26 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayo
   { //convert from dense to sparse
 
     //go through each field, for every matXcell field, create a new map of sparse mat
-    for (int i = 0; i < m_fieldMappingVec.size(); i++)
+    for (int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
     {
-      if (m_fieldMappingVec[i] != PER_CELL_MAT) 
+      if (m_fieldMappingVec[map_i] != PER_CELL_MAT)
         continue;
 
-      //TODO
-    }
+
+      if (m_dataTypeVec[map_i] == TypeDouble) {
+        convertToSparse_helper<double>(map_i);
+      }
+      else  if (m_dataTypeVec[map_i] == TypeInt) {
+        convertToSparse_helper<int>(map_i);
+      }
+      else  if (m_dataTypeVec[map_i] == TypeUnsignChar) {
+        convertToSparse_helper<unsigned char>(map_i);
+      }
+      else assert(false); //TODO
+
+
+    } //for
+
   }
   else {
     assert(false);
