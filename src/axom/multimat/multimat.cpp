@@ -81,7 +81,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   cout << "cellmatrel total size: " << m_cell2matRel.totalSize() << endl;
   cout << "fromset size: " << m_cellSet.size() << endl;
 
-  //Set-up both dense and sparse sets, since they don't take any memory...
+  //Set-up both dense and sparse sets, since they don't take any extra memory...
 
   //a set of mapped relation
   m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
@@ -95,13 +95,13 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
 }
 
-MultiMat::IdSubSet MultiMat::getMatInCell(int c)
+MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
   if (m_dataLayout == LAYOUT_SPARSE) {
     return m_cell2matRel[c]; //returns a RelationSet / OrderedSet with STLindirection
   }
-  //else if (m_dataLayout == LAYOUT_DENSE)
-  //  return m_cell2matRel[c]; //since the relation is currently only stored sparse, return the same thing.
+  else if (m_dataLayout == LAYOUT_DENSE)
+    return m_cell2matRel[c]; //since the relation is currently only stored sparse, return the same thing.
   else assert(false);
 }
 
@@ -140,21 +140,22 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayo
       if (m_fieldMappingVec[map_i] != PER_CELL_MAT)
         continue;
 
-
       if (m_dataTypeVec[map_i] == TypeDouble) {
         convertToSparse_helper<double>(map_i);
       }
-      else  if (m_dataTypeVec[map_i] == TypeInt) {
+      else if (m_dataTypeVec[map_i] == TypeFloat) {
+        convertToSparse_helper<float>(map_i);
+      }
+      else if (m_dataTypeVec[map_i] == TypeInt) {
         convertToSparse_helper<int>(map_i);
       }
-      else  if (m_dataTypeVec[map_i] == TypeUnsignChar) {
+      else if (m_dataTypeVec[map_i] == TypeUnsignChar) {
         convertToSparse_helper<unsigned char>(map_i);
       }
       else assert(false); //TODO
 
-
-    } //for
-
+      m_sparcityLayout = LAYOUT_SPARSE;
+    } 
   }
   else {
     assert(false);
