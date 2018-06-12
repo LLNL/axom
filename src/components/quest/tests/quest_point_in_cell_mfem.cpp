@@ -1299,7 +1299,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   const double denom = res;
   double* x_coords = cmesh.getCoordinateArray( axom::mint::X_COORDINATE );
   double* y_coords = cmesh.getCoordinateArray( axom::mint::Y_COORDINATE );
-    for(axom::mint::IndexType i=0 ; i <= res ; ++i)
+  for(axom::mint::IndexType i=0 ; i <= res ; ++i)
   {
     for(axom::mint::IndexType j=0 ; j<= res ; ++j)
     {
