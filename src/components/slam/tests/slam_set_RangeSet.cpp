@@ -204,13 +204,15 @@ TEST(slam_range_set,iterate)
     std::stringstream sstr;
 
     typedef SetType::iterator SetIterator;
-    
+
     EXPECT_EQ(SetIterator(s.offset(), s), s.begin());
 
     //iter++ access
     {
       int idx = 0;
-      for (SetIterator it = s.begin(), itEnd = s.end(); it != itEnd; ++it, ++idx)
+      for (SetIterator it = s.begin(), itEnd = s.end() ;
+           it != itEnd ;
+           ++it, ++idx)
       {
         SetElement expected = idx + lowerIndex;
         EXPECT_EQ(expected, *it)
@@ -223,7 +225,7 @@ TEST(slam_range_set,iterate)
     //iter+n access
     {
       SetIterator beginIter = s.begin();
-      for (int idx = 0; idx < s.size(); ++idx)
+      for (int idx = 0 ; idx < s.size() ; ++idx)
       {
         SetIterator iter = beginIter + idx;
 
@@ -239,7 +241,7 @@ TEST(slam_range_set,iterate)
     //iter-n access
     {
       SetIterator endIter = s.end();
-      for (int idx = 1; idx <= s.size(); ++idx)
+      for (int idx = 1 ; idx <= s.size() ; ++idx)
       {
         SetIterator iter = endIter - idx;
 
@@ -254,7 +256,7 @@ TEST(slam_range_set,iterate)
 
     //iter+=n access
     {
-      for (int idx = 0; idx < s.size(); ++idx)
+      for (int idx = 0 ; idx < s.size() ; ++idx)
       {
         SetIterator iter = s.begin();
         iter += idx;
@@ -268,7 +270,7 @@ TEST(slam_range_set,iterate)
 
     //iter-=n access
     {
-      for (int idx = 1; idx <= s.size(); ++idx)
+      for (int idx = 1 ; idx <= s.size() ; ++idx)
       {
         SetIterator iter = s.end();
         iter -= idx;
@@ -283,7 +285,7 @@ TEST(slam_range_set,iterate)
     //iter[n] access
     {
       SetIterator beginIter = s.begin();
-      for (int idx = 0; idx < s.size(); ++idx)
+      for (int idx = 0 ; idx < s.size() ; ++idx)
       {
         SetElement expected = idx + lowerIndex;
         EXPECT_EQ(expected, beginIter[idx])
@@ -297,7 +299,9 @@ TEST(slam_range_set,iterate)
     //iter+n access
     {
       int idx = 0;
-      for (SetIterator it = s.begin(), itEnd = s.end(); it != itEnd; ++it, ++idx)
+      for (SetIterator it = s.begin(), itEnd = s.end() ;
+           it != itEnd ;
+           ++it, ++idx)
       {
         SetElement position = std::distance(s.begin(), it);
         SetElement expected = idx;
