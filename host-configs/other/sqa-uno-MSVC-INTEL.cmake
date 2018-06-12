@@ -50,8 +50,6 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 # Set the HOME variable (%USERPROFILE% in Windows)
 string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 
-set(BOOST_DIR "${HOME}/Code/boost" CACHE PATH "")
-
 # Note: Doxygen assumes graphviz 'dot' is in PATH
 set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
 
