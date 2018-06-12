@@ -22,6 +22,12 @@ namespace axom
 namespace quest
 {
 
+namespace
+{
+constexpr int READER_SUCCESS = 0;
+constexpr int READER_FAILED  = -1;
+}
+
 //------------------------------------------------------------------------------
 PSTLReader::PSTLReader( MPI_Comm comm ) : m_comm( comm )
 {
@@ -45,41 +51,35 @@ int PSTLReader::read()
 
   int rc = -1; // return code
 
-  if( m_my_rank == 0)
+  switch( m_my_rank )
   {
+  case 0:
 
-    // Rank 0 reads the mesh and broadcasts vertex positions to the others
     rc = STLReader::read();
-    if ( rc == 0 )
+    if ( rc == READER_SUCCESS )
     {
       MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
-      MPI_Bcast( &m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
-
-    }
+      MPI_Bcast( &m_nodes[0], m_num_nodes*3, MPI_DOUBLE, 0, m_comm );
+    } // END if
     else
     {
-
       MPI_Bcast( &rc, 1, MPI_INT, 0, m_comm );
+    } // END else
+    break;
 
-    }
+  default:
 
-  }
-  else
-  {
-
-    // Other ranks receive the mesh vertices from rank 0
     MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
-    if ( m_num_nodes !=-1 )
+    if ( m_num_nodes != READER_FAILED )
     {
-      m_nodes.resize( m_num_nodes * 3);
-      MPI_Bcast( &m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
+      rc = READER_SUCCESS;
       m_num_faces = m_num_nodes / 3;
-      rc = 0;
+      m_nodes.resize( m_num_nodes * 3 );
+      MPI_Bcast( &m_nodes[0], m_num_nodes*3, MPI_DOUBLE, 0, m_comm );
     }
 
-  } // END else
+  } // END switch
 
-  MPI_Barrier( MPI_COMM_WORLD );
 
   return ( rc );
 }
