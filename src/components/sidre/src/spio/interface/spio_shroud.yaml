@@ -17,7 +17,7 @@ copyright:
   -
 
 library: SPIO
-#namespace: axom sidre
+namespace: axom sidre
 
 options:
   C_line_length: 1000
@@ -32,40 +32,35 @@ format:
   F_string_result_as_arg: name
 
 declarations:
-  - decl: namespace axom
-    declarations:
-    - decl: namespace sidre
-      declarations:
+- decl: class Group
+  fields:
+    cxx_header: sidre/Group.hpp
+#    cxx_type: Group
+    f_derived_type: SidreGroup
+    f_module:
+      axom_sidre: [ SidreGroup ]
+    c_type: SIDRE_group
+    c_header: sidre/wrapGroup.h
+    f_to_c: '{f_var}%get_instance()'
 
-      - decl: class Group
-        fields:
-          cxx_header: sidre/Group.hpp
-#          cxx_type: Group
-          f_derived_type: SidreGroup
-          f_module:
-            axom_sidre: [ SidreGroup ]
-          c_type: SIDRE_group
-          c_header: sidre/wrapGroup.h
-          f_to_c: '{f_var}%get_instance()'
-
-      - decl: class IOManager
-        cxx_header: sidre/IOManager.hpp
-        declarations:
-        - decl: IOManager(MPI_Comm com, bool use_scr = false) +name(new)
-        - decl: ~IOManager() +name(delete)
-        - decl: void write(Group * group,
-                           int num_files,
-                           const std::string& file_string,
-                           const std::string& protocol)
-        - decl: void writeGroupToRootFile(Group * group,
-                                          const std::string& file_name)
-        - decl: void read(Group * group,
-                          const std::string& file_string,
-                          const std::string& protocol,
-                          bool preserve_contents = false)
-        - decl: void read(Group * group,
-                          const std::string& root_file,
-                          bool preserve_contents = false,
-                          bool use_scr = false)
-        - decl: void loadExternalData(Group * group,
-                                      const std::string& root_file)
+- decl: class IOManager
+  cxx_header: sidre/IOManager.hpp
+  declarations:
+  - decl: IOManager(MPI_Comm com, bool use_scr = false) +name(new)
+  - decl: ~IOManager() +name(delete)
+  - decl: void write(Group * group,
+                     int num_files,
+                     const std::string& file_string,
+                     const std::string& protocol)
+  - decl: void writeGroupToRootFile(Group * group,
+                                    const std::string& file_name)
+  - decl: void read(Group * group,
+                    const std::string& file_string,
+                    const std::string& protocol,
+                    bool preserve_contents = false)
+  - decl: void read(Group * group,
+                    const std::string& root_file,
+                    bool preserve_contents = false,
+                    bool use_scr = false)
+  - decl: void loadExternalData(Group * group,
+                                const std::string& root_file)
