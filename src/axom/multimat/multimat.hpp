@@ -23,7 +23,7 @@ namespace policies = slam::policies;
 enum FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
 enum DataLayout { LAYOUT_CELL_DOM, LAYOUT_MAT_DOM };
 enum SparcityLayout { LAYOUT_SPARSE, LAYOUT_DENSE };
-enum DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeUnsignChar };
+enum DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar };
 
 class MultiMat
 {
@@ -40,11 +40,9 @@ private:
   using VariableCardinality = policies::VariableCardinality<SetPosType, STLIndirection>;
   using StaticVariableRelationType = slam::StaticRelation<VariableCardinality, STLIndirection,
     RangeSetType, RangeSetType>;
-  using IndicesSet = StaticVariableRelationType::IndicesSet;
-  using RelationSet = StaticVariableRelationType::RelationSet;
   using OrderedSetType = slam::OrderedSet<
                 policies::RuntimeSize<SetType::PositionType>,
-                policies::ZeroOffset<SetType::PositionType>,
+                policies::RuntimeOffset<SetType::PositionType>,
                 policies::StrideOne<SetType::PositionType>,
                 policies::STLVectorIndirection<SetType::PositionType, SetType::ElementType>,
                 policies::NoSubset>;
@@ -72,7 +70,6 @@ public:
   using SubField = SubsetMap<T>;
   using IndexSet = RangeSetType;
   using IdSet = OrderedSetType;
-  using IdSubSet = RelationSet;
   
 /** Public functions **/
   MultiMat();
@@ -93,7 +90,7 @@ public:
   template<typename T>
   Field2D<T>& get2dField(std::string field_name);
 
-  IdSubSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
+  IdSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
   IndexSet getIndexingSetOfCell(int c);
 
   int getNumberOfMaterials() { return m_nmats; };
@@ -185,9 +182,11 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
     m_dataTypeVec.push_back(TypeInt);
   else if (is_same<T, double>::value)
     m_dataTypeVec.push_back(TypeDouble);
+  else if (is_same<T, float>::value)
+    m_dataTypeVec.push_back(TypeFloat);
   else if (is_same<T, unsigned char>::value)
     m_dataTypeVec.push_back(TypeUnsignChar);
-  else 
+  else
     m_dataTypeVec.push_back(TypeUnknown);
 
   return index_val;
@@ -200,8 +199,13 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
   {
     if (m_arrNameVec[i] == field_name)
     {
-      assert(m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT);
-      return *dynamic_cast<Field1D<T>*>(m_mapVec[i]);
+      //assert(m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT);
+      if (m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT)
+        return *dynamic_cast<Field1D<T>*>(m_mapVec[i]);
+      else if (m_fieldMappingVec[i] == PER_CELL_MAT) {
+        Field2D<T> * map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[i]);
+        return *(map_2d->getMap());
+      }
     }
   }
   assert(false); //No array with such name found

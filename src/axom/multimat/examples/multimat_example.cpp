@@ -546,9 +546,13 @@ struct Robey_data
 ////    Average material density over neighborhood of each cell
 ////    Same as the function above, but modified to use MultiMat class
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//void average_material_density_over_cell_nbr_mm(MultiMat& mm, const std::vector<double>& cen, const std::vector<int>& nnbrs, const std::vector<int>& nbrs)
+//void average_material_density_over_cell_nbr_mm(MultiMat& mm, Robey_data& data)
 //{
 //  cout << "-- Calculating avg material density over cell neighbor, Multimat version--" << endl;
+//
+//  const std::vector<double>& cen = data.cen;
+//  const std::vector<int>& nnbrs = data.nnbrs;
+//  const std::vector<int>& nbrs = data.nbrs;
 //
 //  int ncells = mm.getNumberOfCells();
 //  int nmats = mm.getNumberOfMaterials();
@@ -653,7 +657,7 @@ int main(int argc, char** argv)
   //calculate_pressure_mm(mm);
 
   //average_material_density_over_cell_nbr(data);
-  //average_material_density_over_cell_nbr_mm(mm, cen, nnbrs, nbrs);
+  //average_material_density_over_cell_nbr_mm(mm, data);
 
   test_code();
 
@@ -735,12 +739,15 @@ void test_code() {
     MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array"); //get1dField
     for (int i = 0; i < map.set1Size(); i++)
     {
-      //MultiMat::IdSubSet rel_set = map.getSubset(i);
+      MultiMat::IdSet rel_set = map.getSubset(i);
       MultiMat::SubField<double>& submap = map[i];
+      assert(rel_set.size() == submap.size());
       for (int j = 0; j < submap.size(); j++)
       {
         int idx = submap.index(j);  //mat id
-        //  idx = rel_set[j]; //another way to get mat id
+        int idx2 = rel_set[j]; //another way to get mat id
+        assert(idx == idx2); 
+
         sum += submap.value(j);        //<----------
         //sum += submap[j];            //another way to get value
       }
@@ -760,36 +767,38 @@ void test_code() {
     for (int i = 0; i < mm.getNumberOfCells(); i++) {
       for (int m = 0; m < mm.getNumberOfMaterials(); m++) {
         double* valptr = map.findValue(i, m);
-        if (valptr) sum += *valptr;           //<---- contains a hidden for-loop
+        if (valptr) sum += *valptr;           //<---- contains a hidden for-loop for sparse layouts
       }
     }
   }
   cout << end_timer() << "\t";
   assert(x_sum == sum);
-    
+   
 
-  //// ------------ return index set --------------
-  //printf("\nAccess by Map with indexing set\n-\t");
-  //sum = 0;
-  //start_timer();
-  //{
-  //  MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
-  //  for (int i = 0; i < mm.getNumberOfCells(); i++)
-  //  {
-  //    MultiMat::IdSubSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
-  //    MultiMat::IndexSet indexSet = mm.getIndexingSetOfCell(i); //the indices into the maps
-  //    assert(setOfMaterialsInThisCell.size() == indexSet.size());
-  //    for (int j = 0; j < indexSet.size(); j++)
-  //    {
-  //      int mat_id = setOfMaterialsInThisCell.at(j);
-  //      double val = map[indexSet.at(j)];
-  //      sum += val;
-  //    }
-  //  }
-  //}
-  //cout << end_timer() << "\t";
-  //assert(x_sum == sum);
-
+  if (mm.getSparcityLayout() == LAYOUT_SPARSE)
+  {
+    // ------------ return index set --------------
+    printf("\nAccess by Map with indexing set\n-\t");
+    sum = 0;
+    start_timer();
+    {
+      MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
+      for (int i = 0; i < mm.getNumberOfCells(); i++)
+      {
+        MultiMat::IdSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
+        MultiMat::IndexSet indexSet = mm.getIndexingSetOfCell(i); //the indices into the maps
+        assert(setOfMaterialsInThisCell.size() == indexSet.size());
+        for (int j = 0; j < indexSet.size(); j++)
+        {
+          int mat_id = setOfMaterialsInThisCell.at(j);
+          double val = map[indexSet.at(j)];   //<-----
+          sum += val;
+        }
+      }
+    }
+    cout << end_timer() << "\t";
+    assert(x_sum == sum);
+  }
 
 
   // ---------- using iterator with Map -------------
