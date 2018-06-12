@@ -459,8 +459,11 @@ void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
   SLIC_ASSERT_MSG(ndims==3,
                   "Quest currently only supports 3D (not 2D) triangle meshes.");
   SLIC_ASSERT_MSG(input_mesh->getMeshType() == mint::UNSTRUCTURED_MESH,
-                  "Quest currently only supports 3D triangle meshes "
-                  "(not any other kind of cell).");
+                  "Quest currently only supports 3D unstructured meshes " );
+  SLIC_ASSERT_MSG( input_mesh->hasMixedCellTypes() == false,
+   "Quest does not support unstructured meshes with mixed shape topology!" );
+  SLIC_ASSERT_MSG( input_mesh->getCellType() == mint::TRIANGLE,
+                   "Quest currently only supports 3D triangle meshes" );
 
   accelerator3D.setupQuestLogger(comm);
 
@@ -513,8 +516,11 @@ void initialize( mint::Mesh*& input_mesh,
   SLIC_ASSERT_MSG(ndims==3,
                   "Quest currently only supports 3D (not 2D) triangle meshes.");
   SLIC_ASSERT_MSG(input_mesh->getMeshType() == mint::UNSTRUCTURED_MESH,
-                  "Quest currently only supports 3D triangle meshes "
-                  "(not any other kind of cell).");
+                  "Quest currently only supports 3D unstructured meshes" );
+  SLIC_ASSERT_MSG( input_mesh->hasMixedCellTypes() == false,
+    "Quest does not support unstructured meshes with mixed shape topology!" );
+  SLIC_ASSERT_MSG( input_mesh->getCellType() == mint::TRIANGLE,
+                   "Quest currently only supports 3D triangle meshes" );
 
   accelerator3D.setupQuestLogger();
 
