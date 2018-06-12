@@ -67,14 +67,8 @@ def main():
         builds_dir = get_shared_tpl_builds_dir()
     builds_dir = os.path.abspath(builds_dir)
 
-    # Make sure builds_dir is not located inside of the repository (CMake hates this)
     repo_dir = get_repo_dir()
-    if builds_dir.startswith(repo_dir):
-        print "Error: TPL build directory cannot be inside of the AXOM repository."
-        print "   CMake will not allow you to use any TPL's include directory inside the repository."
-        return False
 
-    
     if opts["archive"] != "":
         job_name = opts["archive"]
     else:

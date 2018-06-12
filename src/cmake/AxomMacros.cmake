@@ -62,7 +62,7 @@ macro(axom_add_code_checks)
 
     blt_add_code_checks(PREFIX    ${arg_PREFIX}
                         SOURCES   ${_sources}
-                        UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/src/uncrustify.cfg)
+                        UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
 
 endmacro(axom_add_code_checks)
 
