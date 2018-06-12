@@ -411,8 +411,7 @@ public:
 /// @{
 
   /*!
-   * \brief Changes the num-tuples of all fields in this FieldData instance by
-   *  creating
+   * \brief Changes the num-tuples of all fields in this FieldData instance.
    *
    * \param [in] newNumTuples the new number of tuples.
    *
@@ -485,7 +484,8 @@ private:
    * \brief Deletes all fields associated with this FieldData instance.
    *
    * \note If the FieldData instance is using Sidre as the back-end data-store,
-   *  this method does not remove the associated from the Sidre hierarchy.
+   *  this method does not remove the associated objects from the Sidre
+   *  hierarchy.
    *
    * \post this->empty() == true.
    */
@@ -494,7 +494,10 @@ private:
   /*!
    * \brief Returns a string representation of the association name.
    *
-   * \return name the string association name.
+   * \return name a string corresponding to the association name.
+   *
+   * \note By construction, the returned name will never be an empty string.
+   *
    * \post name.empty() == false
    */
   inline std::string getAssociationName();

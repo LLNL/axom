@@ -132,6 +132,9 @@ public:
    *  capacity of the array will be initialized to
    *  num_tuples * DEFAULT_RESIZE_RATIO.
    *
+   * \note a capacity is specified for the number of tuples to store in the
+   *  array and does not correspond to the actual bytesize.
+   *
    * \pre num_tuples >= 0
    * \pre num_components >= 1
    *
@@ -163,6 +166,9 @@ public:
    *
    * \post numComponents() == num_components
    * \post getResizeRatio == 0.0
+   *
+   * \note a capacity is specified for the number of tuples to store in the
+   *  array and does not correspond to the actual bytesize.
    *
    * \note If no capacity is specified then it will default to the number of
    *  tuples.
@@ -273,8 +279,8 @@ public:
     SLIC_ASSERT( pos >= 0 );
     SLIC_ASSERT( pos <= m_num_tuples );
     SLIC_ASSERT( component >= 0 );
-    SLIC_ASSERT( component < m_num_components ); 
-    return m_data[ pos * m_num_components + component ]; 
+    SLIC_ASSERT( component < m_num_components );
+    return m_data[ pos * m_num_components + component ];
   }
 
   /// @}
@@ -430,10 +436,10 @@ public:
    * \param [in] capacity the new number of tuples to allocate.
    */
   void reserve( IndexType capacity )
-  { 
-    if ( capacity > m_capacity ) 
+  {
+    if ( capacity > m_capacity )
     {
-      setCapacity( capacity ); 
+      setCapacity( capacity );
     }
   }
 
@@ -568,7 +574,7 @@ private:
   }
 
   /*!
-   * \brief Describes m_view as having dimensions 
+   * \brief Describes m_view as having dimensions
    * (m_num_tuples, m_num_components).
    */
   void describeView();
