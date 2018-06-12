@@ -70,14 +70,17 @@ public:
   /*!
    * \brief Constructs an empty ConnectivityArray instance.
    *
+   * \param [in] cell_type the cell type associated with the IDs.
    * \param [in] ID_capacity the number of IDs to allocate space for.
    * \param [in] value_capacity the number of values to allocate space for.
+   *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
    * \post getNumberOfIDs() == 0
    * \post getNumberOfValues() == 0
-   * \post getIDType() == TYPE
+   * \post getIDType() == cell_type
    */
   ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT,
                      IndexType value_capacity=USE_DEFAULT ) :
@@ -107,9 +110,10 @@ public:
    * \brief External constructor which creates a ConnectivityArray instance to
    *  wrap the given pointers.
    *
+   * \param [in] cell_type the cell type associated with the IDs.
    * \param [in] n_IDs the number of IDs.
-   * \param [in] values the array of values, of length value_capacity.
-   * \param [in] offsets the offsets of each ID, of length ID_capacity + 1.
+   * \param [in] values the array of values, of length at least value_capacity.
+   * \param [in] offsets the offsets array, of length at least ID_capacity + 1.
    * \param [in] ID_capacity the number of IDs able to be stored in the
    *  offsets array. If not specified the capacity is set to n_IDs.
    * \param [in] value_capacity the number of values able to be stored in the
@@ -119,6 +123,7 @@ public:
    * \note the offset of ID 0 must be 0.
    * \note the total number of values is stored in offsets[ n_IDs ]
    *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
    * \pre n_IDs >= 0
    * \pre values != AXOM_NULLPTR
    * \pre offsets != AXOM_NULLPTR
@@ -127,7 +132,7 @@ public:
    * \post getValueCapacity() >= getNumberOfValues()
    * \post getNumberOfIDs() == n_IDs
    * \post getNumberOfValues() == offsets[ n_IDs ]
-   * \post getIDType() == TYPE
+   * \post getIDType() == cell_type
    */
   ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values,
                      IndexType* offsets,
@@ -178,7 +183,6 @@ public:
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
-   * \post getIDType() == TYPE
    */
   ConnectivityArray( sidre::Group* group ) :
     m_cell_type( UNDEFINED_CELL ),
@@ -198,18 +202,20 @@ public:
    * \brief Creates an empty ConnectivityArray instance from an empty
    *  sidre::Group.
    *
+   * \param [in] cell_type the cell type associated with the IDs.
    * \param [in] group the sidre::Group to create the ConnectivityArray from.
    * \param [in] coordset the name of the Blueprint coordinate set to associate
    *  this ConnectivityArray with.
    * \param [in] ID_capacity the number of IDs to allocate space for.
    * \param [in] value_capacity the number of values to allocate space for.
    *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
    * \pre group != AXOM_NULLPTR
    * \pre group->getNumGroups() == group->getNumViews() == 0
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
-   * \post getIDType() == TYPE
+   * \post getIDType() == cell_type
    */
   ConnectivityArray( CellType cell_type, sidre::Group* group,
                      const std::string& coordset,
@@ -250,7 +256,7 @@ public:
 /// @}
 
   /*!
-   * \brief Destructor, free's the allocated vectors.
+   * \brief Destructor, free's the allocated arrays.
    */
   ~ConnectivityArray()
   {
@@ -276,7 +282,7 @@ public:
   { return m_offsets->size() - 1; }
 
   /*!
-   * \brief Return the number of IDs available for storage without resizing.
+   * \brief Returns the number of IDs available for storage without resizing.
    */
   IndexType getIDCapacity() const
   { return m_offsets->capacity() - 1; }
@@ -288,7 +294,7 @@ public:
   { return m_values->size(); }
 
   /*!
-   * \brief Return the number of values available for storage without resizing.
+   * \brief Returns the number of values available for storage without resizing.
    */
   IndexType getValueCapacity() const
   { return m_values->capacity(); }
@@ -355,7 +361,7 @@ public:
   { return true; }
 
   /*!
-   * \brief Checks if this ConnectivityArray instance is empty.
+   * \brief Return true if this ConnectivityArray instance is empty.
    */
   bool empty() const
   { return m_values->empty(); }
@@ -431,7 +437,8 @@ public:
    *
    * \param [in] ID the ID in question.
    *
-   * \return pointer to the values of the given ID.
+   * \return pointer to the values of the given ID, of length at least
+   *  getNumberOfValuesForID( ID ).
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \post cell_ptr != AXOM_NULLPTR.
@@ -454,7 +461,7 @@ public:
 
   /*!
    * \brief Returns a pointer to the values array, of length
-   *getNumberOfValues().
+   *  getNumberOfValues().
    */
   /// @{
 
@@ -481,7 +488,9 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the types array, in this case AXOM_NULLPTR.
+   * \brief Returns a pointer to the types array. Since this version of the
+   *  ConnectivityArray does not have a types array this function returns a
+   *  null pointer. 
    */
   /// @{
 
@@ -497,7 +506,7 @@ public:
   /*!
    * \brief Append a ID.
    *
-   * \param [in] values pointer to the values to add, of length at least
+   * \param [in] values pointer to the values to append, of length at least
    *  n_values.
    * \param [in] n_values the number of values corresponding to the new ID.
    * \param [in] type not used, does not need to be specified.
@@ -515,11 +524,14 @@ public:
   /*!
    * \brief Append multiple IDs.
    *
-   * \param [in] values pointer to the values to set, of length at least
-   *  n_values
+   * \param [in] values pointer to the values to append.
    * \param [in] n_IDs the number of IDs to append.
    * \param [in] the offsets array of length n_IDs + 1.
    * \param [in] types not used, does not need to be specified.
+   *
+   * \note The number of values to append is given by 
+   *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
+   *  this long.
    *
    * \pre n_IDs >= 0
    * \pre values != AXOM_NULLPTR
@@ -537,6 +549,9 @@ public:
    *  getNumberOfValuesForID( ID ).
    * \param [in] ID the ID of the values to set.
    *
+   * \note The number of values associated with the given ID may not be changed,
+   *  only the values themselves.
+   *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
@@ -551,6 +566,9 @@ public:
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
    *
+   * \note The number of values associated with the given IDs may not be 
+   *  changed, only the values themselves.
+   *
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
@@ -561,7 +579,7 @@ public:
    * \brief Insert the values of a new ID before the given ID.
    *
    * \param [in] values pointer to the values to set, of length at least
-   *  n_values
+   *  n_values.
    * \param [in] start_ID the ID to start at.
    * \param [in] n_values the number of values the new ID has.
    * \param [in] type not used, does not need to be specified.
@@ -581,14 +599,17 @@ public:
   }
 
   /*!
-   * \brief Insert the values of a new ID before the given ID.
+   * \brief Insert the values of new IDs before the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least
-   *  n_values
-   * \param [in] start_ID the ID to start at.
+   * \param [in] values pointer to the values to insert.
+   * \param [in] start_ID the ID to insert at.
    * \param [in] n_IDs the number of IDs to insert.
-   * \param [in] the offsets array of length n_IDs + 1.
+   * \param [in] offsets the offsets array of length at least n_IDs + 1.
    * \param [in] types not used, does not need to be specified.
+   *
+   * \note The number of values to insert is given by 
+   *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
+   *  this long.
    *
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre n_IDs >= 0

@@ -55,7 +55,7 @@ enum ConnectivityType
  *
  *  The ConnectivityArray is a map between IDs and values where each
  *  ID can be a different type and have a different number of values.
- *  A ConnectivityArray with  N IDs has IDs from [0, N-1] whereas the values
+ *  A ConnectivityArray with N IDs has IDs from [0, N-1] whereas the values
  *  for each ID can be anything within the range of IndexType.
  *
  *  The ConnectivityArray object may be constructed using (a) native storage,
@@ -64,8 +64,8 @@ enum ConnectivityType
  *  * <b> Native Storage </b> <br />
  *
  *    When using native storage, the ConnectivityArray object owns all
- *    associated memory. The storage can dynamically grow as needed, e.g., when
- *    adding more cells. Typically, extra space is allocated to minimize the
+ *    associated memory. The storage can dynamically grow as needed, e.g. when
+ *    adding more IDs. Typically, extra space is allocated to minimize the
  *    number of re-allocations. At any given instance, the total ID/value
  *    capacity can be queried by calling the getIDCapacity()/getValueCapacity()
  *    functions. The extra memory can be returned to the system by calling the
@@ -83,7 +83,7 @@ enum ConnectivityType
  *  * <b> External Storage </b> <br />
  *
  *    A ConnectivityArray object may also be constructed from external,
- *    user-supplied buffers that store the varius arrays. In this case,
+ *    user-supplied buffers that store the various arrays. In this case,
  *    the memory is owned by the caller. The ConnectivityArray object just keeps
  *    pointers to the user-supplied buffers.
  *
@@ -107,16 +107,16 @@ enum ConnectivityType
  *
  *    A ConnectivityArray object that is bound to a particular sidre::Group
  *    supports all operations transparently including dynamically growing the
- *    storage to hold more nodes as needed, but, instead, Sidre owns the memory.
+ *    storage to hold more nodes as needed, but instead Sidre owns the memory.
  *    All memory management operations are delegated to Sidre.
  *
  *    \warning Once the ConnectivityArray object goes out-of-scope, the data
- *     stays remains persistent in Sidre.
+ *     remains persistent in Sidre.
  *
  * \warning Reallocations tend to be costly operations in terms of performance.
  *  Use `reserveIDs()`/`reserveValues()` when the number of IDs/values is
- *  known a priori, or opt to use a constructor that takes an actual size and
- *  capacity when possible.
+ *  known a priori, or opt to use a constructor that takes a size and capacity
+ *  when possible.
  *
  *  In this non-specialized ConnectivityArray it is assumed that each ID is of
  *  the same type and has the same number of values. Template specializations
@@ -148,11 +148,14 @@ public:
   /*!
    * \brief Constructs an empty ConnectivityArray instance.
    *
+   * \param [in] cell_type the cell type associated with the IDs.
    * \param [in] ID_capacity the number of IDs to allocate space for.
+   *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getNumberOfIDs() == 0
-   * \post getIDType() == TYPE
+   * \post getIDType() == cell_type
    */
   ConnectivityArray( CellType cell_type, IndexType ID_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
@@ -177,17 +180,20 @@ public:
    * \brief External constructor which creates a ConnectivityArray instance to
    *  wrap the given pointer.
    *
+   * \param [in] cell_type the cell type associated with the IDs.
    * \param [in] n_IDs the number of IDs.
-   * \param [in] values the array of values of length ID_capacity * STRIDE.
+   * \param [in] values the array of values of length at least
+   *  ID_capacity * getCellInfo( cell_type ).num_nodes.
    * \param [in] ID_capacity the capacity of the values array in terms of IDs.
    *  If not specified the capacity is set to n_IDs.
    *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
    * \pre n_IDs >= 0
    * \pre values != AXOM_NULLPTR
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getNumberOfIDs() == n_IDs
-   * \post getIDType() == TYPE
+   * \post getIDType() == cell_type
    */
   ConnectivityArray( CellType cell_type, IndexType n_IDs, IndexType* values,
                      IndexType ID_capacity=USE_DEFAULT ) :
@@ -221,7 +227,6 @@ public:
    * \pre group != AXOM_NULLPTR
    *
    * \post getIDCapacity() >= getNumberOfIDs()
-   * \post getIDType() == TYPE
    */
   ConnectivityArray( sidre::Group* group ) :
     m_cell_type( UNDEFINED_CELL ),
@@ -246,16 +251,18 @@ public:
    * \brief Creates an empty ConnectivityArray instance from an empty
    *  sidre::Group.
    *
+   * \param [in] cell_type the cell type associated with the IDs.
    * \param [in] group the sidre::Group to create the ConnectivityArray from.
    * \param [in] coordset the name of the Blueprint coordinate set to associate
    *  this ConnectivityArray with.
    * \param [in] ID_capacity the number of IDs to allocate space for.
    *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
    * \pre group != AXOM_NULLPTR
    * \pre group->getNumGroups() == group->getNumViews() == 0
    *
    * \post getIDCapacity() >= getNumberOfIDs()
-   * \post getIDType() == TYPE
+   * \post getIDType() == cell_type
    */
   ConnectivityArray( CellType cell_type, sidre::Group* group,
                      const std::string& coordset,
@@ -283,7 +290,7 @@ public:
 /// @}
 
   /*!
-   * \brief Destructor, free's the allocated vector.
+   * \brief Destructor, free's the allocated array.
    */
   ~ConnectivityArray()
   {
@@ -304,7 +311,7 @@ public:
   { return m_values->size(); }
 
   /*!
-   * \brief Return the number of IDs available for storage without resizing.
+   * \brief Returns the number of IDs available for storage without resizing.
    */
   IndexType getIDCapacity() const
   { return m_values->capacity(); }
@@ -316,7 +323,7 @@ public:
   { return m_values->size() * m_stride; }
 
   /*!
-   * \brief Return the number of values available for storage without resizing.
+   * \brief Returns the number of values available for storage without resizing.
    */
   IndexType getValueCapacity() const
   { return getIDCapacity() * m_stride; }
@@ -366,7 +373,7 @@ public:
   { return false; }
 
   /*!
-   * \brief Checks if this ConnectivityArray instance is empty.
+   * \brief Return true if this ConnectivityArray instance is empty.
    */
   bool empty() const
   { return m_values->empty(); }
@@ -425,7 +432,8 @@ public:
    *
    * \param [in] ID the ID in question.
    *
-   * \return pointer to the values of the given ID.
+   * \return pointer to the values of the given ID, of length at least 
+   *  getNumberOfValuesForID().
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \post cell_ptr != AXOM_NULLPTR.
@@ -448,7 +456,7 @@ public:
 
   /*!
    * \brief Returns a pointer to the values array, of length
-   *getNumberOfValues().
+   *  getNumberOfValues().
    */
   /// @{
 
@@ -461,8 +469,9 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the offsets array, of length
-   *  getNumberOfIDs() + 1.
+   * \brief Returns a pointer to the offsets array. Since this version of the
+   *  ConnectivityArray does not have an offsets array this function returns a
+   *  null pointer. 
    */
   /// @{
 
@@ -475,7 +484,9 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the types array, of length getNumberOfIDs().
+   * \brief Returns a pointer to the types array. Since this version of the
+   *  ConnectivityArray does not have a types array this function returns a
+   *  null pointer. 
    */
   /// @{
 
@@ -488,9 +499,10 @@ public:
   /// @}
 
   /*!
-   * \brief Adds a ID.
+   * \brief Appends an ID.
    *
-   * \param [in] values pointer to the values to add, of length at least STRIDE.
+   * \param [in] values pointer to the values to add, of length at least 
+   *  getNumberOfValuesForID().
    * \param [in] n_values not used, does not need to be specified.
    * \param [in] type not used, does not need to be specified.
    *
@@ -504,7 +516,7 @@ public:
    * \brief Adds multiple IDs.
    *
    * \param [in] values pointer to the values to add, of length at least
-   *  n_IDs * STRIDE.
+   *  n_IDs * getNumberOfValuesForID().
    * \param [in] n_IDs the number of IDs to append.
    * \param [in] offsets not used, does not need to be specified.
    * \param [in] types not used, does not need to be specified.
@@ -524,7 +536,8 @@ public:
   /*!
    * \brief Sets the values of the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least STRIDE.
+   * \param [in] values pointer to the values to set, of length at least 
+   *  getNumberOfValuesForID().
    * \param [in] ID the ID of the values to set.
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
@@ -542,8 +555,8 @@ public:
    * \brief Sets the values of multiple IDs starting with the given ID.
    *
    * \param [in] values pointer to the values to set, of length at least
-   *  n_IDs * STRIDE.
-   * \param [in] start_ID the ID to start at.``
+   *  n_IDs * getNumberOfValuesForID.
+   * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
    *
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
@@ -561,7 +574,7 @@ public:
    * \brief Insert the values of a new ID before the given ID.
    *
    * \param [in] values pointer to the values to insert, of length at least
-   *  STRIDE.
+   *  getNumberOfValuesForID().
    * \param [in] start_ID the ID to start at.
    * \param [in] n_values not used, does not need to be specified.
    * \param [in] type not used, does not need to be specified.
@@ -569,18 +582,18 @@ public:
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
-  void insert( const IndexType* values, IndexType ID,
+  void insert( const IndexType* values, IndexType start_ID,
                IndexType AXOM_NOT_USED(n_values)=0,
                CellType AXOM_NOT_USED(type)=UNDEFINED_CELL )
-  { insertM( values, ID, 1 ); }
+  { insertM( values, start_ID, 1 ); }
 
   /*!
    * \brief Insert the values of multiple IDs before the given ID.
    *
    * \param [in] values pointer to the values to set, of length at least
-   *  n_IDs * STRIDE.
+   *  n_IDs * getNumberOfValuesForID().
    * \param [in] start_ID the ID to start at.
-   * \param [in] n_IDs the number of IDs to set.
+   * \param [in] n_IDs the number of IDs to insert.
    * \param [in] offsets not used, does not need to be specified.
    * \param [in] types not used, does not need to be specified.
    *

@@ -46,9 +46,9 @@ namespace mint
  * \brief Provides an interface for general mesh connectivity.
  *
  *  In this specialized ConnectivityArray it is assumed that each ID has a
- *  different type and a different number of values, as such an offset array
+ *  different type and a different number of values. As such an offsets array
  *  is used to store the starting location of the values corresponding to each
- *  ID as well as a type array to store the type of each ID.
+ *  ID as well as a types array to store the type of each ID.
  *
  * \see ConnectivityArray_indirection.hpp
  * \see ConnectivityArray_typed_indirection.hpp
@@ -98,9 +98,9 @@ public:
    *  wrap the given pointers.
    *
    * \param [in] n_IDs the number of IDs.
-   * \param [in] values the array of values, of length value_capacity.
-   * \param [in] offsets the offsets of each ID, of length ID_capacity + 1.
-   * \param [in] types the array of ID types, of length ID_capacity.
+   * \param [in] values the array of values, of length at least value_capacity.
+   * \param [in] offsets the offsets array, of length at least ID_capacity + 1.
+   * \param [in] types the array of ID types, of length at least ID_capacity.
    * \param [in] ID_capacity the number of IDs able to be stored in the
    *  offsets array. If not specified the capacity is set to n_IDs.
    * \param [in] value_capacity the number of values able to be stored in the
@@ -193,7 +193,6 @@ public:
    *
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
-   * \post getIDType() == TYPE
    */
   ConnectivityArray( sidre::Group* group, const std::string& coordset,
                      IndexType ID_capacity=USE_DEFAULT,
@@ -234,7 +233,7 @@ public:
 /// @}
 
   /*!
-   * \brief Destructor, free's the allocated vectors.
+   * \brief Destructor, free's the allocated arrays.
    */
   ~ConnectivityArray()
   {
@@ -305,8 +304,8 @@ public:
   }
 
   /*!
-   * \brief Shrink the offsets and values arrays so that there is no extra
-   *  capacity.
+   * \brief Shrink the offsets, values and types arrays so that there is no 
+   *  extra capacity.
    *
    * \post getIDCapacity() == getNumberOfIDs()
    * \post getValueCapacity() == getNumberOfValues()
@@ -347,7 +346,7 @@ public:
   { return true; }
 
   /*!
-   * \brief Checks if this ConnectivityArray instance is empty.
+   * \brief Return true if this ConnectivityArray instance is empty.
    */
   bool empty() const
   { return m_values->empty(); }
@@ -429,7 +428,8 @@ public:
    *
    * \param [in] ID the ID in question.
    *
-   * \return pointer to the values of the given ID.
+   * \return pointer to the values of the given ID, of length at least 
+   *  getNumberOfValuesForID( ID ).
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \post cell_ptr != AXOM_NULLPTR.
@@ -451,8 +451,8 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the values array, of length
-   *getNumberOfValues().
+   * \brief Returns a pointer to the values array, of length at least
+   *  getNumberOfValues().
    */
   /// @{
 
@@ -465,7 +465,7 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the offsets array, of length
+   * \brief Returns a pointer to the offsets array, of length at least
    *  getNumberOfIDs() + 1.
    */
   /// @{
@@ -479,7 +479,8 @@ public:
   /// @}
 
   /*!
-   * \brief Returns a pointer to the types array, of length getNumberOfIDs().
+   * \brief Returns a pointer to the types array, of length at least
+   *  getNumberOfIDs().
    */
   /// @{
 
@@ -494,7 +495,7 @@ public:
   /*!
    * \brief Append a ID.
    *
-   * \param [in] values pointer to the values to add, of length at least
+   * \param [in] values pointer to the values to append, of length at least
    *  n_values.
    * \param [in] n_values the number of values corresponding to the new ID.
    * \param [in] type the type of the ID to append.
@@ -513,11 +514,14 @@ public:
   /*!
    * \brief Append multiple IDs.
    *
-   * \param [in] values pointer to the values to set, of length at least
-   *  n_values
+   * \param [in] values pointer to the values to append.
    * \param [in] n_IDs the number of IDs to append.
    * \param [in] offsets the offsets array of length n_IDs + 1.
    * \param [in] types array of types of the IDs to append, of length n_IDs.
+   *
+   * \note The number of values to append is given by 
+   *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
+   *  this long.
    *
    * \pre n_IDs >= 0
    * \pre values != AXOM_NULLPTR
@@ -537,6 +541,9 @@ public:
    *  getNumberOfValuesForID( ID ).
    * \param [in] ID the ID of the values to set.
    *
+   * \note The number of values and the type associated with the given ID may 
+   *  not be changed, only the values themselves.
+   *
    * \pre ID >= 0 && ID < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
@@ -551,6 +558,9 @@ public:
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
    *
+   * \note The number of values and the type associated with the given IDs may 
+   *  not be changed, only the values themselves.
+   *
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
    * \pre values != AXOM_NULLPTR
    */
@@ -561,7 +571,7 @@ public:
    * \brief Insert the values of a new ID before the given ID.
    *
    * \param [in] values pointer to the values to set, of length at least
-   *  n_values
+   *  n_values.
    * \param [in] start_ID the ID to start at.
    * \param [in] n_values the number of values the new ID has.
    * \param [in] type the type of the ID to insert.
@@ -587,13 +597,16 @@ public:
   /*!
    * \brief Insert the values of a new ID before the given ID.
    *
+   * \param [in] values pointer to the values to insert.
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to insert.
-   * \param [in] values pointer to the values to set, of length at least
-   *  n_values
-   * \param [in] the offsets array of length n_IDs + 1.
+   * \param [in] the offsets array of length at least n_IDs + 1.
    * \param [in] types the array of ID types to insert, of length at least
    *  n_IDs.
+   *
+   * \note The number of values to insert is given by 
+   *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
+   *  this long.
    *
    * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
    * \pre n_IDs >= 0

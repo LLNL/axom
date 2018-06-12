@@ -27,7 +27,9 @@
 #include "sidre/sidre.hpp"
 #endif
 
-#include <cmath>                        /* for std::ceil */
+#include <cmath>                 /* for std::ceil */
+#include <string>                /* for std:string */
+#include <cstring>               /* for std::srcmp */
 
 namespace axom
 {
@@ -39,7 +41,7 @@ namespace internal
 #ifdef MINT_USE_SIDRE
 
 /*!
- * \brief Initializes the members of a  a ConnectivityArray instance from a
+ * \brief Initializes the members of a ConnectivityArray instance from a
  *  sidre::Group which already has data.
  *
  * \param [in] group the sidre::Group to create the ConnectivityArray from.
@@ -158,7 +160,7 @@ inline CellType initializeFromGroup( sidre::Group* group,
 }
 
 /*!
- * \brief Initializees an empty sidre::Group to hold a ConnectivityArray.
+ * \brief Initializes an empty sidre::Group to hold a ConnectivityArray.
  *
  * \param [out] group the empty sidre::Group.
  * \param [in] coordset the name of the Blueprint coordinate set to associate
@@ -166,7 +168,7 @@ inline CellType initializeFromGroup( sidre::Group* group,
  * \param [in] create_offsets iff true will create a view for the offsets array.
  * \param [in] create_types iff true will create a view for the types array.
  *
- * \pre group != AXOM_NULLPTR
+ * \pee group != AXOM_NULLPTR
  * \pre group->getNumGroups() == group->getNumViews() == 0
  */
 inline void initializeGroup( sidre::Group* group, const std::string& coordset,
@@ -206,11 +208,14 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
  * \brief Append multiple IDs to the members of a ConnectivityArray.
  *
  * \param [in] n_IDs the number of IDs to append.
- * \param [in] values pointer to the values to set, of length at least
- *  n_values
- * \param [in] the offsets array of length n_IDs + 1.
- * \param [in/out] a pointer to the values array.
- * \param [in/out] a pointer to the offsets array.
+ * \param [in] values pointer to the values to append.
+ * \param [in] offsets the offsets array of length at least n_IDs + 1.
+ * \param [in/out] m_values a pointer to the values array.
+ * \param [in/out] m_offsets a pointer to the offsets array.
+ *
+ * \note The number of values to append is given by 
+ *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
+ *  this long.
  *
  * \pre n_IDs >= 0
  * \pre values != AXOM_NULLPTR
@@ -250,7 +255,7 @@ inline void append( IndexType n_IDs, const IndexType* values,
  * \param [in] values pointer to the values to set, of length at least
  *  the sum of the number of values of each ID to set.
  * \param [in] n_IDs the number of IDs to set.
- * \param [in/out] a pointer to the values array.
+ * \param [in/out] m_values a pointer to the values array.
  * \param [in] m_offsets a pointer to the offsets Array.
  *
  * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
@@ -271,15 +276,18 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
 }
 
 /*!
- * \brief Insert the values of a new ID before the given ID.
+ * \brief Insert the values of new IDs before the given ID.
  *
- * \param [in] start_ID the ID to start at.
+ * \param [in] start_ID the ID to insert at.
  * \param [in] n_IDs the number of IDs to insert.
- * \param [in] values pointer to the values to set, of length at least
- *  n_values
- * \param [in] offsets the offsets array of length n_IDs + 1.
+ * \param [in] values pointer to the values to insert.
+ * \param [in] offsets the offsets array of length at least n_IDs + 1.
  * \param [in/out] m_values a pointer to the values Array.
  * \param [in/out] m_offsets a pointer to the offsets Array.
+ *
+ * \note The number of values to insert is given by 
+ *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
+ *  this long.
  *
  * \pre start_ID >= 0 && start_ID <= getNumberOfIDs()
  * \pre n_IDs >= 0
