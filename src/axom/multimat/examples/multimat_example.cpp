@@ -55,10 +55,10 @@ struct Robey_data
   std::vector<double> Temperaturefrac_sparse;
   std::vector<double> Pressurefrac_sparse;
 
-  Robey_data(int method = 0)
+  Robey_data(bool read_from_file_bool = false)
   {
 
-    if (method) {
+    if (read_from_file_bool) {
       //read from file... large and takes a long time.
       read_vol_frac_matrix_file(ncells, nmats, Volfrac, filled_percentage);
     }
@@ -68,13 +68,13 @@ struct Robey_data
       get_vol_frac_matrix_rand(ncells, nmats, Volfrac, filled_percentage, 100, 50); //small version
     }
     make_other_field_data(ncells, nmats, Volfrac, Vol, Densityfrac, Temperaturefrac, Pressurefrac, nmatconsts);
-    filled_fraction = filled_percentage / 100.0;
+    filled_fraction = filled_percentage / 100.0f;
 
     // Some variables on neighbors
-    float L_f = method ? 0.5 : 1.0;  // ave frac of nbrs containing material
+    float L_f = read_from_file_bool ? 0.5 : 1.0;  // ave frac of nbrs containing material
     int nnbrs_ave = 8;  // nearly so; 4000 boundary cells in 1 million cells
                         //                  // in 3D, nnbrs_ave would be 26
-    int nnbrs_max = 8;
+    nnbrs_max = 8;
     // Build up list of neighbors for each cell
     // Assuming a 2D structured mesh, each cell will have a maximum of 8 nbrs
     nnbrs.resize(ncells);
@@ -88,7 +88,7 @@ struct Robey_data
 
     //Making data for SLAM cell to mat relation
     Volfrac_bool.resize(ncells*nmats, false);
-    int cellmatcount = 0;
+    cellmatcount = 0;
     for (int i = 0; i < Volfrac.size(); i++) {
       if (Volfrac[i] > 0) {
         Volfrac_bool[i] = true;
@@ -802,7 +802,7 @@ void test_code() {
 
 
   // ---------- using iterator with Map -------------
-  printf("\nWith Map iterators\n");
+  printf("\nWith Map (and Submap) iterators\n");
   sum = 0;
   start_timer();
   {
@@ -824,18 +824,18 @@ void test_code() {
       MultiMat::SubField<double>& submap = map[i];
       for (auto iter = submap.begin(); iter != submap.end(); iter++) 
       {
-        sum += *iter;// ->value();            //<----
-        //iter->value();
-        //iter->index();
-        //int idx = iter->index();
+        sum += *iter;                  //<----
+        //assert(*iter, iter.value());   //another way to get the value
+        int idx = iter.index();
       }
     }
   }
   cout << end_timer() << "\t";
   assert(x_sum == sum);
 
-  //iterator for relationMap too
-  printf("\nWith Map iterators - version 2\n-\t");
+
+  // ---------- iterator for BivariateMap ------------
+  printf("\nWith Map iterators - begin(i) and end(i)\n-\t");
   sum = 0;
   start_timer();
   {
@@ -844,14 +844,15 @@ void test_code() {
     {
       for (auto iter = map.begin(i); iter != map.end(i); iter++)
       {
-        sum += *iter;// ->value();            //<----
-                     //int idx = iter->index();
+        sum += *iter;          //<----
+        //assert(*iter, iter.value()); //another way to get the value
+        int idx = iter.index();
       }
     }
   }
   cout << end_timer() << "\t";
   assert(x_sum == sum);
 
-
+  
   cout << endl;
 }
