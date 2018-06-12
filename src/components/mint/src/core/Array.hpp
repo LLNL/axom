@@ -251,14 +251,15 @@ public:
    * \brief Accessor, returns a reference to the given component of the
    *  specified tuple.
    *
-   * \param [in] pos the tuple to querry.
+   * \param [in] pos the tuple to query.
    * \param [in] component the component to return.
-   * \return a reference to the given component of the specified tuple.
    *
    * \pre 0 <= pos < size()
    * \pre 0 <= component < numComponents()
    */
-  inline T & operator()( IndexType pos, IndexType component=0 )
+  /// @{
+
+  inline T& operator()( IndexType pos, IndexType component=0 )
   {
     SLIC_ASSERT( pos >= 0 );
     SLIC_ASSERT( pos < m_num_tuples );
@@ -266,6 +267,18 @@ public:
     SLIC_ASSERT( component < m_num_components );
     return m_data[ pos * m_num_components + component ];
   }
+
+  inline const T& operator()( IndexType pos, IndexType component=0 ) const
+  {
+    SLIC_ASSERT( pos >= 0 );
+    SLIC_ASSERT( pos <= m_num_tuples );
+    SLIC_ASSERT( component >= 0 );
+    SLIC_ASSERT( component < m_num_components ); 
+    return m_data[ pos * m_num_components + component ]; 
+  }
+
+  /// @}
+
 
   /*!
    * \brief Accessor, returns a reference to the given value.
@@ -276,32 +289,35 @@ public:
    *
    * \pre 0 <= idx < m_num_tuples * m_num_components
    */
-  inline T & operator[]( IndexType idx )
+  /// @{
+
+  T& operator[]( IndexType idx )
   {
     SLIC_ASSERT( idx >= 0 );
     SLIC_ASSERT( idx < m_num_tuples * m_num_components );
     return m_data[ idx ];
   }
 
-  /*!
-   * \brief Constant accessor, returns a reference to the given component of the
-   *  specified tuple.
-   *
-   * \param [in] pos the tuple to querry.
-   * \param [in] component the component to return.
-   */
-  inline const T & operator()( IndexType pos, IndexType component=0 ) const
-  { return m_data[ pos * m_num_components + component ]; }
+  const T& operator[]( IndexType idx ) const
+  {
+    SLIC_ASSERT( idx >= 0 );
+    SLIC_ASSERT( idx < m_num_tuples * m_num_components );
+    return m_data[ idx ];
+  }
+
+  /// @}
+
 
   /*!
    * \brief Return a pointer to the array of data.
    */
-  inline T* getData() { return m_data; }
+  /// @{
 
-  /*!
-   * \brief Return a constant pointer to the array of data.
-   */
-  inline const T* getData() const { return m_data; }
+  T* getData() { return m_data; }
+  const T* getData() const { return m_data; }
+
+  /// @}
+
 
 /// @}
 
@@ -313,7 +329,7 @@ public:
    *
    * \param [in] value the value to set to.
    */
-  inline void fill( const T& value )
+  void fill( const T& value )
   { std::fill_n( m_data, m_num_tuples * m_num_components, value ); }
 
   /*!
@@ -325,7 +341,7 @@ public:
    *
    * \pre m_num_components == 1.
    */
-  inline void append( const T& value );
+  void append( const T& value );
 
   /*!
    * \brief Append tuples to the end of the array.
@@ -336,7 +352,7 @@ public:
    * \note It's assumed that tuples is of length n * m_num_components.
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void append( const T* tuples, IndexType n );
+  void append( const T* tuples, IndexType n );
 
   /*!
    * \brief Modify the values of existing tuples.
@@ -350,7 +366,7 @@ public:
    *
    * \pre pos + n <= m_num_tuples.
    */
-  inline void set( const T* tuples, IndexType n, IndexType pos );
+  void set( const T* tuples, IndexType n, IndexType pos );
 
   /*!
    * \brief Insert a tuple into the array at the given position.
@@ -363,7 +379,7 @@ public:
    *
    * \pre numComponents() == 1.
    */
-  inline void insert( const T& value, IndexType pos );
+  void insert( const T& value, IndexType pos );
 
   /*!
    * \brief Insert tuples into the array at the given position.
@@ -378,7 +394,7 @@ public:
    *
    * \pre pos <= m_num_tuples.
    */
-  inline void insert( const T* tuples, IndexType n, IndexType pos );
+  void insert( const T* tuples, IndexType n, IndexType pos );
 
   /*!
    * \brief Insert multiple copies of the same value at the given position.
@@ -395,7 +411,7 @@ public:
    *
    * \pre pos <= m_num_tuples.
    */
-  inline void emplace( IndexType n, IndexType pos, const T& value=T() );
+  void emplace( IndexType n, IndexType pos, const T& value=T() );
 
 /// @}
 
@@ -405,7 +421,7 @@ public:
   /*!
    * \brief Return the number of tuples allocated for the data array.
    */
-  inline IndexType capacity() const { return m_capacity; }
+  IndexType capacity() const { return m_capacity; }
 
   /*!
    * \brief Increase the capacity. Does nothing if the new capacity is less
@@ -413,59 +429,64 @@ public:
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
-  inline void reserve( IndexType capacity )
-  { if ( capacity > m_capacity ) setCapacity( capacity ); }
+  void reserve( IndexType capacity )
+  { 
+    if ( capacity > m_capacity ) 
+    {
+      setCapacity( capacity ); 
+    }
+  }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.
    */
-  inline void shrink() { setCapacity( m_num_tuples ); }
+  void shrink() { setCapacity( m_num_tuples ); }
 
   /*!
    * \brief Returns true iff the Array stores no elements.
    *
    * \note If the Array is empty the capacity can still be greater than zero.
    */
-  inline bool empty() const { return m_num_tuples == 0; }
+  bool empty() const { return m_num_tuples == 0; }
 
   /*!
    * \brief Return the number of tuples stored in the data array.
    */
-  inline IndexType size() const { return m_num_tuples; }
+  IndexType size() const { return m_num_tuples; }
 
   /*!
    * \brief Update the number of tuples stored in the data array.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline void resize( IndexType new_num_tuples );
+  void resize( IndexType new_num_tuples );
 
   /*!
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
    */
-  inline double getResizeRatio() const { return m_resize_ratio; }
+  double getResizeRatio() const { return m_resize_ratio; }
 
   /*!
    * \brief Set the ratio by which the capacity increases upon dynamic resize.
    *
    * \param [in] ratio the new resize ratio.
    */
-  inline void setResizeRatio( double ratio ) { m_resize_ratio = ratio; }
+  void setResizeRatio( double ratio ) { m_resize_ratio = ratio; }
 
   /*!
    * \brief Return the number of components per tuple.
    */
-  inline IndexType numComponents() const { return m_num_components; }
+  IndexType numComponents() const { return m_num_components; }
 
   /*!
    * \brief Return true iff the external buffer constructor was called.
    */
-  inline bool isExternal() const { return m_is_external; }
+  bool isExternal() const { return m_is_external; }
 
   /*!
    * \brief Return true iff a sidre constructor was called.
    */
-  inline bool isInSidre() const
+  bool isInSidre() const
   {
     #ifdef MINT_USE_SIDRE
     return m_view != AXOM_NULLPTR;
@@ -478,7 +499,7 @@ public:
   /*!
    * \brief Return a pointer to the sidre::View that this Array wraps.
    */
-  inline const sidre::View* getView() const { return m_view; }
+  const sidre::View* getView() const { return m_view; }
 #endif
 
 /// @}
@@ -495,21 +516,21 @@ private:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  inline T* reserveForInsert( IndexType n, IndexType pos );
+  T* reserveForInsert( IndexType n, IndexType pos );
 
   /*!
    * \brief Update the number of tuples.
    *
    * \param [in] new_num_tuples the new number of tuples.
    */
-  inline void updateNumTuples( IndexType new_num_tuples );
+  void updateNumTuples( IndexType new_num_tuples );
 
   /*!
    * \brief Set the number of tuples allocated for the data array.
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
-  inline void setCapacity( IndexType new_capacity );
+  void setCapacity( IndexType new_capacity );
 
   /*!
    * \brief Reallocates the data array when the size exceeds the capacity.
@@ -517,7 +538,7 @@ private:
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
    */
-  inline void dynamicRealloc( IndexType new_num_tuples );
+  void dynamicRealloc( IndexType new_num_tuples );
 
 
 
@@ -550,7 +571,7 @@ private:
    * \brief Describes m_view as having dimensions 
    * (m_num_tuples, m_num_components).
    */
-  inline void describeView();
+  void describeView();
 
   /*!
    * \brief Given a non-empty sidre::View of dimension 2, returns the length
@@ -561,12 +582,12 @@ private:
    *
    * \pre 0 <= dim <= 1
    */
-  inline IndexType getViewShape( int dim ) const;
+  IndexType getViewShape( int dim ) const;
 
   /*!
    * \brief Allocates space within the Array's sidre::View.
    */
-  inline void reallocViewData();
+  void reallocViewData();
 
   sidre::View* m_view;
 #endif
