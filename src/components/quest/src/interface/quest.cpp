@@ -490,7 +490,7 @@ void initialize( const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  axom::mint::Mesh* surface_mesh = new UMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
   reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
@@ -512,7 +512,7 @@ void initialize( mint::Mesh*& input_mesh,
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
                   "Quest currently only supports 3D (not 2D) triangle meshes.");
-  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == mint::UNSTRUCTURED_MESH,
                   "Quest currently only supports 3D triangle meshes "
                   "(not any other kind of cell).");
 
