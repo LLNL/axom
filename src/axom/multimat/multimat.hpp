@@ -33,6 +33,7 @@ private:
   // SLAM Set type definitions
   using SetType = slam::Set;
   using RangeSetType   = slam::RangeSet;
+  using BivariateSetType = slam::BivariateSet;
   using SetPosType  = SetType::PositionType;
   using SetElemType = SetType::ElementType;
   // SLAM Relation typedef (static variable-cardinality relation)
@@ -118,7 +119,7 @@ private: //private functions
   void convertToSparse_helper(int map_i);
 
 private:
-  int m_nmats, m_ncells;
+  unsigned int m_nmats, m_ncells;
   DataLayout m_dataLayout;
   SparcityLayout m_sparcityLayout;
 
@@ -148,43 +149,44 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
 {
   int index_val = m_mapVec.size();
   
-  if (arr_mapping == PER_CELL_MAT) {
-    
-    Field2D<T>* newMapPtr;
+  if (arr_mapping == PER_CELL_MAT) 
+  {
+    BivariateSetType* s = nullptr;
     if (m_sparcityLayout == LAYOUT_SPARSE) {
-      MappedRelationSetType* s = &m_cellMatNZSet;
-      newMapPtr = new Field2D<T>(s, data_arr);
+      s = &m_cellMatNZSet;
     }
     else if (m_sparcityLayout == LAYOUT_DENSE) {
-      ProductSetType* s = &m_cellMatProdSet;
-      newMapPtr = new Field2D<T>(s, data_arr);
+      s = &m_cellMatProdSet;
     }
     else assert(false);
 
-    m_mapVec.push_back(newMapPtr);
+    Field2D<T>* new_map_ptr = new Field2D<T>(s, data_arr);
+    m_mapVec.push_back(new_map_ptr);
   }
   else if (arr_mapping == PER_CELL || arr_mapping == PER_MAT)
   {
-    MapType<T>* newMapPtr = new MapType<T>(get_mapped_set(arr_mapping));
+    MapType<T>* new_map_ptr = new MapType<T>(get_mapped_set(arr_mapping));
     
     int i = 0;
-    for (auto iter = newMapPtr->begin(); iter != newMapPtr->end(); iter++) {
+    for (auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++) {
       *iter = data_arr[i++];
     }
 
-    m_mapVec.push_back(newMapPtr);
+    m_mapVec.push_back(new_map_ptr);
   }
+  else assert(false);
+
   m_arrNameVec.push_back(arr_name);
   m_fieldMappingVec.push_back(arr_mapping);
   assert(m_arrNameVec.size() == m_mapVec.size() && m_mapVec.size() == m_fieldMappingVec.size());
 
-  if (is_same<T, int>::value)
+  if (std::is_same<T, int>::value)
     m_dataTypeVec.push_back(TypeInt);
-  else if (is_same<T, double>::value)
+  else if (std::is_same<T, double>::value)
     m_dataTypeVec.push_back(TypeDouble);
-  else if (is_same<T, float>::value)
+  else if (std::is_same<T, float>::value)
     m_dataTypeVec.push_back(TypeFloat);
-  else if (is_same<T, unsigned char>::value)
+  else if (std::is_same<T, unsigned char>::value)
     m_dataTypeVec.push_back(TypeUnsignChar);
   else
     m_dataTypeVec.push_back(TypeUnknown);
@@ -228,7 +230,7 @@ inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
 template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
-  vector<DataType> arr_data(m_cellMatNZSet.totalSize());
+  std::vector<DataType> arr_data(m_cellMatNZSet.totalSize());
   auto& old_ptr = *dynamic_cast<Field2D<DataType>*>(m_mapVec[map_i]);
   
   int idx = 0;
