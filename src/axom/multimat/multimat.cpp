@@ -97,10 +97,10 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
-  if (m_dataLayout == LAYOUT_SPARSE) {
+  if (m_sparcityLayout == LAYOUT_SPARSE) {
     return m_cell2matRel[c]; //returns a RelationSet / OrderedSet with STLindirection
   }
-  else if (m_dataLayout == LAYOUT_DENSE)
+  else if (m_sparcityLayout == LAYOUT_DENSE)
     return m_cell2matRel[c]; //since the relation is currently only stored sparse, return the same thing.
   else assert(false);
 }
@@ -115,7 +115,6 @@ MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
   }
   else if (m_sparcityLayout == LAYOUT_DENSE) {
     //return m_cellMatProdSet.getRow(c);
-    int size1 = m_cellMatProdSet.set1Size();
     int size2 = m_cellMatProdSet.set2Size();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }
@@ -135,7 +134,7 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayo
   { //convert from dense to sparse
 
     //go through each field, for every matXcell field, create a new map of sparse mat
-    for (int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
+    for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
     {
       if (m_fieldMappingVec[map_i] != PER_CELL_MAT)
         continue;
@@ -193,7 +192,7 @@ void axom::multimat::MultiMat::printSelf()
   printf("Number of cells:     %d\n", m_ncells);
 
   printf("\nFields:\n");
-  for (int i = 0; i < m_mapVec.size(); i++)
+  for (unsigned int i = 0; i < m_mapVec.size(); i++)
   {
     printf("Field %d - %s\n", i, m_arrNameVec[i].c_str());
     printf("  Mapping type: %d\n", m_fieldMappingVec[i]);
@@ -208,7 +207,7 @@ bool axom::multimat::MultiMat::isValid()
 
 axom::multimat::MultiMat::SetType* axom::multimat::MultiMat::get_mapped_set(FieldMapping fm)
 {
-  SetType* map_set;
+  SetType* map_set = nullptr;
   switch (fm)
   {
   case PER_CELL:
