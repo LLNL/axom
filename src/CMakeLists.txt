@@ -90,7 +90,3 @@ endif()
 ################################s
 include(cmake/AxomConfig.cmake)
 
-################################
-# Add license files
-################################
-install(FILES LICENSE NOTICE DESTINATION docs)
