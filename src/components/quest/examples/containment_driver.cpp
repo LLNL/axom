@@ -313,21 +313,16 @@ void print_surface_stats( mint::Mesh * mesh)
       double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
       if(axom::utilities::isNearlyEqual(len,0.))
       {
-        double len = SpaceVector(tri[j],tri[(j+1)%3]).norm();
-        if(utilities::isNearlyEqual(len,0.))
-        {
-          badTriangles.insert(i);
-        }
-        else
-        {
-          LengthType edgeLen(len);
-          meshEdgeLenRange.addPoint( edgeLen );
-          std::frexp (len, &expBase2);
-          edgeLenHist[expBase2]++;
-          edgeLenRangeMap[expBase2].addPoint( edgeLen );
-        }
+        badTriangles.insert(i);
       }
-
+      else
+      {
+        LengthType edgeLen(len);
+        meshEdgeLenRange.addPoint( edgeLen );
+        std::frexp (len, &expBase2);
+        edgeLenHist[expBase2]++;
+        edgeLenRangeMap[expBase2].addPoint( edgeLen );
+      }
     }
 
     // Compute triangle area stats
