@@ -69,6 +69,9 @@ int PSTLReader::read()
 
   default:
 
+    // Rank 0 broadcasts the number of nodes, a positive integer, if the
+    // STL file is read successfully, or send a READER_FAILED flag, indicating
+    // that the read was not successful.
     MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
     if ( m_num_nodes != READER_FAILED )
     {
