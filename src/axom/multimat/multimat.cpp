@@ -13,8 +13,8 @@ using namespace axom::multimat;
 
 MultiMat::MultiMat() {
   m_ncells = m_nmats = 0;
-  m_dataLayout = LAYOUT_CELL_DOM;
-  m_sparcityLayout = LAYOUT_SPARSE;
+  m_dataLayout = DataLayout::CELL_CENTRIC;
+  m_sparcityLayout = SparcityLayout::SPARSE;
 }
 
 MultiMat::MultiMat(DataLayout d, SparcityLayout s): MultiMat() {
@@ -52,7 +52,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
   assert(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
 
-  assert(m_dataLayout == LAYOUT_CELL_DOM); //for now assumes cell dominant
+  assert(m_dataLayout == DataLayout::CELL_CENTRIC); //for now assumes cell dominant
 
   //Set-up the cell/mat relation
   m_cell2matRel_beginsVec.resize(m_cellSet.size() + 1, -1);
@@ -87,9 +87,9 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
 
   // a cartesian set of cell x mat
-  if(m_dataLayout == LAYOUT_CELL_DOM)
+  if(m_dataLayout == DataLayout::CELL_CENTRIC)
     m_cellMatProdSet = ProductSetType(&m_cellSet, &m_matSet);
-  else if(m_dataLayout==LAYOUT_MAT_DOM)
+  else if(m_dataLayout == DataLayout::MAT_CENTRIC)
     m_cellMatProdSet = ProductSetType(&m_matSet, &m_cellSet);
   else assert(false);
 
@@ -97,23 +97,23 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
-  if (m_sparcityLayout == LAYOUT_SPARSE) {
+  if (m_sparcityLayout == SparcityLayout::SPARSE) {
     return m_cell2matRel[c]; //returns a RelationSet / OrderedSet with STLindirection
   }
-  else if (m_sparcityLayout == LAYOUT_DENSE)
+  else if (m_sparcityLayout == SparcityLayout::DENSE)
     return m_cell2matRel[c]; //since the relation is currently only stored sparse, return the same thing.
   else assert(false);
 }
 
 MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
 {
-  if (m_sparcityLayout == LAYOUT_SPARSE) {
+  if (m_sparcityLayout == SparcityLayout::SPARSE) {
     assert(0 <= c && c < m_ncells);
     int start_idx = m_cell2matRel_beginsVec[c];
     int end_idx = m_cell2matRel_beginsVec[c + 1];
     return RangeSetType::SetBuilder().range(start_idx, end_idx);
   }
-  else if (m_sparcityLayout == LAYOUT_DENSE) {
+  else if (m_sparcityLayout == SparcityLayout::DENSE) {
     //return m_cellMatProdSet.getRow(c);
     int size2 = m_cellMatProdSet.set2Size();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
@@ -128,32 +128,32 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayo
     return;
 
   //assumes cell dom stays cell dom
-  assert(new_layout == LAYOUT_CELL_DOM);
+  assert(new_layout == DataLayout::CELL_CENTRIC);
 
-  if (m_sparcityLayout == LAYOUT_DENSE && new_sparcity == LAYOUT_SPARSE)
+  if (m_sparcityLayout == SparcityLayout::DENSE && new_sparcity == SparcityLayout::SPARSE)
   { //convert from dense to sparse
 
     //go through each field, for every matXcell field, create a new map of sparse mat
     for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
     {
-      if (m_fieldMappingVec[map_i] != PER_CELL_MAT)
+      if (m_fieldMappingVec[map_i] != FieldMapping::PER_CELL_MAT)
         continue;
 
-      if (m_dataTypeVec[map_i] == TypeDouble) {
+      if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
         convertToSparse_helper<double>(map_i);
       }
-      else if (m_dataTypeVec[map_i] == TypeFloat) {
+      else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
         convertToSparse_helper<float>(map_i);
       }
-      else if (m_dataTypeVec[map_i] == TypeInt) {
+      else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
         convertToSparse_helper<int>(map_i);
       }
-      else if (m_dataTypeVec[map_i] == TypeUnsignChar) {
+      else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
         convertToSparse_helper<unsigned char>(map_i);
       }
       else assert(false); //TODO
 
-      m_sparcityLayout = LAYOUT_SPARSE;
+      m_sparcityLayout = SparcityLayout::SPARSE;
     } 
   }
   else {
@@ -170,10 +170,10 @@ axom::multimat::DataLayout axom::multimat::MultiMat::getDataLayout()
 std::string axom::multimat::MultiMat::getLayoutAsString()
 {
   switch (m_dataLayout) {
-  case LAYOUT_CELL_DOM:
-    return "LAYOUT_CELL_DOM";
-  case LAYOUT_MAT_DOM:
-    return "LAYOUT_MAT_DOM";
+  case DataLayout::CELL_CENTRIC:
+    return "DataLayout::CELL_CENTRIC";
+  case DataLayout::MAT_CENTRIC:
+    return "DataLayout::MAT_CENTRIC";
   default:
     assert(false);
     return "";
@@ -210,16 +210,16 @@ axom::multimat::MultiMat::SetType* axom::multimat::MultiMat::get_mapped_set(Fiel
   SetType* map_set = nullptr;
   switch (fm)
   {
-  case PER_CELL:
+  case FieldMapping::PER_CELL:
     map_set = &m_cellSet;
     break;
-  case PER_MAT:
+  case FieldMapping::PER_MAT:
     map_set = &m_matSet;
     break;
-  case PER_CELL_MAT:
-    if (m_sparcityLayout == LAYOUT_SPARSE)
+  case FieldMapping::PER_CELL_MAT:
+    if (m_sparcityLayout == SparcityLayout::SPARSE)
       map_set = &m_cellMatNZSet;
-    else if (m_sparcityLayout == LAYOUT_DENSE)
+    else if (m_sparcityLayout == SparcityLayout::DENSE)
       map_set = &m_cellMatProdSet;
     else assert(false);
     break;
