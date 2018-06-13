@@ -20,10 +20,10 @@ namespace multimat
 namespace policies = slam::policies;
 
 
-enum FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
-enum DataLayout { LAYOUT_CELL_DOM, LAYOUT_MAT_DOM };
-enum SparcityLayout { LAYOUT_SPARSE, LAYOUT_DENSE };
-enum DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar };
+enum class FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
+enum class DataLayout { CELL_CENTRIC, MAT_CENTRIC };
+enum class SparcityLayout { SPARSE, DENSE };
+enum class DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar };
 
 class MultiMat
 {
@@ -101,10 +101,10 @@ public:
   //...
 
   //Layout modification functions
-  void convertLayoutToCellDominant() { convertLayout(LAYOUT_CELL_DOM, m_sparcityLayout); }
-  void convertLayoutToMaterialDominant() { convertLayout(LAYOUT_MAT_DOM, m_sparcityLayout); }
-  void convertLayoutToSparse() { convertLayout(m_dataLayout, LAYOUT_SPARSE); }
-  void convertLayoutToDense() { convertLayout(m_dataLayout, LAYOUT_DENSE); }
+  void convertLayoutToCellDominant() { convertLayout(DataLayout::CELL_CENTRIC, m_sparcityLayout); }
+  void convertLayoutToMaterialDominant() { convertLayout(DataLayout::MAT_CENTRIC, m_sparcityLayout); }
+  void convertLayoutToSparse() { convertLayout(m_dataLayout, SparcityLayout::SPARSE); }
+  void convertLayoutToDense() { convertLayout(m_dataLayout, SparcityLayout::DENSE); }
   void convertLayout(DataLayout, SparcityLayout);
   DataLayout getDataLayout();
   std::string getLayoutAsString();
@@ -149,13 +149,13 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
 {
   int index_val = m_mapVec.size();
   
-  if (arr_mapping == PER_CELL_MAT) 
+  if (arr_mapping == FieldMapping::PER_CELL_MAT) 
   {
     BivariateSetType* s = nullptr;
-    if (m_sparcityLayout == LAYOUT_SPARSE) {
+    if (m_sparcityLayout == SparcityLayout::SPARSE) {
       s = &m_cellMatNZSet;
     }
-    else if (m_sparcityLayout == LAYOUT_DENSE) {
+    else if (m_sparcityLayout == SparcityLayout::DENSE) {
       s = &m_cellMatProdSet;
     }
     else assert(false);
@@ -163,7 +163,7 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
     Field2D<T>* new_map_ptr = new Field2D<T>(s, data_arr);
     m_mapVec.push_back(new_map_ptr);
   }
-  else if (arr_mapping == PER_CELL || arr_mapping == PER_MAT)
+  else if (arr_mapping == FieldMapping::PER_CELL || arr_mapping == FieldMapping::PER_MAT)
   {
     MapType<T>* new_map_ptr = new MapType<T>(get_mapped_set(arr_mapping));
     
@@ -181,15 +181,15 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
   assert(m_arrNameVec.size() == m_mapVec.size() && m_mapVec.size() == m_fieldMappingVec.size());
 
   if (std::is_same<T, int>::value)
-    m_dataTypeVec.push_back(TypeInt);
+    m_dataTypeVec.push_back(DataTypeSupported::TypeInt);
   else if (std::is_same<T, double>::value)
-    m_dataTypeVec.push_back(TypeDouble);
+    m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
   else if (std::is_same<T, float>::value)
-    m_dataTypeVec.push_back(TypeFloat);
+    m_dataTypeVec.push_back(DataTypeSupported::TypeFloat);
   else if (std::is_same<T, unsigned char>::value)
-    m_dataTypeVec.push_back(TypeUnsignChar);
+    m_dataTypeVec.push_back(DataTypeSupported::TypeUnsignChar);
   else
-    m_dataTypeVec.push_back(TypeUnknown);
+    m_dataTypeVec.push_back(DataTypeSupported::TypeUnknown);
 
   return index_val;
 }
@@ -201,10 +201,10 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
   {
     if (m_arrNameVec[i] == field_name)
     {
-      //assert(m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT);
-      if (m_fieldMappingVec[i] == PER_CELL || m_fieldMappingVec[i] == PER_MAT)
+      //assert(m_fieldMappingVec[i] == FieldMapping::PER_CELL || m_fieldMappingVec[i] == FieldMapping::PER_MAT);
+      if (m_fieldMappingVec[i] == FieldMapping::PER_CELL || m_fieldMappingVec[i] == FieldMapping::PER_MAT)
         return *dynamic_cast<Field1D<T>*>(m_mapVec[i]);
-      else if (m_fieldMappingVec[i] == PER_CELL_MAT) {
+      else if (m_fieldMappingVec[i] == FieldMapping::PER_CELL_MAT) {
         Field2D<T> * map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[i]);
         return *(map_2d->getMap());
       }
@@ -220,7 +220,7 @@ inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
   {
     if (m_arrNameVec[i] == field_name)
     {
-      assert(m_fieldMappingVec[i] == PER_CELL_MAT);
+      assert(m_fieldMappingVec[i] == FieldMapping::PER_CELL_MAT);
       return *dynamic_cast<Field2D<T>*>(m_mapVec[i]);
     }
   }
