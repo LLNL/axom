@@ -8,8 +8,7 @@
 
 
 set(multimat_example_headers
-    multimat_example.hpp
-	helper.hpp
+    helper.hpp
     )
 
 set(multimat_example_sources

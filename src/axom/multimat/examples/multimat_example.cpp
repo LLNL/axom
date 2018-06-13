@@ -1,5 +1,5 @@
 
-#include "multimat_example.hpp"
+#include "multimat.hpp"
 
 #include "helper.hpp"
 #include <ctime>
@@ -634,12 +634,12 @@ int main(int argc, char** argv)
   mm.setCellMatRel(data.Volfrac_bool);
 
   //Setting field data in terms of slam
-  auto mmidx_densityfrac     = mm.newFieldArray<>("Densityfrac"    , PER_CELL_MAT, &data.Densityfrac_sparse[0]);
-  auto mmidx_vol             = mm.newFieldArray<>("Vol"            , PER_CELL    , &data.Vol[0]);
-  auto mmidx_volfrac         = mm.newFieldArray<>("Volfrac"        , PER_CELL_MAT, &data.Volfrac_sparse[0]);
-  auto mmidx_temperaturefrac = mm.newFieldArray<>("Temperaturefrac", PER_CELL_MAT, &data.Temperaturefrac_sparse[0]);
-  auto mmidx_pressurefrac    = mm.newFieldArray<>("Pressurefrac"   , PER_CELL_MAT, &data.Pressurefrac_sparse[0]);
-  auto mmidx_nmatconsts      = mm.newFieldArray<>("nmatconsts"     , PER_MAT     , &data.nmatconsts[0]);
+  mm.newFieldArray<>("Densityfrac"    , FieldMapping::PER_CELL_MAT, &data.Densityfrac_sparse[0]);
+  mm.newFieldArray<>("Vol"            , FieldMapping::PER_CELL    , &data.Vol[0]);
+  mm.newFieldArray<>("Volfrac"        , FieldMapping::PER_CELL_MAT, &data.Volfrac_sparse[0]);
+  mm.newFieldArray<>("Temperaturefrac", FieldMapping::PER_CELL_MAT, &data.Temperaturefrac_sparse[0]);
+  mm.newFieldArray<>("Pressurefrac"   , FieldMapping::PER_CELL_MAT, &data.Pressurefrac_sparse[0]);
+  mm.newFieldArray<>("nmatconsts"     , FieldMapping::PER_MAT     , &data.nmatconsts[0]);
 
   //printself and check
   mm.printSelf();
@@ -671,7 +671,7 @@ void test_code() {
   //Set-up
   bool use_sparse = false;
 
-  MultiMat mm(LAYOUT_CELL_DOM, use_sparse ? LAYOUT_SPARSE : LAYOUT_DENSE);
+  MultiMat mm(DataLayout::CELL_CENTRIC, use_sparse ? SparcityLayout::SPARSE : SparcityLayout::DENSE);
   
   int nmats = 50;
   int ncells = 2000;
@@ -708,8 +708,8 @@ void test_code() {
   }
 
 
-  mm.newFieldArray<>("Cell Array"   , PER_CELL    , &cell_arr1[0]);
-  mm.newFieldArray<>("CellMat Array", PER_CELL_MAT, &cellmat_arr[0]);
+  mm.newFieldArray<>("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0]);
+  mm.newFieldArray<>("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0]);
 
   //convert layout
   mm.convertLayoutToSparse();
@@ -775,7 +775,7 @@ void test_code() {
   assert(x_sum == sum);
    
 
-  if (mm.getSparcityLayout() == LAYOUT_SPARSE)
+  if (mm.getSparcityLayout() == SparcityLayout::SPARSE)
   {
     // ------------ return index set --------------
     printf("\nAccess by Map with indexing set\n-\t");
