@@ -52,7 +52,7 @@ typedef slam::RangeSet::PositionType PositionType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 6;
-const PositionType ELEM_STRIDE = 5;
+const PositionType ELEM_STRIDE = 6;
 
 typedef policies::CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
 typedef policies::RuntimeStride<PositionType>                       RTStride;
