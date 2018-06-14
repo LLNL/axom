@@ -1,5 +1,5 @@
 
-#include "multimat.hpp"
+#include "multimat/multimat.hpp"
 
 #include "helper.hpp"
 #include <ctime>
