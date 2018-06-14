@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/vector_utilities.hpp"
+#include "axom_utils/matvecops.hpp"
 #include "axom_utils/Utilities.hpp"
 
 namespace numerics  = axom::numerics;
@@ -44,10 +44,147 @@ void expect_vector_eq( const double* u, const double* v, int N)
 } /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
-// UNIT TESTS
+// UNIT TESTS FOR MATRIX OPS
 //------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_add )
+{
+  constexpr int N=3;
+  numerics::Matrix< int > I1 = numerics::Matrix< int >::identity( N );
+  numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( N );
 
-TEST( numerics_vector_utilities, linspace_test )
+  numerics::Matrix< int > A( N, N );
+  numerics::matrix_add( I1, I2, A );
+
+  for ( int i=0 ; i < N ; ++i )
+  {
+    for ( int j=0 ; j < N ; ++j )
+    {
+      int expected = (i==j) ? 2 : 0;
+      EXPECT_EQ( expected, A(i,j) );
+    }  // END for all columns
+  } // END for all rows
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_subtract )
+{
+  constexpr int ZERO = 0;
+  constexpr int N    = 3;
+
+  numerics::Matrix< int > I1 = numerics::Matrix< int >::identity( N );
+  numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( N );
+
+  numerics::Matrix< int > A( N, N );
+  numerics::matrix_subtract( I1, I2, A );
+
+  for ( int i=0 ; i < N ; ++i )
+  {
+    for ( int j=0 ; j < N ; ++j )
+    {
+      EXPECT_EQ( A(i,j), ZERO );
+    }  // END for all columns
+  } // END for all rows
+
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_matrix_multiply )
+{
+  // Setup test matrix A
+  numerics::Matrix< int > A( 2, 3 );
+  A( 0,0 ) = 1; A( 0,1 ) = 2; A( 0,2 ) = 3;
+  A( 1,0 ) = 4; A( 1,1 ) = 5; A( 1,2 ) = 6;
+
+  // Setup test matrix B
+  numerics::Matrix< int > B( 3, 2 );
+  B( 0,0 ) = 1; B( 0,1 ) = 2;
+  B( 1,0 ) = 3; B( 1,1 ) = 4;
+  B( 2,0 ) = 5; B( 2,1 ) = 6;
+
+  numerics::Matrix< int > C( 2, 2 );
+  numerics::matrix_multiply( A, B, C );
+
+  EXPECT_EQ( 22, C(0,0) );
+  EXPECT_EQ( 28, C(0,1) );
+  EXPECT_EQ( 49, C(1,0) );
+  EXPECT_EQ( 64, C(1,1) );
+
+  numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( 2 );
+  numerics::Matrix< int > C2( 2, 2 );
+  numerics::matrix_multiply( C, I2, C2 );
+
+  EXPECT_EQ( 22, C2(0,0) );
+  EXPECT_EQ( 28, C2(0,1) );
+  EXPECT_EQ( 49, C2(1,0) );
+  EXPECT_EQ( 64, C2(1,1) );
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_scalar_multiply )
+{
+  constexpr int N = 3;
+  constexpr int SCALAR = 2;
+
+  numerics::Matrix< int > A = numerics::Matrix< int >::identity( N );
+  numerics::matrix_scalar_multiply( A, SCALAR );
+
+  for ( int i=0 ; i < N ; ++i )
+  {
+    for ( int j=0 ; j < N ; ++j )
+    {
+      int expected = (i==j) ? SCALAR : 0;
+      EXPECT_EQ( expected, A(i,j) );
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_vector_multiply )
+{
+  constexpr int N=2;
+  numerics::Matrix< int > A( N,N );
+  A( 0,0 ) = 1; A( 0,1 ) = 2;
+  A( 1,0 ) = 3; A( 1,1 ) = 4;
+
+  int res[ 2 ];
+  int v[2] = { 1, 2 };
+  int expected[2] = { 5, 11 };
+
+  numerics::matrix_vector_multiply( A, v, res );
+
+  for ( int i=0 ; i < N ; ++i )
+  {
+    EXPECT_EQ( expected[ i ], res[ i ] );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_transpose )
+{
+  // Setup matrix: (1 2 3)
+  //               (4 5 6)
+  numerics::Matrix< int > A( 2, 3 );
+  A( 0,0 ) = 1; A( 0,1 ) = 2; A( 0,2 ) = 3;
+  A( 1,0 ) = 4; A( 1,1 ) = 5; A( 1,2 ) = 6;
+
+  // Matrix transpose
+  numerics::Matrix< int > M( A.getNumColumns(), A.getNumRows() );
+  numerics::matrix_transpose( A, M );
+
+  EXPECT_EQ( 1, M(0,0) );
+  EXPECT_EQ( 2, M(1,0) );
+  EXPECT_EQ( 3, M(2,0) );
+
+  EXPECT_EQ( 4, M(0,1) );
+  EXPECT_EQ( 5, M(1,1) );
+  EXPECT_EQ( 6, M(2,1) );
+}
+
+//------------------------------------------------------------------------------
+// UNIT TESTS FOR VECTOR OPS
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, linspace )
 {
   double vc[ 6 ]; // storage for the computed vector
 
@@ -72,7 +209,7 @@ TEST( numerics_vector_utilities, linspace_test )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_vector_utilities, cross_product_test )
+TEST( numerics_matvecops, vector_cross_product )
 {
   const int NDIMS = 3;
 
@@ -104,7 +241,7 @@ TEST( numerics_vector_utilities, cross_product_test )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_vector_utilities, dot_product_test )
+TEST( numerics_matvecops, vector_dot_product )
 {
   const int dim = 10;
   const double EPS = 1E-4;
@@ -133,7 +270,7 @@ TEST( numerics_vector_utilities, dot_product_test )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_vector_utilities, make_orthogonal_test )
+TEST( numerics_matvecops, vector_make_orthogonal )
 {
   const int dim = 3;
   const double ONE_THIRD = 0.3333333333;
@@ -168,7 +305,7 @@ TEST( numerics_vector_utilities, make_orthogonal_test )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_vector_utilities, orthonormalize_test )
+TEST( numerics_matvecops, vector_orthonormalize )
 {
   const int dim = 3;
   const int size = 2;
@@ -202,7 +339,7 @@ TEST( numerics_vector_utilities, orthonormalize_test )
 }
 
 //------------------------------------------------------------------------------
-TEST( numerics_vector_utilities, normalize_test )
+TEST( numerics_matvecops, vector_normalize )
 {
   const int dim = 3;
   const double EPS = 1E-4;

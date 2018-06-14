@@ -23,8 +23,8 @@
 #include "axom/config.hpp"   // defines AXOM_USE_CXX11
 #include "axom/Macros.hpp"   // for AXOM_DEBUG_VAR
 
-#include "primal/NumericArray.hpp" // for numeric arrays
-#include "axom_utils/vector_utilities.hpp" // for vector calculations
+#include "primal/NumericArray.hpp"     // for numeric arrays
+#include "axom_utils/matvecops.hpp"    // for vector operations
 #include "axom_utils/eigen_solve.hpp"
 #include "axom_utils/Utilities.hpp" // for nearly equal
 #include "axom_utils/Matrix.hpp" // for Matrix
@@ -436,7 +436,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(const PointType* pts,
   }
 
   // average the covariance matrix
-  numerics::scalar_multiply(covar, static_cast< T >(1./n));
+  numerics::matrix_scalar_multiply(covar, static_cast< T >(1./n));
 
   // make room for the eigenvectors and eigenvalues
   T u[NDIMS*NDIMS];

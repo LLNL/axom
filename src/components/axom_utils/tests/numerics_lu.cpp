@@ -17,8 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Matrix.hpp"
 #include "axom_utils/LU.hpp"
+#include "axom_utils/Matrix.hpp"
+#include "axom_utils/matvecops.hpp"
 
 namespace numerics = axom::numerics;
 
@@ -76,12 +77,12 @@ TEST( numerics_lu, lu_decompose )
     }
   }
 
-  numerics::Matrix< double > PA = P * A;
-  numerics::Matrix< double > LU = L * U;
+  numerics::Matrix< double > PA( N, N );
+  numerics::matrix_multiply( P, A, PA );
 
-  // check answer
-  EXPECT_EQ( PA.getNumColumns(), LU.getNumColumns() );
-  EXPECT_EQ( PA.getNumRows(), LU.getNumRows() );
+  numerics::Matrix< double > LU( N, N );
+  numerics::matrix_multiply( L, U, LU );
+
   for ( int i=0 ; i < N ; ++i )
   {
     for ( int j=0 ; j < N ; ++j )
@@ -115,14 +116,13 @@ TEST( numerics_lu, lu_solve )
   EXPECT_DOUBLE_EQ( 4,  x[1] );
   EXPECT_DOUBLE_EQ( -2, x[2] );
 
-  numerics::Matrix< double > lhs = A * x;
-  EXPECT_EQ( 1, lhs.getNumColumns() );
-  EXPECT_EQ( N, lhs.getNumRows() );
+  double rhs[ 3 ];
+  numerics::matrix_vector_multiply( A, x, rhs );
 
-  typedef numerics::Matrix< double >::IndexType IndexType;
+  using IndexType = numerics::Matrix< double >::IndexType ;
   for ( IndexType i=0 ; i < N ; ++i )
   {
-    EXPECT_DOUBLE_EQ( b[i], lhs.data()[i] );
+    EXPECT_DOUBLE_EQ( b[i], rhs[ i ] );
   }
 
 }

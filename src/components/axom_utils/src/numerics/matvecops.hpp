@@ -17,19 +17,19 @@
 
 /*!
  *
- * \file vector_utilities.hpp
+ * \file matvecops.hpp
  *
- * \brief Header file containing utility functions to be used for vector
- *  calculations where "vectors" are arrays.
+ * \brief Provides Matrix/Vector operations.
  *
  */
 
-#ifndef AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
-#define AXOM_NUMERICS_VECTOR_UTILITIES_HPP_
+#ifndef AXOM_NUMERICS_MATVECOPS_HPP_
+#define AXOM_NUMERICS_MATVECOPS_HPP_
 
 #include "axom/Types.hpp"                  // for AXOM_NULLPTR
 
 #include "axom_utils/Determinants.hpp"     // for numerics::determinant()
+#include "axom_utils/Matrix.hpp"           // for numerics::Matrix
 #include "axom_utils/Utilities.hpp"        // for isNearlyEqual()
 
 // C/C++ includes
@@ -40,6 +40,9 @@ namespace axom
 {
 namespace numerics
 {
+
+/// \name Vector Operators
+/// @{
 
 /*!
  * \brief Generates a vector consisting of a sequence of N uniformly spaced
@@ -156,6 +159,116 @@ bool orthonormalize(T* basis, int size, int dim, double eps = 1E-16);
 template < typename T >
 inline bool normalize(T* v, int dim, double eps = 1e-16);
 
+/// @}
+
+/// \name Matrix Operators
+/// @{
+
+/*!
+ * \brief Computes \f$ \mathcal{C} = \mathcal{A} + \mathcal{B} \f$
+ *
+ * \param [in]  A \f$ M \times N \f$ matrix on the left-hand side.
+ * \param [in]  B \f$ M \times N \f$ matrix on the right-hand side.
+ * \param [out] C \f$ M \times N \f$ output matrix.
+ *
+ * \post \f$ c_{ij} = a_{ij} + b{ij} \f$, \f$\forall c_{ij} \in \mathcal{C}\f$
+ *
+ * \note Matrix addition is undefined for matrices that have different
+ *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
+ *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
+ *  matrix is returned in \f$ \mathcal{C} \f$
+ */
+template < typename T >
+inline void matrix_add( const Matrix< T >& A,
+                        const Matrix< T >& B,
+                        Matrix< T >& C );
+
+/*!
+ * \brief Computes \f$ \mathcal{C} = \mathcal{A} - \mathcal{B} \f$
+ *
+ * \param [in]  A \f$ M \times N \f$ matrix on the left-hand side.
+ * \param [in]  B \f$ M \times N \f$ matrix on the right-hand side.
+ * \param [out] C \f$ M \times N \f$ output matrix.
+ *
+ * \post \f$ c_{ij} = a_{ij} + b{ij} \f$, \f$\forall c_{ij} \in \mathcal{C}\f$
+ *
+ * \note Matrix subtraction is undefined for matrices that have different
+ *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
+ *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
+ *  matrix is returned in \f$ \mathcal{C} \f$
+ */
+template < typename T >
+inline void matrix_subtract( const Matrix< T >& A,
+                             const Matrix< T >& B,
+                             Matrix< T >& C );
+/*!
+ * \brief Computes the matrix-matrix product of \f$ \mathcal{A} \f$ and
+ *  \f$ \mathcal{B} \f$ and stores the result in \f$ \mathcal{C} \f$
+ *
+ * \param [in] A  \f$ M \times N \f$ matrix on the left hand-side.
+ * \param [in] B  \f$ N \times K \f$ matrix on the right hand-side.
+ * \param [out] C \f$ M \times K \f$ output matrix
+ *
+ * \pre The inner dimensions of matrices A, B must match
+ * \pre Output matrix should be an \f$ M \times K \f$ matrix
+ *
+ * \note Matrix multiplication is undefined for matrices with different inner
+ *  dimension. If the inner dimensions are not matching, the code returns a
+ *  \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{C} \f$
+ */
+template < typename T >
+inline void matrix_multiply( const Matrix< T >&A,
+                             const Matrix< T >& B,
+                             Matrix< T >& C );
+
+/*!
+ * \brief Computes a scalar-matrix produect of a matrix \f$ \mathcal{A} \f$ and
+ *  a scalar \f$ c \f$ and stores the result in \f$ \mathcal{A} \f$
+ *
+ * \param [in,out] A an \f$ M \times N \f$ matrix
+ * \param [in] c scalar value to multiply the matrix coefficients
+ *
+ * \post \f$ a_{ij} = c \cdot a_{ij} \f$, \f$ \forall a_{ij} \in mathcal{A} \f$
+ */
+template < typename T >
+inline void matrix_scalar_multiply( Matrix< T >& A, const T& c );
+
+/*!
+ * \brief Computes the matrix-vector product of a matrix \f$\mathcal{A}\f$ and
+ *  a vector \f$\mathbf{x}\f$ and store the result in the user-supplied output
+ *  vector.
+ *
+ * \param [in] A an \f$ M \times N \f$ matrix
+ * \param [in] vec pointer to user-supplied vector storing the vector
+ * \param [out] output pointer to the user-supplied output vector
+ *
+ * \pre vec != AXOM_NULLPTR
+ * \pre vec must be of dimension \f$ N \f$
+ * \pre output != AXOM_NULLPTR
+ * \pre output must be of dimension \f$ M \f$
+ *
+ * \post \f$ b_i = \sum\limits_{j=0}^N a_{ij} \cdot x_j \f$,
+ *  \f$\forall i \in [0,M-1] \f$
+ */
+template < typename T >
+inline void matrix_vector_multiply( const Matrix< T >& A,
+                                    const T* vec,
+                                    T* output );
+
+/*!
+ * \brief Computes the matrix transpose of a given matrix \f$ \mathcal{A} \f$
+ *
+ * \param [in] A an \f$ m \times n \f$ matrix
+ * \param [out] M an \f$ n \times m \f$ matrix where to store the transpose.
+ *
+ * \note If the supplied matrix does not have the correct dimensions, the code
+ *  returns a \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{M} \f$
+ */
+template < typename T >
+inline void matrix_transpose( const Matrix< T >& A, Matrix< T >& M );
+
+/// @}
+
 } /* end namespace numerics */
 } /* end namespace axom */
 
@@ -167,6 +280,206 @@ namespace axom
 {
 namespace numerics
 {
+
+//------------------------------------------------------------------------------
+// IMPLEMENTATION OF MATRIX OPERATIONS
+//------------------------------------------------------------------------------
+template < typename T >
+inline void matrix_add( const Matrix< T >& A,
+                        const Matrix< T >& B,
+                        Matrix< T >& C )
+{
+  assert( A.getNumRows() == B.getNumRows() );
+  assert( A.getNumColumns() == B.getNumColumns() );
+  assert( C.getNumRows() == B.getNumRows() );
+  assert( C.getNumColumns() == B.getNumColumns() );
+
+  if ( A.getNumRows()    != B.getNumRows() ||
+       A.getNumColumns() != B.getNumColumns() ||
+       C.getNumRows()    != B.getNumRows() ||
+       C.getNumColumns() != B.getNumColumns() )
+  {
+
+    // matrix dimensions do not match
+    C = Matrix< T >::zeros(1,1);
+    return;
+  }
+
+  typedef typename Matrix< T >::IndexType IndexType;
+
+  const int nrows = A.getNumRows();
+  const int ncols = A.getNumColumns();
+  const int N     = nrows*ncols;
+
+  T* target = C.data();
+
+  const T* sourceA = A.data();
+  const T* sourceB = B.data();
+  for ( IndexType i=0 ; i < N ; ++i )
+  {
+    target[ i ] = sourceA[ i ] + sourceB[ i ];
+  }
+
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+void matrix_subtract( const Matrix< T >& A,
+                      const Matrix< T >& B,
+                      Matrix< T >& C )
+{
+  assert( A.getNumRows() == B.getNumRows() );
+  assert( A.getNumColumns() == B.getNumColumns() );
+  assert( C.getNumRows() == B.getNumRows() );
+  assert( C.getNumColumns() == B.getNumColumns() );
+
+  if ( A.getNumRows()    != B.getNumRows() ||
+       A.getNumColumns() != B.getNumColumns() ||
+       C.getNumRows()    != B.getNumRows() ||
+       C.getNumColumns() != B.getNumColumns() )
+  {
+
+    // matrix dimensions do not match
+    C = Matrix< T >::zeros(1,1);
+    return;
+  }
+
+  typedef typename Matrix< T >::IndexType IndexType;
+
+  const int nrows = A.getNumRows();
+  const int ncols = A.getNumColumns();
+  const int N     = nrows*ncols;
+
+  T* target = C.data();
+
+  const T* sourceB = B.data();
+  const T* sourceA = A.data();
+  for ( IndexType i=0 ; i < N ; ++i )
+  {
+    target[ i ] = sourceA[ i ] - sourceB[ i ];
+  }
+
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+void matrix_multiply( const Matrix< T >& A,
+                      const Matrix< T >& B,
+                      Matrix< T >& C )
+{
+  // basic matrix-matrix multiplication
+  assert( A.getNumColumns() == B.getNumRows() );
+
+  if ( A.getNumColumns() != B.getNumRows()   ||
+       C.getNumRows() != A.getNumRows()      ||
+       C.getNumColumns() != B.getNumColumns()   )
+  {
+
+    C = Matrix< T >::zeros( 1,1 );
+    return;
+  }
+
+  typedef typename Matrix< T >::IndexType IndexType;
+
+  const int nk    = A.getNumColumns();
+  const int nrows = C.getNumRows();
+  const int ncols = C.getNumColumns();
+
+  for ( IndexType i=0 ; i < nrows ; ++i )
+  {
+    for ( IndexType j=0 ; j < ncols ; ++j )
+    {
+
+      C( i,j ) = static_cast< T >( 0 );
+      for ( IndexType k=0 ; k < nk ; ++k )
+      {
+        C( i,j ) += A(i,k) * B(k,j);
+      }   // END for all internal
+
+    }  // END for all columns
+  } // END for all rows
+
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline void matrix_scalar_multiply( Matrix< T >& A, const T& c )
+{
+  // matrix-scalar multiplication
+  const int nrows = A.getNumRows();
+  const int ncols = A.getNumColumns();
+  const int N     = nrows*ncols;
+
+  typedef typename Matrix< T >::IndexType IndexType;
+
+  T* target = A.data();
+  for ( IndexType i=0 ; i < N ; ++i )
+  {
+    target[ i ] *= c;
+  }
+
+}
+
+//------------------------------------------------------------------------------
+template < typename T >
+inline void matrix_vector_multiply( const Matrix< T >& A, const T* x, T* b )
+{
+  // matrix-vector multiplication
+  const int nrows = A.getNumRows();
+  const int ncols = A.getNumColumns();
+
+  typedef typename Matrix< T >::IndexType IndexType;
+
+  for ( IndexType i=0 ; i < nrows ; ++i )
+  {
+
+    double sum = 0.0;
+    for ( IndexType j=0 ; j < ncols ; ++j )
+    {
+      sum += A( i,j )*x[ j ];
+    } // END for all columns
+
+    b[ i ] = static_cast< T >( sum );
+
+  } // END for all rows
+
+}
+
+//-----------------------------------------------------------------------------
+template < typename T >
+inline void matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
+{
+  // sanity checks
+  assert( "Supplied Matrix has wrong dimensions. Cannot store transpose." &&
+           M.getNumRows() == A.getNumColumns() );
+  assert( "Supplied Matrix has wrong dimensions. Cannot store transpose." &&
+           M.getNumColumns() == A.getNumRows() );
+
+  if ( M.getNumRows()    != A.getNumColumns() ||
+       M.getNumColumns() != A.getNumRows()  )
+  {
+    M = Matrix< T >::zeros(1,1);
+    return;
+  }
+
+  const int ncols = A.getNumColumns();
+  const int nrows = A.getNumRows();
+  using IndexType = typename Matrix< T >::IndexType;
+
+  for ( IndexType i=0 ; i < nrows ; ++i )
+  {
+    for ( IndexType j=0 ; j < ncols ; ++j )
+    {
+      M( j,i ) = A( i,j );
+    }  // END for all columns in A
+  } // END for all rows in A
+
+}
+
+
+//------------------------------------------------------------------------------
+// IMPLEMENTATION OF VECTOR OPERATIONS
+//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 template < typename T >

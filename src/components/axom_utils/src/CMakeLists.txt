@@ -26,12 +26,12 @@ set(axom_utils_headers
     detail/TickCountTimer.hpp
 
     numerics/Determinants.hpp
-    numerics/linear_solve.hpp
-    numerics/eigen_solve.hpp
-    numerics/polynomial_solvers.hpp
-    numerics/matvecops.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
+    numerics/eigen_solve.hpp
+    numerics/linear_solve.hpp
+    numerics/matvecops.hpp
+    numerics/polynomial_solvers.hpp
     )
 
 #
