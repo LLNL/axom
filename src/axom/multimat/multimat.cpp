@@ -185,22 +185,42 @@ SparcityLayout axom::multimat::MultiMat::getSparcityLayout()
   return m_sparcityLayout;
 }
 
-void axom::multimat::MultiMat::printSelf()
+void axom::multimat::MultiMat::printSelf() const
 {
   printf("Multimat Object\n");
   printf("Number of materials: %d\n", m_nmats);
   printf("Number of cells:     %d\n", m_ncells);
+  printf("Data layout: ");
+  if (m_dataLayout == DataLayout::CELL_CENTRIC)
+    printf("Cell-centric\n");
+  else
+    printf("Material-centric\n");
 
-  printf("\nFields:\n");
+  printf("Sparcity layout: ");
+  if (m_sparcityLayout == SparcityLayout::DENSE)
+    printf("Dense\n");
+  else
+    printf("Sparse\n");
+
+  printf("\n%d Fields:\n", m_mapVec.size());
   for (unsigned int i = 0; i < m_mapVec.size(); i++)
   {
     printf("Field %d - %s\n", i, m_arrNameVec[i].c_str());
-    printf("  Mapping type: %d\n", m_fieldMappingVec[i]);
+    printf("  Mapping per ");
+    switch (m_fieldMappingVec[i]) {
+    case FieldMapping::PER_CELL: printf("cell"); break;
+    case FieldMapping::PER_MAT: printf("material"); break;
+    case FieldMapping::PER_CELL_MAT: printf("cellXmaterial"); break;
+    }
   }
+  printf("\n\n");
+  
 }
 
-bool axom::multimat::MultiMat::isValid()
+bool axom::multimat::MultiMat::isValid(bool verboseOutput) const
 {
+  if (verboseOutput) printSelf();
+
   //TODO
   return true;
 }
