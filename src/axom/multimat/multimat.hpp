@@ -126,9 +126,9 @@ private:
   //slam variables
   RangeSetType m_cellSet;
   RangeSetType m_matSet;
-  StaticVariableRelationType m_cell2matRel;
-  std::vector<SetPosType> m_cell2matRel_beginsVec; //to store the cell2mat relation
-  std::vector<SetPosType> m_cell2matRel_indicesVec; //to store the cell2mat relation
+  StaticVariableRelationType m_cellMatRel;
+  std::vector<SetPosType> m_cellMatRel_beginsVec; //to store the cell2mat relation
+  std::vector<SetPosType> m_cellMatRel_indicesVec; //to store the cell2mat relation
   MappedRelationSetType m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
   ProductSetType m_cellMatProdSet;
 
@@ -136,8 +136,7 @@ private:
   std::vector<FieldMapping> m_fieldMappingVec;
   std::vector<MapBaseType*> m_mapVec; 
   std::vector<DataTypeSupported> m_dataTypeVec;
-  friend class MultiMatArray;
-  
+
 }; //end MultiMat class
 
 
@@ -234,8 +233,8 @@ void MultiMat::convertToSparse_helper(int map_i)
   auto& old_ptr = *dynamic_cast<Field2D<DataType>*>(m_mapVec[map_i]);
   
   int idx = 0;
-  for (int i = 0; i < m_cell2matRel.fromSetSize(); ++i) {
-    auto relset = m_cell2matRel[i];
+  for (int i = 0; i < m_cellMatRel.fromSetSize(); ++i) {
+    auto relset = m_cellMatRel[i];
     auto submap = old_ptr[i];
     for (int j = 0; j < relset.size(); ++j) {
 

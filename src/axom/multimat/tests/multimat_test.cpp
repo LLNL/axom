@@ -42,7 +42,8 @@ TEST(multimat,construct_empty_multimat_obj)
 
 template<typename DataType>
 struct MM_test_data {
-  std::vector<bool> fillBool;
+  std::vector<bool> fillBool_cellcen;
+  std::vector<bool> fillBool_matcen;
 
   std::vector<DataType> cellmat_dense_arr;
   std::vector<DataType> cellmat_sparse_arr;
@@ -59,11 +60,17 @@ struct MM_test_data {
     num_mats = n_m;
     
     nfilled = 0;
-    fillBool.resize(num_mats * num_cells, false);
-    for (int i = 0; i < num_mats*num_cells; i++) {
-      if (i % 3 == 1) {
-        fillBool[i] = true;
-        nfilled++;
+    fillBool_cellcen.resize(num_mats * num_cells, false);
+    fillBool_matcen.resize(num_mats * num_cells, false);
+    for (int c = 0; c < num_cells; ++c) {
+      for (int m = 0; m < num_mats; ++m) {
+        int dense_cellcen_idx = c * num_mats + m;
+        if (dense_cellcen_idx % 3 == 1) {
+          int dense_matcen_idx = m * num_cells + c;
+          fillBool_cellcen[dense_cellcen_idx] = true;
+          fillBool_matcen[dense_matcen_idx] = true;
+          nfilled++;
+        }
       }
     }
 
@@ -78,11 +85,13 @@ struct MM_test_data {
         int dense_cellcen_idx = c * num_mats + m;
         int dense_matcen_idx = m * num_cells + c;
         DataType val = static_cast<DataType>(c * 1000.0 + m * 1.0);
-        if (fillBool[dense_cellcen_idx]) {
+        if (fillBool_cellcen[dense_cellcen_idx]) {
           cellmat_sparse_arr[sparse_idx++] = val;
+          cellmat_dense_arr[dense_cellcen_idx] = val;
         }
-        cellmat_dense_arr[dense_cellcen_idx] = val;
-        matcell_dense_arr[dense_matcen_idx] = val;
+        if (fillBool_cellcen[dense_cellcen_idx]) {
+          matcell_dense_arr[dense_matcen_idx] = val;
+        }
       }
     }
     sparse_idx = 0;
@@ -90,7 +99,7 @@ struct MM_test_data {
       for (int c = 0; c < num_cells; ++c) {
         int dense_cellcen_idx = c * num_mats + m;
         DataType val = cellmat_dense_arr[dense_cellcen_idx];
-        if (fillBool[dense_cellcen_idx]) {
+        if (fillBool_cellcen[dense_cellcen_idx]) {
           matcell_sparse_arr[sparse_idx++] = val;
         }
       }
@@ -123,7 +132,7 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
         EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx]);
       }
       else {
-        if (data.fillBool[dense_idx]) {
+        if (data.fillBool_cellcen[dense_idx]) {
           EXPECT_NE(d, nullptr);
           if (d) EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx]);
           sparse_idx += 1;
@@ -152,7 +161,10 @@ TEST(multimat, construct_multimat_1_array)
       MultiMat mm(layout_used, sparcity_used);
       mm.setNumberOfCell(data.num_cells);
       mm.setNumberOfMat(data.num_mats);
-      mm.setCellMatRel(data.fillBool);
+      if (layout_used == DataLayout::CELL_CENTRIC) 
+        mm.setCellMatRel(data.fillBool_cellcen);
+      else
+        mm.setCellMatRel(data.fillBool_matcen);
 
       EXPECT_TRUE(mm.isValid());
 
