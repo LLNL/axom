@@ -110,8 +110,8 @@ public:
   std::string getLayoutAsString();
   SparcityLayout getSparcityLayout();
 
-  void printSelf();
-  bool isValid();
+  void printSelf() const;
+  bool isValid(bool verboseOutput = false) const;
   
 private: //private functions
   SetType* get_mapped_set(FieldMapping fm);
