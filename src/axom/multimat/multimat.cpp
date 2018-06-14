@@ -52,65 +52,66 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
   assert(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
 
-  assert(m_dataLayout == DataLayout::CELL_CENTRIC); //for now assumes cell dominant
+  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
+  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
 
   //Set-up the cell/mat relation
-  m_cell2matRel_beginsVec.resize(m_cellSet.size() + 1, -1);
+  m_cellMatRel_beginsVec.resize(set1.size() + 1, -1);
 
   SetPosType curIdx = SetPosType();
-  for (SetPosType i = 0; i < m_ncells; ++i)
+  for (SetPosType i = 0; i < set1.size(); ++i)
   {
-    m_cell2matRel_beginsVec[i] = curIdx;
-    for (SetPosType j = 0; j < m_nmats; ++j)
+    m_cellMatRel_beginsVec[i] = curIdx;
+    for (SetPosType j = 0; j < set2.size(); ++j)
     {
-      if (vecarr[i*m_nmats + j]) {
-        m_cell2matRel_indicesVec.push_back(j);
+      if (vecarr[i*set2.size() + j]) {
+        m_cellMatRel_indicesVec.push_back(j);
         ++curIdx;
       }
     }
   }
-  m_cell2matRel_beginsVec[m_ncells] = curIdx;
+  m_cellMatRel_beginsVec[set1.size()] = curIdx;
 
-  m_cell2matRel = StaticVariableRelationType(&m_cellSet, &m_matSet);
-  m_cell2matRel.bindBeginOffsets(m_cellSet.size(), &m_cell2matRel_beginsVec);
-  m_cell2matRel.bindIndices(m_cell2matRel_indicesVec.size(), &m_cell2matRel_indicesVec);
+  m_cellMatRel = StaticVariableRelationType(&set1, &set2);
+  m_cellMatRel.bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
+  m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
 
-  assert(m_cell2matRel.isValid());
+  assert(m_cellMatRel.isValid());
 
-  cout << "indice total size: " << m_cell2matRel_indicesVec.size() << endl;
-  cout << "cellmatrel total size: " << m_cell2matRel.totalSize() << endl;
-  cout << "fromset size: " << m_cellSet.size() << endl;
+  cout << "indice total size: " << m_cellMatRel_indicesVec.size() << endl;
+  cout << "cellmatrel total size: " << m_cellMatRel.totalSize() << endl;
+  cout << "fromset size: " << set1.size() << endl;
 
   //Set-up both dense and sparse sets, since they don't take any extra memory...
 
   //a set of mapped relation
-  m_cellMatNZSet = MappedRelationSetType(&m_cell2matRel);
+  m_cellMatNZSet = MappedRelationSetType(&m_cellMatRel);
 
   // a cartesian set of cell x mat
-  if(m_dataLayout == DataLayout::CELL_CENTRIC)
-    m_cellMatProdSet = ProductSetType(&m_cellSet, &m_matSet);
-  else if(m_dataLayout == DataLayout::MAT_CENTRIC)
-    m_cellMatProdSet = ProductSetType(&m_matSet, &m_cellSet);
-  else assert(false);
+  m_cellMatProdSet = ProductSetType(&set1, &set2);
 
 }
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
+  assert(m_dataLayout == DataLayout::CELL_CENTRIC);
+
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
-    return m_cell2matRel[c]; //returns a RelationSet / OrderedSet with STLindirection
+    return m_cellMatRel[c]; //returns a RelationSet / OrderedSet with STLindirection
   }
   else if (m_sparcityLayout == SparcityLayout::DENSE)
-    return m_cell2matRel[c]; //since the relation is currently only stored sparse, return the same thing.
+    return m_cellMatRel[c]; //since the relation is currently only stored sparse, return the same thing.
   else assert(false);
 }
 
 MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
 {
+  assert(m_dataLayout == DataLayout::CELL_CENTRIC);
+
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
     assert(0 <= c && c < m_ncells);
-    int start_idx = m_cell2matRel_beginsVec[c];
-    int end_idx = m_cell2matRel_beginsVec[c + 1];
+    int start_idx = m_cellMatRel_beginsVec[c];
+    int end_idx = m_cellMatRel_beginsVec[c + 1];
     return RangeSetType::SetBuilder().range(start_idx, end_idx);
   }
   else if (m_sparcityLayout == SparcityLayout::DENSE) {
@@ -171,12 +172,11 @@ std::string axom::multimat::MultiMat::getLayoutAsString()
 {
   switch (m_dataLayout) {
   case DataLayout::CELL_CENTRIC:
-    return "DataLayout::CELL_CENTRIC";
+    return "CELL_CENTRIC";
   case DataLayout::MAT_CENTRIC:
-    return "DataLayout::MAT_CENTRIC";
+    return "MAT_CENTRIC";
   default:
     assert(false);
-    return "";
   }
 }
 
