@@ -29,7 +29,7 @@ set(axom_utils_headers
     numerics/linear_solve.hpp
     numerics/eigen_solve.hpp
     numerics/polynomial_solvers.hpp
-    numerics/vector_utilities.hpp
+    numerics/matvecops.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
     )
