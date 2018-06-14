@@ -310,7 +310,7 @@ def build_and_test_host_config(test_root,host_config):
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
-    print "[testing build, test, and install of host config file: %s]" % host_config
+    print "[Testing build, test, and install of host config file: %s]" % host_config
     print "[ build dir: %s]"   % build_dir
     print "[ install dir: %s]" % install_dir
 
@@ -323,7 +323,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
     
     if res != 0:
-        print "[ERROR: Configure for host-config: %s failed]" % host_config
+        print "[ERROR: Configure for host-config: %s failed]\n" % host_config
         return res
         
     ####
@@ -337,7 +337,7 @@ def build_and_test_host_config(test_root,host_config):
                 echo=True)
 
     if res != 0:
-        print "[ERROR: Build for host-config: %s failed]" % host_config
+        print "[ERROR: Build for host-config: %s failed]\n" % host_config
         return res
 
     tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
@@ -351,7 +351,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        print "[ERROR: Tests for host-config: %s failed]\n" % host_config
         return res
 
 
@@ -364,7 +364,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        print "[ERROR: Install for host-config: %s failed]\n" % host_config
         return res
 
     # simple sanity check for make install
@@ -372,7 +372,7 @@ def build_and_test_host_config(test_root,host_config):
     sexe("ls %s/include" % install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/lib" %     install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
-    print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
+    print "[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config
 
     set_axom_group_and_perms(build_dir)
     set_axom_group_and_perms(install_dir)
@@ -480,15 +480,15 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
             set_axom_group_and_perms(mirror_dir)
             return res
         else:
-            print "[SUCCESS: Finished build tpls for spec %s]" % spec
+            print "[SUCCESS: Finished build tpls for spec %s]\n" % spec
     # patch manual edits into host config files
     patch_host_configs(prefix)
     # build the axom against the new tpls
     res = build_and_test_host_configs(prefix, job_name, timestamp)
     if res != 0:
-        print "[ERROR: build and test of axom vs tpls test failed.]"
+        print "[ERROR: build and test of axom vs tpls test failed.]\n"
     else:
-        print "[SUCCESS: build and test of axom vs tpls test passed.]"
+        print "[SUCCESS: build and test of axom vs tpls test passed.]\n"
     # set proper perms for installed tpls
     set_axom_group_and_perms(prefix)
     # set proper perms for the mirror files
