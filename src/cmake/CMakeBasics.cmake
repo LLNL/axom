@@ -121,6 +121,13 @@ if(C_COMPILER_FAMILY_IS_CLANG AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.
   set(clang_unused_local_typedef "-Wno-unused-local-typedefs")
 endif()
 
+# X-Code 9 + apple clang 9 are based of llvm 4.0, so we need this flag.
+# For whatever reason C_COMPILER_FAMILY_IS_CLANG isn't true this case. 
+if(APPLE AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.0))
+
+  set(clang_unused_local_typedef "-Wno-unused-local-typedefs")
+endif()
+
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   DEFAULT " "
                   CLANG   "${clang_unused_local_typedef}"
