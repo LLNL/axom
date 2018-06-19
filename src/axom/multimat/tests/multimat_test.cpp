@@ -22,7 +22,6 @@
  * \brief Unit tests for MultiMat class
  */
 
-#include <iterator>
 #include "gtest/gtest.h"
 
 #include "multimat/multimat.hpp"
@@ -50,15 +49,15 @@ struct MM_test_data {
   std::vector<DataType> matcell_dense_arr;
   std::vector<DataType> matcell_sparse_arr;
 
-  int num_cells, num_mats;
+  int num_cells, num_mats, stride;
   int nfilled = 0;
-
   //constructor
-  MM_test_data(int n_c = 20, int n_m = 10)
+  MM_test_data(int n_c = 20, int n_m = 10, int str = 1)
   {
     num_cells = n_c;
     num_mats = n_m;
-    
+    stride = str;
+
     nfilled = 0;
     fillBool_cellcen.resize(num_mats * num_cells, false);
     fillBool_matcen.resize(num_mats * num_cells, false);
@@ -75,22 +74,29 @@ struct MM_test_data {
     }
 
     //fill in the data
-    cellmat_dense_arr.resize(num_mats * num_cells);
-    cellmat_sparse_arr.resize(nfilled);
-    matcell_dense_arr.resize(num_mats * num_cells);
-    matcell_sparse_arr.resize(nfilled);
+    cellmat_dense_arr.resize(num_mats * num_cells * stride);
+    cellmat_sparse_arr.resize(nfilled * stride);
+    matcell_dense_arr.resize(num_mats * num_cells * stride);
+    matcell_sparse_arr.resize(nfilled * stride);
     int sparse_idx = 0;
     for (int c = 0; c < num_cells; ++c) {
       for (int m = 0; m < num_mats; ++m) {
         int dense_cellcen_idx = c * num_mats + m;
         int dense_matcen_idx = m * num_cells + c;
-        DataType val = static_cast<DataType>(c * 1000.0 + m * 1.0);
+
         if (fillBool_cellcen[dense_cellcen_idx]) {
-          cellmat_sparse_arr[sparse_idx++] = val;
-          cellmat_dense_arr[dense_cellcen_idx] = val;
+          for (int s = 0; s < stride; ++s) {
+            DataType val = static_cast<DataType>(c * 1000.0 + m * 1.0 + s * 0.01);
+            cellmat_sparse_arr[sparse_idx*stride+s] = val;
+            cellmat_dense_arr[dense_cellcen_idx*stride + s] = val;
+          }
+          ++sparse_idx;
         }
         if (fillBool_cellcen[dense_cellcen_idx]) {
-          matcell_dense_arr[dense_matcen_idx] = val;
+          for (int s = 0; s < stride; ++s) {
+            DataType val = static_cast<DataType>(c * 1000.0 + m * 1.0 + s * 0.01);
+            matcell_dense_arr[dense_matcen_idx*stride + s] = val;
+          }
         }
       }
     }
@@ -98,9 +104,12 @@ struct MM_test_data {
     for (int m = 0; m < num_mats; ++m) {
       for (int c = 0; c < num_cells; ++c) {
         int dense_cellcen_idx = c * num_mats + m;
-        DataType val = cellmat_dense_arr[dense_cellcen_idx];
         if (fillBool_cellcen[dense_cellcen_idx]) {
-          matcell_sparse_arr[sparse_idx++] = val;
+          for (int s = 0; s < stride; ++s) {
+            DataType val = cellmat_dense_arr[dense_cellcen_idx*stride + s];
+            matcell_sparse_arr[sparse_idx*stride + s] = val;
+          }
+          ++sparse_idx;
         }
       }
     }
@@ -114,31 +123,36 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
 {
   MultiMat::Field2D<DataType>& map = mm.get2dField<DataType>(arr_name);
   EXPECT_TRUE(map.isValid());
-
+  EXPECT_EQ(data.stride, map.stride());
+  
   //check via findValue(...)
   int sparse_idx = 0;
   for (int ci = 0; ci < data.num_cells; ++ci)
   {
     for (int mi = 0; mi < data.num_mats; ++mi)
     {
-      double *d;
-      if(mm.getDataLayout()==DataLayout::CELL_CENTRIC) 
-        d = map.findValue(ci, mi);
-      else
-        d = map.findValue(mi, ci);
-      int dense_idx = ci * data.num_mats + mi;
+      for (int s = 0; s < data.stride; ++s)
+      {
+        double *d;
+        if (mm.getDataLayout() == DataLayout::CELL_CENTRIC)
+          d = map.findValue(ci, mi, s);
+        else
+          d = map.findValue(mi, ci, s);
+        int dense_idx = ci * data.num_mats + mi;
 
-      if (mm.getSparcityLayout() == SparcityLayout::DENSE) {
-        EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx]);
-      }
-      else {
-        if (data.fillBool_cellcen[dense_idx]) {
-          EXPECT_NE(d, nullptr);
-          if (d) EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx]);
-          sparse_idx += 1;
+        if (mm.getSparcityLayout() == SparcityLayout::DENSE) {
+          EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx*data.stride + s]);
         }
         else {
-          EXPECT_EQ(d, nullptr);
+          if (data.fillBool_cellcen[dense_idx]) {
+            EXPECT_NE(d, nullptr);
+            EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx*data.stride + s]);
+            if(s == data.stride-1)
+              sparse_idx += 1;
+          }
+          else {
+            EXPECT_EQ(d, nullptr);
+          }
         }
       }
     }
@@ -150,7 +164,8 @@ TEST(multimat, construct_multimat_1_array)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  MM_test_data<double> data(20, 10);
+  const int stride_val = 4;
+  MM_test_data<double> data(20, 10, stride_val);
 
   std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, DataLayout::MAT_CENTRIC };
   std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, SparcityLayout::SPARSE };
@@ -172,15 +187,15 @@ TEST(multimat, construct_multimat_1_array)
 
       if (layout_used == DataLayout::CELL_CENTRIC) {
         if(sparcity_used == SparcityLayout::DENSE)
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data());
+          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), stride_val);
         else
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data());
+          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data(), stride_val);
       }
       else {
         if (sparcity_used == SparcityLayout::DENSE)
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data());
+          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data(), stride_val);
         else
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data());
+          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data(), stride_val);
       }
 
       EXPECT_TRUE(mm.isValid(true));
