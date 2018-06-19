@@ -625,25 +625,25 @@ struct Robey_data
 
 int main(int argc, char** argv)
 {
-  Robey_data data;
+  //Robey_data data;
 
-  //Set-up the multimat class
-  MultiMat mm;
-  mm.setNumberOfMat(data.nmats);
-  mm.setNumberOfCell(data.ncells);
-  mm.setCellMatRel(data.Volfrac_bool);
+  ////Set-up the multimat class
+  //MultiMat mm;
+  //mm.setNumberOfMat(data.nmats);
+  //mm.setNumberOfCell(data.ncells);
+  //mm.setCellMatRel(data.Volfrac_bool);
 
-  //Setting field data in terms of slam
-  mm.newFieldArray<>("Densityfrac"    , FieldMapping::PER_CELL_MAT, &data.Densityfrac_sparse[0]);
-  mm.newFieldArray<>("Vol"            , FieldMapping::PER_CELL    , &data.Vol[0]);
-  mm.newFieldArray<>("Volfrac"        , FieldMapping::PER_CELL_MAT, &data.Volfrac_sparse[0]);
-  mm.newFieldArray<>("Temperaturefrac", FieldMapping::PER_CELL_MAT, &data.Temperaturefrac_sparse[0]);
-  mm.newFieldArray<>("Pressurefrac"   , FieldMapping::PER_CELL_MAT, &data.Pressurefrac_sparse[0]);
-  mm.newFieldArray<>("nmatconsts"     , FieldMapping::PER_MAT     , &data.nmatconsts[0]);
+  ////Setting field data in terms of slam
+  //mm.newFieldArray<>("Densityfrac"    , FieldMapping::PER_CELL_MAT, &data.Densityfrac_sparse[0]);
+  //mm.newFieldArray<>("Vol"            , FieldMapping::PER_CELL    , &data.Vol[0]);
+  //mm.newFieldArray<>("Volfrac"        , FieldMapping::PER_CELL_MAT, &data.Volfrac_sparse[0]);
+  //mm.newFieldArray<>("Temperaturefrac", FieldMapping::PER_CELL_MAT, &data.Temperaturefrac_sparse[0]);
+  //mm.newFieldArray<>("Pressurefrac"   , FieldMapping::PER_CELL_MAT, &data.Pressurefrac_sparse[0]);
+  //mm.newFieldArray<>("nmatconsts"     , FieldMapping::PER_MAT     , &data.nmatconsts[0]);
 
-  //printself and check
-  mm.printSelf();
-  printf("IsValid: %d\n\n", mm.isValid());
+  ////printself and check
+  //mm.printSelf();
+  //printf("IsValid: %d\n\n", mm.isValid());
 
   ////Run the examples
   //average_density_cell_dom(data);
@@ -675,6 +675,8 @@ void test_code() {
   
   int nmats = 50;
   int ncells = 2000;
+  int ncomp = 2;
+
   int nfilled = 0;
   std::vector<bool> cellMatRel(nmats * ncells, false);
   for (int i = 0; i < nmats*ncells; i++) {
@@ -689,27 +691,29 @@ void test_code() {
   mm.setCellMatRel(cellMatRel);
 
   //create the std::vector data for the field arrays
-  std::vector<double> cell_arr1(ncells);
+  std::vector<double> cell_arr1(ncells*ncomp);
   double c_sum = 0;
-  for (int i = 0; i < cell_arr1.size(); i++) {
-    cell_arr1[i] = (double)i * 2.0;
-    c_sum += cell_arr1[i];
+  for (int i = 0; i < ncells; ++i) {
+    for (int s = 0; s < ncomp; ++s) {
+      cell_arr1[i*ncomp + s] = (double)i * 2.0 + s * 0.01;
+      c_sum += cell_arr1[i*ncomp + s];
+    }
   }
     
   std::vector<double> cellmat_arr;
-
-  cellmat_arr.resize(use_sparse ? nfilled : nmats * ncells);
+  cellmat_arr.resize( (use_sparse ? nfilled : nmats * ncells) *ncomp);
   double x_sum = 0;
-  for (int i = 0; i < cellmat_arr.size(); i++) {
+  for (int i = 0; i < cellmat_arr.size()/ncomp; i++) {
     if (use_sparse || cellMatRel[i]) {
-      cellmat_arr[i] = (double)i * 1.1;
-      x_sum += cellmat_arr[i];
+      for (int s = 0; s < ncomp; ++s) {
+        cellmat_arr[i*ncomp + s] = (double)i * 1.1 + s * 0.001;
+        x_sum += cellmat_arr[i*ncomp + s];
+      }
     }
   }
 
-
-  mm.newFieldArray<>("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0]);
-  mm.newFieldArray<>("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0]);
+  mm.newFieldArray<>("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0], ncomp);
+  mm.newFieldArray<>("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0], ncomp);
 
   //convert layout
   mm.convertLayoutToSparse();
@@ -725,9 +729,12 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
-    for (int i = 0; i < mm.getNumberOfCells(); i++) 
-    {
-      sum += map[i];                               //<----
+    for (int i = 0; i < mm.getNumberOfCells(); i++) {
+      assert(ncomp == map.stride());
+      for (int s = 0; s < map.stride(); s++)
+      {
+        sum += map(i, s);                               //<----
+      }
     }
   }
   cout << end_timer() << "\t";
@@ -748,7 +755,9 @@ void test_code() {
         int idx2 = rel_set[j]; //another way to get mat id
         assert(idx == idx2); 
 
-        sum += submap.value(j);        //<----------
+        for (int s = 0; s < map.stride(); ++s) {
+          sum += submap.value(j,s);        //<----------
+        }
         //sum += submap[j];            //another way to get value
       }
     }
@@ -766,8 +775,10 @@ void test_code() {
     
     for (int i = 0; i < mm.getNumberOfCells(); i++) {
       for (int m = 0; m < mm.getNumberOfMaterials(); m++) {
-        double* valptr = map.findValue(i, m);
-        if (valptr) sum += *valptr;           //<---- contains a hidden for-loop for sparse layouts
+        for (int s = 0; s < map.stride(); ++s) {
+          double* valptr = map.findValue(i, m, s);
+          if (valptr) sum += *valptr;           //<---- contains a hidden for-loop for sparse layouts
+        }
       }
     }
   }
@@ -791,8 +802,10 @@ void test_code() {
         for (int j = 0; j < indexSet.size(); j++)
         {
           int mat_id = setOfMaterialsInThisCell.at(j);
-          double val = map[indexSet.at(j)];   //<-----
-          sum += val;
+          for (int s = 0; s < map.stride(); ++s) {
+            double val = map[indexSet.at(j)*map.stride() + s];   //<-----
+            sum += val;
+          }
         }
       }
     }
@@ -809,7 +822,8 @@ void test_code() {
     MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
     for (MultiMat::Field1D<double>::iterator iter = map.begin(); iter != map.end(); iter++)
     {
-      sum += *iter;              //<----
+      for(int s=0; s<iter.numComp(); ++s)
+        sum += iter(s);              //<----
     }
   }
   cout << end_timer() << "\t";
@@ -824,9 +838,12 @@ void test_code() {
       MultiMat::SubField<double>& submap = map[i];
       for (auto iter = submap.begin(); iter != submap.end(); iter++) 
       {
-        sum += *iter;                  //<----
-        //assert(*iter, iter.value());   //another way to get the value
-        int idx = iter.index();
+        for (int s = 0; s < map.stride(); ++s)
+        {
+          sum += iter(s);                  //<----
+          //assert(*iter, iter.value());   //another way to get the value
+          int idx = iter.index();
+        }
       }
     }
   }
@@ -844,9 +861,12 @@ void test_code() {
     {
       for (auto iter = map.begin(i); iter != map.end(i); iter++)
       {
-        sum += *iter;          //<----
-        //assert(*iter, iter.value()); //another way to get the value
-        int idx = iter.index();
+        for (int s = 0; s < map.stride(); ++s)
+        {
+          sum += iter(s);          //<----
+          //assert(*iter, iter.value()); //another way to get the value
+          int idx = iter.index();
+        }
       }
     }
   }
