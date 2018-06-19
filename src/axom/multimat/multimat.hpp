@@ -51,15 +51,18 @@ private:
   // SLAM MappedRelationSet for the set of non-zero cell to mat variables
   using MappedRelationSetType = slam::MappedRelationSet<StaticVariableRelationType>;
   
+  //stride-related
+  using StrideType = slam::policies::RuntimeStride<SetPosType>;
+
   // SLAM Map type
   using MapBaseType = slam::MapBase;
   template <typename T>
-  using MapType = slam::Map<T>;
+  using MapType = slam::Map<T, StrideType>;
   template <typename T>
-  using BivariateMapType = slam::BivariateMap<T>;
+  using BivariateMapType = slam::BivariateMap<T, StrideType>;
 
   template<typename T>
-  using SubsetMap = slam::SubsetMap<T>;
+  using SubsetMap = slam::SubsetMap<T, StrideType>;
 
 /** Public type def **/
 public:
@@ -84,7 +87,7 @@ public:
 
   //functions related to the field arrays
   template<class T>
-  int newFieldArray(std::string arr_name, FieldMapping, T* arr);
+  int newFieldArray(std::string arr_name, FieldMapping, T* arr, int stride = 1);
  
   template<typename T>
   Field1D<T>& get1dField(std::string field_name);
@@ -144,8 +147,10 @@ private:
 
 
 template<class T>
-int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* data_arr)
+int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* data_arr, int stride)
 {
+  assert(stride > 0);
+
   int index_val = m_mapVec.size();
   
   if (arr_mapping == FieldMapping::PER_CELL_MAT) 
@@ -159,16 +164,18 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
     }
     else assert(false);
 
-    Field2D<T>* new_map_ptr = new Field2D<T>(s, data_arr);
+    Field2D<T>* new_map_ptr = new Field2D<T>(s, data_arr, stride);
     m_mapVec.push_back(new_map_ptr);
   }
   else if (arr_mapping == FieldMapping::PER_CELL || arr_mapping == FieldMapping::PER_MAT)
   {
-    MapType<T>* new_map_ptr = new MapType<T>(get_mapped_set(arr_mapping));
+    Field1D<T>* new_map_ptr = new Field1D<T>(get_mapped_set(arr_mapping), T(), stride);
     
     int i = 0;
     for (auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++) {
-      *iter = data_arr[i++];
+      for (auto s = 0; s < stride; ++s) {
+        iter(s) = data_arr[i++];
+      }
     }
 
     m_mapVec.push_back(new_map_ptr);
@@ -229,21 +236,22 @@ inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
 template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
-  std::vector<DataType> arr_data(m_cellMatNZSet.totalSize());
-  auto& old_ptr = *dynamic_cast<Field2D<DataType>*>(m_mapVec[map_i]);
-  
+  Field2D<DataType>& old_ptr = *dynamic_cast<Field2D<DataType>*>(m_mapVec[map_i]);
+  int stride = old_ptr.stride();
+  std::vector<DataType> arr_data(m_cellMatNZSet.totalSize()*stride);
   int idx = 0;
   for (int i = 0; i < m_cellMatRel.fromSetSize(); ++i) {
     auto relset = m_cellMatRel[i];
     auto submap = old_ptr[i];
     for (int j = 0; j < relset.size(); ++j) {
-
-      arr_data[idx++] = submap[relset[j]];
+      for (int s = 0; s < stride; ++s) {
+        arr_data[idx++] = submap[relset[j]*stride + s];
+      }
     }
   }
-  assert(idx == m_cellMatNZSet.totalSize());
+  assert(idx == m_cellMatNZSet.totalSize()*stride);
 
-  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatNZSet, &arr_data[0]);
+  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatNZSet, &arr_data[0], stride);
   delete m_mapVec[map_i];
   m_mapVec[map_i] = new_field;
 }
