@@ -177,9 +177,11 @@ inline bool normalize(T* v, int dim, double eps = 1e-16);
  *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
  *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
  *  matrix is returned in \f$ \mathcal{C} \f$
+ *
+ * \return status true if addition is successful, otherwise, false.
  */
 template < typename T >
-inline void matrix_add( const Matrix< T >& A,
+inline bool matrix_add( const Matrix< T >& A,
                         const Matrix< T >& B,
                         Matrix< T >& C );
 
@@ -196,9 +198,11 @@ inline void matrix_add( const Matrix< T >& A,
  *  dimensions. If the input matrices, \f$ \mathcal{A} \f$, \f$ \mathcal{B} \f$
  *  or \f$ \mathcal{C} \f$ have different dimensions, a \f$ 1 \times 1 \f$ null
  *  matrix is returned in \f$ \mathcal{C} \f$
+ *
+ * \return status true if addition is successful, otherwise, false.
  */
 template < typename T >
-inline void matrix_subtract( const Matrix< T >& A,
+inline bool matrix_subtract( const Matrix< T >& A,
                              const Matrix< T >& B,
                              Matrix< T >& C );
 /*!
@@ -215,9 +219,11 @@ inline void matrix_subtract( const Matrix< T >& A,
  * \note Matrix multiplication is undefined for matrices with different inner
  *  dimension. If the inner dimensions are not matching, the code returns a
  *  \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{C} \f$
+ *
+ * \return status true if the multiplication is successful, otherwise, false.
  */
 template < typename T >
-inline void matrix_multiply( const Matrix< T >&A,
+inline bool matrix_multiply( const Matrix< T >&A,
                              const Matrix< T >& B,
                              Matrix< T >& C );
 
@@ -263,9 +269,11 @@ inline void matrix_vector_multiply( const Matrix< T >& A,
  *
  * \note If the supplied matrix does not have the correct dimensions, the code
  *  returns a \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{M} \f$
+ *
+ * \return status true if the matrix transpose is successful, otherwise, false.
  */
 template < typename T >
-inline void matrix_transpose( const Matrix< T >& A, Matrix< T >& M );
+inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M );
 
 /// @}
 
@@ -285,15 +293,10 @@ namespace numerics
 // IMPLEMENTATION OF MATRIX OPERATIONS
 //------------------------------------------------------------------------------
 template < typename T >
-inline void matrix_add( const Matrix< T >& A,
+inline bool matrix_add( const Matrix< T >& A,
                         const Matrix< T >& B,
                         Matrix< T >& C )
 {
-  assert( A.getNumRows() == B.getNumRows() );
-  assert( A.getNumColumns() == B.getNumColumns() );
-  assert( C.getNumRows() == B.getNumRows() );
-  assert( C.getNumColumns() == B.getNumColumns() );
-
   if ( A.getNumRows()    != B.getNumRows() ||
        A.getNumColumns() != B.getNumColumns() ||
        C.getNumRows()    != B.getNumRows() ||
@@ -302,7 +305,7 @@ inline void matrix_add( const Matrix< T >& A,
 
     // matrix dimensions do not match
     C = Matrix< T >::zeros(1,1);
-    return;
+    return false;
   }
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -320,19 +323,15 @@ inline void matrix_add( const Matrix< T >& A,
     target[ i ] = sourceA[ i ] + sourceB[ i ];
   }
 
+  return true;
 }
 
 //------------------------------------------------------------------------------
 template < typename T >
-void matrix_subtract( const Matrix< T >& A,
+bool matrix_subtract( const Matrix< T >& A,
                       const Matrix< T >& B,
                       Matrix< T >& C )
 {
-  assert( A.getNumRows() == B.getNumRows() );
-  assert( A.getNumColumns() == B.getNumColumns() );
-  assert( C.getNumRows() == B.getNumRows() );
-  assert( C.getNumColumns() == B.getNumColumns() );
-
   if ( A.getNumRows()    != B.getNumRows() ||
        A.getNumColumns() != B.getNumColumns() ||
        C.getNumRows()    != B.getNumRows() ||
@@ -341,7 +340,7 @@ void matrix_subtract( const Matrix< T >& A,
 
     // matrix dimensions do not match
     C = Matrix< T >::zeros(1,1);
-    return;
+    return false;
   }
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -359,24 +358,22 @@ void matrix_subtract( const Matrix< T >& A,
     target[ i ] = sourceA[ i ] - sourceB[ i ];
   }
 
+  return true;
 }
 
 //------------------------------------------------------------------------------
 template < typename T >
-void matrix_multiply( const Matrix< T >& A,
+inline bool matrix_multiply( const Matrix< T >& A,
                       const Matrix< T >& B,
                       Matrix< T >& C )
 {
-  // basic matrix-matrix multiplication
-  assert( A.getNumColumns() == B.getNumRows() );
-
   if ( A.getNumColumns() != B.getNumRows()   ||
        C.getNumRows() != A.getNumRows()      ||
        C.getNumColumns() != B.getNumColumns()   )
   {
 
     C = Matrix< T >::zeros( 1,1 );
-    return;
+    return false;
   }
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -399,6 +396,7 @@ void matrix_multiply( const Matrix< T >& A,
     }  // END for all columns
   } // END for all rows
 
+  return true;
 }
 
 //------------------------------------------------------------------------------
@@ -447,19 +445,13 @@ inline void matrix_vector_multiply( const Matrix< T >& A, const T* x, T* b )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-inline void matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
+inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
 {
-  // sanity checks
-  assert( "Supplied Matrix has wrong dimensions. Cannot store transpose." &&
-           M.getNumRows() == A.getNumColumns() );
-  assert( "Supplied Matrix has wrong dimensions. Cannot store transpose." &&
-           M.getNumColumns() == A.getNumRows() );
-
   if ( M.getNumRows()    != A.getNumColumns() ||
        M.getNumColumns() != A.getNumRows()  )
   {
     M = Matrix< T >::zeros(1,1);
-    return;
+    return false;
   }
 
   const int ncols = A.getNumColumns();
@@ -474,6 +466,7 @@ inline void matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
     }  // END for all columns in A
   } // END for all rows in A
 
+  return true;
 }
 
 

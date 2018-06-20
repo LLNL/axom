@@ -46,6 +46,25 @@ void expect_vector_eq( const double* u, const double* v, int N)
 //------------------------------------------------------------------------------
 // UNIT TESTS FOR MATRIX OPS
 //------------------------------------------------------------------------------
+TEST( numerics_matvecops, check_invalid_matrix_addition )
+{
+  numerics::Matrix< int > A( 2, 2 );
+  numerics::Matrix< int > B( 3, 3 );
+  numerics::Matrix< int > C( 3, 3 );
+  numerics::Matrix< int > C2( 3, 3 );
+
+  EXPECT_FALSE( numerics::matrix_add( A, B, C ) );
+  EXPECT_EQ( C.getNumColumns(), 1 );
+  EXPECT_EQ( C.getNumRows(), 1 );
+  EXPECT_EQ( C(0,0), 0 );
+
+  EXPECT_FALSE( numerics::matrix_add( B, C2, A ) );
+  EXPECT_EQ( A.getNumColumns(), 1 );
+  EXPECT_EQ( A.getNumRows(), 1 );
+  EXPECT_EQ( A(0,0), 0 );
+}
+
+//------------------------------------------------------------------------------
 TEST( numerics_matvecops, matrix_add )
 {
   constexpr int N=3;
@@ -53,7 +72,7 @@ TEST( numerics_matvecops, matrix_add )
   numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( N );
 
   numerics::Matrix< int > A( N, N );
-  numerics::matrix_add( I1, I2, A );
+  EXPECT_TRUE( numerics::matrix_add( I1, I2, A ) );
 
   for ( int i=0 ; i < N ; ++i )
   {
@@ -66,6 +85,25 @@ TEST( numerics_matvecops, matrix_add )
 }
 
 //------------------------------------------------------------------------------
+TEST( numerics_matvecops, check_invalid_matrix_subtraction )
+{
+  numerics::Matrix< int > A( 2, 2 );
+  numerics::Matrix< int > B( 3, 3 );
+  numerics::Matrix< int > C( 3, 3 );
+  numerics::Matrix< int > C2( 3, 3 );
+
+  EXPECT_FALSE( numerics::matrix_subtract( A, B, C ) );
+  EXPECT_EQ( C.getNumColumns(), 1 );
+  EXPECT_EQ( C.getNumRows(), 1 );
+  EXPECT_EQ( C(0,0), 0 );
+
+  EXPECT_FALSE( numerics::matrix_subtract( B, C2, A ) );
+  EXPECT_EQ( A.getNumColumns(), 1 );
+  EXPECT_EQ( A.getNumRows(), 1 );
+  EXPECT_EQ( A(0,0), 0 );
+}
+
+//------------------------------------------------------------------------------
 TEST( numerics_matvecops, matrix_subtract )
 {
   constexpr int ZERO = 0;
@@ -75,7 +113,7 @@ TEST( numerics_matvecops, matrix_subtract )
   numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( N );
 
   numerics::Matrix< int > A( N, N );
-  numerics::matrix_subtract( I1, I2, A );
+  EXPECT_TRUE( numerics::matrix_subtract( I1, I2, A ) );
 
   for ( int i=0 ; i < N ; ++i )
   {
@@ -85,6 +123,24 @@ TEST( numerics_matvecops, matrix_subtract )
     }  // END for all columns
   } // END for all rows
 
+}
+
+//------------------------------------------------------------------------------
+TEST( numerics_matvecops, check_invalid_matrix_multiplication )
+{
+  numerics::Matrix< int > A( 2, 3 );
+  numerics::Matrix< int > B( 3, 2 );
+  numerics::Matrix< int > C( 3, 3 );
+
+  EXPECT_FALSE( numerics::matrix_multiply( A, B, C ) );
+  EXPECT_EQ( C.getNumColumns(), 1 );
+  EXPECT_EQ( C.getNumRows(), 1 );
+  EXPECT_EQ( C(0,0), 0 );
+
+  EXPECT_FALSE( numerics::matrix_multiply( A, C, B ) );
+  EXPECT_EQ( B.getNumColumns(), 1 );
+  EXPECT_EQ( B.getNumRows(), 1 );
+  EXPECT_EQ( B(0,0), 0 );
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +158,7 @@ TEST( numerics_matvecops, matrix_matrix_multiply )
   B( 2,0 ) = 5; B( 2,1 ) = 6;
 
   numerics::Matrix< int > C( 2, 2 );
-  numerics::matrix_multiply( A, B, C );
+  EXPECT_TRUE( numerics::matrix_multiply( A, B, C ) );
 
   EXPECT_EQ( 22, C(0,0) );
   EXPECT_EQ( 28, C(0,1) );
@@ -111,7 +167,7 @@ TEST( numerics_matvecops, matrix_matrix_multiply )
 
   numerics::Matrix< int > I2 = numerics::Matrix< int >::identity( 2 );
   numerics::Matrix< int > C2( 2, 2 );
-  numerics::matrix_multiply( C, I2, C2 );
+  EXPECT_TRUE( numerics::matrix_multiply( C, I2, C2 ) );
 
   EXPECT_EQ( 22, C2(0,0) );
   EXPECT_EQ( 28, C2(0,1) );
@@ -160,6 +216,18 @@ TEST( numerics_matvecops, matrix_vector_multiply )
 }
 
 //------------------------------------------------------------------------------
+TEST( numerics_matvecops, check_invalid_matrix_transpose )
+{
+  numerics::Matrix< int > A( 2,3 );
+  numerics::Matrix< int > M( 10, 10 );
+
+  EXPECT_FALSE( numerics::matrix_transpose( A, M ) );
+  EXPECT_EQ( M.getNumRows(), 1 );
+  EXPECT_EQ( M.getNumColumns(), 1 );
+  EXPECT_EQ( M(0,0), 0 );
+}
+
+//------------------------------------------------------------------------------
 TEST( numerics_matvecops, matrix_transpose )
 {
   // Setup matrix: (1 2 3)
@@ -170,7 +238,7 @@ TEST( numerics_matvecops, matrix_transpose )
 
   // Matrix transpose
   numerics::Matrix< int > M( A.getNumColumns(), A.getNumRows() );
-  numerics::matrix_transpose( A, M );
+  EXPECT_TRUE( numerics::matrix_transpose( A, M ) );
 
   EXPECT_EQ( 1, M(0,0) );
   EXPECT_EQ( 2, M(1,0) );
