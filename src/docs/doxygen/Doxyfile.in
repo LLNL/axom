@@ -784,6 +784,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/src/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/src/components/mint/src/fem/shape_functions/lagrange \
                          @PROJECT_SOURCE_DIR@/src/components/mint/src/mesh \
                          @PROJECT_SOURCE_DIR@/src/components/mint/src/utils \
+                         @PROJECT_SOURCE_DIR@/src/components/mint/src/core \
                          @PROJECT_SOURCE_DIR@/src/components/primal/README.md \
                          @PROJECT_SOURCE_DIR@/src/components/primal/src/geometry \
                          @PROJECT_SOURCE_DIR@/src/components/primal/src/operators \
