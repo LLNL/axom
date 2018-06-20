@@ -893,8 +893,6 @@ public:
    * \brief Append a cell to the mesh.
    *
    * \param [in] connec the connectivity of the new cell.
-   * \param [in] n_values the number of values in the connectivity, ignored
-   *  if TOPO == SINGLE_SHAPE.
    * \param [in] type the type of the new cell, ignored if
    *  TOPO == SINGLE_SHAPE.
    *
@@ -1231,7 +1229,7 @@ private:
   }
 
   /*!
-   * \breif Performs common initialization.
+   * \brief Performs common initialization.
    */
   void initialize()
   {
