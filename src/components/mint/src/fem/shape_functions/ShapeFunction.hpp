@@ -47,7 +47,7 @@ public:
    * \return cellType the cell type
    * \see CellType.hpp
    */
-  static int cellType( ) { return ShapeType::getCellType(); };
+  static CellType cellType( ) { return ShapeType::getCellType(); };
 
   /*!
    * \brief Returns the Finite Element basis family type

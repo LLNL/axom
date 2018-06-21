@@ -30,6 +30,7 @@
 #include "quest/STLReader.hpp"
 #include "quest/SignedDistance.hpp"
 
+#include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -58,7 +59,7 @@ using axom::primal::Vector;
 
 using quest::SignedDistance;
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
 static struct
 {
@@ -84,7 +85,7 @@ void showHelp()
 }
 
 //------------------------------------------------------------------------------
-void parse_args( int argc, char** argv )
+void parse_args( int argc, char * * argv )
 {
   // Defaults
   Arguments.fileName   = "";
@@ -168,40 +169,42 @@ void write_point( const Point< double, 3 >& pt,
 }
 
 //------------------------------------------------------------------------------
-void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
+void write_triangles( axom::mint::Mesh * mesh,
+                      const axom::mint::IndexType * cells,
+                      axom::mint::IndexType ncells,
                       const std::string& fileName )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-  TriangleMesh* subset = new TriangleMesh(3);
-  SLIC_ASSERT( subset->getMeshType() == mesh->getMeshType() );
+  UMesh * subset = new UMesh(3, mint::TRIANGLE);
+  SLIC_ASSERT( subset->getCellType() == mesh->getCellType() );
 
-  int cellIds[3];
+  axom::mint::IndexType cellIds[3];
   Point< double, 3 > n1;
   Point< double, 3 > n2;
   Point< double, 3 > n3;
 
   int icount = 0;
-  int new_cell[3];
+  axom::mint::IndexType new_cell[3];
 
-  for ( int i=0 ; i < ncells ; ++i )
+  for ( axom::mint::IndexType i=0 ; i < ncells ; ++i )
   {
 
-    const int cellIdx = cells[ i ];
-    mesh->getMeshCell( cellIdx, cellIds );
+    const axom::mint::IndexType cellIdx = cells[ i ];
+    mesh->getCell( cellIdx, cellIds );
 
-    mesh->getMeshNode( cellIds[0], n1.data() );
-    mesh->getMeshNode( cellIds[1], n2.data() );
-    mesh->getMeshNode( cellIds[2], n3.data() );
+    mesh->getNode( cellIds[0], n1.data() );
+    mesh->getNode( cellIds[1], n2.data() );
+    mesh->getNode( cellIds[2], n3.data() );
 
-    subset->insertNode( n1[0], n1[1], n1[2] );
+    subset->appendNode( n1[0], n1[1], n1[2] );
     new_cell[0] = icount; ++icount;
-    subset->insertNode( n2[0], n2[1], n2[2] );
+    subset->appendNode( n2[0], n2[1], n2[2] );
     new_cell[1] = icount; ++icount;
-    subset->insertNode( n3[0], n3[1], n3[2] );
+    subset->appendNode( n3[0], n3[1], n3[2] );
     new_cell[2] = icount; ++icount;
 
-    subset->insertCell( new_cell, MINT_TRIANGLE,3 );
+    subset->appendCell( new_cell );
   }
 
   axom::mint::write_vtk( subset, fileName );
@@ -210,7 +213,7 @@ void write_triangles( axom::mint::Mesh* mesh, const int* cells, int ncells,
 }
 
 //------------------------------------------------------------------------------
-BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
+BoundingBox< double,3 > compute_bounds( axom::mint::Mesh * mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -219,9 +222,9 @@ BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
   BoundingBox< double,3 > meshBB;
   Point< double,3 > pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    mesh->getNode( i, pt.data() );
     meshBB.addPoint( pt );
   }  // END for all nodes
 
@@ -232,8 +235,8 @@ BoundingBox< double,3 > compute_bounds( axom::mint::Mesh* mesh)
 
 
 //------------------------------------------------------------------------------
-void distance_field( axom::mint::Mesh* surface_mesh,
-                     axom::mint::UniformMesh* umesh )
+void distance_field( axom::mint::Mesh * surface_mesh,
+                     axom::mint::UniformMesh * umesh )
 {
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
@@ -252,16 +255,14 @@ void distance_field( axom::mint::Mesh* surface_mesh,
 
 #ifdef AXOM_DEBUG
   // write the bucket tree to a file
-  const BVHTree< int, 3>* btree = signedDistance.getBVHTree();
+  const BVHTree< int, 3> * btree = signedDistance.getBVHTree();
   SLIC_ASSERT( btree != AXOM_NULLPTR );
 
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  const int ncells = surface_mesh->getMeshNumberOfCells();
-  axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
-  CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
-  int* bidx = CD->getField( "BucketID" )->getIntPtr();
+  int* bidx = surface_mesh->createField< int >( "BucketID",
+                                                mint::CELL_CENTERED );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
@@ -273,21 +274,17 @@ void distance_field( axom::mint::Mesh* surface_mesh,
 
   } // END for all objects
 
-  axom::mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
+  mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
 #endif
 
-  const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
+  const mint::IndexType nnodes = umesh->getNumberOfNodes();
 
-  PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
-  PD->addField( new axom::mint::FieldVariable< int >("nbuckets",nnodes) );
-  PD->addField( new axom::mint::FieldVariable< int >("ntriangles", nnodes) );
-
-  double* phi     = PD->getField( "phi" )->getDoublePtr();
-  int* nbuckets  = PD->getField( "nbuckets" )->getIntPtr();
-  int* ntriangles = PD->getField( "ntriangles" )->getIntPtr();
-
+  double* phi         = umesh->createField< double >( "phi",
+                                                      mint::NODE_CENTERED );
+  int* nbuckets       = umesh->createField< int >( "nbuckets",
+                                                   mint::NODE_CENTERED );
+  int* ntriangles     = umesh->createField< int >( "ntriangles",
+                                                   mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
   SLIC_ASSERT( nbuckets != AXOM_NULLPTR );
   SLIC_ASSERT( ntriangles != AXOM_NULLPTR );
@@ -295,15 +292,15 @@ void distance_field( axom::mint::Mesh* surface_mesh,
   utilities::Timer timer2;
   timer2.start();
 
-  for ( int inode=0 ; inode < nnodes ; ++inode )
+  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
 
     Point< double,3 > pt;
-    umesh->getMeshNode( inode, pt.data() );
+    umesh->getNode( inode, pt.data() );
 
     std::vector< int > buckets;
-    std::vector< int > triangles;
-    std::vector< int > my_triangles;
+    std::vector< mint::IndexType > triangles;
+    std::vector< mint::IndexType > my_triangles;
     triangles.clear();
     buckets.clear();
 
@@ -354,7 +351,7 @@ void distance_field( axom::mint::Mesh* surface_mesh,
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, char * * argv )
 {
   // STEP 0: Initialize SLIC Environment
   axom::slic::initialize();
@@ -362,9 +359,9 @@ int main( int argc, char** argv )
 
   // Create a more verbose message for this application (only level and message)
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  axom::slic::GenericOutputStream* defaultStream =
+  axom::slic::GenericOutputStream * defaultStream =
     new axom::slic::GenericOutputStream(&std::cout);
-  axom::slic::GenericOutputStream* compactStream =
+  axom::slic::GenericOutputStream * compactStream =
     new axom::slic::GenericOutputStream(&std::cout, slicFormatStr);
   axom::slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
   axom::slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
@@ -376,17 +373,17 @@ int main( int argc, char** argv )
 
   // STEP 2: read file
   SLIC_INFO( "Reading file: " << Arguments.fileName << "...");
-  quest::STLReader* reader = new quest::STLReader();
+  quest::STLReader * reader = new quest::STLReader();
   reader->setFileName( Arguments.fileName );
   reader->read();
   SLIC_INFO("done");
 
   // STEP 3: get surface mesh
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
-  reader->getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  axom::mint::Mesh * surface_mesh = new UMesh( 3, mint::TRIANGLE );
+  reader->getMesh( static_cast<UMesh *>( surface_mesh ) );
   SLIC_INFO("Mesh has "
-            << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-            << surface_mesh->getMeshNumberOfCells() << " cells.");
+            << surface_mesh->getNumberOfNodes() << " nodes and "
+            << surface_mesh->getNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;
@@ -413,7 +410,7 @@ int main( int argc, char** argv )
                                << Arguments.nz );
   SLIC_INFO("grid cell size:(" << h[0] << "," << h[1] << "," << h[2] << ")\n" );
 
-  int node_ext[6];
+  axom::mint::int64 node_ext[6];
   node_ext[0] = 0;
   node_ext[1] = Arguments.nx;
   node_ext[2] = 0;
@@ -422,7 +419,7 @@ int main( int argc, char** argv )
   node_ext[5] = Arguments.nz;
 
   // STEP 8: Construct uniform mesh
-  axom::mint::UniformMesh* umesh =
+  axom::mint::UniformMesh * umesh =
     new axom::mint::UniformMesh(3, queryBounds.getMin().data(), h, node_ext);
 
   // STEP 9: Compute the distance field on the uniform mesh

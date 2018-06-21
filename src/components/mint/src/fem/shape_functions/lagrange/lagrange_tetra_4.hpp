@@ -19,7 +19,7 @@
 #define MINT_TETRA_4_HPP_
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/FEBasisTypes.hpp"
 #include "mint/ShapeFunction.hpp"
 
@@ -56,11 +56,11 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_TET > : public ShapeFunction< Lagrange< MINT_TET > >
+class Lagrange< mint::TET > : public ShapeFunction< Lagrange< mint::TET > >
 {
 public:
 
-  static int getCellType() { return MINT_TET; }
+  static CellType getCellType() { return mint::TET; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

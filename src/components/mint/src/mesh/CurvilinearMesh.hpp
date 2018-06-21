@@ -15,312 +15,337 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef CURVILINEARMESH_HXX_
-#define CURVILINEARMESH_HXX_
+#ifndef MINT_CURVILINEARMESH_HPP_
+#define MINT_CURVILINEARMESH_HPP_
 
-#include "mint/StructuredMesh.hpp"
-#include "mint/MeshCoordinates.hpp"
-#include "slic/slic.hpp"
+#include "mint/StructuredMesh.hpp"  // base class
+#include "mint/config.hpp"          // for compile-time definitions
 
 namespace axom
 {
 namespace mint
 {
 
+// Forward Declarations
+class MeshCoordinates;
+
+/*!
+ * \class CurvilinearMesh
+ *
+ * \brief Provides the ability to represent and operate on structured,
+ *  curvilinear meshes.
+ *
+ *  The CurvilinearMesh extends from the StructuredMesh base class and adds
+ *  the ability to represent and operate on structured, curvilinear meshes.
+ *
+ *  A <em> CurvilinearMesh </em> divides the solution domain in cells that are
+ *  topologically arranged on a logical, regular grid. Consequently, each node
+ *  and cell in the mesh can be uniquely identified by a corresponding logical
+ *  i-j-k index. However, the geometry, i.e., the coordinates of the nodes are
+ *  explicitly defined and mapped on to the physical domain. For this reason,
+ *  curvilinear meshes are also called <em> mapped </em> or <em> body-fitted
+ *  </em> meshes.
+ *
+ *  A <em> CurvilinearMesh </em> object may be constructed using (a) a native
+ *  constructor (b) an external constructor or (c) a Sidre constructor, when
+ *  Mint is compiled with Sidre support.
+ *
+ * * <b> Native Constructor </b> <br />
+ *
+ *    When using native storage, the CurvilinearMesh object owns all associated
+ *    memory. Once the object is deleted, all memory is returned to the system.
+ *
+ * * <b> External Constructor </b> <br />
+ *
+ *    A CurvilinearMesh object may also be constructed from externally supplied
+ *    coordinate buffers. In this case, the calling code owns the memory and
+ *    is responsible for properly deallocating the supplied buffers.
+ *
+ * * <b> Sidre Constructor </b> <br />
+ *
+ *    When the CurvilinearMesh is associated with a group within a Sidre
+ *    hierarchy, Sidre owns all the memory. Once the object goes out-of-scope
+ *    all mesh data remains persistent in Sidre.
+ *
+ * \note When using Sidre, the specified group must conform to the conventions
+ *  defined by the <a href="http://llnl-conduit.readthedocs.io/en/latest/">
+ *  computational mesh blueprint </a>
+ *
+ * \see StructuredMesh
+ * \see Extent
+ */
 class CurvilinearMesh : public StructuredMesh
 {
 public:
 
   /*!
-   * \brief Constructs a curvilinear mesh instance.
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the logical extent of this mesh instance.
+   * \brief Default constructor. Disabled.
    */
-  CurvilinearMesh( int dimension, int ext[6] );
+  CurvilinearMesh() = delete;
+
+/// \name Native Constructors
+/// @{
 
   /*!
-   * \brief Constructs a curvilinear mesh instance.
+   * \brief Constructs a CurvilinearMesh instance given the ambient dimension
+   *  of the mesh and associated logical extent.
+   *
    * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the logical extent of this mesh instance.
-   * \param [in] blockId the block ID of this mesh
-   * \param [in] partId the partition ID of this mesh
+   * \param [in] ext pointer to buffer with the logical extent of the mesh.
+   *
+   * \note The supplied `ext` pointer must point to a buffer that has at least
+   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
+   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
+   *
+   * \pre 1 <= dimension <= 3
+   * \pre ext != AXOM_NULLPTR
+   *
+   * \post getDimension()==dimension
+   * \post getCoordinateArray( i ) != AXOM_NULLPTR \f$ \forall i \f$
+   * \post hasSidreGroup() == false
+   * \post isExternal() == false
    */
-  CurvilinearMesh( int dimension, int ext[6], int blockId, int partId );
+  CurvilinearMesh( int dimension,
+                   const int64* ext );
+
+  /*!
+   * \brief Constructs a CurvilinearMesh with the given dimensions.
+   *
+   * \param [in] Ni number of nodes in the i-direction.
+   * \param [in] Nj number of nodes in the j-direction (for dimension >= 2).
+   * \param [in] Nk number of nodes in the k-direction (for dimension==3).
+   *
+   * \pre Ni >= 1
+   * \pre Nj >= 1 iff dimesion >=2
+   * \pre Nk >= 1 iff dimesion == 3
+   *
+   * \post 1 <= getDimesion() <= 3
+   * \post getCoordinateArray( i ) != AXOM_NULLPTR \f$ \forall i \f$
+   * \post hasSidreGroup() == false
+   * \post isExternal() == false
+   */
+  CurvilinearMesh( IndexType Ni,
+                   IndexType Nj=-1,
+                   IndexType Nk=-1  );
+/// @}
+
+/// \name External Constructors
+/// @{
+
+  /*!
+   * \brief Constructs a CurvilinearMesh instance given the supplied, external
+   *  coordinate buffers.
+   *
+   * \param [in] ext pointer to buffer with the logical extent of the mesh.
+   * \param [in] x pointer to the x-coordinates
+   * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
+   * \param [in] z pointer to the z-coordinates (required only 3D)
+   *
+   * \note The supplied `ext` pointer must point to a buffer that has at least
+   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
+   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
+   *
+   * \note The calling code maintains ownership of the supplied coordinate
+   *  buffers and the responsibility of properly deallocating them.
+   *
+   * \pre ext != AXOM_NULLPTR
+   * \pre x != AXOM_NULLPTR
+   * \pre y != AXOM_NULLPTR
+   * \pre z != AXOM_NULLPTR
+   *
+   * \post 1 <= getDimesion() <= 3
+   * \post getCoordinateArray( i ) != AXOM_NULLPTR \f$ \forall i \f$
+   * \post hasSidreGroup() == false.
+   * \post isExternal() == true
+   */
+  CurvilinearMesh( const int64* ext,
+                   double* x,
+                   double* y=AXOM_NULLPTR,
+                   double* z=AXOM_NULLPTR  );
+/// @}
+
+#ifdef MINT_USE_SIDRE
+
+/// \name Sidre Constructors
+/// @{
+
+  /*!
+   * \brief Create a curvilinear mesh instance from the given Sidre group that
+   *  holds mesh data for a structured curvilinear mesh according to the
+   *  computational mesh blueprint conventions.
+   *
+   * \param [in] group pointe to the root group within a Sidre hierarchy.
+   * \param [in] topo the name of the topology for this mesh (optional).
+   *
+   * \note The supplied group is expected to contain a valid curvilinear
+   *  structured mesh instance that is conforming to the conventions described
+   *  in the conduit <a href="http://llnl-conduit.readthedocs.io/en/latest/">
+   *  computational mesh blueprint </a>.
+   *
+   * \note If a topology name is not provided, the implementation will use the
+   *  1st topology group under the parent "topologies" group.
+   *
+   * \note When using this constructor, all data is owned by Sidre. Once the
+   *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
+   *
+   * \pre group != AXOM_NULLPTR
+   * \pre blueprint::isValidRootGroup( group )
+   *
+   * \post hasSidreGroup() == true
+   * \post isExternal() == false
+   */
+  /// @{
+  explicit CurvilinearMesh( sidre::Group* group,
+                            const std::string& topo="" );
+  /// @}
+
+  /*!
+   * \brief Create a curvilinear mesh instance, on an empty sidre::Group,
+   *  that has the specified dimension and extent.
+   *
+   * \param [in] dimension the dimension of the mesh
+   * \param [in] ext pointer to buffer with the logical extent of the mesh.
+   * \param [in] group pointer to Sidre group where to store the mesh.
+   * \param [in] topo the name of the associated topology (optional)
+   * \param [in] coordset the name of the associated coordset group (optional)
+   *
+   * \note If a topology and coordset name is not provided, internal defaults
+   *  will be used by the implementation.
+   *
+   * \note When using this constructor, all data is owned by Sidre. Once the
+   *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
+   *
+   * \pre ext != AXOM_NULLPTR
+   * \pre group != AXOM_NULLPTR
+   * \pre group->getNumViews()==0
+   * \pre group->getNumGroups()==0
+   *
+   * \post hasSidreGroup() == true
+   * \post isExternal() == false
+   */
+  CurvilinearMesh( int dimension,
+                   const int64* ext,
+                   sidre::Group* group,
+                   const std::string& topo="",
+                   const std::string& coordset="" );
+
+  /*!
+   * \brief Create a curvilinear mesh instance, on an empty sidre::Group, with
+   *  specified dimensions,  \f$ N_i, N_j, N_k f\$
+   *
+   * \param [in] group pointer to the Sidre group where to store the mesh
+   * \param [in] topo the name of the associated topology (optional)
+   * \param [in] coordset the name of the associated coordset group (optional)
+   * \param [in] Ni number of nodes in the i-direction.
+   * \param [in] Nj number of nodes in the j-direction (for dimension >= 2).
+   * \param [in] Nk number of nodes in the k-direction (for dimension==3).
+   *
+   * \note If a topology and coordset name is not provided, internal defaults
+   *  will be used by the implementation.
+   *
+   * \note When using this constructor, all data is owned by Sidre. Once the
+   *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
+   *
+   * \pre Ni >= 1
+   * \pre Nj >= 1 iff dimesion >=2
+   * \pre Nk >= 1 iff dimesion == 3
+   *
+   * \pre group != AXOM_NULLPTR
+   * \pre group->getNumViews()==0
+   * \pre group->getNumGroups()==0
+   *
+   * \post hasSidreGroup() == true
+   * \post isExternal() == false
+   */
+  /// @{
+
+  CurvilinearMesh( sidre::Group* group,
+                   const std::string& topo,
+                   const std::string& coordset,
+                   IndexType Ni,
+                   IndexType Nj=-1,
+                   IndexType Nk=-1  );
+
+  CurvilinearMesh( sidre::Group* group,
+                   IndexType Ni,
+                   IndexType Nj=-1,
+                   IndexType Nk=-1  );
+  /// @}
+
+/// @}
+#endif
+
+/// \name Virtual methods
+/// @{
 
   /*!
    * \brief Destructor.
    */
   virtual ~CurvilinearMesh();
 
-  /// \name GetNode() methods
+  /*!
+   * \brief Returns true if the mesh points to external coordinate arrays.
+   * \return status true iff external coordinate arrays were supplied.
+   */
+  virtual bool isExternal() const final override
+  { return m_coordinates->isExternal(); }
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* coords ) const final override
+  { m_coordinates->getCoordinates( nodeID, coords ); }
+
+  /*!
+   * \brief Returns pointer to the requested mesh coordinate buffer.
+   *
+   * \param [in] dim the dimension of the requested coordinate buffer
+   * \return ptr pointer to the coordinate buffer.
+   *
+   * \note The length of the returned buffer is getNumberOfNodes().
+   *
+   * \pre dim >= 0 && dim < dimension()
+   * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
+   */
   /// @{
 
-  /*!
-   * \brief Returns the coordinates of the given node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre coordinates != AXOM_NULLPTR.
-   * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes().
-   */
-  virtual void getNode( int nodeIdx, double* coordinates ) const;
+  virtual double* getCoordinateArray( int dim ) final override
+  { return m_coordinates->getCoordinateArray( dim ); }
 
-  /*!
-   * \brief Returns the coordinates of the node at (i,j)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre this->getDimension() == 2
-   */
-  virtual void getNode( int i, int j, double* coordinates ) const;
-
-  /*!
-   * \brief Returns the coordinates of the node at (i,j)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] k logical index of the node along the third dimension.
-   * \param [out] coordinates pointer to buffer to populate with coordinates.
-   * \pre this->getDimension() == 3
-   */
-  virtual void getNode( int i, int j, int k, double* coordinates ) const;
-
-  /*!
-   * \brief Returns the coordinate of the given node.
-   * \param [in] nodeIdx index of the node in query.
-   * \param [in] idim requested coordinate dimension.
-   * \return x the coordinate value of the node.
-   * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes()
-   * \pre idim >= 0 && idim < m_ndims.
-   */
-  virtual double getNodeCoordinate( int nodeIdx, int idim  ) const;
-
-  /*!
-   * \brief Returns the coordinate value of the node at (i,j)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] idim requested coordinate dimension.
-   * \return x the coordinate value of the node.
-   * \pre this->getDimension()==2.
-   * \pre idim >= 0 && idim < m_ndims.
-   */
-  virtual double getNodeCoordinate( int i, int j, int idim ) const;
-
-  /*!
-   * \brief Returns the coordinate value of the node at (i,j,k)
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] k logical index of the node along the third dimension.
-   * \param [in] idim requested coordinate dimension.
-   * \return x the coordinate value of the node.
-   * \pre this->getDimension()==3.
-   * \pre idim >= 0 && idim < m_ndims.
-   */
-  virtual double getNodeCoordinate( int i, int j, int k, int idim ) const;
+  virtual const double* getCoordinateArray( int dim ) const final override
+  { return m_coordinates->getCoordinateArray( dim ); }
 
   /// @}
 
-  /// \name SetNode() methods
-  /// @{
+/// @}
 
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \param [in] z the z--coorindate to set at the given node.
-   * \pre nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes
-   * \pre this->getDimension() == 3
-   */
-  void setNode( int nodeIdx, double x, double y, double z );
-
-  /*!
-   * \brief Sets the coordinates of the node at (i,j,k).
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] k logical index of the node along the third dimension.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \param [in] z the z--coordinate to set at the given node.
-   * \pre this->getDimension() == 3
-   */
-  void setNode( int i, int j, int k,
-                double x, double y, double z );
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \pre this->getDimension() == 2
-   */
-  void setNode( int nodeIdx, double x, double y );
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] i logical index of the node along the first dimension.
-   * \param [in] j logical index of the node along the second dimension.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \param [in] y the y--coordinate to set at the given node.
-   * \pre this->getDimension() == 2
-   */
-  void setNode( int i, int j, double x, double y );
-
-  /*!
-   * \brief Sets the coordinates of the node at the given index.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] x the x--coordinate to set at the given node.
-   * \pre this->getDimension() == 1
-   */
-  void setNode( int nodeIdx, double x );
-
-  /// @}
-
-  /*!
-   * \brief Returns a pointer to the coordinates array for the given dimension.
-   * \param [in] idim the requested coordinate dimension.
-   * \return ptr pointer to the coordinates array.
-   * \pre idim >= 0 && idim < this->getDimension().
-   * \post ptr != AXOM_NULLPTR.
-   */
-  const double* getMeshCoordinateArray( int idim ) const;
+/// @}
 
 private:
 
   /*!
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent applications from calling it.
+   * \brief Initializes the CurvilinearMesh
+   * \note Helper method to be called from a constructor.
    */
-  CurvilinearMesh();
+  void initialize();
 
   MeshCoordinates* m_coordinates;
 
-  CurvilinearMesh(const CurvilinearMesh&); // Not implemented
-  CurvilinearMesh& operator=(const CurvilinearMesh&); // Not implemented
+  DISABLE_COPY_AND_ASSIGNMENT( CurvilinearMesh );
+  DISABLE_MOVE_AND_ASSIGNMENT( CurvilinearMesh );
 };
 
 } /* namespace mint */
 } /* namespace axom */
 
-//------------------------------------------------------------------------------
-//      In-lined Method Implementations
-//------------------------------------------------------------------------------
-
-namespace axom
-{
-namespace mint
-{
-
-inline const double* CurvilinearMesh::getMeshCoordinateArray( int idim ) const
-{
-  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
-  return( m_coordinates->getCoordinateArray( idim ) );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int nodeIdx, double x, double y, double z)
-{
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT(  this->getDimension()==3 );
-  m_coordinates->setPoint( nodeIdx, x, y, z );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int i,    int j,    int k,
-                                      double x, double y, double z )
-{
-  int nodeIdx = m_extent->getLinearIndex( i, j, k );
-  this->setNode( nodeIdx, x, y, z );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int nodeIdx, double x, double y )
-{
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
-  SLIC_ASSERT(  this->getDimension()==2 );
-  m_coordinates->setPoint( nodeIdx, x, y );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int i, int j, double x, double y )
-{
-  int nodeIdx = m_extent->getLinearIndex( i, j );
-  this->setNode( nodeIdx, x, y );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::setNode( int nodeIdx, double x )
-{
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getMeshNumberOfNodes() );
-  SLIC_ASSERT(  this->getDimension()==2 );
-  m_coordinates->setPoint( nodeIdx, x );
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::getNode(int nodeIdx, double* coordinates) const
-{
-  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-
-  for ( int i=0 ; i < this->getDimension() ; ++i )
-  {
-    const double* coords = m_coordinates->getCoordinateArray( i );
-    coordinates[ i ] = coords[ nodeIdx ];
-  }
-
-}
-
-//------------------------------------------------------------------------------
-inline void CurvilinearMesh::getNode( int i, int j, double* coordinates ) const
-{
-  SLIC_ASSERT(  coordinates != AXOM_NULLPTR );
-  SLIC_ASSERT(  this->getDimension()==2 );
-
-  const int nodeIdx = m_extent->getLinearIndex( i, j );
-  this->getNode( nodeIdx, coordinates );
-}
-
-//------------------------------------------------------------------------------
-inline
-void CurvilinearMesh::getNode(int i, int j, int k, double* coordinates) const
-{
-  SLIC_ASSERT(  coordinates !=  AXOM_NULLPTR );
-  SLIC_ASSERT(  this->getDimension()==3 );
-
-  const int nodeIdx = m_extent->getLinearIndex( i, j, k );
-  this->getNode( nodeIdx, coordinates );
-}
-
-//------------------------------------------------------------------------------
-inline double CurvilinearMesh::getNodeCoordinate( int nodeIdx, int idim ) const
-{
-  SLIC_ASSERT(  nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  SLIC_ASSERT(  idim >= 0 && idim < this->getDimension() );
-
-  const double* coord = m_coordinates->getCoordinateArray( idim );
-  return( coord[nodeIdx] );
-}
-
-//------------------------------------------------------------------------------
-inline double CurvilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
-{
-  SLIC_ASSERT(  this->getDimension()==2 );
-  SLIC_ASSERT(  idim >= 0 && idim < 2 );
-
-  const int nodeIdx = m_extent->getLinearIndex( i, j );
-  return ( this->getNodeCoordinate(nodeIdx, idim) );
-}
-
-//------------------------------------------------------------------------------
-inline
-double CurvilinearMesh::getNodeCoordinate( int i, int j, int k, int idim ) const
-{
-  SLIC_ASSERT(  this->getDimension()==3 );
-  SLIC_ASSERT(  idim >= 0 && idim < 3 );
-
-  const int nodeIdx = m_extent->getLinearIndex( i, j, k );
-  return ( this->getNodeCoordinate(nodeIdx, idim) );
-}
-
-} /* namespace mint */
-} /* namespace axom */
-
-#endif /* CURVILINEARMESH_HXX_ */
+#endif /* MINT_CURVILINEARMESH_HPP_ */

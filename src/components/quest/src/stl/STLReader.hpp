@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "axom/Macros.hpp"
+#include "mint/config.hpp"
 #include "mint/UnstructuredMesh.hpp"
 
 namespace axom
@@ -74,7 +75,7 @@ public:
    * \param [in,out] mesh pointer to the unstructured mesh.
    * \pre mesh != AXOM_NULLPTR.
    */
-  void getMesh( axom::mint::UnstructuredMesh< MINT_TRIANGLE >* mesh );
+  void getMesh( axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
 
 
 private:
@@ -106,8 +107,8 @@ private:
 protected:
   std::string m_fileName;
 
-  axom::common::int32 m_num_nodes;
-  axom::common::int32 m_num_faces;
+  axom::mint::IndexType m_num_nodes;
+  axom::mint::IndexType m_num_faces;
 
   std::vector<double> m_nodes;
 

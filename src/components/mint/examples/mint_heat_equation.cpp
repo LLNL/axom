@@ -14,20 +14,19 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+#include "axom_utils/FileUtilities.hpp"   /* for getDirName, makeDirsForPath */
+#include "axom_utils/Utilities.hpp"       /* for abs, processAbort */
+#include "mint/FieldData.hpp"             /* for FieldData */
+#include "mint/FieldVariable.hpp"         /* for FieldVariable */
+#include "mint/UniformMesh.hpp"           /* for UniformMesh */
+#include "mint/vtk_utils.hpp"             /* for write_vtk */
+#include "mint/config.hpp"             /* for IndexType, int64 */
+#include "slic/GenericOutputStream.hpp"   /* for GenericOutputStream */
+#include "slic/slic.hpp"                  /* for slic macros */
 
-#include "axom/Types.hpp"                     // for uint32
-#include "axom_utils/FileUtilities.hpp"       // for getDirName, makeDirsForPath
-#include "axom_utils/Utilities.hpp"           // for abs, processAbort
-#include "mint/FieldData.hpp"                 // for FieldData
-#include "mint/FieldVariable.hpp"             // for FieldVariable
-#include "mint/UniformMesh.hpp"               // for UniformMesh
-#include "mint/vtk_utils.hpp"                 // for write_vtk
-#include "slic/GenericOutputStream.hpp"       // for GenericOutputStream
-#include "slic/slic.hpp"                      // for slic macros
-
-#include <cmath>                              // for std::exp, std::ciel
-#include <sstream>                            // for std::stringstream
-#include <string>                             // for std::string
+#include <cmath>                          /* for std::exp, std::ciel */
+#include <sstream>                        /* for std::stringstream */
+#include <string>                         /* for std::string */
 
 namespace axom
 {
@@ -39,8 +38,7 @@ class Gaussian2D
 public:
   /*!
    * \brief Creates a 2D Guassian with the given amplitude, mean, and
-   *  covariance.
-   *
+   * covariance.
    * \param [in] amplitude the maximum amplitude of the gaussian \f$ a \f$.
    * \param [in] mean the mean of the gaussian. The format is
    *  \f$ \mu_x, \mu_y \f$.
@@ -129,8 +127,8 @@ public:
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
-   * \note the equation we are solving is
-   *  \f$ \frac{\partial U}{\partial t} = \alpha \nabla^2 U \f$.
+   * \note the equation we are solving is \f$ \frac{\partial U}{\partial t}
+                                          = \alpha \nabla^2 U \f$.
    */
   HeatEquationSolver( double h, const double lower_bound[2],
                       const double upper_bound[2] ) :
@@ -148,7 +146,6 @@ public:
 
   /*!
    * \brief Set the uniform mesh upon which to solve.
-   *
    * \param [in] h the spacing of the uniform mesh.
    * \param [in] lower_bound the bottom left corner of the bounding box.
    * \param [in] upper_bound the upper right corner of the bounding box.
@@ -163,23 +160,22 @@ public:
 
   /*!
    * \brief Apply a two dimensional gaussian to the mesh as an initial
-   *  condition.
-   *
+   * condition.
    * \param [in] pulse the pulse to apply.
    */
   void initialize( const Gaussian2D& pulse )
   {
-    double origin[3];
-    m_mesh->getOrigin( origin );
-    int size[3];
+    const double* origin = m_mesh->getOrigin( );
+    IndexType size[3];
     m_mesh->getExtentSize( size );
-    double* t = m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    double* t = m_mesh->getFieldPtr< double >( "temperature",
+                                               mint::NODE_CENTERED );
 
-    int idx = 0;
+    IndexType idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
-    for ( int j = 0 ; j < size[1] ; ++j )
+    for ( IndexType j = 0 ; j < size[1] ; ++j )
     {
-      for ( int i = 0 ; i < size[0] ; ++i )
+      for ( IndexType i = 0 ; i < size[0] ; ++i )
       {
         t[ idx++ ] = pulse.evaluate( node_pos );
         node_pos[0] += m_h;
@@ -200,21 +196,19 @@ public:
   void solve( double alpha, double dt, double t_max, int period,
               const std::string& path )
   {
-    typedef axom::common::uint32 uint32;
-
-    const int num_nodes = m_mesh->getMeshNumberOfNodes();
-    double* new_temp = new double[num_nodes];
-    double* prev_temp =
-      m_mesh->getNodeFieldData()->getField(0)->getDoublePtr();
+    const IndexType num_nodes = m_mesh->getNumberOfNodes();
+    double* new_temp  = new double[num_nodes];
+    double* prev_temp = m_mesh->getFieldPtr< double >( "temperature",
+                                                       mint::NODE_CENTERED );
 
     /* Copy the boundary conditions into new_temp since they won't be copied
        during the time step. */
     copy_boundary( prev_temp, new_temp );
 
-    uint32 cur_dump = 0;
+    int cur_dump = 0;
     double cur_time = 0.0;
-    const uint32 num_cycles = std::ceil( t_max / dt );
-    for (uint32 cycle = 0 ; cycle < num_cycles ; ++cycle )
+    const int num_cycles = std::ceil( t_max / dt );
+    for (int cycle = 0 ; cycle < num_cycles ; ++cycle )
     {
       if ( cycle == num_cycles - 1 )
       {
@@ -255,19 +249,19 @@ private:
    */
   void copy_boundary( const double* prev_temp, double* new_temp )
   {
-    int size[3];
+    IndexType size[3];
     m_mesh->getExtentSize( size );
 
     /* Copy the -y side, which is contiguous. */
-    const int memcpy_size = size[0] * sizeof(double);
-    std:: memcpy( new_temp, prev_temp, memcpy_size );
+    const IndexType memcpy_size = size[0] * sizeof(double);
+    std::memcpy( new_temp, prev_temp, memcpy_size );
 
     /* Copy the +y side, which is contiguous. */
-    const int offset = (size[1] - 1) * size[0];
-    std:: memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
+    const IndexType offset = (size[1] - 1) * size[0];
+    std::memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
-    for ( int idx = size[0] ; idx < offset ; idx += size[0] )
+    for ( IndexType idx = size[0] ; idx < offset ; idx += size[0] )
     {
       new_temp[ idx ] = prev_temp[ idx ];
       new_temp[ idx + size[0] - 1 ] = prev_temp[ idx + size[0] - 1 ];
@@ -289,30 +283,31 @@ private:
   void step( double alpha, double dt, const double* prev_temp,
              double* new_temp )
   {
-    int size[3];
+    IndexType size[3];
     m_mesh->getExtentSize( size );
     const double neighbors_scale = dt * alpha / ( m_h * m_h );
     const double self_scale = 1.0 - (4.0 * neighbors_scale);
 
     /* Since the boundary conditions are fixed we only need to iterate over
        the interior nodes. */
-    const int jp = size[0];
-    const int Nj = size[1] - 1;
-    const int Ni = size[0] - 1;
-    for ( int j = 1 ; j < Nj ; ++j )
+    const IndexType jp = size[0];
+    const IndexType Nj = size[1] - 1;
+    const IndexType Ni = size[0] - 1;
+    for ( IndexType j = 1 ; j < Nj ; ++j )
     {
-      const int j_offset = j * jp;
-      for ( int i = 1 ; i < Ni ; ++i )
+      const IndexType j_offset = j * jp;
+      for ( IndexType i = 1 ; i < Ni ; ++i )
       {
 
-        const int idx = i + j_offset;
-        const int north = idx + jp;
-        const int south = idx - jp;
-        const int east = idx + 1;
-        const int west = idx - 1;
+        const IndexType idx = i + j_offset;
+        const IndexType north = idx + jp;
+        const IndexType south = idx - jp;
+        const IndexType east = idx + 1;
+        const IndexType west = idx - 1;
         const double neighbors_contrib = prev_temp[ north ] +
                                          prev_temp[ east ] +
-                                         prev_temp[ south ] + prev_temp[ west ];
+                                         prev_temp[ south ] +
+                                         prev_temp[ west ];
 
         new_temp[ idx ] = neighbors_scale * neighbors_contrib;
         new_temp[ idx ] += self_scale * prev_temp[ idx ];
@@ -346,7 +341,7 @@ private:
   static UniformMesh* create_mesh( const double h, const double lower_bound[2],
                                    const double upper_bound[2] )
   {
-    int ext[4];
+    int64 ext[4];
     for ( int i = 0 ; i < 2 ; ++i )
     {
       double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
@@ -355,12 +350,7 @@ private:
     }
 
     UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
-    const int num_nodes = mesh->getMeshNumberOfNodes();
-
-    FieldVariable< double >* t =
-      new FieldVariable< double >("temperature", num_nodes);
-    mesh->getNodeFieldData()->addField(t);
-
+    mesh->createField< double >( "temperature", mint::NODE_CENTERED );
     return mesh;
   }
 
@@ -377,12 +367,12 @@ const std::string help_string =
   "\tPrint out this message then exit.\n"                                      \
   "-p -path PATH\n"                                                            \
   "\tThe base bath of the dump files. The files will be written to\n"          \
-  "path_#.vtk where # is the dump number.\n"                                   \
+  "\tpath_#.vtk where # is the dump number.\n"                                 \
   "-s, -spacing FLOAT\n"                                                       \
   "\tSet the mesh spacing, must be greater than 0.\n."                         \
-  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT\n"                    \
-  "\tSet the bounding box for the mesh. Format is x1 y1 x2 y2 where x1 < x2\n" \
-  "\tand y1 < y2.\n"                                                           \
+  "-b FLOAT FLOAT FLOAT FLOAT, -bounds FLOAT FLOAT FLOAT FLOAT\n"              \
+  "\tSet the bounding box for the mesh. Format is lower_x lower_y upper_x\n"   \
+  "\tupper_y.\n"                                                               \
   "-a FLOAT, -amplitude FLOAT\n"                                               \
   "\tSet the amplitude of the gaussian pulse.\n"                               \
   "-m FLOAT FLOAT, -mean FLOAT FLOAT\n"                                        \

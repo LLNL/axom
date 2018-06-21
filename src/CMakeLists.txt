@@ -53,6 +53,11 @@ set(ENABLE_COPY_HEADERS ON CACHE BOOL "")
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 ################################
+# built-in cmake modules
+################################
+include(CMakeDependentOption)
+
+################################
 # Include standard build system logic and options
 ################################
 include(cmake/CMakeBasics.cmake)

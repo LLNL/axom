@@ -15,109 +15,295 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "FieldData.hpp"
+#include "axom/config.hpp"     // for axom compile-time definitions
+#include "axom/Types.hpp"      // for AXOM_NULLPTR
 
-// axom includes
-#include "mint/Field.hpp"
-#include "slic/slic.hpp"
+#include "mint/config.hpp"     // for mint compile-time type definitions
+#include "mint/FieldData.hpp"
 
+#ifdef MINT_USE_SIDRE
+#include "sidre/sidre.hpp"  // for sidre::Group, sidre::View
+#endif
 
 namespace axom
 {
 namespace mint
 {
 
-FieldData::FieldData()
-{}
-
 //------------------------------------------------------------------------------
-FieldData::~FieldData()
-{
-  this->clear();
-}
-
+// INTERNAL HELPER METHODS
 //------------------------------------------------------------------------------
-bool FieldData::hasField( const std::string& name ) const
+namespace internal
 {
-  bool status = false;
 
-  if ( m_container.find( name ) != m_container.end() )
+#ifdef MINT_USE_SIDRE
+mint::Field* getFieldFromView( const std::string& name, sidre::View* view )
+{
+  SLIC_ASSERT( view != AXOM_NULLPTR );
+  SLIC_ASSERT( !view->isEmpty() );
+
+  using int32 = axom::common::int32;
+  using int64 = axom::common::int64;
+
+  mint::Field* f = AXOM_NULLPTR;
+
+  switch( view->getTypeID() )
   {
-    status = true;
-  }
+  case sidre::INT32_ID:
+    f = new mint::FieldVariable< int32 >( name, view );
+    break;
+  case sidre::INT64_ID:
+    f = new mint::FieldVariable< int64 >( name, view );
+    break;
+  case sidre::FLOAT64_ID:
+    f = new mint::FieldVariable< double >( name, view );
+    break;
+  case sidre::FLOAT32_ID:
+    f= new mint::FieldVariable< float >( name, view );
+    break;
+  default:
+    SLIC_ERROR( "Encountered unsupported type [" << view->getTypeID() << "]" );
+  } // END switch
 
-  return status;
+  SLIC_ERROR_IF( f == AXOM_NULLPTR, "null field!" );
+  return ( f );
 }
 
 //------------------------------------------------------------------------------
-void FieldData::addField( Field* f )
+void removeFromSidre( sidre::Group* grp, const std::string& name )
 {
-  SLIC_ASSERT(  f != AXOM_NULLPTR );
-  SLIC_ASSERT(  this->hasField( f->getName() )==false );
+  SLIC_ASSERT( grp != AXOM_NULLPTR );
+  SLIC_ASSERT( grp->hasChildGroup( name ) );
 
-  m_fields.push_back( f->getName() );
-  m_container[ f->getName() ] = f;
+  grp->destroyGroup( name );
+}
 
-  SLIC_ASSERT( m_fields.size() == m_container.size() );
+#endif
+
 }
 
 //------------------------------------------------------------------------------
-int FieldData::getNumberOfFields() const
+//  FIELDDATA IMPLEMENTATION
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+FieldData::FieldData( int association ) :
+  m_association( association ),
+  m_resize_ratio( Array< double >::DEFAULT_RESIZE_RATIO ),
+  m_fields()
 {
-  SLIC_ASSERT( m_fields.size() == m_container.size() );
-  return static_cast< int >( m_fields.size() );
+#ifdef MINT_USE_SIDRE
+  m_fields_group = AXOM_NULLPTR;
+#endif
+
+  SLIC_ERROR_IF(
+    (m_association < 0) || (m_association >= NUM_FIELD_ASSOCIATIONS),
+    "Invalid field association!" );
 }
 
 //------------------------------------------------------------------------------
-Field* FieldData::getField( int i )
+#ifdef MINT_USE_SIDRE
+FieldData::FieldData( int association, sidre::Group* fields_group,
+                      const std::string& topo ) :
+  m_association( association ),
+  m_resize_ratio( Array< double >::DEFAULT_RESIZE_RATIO ),
+  m_fields(),
+  m_fields_group( fields_group ),
+  m_topology( topo )
 {
-  SLIC_ASSERT( i >= 0 && i < this->getNumberOfFields() );
+  SLIC_ERROR_IF(
+    (m_association < 0) || (m_association >= NUM_FIELD_ASSOCIATIONS),
+    "Invalid field association!" );
 
-  if ( i < 0 || i >= this->getNumberOfFields() )
+  SLIC_ERROR_IF( m_fields_group==AXOM_NULLPTR, "NULL sidre group!" );
+
+  size_t numGroups = m_fields_group->getNumGroups( );
+  for ( size_t i=0 ; i < numGroups ; ++i )
   {
-    return AXOM_NULLPTR;
-  }
+    sidre::Group* gp = m_fields_group->getGroup( i );
+    SLIC_ERROR_IF( gp == AXOM_NULLPTR, "Encountered a NULL group" );
 
-  return this->getField( m_fields[ i ] );
-}
+    SLIC_ERROR_IF( !gp->hasChildView( "topology" ),
+                   "field [" << gp->getName() << "] does not conform to blueprint!" <<
+                   " Missing 'topology' view" );
+    SLIC_ERROR_IF( !gp->getView( "topology" )->isString(),
+                   "topology view needs to hold a string." );
+    if ( gp->getView( "topology" )->getString() != m_topology )
+    {
+      continue;
+    }
 
-//------------------------------------------------------------------------------
-const Field* FieldData::getField( int i ) const
-{
-  return const_cast< const Field* >(
-    const_cast< FieldData* >( this )->getField( i ) );
-}
+    SLIC_ERROR_IF( !gp->hasChildView( "association" ),
+                   "field [" << gp->getName() << "] does not conform to blueprint!" <<
+                   " Missing 'association' view" );
+    SLIC_ERROR_IF( !gp->getView( "association" )->isString(),
+                   "association view needs to hold a string." );
 
-//------------------------------------------------------------------------------
-Field* FieldData::getField( const std::string& name )
-{
-  SLIC_ASSERT( this->hasField( name ) );
-  return m_container[ name ];
-}
+    SLIC_ERROR_IF( !gp->hasChildView( "volume_dependent" ),
+                   "field [" << gp->getName() << "] does not conform to blueprint!" <<
+                   " Missing 'volume_dependent' view" );
+    SLIC_ERROR_IF( !gp->getView( "volume_dependent" )->isString(),
+                   "volume_dependent view needs to hold a string." );
 
-//------------------------------------------------------------------------------
-const Field* FieldData::getField( const std::string& name ) const
-{
-  return const_cast< const Field* >(
-    const_cast< FieldData* >( this )->getField( name ) );
+    SLIC_ERROR_IF( !gp->hasChildView( "values" ),
+                   "field [" << gp->getName() << "] does not conform to blueprint!" <<
+                   " Missing 'values' view" );
+
+    // NOTE: currently the blue-print supports
+    const char* assoc    = gp->getView( "association" )->getString( );
+    const bool isVertex  = (strcmp( assoc, "vertex" ) == 0);
+    const bool isElement = (strcmp( assoc, "element" ) == 0);
+    SLIC_ERROR_IF( (!isVertex && !isElement),
+                   "field [" << gp->getName() << "] has invalid association!" <<
+                   " => association= " << assoc );
+
+    int centering = ( isVertex ) ? NODE_CENTERED : CELL_CENTERED;
+
+    IndexType num_tuples = -1;
+    if ( centering == m_association )
+    {
+      const std::string name = gp->getName();
+      SLIC_ERROR_IF( hasField( name ), "Encountered a duplicate field!" );
+
+      sidre::View* view = gp->getView( "values" );
+      Field* field = internal::getFieldFromView( name, view );
+      if ( num_tuples == -1 )
+      {
+        num_tuples = field->getNumTuples();
+      }
+
+      SLIC_ERROR_IF(
+        field->getNumTuples() != num_tuples,
+        "Inconsistent number of tuples" );
+
+      m_fields[ name ] = field;
+    } // END if centering
+  } // END for all fields
 }
+#endif
 
 //------------------------------------------------------------------------------
 void FieldData::clear()
 {
-  std::map< std::string, Field* >::iterator iter = m_container.begin();
-  for ( ; iter != m_container.end() ; ++iter )
+  const int numFields = getNumFields();
+  for ( int i = 0 ; i < numFields ; ++i )
   {
-    delete iter->second;
-    iter->second = AXOM_NULLPTR;
+    delete getField( i );
   }
-  m_container.clear();
+
+  m_fields.clear( );
 }
 
 //------------------------------------------------------------------------------
-bool FieldData::empty() const
+void FieldData::resize( IndexType newNumTuples )
 {
-  return( m_container.empty( ) );
+  const IndexType numFields = getNumFields();
+  for ( int i = 0 ; i < numFields ; ++i )
+  {
+    getField( i )->resize( newNumTuples );
+  }
+  ;
+}
+
+//------------------------------------------------------------------------------
+void FieldData::emplace( IndexType pos, IndexType num_tuples )
+{
+  const IndexType numFields = getNumFields();
+  for ( int i = 0 ; i < numFields ; ++i )
+  {
+    getField( i )->emplace( pos, num_tuples );
+  }
+  ;
+}
+
+//------------------------------------------------------------------------------
+void FieldData::reserve( IndexType newCapacity )
+{
+  const IndexType numFields = getNumFields();
+  for ( int i = 0 ; i < numFields ; ++i )
+  {
+    getField( i )->reserve( newCapacity );
+  }
+  ;
+}
+
+//------------------------------------------------------------------------------
+void FieldData::shrink()
+{
+  const IndexType numFields = getNumFields();
+  for ( int i = 0 ; i < numFields ; ++i )
+  {
+    getField( i )->shrink();
+  }
+  ;
+}
+
+//------------------------------------------------------------------------------
+void FieldData::setResizeRatio( double ratio )
+{
+  m_resize_ratio = ratio;
+  const IndexType numFields = getNumFields();
+  for ( int i = 0 ; i < numFields ; ++i )
+  {
+    getField( i )->setResizeRatio( ratio );
+  }
+  ;
+}
+
+//------------------------------------------------------------------------------
+bool FieldData::checkConsistency( IndexType num_tuples,
+                                  IndexType capacity ) const
+{
+  const int numFields = getNumFields();
+  if ( numFields == 0 )
+  {
+    return true;
+  }
+
+  bool tuple_status = true;
+  bool capacity_status = true;
+  bool resize_status = true;
+  for ( int i = 1 ; i < numFields ; ++i )
+  {
+    const Field* f = getField( i );
+    tuple_status &= f->getNumTuples() == num_tuples;
+    capacity_status &= f->getCapacity() >= f->getNumTuples();
+    if ( !f->isExternal() )
+    {
+      capacity_status &= f->getCapacity() == capacity;
+      resize_status &= f->getResizeRatio() == m_resize_ratio;
+    }
+  }
+
+  SLIC_WARNING_IF( !tuple_status, "Inconsistent number of tuples." );
+  SLIC_WARNING_IF( !capacity, "Inconsistent capacity." );
+  SLIC_WARNING_IF( !resize_status, "Inconsistent resize ratio." );
+  return tuple_status && capacity_status && resize_status;
+}
+
+//------------------------------------------------------------------------------
+void FieldData::removeField( const std::string& name )
+{
+  mint::Field* f = getField( name );
+  SLIC_ASSERT( f != AXOM_NULLPTR );
+  m_fields.erase( name );
+  delete f;
+
+#ifdef MINT_USE_SIDRE
+  if ( hasSidreGroup() && m_fields_group->hasChildGroup(name) )
+  {
+    internal::removeFromSidre( m_fields_group, name );
+    SLIC_ASSERT( !m_fields_group->hasChildGroup( name ) );
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+void FieldData::removeField( int i )
+{
+  mint::Field* f = getField( i );
+  removeField( f->getName() );
+  f = AXOM_NULLPTR;
 }
 
 } /* namespace mint */
