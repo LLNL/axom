@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   is used extensively for Delaunay triangulations.
 
 ### Changed
+- Quest's STL reader now returns a status code, inidicating whether reading
+  the STL file was successful. Also, the reader now leverages the improved
+  Mint API to reserve storage for mesh and avoid re-allocations when reading
+  the STL mesh data into the Mint mesh.
 - Refactored and cleaned up Primal's Sphere class.
 - Refactored Mint and removed all STL usage in preparation for GPUs.
 

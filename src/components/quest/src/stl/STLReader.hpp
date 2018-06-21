@@ -15,15 +15,18 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef STLREADER_HPP_
-#define STLREADER_HPP_
+#ifndef QUEST_STLREADER_HPP_
+#define QUEST_STLREADER_HPP_
 
-#include <string>
-#include <vector>
+// Axom includes
+#include "axom/Macros.hpp"  // for axom macros
 
-#include "axom/Macros.hpp"
-#include "mint/config.hpp"
+// Mint includes
 #include "mint/UnstructuredMesh.hpp"
+
+// C/C++ includes
+#include <string>  // for std::string
+#include <vector>  // for std::vector
 
 namespace axom
 {
@@ -67,16 +70,16 @@ public:
   /*!
    * \brief Reads in the surface mesh from an STL file.
    * \pre m_fileName != ""
+   * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual void read();
+  virtual int read();
 
   /*!
    * \brief Stores the STL data in the supplied unstructured mesh object.
    * \param [in,out] mesh pointer to the unstructured mesh.
    * \pre mesh != AXOM_NULLPTR.
    */
-  void getMesh( axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
-
+  void getMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
 
 private:
   /*!
@@ -96,13 +99,13 @@ private:
    * \brief Reads an ascii-encoded STL file into memory
    * \note The filename should be set with STLReader::setFileName()
    */
-  void readAsciiSTL();
+  int readAsciiSTL();
 
   /*!
    * \brief Reads a binary-encoded STL file into memory
    * \note The filename should be set with STLReader::setFileName()
    */
-  void readBinarySTL();
+  int readBinarySTL();
 
 protected:
   std::string m_fileName;
@@ -121,4 +124,4 @@ private:
 } // end namespace quest
 } // end namespace axom
 
-#endif /* STLREADER_HPP_ */
+#endif /* QUEST_STLREADER_HPP_ */

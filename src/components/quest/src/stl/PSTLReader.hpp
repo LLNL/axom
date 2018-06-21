@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef PSTLREADER_HPP_
-#define PSTLREADER_HPP_
+#ifndef QUEST_PSTLREADER_HPP_
+#define QUEST_PSTLREADER_HPP_
 
 #include "axom/Macros.hpp"
 #include "quest/STLReader.hpp" // base class
@@ -47,8 +47,9 @@ public:
    * \brief Reads in an STL file to all ranks in the associated communicator.
    * \note Rank 0 reads in the STL mesh file and broadcasts the data the rest
    *  of the ranks.
+   * \return status set to zero on success; set to a non-zero value otherwise.
    */
-  virtual void read();
+  virtual int read() final override;
 
 private:
 
@@ -68,4 +69,4 @@ private:
 } // end namespace quest
 } // end namespace axom
 
-#endif /* PSTLREADER_HPP_ */
+#endif /* QUEST_PSTLREADER_HPP_ */
