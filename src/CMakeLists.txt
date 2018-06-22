@@ -95,4 +95,3 @@ endif()
 ################################s
 include(cmake/AxomConfig.cmake)
 
-install(FILES docs/LICENSE DESTINATION docs)

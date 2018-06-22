@@ -169,7 +169,7 @@ group access by sending an email request to 'axom-dev@llnl.gov'.
 Axom Copyright and License Information
 ======================================================
 
-Please see our `license <../../../LICENSE>`_.
+Please see the :ref:`axom-license`.
 
 Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
