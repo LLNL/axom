@@ -89,7 +89,7 @@ struct Robey_data
     //Making data for SLAM cell to mat relation
     Volfrac_bool.resize(ncells*nmats, false);
     cellmatcount = 0;
-    for (int i = 0; i < Volfrac.size(); i++) {
+    for (unsigned int i = 0; i < Volfrac.size(); i++) {
       if (Volfrac[i] > 0) {
         Volfrac_bool[i] = true;
         cellmatcount++;
@@ -703,7 +703,7 @@ void test_code() {
   std::vector<double> cellmat_arr;
   cellmat_arr.resize( (use_sparse ? nfilled : nmats * ncells) *ncomp);
   double x_sum = 0;
-  for (int i = 0; i < cellmat_arr.size()/ncomp; i++) {
+  for (unsigned int i = 0; i < cellmat_arr.size()/ncomp; i++) {
     if (use_sparse || cellMatRel[i]) {
       for (int s = 0; s < ncomp; ++s) {
         cellmat_arr[i*ncomp + s] = (double)i * 1.1 + s * 0.001;
@@ -731,9 +731,12 @@ void test_code() {
     MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
     for (int i = 0; i < mm.getNumberOfCells(); i++) {
       assert(ncomp == map.stride());
+      assert(ncomp == map.numComp());
       for (int s = 0; s < map.stride(); s++)
       {
-        sum += map(i, s);                               //<----
+        double val = map(i, s);                               //<----
+        //assert(val == map[ i*map.numComp() + s] );    //1d bracket access
+        sum += val;
       }
     }
   }
@@ -743,22 +746,24 @@ void test_code() {
   sum = 0;
   start_timer();
   {
-    MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array"); //get1dField
-    for (int i = 0; i < map.set1Size(); i++)
+    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    for (int i = 0; i < map2d.firstSetSize(); i++)
     {
-      MultiMat::IdSet rel_set = map.getSubset(i);
-      MultiMat::SubField<double>& submap = map[i];
+      MultiMat::IdSet rel_set = map2d.indexSet(i);
+      MultiMat::SubField<double>& submap = map2d(i);
       assert(rel_set.size() == submap.size());
-      for (int j = 0; j < submap.size(); j++)
+      for (int k = 0; k < submap.size(); k++)
       {
-        int idx = submap.index(j);  //mat id
-        int idx2 = rel_set[j]; //another way to get mat id
+        int idx = submap.index(k);  //mat id
+        int idx2 = rel_set[k]; //another way to get mat id
         assert(idx == idx2); 
 
-        for (int s = 0; s < map.stride(); ++s) {
-          sum += submap.value(j,s);        //<----------
+        for (int c = 0; c < submap.numComp(); ++c) {
+          double val = submap.value(k, c);                 //<----------
+          assert( val == submap(k,c) );                    //operator () access
+          assert( val == submap[ k*submap.stride()+c ] );  //1d bracket access
+          sum += val;         
         }
-        //sum += submap[j];            //another way to get value
       }
     }
   }
@@ -775,9 +780,11 @@ void test_code() {
     
     for (int i = 0; i < mm.getNumberOfCells(); i++) {
       for (int m = 0; m < mm.getNumberOfMaterials(); m++) {
-        for (int s = 0; s < map.stride(); ++s) {
-          double* valptr = map.findValue(i, m, s);
-          if (valptr) sum += *valptr;           //<---- contains a hidden for-loop for sparse layouts
+        for (int c = 0; c < map.numComp(); ++c) 
+        {
+          double* valptr = map.findValue(i, m, c); //<---- contains a hidden for-loop for sparse layouts
+          if (valptr) 
+            sum += *valptr;           
         }
       }
     }
@@ -793,7 +800,11 @@ void test_code() {
     sum = 0;
     start_timer();
     {
-      MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
+      //Note you can achieve the same thing by using a Map pointer to point to a bivariateMap object
+      //MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
+
+      MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
+
       for (int i = 0; i < mm.getNumberOfCells(); i++)
       {
         MultiMat::IdSet setOfMaterialsInThisCell = mm.getMatInCell(i); //the materials (by id) in this cell
@@ -802,8 +813,8 @@ void test_code() {
         for (int j = 0; j < indexSet.size(); j++)
         {
           int mat_id = setOfMaterialsInThisCell.at(j);
-          for (int s = 0; s < map.stride(); ++s) {
-            double val = map[indexSet.at(j)*map.stride() + s];   //<-----
+          for (int s = 0; s < map.numComp(); ++s) {
+            double val = map[indexSet.at(j)*map.numComp() + s];   //<-----
             sum += val;
           }
         }
@@ -832,13 +843,13 @@ void test_code() {
   sum = 0;
   start_timer();
   {
-    MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
-    for (int i = 0; i < map.set1Size(); i++) 
+    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    for (int i = 0; i < map2d.firstSetSize(); i++) 
     {
-      MultiMat::SubField<double>& submap = map[i];
+      MultiMat::SubField<double>& submap = map2d(i);
       for (auto iter = submap.begin(); iter != submap.end(); iter++) 
       {
-        for (int s = 0; s < map.stride(); ++s)
+        for (int s = 0; s < map2d.stride(); ++s)
         {
           sum += iter(s);                  //<----
           //assert(*iter, iter.value());   //another way to get the value
@@ -857,7 +868,7 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
-    for (int i = 0; i < map.set1Size(); i++)
+    for (int i = 0; i < map.firstSetSize(); i++)
     {
       for (auto iter = map.begin(i); iter != map.end(i); iter++)
       {
