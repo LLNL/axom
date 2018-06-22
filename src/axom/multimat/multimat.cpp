@@ -116,7 +116,7 @@ MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
   }
   else if (m_sparcityLayout == SparcityLayout::DENSE) {
     //return m_cellMatProdSet.getRow(c);
-    int size2 = m_cellMatProdSet.set2Size();
+    int size2 = m_cellMatProdSet.secondSetSize();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }
   else assert(false);

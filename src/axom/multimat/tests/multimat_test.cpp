@@ -165,7 +165,7 @@ TEST(multimat, construct_multimat_1_array)
   const int num_cells = 20;
   const int num_mats = 10;
   const int stride_val = 4;
-  MM_test_data<double> data(20, 10, stride_val);
+  MM_test_data<double> data(num_cells, num_mats, stride_val);
 
   std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, DataLayout::MAT_CENTRIC };
   std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, SparcityLayout::SPARSE };

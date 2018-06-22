@@ -62,7 +62,7 @@ private:
   using BivariateMapType = slam::BivariateMap<T, StrideType>;
 
   template<typename T>
-  using SubsetMap = slam::SubsetMap<T, StrideType>;
+  using SubMap = slam::SubMap<T, StrideType>;
 
 /** Public type def **/
 public:
@@ -71,7 +71,7 @@ public:
   template <typename T>
   using Field2D = BivariateMapType<T>;
   template <typename T>
-  using SubField = SubsetMap<T>;
+  using SubField = SubMap<T>;
   using IndexSet = RangeSetType;
   using IdSet = OrderedSetType;
   
@@ -203,7 +203,7 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
 template<typename T>
 MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
 {
-  for (int i = 0; i < m_arrNameVec.size(); i++)
+  for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
   {
     if (m_arrNameVec[i] == field_name)
     {
@@ -222,7 +222,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
 template<typename T>
 inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
 {
-  for (int i = 0; i < m_arrNameVec.size(); i++)
+  for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
   {
     if (m_arrNameVec[i] == field_name)
     {
@@ -242,7 +242,7 @@ void MultiMat::convertToSparse_helper(int map_i)
   int idx = 0;
   for (int i = 0; i < m_cellMatRel.fromSetSize(); ++i) {
     auto relset = m_cellMatRel[i];
-    auto submap = old_ptr[i];
+    auto submap = old_ptr(i);
     for (int j = 0; j < relset.size(); ++j) {
       for (int s = 0; s < stride; ++s) {
         arr_data[idx++] = submap[relset[j]*stride + s];
