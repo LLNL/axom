@@ -12,9 +12,9 @@
 .. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
-****************************
-Axom (a.k.a. The CS Toolkit)
-****************************
+****
+Axom
+****
 
 .. note:: We recently changed our project name from "The CS Toolkit" to 
           "Axom". As a result, you may hear either term used. However, they
@@ -44,7 +44,8 @@ The main drivers of the Axom project are to:
 
   *  Provide the CS infrastructure foundation of the ECP/ATDM multi-physics application at LLNL
   *  Support current ASC and other production applications and as they continue to evolve
-  *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology transfer from research efforts into production applications
+  *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology
+     transfer from research efforts into production applications
 
 
 =====================
@@ -169,8 +170,7 @@ group access by sending an email request to 'axom-dev@llnl.gov'.
 Axom Copyright and License Information
 ======================================================
 
-Please see our `license <../../../LICENSE>`_ and accompanying
-`notice <../../../NOTICE>`_.
+Please see the :ref:`axom-license`.
 
 Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
