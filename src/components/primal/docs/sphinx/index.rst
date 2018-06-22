@@ -28,7 +28,10 @@ tuple of numbers and provides arithmetic and output operators.  Classes in Prima
 are templated on coordinate type (double, float, etc.) and dimension.  The
 primitives do not inherit from a common base class.  This was a design choice
 in favor of simplicity and performance.  Geometric primitives each have equality
-and inequality operators and an output left-shift operator.  
+and inequality operators and an output left-shift operator.
+
+Primal also includes functions to merge two BoundingBox or two OrientedBoundingBox
+objects and to create new OrientedBoundingBox objects from a list of points.
 
 
 Operations
@@ -43,13 +46,7 @@ Primal implements geometric operations with functions, listed below:
 - ``clip`` finds the polygon resulting from a bounding box clipping a triangle.
 - ``compute_bounding_box`` finds the bounding box for a given primitive.
 - ``intersect`` predicate tests if two primitives intersect.  Some of the combinations
-  also indicate the point of intersection of a 1D and a 2D primitive.
-
-File elsewhere:
-- Morton functions (list with Morton spatial index)
-- Rectangular lattice functions (list below with class)
-- merge_boxes (list with bounding box and OBB objects)
-- compute_oriented_bounding_box (list with OBB object)
+  also indicate the point of intersection of a 1D primitive with another primitive.
 
 Most use cases have low dimension, usually 2 or 3.  Dimensionality has been
 generalized to support other values where it does not interfere with the common case, 
@@ -61,20 +58,30 @@ Spatial Indexes
 
 There are two spatial indexes provided by Primal, represented by the BVHTree and
 UniformGrid classes.  These are supported by the RectangularLattice class and
-several classes implementing a Morton index.
+construction functions, and several classes implementing a Morton index.
 
-The `bounding volume hierarchy tree <http://foo.boo.com>`_ is implemented by BVHTree.
-A code will add objects with associated bounding boxes to the BVHTree, then call
-the ``build()`` method.  This method hierarchically subdivides a region of space
-until the smallest subdivisions (leaf buckets) intersect no more than 25 objects.
+The `bounding volume hierarchy tree <https://en.wikipedia.org/wiki/Bounding_volume_hierarchy>`_ 
+is implemented by BVHTree.  A code will add objects with associated bounding
+boxes to the BVHTree, then call the ``build()`` method.  This method hierarchically
+subdivides a region of space until the smallest subdivisions (leaf buckets)
+contain no more than a certain number of objects (default 25).  Parent buckets
+entirely contain their child buckets, and child buckets may overlap.
+
+This spatial index is often used in ray casting or collision detection, where a
+probe object such as a particle or ray can potentially hit anything in the
+region of interest.  The main idea is that testing for probe intersection
+with a bucket (bounding box) is cheap, and will eliminate the need to check against 
+anything in that bounding box.
 
 The `Verlet list <https://en.wikipedia.org/wiki/Cell_lists>`_ or cell list is
 implemented by UniformGrid.  As with BVHTree, a code adds objects with bounding
 boxes to the UniformGrid, then calls ``build()``.  Unlike BVHTree, UniformGrid
 divides the region space into one layer of non-overlapping bins, all of equal size.
 
-Both BVHTree and UniformGrid allow a code to get the list of bins that intersect a query
-bounding box, then perform an action on each candidate object from the list of bins.
+The cell list is used where each object will interact with its neighbors.  Bin size
+should be chosen to be just larger than the range of interaction.  This way, when
+calculating interactions with a particular object, an application
+can rule out all objects that do not fall into the object's bin or its immediate neighbors.
 
 Two helper classes are used by the spatial indexes and are also available for use by codes.
 The `Morton index <https://en.wikipedia.org/wiki/Z-order_curve>`_, or Z-order curve, is
