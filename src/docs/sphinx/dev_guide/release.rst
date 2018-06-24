@@ -18,8 +18,17 @@
 Axom Release Process
 *******************************************
 
-n the :ref:`gitflow-label` section, we noted that the master branch
-records the official release history of the project. Specifically,
+The Axom team uses its collective professional judgement to decide when
+the code is ready for a release. Most often, a release is done when some
+set of functionaly is sufficiently complete to make available to users or
+when some other development goal is reached. This section describes how 
+Axom releases are done. The process is fairly informal; however, it should 
+be adequate to ensure that the software is in a reasonably robust and stable 
+state when a release is done. In particular, we follow this process to avoid
+simple oversights and issues that we do not want to pass on to users.
+
+In the :ref:`gitflow-label` section, we noted that the **master branch
+records the official release history of the project**. Specifically,
 whenever, the master branch is changed, it is tagged with a new
 version number. We use a git 'lightweight tag' for this purpose. Such
 a tag is essentially a pointer to a specific commit on the branch.
