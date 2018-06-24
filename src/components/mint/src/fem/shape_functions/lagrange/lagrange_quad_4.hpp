@@ -19,7 +19,7 @@
 #define MINT_QUAD4_HPP_
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/FEBasisTypes.hpp"
 #include "mint/ShapeFunction.hpp"
 
@@ -50,11 +50,12 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_QUAD > : public ShapeFunction< Lagrange< MINT_QUAD > >
+class Lagrange< mint::QUAD > :
+  public ShapeFunction< Lagrange< mint::QUAD > >
 {
 public:
 
-  static int getCellType() { return MINT_QUAD; }
+  static CellType getCellType() { return mint::QUAD; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

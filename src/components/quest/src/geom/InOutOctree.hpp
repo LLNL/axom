@@ -52,10 +52,12 @@
 
 #include "quest/SpatialOctree.hpp"
 
+#include "mint/config.hpp"
 #include "mint/Mesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
+#include "mint/Field.hpp"
 #include "mint/vtk_utils.hpp"
 
 
@@ -350,8 +352,8 @@ class DynamicGrayBlockData
 public:
   enum { NO_VERTEX = -1 };
 
-  typedef int VertexIndex;
-  typedef int TriangleIndex;
+  typedef mint::IndexType VertexIndex;
+  typedef mint::IndexType TriangleIndex;
 
   typedef std::vector<TriangleIndex> TriangleList;
 
@@ -364,8 +366,7 @@ public:
   /**
    * \brief Constructor for an InOutLeafData
    *
-   * \param vInd The index of a vertex (optional; default is to not set a
-   * vertex)
+   * \param vInd The index of a vertex (optional; default is to not set a vertex)
    */
   DynamicGrayBlockData(VertexIndex vInd, bool isLeaf)
     : m_vertIndex(vInd), m_isLeaf(isLeaf) {}
@@ -570,9 +571,9 @@ private:
   class MeshWrapper
   {
 public:
-    typedef int VertexIndex;
-    typedef int TriangleIndex;
-    typedef axom::mint::Mesh SurfaceMesh;
+    typedef mint::IndexType VertexIndex;
+    typedef mint::IndexType TriangleIndex;
+    typedef mint::Mesh SurfaceMesh;
 
     /** \brief A vertex index to indicate that there is no associated vertex */
     static const VertexIndex NO_VERTEX = -1;
@@ -634,7 +635,7 @@ public:
       if(m_meshWasReindexed)
         return m_vertexSet.size();
       else
-        return m_surfaceMesh->getMeshNumberOfNodes();
+        return m_surfaceMesh->getNumberOfNodes();
     }
 
     /** Accessor for the number of elements in the wrapped surface mesh */
@@ -643,7 +644,7 @@ public:
       if(m_meshWasReindexed)
         return m_elementSet.size();
       else
-        return m_surfaceMesh->getMeshNumberOfCells();
+        return m_surfaceMesh->getNumberOfCells();
     }
 
     /** Predicate to determine if the wrapped surface mesh has been reindexed */
@@ -663,8 +664,11 @@ public:
       }
       else
       {
+        SLIC_ASSERT( m_surfaceMesh->getDimension()==SpacePt::dimension() );
+
         SpacePt pt;
-        m_surfaceMesh->getMeshNode(idx, pt.data() );
+        m_surfaceMesh->getNode( idx, pt.data() );
+
         return pt;
       }
     }
@@ -856,11 +860,12 @@ public:
 
       m_tv_data.clear();
       m_tv_data.reserve(NUM_TRI_VERTS * numOrigTris);
-      for(int i=0 ; i< numOrigTris ; ++i)
+      for(mint::IndexType i=0 ; i< numOrigTris ; ++i)
       {
         // Grab relation from mesh
-        int vertIds[NUM_TRI_VERTS];
-        m_surfaceMesh->getMeshCell(i, vertIds);
+        using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
+        mint::IndexType* vertIds =
+            static_cast< UMesh* >(m_surfaceMesh)->getCell( i );
 
         // Remap the vertex IDs
         for(int j=0 ; j< NUM_TRI_VERTS ; ++j)
@@ -901,21 +906,22 @@ public:
         m_surfaceMesh = AXOM_NULLPTR;
       }
 
-      typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
-      TriangleMesh* triMesh = new TriangleMesh(3);
+      typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+      UMesh * triMesh =
+          new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size() );
 
       // Add vertices to the mesh (i.e. vertex positions)
-      for(int i=0 ; i< m_vertexSet.size() ; ++i)
+      for(int i=0; i< m_vertexSet.size(); ++i)
       {
         const SpacePt& pt = vertexPosition(i);
-        triMesh->insertNode(pt[0], pt[1], pt[2]);
+        triMesh->appendNode(pt[0], pt[1], pt[2]);
       }
 
       // Add triangles to the mesh (i.e. boundary vertices)
-      for(int i=0 ; i< m_elementSet.size() ; ++i)
+      for(int i=0; i< m_elementSet.size(); ++i)
       {
-        const TriangleIndex* tv = &triangleVertexIndices(i)[0];
-        triMesh->insertCell(tv, MINT_TRIANGLE, NUM_TRI_VERTS);
+        const TriangleIndex * tv = &triangleVertexIndices(i)[0];
+        triMesh->appendCell(tv);
       }
 
       m_surfaceMesh = triMesh;
@@ -940,8 +946,8 @@ public:
 
   typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
 
-  typedef typename MeshWrapper::VertexIndex VertexIndex;
-  typedef typename MeshWrapper::TriangleIndex TriangleIndex;
+  typedef typename mint::IndexType VertexIndex;
+  typedef typename mint::IndexType TriangleIndex;
   typedef axom::slam::FieldRegistry<VertexIndex>  IndexRegistry;
 
   typedef typename MeshWrapper::SpaceTriangle SpaceTriangle;
@@ -2336,7 +2342,7 @@ public:
   typedef axom::slam::Map<int> LeafIntMap;
   typedef axom::slam::Map<GridPt> LeafGridPtMap;
 
-  typedef axom::mint::UnstructuredMesh< MINT_MIXED_CELL > DebugMesh;
+  typedef mint::UnstructuredMesh< mint::MIXED_SHAPE > DebugMesh;
 
   typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
 
@@ -2602,8 +2608,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3);
-
+    DebugMesh* debugMesh= new DebugMesh(3, 8 * blocks.size());
     const bool hasTriangles =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED);
     const bool hasColors =
@@ -2662,13 +2667,13 @@ private:
 
 
     // Add the fields to the mint mesh
-    VertexIndex* vertID = addIntField(debugMesh, "vertID", leafSet.size() );
-    VertexIndex* lLevel = addIntField(debugMesh, "level", leafSet.size() );
+    VertexIndex* vertID = addIntField(debugMesh, "vertID" );
+    VertexIndex* lLevel = addIntField(debugMesh, "level" );
 
     int* blockCoord[3];
-    blockCoord[0] = addIntField(debugMesh, "block_x", leafSet.size() );
-    blockCoord[1] = addIntField(debugMesh, "block_y", leafSet.size() );
-    blockCoord[2] = addIntField(debugMesh, "block_z", leafSet.size() );
+    blockCoord[0] = addIntField(debugMesh, "block_x" );
+    blockCoord[1] = addIntField(debugMesh, "block_y" );
+    blockCoord[2] = addIntField(debugMesh, "block_z" );
 
     for ( int i=0 ; i < leafSet.size() ; ++i )
     {
@@ -2682,10 +2687,8 @@ private:
 
     if(hasTriangles)
     {
-      VertexIndex* uniqVertID =
-        addIntField(debugMesh, "uniqVertID", leafSet.size() );
-      int* triCount =
-        addIntField(debugMesh, "triCount", leafSet.size() );
+      VertexIndex* uniqVertID = addIntField(debugMesh, "uniqVertID" );
+      int* triCount = addIntField(debugMesh, "triCount" );
 
       for ( int i=0 ; i < leafSet.size() ; ++i )
       {
@@ -2696,7 +2699,7 @@ private:
 
     if(hasColors)
     {
-      int* colors = addIntField(debugMesh, "colors", leafSet.size() );
+      int* colors = addIntField(debugMesh, "colors" );
       for ( int i=0 ; i < leafSet.size() ; ++i )
         colors[i] = leafColors[i];
     }
@@ -2717,7 +2720,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3);
+    DebugMesh* debugMesh= new DebugMesh(3, 3 * tris.size());
 
     for(TriIter it = tris.begin() ; it < tris.end() ; ++it)
     {
@@ -2729,13 +2732,13 @@ private:
     int numTris = tris.size();
 
     // Index of each triangle within the mesh
-    int* triIdx = addIntField(debugMesh, "triangle_index", numTris);
+    int* triIdx = addIntField(debugMesh, "triangle_index" );
 
     // Indices of the three boundary vertices of this triangle
     int* vertIdx[3];
-    vertIdx[0] = addIntField(debugMesh, "vertex_index_0", numTris);
-    vertIdx[1] = addIntField(debugMesh, "vertex_index_1", numTris);
-    vertIdx[2] = addIntField(debugMesh, "vertex_index_2", numTris);
+    vertIdx[0] = addIntField(debugMesh, "vertex_index_0" );
+    vertIdx[1] = addIntField(debugMesh, "vertex_index_1" );
+    vertIdx[2] = addIntField(debugMesh, "vertex_index_2" );
 
     for(int i=0 ; i< numTris ; ++i)
     {
@@ -2760,26 +2763,17 @@ private:
 
 private:
 
-  int* addIntField(DebugMesh* mesh, const std::string& name, int size) const
+  int* addIntField(DebugMesh* mesh, const std::string& name ) const
   {
-    mint::FieldData* CD = mesh->getCellFieldData();
-
-    CD->addField( new mint::FieldVariable< int >(name, size) );
-    int* fld = CD->getField( name )->getIntPtr();
+    int* fld = mesh->createField< int >( name, mint::NODE_CENTERED );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
-
     return fld;
   }
 
-  double* addRealField(DebugMesh* mesh, const std::string& name,
-                       int size) const
+  double* addRealField(DebugMesh* mesh, const std::string& name ) const
   {
-    mint::FieldData* CD = mesh->getCellFieldData();
-
-    CD->addField( new mint::FieldVariable< double >(name, size) );
-    double* fld = CD->getField( name )->getDoublePtr();
+    double* fld = mesh->createField< double >( name, mint::NODE_CENTERED );
     SLIC_ASSERT( fld != AXOM_NULLPTR );
-
     return fld;
   }
 
@@ -2788,16 +2782,18 @@ private:
   {
     SpaceTriangle triPos = m_octree.m_meshWrapper.trianglePositions(tIdx);
 
-    int vStart = mesh->getMeshNumberOfNodes();
-    mesh->insertNode( triPos[0][0], triPos[0][1], triPos[0][2]);
-    mesh->insertNode( triPos[1][0], triPos[1][1], triPos[1][2]);
-    mesh->insertNode( triPos[2][0], triPos[2][1], triPos[2][2]);
+    mint::IndexType vStart = mesh->getNumberOfNodes();
+    mesh->appendNode( triPos[0][0], triPos[0][1], triPos[0][2]);
+    mesh->appendNode( triPos[1][0], triPos[1][1], triPos[1][2]);
+    mesh->appendNode( triPos[2][0], triPos[2][1], triPos[2][2]);
 
-    int data[3];
+    mint::IndexType data[3];
     for(int i=0 ; i< 3 ; ++i)
-      data[i] = vStart + i;
+    {
+        data[i] = vStart + i;
+    }
 
-    mesh->insertCell(data, MINT_TRIANGLE, 3);
+    mesh->appendCell(data);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2816,37 +2812,36 @@ private:
   {
     GeometricBoundingBox blockBB = m_octree.blockBoundingBox(block);
 
-    int vStart = mesh->getMeshNumberOfNodes();
+    mint::IndexType vStart = mesh->getNumberOfNodes();
 
     const SpacePt& bMin = blockBB.getMin();
     const SpacePt& bMax = blockBB.getMax();
 
-    mesh->insertNode( bMin[0], bMin[1], bMin[2]);
-    mesh->insertNode( bMax[0], bMin[1], bMin[2]);
-    mesh->insertNode( bMax[0], bMax[1], bMin[2]);
-    mesh->insertNode( bMin[0], bMax[1], bMin[2]);
+    mesh->appendNode( bMin[0], bMin[1], bMin[2] );
+    mesh->appendNode( bMax[0], bMin[1], bMin[2] );
+    mesh->appendNode( bMax[0], bMax[1], bMin[2] );
+    mesh->appendNode( bMin[0], bMax[1], bMin[2] );
 
-    mesh->insertNode( bMin[0], bMin[1], bMax[2]);
-    mesh->insertNode( bMax[0], bMin[1], bMax[2]);
-    mesh->insertNode( bMax[0], bMax[1], bMax[2]);
-    mesh->insertNode( bMin[0], bMax[1], bMax[2]);
+    mesh->appendNode( bMin[0], bMin[1], bMax[2] );
+    mesh->appendNode( bMax[0], bMin[1], bMax[2] );
+    mesh->appendNode( bMax[0], bMax[1], bMax[2] );
+    mesh->appendNode( bMin[0], bMax[1], bMax[2] );
 
-    int data[8];
+    mint::IndexType data[8];
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
-    mesh->insertCell( data, MINT_HEX, 8);
+    mesh->appendCell(data);
 
-    // Log the triangle info as primal code to simplify adding a test for this
-    // case
+    // Log the triangle info as primal code to simplify adding a test for this case
     if(shouldLogBlocks)
     {
       static int counter = 0;
       SLIC_INFO("// Block index " << block);
       SLIC_INFO(
         "BoundingBoxType box"
-        << ++counter <<"(PointType::make_point" << blockBB.getMin() << ","
-        << "PointType::make_point" << blockBB.getMax()<<  ");" );
+        << ++counter <<"(PointType::make_point" << bMin << ","
+        << "PointType::make_point" << bMax<<  ");" );
     }
   }
 
@@ -2915,8 +2910,8 @@ public:
   {
     SLIC_DEBUG("--Checking that each vertex is in a leaf block of the tree.");
 
-    const int numVertices = m_octree.m_meshWrapper.numMeshVertices();
-    for(int i=0 ; i< numVertices ; ++i)
+    const VertexIndex numVertices = m_octree.m_meshWrapper.numMeshVertices();
+    for(VertexIndex i=0; i< numVertices; ++i)
     {
       const SpacePt& pos = m_octree.m_meshWrapper.vertexPosition(i);
       BlockIndex vertBlock = m_octree.findLeafBlock(pos);
@@ -2957,8 +2952,9 @@ public:
     SLIC_DEBUG(
       "--Checking that each triangle is referenced by the leaf blocks containing its vertices.");
 
-    const int numTriangles = m_octree.m_meshWrapper.numMeshElements();
-    for(int tIdx=0 ; tIdx< numTriangles ; ++tIdx)
+    const mint::IndexType numTriangles =
+      m_octree.m_meshWrapper.numMeshElements();
+    for(mint::IndexType tIdx=0 ; tIdx< numTriangles ; ++tIdx)
     {
       TriVertIndices tvRel =
         m_octree.m_meshWrapper.triangleVertexIndices( tIdx );

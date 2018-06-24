@@ -44,7 +44,7 @@ namespace axom
 namespace quest
 {
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -64,17 +64,24 @@ typedef std::map<IndexType, IndexType> MortonMap;
 #endif
 typedef std::pair<MortonMap::iterator, bool> MortonMapResult;
 
-inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
+inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   SpatialBoundingBox meshBB;
   Point3 pt;
 
-  const int numNodes = mesh->getMeshNumberOfNodes();
-  for ( int i=0 ; i < numNodes ; ++i )
+  const double* x = mesh->getCoordinateArray( mint::X_COORDINATE );
+  const double* y = mesh->getCoordinateArray( mint::Y_COORDINATE );
+  const double* z = mesh->getCoordinateArray( mint::Z_COORDINATE );
+
+  const mint::IndexType numNodes = mesh->getNumberOfNodes();
+  for ( mint::IndexType i=0 ; i < numNodes ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    pt[ 0 ] = x[ i ];
+    pt[ 1 ] = y[ i ];
+    pt[ 2 ] = z[ i ];
+
     meshBB.addPoint( pt );
   } // END for all nodes
 
@@ -98,21 +105,30 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
+inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
 {
-  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
-  primal::Point<int, 3> triCell;
-  Triangle3 tri;
-  surface_mesh->getMeshCell(i, triCell.data());
+  SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
 
-  surface_mesh->getMeshNode(triCell[0], tri[0].data());
-  surface_mesh->getMeshNode(triCell[1], tri[1].data());
-  surface_mesh->getMeshNode(triCell[2], tri[2].data());
+  Triangle3 tri;
+
+  const mint::IndexType* triCell = surface_mesh->getCell( i );
+
+  const double* x = surface_mesh->getCoordinateArray( mint::X_COORDINATE );
+  const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
+  const double* z = surface_mesh->getCoordinateArray( mint::Z_COORDINATE );
+
+  for ( int n=0; n < 3; ++n )
+  {
+    const mint::IndexType nodeIdx = triCell[ n ];
+    tri[ n ][ 0 ] = x[ nodeIdx ];
+    tri[ n ][ 1 ] = y[ nodeIdx ];
+    tri[ n ][ 2 ] = z[ nodeIdx ];
+  }
 
   return tri;
 }
 
-inline bool areTriangleIndicesDistinct(int* indices)
+inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
 {
   SLIC_ASSERT(indices != AXOM_NULLPTR);
 
@@ -127,7 +143,7 @@ inline bool areTriangleIndicesDistinct(int* indices)
  * \see findTriMeshIntersections
  */
 void findTriMeshIntersections(
-  TriangleMesh* surface_mesh,
+  UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution)
@@ -141,7 +157,7 @@ void findTriMeshIntersections(
   const Point3 & minBBPt = meshBB.getMin();
   const Point3 & maxBBPt = meshBB.getMax();
 
-  const int ncells = surface_mesh->getMeshNumberOfCells();
+  const int ncells = surface_mesh->getNumberOfCells();
 
   // find the specified resolution.  If we're passed a number less than one,
   // use the cube root of the number of triangles.
@@ -227,7 +243,7 @@ void findTriMeshIntersections(
 
 
 /* Weld vertices of a triangle mesh that are closer than \a eps  */
-void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
+void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 {
   /// Implementation notes:
   ///
@@ -253,7 +269,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
     "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
 
   int const DIM = 3;
-  TriangleMesh* oldMesh = *surface_mesh;
+  UMesh* oldMesh = *surface_mesh;
 
   SpatialBoundingBox meshBB = compute_bounds(oldMesh).expand(eps);
 
@@ -265,7 +281,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       it != offsets.end() ; ++it)
   {
     // We will build up a new triangle mesh with the welded indices
-    TriangleMesh* newMesh = new TriangleMesh(DIM);
+    UMesh* newMesh = new UMesh(DIM, mint::TRIANGLE);
 
     // Set up the lattice for quantizing points to an integer lattice
     Point3 origin(meshBB.getMin().array() - Point3(*it).array() );
@@ -275,17 +291,23 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
     MortonMap vertexIndexMap;
 
     // First, find unique indices for the welded vertices
-    const int numVerts = oldMesh->getMeshNumberOfNodes();
+    const int numVerts = oldMesh->getNumberOfNodes();
     int uniqueVertCount = 0;
 
     std::vector<int> vertex_remap; // stores the new vertex indices
     vertex_remap.resize(numVerts); // for each old vertex
 
     Point3 vert;
+    const double* x = oldMesh->getCoordinateArray( mint::X_COORDINATE );
+    const double* y = oldMesh->getCoordinateArray( mint::Y_COORDINATE );
+    const double* z = oldMesh->getCoordinateArray( mint::Z_COORDINATE );
+
     for(int i =0 ; i < numVerts ; ++i)
     {
       // get the vertex from the mesh
-      oldMesh->getMeshNode(i, vert.data());
+      vert[ 0 ] = x[ i ];
+      vert[ 1 ] = y[ i ];
+      vert[ 2 ] = z[ i ];
 
       // find the Morton index of the point w.r.t. the lattice
       IndexType morton = Morton3::mortonize(lattice.gridCell(vert));
@@ -296,18 +318,19 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       if(res.second == true)
       {
         uniqueVertCount++;
-        newMesh->insertNode(vert.data());
+        newMesh->appendNodes(vert.data());
       }
       vertex_remap[i] = res.first->second;
     }
 
     // Next, add triangles into the new mesh using the unique vertex indices
     const int NUM_TRI_VERTS = 3;
-    int triInds[NUM_TRI_VERTS];
-    const int numTris = oldMesh->getMeshNumberOfCells();
-    for(int i =0 ; i < numTris ; ++i)
+    mint::IndexType triInds[ NUM_TRI_VERTS ];
+    const mint::IndexType numTris = oldMesh->getNumberOfCells();
+    for( mint::IndexType i =0 ; i < numTris ; ++i)
     {
-      oldMesh->getMeshCell(i, triInds);
+      memcpy( triInds, oldMesh->getCell( i ),
+              NUM_TRI_VERTS*sizeof( mint::IndexType ) );
 
       for(int d =0 ; d < NUM_TRI_VERTS ; ++d)
       {
@@ -317,7 +340,7 @@ void weldTriMeshVertices(TriangleMesh** surface_mesh,double eps)
       // Degeneracy check -- vertices need to be distinct
       if( areTriangleIndicesDistinct(triInds) )
       {
-        newMesh->insertCell(triInds, MINT_TRIANGLE, NUM_TRI_VERTS);
+        newMesh->appendCell(triInds, mint::TRIANGLE);
       }
     }
 

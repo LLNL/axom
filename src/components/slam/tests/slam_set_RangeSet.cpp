@@ -204,18 +204,119 @@ TEST(slam_range_set,iterate)
     std::stringstream sstr;
 
     typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
+
+    EXPECT_EQ(SetIterator(s.offset(), s), s.begin());
+
+    //iter++ access
     {
-      SetPosition position = std::distance(s.begin(), it);
-      SetElement expected = position + lowerIndex;
-      EXPECT_EQ( expected, *it )
-        << "Iterator dereference should be equal "
-        << "to its translated position in the windowed range set";
-      sstr << *it << "\t";
+      int idx = 0;
+      for (SetIterator it = s.begin(), itEnd = s.end() ;
+           it != itEnd ;
+           ++it, ++idx)
+      {
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, *it)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *it << "\t";
+      }
     }
+
+    //iter+n access
+    {
+      SetIterator beginIter = s.begin();
+      for (int idx = 0 ; idx < s.size() ; ++idx)
+      {
+        SetIterator iter = beginIter + idx;
+
+        //SetPosition position = std::distance(s.begin(), iter);
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter-n access
+    {
+      SetIterator endIter = s.end();
+      for (int idx = 1 ; idx <= s.size() ; ++idx)
+      {
+        SetIterator iter = endIter - idx;
+
+        //SetPosition position = std::distance(s.begin(), iter);
+        SetElement expected = upperIndex - idx;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter+=n access
+    {
+      for (int idx = 0 ; idx < s.size() ; ++idx)
+      {
+        SetIterator iter = s.begin();
+        iter += idx;
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter-=n access
+    {
+      for (int idx = 1 ; idx <= s.size() ; ++idx)
+      {
+        SetIterator iter = s.end();
+        iter -= idx;
+        SetElement expected = upperIndex - idx;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter[n] access
+    {
+      SetIterator beginIter = s.begin();
+      for (int idx = 0 ; idx < s.size() ; ++idx)
+      {
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, beginIter[idx])
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << beginIter[idx] << "\t";
+      }
+    }
+
+    //std::distance calculation
+    //iter+n access
+    {
+      int idx = 0;
+      for (SetIterator it = s.begin(), itEnd = s.end() ;
+           it != itEnd ;
+           ++it, ++idx)
+      {
+        SetElement position = std::distance(s.begin(), it);
+        SetElement expected = idx;
+        EXPECT_EQ(expected, position)
+          << "Iterator distance should be equal "
+          << "to the number of times it's been incremented";
+        sstr << idx << "\t";
+      }
+    }
+
+    EXPECT_TRUE(s.isValid(true));
+
     SLIC_INFO(sstr.str());
   }
-#endif
+#endif //AXOM_USE_CXX11
 }
 
 TEST(slam_range_set,out_of_range)

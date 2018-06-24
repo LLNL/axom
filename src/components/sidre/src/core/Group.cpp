@@ -875,12 +875,12 @@ Group* Group::createGroup( const std::string& path )
                     getPathName() << "." );
     SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
                     "Cannot create Group with name '" << path <<
-                    " in Group '" << getPathName() <<
-                    " since it already has a Group with that name" );
+                    "' in Group '" << getPathName() <<
+                    "' since it already has a Group with that name" );
     SLIC_CHECK_MSG( !group->hasChildView(intpath),
                     "Cannot create Group with name '" << path <<
-                    " in Group '" << getPathName() <<
-                    " since it already has a View with that name" );
+                    "' in Group '" << getPathName() <<
+                    "' since it already has a View with that name" );
 
     return AXOM_NULLPTR;
   }

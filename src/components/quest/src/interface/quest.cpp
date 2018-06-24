@@ -55,7 +55,7 @@ namespace
 
 namespace slic = axom::slic;
 
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };
@@ -99,10 +99,10 @@ struct QuestAccelerator
     m_meshCenterOfMass = SpacePt::zero();
 
     SpacePt pt;
-    int numMeshNodes = m_surface_mesh->getMeshNumberOfNodes();
+    int numMeshNodes = m_surface_mesh->getNumberOfNodes();
     for ( int i=0 ; i < numMeshNodes ; ++i )
     {
-      m_surface_mesh->getMeshNode( i, pt.data() );
+      m_surface_mesh->getNode( i, pt.data() );
 
       m_meshBoundingBox.addPoint( pt );
       m_meshCenterOfMass.array() += pt.array();
@@ -435,10 +435,10 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
-  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
   delete reader;
 
   initialize(comm, surface_mesh, requiresDistance, ndims, maxElements,
@@ -458,9 +458,12 @@ void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
                   "Quest currently only supports 3D (not 2D) triangle meshes.");
-  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
-                  "Quest currently only supports 3D triangle meshes "
-                  "(not any other kind of cell).");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == mint::UNSTRUCTURED_MESH,
+                  "Quest currently only supports 3D unstructured meshes " );
+  SLIC_ASSERT_MSG( input_mesh->hasMixedCellTypes() == false,
+   "Quest does not support unstructured meshes with mixed shape topology!" );
+  SLIC_ASSERT_MSG( input_mesh->getCellType() == mint::TRIANGLE,
+                   "Quest currently only supports 3D triangle meshes" );
 
   accelerator3D.setupQuestLogger(comm);
 
@@ -490,10 +493,10 @@ void initialize( const std::string& fileName,
   reader->setFileName( fileName );
   reader->read();
 
-  axom::mint::Mesh* surface_mesh = new TriangleMesh( 3 );
+  axom::mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
 
-  reader->getMesh( static_cast< TriangleMesh* >( surface_mesh ) );
+  reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
   delete reader;
 
   initialize(surface_mesh, requiresDistance, ndims, maxElements,
@@ -512,9 +515,12 @@ void initialize( mint::Mesh*& input_mesh,
   // In the future, we will also support 2D, but we currently only support 3D
   SLIC_ASSERT_MSG(ndims==3,
                   "Quest currently only supports 3D (not 2D) triangle meshes.");
-  SLIC_ASSERT_MSG(input_mesh->getMeshType() == MINT_UNSTRUCTURED_TRIANGLE_MESH,
-                  "Quest currently only supports 3D triangle meshes "
-                  "(not any other kind of cell).");
+  SLIC_ASSERT_MSG(input_mesh->getMeshType() == mint::UNSTRUCTURED_MESH,
+                  "Quest currently only supports 3D unstructured meshes" );
+  SLIC_ASSERT_MSG( input_mesh->hasMixedCellTypes() == false,
+    "Quest does not support unstructured meshes with mixed shape topology!" );
+  SLIC_ASSERT_MSG( input_mesh->getCellType() == mint::TRIANGLE,
+                   "Quest currently only supports 3D triangle meshes" );
 
   accelerator3D.setupQuestLogger();
 

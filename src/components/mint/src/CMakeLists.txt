@@ -12,8 +12,15 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
+## generate mint config
+configure_file ( core/config.hpp.in
+                 ${HEADER_INCLUDES_DIRECTORY}/mint/config.hpp )
+
 ## mint headers
 set( mint_headers
+
+    ## core
+    core/Array.hpp
 
     ## FEM classes
     fem/FEBasis.hpp
@@ -34,17 +41,25 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Mesh data-model
-    mesh/CellConnectivity.hpp
-    mesh/CellType.hpp
+    ## Internal implementation
+    mesh/internal/ConnectivityArray_indirection.hpp
+    mesh/internal/ConnectivityArray_typed_indirection.hpp
+    mesh/internal/ConnectivityArrayHelpers.hpp
+    mesh/internal/MeshHelpers.hpp
+
+    mesh/blueprint.hpp
+    mesh/CellTypes.hpp
+    mesh/ConnectivityArray.hpp
     mesh/CurvilinearMesh.hpp
     mesh/Extent.hpp
     mesh/Field.hpp
+    mesh/FieldAssociation.hpp
     mesh/FieldData.hpp
     mesh/FieldTypes.hpp
     mesh/FieldVariable.hpp
     mesh/Mesh.hpp
     mesh/MeshCoordinates.hpp
-    mesh/MeshType.hpp
+    mesh/MeshTypes.hpp
     mesh/ParticleMesh.hpp
     mesh/RectilinearMesh.hpp
     mesh/StructuredMesh.hpp
@@ -62,8 +77,9 @@ set( mint_sources
     fem/FiniteElement.cpp
 
     ## Mesh data-model
+    mesh/blueprint.cpp
     mesh/CurvilinearMesh.cpp
-    mesh/Field.cpp
+    mesh/Extent.cpp
     mesh/FieldData.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
@@ -76,13 +92,22 @@ set( mint_sources
     utils/vtk_utils.cpp
    )
 
+set( mint_dependencies
+     axom_utils
+     slic
+     )
+
+if ( ${MINT_USE_SIDRE} )
+  list(APPEND mint_dependencies sidre conduit)
+endif()
+
 ## create the mint library
 blt_add_library(
     NAME mint
     SOURCES ${mint_sources}
     HEADERS ${mint_headers}
     HEADERS_OUTPUT_SUBDIR mint
-    DEPENDS_ON axom_utils slic
+    DEPENDS_ON ${mint_dependencies}
     FOLDER axom/mint
    )
 

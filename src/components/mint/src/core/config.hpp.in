@@ -1,0 +1,49 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+#ifndef MINT_CONFIG_HPP_
+#define MINT_CONFIG_HPP_
+
+#include "axom/config.hpp"// for compile-time definitions
+#include "axom/Types.hpp" // for fixed-width types
+
+#cmakedefine MINT_USE_SIDRE
+
+#ifndef AXOM_NO_INT64_T
+#cmakedefine MINT_USE_64BIT_INDEXTYPE
+#endif
+
+namespace axom
+{
+namespace mint
+{
+
+#ifdef MINT_USE_64BIT_INDEXTYPE
+using IndexType = common::int64;
+#else
+using IndexType = common::int32;
+#endif
+
+constexpr IndexType USE_DEFAULT = -1;
+
+using int64 = common::int64;
+
+} /* end namespace mint */
+} /* end namespace axom */
+
+
+
+#endif /* MINT_CONFIG_HPP_ */

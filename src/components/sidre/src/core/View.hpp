@@ -823,7 +823,7 @@ public:
    *
    *  If the view is not a STRING, then AXOM_NULLPTR is returned.
    */
-  const char* getString()
+  const char* getString() const
   {
     if (m_state == STRING)
     {

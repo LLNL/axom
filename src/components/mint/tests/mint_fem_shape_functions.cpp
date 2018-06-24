@@ -21,7 +21,7 @@
 #include "mint/ShapeFunction.hpp"
 #include "mint/FEBasis.hpp"
 #include "mint/FEBasisTypes.hpp"
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 
 #include "slic/slic.hpp"
 
@@ -42,20 +42,21 @@ namespace
  * \brief Tests basic attributes of the shape function
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
 {
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
-  const int ctype = sf.cellType();
-  EXPECT_TRUE(  (ctype >= 0) && (ctype < MINT_NUM_CELL_TYPES) );
+  const mint::CellType ctype = sf.cellType();
+  int ctype_val = mint::cellTypeToInt( ctype );
+  EXPECT_TRUE(  (ctype_val >= 0) && (ctype_val < mint::NUM_CELL_TYPES) );
 
   const int type = sf.type();
   EXPECT_TRUE(  (type >= 0) && ( type < MINT_NUM_BASIS_TYPES ) );
@@ -94,15 +95,15 @@ void reference_element( double TOL=std::numeric_limits< double >::epsilon() )
 /*!
  * \brief Ensures shape functions satisfy the kronecker delta property.
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void kronecker_delta( )
 {
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   int ndims = sf.dimension();
   int ndofs = sf.numDofs();
@@ -133,15 +134,15 @@ void kronecker_delta( )
 /*!
  * \brief Ensures shape functions satisfy the partition of unity property.
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void partition_of_unity()
 {
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
   ShapeFunctionType sf;
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   int ndims      = sf.dimension();
   int ndofs      = sf.numDofs();
@@ -213,45 +214,45 @@ void partition_of_unity()
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( mint_shape_functions, check_reference_element )
+TEST( mint_fem_shape_functions, check_reference_element )
 {
-  reference_element< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  reference_element< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  reference_element< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  reference_element< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  reference_element< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  reference_element< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::TET >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::PYRAMID >( );
 
-  reference_element< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  reference_element< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  reference_element< MINT_LAGRANGE_BASIS, mint::HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_shape_functions, check_kronecker_delta )
+TEST( mint_fem_shape_functions, check_kronecker_delta )
 {
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::TET >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::PYRAMID >( );
 
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  kronecker_delta< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  kronecker_delta< MINT_LAGRANGE_BASIS, mint::HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_shape_functions, check_partition_of_unity )
+TEST( mint_fem_shape_functions, check_partition_of_unity )
 {
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::TET >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::PYRAMID >( );
 
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  partition_of_unity< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  partition_of_unity< MINT_LAGRANGE_BASIS, mint::HEX27 >( );
 }
 
 //------------------------------------------------------------------------------

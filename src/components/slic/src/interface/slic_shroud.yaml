@@ -18,12 +18,14 @@ copyright:
 
 library: SLIC
 cxx_header: slic/slic.hpp
-#namespace: axom slic
+namespace: axom slic
 
 options:
   C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False
+  # Change the default template for Fortran functions to include the library name.
+  F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
 
 format:
   C_prefix: SLIC_
@@ -35,49 +37,41 @@ format:
 ######################################################################
 
 declarations:
-  - decl: namespace axom
-    declarations:
-    - decl: namespace slic
-      options:
-        # Change the default template for Fortran functions to include the library name.
-         F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
-      declarations:
+- decl: namespace message
+  # MessageLevel.h
+  declarations:
+  - decl: |
+        enum Level
+        {
+          Error,
+          Warning,
+          Info,
+          Debug,
+          Num_Levels
+        };
 
-      - decl: namespace message
-        # MessageLevel.h
-        declarations:
-        - decl: |
-              enum Level
-              {
-                Error,
-                Warning,
-                Info,
-                Debug,
-                Num_Levels
-              };
+- decl: void initialize()
+- decl: bool isInitialized()
 
-      - decl: void initialize()
-      - decl: bool isInitialized()
+- decl: void createLogger( const std::string& name, char imask )
+- decl: bool activateLogger( const std::string& name )
+- decl: std::string getActiveLoggerName()
+- decl: void setLoggingMsgLevel( message::Level level )
 
-      - decl: void createLogger( const std::string& name, char imask )
-      - decl: bool activateLogger( const std::string& name )
-      - decl: std::string getActiveLoggerName()
-      - decl: void setLoggingMsgLevel( message::Level level )
+- decl: void setAbortOnError( bool status )
+- decl: void enableAbortOnError()
+- decl: void disableAbortOnError()
+- decl: bool isAbortOnErrorsEnabled()
 
-      - decl: void setAbortOnError( bool status )
-      - decl: void enableAbortOnError()
-      - decl: void disableAbortOnError()
-      - decl: bool isAbortOnErrorsEnabled()
+- decl: void setAbortOnWarning( bool status )
+- decl: void enableAbortOnWarning()
+- decl: void disableAbortOnWarning()
+- decl: bool isAbortOnWarningsEnabled()
 
-      - decl: void setAbortOnWarning( bool status )
-      - decl: void enableAbortOnWarning()
-      - decl: void disableAbortOnWarning()
-      - decl: bool isAbortOnWarningsEnabled()
-
-      - decl: void logMessage( message::Level level,
-                               const std::string& message,
-                               const std::string& fileName,
-                               int line,
-                               bool filter )
-      - decl: void finalize()
+- decl: void logMessage( message::Level level,
+                         const std::string& message,
+                         const std::string& fileName,
+                         int line,
+                         bool filter )
+- decl: void finalize()
   

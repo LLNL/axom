@@ -132,7 +132,11 @@ namespace detail
  * \brief Type traits to assist in converting compiler types to the appropriate
  *  data type ids.
  */
-template<typename T> struct SidreTT {};
+template<typename T> struct SidreTT
+{
+  static const DataTypeId id = NO_TYPE_ID;
+};
+
 template<> struct SidreTT<common::int8>
 {
   static const DataTypeId id = INT8_ID;

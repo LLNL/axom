@@ -42,7 +42,7 @@ blt_add_library(NAME fmt
                 HEADERS_OUTPUT_SUBDIR fmt)
 
 target_include_directories(fmt INTERFACE
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/thirdparty/fmt>)
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty/fmt>)
 
 
 # Setup some variables for fmt in Axom's config.hpp
@@ -59,7 +59,7 @@ endif()
 install(TARGETS              fmt
         EXPORT               fmt-targets
         INCLUDES DESTINATION include/fmt)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/src/thirdparty/fmt
+install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
 install(EXPORT fmt-targets DESTINATION lib/cmake)
@@ -144,7 +144,7 @@ if (ENABLE_SPARSEHASH)
             EXPORT               sparsehash-targets
             INCLUDES DESTINATION include)
 
-    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/src/thirdparty/sparsehash
+    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sparsehash
             DESTINATION include)
 
     install(EXPORT sparsehash-targets DESTINATION lib/cmake)

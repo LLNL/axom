@@ -69,7 +69,7 @@ set(custom_compiler_flags_list) # Tracks custom compiler flags for logging
 # Flag for disabling warnings about omp pragmas in the code
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_OMP_PRAGMA_WARNINGS
                   DEFAULT      "-Wno-unknown-pragmas"
-                  XL           "-qignprag=omp"
+                  XL           " "
                   INTEL        "-diag-disable 3180"
                   MSVC         "/wd4068"
                   MSVC_INTEL   "/Qdiag-disable:3180"
@@ -80,7 +80,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_OMP_PRAGMA_WARNINGS)
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS
                   DEFAULT     "-Wno-unused-parameter"
-                  XL          "-qinfo=nopar"
+                  XL          " "
                   MSVC        "/wd4100"
                   MSVC_INTEL  "/Qdiag-disable:869"
                   )
@@ -90,7 +90,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS)
 # Useful when we include external code.
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_VARIABLE_WARNINGS
                   DEFAULT     "-Wno-unused-variable"
-                  XL          "-qinfo=nouse"
+                  XL          " "
                   MSVC        "/wd4101"
                   MSVC_INTEL  "/Qdiag-disable:177"
                   )
@@ -117,7 +117,7 @@ list(APPEND custom_compiler_flags_list AXOM_DISABLE_ALIASING_WARNINGS)
 
 # Flag for disabling warnings about unused local typedefs.
 # Note: Clang 3.5 and below are not aware of this warning, but later versions are
-if(COMPILER_FAMILY_IS_CLANG AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5))
+if(C_COMPILER_FAMILY_IS_CLANG AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 3.5))
   set(clang_unused_local_typedef "-Wno-unused-local-typedefs")
 endif()
 
@@ -126,6 +126,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF
                   CLANG   "${clang_unused_local_typedef}"
                   GNU     "-Wno-unused-local-typedefs"
                   MSVC    " "
+                  XL      "-Wno-unused-local-typedefs"
                   )
 list(APPEND custom_compiler_flags_list AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF)
 
