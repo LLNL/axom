@@ -712,8 +712,24 @@ void test_code() {
     }
   }
 
-  mm.newFieldArray<>("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0], ncomp);
-  mm.newFieldArray<>("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0], ncomp);
+  //create volfrac array
+  std::vector<double> volfrac_arr(ncells*nmats, 0);
+  for (auto i = 0; i < ncells; ++i)
+  {
+    int matcount = 0;
+    for (auto m = 0; m < nmats; ++m) {
+      if (cellMatRel[i*nmats + m])
+        matcount+=1;
+    }
+    for (auto m = 0; m < nmats; ++m) {
+      if (cellMatRel[i*nmats + m])
+        volfrac_arr[i*nmats + m] = 1.0 / (double)matcount;
+    }
+  }
+
+  mm.setVolfracArray(volfrac_arr.data());
+  mm.newFieldArray("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0], ncomp);
+  mm.newFieldArray("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0], ncomp);
 
   //convert layout
   mm.convertLayoutToSparse();
@@ -721,7 +737,11 @@ void test_code() {
   double sum = 0;
 
   //Different accessing methods ...
-
+  
+  //get the volfrac field
+  MultiMat::Field2D<double>& volfrac_map = mm.getVolfracField();
+  MultiMat::Field2D<double>& volfrac_map2 = mm.get2dField<double>("Volfrac");
+  assert(&volfrac_map == &volfrac_map2);
   
   // --------- returning SLAM map and submap -----------
   printf("\nAccess from SLAM map (and submap)\n");
@@ -729,13 +749,13 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
+    assert(ncomp == map.stride());
+    assert(ncomp == map.numComp());
     for (int i = 0; i < mm.getNumberOfCells(); i++) {
-      assert(ncomp == map.stride());
-      assert(ncomp == map.numComp());
       for (int s = 0; s < map.stride(); s++)
       {
         double val = map(i, s);                               //<----
-        //assert(val == map[ i*map.numComp() + s] );    //1d bracket access
+        assert(val == map[ i*map.numComp() + s] );    //1d bracket access
         sum += val;
       }
     }
@@ -747,6 +767,8 @@ void test_code() {
   start_timer();
   {
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    assert(ncomp == map2d.stride());
+    assert(ncomp == map2d.numComp());
     for (int i = 0; i < map2d.firstSetSize(); i++)
     {
       MultiMat::IdSet rel_set = map2d.indexSet(i);
@@ -815,6 +837,7 @@ void test_code() {
           int mat_id = setOfMaterialsInThisCell.at(j);
           for (int s = 0; s < map.numComp(); ++s) {
             double val = map[indexSet.at(j)*map.numComp() + s];   //<-----
+            //assert(val == map(indexSet.at(j), s)); //if 1dMap is used, this is also valid
             sum += val;
           }
         }
