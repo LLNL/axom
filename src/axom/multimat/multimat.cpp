@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include <cassert>
+#include "multimat.hpp"
 
 
 using namespace std;
@@ -22,14 +23,15 @@ MultiMat::MultiMat(DataLayout d, SparcityLayout s): MultiMat() {
   m_sparcityLayout = s;
 }
 
-axom::multimat::MultiMat::~MultiMat()
+MultiMat::~MultiMat()
 {
   for (auto mapPtr : m_mapVec) {
     delete mapPtr;
   }
 }
 
-void MultiMat::setNumberOfMat(int n){
+void MultiMat::setNumberOfMat(int n)
+{
   assert(n > 0);
   m_nmats = n;
 
@@ -49,6 +51,7 @@ void MultiMat::setNumberOfCell(int c)
 void MultiMat::setCellMatRel(vector<bool>& vecarr)
 {
   //Setup the SLAM cell to mat relation
+  //This step is necessary if the volfrac field is sparse
 
   assert(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
 
@@ -90,7 +93,82 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   // a cartesian set of cell x mat
   m_cellMatProdSet = ProductSetType(&set1, &set2);
 
+
+  //Create a field for VolFrac as the 0th field
+  //BivariateSetType* s = nullptr;
+  //if (m_sparcityLayout == SparcityLayout::SPARSE) {
+  //  s = &m_cellMatNZSet;
+  //}
+  //else if (m_sparcityLayout == SparcityLayout::DENSE) {
+  //  s = &m_cellMatProdSet;
+  //}
+  //else assert(false);
+  //auto new_map_ptr = new Field2D<double>(s);
+  //m_mapVec.push_back(new_map_ptr);
+  m_mapVec.push_back(nullptr);
+
+  m_arrNameVec.push_back("Volfrac");
+  m_fieldMappingVec.push_back(FieldMapping::PER_CELL_MAT);
+  m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
+  assert(m_mapVec.size() == 1);
+  assert(m_arrNameVec.size() == 1);
+  assert(m_fieldMappingVec.size() == 1);
+  assert(m_dataTypeVec.size() == 1);
+
 }
+
+
+int MultiMat::setVolfracArray(double* arr)
+{
+  //Assumes this is to CellxMat mapping, named "Volfrac", and is stride 1.
+  int arr_i = addFieldArray_impl<double>("Volfrac", FieldMapping::PER_CELL_MAT, arr, 1);
+
+  //checks volfrac values sums to 1
+  auto& map = *dynamic_cast<Field2D<double>*>(m_mapVec[arr_i]);
+  double tol = 10e-9;
+  for (int i = 0; i < map.firstSetSize(); ++i)
+  {
+    double sum = 0.0;
+    for (auto iter = map.begin(i); iter != map.end(i); ++iter)
+    {
+      sum += iter.value();
+    }
+
+    assert(abs(sum - 1.0) < tol);
+  }
+
+  //move the data to the first one (index 0) in the list
+  std::iter_swap(m_mapVec.begin(), m_mapVec.begin() + arr_i);
+  std::iter_swap(m_dataTypeVec.begin(), m_dataTypeVec.begin() + arr_i);
+
+  //remove the new entry...
+  int nfield = m_mapVec.size() - 1;
+  m_mapVec.resize(nfield); //TODO if delete is needed
+  m_fieldMappingVec.resize(nfield);
+  m_arrNameVec.resize(nfield);
+  m_dataTypeVec.resize(nfield);
+
+  return 0;
+}
+
+
+MultiMat::Field2D<double>& MultiMat::getVolfracField()
+{
+  return *dynamic_cast<Field2D<double>*>(m_mapVec[0]);
+}
+
+
+int MultiMat::getFieldIdx(std::string field_name)
+{
+  for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
+  {
+    if (m_arrNameVec[i] == field_name)
+      return i;
+  }
+
+  return -1;
+}
+
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
@@ -104,7 +182,8 @@ MultiMat::IdSet MultiMat::getMatInCell(int c)
   else assert(false);
 }
 
-MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
+
+MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 {
   assert(m_dataLayout == DataLayout::CELL_CENTRIC);
 
@@ -123,7 +202,7 @@ MultiMat::IndexSet axom::multimat::MultiMat::getIndexingSetOfCell(int c)
 }
 
 
-void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
+void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 {
   if (new_layout == m_dataLayout && new_sparcity == m_sparcityLayout)
     return;
@@ -163,10 +242,12 @@ void axom::multimat::MultiMat::convertLayout(DataLayout new_layout, SparcityLayo
   }
 }
 
-axom::multimat::DataLayout axom::multimat::MultiMat::getDataLayout()
+
+DataLayout MultiMat::getDataLayout()
 {
   return m_dataLayout;
 }
+
 
 std::string axom::multimat::MultiMat::getLayoutAsString()
 {
@@ -180,12 +261,14 @@ std::string axom::multimat::MultiMat::getLayoutAsString()
   }
 }
 
-SparcityLayout axom::multimat::MultiMat::getSparcityLayout()
+
+SparcityLayout MultiMat::getSparcityLayout()
 {
   return m_sparcityLayout;
 }
 
-void axom::multimat::MultiMat::printSelf() const
+
+void MultiMat::print() const
 {
   printf("Multimat Object\n");
   printf("Number of materials: %d\n", m_nmats);
@@ -217,15 +300,19 @@ void axom::multimat::MultiMat::printSelf() const
   
 }
 
-bool axom::multimat::MultiMat::isValid(bool verboseOutput) const
-{
-  if (verboseOutput) printSelf();
 
+bool MultiMat::isValid(bool verboseOutput) const
+{
+  if (verboseOutput) print();
+
+  //make sure there is a volfrac field filled out 
+  //that matches the CellMatRelation
   //TODO
+
   return true;
 }
 
-axom::multimat::MultiMat::SetType* axom::multimat::MultiMat::get_mapped_set(FieldMapping fm)
+MultiMat::SetType* MultiMat::get_mapped_set(FieldMapping fm)
 {
   SetType* map_set = nullptr;
   switch (fm)
