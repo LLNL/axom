@@ -88,11 +88,14 @@ public:
   //functions related to the field arrays
   template<class T>
   int newFieldArray(std::string arr_name, FieldMapping, T* arr, int stride = 1);
- 
+  int setVolfracArray(double* arr);
+
+  int getFieldIdx(std::string arr_name);
   template<typename T>
   Field1D<T>& get1dField(std::string field_name);
   template<typename T>
   Field2D<T>& get2dField(std::string field_name);
+  Field2D<double>& getVolfracField();
 
   IdSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
   IndexSet getIndexingSetOfCell(int c);
@@ -113,13 +116,15 @@ public:
   std::string getLayoutAsString();
   SparcityLayout getSparcityLayout();
 
-  void printSelf() const;
+  void print() const;
   bool isValid(bool verboseOutput = false) const;
   
 private: //private functions
   SetType* get_mapped_set(FieldMapping fm);
   template<typename DataType>
   void convertToSparse_helper(int map_i);
+  template<typename T>
+  int addFieldArray_impl(std::string, FieldMapping, T*, int);
 
 private:
   unsigned int m_nmats, m_ncells;
@@ -143,17 +148,16 @@ private:
 }; //end MultiMat class
 
 
+
 //--------------- MultiMat template function definitions -----------------//
 
-
 template<class T>
-int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* data_arr, int stride)
+int MultiMat::addFieldArray_impl(std::string arr_name, FieldMapping arr_mapping,
+  T* data_arr, int stride)
 {
-  assert(stride > 0);
+  int new_arr_idx = m_mapVec.size();
 
-  int index_val = m_mapVec.size();
-  
-  if (arr_mapping == FieldMapping::PER_CELL_MAT) 
+  if (arr_mapping == FieldMapping::PER_CELL_MAT)
   {
     BivariateSetType* s = nullptr;
     if (m_sparcityLayout == SparcityLayout::SPARSE) {
@@ -167,10 +171,11 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
     Field2D<T>* new_map_ptr = new Field2D<T>(s, data_arr, stride);
     m_mapVec.push_back(new_map_ptr);
   }
-  else if (arr_mapping == FieldMapping::PER_CELL || arr_mapping == FieldMapping::PER_MAT)
+  else if (arr_mapping == FieldMapping::PER_CELL ||
+    arr_mapping == FieldMapping::PER_MAT)
   {
     Field1D<T>* new_map_ptr = new Field1D<T>(get_mapped_set(arr_mapping), T(), stride);
-    
+
     int i = 0;
     for (auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++) {
       for (auto s = 0; s < stride; ++s) {
@@ -184,7 +189,8 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
 
   m_arrNameVec.push_back(arr_name);
   m_fieldMappingVec.push_back(arr_mapping);
-  assert(m_arrNameVec.size() == m_mapVec.size() && m_mapVec.size() == m_fieldMappingVec.size());
+  assert(m_mapVec.size() == m_arrNameVec.size());
+  assert(m_mapVec.size() == m_fieldMappingVec.size());
 
   if (std::is_same<T, int>::value)
     m_dataTypeVec.push_back(DataTypeSupported::TypeInt);
@@ -197,30 +203,63 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping, T* d
   else
     m_dataTypeVec.push_back(DataTypeSupported::TypeUnknown);
 
-  return index_val;
+  return new_arr_idx;
+}
+
+template<class T>
+int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping,
+                            T* data_arr, int stride)
+{
+  assert(stride > 0);
+
+  //make sure the name does not conflict
+  int fieldIdx = getFieldIdx(arr_name);
+  if (fieldIdx == 0) 
+  { //this is the vol frac array. call setVolfrac instead
+    assert(arr_mapping == FieldMapping::PER_CELL_MAT);
+    assert(stride == 1);
+    assert(data_arr != nullptr);
+    setVolfracArray(data_arr);
+    return 0;
+  }
+  else if(fieldIdx > 0) 
+  {
+    // There is already an array with the current name. And it's not Volfrac.
+    // Don't add the new field
+    return -1;
+  }
+  else 
+  {
+    //No field with this name. Proceed with adding the field
+    return addFieldArray_impl<>(arr_name, arr_mapping, data_arr, stride);
+  }
 }
 
 template<typename T>
 MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
 {
-  for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
+  int fieldIdx = getFieldIdx(field_name);
+  if (fieldIdx >= 0)
   {
-    if (m_arrNameVec[i] == field_name)
+    //assert(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
+    //       m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT);
+    if (m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL || 
+        m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
     {
-      //assert(m_fieldMappingVec[i] == FieldMapping::PER_CELL || m_fieldMappingVec[i] == FieldMapping::PER_MAT);
-      if (m_fieldMappingVec[i] == FieldMapping::PER_CELL || m_fieldMappingVec[i] == FieldMapping::PER_MAT)
-        return *dynamic_cast<Field1D<T>*>(m_mapVec[i]);
-      else if (m_fieldMappingVec[i] == FieldMapping::PER_CELL_MAT) {
-        Field2D<T> * map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[i]);
-        return *(map_2d->getMap());
-      }
+      return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx]);
+    }
+    else if (m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT) 
+    {
+      Field2D<T>* map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+      return *(map_2d->getMap());
     }
   }
-  assert(false); //No array with such name found
+  else
+    assert(false); //No array with such name found
 }
 
 template<typename T>
-inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
+MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
 {
   for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
   {
@@ -232,11 +271,13 @@ inline MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
   }
 }
 
-
 template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
-  Field2D<DataType>& old_ptr = *dynamic_cast<Field2D<DataType>*>(m_mapVec[map_i]);
+  MapBaseType* mapPtr = m_mapVec[map_i];
+  if (map_i == 0 && mapPtr == nullptr) { return; }
+
+  Field2D<DataType>& old_ptr = *dynamic_cast<Field2D<DataType>*>(mapPtr);
   int stride = old_ptr.stride();
   std::vector<DataType> arr_data(m_cellMatNZSet.totalSize()*stride);
   int idx = 0;

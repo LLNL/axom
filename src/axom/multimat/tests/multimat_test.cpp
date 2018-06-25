@@ -43,6 +43,13 @@ template<typename DataType>
 struct MM_test_data {
   std::vector<bool> fillBool_cellcen;
   std::vector<bool> fillBool_matcen;
+  
+  std::vector<int> matcount;
+
+  std::vector<double> volfrac_cellcen_dense;
+  std::vector<double> volfrac_matcen_dense;
+  std::vector<double> volfrac_cellcen_sparse;
+  std::vector<double> volfrac_matcen_sparse;
 
   std::vector<DataType> cellmat_dense_arr;
   std::vector<DataType> cellmat_sparse_arr;
@@ -51,6 +58,7 @@ struct MM_test_data {
 
   int num_cells, num_mats, stride;
   int nfilled = 0;
+
   //constructor
   MM_test_data(int n_c = 20, int n_m = 10, int str = 1)
   {
@@ -61,6 +69,7 @@ struct MM_test_data {
     nfilled = 0;
     fillBool_cellcen.resize(num_mats * num_cells, false);
     fillBool_matcen.resize(num_mats * num_cells, false);
+    matcount.resize(num_mats, 0);
     for (int c = 0; c < num_cells; ++c) {
       for (int m = 0; m < num_mats; ++m) {
         int dense_cellcen_idx = c * num_mats + m;
@@ -69,6 +78,33 @@ struct MM_test_data {
           fillBool_cellcen[dense_cellcen_idx] = true;
           fillBool_matcen[dense_matcen_idx] = true;
           nfilled++;
+          matcount[m]++;
+        }
+      }
+    }
+
+    //create volfrac array
+    int sparse_idx = 0;
+    volfrac_cellcen_dense.resize(num_cells*num_mats, 0);
+    volfrac_matcen_dense.resize(num_cells*num_mats, 0);
+    volfrac_cellcen_sparse.resize(nfilled);
+    volfrac_matcen_sparse.resize(nfilled);
+    for (auto i = 0; i < num_cells; ++i)
+    {
+      for (auto m = 0; m < num_mats; ++m) {
+        if (fillBool_cellcen[i*num_mats + m]) {
+          volfrac_cellcen_dense[i*num_mats + m] = 1.0 / (double)matcount[m];
+          volfrac_matcen_dense[m*num_cells + i] = 1.0 / (double)matcount[m];
+          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[m];
+        }
+      }
+    }
+    sparse_idx = 0;
+    for (int m = 0; m < num_mats; ++m) {
+      for (int c = 0; c < num_cells; ++c) {
+        int dense_cellcen_idx = c * num_mats + m;
+        if (fillBool_cellcen[dense_cellcen_idx]) {
+          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[m];
         }
       }
     }
@@ -78,7 +114,7 @@ struct MM_test_data {
     cellmat_sparse_arr.resize(nfilled * stride);
     matcell_dense_arr.resize(num_mats * num_cells * stride);
     matcell_sparse_arr.resize(nfilled * stride);
-    int sparse_idx = 0;
+    sparse_idx = 0;
     for (int c = 0; c < num_cells; ++c) {
       for (int m = 0; m < num_mats; ++m) {
         int dense_cellcen_idx = c * num_mats + m;
@@ -182,6 +218,19 @@ TEST(multimat, construct_multimat_1_array)
         mm.setCellMatRel(data.fillBool_matcen);
 
       EXPECT_TRUE(mm.isValid());
+
+      if (layout_used == DataLayout::CELL_CENTRIC) {
+        if (sparcity_used == SparcityLayout::DENSE)
+          mm.setVolFracArray(data.volfrac_cellcen_dense.data());
+        else
+          mm.setVolFracArray(data.volfrac_cellcen_sparse.data());
+      }
+      else {
+        if (sparcity_used == SparcityLayout::DENSE)
+          mm.setVolFracArray(data.volfrac_matcen_dense.data());
+        else
+          mm.setVolFracArray(data.volfrac_matcen_sparse.data());
+      }
 
       std::string array_name = "Array 1";
 
