@@ -24,6 +24,7 @@
 // Axom Utils includes
 #include "axom_utils/Utilities.hpp"    // for abs()
 #include "axom_utils/linear_solve.hpp" // for linear_solve()
+#include "axom_utils/matvecops.hpp"    // for matrix/vector operators
 
 // Mint includes
 #include "mint/CellTypes.hpp"          // for cell type definitions
@@ -242,7 +243,7 @@ void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
   numerics::Matrix< double > coords_matrix( m_dim, m_numnodes, m_xyz, true );
 
   // STEP 2: compute the global (physical) coordinates
-  numerics::vector_multiply( coords_matrix, m_phi, xp );
+  numerics::matrix_vector_multiply( coords_matrix, m_phi, xp );
 }
 
 //------------------------------------------------------------------------------

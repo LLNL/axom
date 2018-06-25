@@ -22,7 +22,7 @@
 #include "axom/Types.hpp"                  // for AXOM_NULLPTR
 
 #include "axom_utils/Utilities.hpp"        // for utilities::isNearlyEqual()
-#include "axom_utils/vector_utilities.hpp" // for dot_product()
+#include "axom_utils/matvecops.hpp"        // for dot_product()
 
 #include "primal/OrientationResult.hpp"    // for OrientationResult enum
 
