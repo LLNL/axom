@@ -18,49 +18,68 @@
 Axom Release Process
 *******************************************
 
-The Axom team uses its collective professional judgement to decide when
-the code is ready for a release. Most often, a release is done when some
-set of functionaly is sufficiently complete to make available to users or
-when some other development goal is reached. This section describes how 
-Axom releases are done. The process is fairly informal; however, it should 
-be adequate to ensure that the software is in a reasonably robust and stable 
-state when a release is done. In particular, we follow this process to avoid
-simple oversights and issues that we do not want to pass on to users.
+The Axom team decides as a group when the code is ready for a release. 
+Typically, a release is done when we want to make changes available to users;
+e.g., when some new functionality is sufficiently complete or we want users to
+try something out and give us feedback early in the development process. A
+release may also be done when some other development goal is reached. This 
+section describes how an Axom releases is done. The process is fairly 
+informal. However, we want to ensure that the software is in a reasonably 
+robust and stable state when a release is done. We follow this process to 
+avoid simple oversights and issues that we do not want to pass on to users.
 
 In the :ref:`gitflow-label` section, we noted that the **master branch
 records the official release history of the project**. Specifically,
 whenever, the master branch is changed, it is tagged with a new
 version number. We use a git 'lightweight tag' for this purpose. Such
-a tag is essentially a pointer to a specific commit on the branch.
+a tag is essentially a pointer to a specific commit on the master branch.
 
-Here are the steps to generate a new tagged version of the master branch
-for release:
+We finalize preparations for a release on a release branch so that other 
+work may continue on the develop branch without interruption. 
 
-  #. Create a **release branch** off of the develop branch. Rather than
-     finalize the release directly on the develop branch, a release branch
-     is preferred so that other work may continue on the develop branch
-     without interruption.
+.. note:: No significant code development is performed on a release branch.
+          In addition to preparing release notes and other documentation, the
+          only code changes that should be done are bug fixes identified 
+          during release preparations
 
-  #. Update the version number information in the
-     ``axom/src/cmake/AxomVersion.cmake`` file.
+Here are the steps to follow for an Axom release.
 
-  #. Create a pull request to merge the release branch into master so that
-     it can be reviewed.
+  #  **Create a release branch** off of the develop branch to finalize 
+     the release. The name of a release branch must contain the associated 
+     release version number. Typically, we use a name like rc0.5.0 (i.e., 
+     version 0.5.0 release candidate). See :ref:`semver-label` for a 
+     description of how version numbers are chosen. 
 
-     * Ensure the code builds on all platforms and all tests pass.
+  #. **Create a pull request to merge the release branch into master** so that
+     release changes can be reviewed. Such changes include:
 
-     * Make sure any discovered issues are resolved.
+     * Update the version information (major, minor, and patch version numbers)
+       at the top of the ``axom/src/cmake/AxomVersion.cmake`` file.
 
-     * Make sure all documentation (user guides, release notes, etc.) is
-       updated and reviewed.
+     * Test the code by running it through all continuous integration tests 
+       and builds. This will ensure that all build configurations are working 
+       properly and all tests pass. 
 
-  #. When the release branch is ready and approved, merge it into master.
+     * Fix any issues discovered during final release testing if code changes
+       are reasonably small and re-run appropriate tests to ensure issues are
+       resolved. If a major bug is discovered, and it requires significant
+       code modifications to fix, do not fix it on the release branch. Add
+       a JIRA issue for it and note the issue in the ``known bugs`` section of
+       the release notes.
 
-  #. Also merge master into develop if the release branch changed during
-     this process.
+     * Make sure all documentation (source code, user guides, etc.) is
+       updated and reviewed. This should not be a substantial undertaking as
+       most of this should have been done during the regular development cycle.
 
-  #. Tag the master branch with a new version number. See :ref:`semver-label`
-     for a description of how version numbers are chosen. To tag master::
+     * Proofread the release notes for completeness and clarity and address
+       any shortcomings. Again, this should not take much time as release notes
+       should be updated during the regular development cycle. See 
+       :ref:`release-notes-label` for information about release notes.
+
+  #. **Merge the release branch into the master branch** when the release 
+     branch is ready and approved.
+
+  #. **Tag the master branch with a new version number.** To tag master::
 
        $ git checkout master
        $ git tag vMM.mm.pp
@@ -77,7 +96,7 @@ for release:
 
      will show information about the tagged commit.
 
-  #. Push the new tag to bitbucket.  You can push a single tag
+  #. **Push the new tag to bitbucket.** You can push a single tag
      to bitbucket by running the command ::
 
        $ git push vMM.mm.pp
@@ -85,4 +104,70 @@ for release:
      To push all local tags to bitbucket, use this command::
 
        $ git push --tags
+
+  #. **Create a pull request to merge master into develop.** When approved,
+     do the merge.
+
+
+.. _release-notes-label:
+
+*******************************************
+Release Notes
+*******************************************
+
+Axom release notes are maintained in a single file ``axom/RELEASE-NOTES``.
+The release notes for the latest version are at the top of the file. 
+Notes for previous releases appear after that in descending version number 
+order.
+
+For each version, the release notes must contain the following information:
+
+ * Name of software product (i.e., Axom) and version number
+
+ * Date of release
+
+ * One or two sentence overview of release, including any major changes.
+ 
+ * Link to landing page for installation instructions, user manuals, and other
+   important documentation.
+
+ * The release notes should be broken out into the following sections: 
+
+    * Additions: Descriptions of new features
+    * Removals: Notable deprecated features or removed functionality
+    * Changes: Enhancements to existing functionality
+    * Fixes: Major bug fixes
+    * Known bugs: Existing issues that are important for users to know about
+
+.. note:: Release notes for each Axom version should explain what changed in 
+          that version of the software -- and nothing else!! 
+
+Release notes are an important way to communicate software changes to users
+(functionality enhancements, new features, bug fixes, etc.). Arguably, they 
+are the simplest and easiest way to do so. Each change listed in the release 
+notes should contain a clear, concise statement of the change. Items should 
+be ordered based on the impact to users (higher impact - first, lower impact 
+last). 
+
+.. note:: When writing release notes, think about what users need to know and 
+          what is of value to them. 
+
+Release notes should summarize new developments and provide enough detail
+for users to get a clear sense of what's new. They should be brief -- don't
+make them overly verbose or detailed. Provide enough description for users
+to understand a change, but no more than necessary. In other words, release
+notes summarize major closed issues in a human-readable narrative. Direct 
+users to other documentation (user guides, software documentation, example 
+codes) for details and additional information.
+
+.. note:: Release notes should be updated as work is completed and reviewed
+          along with other documentation in a pull request. This is much 
+          easier than attempting to compile release notes before a release 
+          by looking at commit logs, etc. **Preparing release notes as part 
+          of the release process should take no more than one hour.
+
+Lastly, release notes provide an easy-to-find retrospective record of 
+progress for users and other stakeholders. They are useful for developers
+and for project reporting and reviews.
+
 
