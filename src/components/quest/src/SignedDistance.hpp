@@ -83,13 +83,29 @@ public:
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != AXOM_NULLPTR
    */
-  SignedDistance( axom::mint::Mesh* surfaceMesh, int maxObjects,
+  SignedDistance( const mint::Mesh* surfaceMesh,
+                  int maxObjects,
                   int maxLevels=5 );
 
   /*!
    * \brief Destructor.
    */
   ~SignedDistance();
+
+  /*!
+   * \brief Computes the distance of the given point to the input surface mesh.
+   *
+   * \param [in] x x-coordinate of the query point
+   * \param [in] y y-coordinate of the query point
+   * \param [in] z z-coordinate of the query point
+   *
+   * \return minDist minimum signed distance of the query point to the surface.
+   */
+  double computeDistance( double x, double y, double z=0.0 )
+  {
+    PointType pt = PointType::make_point( x, y, z );
+    return ( computeDistance( pt ) );
+  }
 
   /*!
    * \brief Computes the distance of the given point to the surface mesh.
@@ -224,9 +240,9 @@ private:
   SignedDistance() : m_surfaceMesh(AXOM_NULLPTR), m_bvhTree(AXOM_NULLPTR) { };
 
 private:
-  axom::mint::Mesh* m_surfaceMesh;      /*!< User-supplied surface mesh. */
-  BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
-  BVHTreeType* m_bvhTree;         /*!< Spatial acceleration data-structure. */
+  const mint::Mesh* m_surfaceMesh;  /*!< User-supplied surface mesh. */
+  BoxType m_boxDomain;              /*!< bounding box containing surface mesh */
+  BVHTreeType* m_bvhTree;           /*!< Spatial acceleration data-structure. */
 
   DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
 
@@ -260,7 +276,7 @@ private:
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-  axom::mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
+   const mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != AXOM_NULLPTR );
