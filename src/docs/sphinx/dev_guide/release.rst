@@ -101,12 +101,8 @@ Here are the steps to follow for an Axom release.
 
        $ git push vMM.mm.pp
 
-     To push all local tags to bitbucket, use this command::
-
-       $ git push --tags
-
   #. **Create a pull request to merge master into develop.** When approved,
-     do the merge.
+     merge it.
 
 
 .. _release-notes-label:
@@ -115,22 +111,19 @@ Here are the steps to follow for an Axom release.
 Release Notes
 *******************************************
 
-Axom release notes are maintained in a single file ``axom/RELEASE-NOTES``.
+Axom release notes are maintained in a single file ``axom/RELEASE-NOTES.md``.
 The release notes for the latest version are at the top of the file. 
 Notes for previous releases appear after that in descending version number 
 order.
 
 For each version, the release notes must contain the following information:
 
- * Name of software product (i.e., Axom) and version number
+ * Axom version number
 
  * Date of release
 
  * One or two sentence overview of release, including any major changes.
  
- * Link to landing page for installation instructions, user manuals, and other
-   important documentation.
-
  * The release notes should be broken out into the following sections: 
 
     * Additions: Descriptions of new features
