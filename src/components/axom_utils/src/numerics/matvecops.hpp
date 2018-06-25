@@ -220,6 +220,9 @@ inline bool matrix_subtract( const Matrix< T >& A,
  *  dimension. If the inner dimensions are not matching, the code returns a
  *  \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{C} \f$
  *
+ * * \note Matrix \f$ \mathcal{C} \f$ should be a different Matrix instance than
+ *  \f$ \mathcal{A} \f$ , \f$ \mathcal{B} \f$
+ *
  * \return status true if the multiplication is successful, otherwise, false.
  */
 template < typename T >
@@ -252,6 +255,7 @@ inline void matrix_scalar_multiply( Matrix< T >& A, const T& c );
  * \pre vec must be of dimension \f$ N \f$
  * \pre output != AXOM_NULLPTR
  * \pre output must be of dimension \f$ M \f$
+ * \pre vec != output
  *
  * \post \f$ b_i = \sum\limits_{j=0}^N a_{ij} \cdot x_j \f$,
  *  \f$\forall i \in [0,M-1] \f$
@@ -269,6 +273,9 @@ inline void matrix_vector_multiply( const Matrix< T >& A,
  *
  * \note If the supplied matrix does not have the correct dimensions, the code
  *  returns a \f$ 1 \times 1 \f$ null matrix in \f$ \mathcal{M} \f$
+ *
+ * \note Matrix \f$ \mathcal{M} \f$ should be a different Matrix instance than
+ *  \f$ \mathcal{A} \f$
  *
  * \return status true if the matrix transpose is successful, otherwise, false.
  */
