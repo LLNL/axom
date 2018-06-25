@@ -1,0 +1,45 @@
+.. ##
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory
+.. ##
+.. ## LLNL-CODE-741217
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
+.. ##
+
+.. |quad| image:: ../figures/quad.png
+          :scale: 100%
+          :alt: Linear Lagrangian Quadrilateral Element
+
+.. |quad9| image:: ../figures/quad9.png
+           :scale: 100%
+           :alt: Quadratic Lagrangian Quadrilateral Element
+
+.. |triangle| image:: ../figures/triangle.png
+              :scale: 100%
+              :alt: Linear Lagrangian Triangle Element
+
+.. |hex| image:: ../figures/hex.png
+         :scale: 100%
+         :alt: Linear Lagrangian Hexahedron Element
+
+.. |hex27| image:: ../figures/hex27.png
+           :scale: 100%
+           :alt: Quadratic Lagrangian Hexahedron Element
+
+.. |tet| image:: ../figures/tet.png
+         :scale: 100%
+         :alt: Linear Lagrangian Tetrahedron Element
+
+.. |prism| image:: ../figures/prism.png
+           :scale: 100%
+           :alt: Linear Lagrangian Prism Element
+
+.. |pyramid| image:: ../figures/pyramid.png
+             :scale: 100%
+             :alt: Linear Lagrangian Pyramid Element
