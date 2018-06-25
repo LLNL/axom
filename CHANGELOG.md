@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   is used extensively for Delaunay triangulations.
 
 ### Changed
+- Refactored Axom's Matrix/Vector operators and consolidated them in a single file.
+- Removed overloaded arithmetic operators from the Matrix class. Using the overloaded operators,
+  albeit convenient, could have undesirable performance side effects, e.g., creation of temp
+  objects when chaining those operators. To avoid confusion and to prevent applications from
+  inadvartently misusing them, the overloaded operators are now removed. Application codes can
+  use the ``matvecops``  methods instead.
 - Quest's STL reader now returns a status code, inidicating whether reading
   the STL file was successful. Also, the reader now leverages the improved
   Mint API to reserve storage for mesh and avoid re-allocations when reading

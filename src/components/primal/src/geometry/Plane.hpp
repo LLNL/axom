@@ -20,7 +20,7 @@
 
 #include "axom/Macros.hpp"                 // for Axom macros
 #include "axom/Types.hpp"                  // for AXOM_NULLPTR
-#include "axom_utils/vector_utilities.hpp" // for vector operators
+#include "axom_utils/matvecops.hpp"        // for vector operators
 #include "primal/OrientationResult.hpp"    // for OrientedSide enum
 
 #include "slic/slic.hpp"                   // for SLIC macros

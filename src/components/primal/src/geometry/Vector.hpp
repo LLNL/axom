@@ -19,8 +19,8 @@
 #define VECTOR_HPP_
 
 // axom_utils includes
-#include "axom_utils/Determinants.hpp"     // for numerics::determinant()
-#include "axom_utils/vector_utilities.hpp" // for dot_product()/cross_product()
+#include "axom_utils/Determinants.hpp"  // for numerics::determinant()
+#include "axom_utils/matvecops.hpp"     // for dot_product()/cross_product()
 
 // Primal includes
 #include "primal/NumericArray.hpp"
