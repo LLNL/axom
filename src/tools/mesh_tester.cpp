@@ -448,6 +448,22 @@ int main( int argc, char** argv )
     "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
                 <<  surface_mesh->getNumberOfCells() << " triangles.");
 
+  // Vertex welding
+  {
+    axom::utilities::Timer timer(true);
+
+    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+
+    timer.stop();
+    SLIC_INFO("Vertex welding took "
+              << timer.elapsedTimeInSec() << " seconds.");
+    SLIC_INFO("After welding, mesh has "
+              << surface_mesh->getNumberOfNodes() << " vertices and "
+              <<  surface_mesh->getNumberOfCells() << " triangles.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
+  }
+
   // Detect collisions
   {
     std::vector< std::pair<int, int> > collisions;
@@ -485,22 +501,6 @@ int main( int argc, char** argv )
     {
       SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
     }
-  }
-
-  // Vertex welding
-  {
-    axom::utilities::Timer timer(true);
-
-    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
-
-    timer.stop();
-    SLIC_INFO("Vertex welding took "
-              << timer.elapsedTimeInSec() << " seconds.");
-    SLIC_INFO("After welding, mesh has "
-              << surface_mesh->getNumberOfNodes() << " vertices and "
-              <<  surface_mesh->getNumberOfCells() << " triangles.");
-
-    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Delete the mesh
