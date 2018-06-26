@@ -15,20 +15,22 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef SIGNEDDISTANCE_HPP_
-#define SIGNEDDISTANCE_HPP_
+#ifndef QUEST_SIGNED_DISTANCE_HPP_
+#define QUEST_SIGNED_DISTANCE_HPP_
 
 // axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 #include "axom_utils/Utilities.hpp"
 
+// primal includes
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 
+// mint includes
 #include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
