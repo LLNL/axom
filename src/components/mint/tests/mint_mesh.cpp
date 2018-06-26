@@ -330,8 +330,8 @@ TEST( mint_mesh_DeathTest, enforce_unique_field_names )
   m.createField< double >( "foo", mint::NODE_CENTERED );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      m.createField< double >( "foo", mint::CELL_CENTERED ),
-      IGNORE_OUTPUT );
+    m.createField< double >( "foo", mint::CELL_CENTERED ),
+    IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------

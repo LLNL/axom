@@ -264,7 +264,7 @@ void check_set( Array< T >& v )
   /* Set all the values in the array to zero. */
   v.fill( ZERO );
 
-  /* Set the first half of the tuples in the array to the sequential values in 
+  /* Set the first half of the tuples in the array to the sequential values in
    * buffer. */
   v.set( buffer, buffer_size, 0 );
 
@@ -300,7 +300,7 @@ void check_set( Array< T >& v )
     buffer[ i ] = i + buffer_size * num_components;
   }
 
-  /* Set the second half of the tuples in the array to the new sequential values 
+  /* Set the second half of the tuples in the array to the new sequential values
    * in buffer. */
   v.set( buffer, buffer_size, buffer_size );
 
@@ -310,7 +310,7 @@ void check_set( Array< T >& v )
   EXPECT_EQ( num_components, v.numComponents() );
   EXPECT_EQ( ratio, v.getResizeRatio() );
   EXPECT_EQ( data_ptr, v.getData() );
-  
+
   /* Check that all the tuples in the array now hold sequential values. */
   for ( IndexType i = 0 ; i < 2 * buffer_size ; ++i )
   {
@@ -492,7 +492,7 @@ void check_resize( Array< T >& v )
   {
     tuple[ j ] = size * num_components + j;
   }
-  
+
   capacity = calc_new_capacity( v, old_capacity - size + 1 );
   v.append( tuple, 1 );
   size++;
@@ -648,7 +648,7 @@ void check_emplace( Array< T >& v )
     }
   }
 
-  /* Emplace 1 tuple at the end of the array with the default value, 
+  /* Emplace 1 tuple at the end of the array with the default value,
    * should resize. */
   capacity = calc_new_capacity( v, 1 );
   v.emplace( 1, v.size() );
@@ -821,7 +821,7 @@ void check_sidre( Array< T >& v )
   /* Create a copy. */
   Array< T > cpy( const_cast< sidre::View* >( v.getView() ) );
   cpy.setResizeRatio( v.getResizeRatio() );
-  
+
   /* Check that the copy holds the same data. */
   check_copy( v, cpy );
 

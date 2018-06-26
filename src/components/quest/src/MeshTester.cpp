@@ -117,7 +117,7 @@ inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
   const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
   const double* z = surface_mesh->getCoordinateArray( mint::Z_COORDINATE );
 
-  for ( int n=0; n < 3; ++n )
+  for ( int n=0 ; n < 3 ; ++n )
   {
     const mint::IndexType nodeIdx = triCell[ n ];
     tri[ n ][ 0 ] = x[ nodeIdx ];

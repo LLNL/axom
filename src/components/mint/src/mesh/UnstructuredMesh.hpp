@@ -168,7 +168,7 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                "This constructor is only active for single topology meshes." );
+                            "This constructor is only active for single topology meshes." );
 
     initialize();
   }
@@ -197,7 +197,7 @@ public:
                                                connectivity_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
-                "This constructor is only active for mixed topology meshes." );
+                            "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
     initialize();
@@ -226,7 +226,7 @@ public:
    * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
    * \param [in] z pointer to the z-coordinates (required only 3D)
    *
-   * \note the provided coordinate arrays are to be of length at least 
+   * \note the provided coordinate arrays are to be of length at least
    *  node_capacity.
    * \note This constructor is only active when TOPO == SINGLE_SHAPE.
    *
@@ -248,7 +248,7 @@ public:
                                                cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                "This constructor is only active for single topology meshes." );
+                            "This constructor is only active for single topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
@@ -269,9 +269,9 @@ public:
    *  in the provided connectivity array.
    * \param [in] connectivity the connectivity array. Must be Of length at least
    *  connectivity_capacity.
-   * \param [in] offsets the offsets of each ID, of length at lesat 
+   * \param [in] offsets the offsets of each ID, of length at lesat
    *  cell_capacity + 1.
-   * \param [in] types the array of cell types. Must be of length at least 
+   * \param [in] types the array of cell types. Must be of length at least
    *  cell_capacity.
    * \param [in] n_nodes the number of nodes in the mesh.
    * \param [in] node_capacity the number of nodes able to be stored in the
@@ -280,7 +280,7 @@ public:
    * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
    * \param [in] z pointer to the z-coordinates (required only 3D)
    *
-   * \note the provided coordinate arrays are to be of length at least 
+   * \note the provided coordinate arrays are to be of length at least
    *  node_capacity.
    * \note This constructor is only active when TOPO == MIXED_SHAPE.
    *
@@ -303,7 +303,7 @@ public:
                                                connectivity_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
-                "This constructor is only active for mixed topology meshes." );
+                            "This constructor is only active for mixed topology meshes." );
 
     SLIC_ASSERT( x != AXOM_NULLPTR );
     SLIC_ASSERT( m_ndims < 2 || y != AXOM_NULLPTR );
@@ -343,7 +343,7 @@ public:
     m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
-           "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
+                   "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
     if ( TOPO == MIXED_SHAPE )
     {
@@ -393,7 +393,7 @@ public:
                                                m_coordset, cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                "This constructor is only active for single topology meshes." );
+                            "This constructor is only active for single topology meshes." );
     initialize();
   }
 
@@ -417,7 +417,7 @@ public:
                                                connectivity_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
-                "This constructor is only active for mixed topology meshes." );
+                            "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
     initialize();
@@ -787,7 +787,7 @@ public:
    * \post getNodeCapacity() >= node_capacity
    * \post getCellCapacity() >= cell_capacity
    */
-  void reserve( IndexType node_capacity, IndexType cell_capacity, 
+  void reserve( IndexType node_capacity, IndexType cell_capacity,
                 IndexType connectivity_capacity=USE_DEFAULT )
   {
     reserveNodes( node_capacity );

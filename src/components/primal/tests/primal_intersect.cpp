@@ -74,22 +74,24 @@ template < int DIM >
 void permuteCornersTest(const primal::Triangle< double, DIM > & a,
                         const primal::Triangle< double, DIM > & b,
                         const std::string & whattest,
-                        const bool includeBoundary,
+                        const bool includeBdry,
                         const bool testtrue)
 {
-  SCOPED_TRACE(whattest + (includeBoundary ?
+  SCOPED_TRACE(whattest + (includeBdry ?
                            " (including boundary)" :
                            " (NOT including boundary)"));
 
-  bool allmatch = true;
+  int numFailures = 0;
+  const int numTests = 3*3*4;
 
   for (int i = 0 ; i < 3 ; ++i)
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      allmatch = allmatch &&
-                 (primal::intersect(roll(a, i), roll(b, j),
-                                    includeBoundary) == testtrue);
+      if(primal::intersect(roll(a, i), roll(b, j),includeBdry) != testtrue)
+      {
+        ++numFailures;
+      }
     }
   }
 
@@ -100,9 +102,10 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      allmatch = allmatch &&
-                 (primal::intersect(roll(ap, i), roll(bp, j),
-                                    includeBoundary) == testtrue);
+      if(primal::intersect(roll(ap, i), roll(bp, j),includeBdry) != testtrue)
+      {
+        ++numFailures;
+      }
     }
   }
 
@@ -112,9 +115,10 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      allmatch = allmatch &&
-                 (primal::intersect(roll(b, i), roll(a, j),
-                                    includeBoundary) == testtrue);
+      if(primal::intersect(roll(b, i), roll(a, j),includeBdry) != testtrue)
+      {
+        ++numFailures;
+      }
     }
   }
 
@@ -122,21 +126,27 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      allmatch = allmatch &&
-                 (primal::intersect(roll(bp, i), roll(ap, j),
-                                    includeBoundary) == testtrue);
+      if(primal::intersect(roll(bp, i), roll(ap, j),includeBdry) != testtrue)
+      {
+        ++numFailures;
+      }
     }
   }
 
-  if (allmatch)
+  if (numFailures == 0)
   {
     SUCCEED();
   }
   else
   {
-    ADD_FAILURE() << (testtrue ?
-                      "Triangles should intersect but did not" :
-                      "Triangles should not intersect but did");
+    ADD_FAILURE()
+      << (testtrue ?
+          "Triangles should intersect but did not" :
+          "Triangles should not intersect but did")
+      << "\n\t -- " << numFailures << " of " << numTests
+      << " permutations failed when testing intersection of triangles "
+      << "\n\t a: " << a
+      << "\n\t b: " << b;
   }
 }
 
@@ -901,6 +911,32 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection )
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
+
+TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
+{
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
+  SLIC_INFO("Triangle intersection regression tests for discovered problems");
+
+  typedef primal::Triangle< double,3 > Triangle3;
+  typedef primal::Point< double,3 >   Point3;
+
+  {
+    std::string msg = "Adjacent coplanar triangles with obtuse angles";
+    Point3 vdata[4] = { Point3::make_point(-1.83697e-14,62.5,300),
+                        Point3::make_point(16.17619,60.37037,300),
+                        Point3::make_point(-5.790149e-16,11.26926,9.456031),
+                        Point3::make_point(2.916699,10.88527,9.456031)};
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[2], vdata[1], vdata[3]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
+}
+
 
 TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {

@@ -469,14 +469,14 @@ void runContainmentQueries(CommandLineArguments& clargs)
 
   // Add a scalar field for the containment queries
   SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
-  axom::mint::UniformMesh * umesh = clargs.queryMesh;
+  axom::mint::UniformMesh* umesh = clargs.queryMesh;
   const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
 
   int* containment = umesh->createField< int >( "octree_containment",
                                                 axom::mint::NODE_CENTERED );
   SLIC_ASSERT( containment != AXOM_NULLPTR );
 
-  double * coords = new double[3*nnodes];
+  double* coords = new double[3*nnodes];
   axom::utilities::Timer fillTimer(true);
 
     #pragma omp parallel for schedule(static)
@@ -558,7 +558,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
   // Add a scalar field for the containment queries
   SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
-  axom::mint::UniformMesh * umesh = clargs.queryMesh;
+  axom::mint::UniformMesh* umesh = clargs.queryMesh;
   const int nnodes = umesh->getNumberOfNodes();
 
   int* containment = umesh->createField< int >( "bvh_containment",
@@ -639,9 +639,9 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
     fmt::MemoryWriter out;
 
     int* bvh_containment = umesh->getFieldPtr< int >( "bvh_containment",
-                                                    axom::mint::NODE_CENTERED );
+                                                      axom::mint::NODE_CENTERED );
     int* oct_containment = umesh->getFieldPtr< int >( "octree_containment",
-                                                    axom::mint::NODE_CENTERED );
+                                                      axom::mint::NODE_CENTERED );
 
     for ( int inode=0 ; inode < nnodes ; ++inode )
     {
@@ -703,9 +703,9 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
     int diffCount = 0;
     fmt::MemoryWriter out;
 
-    int * exp_containment = umesh->getFieldPtr< int >( "octree_containment",
-                                                    axom::mint::NODE_CENTERED );
-    int * base_containment = grp->getView("octree_containment")->getArray();
+    int* exp_containment = umesh->getFieldPtr< int >( "octree_containment",
+                                                      axom::mint::NODE_CENTERED );
+    int* base_containment = grp->getView("octree_containment")->getArray();
 
     for ( int inode=0 ; inode < nnodes ; ++inode )
     {
@@ -743,11 +743,11 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
 
     int* base_containment = grp->getView("bvh_containment")->getArray();
     int* exp_containment  = umesh->getFieldPtr< int >(
-                                "bvh_containment", axom::mint::NODE_CENTERED );
+      "bvh_containment", axom::mint::NODE_CENTERED );
 
     double* base_distance = grp->getView("bvh_distance")->getArray();
     double* exp_distance  = umesh->getFieldPtr< double >(
-                                   "bvh_distance", axom::mint::NODE_CENTERED );
+      "bvh_distance", axom::mint::NODE_CENTERED );
 
     for ( int inode=0 ; inode < nnodes ; ++inode )
     {
@@ -825,9 +825,9 @@ void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
   if(clargs.testContainment)
   {
     int* oct_containment = umesh->getFieldPtr< int >(
-                              "octree_containment", axom::mint::NODE_CENTERED );
+      "octree_containment", axom::mint::NODE_CENTERED );
     view = grp->createView( "octree_containment",
-                             axom::sidre::INT_ID, nnodes )->allocate();
+                            axom::sidre::INT_ID, nnodes )->allocate();
     int* contData = view->getArray();
     std::copy(oct_containment, oct_containment + nnodes, contData);
   }
@@ -835,14 +835,14 @@ void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
   if(clargs.testDistance)
   {
     int* bvh_containment = umesh->getFieldPtr< int >(
-                            "bvh_containment", axom::mint::NODE_CENTERED );
+      "bvh_containment", axom::mint::NODE_CENTERED );
     view = grp->createView( "bvh_containment",
-                             axom::sidre::INT_ID,nnodes )->allocate();
+                            axom::sidre::INT_ID,nnodes )->allocate();
     int* contData = view->getArray();
     std::copy(bvh_containment, bvh_containment+nnodes, contData);
 
-    double * bvh_distance = umesh->getFieldPtr< double >(
-                            "bvh_distance", axom::mint::NODE_CENTERED );
+    double* bvh_distance = umesh->getFieldPtr< double >(
+      "bvh_distance", axom::mint::NODE_CENTERED );
     view = grp->createView( "bvh_distance",
                             axom::sidre::DOUBLE_ID,nnodes)->allocate();
 

@@ -203,7 +203,8 @@ public:
   {
     SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
                    "Cannot have an undefined cell type." );
-    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES, "Unknown cell type." );
+    SLIC_ERROR_IF( cellTypeToInt(m_cell_type) >= NUM_CELL_TYPES,
+                   "Unknown cell type." );
 
     m_stride = getCellInfo( cell_type ).num_nodes;
     m_values = new Array< IndexType >( values, n_IDs, m_stride, ID_capacity );
@@ -244,7 +245,7 @@ public:
     SLIC_ERROR_IF(
       m_values->numComponents() != m_stride,
       "values array must have " << m_stride << " components, is " <<
-                   m_values->numComponents() << "." );
+      m_values->numComponents() << "." );
   }
 
   /*!
@@ -432,7 +433,7 @@ public:
    *
    * \param [in] ID the ID in question.
    *
-   * \return pointer to the values of the given ID, of length at least 
+   * \return pointer to the values of the given ID, of length at least
    *  getNumberOfValuesForID().
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
@@ -471,7 +472,7 @@ public:
   /*!
    * \brief Returns a pointer to the offsets array. Since this version of the
    *  ConnectivityArray does not have an offsets array this function returns a
-   *  null pointer. 
+   *  null pointer.
    */
   /// @{
 
@@ -486,7 +487,7 @@ public:
   /*!
    * \brief Returns a pointer to the types array. Since this version of the
    *  ConnectivityArray does not have a types array this function returns a
-   *  null pointer. 
+   *  null pointer.
    */
   /// @{
 
@@ -501,7 +502,7 @@ public:
   /*!
    * \brief Appends an ID.
    *
-   * \param [in] values pointer to the values to add, of length at least 
+   * \param [in] values pointer to the values to add, of length at least
    *  getNumberOfValuesForID().
    * \param [in] n_values not used, does not need to be specified.
    * \param [in] type not used, does not need to be specified.
@@ -536,7 +537,7 @@ public:
   /*!
    * \brief Sets the values of the given ID.
    *
-   * \param [in] values pointer to the values to set, of length at least 
+   * \param [in] values pointer to the values to set, of length at least
    *  getNumberOfValuesForID().
    * \param [in] ID the ID of the values to set.
    *

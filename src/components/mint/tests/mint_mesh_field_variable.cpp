@@ -157,13 +157,13 @@ TEST( mint_mesh_field_variable_DeathTest, invalid_construction )
                                                                   internal::ZERO,
                                                                   axom::mint::
                                                                   internal::ZERO ),
-  IGNORE_OUTPUT );
+                             IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< double >( EMPTY_STRING,
                                                             axom::mint::internal
                                                             ::ZERO,
                                                             axom::mint::internal
                                                             ::ZERO ),
-  IGNORE_OUTPUT );
+                             IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------

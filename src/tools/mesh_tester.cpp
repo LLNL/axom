@@ -302,9 +302,9 @@ void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
                           int degenerateCount)
 {
-  std::cout << triangleCount << " triangles, with " << intersectPairCount <<
-    " intersecting tri pairs, " << degenerateCount << " degenerate tris." <<
-    std::endl;
+  std::cout << triangleCount << " triangles, with " << intersectPairCount
+            << " intersecting tri pairs, " << degenerateCount
+            <<  " degenerate tris." <<  std::endl;
 }
 
 void saveProblemFlagsToMesh(mint::Mesh* mesh,
@@ -313,10 +313,10 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
 {
   // Create new Field variables to hold degenerate and intersecting info
   const int num_cells = mesh->getNumberOfCells();
-  int* intersectptr = mesh->createField< int >(
-                            "nbr_intersection", mint::CELL_CENTERED );
-  int* dgnptr       = mesh->createField< int >(
-                            "degenerate_triangles", mint::CELL_CENTERED );
+  int* intersectptr =
+    mesh->createField< int >("nbr_intersection", mint::CELL_CENTERED );
+  int* dgnptr =
+    mesh->createField< int >("degenerate_triangles", mint::CELL_CENTERED );
 
   // Initialize everything to 0
   for (int i = 0 ; i < num_cells ; ++i)
@@ -448,6 +448,22 @@ int main( int argc, char** argv )
     "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
                 <<  surface_mesh->getNumberOfCells() << " triangles.");
 
+  // Vertex welding
+  {
+    axom::utilities::Timer timer(true);
+
+    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+
+    timer.stop();
+    SLIC_INFO("Vertex welding took "
+              << timer.elapsedTimeInSec() << " seconds.");
+    SLIC_INFO("After welding, mesh has "
+              << surface_mesh->getNumberOfNodes() << " vertices and "
+              <<  surface_mesh->getNumberOfCells() << " triangles.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
+  }
+
   // Detect collisions
   {
     std::vector< std::pair<int, int> > collisions;
@@ -485,22 +501,6 @@ int main( int argc, char** argv )
     {
       SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
     }
-  }
-
-  // Vertex welding
-  {
-    axom::utilities::Timer timer(true);
-
-    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
-
-    timer.stop();
-    SLIC_INFO("Vertex welding took "
-              << timer.elapsedTimeInSec() << " seconds.");
-    SLIC_INFO("After welding, mesh has "
-              << surface_mesh->getNumberOfNodes() << " vertices and "
-              <<  surface_mesh->getNumberOfCells() << " triangles.");
-
-    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Delete the mesh
