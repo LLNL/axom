@@ -772,7 +772,7 @@ private:
    * \return status true if the mesh type is valie, else, false.
    */
   inline bool validMeshType( ) const
-  { return ( (m_type >= 0) && (mint::NUM_MESH_TYPES) ); }
+  { return ( (m_type >= 0) && (m_type < mint::NUM_MESH_TYPES) ); }
 
   /*!
    * \brief Helper method to check if the mesh dimension is valid.
@@ -818,7 +818,7 @@ inline const FieldData* Mesh::getFieldData( int association ) const
                  "invalid field association [" << association << "]" );
   SLIC_ERROR_IF( m_mesh_fields[ association ]==AXOM_NULLPTR,
                  "null field data object w/association [" << association <<
-      "]" );
+                 "]" );
   SLIC_ERROR_IF( m_type==PARTICLE_MESH && association != NODE_CENTERED,
                  "a particle mesh may only store node-centered fields" );
 
@@ -835,7 +835,7 @@ inline bool Mesh::hasField( const std::string& name,
   {
 
     int N = ( m_type==mint::PARTICLE_MESH ) ? 1 : mint::NUM_FIELD_ASSOCIATIONS;
-    for ( int i=0; !found && i < N; ++i )
+    for ( int i=0 ; !found && i < N ; ++i )
     {
       const FieldData* fd = getFieldData( i );
       SLIC_ASSERT( fd != AXOM_NULLPTR );

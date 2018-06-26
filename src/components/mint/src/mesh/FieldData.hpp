@@ -380,7 +380,7 @@ public:
 
   /*!
    * \brief Returns const pointer to the buffer of the field with the given
-   *name.
+   * name.
    *
    * \param [in] name the name of the field in query.
    * \param [out] num_tuples the number of tuples in the field (optional)

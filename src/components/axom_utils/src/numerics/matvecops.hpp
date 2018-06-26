@@ -371,8 +371,8 @@ bool matrix_subtract( const Matrix< T >& A,
 //------------------------------------------------------------------------------
 template < typename T >
 inline bool matrix_multiply( const Matrix< T >& A,
-                      const Matrix< T >& B,
-                      Matrix< T >& C )
+                             const Matrix< T >& B,
+                             Matrix< T >& C )
 {
   if ( A.getNumColumns() != B.getNumRows()   ||
        C.getNumRows() != A.getNumRows()      ||

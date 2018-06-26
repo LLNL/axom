@@ -213,7 +213,7 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
  * \param [in/out] m_values a pointer to the values array.
  * \param [in/out] m_offsets a pointer to the offsets array.
  *
- * \note The number of values to append is given by 
+ * \note The number of values to append is given by
  *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
  *  this long.
  *
@@ -285,7 +285,7 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  * \param [in/out] m_values a pointer to the values Array.
  * \param [in/out] m_offsets a pointer to the offsets Array.
  *
- * \note The number of values to insert is given by 
+ * \note The number of values to insert is given by
  *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
  *  this long.
  *

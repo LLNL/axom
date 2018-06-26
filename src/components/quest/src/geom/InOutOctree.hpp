@@ -366,7 +366,8 @@ public:
   /**
    * \brief Constructor for an InOutLeafData
    *
-   * \param vInd The index of a vertex (optional; default is to not set a vertex)
+   * \param vInd The index of a vertex
+   * (optional; default is to not set a vertex)
    */
   DynamicGrayBlockData(VertexIndex vInd, bool isLeaf)
     : m_vertIndex(vInd), m_isLeaf(isLeaf) {}
@@ -865,7 +866,7 @@ public:
         // Grab relation from mesh
         using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
         mint::IndexType* vertIds =
-            static_cast< UMesh* >(m_surfaceMesh)->getCell( i );
+          static_cast< UMesh* >(m_surfaceMesh)->getCell( i );
 
         // Remap the vertex IDs
         for(int j=0 ; j< NUM_TRI_VERTS ; ++j)
@@ -907,20 +908,20 @@ public:
       }
 
       typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
-      UMesh * triMesh =
-          new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size() );
+      UMesh* triMesh =
+        new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size() );
 
       // Add vertices to the mesh (i.e. vertex positions)
-      for(int i=0; i< m_vertexSet.size(); ++i)
+      for(int i=0 ; i< m_vertexSet.size() ; ++i)
       {
         const SpacePt& pt = vertexPosition(i);
         triMesh->appendNode(pt[0], pt[1], pt[2]);
       }
 
       // Add triangles to the mesh (i.e. boundary vertices)
-      for(int i=0; i< m_elementSet.size(); ++i)
+      for(int i=0 ; i< m_elementSet.size() ; ++i)
       {
-        const TriangleIndex * tv = &triangleVertexIndices(i)[0];
+        const TriangleIndex* tv = &triangleVertexIndices(i)[0];
         triMesh->appendCell(tv);
       }
 
@@ -2790,7 +2791,7 @@ private:
     mint::IndexType data[3];
     for(int i=0 ; i< 3 ; ++i)
     {
-        data[i] = vStart + i;
+      data[i] = vStart + i;
     }
 
     mesh->appendCell(data);
@@ -2833,7 +2834,7 @@ private:
 
     mesh->appendCell(data);
 
-    // Log the triangle info as primal code to simplify adding a test for this case
+    // Log bounding box info to simplify adding a test for this case
     if(shouldLogBlocks)
     {
       static int counter = 0;
@@ -2911,7 +2912,7 @@ public:
     SLIC_DEBUG("--Checking that each vertex is in a leaf block of the tree.");
 
     const VertexIndex numVertices = m_octree.m_meshWrapper.numMeshVertices();
-    for(VertexIndex i=0; i< numVertices; ++i)
+    for(VertexIndex i=0 ; i< numVertices ; ++i)
     {
       const SpacePt& pos = m_octree.m_meshWrapper.vertexPosition(i);
       BlockIndex vertBlock = m_octree.findLeafBlock(pos);

@@ -279,12 +279,13 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
     z = new double[ node_capacity ];
   }
 
-  IndexType connec_capacity = getCellInfo( cell_type ).num_nodes * cell_capacity;
+  IndexType connec_capacity = getCellInfo( cell_type ).num_nodes *
+                              cell_capacity;
   IndexType* connectivity = new IndexType[ connec_capacity ];
 
   return new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, 0,
-                                                   cell_capacity, connectivity,
-                                                   0, node_capacity, x, y, z );
+                                               cell_capacity, connectivity,
+                                               0, node_capacity, x, y, z );
 }
 
 /*!
@@ -317,9 +318,9 @@ createExternalMixed( int ndims, IndexType cell_capacity,
   CellType* types = new CellType[ cell_capacity ];
 
   return new UnstructuredMesh< MIXED_SHAPE >( ndims, 0, cell_capacity,
-                                                  connec_capacity, connectivity,
-                                                  offsets, types, 0,
-                                                  node_capacity, x, y, z );
+                                              connec_capacity, connectivity,
+                                              offsets, types, 0,
+                                              node_capacity, x, y, z );
 }
 
 /*!
@@ -435,9 +436,9 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
 
   delete mesh;
   mesh = new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, n_cells,
-                                                   cell_capacity, connectivity,
-                                                   n_nodes, node_capacity,
-                                                   x, y, z );
+                                               cell_capacity, connectivity,
+                                               n_nodes, node_capacity,
+                                               x, y, z );
 
   if ( f1 != AXOM_NULLPTR )
   {
@@ -509,9 +510,9 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
 
   delete mesh;
   mesh = new UnstructuredMesh< MIXED_SHAPE >( ndims, n_cells, cell_capacity,
-                                                  connec_capacity, connectivity,
-                                                  offsets, types, n_nodes,
-                                                  node_capacity, x, y, z );
+                                              connec_capacity, connectivity,
+                                              offsets, types, n_nodes,
+                                              node_capacity, x, y, z );
 
   if ( f1 != AXOM_NULLPTR )
   {
@@ -636,8 +637,8 @@ void createMeshes( UnstructuredMesh< SINGLE_SHAPE >** meshes,
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
-                                                                   root, topo,
-                                                                   coordset );
+                                                               root, topo,
+                                                               coordset );
     if ( node_field )
     {
       internal::createField( meshes[ cur_mesh ], NODE_CENTERED );
@@ -693,8 +694,8 @@ void createMeshes( UnstructuredMesh< MIXED_SHAPE >** meshes,
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, root,
-                                                                  topo,
-                                                                  coordset );
+                                                              topo,
+                                                              coordset );
     if ( node_field )
     {
       internal::createField( meshes[ cur_mesh ], NODE_CENTERED );
@@ -739,8 +740,8 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
   for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
-                                                                   n_nodes,
-                                                                   n_cells );
+                                                               n_nodes,
+                                                               n_cells );
     if ( node_field )
     {
       internal::createField( meshes[ cur_mesh ], NODE_CENTERED );
@@ -755,10 +756,10 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
-                                                                   root, topo,
-                                                                   coordset,
-                                                                   n_nodes,
-                                                                   n_cells );
+                                                               root, topo,
+                                                               coordset,
+                                                               n_nodes,
+                                                               n_cells );
     if ( node_field )
     {
       internal::createField( meshes[ cur_mesh ], NODE_CENTERED );
@@ -786,7 +787,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
   for ( int dim = 1 ; dim <= 3 ; ++dim )
   {
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, n_nodes,
-                                                                  n_cells );
+                                                              n_cells );
     if ( node_field )
     {
       internal::createField( meshes[ cur_mesh ], NODE_CENTERED );
@@ -801,10 +802,10 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, root,
-                                                                  topo,
-                                                                  coordset,
-                                                                  n_nodes,
-                                                                  n_cells );
+                                                              topo,
+                                                              coordset,
+                                                              n_nodes,
+                                                              n_cells );
     if ( node_field )
     {
       internal::createField( meshes[ cur_mesh ], NODE_CENTERED );
@@ -2105,7 +2106,7 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   }
 
   /* Set the resize ratio to 1 and append ten values, should trigger a resize.
-     */
+   */
   resize_ratio = 1.0;
   mesh->setNodeResizeRatio( resize_ratio );
   append_node_structs( mesh, 10 );

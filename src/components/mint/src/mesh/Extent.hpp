@@ -212,7 +212,7 @@ public:
 
   /*!
    * \brief Converts the given cell grid index to a one-dimensional linear
-   *index.
+   * index.
    *
    * \param [in] i the grid cell index along the I_DIRECTION.
    * \param [in] j the grid cell index along the J_DIRECTION.

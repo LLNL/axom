@@ -50,9 +50,9 @@ namespace utilities
  *  failed.
  */
 template < typename T >
-inline T * alloc( std::size_t n )
+inline T* alloc( std::size_t n )
 {
-  return static_cast< T * >( std::malloc( n * sizeof( T ) ) );
+  return static_cast< T* >( std::malloc( n * sizeof( T ) ) );
 }
 
 /*!
@@ -65,7 +65,7 @@ inline T * alloc( std::size_t n )
  *  failed.
  */
 template < typename T >
-inline T * realloc( T * pointer, std::size_t n )
+inline T* realloc( T* pointer, std::size_t n )
 {
   if ( n == 0 )
   {
@@ -73,7 +73,7 @@ inline T * realloc( T * pointer, std::size_t n )
     return AXOM_NULLPTR;
   }
 
-  return static_cast< T * >( std::realloc( pointer,  n * sizeof( T ) ) );
+  return static_cast< T* >( std::realloc( pointer,  n * sizeof( T ) ) );
 }
 
 /*!
@@ -81,7 +81,7 @@ inline T * realloc( T * pointer, std::size_t n )
  * \param [in] pointer pointer to memory previously allocated with
  *  alloc or realloc or a null pointer.
  */
-inline void free( void * pointer )
+inline void free( void* pointer )
 {
   std::free( pointer );
 }

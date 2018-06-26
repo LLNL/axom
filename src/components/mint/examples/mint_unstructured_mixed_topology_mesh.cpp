@@ -61,7 +61,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 0: create the UnstructuredMesh */
   mint::UnstructuredMesh< mint::MIXED_SHAPE > mesh( DIMENSION, NUM_NODES,
-                                                        NUM_CELLS );
+                                                    NUM_CELLS );
 
   /* STEP 1: Add fields to the nodes and cells.
    * Note that we can only use the pointers below because we specified

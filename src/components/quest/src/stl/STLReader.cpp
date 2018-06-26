@@ -205,7 +205,7 @@ int STLReader::readBinarySTL()
     for(int j=0 ; j<9 ; ++j)
     {
       float coord = isLittleEndian ?
-          tri.vert[j] : utilities::swapEndian(tri.vert[j]);
+                    tri.vert[j] : utilities::swapEndian(tri.vert[j]);
 
       m_nodes.push_back( static_cast<double>( coord) );
     }
@@ -240,8 +240,9 @@ void STLReader::getMesh(
   /* Sanity checks */
   SLIC_ERROR_IF( mesh == AXOM_NULLPTR,
                  "supplied mesh is null!" );
-  SLIC_ERROR_IF( static_cast< mint::IndexType >(m_nodes.size()) != 3*m_num_nodes,
-                 "nodes vector size doesn't match expected size!" );
+  SLIC_ERROR_IF(
+    static_cast< mint::IndexType >(m_nodes.size()) != 3*m_num_nodes,
+    "nodes vector size doesn't match expected size!" );
   SLIC_ERROR_IF( mesh->getDimension() != 3,
                  "STL reader expects a 3D mesh!" );
   SLIC_ERROR_IF( mesh->getCellType() != mint::TRIANGLE,

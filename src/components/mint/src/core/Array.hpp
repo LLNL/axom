@@ -408,7 +408,8 @@ public:
    * \param [in] n the number of tuples to insert.
    * \param [in] pos the position to insert at.
    * \param [in] value the value for each component of the new tuples. If not
-   *  specified defaults to the default value of T (zero for most numeric types).
+   *  specified defaults to the default value of T (zero for most numeric
+   *  types).
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by n.

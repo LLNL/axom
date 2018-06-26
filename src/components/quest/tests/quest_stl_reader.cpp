@@ -140,7 +140,7 @@ TEST( quest_stl_reader, read_stl )
   EXPECT_TRUE( z != AXOM_NULLPTR );
 
   mint::IndexType numNodes = mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0; inode < numNodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     EXPECT_DOUBLE_EQ( x[ inode ], x_expected[ inode ] );
     EXPECT_DOUBLE_EQ( y[ inode ], y_expected[ inode ] );

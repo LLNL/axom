@@ -46,7 +46,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   constexpr double SPACING = 1.0;
   constexpr mint::CellType CELL_TYPE = mint::QUAD;
   constexpr mint::IndexType NODES_PER_CELL =
-                                      mint::getCellInfo( CELL_TYPE ).num_nodes;
+    mint::getCellInfo( CELL_TYPE ).num_nodes;
   constexpr mint::IndexType NUM_NODES = X_EXTENT * Y_EXTENT;
   constexpr mint::IndexType NUM_CELLS = (X_EXTENT - 1) * (Y_EXTENT - 1);
 
@@ -57,7 +57,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   /* STEP 0: create the UnstructuredMesh */
   mint::UnstructuredMesh< mint::SINGLE_SHAPE > mesh( DIMENSION, CELL_TYPE,
-                                                         NUM_NODES, NUM_CELLS );
+                                                     NUM_NODES, NUM_CELLS );
 
   /* STEP 1: Add fields to the nodes and cells.
    * Note that we can only use the pointers below because we specified

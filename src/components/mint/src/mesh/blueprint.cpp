@@ -142,7 +142,7 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
   const sidre::Group* coords = coordsets->getGroup( coordset_name );
   SLIC_WARNING_IF( coords==AXOM_NULLPTR,
                    "null coordset [" << coordset_name << "] in " <<
-        coordsets->getPathName() );
+                   coordsets->getPathName() );
 
   return coords;
 }
@@ -172,7 +172,7 @@ const sidre::Group* getCoordsetGroup( const sidre::Group* group,
     SLIC_ERROR_IF( !coordsets->hasChildGroup(
                      coords ),
                    "[" << path << "] is missing requested coordset group [" << coords <<
-          "]" );
+                   "]" );
 
     coordset = coordsets->getGroup( coords );
   }
@@ -205,7 +205,7 @@ const sidre::Group* getTopologyGroup( const sidre::Group* group,
     SLIC_ERROR_IF( !topologies->hasChildGroup(
                      topo ),
                    "[" << path << "] is missing requested topology group [" << topo <<
-          "]" );
+                   "]" );
 
     topology = topologies->getGroup( topo );
   }
@@ -376,7 +376,7 @@ void getUniformMesh( int dimension,
                                   "elements/origin/j0",
                                   "elements/origin/k0"   };
 
-  for ( int i=0; i < dimension; ++i )
+  for ( int i=0 ; i < dimension ; ++i )
   {
     origin [ i ] = c->getView( origin_names[ i ] )->getScalar();
     spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
@@ -415,7 +415,7 @@ void setUniformMesh( int dim,
                                   "elements/origin/k0"   };
 
   coordset->createView( "type" )->setString( "uniform" );
-  for ( int i=0; i < dim; ++i )
+  for ( int i=0 ; i < dim ; ++i )
   {
     coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
     coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );

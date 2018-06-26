@@ -83,7 +83,7 @@ public:
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != AXOM_NULLPTR
    */
-  SignedDistance( axom::mint::Mesh * surfaceMesh, int maxObjects,
+  SignedDistance( axom::mint::Mesh* surfaceMesh, int maxObjects,
                   int maxLevels=5 );
 
   /*!
@@ -123,7 +123,7 @@ public:
    * \return ptr pointer to the underlying bucket tree
    * \post ptr != AXOM_NULLPTR
    */
-  const BVHTreeType * getBVHTree( ) const { return m_bvhTree; };
+  const BVHTreeType* getBVHTree( ) const { return m_bvhTree; };
 
 private:
 
@@ -162,9 +162,9 @@ private:
    * \return dist minimum squared distance to the surface.
    */
   double getMinSqDistance( const PointType& pt,
-                           const int * candidates,
+                           const int* candidates,
                            int nelems,
-                           cpt_data * cpt) const;
+                           cpt_data* cpt) const;
 
   /*!
    * \brief Computes the sign of the given query point given the closest point
@@ -182,7 +182,7 @@ private:
    * \pre clocs != AXOM_NULLPTR
    */
   double computeSign( const PointType& pt,
-                      const cpt_data * cpt,
+                      const cpt_data* cpt,
                       std::vector< axom::mint::IndexType >& my_elements ) const;
 
   /*!
@@ -205,7 +205,7 @@ private:
    *  \pre indx != AXOM_NULLPTR
    */
   void getCandidateSurfaceElements( const PointType& pt,
-                                    const int * bins,
+                                    const int* bins,
                                     int nbins,
                                     std::vector< int >& candidates ) const;
 
@@ -224,9 +224,9 @@ private:
   SignedDistance() : m_surfaceMesh(AXOM_NULLPTR), m_bvhTree(AXOM_NULLPTR) { };
 
 private:
-  axom::mint::Mesh * m_surfaceMesh;     /*!< User-supplied surface mesh. */
+  axom::mint::Mesh* m_surfaceMesh;      /*!< User-supplied surface mesh. */
   BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
-  BVHTreeType * m_bvhTree;        /*!< Spatial acceleration data-structure. */
+  BVHTreeType* m_bvhTree;         /*!< Spatial acceleration data-structure. */
 
   DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
 
@@ -248,11 +248,11 @@ namespace detail
 class SortByDistance
 {
 public:
-  SortByDistance( double * dist ) : m_dist( dist ) { };
+  SortByDistance( double* dist ) : m_dist( dist ) { };
   ~SortByDistance() { }
   bool operator()( int i, int j) const { return( m_dist[i] < m_dist[j] ); }
 private:
-  double * m_dist;
+  double* m_dist;
 };
 
 } // end namespace detail
@@ -260,7 +260,7 @@ private:
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-  axom::mint::Mesh * surfaceMesh, int maxObjects, int maxLevels )
+  axom::mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != AXOM_NULLPTR );
@@ -275,7 +275,7 @@ SignedDistance< NDIMS >::SignedDistance(
   for ( axom::mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     PointType pt;
-    for ( int i=0; i < NDIMS; ++i )
+    for ( int i=0 ; i < NDIMS ; ++i )
     {
       pt[ i ] = m_surfaceMesh->getCoordinateArray( i )[ inode ];
     }
@@ -358,7 +358,7 @@ inline double SignedDistance< NDIMS >::computeDistance(
 template < int NDIMS >
 double SignedDistance< NDIMS >::computeSign(
   const PointType& pt,
-  const cpt_data * cpt,
+  const cpt_data* cpt,
   std::vector< axom::mint::IndexType >& AXOM_DEBUG_PARAM(my_elements) ) const
 {
   // Sanity checks
@@ -450,9 +450,9 @@ double SignedDistance< NDIMS >::computeSign(
 //------------------------------------------------------------------------------
 template < int NDIMS >
 double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
-                                                  const int * candidates,
+                                                  const int* candidates,
                                                   int nelems,
-                                                  cpt_data * cpt ) const
+                                                  cpt_data* cpt ) const
 {
   SLIC_ASSERT( candidates != AXOM_NULLPTR );
   SLIC_ASSERT( cpt != AXOM_NULLPTR );
@@ -463,8 +463,8 @@ double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
   cpt->cpt_locs.resize( nelems );
   cpt->element_ids.resize( nelems );
 
-  PointType * closest_pts = &(cpt->closest_pts)[0];
-  int * cpt_locs          = &(cpt->cpt_locs)[0];
+  PointType* closest_pts = &(cpt->closest_pts)[0];
+  int* cpt_locs          = &(cpt->cpt_locs)[0];
 
   double minSqDist = std::numeric_limits< double >::max();
 
@@ -525,7 +525,7 @@ double SignedDistance< NDIMS >::getMaxSqDistance( const BoxType& b,
 template < int NDIMS >
 void SignedDistance< NDIMS >::getCandidateSurfaceElements(
   const PointType& pt,
-  const int * bins,
+  const int* bins,
   int nbins,
   std::vector< int >& candidates ) const
 {
@@ -543,10 +543,10 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
 
   // STEP 0: allocate array to store the distance of the bounding box of each
   // surface element to the query point.
-  int * surface_elements = new int[ nelems ];
-  double * dist          = new double[ nelems ];
-  int * objectIds        = new int[ nelems ];
-  int * indx             = new int[ nelems ];
+  int* surface_elements = new int[ nelems ];
+  double* dist          = new double[ nelems ];
+  int* objectIds        = new int[ nelems ];
+  int* indx             = new int[ nelems ];
 
   // STEP 1: get flat array of the surface elements and compute distances
   int icount = 0;
@@ -555,7 +555,7 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
 
     const int binIdx   = bins[ ibin ];
     const int nobjects = m_bvhTree->getBucketNumObjects( binIdx );
-    const int * objList = m_bvhTree->getBucketObjectArray( binIdx );
+    const int* objList = m_bvhTree->getBucketObjectArray( binIdx );
 
     for ( int iobject=0 ; iobject < nobjects ; ++iobject )
     {
@@ -619,7 +619,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
   const int nnodes = axom::mint::getCellInfo( cellType ).num_nodes;
 
   // Get the cell node IDs that make up the cell
-  axom::mint::IndexType * cellIds = new axom::mint::IndexType[ nnodes ];
+  axom::mint::IndexType* cellIds = new axom::mint::IndexType[ nnodes ];
   m_surfaceMesh->getCell( icell, cellIds );
 
   // compute the cell's bounding box
