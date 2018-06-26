@@ -35,7 +35,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - 
 
 ### Changes
-- To access all functionality, Axom now requires a C++11 compiler.
+- Axom now requires a C++11 compiler.
 - Refactored Axom's Matrix/Vector operators and consolidated them in one file.
 - Removed overloaded arithmetic operators from the Matrix class to avoid 
   potential negative performance impacts. Applications should use the new 
