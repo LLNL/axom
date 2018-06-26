@@ -7,18 +7,8 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased] - Release date yyyy-mm-dd
-
-### Additions
-
-### Removals
-
-### Changes
-
-### Fixes
-
-
-## [Version 0.3.0] - Release date 2018-mm-dd
 
 ### Additions
 - Improved integration of Mint and Sidre. Mint can now operate on meshes 
@@ -41,6 +31,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Removals
 - Axom no longer depends on the Boost library.
 
+### Deprecations
+- 
+
 ### Changes
 - To access all functionality, Axom now requires a C++11 compiler.
 - Refactored Axom's Matrix/Vector operators and consolidated them in one file.
@@ -55,6 +48,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Refactored Mint and removed all STL usage in preparation for GPUs.
 
 ### Fixes
+-
 
 
 ## [Version 0.2.9] - Release date 2018-03-08
@@ -82,6 +76,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ``numerics``
 
 ### Removals
+- 
+
+### Deprecations
+- 
 
 ### Changes
 - The root cmake file for Axom is now located in ``<axom>``'s root directory,
