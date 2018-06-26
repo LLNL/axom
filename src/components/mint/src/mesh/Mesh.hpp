@@ -772,7 +772,7 @@ private:
    * \return status true if the mesh type is valie, else, false.
    */
   inline bool validMeshType( ) const
-  { return ( (m_type >= 0) && (mint::NUM_MESH_TYPES) ); }
+  { return ( (m_type >= 0) && (m_type < mint::NUM_MESH_TYPES) ); }
 
   /*!
    * \brief Helper method to check if the mesh dimension is valid.
