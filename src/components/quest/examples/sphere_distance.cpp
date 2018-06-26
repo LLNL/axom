@@ -410,7 +410,7 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
   // STEP 1: Setup node-centered signed distance field on uniform mesh
   const int nnodes    = umesh->getNumberOfNodes();
   double* phi         = umesh->createField< double >( "n2_phi",
-                                                       mint::NODE_CENTERED );
+                                                      mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -509,7 +509,7 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 
 //------------------------------------------------------------------------------
 BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::IndexType cellIdx,
-                                                mint::Mesh * surface_mesh )
+                                                mint::Mesh* surface_mesh )
 {
   // Sanity checks
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );

@@ -128,7 +128,7 @@ public:
    * \brief Default constructor. Disabled.
    */
   FiniteElement() = delete;
-  
+
   /*!
    * \brief Constructs a FiniteElement instance from a matrix consisting of the
    *  element coordinates and a cell type.

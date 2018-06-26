@@ -149,7 +149,9 @@ static constexpr CellInfo cell_info[ NUM_CELL_TYPES ] = {
  * \param [in] type the CellType in question.
  */
 inline constexpr int cellTypeToInt( CellType type )
-{ return static_cast< int >( type ); }
+{
+  return static_cast< int >( type );
+}
 
 /*!
  * \brief Return the CellInfo struct associated with the given type.
@@ -157,7 +159,9 @@ inline constexpr int cellTypeToInt( CellType type )
  * \param [in] type the CellType in question.
  */
 inline constexpr const CellInfo& getCellInfo( CellType type )
-{ return cell_info[ cellTypeToInt( type ) ]; }
+{
+  return cell_info[ cellTypeToInt( type ) ];
+}
 
 
 } /* namespace mint */

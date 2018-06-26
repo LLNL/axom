@@ -490,7 +490,7 @@ public:
   /*!
    * \brief Returns a pointer to the types array. Since this version of the
    *  ConnectivityArray does not have a types array this function returns a
-   *  null pointer. 
+   *  null pointer.
    */
   /// @{
 
@@ -529,7 +529,7 @@ public:
    * \param [in] the offsets array of length n_IDs + 1.
    * \param [in] types not used, does not need to be specified.
    *
-   * \note The number of values to append is given by 
+   * \note The number of values to append is given by
    *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
    *  this long.
    *
@@ -566,7 +566,7 @@ public:
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
    *
-   * \note The number of values associated with the given IDs may not be 
+   * \note The number of values associated with the given IDs may not be
    *  changed, only the values themselves.
    *
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
@@ -607,7 +607,7 @@ public:
    * \param [in] offsets the offsets array of length at least n_IDs + 1.
    * \param [in] types not used, does not need to be specified.
    *
-   * \note The number of values to insert is given by 
+   * \note The number of values to insert is given by
    *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
    *  this long.
    *

@@ -90,7 +90,7 @@ const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
 /**
  * \brief Computes the bounding box of the surface mesh
  */
-GeometricBoundingBox compute_bounds( mint::Mesh * mesh)
+GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -127,7 +127,7 @@ void testIntersectionOnRegularGrid()
   TriangleType unitTri( ptX, ptY, ptZ );
 
   typedef mint::UnstructuredMesh< mint::MIXED_SHAPE > DebugMesh;
-  DebugMesh * debugMesh = new DebugMesh(3);
+  DebugMesh* debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
   debugMesh->appendNode( ptX[0], ptX[1], ptX[2]);
@@ -204,7 +204,7 @@ void testContainmentOnRegularGrid(
   ext[0] = ext[2] = ext[4] = 0;
   ext[1] = ext[3] = ext[5] = gridRes;
 
-  mint::UniformMesh * umesh =
+  mint::UniformMesh* umesh =
     new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
 
   const int nnodes    = umesh->getNumberOfNodes();
@@ -240,7 +240,7 @@ void testContainmentOnRegularGrid(
 /**
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
-TriVertIndices getTriangleVertIndices(mint::Mesh * mesh,
+TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
                                       mint::IndexType cellIndex)
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
@@ -255,7 +255,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh * mesh,
  * \brief Extracts the positions of a traingle's vertices from the mesh
  * \return The triangle vertex positions in a SpaceTriangle instance
  */
-SpaceTriangle getMeshTriangle(mint::Mesh * mesh,
+SpaceTriangle getMeshTriangle(mint::Mesh* mesh,
                               const TriVertIndices& vertIndices )
 {
   SLIC_ASSERT(mesh != AXOM_NULLPTR);
@@ -270,10 +270,11 @@ SpaceTriangle getMeshTriangle(mint::Mesh * mesh,
 /**
  * \brief Computes some statistics about the surface mesh.
  *
- * Specifically, computes histograms (and ranges) of the edge lengths and triangle areas
+ * Specifically, computes histograms (and ranges) of the edge lengths and
+ * triangle areas
  * on a logarithmic scale and logs the results
  */
-void print_surface_stats( mint::Mesh * mesh)
+void print_surface_stats( mint::Mesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
@@ -290,12 +291,12 @@ void print_surface_stats( mint::Mesh * mesh)
 
   // simple binning based on the exponent
   typedef std::map<int,int> LogHistogram;
-  LogHistogram edgeLenHist;         // Create histogram of edge lengths (log scale)
-  LogHistogram areaHist;            // Create histogram of triangle areas (log scale)
+  LogHistogram edgeLenHist;    // Create histogram of edge lengths (log scale)
+  LogHistogram areaHist;       // Create histogram of triangle areas (log scale)
 
   typedef std::map<int,MinMaxRange> LogRangeMap;
-  LogRangeMap edgeLenRangeMap;      // Tracks range of edge lengths at each scale
-  LogRangeMap areaRangeMap;         // Tracks range of triangle areas at each scale
+  LogRangeMap edgeLenRangeMap; // Tracks range of edge lengths at each scale
+  LogRangeMap areaRangeMap;    // Tracks range of triangle areas at each scale
 
   typedef axom::primal::Point<mint::IndexType,3> TriVertIndices;
   int expBase2;
@@ -397,7 +398,8 @@ void print_surface_stats( mint::Mesh * mesh)
 }
 
 /**
- * \brief Finds the octree leaf containing the given query point, and optionally refines the leaf
+ * \brief Finds the octree leaf containing the given query point,
+ * and optionally refines the leaf
  */
 void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
                     bool shouldRefine = true)
@@ -420,7 +422,7 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
 }
 
 //------------------------------------------------------------------------------
-int main( int argc, char * * argv )
+int main( int argc, char** argv )
 {
   slic::UnitTestLogger logger;  // create & initialize logger
   // slic::debug::checksAreErrors = true;
@@ -448,15 +450,15 @@ int main( int argc, char * * argv )
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));
   SLIC_INFO("Reading file: " << stlFile << "...");
 
-  quest::STLReader * reader = new quest::STLReader();
+  quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
   SLIC_INFO("done.");
 
 
   // STEP 3: create surface mesh
-  mint::Mesh * surface_mesh = new UMesh( 3, mint::TRIANGLE );
-  reader->getMesh( static_cast<UMesh *>( surface_mesh ) );
+  mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
+  reader->getMesh( static_cast<UMesh*>( surface_mesh ) );
   // dump mesh info
   SLIC_INFO("Mesh has "
             << surface_mesh->getNumberOfNodes() << " nodes and "
@@ -506,7 +508,8 @@ int main( int argc, char * * argv )
 
   slic::setLoggingMsgLevel( slic::message::Warning);
 
-  // Other -- find leaf block of a given query point at various levels of resolution
+  // Other octree operations
+  //-- find leaf block of a given query point at various levels of resolution
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Other octree operations "));
   double alpha = 2./3.;
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);

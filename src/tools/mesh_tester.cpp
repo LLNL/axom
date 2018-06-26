@@ -302,9 +302,9 @@ void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
                           int degenerateCount)
 {
-  std::cout << triangleCount << " triangles, with " << intersectPairCount <<
-    " intersecting tri pairs, " << degenerateCount << " degenerate tris." <<
-    std::endl;
+  std::cout << triangleCount << " triangles, with " << intersectPairCount
+            << " intersecting tri pairs, " << degenerateCount
+            <<  " degenerate tris." <<  std::endl;
 }
 
 void saveProblemFlagsToMesh(mint::Mesh* mesh,
@@ -313,10 +313,10 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
 {
   // Create new Field variables to hold degenerate and intersecting info
   const int num_cells = mesh->getNumberOfCells();
-  int* intersectptr = mesh->createField< int >(
-                            "nbr_intersection", mint::CELL_CENTERED );
-  int* dgnptr       = mesh->createField< int >(
-                            "degenerate_triangles", mint::CELL_CENTERED );
+  int* intersectptr =
+    mesh->createField< int >("nbr_intersection", mint::CELL_CENTERED );
+  int* dgnptr =
+    mesh->createField< int >("degenerate_triangles", mint::CELL_CENTERED );
 
   // Initialize everything to 0
   for (int i = 0 ; i < num_cells ; ++i)

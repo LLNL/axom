@@ -304,7 +304,7 @@ public:
   }
 
   /*!
-   * \brief Shrink the offsets, values and types arrays so that there is no 
+   * \brief Shrink the offsets, values and types arrays so that there is no
    *  extra capacity.
    *
    * \post getIDCapacity() == getNumberOfIDs()
@@ -428,7 +428,7 @@ public:
    *
    * \param [in] ID the ID in question.
    *
-   * \return pointer to the values of the given ID, of length at least 
+   * \return pointer to the values of the given ID, of length at least
    *  getNumberOfValuesForID( ID ).
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
@@ -519,7 +519,7 @@ public:
    * \param [in] offsets the offsets array of length n_IDs + 1.
    * \param [in] types array of types of the IDs to append, of length n_IDs.
    *
-   * \note The number of values to append is given by 
+   * \note The number of values to append is given by
    *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
    *  this long.
    *
@@ -541,7 +541,7 @@ public:
    *  getNumberOfValuesForID( ID ).
    * \param [in] ID the ID of the values to set.
    *
-   * \note The number of values and the type associated with the given ID may 
+   * \note The number of values and the type associated with the given ID may
    *  not be changed, only the values themselves.
    *
    * \pre ID >= 0 && ID < getNumberOfIDs()
@@ -558,7 +558,7 @@ public:
    * \param [in] start_ID the ID to start at.
    * \param [in] n_IDs the number of IDs to set.
    *
-   * \note The number of values and the type associated with the given IDs may 
+   * \note The number of values and the type associated with the given IDs may
    *  not be changed, only the values themselves.
    *
    * \pre start_ID >= 0 && start_ID + n_IDs < getNumberOfIDs()
@@ -604,7 +604,7 @@ public:
    * \param [in] types the array of ID types to insert, of length at least
    *  n_IDs.
    *
-   * \note The number of values to insert is given by 
+   * \note The number of values to insert is given by
    *  offsets[n_IDs + 1] - offsets[0] and the values array must be at least
    *  this long.
    *

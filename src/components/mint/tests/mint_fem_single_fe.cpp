@@ -187,7 +187,8 @@ void get_single_fe( mint::FiniteElement*& fe )
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 
 #ifdef MINT_FEM_DEBUG
-  std::string vtkFile = std::string( mint::getCellInfo( CELLTYPE ).name ) + ".vtk";
+  std::string vtkFile = std::string( mint::getCellInfo( CELLTYPE ).name ) +
+                        ".vtk";
   mint::write_vtk(  *fe, vtkFile );
 #endif
 
