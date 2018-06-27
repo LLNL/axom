@@ -791,6 +791,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/components/mainpage.md \
                          @PROJECT_SOURCE_DIR@/components/primal/src/spatial_acceleration \
                          @PROJECT_SOURCE_DIR@/components/quest/README.md \
                          @PROJECT_SOURCE_DIR@/components/quest/src \
+                         @PROJECT_SOURCE_DIR@/components/quest/src/interface \
                          @PROJECT_SOURCE_DIR@/components/quest/src/geom \
                          @PROJECT_SOURCE_DIR@/components/quest/src/stl \
                          @PROJECT_SOURCE_DIR@/components/sidre/README.md \
