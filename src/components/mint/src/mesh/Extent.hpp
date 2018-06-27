@@ -348,7 +348,7 @@ inline void Extent::shiftToLocal( const int64* gijk, IndexType* lijk ) const
   const int N = getDimension( );
   for ( int i=0 ; i < N ; ++i )
   {
-    lijk[ i ] = gijk[ i ] - min( i );
+    lijk[ i ] = static_cast< IndexType >( gijk[ i ] - min( i ) );
   }
 
 }
