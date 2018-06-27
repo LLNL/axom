@@ -87,8 +87,8 @@ public:
 
   //functions related to the field arrays
   template<class T>
-  int newFieldArray(std::string arr_name, FieldMapping, T* arr, int stride = 1);
-  int setVolfracArray(double* arr);
+  int addField(std::string arr_name, FieldMapping, T* arr, int stride = 1);
+  int setVolfracField(double* arr); //TODO field
 
   int getFieldIdx(std::string arr_name);
   template<typename T>
@@ -207,7 +207,7 @@ int MultiMat::addFieldArray_impl(std::string arr_name, FieldMapping arr_mapping,
 }
 
 template<class T>
-int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping,
+int MultiMat::addField(std::string arr_name, FieldMapping arr_mapping,
                             T* data_arr, int stride)
 {
   assert(stride > 0);
@@ -219,7 +219,7 @@ int MultiMat::newFieldArray(std::string arr_name, FieldMapping arr_mapping,
     assert(arr_mapping == FieldMapping::PER_CELL_MAT);
     assert(stride == 1);
     assert(data_arr != nullptr);
-    setVolfracArray(data_arr);
+    setVolfracField(data_arr);
     return 0;
   }
   else if(fieldIdx > 0) 
