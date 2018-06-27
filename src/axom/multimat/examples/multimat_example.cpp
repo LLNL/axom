@@ -634,12 +634,12 @@ int main(int argc, char** argv)
   //mm.setCellMatRel(data.Volfrac_bool);
 
   ////Setting field data in terms of slam
-  //mm.newFieldArray<>("Densityfrac"    , FieldMapping::PER_CELL_MAT, &data.Densityfrac_sparse[0]);
-  //mm.newFieldArray<>("Vol"            , FieldMapping::PER_CELL    , &data.Vol[0]);
-  //mm.newFieldArray<>("Volfrac"        , FieldMapping::PER_CELL_MAT, &data.Volfrac_sparse[0]);
-  //mm.newFieldArray<>("Temperaturefrac", FieldMapping::PER_CELL_MAT, &data.Temperaturefrac_sparse[0]);
-  //mm.newFieldArray<>("Pressurefrac"   , FieldMapping::PER_CELL_MAT, &data.Pressurefrac_sparse[0]);
-  //mm.newFieldArray<>("nmatconsts"     , FieldMapping::PER_MAT     , &data.nmatconsts[0]);
+  //mm.addField<>("Densityfrac"    , FieldMapping::PER_CELL_MAT, &data.Densityfrac_sparse[0]);
+  //mm.addField<>("Vol"            , FieldMapping::PER_CELL    , &data.Vol[0]);
+  //mm.addField<>("Volfrac"        , FieldMapping::PER_CELL_MAT, &data.Volfrac_sparse[0]);
+  //mm.addField<>("Temperaturefrac", FieldMapping::PER_CELL_MAT, &data.Temperaturefrac_sparse[0]);
+  //mm.addField<>("Pressurefrac"   , FieldMapping::PER_CELL_MAT, &data.Pressurefrac_sparse[0]);
+  //mm.addField<>("nmatconsts"     , FieldMapping::PER_MAT     , &data.nmatconsts[0]);
 
   ////printself and check
   //mm.printSelf();
@@ -727,9 +727,9 @@ void test_code() {
     }
   }
 
-  mm.setVolfracArray(volfrac_arr.data());
-  mm.newFieldArray("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0], ncomp);
-  mm.newFieldArray("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0], ncomp);
+  mm.setVolfracField(volfrac_arr.data());
+  mm.addField("Cell Array"   , FieldMapping::PER_CELL    , &cell_arr1[0], ncomp);
+  mm.addField("CellMat Array", FieldMapping::PER_CELL_MAT, &cellmat_arr[0], ncomp);
 
   //convert layout
   mm.convertLayoutToSparse();
