@@ -221,30 +221,30 @@ TEST(multimat, construct_multimat_1_array)
 
       if (layout_used == DataLayout::CELL_CENTRIC) {
         if (sparcity_used == SparcityLayout::DENSE)
-          mm.setVolFracArray(data.volfrac_cellcen_dense.data());
+          mm.setVolfracField(data.volfrac_cellcen_dense.data());
         else
-          mm.setVolFracArray(data.volfrac_cellcen_sparse.data());
+          mm.setVolfracField(data.volfrac_cellcen_sparse.data());
       }
       else {
         if (sparcity_used == SparcityLayout::DENSE)
-          mm.setVolFracArray(data.volfrac_matcen_dense.data());
+          mm.setVolfracField(data.volfrac_matcen_dense.data());
         else
-          mm.setVolFracArray(data.volfrac_matcen_sparse.data());
+          mm.setVolfracField(data.volfrac_matcen_sparse.data());
       }
 
       std::string array_name = "Array 1";
 
       if (layout_used == DataLayout::CELL_CENTRIC) {
         if(sparcity_used == SparcityLayout::DENSE)
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), stride_val);
+          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), stride_val);
         else
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data(), stride_val);
+          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data(), stride_val);
       }
       else {
         if (sparcity_used == SparcityLayout::DENSE)
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data(), stride_val);
+          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data(), stride_val);
         else
-          mm.newFieldArray(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data(), stride_val);
+          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data(), stride_val);
       }
 
       EXPECT_TRUE(mm.isValid(true));
