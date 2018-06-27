@@ -47,8 +47,6 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   const double VLO = 0.0;
   const double VHI = 1.0;
 
-  srand( time(0) );
-
   // STEP 0: create the ParticleMesh
   mint::ParticleMesh particles( DIMENSION, NUM_PARTICLES );
 
