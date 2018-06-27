@@ -122,13 +122,13 @@ For each version, the release notes must contain the following information:
 
  * One or two sentence overview of release, including any major changes.
  
- * The release notes should be broken out into the following sections: 
+ * Release note items should be broken out into the following sections: 
 
-    * Additions: Descriptions of new features
-    * Removals: Notable removed functionality
-    * Deprecations: Notable deprecated features that will be removed in a future release
-    * Changes: Enhancements to existing functionality
-    * Fixes: Major bug fixes
+    * Added: Descriptions of new features
+    * Removed: Notable removed functionality
+    * Deprecated: Deprecated features that will be removed in a future release
+    * Changed: Enhancements or other changes to existing functionality
+    * Fixed: Major bug fixes
     * Known bugs: Existing issues that are important for users to know about
 
 .. note:: Release notes for each Axom version should explain what changed in 

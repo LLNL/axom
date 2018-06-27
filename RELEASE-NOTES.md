@@ -10,7 +10,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-### Additions
+### Added
 - Improved integration of Mint and Sidre. Mint can now operate on meshes 
   stored in Sidre and conform to the [computational mesh blueprint conventions](http://llnl-conduit.readthedocs.io/en/latest/blueprint.html).
 - Added a sphere-sphere intersection test to Primal.
@@ -28,13 +28,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added an in_sphere operator to Primal, which is a predicate that
   is used extensively for Delaunay triangulations.
 
-### Removals
+### Removed
 - Axom no longer depends on the Boost library.
 
-### Deprecations
+### Deprecated
 - 
 
-### Changes
+### Changed
 - Axom now requires a C++11 compiler.
 - Refactored Axom's Matrix/Vector operators and consolidated them in one file.
 - Removed overloaded arithmetic operators from the Matrix class to avoid 
@@ -47,13 +47,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Refactored and cleaned up Primal's Sphere class.
 - Refactored Mint and removed all STL usage in preparation for GPUs.
 
-### Fixes
+### Fixed
+-
+
+### Known Bugs
 -
 
 
 ## [Version 0.2.9] - Release date 2018-03-08
 
-### Additions
+### Added
 - Updated to [conduit version 0.3.1](https://github.com/LLNL/conduit/tree/v0.3.1)
 - Updated to [shroud version 0.8.8](https://github.com/LLNL/shroud/tree/v0.8.0)
 - Improved platform support for LLNL's ``blue_os`` and ``bg/q`` systems.
@@ -75,24 +78,28 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added cross-product and linspace operators to the vector utilities in 
 ``numerics``
 
-### Removals
+### Removed
 - 
 
-### Deprecations
+### Deprecated
 - 
 
-### Changes
+### Changed
 - The root cmake file for Axom is now located in ``<axom>``'s root directory,
   rather than in ``<axom>/src``
 - ``primal`` is no longer a header-only library.
 - Modified ``quest`` API to allow using a ``mint`` mesh that is already
   resident in memory.
 
-### Fixes
+### Fixed
 - Fixed a divide-by-zero problem in ``primal::intersect()``
 - Fixed the calculation of the Jacobian in ``mint::FiniteElement`` to support
   elements that are in higher-dimensional ambient space, e.g., surface elements,
   a Triangle or Quad in 3D.
+
+### Known Bugs
+-
+
 
 [Unreleased]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.9&sourceBranch=refs%2Fheads%2Fdevelop&targetRepoId=1066
 [0.2.9]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.8&sourceBranch=refs%2Ftags%2Fv0.2.9&targetRepoId=1066
