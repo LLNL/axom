@@ -118,7 +118,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 }
 
 
-int MultiMat::setVolfracArray(double* arr)
+int MultiMat::setVolfracField(double* arr)
 {
   //Assumes this is to CellxMat mapping, named "Volfrac", and is stride 1.
   int arr_i = addFieldArray_impl<double>("Volfrac", FieldMapping::PER_CELL_MAT, arr, 1);
