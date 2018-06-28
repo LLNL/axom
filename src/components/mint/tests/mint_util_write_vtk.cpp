@@ -314,7 +314,7 @@ void check_header( std::ifstream& file )
  * \pre field != AXOM_NULLPTR
  */
 void check_scalar( const Field* field, std::ifstream& file,
-                   uint offset = 0 )
+                   unsigned int offset = 0 )
 {
   const int num_components   = field->getNumComponents( );
   const IndexType num_values = field->getNumTuples( );
@@ -736,7 +736,7 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
 
   /* Write out the mesh cell connectivity. */
   IndexType temp;
-  IndexType cell_nodes[ max_cell_nodes ];
+  IndexType* cell_nodes = new IndexType[ max_cell_nodes ];
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
     const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
@@ -761,6 +761,9 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
     file >> temp;
     EXPECT_EQ( temp, getCellInfo( cell_type ).vtk_type );
   }
+
+  delete [] cell_nodes;
+  cell_nodes = AXOM_NULLPTR;
 }
 
 /*!

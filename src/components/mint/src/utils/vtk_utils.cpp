@@ -144,7 +144,7 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   file << "CELLS " << num_cells << " " << total_size << std::endl;
 
   /* Write out the mesh cell connectivity. */
-  IndexType cell_nodes[ max_cell_nodes ];
+  IndexType* cell_nodes = new IndexType[ max_cell_nodes ];
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
     const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
@@ -157,6 +157,8 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
     }
     file << std::endl;
   }
+
+  delete [] cell_nodes;
 
   /* Write out the mesh cell types. */
   file << "CELL_TYPES " << num_cells << std::endl;

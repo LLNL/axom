@@ -356,7 +356,7 @@ inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity,
     else
     {
       const double avg_n_vals =  double( n_values ) / n_IDs;
-      value_capacity = std::ceil( avg_n_vals * n_IDs );
+      value_capacity = static_cast< IndexType >( std::ceil(avg_n_vals*n_IDs) );
     }
   }
 

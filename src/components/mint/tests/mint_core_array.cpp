@@ -102,7 +102,7 @@ void check_storage( Array< T >& v )
   }
   else
   {
-    T tuple[ num_components ];
+    T* tuple = new T[ num_components ];
     for ( IndexType i = 0 ; i < capacity / 2 ; ++i )
     {
       for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -111,6 +111,8 @@ void check_storage( Array< T >& v )
       }
       v.append( tuple, 1 );
     }
+    delete [] tuple;
+    tuple = AXOM_NULLPTR;
   }
 
   /* Check the array metadata. */
@@ -129,7 +131,7 @@ void check_storage( Array< T >& v )
   }
   else
   {
-    T tuple[ num_components ];
+    T* tuple = new T[ num_components ];
     for ( IndexType i = capacity / 2 ; i < capacity ; ++i )
     {
       for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -138,6 +140,8 @@ void check_storage( Array< T >& v )
       }
       v.append( tuple, 1 );
     }
+    delete [] tuple;
+    tuple = AXOM_NULLPTR;
   }
 
   /* Check the array metadata. */
@@ -349,7 +353,7 @@ void check_resize( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T tuple[ num_components ];
+  T* tuple = new T[ num_components ];
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -373,7 +377,7 @@ void check_resize( Array< T >& v )
 
   /* Prepare 1000 tuples to be appended. */
   const IndexType n_tuples = 1000;
-  T values[ n_tuples * num_components ];
+  T* values = new T[ n_tuples * num_components ];
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -511,6 +515,11 @@ void check_resize( Array< T >& v )
     }
   }
 
+  delete [] tuple;
+  tuple = AXOM_NULLPTR;
+
+  delete [] values;
+  values = AXOM_NULLPTR;
 }
 
 /*!
@@ -540,7 +549,7 @@ void check_insert( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T tuple[ num_components ];
+  T* tuple = new T[ num_components ];
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -562,7 +571,7 @@ void check_insert( Array< T >& v )
 
   /* Append 1000 tuples */
   const IndexType n_tuples = 1000;
-  T values[ n_tuples * num_components ];
+  T* values = new T[ n_tuples * num_components ];
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -620,6 +629,12 @@ void check_insert( Array< T >& v )
       EXPECT_EQ( v( i, j ), i * num_components + j );
     }
   }
+
+  delete [] tuple;
+  tuple = AXOM_NULLPTR;
+
+  delete [] values;
+  values = AXOM_NULLPTR;
 }
 
 /*!
@@ -888,10 +903,13 @@ void check_external( Array< T >& v )
 
   /* Since the array is full all of the following calls should require a
    * reallocation and cause a fatal error. */
-  T tuple[ num_components ];
+  T* tuple = new T[ num_components ];
   EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
+
+  delete [] tuple;
+  tuple = AXOM_NULLPTR;
 }
 
 }   /* end namespace internal */

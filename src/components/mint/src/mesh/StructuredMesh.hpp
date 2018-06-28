@@ -459,9 +459,9 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j,
   const IndexType* offsets_table = m_extent->getCellOffSets();
   const IndexType n0 = m_extent->getLinearIndex(i, j);
 
-  for ( IndexType i = 0 ; i < 4 ; ++i )
+  for ( IndexType ii = 0 ; ii < 4 ; ++ii )
   {
-    cell[ i ] = n0 + offsets_table[ i ];
+    cell[ ii ] = n0 + offsets_table[ ii ];
   }
 
 }
@@ -476,9 +476,9 @@ inline void StructuredMesh::getCell( IndexType i, IndexType j, IndexType k,
   const IndexType* offsets_table = m_extent->getCellOffSets();
   const IndexType n0 = m_extent->getLinearIndex(i, j, k);
 
-  for ( IndexType i = 0 ; i < 8 ; ++i )
+  for ( IndexType ii = 0 ; ii < 8 ; ++ii )
   {
-    cell[ i ] = n0 + offsets_table[ i ];
+    cell[ ii ] = n0 + offsets_table[ ii ];
   }
 }
 
