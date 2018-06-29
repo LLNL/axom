@@ -4,6 +4,7 @@
 #include <iterator>
 #include <algorithm>
 
+#include "slic/slic.hpp"
 #include <cassert>
 #include "multimat.hpp"
 
@@ -126,15 +127,32 @@ int MultiMat::setVolfracField(double* arr)
   //checks volfrac values sums to 1
   auto& map = *dynamic_cast<Field2D<double>*>(m_mapVec[arr_i]);
   double tol = 10e-9;
-  for (int i = 0; i < map.firstSetSize(); ++i)
+  if (m_dataLayout == DataLayout::CELL_CENTRIC) 
   {
-    double sum = 0.0;
-    for (auto iter = map.begin(i); iter != map.end(i); ++iter)
+    for (int i = 0; i < map.firstSetSize(); ++i)
     {
-      sum += iter.value();
+      double sum = 0.0;
+      for (auto iter = map.begin(i); iter != map.end(i); ++iter)
+      {
+        sum += iter.value();
+      }
+
+      SLIC_ASSERT(abs(sum - 1.0) < tol);
+    }
+  }
+  else //material centric layout
+  {
+    std::vector<double> sum_vec(m_cellSet.size(), 0);
+    for (int i = 0; i < map.firstSetSize(); ++i)
+    {
+      for (auto iter = map.begin(i); iter != map.end(i); ++iter)
+      {
+        sum_vec[iter.index()] += iter.value();
+      }
     }
 
-    assert(abs(sum - 1.0) < tol);
+    for(int i=0; i<sum_vec.size(); ++i)
+      SLIC_ASSERT(abs(sum_vec[i] - 1.0) < tol);
   }
 
   //move the data to the first one (index 0) in the list
