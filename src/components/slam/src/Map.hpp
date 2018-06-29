@@ -111,8 +111,9 @@ public:
   /**
    * Copy constructor from another map
    */
-  Map(const Map& otherMap) : m_set(otherMap.m_set),
-    StridePolicyType(otherMap.StridePolicyType::stride())
+  Map(const Map& otherMap) : 
+    StridePolicyType(otherMap.StridePolicyType::stride()),
+    m_set(otherMap.m_set)
   {
     m_data.resize( otherMap.m_data.size() );
     copy( otherMap );

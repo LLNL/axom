@@ -142,7 +142,7 @@ TEST(slam_map, map_builder)
 
   SetType s(MAX_SET_SIZE);
   std::vector<DataType> data_arr(s.size());
-  for (auto i = 0; i < data_arr.size(); ++i)
+  for (unsigned int i = 0 ; i < data_arr.size() ; ++i)
     data_arr[i] = static_cast<DataType>(i*1.01);
 
   MapType m2(MapBuilder()
@@ -152,7 +152,7 @@ TEST(slam_map, map_builder)
   EXPECT_TRUE(m2.isValid());
   EXPECT_EQ(m2.size(), s.size());
   EXPECT_EQ(m2.stride(), 1);
-  for (auto i = 0; i < data_arr.size(); ++i)
+  for (unsigned int i = 0 ; i < data_arr.size() ; ++i)
     EXPECT_EQ(m2[i], data_arr[i]);
 
 }
