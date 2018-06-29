@@ -875,9 +875,9 @@ void test_code() {
         for (int s = 0; s < map2d.stride(); ++s)
         {
           sum += iter(s);                  //<----
-          //assert(*iter, iter.value());   //another way to get the value
           int idx = iter.index();
         }
+        //assert(*iter, iter.value());   //another way to get the first component value
       }
     }
   }
@@ -890,17 +890,18 @@ void test_code() {
   sum = 0;
   start_timer();
   {
-    MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
-    for (int i = 0; i < map.firstSetSize(); i++)
+    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    for (int i = 0; i < mm.getNumberOfCells();/* map2d.firstSetSize(); */i++)
     {
-      for (auto iter = map.begin(i); iter != map.end(i); iter++)
+      for (auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
       {
-        for (int s = 0; s < map.stride(); ++s)
+        for (int s = 0; s < map2d.numComp(); ++s)
         {
           sum += iter(s);          //<----
-          //assert(*iter, iter.value()); //another way to get the value
+          //assert(iter(s) == iter.value(s));  //anotehr way to get the value
           int idx = iter.index();
         }
+        //assert(*iter, iter.value()); //another way to get the first component value
       }
     }
   }
