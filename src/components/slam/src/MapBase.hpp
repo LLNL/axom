@@ -18,7 +18,7 @@
 /**
  * \file MapBase.hpp
  *
- * \brief Contains an Abstract class MapBase 
+ * \brief Contains an Abstract class MapBase
  *
  */
 
@@ -38,7 +38,7 @@ namespace slam
 /**
  * \class   MapBase
  *
- * \brief   A base class for Map, providing basic API for class 
+ * \brief   A base class for Map, providing basic API for class
  * that associates value to each element in a Set
  * \see Map
  *
@@ -47,17 +47,17 @@ namespace slam
 class MapBase
 {
 public:
-  using SetIndex = Set::IndexType ;
-  using SetPosition = Set::PositionType ;
+  using SetIndex = Set::IndexType;
+  using SetPosition = Set::PositionType;
 
 public:
   //MapBase(){};
   virtual ~MapBase() {};
-  
+
   /**
-  * \brief Get the number of entities in the set used by this map
-  * \return The number of entities in the set used in the map.
-  */
+   * \brief Get the number of entities in the set used by this map
+   * \return The number of entities in the set used in the map.
+   */
   virtual SetPosition size() const = 0;
 
   /**
@@ -65,14 +65,14 @@ public:
    * \return   True if valid, false otherwise.
    */
   virtual bool        isValid(bool verboseOutput) const = 0;
-  
+
 private:
   /**
-  * \brief Utility function to verify that the given SetPosition is in a valid
-  * range.
-  */
-  virtual void        verifyPosition(SetPosition )       const = 0;
-  
+   * \brief Utility function to verify that the given SetPosition is in a valid
+   * range.
+   */
+  virtual void verifyPosition(SetPosition )       const = 0;
+
 };
 
 

@@ -146,9 +146,9 @@ TEST(slam_map, map_builder)
     data_arr[i] = static_cast<DataType>(i*1.01);
 
   MapType m2(MapBuilder()
-    .set(&s)
-    .data(data_arr.data())
-  );
+             .set(&s)
+             .data(data_arr.data())
+             );
   EXPECT_TRUE(m2.isValid());
   EXPECT_EQ(m2.size(), s.size());
   EXPECT_EQ(m2.stride(), 1);
@@ -168,32 +168,32 @@ void constructAndTestMapWithStride(int stride)
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO(
-    "\nCreating " << axom::slam::util::TypeToString<T>::to_string() << 
+    "\nCreating " << axom::slam::util::TypeToString<T>::to_string() <<
     " map with stride " << stride << " on the set ");
 
   axom::slam::Map<T, StrideType> m(&s, 0, stride);
   EXPECT_TRUE(m.isValid());
-  
+
   EXPECT_EQ(m.stride(), stride);
 
   SLIC_INFO("\nSetting the elements.");
   double multFac = 100.0001;
   double multFac2 = 1.010;
-  for (PositionType idx = 0; idx < m.size(); ++idx)
+  for (PositionType idx = 0 ; idx < m.size() ; ++idx)
   {
-    for (PositionType idx2 = 0; idx2 < stride; ++idx2)
+    for (PositionType idx2 = 0 ; idx2 < stride ; ++idx2)
     {
       m(idx, idx2) = static_cast<T>(idx * multFac + idx2 * multFac2);
     }
-    
+
   }
 
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO("\nChecking the elements.");
-  for (PositionType idx = 0; idx < m.size(); ++idx)
+  for (PositionType idx = 0 ; idx < m.size() ; ++idx)
   {
-    for (PositionType idx2 = 0; idx2 < stride; ++idx2)
+    for (PositionType idx2 = 0 ; idx2 < stride ; ++idx2)
     {
       EXPECT_EQ(m(idx, idx2), static_cast<T>(idx * multFac + idx2 * multFac2));
     }
@@ -209,9 +209,9 @@ TEST(slam_map, construct_double_map_with_stride)
   constructAndTestMapWithStride<double, RunTimeStrideType>(2);
   constructAndTestMapWithStride<double, RunTimeStrideType>(3);
 
-  constructAndTestMapWithStride<double, CompileTimeStrideType<1>>(1);
-  constructAndTestMapWithStride<double, CompileTimeStrideType<2>>(2);
-  constructAndTestMapWithStride<double, CompileTimeStrideType<3>>(3);
+  constructAndTestMapWithStride< double, CompileTimeStrideType<1> >(1);
+  constructAndTestMapWithStride< double, CompileTimeStrideType<2> >(2);
+  constructAndTestMapWithStride< double, CompileTimeStrideType<3> >(3);
 
   constructAndTestMapWithStride<double, OneStrideType>(1);
 }
@@ -229,7 +229,8 @@ TEST(slam_map, iterate)
 
   SLIC_INFO(
     "\nCreating "
-    << axom::slam::util::TypeToString<double>::to_string() << " map on the set ");
+    << axom::slam::util::TypeToString<double>::to_string()
+    << " map on the set ");
   RealMap m(&s);
   EXPECT_TRUE(m.isValid());
 
@@ -237,7 +238,7 @@ TEST(slam_map, iterate)
   double multFac = 1.0001;
   {
     int idx = 0;
-    for (IterType iter = m.begin(); iter != m.end(); iter++)
+    for (IterType iter = m.begin() ; iter != m.end() ; iter++)
     {
       *iter = static_cast<double>(idx * multFac);
       idx++;
@@ -250,7 +251,7 @@ TEST(slam_map, iterate)
   //iter++ access
   {
     int idx = 0;
-    for (IterType iter = m.begin(); iter != m.end(); iter++)
+    for (IterType iter = m.begin() ; iter != m.end() ; iter++)
     {
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
       idx++;
@@ -261,7 +262,7 @@ TEST(slam_map, iterate)
   //iter+n access
   {
     IterType beginIter = m.begin();
-    for (int idx=0; idx<m.size(); ++idx)
+    for (int idx=0 ; idx<m.size() ; ++idx)
     {
       IterType iter = beginIter + idx;
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
@@ -271,7 +272,7 @@ TEST(slam_map, iterate)
   //iter-n access
   {
     IterType endIter = m.end();
-    for (int idx = 1; idx <= m.size(); ++idx)
+    for (int idx = 1 ; idx <= m.size() ; ++idx)
     {
       IterType iter = endIter - idx;
       EXPECT_EQ(*iter, static_cast<double>( (m.size()-idx) * multFac));
@@ -280,7 +281,7 @@ TEST(slam_map, iterate)
 
   //iter+=n access
   {
-    for (int idx = 0; idx<m.size(); idx++)
+    for (int idx = 0 ; idx<m.size() ; idx++)
     {
       IterType iter = m.begin();
       iter += idx;
@@ -290,7 +291,7 @@ TEST(slam_map, iterate)
 
   //iter-=n access
   {
-    for (int idx = 1; idx <= m.size(); ++idx)
+    for (int idx = 1 ; idx <= m.size() ; ++idx)
     {
       IterType iter = m.end();
       iter -= idx;
@@ -301,7 +302,7 @@ TEST(slam_map, iterate)
   //iter[n] access
   {
     IterType beginIter = m.begin();
-    for (int idx = 0; idx<m.size(); idx++)
+    for (int idx = 0 ; idx<m.size() ; idx++)
     {
       EXPECT_EQ(beginIter[idx], static_cast<double>(idx * multFac));
     }
@@ -329,16 +330,16 @@ void constructAndTestMapIteratorWithStride(int stride)
 
   RealMap m(&s, 0, stride);
   EXPECT_TRUE(m.isValid());
-    
+
   EXPECT_EQ(m.stride(), stride);
 
   SLIC_INFO("\nSetting the elements using iterator.");
   double multFac = 100.0001;
   double multFac2 = 1.010;
   int idx = 0;
-  for (MapIterator iter = m.begin(); iter != m.end(); ++iter)
+  for (MapIterator iter = m.begin() ; iter != m.end() ; ++iter)
   {
-    for (PositionType idx2 = 0; idx2 < iter.numComp(); ++idx2)
+    for (PositionType idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
     {
       iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
     }
@@ -348,16 +349,17 @@ void constructAndTestMapIteratorWithStride(int stride)
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO("\nChecking the elements by iterator.");
-  
+
   //iter++ access
   {
     int idx = 0;
-    for (MapIterator iter = m.begin(); iter != m.end(); iter++)
+    for (MapIterator iter = m.begin() ; iter != m.end() ; iter++)
     {
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
-      for (PositionType idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      for (PositionType idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
       {
-        EXPECT_EQ(iter(idx2), static_cast<double>(idx * multFac + idx2 * multFac2));
+        EXPECT_EQ(iter(idx2),
+                  static_cast<double>(idx * multFac + idx2 * multFac2));
       }
       idx++;
     }
@@ -373,10 +375,10 @@ TEST(slam_map, iterate_with_stride)
   constructAndTestMapIteratorWithStride<RunTimeStrideType>(1);
   constructAndTestMapIteratorWithStride<RunTimeStrideType>(2);
   constructAndTestMapIteratorWithStride<RunTimeStrideType>(3);
-  
-  constructAndTestMapIteratorWithStride<CompileTimeStrideType<1>>(1);
-  constructAndTestMapIteratorWithStride<CompileTimeStrideType<2>>(2);
-  constructAndTestMapIteratorWithStride<CompileTimeStrideType<3>>(3);
+
+  constructAndTestMapIteratorWithStride<CompileTimeStrideType<1> >(1);
+  constructAndTestMapIteratorWithStride<CompileTimeStrideType<2> >(2);
+  constructAndTestMapIteratorWithStride<CompileTimeStrideType<3> >(3);
 
   SLIC_INFO("Done");
 }
