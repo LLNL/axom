@@ -34,7 +34,6 @@
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"
-#include "slam/NullSet.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OffsetPolicies.hpp"

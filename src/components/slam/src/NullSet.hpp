@@ -113,4 +113,4 @@ inline bool operator!=(NullSet const&, NullSet const&)
 } // end namespace slam
 } // end namespace axom
 
-#endif //  SLAM_SET_H_
+#endif //  SLAM_NULL_SET_H_

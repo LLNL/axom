@@ -89,14 +89,14 @@ public:
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,
-      STLIndirection >                              RelationSet;
+      STLIndirection >                              RelationSubset;
 
 #ifdef AXOM_USE_CXX11
-  typedef typename RelationSet::iterator RelationIterator;
-  typedef typename RelationSet::iterator_pair RelationIteratorPair;
+  typedef typename RelationSubset::iterator RelationIterator;
+  typedef typename RelationSubset::iterator_pair RelationIteratorPair;
 
-  typedef typename RelationSet::const_iterator RelationConstIterator;
-  typedef typename RelationSet::const_iterator_pair RelationConstIteratorPair;
+  typedef typename RelationSubset::const_iterator RelationConstIterator;
+  typedef typename RelationSubset::const_iterator_pair RelationConstIteratorPair;
 #endif // AXOM_USE_CXX11
 
 public:
@@ -226,7 +226,7 @@ public:
    * element with index \a fromSetIndex in the FromSet
    * \param fromSetIndex The index of an element in the FromSet
    */
-  RelationSet const at(SetPosition fromSetIndex) const
+  RelationSubset const at(SetPosition fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return operator[](fromSetIndex);
@@ -237,10 +237,10 @@ public:
    * element with index \a fromSetIndex in the FromSet
    * \param fromSetIndex The index of an element in the FromSet
    */
-  RelationSet const operator[](SetPosition fromSetIndex) const
+  RelationSubset const operator[](SetPosition fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
-    typedef typename RelationSet::SetBuilder SetBuilder;
+    typedef typename RelationSubset::SetBuilder SetBuilder;
     return SetBuilder()
            //.size( CardinalityPolicy::size(fromSetIndex) )
            .size( m_relationCardinality )
@@ -364,7 +364,7 @@ public:
    *  allows us to modify values.
    *
    * This should be replaced with operator[] which returns a non-const
-   * RelationSet so users can more naturally update the relation.
+   * RelationSubset so users can more naturally update the relation.
    * E.g. relation[fromSetIndex][offset] = toSetIndex;
    */
   void modify(SetPosition fromSetIndex,
