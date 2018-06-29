@@ -47,7 +47,7 @@ class UberenvAxom(Package):
     variant('devtools',default=True, description="Build development tools (such as sphinx, uncrustify, etc)")
 
     variant("python",  default=True, description="Build python")
-
+    variant("mpi",default=True,description="Build MPI support")
     variant("mfem",   default=True, description="Build mfem")
 
     variant("hdf5",   default=True, description="Build hdf5")
@@ -81,11 +81,7 @@ class UberenvAxom(Package):
     #depends_on("py-breathe",when="+devtools")
     depends_on("py-shroud", when="+devtools")
 
-    if "darwin" in platform.system().lower():
-        depends_on("mpich")
-
-    #if not "darwin" in platform.system().lower():
-    #    depends_on("lcov",when="+devtools")
+    depends_on("mpi",when="+mpi")
 
     # use dummy tarfile to avoid downloads
     def url_for_version(self, version):
@@ -237,19 +233,26 @@ class UberenvAxom(Package):
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
 
-        #MPI SUPPORT (when mpich is enabled)
-        if "mpich" in spec:
-            mpiexec  = pjoin(spec['mpich'].prefix.bin,"mpiexec")
-            mpicc    = pjoin(spec['mpich'].prefix.bin,"mpicc")
-            mpif90   = pjoin(spec['mpich'].prefix.bin,"mpif90")
-            cfg.write("# MPI Support\n")
-            cfg.write(cmake_cache_option("ENABLE_MPI",True))
-            cfg.write(cmake_cache_entry("MPI_C_COMPILER",mpicc))
-            # we use `mpicc` as `MPI_CXX_COMPILER` b/c we don't want to introduce 
-            # linking deps to the MPI C++ libs (we aren't using C++ features of MPI)
-            cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",mpicc))
-            cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",mpif90))
-            cfg.write(cmake_cache_entry("MPIEXEC",mpiexec))
+        if "+mpi" in spec:
+            cfg.write(cmake_cache_entry("ENABLE_MPI", "ON"))
+            cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
+            cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
+                                        spec['mpi'].mpicxx))
+            cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
+                                        spec['mpi'].mpifc))
+            mpiexe_bin = join_path(spec['mpi'].prefix.bin, 'mpiexec')
+            if os.path.isfile(mpiexe_bin):
+                # starting with cmake 3.10, FindMPI expects MPIEXEC_EXECUTABLE
+                # vs the older versions which expect MPIEXEC
+                if self.spec["cmake"].satisfies('@3.10:'):
+                    cfg.write(cmake_cache_entry("MPIEXEC_EXECUTABLE",
+                                                mpiexe_bin))
+                else:
+                    cfg.write(cmake_cache_entry("MPIEXEC",
+                                                mpiexe_bin))
+        else:
+            cfg.write(cmake_cache_entry("ENABLE_MPI", "OFF"))
+
 
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")
