@@ -104,7 +104,7 @@ struct MM_test_data {
       for (int c = 0; c < num_cells; ++c) {
         int dense_cellcen_idx = c * num_mats + m;
         if (fillBool_cellcen[dense_cellcen_idx]) {
-          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[c];
+          volfrac_matcen_sparse[sparse_idx++] = 1.0 / (double)matcount[c];
         }
       }
     }
