@@ -69,7 +69,7 @@ struct MM_test_data {
     nfilled = 0;
     fillBool_cellcen.resize(num_mats * num_cells, false);
     fillBool_matcen.resize(num_mats * num_cells, false);
-    matcount.resize(num_mats, 0);
+    matcount.resize(num_cells, 0);
     for (int c = 0; c < num_cells; ++c) {
       for (int m = 0; m < num_mats; ++m) {
         int dense_cellcen_idx = c * num_mats + m;
@@ -78,24 +78,24 @@ struct MM_test_data {
           fillBool_cellcen[dense_cellcen_idx] = true;
           fillBool_matcen[dense_matcen_idx] = true;
           nfilled++;
-          matcount[m]++;
+          matcount[c]++;
         }
       }
     }
 
     //create volfrac array
     int sparse_idx = 0;
-    volfrac_cellcen_dense.resize(num_cells*num_mats, 0);
-    volfrac_matcen_dense.resize(num_cells*num_mats, 0);
-    volfrac_cellcen_sparse.resize(nfilled);
-    volfrac_matcen_sparse.resize(nfilled);
+    volfrac_cellcen_dense.resize(num_cells*num_mats, 0.0);
+    volfrac_matcen_dense.resize(num_cells*num_mats, 0.0);
+    volfrac_cellcen_sparse.resize(nfilled, 0.0);
+    volfrac_matcen_sparse.resize(nfilled, 0.0);
     for (auto i = 0; i < num_cells; ++i)
     {
       for (auto m = 0; m < num_mats; ++m) {
         if (fillBool_cellcen[i*num_mats + m]) {
-          volfrac_cellcen_dense[i*num_mats + m] = 1.0 / (double)matcount[m];
-          volfrac_matcen_dense[m*num_cells + i] = 1.0 / (double)matcount[m];
-          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[m];
+          volfrac_cellcen_dense[i*num_mats + m] = 1.0 / (double)matcount[i];
+          volfrac_matcen_dense[m*num_cells + i] = 1.0 / (double)matcount[i];
+          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[i];
         }
       }
     }
@@ -104,12 +104,12 @@ struct MM_test_data {
       for (int c = 0; c < num_cells; ++c) {
         int dense_cellcen_idx = c * num_mats + m;
         if (fillBool_cellcen[dense_cellcen_idx]) {
-          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[m];
+          volfrac_cellcen_sparse[sparse_idx++] = 1.0 / (double)matcount[c];
         }
       }
     }
 
-    //fill in the data
+	//fill in the data
     cellmat_dense_arr.resize(num_mats * num_cells * stride);
     cellmat_sparse_arr.resize(nfilled * stride);
     matcell_dense_arr.resize(num_mats * num_cells * stride);
