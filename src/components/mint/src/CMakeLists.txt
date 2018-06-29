@@ -98,7 +98,7 @@ set( mint_dependencies
      )
 
 if ( ${MINT_USE_SIDRE} )
-  list(APPEND mint_dependencies sidre conduit)
+    list(APPEND mint_dependencies sidre conduit)
 endif()
 
 ## create the mint library
@@ -116,6 +116,6 @@ install(TARGETS              mint
         DESTINATION          lib
         INCLUDES DESTINATION include/mint
         )
-install(FILES       ${mint_headers}
+install(FILES       ${mint_headers} ${HEADER_INCLUDES_DIRECTORY}/mint/config.hpp
         DESTINATION include/mint
         )
