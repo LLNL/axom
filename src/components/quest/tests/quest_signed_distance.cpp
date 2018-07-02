@@ -31,6 +31,7 @@ using axom::slic::UnitTestLogger;
 #include "primal/Point.hpp"
 
 #include "quest/SignedDistance.hpp"  // quest::SignedDistance
+#include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Google Test includes
 #include "gtest/gtest.h"
@@ -44,9 +45,6 @@ namespace quest  = axom::quest;
 namespace primal = axom::primal;
 using UMesh      = axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 
-// pi / 180
-#define DEG_TO_RAD 0.01745329251
-
 // Note: the following macro is intended for debugging purposes. Uncomment the
 // following line to enable VTK dumps from this test.
 // #define QUEST_SIGNED_DISTANCE_TEST_DUMP_VTK
@@ -56,129 +54,6 @@ using UMesh      = axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 //------------------------------------------------------------------------------
 namespace detail
 {
-
-/*!
- * \brief Gets a surface mesh instance for the sphere.
- *
- * \param [in,out] mesh pointer to the mesh instance, where to store the mesh
- * \param [in] SPHERE_CENTER the center of the sphere
- * \param [in] RADIUS the radius of the sphere
- * \param [in] THETA_RES the theta resolution for generating the sphere
- * \param [in] PHI_RES the phi resolution for generating the sphere
- *
- * \pre mesh != AXOM_NULLPTR
- * \pre mesh->getDimension() == 3
- * \pre mesh->getMeshType() == mint::UNSTRUCTURED_MESH
- * \pre mesh->hasMixedCellTypes() == false
- * \pre mesh->getCellType() == mint::TRIANGLE
- */
-void getSphereSurfaceMesh( UMesh* mesh,
-                           const double* SPHERE_CENTER,
-                           double RADIUS,
-                           int THETA_RES,
-                           int PHI_RES )
-{
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( mesh->getDimension()==3 );
-  SLIC_ASSERT( mesh->getMeshType()==mint::UNSTRUCTURED_MESH );
-  SLIC_ASSERT( mesh->hasMixedCellTypes()==false );
-  SLIC_ASSERT( mesh->getCellType()==mint::TRIANGLE );
-
-  const double totalNodes = THETA_RES * PHI_RES;
-  const double totalCells = (2 * THETA_RES) + (THETA_RES * PHI_RES);
-  mesh->reserve( totalNodes, totalCells );
-
-  const double theta_start = 0;
-  const double theta_end   = 360 * DEG_TO_RAD;
-  const double phi_start   = 0;
-  const double phi_end     = 180 * DEG_TO_RAD;
-
-  double x[3];
-  double n[3];
-  mint::IndexType c[3];
-
-  // North pole point
-  x[0] = SPHERE_CENTER[0];
-  x[1] = SPHERE_CENTER[1];
-  x[2] = SPHERE_CENTER[2] + RADIUS;
-  mesh->appendNode( x[0], x[1], x[2] );
-
-  // South pole point
-  x[2] = SPHERE_CENTER[2] - RADIUS;
-  mesh->appendNode( x[0], x[1], x[2] );
-
-  // Calculate spacing
-  const double dphi   = ( phi_end-phi_start ) /
-                        ( static_cast< double>(PHI_RES-1) );
-  const double dtheta = ( theta_end-theta_start ) /
-                        ( static_cast<double>(THETA_RES-1) );
-
-  // Generate points
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-
-    const double theta = theta_start + i*dtheta;
-
-    for ( int j=0 ; j < PHI_RES-2 ; ++j )
-    {
-
-      const double phi = phi_start + j*dphi;
-      const double radius = RADIUS * sin( phi );
-
-      n[0] = radius * cos( theta );
-      n[1] = radius * sin( theta );
-      n[2] = RADIUS * cos( phi );
-      x[0] = n[0] + SPHERE_CENTER[0];
-      x[1] = n[1] + SPHERE_CENTER[1];
-      x[2] = n[2] + SPHERE_CENTER[2];
-
-      mesh->appendNode( x[0], x[1], x[2] );
-
-    }  // END for all j
-
-  } // END for all i
-
-  const int phiResolution = PHI_RES-2; // taking in to account two pole points.
-  int stride = phiResolution * THETA_RES;
-
-  // Generate mesh connectivity around north pole
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-    c[2] = phiResolution*i + /* number of poles */ 2;
-    c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
-    c[0] = 0;
-    mesh->appendCell( c );
-  } // END for
-
-  // Generate mesh connectivity around south pole
-  int offset = PHI_RES - 1;
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-    c[2] = phiResolution*i + offset;
-    c[1] = ( phiResolution*(i+1) % stride ) + offset;
-    c[0] = 1;
-    mesh->appendCell( c );
-  }
-
-  // Generate mesh connectivity in between poles
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-
-    for ( int j=0 ; j < PHI_RES-3 ; ++j )
-    {
-
-      c[ 0 ] = phiResolution*i + j + 2;
-      c[ 1 ] = c[0] + 1;
-      c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
-
-      mesh->appendCell( c );
-
-      c[ 1 ] = c[ 2 ];
-      c[ 2 ] = c[ 1 ] - 1;
-      mesh->appendCell( c );
-    }  // END for all j
-  } // END for all i
-}
 
 /*!
  * \brief Returns the bounding box of the mesh.
@@ -244,7 +119,7 @@ TEST( quest_signed_distance, sphere_test )
 
   SLIC_INFO( "Constructing sphere mesh..." );
   UMesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
-  detail::getSphereSurfaceMesh( surface_mesh,
+  quest::utilities::getSphereSurfaceMesh( surface_mesh,
       SPHERE_CENTER, SPHERE_RADIUS, SPHERE_THETA_RES, SPHERE_PHI_RES );
 
   SLIC_INFO( "Generating uniform mesh..." );
