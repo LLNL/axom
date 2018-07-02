@@ -89,7 +89,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   //Set-up both dense and sparse sets, since they don't take any extra memory...
 
   //a set of mapped relation
-  m_cellMatNZSet = MappedRelationSetType(&m_cellMatRel);
+  m_cellMatNZSet = RelationSetType(&m_cellMatRel);
 
   // a cartesian set of cell x mat
   m_cellMatProdSet = ProductSetType(&set1, &set2);

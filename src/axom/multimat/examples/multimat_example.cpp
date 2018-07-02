@@ -848,7 +848,7 @@ void test_code() {
   }
 
 
-  // ---------- using iterator with Map -------------
+  // ---------- using iterator with Map and Submap -------------
   printf("\nWith Map (and Submap) iterators\n");
   sum = 0;
   start_timer();
@@ -863,6 +863,7 @@ void test_code() {
   cout << end_timer() << "\t";
   assert(c_sum == sum);
 
+
   sum = 0;
   start_timer();
   {
@@ -875,9 +876,10 @@ void test_code() {
         for (int s = 0; s < map2d.stride(); ++s)
         {
           sum += iter(s);                  //<----
+          assert(iter(s) == iter.value(s));  //another way to get the value
           int idx = iter.index();
         }
-        //assert(*iter, iter.value());   //another way to get the first component value
+        //assert(*iter, iter.value());   //2 ways to get the first component value
       }
     }
   }
@@ -893,15 +895,16 @@ void test_code() {
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0; i < mm.getNumberOfCells();/* map2d.firstSetSize(); */i++)
     {
-      for (auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
+      for (MultiMat::SubField<double>::SubmapIterator iter = map2d.begin(i); iter != map2d.end(i); iter++)
       {
         for (int s = 0; s < map2d.numComp(); ++s)
         {
           sum += iter(s);          //<----
-          //assert(iter(s) == iter.value(s));  //anotehr way to get the value
+          assert(iter(s) == iter.value(s));  //another way to get the value
           int idx = iter.index();
         }
-        //assert(*iter, iter.value()); //another way to get the first component value
+        assert(iter(0) == *iter); //2 ways to get the first component value
+        assert(iter(0) == iter.value()); 
       }
     }
   }

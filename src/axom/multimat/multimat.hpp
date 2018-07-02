@@ -6,7 +6,7 @@
 #include "slam/OrderedSet.hpp"
 #include "slam/StaticRelation.hpp"
 #include "slam/Map.hpp"
-#include "slam/MappedRelationSet.hpp"
+#include "slam/RelationSet.hpp"
 #include "slam/ProductSet.hpp"
 #include "slam/BivariateMap.hpp"
 #include <vector>
@@ -49,7 +49,7 @@ private:
                 policies::NoSubset>;
   using ProductSetType = slam::ProductSet;
   // SLAM MappedRelationSet for the set of non-zero cell to mat variables
-  using MappedRelationSetType = slam::MappedRelationSet<StaticVariableRelationType>;
+  using RelationSetType = slam::RelationSet<StaticVariableRelationType>;
   
   //stride-related
   using StrideType = slam::policies::RuntimeStride<SetPosType>;
@@ -137,7 +137,7 @@ private:
   StaticVariableRelationType m_cellMatRel;
   std::vector<SetPosType> m_cellMatRel_beginsVec; //to store the cell2mat relation
   std::vector<SetPosType> m_cellMatRel_indicesVec; //to store the cell2mat relation
-  MappedRelationSetType m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
+  RelationSetType m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
   ProductSetType m_cellMatProdSet;
 
   std::vector<std::string> m_arrNameVec;
@@ -168,7 +168,8 @@ int MultiMat::addFieldArray_impl(std::string arr_name, FieldMapping arr_mapping,
     }
     else assert(false);
 
-    Field2D<T>* new_map_ptr = new Field2D<T>(s, data_arr, stride);
+    Field2D<T>* new_map_ptr = new Field2D<T>(s, T(), stride);
+    new_map_ptr->copy(data_arr);
     m_mapVec.push_back(new_map_ptr);
   }
   else if (arr_mapping == FieldMapping::PER_CELL ||
@@ -214,7 +215,7 @@ int MultiMat::addField(std::string arr_name, FieldMapping arr_mapping,
 
   //make sure the name does not conflict
   int fieldIdx = getFieldIdx(arr_name);
-  if (fieldIdx == 0) 
+  if (fieldIdx == 0 && m_mapVec[0] != nullptr) 
   { //this is the vol frac array. call setVolfrac instead
     assert(arr_mapping == FieldMapping::PER_CELL_MAT);
     assert(stride == 1);
@@ -292,7 +293,9 @@ void MultiMat::convertToSparse_helper(int map_i)
   }
   assert(idx == m_cellMatNZSet.totalSize()*stride);
 
-  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatNZSet, &arr_data[0], stride);
+  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatNZSet, DataType(), stride);
+  new_field->copy(&arr_data[0]);
+
   delete m_mapVec[map_i];
   m_mapVec[map_i] = new_field;
 }
