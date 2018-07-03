@@ -57,6 +57,8 @@ class UberenvAxom(Package):
 
     depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
 
+    depends_on("conduit~shared") # needed so we can optionally use ^conduit@master
+
     depends_on("conduit~shared+cmake+hdf5",when="+cmake+hdf5")
     depends_on("conduit~shared~cmake+hdf5",when="~cmake+hdf5")
     depends_on("conduit~shared+cmake~hdf5",when="+cmake~hdf5")
