@@ -68,7 +68,7 @@ public:
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,
-      IndicesIndirectionPolicy >                  RelationSet;
+      IndicesIndirectionPolicy >                  RelationSubset;
 
 
   typedef OrderedSet<
@@ -81,11 +81,11 @@ public:
     IndicesIndirectionPolicy::IndirectionBufferType IndirectionBufferType;
 
 #ifdef AXOM_USE_CXX11
-  typedef typename RelationSet::iterator RelationIterator;
-  typedef typename RelationSet::iterator_pair RelationIteratorPair;
+  typedef typename RelationSubset::iterator RelationIterator;
+  typedef typename RelationSubset::iterator_pair RelationIteratorPair;
 
-  typedef typename RelationSet::const_iterator RelationConstIterator;
-  typedef typename RelationSet::const_iterator_pair RelationConstIteratorPair;
+  typedef typename RelationSubset::const_iterator RelationConstIterator;
+  typedef typename RelationSubset::const_iterator_pair RelationConstIteratorPair;
 #endif // AXOM_USE_CXX11
 
 public:
@@ -166,11 +166,11 @@ private:
 
 public:
 
-  const RelationSet operator[](SetPosition fromSetInd ) const
+  const RelationSubset operator[](SetPosition fromSetInd ) const
   {
     SLIC_ASSERT( m_relationIndices.isValid(true) );
 
-    typedef typename RelationSet::SetBuilder SetBuilder;
+    typedef typename RelationSubset::SetBuilder SetBuilder;
     return SetBuilder()
            .size( CardinalityPolicy::size( fromSetInd ) )
            .offset ( CardinalityPolicy::offset( fromSetInd ))
@@ -178,11 +178,11 @@ public:
     ;
   }
 
-  RelationSet operator[](SetPosition fromSetInd )
+  RelationSubset operator[](SetPosition fromSetInd )
   {
     SLIC_ASSERT( m_relationIndices.isValid(true) );
 
-    typedef typename RelationSet::SetBuilder SetBuilder;
+    typedef typename RelationSubset::SetBuilder SetBuilder;
     return SetBuilder()
            .size( CardinalityPolicy::size( fromSetInd ) )
            .offset ( CardinalityPolicy::offset( fromSetInd ))

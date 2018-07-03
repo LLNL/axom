@@ -605,7 +605,7 @@ public:
         STLIndirection,
         MeshElementSet,
         MeshVertexSet>                                TriangleVertexRelation;
-    typedef typename TriangleVertexRelation::RelationSet TriVertIndices;
+    typedef typename TriangleVertexRelation::RelationSubset TriVertIndices;
 
 public:
     /** \brief Constructor for a mesh wrapper */
@@ -987,7 +987,7 @@ public:
       STLIndirection,
       GrayLeafSet,
       MeshElementSet >                                   GrayLeafElementRelation;
-  typedef typename GrayLeafElementRelation::RelationSet TriangleIndexSet;
+  typedef typename GrayLeafElementRelation::RelationSubset TriangleIndexSet;
 
   typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
   typedef axom::slam::Map<GrayLeafVertexRelation> GrayLeafVertexRelationLevelMap;
