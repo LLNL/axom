@@ -52,16 +52,21 @@ namespace slam
 /**
  * \class   Map
  *
- * \brief   A Map class that associates a value to every element in a set
+ * \brief   A Map class that associates a constant number of values to every
+ *          element in a set.
  *
- * \detail  The Map will take a Set pointer, and maintain a value of DataType
- *          for each element in the Set. If the stride of the map is larger
- *          than 1, then each element of the set will be mapped to stride
- *          number of DataType
- *
- *          Accessing the element with map(i,j) will give you the ith element,
- *          jth component. Accessing the map with map[k] will give you the kth
- *          element in the underhood array s.t. i*stride+j=k
+ * \tparam  DataType The data type of each value
+ * \tparam  StridePolicy A policy class that determines how many values to
+ *          associate with each element. There is a fixed \a stride between
+ *          the data associated with each element of the set.
+ * \details The map class associates a fixed number of values, also referred
+ *          to as \a components, with each element in its underlying \a Set
+ *          instance. Depending on the \a StridePolicy, this can be fixed at
+ *          compile time or at runtime.\n
+ *          Access to the j<sup>th</sup> component of the i<sup>th</sup>
+ *          element, can be obtained via the parenthesis operator
+ *          ( `map(i,j)` ), or via the square bracket operator
+ *          (i.e. `map[k]`, where `k = i * stride() + j` ).
  *
  */
 
@@ -96,9 +101,11 @@ public:
    * \param theSet         (Optional) A pointer to the map's set
    * \param defaultValue   (Optional) If given, every entry in the map will be
    *                       initialized using defaultValue
-   * \param stride         (Optional) The stride. The number of DataType that
-   *                       each element in the set will be mapped to.
-   *                       Default is 1.
+   * \param stride  (Optional) The stride. The number of DataType that
+   *                each element in the set will be mapped to.
+   *                When using a \a RuntimeStridePolicy, the default is 1.
+   * \note  When using a compile time StridePolicy, \a stride must be equal to
+   *        \a stride(), when provided.
    */
 
   Map(const Set* theSet = &s_nullSet, DataType defaultValue = DataType(),
@@ -161,8 +168,12 @@ public:
   ///
 
   /**
-   * \brief Access the element given a flat index into the size()*numComp()
-   * range of the map
+   * \brief  Access the value in the map using a flat index in the range of 0 to
+   *         `size()*numComp()`
+   *
+   * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
+   *         element, where `setIndex = i * numComp() + j`.
+   * \pre    0 <= setIndex < size() * numComp()
    */
   const DataType & operator[](SetPosition setIndex) const
   {
@@ -177,23 +188,23 @@ public:
   }
 
   /**
-   * \brief Access the element given a position in the set and a component
-   * index.
+   * \brief Access the value associated with the given position in the set and
+   *        the component index.
    *
-   * \pre setIdx must be between 0 and size()
-   * \pre comp must be between 0 and numComp()
+   * \pre `0 <= setIdx < size()`
+   * \pre `0 <= comp < numComp()`
    */
   const DataType & operator()(SetPosition setIdx, SetPosition comp = 0) const
   {
+    verifyPosition(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
-    verifyPosition(setIndex);
     return m_data[setIndex];
   }
 
   DataType & operator()(SetPosition setIdx, SetPosition comp = 0)
   {
+    verifyPosition(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
-    verifyPosition(setIndex);
     return m_data[setIndex];
   }
 
@@ -204,14 +215,15 @@ public:
   /// @{
 
   /**
-   * \brief Return the set size. Same as set()->size().
+   * \brief Return the set size. Same as `set()->size()`.
    *
-   * The total storage size would be size() * numComp()
+   * The total storage size for the map's values is `size() * numComp()`
    */
   SetPosition size() const { return SetPosition(m_set->size()); }
 
   /*
-   * Return the stride, equivalent to the number of components of the map
+   * \brief  Gets the number of component values associalted with each element.
+   *         Equivalent to stride().
    */
   SetPosition numComp() const { return StridePolicyType::stride(); }
 
@@ -305,10 +317,20 @@ private:
 
 #ifdef AXOM_USE_CXX11
   /**
-   * \class MapIterator
-   * \brief An iterator type for a map. It will increment/decrement by the
-   *        number of stride. To access the components, do iter(c) where c
-   *        is the component you want to access.
+   * \class   MapIterator
+   * \brief   An iterator type for a map.
+   *          Each increment operation advances the iterator to the next set
+   *          element.
+   *          To access the j<sup>th</sup> component values of the iterator's
+   *          current element, use `iter(j)`.
+   * \warning Note the difference between the subscript operator ( `iter[off]` )
+   *          and the parenthesis operator ( `iter(j)` ). \n
+   *          `iter[off]` returns the value of the first component of the
+   *          element at offset \a `off` from the currently pointed to
+   *          element.\n
+   *          And `iter(j)` returns the value of the j<sup>th</sup> component of
+   *          the currently pointed to element (where 0 <= j < numComp()).\n
+   *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
   class MapIterator : public std::iterator<std::random_access_iterator_tag,
                                            DataType>
@@ -386,7 +408,7 @@ public:
       return (a.m_pos - b.m_pos);
     }
 
-    /** \brief Returns the number of component the map has. */
+    /** \brief Returns the number of component  per element in the map's set. */
     PositionType numComp() const { return m_mapPtr->stride(); }
 
 private:
@@ -428,12 +450,22 @@ public:
   /// \}
 
 private:
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIndex))      const
+  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx))      const
   {
     SLIC_ASSERT_MSG(
-      setIndex >= 0 && setIndex < SetPosition( m_data.size()),
+      idx >= 0 && idx < SetPosition( m_data.size()),
       "Attempted to access element "
-      << setIndex << " but map's data has size "  << m_data.size() );
+      << idx << " but map's data has size "  << m_data.size() );
+  }
+
+  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIdx),
+                             SetPosition AXOM_DEBUG_PARAM(compIdx))     const
+  {
+    SLIC_ASSERT_MSG(
+      setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
+      "Attempted to access element at ("
+      << setIdx << "," << compIdx << ",) but map's set has size " << size()
+      << " with " << numComp() << " components." );
   }
 
   // setStride function should not be called after constructor is called.
