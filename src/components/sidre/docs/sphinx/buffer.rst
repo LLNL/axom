@@ -12,6 +12,8 @@
 .. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
+.. _buffer-label:
+
 ==========
 Buffer
 ==========

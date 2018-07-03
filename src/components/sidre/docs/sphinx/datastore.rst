@@ -12,15 +12,48 @@
 .. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
+.. _datastore-label:
+
 ==========
 Datastore
 ==========
 
-The Datastore class provides a container for all Sidre data.  Each Datastore
-contains one root Group, which provides access to the hierarchy of Group and View objects in
-the Datastore.  A Datastore supports creation and destruction of Buffers and access
-to individual Buffers via buffer IDs.
-A Datastore also allows management of a list of Attributes
-that can be set on any of its Views.
+A Sidre Datastore object provides the main access point for Sidre contents,
+including the data managed by Sidre. In particular, a DataStore maintains the 
+group at the root of the Sidre group hierarchy (named "/"), a collection of 
+Buffer objects, and a collection of Attribute objects. Generally, the first 
+thing a Sidre user does is create a DataStore; this operation also creates 
+the root group. Apart from providing access to the root group, a DataStore 
+object provides methods to interact with Buffer and Attribute objects. 
 
+.. note:: Buffer and Attribute objects can only be created using DataStore
+          methods noted below. Their constructors are private.
 
+DataStore methods for Buffers support the following operations:
+
+ * Create, destroy, and allocate data in Buffer objects
+ * Query the number of Buffers that exist
+ * Query whether a Buffer exists with given id
+ * Retrieve Buffer with given id
+ * Iterate over set of Buffers in DataStore
+
+.. note:: Each Buffer object has a unique integer identifier generated when it
+          is created. If you want to interact with a Buffer object directly,
+          you must keep a pointer to it or note its id so that you can retrieve
+          it from the DataStore. 
+
+Please see :ref:`buffer-label` for more information about using Buffer objects.
+
+DataStore methods for Attributes support the following operations:
+
+ * Create and destroy Attributes
+ * Query the number of Attributes that exist
+ * Query whether an Attribute exists with given name or id
+ * Retrieve Attribute with given name or id
+ * Iterate over set of Attributes in DataStore
+
+.. note:: Each Attribute has a unique name and integer identifier. Either can
+          be used to retrieve it from the DataStore.
+
+Please see :ref:`attribute-label` for more information about using Attribute
+objects.
