@@ -432,22 +432,10 @@ public:     // Functions related to iteration
 
 public:
   /**
-   * \name DirectDataAccess
-   * \brief Accessor functions to get the underlying map data
-
-   * \note We will have to figure out a good way to limit
-   * this access to situations where it makes sense.
+   * \brief Returns a reference to the underlying map data 
    */
-
-  /// \{
-
-  //* Placeholder for function that returns the (pointer to) underlying data **/
   OrderedMap &        data()       { return m_data; }
-  //* Placeholder for function that returns the (const pointer to) underlying
-  // data **/
   const OrderedMap &  data() const { return m_data; }
-
-  /// \}
 
 private:
   inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx))      const

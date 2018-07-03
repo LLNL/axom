@@ -38,9 +38,10 @@ namespace slam
 /**
  * \class   MapBase
  *
- * \brief   A base class for Map, providing basic API for class
- * that associates value to each element in a Set
- * \see Map
+ * \brief   A base class specifying methods that support operations of a Map,
+ *          associating value(s) to each element in a Set. MapBase can be used
+ *          as a base class pointer to a templated Map object.
+ * \see     Map
  *
  */
 
@@ -71,7 +72,7 @@ private:
    * \brief Utility function to verify that the given SetPosition is in a valid
    * range.
    */
-  virtual void verifyPosition(SetPosition )       const = 0;
+  virtual void verifyPosition(SetPosition)       const = 0;
 
 };
 
